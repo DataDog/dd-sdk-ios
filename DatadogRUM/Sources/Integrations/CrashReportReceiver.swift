@@ -417,6 +417,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 crash: .init(count: 0),
                 cumulativeLayoutShift: nil,
                 cumulativeLayoutShiftTargetSelector: nil,
+                cumulativeLayoutShiftTime: nil,
                 customTimings: nil,
                 domComplete: nil,
                 domContentLoaded: nil,
@@ -435,6 +436,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 inForegroundPeriods: nil,
                 interactionToNextPaint: nil,
                 interactionToNextPaintTargetSelector: nil,
+                interactionToNextPaintTime: nil,
                 isActive: false, // we know it won't receive updates
                 isSlowRendered: false,
                 jsRefreshRate: nil,

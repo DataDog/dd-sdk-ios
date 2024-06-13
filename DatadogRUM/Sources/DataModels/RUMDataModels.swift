@@ -2326,6 +2326,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// CSS selector path of the first element (in document order) of the largest layout shift contributing to CLS
         public let cumulativeLayoutShiftTargetSelector: String?
 
+        /// Duration in ns between start of the view and start of the largest layout shift contributing to CLS
+        public let cumulativeLayoutShiftTime: Int64?
+
         /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
         public let customTimings: [String: Int64]?
 
@@ -2379,6 +2382,9 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// CSS selector path of the interacted element corresponding to INP
         public let interactionToNextPaintTargetSelector: String?
+
+        /// Duration in ns between start of the view and start of the INP
+        public let interactionToNextPaintTime: Int64?
 
         /// Whether the View corresponding to this event is considered active
         public let isActive: Bool?
@@ -2441,6 +2447,7 @@ public struct RUMViewEvent: RUMDataModel {
             case crash = "crash"
             case cumulativeLayoutShift = "cumulative_layout_shift"
             case cumulativeLayoutShiftTargetSelector = "cumulative_layout_shift_target_selector"
+            case cumulativeLayoutShiftTime = "cumulative_layout_shift_time"
             case customTimings = "custom_timings"
             case domComplete = "dom_complete"
             case domContentLoaded = "dom_content_loaded"
@@ -2459,6 +2466,7 @@ public struct RUMViewEvent: RUMDataModel {
             case inForegroundPeriods = "in_foreground_periods"
             case interactionToNextPaint = "interaction_to_next_paint"
             case interactionToNextPaintTargetSelector = "interaction_to_next_paint_target_selector"
+            case interactionToNextPaintTime = "interaction_to_next_paint_time"
             case isActive = "is_active"
             case isSlowRendered = "is_slow_rendered"
             case jsRefreshRate = "js_refresh_rate"
@@ -2770,11 +2778,15 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Session-related internal properties
         public let session: Session?
 
+        /// Internal vital properties
+        public let vital: Vital?
+
         enum CodingKeys: String, CodingKey {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
             case formatVersion = "format_version"
             case session = "session"
+            case vital = "vital"
         }
 
         /// Subset of the SDK configuration options in use during its execution
@@ -2808,6 +2820,16 @@ public struct RUMVitalEvent: RUMDataModel {
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
+            }
+        }
+
+        /// Internal vital properties
+        public struct Vital: Codable {
+            /// Whether the value of the vital is computed by the SDK (as opposed to directly provided by the customer)
+            public let computedValue: Bool?
+
+            enum CodingKeys: String, CodingKey {
+                case computedValue = "computed_value"
             }
         }
     }
@@ -2987,7 +3009,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
     public let source: Source
 
     /// The telemetry log information
-    public let telemetry: Telemetry
+    public internal(set) var telemetry: Telemetry
 
     /// Telemetry event type. Should specify telemetry only.
     public let type: String = "telemetry"
@@ -3065,11 +3087,17 @@ public struct TelemetryErrorEvent: RUMDataModel {
 
     /// The telemetry log information
     public struct Telemetry: Codable {
+        /// Device properties
+        public let device: RUMTelemetryDevice?
+
         /// Error properties
         public let error: Error?
 
         /// Body of the log
         public let message: String
+
+        /// OS properties
+        public let os: RUMTelemetryOperatingSystem?
 
         /// Level/severity of the log
         public let status: String = "error"
@@ -3077,9 +3105,13 @@ public struct TelemetryErrorEvent: RUMDataModel {
         /// Telemetry type
         public let type: String? = "log"
 
-        enum CodingKeys: String, CodingKey {
+        public internal(set) var telemetryInfo: [String: Encodable]
+
+        enum StaticCodingKeys: String, CodingKey {
+            case device = "device"
             case error = "error"
             case message = "message"
+            case os = "os"
             case status = "status"
             case type = "type"
         }
@@ -3107,6 +3139,45 @@ public struct TelemetryErrorEvent: RUMDataModel {
         enum CodingKeys: String, CodingKey {
             case id = "id"
         }
+    }
+}
+
+extension TelemetryErrorEvent.Telemetry {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(device, forKey: .device)
+        try staticContainer.encodeIfPresent(error, forKey: .error)
+        try staticContainer.encodeIfPresent(message, forKey: .message)
+        try staticContainer.encodeIfPresent(os, forKey: .os)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try telemetryInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.device = try staticContainer.decodeIfPresent(RUMTelemetryDevice.self, forKey: .device)
+        self.error = try staticContainer.decodeIfPresent(Error.self, forKey: .error)
+        self.message = try staticContainer.decode(String.self, forKey: .message)
+        self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
+
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        }
+
+        self.telemetryInfo = dictionary
     }
 }
 
@@ -3215,8 +3286,14 @@ public struct TelemetryDebugEvent: RUMDataModel {
 
     /// The telemetry log information
     public struct Telemetry: Codable {
+        /// Device properties
+        public let device: RUMTelemetryDevice?
+
         /// Body of the log
         public let message: String
+
+        /// OS properties
+        public let os: RUMTelemetryOperatingSystem?
 
         /// Level/severity of the log
         public let status: String = "debug"
@@ -3227,7 +3304,9 @@ public struct TelemetryDebugEvent: RUMDataModel {
         public internal(set) var telemetryInfo: [String: Encodable]
 
         enum StaticCodingKeys: String, CodingKey {
+            case device = "device"
             case message = "message"
+            case os = "os"
             case status = "status"
             case type = "type"
         }
@@ -3248,7 +3327,9 @@ extension TelemetryDebugEvent.Telemetry {
     public func encode(to encoder: Encoder) throws {
         // Encode static properties:
         var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(device, forKey: .device)
         try staticContainer.encodeIfPresent(message, forKey: .message)
+        try staticContainer.encodeIfPresent(os, forKey: .os)
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
@@ -3261,7 +3342,9 @@ extension TelemetryDebugEvent.Telemetry {
     public init(from decoder: Decoder) throws {
         // Decode static properties:
         let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.device = try staticContainer.decodeIfPresent(RUMTelemetryDevice.self, forKey: .device)
         self.message = try staticContainer.decode(String.self, forKey: .message)
+        self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
 
         // Decode other properties into [String: Codable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
@@ -3385,11 +3468,21 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
         /// Configuration properties
         public var configuration: Configuration
 
+        /// Device properties
+        public let device: RUMTelemetryDevice?
+
+        /// OS properties
+        public let os: RUMTelemetryOperatingSystem?
+
         /// Telemetry type
         public let type: String = "configuration"
 
-        enum CodingKeys: String, CodingKey {
+        public internal(set) var telemetryInfo: [String: Encodable]
+
+        enum StaticCodingKeys: String, CodingKey {
             case configuration = "configuration"
+            case device = "device"
+            case os = "os"
             case type = "type"
         }
 
@@ -3428,6 +3521,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Session replay default privacy level
             public var defaultPrivacyLevel: String?
 
+            /// Privacy control for action name
+            public var enablePrivacyForActionName: Bool?
+
             /// The console.* tracked
             public let forwardConsoleLogs: ForwardConsoleLogs?
 
@@ -3457,6 +3553,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// A list of selected tracing propagators
             public let selectedTracingPropagators: [SelectedTracingPropagators]?
+
+            /// Whether logs are sent after the session expiration
+            public var sendLogsAfterSessionExpiration: Bool?
 
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public var sessionReplaySampleRate: Int64?
@@ -3540,7 +3639,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             public var trackViewsManually: Bool?
 
             /// The initial tracking consent value
-            public let trackingConsent: String?
+            public let trackingConsent: TrackingConsent?
 
             /// The version of Unity used in a Unity application
             public var unityVersion: String?
@@ -3599,6 +3698,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case compressIntakeRequests = "compress_intake_requests"
                 case dartVersion = "dart_version"
                 case defaultPrivacyLevel = "default_privacy_level"
+                case enablePrivacyForActionName = "enable_privacy_for_action_name"
                 case forwardConsoleLogs = "forward_console_logs"
                 case forwardErrorsToLogs = "forward_errors_to_logs"
                 case forwardReports = "forward_reports"
@@ -3609,6 +3709,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case reactVersion = "react_version"
                 case replaySampleRate = "replay_sample_rate"
                 case selectedTracingPropagators = "selected_tracing_propagators"
+                case sendLogsAfterSessionExpiration = "send_logs_after_session_expiration"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case silentMultipleInit = "silent_multiple_init"
@@ -3751,6 +3852,13 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case sampled = "sampled"
             }
 
+            /// The initial tracking consent value
+            public enum TrackingConsent: String, Codable {
+                case granted = "granted"
+                case notGranted = "not-granted"
+                case pending = "pending"
+            }
+
             /// View tracking strategy
             public enum ViewTrackingStrategy: String, Codable {
                 case activityViewTrackingStrategy = "ActivityViewTrackingStrategy"
@@ -3769,6 +3877,43 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
         enum CodingKeys: String, CodingKey {
             case id = "id"
         }
+    }
+}
+
+extension TelemetryConfigurationEvent.Telemetry {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(configuration, forKey: .configuration)
+        try staticContainer.encodeIfPresent(device, forKey: .device)
+        try staticContainer.encodeIfPresent(os, forKey: .os)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try telemetryInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.configuration = try staticContainer.decode(Configuration.self, forKey: .configuration)
+        self.device = try staticContainer.decodeIfPresent(RUMTelemetryDevice.self, forKey: .device)
+        self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
+
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        }
+
+        self.telemetryInfo = dictionary
     }
 }
 
@@ -4081,4 +4226,40 @@ public enum RUMMethod: String, Codable {
     case connect = "CONNECT"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/0455e104863c0f67c3bf69899c7d5da1ba6f0ebb
+/// Device properties
+public struct RUMTelemetryDevice: Codable {
+    /// Architecture of the device
+    public let architecture: String?
+
+    /// Brand of the device
+    public let brand: String?
+
+    /// Model of the device
+    public let model: String?
+
+    enum CodingKeys: String, CodingKey {
+        case architecture = "architecture"
+        case brand = "brand"
+        case model = "model"
+    }
+}
+
+/// OS properties
+public struct RUMTelemetryOperatingSystem: Codable {
+    /// Build of the OS
+    public let build: String?
+
+    /// Name of the OS
+    public let name: String?
+
+    /// Version of the OS
+    public let version: String?
+
+    enum CodingKeys: String, CodingKey {
+        case build = "build"
+        case name = "name"
+        case version = "version"
+    }
+}
+
+// Generated from https://github.com/DataDog/rum-events-format/tree/30d4b773abb4e33edc9d6053d3c12cd302e948a5

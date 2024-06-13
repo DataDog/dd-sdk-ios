@@ -32,7 +32,7 @@ class DatadogXCFrameworkValidator(XCFrameworkValidator):
         if in_version >= v2:
             return False # Datadog.xcframework no longer exist in `2.0`
 
-        dir = zip_directory.get('Datadog.xcframework')
+        dir = zip_directory.get(self.name)
 
         # above 1.12.1: framework includes arm64e slices
         min_arm64e_version = Version('1.12.1')
@@ -77,7 +77,7 @@ class DatadogObjcXCFrameworkValidator(XCFrameworkValidator):
     def validate(self, zip_directory: DirectoryMatcher, in_version: Version) -> bool:
         # always expect `DatadogObjc.xcframework`
 
-        dir = zip_directory.get('DatadogObjc.xcframework')
+        dir = zip_directory.get(self.name)
 
         # above 1.12.1: framework includes arm64e slices
         min_arm64e_version = Version('1.12.1')
@@ -122,7 +122,7 @@ class DatadogCrashReportingXCFrameworkValidator(XCFrameworkValidator):
         if in_version < min_cr_version:
             return False # Datadog Crash Reporting.xcframework was introduced in `1.7.0`
 
-        dir = zip_directory.get('DatadogCrashReporting.xcframework')
+        dir = zip_directory.get(self.name)
 
         # above 1.12.1: framework includes arm64e slices
         min_arm64e_version = Version('1.12.1')
@@ -167,7 +167,7 @@ class CrashReporterXCFrameworkValidator(XCFrameworkValidator):
         if in_version < min_cr_version:
             return False # Datadog Crash Reporting.xcframework was introduced in `1.7.0`
 
-        dir = zip_directory.get('CrashReporter.xcframework')
+        dir = zip_directory.get(self.name)
 
         min_xc14_version = Version('1.12.1')
         if in_version >= min_xc14_version:
@@ -204,7 +204,7 @@ class KronosXCFrameworkValidator(XCFrameworkValidator):
         if in_version < min_version or in_version >= max_version:
             return False
             
-        zip_directory.get('Kronos.xcframework').assert_it_has_files([
+        zip_directory.get(self.name).assert_it_has_files([
             'ios-arm64_arm64e',
             'ios-arm64_arm64e/dSYMs/*.dSYM',
             'ios-arm64_arm64e/**/*.swiftinterface',
@@ -251,6 +251,33 @@ class DatadogModuleXCFrameworkValidator(XCFrameworkValidator):
             ])
 
         return True
+    
+class OpenTelemetryXCFrameworkValidator(XCFrameworkValidator):
+    name = 'OpenTelemetryApi.xcframework'
+
+    def validate(self, zip_directory: DirectoryMatcher, in_version: Version) -> bool:
+        min_otel_version = Version('2.12.0')
+        if in_version < min_otel_version:
+            return False # introduced in 2.12.0
+        
+        dir = zip_directory.get(self.name)
+        
+        dir.assert_it_has_files([
+            'ios-arm64_x86_64-simulator',
+            'ios-arm64_x86_64-simulator/dSYMs/*.dSYM',
+            'ios-arm64_x86_64-simulator/**/*.swiftinterface',
+        ])
+
+        dir.assert_it_has_files([
+            'tvos-arm64',
+            'tvos-arm64/**/*.swiftinterface',
+
+            'tvos-arm64_x86_64-simulator',
+            'tvos-arm64_x86_64-simulator/dSYMs/*.dSYM',
+            'tvos-arm64_x86_64-simulator/**/*.swiftinterface',
+        ])
+
+        return True
 
 xcframeworks_validators: list[XCFrameworkValidator] = [
     DatadogXCFrameworkValidator(),
@@ -268,6 +295,7 @@ xcframeworks_validators: list[XCFrameworkValidator] = [
     DatadogObjcXCFrameworkValidator(),
     DatadogCrashReportingXCFrameworkValidator(),
     CrashReporterXCFrameworkValidator(),
+    OpenTelemetryXCFrameworkValidator(),
 ]
 
 class GHAsset:

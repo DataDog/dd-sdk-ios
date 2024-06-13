@@ -38,7 +38,7 @@ public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing {
     ///   - name: The Feature's name.
     ///   - type: The Feature instance type.
     /// - Returns: The Feature if any.
-    func get<T>(feature type: T.Type) -> T? where T: DatadogFeature
+    func feature<T>(named name: String, type: T.Type) -> T?
 
     /// Retrieves a Feature Scope for given feature type.
     ///
@@ -98,6 +98,17 @@ public protocol BaggageSharing {
     ///   - baggage: The Feature's baggage to set.
     ///   - key: The baggage's key.
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String)
+}
+
+extension DatadogCoreProtocol {
+    /// Returns a `DatadogFeature` conforming type from the
+    /// Feature registry.
+    ///
+    /// - Parameter type: The Feature instance type.
+    /// - Returns: The Feature if any.
+    public func get<T>(feature type: T.Type = T.self) -> T? where T: DatadogFeature {
+        feature(named: T.name, type: type)
+    }
 }
 
 extension MessageSending {
@@ -290,7 +301,7 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     /// no-op
     public func register<T>(feature: T) throws where T: DatadogFeature { }
     /// no-op
-    public func get<T>(feature type: T.Type) -> T? where T: DatadogFeature { nil }
+    public func feature<T>(named name: String, type: T.Type) -> T? { nil }
     /// no-op
     public func scope<T>(for featureType: T.Type) -> FeatureScope { NOPFeatureScope() }
     /// no-op

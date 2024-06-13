@@ -228,6 +228,9 @@ public enum DDRUMMethod: Int {
     case put
     case delete
     case patch
+    case connect
+    case trace
+    case options
 
     internal var swiftType: RUMMethod {
         switch self {
@@ -237,6 +240,9 @@ public enum DDRUMMethod: Int {
         case .put: return .put
         case .delete: return .delete
         case .patch: return .patch
+        case .connect: return .connect
+        case .trace: return .trace
+        case .options: return .options
         default: return .get
         }
     }
@@ -369,6 +375,11 @@ public class DDRUMConfiguration: NSObject {
     @objc public var longTaskThreshold: TimeInterval {
         set { swiftConfig.longTaskThreshold = newValue }
         get { swiftConfig.longTaskThreshold ?? 0 }
+    }
+
+    @objc public var appHangThreshold: TimeInterval {
+        set { swiftConfig.appHangThreshold = newValue }
+        get { swiftConfig.appHangThreshold ?? 0 }
     }
 
     @objc public var vitalsUpdateFrequency: DDRUMVitalsFrequency {

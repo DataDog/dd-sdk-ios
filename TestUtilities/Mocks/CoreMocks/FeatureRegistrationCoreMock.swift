@@ -40,7 +40,7 @@ public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
         registeredFeatures.append(feature)
     }
 
-    public func get<T>(feature type: T.Type) -> T? where T : DatadogFeature {
+    public func feature<T>(named name: String, type: T.Type) -> T? {
         return registeredFeatures.firstElement(of: type)
     }
 

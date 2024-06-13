@@ -89,15 +89,13 @@ extension UITextContentType: RandomMockable {
             .jobTitle, .organizationName, .location, .fullStreetAddress, .streetAddressLine1,
             .streetAddressLine2, .addressCity, .addressState, .addressCityAndState, .sublocality,
             .countryName, .postalCode, .telephoneNumber, .emailAddress, .URL, .creditCardNumber,
-            .username, .password
+            .username, .password,
+            .newPassword,
+            .oneTimeCode,
         ]
 
         if #available(iOS 15.0, tvOS 15.0, *) {
             all.formUnion([.shipmentTrackingNumber, .flightNumber, .dateTime])
-        }
-
-        if #available(iOS 12.0, tvOS 12.0, *) {
-            all.formUnion([.newPassword, .oneTimeCode])
         }
 
         return all

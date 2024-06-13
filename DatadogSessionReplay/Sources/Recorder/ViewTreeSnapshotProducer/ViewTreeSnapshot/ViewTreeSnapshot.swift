@@ -78,7 +78,7 @@ public struct SessionReplayViewAttributes: Equatable {
     /// The view's `frame`, in VTS's root view's coordinate space (usually, the screen coordinate space).
     public let frame: CGRect
 
-    /// Original view's `.backgorundColor`.
+    /// Original view's `.backgroundColor`.
     public let backgroundColor: CGColor?
 
     /// Original view's `layer.borderColor`.

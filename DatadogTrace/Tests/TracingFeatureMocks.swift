@@ -219,6 +219,28 @@ extension DatadogTracer {
             spanEventBuilder: spanEventBuilder
         )
     }
+
+    static func mockWith(
+        featureScope: FeatureScope,
+        localTraceSampler: Sampler = .mockKeepAll(),
+        tags: [String: Encodable] = [:],
+        traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
+        spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator(),
+        dateProvider: DateProvider = SystemDateProvider(),
+        spanEventBuilder: SpanEventBuilder = .mockAny(),
+        loggingIntegration: TracingWithLoggingIntegration = .mockAny()
+    ) -> DatadogTracer {
+        return DatadogTracer(
+            featureScope: featureScope,
+            localTraceSampler: localTraceSampler,
+            tags: tags,
+            traceIDGenerator: traceIDGenerator,
+            spanIDGenerator: spanIDGenerator,
+            dateProvider: dateProvider,
+            loggingIntegration: loggingIntegration,
+            spanEventBuilder: spanEventBuilder
+        )
+    }
 }
 
 extension TracingWithLoggingIntegration {

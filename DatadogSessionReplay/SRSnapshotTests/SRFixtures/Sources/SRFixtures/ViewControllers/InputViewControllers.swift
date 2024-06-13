@@ -77,29 +77,30 @@ public class DatePickersCompactViewController: UIViewController {
 
     /// Forces the "compact" date picker to open full calendar view in a popover.
     public func openCalendarPopover() {
-        // Here we use private Objc APIs. It works fine on iOS 15.0+ which matches the OS version used
+        // Here we use private Objc APIs. It works fine on iOS 17.5 which matches the OS version used
         // for snapshot tests, but might need updates in the future.
-        if #available(iOS 15.0, *) {
-            let label = datePicker.subviews[0].subviews[0]
-            let tapAction = NSSelectorFromString("_didTapTextLabel")
-            label.perform(tapAction)
-        }
+        //
+        // If this breaks on newer iOS version, leverage this gist:
+        // https://gist.github.com/ncreated/dedd8f8b628fbb820b0771e8355e32b9
+        // to inspect private methods on `datePicker` and its subviews (`po datePicker.__methods`). Find the
+        // one that can trigger popover open and use it as `tapAction`.
+        let target = datePicker.subviews[0].subviews[0]
+        let tapAction = NSSelectorFromString("activateLabel")
+        target.perform(tapAction, with: nil)
     }
 
     /// Forces the "wheel" time picker to open in a popover.
     public func openTimePickerPopover() {
-        // Here we use private Objc APIs - it works fine on iOS 15.0+ which matches the OS version used
+        // Here we use private Objc APIs - it works fine on iOS 17.5 which matches the OS version used
         // for snapshot tests, but might need updates in the future.
-        if #available(iOS 15.0, *) {
-            class DummySender: NSObject {
-                @objc
-                func activeTouch() -> UITouch? { return nil }
-            }
-
-            let label = datePicker.subviews[0].subviews[1]
-            let tapAction = NSSelectorFromString("didTapInputLabel:")
-            label.perform(tapAction, with: DummySender())
-        }
+        //
+        // If this breaks on newer iOS version, leverage this gist:
+        // https://gist.github.com/ncreated/dedd8f8b628fbb820b0771e8355e32b9
+        // to inspect private methods on `datePicker` and its subviews (`po datePicker.__methods`). Find the
+        // one that can trigger popover open and use it as `tapAction`.
+        let target = datePicker.subviews[0].subviews[1]
+        let tapAction = NSSelectorFromString("activateLabel")
+        target.perform(tapAction, with: nil)
     }
 }
 

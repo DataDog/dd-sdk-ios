@@ -11,7 +11,9 @@ internal class RUMResourceScope: RUMScope {
     // MARK: - Initialization
 
     let context: RUMContext
-    private let dependencies: RUMScopeDependencies
+
+    /// Container bundling dependencies for this scope.
+    let dependencies: RUMScopeDependencies
 
     /// This Resource's UUID.
     let resourceUUID: RUMUUID

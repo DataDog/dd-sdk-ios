@@ -379,11 +379,13 @@ class TelemetryReceiverTests: XCTestCase {
 
     // MARK: - Metrics Telemetry Events
 
-    func testSendTelemetryMetric() {
+    func testSendTelemetryMetric() throws {
+        let deviceMock: DeviceInfo = .mockRandom()
         featureScope.contextMock = .mockWith(
             version: "app-version",
             source: "react-native",
-            sdkVersion: "sdk-version"
+            sdkVersion: "sdk-version",
+            device: deviceMock
         )
 
         // Given
@@ -404,12 +406,24 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.service, "dd-sdk-ios")
         XCTAssertEqual(event?.source, .reactNative)
         XCTAssertEqual(event?.telemetry.message, "[Mobile Metric] \(randomName)")
-        DDAssertReflectionEqual(event?.telemetry.telemetryInfo, randomAttributes)
+        randomAttributes.forEach { key, value in
+            DDAssertReflectionEqual(event?.telemetry.telemetryInfo[key], value)
+        }
+        let device = try XCTUnwrap(event?.telemetry.device)
+        XCTAssertEqual(device.model, deviceMock.model)
+        XCTAssertEqual(device.brand, deviceMock.brand)
+        XCTAssertEqual(device.architecture, deviceMock.architecture)
+        let os = try XCTUnwrap(event?.telemetry.os)
+        XCTAssertEqual(os.version, deviceMock.osVersion)
+        XCTAssertEqual(os.name, deviceMock.osName)
+        XCTAssertEqual(os.build, deviceMock.osBuildNumber)
     }
 
-    func testSendTelemetryMetricWithRUMContext() {
+    func testSendTelemetryMetricWithRUMContext() throws {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
+        let deviceMock: DeviceInfo = .mockRandom()
+        featureScope.contextMock = .mockWith(device: deviceMock)
         featureScope.contextMock.baggages = [RUMFeature.name: FeatureBaggage(rumContext)]
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
 
@@ -422,10 +436,41 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.session?.id, rumContext.sessionID)
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
         XCTAssertEqual(event?.action?.id, rumContext.userActionID)
+        let device = try XCTUnwrap(event?.telemetry.device)
+        XCTAssertEqual(device.model, deviceMock.model)
+        XCTAssertEqual(device.brand, deviceMock.brand)
+        XCTAssertEqual(device.architecture, deviceMock.architecture)
+        let os = try XCTUnwrap(event?.telemetry.os)
+        XCTAssertEqual(os.version, deviceMock.osVersion)
+        XCTAssertEqual(os.name, deviceMock.osName)
+        XCTAssertEqual(os.build, deviceMock.osBuildNumber)
+    }
+
+    func testSendTelemetryMetricWithRUMContextAndSessionIDOverride() {
+        // Given
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock.baggages = [RUMFeature.name: FeatureBaggage(rumContext)]
+        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
+        let sessionIDOverride = "session-id-override"
+
+        // When
+        var attributes = mockRandomAttributes()
+        attributes[SDKMetricFields.sessionIDOverrideKey] = sessionIDOverride
+        TelemetryMock(with: receiver).metric(name: .mockRandom(), attributes: attributes)
+
+        // Then
+        let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
+        XCTAssertEqual(event?.application?.id, rumContext.applicationID)
+        XCTAssertEqual(event?.session?.id, sessionIDOverride)
+        XCTAssertEqual(event?.view?.id, rumContext.viewID)
+        XCTAssertEqual(event?.action?.id, rumContext.userActionID)
+        XCTAssertNil(event?.telemetry.telemetryInfo[SDKMetricFields.sessionIDOverrideKey], "It should delete `sessionIDOverrideKey` from metric attributes")
     }
 
     func testMethodCallTelemetryPropagetsAllData() throws {
         // Given
+        let deviceMock: DeviceInfo = .mockRandom()
+        featureScope.contextMock = .mockWith(device: deviceMock)
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
         let telemetry = TelemetryMock(with: receiver)
 
@@ -448,14 +493,14 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.callerClass] as? String), callerClass)
         XCTAssertEqual(try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.isSuccessful] as? Bool), isSuccessful)
         XCTAssertGreaterThan(try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.executionTime] as? Int64), 0)
-        let device = try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.Device.key] as? [String: String])
-        XCTAssertTrue(device[MethodCalledMetric.Device.model]?.isEmpty == false)
-        XCTAssertTrue(device[MethodCalledMetric.Device.brand]?.isEmpty == false)
-        XCTAssertTrue(device[MethodCalledMetric.Device.architecture]?.isEmpty == false)
-        let os = try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.OS.key] as? [String: String])
-        XCTAssertTrue(os[MethodCalledMetric.OS.version]?.isEmpty == false)
-        XCTAssertTrue(os[MethodCalledMetric.OS.build]?.isEmpty == false)
-        XCTAssertTrue(os[MethodCalledMetric.OS.name]?.isEmpty == false)
+        let device = try XCTUnwrap(event?.telemetry.device)
+        XCTAssertEqual(device.model, deviceMock.model)
+        XCTAssertEqual(device.brand, deviceMock.brand)
+        XCTAssertEqual(device.architecture, deviceMock.architecture)
+        let os = try XCTUnwrap(event?.telemetry.os)
+        XCTAssertEqual(os.version, deviceMock.osVersion)
+        XCTAssertEqual(os.name, deviceMock.osName)
+        XCTAssertEqual(os.build, deviceMock.osBuildNumber)
     }
 
     func testMethodCallTelemetryDroppedWhenSampledOut() {

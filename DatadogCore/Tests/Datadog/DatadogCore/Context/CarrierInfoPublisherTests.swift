@@ -23,77 +23,28 @@ class CarrierInfoPublisherTests: XCTestCase {
         serviceSubscriberCellularProviders: [:]
     )
 
-    func testGivenCellularServiceAvailableOnIOS12AndAbove_itProvidesInitialValue() {
-        if #available(iOS 12, *) {
-            // Given
-            let publisher = iOS12CarrierInfoPublisher(networkInfo: availableCTTelephonyNetworkInfo)
-
-            // Then
-            XCTAssertEqual(publisher.initialValue?.carrierName, "Carrier")
-            XCTAssertEqual(publisher.initialValue?.carrierISOCountryCode, "US")
-            XCTAssertEqual(publisher.initialValue?.carrierAllowsVOIP, true)
-        }
-    }
-
-    func testGivenCellularServiceUnAvailableOnIOS12AndAbove_itProvidesNoInitialValue() {
-        if #available(iOS 12, *) {
-            // Given
-            let publisher = iOS12CarrierInfoPublisher(networkInfo: unavailableCTTelephonyNetworkInfo)
-
-            // Then
-            XCTAssertNil(publisher.initialValue)
-        }
-    }
-
-    @available(iOS, deprecated: 12)
-    func testGivenCellularServiceUnavailableOnIOS11_whenReadingCurrentCarrierInfo_itReturnsNoValue() {
+    func testGivenCellularServiceAvailable_itProvidesInitialValue() {
         // Given
-        let reader = iOS11CarrierInfoReader(networkInfo: unavailableCTTelephonyNetworkInfo)
-
-        // When
-        var info: CarrierInfo? = nil
-        reader.read(to: &info)
+        let publisher = CarrierInfoPublisher(networkInfo: availableCTTelephonyNetworkInfo)
 
         // Then
-        XCTAssertNil(info)
+        XCTAssertEqual(publisher.initialValue?.carrierName, "Carrier")
+        XCTAssertEqual(publisher.initialValue?.carrierISOCountryCode, "US")
+        XCTAssertEqual(publisher.initialValue?.carrierAllowsVOIP, true)
     }
 
-    @available(iOS, deprecated: 12)
-    func testGivenSubscribediOS11CarrierInfoProvider_whenCarrierInfoChanges_itReadsNewValue() throws {
+    func testGivenCellularServiceUnAvailable_itProvidesNoInitialValue() {
         // Given
-        let reader = iOS11CarrierInfoReader(networkInfo: availableCTTelephonyNetworkInfo)
-
-        let newCarrierName: String = .mockRandom()
-        let newISOCountryCode: String = .mockRandom()
-        let newAllowsVOIP: Bool = .mockRandom()
-        let newRadioAccessTechnology: String = [CTRadioAccessTechnologyGPRS, CTRadioAccessTechnologyEdge].randomElement()!
-
-        // When
-        availableCTTelephonyNetworkInfo.changeCarrier(
-            newCarrierName: newCarrierName,
-            newISOCountryCode: newISOCountryCode,
-            newAllowsVOIP: newAllowsVOIP,
-            newRadioAccessTechnology: newRadioAccessTechnology
-        )
-
-        var info: CarrierInfo? = nil
-        reader.read(to: &info)
+        let publisher = CarrierInfoPublisher(networkInfo: unavailableCTTelephonyNetworkInfo)
 
         // Then
-        XCTAssertEqual(info?.carrierName, newCarrierName)
-        XCTAssertEqual(info?.carrierISOCountryCode, newISOCountryCode)
-        XCTAssertEqual(info?.carrierAllowsVOIP, newAllowsVOIP)
-        XCTAssertEqual(info?.radioAccessTechnology, .init(newRadioAccessTechnology))
+        XCTAssertNil(publisher.initialValue)
     }
 
-    func testGivenSubscribediOS12CarrierInfoProvider_whenCarrierInfoChanges_itNotifiesSubscriber() throws {
-        guard #available(iOS 12, *) else {
-            return
-        }
-
+    func testGivenSubscribedInfoProvider_whenCarrierInfoChanges_itNotifiesSubscriber() throws {
         let expectation = expectation(description: "Notify `CarrierInfo` change")
         var info: CarrierInfo? = nil
-        let publisher = iOS12CarrierInfoPublisher(networkInfo: availableCTTelephonyNetworkInfo)
+        let publisher = CarrierInfoPublisher(networkInfo: availableCTTelephonyNetworkInfo)
 
         // Given
         publisher.publish {

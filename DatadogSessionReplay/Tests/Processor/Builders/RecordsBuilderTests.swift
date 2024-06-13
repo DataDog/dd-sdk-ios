@@ -97,7 +97,7 @@ class RecordsBuilderTests: XCTestCase {
             telemetry.description,
             """
             Telemetry logs:
-             - [error] [SR] Failed to create incremental record - typeMismatch, kind: WireframeMutationError, stack: typeMismatch
+             - [error] [SR] Failed to create incremental record - typeMismatch(fromType: "shape", toType: "text"), kind: WireframeMutationError, stack: typeMismatch(fromType: "shape", toType: "text")
             """
         )
     }

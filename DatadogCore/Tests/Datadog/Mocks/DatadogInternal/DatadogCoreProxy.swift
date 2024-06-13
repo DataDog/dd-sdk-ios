@@ -70,8 +70,8 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         try core.register(feature: feature)
     }
 
-    func get<T>(feature type: T.Type) -> T? where T: DatadogFeature {
-        return core.get(feature: type)
+    func feature<T>(named name: String, type: T.Type) -> T? {
+        return core.feature(named: name, type: type)
     }
 
     func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature {

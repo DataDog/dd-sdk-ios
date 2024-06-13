@@ -167,6 +167,7 @@ internal struct FatalErrorBuilder {
                 ),
                 cumulativeLayoutShift: original.view.cumulativeLayoutShift,
                 cumulativeLayoutShiftTargetSelector: original.view.cumulativeLayoutShiftTargetSelector,
+                cumulativeLayoutShiftTime: original.view.cumulativeLayoutShiftTime,
                 customTimings: original.view.customTimings,
                 domComplete: original.view.domComplete,
                 domContentLoaded: original.view.domContentLoaded,
@@ -187,6 +188,7 @@ internal struct FatalErrorBuilder {
                 inForegroundPeriods: original.view.inForegroundPeriods,
                 interactionToNextPaint: original.view.interactionToNextPaint,
                 interactionToNextPaintTargetSelector: original.view.interactionToNextPaintTargetSelector,
+                interactionToNextPaintTime: original.view.interactionToNextPaintTime,
                 isActive: false, // after fatal error, this is no longer active view
                 isSlowRendered: original.view.isSlowRendered,
                 jsRefreshRate: original.view.jsRefreshRate,

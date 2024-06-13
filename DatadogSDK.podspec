@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogSDK"
-  s.version      = "2.12.0"
+  s.version      = "2.13.0"
   s.summary      = "Official Datadog Swift SDK for iOS."
 
   s.homepage     = "https://www.datadoghq.com"
@@ -14,9 +14,9 @@ Pod::Spec.new do |s|
     "Maciej Burda" => "maciej.burda@datadoghq.com"
   }
 
-  s.swift_version = '5.7.1'
-  s.ios.deployment_target = '11.0'
-  s.tvos.deployment_target = '11.0'
+  s.swift_version = '5.9'
+  s.ios.deployment_target = '12.0'
+  s.tvos.deployment_target = '12.0'
 
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
 

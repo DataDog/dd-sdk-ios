@@ -212,6 +212,11 @@
                BlueprintName = "DatadogTraceTests tvOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "OTelSpanTests/testSetActive_givenParentSpan()">
+               </Test>
+            </SkippedTests>
          </TestableReference>
          <TestableReference
             skipped = "NO">
