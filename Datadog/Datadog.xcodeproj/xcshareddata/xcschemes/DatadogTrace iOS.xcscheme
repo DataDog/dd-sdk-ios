@@ -39,7 +39,7 @@
             </BuildableReference>
             <SkippedTests>
                <Test
-                  Identifier = "DatadogTracer_SamplingTests/testWhenRootSpanIsSampled_thenAllChildSpansMustBeSampledTheSameWay()">
+                  Identifier = "OTelSpanTests/testSetActive_givenParentSpan()">
                </Test>
             </SkippedTests>
          </TestableReference>

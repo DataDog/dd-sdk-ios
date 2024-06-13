@@ -1,86 +1,74 @@
 stages:
-  - info
+  - pre
   - lint
   - test
+  - ui-test
 
-ENV info:
-  stage: info
+ENV check:
+  stage: pre
   tags:
-    - mac-ventura-preview
-  allow_failure: true # do not block GH PRs
+    - macos:sonoma
+    - specific:true
   script:
-    - system_profiler SPSoftwareDataType # system info
-    - xcodebuild -version
-    - xcode-select -p # default Xcode
-    - ls /Applications/ | grep Xcode # other Xcodes
-    - xcodebuild -workspace "Datadog.xcworkspace" -scheme "DatadogCore iOS" -showdestinations -quiet # installed iOS destinations
-    - xcodebuild -workspace "Datadog.xcworkspace" -scheme "DatadogCore tvOS" -showdestinations -quiet # installed tvOS destinations
-    - xcbeautify --version
-    - swiftlint --version
-    - carthage version
-    - gh --version
-    - brew -v
-    - bundler --version
-    - python3 -V
+    - ./tools/runner-setup.sh --ios # temporary, waiting for AMI
+    - make env-check
 
 Lint:
   stage: lint
   tags:
-    - mac-ventura-preview
-  allow_failure: true # do not block GH PRs
+    - macos:sonoma
+    - specific:true
   script:
-    - ./tools/lint/run-linter.sh
-    - ./tools/license/check-license.sh
+    - ./tools/runner-setup.sh --ios # temporary, waiting for AMI
+    - make clean repo-setup ENV=ci
+    - make lint license-check
+    - make rum-models-verify sr-models-verify
 
-SDK unit tests (iOS):
+Unit Tests (iOS):
   stage: test
   tags:
-    - mac-ventura-preview
-  allow_failure: true # do not block GH PRs
+    - macos:sonoma
+    - specific:true
   variables:
-    TEST_WORKSPACE: "Datadog.xcworkspace"
-    TEST_DESTINATION: "platform=iOS Simulator,name=iPhone 15 Pro Max,OS=17.0.1"
+    OS: "latest"
+    PLATFORM: "iOS Simulator"
+    DEVICE: "iPhone 15 Pro"
   script:
-    - make dependencies-gitlab
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore iOS" -only-testing:"DatadogCoreTests iOS" test | xcbeautify
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore iOS" -only-testing:"DatadogInternalTests iOS" test | xcbeautify
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore iOS" -only-testing:"DatadogLogsTests iOS" test | xcbeautify
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore iOS" -only-testing:"DatadogTraceTests iOS" test | xcbeautify
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore iOS" -only-testing:"DatadogRUMTests iOS" test | xcbeautify
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore iOS" -only-testing:"DatadogWebViewTrackingTests iOS" test | xcbeautify
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogSessionReplay iOS" test | xcbeautify
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCrashReporting iOS" test | xcbeautify
+    - ./tools/runner-setup.sh --ios # temporary, waiting for AMI
+    - make clean repo-setup ENV=ci
+    - make test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-SDK unit tests (tvOS):
+Unit Tests (tvOS):
   stage: test
   tags:
-    - mac-ventura-preview
-  allow_failure: true # do not block GH PRs
+    - macos:sonoma
+    - specific:true
   variables:
-    TEST_WORKSPACE: "Datadog.xcworkspace"
-    TEST_DESTINATION: "platform=tvOS Simulator,name=Apple TV,OS=17.0"
+    OS: "latest"
+    PLATFORM: "tvOS Simulator"
+    DEVICE: "Apple TV"
   script:
-    - make dependencies-gitlab
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore tvOS" -only-testing:"DatadogCoreTests tvOS" test | xcbeautify
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore tvOS" -only-testing:"DatadogInternalTests tvOS" test | xcbeautify
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore tvOS" -only-testing:"DatadogLogsTests tvOS" test | xcbeautify
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore tvOS" -only-testing:"DatadogTraceTests tvOS" test | xcbeautify
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore tvOS" -only-testing:"DatadogRUMTests tvOS" test | xcbeautify
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCrashReporting tvOS" test | xcbeautify
+    - ./tools/runner-setup.sh --tvos # temporary, waiting for AMI
+    - make clean repo-setup ENV=ci
+    - make test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-SDK integration tests (iOS):
-  stage: test
+UI Tests:
+  stage: ui-test
   tags:
-    - mac-ventura-preview
-  allow_failure: true # do not block GH PRs
+    - macos:sonoma
+    - specific:true
   variables:
-    TEST_WORKSPACE: "IntegrationTests/IntegrationTests.xcworkspace"
-    TEST_DESTINATION: "platform=iOS Simulator,name=iPhone 15 Pro Max,OS=17.0.1"
+    OS: "latest"
+    PLATFORM: "iOS Simulator"
+    DEVICE: "iPhone 15 Pro"
+  parallel:
+    matrix:
+      - TEST_PLAN:
+          - Default
+          - RUM
+          - CrashReporting
+          - NetworkInstrumentation
   script:
-    - make dependencies-gitlab
-    - make prepare-integration-tests
-    # Before running crash reporting tests, disable Apple Crash Reporter so it doesn't capture the crash causing tests hang on "<app> quit unexpectedly" prompt:
-    - launchctl unload -w /System/Library/LaunchAgents/com.apple.ReportCrash.plist
-    - ./tools/config/generate-http-server-mock-config.sh
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "IntegrationScenarios" -testPlan DatadogIntegrationTests test | xcbeautify
-    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "IntegrationScenarios" -testPlan DatadogCrashReportingIntegrationTests test | xcbeautify
+    - ./tools/runner-setup.sh --ios # temporary, waiting for AMI
+    - make clean repo-setup ENV=ci
+    - make ui-test TEST_PLAN="$TEST_PLAN" OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"

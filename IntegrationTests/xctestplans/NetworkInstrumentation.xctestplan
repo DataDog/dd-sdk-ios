@@ -1,0 +1,54 @@
+{
+  "configurations" : [
+    {
+      "id" : "51FFC535-B198-42D9-B7EE-3927A757F6C4",
+      "name" : "Configuration",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:IntegrationTests.xcodeproj",
+      "identifier" : "61441C2924616F1D003D8BB8",
+      "name" : "IntegrationScenarios"
+    }
+  },
+  "testTargets" : [
+    {
+      "selectedTests" : [
+        "RUMResourcesScenarioTests\/testRUMNSURLSessionResourcesScenario_composition()",
+        "RUMResourcesScenarioTests\/testRUMNSURLSessionResourcesScenario_delegateUsingFeatureFirstPartyHosts()",
+        "RUMResourcesScenarioTests\/testRUMNSURLSessionResourcesScenario_delegateWithAdditionalFirstyPartyHosts()",
+        "RUMResourcesScenarioTests\/testRUMNSURLSessionResourcesScenario_inheritance()",
+        "RUMResourcesScenarioTests\/testRUMNSURLSessionResourcesScenario_legacyWithAdditionalFirstyPartyHosts()",
+        "RUMResourcesScenarioTests\/testRUMNSURLSessionResourcesScenario_legacyWithFeatureFirstPartyHosts()",
+        "RUMResourcesScenarioTests\/testRUMURLSessionResourcesScenario_composition()",
+        "RUMResourcesScenarioTests\/testRUMURLSessionResourcesScenario_delegateUsingFeatureFirstPartyHosts()",
+        "RUMResourcesScenarioTests\/testRUMURLSessionResourcesScenario_delegateWithAdditionalFirstyPartyHosts()",
+        "RUMResourcesScenarioTests\/testRUMURLSessionResourcesScenario_inheritance()",
+        "RUMResourcesScenarioTests\/testRUMURLSessionResourcesScenario_legacyWithAdditionalFirstyPartyHosts()",
+        "RUMResourcesScenarioTests\/testRUMURLSessionResourcesScenario_legacyWithFeatureFirstPartyHosts()",
+        "TracingURLSessionScenarioTests\/testTracingNSURLSessionScenario_composition()",
+        "TracingURLSessionScenarioTests\/testTracingNSURLSessionScenario_delegateUsingFeatureFirstPartyHosts()",
+        "TracingURLSessionScenarioTests\/testTracingNSURLSessionScenario_delegateWithAdditionalFirstyPartyHosts()",
+        "TracingURLSessionScenarioTests\/testTracingNSURLSessionScenario_inheritance()",
+        "TracingURLSessionScenarioTests\/testTracingNSURLSessionScenario_legacyWithAdditionalFirstyPartyHosts()",
+        "TracingURLSessionScenarioTests\/testTracingNSURLSessionScenario_legacyWithFeatureFirstPartyHosts()",
+        "TracingURLSessionScenarioTests\/testTracingURLSessionScenario_composition()",
+        "TracingURLSessionScenarioTests\/testTracingURLSessionScenario_delegateUsingFeatureFirstPartyHosts()",
+        "TracingURLSessionScenarioTests\/testTracingURLSessionScenario_delegateWithAdditionalFirstyPartyHosts()",
+        "TracingURLSessionScenarioTests\/testTracingURLSessionScenario_directWithGlobalFirstPartyHosts()",
+        "TracingURLSessionScenarioTests\/testTracingURLSessionScenario_inheritance()",
+        "TracingURLSessionScenarioTests\/testTracingURLSessionScenario_legacyWithAdditionalFirstyPartyHosts()"
+      ],
+      "target" : {
+        "containerPath" : "container:IntegrationTests.xcodeproj",
+        "identifier" : "61441C2924616F1D003D8BB8",
+        "name" : "IntegrationScenarios"
+      }
+    }
+  ],
+  "version" : 1
+}

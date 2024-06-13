@@ -15,7 +15,7 @@ import traceback
 import subprocess
 from dataclasses import dataclass
 
-SCHEMAS_REPO_SSH = 'git@github.com:DataDog/rum-events-format.git'
+SCHEMAS_REPO = 'https://github.com/DataDog/rum-events-format.git'
 
 # JSON Schema paths (relative to cwd)
 RUM_SCHEMA_PATH = '/rum-events-format/rum-events-format.json'
@@ -104,7 +104,7 @@ def clone_schemas_repo(git_ref: str):
     """
     print(f'⚙️ Cloning `rum-events-format` repository at "{git_ref}"...')
     shell_output('rm -rf rum-events-format')
-    shell_output(f'git clone {SCHEMAS_REPO_SSH}')
+    shell_output(f'git clone {SCHEMAS_REPO}')
     shell_output(f'cd rum-events-format && git fetch origin {git_ref} && git checkout FETCH_HEAD')
     sha = shell_output(f'cd rum-events-format && git rev-parse HEAD')
     return sha
