@@ -182,6 +182,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         XCTAssertEqual(metricAttributes.viewsCount.applicationLaunch, 1)
         XCTAssertEqual(metricAttributes.viewsCount.background, 3)
         XCTAssertEqual(metricAttributes.viewsCount.byInstrumentation, ["manual": 6])
+        XCTAssertEqual(metricAttributes.viewsCount.withHasReplay, 0)
     }
 
     func testTrackingSDKErrors() throws {

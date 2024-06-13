@@ -137,7 +137,8 @@ extension RUMViewEvent: RandomMockable {
         viewIsActive: Bool? = .random(),
         viewTimeSpent: Int64 = .mockRandom(),
         viewURL: String = .mockRandom(),
-        crashCount: Int64? = nil
+        crashCount: Int64? = nil,
+        hasReplay: Bool? = nil
     ) -> RUMViewEvent {
         return RUMViewEvent(
             dd: .init(
@@ -165,7 +166,7 @@ extension RUMViewEvent: RandomMockable {
             privacy: nil,
             service: .mockRandom(),
             session: .init(
-                hasReplay: nil,
+                hasReplay: hasReplay,
                 id: sessionID.toRUMDataFormat,
                 isActive: true,
                 sampledForReplay: nil,

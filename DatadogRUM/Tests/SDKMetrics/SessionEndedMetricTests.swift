@@ -368,6 +368,25 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertEqual(rse.viewsCount.byInstrumentation, ["manual": 1])
     }
 
+    func testReportingHasReplayViewsCount() throws {
+        // Given
+        var metric = SessionEndedMetric.with(sessionID: sessionID)
+
+        // When
+        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "1", hasReplay: nil), instrumentationType: nil)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "1", hasReplay: false), instrumentationType: nil)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "1", hasReplay: true), instrumentationType: nil) // count
+        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "2", hasReplay: false), instrumentationType: nil)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "3", hasReplay: true), instrumentationType: nil) // count
+        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "3", hasReplay: false), instrumentationType: nil) // ignore
+        let attributes = metric.asMetricAttributes()
+
+        // Then
+        let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
+        XCTAssertEqual(rse.viewsCount.total, 3)
+        XCTAssertEqual(rse.viewsCount.withHasReplay, 2)
+    }
+
     func testWhenReportingViewsCount_itIgnoresViewsFromDifferentSession() throws {
         // Given
         var metric = SessionEndedMetric.with(sessionID: sessionID)
@@ -471,6 +490,7 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.manual") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.swiftui") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.uikit") as Int)
+        XCTAssertNotNil(try matcher.value("rse.views_count.with_has_replay") as Int)
         XCTAssertNotNil(try matcher.value("rse.sdk_errors_count.total") as Int)
         XCTAssertNotNil(try matcher.value("rse.sdk_errors_count.by_kind") as [String: Int])
         XCTAssertNotNil(try matcher.value("rse.ntp_offset.at_start") as Int)

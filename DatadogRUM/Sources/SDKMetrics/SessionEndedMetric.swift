@@ -54,6 +54,7 @@ internal struct SessionEndedMetric {
     /// The session precondition that led to the creation of this session.
     private let precondition: RUMSessionPrecondition?
 
+    /// Tracks view information for certain `view.id`.
     private struct TrackedViewInfo {
         /// The view URL as reported in RUM data.
         let viewURL: String
@@ -64,9 +65,11 @@ internal struct SessionEndedMetric {
         let startMs: Int64
         /// The duration of the view in nanoseconds.
         var durationNs: Int64
+        /// If any of view updates to this `view.id` had `session.has_replay == true`.
+        var hasReplay: Bool
     }
 
-    /// Stores information about tracked views, referencing them by their view ID.
+    /// Stores information about tracked views, referencing them by their `view.id`.
     private var trackedViews: [String: TrackedViewInfo] = [:]
 
     /// Info about the first tracked view.
@@ -89,7 +92,6 @@ internal struct SessionEndedMetric {
 
     // TODO: RUM-4591 Track diagnostic attributes:
     // - no_view_events_count
-    // - has_replay
 
     // MARK: - Tracking Metric State
 
@@ -126,18 +128,18 @@ internal struct SessionEndedMetric {
             viewURL: view.view.url,
             instrumentationType: instrumentationType,
             startMs: view.date,
-            durationNs: view.view.timeSpent
+            durationNs: view.view.timeSpent,
+            hasReplay: view.session.hasReplay ?? false
         )
 
         info.durationNs = view.view.timeSpent
+        info.hasReplay = info.hasReplay || (view.session.hasReplay ?? false)
         trackedViews[view.view.id] = info
 
         if firstTrackedView == nil {
             firstTrackedView = info
         }
         lastTrackedView = info
-
-        _ = view.session.hasReplay // TODO: RUM-4591 track replay information
     }
 
     /// Tracks the kind of SDK error that occurred during the session.
@@ -185,12 +187,15 @@ internal struct SessionEndedMetric {
             let applicationLaunch: Int
             /// The map of view instrumentation types to the number of views tracked with each instrumentation.
             let byInstrumentation: [String: Int]
+            /// The number of distinct views that had `has_replay == true` in any of their view events.
+            let withHasReplay: Int
 
             enum CodingKeys: String, CodingKey {
                 case total
                 case background
                 case applicationLaunch = "app_launch"
                 case byInstrumentation = "by_instrumentation"
+                case withHasReplay = "with_has_replay"
             }
         }
 
@@ -262,6 +267,7 @@ internal struct SessionEndedMetric {
                 byInstrumentationViewsCount[instrumentationType] = (byInstrumentationViewsCount[instrumentationType] ?? 0) + 1
             }
         }
+        let withHasReplayCount = trackedViews.values.reduce(0, { acc, next in acc + (next.hasReplay ? 1 : 0) })
 
         // Compute SDK errors count
         let totalSDKErrors = trackedSDKErrors.values.reduce(0, +)
@@ -285,7 +291,8 @@ internal struct SessionEndedMetric {
                     total: totalViewsCount,
                     background: backgroundViewsCount,
                     applicationLaunch: appLaunchViewsCount,
-                    byInstrumentation: byInstrumentationViewsCount
+                    byInstrumentation: byInstrumentationViewsCount,
+                    withHasReplay: withHasReplayCount
                 ),
                 sdkErrorsCount: .init(
                     total: totalSDKErrors,
