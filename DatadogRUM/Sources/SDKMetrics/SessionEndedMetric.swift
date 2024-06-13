@@ -35,9 +35,13 @@ internal struct SessionEndedMetric {
         static let rseKey = "rse"
     }
 
-    internal enum ViewInstrumentationType: String {
+    /// Represents the type of instrumentation used to start a view.
+    internal enum ViewInstrumentationType: String, Encodable {
+        /// View was started manually through `RUMMonitor.shared().startView()` API.
         case manual
+        /// View was started automatically with `UIKitRUMViewsPredicate`.
         case uikit
+        /// View was started through `trackRUMView()` SwiftUI modifier.
         case swiftui
     }
 
@@ -51,12 +55,15 @@ internal struct SessionEndedMetric {
     private let precondition: RUMSessionPrecondition?
 
     private struct TrackedViewInfo {
+        /// The view URL as reported in RUM data.
         let viewURL: String
+        /// The type of instrumentation that started this view.
+        /// It can be `nil` if view was started implicitly by RUM, which is the case for "ApplicationLaunch" and "Background" views.
+        let instrumentationType: ViewInstrumentationType?
+        /// The start of the view in milliseconds from from epoch.
         let startMs: Int64
+        /// The duration of the view in nanoseconds.
         var durationNs: Int64
-
-        // TODO: RUM-4591 Track diagnostic attributes:
-        // - `instrumentationType`: manual | uikit | swiftui
     }
 
     /// Stores information about tracked views, referencing them by their view ID.
@@ -98,13 +105,18 @@ internal struct SessionEndedMetric {
     }
 
     /// Tracks the view event that occurred during the session.
-    mutating func track(view: RUMViewEvent) throws {
+    /// - Parameters:
+    ///   - view: the view event to track
+    ///   - instrumentationType: the type of instrumentation used to start this view (only the first value for each `view.id` is tracked; succeeding values
+    ///   will be ignored so it is okay to pass value on first call and then follow with `nil` for next updates of given `view.id`)
+    mutating func track(view: RUMViewEvent, instrumentationType: ViewInstrumentationType?) throws {
         guard view.session.id == sessionID.toRUMDataFormat else {
             throw SessionEndedMetricError.trackingViewInForeignSession(viewURL: view.view.url, sessionID: sessionID)
         }
 
         var info = trackedViews[view.view.id] ?? TrackedViewInfo(
             viewURL: view.view.url,
+            instrumentationType: instrumentationType,
             startMs: view.date,
             durationNs: view.view.timeSpent
         )
@@ -161,11 +173,14 @@ internal struct SessionEndedMetric {
             let background: Int
             /// The number of standard "ApplicationLaunch" views tracked during this session (sanity check: we expect `0` or `1`).
             let applicationLaunch: Int
+            /// The map of view instrumentation types to the number of views tracked with each instrumentation.
+            let byInstrumentation: [String: Int]
 
             enum CodingKeys: String, CodingKey {
                 case total
                 case background
                 case applicationLaunch = "app_launch"
+                case byInstrumentation = "by_instrumentation"
             }
         }
 
@@ -210,6 +225,12 @@ internal struct SessionEndedMetric {
         let totalViewsCount = trackedViews.count
         let backgroundViewsCount = trackedViews.values.filter({ $0.viewURL == RUMOffViewEventsHandlingRule.Constants.backgroundViewURL }).count
         let appLaunchViewsCount = trackedViews.values.filter({ $0.viewURL == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL }).count
+        var byInstrumentationViewsCount: [String: Int] = [:]
+        trackedViews.values.forEach {
+            if let instrumentationType = $0.instrumentationType?.rawValue {
+                byInstrumentationViewsCount[instrumentationType] = (byInstrumentationViewsCount[instrumentationType] ?? 0) + 1
+            }
+        }
 
         // Compute SDK errors count
         let totalSDKErrors = trackedSDKErrors.values.reduce(0, +)
@@ -231,7 +252,8 @@ internal struct SessionEndedMetric {
                 viewsCount: .init(
                     total: totalViewsCount,
                     background: backgroundViewsCount,
-                    applicationLaunch: appLaunchViewsCount
+                    applicationLaunch: appLaunchViewsCount,
+                    byInstrumentation: byInstrumentationViewsCount
                 ),
                 sdkErrorsCount: .init(
                     total: totalSDKErrors,
