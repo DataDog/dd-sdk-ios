@@ -22,10 +22,7 @@ class SessionReplayWebViewController: UIViewController, WKUIDelegate {
         super.viewDidLoad()
         WebViewTracking.enable(
             webView: webView,
-            hosts: ["datadoghq.dev"],
-            sessionReplayConfiguration: WebViewTracking.SessionReplayConfiguration(
-                privacyLevel: .allow
-            )
+            hosts: ["datadoghq.dev"]
         )
     }
 
