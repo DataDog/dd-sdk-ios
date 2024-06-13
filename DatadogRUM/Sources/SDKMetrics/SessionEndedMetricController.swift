@@ -62,7 +62,7 @@ internal final class SessionEndedMetricController {
     func track(sdkErrorKind: String, in sessionID: RUMUUID?) {
         updateMetric(for: sessionID) { $0?.track(sdkErrorKind: sdkErrorKind) }
     }
-    
+
     /// Tracks an event missed due to absence of an active view.
     /// - Parameters:
     ///   - missedEventType: the type of an event that was missed
