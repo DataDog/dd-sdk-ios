@@ -110,7 +110,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             precondition: startPrecondition,
             context: context,
             tracksBackgroundEvents: trackBackgroundEvents
-            // TODO: RUM-4591 pass NTP offset at session start to SE metric
         )
 
         if let viewScope = resumingViewScope {

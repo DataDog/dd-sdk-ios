@@ -25,7 +25,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         viewIDs.forEach { controller.track(view: .mockRandomWith(sessionID: sessionID, viewID: $0), instrumentationType: nil, in: sessionID) }
         errorKinds.forEach { controller.track(sdkErrorKind: $0, in: sessionID) }
         controller.trackWasStopped(sessionID: sessionID)
-        controller.endMetric(sessionID: sessionID)
+        controller.endMetric(sessionID: sessionID, with: .mockRandom())
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.lastSessionEndedMetric)
@@ -49,9 +49,9 @@ class SessionEndedMetricControllerTests: XCTestCase {
         // Session 2:
         controller.track(sdkErrorKind: "error.kind2", in: sessionID2)
         // Send 1st and 2nd:
-        controller.endMetric(sessionID: sessionID1)
+        controller.endMetric(sessionID: sessionID1, with: .mockRandom())
         let metric1 = try XCTUnwrap(telemetry.messages.lastSessionEndedMetric)
-        controller.endMetric(sessionID: sessionID2)
+        controller.endMetric(sessionID: sessionID2, with: .mockRandom())
         let metric2 = try XCTUnwrap(telemetry.messages.lastSessionEndedMetric)
 
         // Then
@@ -79,7 +79,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         controller.track(sdkErrorKind: "error.kind1", in: nil)
         controller.trackWasStopped(sessionID: nil)
         // Send 2nd:
-        controller.endMetric(sessionID: sessionID2)
+        controller.endMetric(sessionID: sessionID2, with: .mockRandom())
         let metric = try XCTUnwrap(telemetry.messages.lastSessionEndedMetric)
 
         // Then
@@ -106,7 +106,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
                 { controller.track(view: .mockRandom(), instrumentationType: nil, in: nil) },
                 { controller.track(sdkErrorKind: .mockRandom(), in: nil) },
                 { controller.trackWasStopped(sessionID: nil) },
-                { controller.endMetric(sessionID: sessionIDs.randomElement()!) },
+                { controller.endMetric(sessionID: sessionIDs.randomElement()!, with: .mockRandom()) },
             ],
             iterations: 100
         )

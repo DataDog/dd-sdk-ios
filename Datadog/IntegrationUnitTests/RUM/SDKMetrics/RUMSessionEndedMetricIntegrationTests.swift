@@ -212,6 +212,27 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
             "It should report TOP 5 error kinds"
         )
     }
+
+    func testTrackingNTPOffset() throws {
+        let offsetAtStart: TimeInterval = .mockRandom(min: -10, max: 10)
+        let offsetAtEnd: TimeInterval = .mockRandom(min: -10, max: 10)
+
+        core.context.serverTimeOffset = offsetAtStart
+        RUM.enable(with: rumConfig, in: core)
+
+        // Given
+        let monitor = RUMMonitor.shared(in: core)
+        monitor.startView(key: "key", name: "View")
+
+        // When
+        core.context.serverTimeOffset = offsetAtEnd
+        monitor.stopSession()
+
+        // Then
+        let metric = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent())
+        XCTAssertEqual(metric.attributes?.ntpOffset.atStart, offsetAtStart.toInt64Milliseconds)
+        XCTAssertEqual(metric.attributes?.ntpOffset.atEnd, offsetAtEnd.toInt64Milliseconds)
+    }
 }
 
 // MARK: - Helpers

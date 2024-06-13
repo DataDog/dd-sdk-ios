@@ -221,6 +221,24 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertFalse(rse.wasStopped)
     }
 
+    // MARK: - NTP Offset
+
+    func testReportingNTPOffset() throws {
+        let offsetAtStart: TimeInterval = .mockRandom(min: -10, max: 10)
+        let offsetAtEnd: TimeInterval = .mockRandom(min: -10, max: 10)
+
+        // Given
+        let metric = SessionEndedMetric.with(sessionID: sessionID, context: .mockWith(serverTimeOffset: offsetAtStart))
+
+        // When
+        let attributes = metric.asMetricAttributes(with: .mockWith(serverTimeOffset: offsetAtEnd))
+
+        // Then
+        let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
+        XCTAssertEqual(rse.ntpOffset.atStart, offsetAtStart.toInt64Milliseconds)
+        XCTAssertEqual(rse.ntpOffset.atEnd, offsetAtEnd.toInt64Milliseconds)
+    }
+
     // MARK: - Views Count
 
     func testReportingTotalViewsCount() throws {
@@ -455,6 +473,8 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.uikit") as Int)
         XCTAssertNotNil(try matcher.value("rse.sdk_errors_count.total") as Int)
         XCTAssertNotNil(try matcher.value("rse.sdk_errors_count.by_kind") as [String: Int])
+        XCTAssertNotNil(try matcher.value("rse.ntp_offset.at_start") as Int)
+        XCTAssertNotNil(try matcher.value("rse.ntp_offset.at_end") as Int)
     }
 }
 
@@ -477,5 +497,9 @@ private extension SessionEndedMetric {
         tracksBackgroundEvents: Bool = .mockRandom()
     ) -> SessionEndedMetric {
         SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context, tracksBackgroundEvents: tracksBackgroundEvents)
+    }
+
+    func asMetricAttributes() -> [String: Encodable] {
+        asMetricAttributes(with: .mockRandom())
     }
 }

@@ -84,10 +84,12 @@ internal struct SessionEndedMetric {
     /// If `RUM.Configuration.trackBackgroundEvents` was enabled for this session.
     private let tracksBackgroundEvents: Bool
 
+    /// The current value of NTP offset at session start.
+    private let ntpOffsetAtStart: TimeInterval
+
     // TODO: RUM-4591 Track diagnostic attributes:
     // - no_view_events_count
     // - has_replay
-    // - ntp_offset
 
     // MARK: - Tracking Metric State
 
@@ -107,6 +109,7 @@ internal struct SessionEndedMetric {
         self.bundleType = context.applicationBundleType
         self.precondition = precondition
         self.tracksBackgroundEvents = tracksBackgroundEvents
+        self.ntpOffsetAtStart = context.serverTimeOffset
     }
 
     /// Tracks the view event that occurred during the session.
@@ -209,6 +212,21 @@ internal struct SessionEndedMetric {
 
         let sdkErrorsCount: SDKErrorsCount
 
+        struct NTPOffset: Encodable {
+            /// The NTP offset at session start, in milliseconds.
+            let atStart: Int64
+            /// The NTP offset at session end, in milliseconds.
+            let atEnd: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case atStart = "at_start"
+                case atEnd = "at_end"
+            }
+        }
+
+        /// NTP offset information tracked for this session.
+        let ntpOffset: NTPOffset
+
         enum CodingKeys: String, CodingKey {
             case processType = "process_type"
             case precondition
@@ -217,11 +235,16 @@ internal struct SessionEndedMetric {
             case hasBackgroundEventsTrackingEnabled = "has_background_events_tracking_enabled"
             case viewsCount = "views_count"
             case sdkErrorsCount = "sdk_errors_count"
+            case ntpOffset = "ntp_offset"
         }
     }
 
-    /// Exports metric attributes for `Telemetry.metric(name:attributes:)`.
-    func asMetricAttributes() -> [String: Encodable] {
+    /// Exports metric attributes for `Telemetry.metric(name:attributes:)`. This method is expected to be called
+    /// at session end with providing the SDK `context` valid at the moment of call.
+    ///
+    /// - Parameter context: the SDK context valid at the moment of this call
+    /// - Returns: metric attributes
+    func asMetricAttributes(with context: DatadogContext) -> [String: Encodable] {
         // Compute duration
         var durationNs: Int64?
         if let firstView = firstTrackedView, let lastView = lastTrackedView {
@@ -267,6 +290,10 @@ internal struct SessionEndedMetric {
                 sdkErrorsCount: .init(
                     total: totalSDKErrors,
                     byKind: top5SDKErrorsByKind
+                ),
+                ntpOffset: .init(
+                    atStart: ntpOffsetAtStart.toInt64Milliseconds,
+                    atEnd: context.serverTimeOffset.toInt64Milliseconds
                 )
             )
         ]

@@ -26,7 +26,7 @@ class TelemetryInterceptorTests: XCTestCase {
         XCTAssertFalse(result)
 
         // Then
-        metricController.endMetric(sessionID: sessionID)
+        metricController.endMetric(sessionID: sessionID, with: .mockRandom())
         let metric = try XCTUnwrap(telemetry.messages.lastMetric(named: SessionEndedMetric.Constants.name))
         let rse = try XCTUnwrap(metric.attributes[SessionEndedMetric.Constants.rseKey] as? SessionEndedMetric.Attributes)
         XCTAssertEqual(rse.sdkErrorsCount.total, 1)
