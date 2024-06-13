@@ -1,6 +1,6 @@
 # Unreleased
 
-# 2.13.0 / 12-06-2024
+# 2.13.0 / 13-06-2024
 
 - [IMPROVEMENT] Bump `IPHONEOS_DEPLOYMENT_TARGET` and `TVOS_DEPLOYMENT_TARGET` from 11 to 12. See [#1891][]
 - [IMPROVEMENT] Add `.connect`, `.trace`, `.options` values to `DDRUMMethod` type. See [#1886][]
