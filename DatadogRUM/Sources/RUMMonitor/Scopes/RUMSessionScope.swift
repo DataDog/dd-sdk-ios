@@ -322,6 +322,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         case .handleInBackgroundView where command.canStartBackgroundView:
             startBackgroundView(on: command, context: context)
         default:
+            if let missedEventType = command.missedEventType {
+                // In case there was an event missed due to no active view, track it in Session Ended metric
+                dependencies.sessionEndedMetric.track(missedEventType: missedEventType, in: sessionUUID)
+            }
+
             if !(command is RUMKeepSessionAliveCommand) { // it is expected to receive 'keep alive' while no active view (when tracking WebView events)
                 // As no view scope will handle this command, warn the user on dropping it.
                 DD.logger.warn(
@@ -331,8 +336,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 with `RUMMonitor.shared().startView()` and `RUMMonitor.shared().stopView()`.
                 """
                 )
-
-                _ = dependencies.sessionEndedMetric // TODO: RUM-4591 pass the command to SE metric for tracking off-view events
             }
         }
     }

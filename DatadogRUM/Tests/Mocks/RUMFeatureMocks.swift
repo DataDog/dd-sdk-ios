@@ -147,6 +147,7 @@ struct RUMCommandMock: RUMCommand {
     var attributes: [AttributeKey: AttributeValue] = [:]
     var canStartBackgroundView = false
     var isUserInteraction = false
+    var missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
 /// Creates random `RUMCommand` from available ones.

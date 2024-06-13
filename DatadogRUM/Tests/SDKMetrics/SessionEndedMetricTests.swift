@@ -466,6 +466,32 @@ class SessionEndedMetricTests: XCTestCase {
         )
     }
 
+    // MARK: - No View Events Count
+
+    func testReportingMissedEventsCount() throws {
+        let missedActionsCount: Int = .mockRandom(min: 1, max: 10)
+        let missedResourcesCount: Int = .mockRandom(min: 1, max: 10)
+        let missedErrorsCount: Int = .mockRandom(min: 1, max: 10)
+        let missedLongTasksCount: Int = .mockRandom(min: 1, max: 10)
+
+        // Given
+        var metric = SessionEndedMetric.with(sessionID: sessionID)
+
+        // When
+        (0..<missedActionsCount).forEach { _ in metric.track(missedEventType: .action) }
+        (0..<missedResourcesCount).forEach { _ in metric.track(missedEventType: .resource) }
+        (0..<missedErrorsCount).forEach { _ in metric.track(missedEventType: .error) }
+        (0..<missedLongTasksCount).forEach { _ in metric.track(missedEventType: .longTask) }
+        let attributes = metric.asMetricAttributes()
+
+        // Then
+        let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
+        XCTAssertEqual(rse.noViewEventsCount.actions, missedActionsCount)
+        XCTAssertEqual(rse.noViewEventsCount.resources, missedResourcesCount)
+        XCTAssertEqual(rse.noViewEventsCount.errors, missedErrorsCount)
+        XCTAssertEqual(rse.noViewEventsCount.longTasks, missedLongTasksCount)
+    }
+
     // MARK: - Metric Spec
 
     func testEncodedMetricAttributesFollowTheSpec() throws {
@@ -495,6 +521,10 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertNotNil(try matcher.value("rse.sdk_errors_count.by_kind") as [String: Int])
         XCTAssertNotNil(try matcher.value("rse.ntp_offset.at_start") as Int)
         XCTAssertNotNil(try matcher.value("rse.ntp_offset.at_end") as Int)
+        XCTAssertNotNil(try matcher.value("rse.no_view_events_count.actions") as Int)
+        XCTAssertNotNil(try matcher.value("rse.no_view_events_count.resources") as Int)
+        XCTAssertNotNil(try matcher.value("rse.no_view_events_count.errors") as Int)
+        XCTAssertNotNil(try matcher.value("rse.no_view_events_count.long_tasks") as Int)
     }
 }
 

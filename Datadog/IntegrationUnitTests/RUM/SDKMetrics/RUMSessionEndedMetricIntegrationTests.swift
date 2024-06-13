@@ -234,6 +234,32 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         XCTAssertEqual(metric.attributes?.ntpOffset.atStart, offsetAtStart.toInt64Milliseconds)
         XCTAssertEqual(metric.attributes?.ntpOffset.atEnd, offsetAtEnd.toInt64Milliseconds)
     }
+
+    func testTrackingNoViewEventsCount() throws {
+        let expectedCount: Int = .mockRandom(min: 1, max: 5)
+        RUM.enable(with: rumConfig, in: core)
+
+        // Given
+        let monitor = RUMMonitor.shared(in: core)
+        monitor.startView(key: "key", name: "View")
+        monitor.stopView(key: "key") // no active view
+
+        // When
+        (0..<expectedCount).forEach { _ in
+            monitor.addAction(type: .tap, name: .mockAny())
+            monitor.startResource(resourceKey: .mockAny(), url: .mockAny())
+            monitor.addError(message: .mockAny())
+            monitor._internal?.addLongTask(at: Date(), duration: 1)
+        }
+        monitor.stopSession()
+
+        // Then
+        let metric = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent())
+        XCTAssertEqual(metric.attributes?.noViewEventsCount.actions, expectedCount)
+        XCTAssertEqual(metric.attributes?.noViewEventsCount.resources, expectedCount)
+        XCTAssertEqual(metric.attributes?.noViewEventsCount.errors, expectedCount)
+        XCTAssertEqual(metric.attributes?.noViewEventsCount.longTasks, expectedCount)
+    }
 }
 
 // MARK: - Helpers

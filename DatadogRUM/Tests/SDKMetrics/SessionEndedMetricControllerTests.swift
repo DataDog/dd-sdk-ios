@@ -24,6 +24,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         // When
         viewIDs.forEach { controller.track(view: .mockRandomWith(sessionID: sessionID, viewID: $0), instrumentationType: nil, in: sessionID) }
         errorKinds.forEach { controller.track(sdkErrorKind: $0, in: sessionID) }
+        controller.track(missedEventType: .action, in: sessionID)
         controller.trackWasStopped(sessionID: sessionID)
         controller.endMetric(sessionID: sessionID, with: .mockRandom())
 
@@ -31,6 +32,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         let metric = try XCTUnwrap(telemetry.messages.lastSessionEndedMetric)
         XCTAssertEqual(metric.viewsCount.total, viewIDs.count)
         XCTAssertEqual(metric.sdkErrorsCount.total, errorKinds.count)
+        XCTAssertEqual(metric.noViewEventsCount.actions, 1)
         XCTAssertEqual(metric.wasStopped, true)
     }
 
@@ -77,6 +79,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         // Track latest session (`sessionID: nil`)
         controller.track(view: .mockRandomWith(sessionID: sessionID2), instrumentationType: nil, in: nil)
         controller.track(sdkErrorKind: "error.kind1", in: nil)
+        controller.track(missedEventType: .resource, in: nil)
         controller.trackWasStopped(sessionID: nil)
         // Send 2nd:
         controller.endMetric(sessionID: sessionID2, with: .mockRandom())
@@ -85,6 +88,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         // Then
         XCTAssertEqual(metric.viewsCount.total, 1)
         XCTAssertEqual(metric.sdkErrorsCount.total, 1)
+        XCTAssertEqual(metric.noViewEventsCount.resources, 1)
         XCTAssertEqual(metric.wasStopped, true)
     }
 
@@ -105,6 +109,8 @@ class SessionEndedMetricControllerTests: XCTestCase {
                 { controller.trackWasStopped(sessionID: sessionIDs.randomElement()!) },
                 { controller.track(view: .mockRandom(), instrumentationType: nil, in: nil) },
                 { controller.track(sdkErrorKind: .mockRandom(), in: nil) },
+                { controller.track(missedEventType: .action, in: sessionIDs.randomElement()!) },
+                { controller.track(missedEventType: .resource, in: nil) },
                 { controller.trackWasStopped(sessionID: nil) },
                 { controller.endMetric(sessionID: sessionIDs.randomElement()!, with: .mockRandom()) },
             ],

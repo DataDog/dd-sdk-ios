@@ -62,6 +62,14 @@ internal final class SessionEndedMetricController {
     func track(sdkErrorKind: String, in sessionID: RUMUUID?) {
         updateMetric(for: sessionID) { $0?.track(sdkErrorKind: sdkErrorKind) }
     }
+    
+    /// Tracks an event missed due to absence of an active view.
+    /// - Parameters:
+    ///   - missedEventType: the type of an event that was missed
+    ///   - sessionID: session ID to track this error in (pass `nil` to track it for the last started session)
+    func track(missedEventType: SessionEndedMetric.MissedEventType, in sessionID: RUMUUID?) {
+        updateMetric(for: sessionID) { $0?.track(missedEventType: missedEventType) }
+    }
 
     /// Signals that the session was stopped with `stopSession()` API.
     /// - Parameter sessionID: session ID to mark as stopped (pass `nil` to track it for the last started session)

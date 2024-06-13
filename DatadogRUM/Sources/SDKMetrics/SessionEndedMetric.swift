@@ -90,8 +90,16 @@ internal struct SessionEndedMetric {
     /// The current value of NTP offset at session start.
     private let ntpOffsetAtStart: TimeInterval
 
-    // TODO: RUM-4591 Track diagnostic attributes:
-    // - no_view_events_count
+    /// Represents types of event that can be missed due to absence of an active RUM view.
+    enum MissedEventType: String {
+        case action
+        case resource
+        case error
+        case longTask
+    }
+
+    /// Tracks the number of RUM events missed due to absence of an active RUM view.
+    private var missedEvents: [MissedEventType: Int] = [:]
 
     // MARK: - Tracking Metric State
 
@@ -148,6 +156,15 @@ internal struct SessionEndedMetric {
             trackedSDKErrors[sdkErrorKind] = count + 1
         } else {
             trackedSDKErrors[sdkErrorKind] = 1
+        }
+    }
+
+    /// Tracks an event missed due to absence of an active view.
+    mutating func track(missedEventType: MissedEventType) {
+        if let count = missedEvents[missedEventType] {
+            missedEvents[missedEventType] = count + 1
+        } else {
+            missedEvents[missedEventType] = 1
         }
     }
 
@@ -232,6 +249,27 @@ internal struct SessionEndedMetric {
         /// NTP offset information tracked for this session.
         let ntpOffset: NTPOffset
 
+        struct NoViewEventsCount: Encodable {
+            /// Number of action events missed due to absence of an active view.
+            let actions: Int
+            /// Number of resource events missed due to absence of an active view.
+            let resources: Int
+            /// Number of error events missed due to absence of an active view.
+            let errors: Int
+            /// Number of long task events missed due to absence of an active view.
+            let longTasks: Int
+
+            enum CodingKeys: String, CodingKey {
+                case actions
+                case resources
+                case errors
+                case longTasks = "long_tasks"
+            }
+        }
+
+        /// Information on number of events missed due to absence of an active view.
+        let noViewEventsCount: NoViewEventsCount
+
         enum CodingKeys: String, CodingKey {
             case processType = "process_type"
             case precondition
@@ -241,6 +279,7 @@ internal struct SessionEndedMetric {
             case viewsCount = "views_count"
             case sdkErrorsCount = "sdk_errors_count"
             case ntpOffset = "ntp_offset"
+            case noViewEventsCount = "no_view_events_count"
         }
     }
 
@@ -301,6 +340,12 @@ internal struct SessionEndedMetric {
                 ntpOffset: .init(
                     atStart: ntpOffsetAtStart.toInt64Milliseconds,
                     atEnd: context.serverTimeOffset.toInt64Milliseconds
+                ),
+                noViewEventsCount: .init(
+                    actions: missedEvents[.action] ?? 0,
+                    resources: missedEvents[.resource] ?? 0,
+                    errors: missedEvents[.error] ?? 0,
+                    longTasks: missedEvents[.longTask] ?? 0
                 )
             )
         ]

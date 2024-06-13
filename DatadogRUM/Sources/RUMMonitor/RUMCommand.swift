@@ -18,6 +18,8 @@ internal protocol RUMCommand {
     var canStartBackgroundView: Bool { get }
     /// Whether or not this command is considered a user intaraction
     var isUserInteraction: Bool { get }
+    /// A type of event missed upon receiving this command in case of absence of an active view; `nil` if none or N/A.
+    var missedEventType: SessionEndedMetric.MissedEventType? { get }
 }
 
 internal struct RUMSDKInitCommand: RUMCommand {
@@ -25,6 +27,7 @@ internal struct RUMSDKInitCommand: RUMCommand {
     var attributes: [AttributeKey: AttributeValue] = [:]
     var canStartBackgroundView = false
     var isUserInteraction = false
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
 internal struct RUMApplicationStartCommand: RUMCommand {
@@ -32,6 +35,7 @@ internal struct RUMApplicationStartCommand: RUMCommand {
     var attributes: [AttributeKey: AttributeValue]
     var canStartBackgroundView = false
     var isUserInteraction = false
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
 internal struct RUMStopSessionCommand: RUMCommand {
@@ -39,6 +43,7 @@ internal struct RUMStopSessionCommand: RUMCommand {
     var attributes: [AttributeKey: AttributeValue] = [:]
     let canStartBackgroundView = false // no, stopping a session should not start a backgorund session
     let isUserInteraction = false
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
 
     init(time: Date) {
         self.time = time
@@ -64,6 +69,7 @@ internal struct RUMStartViewCommand: RUMCommand, RUMViewScopePropagatableAttribu
 
     /// The type of instrumentation that started this view.
     let instrumentationType: SessionEndedMetric.ViewInstrumentationType
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
 
     init(
         time: Date,
@@ -90,6 +96,7 @@ internal struct RUMStopViewCommand: RUMCommand, RUMViewScopePropagatableAttribut
 
     /// The value holding stable identity of the RUM View.
     let identity: ViewIdentifier
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
 /// Any error command, like exception or App Hang.
@@ -135,6 +142,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
     let threads: [DDThread]?
     let binaryImages: [BinaryImage]?
     let isStackTraceTruncated: Bool?
+    let missedEventType: SessionEndedMetric.MissedEventType? = .error
 
     /// Constructor dedicated to errors defined by message, type and stack.
     init(
@@ -234,6 +242,7 @@ internal struct RUMAddCurrentViewAppHangCommand: RUMErrorCommand {
 
     /// The duration of hang.
     let hangDuration: TimeInterval
+    let missedEventType: SessionEndedMetric.MissedEventType? = .error
 }
 
 internal struct RUMAddViewTimingCommand: RUMCommand, RUMViewScopePropagatableAttributes {
@@ -245,6 +254,7 @@ internal struct RUMAddViewTimingCommand: RUMCommand, RUMViewScopePropagatableAtt
     /// The name of the timing. It will be used as a JSON key, whereas the value will be the timing duration,
     /// measured since the start of the View.
     let timingName: String
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
 // MARK: - RUM Resource related commands
@@ -280,6 +290,7 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
     let kind: RUMResourceType?
     /// Span context passed to the RUM backend in order to generate the APM span for underlying resource.
     let spanContext: RUMSpanContext?
+    let missedEventType: SessionEndedMetric.MissedEventType? = .resource
 }
 
 internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
@@ -291,6 +302,7 @@ internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
 
     /// Resource metrics.
     let metrics: ResourceMetrics
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
 internal struct RUMStopResourceCommand: RUMResourceCommand {
@@ -306,6 +318,7 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
     let httpStatusCode: Int?
     /// The size of loaded Resource
     let size: Int64?
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
 internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
@@ -327,6 +340,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     let stack: String?
     /// HTTP status code of the Ressource error.
     let httpStatusCode: Int?
+    let missedEventType: SessionEndedMetric.MissedEventType? = .error
 
     init(
         resourceKey: String,
@@ -390,6 +404,7 @@ internal struct RUMStartUserActionCommand: RUMUserActionCommand {
 
     let actionType: RUMActionType
     let name: String
+    let missedEventType: SessionEndedMetric.MissedEventType? = .action
 }
 
 /// Stops continuous User Action.
@@ -401,6 +416,7 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
 
     let actionType: RUMActionType
     let name: String?
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
 /// Adds discrete (discontinuous) User Action.
@@ -412,6 +428,7 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
 
     let actionType: RUMActionType
     let name: String
+    let missedEventType: SessionEndedMetric.MissedEventType? = .action
 }
 
 /// Adds that a feature flag has been evaluated to the view
@@ -422,6 +439,7 @@ internal struct RUMAddFeatureFlagEvaluationCommand: RUMCommand {
     let isUserInteraction = false
     let name: String
     let value: Encodable
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
 
     init(time: Date, name: String, value: Encodable) {
         self.time = time
@@ -440,6 +458,7 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
     let isUserInteraction = false // a long task is not an interactive event
 
     let duration: TimeInterval
+    let missedEventType: SessionEndedMetric.MissedEventType? = .longTask
 }
 
 // MARK: - RUM Web Events related commands
@@ -450,6 +469,7 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
     let isUserInteraction = false
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
 // MARK: - Cross-platform perf metrics
@@ -461,4 +481,5 @@ internal struct RUMUpdatePerformanceMetric: RUMCommand {
     let value: Double
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
