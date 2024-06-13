@@ -278,7 +278,7 @@ workflows:
         run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
         inputs:
         - scheme: SRSnapshotTests
-        - destination: platform=iOS Simulator,name=iPhone 14,OS=16.2
+        - destination: platform=iOS Simulator,name=iPhone 15,OS=17.5
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
