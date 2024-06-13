@@ -81,9 +81,11 @@ internal struct SessionEndedMetric {
     /// Indicates if the session was stopped through `stopSession()` API.
     private var wasStopped = false
 
+    /// If `RUM.Configuration.trackBackgroundEvents` was enabled for this session.
+    private let tracksBackgroundEvents: Bool
+
     // TODO: RUM-4591 Track diagnostic attributes:
     // - no_view_events_count
-    // - has_background_events_tracking_enabled
     // - has_replay
     // - ntp_offset
 
@@ -94,14 +96,17 @@ internal struct SessionEndedMetric {
     ///   - sessionID: An ID of the session that is being tracked with this metric.
     ///   - precondition: The precondition that led to starting this session.
     ///   - context: The SDK context at the moment of starting this session.
+    ///   - tracksBackgroundEvents: If background events tracking is enabled for this session.
     init(
         sessionID: RUMUUID,
         precondition: RUMSessionPrecondition?,
-        context: DatadogContext
+        context: DatadogContext,
+        tracksBackgroundEvents: Bool
     ) {
         self.sessionID = sessionID
         self.bundleType = context.applicationBundleType
         self.precondition = precondition
+        self.tracksBackgroundEvents = tracksBackgroundEvents
     }
 
     /// Tracks the view event that occurred during the session.
@@ -165,6 +170,8 @@ internal struct SessionEndedMetric {
         let duration: Int64?
         /// Indicates if the session was stopped through `stopSession()` API.
         let wasStopped: Bool
+        /// If background events tracking is enabled for this session.
+        let hasBackgroundEventsTrackingEnabled: Bool
 
         struct ViewsCount: Encodable {
             /// The number of distinct views (view UUIDs) sent during this session.
@@ -207,6 +214,7 @@ internal struct SessionEndedMetric {
             case precondition
             case duration
             case wasStopped = "was_stopped"
+            case hasBackgroundEventsTrackingEnabled = "has_background_events_tracking_enabled"
             case viewsCount = "views_count"
             case sdkErrorsCount = "sdk_errors_count"
         }
@@ -249,6 +257,7 @@ internal struct SessionEndedMetric {
                 precondition: precondition?.rawValue,
                 duration: durationNs,
                 wasStopped: wasStopped,
+                hasBackgroundEventsTrackingEnabled: tracksBackgroundEvents,
                 viewsCount: .init(
                     total: totalViewsCount,
                     background: backgroundViewsCount,

@@ -101,7 +101,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
 
     // MARK: - Reporting Session Attributes
 
-    func testReportingSessionID() throws {
+    func testReportingSessionInformation() throws {
         var currentSessionID: String?
         RUM.enable(with: rumConfig, in: core)
 
@@ -118,6 +118,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         let metric = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent())
         let expectedSessionID = try XCTUnwrap(currentSessionID)
         XCTAssertEqual(metric.session?.id, expectedSessionID.lowercased())
+        XCTAssertEqual(metric.attributes?.hasBackgroundEventsTrackingEnabled, rumConfig.trackBackgroundEvents)
     }
 
     func testTrackingSessionDuration() throws {

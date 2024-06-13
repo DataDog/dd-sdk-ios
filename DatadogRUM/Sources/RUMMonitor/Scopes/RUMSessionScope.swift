@@ -108,8 +108,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         dependencies.sessionEndedMetric.startMetric(
             sessionID: sessionUUID,
             precondition: startPrecondition,
-            context: context
-            // TODO: RUM-4591 pass `trackBackgroundEvents` to SE metric
+            context: context,
+            tracksBackgroundEvents: trackBackgroundEvents
             // TODO: RUM-4591 pass NTP offset at session start to SE metric
         )
 

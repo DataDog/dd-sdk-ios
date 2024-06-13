@@ -19,7 +19,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
 
         // Given
         let controller = SessionEndedMetricController(telemetry: telemetry)
-        controller.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom())
+        controller.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
 
         // When
         viewIDs.forEach { controller.track(view: .mockRandomWith(sessionID: sessionID, viewID: $0), instrumentationType: nil, in: sessionID) }
@@ -40,8 +40,8 @@ class SessionEndedMetricControllerTests: XCTestCase {
 
         // When
         let controller = SessionEndedMetricController(telemetry: telemetry)
-        controller.startMetric(sessionID: sessionID1, precondition: .mockRandom(), context: .mockRandom())
-        controller.startMetric(sessionID: sessionID2, precondition: .mockRandom(), context: .mockRandom())
+        controller.startMetric(sessionID: sessionID1, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
+        controller.startMetric(sessionID: sessionID2, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
         // Session 1:
         controller.track(view: .mockRandomWith(sessionID: sessionID1), instrumentationType: nil, in: sessionID1)
         controller.track(sdkErrorKind: "error.kind1", in: sessionID1)
@@ -72,8 +72,8 @@ class SessionEndedMetricControllerTests: XCTestCase {
 
         // When
         let controller = SessionEndedMetricController(telemetry: telemetry)
-        controller.startMetric(sessionID: sessionID1, precondition: .mockRandom(), context: .mockRandom())
-        controller.startMetric(sessionID: sessionID2, precondition: .mockRandom(), context: .mockRandom())
+        controller.startMetric(sessionID: sessionID1, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
+        controller.startMetric(sessionID: sessionID2, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
         // Track latest session (`sessionID: nil`)
         controller.track(view: .mockRandomWith(sessionID: sessionID2), instrumentationType: nil, in: nil)
         controller.track(sdkErrorKind: "error.kind1", in: nil)
@@ -98,7 +98,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         callConcurrently(
             closures: [
                 { controller.startMetric(
-                    sessionID: sessionIDs.randomElement()!, precondition: .mockRandom(), context: .mockRandom()
+                    sessionID: sessionIDs.randomElement()!, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom()
                 ) },
                 { controller.track(view: .mockRandom(), instrumentationType: nil, in: sessionIDs.randomElement()!) },
                 { controller.track(sdkErrorKind: .mockRandom(), in: sessionIDs.randomElement()!) },

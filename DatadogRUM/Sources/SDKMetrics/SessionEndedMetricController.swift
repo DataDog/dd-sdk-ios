@@ -29,13 +29,14 @@ internal final class SessionEndedMetricController {
     ///   - sessionID: The ID of the session to track.
     ///   - precondition: The precondition that led to starting this session.
     ///   - context: The SDK context at the moment of starting this session.
+    ///   - tracksBackgroundEvents: If background events tracking is enabled for this session.
     /// - Returns: The newly created `SessionEndedMetric` instance.
-    func startMetric(sessionID: RUMUUID, precondition: RUMSessionPrecondition?, context: DatadogContext) {
+    func startMetric(sessionID: RUMUUID, precondition: RUMSessionPrecondition?, context: DatadogContext, tracksBackgroundEvents: Bool) {
         guard sessionID != RUMUUID.nullUUID else {
             return // do not track metric when session is not sampled
         }
         _metricsBySessionID.mutate { metrics in
-            metrics[sessionID] = SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context)
+            metrics[sessionID] = SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context, tracksBackgroundEvents: tracksBackgroundEvents)
             pendingSessionIDs.append(sessionID)
         }
     }
