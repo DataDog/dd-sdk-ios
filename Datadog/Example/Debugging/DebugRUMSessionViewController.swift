@@ -33,7 +33,10 @@ private class DebugRUMSessionViewModel: ObservableObject {
         var id: UUID = UUID()
     }
 
-    @Published var sessionItems: [SessionItem] = []
+    @Published var sessionItems: [SessionItem] = [] {
+        didSet { updateSessionID() }
+    }
+    @Published var sessionID: String = ""
 
     @Published var viewKey: String = ""
     @Published var actionName: String = ""
@@ -46,12 +49,18 @@ private class DebugRUMSessionViewModel: ObservableObject {
 
     var urlSessions: [URLSession] = []
 
+    init() {
+        updateSessionID()
+    }
+
     func startView() {
         guard !viewKey.isEmpty else {
             return
         }
 
         let key = viewKey
+        RUMMonitor.shared().startView(key: key)
+
         sessionItems.append(
             SessionItem(
                 label: key,
@@ -67,7 +76,6 @@ private class DebugRUMSessionViewModel: ObservableObject {
             )
         )
 
-        RUMMonitor.shared().startView(key: key)
         self.viewKey = ""
     }
 
@@ -76,11 +84,11 @@ private class DebugRUMSessionViewModel: ObservableObject {
             return
         }
 
+        RUMMonitor.shared().addAction(type: .custom, name: actionName)
         sessionItems.append(
             SessionItem(label: actionName, type: .action, isPending: false, stopAction: nil)
         )
 
-        RUMMonitor.shared().addAction(type: .custom, name: actionName)
         self.actionName = ""
     }
 
@@ -89,11 +97,11 @@ private class DebugRUMSessionViewModel: ObservableObject {
             return
         }
 
+        RUMMonitor.shared().addError(message: errorMessage)
         sessionItems.append(
             SessionItem(label: errorMessage, type: .error, isPending: false, stopAction: nil)
         )
 
-        RUMMonitor.shared().addError(message: errorMessage)
         self.errorMessage = ""
     }
 
@@ -103,6 +111,7 @@ private class DebugRUMSessionViewModel: ObservableObject {
         }
 
         let key = self.resourceKey
+        RUMMonitor.shared().startResource(resourceKey: key, url: mockURL())
         sessionItems.append(
             SessionItem(
                 label: key,
@@ -118,7 +127,6 @@ private class DebugRUMSessionViewModel: ObservableObject {
             )
         )
 
-        RUMMonitor.shared().startResource(resourceKey: key, url: mockURL())
         self.resourceKey = ""
     }
 
@@ -161,6 +169,11 @@ private class DebugRUMSessionViewModel: ObservableObject {
         urlSessions.append(session) // keep session
     }
 
+    func stopSession() {
+        RUMMonitor.shared().stopSession()
+        sessionItems = []
+    }
+
     // MARK: - Private
 
     private func modifySessionItem(type: SessionItemType, label: String, change: (inout SessionItem) -> Void) {
@@ -175,6 +188,14 @@ private class DebugRUMSessionViewModel: ObservableObject {
 
     private func mockURL() -> URL {
         return URL(string: "https://foo.com/\(UUID().uuidString)")!
+    }
+
+    private func updateSessionID() {
+        RUMMonitor.shared().currentSessionID { [weak self] id in
+            DispatchQueue.main.async {
+                self?.sessionID = id ?? "-"
+            }
+        }
     }
 }
 
@@ -215,6 +236,10 @@ internal struct DebugRUMSessionView: View {
                     )
                     Button("START") { viewModel.startResource() }
                 }
+                HStack {
+                    Button("STOP SESSION") { viewModel.stopSession() }
+                    Spacer()
+                }
                 Divider()
             }
             Group {
@@ -248,9 +273,12 @@ internal struct DebugRUMSessionView: View {
                 Divider()
             }
             Group {
-                Text("Current RUM Session:")
+                Text("Current RUM Session")
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .font(.caption.weight(.bold))
+                Text("UUID: \(viewModel.sessionID)")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .font(.caption.weight(.ultraLight))
                 List(viewModel.sessionItems) { sessionItem in
                     SessionItemView(item: sessionItem)
                         .listRowInsets(EdgeInsets())
@@ -277,20 +305,20 @@ private struct FormItemView: View {
             Text(title)
                 .bold()
                 .font(.system(size: 10))
-                .padding(8)
+                .padding(4)
                 .background(accent)
                 .foregroundColor(Color.white)
-                .cornerRadius(8)
+                .cornerRadius(4)
             TextField(placeholder, text: $value)
                 .font(.system(size: 12))
-                .padding(8)
+                .padding(4)
                 .background(Color(UIColor.secondarySystemFill))
-                .cornerRadius(8)
+                .cornerRadius(4)
         }
-        .padding(8)
+        .padding(4)
         .background(Color(UIColor.systemFill))
         .foregroundColor(Color.secondary)
-        .cornerRadius(8)
+        .cornerRadius(4)
     }
 }
 
@@ -304,20 +332,20 @@ private struct SessionItemView: View {
                 Text(label(for: item.type))
                     .bold()
                     .font(.system(size: 10))
-                    .padding(8)
+                    .padding(4)
                     .background(color(for: item.type))
                     .foregroundColor(Color.white)
-                    .cornerRadius(8)
+                    .cornerRadius(4)
                 Text(item.label)
                     .bold()
                     .font(.system(size: 14))
                 Spacer()
             }
-            .padding(8)
+            .padding(4)
             .frame(maxWidth: .infinity)
             .background(Color(UIColor.systemFill))
             .foregroundColor(Color.secondary)
-            .cornerRadius(8)
+            .cornerRadius(4)
 
             if item.isPending {
                 Button("STOP") { item.stopAction?() }
