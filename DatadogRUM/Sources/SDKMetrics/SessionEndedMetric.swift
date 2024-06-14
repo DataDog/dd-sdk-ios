@@ -23,7 +23,11 @@ internal enum SessionEndedMetricError: Error, CustomStringConvertible {
 }
 
 /// Tracks the state of RUM session and exports attributes for "RUM Session Ended" telemetry.
-internal struct SessionEndedMetric {
+///
+/// It is modeled as a reference type and contains mutable state. The thread safety for its mutations is
+/// achieved by design: only `SessionEndedMetricController` interacts with this class and does
+/// it through critical section each time.
+internal class SessionEndedMetric {
     /// Definition of fields in "RUM Session Ended" telemetry, following the "RUM Session Ended" telemetry spec.
     internal enum Constants {
         /// The name of this metric, included in telemetry log.
@@ -55,7 +59,7 @@ internal struct SessionEndedMetric {
     private let precondition: RUMSessionPrecondition?
 
     /// Tracks view information for certain `view.id`.
-    private struct TrackedViewInfo {
+    private class TrackedViewInfo {
         /// The view URL as reported in RUM data.
         let viewURL: String
         /// The type of instrumentation that started this view.
@@ -67,6 +71,20 @@ internal struct SessionEndedMetric {
         var durationNs: Int64
         /// If any of view updates to this `view.id` had `session.has_replay == true`.
         var hasReplay: Bool
+
+        init(
+            viewURL: String,
+            instrumentationType: ViewInstrumentationType?,
+            startMs: Int64,
+            durationNs: Int64,
+            hasReplay: Bool
+        ) {
+            self.viewURL = viewURL
+            self.instrumentationType = instrumentationType
+            self.startMs = startMs
+            self.durationNs = durationNs
+            self.hasReplay = hasReplay
+        }
     }
 
     /// Stores information about tracked views, referencing them by their `view.id`.
@@ -127,22 +145,27 @@ internal struct SessionEndedMetric {
     ///   - view: the view event to track
     ///   - instrumentationType: the type of instrumentation used to start this view (only the first value for each `view.id` is tracked; succeeding values
     ///   will be ignored so it is okay to pass value on first call and then follow with `nil` for next updates of given `view.id`)
-    mutating func track(view: RUMViewEvent, instrumentationType: ViewInstrumentationType?) throws {
+    func track(view: RUMViewEvent, instrumentationType: ViewInstrumentationType?) throws {
         guard view.session.id == sessionID.toRUMDataFormat else {
             throw SessionEndedMetricError.trackingViewInForeignSession(viewURL: view.view.url, sessionID: sessionID)
         }
 
-        var info = trackedViews[view.view.id] ?? TrackedViewInfo(
-            viewURL: view.view.url,
-            instrumentationType: instrumentationType,
-            startMs: view.date,
-            durationNs: view.view.timeSpent,
-            hasReplay: view.session.hasReplay ?? false
-        )
+        let info: TrackedViewInfo
 
-        info.durationNs = view.view.timeSpent
-        info.hasReplay = info.hasReplay || (view.session.hasReplay ?? false)
-        trackedViews[view.view.id] = info
+        if let existingInfo = trackedViews[view.view.id] {
+            info = existingInfo
+            info.durationNs = view.view.timeSpent
+            info.hasReplay = info.hasReplay || (view.session.hasReplay ?? false)
+        } else {
+            info = TrackedViewInfo(
+                viewURL: view.view.url,
+                instrumentationType: instrumentationType,
+                startMs: view.date,
+                durationNs: view.view.timeSpent,
+                hasReplay: view.session.hasReplay ?? false
+            )
+            trackedViews[view.view.id] = info
+        }
 
         if firstTrackedView == nil {
             firstTrackedView = info
@@ -151,7 +174,8 @@ internal struct SessionEndedMetric {
     }
 
     /// Tracks the kind of SDK error that occurred during the session.
-    mutating func track(sdkErrorKind: String) {
+    /// - Parameter sdkErrorKind: the kind of SDK error
+    func track(sdkErrorKind: String) {
         if let count = trackedSDKErrors[sdkErrorKind] {
             trackedSDKErrors[sdkErrorKind] = count + 1
         } else {
@@ -160,7 +184,8 @@ internal struct SessionEndedMetric {
     }
 
     /// Tracks an event missed due to absence of an active view.
-    mutating func track(missedEventType: MissedEventType) {
+    /// - Parameter missedEventType: the type of an event that was missed
+    func track(missedEventType: MissedEventType) {
         if let count = missedEvents[missedEventType] {
             missedEvents[missedEventType] = count + 1
         } else {
@@ -169,7 +194,7 @@ internal struct SessionEndedMetric {
     }
 
     /// Signals that the session was stopped with `stopSession()` API.
-    mutating func trackWasStopped() {
+    func trackWasStopped() {
         wasStopped = true
     }
 

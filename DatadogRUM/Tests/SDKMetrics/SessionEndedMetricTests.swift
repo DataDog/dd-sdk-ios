@@ -117,7 +117,7 @@ class SessionEndedMetricTests: XCTestCase {
 
     func testComputingDurationFromSingleView() throws {
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
         let view: RUMViewEvent = .mockRandomWith(sessionID: sessionID)
 
         // When
@@ -131,7 +131,7 @@ class SessionEndedMetricTests: XCTestCase {
 
     func testComputingDurationFromMultipleViews() throws {
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
         let view1: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 10.s2ms, viewTimeSpent: 10.s2ns)
         let view2: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 10.s2ms + 10.s2ms, viewTimeSpent: 20.s2ns)
         let view3: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 10.s2ms + 10.s2ms + 20.s2ms, viewTimeSpent: 50.s2ns)
@@ -149,7 +149,7 @@ class SessionEndedMetricTests: XCTestCase {
 
     func testComputingDurationFromOverlappingViews() throws {
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
         let view1: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 10.s2ms, viewTimeSpent: 10.s2ns)
         let view2: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 15.s2ms, viewTimeSpent: 20.s2ns) // starts in the middle of `view1`
 
@@ -165,7 +165,7 @@ class SessionEndedMetricTests: XCTestCase {
 
     func testDurationIsAlwaysComputedFromTheFirstAndLastView() throws {
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
         let firstView: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 5.s2ms, viewTimeSpent: 10.s2ns)
         let lastView: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 5.s2ms + 10.s2ms, viewTimeSpent: 20.s2ns)
 
@@ -182,7 +182,7 @@ class SessionEndedMetricTests: XCTestCase {
 
     func testWhenComputingDuration_itIgnoresViewsFromDifferentSession() throws {
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
         XCTAssertThrowsError(try metric.track(view: .mockRandom(), instrumentationType: nil))
@@ -198,7 +198,7 @@ class SessionEndedMetricTests: XCTestCase {
 
     func testReportingSessionThatWasStopped() throws {
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
         metric.trackWasStopped()
@@ -245,7 +245,7 @@ class SessionEndedMetricTests: XCTestCase {
         let viewIDs: Set<String> = .mockRandom(count: .mockRandom(min: 1, max: 10))
 
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
         try viewIDs.forEach { try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: $0), instrumentationType: nil) }
@@ -261,7 +261,7 @@ class SessionEndedMetricTests: XCTestCase {
         let viewID2: String = .mockRandom(otherThan: [viewID1])
 
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
         try (0..<5).forEach { _ in // repeat few times
@@ -281,7 +281,7 @@ class SessionEndedMetricTests: XCTestCase {
         let viewIDs = backgroundViewIDs.union(otherViewIDs)
 
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
         try viewIDs.forEach { viewID in
@@ -301,7 +301,7 @@ class SessionEndedMetricTests: XCTestCase {
         let viewIDs = appLaunchViewIDs.union(otherViewIDs)
 
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
         try viewIDs.forEach { viewID in
@@ -322,7 +322,7 @@ class SessionEndedMetricTests: XCTestCase {
         let unknownViewsCount: Int = .mockRandom(min: 1, max: 10)
 
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
         try (0..<manualViewsCount).forEach { idx in
@@ -354,7 +354,7 @@ class SessionEndedMetricTests: XCTestCase {
 
     func testWhenReportingViewsCountByInstrumentationType_itIgnoresSuccedingInstrumentationTypesForGivenViewID() throws {
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
         try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "view-id"), instrumentationType: .manual)
 
         // When
@@ -370,7 +370,7 @@ class SessionEndedMetricTests: XCTestCase {
 
     func testReportingHasReplayViewsCount() throws {
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
         try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "1", hasReplay: nil), instrumentationType: nil)
@@ -389,7 +389,7 @@ class SessionEndedMetricTests: XCTestCase {
 
     func testWhenReportingViewsCount_itIgnoresViewsFromDifferentSession() throws {
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
         XCTAssertThrowsError(try metric.track(view: .mockRandom(), instrumentationType: nil))
@@ -408,7 +408,7 @@ class SessionEndedMetricTests: XCTestCase {
         let repetitions = 5
 
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
         (0..<repetitions).forEach { _ in
@@ -428,7 +428,7 @@ class SessionEndedMetricTests: XCTestCase {
         ]
 
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
         errorKinds.forEach { kind, count in
@@ -450,7 +450,7 @@ class SessionEndedMetricTests: XCTestCase {
         ]
 
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
         errorKinds.forEach { kind, count in
@@ -475,7 +475,7 @@ class SessionEndedMetricTests: XCTestCase {
         let missedLongTasksCount: Int = .mockRandom(min: 1, max: 10)
 
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID)
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
         (0..<missedActionsCount).forEach { _ in metric.track(missedEventType: .action) }
@@ -496,7 +496,7 @@ class SessionEndedMetricTests: XCTestCase {
 
     func testEncodedMetricAttributesFollowTheSpec() throws {
         // Given
-        var metric = SessionEndedMetric.with(sessionID: sessionID, context: .mockWith(applicationBundleType: .iOSApp))
+        let metric = SessionEndedMetric.with(sessionID: sessionID, context: .mockWith(applicationBundleType: .iOSApp))
         try metric.track(view: .mockRandomWith(sessionID: sessionID, viewTimeSpent: 10), instrumentationType: .manual)
         try metric.track(view: .mockRandomWith(sessionID: sessionID, viewTimeSpent: 10), instrumentationType: .swiftui)
         try metric.track(view: .mockRandomWith(sessionID: sessionID, viewTimeSpent: 10), instrumentationType: .uikit)
