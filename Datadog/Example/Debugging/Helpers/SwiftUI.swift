@@ -34,10 +34,10 @@ extension Color {
 internal struct DatadogButtonStyle: ButtonStyle {
     func makeBody(configuration: DatadogButtonStyle.Configuration) -> some View {
         return configuration.label
-            .font(.system(size: 14, weight: .medium))
-            .padding(10)
+            .font(.system(size: 12, weight: .medium))
+            .padding(6)
             .background(Color.datadogPurple)
             .foregroundColor(.white)
-            .cornerRadius(8)
+            .cornerRadius(6)
     }
 }

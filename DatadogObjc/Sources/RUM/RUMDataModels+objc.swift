@@ -5292,6 +5292,10 @@ public class DDRUMViewEventView: NSObject {
         root.swiftModel.view.cumulativeLayoutShiftTargetSelector
     }
 
+    @objc public var cumulativeLayoutShiftTime: NSNumber? {
+        root.swiftModel.view.cumulativeLayoutShiftTime as NSNumber?
+    }
+
     @objc public var customTimings: [String: NSNumber]? {
         root.swiftModel.view.customTimings as [String: NSNumber]?
     }
@@ -5362,6 +5366,10 @@ public class DDRUMViewEventView: NSObject {
 
     @objc public var interactionToNextPaintTargetSelector: String? {
         root.swiftModel.view.interactionToNextPaintTargetSelector
+    }
+
+    @objc public var interactionToNextPaintTime: NSNumber? {
+        root.swiftModel.view.interactionToNextPaintTime as NSNumber?
     }
 
     @objc public var isActive: NSNumber? {
@@ -5782,6 +5790,10 @@ public class DDRUMVitalEventDD: NSObject {
     @objc public var session: DDRUMVitalEventDDSession? {
         root.swiftModel.dd.session != nil ? DDRUMVitalEventDDSession(root: root) : nil
     }
+
+    @objc public var vital: DDRUMVitalEventDDVital? {
+        root.swiftModel.dd.vital != nil ? DDRUMVitalEventDDVital(root: root) : nil
+    }
 }
 
 @objc
@@ -5877,6 +5889,19 @@ public enum DDRUMVitalEventDDSessionRUMSessionPrecondition: Int {
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
+}
+
+@objc
+public class DDRUMVitalEventDDVital: NSObject {
+    internal let root: DDRUMVitalEvent
+
+    internal init(root: DDRUMVitalEvent) {
+        self.root = root
+    }
+
+    @objc public var computedValue: NSNumber? {
+        root.swiftModel.dd.vital!.computedValue as NSNumber?
+    }
 }
 
 @objc
@@ -6588,6 +6613,10 @@ public class DDTelemetryErrorEventTelemetry: NSObject {
         self.root = root
     }
 
+    @objc public var device: DDTelemetryErrorEventTelemetryRUMTelemetryDevice? {
+        root.swiftModel.telemetry.device != nil ? DDTelemetryErrorEventTelemetryRUMTelemetryDevice(root: root) : nil
+    }
+
     @objc public var error: DDTelemetryErrorEventTelemetryError? {
         root.swiftModel.telemetry.error != nil ? DDTelemetryErrorEventTelemetryError(root: root) : nil
     }
@@ -6596,12 +6625,41 @@ public class DDTelemetryErrorEventTelemetry: NSObject {
         root.swiftModel.telemetry.message
     }
 
+    @objc public var os: DDTelemetryErrorEventTelemetryRUMTelemetryOperatingSystem? {
+        root.swiftModel.telemetry.os != nil ? DDTelemetryErrorEventTelemetryRUMTelemetryOperatingSystem(root: root) : nil
+    }
+
     @objc public var status: String {
         root.swiftModel.telemetry.status
     }
 
     @objc public var type: String? {
         root.swiftModel.telemetry.type
+    }
+
+    @objc public var telemetryInfo: [String: Any] {
+        root.swiftModel.telemetry.telemetryInfo.castToObjectiveC()
+    }
+}
+
+@objc
+public class DDTelemetryErrorEventTelemetryRUMTelemetryDevice: NSObject {
+    internal let root: DDTelemetryErrorEvent
+
+    internal init(root: DDTelemetryErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var architecture: String? {
+        root.swiftModel.telemetry.device!.architecture
+    }
+
+    @objc public var brand: String? {
+        root.swiftModel.telemetry.device!.brand
+    }
+
+    @objc public var model: String? {
+        root.swiftModel.telemetry.device!.model
     }
 }
 
@@ -6619,6 +6677,27 @@ public class DDTelemetryErrorEventTelemetryError: NSObject {
 
     @objc public var stack: String? {
         root.swiftModel.telemetry.error!.stack
+    }
+}
+
+@objc
+public class DDTelemetryErrorEventTelemetryRUMTelemetryOperatingSystem: NSObject {
+    internal let root: DDTelemetryErrorEvent
+
+    internal init(root: DDTelemetryErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var build: String? {
+        root.swiftModel.telemetry.os!.build
+    }
+
+    @objc public var name: String? {
+        root.swiftModel.telemetry.os!.name
+    }
+
+    @objc public var version: String? {
+        root.swiftModel.telemetry.os!.version
     }
 }
 
@@ -6785,8 +6864,16 @@ public class DDTelemetryDebugEventTelemetry: NSObject {
         self.root = root
     }
 
+    @objc public var device: DDTelemetryDebugEventTelemetryRUMTelemetryDevice? {
+        root.swiftModel.telemetry.device != nil ? DDTelemetryDebugEventTelemetryRUMTelemetryDevice(root: root) : nil
+    }
+
     @objc public var message: String {
         root.swiftModel.telemetry.message
+    }
+
+    @objc public var os: DDTelemetryDebugEventTelemetryRUMTelemetryOperatingSystem? {
+        root.swiftModel.telemetry.os != nil ? DDTelemetryDebugEventTelemetryRUMTelemetryOperatingSystem(root: root) : nil
     }
 
     @objc public var status: String {
@@ -6799,6 +6886,48 @@ public class DDTelemetryDebugEventTelemetry: NSObject {
 
     @objc public var telemetryInfo: [String: Any] {
         root.swiftModel.telemetry.telemetryInfo.castToObjectiveC()
+    }
+}
+
+@objc
+public class DDTelemetryDebugEventTelemetryRUMTelemetryDevice: NSObject {
+    internal let root: DDTelemetryDebugEvent
+
+    internal init(root: DDTelemetryDebugEvent) {
+        self.root = root
+    }
+
+    @objc public var architecture: String? {
+        root.swiftModel.telemetry.device!.architecture
+    }
+
+    @objc public var brand: String? {
+        root.swiftModel.telemetry.device!.brand
+    }
+
+    @objc public var model: String? {
+        root.swiftModel.telemetry.device!.model
+    }
+}
+
+@objc
+public class DDTelemetryDebugEventTelemetryRUMTelemetryOperatingSystem: NSObject {
+    internal let root: DDTelemetryDebugEvent
+
+    internal init(root: DDTelemetryDebugEvent) {
+        self.root = root
+    }
+
+    @objc public var build: String? {
+        root.swiftModel.telemetry.os!.build
+    }
+
+    @objc public var name: String? {
+        root.swiftModel.telemetry.os!.name
+    }
+
+    @objc public var version: String? {
+        root.swiftModel.telemetry.os!.version
     }
 }
 
@@ -6969,8 +7098,20 @@ public class DDTelemetryConfigurationEventTelemetry: NSObject {
         DDTelemetryConfigurationEventTelemetryConfiguration(root: root)
     }
 
+    @objc public var device: DDTelemetryConfigurationEventTelemetryRUMTelemetryDevice? {
+        root.swiftModel.telemetry.device != nil ? DDTelemetryConfigurationEventTelemetryRUMTelemetryDevice(root: root) : nil
+    }
+
+    @objc public var os: DDTelemetryConfigurationEventTelemetryRUMTelemetryOperatingSystem? {
+        root.swiftModel.telemetry.os != nil ? DDTelemetryConfigurationEventTelemetryRUMTelemetryOperatingSystem(root: root) : nil
+    }
+
     @objc public var type: String {
         root.swiftModel.telemetry.type
+    }
+
+    @objc public var telemetryInfo: [String: Any] {
+        root.swiftModel.telemetry.telemetryInfo.castToObjectiveC()
     }
 }
 
@@ -7028,6 +7169,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.defaultPrivacyLevel }
     }
 
+    @objc public var enablePrivacyForActionName: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.enablePrivacyForActionName = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.enablePrivacyForActionName as NSNumber? }
+    }
+
     @objc public var forwardConsoleLogs: DDTelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs? {
         root.swiftModel.telemetry.configuration.forwardConsoleLogs != nil ? DDTelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs(root: root) : nil
     }
@@ -7070,6 +7216,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     @objc public var selectedTracingPropagators: [Int]? {
         root.swiftModel.telemetry.configuration.selectedTracingPropagators?.map { DDTelemetryConfigurationEventTelemetryConfigurationSelectedTracingPropagators(swift: $0).rawValue }
+    }
+
+    @objc public var sendLogsAfterSessionExpiration: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.sendLogsAfterSessionExpiration = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.sendLogsAfterSessionExpiration as NSNumber? }
     }
 
     @objc public var sessionReplaySampleRate: NSNumber? {
@@ -7199,8 +7350,8 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.trackViewsManually as NSNumber? }
     }
 
-    @objc public var trackingConsent: String? {
-        root.swiftModel.telemetry.configuration.trackingConsent
+    @objc public var trackingConsent: DDTelemetryConfigurationEventTelemetryConfigurationTrackingConsent {
+        .init(swift: root.swiftModel.telemetry.configuration.trackingConsent)
     }
 
     @objc public var unityVersion: String? {
@@ -7367,6 +7518,32 @@ public enum DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjec
 }
 
 @objc
+public enum DDTelemetryConfigurationEventTelemetryConfigurationTrackingConsent: Int {
+    internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.TrackingConsent?) {
+        switch swift {
+        case nil: self = .none
+        case .granted?: self = .granted
+        case .notGranted?: self = .notGranted
+        case .pending?: self = .pending
+        }
+    }
+
+    internal var toSwift: TelemetryConfigurationEvent.Telemetry.Configuration.TrackingConsent? {
+        switch self {
+        case .none: return nil
+        case .granted: return .granted
+        case .notGranted: return .notGranted
+        case .pending: return .pending
+        }
+    }
+
+    case none
+    case granted
+    case notGranted
+    case pending
+}
+
+@objc
 public enum DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy: Int {
     internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.ViewTrackingStrategy?) {
         switch swift {
@@ -7396,6 +7573,48 @@ public enum DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrat
 }
 
 @objc
+public class DDTelemetryConfigurationEventTelemetryRUMTelemetryDevice: NSObject {
+    internal let root: DDTelemetryConfigurationEvent
+
+    internal init(root: DDTelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    @objc public var architecture: String? {
+        root.swiftModel.telemetry.device!.architecture
+    }
+
+    @objc public var brand: String? {
+        root.swiftModel.telemetry.device!.brand
+    }
+
+    @objc public var model: String? {
+        root.swiftModel.telemetry.device!.model
+    }
+}
+
+@objc
+public class DDTelemetryConfigurationEventTelemetryRUMTelemetryOperatingSystem: NSObject {
+    internal let root: DDTelemetryConfigurationEvent
+
+    internal init(root: DDTelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    @objc public var build: String? {
+        root.swiftModel.telemetry.os!.build
+    }
+
+    @objc public var name: String? {
+        root.swiftModel.telemetry.os!.name
+    }
+
+    @objc public var version: String? {
+        root.swiftModel.telemetry.os!.version
+    }
+}
+
+@objc
 public class DDTelemetryConfigurationEventView: NSObject {
     internal let root: DDTelemetryConfigurationEvent
 
@@ -7410,4 +7629,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/0455e104863c0f67c3bf69899c7d5da1ba6f0ebb
+// Generated from https://github.com/DataDog/rum-events-format/tree/30d4b773abb4e33edc9d6053d3c12cd302e948a5

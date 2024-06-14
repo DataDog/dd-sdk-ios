@@ -1,4 +1,4 @@
-// swift-tools-version: 5.7.1
+// swift-tools-version: 5.9
 
 import PackageDescription
 import Foundation
@@ -6,8 +6,8 @@ import Foundation
 let package = Package(
     name: "Datadog",
     platforms: [
-        .iOS(.v11),
-        .tvOS(.v11),
+        .iOS(.v12),
+        .tvOS(.v12),
         .macOS(.v12)
     ],
     products: [

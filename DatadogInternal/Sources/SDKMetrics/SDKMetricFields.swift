@@ -8,6 +8,12 @@ import Foundation
 
 /// Common fields in SDK metrics.
 public enum SDKMetricFields {
-    /// Metric type key.
+    /// Metric type key. It expects `String` value.
     public static let typeKey = "metric_type"
+
+    /// Key referencing the session ID (`String`) that the metric should be sent with. It expects `String` value.
+    ///
+    /// When attached to metric attributes, the value of this key (session ID) will be used to replace
+    /// the ID of session that the metric was collected in. The key itself is dropped before the metric is sent.
+    public static let sessionIDOverrideKey = "session_id_override"
 }

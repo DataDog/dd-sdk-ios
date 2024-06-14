@@ -20,13 +20,22 @@ internal protocol BackgroundTaskCoordinator {
 import UIKit
 import DatadogInternal
 
-/// Bridge protocol that matches `UIApplication` interface for background tasks. Allows easier testablity.
+/// Bridge protocol that calls corresponding `UIApplication` interface for background tasks. Allows easier testablity.
 internal protocol UIKitAppBackgroundTaskCoordinator {
-    func beginBackgroundTask(expirationHandler handler: (() -> Void)?) -> UIBackgroundTaskIdentifier
-    func endBackgroundTask(_ identifier: UIBackgroundTaskIdentifier)
+    func beginBgTask(_ handler: (() -> Void)?) -> UIBackgroundTaskIdentifier
+    func endBgTask(_ identifier: UIBackgroundTaskIdentifier)
 }
 
-extension UIApplication: UIKitAppBackgroundTaskCoordinator {}
+extension UIApplication: UIKitAppBackgroundTaskCoordinator {
+    func beginBgTask(_ handler: (() -> Void)?) -> UIBackgroundTaskIdentifier {
+        return beginBackgroundTask {
+            handler?()
+        }
+    }
+    func endBgTask(_ identifier: UIBackgroundTaskIdentifier) {
+        endBackgroundTask(identifier)
+    }
+}
 
 internal class AppBackgroundTaskCoordinator: BackgroundTaskCoordinator {
     private let app: UIKitAppBackgroundTaskCoordinator?
@@ -42,7 +51,7 @@ internal class AppBackgroundTaskCoordinator: BackgroundTaskCoordinator {
 
     internal func beginBackgroundTask() {
         endBackgroundTask()
-        currentTaskId = app?.beginBackgroundTask { [weak self] in
+        currentTaskId = app?.beginBgTask { [weak self] in
             guard let self = self else {
                 return
             }
@@ -55,13 +64,13 @@ internal class AppBackgroundTaskCoordinator: BackgroundTaskCoordinator {
             return
         }
         if currentTaskId != .invalid {
-            app?.endBackgroundTask(currentTaskId)
+            app?.endBgTask(currentTaskId)
         }
         self.currentTaskId = nil
     }
 }
 
-/// Bridge protocol that matches `UIApplication` interface for background tasks. Allows easier testablity.
+/// Bridge protocol that matches `ProcessInfo` interface for background activity. Allows easier testablity.
 internal protocol ProcessInfoActivityCoordinator {
     func beginActivity(options: ProcessInfo.ActivityOptions, reason: String) -> any NSObjectProtocol
     func endActivity(_ activity: any NSObjectProtocol)

@@ -53,10 +53,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     // MARK: - Initialization
 
     unowned let parent: RUMContextProvider
-    private let dependencies: RUMScopeDependencies
+
+    /// Container bundling dependencies for this scope.
+    let dependencies: RUMScopeDependencies
 
     /// Automatically detect background events by creating "Background" view if no other view is active
-    internal let trackBackgroundEvents: Bool
+    let trackBackgroundEvents: Bool
 
     /// This Session UUID. Equals `.nullUUID` if the Session is sampled.
     let sessionUUID: RUMUUID
@@ -81,8 +83,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         parent: RUMContextProvider,
         startTime: Date,
         startPrecondition: RUMSessionPrecondition?,
+        context: DatadogContext,
         dependencies: RUMScopeDependencies,
-        hasReplay: Bool?,
         resumingViewScope: RUMViewScope? = nil
     ) {
         self.parent = parent
@@ -99,7 +101,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             sessionUUID: sessionUUID.rawValue,
             isInitialSession: isInitialSession,
             hasTrackedAnyView: false,
-            didStartWithReplay: hasReplay
+            didStartWithReplay: context.hasReplay
+        )
+
+        // Start tracking "RUM Session Ended" metric for this session
+        dependencies.sessionEndedMetric.startMetric(
+            sessionID: sessionUUID,
+            precondition: startPrecondition,
+            context: context
         )
 
         if let viewScope = resumingViewScope {
@@ -113,17 +122,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 customTimings: [:],
                 startTime: startTime,
                 serverTimeOffset: viewScope.serverTimeOffset,
-                hasReplay: hasReplay
+                hasReplay: context.hasReplay
             )
         }
 
         // Update fatal error context with recent RUM session state:
         dependencies.fatalErrorContext.sessionState = state
-
-        // Notify Synthetics if needed
-        if dependencies.syntheticsTest != nil && sessionUUID != .nullUUID {
-            NSLog("_dd.session.id=" + sessionUUID.toRUMDataFormat)
-        }
     }
 
     /// Creates a new Session upon expiration of the previous one.
@@ -138,8 +142,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             parent: expiredSession.parent,
             startTime: startTime,
             startPrecondition: startPrecondition,
-            dependencies: expiredSession.dependencies,
-            hasReplay: context.hasReplay
+            context: context,
+            dependencies: expiredSession.dependencies
         )
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
@@ -186,7 +190,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
 
         if !isSampled {
-            // Make sure sessions end even if they are sampled
+            // Make sure sessions end even if they are not sampled
             if command is RUMStopSessionCommand {
                 endReason = .stopAPI
                 return false // end this session (no longer keep the session scope)
@@ -198,6 +202,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         var deactivating = false
         if isActive {
             if command is RUMStopSessionCommand {
+                dependencies.sessionEndedMetric.trackWasStopped(sessionID: self.context.sessionID)
                 endReason = .stopAPI
                 deactivating = true
             } else if let startApplicationCommand = command as? RUMApplicationStartCommand {

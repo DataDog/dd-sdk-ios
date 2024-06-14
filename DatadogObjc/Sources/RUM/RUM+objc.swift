@@ -228,6 +228,9 @@ public enum DDRUMMethod: Int {
     case put
     case delete
     case patch
+    case connect
+    case trace
+    case options
 
     internal var swiftType: RUMMethod {
         switch self {
@@ -237,6 +240,9 @@ public enum DDRUMMethod: Int {
         case .put: return .put
         case .delete: return .delete
         case .patch: return .patch
+        case .connect: return .connect
+        case .trace: return .trace
+        case .options: return .options
         default: return .get
         }
     }

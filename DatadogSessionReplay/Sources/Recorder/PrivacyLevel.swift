@@ -5,14 +5,13 @@
  */
 
 #if os(iOS)
-@_spi(Internal)
-public typealias SessionReplayPrivacyLevel = SessionReplay.Configuration.PrivacyLevel
+import DatadogInternal
 
 internal typealias PrivacyLevel = SessionReplayPrivacyLevel
 
 /// Text obfuscation strategies for different text types.
 @_spi(Internal)
-public extension SessionReplay.Configuration.PrivacyLevel {
+public extension PrivacyLevel {
     /// Returns "Sensitive Text" obfuscator for given `privacyLevel`.
     ///
     /// In Session Replay, "Sensitive Text" is:
@@ -59,7 +58,7 @@ public extension SessionReplay.Configuration.PrivacyLevel {
 }
 
 /// Other convenience helpers.
-internal extension SessionReplay.Configuration.PrivacyLevel {
+internal extension SessionReplayPrivacyLevel {
     /// If input elements should be masked in this privacy mode.
     var shouldMaskInputElements: Bool {
         switch self {

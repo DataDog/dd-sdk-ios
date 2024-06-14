@@ -117,7 +117,13 @@ class DiffSRWireframes: XCTestCase {
         try wireframes.forEach { wireframeA, wireframeB in
             XCTAssertThrowsError(try wireframeB.mutations(from: wireframeA)) { error in
                 // Then
-                XCTAssertEqual(error as? WireframeMutationError, WireframeMutationError.typeMismatch)
+                XCTAssertEqual(
+                    error as? WireframeMutationError,
+                    WireframeMutationError.typeMismatch(
+                        fromType: wireframeA.type,
+                        toType: wireframeB.type
+                    )
+                )
             }
         }
     }

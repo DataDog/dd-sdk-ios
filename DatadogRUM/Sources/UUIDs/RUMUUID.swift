@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal struct RUMUUID: Equatable {
+internal struct RUMUUID: Equatable, Hashable {
     let rawValue: UUID
 
     /// UUID with all zeros, used to represent no-op values.

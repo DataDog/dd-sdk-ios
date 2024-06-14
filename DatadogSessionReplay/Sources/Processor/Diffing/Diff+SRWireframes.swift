@@ -41,17 +41,32 @@ extension SRWireframe: Diffable {
             return true
         }
     }
+
+    var type: String {
+        switch self {
+        case let (.shapeWireframe(value)):
+            return value.type
+        case let (.textWireframe(value)):
+            return value.type
+        case let (.imageWireframe(value)):
+            return value.type
+        case let (.placeholderWireframe(value)):
+            return value.type
+        case let (.webviewWireframe(value)):
+            return value.type
+        }
+    }
 }
 
 // MARK: - Resolving Mutations
 
 internal typealias WireframeMutation = SRIncrementalSnapshotRecord.Data.MutationData.Updates
 
-internal enum WireframeMutationError: Error {
+internal enum WireframeMutationError: Error, Equatable {
     /// Indicates an attempt of computing mutation for wireframes that have different `id`.
     case idMismatch
     /// Indicates an attempt of computing mutation for wireframes that have different type.
-    case typeMismatch
+    case typeMismatch(fromType: String, toType: String)
 }
 
 internal protocol MutableWireframe {
@@ -84,8 +99,13 @@ extension SRWireframe: MutableWireframe {
 extension SRShapeWireframe: MutableWireframe {
     func mutations(from otherWireframe: SRWireframe) throws -> WireframeMutation {
         guard case .shapeWireframe(let other) = otherWireframe else {
-            throw WireframeMutationError.typeMismatch
+            throw WireframeMutationError.typeMismatch(
+                fromType: otherWireframe.type,
+                toType: type
+            )
         }
+        // print string of enum of otherWireframe
+
         guard other.id == id else {
             throw WireframeMutationError.idMismatch
         }
@@ -108,7 +128,10 @@ extension SRShapeWireframe: MutableWireframe {
 extension SRPlaceholderWireframe: MutableWireframe {
     func mutations(from otherWireframe: SRWireframe) throws -> WireframeMutation {
         guard case .placeholderWireframe(let other) = otherWireframe else {
-            throw WireframeMutationError.typeMismatch
+            throw WireframeMutationError.typeMismatch(
+                fromType: otherWireframe.type,
+                toType: type
+            )
         }
         guard other.id == id else {
             throw WireframeMutationError.idMismatch
@@ -130,7 +153,10 @@ extension SRPlaceholderWireframe: MutableWireframe {
 extension SRImageWireframe: MutableWireframe {
     func mutations(from otherWireframe: SRWireframe) throws -> WireframeMutation {
         guard case .imageWireframe(let other) = otherWireframe else {
-            throw WireframeMutationError.typeMismatch
+            throw WireframeMutationError.typeMismatch(
+                fromType: otherWireframe.type,
+                toType: type
+            )
         }
         guard other.id == id else {
             throw WireframeMutationError.idMismatch
@@ -157,7 +183,10 @@ extension SRImageWireframe: MutableWireframe {
 extension SRTextWireframe: MutableWireframe {
     func mutations(from otherWireframe: SRWireframe) throws -> WireframeMutation {
         guard case .textWireframe(let other) = otherWireframe else {
-            throw WireframeMutationError.typeMismatch
+            throw WireframeMutationError.typeMismatch(
+                fromType: otherWireframe.type,
+                toType: type
+            )
         }
         guard other.id == id else {
             throw WireframeMutationError.idMismatch
@@ -184,7 +213,10 @@ extension SRTextWireframe: MutableWireframe {
 extension SRWebviewWireframe: MutableWireframe {
     func mutations(from otherWireframe: SRWireframe) throws -> WireframeMutation {
         guard case .webviewWireframe(let other) = otherWireframe else {
-            throw WireframeMutationError.typeMismatch
+            throw WireframeMutationError.typeMismatch(
+                fromType: otherWireframe.type,
+                toType: type
+            )
         }
         guard other.id == id, other.slotId == slotId else {
             throw WireframeMutationError.idMismatch

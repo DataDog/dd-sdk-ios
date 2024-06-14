@@ -6,9 +6,6 @@
 
 import Foundation
 import DatadogInternal
-
-// MARK: - iOS 12+
-
 import Network
 
 /// Thread-safe wrapper for `NWPathMonitor`.
@@ -20,7 +17,6 @@ import Network
 /// We found the pulling model to not be thread-safe: accessing `currentPath` properties lead to occasional crashes.
 /// The `ThreadSafeNWPathMonitor` listens to path updates and synchonizes the values on `.current` property.
 /// This adds the necessary thread-safety and keeps the convenience of pulling.
-@available(iOS 12, tvOS 12, *)
 internal struct NWPathMonitorPublisher: ContextValuePublisher {
     private static let defaultQueue = DispatchQueue(
         label: "com.datadoghq.nw-path-monitor-publisher",
@@ -56,7 +52,6 @@ internal struct NWPathMonitorPublisher: ContextValuePublisher {
 }
 
 extension NetworkConnectionInfo {
-    @available(iOS 12, tvOS 12, *)
     init(_ path: NWPath) {
         self.init(
             reachability: NetworkConnectionInfo.Reachability(path.status),
@@ -75,7 +70,6 @@ extension NetworkConnectionInfo {
 }
 
 extension NetworkConnectionInfo.Reachability {
-    @available(iOS 12, tvOS 12, *)
     init(_ status: NWPath.Status) {
         switch status {
         case .satisfied: self = .yes
@@ -87,7 +81,6 @@ extension NetworkConnectionInfo.Reachability {
 }
 
 extension NetworkConnectionInfo.Interface {
-    @available(iOS 12, tvOS 12, *)
     init(_ interface: NWInterface.InterfaceType) {
         switch interface {
         case .wifi: self = .wifi
@@ -97,68 +90,5 @@ extension NetworkConnectionInfo.Interface {
         case .other: self = .other
         @unknown default: self = .other
         }
-    }
-}
-
-// MARK: - iOS 11
-
-import SystemConfiguration
-
-internal struct SCNetworkReachabilityReader: ContextValueReader {
-    private let reachability: SCNetworkReachability
-
-    init(reachability: SCNetworkReachability) {
-        self.reachability = reachability
-    }
-
-    init() {
-        var zero = sockaddr()
-        zero.sa_len = UInt8(MemoryLayout<sockaddr>.size)
-        zero.sa_family = sa_family_t(AF_INET)
-        let reachability = SCNetworkReachabilityCreateWithAddress(nil, &zero)! // swiftlint:disable:this force_unwrapping
-        self.init(reachability: reachability)
-    }
-
-    func read(to receiver: inout NetworkConnectionInfo?) {
-        receiver = NetworkConnectionInfo(reachability)
-    }
-}
-
-extension NetworkConnectionInfo {
-    init(_ reachability: SCNetworkReachability) {
-        var retrieval = SCNetworkReachabilityFlags()
-        let flags = (SCNetworkReachabilityGetFlags(reachability, &retrieval)) ? retrieval : nil
-        self.init(
-            reachability: .init(flags),
-            availableInterfaces: NetworkConnectionInfo.Interface(flags).map { [$0] },
-            supportsIPv4: nil,
-            supportsIPv6: nil,
-            isExpensive: nil,
-            isConstrained: nil
-        )
-    }
-}
-
-extension NetworkConnectionInfo.Reachability {
-    init(_ flags: SCNetworkReachabilityFlags?) {
-        switch flags?.contains(.reachable) {
-        case .none: self = .maybe
-        case .some(true): self = .yes
-        case .some(false): self = .no
-        }
-    }
-}
-
-extension NetworkConnectionInfo.Interface {
-    @available(iOS 2.0, macCatalyst 13.0, *)
-    init?(_ flags: SCNetworkReachabilityFlags?) {
-        #if os(iOS) || os(tvOS)
-        guard let flags = flags, flags.contains(.isWWAN) else {
-            return nil
-        }
-        self = .cellular
-        #else
-        self = .other
-        #endif
     }
 }
