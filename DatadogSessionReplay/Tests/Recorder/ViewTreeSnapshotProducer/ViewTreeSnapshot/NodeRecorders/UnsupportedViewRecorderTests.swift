@@ -61,7 +61,7 @@ class UnsupportedViewRecorderTests: XCTestCase {
     func testWhenViewIsUnsupportedViewControllersRootView() throws {
         var context = ViewTreeRecordingContext.mockRandom()
         context.viewControllerContext.isRootView = true
-        context.viewControllerContext.parentType = [.safari, .activity, .swiftUI].randomElement()
+        context.viewControllerContext.parentType = [.safari, .activity].randomElement()
 
         let semantics = try XCTUnwrap(recorder.semantics(of: UIView(), with: .mock(fixture: .visible(.someAppearance)), in: context))
         XCTAssertTrue(semantics is SpecificElement)
