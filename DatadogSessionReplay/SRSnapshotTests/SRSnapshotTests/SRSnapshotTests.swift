@@ -321,7 +321,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         }
 
         // - Embedded Tab Bar
-        /*show(fixture: .embeddedTabbar)
+        show(fixture: .embeddedTabbar)
 
         try forPrivacyModes([.allow, .mask]) { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
@@ -344,7 +344,7 @@ final class SRSnapshotTests: SnapshotTestCase {
                 snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-\(privacyMode)-privacy"),
                 record: true
             )
-        }*/
+        }
     }
 
 }
