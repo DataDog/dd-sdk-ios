@@ -25,7 +25,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Initialization
 
     private unowned let parent: RUMContextProvider
-    private let dependencies: RUMScopeDependencies
+
+    /// Container bundling dependencies for this scope.
+    let dependencies: RUMScopeDependencies
+
     /// If this is the very first view created in the current app process.
     private let isInitialView: Bool
 
@@ -127,6 +130,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // Notify Synthetics if needed
         if dependencies.syntheticsTest != nil && self.context.sessionID != .nullUUID {
+            NSLog("_dd.session.id=" + self.context.sessionID.toRUMDataFormat)
+            NSLog("_dd.application.id=" + self.context.rumApplicationID)
             NSLog("_dd.view.id=" + self.viewUUID.toRUMDataFormat)
         }
     }
@@ -501,6 +506,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 crash: isCrash ? .init(count: 1) : .init(count: 0),
                 cumulativeLayoutShift: nil,
                 cumulativeLayoutShiftTargetSelector: nil,
+                cumulativeLayoutShiftTime: nil,
                 customTimings: customTimings.reduce(into: [:]) { acc, element in
                     acc[sanitizeCustomTimingName(customTiming: element.key)] = element.value
                 },
@@ -521,6 +527,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 inForegroundPeriods: nil,
                 interactionToNextPaint: nil,
                 interactionToNextPaintTargetSelector: nil,
+                interactionToNextPaintTime: nil,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered ?? false,
                 jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),
@@ -547,6 +554,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
             // Update fatal error context with recent RUM view:
             dependencies.fatalErrorContext.view = event
+
+            // Track this view in Session Ended metric:
+            dependencies.sessionEndedMetric.track(view: event, in: self.context.sessionID)
         } else { // if event was dropped by mapper
             version -= 1
         }

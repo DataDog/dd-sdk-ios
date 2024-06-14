@@ -43,14 +43,4 @@ final class MockScriptMessage: WKScriptMessage {
     override weak var webView: WKWebView? { _webView }
 }
 
-extension WebViewTracking.SessionReplayConfiguration.PrivacyLevel: AnyMockable, RandomMockable {
-    public static func mockAny() -> Self {
-        .allow
-    }
-
-    public static func mockRandom() -> Self {
-        [.allow, .mask, .maskUserInput].randomElement()!
-    }
-}
-
 #endif

@@ -39,7 +39,7 @@ internal extension XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        DDAssertSimulatorDevice("iPhone14,7", "16.2", file: file, line: line)
+        DDAssertSimulatorDevice("iPhone15,4", "iPhone15", "17.5", file: file, line: line)
 
         if record {
             DDSaveSnapshotIfDifferent(image: newImage, into: snapshotLocation, file: file, line: line)
@@ -54,8 +54,8 @@ internal extension XCTestCase {
     }
 
     /// Asserts that tests are executed on given iOS Simulator.
-    private func DDAssertSimulatorDevice(_ expectedModel: String, _ expectedOSVersion: String, file: StaticString = #filePath, line: UInt = #line) {
-        _DDEvaluateAssertion(message: "Snapshots must be compared on \(expectedModel) Simulator with iOS \(expectedModel)", file: file, line: line) {
+    private func DDAssertSimulatorDevice(_ expectedModel: String, _ expectedModelPrettyName: String, _ expectedOSVersion: String, file: StaticString = #filePath, line: UInt = #line) {
+        _DDEvaluateAssertion(message: "Snapshots must be compared on \(expectedModel) Simulator (\(expectedModelPrettyName)) and iOS \(expectedOSVersion)", file: file, line: line) {
             guard let actualModel = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] else {
                 throw DDAssertError.expectedFailure("Not running in Simulator")
             }

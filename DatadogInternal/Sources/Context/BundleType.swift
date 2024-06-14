@@ -6,8 +6,13 @@
 
 import Foundation
 
-/// A type of the bundle running the SDK.
-internal enum BundleType: String {
+public enum BundleType: String {
+    /// An iOS application.
     case iOSApp
+    /// An iOS app extension.
     case iOSAppExtension
+
+    public init(bundle: Bundle) {
+        self = bundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp
+    }
 }

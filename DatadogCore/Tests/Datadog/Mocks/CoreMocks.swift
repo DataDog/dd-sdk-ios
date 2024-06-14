@@ -188,16 +188,6 @@ extension UploadPerformanceMock {
     }
 }
 
-extension BundleType: AnyMockable, RandomMockable {
-    public static func mockAny() -> BundleType {
-        return .iOSApp
-    }
-
-    public static func mockRandom() -> BundleType {
-        return [.iOSApp, .iOSAppExtension].randomElement()!
-    }
-}
-
 extension PerformancePreset: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
         PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)

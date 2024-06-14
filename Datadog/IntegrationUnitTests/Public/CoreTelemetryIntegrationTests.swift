@@ -22,7 +22,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core = nil
     }
 
-    func testGivenRUMEnabled_telemetryEventsAreSent() {
+    func testGivenRUMEnabled_telemetryEventsAreSent() throws {
         // Given
         var config = RUM.Configuration(applicationID: .mockAny())
         config.telemetrySampleRate = 100
@@ -57,7 +57,9 @@ class CoreTelemetryIntegrationTests: XCTestCase {
 
         let metric = debugEvents[1]
         XCTAssertEqual(metric.telemetry.message, "[Mobile Metric] Metric Name")
-        DDAssertReflectionEqual(metric.telemetry.telemetryInfo, ["metric.attribute": 42])
+        
+        let metricAttribute = try XCTUnwrap(metric.telemetry.telemetryInfo["metric.attribute"] as? Int)
+        XCTAssertEqual(metricAttribute, 42)
 
         let methodCalledMetric = debugEvents[2]
         XCTAssertEqual(methodCalledMetric.telemetry.message, "[Mobile Metric] Method Called")

@@ -32,17 +32,8 @@
     [DDWebViewTracking enableWithWebView:webView
                                    hosts:[NSSet<NSString*> setWithArray:@[@"host1.com", @"host2.com"]]
                           logsSampleRate:100.0
-                                    with:nil];
+    ];
     [DDWebViewTracking disableWithWebView:webView];
-}
-
-- (void)testDDWebViewTrackingSessionReplayConfigurationAPI {
-    DDWebViewTrackingSessionReplayConfiguration *config = [[DDWebViewTrackingSessionReplayConfiguration alloc] init];
-    XCTAssertEqual(config.privacyLevel, DDPrivacyLevelMask);
-    config.privacyLevel = DDPrivacyLevelAllow;
-    XCTAssertEqual(config.privacyLevel, DDPrivacyLevelAllow);
-    config.privacyLevel = DDPrivacyLevelMaskUserInput;
-    XCTAssertEqual(config.privacyLevel, DDPrivacyLevelMaskUserInput);
 }
 
 #pragma clang diagnostic pop

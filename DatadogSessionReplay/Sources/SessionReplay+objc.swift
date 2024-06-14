@@ -5,6 +5,8 @@
  */
 
 import Foundation
+import DatadogInternal
+
 #if os(iOS)
 
 /// An entry point to Datadog Session Replay feature.
@@ -87,7 +89,7 @@ public enum DDSessionReplayConfigurationPrivacyLevel: Int {
     /// Mask input elements, but record all other content.
     case maskUserInput
 
-    internal var _swift: SessionReplay.Configuration.PrivacyLevel {
+    internal var _swift: SessionReplayPrivacyLevel {
         switch self {
         case .allow: return .allow
         case .mask: return .mask
@@ -96,7 +98,7 @@ public enum DDSessionReplayConfigurationPrivacyLevel: Int {
         }
     }
 
-    internal init(_ swift: SessionReplay.Configuration.PrivacyLevel) {
+    internal init(_ swift: SessionReplayPrivacyLevel) {
         switch swift {
         case .allow: self = .allow
         case .mask: self = .mask

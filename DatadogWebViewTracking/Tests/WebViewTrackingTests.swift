@@ -24,7 +24,6 @@ class WebViewTrackingTests: XCTestCase {
             hosts: [host],
             hostsSanitizer: mockSanitizer,
             logsSampleRate: 30,
-            sessionReplayConfiguration: nil,
             in: PassthroughCoreMock()
         )
 
@@ -49,11 +48,17 @@ class WebViewTrackingTests: XCTestCase {
     }
 
     func testItAddsUserScriptWithSessionReplay() throws {
+        struct SessionReplayFeature: DatadogFeature, SessionReplayConfiguration {
+            static let name = "session-replay"
+            let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+            let privacyLevel: SessionReplayPrivacyLevel
+        }
+
         let mockSanitizer = HostsSanitizerMock()
         let controller = DDUserContentController()
 
         let host: String = .mockRandom()
-        let sessionReplayConfiguration = WebViewTracking.SessionReplayConfiguration(
+        let sr = SessionReplayFeature(
             privacyLevel: .mockRandom()
         )
 
@@ -62,8 +67,7 @@ class WebViewTrackingTests: XCTestCase {
             hosts: [host],
             hostsSanitizer: mockSanitizer,
             logsSampleRate: 30,
-            sessionReplayConfiguration: sessionReplayConfiguration,
-            in: PassthroughCoreMock()
+            in: SingleFeatureCoreMock(feature: sr)
         )
 
         let script = try XCTUnwrap(controller.userScripts.last)
@@ -80,7 +84,7 @@ class WebViewTrackingTests: XCTestCase {
                 return '["records"]'
             },
             getPrivacyLevel() {
-                return '\(sessionReplayConfiguration.privacyLevel.rawValue)'
+                return '\(sr.privacyLevel.rawValue)'
             }
         }
         """)
@@ -97,7 +101,6 @@ class WebViewTrackingTests: XCTestCase {
             hosts: ["datadoghq.com"],
             hostsSanitizer: mockSanitizer,
             logsSampleRate: 30,
-            sessionReplayConfiguration: nil,
             in: PassthroughCoreMock()
         )
 
@@ -129,7 +132,6 @@ class WebViewTrackingTests: XCTestCase {
                 hosts: ["datadoghq.com"],
                 hostsSanitizer: mockSanitizer,
                 logsSampleRate: 100,
-                sessionReplayConfiguration: nil,
                 in: PassthroughCoreMock()
             )
         }
@@ -208,7 +210,6 @@ class WebViewTrackingTests: XCTestCase {
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
             logsSampleRate: 100,
-            sessionReplayConfiguration: nil,
             in: core
         )
 
@@ -261,7 +262,6 @@ class WebViewTrackingTests: XCTestCase {
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
             logsSampleRate: 100,
-            sessionReplayConfiguration: nil,
             in: core
         )
 
@@ -354,7 +354,6 @@ class WebViewTrackingTests: XCTestCase {
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
             logsSampleRate: 100,
-            sessionReplayConfiguration: nil,
             in: core
         )
 

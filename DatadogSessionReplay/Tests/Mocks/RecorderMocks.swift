@@ -14,16 +14,6 @@ import WebKit
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
-extension PrivacyLevel: AnyMockable, RandomMockable {
-    public static func mockAny() -> PrivacyLevel {
-        return .allow
-    }
-
-    public static func mockRandom() -> PrivacyLevel {
-        return [.allow, .mask, .maskUserInput].randomElement()!
-    }
-}
-
 // MARK: - ViewTreeSnapshot Mocks
 
 extension ViewTreeSnapshot: AnyMockable, RandomMockable {

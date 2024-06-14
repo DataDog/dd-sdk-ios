@@ -8,12 +8,11 @@
 import Foundation
 import DatadogInternal
 
-internal class SessionReplayFeature: DatadogRemoteFeature {
-    static let name: String = "session-replay"
-
+internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFeature {
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?
+    let privacyLevel: SessionReplayPrivacyLevel
 
     // MARK: - Main Components
 
@@ -46,6 +45,7 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         let scheduler = MainThreadScheduler(interval: 0.1)
         let contextReceiver = RUMContextReceiver()
 
+        self.privacyLevel = configuration.defaultPrivacyLevel
         self.messageReceiver = CombinedFeatureMessageReceiver([
             contextReceiver,
             WebViewRecordReceiver(

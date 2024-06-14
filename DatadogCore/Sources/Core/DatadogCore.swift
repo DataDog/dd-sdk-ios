@@ -109,7 +109,6 @@ internal final class DatadogCore {
         self.isRunFromExtension = isRunFromExtension
         self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
         self.consentPublisher = TrackingConsentPublisher(consent: initialConsent)
-
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
         self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
@@ -292,8 +291,8 @@ extension DatadogCore: DatadogCoreProtocol {
     ///   - name: The Feature's name.
     ///   - type: The Feature instance type.
     /// - Returns: The Feature if any.
-    func get<T>(feature type: T.Type = T.self) -> T? where T: DatadogFeature {
-        features[T.name] as? T
+    func feature<T>(named name: String, type: T.Type) -> T? {
+        features[name] as? T
     }
 
     func scope<Feature>(for featureType: Feature.Type) -> FeatureScope where Feature: DatadogFeature {
@@ -391,6 +390,7 @@ extension DatadogContextProvider {
         ciAppOrigin: String?,
         applicationName: String,
         applicationBundleIdentifier: String,
+        applicationBundleType: BundleType,
         applicationVersion: String,
         sdkInitDate: Date,
         device: DeviceInfo,
@@ -411,6 +411,7 @@ extension DatadogContextProvider {
             ciAppOrigin: ciAppOrigin,
             applicationName: applicationName,
             applicationBundleIdentifier: applicationBundleIdentifier,
+            applicationBundleType: applicationBundleType,
             sdkInitDate: dateProvider.now,
             device: device,
             nativeSourceOverride: nativeSourceOverride,
@@ -428,17 +429,10 @@ extension DatadogContextProvider {
         subscribe(\.launchTime, to: LaunchTimePublisher())
         #endif
 
-        if #available(iOS 12, tvOS 12, *) {
-            subscribe(\.networkConnectionInfo, to: NWPathMonitorPublisher())
-        } else {
-            assign(reader: SCNetworkReachabilityReader(), to: \.networkConnectionInfo)
-        }
+        subscribe(\.networkConnectionInfo, to: NWPathMonitorPublisher())
+
         #if os(iOS) && !targetEnvironment(macCatalyst) && !(swift(>=5.9) && os(visionOS))
-        if #available(iOS 12, *) {
-            subscribe(\.carrierInfo, to: iOS12CarrierInfoPublisher())
-        } else {
-            assign(reader: iOS11CarrierInfoReader(), to: \.carrierInfo)
-        }
+        subscribe(\.carrierInfo, to: CarrierInfoPublisher())
         #endif
 
         #if os(iOS) && !targetEnvironment(simulator)

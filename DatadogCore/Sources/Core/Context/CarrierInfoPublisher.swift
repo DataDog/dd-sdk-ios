@@ -11,12 +11,8 @@ import DatadogInternal
 
 import CoreTelephony
 
-// MARK: - iOS 12+
-
-/// Carrier info provider for iOS 12 and above.
 /// It reads `CarrierInfo?` from `CTTelephonyNetworkInfo` only when `CTCarrier` has changed (e.g. when the SIM card was swapped).
-@available(iOS 12, *)
-internal struct iOS12CarrierInfoPublisher: ContextValuePublisher {
+internal struct CarrierInfoPublisher: ContextValuePublisher {
     let initialValue: CarrierInfo?
 
     private let networkInfo: CTTelephonyNetworkInfo
@@ -44,47 +40,10 @@ internal struct iOS12CarrierInfoPublisher: ContextValuePublisher {
 }
 
 extension CarrierInfo {
-    @available(iOS 12, *)
     init?(_ info: CTTelephonyNetworkInfo, service key: String?) {
         guard let key = key,
            let radioTechnology = info.serviceCurrentRadioAccessTechnology?[key],
            let carrier = info.serviceSubscriberCellularProviders?[key]
-        else {
-            return nil // the service is not registered on any network
-        }
-
-        self.init(
-            carrierName: carrier.carrierName,
-            carrierISOCountryCode: carrier.isoCountryCode,
-            carrierAllowsVOIP: carrier.allowsVOIP,
-            radioAccessTechnology: .init(radioTechnology)
-        )
-    }
-}
-
-// MARK: - iOS 11
-
-/// Carrier info provider for iOS 11.
-/// It reads `CarrierInfo?` from `CTTelephonyNetworkInfo` each time.
-@available(iOS, deprecated: 12)
-internal struct iOS11CarrierInfoReader: ContextValueReader {
-    private let networkInfo: CTTelephonyNetworkInfo
-
-    init(networkInfo: CTTelephonyNetworkInfo = .init()) {
-        self.networkInfo = networkInfo
-    }
-
-    func read(to receiver: inout CarrierInfo?) {
-        receiver = CarrierInfo(networkInfo)
-    }
-}
-
-extension CarrierInfo {
-    @available(iOS, deprecated: 12)
-    init?(_ info: CTTelephonyNetworkInfo) {
-        guard
-            let radioTechnology = info.currentRadioAccessTechnology,
-            let carrier = info.subscriberCellularProvider
         else {
             return nil // the service is not registered on any network
         }

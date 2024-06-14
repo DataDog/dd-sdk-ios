@@ -22,35 +22,4 @@ public enum MethodCalledMetric {
     public static let isSuccessful = "is_successful"
     /// The key for execution time.
     public static let executionTime = "execution_time"
-
-    public enum Device {
-        /// The key for device object.
-        public static let key = "device"
-
-        /// The key for device model name.
-        public static let model = "model"
-        /// The key for device brand.
-        public static let brand = "brand"
-        /// The key for CPU architecture.
-        public static let architecture = "architecture"
-    }
-
-    /// The key for OS object.
-    public enum OS {
-        /// The key for operating system object.
-        public static let key = "os"
-
-        /// The key for OS name.
-        public static let name = "name"
-        /// The key for OS version.
-        public static let version = "version"
-        /// The key for OS build.
-        public static let build = "build"
-    }
-}
-
-public extension [String: Encodable] {
-    var isMethodCallAttributes: Bool {
-        self[SDKMetricFields.typeKey] as? String == MethodCalledMetric.typeValue
-    }
 }

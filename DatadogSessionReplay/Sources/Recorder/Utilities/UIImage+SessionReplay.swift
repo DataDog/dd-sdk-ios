@@ -37,6 +37,16 @@ extension DatadogExtension where ExtendedType: UIImage {
 
 extension UIColor {
     var srIdentifier: String {
+        if let hash = objc_getAssociatedObject(self, &srIdentifierKey) as? String {
+            return hash
+        } else {
+            let hash = computeIdentifier()
+            objc_setAssociatedObject(self, &srIdentifierKey, hash, .OBJC_ASSOCIATION_RETAIN)
+            return hash
+        }
+    }
+
+    private func computeIdentifier() -> String {
         var r: CGFloat = 0
         var g: CGFloat = 0
         var b: CGFloat = 0
