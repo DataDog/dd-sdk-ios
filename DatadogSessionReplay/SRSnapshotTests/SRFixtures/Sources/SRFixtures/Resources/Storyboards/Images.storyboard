@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22504"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22685"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -156,23 +156,8 @@
                                     </stackView>
                                 </subviews>
                             </stackView>
-                            <tabBar contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="raw-wh-zEy">
-                                <rect key="frame" x="0.0" y="591" width="393" height="49"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="49" id="t9n-YU-wtJ"/>
-                                </constraints>
-                                <items>
-                                    <tabBarItem systemItem="contacts" id="C39-e3-9wj"/>
-                                    <tabBarItem systemItem="history" id="7jC-1U-Ikj"/>
-                                    <tabBarItem title="Search" image="magnifyingglass" catalog="system" badgeValue="1" id="ECb-VF-O4D">
-                                        <color key="badgeColor" systemColor="systemIndigoColor"/>
-                                    </tabBarItem>
-                                    <tabBarItem systemItem="downloads" id="xY8-vP-c67"/>
-                                    <tabBarItem systemItem="more" id="duc-uA-wL8"/>
-                                </items>
-                            </tabBar>
                             <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ftc-4B-7Pp">
-                                <rect key="frame" x="0.0" y="648" width="393" height="44"/>
+                                <rect key="frame" x="0.0" y="591" width="393" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="4hr-VJ-mh1"/>
                                 </constraints>
@@ -203,18 +188,15 @@
                         <viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="raw-wh-zEy" firstAttribute="top" secondItem="zQI-BZ-L2g" secondAttribute="bottom" constant="32" id="3Tf-N7-p6F"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="KxN-zV-mGU" secondAttribute="trailing" constant="16" id="Cj8-dU-3FG"/>
-                            <constraint firstItem="raw-wh-zEy" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="ET0-BN-qth"/>
                             <constraint firstItem="zQI-BZ-L2g" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="OAe-l4-L39"/>
                             <constraint firstItem="xxq-Cw-MRl" firstAttribute="centerX" secondItem="vDu-zF-Fre" secondAttribute="centerX" id="OTN-dD-tUV"/>
                             <constraint firstItem="ftc-4B-7Pp" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="OuL-9P-SDJ"/>
                             <constraint firstItem="ftc-4B-7Pp" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="P5h-A7-U1M"/>
                             <constraint firstItem="zQI-BZ-L2g" firstAttribute="top" secondItem="xxq-Cw-MRl" secondAttribute="bottom" constant="32" id="SQh-2j-ine"/>
-                            <constraint firstItem="ftc-4B-7Pp" firstAttribute="top" secondItem="raw-wh-zEy" secondAttribute="bottom" constant="8" id="TIg-KH-e5o"/>
                             <constraint firstItem="KxN-zV-mGU" firstAttribute="leading" secondItem="xxq-Cw-MRl" secondAttribute="trailing" constant="48" id="VVE-7k-3Tk"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="zQI-BZ-L2g" secondAttribute="trailing" id="Wjg-fd-LWW"/>
-                            <constraint firstItem="raw-wh-zEy" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="iAJ-aX-zcr"/>
+                            <constraint firstItem="ftc-4B-7Pp" firstAttribute="top" secondItem="zQI-BZ-L2g" secondAttribute="bottom" constant="32" id="iI1-xG-KJi"/>
                             <constraint firstItem="xxq-Cw-MRl" firstAttribute="top" secondItem="vDu-zF-Fre" secondAttribute="top" constant="8" id="jIN-YZ-8QX"/>
                             <constraint firstItem="KxN-zV-mGU" firstAttribute="centerY" secondItem="xxq-Cw-MRl" secondAttribute="centerY" id="wlR-Fb-T22"/>
                         </constraints>
@@ -224,7 +206,6 @@
                         <outlet property="customButton" destination="KxN-zV-mGU" id="zX2-X5-J8J"/>
                         <outlet property="customImageView" destination="vKz-Ut-7bS" id="aJg-Sy-OrB"/>
                         <outlet property="navigationBar" destination="ftc-4B-7Pp" id="Cz6-ki-X2T"/>
-                        <outlet property="tabBar" destination="raw-wh-zEy" id="TaQ-44-tXa"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -237,7 +218,6 @@
         <image name="book" catalog="system" width="128" height="99"/>
         <image name="dd_logo" width="64" height="74"/>
         <image name="face.dashed.fill" catalog="system" width="128" height="123"/>
-        <image name="magnifyingglass" catalog="system" width="128" height="117"/>
         <image name="paperplane.fill" catalog="system" width="128" height="119"/>
         <namedColor name="AccentColor">
             <color red="0.0" green="0.46000000000000002" blue="0.89000000000000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -246,16 +226,16 @@
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemGreenColor">
-            <color red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemIndigoColor">
-            <color red="0.34509803919999998" green="0.33725490200000002" blue="0.83921568629999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.34509803921568627" green="0.33725490196078434" blue="0.83921568627450982" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemOrangeColor">
-            <color red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.58431372549019611" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemRedColor">
-            <color red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.23137254901960785" blue="0.18823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemYellowColor">
             <color red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
