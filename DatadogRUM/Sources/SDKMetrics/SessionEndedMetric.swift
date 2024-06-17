@@ -23,7 +23,11 @@ internal enum SessionEndedMetricError: Error, CustomStringConvertible {
 }
 
 /// Tracks the state of RUM session and exports attributes for "RUM Session Ended" telemetry.
-internal struct SessionEndedMetric {
+///
+/// It is modeled as a reference type and contains mutable state. The thread safety for its mutations is
+/// achieved by design: only `SessionEndedMetricController` interacts with this class and does
+/// it through critical section each time.
+internal class SessionEndedMetric {
     /// Definition of fields in "RUM Session Ended" telemetry, following the "RUM Session Ended" telemetry spec.
     internal enum Constants {
         /// The name of this metric, included in telemetry log.
@@ -35,6 +39,16 @@ internal struct SessionEndedMetric {
         static let rseKey = "rse"
     }
 
+    /// Represents the type of instrumentation used to start a view.
+    internal enum ViewInstrumentationType: String, Encodable {
+        /// View was started manually through `RUMMonitor.shared().startView()` API.
+        case manual
+        /// View was started automatically with `UIKitRUMViewsPredicate`.
+        case uikit
+        /// View was started through `trackRUMView()` SwiftUI modifier.
+        case swiftui
+    }
+
     /// An ID of the session being tracked through this metric object.
     let sessionID: RUMUUID
 
@@ -44,16 +58,36 @@ internal struct SessionEndedMetric {
     /// The session precondition that led to the creation of this session.
     private let precondition: RUMSessionPrecondition?
 
-    private struct TrackedViewInfo {
+    /// Tracks view information for certain `view.id`.
+    private class TrackedViewInfo {
+        /// The view URL as reported in RUM data.
         let viewURL: String
+        /// The type of instrumentation that started this view.
+        /// It can be `nil` if view was started implicitly by RUM, which is the case for "ApplicationLaunch" and "Background" views.
+        let instrumentationType: ViewInstrumentationType?
+        /// The start of the view in milliseconds from from epoch.
         let startMs: Int64
+        /// The duration of the view in nanoseconds.
         var durationNs: Int64
+        /// If any of view updates to this `view.id` had `session.has_replay == true`.
+        var hasReplay: Bool
 
-        // TODO: RUM-4591 Track diagnostic attributes:
-        // - `instrumentationType`: manual | uikit | swiftui
+        init(
+            viewURL: String,
+            instrumentationType: ViewInstrumentationType?,
+            startMs: Int64,
+            durationNs: Int64,
+            hasReplay: Bool
+        ) {
+            self.viewURL = viewURL
+            self.instrumentationType = instrumentationType
+            self.startMs = startMs
+            self.durationNs = durationNs
+            self.hasReplay = hasReplay
+        }
     }
 
-    /// Stores information about tracked views, referencing them by their view ID.
+    /// Stores information about tracked views, referencing them by their `view.id`.
     private var trackedViews: [String: TrackedViewInfo] = [:]
 
     /// Info about the first tracked view.
@@ -68,11 +102,22 @@ internal struct SessionEndedMetric {
     /// Indicates if the session was stopped through `stopSession()` API.
     private var wasStopped = false
 
-    // TODO: RUM-4591 Track diagnostic attributes:
-    // - no_view_events_count
-    // - has_background_events_tracking_enabled
-    // - has_replay
-    // - ntp_offset
+    /// If `RUM.Configuration.trackBackgroundEvents` was enabled for this session.
+    private let tracksBackgroundEvents: Bool
+
+    /// The current value of NTP offset at session start.
+    private let ntpOffsetAtStart: TimeInterval
+
+    /// Represents types of event that can be missed due to absence of an active RUM view.
+    enum MissedEventType: String {
+        case action
+        case resource
+        case error
+        case longTask
+    }
+
+    /// Tracks the number of RUM events missed due to absence of an active RUM view.
+    private var missedEvents: [MissedEventType: Int] = [:]
 
     // MARK: - Tracking Metric State
 
@@ -81,30 +126,46 @@ internal struct SessionEndedMetric {
     ///   - sessionID: An ID of the session that is being tracked with this metric.
     ///   - precondition: The precondition that led to starting this session.
     ///   - context: The SDK context at the moment of starting this session.
+    ///   - tracksBackgroundEvents: If background events tracking is enabled for this session.
     init(
         sessionID: RUMUUID,
         precondition: RUMSessionPrecondition?,
-        context: DatadogContext
+        context: DatadogContext,
+        tracksBackgroundEvents: Bool
     ) {
         self.sessionID = sessionID
         self.bundleType = context.applicationBundleType
         self.precondition = precondition
+        self.tracksBackgroundEvents = tracksBackgroundEvents
+        self.ntpOffsetAtStart = context.serverTimeOffset
     }
 
     /// Tracks the view event that occurred during the session.
-    mutating func track(view: RUMViewEvent) throws {
+    /// - Parameters:
+    ///   - view: the view event to track
+    ///   - instrumentationType: the type of instrumentation used to start this view (only the first value for each `view.id` is tracked; succeeding values
+    ///   will be ignored so it is okay to pass value on first call and then follow with `nil` for next updates of given `view.id`)
+    func track(view: RUMViewEvent, instrumentationType: ViewInstrumentationType?) throws {
         guard view.session.id == sessionID.toRUMDataFormat else {
             throw SessionEndedMetricError.trackingViewInForeignSession(viewURL: view.view.url, sessionID: sessionID)
         }
 
-        var info = trackedViews[view.view.id] ?? TrackedViewInfo(
-            viewURL: view.view.url,
-            startMs: view.date,
-            durationNs: view.view.timeSpent
-        )
+        let info: TrackedViewInfo
 
-        info.durationNs = view.view.timeSpent
-        trackedViews[view.view.id] = info
+        if let existingInfo = trackedViews[view.view.id] {
+            info = existingInfo
+            info.durationNs = view.view.timeSpent
+            info.hasReplay = info.hasReplay || (view.session.hasReplay ?? false)
+        } else {
+            info = TrackedViewInfo(
+                viewURL: view.view.url,
+                instrumentationType: instrumentationType,
+                startMs: view.date,
+                durationNs: view.view.timeSpent,
+                hasReplay: view.session.hasReplay ?? false
+            )
+            trackedViews[view.view.id] = info
+        }
 
         if firstTrackedView == nil {
             firstTrackedView = info
@@ -113,7 +174,8 @@ internal struct SessionEndedMetric {
     }
 
     /// Tracks the kind of SDK error that occurred during the session.
-    mutating func track(sdkErrorKind: String) {
+    /// - Parameter sdkErrorKind: the kind of SDK error
+    func track(sdkErrorKind: String) {
         if let count = trackedSDKErrors[sdkErrorKind] {
             trackedSDKErrors[sdkErrorKind] = count + 1
         } else {
@@ -121,8 +183,18 @@ internal struct SessionEndedMetric {
         }
     }
 
+    /// Tracks an event missed due to absence of an active view.
+    /// - Parameter missedEventType: the type of an event that was missed
+    func track(missedEventType: MissedEventType) {
+        if let count = missedEvents[missedEventType] {
+            missedEvents[missedEventType] = count + 1
+        } else {
+            missedEvents[missedEventType] = 1
+        }
+    }
+
     /// Signals that the session was stopped with `stopSession()` API.
-    mutating func trackWasStopped() {
+    func trackWasStopped() {
         wasStopped = true
     }
 
@@ -145,6 +217,8 @@ internal struct SessionEndedMetric {
         let duration: Int64?
         /// Indicates if the session was stopped through `stopSession()` API.
         let wasStopped: Bool
+        /// If background events tracking is enabled for this session.
+        let hasBackgroundEventsTrackingEnabled: Bool
 
         struct ViewsCount: Encodable {
             /// The number of distinct views (view UUIDs) sent during this session.
@@ -153,11 +227,17 @@ internal struct SessionEndedMetric {
             let background: Int
             /// The number of standard "ApplicationLaunch" views tracked during this session (sanity check: we expect `0` or `1`).
             let applicationLaunch: Int
+            /// The map of view instrumentation types to the number of views tracked with each instrumentation.
+            let byInstrumentation: [String: Int]
+            /// The number of distinct views that had `has_replay == true` in any of their view events.
+            let withHasReplay: Int
 
             enum CodingKeys: String, CodingKey {
                 case total
                 case background
                 case applicationLaunch = "app_launch"
+                case byInstrumentation = "by_instrumentation"
+                case withHasReplay = "with_has_replay"
             }
         }
 
@@ -179,18 +259,61 @@ internal struct SessionEndedMetric {
 
         let sdkErrorsCount: SDKErrorsCount
 
+        struct NTPOffset: Encodable {
+            /// The NTP offset at session start, in milliseconds.
+            let atStart: Int64
+            /// The NTP offset at session end, in milliseconds.
+            let atEnd: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case atStart = "at_start"
+                case atEnd = "at_end"
+            }
+        }
+
+        /// NTP offset information tracked for this session.
+        let ntpOffset: NTPOffset
+
+        struct NoViewEventsCount: Encodable {
+            /// Number of action events missed due to absence of an active view.
+            let actions: Int
+            /// Number of resource events missed due to absence of an active view.
+            let resources: Int
+            /// Number of error events missed due to absence of an active view.
+            let errors: Int
+            /// Number of long task events missed due to absence of an active view.
+            let longTasks: Int
+
+            enum CodingKeys: String, CodingKey {
+                case actions
+                case resources
+                case errors
+                case longTasks = "long_tasks"
+            }
+        }
+
+        /// Information on number of events missed due to absence of an active view.
+        let noViewEventsCount: NoViewEventsCount
+
         enum CodingKeys: String, CodingKey {
             case processType = "process_type"
             case precondition
             case duration
             case wasStopped = "was_stopped"
+            case hasBackgroundEventsTrackingEnabled = "has_background_events_tracking_enabled"
             case viewsCount = "views_count"
             case sdkErrorsCount = "sdk_errors_count"
+            case ntpOffset = "ntp_offset"
+            case noViewEventsCount = "no_view_events_count"
         }
     }
 
-    /// Exports metric attributes for `Telemetry.metric(name:attributes:)`.
-    func asMetricAttributes() -> [String: Encodable] {
+    /// Exports metric attributes for `Telemetry.metric(name:attributes:)`. This method is expected to be called
+    /// at session end with providing the SDK `context` valid at the moment of call.
+    ///
+    /// - Parameter context: the SDK context valid at the moment of this call
+    /// - Returns: metric attributes
+    func asMetricAttributes(with context: DatadogContext) -> [String: Encodable] {
         // Compute duration
         var durationNs: Int64?
         if let firstView = firstTrackedView, let lastView = lastTrackedView {
@@ -202,6 +325,13 @@ internal struct SessionEndedMetric {
         let totalViewsCount = trackedViews.count
         let backgroundViewsCount = trackedViews.values.filter({ $0.viewURL == RUMOffViewEventsHandlingRule.Constants.backgroundViewURL }).count
         let appLaunchViewsCount = trackedViews.values.filter({ $0.viewURL == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL }).count
+        var byInstrumentationViewsCount: [String: Int] = [:]
+        trackedViews.values.forEach {
+            if let instrumentationType = $0.instrumentationType?.rawValue {
+                byInstrumentationViewsCount[instrumentationType] = (byInstrumentationViewsCount[instrumentationType] ?? 0) + 1
+            }
+        }
+        let withHasReplayCount = trackedViews.values.reduce(0, { acc, next in acc + (next.hasReplay ? 1 : 0) })
 
         // Compute SDK errors count
         let totalSDKErrors = trackedSDKErrors.values.reduce(0, +)
@@ -220,14 +350,27 @@ internal struct SessionEndedMetric {
                 precondition: precondition?.rawValue,
                 duration: durationNs,
                 wasStopped: wasStopped,
+                hasBackgroundEventsTrackingEnabled: tracksBackgroundEvents,
                 viewsCount: .init(
                     total: totalViewsCount,
                     background: backgroundViewsCount,
-                    applicationLaunch: appLaunchViewsCount
+                    applicationLaunch: appLaunchViewsCount,
+                    byInstrumentation: byInstrumentationViewsCount,
+                    withHasReplay: withHasReplayCount
                 ),
                 sdkErrorsCount: .init(
                     total: totalSDKErrors,
                     byKind: top5SDKErrorsByKind
+                ),
+                ntpOffset: .init(
+                    atStart: ntpOffsetAtStart.toInt64Milliseconds,
+                    atEnd: context.serverTimeOffset.toInt64Milliseconds
+                ),
+                noViewEventsCount: .init(
+                    actions: missedEvents[.action] ?? 0,
+                    resources: missedEvents[.resource] ?? 0,
+                    errors: missedEvents[.error] ?? 0,
+                    longTasks: missedEvents[.longTask] ?? 0
                 )
             )
         ]

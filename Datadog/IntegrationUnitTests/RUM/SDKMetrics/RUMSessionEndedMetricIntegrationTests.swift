@@ -101,7 +101,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
 
     // MARK: - Reporting Session Attributes
 
-    func testReportingSessionID() throws {
+    func testReportingSessionInformation() throws {
         var currentSessionID: String?
         RUM.enable(with: rumConfig, in: core)
 
@@ -118,6 +118,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         let metric = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent())
         let expectedSessionID = try XCTUnwrap(currentSessionID)
         XCTAssertEqual(metric.session?.id, expectedSessionID.lowercased())
+        XCTAssertEqual(metric.attributes?.hasBackgroundEventsTrackingEnabled, rumConfig.trackBackgroundEvents)
     }
 
     func testTrackingSessionDuration() throws {
@@ -180,6 +181,8 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         XCTAssertEqual(metricAttributes.viewsCount.total, 10)
         XCTAssertEqual(metricAttributes.viewsCount.applicationLaunch, 1)
         XCTAssertEqual(metricAttributes.viewsCount.background, 3)
+        XCTAssertEqual(metricAttributes.viewsCount.byInstrumentation, ["manual": 6])
+        XCTAssertEqual(metricAttributes.viewsCount.withHasReplay, 0)
     }
 
     func testTrackingSDKErrors() throws {
@@ -209,6 +212,53 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
             ["kind1": 9, "kind2": 8, "kind3": 7, "kind4": 6, "kind5": 5],
             "It should report TOP 5 error kinds"
         )
+    }
+
+    func testTrackingNTPOffset() throws {
+        let offsetAtStart: TimeInterval = .mockRandom(min: -10, max: 10)
+        let offsetAtEnd: TimeInterval = .mockRandom(min: -10, max: 10)
+
+        core.context.serverTimeOffset = offsetAtStart
+        RUM.enable(with: rumConfig, in: core)
+
+        // Given
+        let monitor = RUMMonitor.shared(in: core)
+        monitor.startView(key: "key", name: "View")
+
+        // When
+        core.context.serverTimeOffset = offsetAtEnd
+        monitor.stopSession()
+
+        // Then
+        let metric = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent())
+        XCTAssertEqual(metric.attributes?.ntpOffset.atStart, offsetAtStart.toInt64Milliseconds)
+        XCTAssertEqual(metric.attributes?.ntpOffset.atEnd, offsetAtEnd.toInt64Milliseconds)
+    }
+
+    func testTrackingNoViewEventsCount() throws {
+        let expectedCount: Int = .mockRandom(min: 1, max: 5)
+        RUM.enable(with: rumConfig, in: core)
+
+        // Given
+        let monitor = RUMMonitor.shared(in: core)
+        monitor.startView(key: "key", name: "View")
+        monitor.stopView(key: "key") // no active view
+
+        // When
+        (0..<expectedCount).forEach { _ in
+            monitor.addAction(type: .tap, name: .mockAny())
+            monitor.startResource(resourceKey: .mockAny(), url: .mockAny())
+            monitor.addError(message: .mockAny())
+            monitor._internal?.addLongTask(at: Date(), duration: 1)
+        }
+        monitor.stopSession()
+
+        // Then
+        let metric = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent())
+        XCTAssertEqual(metric.attributes?.noViewEventsCount.actions, expectedCount)
+        XCTAssertEqual(metric.attributes?.noViewEventsCount.resources, expectedCount)
+        XCTAssertEqual(metric.attributes?.noViewEventsCount.errors, expectedCount)
+        XCTAssertEqual(metric.attributes?.noViewEventsCount.longTasks, expectedCount)
     }
 }
 

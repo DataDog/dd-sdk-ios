@@ -623,9 +623,9 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(
             randomCommandLog,
             """
-            \(String(describing: randomCommand)) was detected, but no view is active. To track views automatically, try calling the
-            DatadogConfiguration.Builder.trackUIKitRUMViews() method. You can also track views manually using
-            the RumMonitor.startView() and RumMonitor.stopView() methods.
+            \(String(describing: randomCommand)) was detected, but no view is active. To track views automatically, configure
+            `RUM.Configuration.uiKitViewsPredicate` or use `.trackRUMView()` modifier in SwiftUI. You can also track views manually
+            with `RUMMonitor.shared().startView()` and `RUMMonitor.shared().stopView()`.
             """
         )
 
