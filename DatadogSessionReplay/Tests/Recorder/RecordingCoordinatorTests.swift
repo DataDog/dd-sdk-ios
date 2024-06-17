@@ -131,7 +131,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // Given
         recordingMock.captureNextRecordClosure = { _ in
-            throw ObjcException(error: ErrorMock("snapshot creation error"))
+            throw ObjcException(error: ErrorMock("snapshot creation error"), file: "File.swift", line: 0)
         }
 
         prepareRecordingCoordinator(telemetry: telemetry)

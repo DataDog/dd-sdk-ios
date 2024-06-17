@@ -105,6 +105,10 @@ public struct ObjcException: Error {
     /// The underlying `NSError` describing the `NSException`
     /// thrown by Objective-C runtime.
     public let error: Error
+    /// The source file in which the exception was raised.
+    public let file: String
+    /// The line number on which the exception was raised.
+    public let line: Int
 }
 
 /// Rethrow Objective-C runtime exception as `Swift.Error`.
@@ -115,7 +119,7 @@ public struct ObjcException: Error {
 /// on exceptions.
 /// - throws: `ObjcException` if an exception was raised by the Objective-C runtime.
 @discardableResult
-public func objc_rethrow<T>(_ block: () throws -> T) throws -> T {
+public func objc_rethrow<T>(_ block: () throws -> T, file: String = #fileID, line: Int = #line) throws -> T {
     var value: T! //swiftlint:disable:this implicitly_unwrapped_optional
     var swiftError: Error?
     do {
@@ -130,7 +134,7 @@ public func objc_rethrow<T>(_ block: () throws -> T) throws -> T {
         // wrap the underlying objc runtime exception in
         // a `ObjcException` for easier matching during
         // escalation.
-        throw ObjcException(error: error)
+        throw ObjcException(error: error, file: file, line: line)
     }
 
     return try swiftError.map { throw $0 } ?? value
