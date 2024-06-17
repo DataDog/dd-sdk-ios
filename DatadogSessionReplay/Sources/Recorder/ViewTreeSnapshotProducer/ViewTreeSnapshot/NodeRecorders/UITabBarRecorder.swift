@@ -16,10 +16,13 @@ internal final class UITabBarRecorder: NodeRecorder {
             nodeRecorders: [
                 UIImageViewRecorder(
                     tintColorProvider: { imageView in
-                        guard let imageViewImage = imageView.image else { return nil }
-                        guard let tabBar = self.currentlyProcessedTabbar else { return imageView.tintColor }
+                        guard let imageViewImage = imageView.image else {
+                            return nil
+                        }
+                        guard let tabBar = self.currentlyProcessedTabbar else {
+                            return imageView.tintColor
+                        }
 
-                        
                         // Retrieve the tab bar item containing the imageView.
                         let currentItemInSelectedState = tabBar.items?.first {
                             let itemSelectedImage = $0.selectedImage
@@ -111,7 +114,6 @@ internal struct UITabBarWireframesBuilder: NodeWireframesBuilder {
     let color: CGColor
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
-
         return [
             builder.createShapeWireframe(
                 id: wireframeID,
@@ -133,7 +135,9 @@ fileprivate extension UIImage {
         // e.g., vector-based images (PDF, SVG), CIImage.
         // In the case of tab bar icons,
         // it is likely they have an associated CGImage.
-        guard let cgImage = self.cgImage else { return nil }
+        guard let cgImage = self.cgImage else {
+            return nil
+        }
         // Combine properties to create an unique ID.
         // Note: it is unlikely but not impossible for two different images to have the same ID.
         // This could occur if two images have identical properties and pixel structures.
