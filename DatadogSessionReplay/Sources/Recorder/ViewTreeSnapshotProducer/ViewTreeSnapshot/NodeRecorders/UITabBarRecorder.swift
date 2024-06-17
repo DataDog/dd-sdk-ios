@@ -36,14 +36,12 @@ internal final class UITabBarRecorder: NodeRecorder {
                         // return the unselectedItemTintColor,
                         // or the default gray color if not set.
                         if currentItemInSelectedState == nil || tabBar.selectedItem != currentItemInSelectedState {
-                            let unselectedColor = tabBar.unselectedItemTintColor ?? .lightGray.withAlphaComponent(0.5)
-                            return tabBar.unselectedItemTintColor ?? .systemGray.withAlphaComponent(0.5)
+                            return tabBar.unselectedItemTintColor ?? SystemColors.systemGray.withAlphaComponent(0.5)
                         }
 
                         // Otherwise, return the tab bar tint color,
                         // or the default blue color if not set.
-                        let selectedColor = tabBar.tintColor ?? UIColor.systemBlue
-                        return tabBar.tintColor ?? UIColor.systemBlue
+                        return tabBar.tintColor ?? SystemColors.systemBlue
                     }
                 ),
                 UILabelRecorder(),
@@ -130,11 +128,15 @@ internal struct UITabBarWireframesBuilder: NodeWireframesBuilder {
 #endif
 
 fileprivate extension UIImage {
+    /// Returns a unique description of the image.
+    /// It is calculated from `CGImage` properties,
+    /// Favors performance over acurracy (collisions are unlikely, but possible).
+    /// May return `nil` if the image has no associated `CGImage`.
     var uniqueDescription: String? {
-        // Some images may not have an associated CGImage,
-        // e.g., vector-based images (PDF, SVG), CIImage.
+        // Some images may not have an associated `CGImage`,
+        // e.g., vector-based images (PDF, SVG), `CIImage`.
         // In the case of tab bar icons,
-        // it is likely they have an associated CGImage.
+        // it is likely they have an associated `CGImage`.
         guard let cgImage = self.cgImage else {
             return nil
         }
