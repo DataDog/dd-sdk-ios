@@ -80,11 +80,11 @@ internal final class SessionEndedMetricController {
     /// Ends the metric for a given session, sending it to telemetry and removing it from pending metrics.
     /// - Parameter sessionID: The ID of the session to end the metric for.
     func endMetric(sessionID: RUMUUID, with context: DatadogContext) {
-        guard let metric = metricsBySessionID[sessionID] else {
-            return
-        }
-        telemetry.metric(name: SessionEndedMetric.Constants.name, attributes: metric.asMetricAttributes(with: context))
         _metricsBySessionID.mutate { metrics in
+            guard let metric = metrics[sessionID] else {
+                return
+            }
+            telemetry.metric(name: SessionEndedMetric.Constants.name, attributes: metric.asMetricAttributes(with: context))
             metrics[sessionID] = nil
             pendingSessionIDs.removeAll(where: { $0 == sessionID }) // O(n), but "ending the metric" is very rare event
         }
