@@ -32,9 +32,11 @@ internal class UIHostingViewRecorder: NodeRecorder {
             return nil
         }
 
+        let viewType = type(of: view)
+
         // `_UIGraphicsView` draw `SwiftUI` content from the display list,
         // these content will be recorded from the `_UIHostingView` instead
-        if let cls = _UIGraphicsViewClass, type(of: view).isSubclass(of: cls) {
+        if let cls = _UIGraphicsViewClass, viewType.isSubclass(of: cls) {
             return IgnoredElement(subtreeStrategy: .ignore)
         }
 
@@ -42,7 +44,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
         // By doing so, we both validate the view type and we avoid
         // reflecting the view itself
         guard
-            let ivar = class_getInstanceVariable(type(of: view), "renderer"),
+            let ivar = class_getInstanceVariable(viewType, "renderer"),
             let value = object_getIvar(view, ivar)
         else {
             return nil
