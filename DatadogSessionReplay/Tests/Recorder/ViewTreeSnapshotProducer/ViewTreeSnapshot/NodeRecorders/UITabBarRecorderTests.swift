@@ -20,7 +20,7 @@ class UITabBarRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: tabBar, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is SpecificElement)
-        XCTAssertEqual(semantics.subtreeStrategy, .record)
+        XCTAssertEqual(semantics.subtreeStrategy, .ignore)
         XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UITabBarWireframesBuilder)
     }
 
