@@ -10,10 +10,10 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
+        <!--Navigation Bar Controllers-->
         <scene sceneID="s0d-6b-0kx">
             <objects>
-                <viewController storyboardIdentifier="NavigationBars" id="Y6W-OH-hqX" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="NavigationBars" id="Y6W-OH-hqX" customClass="NavigationBarControllers" customModule="SRFixtures" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="5EZ-qb-Rvc">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -22,26 +22,36 @@
                                 <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                                 <items>
                                     <navigationItem title="Default + Translucent" id="Xeo-w7-dzg">
-                                        <barButtonItem key="backBarButtonItem" title="Back" id="vCu-b1-LV3"/>
+                                        <barButtonItem key="leftBarButtonItem" title="Item" id="vCu-b1-LV3"/>
+                                        <barButtonItem key="rightBarButtonItem" image="info" catalog="system" id="4Od-lE-bU1"/>
                                     </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ajl-Z9-tns" userLabel="Nav Bar 2">
                                 <rect key="frame" x="0.0" y="113" width="393" height="44"/>
                                 <items>
-                                    <navigationItem title="Default + Non Translucent" id="mxX-11-5jT"/>
+                                    <navigationItem title="Default + Non Translucent" id="mxX-11-5jT">
+                                        <barButtonItem key="leftBarButtonItem" title="Item" id="Ig9-4X-3Rw"/>
+                                        <barButtonItem key="rightBarButtonItem" image="info" catalog="system" id="Wey-V1-cEI"/>
+                                    </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" barStyle="black" translatesAutoresizingMaskIntoConstraints="NO" id="ukA-2h-orc" userLabel="Nav Bar 3">
                                 <rect key="frame" x="0.0" y="167" width="393" height="44"/>
                                 <items>
-                                    <navigationItem title="Black + Translucent" id="seE-N8-ZvT"/>
+                                    <navigationItem title="Black + Translucent" id="seE-N8-ZvT">
+                                        <barButtonItem key="leftBarButtonItem" title="Item" id="u4M-QB-9Pq"/>
+                                        <barButtonItem key="rightBarButtonItem" title="Item" image="info" catalog="system" id="QnN-A5-IuA"/>
+                                    </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" barStyle="black" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cPg-it-9Wj" userLabel="Nav Bar 4">
                                 <rect key="frame" x="0.0" y="221" width="393" height="44"/>
                                 <items>
-                                    <navigationItem title="Black + Non Translucent" id="Kya-bw-HAM"/>
+                                    <navigationItem title="Black + Non Translucent" id="Kya-bw-HAM">
+                                        <barButtonItem key="leftBarButtonItem" title="Item" id="rWf-KI-M5o"/>
+                                        <barButtonItem key="rightBarButtonItem" title="Item" image="info" catalog="system" id="DrT-Yq-DLX"/>
+                                    </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="e8h-Mi-66Z" userLabel="Nav Bar 5">
@@ -142,6 +152,20 @@
                             <constraint firstItem="ukA-2h-orc" firstAttribute="top" secondItem="Ajl-Z9-tns" secondAttribute="bottom" constant="10" id="zlg-bG-IZT"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outletCollection property="navigationBars" destination="qW5-Sn-HE5" collectionClass="NSMutableArray" id="IOO-br-dh7"/>
+                        <outletCollection property="navigationBars" destination="1Pp-bo-pl2" collectionClass="NSMutableArray" id="xq5-ai-vR0"/>
+                        <outletCollection property="navigationBars" destination="bKA-5f-YQx" collectionClass="NSMutableArray" id="jRa-1S-ho5"/>
+                        <outletCollection property="navigationBars" destination="bpw-vQ-BO5" collectionClass="NSMutableArray" id="hAU-nv-n7V"/>
+                        <outletCollection property="navigationBars" destination="1ci-qB-B2g" collectionClass="NSMutableArray" id="qin-VM-8tO"/>
+                        <outletCollection property="navigationBars" destination="IWN-im-A5k" collectionClass="NSMutableArray" id="z2p-zN-Ajs"/>
+                        <outletCollection property="navigationBars" destination="cO3-mR-lBy" collectionClass="NSMutableArray" id="T8o-sq-jl3"/>
+                        <outletCollection property="navigationBars" destination="e8h-Mi-66Z" collectionClass="NSMutableArray" id="Mtl-if-2da"/>
+                        <outletCollection property="navigationBars" destination="cPg-it-9Wj" collectionClass="NSMutableArray" id="1Bv-6d-VJD"/>
+                        <outletCollection property="navigationBars" destination="ukA-2h-orc" collectionClass="NSMutableArray" id="NaY-ln-dtW"/>
+                        <outletCollection property="navigationBars" destination="Ajl-Z9-tns" collectionClass="NSMutableArray" id="Vlm-hI-yLq"/>
+                        <outletCollection property="navigationBars" destination="ByF-1h-TJc" collectionClass="NSMutableArray" id="zk7-ZP-hFW"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -150,7 +174,7 @@
         <!--Title-->
         <scene sceneID="Agd-k8-VEQ">
             <objects>
-                <viewController id="uFh-c4-UXt" customClass="NavigationBar_Default_Translucent" customModule="SRFixtures" sceneMemberID="viewController">
+                <viewController id="uFh-c4-UXt" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="cAN-Pg-MYb">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -179,7 +203,7 @@
         <!--Title-->
         <scene sceneID="BVW-Q1-y7R">
             <objects>
-                <viewController id="G5a-0u-Ytb" customClass="NavigationBar_Default_Non_Translucent" customModule="SRFixtures" sceneMemberID="viewController">
+                <viewController id="G5a-0u-Ytb" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="u6o-q9-fLB">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="749"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -246,7 +270,7 @@ Default + Non Translucent</string>
         <!--Title-->
         <scene sceneID="Jhy-Ft-knE">
             <objects>
-                <viewController id="enc-wj-k3C" customClass="NavigationBar_Default_Non_Translucent" customModule="SRFixtures" sceneMemberID="viewController">
+                <viewController id="enc-wj-k3C" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="elU-F4-ck4">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -294,7 +318,7 @@ Default + Translucent with Bar Tint Color</string>
         <!--Title-->
         <scene sceneID="YbI-Rj-yX3">
             <objects>
-                <viewController id="6il-hv-IZL" customClass="NavigationBar_Default_Non_Translucent" customModule="SRFixtures" sceneMemberID="viewController">
+                <viewController id="6il-hv-IZL" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="U5O-fr-Pms">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="749"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -342,7 +366,7 @@ Default + Non Translucent with Bar Tint Color</string>
         <!--Title-->
         <scene sceneID="gwQ-Oh-QCb">
             <objects>
-                <viewController id="Nrc-Gi-6Mu" customClass="NavigationBar_Default_Non_Translucent" customModule="SRFixtures" sceneMemberID="viewController">
+                <viewController id="Nrc-Gi-6Mu" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="kLv-G2-4B4">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -390,7 +414,7 @@ Default + Translucent with Background Color</string>
         <!--Title-->
         <scene sceneID="aVR-FI-XxI">
             <objects>
-                <viewController id="U5K-8R-4He" customClass="NavigationBar_Default_Non_Translucent" customModule="SRFixtures" sceneMemberID="viewController">
+                <viewController id="U5K-8R-4He" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="v8E-AE-bnV">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="749"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -438,7 +462,7 @@ Default + Non Translucent with Background Color</string>
         <!--Title-->
         <scene sceneID="Dj8-eX-Rtx">
             <objects>
-                <viewController id="R2I-xO-zE1" customClass="NavigationBar_Default_Non_Translucent" customModule="SRFixtures" sceneMemberID="viewController">
+                <viewController id="R2I-xO-zE1" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="j0W-xj-Jtx">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="749"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -485,7 +509,7 @@ Black + Non Translucent</string>
         <!--Title-->
         <scene sceneID="BNa-dH-BTh">
             <objects>
-                <viewController id="sUP-TQ-ze4" customClass="NavigationBar_Default_Non_Translucent" customModule="SRFixtures" sceneMemberID="viewController">
+                <viewController id="sUP-TQ-ze4" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Bl4-Hi-3fV">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -531,6 +555,7 @@ Black + Translucent</string>
         </scene>
     </scenes>
     <resources>
+        <image name="info" catalog="system" width="93" height="128"/>
         <namedColor name="AccentColor">
             <color red="0.0" green="0.46000000000000002" blue="0.89000000000000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

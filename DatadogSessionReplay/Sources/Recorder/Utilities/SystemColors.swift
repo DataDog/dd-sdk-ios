@@ -84,6 +84,10 @@ internal enum SystemColors {
         return UIColor.systemGreen.cgColor
     }
 
+    static var systemBlue: UIColor {
+        return UIColor.systemBlue
+    }
+
     static var placeholderText: CGColor {
         if #available(iOS 13.0, *) {
             return UIColor.placeholderText.cgColor

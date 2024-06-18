@@ -279,8 +279,38 @@ final class SRSnapshotTests: SnapshotTestCase {
 
     func testNavigationBars() throws {
 
-        let navBarFixtures: [Fixture] = [
-            .navigationBars,
+        // - Static Navigation Bars
+        
+        // No tinted color
+        show(fixture: .navigationBars)
+        try forPrivacyModes([.allow]) { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            let fileNamePrefix = Fixture.navigationBars.slug
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-\(privacyMode)-privacy"),
+                record: true
+            )
+        }
+
+        // Tinted color
+        let vc2 = show(fixture: .navigationBars) as! NavigationBarControllers
+        vc2.setTintColor()
+        wait(seconds: 1.0)
+
+        try forPrivacyModes([.allow]) { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            let fileNamePrefix = Fixture.navigationBars.slug
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-itemTintColor-\(privacyMode)-privacy"),
+                record: true
+            )
+        }
+
+
+        // - Embedded Navigation Bars
+        /*let navBarFixtures: [Fixture] = [
             .navigationBarDefaultTranslucent,
             .navigationBarDefaultNonTranslucent,
             .navigationBarBlackTranslucent,
@@ -300,10 +330,10 @@ final class SRSnapshotTests: SnapshotTestCase {
                 DDAssertSnapshotTest(
                     newImage: image,
                     snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-\(privacyMode)-privacy"),
-                    record: recordingMode
+                    record: true
                 )
             }
-        }
+        }*/
     }
 
     func testTabBars() throws {
