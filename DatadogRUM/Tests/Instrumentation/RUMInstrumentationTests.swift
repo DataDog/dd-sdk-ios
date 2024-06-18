@@ -24,7 +24,8 @@ class RUMInstrumentationTests: XCTestCase {
             dateProvider: SystemDateProvider(),
             backtraceReporter: BacktraceReporterMock(),
             fatalErrorContext: FatalErrorContextNotifierMock(),
-            processID: .mockAny()
+            processID: .mockAny(),
+            watchdogTermination: .mockRandom()
         )
 
         // Then
@@ -49,7 +50,8 @@ class RUMInstrumentationTests: XCTestCase {
             dateProvider: SystemDateProvider(),
             backtraceReporter: BacktraceReporterMock(),
             fatalErrorContext: FatalErrorContextNotifierMock(),
-            processID: .mockAny()
+            processID: .mockAny(),
+            watchdogTermination: .mockRandom()
         )
 
         // Then
@@ -71,7 +73,8 @@ class RUMInstrumentationTests: XCTestCase {
             dateProvider: SystemDateProvider(),
             backtraceReporter: BacktraceReporterMock(),
             fatalErrorContext: FatalErrorContextNotifierMock(),
-            processID: .mockAny()
+            processID: .mockAny(),
+            watchdogTermination: .mockRandom()
         )
 
         // Then
@@ -96,7 +99,8 @@ class RUMInstrumentationTests: XCTestCase {
             dateProvider: SystemDateProvider(),
             backtraceReporter: BacktraceReporterMock(),
             fatalErrorContext: FatalErrorContextNotifierMock(),
-            processID: .mockAny()
+            processID: .mockAny(),
+            watchdogTermination: .mockRandom()
         )
 
         // Then
@@ -117,7 +121,8 @@ class RUMInstrumentationTests: XCTestCase {
             dateProvider: SystemDateProvider(),
             backtraceReporter: BacktraceReporterMock(),
             fatalErrorContext: FatalErrorContextNotifierMock(),
-            processID: .mockAny()
+            processID: .mockAny(),
+            watchdogTermination: .mockRandom()
         )
 
         // Then
@@ -138,7 +143,8 @@ class RUMInstrumentationTests: XCTestCase {
             dateProvider: SystemDateProvider(),
             backtraceReporter: BacktraceReporterMock(),
             fatalErrorContext: FatalErrorContextNotifierMock(),
-            processID: .mockAny()
+            processID: .mockAny(),
+            watchdogTermination: .mockRandom()
         )
 
         // Then
@@ -159,7 +165,8 @@ class RUMInstrumentationTests: XCTestCase {
             dateProvider: SystemDateProvider(),
             backtraceReporter: BacktraceReporterMock(),
             fatalErrorContext: FatalErrorContextNotifierMock(),
-            processID: .mockAny()
+            processID: .mockAny(),
+            watchdogTermination: .mockRandom()
         )
         let subscriber = RUMCommandSubscriberMock()
 

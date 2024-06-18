@@ -5,10 +5,7 @@
  */
 
 import Foundation
-
-#if SPM_BUILD
-import DatadogPrivate
-#endif
+import DatadogInternal
 
 /// Provides convenient interface for reading metadata and appending data to the file.
 internal protocol WritableFile {
@@ -90,11 +87,11 @@ internal struct File: WritableFile, ReadableFile {
 
     private func legacyAppend(_ data: Data, to fileHandle: FileHandle) throws {
         defer {
-            try? objcExceptionHandler.rethrowToSwift {
+            try? objc_rethrow {
                 fileHandle.closeFile()
             }
         }
-        try objcExceptionHandler.rethrowToSwift {
+        try objc_rethrow {
             fileHandle.seekToEndOfFile()
             fileHandle.write(data)
         }

@@ -59,6 +59,8 @@ internal final class CrashReportingFeature: DatadogFeature {
             self.plugin.readPendingCrashReport { [weak self] crashReport in
                 guard let self = self, let availableCrashReport = crashReport else {
                     DD.logger.debug("No pending Crash found")
+                    // TODO: RUM-4911 enable after `WatchdogTerminationReporter` is implemented.
+                    // self?.sender.send(launch: .init(didCrash: false))
                     return false
                 }
 
@@ -71,6 +73,8 @@ internal final class CrashReportingFeature: DatadogFeature {
                 }
 
                 self.sender.send(report: availableCrashReport, with: crashContext)
+                // TODO: RUM-4911 enable after `WatchdogTerminationReporter` is implemented.
+                // self.sender.send(launch: .init(didCrash: true))
                 return true
             }
         }

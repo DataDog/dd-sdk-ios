@@ -15,13 +15,15 @@ public enum AppState: Codable, PassthroughAnyCodable {
     case inactive
     /// The app is running in the background.
     case background
+    /// The app is terminated.
+    case terminated
 
     /// If the app is running in the foreground - no matter if receiving events or not (i.e. being interrupted because of transitioning from background).
     public var isRunningInForeground: Bool {
         switch self {
         case .active, .inactive:
             return true
-        case .background:
+        case .background, .terminated:
             return false
         }
     }

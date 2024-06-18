@@ -485,3 +485,12 @@ extension DatadogCore: Flushable {
         }
     }
 }
+
+#if SPM_BUILD
+import DatadogPrivate
+#endif
+
+internal let registerObjcExceptionHandlerOnce: () -> Void = {
+    ObjcException.rethrow = __dd_private_ObjcExceptionHandler.rethrow
+    return {}
+}()

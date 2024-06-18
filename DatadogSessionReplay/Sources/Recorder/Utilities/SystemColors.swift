@@ -84,6 +84,10 @@ internal enum SystemColors {
         return UIColor.systemGreen.cgColor
     }
 
+    static var systemGray: UIColor {
+        return UIColor.systemGray
+    }
+
     static var systemBlue: UIColor {
         return UIColor.systemBlue
     }
