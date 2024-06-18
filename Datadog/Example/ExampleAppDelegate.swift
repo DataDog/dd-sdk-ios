@@ -77,8 +77,10 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
                     resourceAttributesProvider: { req, resp, data, err in
                         print("⭐️ [Attributes Provider] data: \(String(describing: data))")
                         return [:]
-            }),
+                    }
+                ),
                 trackBackgroundEvents: true,
+                trackWatchdogTermination: true,
                 customEndpoint: Environment.readCustomRUMURL(),
                 telemetrySampleRate: 100
             )

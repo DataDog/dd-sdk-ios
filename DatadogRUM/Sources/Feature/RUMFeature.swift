@@ -37,6 +37,27 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
         let featureScope = core.scope(for: RUMFeature.self)
         let sessionEndedMetric = SessionEndedMetricController(telemetry: core.telemetry)
+
+        var watchdogTermination: WatchdogTerminationMonitor?
+        var watchdogTerminationAppStateManager: WatchdogTerminationAppStateManager?
+        if configuration.trackWatchdogTermination {
+            let appStateManager = WatchdogTerminationAppStateManager(
+                featureScope: featureScope,
+                processId: configuration.processID
+            )
+            let monitor = WatchdogTerminationMonitor(
+                appStateManager: appStateManager,
+                checker: .init(
+                    appStateManager: appStateManager,
+                    deviceInfo: .init()
+                ),
+                feature: featureScope,
+                reporter: WatchdogTerminationReporter()
+            )
+            watchdogTerminationAppStateManager = appStateManager
+            watchdogTermination = monitor
+        }
+
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
@@ -83,20 +104,6 @@ internal final class RUMFeature: DatadogRemoteFeature {
             dateProvider: configuration.dateProvider
         )
 
-        let appStateManager = WatchdogTerminationAppStateManager(
-            featureScope: featureScope,
-            processId: configuration.processID
-        )
-        let watchdogTermination = WatchdogTerminationMonitor(
-            appStateManager: appStateManager,
-            checker: .init(
-                appStateManager: appStateManager,
-                deviceInfo: .init()
-            ),
-            reporter: WatchdogTerminationReporter(),
-            telemetry: featureScope.telemetry
-        )
-
         self.instrumentation = RUMInstrumentation(
             featureScope: featureScope,
             uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
@@ -115,7 +122,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             eventsFilter: RUMViewEventsFilter(),
             telemetry: core.telemetry
         )
-        self.messageReceiver = CombinedFeatureMessageReceiver(
+        var messageReceivers: [FeatureMessageReceiver] = [
             TelemetryInterceptor(sessionEndedMetric: sessionEndedMetric),
             TelemetryReceiver(
                 featureScope: featureScope,
@@ -152,8 +159,13 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 eventsMapper: eventsMapper
             ),
             LaunchReportReceiver(featureScope: featureScope, watchdogTermination: watchdogTermination),
-            appStateManager
-        )
+        ]
+
+        if let watchdogTerminationAppStateManager = watchdogTerminationAppStateManager {
+            messageReceivers.append(watchdogTerminationAppStateManager)
+        }
+
+        self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
 
         // Forward instrumentation calls to monitor:
         instrumentation.publish(to: monitor)
