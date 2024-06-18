@@ -19,22 +19,32 @@ default:
     - macos:sonoma
     - specific:true
 
+.run:on-code-change:
+  rules:
+    - changes:
+      - "Datadog*/**/*" # covers any change to the SDK code, tests or setup
+      - "TestUtilities/**/*"
+
 ENV check:
   stage: pre
   script:
     - ./tools/runner-setup.sh --ios # temporary, waiting for AMI
     - make env-check
 
-.Lint:
+Lint:
   stage: lint
+  extends:
+    - .run:on-code-change
   script:
     - ./tools/runner-setup.sh --ios # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make lint license-check
     - make rum-models-verify sr-models-verify
 
-.Unit Tests (iOS):
+Unit Tests (iOS):
   stage: test
+  extends:
+    - .run:on-code-change
   variables:
     OS: "latest"
     PLATFORM: "iOS Simulator"
@@ -44,8 +54,10 @@ ENV check:
     - make clean repo-setup ENV=ci
     - make test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-.Unit Tests (tvOS):
+Unit Tests (tvOS):
   stage: test
+  extends:
+    - .run:on-code-change
   variables:
     OS: "latest"
     PLATFORM: "tvOS Simulator"
@@ -55,8 +67,13 @@ ENV check:
     - make clean repo-setup ENV=ci
     - make test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-.UI Tests:
+UI Tests:
   stage: ui-test
+  extends:
+    - .run:on-code-change
+  rules:
+    - changes:
+      - "IntegrationTests/**/*"
   variables:
     OS: "latest"
     PLATFORM: "iOS Simulator"

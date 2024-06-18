@@ -48,9 +48,9 @@ TEST_PLAN="$test_plan"
 
 ./tools/config/generate-http-server-mock-config.sh
 
-xcodebuild -version
-
 disable_apple_crash_reporter
 trap enable_apple_crash_reporter EXIT INT
 
-xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" test | xcbeautify
+# xcodebuild -version
+# xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" test | xcbeautify
+echo "xcodebuild -workspace '$WORKSPACE' -destination '$DESTINATION' -scheme '$SCHEME' -testPlan '$TEST_PLAN' test | xcbeautify"
