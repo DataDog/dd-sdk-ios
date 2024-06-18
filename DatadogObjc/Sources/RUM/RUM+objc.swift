@@ -378,7 +378,7 @@ public class DDRUMConfiguration: NSObject {
     }
 
     @objc public var appHangThreshold: TimeInterval {
-        set { swiftConfig.appHangThreshold = newValue }
+        set { swiftConfig.appHangThreshold = newValue == 0 ? nil : newValue }
         get { swiftConfig.appHangThreshold ?? 0 }
     }
 
