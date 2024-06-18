@@ -6,7 +6,7 @@
 
 #if os(iOS)
 import XCTest
-import DatadogInternal
+@testable import DatadogInternal
 @_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
@@ -39,11 +39,10 @@ class RecordingCoordinatorTests: XCTestCase {
 
     func test_whenNotSampled_itStopsScheduler_andShouldNotRecord() {
         // Given
-        prepareRecordingCoordinator(sampler: Sampler(samplingRate: 0))
+        prepareRecordingCoordinator(sampler: .mockRejectAll())
 
         // When
-        let rumContext = RUMContext.mockRandom()
-        rumContextObserver.notify(rumContext: rumContext)
+        rumContextObserver.notify(rumContext: .mockRandom())
 
         // Then
         XCTAssertFalse(scheduler.isRunning)
@@ -54,7 +53,7 @@ class RecordingCoordinatorTests: XCTestCase {
     func test_whenSampled_itStartsScheduler_andShouldRecord() {
         // Given
         let privacy = PrivacyLevel.mockRandom()
-        prepareRecordingCoordinator(sampler: Sampler(samplingRate: 100), privacy: privacy)
+        prepareRecordingCoordinator(privacy: privacy)
 
         // When
         let rumContext = RUMContext.mockRandom()
@@ -95,7 +94,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
     func test_whenRUMContextWithoutViewID_itStartsScheduler_andShouldNotRecord() {
         // Given
-        prepareRecordingCoordinator(sampler: Sampler(samplingRate: 100))
+        prepareRecordingCoordinator()
 
         // When
         let rumContext = RUMContext.mockWith(viewID: nil)
@@ -107,14 +106,78 @@ class RecordingCoordinatorTests: XCTestCase {
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 
-    private func prepareRecordingCoordinator(sampler: Sampler, privacy: PrivacyLevel = .allow) {
+    func test_whenCapturingSnapshotFails_itSendsErrorTelemetry() {
+        let telemetry = TelemetryMock()
+
+        // Given
+        recordingMock.captureNextRecordClosure = { _ in
+            throw ErrorMock("snapshot creation error")
+        }
+
+        prepareRecordingCoordinator(telemetry: telemetry)
+
+        // When
+        rumContextObserver.notify(rumContext: .mockRandom())
+
+        // Then
+        let error = telemetry.messages.firstError()
+        XCTAssertEqual(error?.message, "[SR] Failed to take snapshot - snapshot creation error")
+        XCTAssertEqual(error?.kind, "ErrorMock")
+        XCTAssertEqual(error?.stack, "snapshot creation error")
+    }
+
+    func test_whenCapturingSnapshotFails_withObjCRuntimeException_itSendsErrorTelemetry() {
+        let telemetry = TelemetryMock()
+
+        // Given
+        recordingMock.captureNextRecordClosure = { _ in
+            throw ObjcException(error: ErrorMock("snapshot creation error"), file: "File.swift", line: 0)
+        }
+
+        prepareRecordingCoordinator(telemetry: telemetry)
+
+        // When
+        rumContextObserver.notify(rumContext: .mockRandom())
+
+        // Then
+        let error = telemetry.messages.firstError()
+        XCTAssertEqual(error?.message, "[SR] Failed to take snapshot due to Objective-C runtime exception - snapshot creation error")
+        XCTAssertEqual(error?.kind, "ErrorMock")
+        XCTAssertEqual(error?.stack, "snapshot creation error")
+        XCTAssertFalse(scheduler.isRunning)
+    }
+
+    func test_whenCapturingSnapshot_itSendsMethodCalledTelemetry() throws {
+        // Given
+        let telemetry = TelemetryMock()
+        prepareRecordingCoordinator(
+            telemetry: telemetry,
+            methodCallTelemetrySamplingRate: 100
+        )
+
+        // When
+        rumContextObserver.notify(rumContext: .mockRandom())
+
+        // Then
+        let metric = try XCTUnwrap(telemetry.messages.last?.asMetric)
+        XCTAssertEqual(metric.name, "Method Called")
+    }
+
+    private func prepareRecordingCoordinator(
+        sampler: Sampler = .mockKeepAll(),
+        privacy: PrivacyLevel = .allow,
+        telemetry: Telemetry = NOPTelemetry(),
+        methodCallTelemetrySamplingRate: Float = 0
+    ) {
         recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
             privacy: privacy,
             rumContextObserver: rumContextObserver,
             srContextPublisher: contextPublisher,
             recorder: recordingMock,
-            sampler: sampler
+            sampler: sampler,
+            telemetry: telemetry,
+            methodCallTelemetrySamplingRate: methodCallTelemetrySamplingRate
         )
     }
 }
@@ -128,13 +191,13 @@ final class RecordingMock: Recording {
     }
     var captureNextRecordReceivedRecorderContext: Recorder.Context?
     var captureNextRecordReceivedInvocations: [Recorder.Context] = []
-    var captureNextRecordClosure: ((Recorder.Context) -> Void)?
+    var captureNextRecordClosure: ((Recorder.Context) throws -> Void)?
 
-    func captureNextRecord(_ recorderContext: Recorder.Context) {
+    func captureNextRecord(_ recorderContext: Recorder.Context) throws {
         captureNextRecordCallsCount += 1
         captureNextRecordReceivedRecorderContext = recorderContext
         captureNextRecordReceivedInvocations.append(recorderContext)
-        captureNextRecordClosure?(recorderContext)
+        try captureNextRecordClosure?(recorderContext)
     }
 }
 #endif

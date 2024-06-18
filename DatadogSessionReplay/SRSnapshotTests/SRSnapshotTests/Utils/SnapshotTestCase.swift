@@ -55,7 +55,6 @@ internal class SnapshotTestCase: XCTestCase {
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,
             resourceProcessor: resourceProcessor,
-            telemetry: TelemetryMock(),
             additionalNodeRecorders: []
         )
 
@@ -74,7 +73,7 @@ internal class SnapshotTestCase: XCTestCase {
         }
 
         // Capture next record with mock RUM Context
-        recorder.captureNextRecord(
+        try recorder.captureNextRecord(
             .init(privacy: privacyLevel, applicationID: "", sessionID: "", viewID: "", viewServerTimeOffset: 0)
         )
 
