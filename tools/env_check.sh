@@ -68,3 +68,6 @@ if command -v brew >/dev/null 2>&1; then
     echo_succ "brew:"
     brew -v
 fi
+
+echo_succ "CI_PIPELINE_SOURCE = $CI_PIPELINE_SOURCE"
+echo_succ "CI_EXTERNAL_PULL_REQUEST_IID = $CI_EXTERNAL_PULL_REQUEST_IID"
