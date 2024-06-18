@@ -58,9 +58,10 @@ internal class UIHostingViewRecorder: NodeRecorder {
             let renderer = try DisplayList.ViewRenderer(reflecting: value)
 
             let builder = UIHostingUIWireframesBuilder(
+                hostID: context.ids.nodeID(view: view, nodeRecorder: self),
+                attributes: attributes,
                 renderer: renderer.renderer,
-                textObfuscator: textObfuscator(context),
-                referential: UIHostingUIWireframesBuilder.Referential(attributes.frame)
+                textObfuscator: textObfuscator(context)
             )
 
             let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
@@ -86,20 +87,46 @@ internal struct UIHostingUIWireframesBuilder: NodeWireframesBuilder {
         let frame: CGRect
     }
 
+    /// ID of the `_UIHostingView`.
+    let hostID: WireframeID
+    /// Attributes of the `_UIHostingView`.
+    let hostAttributes: ViewAttributes
+
     let renderer: DisplayList.ViewUpdater
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
 
-    let referential: Referential
+    var wireframeRect: CGRect { hostAttributes.frame }
 
-    var wireframeRect: CGRect { referential.frame }
+    init(
+        hostID: WireframeID,
+        attributes: ViewAttributes,
+        renderer: DisplayList.ViewUpdater,
+        textObfuscator: TextObfuscating
+    ) {
+        self.hostID = hostID
+        self.hostAttributes = attributes
+        self.renderer = renderer
+        self.textObfuscator = textObfuscator
+    }
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+        let host = builder.createShapeWireframe(
+            id: hostID,
+            frame: wireframeRect,
+            attributes: hostAttributes
+        )
+
         guard let items = renderer.lastList.lazy?.items else {
-            return []
+            return [host]
         }
+
         // Traverse the SwiftUI tree and build wireframes
-        return buildWireframes(items: items, referential: referential, builder: builder)
+        return [host] + buildWireframes(
+            items: items,
+            referential: Referential(hostAttributes.frame),
+            builder: builder
+        )
     }
 
     private func buildWireframes(items: [DisplayList.Item], referential: Referential, builder: WireframesBuilder) -> [SRWireframe] {
@@ -162,7 +189,6 @@ internal struct UIHostingUIWireframesBuilder: NodeWireframesBuilder {
             return nil // Should be recorded by UIKit recorder
         case .unknown:
             return nil // Need a placeholder
-
         }
     }
 

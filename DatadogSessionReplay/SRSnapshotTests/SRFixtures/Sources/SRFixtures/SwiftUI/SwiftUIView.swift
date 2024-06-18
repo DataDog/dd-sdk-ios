@@ -8,8 +8,33 @@ import SwiftUI
 
 @available(iOS 13.0, *)
 public struct SwiftUIView: View {
+    @State private var txt: String = "SwiftUI"
+
     public var body: some View {
-        Text("Hello, SwiftUI!")
+        VStack {
+            Image(systemName: "globe")
+                .imageScale(.large)
+                .foregroundColor(.accentColor)
+            Image("dd_logo", bundle: .module)
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 88)
+                .clipped()
+                .clipShape(.rect(cornerRadius: 44))
+                .foregroundColor(.purple)
+
+            Text("Hello, SwiftUI!")
+            TextField("Your name", text: $txt)
+                .disableAutocorrection(true)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+            Button("Validate") { }
+                .padding()
+                .foregroundColor(.white)
+                .background(Color(.purple))
+                .cornerRadius(8)
+        }
+        .padding()
     }
 }
 
