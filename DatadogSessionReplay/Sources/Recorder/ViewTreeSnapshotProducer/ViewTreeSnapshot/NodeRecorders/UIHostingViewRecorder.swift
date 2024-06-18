@@ -155,18 +155,29 @@ internal struct UIHostingUIWireframesBuilder: NodeWireframesBuilder {
                 fontScalingEnabled: false
             )
         case let .shape(_, paint, _):
-            return builder.createShapeWireframe(
+            // temporary solution to differentiate a border shape
+            // from a content shape (icon):
+            // - A border shape is linked to a view-info to draw borders
+            // - A content shape draw a path on the hosting view layer directly
+            return info.map { info in
+                builder.createShapeWireframe(
+                    id: Int64(content.seed.value),
+                    frame: referential.convert(frame: item.frame),
+                    borderColor: info.borderColor,
+                    borderWidth: info.borderWidth,
+                    backgroundColor: info.backgroundColor,
+                    cornerRadius: info.cornerRadius,
+                    opacity: info.alpha
+                )
+            } ?? builder.createShapeWireframe(
                 id: Int64(content.seed.value),
                 frame: referential.convert(frame: item.frame),
-                borderColor: info?.borderColor,
-                borderWidth: info?.borderWidth,
                 backgroundColor: CGColor(
                     red: CGFloat(paint.paint.linearRed),
                     green: CGFloat(paint.paint.linearGreen),
                     blue: CGFloat(paint.paint.linearBlue),
                     alpha: CGFloat(paint.paint.opacity)
                 ),
-                cornerRadius: info?.cornerRadius,
                 opacity: CGFloat(paint.paint.opacity)
             )
         case .color:
