@@ -10,19 +10,13 @@ import UIKit
 internal class UIHostingViewRecorder: NodeRecorder {
     let identifier = UUID()
 
-    /// An option for overriding default semantics from parent recorder.
-    var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics?
     var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating
 
     let _UIGraphicsViewClass: AnyClass? = NSClassFromString("SwiftUI._UIGraphicsView")
 
-    init(
-        semanticsOverride: @escaping (UIView, ViewAttributes) -> NodeSemantics? = { _, _ in nil },
-        textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = { context in
-            return context.recorder.privacy.staticTextObfuscator
-        }
-    ) {
-        self.semanticsOverride = semanticsOverride
+    init(textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = {
+        $0.recorder.privacy.staticTextObfuscator
+    }) {
         self.textObfuscator = textObfuscator
     }
 
@@ -91,7 +85,7 @@ internal struct UIHostingUIWireframesBuilder: NodeWireframesBuilder {
     let hostID: WireframeID
     /// Attributes of the `_UIHostingView`.
     let hostAttributes: ViewAttributes
-
+    /// The SwiftUI reflected renderer
     let renderer: DisplayList.ViewUpdater
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
