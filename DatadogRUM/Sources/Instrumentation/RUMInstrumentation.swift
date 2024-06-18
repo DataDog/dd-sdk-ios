@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogInternal
+import UIKit
 
 /// Bundles RUM instrumentation components.
 internal final class RUMInstrumentation: RUMCommandPublisher {
@@ -36,6 +37,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// Instruments App Hangs. It is `nil` if hangs monitoring is not enabled.
     let appHangs: AppHangsMonitor?
 
+    /// Instruments Watchdog Terminations.
+    let watchdogTermination: WatchdogTerminationMonitor?
+
     // MARK: - Initialization
 
     init(
@@ -48,7 +52,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         dateProvider: DateProvider,
         backtraceReporter: BacktraceReporting,
         fatalErrorContext: FatalErrorContextNotifying,
-        processID: UUID
+        processID: UUID,
+        watchdogTermination: WatchdogTerminationMonitor
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI instrumentation)
         // and only swizzle `UIViewController` if UIKit instrumentation is configured:
@@ -119,6 +124,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.longTasks = longTasks
         self.appHangs = appHangs
+        self.watchdogTermination = watchdogTermination
 
         // Enable configured instrumentations:
         self.viewControllerSwizzler?.swizzle()
@@ -133,6 +139,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         uiApplicationSwizzler?.unswizzle()
         longTasks?.stop()
         appHangs?.stop()
+        watchdogTermination?.stop()
     }
 
     func publish(to subscriber: RUMCommandSubscriber) {

@@ -31,13 +31,29 @@ public struct DeviceInfo: Codable, Equatable, PassthroughAnyCodable {
     /// The architecture of the device
     public let architecture: String
 
+    /// The device is a simulator
+    public let isSimulator: Bool
+
+    /// The vendor identifier of the device.
+    public let vendorId: String?
+
+    /// Returns `true` if the debugger is attached.
+    public let isDebugging: Bool
+
+    /// Returns system boot time since epoch.
+    public let systemBootTime: TimeInterval
+
     public init(
         name: String,
         model: String,
         osName: String,
         osVersion: String,
         osBuildNumber: String?,
-        architecture: String
+        architecture: String,
+        isSimulator: Bool,
+        vendorId: String?,
+        isDebugging: Bool,
+        systemBootTime: TimeInterval
     ) {
         self.brand = "Apple"
         self.name = name
@@ -46,6 +62,10 @@ public struct DeviceInfo: Codable, Equatable, PassthroughAnyCodable {
         self.osVersion = osVersion
         self.osBuildNumber = osBuildNumber
         self.architecture = architecture
+        self.isSimulator = isSimulator
+        self.vendorId = vendorId
+        self.isDebugging = isDebugging
+        self.systemBootTime = systemBootTime
     }
 }
 
@@ -62,17 +82,20 @@ extension DeviceInfo {
     ///   - device: The `UIDevice` description.
     public init(
         processInfo: ProcessInfo = .processInfo,
-        device: UIDevice = .current
+        device: UIDevice = .current,
+        sysctl: SysctlProviding = Sysctl()
     ) {
         var architecture = "unknown"
         if let archInfo = NXGetLocalArchInfo()?.pointee {
             architecture = String(utf8String: archInfo.name) ?? "unknown"
         }
 
-        let build = try? Sysctl.osVersion()
+        let build = try? sysctl.osBuild()
+        let isDebugging = try? sysctl.isDebugging()
+        let systemBootTime = try? sysctl.systemBootTime()
 
         #if !targetEnvironment(simulator)
-        let model = try? Sysctl.model()
+        let model = try? sysctl.model()
         // Real iOS device
         self.init(
             name: device.model,
@@ -80,7 +103,11 @@ extension DeviceInfo {
             osName: device.systemName,
             osVersion: device.systemVersion,
             osBuildNumber: build,
-            architecture: architecture
+            architecture: architecture,
+            isSimulator: false,
+            vendorId: device.identifierForVendor?.uuidString,
+            isDebugging: isDebugging ?? false,
+            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate
         )
         #else
         let model = processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? device.model
@@ -91,7 +118,11 @@ extension DeviceInfo {
             osName: device.systemName,
             osVersion: device.systemVersion,
             osBuildNumber: build,
-            architecture: architecture
+            architecture: architecture,
+            isSimulator: true,
+            vendorId: device.identifierForVendor?.uuidString,
+            isDebugging: isDebugging ?? false,
+            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate
         )
         #endif
     }
