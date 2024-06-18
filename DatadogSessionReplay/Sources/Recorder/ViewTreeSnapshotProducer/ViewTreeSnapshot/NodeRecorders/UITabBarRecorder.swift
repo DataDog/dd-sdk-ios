@@ -10,17 +10,33 @@ import UIKit
 internal final class UITabBarRecorder: NodeRecorder {
     let identifier = UUID()
 
-    private var currentlyProcessedTabbar: UITabBar? = nil
-    private lazy var subtreeViewRecorder: ViewTreeRecorder = {
-        ViewTreeRecorder(
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
+        guard let tabBar = view as? UITabBar else {
+            return nil
+        }
+
+        let builder = UITabBarWireframesBuilder(
+            wireframeRect: inferOccupiedFrame(of: tabBar, in: context),
+            wireframeID: context.ids.nodeID(view: tabBar, nodeRecorder: self),
+            attributes: attributes,
+            color: inferColor(of: tabBar)
+        )
+
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        let subtreeRecordingResults = recordSubtree(of: tabBar, in: context)
+        let allNodes = [node] + subtreeRecordingResults.nodes
+        let resources = subtreeRecordingResults.resources
+
+        return SpecificElement(subtreeStrategy: .ignore, nodes: allNodes, resources: resources)
+    }
+
+    private func recordSubtree(of tabBar: UITabBar, in context: ViewTreeRecordingContext) -> RecordingResult {
+        let subtreeViewRecorder = ViewTreeRecorder(
             nodeRecorders: [
                 UIImageViewRecorder(
                     tintColorProvider: { imageView in
                         guard let imageViewImage = imageView.image else {
                             return nil
-                        }
-                        guard let tabBar = self.currentlyProcessedTabbar else {
-                            return imageView.tintColor
                         }
 
                         // Retrieve the tab bar item containing the imageView.
@@ -49,29 +65,8 @@ internal final class UITabBarRecorder: NodeRecorder {
                 UIViewRecorder()
             ]
         )
-    }()
 
-    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
-        guard let tabBar = view as? UITabBar else {
-            return nil
-        }
-
-        currentlyProcessedTabbar = tabBar
-
-        let builder = UITabBarWireframesBuilder(
-            wireframeRect: inferOccupiedFrame(of: tabBar, in: context),
-            wireframeID: context.ids.nodeID(view: tabBar, nodeRecorder: self),
-            attributes: attributes,
-            color: inferColor(of: tabBar)
-        )
-
-        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
-
-        let subtreeRecordingResults = subtreeViewRecorder.record(tabBar, in: context)
-        let allNodes = [node] + subtreeRecordingResults.nodes
-        let resources = subtreeRecordingResults.resources
-
-        return SpecificElement(subtreeStrategy: .ignore, nodes: allNodes, resources: resources)
+        return subtreeViewRecorder.record(tabBar, in: context)
     }
 
     private func inferOccupiedFrame(of tabBar: UITabBar, in context: ViewTreeRecordingContext) -> CGRect {
