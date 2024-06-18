@@ -4,20 +4,29 @@ stages:
   - test
   - ui-test
 
-ENV check:
-  stage: pre
+# Workflow configuration for all jobs in this file
+# Ref.: https://docs.gitlab.com/ee/ci/yaml/workflow.html
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'master'
+
+# Tags applied to all jobs
+# Ref.: https://docs.gitlab.com/ee/ci/yaml/
+default:
   tags:
     - macos:sonoma
     - specific:true
+
+ENV check:
+  stage: pre
   script:
     - ./tools/runner-setup.sh --ios # temporary, waiting for AMI
     - make env-check
 
 Lint:
   stage: lint
-  tags:
-    - macos:sonoma
-    - specific:true
   script:
     - ./tools/runner-setup.sh --ios # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
@@ -26,9 +35,6 @@ Lint:
 
 Unit Tests (iOS):
   stage: test
-  tags:
-    - macos:sonoma
-    - specific:true
   variables:
     OS: "latest"
     PLATFORM: "iOS Simulator"
@@ -40,9 +46,6 @@ Unit Tests (iOS):
 
 Unit Tests (tvOS):
   stage: test
-  tags:
-    - macos:sonoma
-    - specific:true
   variables:
     OS: "latest"
     PLATFORM: "tvOS Simulator"
@@ -54,9 +57,6 @@ Unit Tests (tvOS):
 
 UI Tests:
   stage: ui-test
-  tags:
-    - macos:sonoma
-    - specific:true
   variables:
     OS: "latest"
     PLATFORM: "iOS Simulator"
