@@ -7,6 +7,17 @@
 import Foundation
 import DatadogInternal
 
+/// Provides interfaces for accessing common properties and operations for a file.
+internal protocol FileProtocol {
+    /// URL of the file on the disk.
+    var url: URL { get }
+
+    /// Returns the date when the file was last modified. Returns `nil` if the file does not exist.
+    /// If the file is created and never modified, the creation date is returned.
+    /// - Returns: The date when the file was last modified.
+    func modifiedAt() throws -> Date?
+}
+
 /// Provides convenient interface for reading metadata and appending data to the file.
 internal protocol WritableFile {
     /// Name of this file.
@@ -37,13 +48,17 @@ private enum FileError: Error {
 
 /// An immutable `struct` designed to provide optimized and thread safe interface for file manipulation.
 /// It doesn't own the file, which means the file presence is not guaranteed - the file can be deleted by OS at any time (e.g. due to memory pressure).
-internal struct File: WritableFile, ReadableFile {
+internal struct File: WritableFile, ReadableFile, FileProtocol {
     let url: URL
     let name: String
 
     init(url: URL) {
         self.url = url
         self.name = url.lastPathComponent
+    }
+
+    func modifiedAt() throws -> Date? {
+        try FileManager.default.attributesOfItem(atPath: url.path)[.modificationDate] as? Date
     }
 
     /// Appends given data at the end of this file.

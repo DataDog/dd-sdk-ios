@@ -88,4 +88,26 @@ class FileTests: XCTestCase {
             XCTAssertEqual((error as NSError).localizedDescription, "The file “file” doesn’t exist.")
         }
     }
+
+    func testModifiedAt() throws {
+        // when file is created
+        let before = Date.timeIntervalSinceReferenceDate
+        let file = try directory.createFile(named: "file")
+        let creationDate = try file.modifiedAt()
+        let after = Date.timeIntervalSinceReferenceDate
+
+        XCTAssertNotNil(creationDate)
+        XCTAssertGreaterThanOrEqual(creationDate!.timeIntervalSinceReferenceDate, before)
+        XCTAssertLessThanOrEqual(creationDate!.timeIntervalSinceReferenceDate, after)
+
+        // when file is modified
+        let beforeModification = Date.timeIntervalSinceReferenceDate
+        try file.append(data: .mock(ofSize: 5))
+        let modificationDate = try file.modifiedAt()
+        let afterModification = Date.timeIntervalSinceReferenceDate
+
+        XCTAssertNotNil(modificationDate)
+        XCTAssertGreaterThanOrEqual(modificationDate!.timeIntervalSinceReferenceDate, beforeModification)
+        XCTAssertLessThanOrEqual(modificationDate!.timeIntervalSinceReferenceDate, afterModification)
+    }
 }
