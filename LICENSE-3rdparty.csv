@@ -9,3 +9,4 @@ import (tools),https://github.com/apple/swift-argument-parser,Apache-2.0,(c) 202
 import (tools),https://github.com/krzysztofzablocki/Difference.git,MIT,Copyright (c) 2017 Krzysztof Zablocki
 import (tools),https://github.com/pointfreeco/swift-snapshot-testing,MIT,Copyright (c) 2019 Point-Free, Inc.
 import (tools),https://github.com/ncreated/Framing,MIT,Copyright (c) 2016 Maciek Grzybowski
+import (tools),https://github.com/ncreated/argparse-zsh,MIT,Copyright (c) 2023 Yaacov Zamir and 2024 Maciek Grzybowski (fork)
