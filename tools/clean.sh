@@ -6,16 +6,21 @@
 set -e
 source ./tools/utils/echo_color.sh
 
-echo_warn "Cleaning" "~/Library/Developer/Xcode/DerivedData/"
-rm -rf ~/Library/Developer/Xcode/DerivedData/*
+clean_dir() {
+    local dir="$1"
+    if [ -d "$dir" ] && [ "$(ls -A "$dir")" ]; then
+        echo_warn "Removing contents:" "'$dir'"
+        rm -rf "$dir"/*
+    else
+        echo_warn "Nothing to clean:" "'$dir' does not exist or it is already empty"
+    fi
+}
 
-echo_warn "Cleaning" "./Carthage/"
-rm -rf ./Carthage/Build/*
-rm -rf ./Carthage/Checkouts/*
+clean_dir ~/Library/Developer/Xcode/DerivedData
+clean_dir ./Carthage/Build
+clean_dir ./Carthage/Checkouts
+clean_dir ./IntegrationTests/Pods
 
-echo_warn "Cleaning" "./IntegrationTests/Pods/"
-rm -rf ./IntegrationTests/Pods/*
-
-echo_warn "Cleaning" "local xcconfigs"
+echo_warn "Cleaning local xcconfigs"
 rm -vf ./xcconfigs/Base.ci.local.xcconfig
 rm -vf ./xcconfigs/Base.dev.local.xcconfig
