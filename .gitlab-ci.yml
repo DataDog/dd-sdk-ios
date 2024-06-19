@@ -4,20 +4,20 @@ stages:
   - test
   - ui-test
 
-# Workflow configuration for all jobs in this file
-# Ref.: https://docs.gitlab.com/ee/ci/yaml/workflow.html
-workflow:
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-    - if: $CI_COMMIT_TAG
-    - if: $CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'master'
-
-# Tags applied to all jobs
-# Ref.: https://docs.gitlab.com/ee/ci/yaml/
+# Default configuration for all jobs:
 default:
   tags:
     - macos:sonoma
     - specific:true
+
+# Utility job that conditions when to add inheriting jobs to the pipeline:
+.run:on-sdk-changes:
+  rules:
+    - changes:
+        - "Datadog*/**/*"
+        - "IntegrationTests/**/*"
+        - "TestUtilities/**/*"
+        - "*.yml"
 
 ENV check:
   stage: pre
@@ -35,6 +35,7 @@ Lint:
 
 Unit Tests (iOS):
   stage: test
+  extends: .run:on-sdk-changes
   variables:
     OS: "latest"
     PLATFORM: "iOS Simulator"
@@ -46,6 +47,7 @@ Unit Tests (iOS):
 
 Unit Tests (tvOS):
   stage: test
+  extends: .run:on-sdk-changes
   variables:
     OS: "latest"
     PLATFORM: "tvOS Simulator"
@@ -57,6 +59,7 @@ Unit Tests (tvOS):
 
 UI Tests:
   stage: ui-test
+  extends: .run:on-sdk-changes
   variables:
     OS: "latest"
     PLATFORM: "iOS Simulator"

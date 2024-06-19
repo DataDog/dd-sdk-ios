@@ -170,11 +170,6 @@ xcodeproj-session-replay:
 		@cd DatadogSessionReplay/ && swift package generate-xcodeproj
 		@echo "OK 👌"
 
-prepare-integration-tests:
-		@echo "⚙️  Prepare Integration Tests ..."
-		@cd IntegrationTests/ && pod install
-		@echo "OK 👌"
-
 open-sr-snapshot-tests:
 		@echo "⚙️  Opening SRSnapshotTests with DD_TEST_UTILITIES_ENABLED ..."
 		@pgrep -q Xcode && killall Xcode && echo "- Xcode killed" || echo "- Xcode not running"
