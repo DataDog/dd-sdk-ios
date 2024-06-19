@@ -1,0 +1,17 @@
+// Base.ci.local.xcconfig for CI env, sourced from `make repo-setup`
+// - It is git-ignored, so not present for git clones in dependency managers.
+// - It is also sourced for DEV env, but certain settings can be overwritten (disabled) for the
+// convenience of local development.
+
+// Active compilation conditions that are only enabled on the local machine:
+// - DD_SDK_COMPILED_FOR_TESTING: This condition ensures the SDK code is compiled specifically for testing purposes.
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_COMPILED_FOR_TESTING
+
+// Build only the active architecture to optimize build time
+ONLY_ACTIVE_ARCH = YES
+
+// Treat all warnings as errors to prevent unresolved warnings
+SWIFT_TREAT_WARNINGS_AS_ERRORS = YES
+
+// Indicates the build is running on a CI. This value is injected into the `Info.plist` of some targets.
+IS_CI = true

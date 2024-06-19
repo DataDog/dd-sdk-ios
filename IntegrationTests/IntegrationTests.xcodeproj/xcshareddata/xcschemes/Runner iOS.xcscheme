@@ -56,11 +56,17 @@
       </PostActions>
       <TestPlans>
          <TestPlanReference
-            reference = "container:xctestplans/DatadogIntegrationTests.xctestplan"
+            reference = "container:xctestplans/Default.xctestplan"
             default = "YES">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:xctestplans/DatadogCrashReportingIntegrationTests.xctestplan">
+            reference = "container:xctestplans/CrashReporting.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:xctestplans/NetworkInstrumentation.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:xctestplans/RUM.xctestplan">
          </TestPlanReference>
       </TestPlans>
       <Testables>
