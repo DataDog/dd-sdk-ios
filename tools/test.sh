@@ -10,6 +10,7 @@
 #   --platform: Defines the type of simulator platform for the tests, e.g. 'iOS Simulator'
 #   --os: Sets the operating system version for the tests, e.g. '17.5'
 
+set -eo pipefail
 source ./tools/utils/argparse.sh
 
 set_description "Executes unit tests for a specified --scheme, using the provided --os, --platform, and --device."
@@ -26,7 +27,6 @@ DESTINATION="platform=$platform,name=$device,OS=$os"
 SCHEME=$scheme
 
 set -x
-set -eo pipefail
 
 xcodebuild -version
 xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test | xcbeautify

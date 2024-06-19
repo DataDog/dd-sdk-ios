@@ -4,6 +4,7 @@
 # ./tools/env_check.sh
 # Prints environment information and checks if required tools are installed.
 
+set -e
 source ./tools/utils/echo_color.sh
 
 check_if_installed() {
@@ -57,14 +58,15 @@ check_if_installed python3
 python3 -V
 
 echo ""
-echo_succ "Installed iOS runtimes:"
-xcodebuild -workspace "Datadog.xcworkspace" -scheme "DatadogCore iOS" -showdestinations -quiet | grep platform
+echo_succ "Available iOS Simulators:"
+xctrace list devices | grep "iPhone.*Simulator"
 
 echo ""
-echo_succ "Installed tvOS runtimes:"
-xcodebuild -workspace "Datadog.xcworkspace" -scheme "DatadogCore tvOS" -showdestinations -quiet | grep platform
+echo_succ "Available tvOS Simulators:"
+xctrace list devices | grep "Apple TV.*Simulator"
 
 if command -v brew >/dev/null 2>&1; then
+    echo ""
     echo_succ "brew:"
     brew -v
 fi

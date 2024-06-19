@@ -3,6 +3,7 @@
 # Usage:
 # $ ./tools/clean.sh
 
+set -e
 source ./tools/utils/echo_color.sh
 
 echo_warn "Cleaning" "~/Library/Developer/Xcode/DerivedData/"

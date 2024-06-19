@@ -7,6 +7,7 @@
 # Options:
 #   --env: Specifies the environment for preparation. Use 'dev' for local development and 'ci' for CI.
 
+set -eo pipefail
 source ./tools/utils/argparse.sh
 source ./tools/utils/echo_color.sh
 
@@ -23,8 +24,6 @@ if [[ "$env" != "$ENV_CI" && "$env" != "$ENV_DEV" ]]; then
   echo_err "Error: env variable must be 'ci' or 'dev'."
   exit 1
 fi
-
-set -eo pipefail
 
 # Materialize CI xcconfig:
 cp -vi "./tools/repo-setup/Base.ci.xcconfig.src" ./xcconfigs/Base.ci.local.xcconfig

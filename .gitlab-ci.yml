@@ -17,23 +17,26 @@ default:
 # │ Utility jobs: │
 # └───────────────┘
 
-.run:always-on-default-branches:
+# Trigger jobs on 'develop' and 'master' branches
+.run:when-develop-or-master:
   rules:
-    - if: '$CI_COMMIT_BRANCH == $MAIN_BRANCH || $CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH || $CI_COMMIT_BRANCH == $MAIN_BRANCH'
       when: always
 
-.run:on-sdk-changes:
+# Trigger jobs on SDK code changes, comparing against 'develop' branch
+.run:if-sdk-modified:
   rules:
     - changes:
-        - "Datadog*/**/*"
-        - "IntegrationTests/**/*"
-        - "TestUtilities/**/*"
-        - "*.yml"
+        paths:
+          - "Datadog*/**/*"
+          - "IntegrationTests/**/*"
+          - "TestUtilities/**/*"
+          - "*" # match any file in the root directory
+        compare_to: 'develop' # cannot use variable due to: https://gitlab.com/gitlab-org/gitlab/-/issues/369916
 
 ENV check:
   stage: pre
   script:
-    - ./tools/runner-setup.sh --ios # temporary, waiting for AMI
     - make env-check
 
 # ┌──────────────────────────┐
@@ -43,10 +46,9 @@ ENV check:
 Lint:
   stage: lint
   rules: 
-    - !reference [.run:always-on-default-branches, rules]
-    - !reference [.run:on-sdk-changes, rules]
+    - !reference [.run:when-develop-or-master, rules]
+    - !reference [.run:if-sdk-modified, rules]
   script:
-    - ./tools/runner-setup.sh --ios # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make lint license-check
     - make rum-models-verify sr-models-verify
@@ -54,38 +56,38 @@ Lint:
 Unit Tests (iOS):
   stage: test
   rules: 
-    - !reference [.run:always-on-default-branches, rules]
-    - !reference [.run:on-sdk-changes, rules]
+    - !reference [.run:when-develop-or-master, rules]
+    - !reference [.run:if-sdk-modified, rules]
   variables:
-    OS: "latest"
+    OS: "17.4"
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 15 Pro"
   script:
-    - ./tools/runner-setup.sh --ios # temporary, waiting for AMI
+    - ./tools/runner-setup.sh --ios --os "$OS" # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
 Unit Tests (tvOS):
   stage: test
   rules: 
-    - !reference [.run:always-on-default-branches, rules]
-    - !reference [.run:on-sdk-changes, rules]
+    - !reference [.run:when-develop-or-master, rules]
+    - !reference [.run:if-sdk-modified, rules]
   variables:
-    OS: "latest"
+    OS: "17.4"
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
   script:
-    - ./tools/runner-setup.sh --tvos # temporary, waiting for AMI
+    - ./tools/runner-setup.sh --tvos --os "$OS" # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
 UI Tests:
   stage: ui-test
   rules: 
-    - !reference [.run:always-on-default-branches, rules]
-    - !reference [.run:on-sdk-changes, rules]
+    - !reference [.run:when-develop-or-master, rules]
+    - !reference [.run:if-sdk-modified, rules]
   variables:
-    OS: "latest"
+    OS: "17.4"
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 15 Pro"
   parallel:
@@ -96,6 +98,6 @@ UI Tests:
           - CrashReporting
           - NetworkInstrumentation
   script:
-    - ./tools/runner-setup.sh --ios # temporary, waiting for AMI
+    - ./tools/runner-setup.sh --ios --os "$OS" # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"

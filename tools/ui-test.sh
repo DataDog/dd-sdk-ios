@@ -10,6 +10,7 @@
 #   --os: Sets the operating system version for the tests, e.g. '17.5'
 #   --test-plan: Identifies the test plan to run
 
+set -eo pipefail
 source ./tools/utils/echo_color.sh
 source ./tools/utils/argparse.sh
 
@@ -35,7 +36,6 @@ enable_apple_crash_reporter() {
 }
 
 set -x
-set -eo pipefail
 
 DIR=$(pwd)
 cd IntegrationTests/ && bundle exec pod install
