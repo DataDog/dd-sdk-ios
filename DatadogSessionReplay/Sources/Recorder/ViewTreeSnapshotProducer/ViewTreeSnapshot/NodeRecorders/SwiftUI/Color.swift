@@ -11,6 +11,8 @@ import SwiftUI
 
 @available(iOS 13.0, *)
 extension SwiftUI.Color {
+    /// The `SwiftUI.Color.Resolved` has been made public in iOS 17.
+    /// It's reflected by `SwiftUI.Color._Resolved` to avoid name conflict.
     struct _Resolved {
         let linearRed: Float
         let linearGreen: Float
