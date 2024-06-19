@@ -1,4 +1,4 @@
-all: dependencies templates
+all: env-check repo-setup templates
 .PHONY: env-check repo-setup clean templates \
 		lint license-check \
 		test test-ios test-ios-all test-tvos test-tvos-all \
