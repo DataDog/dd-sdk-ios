@@ -4,16 +4,27 @@ stages:
   - test
   - ui-test
 
-# Default configuration for all jobs:
+variables:
+  MAIN_BRANCH: "master"
+  DEVELOP_BRANCH: "develop"
+
 default:
   tags:
     - macos:sonoma
     - specific:true
 
-# Utility job that conditions when to add inheriting jobs to the pipeline:
+# ┌───────────────┐
+# │ Utility jobs: │
+# └───────────────┘
+
+.run:always-on-default-branches:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $MAIN_BRANCH || $CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+      when: always
+
 .run:on-sdk-changes:
   rules:
-    - changes:
+    - changes: # on changes to these files for other branches
         - "Datadog*/**/*"
         - "IntegrationTests/**/*"
         - "TestUtilities/**/*"
@@ -25,8 +36,15 @@ ENV check:
     - ./tools/runner-setup.sh --ios # temporary, waiting for AMI
     - make env-check
 
+# ┌──────────────────────────┐
+# │ SDK changes integration: │
+# └──────────────────────────┘
+
 Lint:
   stage: lint
+  rules: 
+    - !reference [.run:always-on-default-branches, rules]
+    - !reference [.run:on-sdk-changes, rules]
   script:
     - ./tools/runner-setup.sh --ios # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
@@ -35,7 +53,9 @@ Lint:
 
 Unit Tests (iOS):
   stage: test
-  extends: .run:on-sdk-changes
+  rules: 
+    - !reference [.run:always-on-default-branches, rules]
+    - !reference [.run:on-sdk-changes, rules]
   variables:
     OS: "latest"
     PLATFORM: "iOS Simulator"
@@ -47,7 +67,9 @@ Unit Tests (iOS):
 
 Unit Tests (tvOS):
   stage: test
-  extends: .run:on-sdk-changes
+  rules: 
+    - !reference [.run:always-on-default-branches, rules]
+    - !reference [.run:on-sdk-changes, rules]
   variables:
     OS: "latest"
     PLATFORM: "tvOS Simulator"
@@ -59,7 +81,9 @@ Unit Tests (tvOS):
 
 UI Tests:
   stage: ui-test
-  extends: .run:on-sdk-changes
+  rules: 
+    - !reference [.run:always-on-default-branches, rules]
+    - !reference [.run:on-sdk-changes, rules]
   variables:
     OS: "latest"
     PLATFORM: "iOS Simulator"
