@@ -305,12 +305,19 @@ extension DisplayList.Content.Value: RandomMockable {
         .color(color)
     }
 
+    static func mockImage(
+        image: GraphicsImage = .mockAny()
+    ) -> Self {
+        .image(image)
+    }
+
     public static func mockRandom() -> Self {
         switch arc4random_uniform(5) /* [0-4] */ {
         case 0: return .mockShape()
         case 1: return .mockText(string: NSAttributedString(string: .mockRandom()))
         case 2: return .platformView
-        case 3: return .mockColor()
+        case 3: return .mockColor(color: .mockRandom())
+        case 4: return .mockImage(image: .mockRandom())
         default: return .unknown
         }
     }
@@ -324,6 +331,25 @@ extension SwiftUI.Color._Resolved: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> Self {
         .init(linearRed: .mockRandom(), linearGreen: .mockRandom(), linearBlue: .mockRandom(), opacity: .mockRandom())
+    }
+}
+
+@available(iOS 13.0, *)
+extension GraphicsImage: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self {
+        .init(contents: nil, scale: .mockAny(), unrotatedPixelSize: .mockAny(), orientation: .up, maskColor: .mockAny(), interpolation: .none)
+    }
+
+    public static func mockRandom() -> Self {
+        let image: UIImage = .mockRandom()
+        return .init(
+            contents: image.cgImage.map { .init(cgImage: $0) },
+            scale: image.scale,
+            unrotatedPixelSize: .mockRandom(),
+            orientation: .up,
+            maskColor: .mockRandom(),
+            interpolation: .none
+        )
     }
 }
 

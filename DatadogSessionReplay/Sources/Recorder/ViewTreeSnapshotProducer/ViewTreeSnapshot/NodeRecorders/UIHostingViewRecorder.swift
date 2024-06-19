@@ -186,6 +186,40 @@ internal struct UIHostingWireframesBuilder: NodeWireframesBuilder {
                 cornerRadius: info?.cornerRadius,
                 opacity: info?.alpha
             )
+        case let .image(graphics):
+            return graphics.contents.map { contents in
+                builder.createImageWireframe(
+                    id: Int64(content.seed.value),
+                    resource: UIImageResource(
+                        image: UIImage(
+                            cgImage: contents.cgImage,
+                            scale: graphics.scale,
+                            orientation: {
+                                switch graphics.orientation {
+                                case .up:           return .up
+                                case .upMirrored:   return .upMirrored
+                                case .down:         return .down
+                                case .downMirrored: return .downMirrored
+                                case .left:         return .left
+                                case .leftMirrored: return .leftMirrored
+                                case .right:        return .right
+                                case .rightMirrored: return .rightMirrored
+                                }
+                            }()
+                        ),
+                        tintColor: graphics.maskColor.map { color in
+                            UIColor(
+                                red: CGFloat(color.linearRed),
+                                green: CGFloat(color.linearGreen),
+                                blue: CGFloat(color.linearBlue),
+                                alpha: CGFloat(color.opacity)
+                            )
+                        }
+                    ),
+                    frame: referential.convert(frame: item.frame),
+                    clip: nil
+                )
+            }
         case .platformView:
             return nil // Should be recorded by UIKit recorder
         case .unknown:

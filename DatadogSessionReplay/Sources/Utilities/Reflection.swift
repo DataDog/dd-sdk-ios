@@ -94,6 +94,18 @@ extension Mirror {
     }
 }
 
+extension Optional: Reflection where Wrapped: Reflection {
+    init(_ mirror: Mirror) throws {
+        if mirror.displayStyle != .optional {
+            self = try .some(Wrapped(mirror))
+        } else if mirror.children.isEmpty {
+            self = .none
+        } else {
+            self = try .some(mirror.descendant(Wrapped.self, path: "some"))
+        }
+    }
+}
+
 extension Array: Reflection where Element: Reflection {
     init(_ mirror: Mirror) throws {
         guard mirror.displayStyle == .collection || mirror.displayStyle == .set else {
