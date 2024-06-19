@@ -28,6 +28,5 @@ SCHEME=$scheme
 set -x
 set -eo pipefail
 
-# xcodebuild -version
-# xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test | xcbeautify
-echo "xcodebuild -workspace '$WORKSPACE' -destination '$DESTINATION' -scheme '$SCHEME' test | xcbeautify"
+xcodebuild -version
+xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test | xcbeautify

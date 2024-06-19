@@ -51,6 +51,5 @@ TEST_PLAN="$test_plan"
 disable_apple_crash_reporter
 trap enable_apple_crash_reporter EXIT INT
 
-# xcodebuild -version
-# xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" test | xcbeautify
-echo "xcodebuild -workspace '$WORKSPACE' -destination '$DESTINATION' -scheme '$SCHEME' -testPlan '$TEST_PLAN' test | xcbeautify"
+xcodebuild -version
+xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" test | xcbeautify

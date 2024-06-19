@@ -24,7 +24,7 @@ default:
 
 .run:on-sdk-changes:
   rules:
-    - changes: # on changes to these files for other branches
+    - changes:
         - "Datadog*/**/*"
         - "IntegrationTests/**/*"
         - "TestUtilities/**/*"
