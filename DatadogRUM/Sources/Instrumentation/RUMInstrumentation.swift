@@ -53,7 +53,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         backtraceReporter: BacktraceReporting,
         fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID,
-        watchdogTermination: WatchdogTerminationMonitor
+        watchdogTermination: WatchdogTerminationMonitor?
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI instrumentation)
         // and only swizzle `UIViewController` if UIKit instrumentation is configured:

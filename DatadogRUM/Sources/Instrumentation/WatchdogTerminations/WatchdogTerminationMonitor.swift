@@ -19,18 +19,18 @@ internal final class WatchdogTerminationMonitor {
 
     let checker: WatchdogTerminationChecker
     let appStateManager: WatchdogTerminationAppStateManager
-    let telemetry: Telemetry
+    let feature: FeatureScope
     let reporter: WatchdogTerminationReporting
 
     init(
         appStateManager: WatchdogTerminationAppStateManager,
         checker: WatchdogTerminationChecker,
-        reporter: WatchdogTerminationReporting,
-        telemetry: Telemetry
+        feature: FeatureScope,
+        reporter: WatchdogTerminationReporting
     ) {
         self.checker = checker
         self.appStateManager = appStateManager
-        self.telemetry = telemetry
+        self.feature = feature
         self.reporter = reporter
     }
 
@@ -45,7 +45,7 @@ internal final class WatchdogTerminationMonitor {
             try appStateManager.start()
         } catch let error {
             DD.logger.error(ErrorMessages.failedToStartAppState, error: error)
-            telemetry.error(ErrorMessages.failedToStartAppState, error: error)
+            feature.telemetry.error(ErrorMessages.failedToStartAppState, error: error)
         }
     }
 
@@ -63,7 +63,7 @@ internal final class WatchdogTerminationMonitor {
             }
         } catch let error {
             DD.logger.error(ErrorMessages.failedToCheckWatchdogTermination, error: error)
-            telemetry.error(ErrorMessages.failedToCheckWatchdogTermination, error: error)
+            feature.telemetry.error(ErrorMessages.failedToCheckWatchdogTermination, error: error)
         }
     }
 
@@ -73,7 +73,7 @@ internal final class WatchdogTerminationMonitor {
             try appStateManager.stop()
         } catch {
             DD.logger.error(ErrorMessages.failedToStopAppState, error: error)
-            telemetry.error(ErrorMessages.failedToStopAppState, error: error)
+            feature.telemetry.error(ErrorMessages.failedToStopAppState, error: error)
         }
     }
 }

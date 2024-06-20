@@ -90,8 +90,8 @@ extension WatchdogTerminationMonitor: RandomMockable {
         return .init(
             appStateManager: .mockRandom(),
             checker: .mockRandom(),
-            reporter: WatchdogTerminationReporter.mockRandom(),
-            telemetry: NOPTelemetry()
+            feature: FeatureScopeMock(),
+            reporter: WatchdogTerminationReporter.mockRandom()
         )
     }
 }
