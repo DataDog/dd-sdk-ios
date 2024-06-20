@@ -14,6 +14,8 @@ import DatadogInternal
 
 /// An entry point to Datadog SDK.
 ///
+/// Change test
+///
 /// Initialize the core instance of the Datadog SDK prior to enabling any Product.
 ///
 /// ```swift
