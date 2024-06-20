@@ -11,95 +11,13 @@ internal final class UINavigationBarRecorder: NodeRecorder {
     let identifier = UUID()
 
     private enum Constants {
+        // Images (Icons)
+        static let defaultIconTintColor = SystemColors.systemBlue
+        // Texts
         static let defaultTitleFontColor = UIColor.black
         static let defaultTitleFontColorInBlackMode = UIColor.white
-        static let defaultIconTintColor = SystemColors.systemBlue
+        static let defaultItemFontColor = SystemColors.systemBlue
     }
-
-    private var currentlyProcessedNavbar: UINavigationBar? = nil
-    private lazy var subtreeViewRecorder: ViewTreeRecorder = {
-        ViewTreeRecorder(
-            nodeRecorders: [
-                // This is to record the icons' color.
-                UIImageViewRecorder(
-                    tintColorProvider: { imageView in
-                        guard let imageViewImage = imageView.image else {
-                            return nil
-                        }
-
-                        if let tintColor = imageView.tintColor {
-                            print("image tintColor:", tintColor)
-                        }
-
-                        let superview = imageView.superview
-                        let sup2 = superview?.superview
-                        let sup3 = sup2?.superview
-                        print("superview:", superview ?? "nil")
-                        print("sup2:", sup2 ?? "nil")
-                        print("sup3:", sup3 ?? "nil")
-
-                        return imageView.tintColor ?? Constants.defaultIconTintColor
-
-                        /*guard let navBar = self.currentlyProcessedNavbar else {
-                            return imageView.tintColor
-                        }*/
-
-                        // Retrieve the tab bar item containing the imageView.
-                        /*let currentItemInSelectedState = tabBar.items?.first {
-                            let itemSelectedImage = $0.selectedImage
-
-                            // Important note when comparing the different tab bar items' icons:
-                            // our hypothesis is that each item uses a different image.
-                            return itemSelectedImage?.uniqueDescription == imageViewImage.uniqueDescription
-                        }
-
-                        // If the item is not selected,
-                        // return the unselectedItemTintColor,
-                        // or the default gray color if not set.
-                        if currentItemInSelectedState == nil || tabBar.selectedItem != currentItemInSelectedState {
-                            return tabBar.unselectedItemTintColor ?? SystemColors.systemGray.withAlphaComponent(0.5)
-                        }
-
-                        // Otherwise, return the tab bar tint color,
-                        // or the default blue color if not set.
-                        return tabBar.tintColor ?? SystemColors.systemBlue*/
-                    }
-                ),
-                // This is to record the title's and text item's color.
-                UILabelRecorder(
-                    builderOverride: { builder in
-                        guard let navBar = self.currentlyProcessedNavbar else {
-                            return builder
-                        }
-
-                        var builder = builder
-                        builder.textColor = Constants.defaultTitleFontColor.cgColor
-
-                        // Title
-                        navBar.items?.forEach { item in
-                            // Title item
-                            if let title = item.title {
-                                print("title:", title)
-
-                                if let attributes = navBar.titleTextAttributes,
-                                   let color = attributes[NSAttributedString.Key.foregroundColor] as? UIColor {
-                                    print("text color:", color)
-                                    builder.textColor = color.cgColor
-                                } else if navBar.barStyle == .black {
-                                    builder.textColor = Constants.defaultTitleFontColorInBlackMode.cgColor
-                                }
-                            // Other items
-                            } else {
-                                //if let item =
-                            }
-                        }
-
-                        return builder
-                    }
-                )
-            ]
-        )
-    }()
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let navigationBar = view as? UINavigationBar else {
@@ -110,26 +28,22 @@ internal final class UINavigationBarRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        currentlyProcessedNavbar = navigationBar
-
         let builder = UINavigationBarWireframesBuilder(
             wireframeRect: inferOccupiedFrame(of: navigationBar, in: context),
             wireframeID: context.ids.nodeID(view: navigationBar, nodeRecorder: self),
             attributes: attributes,
-            color: inferColor(of: navigationBar)
+            color: inferBackgroundColor(of: navigationBar)
         )
 
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
-        let subtreeRecordingResults = subtreeViewRecorder.record(navigationBar, in: context)
+        let subtreeRecordingResults = recordSubtree(of: navigationBar, in: context)
         let allNodes = [node] + subtreeRecordingResults.nodes
         let resources = subtreeRecordingResults.resources
 
         return SpecificElement(subtreeStrategy: .ignore, nodes: allNodes, resources: resources)
-        //return SpecificElement(subtreeStrategy: .record, nodes: [node])
     }
 
     private func inferOccupiedFrame(of navigationBar: UINavigationBar, in context: ViewTreeRecordingContext) -> CGRect {
-        // TODO: RUMM-2791 Enhance appearance of `UITabBar` and `UINavigationBar` in SR
         var occupiedFrame = navigationBar.frame
         for subview in navigationBar.subviews {
             let subviewFrame = subview.convert(subview.bounds, to: context.coordinateSpace)
@@ -138,13 +52,127 @@ internal final class UINavigationBarRecorder: NodeRecorder {
         return occupiedFrame
     }
 
-    private func inferColor(of navigationBar: UINavigationBar) -> CGColor {
-        // TODO: RUMM-2791 Enhance appearance of `UITabBar` and `UINavigationBar` in SR
-
-        if let color = navigationBar.backgroundColor {
-            return color.cgColor
+    private func recordSubtree(of navBar: UINavigationBar, in context: ViewTreeRecordingContext) -> RecordingResult {
+        var imageViewRecorder = UIImageViewRecorder(
+            tintColorProvider: { imageView in
+                imageView.tintColor ?? Constants.defaultIconTintColor
+            }
+        )
+        imageViewRecorder.builderOverride = { builder in
+            var builder = builder
+            builder.backgroundColor = UIColor.clear.cgColor //self.inferBackgroundColor(of: navBar)
+            return builder
         }
 
+        let subtreeViewRecorder = ViewTreeRecorder(
+            nodeRecorders: [
+                // This is to record the items' icon color (eg. `＋` icon).
+                imageViewRecorder,
+                // This is to record the items' text color (eg. "Back").
+                UILabelRecorder(
+                    builderOverride: { builder in
+                        var builder = builder
+                        builder.textColor = Constants.defaultTitleFontColor.cgColor
+
+                        guard let items = navBar.items else {
+                            return builder
+                        }
+
+                        for item in items {
+                            if self.updateBuilderTextColor(for: item, in: navBar, using: &builder) {
+                                return builder
+                            }
+                        }
+
+                        return builder
+                    }
+                )
+            ]
+        )
+
+        return subtreeViewRecorder.record(navBar, in: context)
+    }
+
+    // MARK: Text Color
+    private func updateBuilderTextColor(for item: UINavigationItem, in navBar: UINavigationBar, using builder: inout UILabelWireframesBuilder) -> Bool {
+        if let title = item.title, title == builder.text {
+            // Back item
+            if let backItemTitle = navBar.backItem?.title,
+               backItemTitle == title {
+                builder.textColor = navBar.backItem?.titleView?.tintColor.cgColor ?? Constants.defaultItemFontColor.cgColor
+                return true
+            }
+
+            // Title
+            updateTitleTextColor(in: navBar, using: &builder)
+            return true
+        }
+
+        // Left items
+        if updateBarButtonItemsTextColor(for: item.leftBarButtonItems, using: &builder) {
+            return true
+        }
+
+        // Right items
+        if updateBarButtonItemsTextColor(for: item.rightBarButtonItems, using: &builder) {
+            return true
+        }
+
+        return false
+    }
+
+    private func updateTitleTextColor(in navBar: UINavigationBar, using builder: inout UILabelWireframesBuilder) {
+        if let attributes = navBar.titleTextAttributes,
+           let color = attributes[NSAttributedString.Key.foregroundColor] as? UIColor {
+            builder.textColor = color.cgColor
+        } else {
+            builder.textColor = (navBar.barStyle == .black) ? Constants.defaultTitleFontColorInBlackMode.cgColor : Constants.defaultTitleFontColor.cgColor
+        }
+    }
+
+    private func updateBarButtonItemsTextColor(for items: [UIBarButtonItem]?, using builder: inout UILabelWireframesBuilder) -> Bool {
+        guard let items else {
+            return false
+        }
+
+        for item in items {
+            if let title = item.title, title == builder.text {
+                builder.textColor = item.tintColor?.cgColor ?? Constants.defaultItemFontColor.cgColor
+                return true
+            }
+        }
+
+        return false
+    }
+
+    // MARK: Background color
+    private func inferBackgroundColor(of navigationBar: UINavigationBar) -> CGColor {
+        if let color = navigationBar.backgroundColor {
+            return colorWithAlphaAdjustment(color, for: navigationBar.isTranslucent)
+        // ignore tint color because only visible when scrolled
+        /*} else if let barTintColor = navigationBar.barTintColor {
+            return colorWithAlphaAdjustment(barTintColor, for: navigationBar.isTranslucent)*/
+        // ignore black style?
+        /*} else if navigationBar.barStyle == .black {
+            return inferBlackBarColor(of: navigationBar)*/
+        }
+
+        return defaultColor()
+    }
+
+    private func colorWithAlphaAdjustment(_ color: UIColor, for isTranslucent: Bool) -> CGColor {
+        guard color != UIColor.clear else {
+            return color.cgColor
+        }
+        return isTranslucent ? color.withAlphaComponent(0.8).cgColor : color.cgColor
+    }
+
+    private func inferBlackBarColor(of navigationBar: UINavigationBar) -> CGColor {
+        let backgroundColor = navigationBar.barTintColor ?? UIColor.black
+        return colorWithAlphaAdjustment(backgroundColor, for: navigationBar.isTranslucent)
+    }
+
+    private func defaultColor() -> CGColor {
         if #available(iOS 13.0, *) {
             switch UITraitCollection.current.userInterfaceStyle {
             case .light:
@@ -174,7 +202,7 @@ internal struct UINavigationBarWireframesBuilder: NodeWireframesBuilder {
                 id: wireframeID,
                 frame: wireframeRect,
                 borderColor: UIColor.lightGray.withAlphaComponent(0.5).cgColor,
-                borderWidth: 0.5,
+                borderWidth: 1,
                 backgroundColor: color,
                 cornerRadius: attributes.layerCornerRadius,
                 opacity: attributes.alpha

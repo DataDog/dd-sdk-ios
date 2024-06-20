@@ -12,14 +12,27 @@ public final class NavigationBarControllers: UIViewController {
 
     public func setTintColor() {
         for navbar in navigationBars {
-            //navbar.tintColor = .systemGreen
-            print("navbar items:", navbar.items?.count ?? "nil")
-            navbar.titleTextAttributes = [.foregroundColor: UIColor.blue]
+            navbar.titleTextAttributes = [.foregroundColor: UIColor.cyan]
             navbar.items?.forEach { item in
-                item.leftBarButtonItem?.tintColor = .green
-                item.rightBarButtonItem?.tintColor = .purple
+                if let leftItems = item.leftBarButtonItems {
+                    for leftItem in leftItems {
+                        leftItem.tintColor = .green
+                    }
+                }
+                if let rightItems = item.rightBarButtonItems {
+                    for rightItem in rightItems {
+                        rightItem.tintColor = .purple
+                    }
+                }
             }
         }
     }
 
+}
+
+public final class TestNavigationController: UINavigationController {
+    public func pushNextView() {
+        let firstVC = self.viewControllers.first
+        firstVC?.performSegue(withIdentifier: "showNext", sender: self)
+    }
 }

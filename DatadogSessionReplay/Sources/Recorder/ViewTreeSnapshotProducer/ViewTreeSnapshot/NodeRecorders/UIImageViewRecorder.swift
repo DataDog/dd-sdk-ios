@@ -10,6 +10,7 @@ import UIKit
 internal struct UIImageViewRecorder: NodeRecorder {
     internal let identifier = UUID()
 
+    var builderOverride: (UIImageViewWireframesBuilder) -> UIImageViewWireframesBuilder
     private let tintColorProvider: (UIImageView) -> UIColor?
     private let shouldRecordImagePredicate: (UIImageView) -> Bool
     /// An option for overriding default semantics from parent recorder.
@@ -18,6 +19,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
     }
 
     internal init(
+        builderOverride: @escaping (UIImageViewWireframesBuilder) -> UIImageViewWireframesBuilder = { $0 },
         tintColorProvider: @escaping (UIImageView) -> UIColor? = { imageView in
             if #available(iOS 13.0, *), let image = imageView.image {
                 return image.isTinted ? imageView.tintColor : nil
@@ -33,6 +35,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             }
         }
     ) {
+        self.builderOverride = builderOverride
         self.tintColorProvider = tintColorProvider
         self.shouldRecordImagePredicate = shouldRecordImagePredicate
     }
@@ -77,7 +80,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             imageResource: shouldRecordImage ? imageResource : nil,
             shouldRecordImage: shouldRecordImage
         )
-        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builderOverride(builder))
         return SpecificElement(
            subtreeStrategy: .record,
            nodes: [node],
@@ -104,6 +107,8 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
     let imageResource: UIImageResource?
 
     let shouldRecordImage: Bool
+
+    var backgroundColor: CGColor?
 
     private var clip: SRContentClip? {
         guard let contentFrame = contentFrame else {
@@ -135,7 +140,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 frame: attributes.frame,
                 borderColor: attributes.layerBorderColor,
                 borderWidth: attributes.layerBorderWidth,
-                backgroundColor: attributes.backgroundColor,
+                backgroundColor: backgroundColor ?? attributes.backgroundColor,
                 cornerRadius: attributes.layerCornerRadius,
                 opacity: attributes.alpha
             )

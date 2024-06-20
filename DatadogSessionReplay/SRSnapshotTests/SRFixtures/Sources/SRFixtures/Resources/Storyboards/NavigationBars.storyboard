@@ -4,7 +4,6 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22685"/>
-        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -22,92 +21,140 @@
                                 <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                                 <items>
                                     <navigationItem title="Default + Translucent" id="Xeo-w7-dzg">
-                                        <barButtonItem key="leftBarButtonItem" title="Item" id="vCu-b1-LV3"/>
-                                        <barButtonItem key="rightBarButtonItem" image="info" catalog="system" id="4Od-lE-bU1"/>
+                                        <leftBarButtonItems>
+                                            <barButtonItem title="Left" id="vCu-b1-LV3"/>
+                                            <barButtonItem systemItem="add" id="kfw-gb-nGz"/>
+                                        </leftBarButtonItems>
+                                        <rightBarButtonItems>
+                                            <barButtonItem image="info" catalog="system" id="4Od-lE-bU1"/>
+                                            <barButtonItem title="Right" id="YXa-W9-hB1"/>
+                                        </rightBarButtonItems>
                                     </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ajl-Z9-tns" userLabel="Nav Bar 2">
                                 <rect key="frame" x="0.0" y="113" width="393" height="44"/>
                                 <items>
-                                    <navigationItem title="Default + Non Translucent" id="mxX-11-5jT">
-                                        <barButtonItem key="leftBarButtonItem" title="Item" id="Ig9-4X-3Rw"/>
-                                        <barButtonItem key="rightBarButtonItem" image="info" catalog="system" id="Wey-V1-cEI"/>
+                                    <navigationItem title="Default + Non Transl." id="mxX-11-5jT">
+                                        <leftBarButtonItems>
+                                            <barButtonItem title="Left" id="Ig9-4X-3Rw"/>
+                                            <barButtonItem systemItem="add" id="KDZ-bZ-iqT"/>
+                                        </leftBarButtonItems>
+                                        <rightBarButtonItems>
+                                            <barButtonItem image="info" catalog="system" id="Wey-V1-cEI"/>
+                                            <barButtonItem title="Right" id="Gxc-EM-0OJ"/>
+                                        </rightBarButtonItems>
                                     </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" barStyle="black" translatesAutoresizingMaskIntoConstraints="NO" id="ukA-2h-orc" userLabel="Nav Bar 3">
                                 <rect key="frame" x="0.0" y="167" width="393" height="44"/>
                                 <items>
-                                    <navigationItem title="Black + Translucent" id="seE-N8-ZvT">
-                                        <barButtonItem key="leftBarButtonItem" title="Item" id="u4M-QB-9Pq"/>
-                                        <barButtonItem key="rightBarButtonItem" title="Item" image="info" catalog="system" id="QnN-A5-IuA"/>
+                                    <navigationItem title="Black + Transl." id="seE-N8-ZvT">
+                                        <leftBarButtonItems>
+                                            <barButtonItem title="Left" id="u4M-QB-9Pq"/>
+                                            <barButtonItem systemItem="add" id="Ofm-jc-uf7"/>
+                                        </leftBarButtonItems>
+                                        <rightBarButtonItems>
+                                            <barButtonItem title="Item" image="info" catalog="system" id="QnN-A5-IuA"/>
+                                            <barButtonItem title="Right" id="Ero-5T-3wM"/>
+                                        </rightBarButtonItems>
                                     </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" barStyle="black" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cPg-it-9Wj" userLabel="Nav Bar 4">
                                 <rect key="frame" x="0.0" y="221" width="393" height="44"/>
                                 <items>
-                                    <navigationItem title="Black + Non Translucent" id="Kya-bw-HAM">
-                                        <barButtonItem key="leftBarButtonItem" title="Item" id="rWf-KI-M5o"/>
-                                        <barButtonItem key="rightBarButtonItem" title="Item" image="info" catalog="system" id="DrT-Yq-DLX"/>
+                                    <navigationItem title="Black + Non Transl." id="Kya-bw-HAM">
+                                        <leftBarButtonItems>
+                                            <barButtonItem title="Left" id="rWf-KI-M5o"/>
+                                            <barButtonItem systemItem="add" id="Y8I-tu-HZR"/>
+                                        </leftBarButtonItems>
+                                        <rightBarButtonItems>
+                                            <barButtonItem title="Item" image="info" catalog="system" id="DrT-Yq-DLX"/>
+                                            <barButtonItem title="Right" id="c5G-Rv-6Tw"/>
+                                        </rightBarButtonItems>
                                     </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="e8h-Mi-66Z" userLabel="Nav Bar 5">
                                 <rect key="frame" x="0.0" y="275" width="393" height="44"/>
-                                <color key="barTintColor" name="EB455F"/>
+                                <color key="barTintColor" systemColor="systemTealColor"/>
                                 <items>
-                                    <navigationItem title="Def. + Translucent + Bar Tint Color" id="gvv-yj-ejF"/>
+                                    <navigationItem title="Def. + Transl. + Bar Tint Color" id="gvv-yj-ejF">
+                                        <barButtonItem key="leftBarButtonItem" title="Left" id="lEK-cX-dBe"/>
+                                        <barButtonItem key="rightBarButtonItem" image="info" catalog="system" id="kYS-Mj-mTi"/>
+                                    </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cO3-mR-lBy" userLabel="Nav Bar 6">
                                 <rect key="frame" x="0.0" y="329" width="393" height="44"/>
-                                <color key="barTintColor" name="EB455F"/>
+                                <color key="barTintColor" systemColor="systemTealColor"/>
                                 <items>
-                                    <navigationItem title="Def. + Non Translucent + Bar Tint Color" id="McZ-Ok-GVo"/>
+                                    <navigationItem title="Def. + Non Transl. + Bar Tint Color" id="McZ-Ok-GVo">
+                                        <barButtonItem key="leftBarButtonItem" title="Left" id="k9L-4s-mDy"/>
+                                        <barButtonItem key="rightBarButtonItem" image="info" catalog="system" id="Q8k-vm-dGl"/>
+                                    </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" barStyle="black" translatesAutoresizingMaskIntoConstraints="NO" id="IWN-im-A5k" userLabel="Nav Bar 7">
                                 <rect key="frame" x="0.0" y="383" width="393" height="44"/>
-                                <color key="barTintColor" name="EB455F"/>
+                                <color key="barTintColor" systemColor="systemTealColor"/>
                                 <items>
-                                    <navigationItem title="Black + Translucent + Bar Tint Color" id="cVz-OM-qZL"/>
+                                    <navigationItem title="B + Transl. + Bar Tint Color" id="cVz-OM-qZL">
+                                        <barButtonItem key="leftBarButtonItem" title="Left" id="dDV-mb-k3P"/>
+                                        <barButtonItem key="rightBarButtonItem" image="info" catalog="system" id="Knq-IK-Q6L"/>
+                                    </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" barStyle="black" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1ci-qB-B2g" userLabel="Nav Bar 8">
                                 <rect key="frame" x="0.0" y="437" width="393" height="44"/>
-                                <color key="barTintColor" name="EB455F"/>
+                                <color key="barTintColor" systemColor="systemTealColor"/>
                                 <items>
-                                    <navigationItem title="Black + Non Translucent + Bar Tint Color" id="VW2-4h-4ex"/>
+                                    <navigationItem title="B + Non Transl. + Bar Tint Color" id="VW2-4h-4ex">
+                                        <barButtonItem key="leftBarButtonItem" title="Left" id="5x4-GA-ZNU"/>
+                                        <barButtonItem key="rightBarButtonItem" image="info" catalog="system" id="UER-w0-t4j"/>
+                                    </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bpw-vQ-BO5" userLabel="Nav Bar 9">
                                 <rect key="frame" x="0.0" y="491" width="393" height="44"/>
-                                <color key="backgroundColor" name="AccentColor"/>
+                                <color key="backgroundColor" systemColor="systemIndigoColor"/>
                                 <items>
-                                    <navigationItem title="Def. + Translucent + BG Color" id="QrT-yg-HKa"/>
+                                    <navigationItem title="Def. + Transl. + BG Color" id="QrT-yg-HKa">
+                                        <barButtonItem key="leftBarButtonItem" title="Left" id="xKD-9p-MmZ"/>
+                                        <barButtonItem key="rightBarButtonItem" image="info" catalog="system" id="awG-KP-aeE"/>
+                                    </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bKA-5f-YQx" userLabel="Nav Bar 10">
                                 <rect key="frame" x="0.0" y="545" width="393" height="44"/>
-                                <color key="backgroundColor" name="AccentColor"/>
+                                <color key="backgroundColor" systemColor="systemIndigoColor"/>
                                 <items>
-                                    <navigationItem title="Def. + Non Translucent + BG Color" id="4Vz-05-7OJ"/>
+                                    <navigationItem title="Def. + Non Transl. + BG Color" id="4Vz-05-7OJ">
+                                        <barButtonItem key="leftBarButtonItem" title="Left" id="GiZ-vo-jU7"/>
+                                        <barButtonItem key="rightBarButtonItem" image="info" catalog="system" id="Spn-TI-732"/>
+                                    </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" barStyle="black" translatesAutoresizingMaskIntoConstraints="NO" id="1Pp-bo-pl2" userLabel="Nav Bar 11">
                                 <rect key="frame" x="0.0" y="599" width="393" height="44"/>
-                                <color key="backgroundColor" name="AccentColor"/>
+                                <color key="backgroundColor" systemColor="systemIndigoColor"/>
                                 <items>
-                                    <navigationItem title="Black + Translucent + BG Color" id="ddg-T7-C0x"/>
+                                    <navigationItem title="B + Transl. + BG Color" id="ddg-T7-C0x">
+                                        <barButtonItem key="leftBarButtonItem" title="Left" id="PEC-IM-Q2X"/>
+                                        <barButtonItem key="rightBarButtonItem" image="info" catalog="system" id="LPq-pC-6YO"/>
+                                    </navigationItem>
                                 </items>
                             </navigationBar>
                             <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qW5-Sn-HE5" userLabel="Nav Bar 12">
                                 <rect key="frame" x="0.0" y="653" width="393" height="44"/>
-                                <color key="backgroundColor" name="AccentColor"/>
+                                <color key="backgroundColor" systemColor="systemIndigoColor"/>
                                 <items>
-                                    <navigationItem title="Def. + Translucent + BG Color" id="pQe-9u-UsW"/>
+                                    <navigationItem title="Def. + Transl. + BG Color" id="pQe-9u-UsW">
+                                        <barButtonItem key="leftBarButtonItem" title="Left" id="lXe-dW-N5n"/>
+                                        <barButtonItem key="rightBarButtonItem" image="info" catalog="system" id="GCr-2g-PsZ"/>
+                                    </navigationItem>
                                 </items>
                             </navigationBar>
                         </subviews>
@@ -171,7 +218,7 @@
             </objects>
             <point key="canvasLocation" x="76" y="-1700"/>
         </scene>
-        <!--Title-->
+        <!--Page 1-->
         <scene sceneID="Agd-k8-VEQ">
             <objects>
                 <viewController id="uFh-c4-UXt" sceneMemberID="viewController">
@@ -194,13 +241,45 @@
                             <constraint firstItem="I0I-mO-uSG" firstAttribute="trailing" secondItem="D51-8m-6pn" secondAttribute="trailing" constant="20" id="akP-t2-fja"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Title" id="OEd-eh-bpW"/>
+                    <navigationItem key="navigationItem" title="Page 1" id="OEd-eh-bpW"/>
+                    <connections>
+                        <segue destination="rN4-xF-Ry4" kind="show" identifier="showNext" id="hZk-xS-Vym"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Iss-TL-eg1" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="940" y="-1017"/>
         </scene>
-        <!--Title-->
+        <!--Page 2-->
+        <scene sceneID="RRG-9K-X74">
+            <objects>
+                <viewController id="rN4-xF-Ry4" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Pi9-Yc-Guv">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Embedded Default + Translucent" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ohy-Ni-Bld">
+                                <rect key="frame" x="20" y="405.66666666666669" width="353" height="40.666666666666686"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="qZS-iu-6MO"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="qZS-iu-6MO" firstAttribute="trailing" secondItem="Ohy-Ni-Bld" secondAttribute="trailing" constant="20" id="Sp6-zC-g3u"/>
+                            <constraint firstItem="Ohy-Ni-Bld" firstAttribute="leading" secondItem="qZS-iu-6MO" secondAttribute="leading" constant="20" id="aNX-bd-ZQM"/>
+                            <constraint firstItem="Ohy-Ni-Bld" firstAttribute="centerY" secondItem="Pi9-Yc-Guv" secondAttribute="centerY" id="cS0-jr-cd1"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Page 2" id="R9U-OI-Lkz"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="tDc-7H-VgV" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1792" y="-1018"/>
+        </scene>
+        <!--Page 1-->
         <scene sceneID="BVW-Q1-y7R">
             <objects>
                 <viewController id="G5a-0u-Ytb" sceneMemberID="viewController">
@@ -225,16 +304,50 @@ Default + Non Translucent</string>
                             <constraint firstItem="2sa-b3-bzj" firstAttribute="leading" secondItem="Jmn-xM-9Ll" secondAttribute="leading" constant="20" id="lrQ-iI-L9r"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Title" id="5Mq-5T-iz0"/>
+                    <navigationItem key="navigationItem" title="Page 1" id="5Mq-5T-iz0"/>
+                    <connections>
+                        <segue destination="LiQ-Cr-dTk" kind="show" identifier="showNext" id="bY8-aJ-CQ8"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="lO5-rh-cmd" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="940" y="-329"/>
         </scene>
-        <!--Navigation Controller-->
+        <!--Page 2-->
+        <scene sceneID="bHS-EO-Urq">
+            <objects>
+                <viewController id="LiQ-Cr-dTk" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="MfW-Ds-cEk">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="749"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L7v-tG-F0k">
+                                <rect key="frame" x="20" y="354.33333333333331" width="353" height="40.666666666666686"/>
+                                <string key="text">Embedded
+Default + Non Translucent</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="Wus-CH-goS"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="Wus-CH-goS" firstAttribute="trailing" secondItem="L7v-tG-F0k" secondAttribute="trailing" constant="20" id="gsT-g9-agi"/>
+                            <constraint firstItem="L7v-tG-F0k" firstAttribute="leading" secondItem="Wus-CH-goS" secondAttribute="leading" constant="20" id="lJG-q9-OpO"/>
+                            <constraint firstItem="L7v-tG-F0k" firstAttribute="centerY" secondItem="MfW-Ds-cEk" secondAttribute="centerY" id="m0h-eH-iXp"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Page 2" id="b8H-nL-9e0"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="IUG-RM-BMP" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1792" y="-330"/>
+        </scene>
+        <!--Test Navigation Controller-->
         <scene sceneID="AyN-GO-9uP">
             <objects>
-                <navigationController storyboardIdentifier="Default_Translucent_Navbar" toolbarHidden="NO" id="2tZ-qf-jd8" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="Default_Translucent_Navbar" toolbarHidden="NO" id="2tZ-qf-jd8" customClass="TestNavigationController" customModule="SRFixtures" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="RuE-LT-ssD">
                         <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -251,10 +364,10 @@ Default + Non Translucent</string>
             </objects>
             <point key="canvasLocation" x="56" y="-1017"/>
         </scene>
-        <!--Navigation Controller-->
+        <!--Test Navigation Controller-->
         <scene sceneID="aN1-DT-3JU">
             <objects>
-                <navigationController storyboardIdentifier="Default_Non_Translucent_Navbar" id="QZ5-VJ-PWm" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="Default_Non_Translucent_Navbar" id="QZ5-VJ-PWm" customClass="TestNavigationController" customModule="SRFixtures" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="fKt-1b-0Q0">
                         <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -267,7 +380,7 @@ Default + Non Translucent</string>
             </objects>
             <point key="canvasLocation" x="76" y="-330"/>
         </scene>
-        <!--Title-->
+        <!--Page 1-->
         <scene sceneID="Jhy-Ft-knE">
             <objects>
                 <viewController id="enc-wj-k3C" sceneMemberID="viewController">
@@ -292,20 +405,54 @@ Default + Translucent with Bar Tint Color</string>
                             <constraint firstItem="dhX-rK-8Ka" firstAttribute="leading" secondItem="ick-qm-vaK" secondAttribute="leading" constant="20" id="rLu-gA-kby"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Title" id="pr0-Ku-6yy"/>
+                    <navigationItem key="navigationItem" title="Page 1" id="pr0-Ku-6yy"/>
+                    <connections>
+                        <segue destination="dwR-N9-KTR" kind="show" identifier="showNext" id="Jwp-Mk-6IR"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cYS-Ll-ZHG" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="960" y="1811"/>
         </scene>
-        <!--Navigation Controller-->
+        <!--Page 2-->
+        <scene sceneID="wRS-yD-W1T">
+            <objects>
+                <viewController id="dwR-N9-KTR" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Xx9-yG-NUa">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EeV-xj-2Nl">
+                                <rect key="frame" x="20" y="395.66666666666669" width="353" height="61"/>
+                                <string key="text">Embedded
+Default + Translucent with Bar Tint Color</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="hKR-ZU-Lqf"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="EeV-xj-2Nl" firstAttribute="centerY" secondItem="Xx9-yG-NUa" secondAttribute="centerY" id="P4l-F0-p87"/>
+                            <constraint firstItem="hKR-ZU-Lqf" firstAttribute="trailing" secondItem="EeV-xj-2Nl" secondAttribute="trailing" constant="20" id="WWb-B4-fiN"/>
+                            <constraint firstItem="EeV-xj-2Nl" firstAttribute="leading" secondItem="hKR-ZU-Lqf" secondAttribute="leading" constant="20" id="ric-DC-wbe"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Page 2" id="eTz-dP-AQw"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="aXJ-qX-X3w" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1793" y="1811"/>
+        </scene>
+        <!--Test Navigation Controller-->
         <scene sceneID="EoL-rL-nXe">
             <objects>
-                <navigationController storyboardIdentifier="Default_Translucent_Bar_Tint_Navbar" id="ogL-c9-MrV" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="Default_Translucent_Bar_Tint_Navbar" id="ogL-c9-MrV" customClass="TestNavigationController" customModule="SRFixtures" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="aPg-Sl-FyU">
                         <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="barTintColor" name="EB455F"/>
+                        <color key="barTintColor" systemColor="systemTealColor"/>
                     </navigationBar>
                     <connections>
                         <segue destination="enc-wj-k3C" kind="relationship" relationship="rootViewController" id="Jeu-c9-Rx7"/>
@@ -315,7 +462,7 @@ Default + Translucent with Bar Tint Color</string>
             </objects>
             <point key="canvasLocation" x="76" y="1811"/>
         </scene>
-        <!--Title-->
+        <!--Page 1-->
         <scene sceneID="YbI-Rj-yX3">
             <objects>
                 <viewController id="6il-hv-IZL" sceneMemberID="viewController">
@@ -340,20 +487,54 @@ Default + Non Translucent with Bar Tint Color</string>
                             <constraint firstItem="Umw-4r-RJU" firstAttribute="centerY" secondItem="U5O-fr-Pms" secondAttribute="centerY" id="JTJ-Bh-aBg"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Title" id="mQI-Xp-OoD"/>
+                    <navigationItem key="navigationItem" title="Page 1" id="mQI-Xp-OoD"/>
+                    <connections>
+                        <segue destination="mTs-5p-o8Y" kind="show" identifier="showNext" id="Eni-Mb-lkm"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ar0-gN-RQn" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="979" y="2491"/>
         </scene>
-        <!--Navigation Controller-->
+        <!--Page 2-->
+        <scene sceneID="zTf-6T-3hU">
+            <objects>
+                <viewController id="mTs-5p-o8Y" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Fqt-ba-ine">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="749"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hCo-rh-8lS">
+                                <rect key="frame" x="20" y="344" width="353" height="61"/>
+                                <string key="text">Embedded
+Default + Non Translucent with Bar Tint Color</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="hCU-5C-RRI"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="hCo-rh-8lS" firstAttribute="leading" secondItem="hCU-5C-RRI" secondAttribute="leading" constant="20" id="K3y-jb-FVb"/>
+                            <constraint firstAttribute="trailing" secondItem="hCo-rh-8lS" secondAttribute="trailing" constant="20" id="qDb-9m-nqc"/>
+                            <constraint firstItem="hCo-rh-8lS" firstAttribute="centerY" secondItem="Fqt-ba-ine" secondAttribute="centerY" id="tU8-xo-p9w"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Page 2" id="SBB-JU-z2e"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="VUd-UD-J9r" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1792" y="2491"/>
+        </scene>
+        <!--Test Navigation Controller-->
         <scene sceneID="HdO-xM-Goy">
             <objects>
-                <navigationController storyboardIdentifier="Default_Non_Translucent_Bar_Tint_Navbar" id="CcE-mr-rQd" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="Default_Non_Translucent_Bar_Tint_Navbar" id="CcE-mr-rQd" customClass="TestNavigationController" customModule="SRFixtures" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="gWr-Ei-VMY">
                         <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="barTintColor" name="EB455F"/>
+                        <color key="barTintColor" systemColor="systemTealColor"/>
                     </navigationBar>
                     <connections>
                         <segue destination="6il-hv-IZL" kind="relationship" relationship="rootViewController" id="LU0-7j-84H"/>
@@ -363,7 +544,7 @@ Default + Non Translucent with Bar Tint Color</string>
             </objects>
             <point key="canvasLocation" x="95" y="2491"/>
         </scene>
-        <!--Title-->
+        <!--Page 1-->
         <scene sceneID="gwQ-Oh-QCb">
             <objects>
                 <viewController id="Nrc-Gi-6Mu" sceneMemberID="viewController">
@@ -388,20 +569,23 @@ Default + Translucent with Background Color</string>
                             <constraint firstItem="mvB-vj-Wqm" firstAttribute="leading" secondItem="xuU-RX-gnf" secondAttribute="leading" constant="20" id="VjA-ml-esN"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Title" id="KAA-nv-Kuj"/>
+                    <navigationItem key="navigationItem" title="Page 1" id="KAA-nv-Kuj"/>
+                    <connections>
+                        <segue destination="CDj-dW-BDH" kind="show" identifier="showNext" id="EmI-yB-f5Y"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="twG-6i-CUH" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="979" y="3220"/>
         </scene>
-        <!--Navigation Controller-->
+        <!--Test Navigation Controller-->
         <scene sceneID="htF-RU-lNe">
             <objects>
-                <navigationController storyboardIdentifier="Default_Translucent_Background_Navbar" id="1gN-O1-6Sp" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="Default_Translucent_Background_Navbar" id="1gN-O1-6Sp" customClass="TestNavigationController" customModule="SRFixtures" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="jqs-cK-9dk">
                         <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="backgroundColor" systemColor="systemGreenColor"/>
+                        <color key="backgroundColor" systemColor="systemIndigoColor"/>
                     </navigationBar>
                     <connections>
                         <segue destination="Nrc-Gi-6Mu" kind="relationship" relationship="rootViewController" id="Yb7-kb-ahD"/>
@@ -411,7 +595,7 @@ Default + Translucent with Background Color</string>
             </objects>
             <point key="canvasLocation" x="95" y="3220"/>
         </scene>
-        <!--Title-->
+        <!--Page 1-->
         <scene sceneID="aVR-FI-XxI">
             <objects>
                 <viewController id="U5K-8R-4He" sceneMemberID="viewController">
@@ -436,20 +620,54 @@ Default + Non Translucent with Background Color</string>
                             <constraint firstItem="33r-3A-Emc" firstAttribute="centerY" secondItem="v8E-AE-bnV" secondAttribute="centerY" id="JCL-IH-8e5"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Title" id="iwR-N2-VaZ"/>
+                    <navigationItem key="navigationItem" title="Page 1" id="iwR-N2-VaZ"/>
+                    <connections>
+                        <segue destination="sJV-39-mdX" kind="show" identifier="showNext" id="5j5-AR-gkA"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Q9p-nO-gx8" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="979" y="3903"/>
         </scene>
-        <!--Navigation Controller-->
+        <!--Page 2-->
+        <scene sceneID="Ufh-4X-7mb">
+            <objects>
+                <viewController id="sJV-39-mdX" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="d9P-gu-wy9">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="749"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Yg-wo-Y6s">
+                                <rect key="frame" x="20" y="344" width="353" height="61"/>
+                                <string key="text">Embedded
+Default + Non Translucent with Background Color</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="E7D-NB-Pi2"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="5Yg-wo-Y6s" firstAttribute="leading" secondItem="E7D-NB-Pi2" secondAttribute="leading" constant="20" id="9Co-Vs-kdo"/>
+                            <constraint firstItem="5Yg-wo-Y6s" firstAttribute="centerY" secondItem="d9P-gu-wy9" secondAttribute="centerY" id="Xk5-Fy-W3R"/>
+                            <constraint firstAttribute="trailing" secondItem="5Yg-wo-Y6s" secondAttribute="trailing" constant="20" id="qCD-Cx-YaU"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Page 2" id="Ech-M6-5aB"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="KCJ-Mn-qbf" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1792" y="3903"/>
+        </scene>
+        <!--Test Navigation Controller-->
         <scene sceneID="El6-lp-whD">
             <objects>
-                <navigationController storyboardIdentifier="Default_Non_Translucent_Background_Navbar" id="P44-X6-iYR" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="Default_Non_Translucent_Background_Navbar" id="P44-X6-iYR" customClass="TestNavigationController" customModule="SRFixtures" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="V0h-dX-rRN">
                         <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="backgroundColor" systemColor="systemGreenColor"/>
+                        <color key="backgroundColor" systemColor="systemIndigoColor"/>
                     </navigationBar>
                     <connections>
                         <segue destination="U5K-8R-4He" kind="relationship" relationship="rootViewController" id="3K0-e4-sA6"/>
@@ -459,7 +677,7 @@ Default + Non Translucent with Background Color</string>
             </objects>
             <point key="canvasLocation" x="95" y="3903"/>
         </scene>
-        <!--Title-->
+        <!--Page 1-->
         <scene sceneID="Dj8-eX-Rtx">
             <objects>
                 <viewController id="R2I-xO-zE1" sceneMemberID="viewController">
@@ -484,16 +702,50 @@ Black + Non Translucent</string>
                             <constraint firstItem="VdD-Xm-eSk" firstAttribute="centerY" secondItem="j0W-xj-Jtx" secondAttribute="centerY" id="pXG-8b-XUk"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Title" id="S4K-aG-2wS"/>
+                    <navigationItem key="navigationItem" title="Page 1" id="S4K-aG-2wS"/>
+                    <connections>
+                        <segue destination="tnK-Mj-sIl" kind="show" identifier="showNext" id="O9s-Ds-aNB"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ahc-Dm-gsP" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="940" y="373"/>
         </scene>
-        <!--Navigation Controller-->
+        <!--Page 2-->
+        <scene sceneID="vx7-wK-usC">
+            <objects>
+                <viewController id="tnK-Mj-sIl" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="f3f-FE-3UO">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="749"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="w1E-3y-VhD">
+                                <rect key="frame" x="20" y="354.33333333333331" width="353" height="40.666666666666686"/>
+                                <string key="text">Embedded
+Black + Non Translucent</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="LRe-EB-JKP"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="w1E-3y-VhD" firstAttribute="centerY" secondItem="f3f-FE-3UO" secondAttribute="centerY" id="Bd1-Bb-e2p"/>
+                            <constraint firstItem="w1E-3y-VhD" firstAttribute="leading" secondItem="f3f-FE-3UO" secondAttribute="leading" constant="20" id="L0H-4g-6xH"/>
+                            <constraint firstItem="LRe-EB-JKP" firstAttribute="trailing" secondItem="w1E-3y-VhD" secondAttribute="trailing" constant="20" id="nVy-Cv-g2S"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Page 2" id="vEw-Ks-G9F"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="T27-Qj-u8w" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1792" y="373"/>
+        </scene>
+        <!--Test Navigation Controller-->
         <scene sceneID="NjG-od-ocH">
             <objects>
-                <navigationController storyboardIdentifier="Black_Non_Translucent_Navbar" id="Ld7-cI-7Lj" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="Black_Non_Translucent_Navbar" id="Ld7-cI-7Lj" customClass="TestNavigationController" customModule="SRFixtures" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="black" translucent="NO" id="Vvh-rv-4Kz">
                         <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -506,7 +758,7 @@ Black + Non Translucent</string>
             </objects>
             <point key="canvasLocation" x="76" y="373"/>
         </scene>
-        <!--Title-->
+        <!--Page 1-->
         <scene sceneID="BNa-dH-BTh">
             <objects>
                 <viewController id="sUP-TQ-ze4" sceneMemberID="viewController">
@@ -531,16 +783,50 @@ Black + Translucent</string>
                             <constraint firstItem="m1v-NH-603" firstAttribute="leading" secondItem="nrs-tL-nYA" secondAttribute="leading" constant="20" id="oeL-tN-LDq"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Title" id="pyq-Lx-FuY"/>
+                    <navigationItem key="navigationItem" title="Page 1" id="pyq-Lx-FuY"/>
+                    <connections>
+                        <segue destination="FxQ-LT-lZK" kind="show" identifier="showNext" id="9kc-X6-Me4"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="UVA-T2-fnX" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="940" y="1060"/>
         </scene>
-        <!--Navigation Controller-->
+        <!--Page 2-->
+        <scene sceneID="aL4-mD-hMT">
+            <objects>
+                <viewController id="FxQ-LT-lZK" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="rIM-ed-vTa">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RVc-Un-0Vf">
+                                <rect key="frame" x="20" y="405.66666666666669" width="353" height="40.666666666666686"/>
+                                <string key="text">Embedded
+Black + Translucent</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="LfH-Bb-B3J"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="RVc-Un-0Vf" firstAttribute="leading" secondItem="LfH-Bb-B3J" secondAttribute="leading" constant="20" id="6Qb-1U-Wig"/>
+                            <constraint firstItem="LfH-Bb-B3J" firstAttribute="trailing" secondItem="RVc-Un-0Vf" secondAttribute="trailing" constant="20" id="8FE-ey-PyI"/>
+                            <constraint firstItem="RVc-Un-0Vf" firstAttribute="centerY" secondItem="rIM-ed-vTa" secondAttribute="centerY" id="OFP-QC-7WT"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Page 2" id="iuj-d7-ivO"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="f4u-sY-3cK" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1792" y="1060"/>
+        </scene>
+        <!--Test Navigation Controller-->
         <scene sceneID="gWW-8j-jhF">
             <objects>
-                <navigationController storyboardIdentifier="Black_Translucent_Navbar" id="C3H-rq-Xlv" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="Black_Translucent_Navbar" id="C3H-rq-Xlv" customClass="TestNavigationController" customModule="SRFixtures" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="black" id="hNu-P8-aqN">
                         <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -553,20 +839,48 @@ Black + Translucent</string>
             </objects>
             <point key="canvasLocation" x="76" y="1060"/>
         </scene>
+        <!--Page 2-->
+        <scene sceneID="JgD-AE-m64">
+            <objects>
+                <viewController id="CDj-dW-BDH" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="xN6-rB-kgp">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dQx-lT-UO9">
+                                <rect key="frame" x="20" y="395.66666666666669" width="353" height="61"/>
+                                <string key="text">Embedded
+Default + Translucent with Background Color</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="aWM-qd-6Sy"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="dQx-lT-UO9" firstAttribute="leading" secondItem="xN6-rB-kgp" secondAttribute="leading" constant="20" id="7sa-6M-ceg"/>
+                            <constraint firstItem="aWM-qd-6Sy" firstAttribute="trailing" secondItem="dQx-lT-UO9" secondAttribute="trailing" constant="20" id="ZKb-qK-chl"/>
+                            <constraint firstItem="dQx-lT-UO9" firstAttribute="centerY" secondItem="xN6-rB-kgp" secondAttribute="centerY" id="lzx-p4-UVE"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Page 2" id="X5E-Df-13M"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="tho-Xd-X0Y" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1792" y="3220"/>
+        </scene>
     </scenes>
     <resources>
         <image name="info" catalog="system" width="93" height="128"/>
-        <namedColor name="AccentColor">
-            <color red="0.0" green="0.46000000000000002" blue="0.89000000000000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="EB455F">
-            <color red="0.92199999094009399" green="0.27099999785423279" blue="0.37299999594688416" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
-        <systemColor name="systemGreenColor">
-            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        <systemColor name="systemIndigoColor">
+            <color red="0.34509803921568627" green="0.33725490196078434" blue="0.83921568627450982" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemTealColor">
+            <color red="0.18823529411764706" green="0.69019607843137254" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
