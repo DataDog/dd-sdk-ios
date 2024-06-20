@@ -3,8 +3,11 @@ all: env-check repo-setup templates
 		lint license-check \
 		test test-ios test-ios-all test-tvos test-tvos-all \
 		ui-test ui-test-all ui-test-podinstall \
+		tools-test \
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
 
+REPO_ROOT := $(PWD)
+include tools/utils/common.mk
 
 define DD_SDK_TESTING_XCCONFIG_CI
 DD_TEST_RUNNER=1\n
@@ -67,7 +70,7 @@ DEFAULT_ENV := dev
 
 env-check:
 	@$(ECHO_TITLE) "make env-check"
-	./tools/env_check.sh
+	./tools/env-check.sh
 
 repo-setup:
 	@:$(eval ENV ?= $(DEFAULT_ENV))
@@ -174,6 +177,11 @@ ui-test-all:
 ui-test-podinstall:
 	@$(ECHO_TITLE) "make ui-test-podinstall"
 	cd IntegrationTests/ && bundle exec pod install
+
+# Run tests CLI tools
+tools-test:
+	@$(ECHO_TITLE) "make tools-test"
+	./tools/tools-test.sh
 
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
@@ -296,17 +304,3 @@ bump:
 
 e2e-upload:
 		./tools/code-sign.sh -- $(MAKE) -C E2ETests
-
-# Helpers
-
-ECHO_TITLE=./tools/utils/echo_color.sh --title
-ECHO_ERROR=./tools/utils/echo_color.sh --err
-ECHO_WARNING=./tools/utils/echo_color.sh --warn
-ECHO_SUCCESS=./tools/utils/echo_color.sh --succ
-
-define require_param
-    if [ -z "$${$(1)}" ]; then \
-        $(ECHO_ERROR) "Error:" "$(1) parameter is required but not provided."; \
-        exit 1; \
-    fi
-endef

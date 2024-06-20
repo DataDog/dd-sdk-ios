@@ -10,6 +10,8 @@
 #   --warn   Display the message as a warning in yellow.
 #   --succ   Display the message as a success in green.
 #   --title  Display the message in a purple title box.
+#   --subtitle  Display the message in a blue title box with "➔" prefix.
+#   --subtitle2  Display the message in a light blue title box with "➔ ➔" prefix.
 
 # Arguments:
 #   "message"            Mandatory first argument; content varies based on the chosen option.
@@ -21,6 +23,8 @@ GREEN="\e[32m"
 RESET="\e[0m"
 BOLD="\e[1m"
 PURPLE="\e[35m"
+BLUE='\033[34m'
+BLUE_LIGHT='\033[36m'
 
 echo_err() {
   echo "${RED}$1${RESET} $2"
@@ -34,14 +38,30 @@ echo_succ() {
   echo "${GREEN}$1${RESET} $2"
 }
 
-echo_title() {
+# Usage:
+# echo_box COLOR text
+echo_box() {
   echo ""
-  local len=$((${#1}+2))
+  local COLOR=$1
+  local text=$2
+  local len=$((${#text}+2))
   local separator=$(printf '.%.0s' {1..$len})
-  echo -e " ${PURPLE}${separator}${RESET}"
-  echo -e "${PURPLE}┌$(printf '%*s' $len | tr ' ' '─')┐${RESET}"
-  echo -e "${PURPLE}│ ${BOLD}$1${RESET}${PURPLE} │${RESET}"
-  echo -e "${PURPLE}└$(printf '%*s' $len | tr ' ' '─')┘${RESET}"
+  echo -e " ${COLOR}${separator}${RESET}"
+  echo -e "${COLOR}┌$(printf '%*s' $len | tr ' ' '─')┐${RESET}"
+  echo -e "${COLOR}│ ${BOLD}$text${RESET}${COLOR} │${RESET}"
+  echo -e "${COLOR}└$(printf '%*s' $len | tr ' ' '─')┘${RESET}"
+}
+
+echo_title() {
+  echo_box "$PURPLE" "$1"
+}
+
+echo_subtitle() {
+  echo_box $BLUE "➔ $1"
+}
+
+echo_subtitle2() {
+  echo_box $BLUE_LIGHT "➔ ➔ $1"
 }
 
 case "$1" in
@@ -56,6 +76,12 @@ case "$1" in
         ;;
     --title)
         echo_title "$2"
+        ;;
+    --subtitle)
+        echo_subtitle "$2"
+        ;;
+    --subtitle2)
+        echo_subtitle2 "$2"
         ;;
     *)
         ;;

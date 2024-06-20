@@ -34,7 +34,17 @@ default:
           - "*" # match any file in the root directory
         compare_to: 'develop' # cannot use variable due to: https://gitlab.com/gitlab-org/gitlab/-/issues/369916
 
-ENV check:
+# Trigger jobs on changes in `tools/*`, comparing against 'develop' branch
+.run:if-tools-modified:
+  rules:
+    - changes:
+        paths:
+          - "tools/**/*"
+          - "Makefile"
+          - ".gitlab-ci.yml"
+        compare_to: 'develop'
+
+.ENV check:
   stage: pre
   script:
     - make env-check
@@ -43,7 +53,7 @@ ENV check:
 # │ SDK changes integration: │
 # └──────────────────────────┘
 
-Lint:
+.Lint:
   stage: lint
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -53,7 +63,7 @@ Lint:
     - make lint license-check
     - make rum-models-verify sr-models-verify
 
-Unit Tests (iOS):
+.Unit Tests (iOS):
   stage: test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -67,7 +77,7 @@ Unit Tests (iOS):
     - make clean repo-setup ENV=ci
     - make test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-Unit Tests (tvOS):
+.Unit Tests (tvOS):
   stage: test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -81,7 +91,7 @@ Unit Tests (tvOS):
     - make clean repo-setup ENV=ci
     - make test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-UI Tests:
+.UI Tests:
   stage: ui-test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -101,3 +111,12 @@ UI Tests:
     - ./tools/runner-setup.sh --ios --os "$OS" # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+
+Tools Tests:
+  stage: test
+  rules: 
+    - !reference [.run:when-develop-or-master, rules]
+    - !reference [.run:if-tools-modified, rules]
+  script:
+    - make clean repo-setup ENV=ci
+    - make tools-test
