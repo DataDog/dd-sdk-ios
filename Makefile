@@ -96,6 +96,16 @@ DEFAULT_TVOS_OS := latest
 DEFAULT_TVOS_PLATFORM := tvOS Simulator
 DEFAULT_TVOS_DEVICE := Apple TV
 
+build-spm:
+	@$(call require_param,PLATFORM)
+	@:$(eval PLATFORM ?= iOS)
+	./tools/spm.sh --platform $(PLATFORM)
+
+build-spm-all:
+	./tools/spm.sh --platform iOS
+	./tools/spm.sh --platform tvOS
+	./tools/spm.sh --platform visionOS
+
 # Run unit tests for specified SCHEME
 test:
 	@$(call require_param,SCHEME)

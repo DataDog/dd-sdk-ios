@@ -120,7 +120,6 @@ internal struct UITabBarWireframesBuilder: NodeWireframesBuilder {
         ]
     }
 }
-#endif
 
 fileprivate extension UIImage {
     /// Returns a unique description of the image.
@@ -142,3 +141,4 @@ fileprivate extension UIImage {
         return "\(cgImage.width)x\(cgImage.height)-\(cgImage.bitsPerComponent)x\(cgImage.bitsPerPixel)-\(cgImage.bytesPerRow)-\(cgImage.bitmapInfo)"
     }
 }
+#endif
