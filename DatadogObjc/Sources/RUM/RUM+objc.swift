@@ -372,13 +372,18 @@ public class DDRUMConfiguration: NSObject {
         get { swiftConfig.trackBackgroundEvents }
     }
 
+    @objc public var trackWatchdogTerminations: Bool {
+        set { swiftConfig.trackWatchdogTerminations = newValue }
+        get { swiftConfig.trackWatchdogTerminations }
+    }
+
     @objc public var longTaskThreshold: TimeInterval {
         set { swiftConfig.longTaskThreshold = newValue }
         get { swiftConfig.longTaskThreshold ?? 0 }
     }
 
     @objc public var appHangThreshold: TimeInterval {
-        set { swiftConfig.appHangThreshold = newValue }
+        set { swiftConfig.appHangThreshold = newValue == 0 ? nil : newValue }
         get { swiftConfig.appHangThreshold ?? 0 }
     }
 

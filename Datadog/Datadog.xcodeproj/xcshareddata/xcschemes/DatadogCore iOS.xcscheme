@@ -197,64 +197,6 @@
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2DA2389298D588800C6C7E6"
-               BuildableName = "DatadogInternalTests iOS.xctest"
-               BlueprintName = "DatadogInternalTests iOS"
-               ReferencedContainer = "container:Datadog.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D207318229A5226A00ECBF94"
-               BuildableName = "DatadogLogsTests iOS.xctest"
-               BlueprintName = "DatadogLogsTests iOS"
-               ReferencedContainer = "container:Datadog.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D25EE93A29C4C3C300CE3839"
-               BuildableName = "DatadogTraceTests iOS.xctest"
-               BlueprintName = "DatadogTraceTests iOS"
-               ReferencedContainer = "container:Datadog.xcodeproj">
-            </BuildableReference>
-            <SkippedTests>
-               <Test
-                  Identifier = "DatadogTracer_SamplingTests/testWhenRootSpanIsSampled_thenAllChildSpansMustBeSampledTheSameWay()">
-               </Test>
-               <Test
-                  Identifier = "OTelSpanTests/testSetActive_givenParentSpan()">
-               </Test>
-            </SkippedTests>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D29A9F3A29DD84AB005C54A4"
-               BuildableName = "DatadogRUMTests iOS.xctest"
-               BlueprintName = "DatadogRUMTests iOS"
-               ReferencedContainer = "container:Datadog.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "3CE11A0429F7BE0300202522"
-               BuildableName = "DatadogWebViewTrackingTests iOS.xctest"
-               BlueprintName = "DatadogWebViewTrackingTests iOS"
-               ReferencedContainer = "container:Datadog.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

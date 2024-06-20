@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 if [ ! -f "Package.swift" ]; then
 	echo "\`check-license.sh\` must be run in repository root folder: \`./tools/license/check-license.sh\`"; exit 1
@@ -19,7 +19,8 @@ function files {
 		-not -path "./tools/rum-models-generator/rum-events-format/*" \
 		-not -path "*/tools/distribution/venv/*" \
 		-not -path "*/tools/ci/venv/*" \
-		-not -path "./instrumented-tests/DatadogSDKTesting.xcframework/*" \
+		-not -path "*.xcframework/*" \
+		-not -path "*.xcarchive/*" \
 		-not -name "OTSpan.swift" \
 		-not -name "OTFormat.swift" \
 		-not -name "OTTracer.swift" \

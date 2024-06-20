@@ -1,0 +1,34 @@
+{
+  "configurations" : [
+    {
+      "id" : "15325B2B-2C4A-4B53-88F7-B6C1E3B6BE98",
+      "name" : "Configuration",
+      "options" : {
+        "mainThreadCheckerEnabled" : false,
+        "uiTestingScreenshotsLifetime" : "keepNever",
+        "userAttachmentLifetime" : "keepNever"
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:IntegrationTests.xcodeproj",
+      "identifier" : "61441C2924616F1D003D8BB8",
+      "name" : "IntegrationScenarios"
+    }
+  },
+  "testTargets" : [
+    {
+      "selectedTests" : [
+        "CrashReportingWithLoggingScenarioTests\/testCrashReportingCollectOrSendWithLoggingScenario()",
+        "CrashReportingWithRUMScenarioTests\/testCrashReportingCollectOrSendWithRUMScenario()"
+      ],
+      "target" : {
+        "containerPath" : "container:IntegrationTests.xcodeproj",
+        "identifier" : "61441C2924616F1D003D8BB8",
+        "name" : "IntegrationScenarios"
+      }
+    }
+  ],
+  "version" : 1
+}

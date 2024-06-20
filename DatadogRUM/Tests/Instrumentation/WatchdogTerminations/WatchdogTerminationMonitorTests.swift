@@ -91,8 +91,8 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         sut = WatchdogTerminationMonitor(
             appStateManager: appStateManager,
             checker: checker,
-            reporter: reporter,
-            telemetry: featureScope.telemetryMock
+            feature: FeatureScopeMock(),
+            reporter: reporter
         )
 
         core = PassthroughCoreMock(
