@@ -1322,6 +1322,8 @@
 		D2B3F053282E827B00C2B5EE /* DDHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F051282E826A00C2B5EE /* DDHTTPHeadersWriter+apiTests.m */; };
 		D2BCB2A12B7B8107005C2AAB /* WKWebViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BCB2A02B7B8107005C2AAB /* WKWebViewRecorder.swift */; };
 		D2BCB2A32B7B9683005C2AAB /* WKWebViewRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BCB2A22B7B9683005C2AAB /* WKWebViewRecorderTests.swift */; };
+		D2BDBCD92C242AC20091A104 /* UIHostingViewRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BDBCD82C242AC20091A104 /* UIHostingViewRecorderTests.swift */; };
+		D2BDBCDB2C242E150091A104 /* SwiftUIMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BDBCDA2C242E150091A104 /* SwiftUIMocks.swift */; };
 		D2BEEDAC2B3356710065F3AC /* URLSessionTaskSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BEEDAB2B3356710065F3AC /* URLSessionTaskSwizzler.swift */; };
 		D2BEEDAD2B3356710065F3AC /* URLSessionTaskSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BEEDAB2B3356710065F3AC /* URLSessionTaskSwizzler.swift */; };
 		D2BEEDAF2B335C400065F3AC /* URLSessionTaskSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BEEDAE2B335C400065F3AC /* URLSessionTaskSwizzlerTests.swift */; };
@@ -2973,6 +2975,8 @@
 		D2BCB12129D34A5F00737A9A /* URLSessionRUMResourcesHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionRUMResourcesHandlerTests.swift; sourceTree = "<group>"; };
 		D2BCB2A02B7B8107005C2AAB /* WKWebViewRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WKWebViewRecorder.swift; sourceTree = "<group>"; };
 		D2BCB2A22B7B9683005C2AAB /* WKWebViewRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WKWebViewRecorderTests.swift; sourceTree = "<group>"; };
+		D2BDBCD82C242AC20091A104 /* UIHostingViewRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIHostingViewRecorderTests.swift; sourceTree = "<group>"; };
+		D2BDBCDA2C242E150091A104 /* SwiftUIMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIMocks.swift; sourceTree = "<group>"; };
 		D2BEEDAB2B3356710065F3AC /* URLSessionTaskSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskSwizzler.swift; sourceTree = "<group>"; };
 		D2BEEDAE2B335C400065F3AC /* URLSessionTaskSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskSwizzlerTests.swift; sourceTree = "<group>"; };
 		D2BEEDB12B335DA90065F3AC /* URLSessionTaskDelegateSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskDelegateSwizzler.swift; sourceTree = "<group>"; };
@@ -3918,6 +3922,7 @@
 				61054F782A6EE1BA00AAA894 /* UITextViewRecorderTests.swift */,
 				D2BCB2A22B7B9683005C2AAB /* WKWebViewRecorderTests.swift */,
 				A7F6512F2B7655DE004B0EDB /* UIImageResourceTests.swift */,
+				D2BDBCD82C242AC20091A104 /* UIHostingViewRecorderTests.swift */,
 			);
 			path = NodeRecorders;
 			sourceTree = "<group>";
@@ -3939,6 +3944,7 @@
 				A74A72882B10D95D00771FEB /* MultipartBuilderSpy.swift */,
 				A71265852B17980C007D63CE /* MockFeature.swift */,
 				A7D952892B28BD94004C79B1 /* ResourceProcessorSpy.swift */,
+				D2BDBCDA2C242E150091A104 /* SwiftUIMocks.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -8379,6 +8385,7 @@
 				61054FAD2A6EE1BA00AAA894 /* WindowTouchSnapshotProducerTests.swift in Sources */,
 				D25A19172C1B383A0035747B /* ReflectionTests.swift in Sources */,
 				61054FD52A6EE1BA00AAA894 /* XCTAssertRectsEqual.swift in Sources */,
+				D2BDBCD92C242AC20091A104 /* UIHostingViewRecorderTests.swift in Sources */,
 				61054FC12A6EE1BA00AAA894 /* ViewTreeRecorderTests.swift in Sources */,
 				61054F982A6EE1BA00AAA894 /* CGRectExtensionsTests.swift in Sources */,
 				D25C834C2B8657CF008E73B1 /* SegmentJSONTests.swift in Sources */,
@@ -8387,6 +8394,7 @@
 				A71013D62B178FAD00101E60 /* ResourcesWriterTests.swift in Sources */,
 				61054FBE2A6EE1BA00AAA894 /* UIImageViewWireframesBuilderTests.swift in Sources */,
 				61054FBC2A6EE1BA00AAA894 /* UIStepperRecorderTests.swift in Sources */,
+				D2BDBCDB2C242E150091A104 /* SwiftUIMocks.swift in Sources */,
 				61054FCB2A6EE1BA00AAA894 /* QueueMocks.swift in Sources */,
 				61054FC42A6EE1BA00AAA894 /* RecorderTests.swift in Sources */,
 				61054FC22A6EE1BA00AAA894 /* ViewTreeSnapshotTests.swift in Sources */,

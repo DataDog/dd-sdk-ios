@@ -10,15 +10,9 @@ import UIKit
 internal class UIHostingViewRecorder: NodeRecorder {
     let identifier = UUID()
 
-    var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating
-
     let _UIGraphicsViewClass: AnyClass? = NSClassFromString("SwiftUI._UIGraphicsView")
 
-    init(textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = {
-        $0.recorder.privacy.staticTextObfuscator
-    }) {
-        self.textObfuscator = textObfuscator
-    }
+    init() { }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         // SwiftUI was introduced in iOS 13
@@ -55,7 +49,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
                 hostID: context.ids.nodeID(view: view, nodeRecorder: self),
                 attributes: attributes,
                 renderer: renderer.renderer,
-                textObfuscator: textObfuscator(context)
+                textObfuscator: context.recorder.privacy.staticTextObfuscator
             )
 
             let node = Node(viewAttributes: attributes, wireframesBuilder: builder)

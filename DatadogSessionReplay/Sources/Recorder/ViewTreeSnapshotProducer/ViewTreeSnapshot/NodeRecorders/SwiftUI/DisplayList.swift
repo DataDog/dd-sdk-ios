@@ -196,16 +196,15 @@ extension DisplayList.Index.ID: Reflection {
 extension DisplayList.ViewUpdater.ViewInfo: Reflection {
     init(_ mirror: Mirror) throws {
         let view = try mirror.descendant(UIView.self, path: "view")
-        let layer = try mirror.descendant(CALayer.self, path: "layer")
 
-        // do not retain the view or layer, only get values required
+        // do not retain the view, only get values required
         // for building wireframes
-        backgroundColor = layer.backgroundColor?.safeCast
-        borderColor = layer.borderColor?.safeCast
-        borderWidth = layer.borderWidth
-        cornerRadius = layer.cornerRadius
+        backgroundColor = view.layer.backgroundColor?.safeCast
+        borderColor = view.layer.borderColor?.safeCast
+        borderWidth = view.layer.borderWidth
+        cornerRadius = view.layer.cornerRadius
         alpha = view.alpha
-        isHidden = layer.isHidden
+        isHidden = view.layer.isHidden
         intrinsicContentSize = view.intrinsicContentSize
     }
 }
