@@ -40,8 +40,8 @@ restore_workspace() {
 }
 
 rename_workspace
-echo "Building SDK for platform $platform"
-xcodebuild build -scheme $SCHEME -destination generic/platform="$platform" | xcbeautify
-
 # try to restore the files even if the script fails
 trap restore_workspace EXIT INT
+
+echo "Building SDK for platform $platform"
+xcodebuild build -scheme $SCHEME -destination generic/platform="$platform" | xcbeautify
