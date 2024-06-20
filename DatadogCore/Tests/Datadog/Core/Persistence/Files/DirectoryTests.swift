@@ -171,6 +171,156 @@ class DirectoryTests: XCTestCase {
         XCTAssertNoThrow(try destinationDirectory.file(named: "f3"))
     }
 
+   func testModifiedAt() throws {
+        // when directory is created
+        let before = Date.timeIntervalSinceReferenceDate - 1
+        let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName())
+        defer { directory.delete() }
+        let creationDate = try directory.modifiedAt()
+        let after = Date.timeIntervalSinceReferenceDate + 1
+
+        XCTAssertNotNil(creationDate)
+        XCTAssertGreaterThanOrEqual(creationDate!.timeIntervalSinceReferenceDate, before)
+        XCTAssertLessThanOrEqual(creationDate!.timeIntervalSinceReferenceDate, after)
+
+        // when directory is updated
+        let beforeModification = Date.timeIntervalSinceReferenceDate
+        _ = try directory.createFile(named: "file")
+        let modificationDate = try directory.modifiedAt()
+        let afterModification = Date.timeIntervalSinceReferenceDate
+
+        XCTAssertNotNil(modificationDate)
+        XCTAssertGreaterThanOrEqual(modificationDate!.timeIntervalSinceReferenceDate, beforeModification)
+        XCTAssertLessThanOrEqual(modificationDate!.timeIntervalSinceReferenceDate, afterModification)
+   }
+
+    func testLatestModifiedFile_whenDirectoryEmpty_returnsSelf() throws {
+        let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName())
+        defer { directory.delete() }
+
+        let modifiedFile = try directory.mostRecentModifiedFile(before: .init())
+        XCTAssertNotNil(modifiedFile)
+        XCTAssertEqual(directory.url, modifiedFile?.url)
+    }
+
+    func testLatestModifiedFile_whenDirectoryContainsFiles_returnsLatestModifiedFile() throws {
+        let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName())
+        defer { directory.delete() }
+
+        let file1 = try directory.createFile(named: "file1")
+        let file2 = try directory.createFile(named: "file2")
+        let file3 = try directory.createFile(named: "file3")
+
+        try file1.append(data: .mock(ofSize: 1))
+        try file2.append(data: .mock(ofSize: 2))
+        try file3.append(data: .mock(ofSize: 3))
+
+        let modifiedFile = try directory.mostRecentModifiedFile(before: .init())
+        XCTAssertNotNil(modifiedFile)
+        XCTAssertEqual(file3.url, modifiedFile?.url)
+    }
+
+    func testLatestModifiedFile_whenDirectoryContainsSubdirectories_returnsLatestModifiedFile() throws {
+        let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName())
+        defer { directory.delete() }
+
+        let subdirectory1 = try directory.createSubdirectory(path: "subdirectory1")
+        let subdirectory2 = try directory.createSubdirectory(path: "subdirectory2")
+        let subdirectory3 = try directory.createSubdirectory(path: "subdirectory3")
+
+        let file1 = try subdirectory1.createFile(named: "file1")
+        let file2 = try subdirectory2.createFile(named: "file2")
+        let file3 = try subdirectory3.createFile(named: "file3")
+
+        try file1.append(data: .mock(ofSize: 1))
+        try file2.append(data: .mock(ofSize: 2))
+        try file3.append(data: .mock(ofSize: 3))
+
+        let modifiedFile = try directory.mostRecentModifiedFile(before: .init())
+        XCTAssertNotNil(modifiedFile)
+        XCTAssertEqual(file3.url, modifiedFile?.url)
+    }
+
+    func testLatestModifiedFile_whenDirectoryContainsFilesAndSubdirectories_returnsLatestModifiedFile() throws {
+        let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName())
+        defer { directory.delete() }
+
+        let subdirectory1 = try directory.createSubdirectory(path: "subdirectory1")
+        let subdirectory2 = try directory.createSubdirectory(path: "subdirectory2")
+        let subdirectory3 = try directory.createSubdirectory(path: "subdirectory3")
+
+        let file1 = try subdirectory1.createFile(named: "file1")
+        let file2 = try subdirectory2.createFile(named: "file2")
+        let file3 = try subdirectory3.createFile(named: "file3")
+
+        try file1.append(data: .mock(ofSize: 1))
+        try file2.append(data: .mock(ofSize: 2))
+        try file3.append(data: .mock(ofSize: 3))
+
+        let modifiedFile = try directory.mostRecentModifiedFile(before: .init())
+        XCTAssertNotNil(modifiedFile)
+        XCTAssertEqual(file3.url, modifiedFile?.url)
+    }
+
+    func testLatestModifiedFile_whenDirectoryContainsFilesAndFileIsDeleted_returnsLatestModifiedFile() throws {
+        let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName())
+        defer { directory.delete() }
+
+        let file1 = try directory.createFile(named: "file1")
+        let file2 = try directory.createFile(named: "file2")
+        let file3 = try directory.createFile(named: "file3")
+
+        try file1.append(data: .mock(ofSize: 1))
+        try file2.append(data: .mock(ofSize: 2))
+        try file3.append(data: .mock(ofSize: 3))
+
+        try file2.delete()
+
+        let modifiedFile = try directory.mostRecentModifiedFile(before: .init())
+        XCTAssertNotNil(modifiedFile)
+        XCTAssertEqual(directory.url, modifiedFile?.url)
+    }
+
+    func testLatestModifiedFile_givenBeforeDate_returnsLatestModifiedFileBeforeGivenDate() throws {
+        let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName())
+        defer { directory.delete() }
+
+        let file1 = try directory.createFile(named: "file1")
+        let file2 = try directory.createFile(named: "file2")
+        let file3 = try directory.createFile(named: "file3")
+
+        try file1.append(data: .mock(ofSize: 1))
+        try file2.append(data: .mock(ofSize: 2))
+        let beforeDate = Date()
+        try file3.append(data: .mock(ofSize: 3))
+
+        let modifiedFile = try directory.mostRecentModifiedFile(before: beforeDate)
+        XCTAssertNotNil(modifiedFile)
+        XCTAssertEqual(file2.url, modifiedFile?.url)
+    }
+
+    func testLatestModifiedFile_whenDirectoryContainsSubdirectoriesAndFiles_givenBeforeDate_returnsLatestModifiedFileBeforeGivenDate() throws {
+        let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName())
+        defer { directory.delete() }
+
+        let subdirectory1 = try directory.createSubdirectory(path: "subdirectory1")
+        let subdirectory2 = try directory.createSubdirectory(path: "subdirectory2")
+        let subdirectory3 = try directory.createSubdirectory(path: "subdirectory3")
+
+        let file1 = try subdirectory1.createFile(named: "file1")
+        let file2 = try subdirectory2.createFile(named: "file2")
+        let file3 = try subdirectory3.createFile(named: "file3")
+
+        try file1.append(data: .mock(ofSize: 1))
+        try file2.append(data: .mock(ofSize: 2))
+        let beforeDate = Date()
+        try file3.append(data: .mock(ofSize: 3))
+
+        let modifiedFile = try directory.mostRecentModifiedFile(before: beforeDate)
+        XCTAssertNotNil(modifiedFile)
+        XCTAssertEqual(file2.url, modifiedFile?.url)
+    }
+
     // MARK: - Helpers
 
     private func uniqueSubdirectoryName() -> String {
