@@ -80,7 +80,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
                     }
                 ),
                 trackBackgroundEvents: true,
-                trackWatchdogTermination: true,
+                trackWatchdogTerminations: true,
                 customEndpoint: Environment.readCustomRUMURL(),
                 telemetrySampleRate: 100
             )

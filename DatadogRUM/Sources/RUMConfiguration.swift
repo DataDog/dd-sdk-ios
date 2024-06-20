@@ -116,7 +116,7 @@ extension RUM {
         /// Read more about watchdog terminations at https://developer.apple.com/documentation/xcode/addressing-watchdog-terminations
         ///
         /// Default: `false`.
-        public var trackWatchdogTermination: Bool
+        public var trackWatchdogTerminations: Bool
 
         /// Enables RUM long tasks tracking with the given threshold (in seconds).
         ///
@@ -346,7 +346,7 @@ extension RUM.Configuration {
     ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
     ///   - longTaskThreshold: The threshold for RUM long tasks tracking (in seconds). Default: `0.1`.
     ///   - appHangThreshold: The threshold for App Hangs monitoring (in seconds). Default: `nil`.
-    ///   - trackWatchdogTermination: Determines whether the SDK should track application termination by the watchdog. Default: `false`.
+    ///   - trackWatchdogTerminations: Determines whether the SDK should track application termination by the watchdog. Default: `false`.
     ///   - vitalsUpdateFrequency: The preferred frequency for collecting RUM vitals. Default: `.average`.
     ///   - viewEventMapper: Custom mapper for RUM view events. Default: `nil`.
     ///   - resourceEventMapper: Custom mapper for RUM resource events. Default: `nil`.
@@ -366,7 +366,7 @@ extension RUM.Configuration {
         trackBackgroundEvents: Bool = false,
         longTaskThreshold: TimeInterval? = 0.1,
         appHangThreshold: TimeInterval? = nil,
-        trackWatchdogTermination: Bool = false,
+        trackWatchdogTerminations: Bool = false,
         vitalsUpdateFrequency: VitalsFrequency? = .average,
         viewEventMapper: RUM.ViewEventMapper? = nil,
         resourceEventMapper: RUM.ResourceEventMapper? = nil,
@@ -395,7 +395,7 @@ extension RUM.Configuration {
         self.onSessionStart = onSessionStart
         self.customEndpoint = customEndpoint
         self.telemetrySampleRate = telemetrySampleRate
-        self.trackWatchdogTermination = trackWatchdogTermination
+        self.trackWatchdogTerminations = trackWatchdogTerminations
     }
 }
 
