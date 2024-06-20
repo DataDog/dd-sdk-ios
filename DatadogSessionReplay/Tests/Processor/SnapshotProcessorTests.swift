@@ -34,6 +34,7 @@ class SnapshotProcessorTests: XCTestCase {
         let processor = SnapshotProcessor(
             queue: NoQueue(),
             recordWriter: recordWriter,
+            resourceProcessor: ResourceProcessorSpy(),
             srContextPublisher: srContextPublisher,
             telemetry: TelemetryMock()
         )
@@ -69,6 +70,7 @@ class SnapshotProcessorTests: XCTestCase {
         let processor = SnapshotProcessor(
             queue: NoQueue(),
             recordWriter: recordWriter,
+            resourceProcessor: ResourceProcessorSpy(),
             srContextPublisher: srContextPublisher,
             telemetry: TelemetryMock()
         )
@@ -114,7 +116,13 @@ class SnapshotProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = SnapshotProcessor(queue: NoQueue(), recordWriter: recordWriter, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
+        let processor = SnapshotProcessor(
+            queue: NoQueue(),
+            recordWriter: recordWriter,
+            resourceProcessor: ResourceProcessorSpy(),
+            srContextPublisher: srContextPublisher,
+            telemetry: TelemetryMock()
+        )
         let view = UIView.mock(withFixture: .visible(.someAppearance))
         view.frame = CGRect(x: 0, y: 0, width: 100, height: 200)
         let rotatedView = UIView.mock(withFixture: .visible(.someAppearance))
@@ -153,7 +161,13 @@ class SnapshotProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = SnapshotProcessor(queue: NoQueue(), recordWriter: recordWriter, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
+        let processor = SnapshotProcessor(
+            queue: NoQueue(),
+            recordWriter: recordWriter,
+            resourceProcessor: ResourceProcessorSpy(),
+            srContextPublisher: srContextPublisher,
+            telemetry: TelemetryMock()
+        )
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -206,6 +220,7 @@ class SnapshotProcessorTests: XCTestCase {
         let processor = SnapshotProcessor(
             queue: NoQueue(),
             recordWriter: recordWriter,
+            resourceProcessor: ResourceProcessorSpy(),
             srContextPublisher: srContextPublisher,
             telemetry: TelemetryMock()
         )
@@ -254,6 +269,7 @@ class SnapshotProcessorTests: XCTestCase {
         let processor = SnapshotProcessor(
             queue: NoQueue(),
             recordWriter: recordWriter,
+            resourceProcessor: ResourceProcessorSpy(),
             srContextPublisher: srContextPublisher,
             telemetry: TelemetryMock()
         )
@@ -281,6 +297,41 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertEqual(fullSnapshotRecord.data.wireframes.first?.id, Int64(webview.hash), "The hidden webview wireframe should be first")
     }
 
+    func testWhenProcessingViewTreeSnapshot_itRecordResources() throws {
+        let resource: UIImageResource = .mockRandom()
+        let builder = UIImageViewWireframesBuilder(
+            wireframeID: .mockAny(),
+            imageWireframeID: .mockAny(),
+            attributes: .mockAny(),
+            contentFrame: .mockAny(),
+            clipsToBounds: .mockAny(),
+            imageResource: resource
+        )
+        let snapshot: ViewTreeSnapshot = .mockWith(
+            context: .mockRandom(),
+            nodes: [
+                Node(viewAttributes: .mockAny(), wireframesBuilder: builder)
+            ]
+        )
+        let resourceProcessor = ResourceProcessorSpy()
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+        let processor = SnapshotProcessor(
+            queue: NoQueue(),
+            recordWriter: recordWriter,
+            resourceProcessor: resourceProcessor,
+            srContextPublisher: srContextPublisher,
+            telemetry: TelemetryMock()
+        )
+
+        processor.process(viewTreeSnapshot: snapshot, touchSnapshot: nil)
+
+        let processedResource = try XCTUnwrap(resourceProcessor.processedResources.first?.resources.first)
+        XCTAssertEqual(processedResource.calculateIdentifier(), resource.calculateIdentifier())
+        XCTAssertEqual(processedResource.calculateData(), resource.calculateData())
+        XCTAssertEqual(resourceProcessor.processedResources.first?.context, EnrichedResource.Context(snapshot.context.applicationID))
+    }
+
     // MARK: - Processing `TouchSnapshots`
 
     func testWhenProcessingTouchSnapshot_itWritesRecordsThatContinueCurrentSegment() throws {
@@ -292,7 +343,13 @@ class SnapshotProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = SnapshotProcessor(queue: NoQueue(), recordWriter: recordWriter, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
+        let processor = SnapshotProcessor(
+            queue: NoQueue(),
+            recordWriter: recordWriter,
+            resourceProcessor: ResourceProcessorSpy(),
+            srContextPublisher: srContextPublisher,
+            telemetry: TelemetryMock()
+        )
 
         // When
         let touchSnapshot = generateTouchSnapshot(startAt: earliestTouchTime, endAt: snapshotTime, numberOfTouches: numberOfTouches)
@@ -335,7 +392,14 @@ class SnapshotProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = SnapshotProcessor(queue: NoQueue(), recordWriter: recordWriter, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
+        let processor = SnapshotProcessor(
+            queue: NoQueue(),
+            recordWriter: recordWriter,
+            resourceProcessor: ResourceProcessorSpy(),
+            srContextPublisher: srContextPublisher,
+            telemetry: TelemetryMock()
+        )
+
         let viewTree = generateSimpleViewTree()
 
         // When

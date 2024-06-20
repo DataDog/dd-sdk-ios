@@ -15,15 +15,13 @@ class RecorderTests: XCTestCase {
         let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom(count: 1)
         let mockTouchSnapshots: [TouchSnapshot] = .mockRandom(count: 1)
         let snapshotProcessor = SnapshotProcessorSpy()
-        let resourceProcessor = ResourceProcessorSpy()
 
         // Given
         let recorder = Recorder(
             uiApplicationSwizzler: .mockAny(),
             viewTreeSnapshotProducer: ViewTreeSnapshotProducerMock(succeedingSnapshots: mockViewTreeSnapshots),
             touchSnapshotProducer: TouchSnapshotProducerMock(succeedingSnapshots: mockTouchSnapshots),
-            snapshotProcessor: snapshotProcessor,
-            resourceProcessor: resourceProcessor
+            snapshotProcessor: snapshotProcessor
         )
         let recorderContext = Recorder.Context.mockRandom()
 
@@ -33,8 +31,6 @@ class RecorderTests: XCTestCase {
         // Then
         DDAssertReflectionEqual(snapshotProcessor.processedSnapshots.map { $0.viewTreeSnapshot }, mockViewTreeSnapshots)
         DDAssertReflectionEqual(snapshotProcessor.processedSnapshots.map { $0.touchSnapshot }, mockTouchSnapshots)
-        DDAssertReflectionEqual(resourceProcessor.processedResources.map { $0.resources }, mockViewTreeSnapshots.map { $0.resources })
-        DDAssertReflectionEqual(resourceProcessor.processedResources.map { $0.context }, mockViewTreeSnapshots.map { _ in EnrichedResource.Context(recorderContext.applicationID) })
     }
 
     func testWhenCapturingSnapshots_itUsesDefaultRecorderContext() throws {
@@ -47,8 +43,7 @@ class RecorderTests: XCTestCase {
             uiApplicationSwizzler: .mockAny(),
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
-            snapshotProcessor: SnapshotProcessorSpy(),
-            resourceProcessor: ResourceProcessorSpy()
+            snapshotProcessor: SnapshotProcessorSpy()
         )
         // When
         try recorder.captureNextRecord(recorderContext)
@@ -73,8 +68,7 @@ class RecorderTests: XCTestCase {
             uiApplicationSwizzler: .mockAny(),
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
-            snapshotProcessor: SnapshotProcessorSpy(),
-            resourceProcessor: ResourceProcessorSpy()
+            snapshotProcessor: SnapshotProcessorSpy()
         )
         // When
         try recorder.captureNextRecord(recorderContext)

@@ -60,12 +60,9 @@ public class Recorder: Recording {
     private let touchSnapshotProducer: TouchSnapshotProducer
     /// Turns view tree snapshots into data models that will be uploaded to SR BE.
     private let snapshotProcessor: SnapshotProcessing
-    /// Processes resources on a background thread.
-    private let resourceProcessor: ResourceProcessing
 
     convenience init(
         snapshotProcessor: SnapshotProcessing,
-        resourceProcessor: ResourceProcessing,
         additionalNodeRecorders: [NodeRecorder]
     ) throws {
         let windowObserver = KeyWindowObserver()
@@ -81,8 +78,7 @@ public class Recorder: Recording {
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
-            snapshotProcessor: snapshotProcessor,
-            resourceProcessor: resourceProcessor
+            snapshotProcessor: snapshotProcessor
         )
     }
 
@@ -90,14 +86,12 @@ public class Recorder: Recording {
         uiApplicationSwizzler: UIApplicationSwizzler,
         viewTreeSnapshotProducer: ViewTreeSnapshotProducer,
         touchSnapshotProducer: TouchSnapshotProducer,
-        snapshotProcessor: SnapshotProcessing,
-        resourceProcessor: ResourceProcessing
+        snapshotProcessor: SnapshotProcessing
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.viewTreeSnapshotProducer = viewTreeSnapshotProducer
         self.touchSnapshotProducer = touchSnapshotProducer
         self.snapshotProcessor = snapshotProcessor
-        self.resourceProcessor = resourceProcessor
         uiApplicationSwizzler.swizzle()
     }
 
@@ -117,11 +111,6 @@ public class Recorder: Recording {
 
         let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
         snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
-
-        resourceProcessor.process(
-            resources: viewTreeSnapshot.resources,
-            context: .init(recorderContext.applicationID)
-        )
     }
 }
 #endif

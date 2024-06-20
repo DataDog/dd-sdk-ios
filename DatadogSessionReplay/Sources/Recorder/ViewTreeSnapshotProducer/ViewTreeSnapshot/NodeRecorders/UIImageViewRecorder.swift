@@ -53,35 +53,30 @@ internal struct UIImageViewRecorder: NodeRecorder {
         }
 
         let ids = context.ids.nodeIDs(2, view: imageView, nodeRecorder: self)
-        let contentFrame: CGRect?
-        if let image = imageView.image {
-            contentFrame = attributes.frame.contentFrame(
-                for: image.size,
+        let contentFrame = imageView.image.map {
+            attributes.frame.contentFrame(
+                for: $0.size,
                 using: imageView.contentMode
             )
-        } else {
-            contentFrame = nil
         }
+
         let shouldRecordImage = shouldRecordImagePredicate(imageView)
-        let tintColor = tintColorProvider(imageView)
-        let imageResource = imageView.image
-            .map { image in
-                UIImageResource(image: image, tintColor: tintColor)
-            }
+        let imageResource = shouldRecordImage ? imageView.image.map { image in
+            UIImageResource(image: image, tintColor: tintColorProvider(imageView))
+        } : nil
+
         let builder = UIImageViewWireframesBuilder(
             wireframeID: ids[0],
             imageWireframeID: ids[1],
             attributes: attributes,
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
-            imageResource: shouldRecordImage ? imageResource : nil,
-            shouldRecordImage: shouldRecordImage
+            imageResource: imageResource
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(
            subtreeStrategy: .record,
-           nodes: [node],
-           resources: [imageResource].filter { _ in shouldRecordImage }.compactMap { $0 }
+           nodes: [node]
        )
     }
 }
@@ -102,8 +97,6 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
     let clipsToBounds: Bool
 
     let imageResource: UIImageResource?
-
-    let shouldRecordImage: Bool
 
     private var clip: SRContentClip? {
         guard let contentFrame = contentFrame else {
@@ -140,26 +133,30 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 opacity: attributes.alpha
             )
         ]
-        if let contentFrame = contentFrame {
-            if let imageResource = imageResource {
-                wireframes.append(
-                    builder.createImageWireframe(
-                        resourceId: imageResource.calculateIdentifier(),
-                        id: imageWireframeID,
-                        frame: contentFrame,
-                        clip: clipsToBounds ? clip : nil
-                    )
-                )
-            } else {
-                wireframes.append(
-                    builder.createPlaceholderWireframe(
-                        id: imageWireframeID,
-                        frame: clipsToBounds ? relativeIntersectedRect : contentFrame,
-                        label: "Content Image"
-                    )
-                )
-            }
+        
+        guard let contentFrame = contentFrame else {
+            return wireframes
         }
+
+        if let imageResource = imageResource {
+            wireframes.append(
+                builder.createImageWireframe(
+                    id: imageWireframeID,
+                    resource: imageResource,
+                    frame: contentFrame,
+                    clip: clipsToBounds ? clip : nil
+                )
+            )
+        } else {
+            wireframes.append(
+                builder.createPlaceholderWireframe(
+                    id: imageWireframeID,
+                    frame: clipsToBounds ? relativeIntersectedRect : contentFrame,
+                    label: "Content Image"
+                )
+            )
+        }
+
         return wireframes
     }
 }

@@ -20,6 +20,8 @@ public typealias WireframeID = NodeID
 /// Note: `WireframesBuilder` is used by `Processor` on a single background thread.
 @_spi(Internal)
 public class SessionReplayWireframesBuilder {
+    /// The resources that were collected while processing snapshots.
+    private(set) var resources: [Resource]
     /// The cache of webview slot IDs in memory during snapshot.
     private var webViewSlotIDs: Set<Int>
 
@@ -30,7 +32,8 @@ public class SessionReplayWireframesBuilder {
     /// that are not visible be still need to be kept by the player.
     ///
     /// - Parameter webviewSlotIDs: The webview slot IDs in memory during snapshot.
-    init(webViewSlotIDs: Set<Int> = []) {
+    init(resources: [Resource] = [], webViewSlotIDs: Set<Int> = []) {
+        self.resources = resources
         self.webViewSlotIDs = webViewSlotIDs
     }
 }
@@ -106,6 +109,37 @@ extension SessionReplayWireframesBuilder {
             isEmpty: false, // field deprecated - we should use placeholder wireframe instead
             mimeType: mimeType,
             resourceId: resourceId,
+            shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
+            width: Int64(withNoOverflow: frame.width),
+            x: Int64(withNoOverflow: frame.minX),
+            y: Int64(withNoOverflow: frame.minY)
+        )
+        return .imageWireframe(value: wireframe)
+    }
+
+    public func createImageWireframe(
+        id: WireframeID,
+        resource: SessionReplayResource,
+        frame: CGRect,
+        mimeType: String = "png",
+        clip: SRContentClip? = nil,
+        borderColor: CGColor? = nil,
+        borderWidth: CGFloat? = nil,
+        backgroundColor: CGColor? = nil,
+        cornerRadius: CGFloat? = nil,
+        opacity: CGFloat? = nil
+    ) -> SRWireframe {
+        resources.append(resource)
+
+        let wireframe = SRImageWireframe(
+            base64: nil, // field deprecated - we should use resource endpoint instead
+            border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
+            clip: clip,
+            height: Int64(withNoOverflow: frame.height),
+            id: id,
+            isEmpty: false, // field deprecated - we should use placeholder wireframe instead
+            mimeType: mimeType,
+            resourceId: resource.calculateIdentifier(),
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             width: Int64(withNoOverflow: frame.width),
             x: Int64(withNoOverflow: frame.minX),
@@ -223,7 +257,7 @@ extension SessionReplayWireframesBuilder {
         return .webviewWireframe(value: wireframe)
     }
 
-    internal func hiddenWebViewWireframes() -> [SRWireframe] {
+    public func hiddenWebViewWireframes() -> [SRWireframe] {
         defer { webViewSlotIDs.removeAll() }
         return webViewSlotIDs.map { id in
             let wireframe = SRWebviewWireframe(
