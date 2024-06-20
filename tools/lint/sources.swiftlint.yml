@@ -165,7 +165,7 @@ included:
   - ../../DatadogWebViewTracking/Sources
   - ../../DatadogObjc/Sources
   - ../../Datadog/E2E
-  - ../../instrumented-tests/http-server-mock/Sources
+  - ../../tools/http-server-mock/Sources
   - ../../tools/api-surface/Sources
   - ../../tools/api-surface/Fixtures/Sources
   - ../../tools/rum-models-generator/Sources

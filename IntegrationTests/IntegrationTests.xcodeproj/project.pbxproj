@@ -259,7 +259,7 @@
 		D2774EE2299E2E90004EC36A /* LogMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogMatcher.swift; sourceTree = "<group>"; };
 		D2774EE3299E2E90004EC36A /* JSONDataMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONDataMatcher.swift; sourceTree = "<group>"; };
 		D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIScenarioTests.swift; sourceTree = "<group>"; };
-		D29495F429967780003518CD /* http-server-mock */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "http-server-mock"; path = "../instrumented-tests/http-server-mock"; sourceTree = "<group>"; };
+		D29495F429967780003518CD /* http-server-mock */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "http-server-mock"; path = "../tools/http-server-mock"; sourceTree = "<group>"; };
 		D2A401D029925A2D00B230A3 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D2AEFF1A29925BEC00A28997 /* CrashReporting.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = CrashReporting.xctestplan; sourceTree = "<group>"; };
 		D2AEFF1B29925BEC00A28997 /* Default.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Default.xctestplan; sourceTree = "<group>"; };
