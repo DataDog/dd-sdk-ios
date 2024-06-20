@@ -59,11 +59,11 @@ python3 -V
 
 echo ""
 echo_succ "Available iOS Simulators:"
-xctrace list devices | grep "iPhone.*Simulator"
+xctrace list devices | grep "iPhone.*Simulator" || true
 
 echo ""
 echo_succ "Available tvOS Simulators:"
-xctrace list devices | grep "Apple TV.*Simulator"
+xctrace list devices | grep "Apple TV.*Simulator" || true
 
 if command -v brew >/dev/null 2>&1; then
     echo ""

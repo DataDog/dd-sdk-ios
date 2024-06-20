@@ -112,7 +112,7 @@ default:
     - make clean repo-setup ENV=ci
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-Tools Tests:
+.Tools Tests:
   stage: test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -120,3 +120,16 @@ Tools Tests:
   script:
     - make clean repo-setup ENV=ci
     - make tools-test
+
+Smoke Tests:
+  stage: test
+  tags:
+    - macos:ventura
+    - specific:true
+  variables:
+    XCODE: "15.2.0"
+    OS: "17.2"
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --ios --os "$OS" # temporary, waiting for AMI
+    - make env-check
+    - make smoke-test

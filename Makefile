@@ -178,10 +178,15 @@ ui-test-podinstall:
 	@$(ECHO_TITLE) "make ui-test-podinstall"
 	cd IntegrationTests/ && bundle exec pod install
 
-# Run tests CLI tools
+# Run tests for repo tools
 tools-test:
 	@$(ECHO_TITLE) "make tools-test"
 	./tools/tools-test.sh
+
+# Run smoke tests
+smoke-test:
+	@$(ECHO_TITLE) "make smoke-test"
+	./tools/smoke-test.sh
 
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
