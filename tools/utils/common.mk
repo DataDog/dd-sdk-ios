@@ -24,4 +24,6 @@ define require_param
     fi
 endef
 
+CURRENT_GIT_TAG := $(shell $(REPO_ROOT)/tools/utils/current_git.sh --print-tag)
+CURRENT_GIT_BRANCH := $(shell $(REPO_ROOT)/tools/utils/current_git.sh --print-branch)
 CURRENT_GIT_REF := $(shell $(REPO_ROOT)/tools/utils/current_git.sh --print)

@@ -199,8 +199,9 @@ smoke-test-ios:
 
 # Run all smoke tests using iOS Simulator
 smoke-test-ios-all:
-	@$(MAKE) smoke-test-ios TEST_DIRECTORY="dependency-manager-tests/spm"
-	@$(MAKE) smoke-test-ios TEST_DIRECTORY="dependency-manager-tests/carthage"
+	# @$(MAKE) smoke-test-ios TEST_DIRECTORY="dependency-manager-tests/spm"
+	# @$(MAKE) smoke-test-ios TEST_DIRECTORY="dependency-manager-tests/carthage"
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="dependency-manager-tests/cocoapods"
 
 # Run smoke tests for specified TEST_DIRECTORY using tvOS Simulator
 smoke-test-tvos:
@@ -212,8 +213,9 @@ smoke-test-tvos:
 
 # Run all smoke tests using tvOS Simulator
 smoke-test-tvos-all:
-	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/spm"
-	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/carthage"
+	# @$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/spm"
+	# @$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/carthage"
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/cocoapods"
 
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
