@@ -1,30 +1,28 @@
-#if canImport(UIKit)
-import UIKit
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
+import Foundation
 
 /// Abstraction protocol to get device information on the current platform
 public protocol DeviceProtocol {
     var model: String { get }
     var systemName: String { get }
     var systemVersion: String { get }
-    var vendorIdentifier: UUID? { get }
+    var identifierForVendor: UUID? { get }
 }
+
+#if canImport(UIKit)
+import UIKit
 
 #if canImport(WatchKit)
 import WatchKit
 
-extension WKInterfaceDevice: DeviceProtocol {
-    public var vendorIdentifier: UUID? {
-        if #available(watchOS 6.2, *) {
-            identifierForVendor
-        } else {
-            nil
-        }
-    }
-}
+extension WKInterfaceDevice: DeviceProtocol {}
 #else
-extension UIDevice: DeviceProtocol {
-    public var vendorIdentifier: UUID? { identifierForVendor }
-}
+extension UIDevice: DeviceProtocol {}
 #endif
 
 public enum DeviceFactory {
