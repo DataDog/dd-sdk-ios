@@ -71,7 +71,7 @@ xcodebuild -version
 
 if [ "$ios" = "true" ]; then
     echo_subtitle "Supply iPhone Simulator runtime ($os)"
-    echo "Check current runner for any iPhone Simulator runtime supporting OS '$os'."
+    echo "Check current runner for any iPhone Simulator runtime supporting OS '$os':"
     if ! xctrace list devices | grep "iPhone.*Simulator ($os)"; then
         echo_warn "Found no iOS Simulator runtime supporting OS '$os'. Installing..."
         xcodebuild -downloadPlatform iOS -quiet | xcbeautify
@@ -82,7 +82,7 @@ fi
 
 if [ "$tvos" = "true" ]; then
     echo_subtitle "Supply tvOS Simulator runtime ($os)"
-    echo "Check current runner for any tvOS Simulator runtime supporting OS '$os'."
+    echo "Check current runner for any tvOS Simulator runtime supporting OS '$os':"
     if ! xctrace list devices | grep "Apple TV.*Simulator ($os)"; then
         echo_warn "Found no tvOS Simulator runtime supporting OS '$os'. Installing..."
         xcodebuild -downloadPlatform tvOS -quiet | xcbeautify

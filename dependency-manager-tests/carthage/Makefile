@@ -1,34 +1,73 @@
-GIT_REFERENCE := $(shell git rev-parse --abbrev-ref HEAD)
-ifneq (${BITRISE_GIT_BRANCH},)
-	GIT_REFERENCE := ${BITRISE_GIT_BRANCH}
-endif
-ifneq (${BITRISE_GIT_TAG},)
-	GIT_REFERENCE := ${BITRISE_GIT_TAG}
+.PHONY: clean install test create-src-from-xcodeproj
+
+REPO_ROOT := ../../
+include ../../tools/utils/common.mk
+
+ifeq ($(PLATFORM), iOS Simulator)
+SCHEME := App iOS
+CARTHAGE_PLATFORM := iOS
+EXPECTED_XCFRAMEWORKS := DatadogInternal \
+						DatadogCore \
+						DatadogLogs \
+						DatadogTrace \
+						DatadogRUM \
+						DatadogSessionReplay \
+						DatadogObjc \
+						DatadogCrashReporting \
+						CrashReporter \
+						DatadogWebViewTracking \
+						OpenTelemetryApi
+else ifeq ($(PLATFORM), tvOS Simulator)
+SCHEME := App tvOS
+CARTHAGE_PLATFORM := tvOS
+EXPECTED_XCFRAMEWORKS := DatadogInternal \
+						DatadogCore \
+						DatadogLogs \
+						DatadogTrace \
+						DatadogRUM \
+						DatadogObjc \
+						DatadogCrashReporting \
+						CrashReporter \
+						OpenTelemetryApi
 endif
 
-GIT_REMOTE := "DataDog/dd-sdk-ios"
-ifneq (${BITRISEIO_PULL_REQUEST_REPOSITORY_URL},)
-	GIT_REMOTE := ${BITRISEIO_PULL_REQUEST_REPOSITORY_URL}
-endif
+clean:
+	@$(ECHO_SUBTITLE2) "make clean"
+	rm -rf Carthage
+
+install:
+	@$(ECHO_SUBTITLE2) "make install"
+	@$(ECHO_SUCCESS) "Preparing for CURRENT_GIT_REF='${CURRENT_GIT_REF}'"
+	sed "s|GIT_REFERENCE|${CURRENT_GIT_REF}|g" Cartfile.src > Cartfile
 
 test:
-		@echo "⚙️  Configuring CTProject with remote branch: '${GIT_REFERENCE}'..."
-
-		@sed "s|GIT_REFERENCE|${GIT_REFERENCE}|g" Cartfile.src | \
-		sed "s|GIT_REMOTE|${GIT_REMOTE}|g" > Cartfile
-		@rm -rf Carthage/
-		@echo "🧪 Run 'carthage update'"
-		@carthage update --platform iOS,tvOS --use-xcframeworks
-		@echo "🧪 Check if expected frameworks exist in $(PWD)/Carthage/Build/"
-		@[ -e "Carthage/Build/DatadogInternal.xcframework" ] && echo "DatadogInternal.xcframework - OK" || { echo "DatadogInternal.xcframework - missing"; false; }
-		@[ -e "Carthage/Build/DatadogCore.xcframework" ] && echo "DatadogCore.xcframework - OK" || { echo "DatadogCore.xcframework - missing"; false; }
-		@[ -e "Carthage/Build/DatadogLogs.xcframework" ] && echo "DatadogLogs.xcframework - OK" || { echo "DatadogLogs.xcframework - missing"; false; }
-		@[ -e "Carthage/Build/DatadogTrace.xcframework" ] && echo "DatadogTrace.xcframework - OK" || { echo "DatadogTrace.xcframework - missing"; false; }
-		@[ -e "Carthage/Build/DatadogRUM.xcframework" ] && echo "DatadogRUM.xcframework - OK" || { echo "DatadogRUM.xcframework - missing"; false; }
-		@[ -e "Carthage/Build/DatadogSessionReplay.xcframework" ] && echo "DatadogSessionReplay.xcframework - OK" || { echo "DatadogSessionReplay.xcframework - missing"; false; }
-		@[ -e "Carthage/Build/DatadogObjc.xcframework" ] && echo "DatadogObjc.xcframework - OK" || { echo "DatadogObjc.xcframework - missing"; false; }
-		@[ -e "Carthage/Build/DatadogCrashReporting.xcframework" ] && echo "DatadogCrashReporting.xcframework - OK" || { echo "DatadogCrashReporting.xcframework - missing"; false; }
-		@[ -e "Carthage/Build/CrashReporter.xcframework" ] && echo "CrashReporter.xcframework - OK" || { echo "CrashReporter.xcframework - missing"; false; }
-		@[ -e "Carthage/Build/DatadogWebViewTracking.xcframework" ] && echo "DatadogWebViewTracking.xcframework - OK" || { echo "DatadogWebViewTracking.xcframework - missing"; false; }
-		@[ -e "Carthage/Build/OpenTelemetryApi.xcframework" ] && echo "OpenTelemetryApi.xcframework - OK" || { echo "OpenTelemetryApi.xcframework - missing"; false; }
-		@echo "🧪 SUCCEEDED"
+	@$(call require_param,OS)
+	@$(call require_param,PLATFORM)
+	@$(call require_param,DEVICE)
+	@$(ECHO_SUBTITLE2) "make test OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)'"
+ifeq ($(SCHEME),)
+	@$(ECHO_ERROR) "No SCHEME is defined for PLATFORM='$(PLATFORM)'"
+	@exit 1
+endif
+ifeq ($(CARTHAGE_PLATFORM),)
+	@$(ECHO_ERROR) "No CARTHAGE_PLATFORM is defined for PLATFORM='$(PLATFORM)'"
+	@exit 1
+endif
+ifeq ($(EXPECTED_XCFRAMEWORKS),)
+	@$(ECHO_ERROR) "No EXPECTED_XCFRAMEWORKS is defined for PLATFORM='$(PLATFORM)'"
+	@exit 1
+endif
+	@$(ECHO_SUCCESS) "Using SCHEME='$(SCHEME)'"
+	@$(ECHO_SUCCESS) "Using CARTHAGE_PLATFORM='$(CARTHAGE_PLATFORM)'"
+	@$(ECHO_SUCCESS) "Using EXPECTED_XCFRAMEWORKS='$(EXPECTED_XCFRAMEWORKS)'"
+	carthage update --platform $(CARTHAGE_PLATFORM) --use-xcframeworks
+	@echo "Check XCFrameworks in $(PWD)/Carthage/Build/"
+	@$(foreach xcf,$(EXPECTED_XCFRAMEWORKS),\
+		if [ -d "Carthage/Build/$(xcf).xcframework" ]; then \
+			$(ECHO_SUCCESS) "$(xcf).xcframework exists"; \
+		else \
+			$(ECHO_ERROR) "$(xcf).xcframework is missing" && exit 1; \
+		fi;)
+	set -eo pipefail; \
+	xcodebuild -version; \
+	xcodebuild -project "CTProject.xcodeproj" -destination "platform=$(PLATFORM),name=$(DEVICE),OS=$(OS)" -scheme "$(SCHEME)" test | xcbeautify

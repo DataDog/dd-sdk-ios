@@ -2,7 +2,7 @@
 
 # Usage:
 # ./tools/tools-test.sh
-# Runs tests for CLI tools in the repo.
+# Runs tests for repo tools.
 
 set -eo pipefail
 source ./tools/utils/echo_color.sh

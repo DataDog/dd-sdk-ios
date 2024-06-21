@@ -115,9 +115,6 @@ test:
 	@$(call require_param,OS)
 	@$(call require_param,PLATFORM)
 	@$(call require_param,DEVICE)
-	@:$(eval OS ?= $(DEFAULT_IOS_OS))
-	@:$(eval PLATFORM ?= $(DEFAULT_IOS_PLATFORM))
-	@:$(eval DEVICE ?= $(DEFAULT_IOS_DEVICE))
 	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)'"
 	./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
 
@@ -185,8 +182,38 @@ tools-test:
 
 # Run smoke tests
 smoke-test:
+	@$(call require_param,TEST_DIRECTORY)
+	@$(call require_param,OS)
+	@$(call require_param,PLATFORM)
+	@$(call require_param,DEVICE)
 	@$(ECHO_TITLE) "make smoke-test"
-	./tools/smoke-test.sh
+	./tools/smoke-test.sh --test-directory "$(TEST_DIRECTORY)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
+
+# Run smoke tests for specified TEST_DIRECTORY using iOS Simulator
+smoke-test-ios:
+	@$(call require_param,TEST_DIRECTORY)
+	@:$(eval OS ?= $(DEFAULT_IOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_IOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_IOS_DEVICE))
+	@$(MAKE) smoke-test TEST_DIRECTORY="$(TEST_DIRECTORY)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run all smoke tests using iOS Simulator
+smoke-test-ios-all:
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="dependency-manager-tests/spm"
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="dependency-manager-tests/carthage"
+
+# Run smoke tests for specified TEST_DIRECTORY using tvOS Simulator
+smoke-test-tvos:
+	@$(call require_param,TEST_DIRECTORY)
+	@:$(eval OS ?= $(DEFAULT_TVOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_TVOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_TVOS_DEVICE))
+	@$(MAKE) smoke-test TEST_DIRECTORY="$(TEST_DIRECTORY)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run all smoke tests using tvOS Simulator
+smoke-test-tvos-all:
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/spm"
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/carthage"
 
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
@@ -202,14 +229,6 @@ open-sr-snapshot-tests:
 templates:
 	@$(ECHO_TITLE) "make templates"
 	./tools/xcode-templates/install-xcode-templates.sh
-
-# Tests if current branch ships a valid SPM package.
-test-spm:
-		@cd dependency-manager-tests/spm && $(MAKE)
-
-# Tests if current branch ships a valid Carthage project.
-test-carthage:
-		@cd dependency-manager-tests/carthage && $(MAKE)
 
 # Tests if current branch ships a valid Cocoapods project.
 test-cocoapods:

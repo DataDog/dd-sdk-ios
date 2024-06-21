@@ -1,28 +1,45 @@
-GIT_REFERENCE := $(shell git rev-parse --abbrev-ref HEAD)
-ifneq (${BITRISE_GIT_BRANCH},)
-	GIT_REFERENCE := ${BITRISE_GIT_BRANCH}
-endif
-ifneq (${BITRISE_GIT_TAG},)
-	GIT_REFERENCE := ${BITRISE_GIT_TAG}
+.PHONY: clean install test create-src-from-xcodeproj
+
+REPO_ROOT := ../../
+include ../../tools/utils/common.mk
+
+ifeq ($(PLATFORM), iOS Simulator)
+SCHEME := App iOS
+else ifeq ($(PLATFORM), tvOS Simulator)
+SCHEME := App tvOS
 endif
 
-GIT_REMOTE := "https://github.com/DataDog/dd-sdk-ios"
-ifneq (${BITRISEIO_PULL_REQUEST_REPOSITORY_URL},)
-	GIT_REMOTE := ${BITRISEIO_PULL_REQUEST_REPOSITORY_URL}
-endif
+clean:
+	@$(ECHO_SUBTITLE2) "make clean"
+	rm -rf SPMProject.xcodeproj
+
+install:
+	@$(ECHO_SUBTITLE2) "make install"
+	@$(ECHO_SUCCESS) "Preparing for CURRENT_GIT_REF='${CURRENT_GIT_REF}'"
+	cp -r SPMProject.xcodeproj.src SPMProject.xcodeproj
+	sed "s|GIT_REFERENCE|${CURRENT_GIT_REF}|g" SPMProject.xcodeproj.src/project.pbxproj | \
+		sed "s|GIT_REMOTE|${CURRENT_GIT_REF}|g" > SPMProject.xcodeproj/project.pbxproj
 
 test:
-		@echo "⚙️  Configuring SPMProject with remote branch: '${GIT_REFERENCE}'..."
-		@rm -rf SPMProject.xcodeproj
-		@cp -r SPMProject.xcodeproj.src SPMProject.xcodeproj
-		@sed "s|GIT_REFERENCE|${GIT_REFERENCE}|g" SPMProject.xcodeproj.src/project.pbxproj | \
-		sed "s|GIT_REMOTE|${GIT_REMOTE}|g" > SPMProject.xcodeproj/project.pbxproj
-		@echo "OK 👌"
+	@$(call require_param,OS)
+	@$(call require_param,PLATFORM)
+	@$(call require_param,DEVICE)
+	@$(ECHO_SUBTITLE2) "make test OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)'"
+ifeq ($(SCHEME),)
+	@$(ECHO_ERROR) "No SCHEME is defined for PLATFORM='$(PLATFORM)'"
+	@exit 1
+endif
+	@$(ECHO_SUCCESS) "Using SCHEME='$(SCHEME)'"
+	set -eo pipefail; \
+	xcodebuild -version; \
+	xcodebuild -project "SPMProject.xcodeproj" -destination "platform=$(PLATFORM),name=$(DEVICE),OS=$(OS)" -scheme "$(SCHEME)" test | xcbeautify
 
+# Helper to apply any changes made to 'SPMProject.xcodeproj' back to 'SPMProject.xcodeproj.src'
 create-src-from-xcodeproj:
-		@echo "⚙️  Creating 'SPMProject.xcodeproj.src' from SPMProject.xcodeproj"
-		rm -rf SPMProject.xcodeproj.src
-		cp -r SPMProject.xcodeproj SPMProject.xcodeproj.src
-		rm SPMProject.xcodeproj.src/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
-		sed "s|${GIT_REFERENCE}|GIT_REFERENCE|g" SPMProject.xcodeproj/project.pbxproj > SPMProject.xcodeproj.src/project.pbxproj
-		@echo "OK 👌"
+	@$(ECHO_SUBTITLE2) "make create-src-from-xcodeproj"
+	@echo "Creating 'SPMProject.xcodeproj.src' template from 'SPMProject.xcodeproj'"
+	rm -rf SPMProject.xcodeproj.src
+	cp -r SPMProject.xcodeproj SPMProject.xcodeproj.src
+	rm SPMProject.xcodeproj.src/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+	sed "s|${CURRENT_GIT_REF}|GIT_REFERENCE|g" SPMProject.xcodeproj/project.pbxproj > SPMProject.xcodeproj.src/project.pbxproj
+	@$(ECHO_SUCCESS) "'SPMProject.xcodeproj.src' template was updated from 'SPMProject.xcodeproj'"

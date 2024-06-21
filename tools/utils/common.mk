@@ -23,3 +23,5 @@ define require_param
         exit 1; \
     fi
 endef
+
+CURRENT_GIT_REF := $(shell $(REPO_ROOT)/tools/utils/current_git.sh --print)
