@@ -6,15 +6,25 @@ public protocol DeviceProtocol {
     var model: String { get }
     var systemName: String { get }
     var systemVersion: String { get }
-    var identifierForVendor: UUID? { get }
+    var vendorIdentifier: UUID? { get }
 }
 
 #if canImport(WatchKit)
 import WatchKit
 
-extension WKInterfaceDevice: DeviceProtocol {}
+extension WKInterfaceDevice: DeviceProtocol {
+    public var vendorIdentifier: UUID? {
+        if #available(watchOS 6.2, *) {
+            identifierForVendor
+        } else {
+            nil
+        }
+    }
+}
 #else
-extension UIDevice: DeviceProtocol {}
+extension UIDevice: DeviceProtocol {
+    public var vendorIdentifier: UUID? { identifierForVendor }
+}
 #endif
 
 public enum DeviceFactory {

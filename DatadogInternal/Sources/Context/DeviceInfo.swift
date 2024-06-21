@@ -120,7 +120,7 @@ extension DeviceInfo {
             osBuildNumber: build,
             architecture: architecture,
             isSimulator: true,
-            vendorId: device.identifierForVendor?.uuidString,
+            vendorId: device.vendorIdentifier?.uuidString,
             isDebugging: isDebugging ?? false,
             systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate
         )
