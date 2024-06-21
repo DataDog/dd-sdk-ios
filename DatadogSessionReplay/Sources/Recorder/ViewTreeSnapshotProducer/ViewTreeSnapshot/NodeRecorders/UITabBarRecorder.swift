@@ -23,14 +23,12 @@ internal final class UITabBarRecorder: NodeRecorder {
         )
 
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
-        let subtreeRecordingResults = recordSubtree(of: tabBar, in: context)
-        let allNodes = [node] + subtreeRecordingResults.nodes
-        let resources = subtreeRecordingResults.resources
+        let allNodes = [node] + recordSubtree(of: tabBar, in: context)
 
-        return SpecificElement(subtreeStrategy: .ignore, nodes: allNodes, resources: resources)
+        return SpecificElement(subtreeStrategy: .ignore, nodes: allNodes)
     }
 
-    private func recordSubtree(of tabBar: UITabBar, in context: ViewTreeRecordingContext) -> RecordingResult {
+    private func recordSubtree(of tabBar: UITabBar, in context: ViewTreeRecordingContext) -> [Node] {
         let subtreeViewRecorder = ViewTreeRecorder(
             nodeRecorders: [
                 UIImageViewRecorder(

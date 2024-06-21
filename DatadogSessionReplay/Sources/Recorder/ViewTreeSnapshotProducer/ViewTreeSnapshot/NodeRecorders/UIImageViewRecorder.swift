@@ -133,7 +133,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 opacity: attributes.alpha
             )
         ]
-        
+
         guard let contentFrame = contentFrame else {
             return wireframes
         }

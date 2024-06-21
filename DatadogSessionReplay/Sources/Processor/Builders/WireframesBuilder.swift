@@ -89,35 +89,6 @@ extension SessionReplayWireframesBuilder {
     }
 
     public func createImageWireframe(
-        resourceId: String,
-        id: WireframeID,
-        frame: CGRect,
-        mimeType: String = "png",
-        clip: SRContentClip? = nil,
-        borderColor: CGColor? = nil,
-        borderWidth: CGFloat? = nil,
-        backgroundColor: CGColor? = nil,
-        cornerRadius: CGFloat? = nil,
-        opacity: CGFloat? = nil
-    ) -> SRWireframe {
-        let wireframe = SRImageWireframe(
-            base64: nil, // field deprecated - we should use resource endpoint instead
-            border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
-            clip: clip,
-            height: Int64(withNoOverflow: frame.height),
-            id: id,
-            isEmpty: false, // field deprecated - we should use placeholder wireframe instead
-            mimeType: mimeType,
-            resourceId: resourceId,
-            shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
-            width: Int64(withNoOverflow: frame.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
-        )
-        return .imageWireframe(value: wireframe)
-    }
-
-    public func createImageWireframe(
         id: WireframeID,
         resource: SessionReplayResource,
         frame: CGRect,
@@ -129,6 +100,7 @@ extension SessionReplayWireframesBuilder {
         cornerRadius: CGFloat? = nil,
         opacity: CGFloat? = nil
     ) -> SRWireframe {
+        // Save resource
         resources.append(resource)
 
         let wireframe = SRImageWireframe(

@@ -236,7 +236,6 @@ class SnapshotProcessorTests: XCTestCase {
             context: .init(privacy: .allow, rumContext: rum, date: time),
             viewportSize: .mockRandom(minWidth: 1_000, minHeight: 1_000),
             nodes: [node],
-            resources: [],
             webViewSlotIDs: Set([hiddenSlot, visibleSlot])
         )
 
