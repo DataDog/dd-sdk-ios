@@ -7,6 +7,7 @@
 import XCTest
 import SRFixtures
 import TestUtilities
+import DatadogInternal
 @testable import SRHost
 
 final class SRSnapshotTests: SnapshotTestCase {
@@ -279,8 +280,47 @@ final class SRSnapshotTests: SnapshotTestCase {
 
     func testNavigationBars() throws {
 
+        let privacyModes: [SessionReplayPrivacyLevel] = [.allow, .mask]
+
+        // - Static Navigation Bars -
+
+        // Note: Static Navigation Bars are not representative of realistic rendering at runtime.
+        // Therefore, Embedded Navigation Bars snapshot tests are also included for more accurate simulations.
+
+        // Test Static Navigation Bars without tinted color
+        show(fixture: .navigationBars)
+        try forPrivacyModes(privacyModes) { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            let fileNamePrefix = Fixture.navigationBars.slug
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-\(privacyMode)-privacy"),
+                record: recordingMode
+            )
+        }
+
+        // Test Static Navigation Bars with tinted color
+        let vc2 = show(fixture: .navigationBars) as! NavigationBarControllers
+        vc2.setTintColor()
+        // Wait for colors to appear on screen, so the recorder can capture them.
+        wait(seconds: 0.5)
+
+        try forPrivacyModes(privacyModes) { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            let fileNamePrefix = Fixture.navigationBars.slug
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-itemTintColor-\(privacyMode)-privacy"),
+                record: recordingMode
+            )
+        }
+
+        // - Embedded Navigation Bars -
+
+        // Note: Although Embedded Navigation Bars are more realistic than Static Navigation Bars,
+        // they still lack some realism as their appearance changes when the view is scrolled.
+
         let navBarFixtures: [Fixture] = [
-            .navigationBars,
             .navigationBarDefaultTranslucent,
             .navigationBarDefaultNonTranslucent,
             .navigationBarBlackTranslucent,
@@ -292,9 +332,12 @@ final class SRSnapshotTests: SnapshotTestCase {
         ]
 
         for fixture in navBarFixtures {
-            show(fixture: fixture)
+            let navController = show(fixture: fixture) as! TestNavigationController
+            navController.pushNextView()
+            // Wait for view controller to be pushed onto the navigation stack.
+            wait(seconds: 0.5)
 
-            try forPrivacyModes([.allow, .mask]) { privacyMode in
+            try forPrivacyModes(privacyModes) { privacyMode in
                 let image = try takeSnapshot(with: privacyMode)
                 let fileNamePrefix = fixture.slug
                 DDAssertSnapshotTest(
