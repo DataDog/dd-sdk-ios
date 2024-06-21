@@ -1,0 +1,41 @@
+#if canImport(UIKit)
+import UIKit
+#if canImport(WatchKit)
+import WatchKit
+#endif
+
+/// Convenient wrapper to get system notifications independent from platform
+public enum ApplicationNotifications {
+    public static var didBecomeActive: Notification.Name {
+        #if canImport(WatchKit)
+        WKExtension.applicationDidBecomeActiveNotification
+        #else
+        UIApplication.didBecomeActiveNotification
+        #endif
+    }
+
+    public static var willResignActive: Notification.Name {
+        #if canImport(WatchKit)
+        WKExtension.applicationWillResignActiveNotification
+        #else
+        UIApplication.willResignActiveNotification
+        #endif
+    }
+
+    public static var didEnterBackground: Notification.Name {
+        #if canImport(WatchKit)
+        WKExtension.applicationDidEnterBackgroundNotification
+        #else
+        UIApplication.didEnterBackgroundNotification
+        #endif
+    }
+
+    public static var willEnterForeground: Notification.Name {
+        #if canImport(WatchKit)
+        WKExtension.applicationWillEnterForegroundNotification
+        #else
+        UIApplication.willEnterForegroundNotification
+        #endif
+    }
+}
+#endif

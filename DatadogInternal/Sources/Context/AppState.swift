@@ -146,8 +146,16 @@ extension AppStateHistory {
 
 import UIKit
 
+#if canImport(WatchKit)
+import WatchKit
+
+public typealias ApplicationState = WKApplicationState
+#else
+public typealias ApplicationState = UIApplication.State
+#endif
+
 extension AppState {
-    public init(_ state: UIApplication.State) {
+    public init(_ state: ApplicationState) {
         switch state {
         case .active:
             self = .active

@@ -75,14 +75,14 @@ import MachO
 import UIKit
 
 extension DeviceInfo {
-    /// Creates device info based on UIKit description.
+    /// Creates device info based on device description.
     ///
     /// - Parameters:
     ///   - processInfo: The current process information.
-    ///   - device: The `UIDevice` description.
+    ///   - device: The `DeviceProtocol` description.
     public init(
         processInfo: ProcessInfo = .processInfo,
-        device: UIDevice = .current,
+        device: DeviceProtocol = DeviceFactory.current,
         sysctl: SysctlProviding = Sysctl()
     ) {
         var architecture = "unknown"
@@ -96,7 +96,7 @@ extension DeviceInfo {
 
         #if !targetEnvironment(simulator)
         let model = try? sysctl.model()
-        // Real iOS device
+        // Real device
         self.init(
             name: device.model,
             model: model ?? device.model,
@@ -111,7 +111,7 @@ extension DeviceInfo {
         )
         #else
         let model = processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? device.model
-        // iOS Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
+        // Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
         self.init(
             name: device.model,
             model: "\(model) Simulator",
