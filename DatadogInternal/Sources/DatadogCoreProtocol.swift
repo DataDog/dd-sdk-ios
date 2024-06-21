@@ -6,13 +6,20 @@
 
 import Foundation
 
+/// A Datadog Core protocol that provides persistance related information.
+public protocol CoreStorage {
+    /// Returns the most recent modified file before a given date.
+    /// - Parameter before: The date to compare the last modification date of files.
+    /// - Returns: The most recent modified file or `nil` if no files were modified before the given date.
+    func mostRecentModifiedFileAt(before: Date) throws -> Date?
+}
+
 /// A Datadog Core holds a set of Features and is responsible for managing their storage
 /// and upload mechanism. It also provides a thread-safe scope for writing events.
 ///
 /// Any reference to `DatadogCoreProtocol` must be captured as `weak` within a Feature. This is to avoid
 /// retain cycle of core holding the Feature and vice-versa.
-public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing {
-    // TODO: RUM-3717 
+public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing, CoreStorage {
     // Remove `DatadogCoreProtocol` conformance to `MessageSending` and `BaggageSharing` once
     // all features are migrated to depend on `FeatureScope` interface.
 
@@ -84,7 +91,7 @@ public protocol BaggageSharing {
     ///     // Bar.swift
     ///     core.scope(for: "bar").eventWriteContext { context, writer in
     ///         if let baggage = context.baggages["key"] {
-    ///             try {
+    ///             do {
     ///                 // Try decoding context to expected type:
     ///                 let value: String = try baggage.decode()
     ///                 // If success, handle the `value`.
@@ -308,6 +315,8 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) { }
     /// no-op
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
+    /// no-op
+    public func mostRecentModifiedFileAt(before: Date) throws -> Date? { return nil }
 }
 
 public struct NOPFeatureScope: FeatureScope {

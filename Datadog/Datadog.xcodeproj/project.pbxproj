@@ -115,8 +115,6 @@
 		3CFF4F952C09E63C006F191D /* WatchdogTerminationChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFF4F932C09E63C006F191D /* WatchdogTerminationChecker.swift */; };
 		3CFF4F972C09E64C006F191D /* WatchdogTerminationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFF4F962C09E64C006F191D /* WatchdogTerminationMonitor.swift */; };
 		3CFF4F982C09E64C006F191D /* WatchdogTerminationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFF4F962C09E64C006F191D /* WatchdogTerminationMonitor.swift */; };
-		3CFF4F9A2C0DBE4C006F191D /* LaunchReportReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFF4F992C0DBE4C006F191D /* LaunchReportReceiver.swift */; };
-		3CFF4F9B2C0DBE4C006F191D /* LaunchReportReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFF4F992C0DBE4C006F191D /* LaunchReportReceiver.swift */; };
 		3CFF4FA42C0E0FE8006F191D /* WatchdogTerminationCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFF4FA32C0E0FE5006F191D /* WatchdogTerminationCheckerTests.swift */; };
 		3CFF4FA52C0E0FE9006F191D /* WatchdogTerminationCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFF4FA32C0E0FE5006F191D /* WatchdogTerminationCheckerTests.swift */; };
 		3CFF5D492B555F4F00FC483A /* OTelTracerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFF5D482B555F4F00FC483A /* OTelTracerProvider.swift */; };
@@ -2131,7 +2129,6 @@
 		3CFF4F902C09E630006F191D /* WatchdogTerminationAppStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationAppStateManager.swift; sourceTree = "<group>"; };
 		3CFF4F932C09E63C006F191D /* WatchdogTerminationChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationChecker.swift; sourceTree = "<group>"; };
 		3CFF4F962C09E64C006F191D /* WatchdogTerminationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationMonitor.swift; sourceTree = "<group>"; };
-		3CFF4F992C0DBE4C006F191D /* LaunchReportReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchReportReceiver.swift; sourceTree = "<group>"; };
 		3CFF4FA32C0E0FE5006F191D /* WatchdogTerminationCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationCheckerTests.swift; sourceTree = "<group>"; };
 		3CFF5D482B555F4F00FC483A /* OTelTracerProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelTracerProvider.swift; sourceTree = "<group>"; };
 		49274903288048AA00ECD49B /* InternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalProxyTests.swift; sourceTree = "<group>"; };
@@ -4695,7 +4692,6 @@
 				D236BE2729520FED00676E67 /* CrashReportReceiver.swift */,
 				D215ED6A29D2E1080046B721 /* ErrorMessageReceiver.swift */,
 				D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */,
-				3CFF4F992C0DBE4C006F191D /* LaunchReportReceiver.swift */,
 				61DCC84D2C071DCD00CB59E5 /* TelemetryInterceptor.swift */,
 			);
 			path = Integrations;
@@ -8746,7 +8742,6 @@
 				3CFF4F8C2C09E61A006F191D /* WatchdogTerminationAppState.swift in Sources */,
 				D23F8E8E29DDCD28001CFAE8 /* UIKitRUMUserActionsHandler.swift in Sources */,
 				D23F8E8F29DDCD28001CFAE8 /* RUMUUIDGenerator.swift in Sources */,
-				3CFF4F9B2C0DBE4C006F191D /* LaunchReportReceiver.swift in Sources */,
 				61DCC84F2C071DCD00CB59E5 /* TelemetryInterceptor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -9076,7 +9071,6 @@
 				3CFF4F8B2C09E61A006F191D /* WatchdogTerminationAppState.swift in Sources */,
 				D29A9F6929DD85BB005C54A4 /* UIKitRUMUserActionsHandler.swift in Sources */,
 				D29A9F5229DD85BB005C54A4 /* RUMUUIDGenerator.swift in Sources */,
-				3CFF4F9A2C0DBE4C006F191D /* LaunchReportReceiver.swift in Sources */,
 				61DCC84E2C071DCD00CB59E5 /* TelemetryInterceptor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

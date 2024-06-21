@@ -73,6 +73,10 @@ internal extension RUMViewEvent {
         }
     }
 
+    enum EventType: String, Codable {
+        case view
+    }
+
     /// Creates `Metadata` from the given `RUMViewEvent`.
     /// - Returns: The `Metadata` for the given `RUMViewEvent`.
     func metadata() -> Metadata {

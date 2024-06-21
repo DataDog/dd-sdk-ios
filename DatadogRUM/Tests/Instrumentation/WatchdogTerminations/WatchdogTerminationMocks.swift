@@ -19,7 +19,8 @@ extension WatchdogTerminationAppState: RandomMockable, AnyMockable {
             wasTerminated: .mockAny(),
             isActive: .mockAny(),
             vendorId: .mockAny(),
-            processId: .mockAny()
+            processId: .mockAny(),
+            trackingConsent: .mockRandom()
         )
     }
 
@@ -32,26 +33,35 @@ extension WatchdogTerminationAppState: RandomMockable, AnyMockable {
             wasTerminated: .mockRandom(),
             isActive: .mockRandom(),
             vendorId: .mockRandom(),
-            processId: .mockAny()
+            processId: .mockAny(),
+            trackingConsent: .mockRandom()
         )
     }
 }
 
 class WatchdogTerminationReporterMock: WatchdogTerminationReporting {
     var didSend: XCTestExpectation
+    var sendParams: SendParams?
 
     init(didSend: XCTestExpectation) {
         self.didSend = didSend
     }
 
-    func send() {
+    func send(date: Date?, state: DatadogRUM.WatchdogTerminationAppState, viewEvent: DatadogRUM.RUMViewEvent) {
+        sendParams = SendParams(date: date, state: state, viewEvent: viewEvent)
         didSend.fulfill()
+    }
+
+    struct SendParams {
+        let date: Date?
+        let state: DatadogRUM.WatchdogTerminationAppState
+        let viewEvent: DatadogRUM.RUMViewEvent
     }
 }
 
 extension WatchdogTerminationReporter: RandomMockable {
     public static func mockRandom() -> Self {
-        return .init()
+        return .init(featureScope: FeatureScopeMock())
     }
 }
 
@@ -90,6 +100,7 @@ extension WatchdogTerminationMonitor: RandomMockable {
         return .init(
             appStateManager: .mockRandom(),
             checker: .mockRandom(),
+            core: NOPDatadogCore(),
             feature: FeatureScopeMock(),
             reporter: WatchdogTerminationReporter.mockRandom()
         )

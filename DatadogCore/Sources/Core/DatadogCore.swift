@@ -126,7 +126,7 @@ internal final class DatadogCore {
     /// Sets current user information.
     ///
     /// Those will be added to logs, traces and RUM events automatically.
-    /// 
+    ///
     /// - Parameters:
     ///   - id: User ID, if any
     ///   - name: Name representing the user, if any
@@ -159,7 +159,7 @@ internal final class DatadogCore {
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
-    /// 
+    ///
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
         if trackingConsent != consentPublisher.consent {
@@ -486,6 +486,15 @@ extension DatadogCore: Flushable {
     }
 }
 
+extension DatadogCore: CoreStorage {
+    /// Returns the most recent modification date of a file in the core directory.
+    /// - Parameter before: The date to compare the last modification date of files.
+    /// - Returns: The latest modified file or `nil` if no files were modified before given date.
+    func mostRecentModifiedFileAt(before: Date) throws -> Date? {
+        let file = try directory.coreDirectory.mostRecentModifiedFile(before: before)
+        return try file?.modifiedAt()
+    }
+}
 #if SPM_BUILD
 import DatadogPrivate
 #endif

@@ -1722,6 +1722,7 @@ public enum DDRUMErrorEventErrorCategory: Int {
         case .aNR?: self = .aNR
         case .appHang?: self = .appHang
         case .exception?: self = .exception
+        case .watchdogTermination?: self = .watchdogTermination
         }
     }
 
@@ -1731,6 +1732,7 @@ public enum DDRUMErrorEventErrorCategory: Int {
         case .aNR: return .aNR
         case .appHang: return .appHang
         case .exception: return .exception
+        case .watchdogTermination: return .watchdogTermination
         }
     }
 
@@ -1738,6 +1740,7 @@ public enum DDRUMErrorEventErrorCategory: Int {
     case aNR
     case appHang
     case exception
+    case watchdogTermination
 }
 
 @objc
@@ -6433,6 +6436,14 @@ public class DDRUMVitalEventVital: NSObject {
         root.swiftModel.vital.custom as [String: NSNumber]?
     }
 
+    @objc public var details: String? {
+        root.swiftModel.vital.details
+    }
+
+    @objc public var duration: NSNumber? {
+        root.swiftModel.vital.duration as NSNumber?
+    }
+
     @objc public var id: String {
         root.swiftModel.vital.id
     }
@@ -7196,6 +7207,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.mobileVitalsUpdatePeriod as NSNumber? }
     }
 
+    @objc public var plugins: [DDTelemetryConfigurationEventTelemetryConfigurationPlugins]? {
+        root.swiftModel.telemetry.configuration.plugins?.map { DDTelemetryConfigurationEventTelemetryConfigurationPlugins(swiftModel: $0) }
+    }
+
     @objc public var premiumSampleRate: NSNumber? {
         root.swiftModel.telemetry.configuration.premiumSampleRate as NSNumber?
     }
@@ -7466,6 +7481,24 @@ public class DDTelemetryConfigurationEventTelemetryConfigurationForwardReports: 
 }
 
 @objc
+public class DDTelemetryConfigurationEventTelemetryConfigurationPlugins: NSObject {
+    internal var swiftModel: TelemetryConfigurationEvent.Telemetry.Configuration.Plugins
+    internal var root: DDTelemetryConfigurationEventTelemetryConfigurationPlugins { self }
+
+    internal init(swiftModel: TelemetryConfigurationEvent.Telemetry.Configuration.Plugins) {
+        self.swiftModel = swiftModel
+    }
+
+    @objc public var name: String {
+        root.swiftModel.name
+    }
+
+    @objc public var pluginsInfo: [String: Any] {
+        root.swiftModel.pluginsInfo.castToObjectiveC()
+    }
+}
+
+@objc
 public enum DDTelemetryConfigurationEventTelemetryConfigurationSelectedTracingPropagators: Int {
     internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.SelectedTracingPropagators?) {
         switch swift {
@@ -7629,4 +7662,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/30d4b773abb4e33edc9d6053d3c12cd302e948a5
+// Generated from https://github.com/DataDog/rum-events-format/tree/ab365359e88ec5e24fc26397695af7e539b8d670

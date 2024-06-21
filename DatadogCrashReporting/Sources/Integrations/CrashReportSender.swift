@@ -78,26 +78,6 @@ internal struct MessageBusSender: CrashReportSender {
     /// - Parameters:
     ///   - launch: The launch report.
     func send(launch: DatadogInternal.LaunchReport) {
-        guard let core = core else {
-            return
-        }
-
-        // We use baggage message to pass the launch report instead updating the global context
-        // because under the hood, some integrations start certain features based on the launch report (e.g. `WatchdogTerminationMonitor`).
-        // If we update the global context, the integrations will keep starting the features on every update which is not desired.
-        core.send(
-            message: .baggage(
-                key: LaunchReport.messageKey,
-                value: launch
-            ),
-            else: {
-                DD.logger.warn(
-                    """
-                    In order to use Crash Reporting, RUM or Logging feature must be enabled.
-                    Make sure `RUM` or `Logs` are enabled when initializing Datadog SDK.
-                    """
-                )
-            }
-        )
+        core?.set(baggage: launch, forKey: LaunchReport.baggageKey)
     }
 }
