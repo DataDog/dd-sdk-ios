@@ -99,16 +99,6 @@ DEFAULT_TVOS_OS := latest
 DEFAULT_TVOS_PLATFORM := tvOS Simulator
 DEFAULT_TVOS_DEVICE := Apple TV
 
-build-spm:
-	@$(call require_param,PLATFORM)
-	@:$(eval PLATFORM ?= iOS)
-	./tools/spm.sh --platform $(PLATFORM)
-
-build-spm-all:
-	./tools/spm.sh --platform iOS
-	./tools/spm.sh --platform tvOS
-	./tools/spm.sh --platform visionOS
-
 # Run unit tests for specified SCHEME
 test:
 	@$(call require_param,SCHEME)
@@ -186,7 +176,7 @@ smoke-test:
 	@$(call require_param,OS)
 	@$(call require_param,PLATFORM)
 	@$(call require_param,DEVICE)
-	@$(ECHO_TITLE) "make smoke-test"
+	@$(ECHO_TITLE) "make smoke-test TEST_DIRECTORY='$(TEST_DIRECTORY)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)'"
 	./tools/smoke-test.sh --test-directory "$(TEST_DIRECTORY)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
 
 # Run smoke tests for specified TEST_DIRECTORY using iOS Simulator
@@ -199,9 +189,10 @@ smoke-test-ios:
 
 # Run all smoke tests using iOS Simulator
 smoke-test-ios-all:
-	# @$(MAKE) smoke-test-ios TEST_DIRECTORY="dependency-manager-tests/spm"
-	# @$(MAKE) smoke-test-ios TEST_DIRECTORY="dependency-manager-tests/carthage"
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="dependency-manager-tests/spm"
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="dependency-manager-tests/carthage"
 	@$(MAKE) smoke-test-ios TEST_DIRECTORY="dependency-manager-tests/cocoapods"
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="dependency-manager-tests/xcframeworks"
 
 # Run smoke tests for specified TEST_DIRECTORY using tvOS Simulator
 smoke-test-tvos:
@@ -213,9 +204,29 @@ smoke-test-tvos:
 
 # Run all smoke tests using tvOS Simulator
 smoke-test-tvos-all:
-	# @$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/spm"
-	# @$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/carthage"
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/spm"
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/carthage"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/cocoapods"
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/xcframeworks"
+
+# Runs SPM package build for specified SCHEME and DESTINATION
+spm-build-test:
+	@$(call require_param,SCHEME)
+	@$(call require_param,DESTINATION)
+	@$(ECHO_TITLE) "make smoke-test-spm-build SCHEME='$(SCHEME)' DESTINATION='$(DESTINATION)'"
+	./tools/spm-build-test.sh --scheme "$(SCHEME)" --destination "$(DESTINATION)"
+
+# Runs SPM package build for all destinations
+spm-build-test-all:
+	@$(MAKE) spm-build-test SCHEME="Datadog-Package" DESTINATION="generic/platform=ios"
+	@$(MAKE) spm-build-test SCHEME="Datadog-Package" DESTINATION="generic/platform=tvOS"
+	@$(MAKE) spm-build-test SCHEME="Datadog-Package" DESTINATION="generic/platform=visionOS"
+	@$(MAKE) spm-build-test SCHEME="Datadog-Package" DESTINATION="platform=macOS,variant=Mac Catalyst"
+	# Only macOS-compatible schemes:
+	@$(MAKE) spm-build-test DESTINATION="platform=macOS" SCHEME="DatadogCore"
+	@$(MAKE) spm-build-test DESTINATION="platform=macOS" SCHEME="DatadogLogs"
+	@$(MAKE) spm-build-test DESTINATION="platform=macOS" SCHEME="DatadogTrace"
+	@$(MAKE) spm-build-test DESTINATION="platform=macOS" SCHEME="DatadogCrashReporting"
 
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
@@ -231,14 +242,6 @@ open-sr-snapshot-tests:
 templates:
 	@$(ECHO_TITLE) "make templates"
 	./tools/xcode-templates/install-xcode-templates.sh
-
-# Tests if current branch ships a valid Cocoapods project.
-test-cocoapods:
-		@cd dependency-manager-tests/cocoapods && $(MAKE)
-
-# Tests if current branch ships valid a XCFrameworks project.
-test-xcframeworks:
-		@cd dependency-manager-tests/xcframeworks && $(MAKE)
 
 # Generate data models from https://github.com/DataDog/rum-events-format
 models-generate:

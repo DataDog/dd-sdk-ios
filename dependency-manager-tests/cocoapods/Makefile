@@ -34,6 +34,7 @@ ifeq ($(COCOAPODS_GIT_REF),)
 endif
 	@$(ECHO_SUCCESS) "Using COCOAPODS_GIT_REF='$(COCOAPODS_GIT_REF)'"
 	sed "s|GIT_REFERENCE|${COCOAPODS_GIT_REF}|g" Podfile.src > Podfile
+	bundle install
 	bundle exec pod update
 
 test:

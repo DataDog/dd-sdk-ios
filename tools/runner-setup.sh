@@ -6,9 +6,10 @@
 
 # Options:
 #   --xcode: Sets the Xcode version on the runner.
-#   --ios: Flag that prepares the runner instance for iOS testing. Disabled by default.
-#   --tvos: Flag that prepares the runner instance for tvOS testing. Disabled by default.
-#   --os: Sets the expected OS version for installed simulators when --ios or --tvos flag is set. Default: '17.4'.
+#   --iOS: Flag that prepares the runner instance for iOS testing. Disabled by default.
+#   --tvOS: Flag that prepares the runner instance for tvOS testing. Disabled by default.
+#   --visionOS: Flag that prepares the runner instance for visionOS testing. Disabled by default.
+#   --os: Sets the expected OS version for installed simulators when --iOS, --tvOS or --visionOS flag is set. Default: '17.4'.
 
 set -eo pipefail
 source ./tools/utils/echo_color.sh
@@ -16,9 +17,10 @@ source ./tools/utils/argparse.sh
 
 set_description "This script is for TEMPORARY. It supplements missing components on the runner. It will be removed once all configurations are integrated into the AMI."
 define_arg "xcode" "" "Sets the Xcode version on the runner." "string" "false"
-define_arg "ios" "false" "Flag that prepares the runner instance for iOS testing. Disabled by default." "store_true"
-define_arg "tvos" "false" "Flag that prepares the runner instance for tvOS testing. Disabled by default." "store_true"
-define_arg "os" "17.4" "Sets the expected OS version for installed simulators when --ios or --tvos flag is set. Default: '17.4'." "string" "false"
+define_arg "iOS" "false" "Flag that prepares the runner instance for iOS testing. Disabled by default." "store_true"
+define_arg "tvOS" "false" "Flag that prepares the runner instance for tvOS testing. Disabled by default." "store_true"
+define_arg "visionOS" "false" "Flag that prepares the runner instance for visionOS testing. Disabled by default." "store_true"
+define_arg "os" "17.4" "Sets the expected OS version for installed simulators when --iOS, --tvOS or --visionOS flag is set. Default: '17.4'." "string" "false"
 
 check_for_help "$@"
 parse_args "$@"
@@ -69,7 +71,7 @@ fi
 echo_succ "Using 'xcodebuild -version':"
 xcodebuild -version
 
-if [ "$ios" = "true" ]; then
+if [ "$iOS" = "true" ]; then
     echo_subtitle "Supply iPhone Simulator runtime ($os)"
     echo "Check current runner for any iPhone Simulator runtime supporting OS '$os':"
     if ! xctrace list devices | grep "iPhone.*Simulator ($os)"; then
@@ -80,7 +82,7 @@ if [ "$ios" = "true" ]; then
     fi
 fi
 
-if [ "$tvos" = "true" ]; then
+if [ "$tvOS" = "true" ]; then
     echo_subtitle "Supply tvOS Simulator runtime ($os)"
     echo "Check current runner for any tvOS Simulator runtime supporting OS '$os':"
     if ! xctrace list devices | grep "Apple TV.*Simulator ($os)"; then
@@ -88,5 +90,16 @@ if [ "$tvos" = "true" ]; then
         xcodebuild -downloadPlatform tvOS -quiet | xcbeautify
     else
         echo_succ "Found some tvOS Simulator runtime supporting OS '$os'. Skipping..."
+    fi
+fi
+
+if [ "$visionOS" = "true" ]; then
+    echo_subtitle "Supply visionOS Simulator runtime ($os)"
+    echo "Check current runner for any visionOS Simulator runtime supporting OS '$os':"
+    if ! xctrace list devices | grep "Apple Vision.*($os)"; then
+        echo_warn "Found no visionOS Simulator runtime supporting OS '$os'. Installing..."
+        xcodebuild -downloadPlatform visionOS -quiet | xcbeautify
+    else
+        echo_succ "Found some visionOS Simulator runtime supporting OS '$os'. Skipping..."
     fi
 fi

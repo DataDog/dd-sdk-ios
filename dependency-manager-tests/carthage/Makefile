@@ -39,6 +39,12 @@ install:
 	@$(ECHO_SUBTITLE2) "make install"
 	@$(ECHO_SUCCESS) "Preparing for CURRENT_GIT_REF='${CURRENT_GIT_REF}'"
 	sed "s|GIT_REFERENCE|${CURRENT_GIT_REF}|g" Cartfile.src > Cartfile
+ifeq ($(CARTHAGE_PLATFORM),)
+	@$(ECHO_ERROR) "No CARTHAGE_PLATFORM is defined for PLATFORM='$(PLATFORM)'"
+	@exit 1
+endif
+	@$(ECHO_SUCCESS) "Using CARTHAGE_PLATFORM='$(CARTHAGE_PLATFORM)'"
+	carthage update --platform $(CARTHAGE_PLATFORM) --use-xcframeworks
 
 test:
 	@$(call require_param,OS)
@@ -49,18 +55,12 @@ ifeq ($(SCHEME),)
 	@$(ECHO_ERROR) "No SCHEME is defined for PLATFORM='$(PLATFORM)'"
 	@exit 1
 endif
-ifeq ($(CARTHAGE_PLATFORM),)
-	@$(ECHO_ERROR) "No CARTHAGE_PLATFORM is defined for PLATFORM='$(PLATFORM)'"
-	@exit 1
-endif
 ifeq ($(EXPECTED_XCFRAMEWORKS),)
 	@$(ECHO_ERROR) "No EXPECTED_XCFRAMEWORKS is defined for PLATFORM='$(PLATFORM)'"
 	@exit 1
 endif
 	@$(ECHO_SUCCESS) "Using SCHEME='$(SCHEME)'"
-	@$(ECHO_SUCCESS) "Using CARTHAGE_PLATFORM='$(CARTHAGE_PLATFORM)'"
 	@$(ECHO_SUCCESS) "Using EXPECTED_XCFRAMEWORKS='$(EXPECTED_XCFRAMEWORKS)'"
-	carthage update --platform $(CARTHAGE_PLATFORM) --use-xcframeworks
 	@echo "Check XCFrameworks in $(PWD)/Carthage/Build/"
 	@$(foreach xcf,$(EXPECTED_XCFRAMEWORKS),\
 		if [ -d "Carthage/Build/$(xcf).xcframework" ]; then \

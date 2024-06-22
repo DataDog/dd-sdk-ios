@@ -1,23 +1,26 @@
 #!/bin/zsh
 
 # Usage:
-# $ ./tools/spm.sh -h
-# Builds the SDK only using Package.swift.
+# $ ./tools/spm-build-test.sh -h
+# Builds Package.swift for a specified --scheme and --destination.
+
+# Options:
+#   --destination: Defines the xcodebuild destination for Package.swift build, e.g. 'generic/platform=visionOS', 'platform=macOS,variant=Mac Catalyst'
+#   --scheme: Identifies the scheme to build
 
 set -eo pipefail
 source ./tools/utils/echo_color.sh
 source ./tools/utils/argparse.sh
 
-define_arg "platform" "" "Defines the type of simulator platform for the tests, e.g. 'iOS', 'tvOS, 'visionOS'" "string" "true"
+set_description "Builds SPM package for a specified --scheme and --destination."
+define_arg "destination" "" "Defines the xcodebuild destination for SPM build, e.g. 'generic/platform=visionOS', 'platform=macOS,variant=Mac Catalyst'" "string" "true"
+define_arg "scheme" "" "Identifies the scheme to build" "string" "true"
 
 check_for_help "$@"
 parse_args "$@"
 
 WORKSPACE="Datadog.xcworkspace"
 WORKSPACE_RENAMED="Datadog.xcworkspace.old"
-SCHEME="Datadog-Package"
-
-set -x
 
 rename_workspace() {
     if [ ! -d "$WORKSPACE" ]; then
@@ -43,5 +46,7 @@ rename_workspace
 # try to restore the files even if the script fails
 trap restore_workspace EXIT INT
 
-echo "Building SDK for platform $platform"
-xcodebuild build -scheme $SCHEME -destination generic/platform="$platform" | xcbeautify
+echo_subtitle "Run 'xcodebuild build -scheme $scheme -destination "$destination" | xcbeautify'"
+
+set -x
+xcodebuild build -scheme "$scheme" -destination "$destination" | xcbeautify
