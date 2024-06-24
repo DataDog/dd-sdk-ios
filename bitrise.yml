@@ -12,12 +12,10 @@ workflows:
         By default, it doesn't run any test phases, but this behaviour is overwritten in `choose_workflows.py` when:
         - one or more `DD_OVERWRITE_RUN_(phase)_TESTS` ENVs are passed to the current CI job:
             - DD_OVERRIDE_RUN_SR_UNIT_TESTS='1' to run unit tests phase for Session Replay product
-            - DD_OVERRIDE_RUN_SMOKE_TESTS='1' to run smoke tests phase
         - a phase is selected on the checklist in the PR description,
         - the PR changes a file which matches phase filter (e.g. changing a file in `Sources/*` will trigger unit tests phase)
     envs:
       - DD_RUN_SR_UNIT_TESTS: '0'
-      - DD_RUN_SMOKE_TESTS: '0'
     after_run:
     - _make_dependencies
     - run_conditioned_workflows
@@ -28,23 +26,10 @@ workflows:
         This workflow is triggered for each new commit pushed to `develop` or `master` branch.
     envs:
       - DD_RUN_SR_UNIT_TESTS: '1'
-      - DD_RUN_SMOKE_TESTS: '0'
     after_run:
     - _make_dependencies
     - run_conditioned_workflows
     - run_e2e_s8s_upload
-    - _deploy_artifacts
-    - _notify_failure_on_slack
-
-  run_nightly_smoke_and_tools_tests:
-    description: |-
-        This workflow is triggered every night.
-    envs:
-      - DD_RUN_SR_UNIT_TESTS: '0'
-      - DD_RUN_SMOKE_TESTS: '1'
-    after_run:
-    - _make_dependencies
-    - run_conditioned_workflows
     - _deploy_artifacts
     - _notify_failure_on_slack
 
@@ -64,7 +49,6 @@ workflows:
         This workflow is triggered on pushing a new release tag.
     envs:
       - DD_RUN_SR_UNIT_TESTS: '1'
-      - DD_RUN_SMOKE_TESTS: '1'
     after_run:
     - _make_dependencies
     - run_conditioned_workflows
@@ -127,7 +111,6 @@ workflows:
             venv/bin/python3 choose_workflows.py
     after_run:
       - run_unit_tests
-      - run_smoke_tests
 
   run_unit_tests:
     description: |-
@@ -164,37 +147,6 @@ workflows:
         - generate_code_coverage_files: 'yes'
         - project_path: DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-snapshot-tests.html"
-
-  run_smoke_tests:
-    description: |-
-        Uses supported dependency managers to fetch, install and link the SDK
-        to test projects.
-        Only ran if 'DD_RUN_SMOKE_TESTS' is '1'.
-    steps:
-    - script:
-        title: Check Mac Catalyst compatibility (build SPMProject for Catalyst)
-        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -euxo pipefail
-
-            xcodebuild build -scheme "App iOS" \
-                -project "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj" \
-                -destination "platform=macOS,variant=Mac Catalyst" \
-                | xcpretty
-    - script:
-        title: Check macOS compatibility (build SPMProject for macOS)
-        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -euxo pipefail
-
-            xcodebuild build -scheme "App macOS" \
-                -project "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj" \
-                -destination "platform=macOS" \
-                | xcpretty
 
   create_dogfooding_pr:
     description: |-
