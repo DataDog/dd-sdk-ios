@@ -134,17 +134,24 @@ extension DeviceInfo {
 ///   - processInfo: The current process information.
 extension DeviceInfo {
     public init(
-        processInfo: ProcessInfo = .processInfo
+        processInfo: ProcessInfo = .processInfo,
+        sysctl: SysctlProviding = Sysctl()
     ) {
         var architecture = "unknown"
         if let archInfo = NXGetLocalArchInfo()?.pointee {
             architecture = String(utf8String: archInfo.name) ?? "unknown"
         }
-        Host.current().name
 
-        let build = (try? Sysctl.osVersion()) ?? ""
-        let model = (try? Sysctl.model()) ?? ""
+        let build = (try? sysctl.osBuild()) ?? ""
+        let model = (try? sysctl.model()) ?? ""
         let systemVersion = processInfo.operatingSystemVersion
+        let systemBootTime = try? sysctl.systemBootTime()
+        let isDebugging = try? sysctl.isDebugging()
+#if targetEnvironment(simulator)
+        let isSimulator = true
+#else
+        let isSimulator = false
+#endif
 
         self.init(
             name: model.components(separatedBy: CharacterSet.letters.inverted).joined(),
@@ -152,7 +159,11 @@ extension DeviceInfo {
             osName: "macOS",
             osVersion: "\(systemVersion.majorVersion).\(systemVersion.minorVersion).\(systemVersion.patchVersion)",
             osBuildNumber: build,
-            architecture: architecture
+            architecture: architecture,
+            isSimulator: isSimulator,
+            vendorId: nil,
+            isDebugging: isDebugging ?? false,
+            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate
         )
     }
 }
