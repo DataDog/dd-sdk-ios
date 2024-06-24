@@ -52,9 +52,9 @@ internal struct UIProgressViewWireframesBuilder: NodeWireframesBuilder {
 
         let background = builder.createShapeWireframe(
             id: backgroundWireframeID,
-            frame: wireframeRect, 
+            frame: wireframeRect,
             backgroundColor: backgroundColor ?? SystemColors.tertiarySystemFill,
-            cornerRadius: wireframeRect.height/2
+            cornerRadius: wireframeRect.height / 2
         )
 
         // Create progress wireframe
@@ -68,7 +68,7 @@ internal struct UIProgressViewWireframesBuilder: NodeWireframesBuilder {
             borderColor: nil,
             borderWidth: nil,
             backgroundColor: progressTintColor,
-            cornerRadius: wireframeRect.height/2,
+            cornerRadius: wireframeRect.height / 2,
             opacity: attributes.alpha
         )
 
