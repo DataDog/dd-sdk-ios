@@ -4,6 +4,8 @@ all: env-check repo-setup templates
 		test test-ios test-ios-all test-tvos test-tvos-all \
 		ui-test ui-test-all ui-test-podinstall \
 		tools-test \
+		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
+		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos \
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
 
 REPO_ROOT := $(PWD)

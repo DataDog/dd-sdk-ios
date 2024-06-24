@@ -45,7 +45,7 @@ default:
           - ".gitlab-ci.yml"
         compare_to: 'develop'
 
-.ENV check:
+ENV check:
   stage: pre
   script:
     - make env-check
@@ -54,7 +54,7 @@ default:
 # │ SDK changes integration: │
 # └──────────────────────────┘
 
-.Lint:
+Lint:
   stage: lint
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -64,7 +64,7 @@ default:
     - make lint license-check
     - make rum-models-verify sr-models-verify
 
-.Unit Tests (iOS):
+Unit Tests (iOS):
   stage: test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -79,7 +79,7 @@ default:
     - make clean repo-setup ENV=ci
     - make test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-.Unit Tests (tvOS):
+Unit Tests (tvOS):
   stage: test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -94,7 +94,7 @@ default:
     - make clean repo-setup ENV=ci
     - make test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-.UI Tests:
+UI Tests:
   stage: ui-test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -116,7 +116,7 @@ default:
     - make clean repo-setup ENV=ci
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-.Tools Tests:
+Tools Tests:
   stage: test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -137,7 +137,7 @@ Smoke Tests (iOS):
     DEVICE: "iPhone 15 Pro"
   script:
     - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --os "$OS" # temporary, waiting for AMI
-    - make env-check
+    - make clean repo-setup ENV=ci
     - make spm-build-ios
     - make smoke-test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
@@ -153,7 +153,7 @@ Smoke Tests (tvOS):
     DEVICE: "Apple TV"
   script:
     - ./tools/runner-setup.sh --xcode "$XCODE" --tvOS --os "$OS" # temporary, waiting for AMI
-    - make env-check
+    - make clean repo-setup ENV=ci
     - make spm-build-tvos
     - make smoke-test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
     
@@ -167,7 +167,7 @@ Smoke Tests (visionOS):
     OS: "1.0"
   script:
     - ./tools/runner-setup.sh --xcode "$XCODE" --visionOS --os "$OS" # temporary, waiting for AMI
-    - make env-check
+    - make clean repo-setup ENV=ci
     - make spm-build-visionos
 
 Smoke Tests (macOS):
@@ -179,5 +179,5 @@ Smoke Tests (macOS):
     XCODE: "15.2.0"
   script:
     - ./tools/runner-setup.sh --xcode "$XCODE" # temporary, waiting for AMI
-    - make env-check
+    - make clean repo-setup ENV=ci
     - make spm-build-macos
