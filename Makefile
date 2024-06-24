@@ -209,24 +209,34 @@ smoke-test-tvos-all:
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/cocoapods"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="dependency-manager-tests/xcframeworks"
 
-# Runs SPM package build for specified SCHEME and DESTINATION
-spm-build-test:
+# Builds SPM package SCHEME for specified DESTINATION
+spm-build:
 	@$(call require_param,SCHEME)
 	@$(call require_param,DESTINATION)
-	@$(ECHO_TITLE) "make smoke-test-spm-build SCHEME='$(SCHEME)' DESTINATION='$(DESTINATION)'"
-	./tools/spm-build-test.sh --scheme "$(SCHEME)" --destination "$(DESTINATION)"
+	@$(ECHO_TITLE) "make spm-build SCHEME='$(SCHEME)' DESTINATION='$(DESTINATION)'"
+	./tools/spm-build.sh --scheme "$(SCHEME)" --destination "$(DESTINATION)"
 
-# Runs SPM package build for all destinations
-spm-build-test-all:
-	@$(MAKE) spm-build-test SCHEME="Datadog-Package" DESTINATION="generic/platform=ios"
-	@$(MAKE) spm-build-test SCHEME="Datadog-Package" DESTINATION="generic/platform=tvOS"
-	@$(MAKE) spm-build-test SCHEME="Datadog-Package" DESTINATION="generic/platform=visionOS"
-	@$(MAKE) spm-build-test SCHEME="Datadog-Package" DESTINATION="platform=macOS,variant=Mac Catalyst"
-	# Only macOS-compatible schemes:
-	@$(MAKE) spm-build-test DESTINATION="platform=macOS" SCHEME="DatadogCore"
-	@$(MAKE) spm-build-test DESTINATION="platform=macOS" SCHEME="DatadogLogs"
-	@$(MAKE) spm-build-test DESTINATION="platform=macOS" SCHEME="DatadogTrace"
-	@$(MAKE) spm-build-test DESTINATION="platform=macOS" SCHEME="DatadogCrashReporting"
+# Builds SPM package for iOS
+spm-build-ios:
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=ios"
+
+# Builds SPM package for tvOS
+spm-build-tvos:
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=tvOS"
+
+# Builds SPM package for visionOS
+spm-build-visionos:
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=visionOS"
+
+# Builds SPM package for macOS (and Mac Catalyst)
+spm-build-macos:
+	# Whole package for Mac Catalyst:
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="platform=macOS,variant=Mac Catalyst"
+	# Only compatible schemes for macOS:
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCore"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogLogs"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogTrace"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCrashReporting"
 
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."

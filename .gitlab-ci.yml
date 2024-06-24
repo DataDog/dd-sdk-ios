@@ -138,8 +138,8 @@ Smoke Tests (iOS):
   script:
     - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --os "$OS" # temporary, waiting for AMI
     - make env-check
+    - make spm-build-ios
     - make smoke-test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
-    - make spm-build-test DESTINATION="generic/platform=ios"
 
 Smoke Tests (tvOS):
   stage: smoke-test
@@ -154,8 +154,8 @@ Smoke Tests (tvOS):
   script:
     - ./tools/runner-setup.sh --xcode "$XCODE" --tvOS --os "$OS" # temporary, waiting for AMI
     - make env-check
+    - make spm-build-tvos
     - make smoke-test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
-    - make spm-build-test DESTINATION="generic/platform=tvOS"
     
 Smoke Tests (visionOS):
   stage: smoke-test
@@ -168,7 +168,7 @@ Smoke Tests (visionOS):
   script:
     - ./tools/runner-setup.sh --xcode "$XCODE" --visionOS --os "$OS" # temporary, waiting for AMI
     - make env-check
-    - make spm-build-test DESTINATION="generic/platform=visionOS"
+    - make spm-build-visionos
 
 Smoke Tests (macOS):
   stage: smoke-test
@@ -180,5 +180,4 @@ Smoke Tests (macOS):
   script:
     - ./tools/runner-setup.sh --xcode "$XCODE" # temporary, waiting for AMI
     - make env-check
-    - make spm-build-test DESTINATION="platform=macOS"
-    - make spm-build-test DESTINATION="platform=macOS,variant=Mac Catalyst"
+    - make spm-build-macos

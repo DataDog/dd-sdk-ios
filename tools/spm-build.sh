@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 # Usage:
-# $ ./tools/spm-build-test.sh -h
+# $ ./tools/spm-build.sh -h
 # Builds Package.swift for a specified --scheme and --destination.
 
 # Options:
