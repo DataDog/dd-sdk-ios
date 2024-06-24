@@ -214,7 +214,7 @@ workflows:
             # Use 'DD_RELEASE_GIT_TAG' ENV if available, otherwise 'BITRISE_GIT_TAG' ENV
             GIT_TAG="${DD_RELEASE_GIT_TAG:-$(echo "${BITRISE_GIT_TAG}")}"
 
-            cd tools/distribution && make
+            cd tools/distribution && make clean install
             venv/bin/python3 release.py "$GIT_TAG" --only-github
 
   publish_cocoapods_podspecs:
@@ -235,7 +235,7 @@ workflows:
             # Use 'DD_RELEASE_GIT_TAG' ENV if available, otherwise 'BITRISE_GIT_TAG' ENV
             GIT_TAG="${DD_RELEASE_GIT_TAG:-$(echo "${BITRISE_GIT_TAG}")}"
 
-            cd tools/distribution && make
+            cd tools/distribution && make clean install
             venv/bin/python3 release.py "$GIT_TAG" --only-cocoapods
 
   run_e2e_s8s_upload:
