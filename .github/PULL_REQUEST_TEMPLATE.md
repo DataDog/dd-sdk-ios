@@ -13,5 +13,3 @@ A brief description of implementation details of this PR.
 
 ### Custom CI job configuration (optional)
 - [ ] Run unit tests for Session Replay
-- [ ] Run smoke tests
-- [ ] Run tests for `tools/`
