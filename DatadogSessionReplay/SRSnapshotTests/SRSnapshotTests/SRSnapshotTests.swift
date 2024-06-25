@@ -7,7 +7,6 @@
 import XCTest
 import SRFixtures
 import TestUtilities
-import DatadogInternal
 @testable import SRHost
 
 final class SRSnapshotTests: SnapshotTestCase {
@@ -279,9 +278,6 @@ final class SRSnapshotTests: SnapshotTestCase {
     }
 
     func testNavigationBars() throws {
-
-        let privacyModes: [SessionReplayPrivacyLevel] = [.allow, .mask]
-
         // - Static Navigation Bars -
 
         // Note: Static Navigation Bars are not representative of realistic rendering at runtime.
@@ -289,7 +285,7 @@ final class SRSnapshotTests: SnapshotTestCase {
 
         // Test Static Navigation Bars without tinted color
         show(fixture: .navigationBars)
-        try forPrivacyModes(privacyModes) { privacyMode in
+        try forPrivacyModes([.allow, .mask]) { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             let fileNamePrefix = Fixture.navigationBars.slug
             DDAssertSnapshotTest(
@@ -303,9 +299,9 @@ final class SRSnapshotTests: SnapshotTestCase {
         let vc2 = show(fixture: .navigationBars) as! NavigationBarControllers
         vc2.setTintColor()
         // Wait for colors to appear on screen, so the recorder can capture them.
-        wait(seconds: 0.5)
+        wait(seconds: 0.1)
 
-        try forPrivacyModes(privacyModes) { privacyMode in
+        try forPrivacyModes([.allow, .mask]) { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             let fileNamePrefix = Fixture.navigationBars.slug
             DDAssertSnapshotTest(
@@ -337,7 +333,7 @@ final class SRSnapshotTests: SnapshotTestCase {
             // Wait for view controller to be pushed onto the navigation stack.
             wait(seconds: 0.5)
 
-            try forPrivacyModes(privacyModes) { privacyMode in
+            try forPrivacyModes([.allow, .mask]) { privacyMode in
                 let image = try takeSnapshot(with: privacyMode)
                 let fileNamePrefix = fixture.slug
                 DDAssertSnapshotTest(
@@ -389,5 +385,4 @@ final class SRSnapshotTests: SnapshotTestCase {
             )
         }
     }
-
 }
