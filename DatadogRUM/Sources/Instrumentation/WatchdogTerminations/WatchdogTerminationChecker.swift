@@ -16,14 +16,14 @@ import UIKit
 /// to determine if the app was terminated by Watchdog.
 internal final class WatchdogTerminationChecker {
     let appStateManager: WatchdogTerminationAppStateManager
-    let deviceInfo: DeviceInfo
+    let featureScope: FeatureScope
 
     init(
         appStateManager: WatchdogTerminationAppStateManager,
-        deviceInfo: DeviceInfo
+        featureScope: FeatureScope
     ) {
         self.appStateManager = appStateManager
-        self.deviceInfo = deviceInfo
+        self.featureScope = featureScope
     }
 
     /// Checks if the app was terminated by Watchdog.
@@ -34,11 +34,10 @@ internal final class WatchdogTerminationChecker {
         do {
             try appStateManager.currentAppState { current in
                 self.appStateManager.readAppState { [weak self] previous in
-                    guard let self = self else {
-                        completion(false, current)
-                        return
+                    self?.featureScope.context { [weak self] context in
+                        let isWatchdogTermination = self?.isWatchdogTermination(launch: launch, deviceInfo: context.device, from: previous, to: current)
+                        completion(isWatchdogTermination ?? false, previous)
                     }
-                    completion(self.isWatchdogTermination(launch: launch, from: previous, to: current), current)
                 }
             }
         } catch let error {
@@ -51,10 +50,12 @@ internal final class WatchdogTerminationChecker {
     /// Checks if the app was terminated by Watchdog.
     /// - Parameters:
     ///  - launch: The launch report containing information about the app launch.
+    ///  - deviceInfo: The device information provided by DatadogContext.
     ///  - previous: The previous app state stored in the data store from the last app session.
     ///  - current: The current app state of the app.
     func isWatchdogTermination(
         launch: LaunchReport,
+        deviceInfo: DeviceInfo,
         from previous: WatchdogTerminationAppState?,
         to current: WatchdogTerminationAppState
     ) -> Bool {

@@ -48,7 +48,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 appStateManager: appStateManager,
                 checker: .init(
                     appStateManager: appStateManager,
-                    deviceInfo: .init()
+                    featureScope: featureScope
                 ),
                 core: core,
                 feature: featureScope,
@@ -194,7 +194,6 @@ extension RUMFeature: Flushable {
     /// **blocks the caller thread**
     func flush() {
         instrumentation.appHangs?.flush()
-        instrumentation.watchdogTermination?.flush()
     }
 }
 

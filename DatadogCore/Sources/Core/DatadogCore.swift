@@ -460,6 +460,9 @@ extension DatadogCore: Flushable {
         // The order of flushing below must be considered cautiously and
         // follow our design choices around SDK core's threading.
 
+        // Reset baggages that need not be persisted across flushes.
+        set(baggage: nil, forKey: LaunchReport.baggageKey)
+
         let features = features.values.compactMap { $0 as? Flushable }
 
         // The flushing is repeated few times, to make sure that operations spawned from other operations

@@ -69,7 +69,7 @@ extension WatchdogTerminationChecker: RandomMockable {
     public static func mockRandom() -> WatchdogTerminationChecker {
         return .init(
             appStateManager: .mockRandom(),
-            deviceInfo: .mockRandom()
+            featureScope: FeatureScopeMock()
         )
     }
 }

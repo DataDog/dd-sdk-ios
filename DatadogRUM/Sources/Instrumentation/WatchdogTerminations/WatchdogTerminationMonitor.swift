@@ -38,7 +38,7 @@ internal final class WatchdogTerminationMonitor {
     /// The status of the monitor  indicating if it is active or not.
     /// When it is active, it listens to the app state changes and updates the app state in the data store.
     @ReadWriteLock
-    private var currentState: State
+    internal var currentState: State
 
     init(
         appStateManager: WatchdogTerminationAppStateManager,
@@ -148,7 +148,6 @@ extension WatchdogTerminationMonitor: Flushable {
     /// This will reset the app state and the monitor will not able to detect Watchdog Termination due to absence of the previous app state.
     func flush() {
         stop()
-        appStateManager.deleteAppState()
     }
 }
 

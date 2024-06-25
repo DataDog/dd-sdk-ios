@@ -15,6 +15,15 @@ internal protocol WatchdogTerminationReporting {
 
 /// Default implementation of `WatchdogTerminationReporting`.
 internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
+    enum Constants {
+        /// The standardized `error.message` for RUM errors describing a Watchdog Termination.
+        static let errorMessage = "The operating system watchdog terminated the application."
+        /// The standardized `error.type` for RUM errors describing a Watchdog Termination.
+        static let errorType = "WatchdogTermination"
+        /// The standardized `error.stack` when stack trace is not available for Watchdog Termination.
+        static let stackNotAvailableErrorMessage = "Stack trace is not available for Watchdog Termination."
+    }
+
     /// RUM feature scope.
     private let featureScope: FeatureScope
 
@@ -37,9 +46,9 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
                 context: context,
                 error: .watchdogTermination,
                 errorDate: errorDate,
-                errorType: "WatchdogTermination",
-                errorMessage: "The operating system watchdog terminated the application.",
-                errorStack: nil,
+                errorType: Constants.errorType,
+                errorMessage: Constants.errorMessage,
+                errorStack: Constants.stackNotAvailableErrorMessage,
                 errorThreads: nil,
                 errorBinaryImages: nil,
                 errorWasTruncated: nil,

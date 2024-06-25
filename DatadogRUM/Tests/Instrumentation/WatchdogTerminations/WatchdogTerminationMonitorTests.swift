@@ -95,6 +95,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         )
 
         featureScope.contextMock.version = appVersion
+        featureScope.contextMock.device = deviceInfo
         featureScope.contextMock.baggages[LaunchReport.baggageKey] = .init(LaunchReport(didCrash: didCrash))
 
         let appStateManager = WatchdogTerminationAppStateManager(
@@ -102,7 +103,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
             processId: processId
         )
 
-        let checker = WatchdogTerminationChecker(appStateManager: appStateManager, deviceInfo: deviceInfo)
+        let checker = WatchdogTerminationChecker(appStateManager: appStateManager, featureScope: featureScope)
 
         reporter = WatchdogTerminationReporterMock(didSend: didSend)
 
