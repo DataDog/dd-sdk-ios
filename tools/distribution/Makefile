@@ -1,11 +1,17 @@
-.PHONY: all
+.PHONY: clean install test
 
-all:
-	@echo "⚙️  Ensuring that GitHub CLI is installed $(PWD)"
-	@brew list gh &>/dev/null || brew install gh
-ifeq ($(wildcard venv),)
-	@echo "⚙️  Creating Python venv in $(PWD)"
+REPO_ROOT := ../../
+include ../utils/common.mk
+
+clean:
+	@$(ECHO_SUBTITLE2) "make clean"
+	rm -rf "venv"
+
+install:
+	@$(ECHO_SUBTITLE2) "make install"
 	python3 -m venv venv
-endif
-	@echo "⚙️  Installing pip dependencies in $(PWD)/venv"
 	venv/bin/pip3 install -r requirements.txt
+
+test:
+	@$(ECHO_SUBTITLE2) "make test"
+	venv/bin/python3 -m pytest tests

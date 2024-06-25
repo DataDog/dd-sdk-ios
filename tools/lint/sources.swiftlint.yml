@@ -165,12 +165,12 @@ included:
   - ../../DatadogWebViewTracking/Sources
   - ../../DatadogObjc/Sources
   - ../../Datadog/E2E
-  - ../../instrumented-tests/http-server-mock/Sources
+  - ../../tools/http-server-mock/Sources
   - ../../tools/api-surface/Sources
   - ../../tools/api-surface/Fixtures/Sources
   - ../../tools/rum-models-generator/Sources
   - ../../tools/rum-models-generator/Tests/rum-models-generator-coreTests/Fixtures/Output # lint generation fixture
   - ../../tools/sr-snapshots/Sources
-  - ../../dependency-manager-tests/carthage/CTProject
-  - ../../dependency-manager-tests/cocoapods/CPProject
-  - ../../dependency-manager-tests/spm/SPMProject
+  - ../../SmokeTests/carthage/CTProject
+  - ../../SmokeTests/cocoapods/CPProject
+  - ../../SmokeTests/spm/SPMProject

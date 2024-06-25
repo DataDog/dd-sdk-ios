@@ -3,8 +3,13 @@ all: env-check repo-setup templates
 		lint license-check \
 		test test-ios test-ios-all test-tvos test-tvos-all \
 		ui-test ui-test-all ui-test-podinstall \
+		tools-test \
+		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
+		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos \
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
 
+REPO_ROOT := $(PWD)
+include tools/utils/common.mk
 
 define DD_SDK_TESTING_XCCONFIG_CI
 DD_TEST_RUNNER=1\n
@@ -67,7 +72,7 @@ DEFAULT_ENV := dev
 
 env-check:
 	@$(ECHO_TITLE) "make env-check"
-	./tools/env_check.sh
+	./tools/env-check.sh
 
 repo-setup:
 	@:$(eval ENV ?= $(DEFAULT_ENV))
@@ -96,25 +101,12 @@ DEFAULT_TVOS_OS := latest
 DEFAULT_TVOS_PLATFORM := tvOS Simulator
 DEFAULT_TVOS_DEVICE := Apple TV
 
-build-spm:
-	@$(call require_param,PLATFORM)
-	@:$(eval PLATFORM ?= iOS)
-	./tools/spm.sh --platform $(PLATFORM)
-
-build-spm-all:
-	./tools/spm.sh --platform iOS
-	./tools/spm.sh --platform tvOS
-	./tools/spm.sh --platform visionOS
-
 # Run unit tests for specified SCHEME
 test:
 	@$(call require_param,SCHEME)
 	@$(call require_param,OS)
 	@$(call require_param,PLATFORM)
 	@$(call require_param,DEVICE)
-	@:$(eval OS ?= $(DEFAULT_IOS_OS))
-	@:$(eval PLATFORM ?= $(DEFAULT_IOS_PLATFORM))
-	@:$(eval DEVICE ?= $(DEFAULT_IOS_DEVICE))
 	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)'"
 	./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
 
@@ -175,6 +167,79 @@ ui-test-podinstall:
 	@$(ECHO_TITLE) "make ui-test-podinstall"
 	cd IntegrationTests/ && bundle exec pod install
 
+# Run tests for repo tools
+tools-test:
+	@$(ECHO_TITLE) "make tools-test"
+	./tools/tools-test.sh
+
+# Run smoke tests
+smoke-test:
+	@$(call require_param,TEST_DIRECTORY)
+	@$(call require_param,OS)
+	@$(call require_param,PLATFORM)
+	@$(call require_param,DEVICE)
+	@$(ECHO_TITLE) "make smoke-test TEST_DIRECTORY='$(TEST_DIRECTORY)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)'"
+	./tools/smoke-test.sh --test-directory "$(TEST_DIRECTORY)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
+
+# Run smoke tests for specified TEST_DIRECTORY using iOS Simulator
+smoke-test-ios:
+	@$(call require_param,TEST_DIRECTORY)
+	@:$(eval OS ?= $(DEFAULT_IOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_IOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_IOS_DEVICE))
+	@$(MAKE) smoke-test TEST_DIRECTORY="$(TEST_DIRECTORY)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run all smoke tests using iOS Simulator
+smoke-test-ios-all:
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/spm"
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/carthage"
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/cocoapods"
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/xcframeworks"
+
+# Run smoke tests for specified TEST_DIRECTORY using tvOS Simulator
+smoke-test-tvos:
+	@$(call require_param,TEST_DIRECTORY)
+	@:$(eval OS ?= $(DEFAULT_TVOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_TVOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_TVOS_DEVICE))
+	@$(MAKE) smoke-test TEST_DIRECTORY="$(TEST_DIRECTORY)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run all smoke tests using tvOS Simulator
+smoke-test-tvos-all:
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/spm"
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/carthage"
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/cocoapods"
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/xcframeworks"
+
+# Builds SPM package SCHEME for specified DESTINATION
+spm-build:
+	@$(call require_param,SCHEME)
+	@$(call require_param,DESTINATION)
+	@$(ECHO_TITLE) "make spm-build SCHEME='$(SCHEME)' DESTINATION='$(DESTINATION)'"
+	./tools/spm-build.sh --scheme "$(SCHEME)" --destination "$(DESTINATION)"
+
+# Builds SPM package for iOS
+spm-build-ios:
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=ios"
+
+# Builds SPM package for tvOS
+spm-build-tvos:
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=tvOS"
+
+# Builds SPM package for visionOS
+spm-build-visionos:
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=visionOS"
+
+# Builds SPM package for macOS (and Mac Catalyst)
+spm-build-macos:
+	# Whole package for Mac Catalyst:
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="platform=macOS,variant=Mac Catalyst"
+	# Only compatible schemes for macOS:
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCore"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogLogs"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogTrace"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCrashReporting"
+
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
 		@cd DatadogSessionReplay/ && swift package generate-xcodeproj
@@ -189,22 +254,6 @@ open-sr-snapshot-tests:
 templates:
 	@$(ECHO_TITLE) "make templates"
 	./tools/xcode-templates/install-xcode-templates.sh
-
-# Tests if current branch ships a valid SPM package.
-test-spm:
-		@cd dependency-manager-tests/spm && $(MAKE)
-
-# Tests if current branch ships a valid Carthage project.
-test-carthage:
-		@cd dependency-manager-tests/carthage && $(MAKE)
-
-# Tests if current branch ships a valid Cocoapods project.
-test-cocoapods:
-		@cd dependency-manager-tests/cocoapods && $(MAKE)
-
-# Tests if current branch ships valid a XCFrameworks project.
-test-xcframeworks:
-		@cd dependency-manager-tests/xcframeworks && $(MAKE)
 
 # Generate data models from https://github.com/DataDog/rum-events-format
 models-generate:
@@ -296,17 +345,3 @@ bump:
 
 e2e-upload:
 		./tools/code-sign.sh -- $(MAKE) -C E2ETests
-
-# Helpers
-
-ECHO_TITLE=./tools/utils/echo_color.sh --title
-ECHO_ERROR=./tools/utils/echo_color.sh --err
-ECHO_WARNING=./tools/utils/echo_color.sh --warn
-ECHO_SUCCESS=./tools/utils/echo_color.sh --succ
-
-define require_param
-    if [ -z "$${$(1)}" ]; then \
-        $(ECHO_ERROR) "Error:" "$(1) parameter is required but not provided."; \
-        exit 1; \
-    fi
-endef
