@@ -48,6 +48,11 @@ check_if_installed gh
 gh --version
 
 echo ""
+echo_succ "vault:"
+check_if_installed vault
+vault -v
+
+echo ""
 echo_succ "bundler:"
 check_if_installed bundler
 bundler --version

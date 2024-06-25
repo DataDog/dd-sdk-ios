@@ -191,5 +191,6 @@ Build Artifacts:
     XCODE: "15.3.0"
   script:
     - ./tools/runner-setup.sh --xcode "$XCODE" # temporary, waiting for AMI
+    - make env-check
     - make clean repo-setup ENV=ci
     - ./tools/release.sh 
