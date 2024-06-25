@@ -7,8 +7,6 @@ Carthage/Build
 Carthage/Checkouts
 
 xcuserdata/
-instrumented-tests/DatadogSDKTesting.*
-instrumented-tests/LICENSE
 
 *.local.xcconfig
 

@@ -4,6 +4,9 @@ stages:
   - test
   - ui-test
   - smoke-test
+  - release:build
+  - release:validate
+  - release:deploy
 
 variables:
   MAIN_BRANCH: "master"
@@ -45,7 +48,7 @@ default:
           - ".gitlab-ci.yml"
         compare_to: 'develop'
 
-ENV check:
+.ENV check:
   stage: pre
   script:
     - make env-check
@@ -54,7 +57,7 @@ ENV check:
 # │ SDK changes integration: │
 # └──────────────────────────┘
 
-Lint:
+.Lint:
   stage: lint
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -64,7 +67,7 @@ Lint:
     - make lint license-check
     - make rum-models-verify sr-models-verify
 
-Unit Tests (iOS):
+.Unit Tests (iOS):
   stage: test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -79,7 +82,7 @@ Unit Tests (iOS):
     - make clean repo-setup ENV=ci
     - make test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-Unit Tests (tvOS):
+.Unit Tests (tvOS):
   stage: test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -94,7 +97,7 @@ Unit Tests (tvOS):
     - make clean repo-setup ENV=ci
     - make test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-UI Tests:
+.UI Tests:
   stage: ui-test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -116,7 +119,7 @@ UI Tests:
     - make clean repo-setup ENV=ci
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-Tools Tests:
+.Tools Tests:
   stage: test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -125,7 +128,7 @@ Tools Tests:
     - make clean repo-setup ENV=ci
     - make tools-test
 
-Smoke Tests (iOS):
+.Smoke Tests (iOS):
   stage: smoke-test
   tags:
     - macos:ventura
@@ -141,7 +144,7 @@ Smoke Tests (iOS):
     - make spm-build-ios
     - make smoke-test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-Smoke Tests (tvOS):
+.Smoke Tests (tvOS):
   stage: smoke-test
   tags:
     - macos:ventura
@@ -157,7 +160,7 @@ Smoke Tests (tvOS):
     - make spm-build-tvos
     - make smoke-test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
     
-Smoke Tests (visionOS):
+.Smoke Tests (visionOS):
   stage: smoke-test
   tags:
     - macos:ventura
@@ -170,7 +173,7 @@ Smoke Tests (visionOS):
     - make clean repo-setup ENV=ci
     - make spm-build-visionos
 
-Smoke Tests (macOS):
+.Smoke Tests (macOS):
   stage: smoke-test
   tags:
     - macos:ventura
@@ -181,3 +184,12 @@ Smoke Tests (macOS):
     - ./tools/runner-setup.sh --xcode "$XCODE" # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make spm-build-macos
+
+Build Artifacts:
+  stage: release:build
+  variables:
+    XCODE: "15.3.0"
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" # temporary, waiting for AMI
+    - make clean repo-setup ENV=ci
+    - ./tools/release.sh 
