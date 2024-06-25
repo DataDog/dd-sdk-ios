@@ -8,7 +8,7 @@ import Foundation
 
 /// Launch report format supported by Datadog SDK.
 public struct LaunchReport: Codable, PassthroughAnyCodable {
-    /// The key used to encode/decode the `LaunchReport` while sending across features.
+    /// The key used to encode/decode the `LaunchReport` in `DatadogContext.baggages`
     public static let baggageKey = "launch-report"
 
     /// Returns `true` if the previous session crashed.
