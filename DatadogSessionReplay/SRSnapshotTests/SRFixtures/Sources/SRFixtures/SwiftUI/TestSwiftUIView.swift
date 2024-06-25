@@ -7,7 +7,7 @@
 import SwiftUI
 
 @available(iOS 13.0, *)
-public struct SwiftUIView: View {
+public struct TestSwiftUIView: View {
     @State private var txt: String = "SwiftUI"
 
     public var body: some View {
@@ -41,6 +41,6 @@ public struct SwiftUIView: View {
 @available(iOS 13.0, *)
 struct SwiftUIView_Previews: PreviewProvider {
     static var previews: some View {
-        SwiftUIView()
+        TestSwiftUIView()
     }
 }

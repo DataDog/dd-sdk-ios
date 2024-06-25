@@ -45,7 +45,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
         do {
             let renderer = try DisplayList.ViewRenderer(reflecting: value)
 
-            let builder = UIHostingUIWireframesBuilder(
+            let builder = UIHostingWireframesBuilder(
                 hostID: context.ids.nodeID(view: view, nodeRecorder: self),
                 attributes: attributes,
                 renderer: renderer.renderer,
@@ -55,7 +55,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
             let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
             return SpecificElement(subtreeStrategy: .record, nodes: [node])
         } catch {
-            print(error) // report telemetry
+            print(error) // TODO: RUM-5092 report telemetry
 
             let builder = UnsupportedViewWireframesBuilder(
                 wireframeRect: view.frame,
@@ -70,7 +70,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
 }
 
 @available(iOS 13.0, *)
-internal struct UIHostingUIWireframesBuilder: NodeWireframesBuilder {
+internal struct UIHostingWireframesBuilder: NodeWireframesBuilder {
     internal struct Referential {
         let frame: CGRect
     }
@@ -195,7 +195,7 @@ internal struct UIHostingUIWireframesBuilder: NodeWireframesBuilder {
         contentWireframe(item: item, content: content, referential: referential, builder: builder).map { [$0] } ?? []
     }
 
-    func effectWireframe(item: DisplayList.Item, effect: DisplayList.Effect, list: DisplayList, referential: Referential, builder: WireframesBuilder) -> [SRWireframe] {
+    private func effectWireframe(item: DisplayList.Item, effect: DisplayList.Effect, list: DisplayList, referential: Referential, builder: WireframesBuilder) -> [SRWireframe] {
         buildWireframes(
             items: list.items,
             referential: Referential(convert: item.frame, to: referential),
@@ -205,7 +205,7 @@ internal struct UIHostingUIWireframesBuilder: NodeWireframesBuilder {
 }
 
 @available(iOS 13.0, *)
-extension UIHostingUIWireframesBuilder.Referential {
+extension UIHostingWireframesBuilder.Referential {
     init(_ frame: CGRect) {
         self.frame = frame
     }

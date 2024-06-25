@@ -26,7 +26,7 @@ class UIHostingViewRecorderTests: XCTestCase {
         XCTAssertEqual(node.viewAttributes, viewAttributes)
 
         let builder = WireframesBuilder()
-        let wireframeBuilder = try XCTUnwrap(node.wireframesBuilder as? UIHostingUIWireframesBuilder)
+        let wireframeBuilder = try XCTUnwrap(node.wireframesBuilder as? UIHostingWireframesBuilder)
         let wireframes = wireframeBuilder.buildWireframes(with: builder)
         XCTAssertFalse(wireframes.isEmpty)
     }
