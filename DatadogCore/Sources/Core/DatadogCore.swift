@@ -491,8 +491,10 @@ extension DatadogCore: CoreStorage {
     /// - Parameter before: The date to compare the last modification date of files.
     /// - Returns: The latest modified file or `nil` if no files were modified before given date.
     func mostRecentModifiedFileAt(before: Date) throws -> Date? {
-        let file = try directory.coreDirectory.mostRecentModifiedFile(before: before)
-        return try file?.modifiedAt()
+        try readWriteQueue.sync {
+            let file = try directory.coreDirectory.mostRecentModifiedFile(before: before)
+            return try file?.modifiedAt()
+        }
     }
 }
 #if SPM_BUILD
