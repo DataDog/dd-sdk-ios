@@ -11,7 +11,7 @@ import os
 import re
 import time
 import random
-from src.utils import shell, read_sdk_version
+from src.utils import shell, read_sdk_version, print_notice, print_succ, print_warn
 
 
 class CPPodspec:
@@ -23,9 +23,9 @@ class CPPodspec:
     __file_name: str  # The name of the spec file, e.g. `DatadogSDK.podspec`
     __path: str  # The path to the `podspec` file
 
-    def __init__(self, name: str):
-        file_name = f'{name}.podspec'
-        print(f'⌛️ Searching for `{file_name}` in {os.getcwd()}')
+    def __init__(self, file_name: str):
+        name, _ = os.path.splitext(file_name)
+        print_notice(f'Searching for `{file_name}` in {os.getcwd()}')
 
         file_path = f'{os.getcwd()}/{file_name}'
         if not os.path.isfile(file_path):
@@ -34,7 +34,7 @@ class CPPodspec:
         self.__name = name
         self.__file_name = file_name
         self.__path = file_path
-        print(f'   → `{file_name}` found')
+        print_succ(f'   → `{file_name}` found')
 
     def __repr__(self):
         return f'[CPPodspec: name = {self.__name}, path = {self.__path}]'
@@ -43,7 +43,7 @@ class CPPodspec:
         """
         Checks the `.podspec` integrity with given `git_tag`.
         """
-        print(f'🔎️️ Validating {self} against: {git_tag}')
+        print_notice(f'Validating {self} against: {git_tag}')
 
         # Check if spec `.version` matches the git tag name and `sdk_version`:
         sdk_version = read_sdk_version()
@@ -51,14 +51,14 @@ class CPPodspec:
         if not (pod_version == git_tag and sdk_version == git_tag):
             raise Exception(f'`sdk_version` ({sdk_version}), `pod_version` ({pod_version})'
                             f' and git tag ({git_tag}) do not match')
-        print(f'   → `sdk_version` ({sdk_version}), `pod_version` ({pod_version})'
+        print_succ(f'   → `sdk_version` ({sdk_version}), `pod_version` ({pod_version})'
               f' and git tag ({git_tag}) do match')
 
     def publish(self, dry_run: bool):
         """
         Publishes the `.podspec` to pods trunk.
         """
-        print(f'📦 Publishing {self} ({self.__read_pod_version()})')
+        print_notice(f'📦 Publishing {self} ({self.__read_pod_version()})')
 
         # Because some of our pods depend on others and due to https://github.com/CocoaPods/CocoaPods/issues/9497
         # we need to retry `pod trunk push` until it succeeds. The maximum number of attempts is 100 (arbitrary),
@@ -81,11 +81,11 @@ class CPPodspec:
                     retry_time = 1
                     raise Exception('Running in dry_run mode, simulating `pod` command failure')
 
-                print(f'   → succeeded in {attempt} attempt(s)')
+                print_succ(f'   → succeeded in {attempt} attempt(s)')
                 break  # break the while loop once all succeed without raising an exception
 
             except Exception:
-                print(f'   → failed on attempt {attempt} (retrying in {retry_time}s)')
+                print_warn(f'   → failed on attempt {attempt} (retrying in {retry_time}s)')
 
             time.sleep(retry_time)
 

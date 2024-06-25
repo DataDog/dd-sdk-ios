@@ -91,3 +91,32 @@ def read_xcode_version() -> str:
         return match.groups()[0]
     else:
         raise Exception(f'Cannot read Xcode version from `xcodebuild -version` output: {xc_version_string}')
+
+
+def print_colored(text, color_code, **kwargs):
+    reset = '\033[0m'
+    print(color_code + text + reset, **kwargs)
+
+
+def print_notice(*args, **kwargs):
+    cyan = '\033[96m'
+    text = ' '.join(str(arg) for arg in args)
+    print_colored(text, cyan, **kwargs)
+
+
+def print_succ(*args, **kwargs):
+    green = '\033[92m'
+    text = ' '.join(str(arg) for arg in args)
+    print_colored(text, green, **kwargs)
+
+
+def print_err(*args, **kwargs):
+    red = '\033[91m'
+    text = ' '.join(str(arg) for arg in args)
+    print_colored(text, red, **kwargs)
+
+
+def print_warn(*args, **kwargs):
+    yellow = '\033[93m'
+    text = ' '.join(str(arg) for arg in args)
+    print_colored(text, yellow, **kwargs)

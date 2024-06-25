@@ -11,7 +11,7 @@ import os
 import glob
 from tempfile import TemporaryDirectory, NamedTemporaryFile
 from packaging.version import Version
-from src.utils import remember_cwd, shell, read_sdk_version, read_xcode_version
+from src.utils import remember_cwd, shell, read_sdk_version, read_xcode_version, print_notice, print_succ
 from src.release.directory_matcher import DirectoryMatcher
 
 min_cr_version = Version('1.7.0')
@@ -308,7 +308,7 @@ class GHAsset:
     __path: str  # The path to the asset `.zip` archive
 
     def __init__(self, git_tag: str):
-        print(f'⌛️️️ Creating the GH release asset from {os.getcwd()}')
+        print_notice(f'Creating the GH release asset from {os.getcwd()}')
 
         this_version = Version(git_tag)
 
@@ -318,7 +318,7 @@ class GHAsset:
             platform = 'iOS' if this_version < min_tvos_version else 'iOS,tvOS'
 
             # Produce XCFrameworks:
-            shell(f'sh tools/distribution/build-xcframework.sh --platform {platform}')
+            # shell(f'sh tools/distribution/build-xcframework.sh --platform {platform}') # Enable!
 
         # Create `.zip` archive:
         zip_archive_name = 'Datadog.xcframework.zip'
@@ -337,7 +337,7 @@ class GHAsset:
 
         self.__path = f'{os.getcwd()}/build/xcframeworks/{zip_archive_name}'
         self.__git_tag = git_tag
-        print('   → GH asset created')
+        print_succ('   → GH asset created')
 
     def __repr__(self):
         return f'[GHAsset: path = {self.__path}]'
@@ -346,13 +346,13 @@ class GHAsset:
         """
         Checks the `.zip` archive integrity with given `git_tag`.
         """
-        print(f'🔎️️ Validating {self} against: {self.__git_tag}')
+        print_notice(f'Validating {self} against: {self.__git_tag}')
 
         # Check if `sdk_version` matches the git tag name:
         sdk_version = read_sdk_version()
         if sdk_version != self.__git_tag:
             raise Exception(f'The `sdk_version` ({sdk_version}) does not match git tag ({self.__git_tag})')
-        print(f'   → `sdk_version` ({sdk_version}) matches git tag ({self.__git_tag})')
+        print_succ(f'   → `sdk_version` ({sdk_version}) matches git tag ({self.__git_tag})')
 
         # Inspect the content of zip archive:
         with TemporaryDirectory() as unzip_dir:
@@ -369,24 +369,24 @@ class GHAsset:
             validated_count = 0
             for validator in xcframeworks_validators:
                 if validator.validate(zip_directory=dm, in_version=this_version):
-                    print(f'       → {validator.name} - OK')
+                    print_succ(f'       → {validator.name} - OK')
                     validated_count += 1
                 else:
                     print(f'       → {validator.name} - SKIPPING for {this_version}')
 
             dm.assert_number_of_files(expected_count=validated_count)  # assert there are no other files
 
-            print(f'   → the content of `.zip` archive is correct')
+            print_succ(f'   → the content of `.zip` archive is correct')
 
     def publish(self, overwrite_existing: bool, dry_run: bool):
         """
         Uploads the `.zip` archive to GH Release for given `git_tag`.
         """
-        print(f'📦️️ Publishing {self} to GH Release tag {self.__git_tag}')
+        print_notice(f'📦️️ Publishing {self} to GH Release tag {self.__git_tag}')
 
         if overwrite_existing:
             shell(f'gh release upload {self.__git_tag} {self.__path} --repo DataDog/dd-sdk-ios --clobber', skip=dry_run)
         else:
             shell(f'gh release upload {self.__git_tag} {self.__path} --repo DataDog/dd-sdk-ios', skip=dry_run)
 
-        print(f'   → succeeded')
+        print_succ(f'   → succeeded')

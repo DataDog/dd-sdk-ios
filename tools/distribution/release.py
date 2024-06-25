@@ -17,135 +17,107 @@ from packaging.version import Version
 from src.release.git import clone_repo
 from src.release.assets.gh_asset import GHAsset
 from src.release.assets.podspec import CPPodspec
+from src.utils import print_notice, print_succ, print_err
 import shutil
+from contextlib import contextmanager # Remove
+
+@contextmanager
+def desktop_directory(): # Remove
+    """A context manager to change the working directory."""
+    home_dir = os.path.expanduser('~')
+    clone_dir_path = os.path.join(home_dir, 'Desktop', 'clone')
+    path = clone_dir_path
+
+    current_dir = os.getcwd()  # Save the current working directory
+    try:
+        if not os.path.exists(path):
+            os.makedirs(path)  # Ensure the directory exists
+        os.chdir(path)  # Change to the target directory
+        yield path
+    finally:
+        os.chdir(current_dir)  # Restore the original working directory
 
 DD_SDK_IOS_REPO_SSH = 'git@github.com:DataDog/dd-sdk-ios.git'
 DD_SDK_IOS_REPO_NAME = 'dd-sdk-ios'
 
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("git_tag", help="Git tag name.")
-    parser.add_argument(
-        "--only-github",
-        action='store_true',
-        help="Only publish GH Release asset.",
-        default=os.environ.get('DD_RELEASE_ONLY_GITHUB') == '1'
-    )
-    parser.add_argument(
-        "--only-cocoapods",
-        action='store_true',
-        help="Only publish Cocoapods podspecs.",
-        default=os.environ.get('DD_RELEASE_ONLY_COCOAPODS') == '1'
-    )
-    parser.add_argument(
-        "--overwrite-github",
-        action='store_true',
-        help="Overwrite existing GH Release asset.",
-        default=os.environ.get('DD_RELEASE_OVERWRITE_GITHUB') == '1'
-    )
-    parser.add_argument(
-        "--dry-run",
-        action='store_true',
-        help="Run validation but skip publishing.",
-        default=os.environ.get('DD_RELEASE_DRY_RUN') == '1'
-    )
+    parser = argparse.ArgumentParser(description="Release tool for Datadog iOS SDK")
+    
+    # Global options
+    parser.add_argument("tag", help="Git tag for the release")
+    
+    # Subcommands
+    subparsers = parser.add_subparsers(title="subcommands", dest="command")
+    subparsers.required = True
+    
+    # GitHub asset release subcommand
+    gh_parser = subparsers.add_parser("github", help="Release GitHub assets")
+    gh_parser.add_argument("--overwrite-existing", action="store_true", help="Overwrite existing GitHub assets")
+    
+    # Cocoapods podspecs release subcommand
+    cp_parser = subparsers.add_parser("cocoapods", help="Release Cocoapods podspecs")
+    cp_parser.add_argument("podspecs", nargs='+', help="List of podspec files to release")
+    
+    # Common flag for dry run
+    for subparser in [gh_parser, cp_parser]:
+        subparser.add_argument("--dry-run", action="store_true", help="Perform a dry run without making any changes")
+    
     args = parser.parse_args()
 
+    print_notice("Running `release.py` with arguments:", args)
+
     try:
-        git_tag = args.git_tag
-        only_github = True if args.only_github else False
-        only_cocoapods = True if args.only_cocoapods else False
-        overwrite_github = True if args.overwrite_github else False
-        dry_run = True if args.dry_run else False
+        Version(args.tag) # validates tag or raises exception
 
-        # Validate arguments:
-        if only_github and only_cocoapods:
-            raise Exception('`--only-github` and `--only-cocoapods` cannot be used together.')
-
-        if only_cocoapods and overwrite_github:
-            raise Exception('`--overwrite-github` and `--only-cocoapods` cannot be used together.')
-
-        version = Version(git_tag)
-        if not version:
-            raise Exception(f'Given git tag ("{git_tag}") is invalid, it must comply with Semantic Versioning, see https://semver.org/')
-
-        print(f'🛠️️ ENV:\n'
-              f'- BITRISE_GIT_TAG                       = {os.environ.get("BITRISE_GIT_TAG")}\n'
-              f'- DD_RELEASE_GIT_TAG                    = {os.environ.get("DD_RELEASE_GIT_TAG")}\n'
-              f'- DD_RELEASE_ONLY_GITHUB                = {os.environ.get("DD_RELEASE_ONLY_GITHUB")}\n'
-              f'- DD_RELEASE_ONLY_COCOAPODS             = {os.environ.get("DD_RELEASE_ONLY_COCOAPODS")}\n'
-              f'- DD_RELEASE_OVERWRITE_GITHUB           = {os.environ.get("DD_RELEASE_OVERWRITE_GITHUB")}\n'
-              f'- DD_RELEASE_DRY_RUN                    = {os.environ.get("DD_RELEASE_DRY_RUN")}')
-
-        print(f'🛠️️ ENV and CLI arguments resolved to:\n'
-              f'- git_tag                            = {git_tag}\n'
-              f'- only_github                        = {only_github}\n'
-              f'- only_cocoapods                     = {only_cocoapods}\n'
-              f'- overwrite_github                   = {overwrite_github}\n'
-              f'- dry_run                            = {dry_run}.')
-
-        print(f'🛠️ Git tag read to version: {version}')
-
-        publish_to_gh = not only_cocoapods
-        publish_to_cp = not only_github
         build_xcfw_relative_path = "tools/distribution/build-xcframework.sh"
         build_xcfw_absolute_path = f"{os.getcwd()}/build-xcframework.sh"
 
-        with TemporaryDirectory() as clone_dir:
-            print(f'ℹ️️ Changing current directory to: {clone_dir}')
+        with desktop_directory() as clone_dir:
+        # with TemporaryDirectory() as clone_dir:
+            print_notice(f'Changing current directory to: {clone_dir}')
             os.chdir(clone_dir)
 
             # Clone repo:
-            clone_repo(repo_ssh=DD_SDK_IOS_REPO_SSH, repo_name=DD_SDK_IOS_REPO_NAME, git_tag=git_tag)
+            # clone_repo(repo_ssh=DD_SDK_IOS_REPO_SSH, repo_name=DD_SDK_IOS_REPO_NAME, git_tag=args.tag)
 
-            print(f'ℹ️️ Changing current directory to: {clone_dir}/{DD_SDK_IOS_REPO_NAME}')
+            print_notice(f'Changing current directory to: {clone_dir}/{DD_SDK_IOS_REPO_NAME}')
             os.chdir(DD_SDK_IOS_REPO_NAME)
             # Copy build-xcframework.sh to cloned repo
             shutil.copyfile(build_xcfw_absolute_path, build_xcfw_relative_path)
             shutil.copymode(build_xcfw_absolute_path, build_xcfw_relative_path)
 
             # Publish GH Release asset:
-            if publish_to_gh:
-                gh_asset = GHAsset(git_tag=git_tag)
+            if args.command == "github":
+                print_succ(f"Releasing GitHub asset for '{args.tag}'")
+                gh_asset = GHAsset(git_tag=args.tag)
                 gh_asset.validate()
-                gh_asset.publish(overwrite_existing=overwrite_github, dry_run=dry_run)
+                gh_asset.publish(overwrite_existing=args.overwrite_existing, dry_run=args.dry_run)
 
             # Publish CP podspecs:
-            if publish_to_cp:
-                podspecs = [
-                    CPPodspec(name='DatadogInternal'),
-                    CPPodspec(name='DatadogCore'),
-                    CPPodspec(name='DatadogLogs'),
-                    CPPodspec(name='DatadogTrace'),
-                    CPPodspec(name='DatadogRUM'),
-                    CPPodspec(name='DatadogSessionReplay'),
-                    CPPodspec(name='DatadogCrashReporting'),
-                    CPPodspec(name='DatadogWebViewTracking'),
-                    CPPodspec(name='DatadogObjc'),
-                    CPPodspec(name='DatadogAlamofireExtension'),
-                    CPPodspec(name='DatadogSDK'),
-                    CPPodspec(name='DatadogSDKObjc'),
-                    CPPodspec(name='DatadogSDKCrashReporting'),
-                    CPPodspec(name='DatadogSDKAlamofireExtension'),
-                ]
-
+            if args.command == "cocoapods":
+                print_succ(f"Releasing Cocoapod specs for '{args.tag}': {args.podspecs}")
+                podspecs = [CPPodspec(file_name=file_name) for file_name in args.podspecs]
                 for podspec in podspecs:
-                    podspec.validate(git_tag=git_tag)
+                    podspec.validate(git_tag=args.tag)
 
-                print('ℹ️️ Checking `pod trunk me` authentication status:')
-                os.system('pod trunk me')
+                print_notice('Check `pod trunk me` authentication status:')
+                if os.system('pod trunk me') != 0:
+                    print_err("The `pod trunk` is not authenticated on this machine.")
+                    sys.exit(1)
+                else:
+                    print_succ("The `pod trunk` is authenticated.")
 
+                print_notice('Publishing podspecs:')
                 for podspec in podspecs:
-                    podspec.publish(dry_run=dry_run)
+                    podspec.publish(dry_run=args.dry_run)
 
-            print(f'✅️️ All good.')
+            print_succ(f'All good!')
 
     except Exception as error:
-        print(f'❌ Failed to release: {error}')
-        print('-' * 60)
+        print_err(f'❌ Failed to release: {error}')
+        print_err('-' * 60)
         traceback.print_exc(file=sys.stdout)
-        print('-' * 60)
+        print_err('-' * 60)
         sys.exit(1)
 
     sys.exit(0)
