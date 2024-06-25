@@ -6,7 +6,7 @@
 
 import UIKit
 
-public class TabbarViewControllers: UIViewController {
+public final class TabbarViewControllers: UIViewController {
 
     @IBOutlet var tabbars: [UITabBar]!
     
@@ -19,13 +19,13 @@ public class TabbarViewControllers: UIViewController {
     }
 }
 
-public class EmbeddedTabbarController: UITabBarController {
+public final class EmbeddedTabbarController: UITabBarController {
     public override func viewDidLoad() {
         tabBar.unselectedItemTintColor = nil
     }
 }
 
-public class EmbeddedTabbarUnselectedTintColorController: UITabBarController {
+public final class EmbeddedTabbarUnselectedTintColorController: UITabBarController {
     public override func viewDidLoad() {
         tabBar.unselectedItemTintColor = UIColor.green
     }

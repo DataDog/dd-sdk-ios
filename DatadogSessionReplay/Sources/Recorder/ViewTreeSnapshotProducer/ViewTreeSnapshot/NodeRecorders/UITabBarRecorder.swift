@@ -19,7 +19,7 @@ internal final class UITabBarRecorder: NodeRecorder {
             wireframeRect: inferOccupiedFrame(of: tabBar, in: context),
             wireframeID: context.ids.nodeID(view: tabBar, nodeRecorder: self),
             attributes: attributes,
-            color: inferColor(of: tabBar)
+            color: inferBackgroundColor(of: tabBar)
         )
 
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
@@ -78,7 +78,7 @@ internal final class UITabBarRecorder: NodeRecorder {
         return occupiedFrame
     }
 
-    private func inferColor(of tabBar: UITabBar) -> CGColor {
+    private func inferBackgroundColor(of tabBar: UITabBar) -> CGColor {
         if let color = tabBar.backgroundColor {
             return color.cgColor
         }
