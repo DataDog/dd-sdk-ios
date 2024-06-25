@@ -657,6 +657,8 @@
 		61FDBA15269722B4001D9D43 /* CrashReportMinifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA14269722B4001D9D43 /* CrashReportMinifierTests.swift */; };
 		61FDBA1726974CA9001D9D43 /* DDCrashReportBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1626974CA9001D9D43 /* DDCrashReportBuilderTests.swift */; };
 		61FF282824B8A31E000B3D9B /* RUMEventMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282724B8A31E000B3D9B /* RUMEventMatcher.swift */; };
+		96E414142C2AF56F005A6119 /* UIProgressViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E414132C2AF56F005A6119 /* UIProgressViewRecorder.swift */; };
+		96E414162C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E414152C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift */; };
 		9E55407C25812D1C00F6E3AD /* RUM+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E55407B25812D1C00F6E3AD /* RUM+objc.swift */; };
 		9E58E8E324615EDA008E5063 /* JSONEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */; };
 		9E5B6D2E270C84B4002499B8 /* RUMMonitorE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5B6D2D270C84B4002499B8 /* RUMMonitorE2ETests.swift */; };
@@ -2681,6 +2683,8 @@
 		61FF282F24BC5E2D000B3D9B /* RUMEventFileOutputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventFileOutputTests.swift; sourceTree = "<group>"; };
 		61FF416125EE5FF400CE35EC /* CrashLogReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashLogReceiverTests.swift; sourceTree = "<group>"; };
 		61FF9A4425AC5DEA001058CC /* ViewIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewIdentifier.swift; sourceTree = "<group>"; };
+		96E414132C2AF56F005A6119 /* UIProgressViewRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIProgressViewRecorder.swift; sourceTree = "<group>"; };
+		96E414152C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIProgressViewRecorderTests.swift; sourceTree = "<group>"; };
 		9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Kronos.xcframework; path = ../Carthage/Build/Kronos.xcframework; sourceTree = "<group>"; };
 		9E26E6B824C87693000B3270 /* RUMDataModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMDataModels.swift; sourceTree = "<group>"; };
 		9E2EF44E2694FA14008A7DAE /* VitalInfoSamplerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalInfoSamplerTests.swift; sourceTree = "<group>"; };
@@ -3612,6 +3616,7 @@
 				61054E2E2A6EE10A00AAA894 /* NodeRecorder.swift */,
 				61054E2F2A6EE10A00AAA894 /* UISliderRecorder.swift */,
 				61054E302A6EE10A00AAA894 /* UIPickerViewRecorder.swift */,
+				96E414132C2AF56F005A6119 /* UIProgressViewRecorder.swift */,
 				61054E312A6EE10A00AAA894 /* UIStepperRecorder.swift */,
 				61054E322A6EE10A00AAA894 /* UILabelRecorder.swift */,
 				61054E332A6EE10A00AAA894 /* UISwitchRecorder.swift */,
@@ -3879,6 +3884,7 @@
 				61054F6A2A6EE1BA00AAA894 /* UILabelRecorderTests.swift */,
 				61054F6B2A6EE1BA00AAA894 /* UITextFieldRecorderTests.swift */,
 				61054F6C2A6EE1BA00AAA894 /* UITabBarRecorderTests.swift */,
+				96E414152C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift */,
 				61054F6D2A6EE1BA00AAA894 /* UISliderRecorderTests.swift */,
 				61054F6E2A6EE1BA00AAA894 /* UnsupportedViewRecorderTests.swift */,
 				61054F6F2A6EE1BA00AAA894 /* UISegmentRecorderTests.swift */,
@@ -8272,6 +8278,7 @@
 				61054E9C2A6EE10B00AAA894 /* UIImage+Scaling.swift in Sources */,
 				61054EA12A6EE10B00AAA894 /* MainThreadScheduler.swift in Sources */,
 				61054E7C2A6EE10A00AAA894 /* UINavigationBarRecorder.swift in Sources */,
+				96E414142C2AF56F005A6119 /* UIProgressViewRecorder.swift in Sources */,
 				61054E772A6EE10A00AAA894 /* ViewTreeRecorder.swift in Sources */,
 				61054E9E2A6EE10B00AAA894 /* Queue.swift in Sources */,
 				61054E872A6EE10A00AAA894 /* ViewAttributes+Copy.swift in Sources */,
@@ -8328,6 +8335,7 @@
 				61054FC02A6EE1BA00AAA894 /* UITextViewRecorderTests.swift in Sources */,
 				61054F9A2A6EE1BA00AAA894 /* CFType+SafetyTests.swift in Sources */,
 				61054F9E2A6EE1BA00AAA894 /* SessionReplayTests.swift in Sources */,
+				96E414162C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift in Sources */,
 				61054FB32A6EE1BA00AAA894 /* UITextFieldRecorderTests.swift in Sources */,
 				61054FCD2A6EE1BA00AAA894 /* SnapshotProducerMocks.swift in Sources */,
 				61054FC32A6EE1BA00AAA894 /* PrivacyLevelTests.swift in Sources */,
