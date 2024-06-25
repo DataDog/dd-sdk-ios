@@ -20,7 +20,7 @@ internal let currentProcessID = UUID()
 
 /// Time since the application process started.
 ///
-/// Example use case in watch dog termination tracking:
+/// Example use case in watchdog termination tracking:
 /// - SDK started -> RUM enabled -> [watchdog termination] -> SDK stopped -> SDK started again -> RUM enabled again -> check if the app was terminated by watchdog
 /// - If true, check any file updates that were done before current process started, that is most close to the watchdog termination.
 internal let runningSince = Date()
