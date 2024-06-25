@@ -93,7 +93,7 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
     }
 
     func mostRecentModifiedFileAt(before: Date) throws -> Date? {
-        return nil
+        return try core.mostRecentModifiedFileAt(before: before)
     }
 }
 
