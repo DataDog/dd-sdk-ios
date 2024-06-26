@@ -14,17 +14,8 @@
 		61C363F124374D6100C4D4E6 /* AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363F024374D6100C4D4E6 /* AppTests.swift */; };
 		61C363FC24374D6100C4D4E6 /* AppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363FB24374D6100C4D4E6 /* AppUITests.swift */; };
 		9E73374026B0123500917C24 /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 9E73373F26B0123500917C24 /* DatadogCrashReporting */; };
-		A71398892BD127790050A54E /* App_macOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71398882BD127790050A54E /* App_macOSApp.swift */; };
-		A713988B2BD127790050A54E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A713988A2BD127790050A54E /* ContentView.swift */; };
-		A71398A52BD1277A0050A54E /* App_macOSUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71398A42BD1277A0050A54E /* App_macOSUITests.swift */; };
 		A71398B22BD12B6D0050A54E /* DatadogSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71398B12BD12B6D0050A54E /* DatadogSetup.swift */; };
 		A71398B32BD12B6D0050A54E /* DatadogSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71398B12BD12B6D0050A54E /* DatadogSetup.swift */; };
-		A71398B42BD12B6D0050A54E /* DatadogSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71398B12BD12B6D0050A54E /* DatadogSetup.swift */; };
-		A71398B62BD12BC60050A54E /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = A71398B52BD12BC60050A54E /* DatadogCore */; };
-		A71398B82BD12BC60050A54E /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = A71398B72BD12BC60050A54E /* DatadogCrashReporting */; };
-		A71398BA2BD12BC60050A54E /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = A71398B92BD12BC60050A54E /* DatadogLogs */; };
-		A71398BC2BD12BC60050A54E /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = A71398BB2BD12BC60050A54E /* DatadogTrace */; };
-		A71398BE2BD12BC60050A54E /* DatadogWebViewTracking in Frameworks */ = {isa = PBXBuildFile; productRef = A71398BD2BD12BC60050A54E /* DatadogWebViewTracking */; };
 		D22919312B76589B00C38A18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D22919302B76589B00C38A18 /* PrivacyInfo.xcprivacy */; };
 		D22919322B76589B00C38A18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D22919302B76589B00C38A18 /* PrivacyInfo.xcprivacy */; };
 		D2344E1F29ACDE61007F5BD2 /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = D2344E1E29ACDE61007F5BD2 /* DatadogLogs */; };
@@ -60,13 +51,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 61C363D524374D5F00C4D4E6;
 			remoteInfo = SPMProject;
-		};
-		A71398A12BD1277A0050A54E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 61C363CE24374D5F00C4D4E6 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A71398852BD127790050A54E;
-			remoteInfo = "App macOS";
 		};
 		D23BF61827CCCE2300BB4CCD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -121,13 +105,7 @@
 		61C363FD24374D6100C4D4E6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		61CE5FD52461D3C2005EA621 /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
 		61CE5FD62461D3C2005EA621 /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
-		A71398862BD127790050A54E /* App macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "App macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A71398882BD127790050A54E /* App_macOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App_macOSApp.swift; sourceTree = "<group>"; };
-		A713988A2BD127790050A54E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A71398A02BD1277A0050A54E /* App macOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "App macOSUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A71398A42BD1277A0050A54E /* App_macOSUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App_macOSUITests.swift; sourceTree = "<group>"; };
 		A71398B12BD12B6D0050A54E /* DatadogSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogSetup.swift; sourceTree = "<group>"; };
-		A7DFE01A2BD131D90024E5E1 /* App_macOS.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = App_macOS.entitlements; sourceTree = "<group>"; };
 		D22919302B76589B00C38A18 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D23BF5FE27CCCC3300BB4CCD /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D23BF60A27CCCCF800BB4CCD /* App tvOS UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "App tvOS UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -158,25 +136,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		61C363F424374D6100C4D4E6 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A71398832BD127790050A54E /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A71398B82BD12BC60050A54E /* DatadogCrashReporting in Frameworks */,
-				A71398BE2BD12BC60050A54E /* DatadogWebViewTracking in Frameworks */,
-				A71398BA2BD12BC60050A54E /* DatadogLogs in Frameworks */,
-				A71398B62BD12BC60050A54E /* DatadogCore in Frameworks */,
-				A71398BC2BD12BC60050A54E /* DatadogTrace in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A713989D2BD1277A0050A54E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -221,8 +180,6 @@
 				61C363D824374D5F00C4D4E6 /* App */,
 				61C363EF24374D6100C4D4E6 /* AppTests */,
 				61C363FA24374D6100C4D4E6 /* AppUITests */,
-				A71398872BD127790050A54E /* App macOS */,
-				A71398A32BD1277A0050A54E /* App macOSUITests */,
 				61C363D724374D5F00C4D4E6 /* Products */,
 				9EC32C6024E596C20063BCCE /* Frameworks */,
 			);
@@ -237,8 +194,6 @@
 				D23BF5FE27CCCC3300BB4CCD /* App.app */,
 				D23BF60A27CCCCF800BB4CCD /* App tvOS UITests.xctest */,
 				D23BF61627CCCD5700BB4CCD /* App tvOS Tests.xctest */,
-				A71398862BD127790050A54E /* App macOS.app */,
-				A71398A02BD1277A0050A54E /* App macOSUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -288,24 +243,6 @@
 			children = (
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		A71398872BD127790050A54E /* App macOS */ = {
-			isa = PBXGroup;
-			children = (
-				A7DFE01A2BD131D90024E5E1 /* App_macOS.entitlements */,
-				A71398882BD127790050A54E /* App_macOSApp.swift */,
-				A713988A2BD127790050A54E /* ContentView.swift */,
-			);
-			path = "App macOS";
-			sourceTree = "<group>";
-		};
-		A71398A32BD1277A0050A54E /* App macOSUITests */ = {
-			isa = PBXGroup;
-			children = (
-				A71398A42BD1277A0050A54E /* App_macOSUITests.swift */,
-			);
-			path = "App macOSUITests";
 			sourceTree = "<group>";
 		};
 		A787CA7D2BD277190053CEBE /* Shared */ = {
@@ -382,48 +319,6 @@
 			name = "App iOS UITests";
 			productName = SPMProjectUITests;
 			productReference = 61C363F724374D6100C4D4E6 /* App iOS UITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
-		A71398852BD127790050A54E /* App macOS */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A71398AE2BD1277A0050A54E /* Build configuration list for PBXNativeTarget "App macOS" */;
-			buildPhases = (
-				A71398822BD127790050A54E /* Sources */,
-				A71398832BD127790050A54E /* Frameworks */,
-				A71398842BD127790050A54E /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "App macOS";
-			packageProductDependencies = (
-				A71398B52BD12BC60050A54E /* DatadogCore */,
-				A71398B72BD12BC60050A54E /* DatadogCrashReporting */,
-				A71398B92BD12BC60050A54E /* DatadogLogs */,
-				A71398BB2BD12BC60050A54E /* DatadogTrace */,
-				A71398BD2BD12BC60050A54E /* DatadogWebViewTracking */,
-			);
-			productName = "App macOS";
-			productReference = A71398862BD127790050A54E /* App macOS.app */;
-			productType = "com.apple.product-type.application";
-		};
-		A713989F2BD1277A0050A54E /* App macOSUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A71398B02BD1277A0050A54E /* Build configuration list for PBXNativeTarget "App macOSUITests" */;
-			buildPhases = (
-				A713989C2BD1277A0050A54E /* Sources */,
-				A713989D2BD1277A0050A54E /* Frameworks */,
-				A713989E2BD1277A0050A54E /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				A71398A22BD1277A0050A54E /* PBXTargetDependency */,
-			);
-			name = "App macOSUITests";
-			productName = "App macOSUITests";
-			productReference = A71398A02BD1277A0050A54E /* App macOSUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		D23BF5EF27CCCC3300BB4CCD /* App tvOS */ = {
@@ -510,13 +405,6 @@
 						CreatedOnToolsVersion = 11.4;
 						TestTargetID = 61C363D524374D5F00C4D4E6;
 					};
-					A71398852BD127790050A54E = {
-						CreatedOnToolsVersion = 15.3;
-					};
-					A713989F2BD1277A0050A54E = {
-						CreatedOnToolsVersion = 15.3;
-						TestTargetID = A71398852BD127790050A54E;
-					};
 					D23BF60027CCCCF800BB4CCD = {
 						TestTargetID = D23BF5EF27CCCC3300BB4CCD;
 					};
@@ -547,8 +435,6 @@
 				D23BF5EF27CCCC3300BB4CCD /* App tvOS */,
 				D23BF60C27CCCD5700BB4CCD /* App tvOS Tests */,
 				D23BF60027CCCCF800BB4CCD /* App tvOS UITests */,
-				A71398852BD127790050A54E /* App macOS */,
-				A713989F2BD1277A0050A54E /* App macOSUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -570,20 +456,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		61C363F524374D6100C4D4E6 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A71398842BD127790050A54E /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A713989E2BD1277A0050A54E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -683,24 +555,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A71398822BD127790050A54E /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A713988B2BD127790050A54E /* ContentView.swift in Sources */,
-				A71398892BD127790050A54E /* App_macOSApp.swift in Sources */,
-				A71398B42BD12B6D0050A54E /* DatadogSetup.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A713989C2BD1277A0050A54E /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A71398A52BD1277A0050A54E /* App_macOSUITests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D23BF5F227CCCC3300BB4CCD /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -740,11 +594,6 @@
 			isa = PBXTargetDependency;
 			target = 61C363D524374D5F00C4D4E6 /* App iOS */;
 			targetProxy = 61C363F824374D6100C4D4E6 /* PBXContainerItemProxy */;
-		};
-		A71398A22BD1277A0050A54E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A71398852BD127790050A54E /* App macOS */;
-			targetProxy = A71398A12BD1277A0050A54E /* PBXContainerItemProxy */;
 		};
 		D23BF61927CCCE2300BB4CCD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1019,130 +868,6 @@
 			};
 			name = Release;
 		};
-		A71398A82BD1277A0050A54E /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CODE_SIGN_ENTITLEMENTS = "App macOS/App_macOS.entitlements";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
-				CODE_SIGN_STYLE = Manual;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 Datadog. All rights reserved.";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.SPMProjectMacOS;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SDKROOT = macosx;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		A71398A92BD1277A0050A54E /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CODE_SIGN_ENTITLEMENTS = "App macOS/App_macOS.entitlements";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
-				CODE_SIGN_STYLE = Manual;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 Datadog. All rights reserved.";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.SPMProjectMacOS;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SDKROOT = macosx;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
-		A71398AC2BD1277A0050A54E /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.SPMProjectMacOSUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SDKROOT = macosx;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = "App macOS";
-			};
-			name = Debug;
-		};
-		A71398AD2BD1277A0050A54E /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.SPMProjectMacOSUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SDKROOT = macosx;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = "App macOS";
-			};
-			name = Release;
-		};
 		D23BF5FC27CCCC3300BB4CCD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1320,24 +1045,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A71398AE2BD1277A0050A54E /* Build configuration list for PBXNativeTarget "App macOS" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A71398A82BD1277A0050A54E /* Debug */,
-				A71398A92BD1277A0050A54E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		A71398B02BD1277A0050A54E /* Build configuration list for PBXNativeTarget "App macOSUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A71398AC2BD1277A0050A54E /* Debug */,
-				A71398AD2BD1277A0050A54E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		D23BF5FB27CCCC3300BB4CCD /* Build configuration list for PBXNativeTarget "App tvOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1396,31 +1103,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
 			productName = DatadogCrashReporting;
-		};
-		A71398B52BD12BC60050A54E /* DatadogCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
-			productName = DatadogCore;
-		};
-		A71398B72BD12BC60050A54E /* DatadogCrashReporting */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
-			productName = DatadogCrashReporting;
-		};
-		A71398B92BD12BC60050A54E /* DatadogLogs */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
-			productName = DatadogLogs;
-		};
-		A71398BB2BD12BC60050A54E /* DatadogTrace */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
-			productName = DatadogTrace;
-		};
-		A71398BD2BD12BC60050A54E /* DatadogWebViewTracking */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
-			productName = DatadogWebViewTracking;
 		};
 		D2344E1E29ACDE61007F5BD2 /* DatadogLogs */ = {
 			isa = XCSwiftPackageProductDependency;

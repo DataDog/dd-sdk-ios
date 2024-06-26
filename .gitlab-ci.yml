@@ -3,6 +3,7 @@ stages:
   - lint
   - test
   - ui-test
+  - smoke-test
 
 variables:
   MAIN_BRANCH: "master"
@@ -34,6 +35,16 @@ default:
           - "*" # match any file in the root directory
         compare_to: 'develop' # cannot use variable due to: https://gitlab.com/gitlab-org/gitlab/-/issues/369916
 
+# Trigger jobs on changes in `tools/*`, comparing against 'develop' branch
+.run:if-tools-modified:
+  rules:
+    - changes:
+        paths:
+          - "tools/**/*"
+          - "Makefile"
+          - ".gitlab-ci.yml"
+        compare_to: 'develop'
+
 ENV check:
   stage: pre
   script:
@@ -59,11 +70,12 @@ Unit Tests (iOS):
     - !reference [.run:when-develop-or-master, rules]
     - !reference [.run:if-sdk-modified, rules]
   variables:
+    XCODE: "15.3.0"
     OS: "17.4"
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 15 Pro"
   script:
-    - ./tools/runner-setup.sh --ios --os "$OS" # temporary, waiting for AMI
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --os "$OS" # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
@@ -73,11 +85,12 @@ Unit Tests (tvOS):
     - !reference [.run:when-develop-or-master, rules]
     - !reference [.run:if-sdk-modified, rules]
   variables:
+    XCODE: "15.3.0"
     OS: "17.4"
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
   script:
-    - ./tools/runner-setup.sh --tvos --os "$OS" # temporary, waiting for AMI
+    - ./tools/runner-setup.sh --xcode "$XCODE" --tvOS --os "$OS" # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
@@ -87,6 +100,7 @@ UI Tests:
     - !reference [.run:when-develop-or-master, rules]
     - !reference [.run:if-sdk-modified, rules]
   variables:
+    XCODE: "15.3.0"
     OS: "17.4"
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 15 Pro"
@@ -98,6 +112,72 @@ UI Tests:
           - CrashReporting
           - NetworkInstrumentation
   script:
-    - ./tools/runner-setup.sh --ios --os "$OS" # temporary, waiting for AMI
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --os "$OS" # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+
+Tools Tests:
+  stage: test
+  rules: 
+    - !reference [.run:when-develop-or-master, rules]
+    - !reference [.run:if-tools-modified, rules]
+  script:
+    - make clean repo-setup ENV=ci
+    - make tools-test
+
+Smoke Tests (iOS):
+  stage: smoke-test
+  tags:
+    - macos:ventura
+    - specific:true
+  variables:
+    XCODE: "15.2.0"
+    OS: "17.2"
+    PLATFORM: "iOS Simulator"
+    DEVICE: "iPhone 15 Pro"
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --os "$OS" # temporary, waiting for AMI
+    - make clean repo-setup ENV=ci
+    - make spm-build-ios
+    - make smoke-test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+
+Smoke Tests (tvOS):
+  stage: smoke-test
+  tags:
+    - macos:ventura
+    - specific:true
+  variables:
+    XCODE: "15.2.0"
+    OS: "17.2"
+    PLATFORM: "tvOS Simulator"
+    DEVICE: "Apple TV"
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --tvOS --os "$OS" # temporary, waiting for AMI
+    - make clean repo-setup ENV=ci
+    - make spm-build-tvos
+    - make smoke-test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+    
+Smoke Tests (visionOS):
+  stage: smoke-test
+  tags:
+    - macos:ventura
+    - specific:true
+  variables:
+    XCODE: "15.2.0"
+    OS: "1.0"
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --visionOS --os "$OS" # temporary, waiting for AMI
+    - make clean repo-setup ENV=ci
+    - make spm-build-visionos
+
+Smoke Tests (macOS):
+  stage: smoke-test
+  tags:
+    - macos:ventura
+    - specific:true
+  variables:
+    XCODE: "15.2.0"
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" # temporary, waiting for AMI
+    - make clean repo-setup ENV=ci
+    - make spm-build-macos
