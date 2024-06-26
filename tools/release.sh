@@ -19,6 +19,11 @@ cd $DISTRIBUTION_PACKAGE && make clean install
 cd -
 
 TEST_SECRET=$(get_secret "test.secret")
-echo "TEST_SECRET=$TEST_SECRET"
+echo "TEST_SECRET='$TEST_SECRET'"
+
+set +e
+set -x
+ls -a ~/.ssh # custom
+cat ~/.ssh/config # none
 
 # git clone --branch 2.12.0 --single-branch git@github.com:DataDog/dd-sdk-ios.git
