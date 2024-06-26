@@ -108,6 +108,7 @@ if [ "$visionOS" = "true" ]; then
 fi
 
 if [ "$ssh" = "true" ]; then
+    # Adds SSH config, so we can git clone GH repos.
     echo_subtitle "Add SSH configuration"
     SSH_KEY_PATH="$HOME/.ssh/id_ed25519"
     SSH_CONFIG_PATH="$HOME/.ssh/config"
@@ -124,6 +125,7 @@ Host github.com
     IdentityFile $SSH_KEY_PATH
     StrictHostKeyChecking no
 EOF
+        echo_succ "Finished SSH setup."
     else
         echo_succ "Found both SSH key and SSH config file. Skipping..."
     fi
