@@ -20,21 +20,4 @@ DISTRIBUTION_PACKAGE="tools/distribution"
 
 # echo "TEST_SECRET='$TEST_SECRET'"
 
-SSH_KEY_PATH="$HOME/.ssh/id_ed25519"
-get_secret "ssh.key" > $SSH_KEY_PATH
-chmod 600 "$SSH_KEY_PATH"
-
-cat <<EOF > "$HOME/.ssh/config"
-Host github.com
-    HostName github.com
-    User git
-    IdentityFile $SSH_KEY_PATH
-    StrictHostKeyChecking no
-EOF
-
-set +e
-set -x
-ls -a ~/.ssh # custom
-cat ~/.ssh/config # none
-
 git clone --branch 2.12.0 --single-branch git@github.com:DataDog/dd-sdk-ios.git
