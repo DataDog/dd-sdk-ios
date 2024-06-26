@@ -187,6 +187,9 @@ default:
 
 Build Artifacts:
   stage: release:build
+  tags:
+    - macos:ventura
+    - specific:true
   variables:
     XCODE: "15.3.0"
   script:
