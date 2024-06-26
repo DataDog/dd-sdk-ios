@@ -16,7 +16,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
 
     private static var currentApplicationState: ApplicationState {
         #if canImport(WatchKit)
-        WKExtension.shared().applicationState
+        WKExtension.dd.shared.applicationState
         #else
         UIApplication.dd.managedShared?.applicationState ?? .active // fallback to most expected state
         #endif
