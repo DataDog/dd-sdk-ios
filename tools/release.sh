@@ -14,16 +14,27 @@ source ./tools/secrets/get-secret-aws.sh
 
 DISTRIBUTION_PACKAGE="tools/distribution"
 
-echo_subtitle "Run 'make clean install' in '$DISTRIBUTION_PACKAGE'"
-cd $DISTRIBUTION_PACKAGE && make clean install
-cd -
+# echo_subtitle "Run 'make clean install' in '$DISTRIBUTION_PACKAGE'"
+# cd $DISTRIBUTION_PACKAGE && make clean install
+# cd -
 
-TEST_SECRET=$(get_secret "test.secret")
-echo "TEST_SECRET='$TEST_SECRET'"
+# echo "TEST_SECRET='$TEST_SECRET'"
+
+SSH_KEY_PATH="$HOME/.ssh/id_ed25519"
+get_secret "ssh.key" > $SSH_KEY_PATH
+chmod 600 "$SSH_KEY_PATH"
+
+cat <<EOF > "$HOME/.ssh/config"
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile $SSH_KEY_PATH
+    StrictHostKeyChecking no
+EOF
 
 set +e
 set -x
 ls -a ~/.ssh # custom
 cat ~/.ssh/config # none
 
-# git clone --branch 2.12.0 --single-branch git@github.com:DataDog/dd-sdk-ios.git
+git clone --branch 2.12.0 --single-branch git@github.com:DataDog/dd-sdk-ios.git

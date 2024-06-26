@@ -16,12 +16,22 @@ set -eo pipefail
 source ./tools/utils/echo_color.sh
 source ./tools/utils/argparse.sh
 
-set_description "Sets or updates CI secret."
-define_arg "name" "" "The name of the secret" "string" "true"
-define_arg "value" "" "The value of the secret" "string" "true"
-
-check_for_help "$@"
-parse_args "$@"
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --name)
+            name=$2
+            shift 2
+            ;;
+        --value)
+            value=$2
+            shift 2
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            exit 1
+            ;;
+    esac
+done
 
 if [[ -z "$name" || -z "$value" ]]; then
     echo_err "Error" "Missing secret name or secret value."
