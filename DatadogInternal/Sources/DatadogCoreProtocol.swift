@@ -7,7 +7,7 @@
 import Foundation
 
 /// A Datadog Core protocol that provides persistance related information.
-public protocol CoreStorage {
+public protocol CoreStorage: AnyObject {
     /// Returns the most recent modified file before a given date.
     /// - Parameter before: The date to compare the last modification date of files.
     /// - Returns: The most recent modified file or `nil` if no files were modified before the given date.
