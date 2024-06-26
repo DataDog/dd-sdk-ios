@@ -36,7 +36,7 @@ internal struct UIProgressViewRecorder: NodeRecorder {
 }
 
 internal struct UIProgressViewWireframesBuilder: NodeWireframesBuilder {
-    var wireframeRect: CGRect
+    var wireframeRect: CGRect { attributes.frame }
     let attributes: ViewAttributes
 
     let backgroundWireframeID: WireframeID
