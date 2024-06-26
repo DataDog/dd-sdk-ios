@@ -7,7 +7,6 @@
 import XCTest
 import SRFixtures
 import TestUtilities
-import DatadogInternal
 @_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import SRHost
@@ -34,6 +33,30 @@ internal class SnapshotTestCase: XCTestCase {
         waitForExpectations(timeout: 30) // very pessimistic timeout to mitigate CI lags
 
         return viewController
+    }
+
+    func takeSnapshotFor(
+        _ fixture: Fixture,
+        with privacyModes: [SessionReplayPrivacyLevel] = [defaultPrivacyLevel],
+        shouldRecord: Bool,
+        folderPath: String,
+        fileNamePrefix: String? = nil,
+        file: StaticString = #filePath,
+        function: StaticString = #function
+    ) throws {
+        show(fixture: fixture)
+
+        try forPrivacyModes(privacyModes) { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            let fileNameSuffix = fileNamePrefix == nil ? "-\(privacyMode)-privacy" : "-\(fileNamePrefix!)-\(privacyMode)-privacy"
+            let snapshotLocation: ImageLocation = .folder(named: folderPath, fileNameSuffix: fileNameSuffix, file: file, function: function)
+
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: snapshotLocation,
+                record: shouldRecord
+            )
+        }
     }
 
     /// Captures side-by-side snapshot of the app UI and recorded wireframes.
