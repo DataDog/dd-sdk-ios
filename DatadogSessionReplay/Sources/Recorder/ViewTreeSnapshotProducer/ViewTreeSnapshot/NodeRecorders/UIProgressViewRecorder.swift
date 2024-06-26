@@ -22,7 +22,6 @@ internal struct UIProgressViewRecorder: NodeRecorder {
         let ids = context.ids.nodeIDs(2, view: progressView, nodeRecorder: self)
 
         let builder = UIProgressViewWireframesBuilder(
-            wireframeRect: attributes.frame,
             attributes: attributes,
             backgroundWireframeID: ids[0],
             progressTrackWireframeID: ids[1],
