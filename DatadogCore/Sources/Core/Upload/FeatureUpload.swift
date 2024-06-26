@@ -39,7 +39,7 @@ internal struct FeatureUpload {
         switch (backgroundTasksEnabled, isRunFromExtension) {
         case (true, false):
             #if os(watchOS)
-            backgroundTaskCoordinator = nil
+            backgroundTaskCoordinator = ExtensionBackgroundTaskCoordinator()
             #else
             backgroundTaskCoordinator = AppBackgroundTaskCoordinator()
             #endif
