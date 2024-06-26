@@ -191,7 +191,7 @@ Build Artifacts:
     - macos:ventura
     - specific:true
   variables:
-    XCODE: "15.3.0"
+    XCODE: "15.2.0"
   script:
     - ./tools/runner-setup.sh --xcode "$XCODE" --ssh # temporary, waiting for AMI
     - make env-check
