@@ -61,7 +61,7 @@ class WatchdogTerminationReporterMock: WatchdogTerminationReporting {
 
 extension WatchdogTerminationReporter: RandomMockable {
     public static func mockRandom() -> Self {
-        return .init(featureScope: FeatureScopeMock())
+        return .init(featureScope: FeatureScopeMock(), dateProvider: DateProviderMock())
     }
 }
 
@@ -100,7 +100,7 @@ extension WatchdogTerminationMonitor: RandomMockable {
         return .init(
             appStateManager: .mockRandom(),
             checker: .mockRandom(),
-            coreStorage: NOPDatadogCore(),
+            stroage: NOPDatadogCore().storage,
             feature: FeatureScopeMock(),
             reporter: WatchdogTerminationReporter.mockRandom()
         )
