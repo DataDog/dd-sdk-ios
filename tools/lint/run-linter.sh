@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 if [ ! -f "Package.swift" ]; then
 	echo "\`run-linter.sh\` must be run in repository root folder: \`./tools/lint/run-linter.sh\`"; exit 1

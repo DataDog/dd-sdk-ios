@@ -152,6 +152,7 @@ struct RUMCommandMock: RUMCommand {
     var attributes: [AttributeKey: AttributeValue] = [:]
     var canStartBackgroundView = false
     var isUserInteraction = false
+    var missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
 /// Creates random `RUMCommand` from available ones.
@@ -200,14 +201,16 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
         attributes: [AttributeKey: AttributeValue] = [:],
         identity: ViewIdentifier = .mockViewIdentifier(),
         name: String = .mockAny(),
-        path: String = .mockAny()
+        path: String = .mockAny(),
+        instrumentationType: SessionEndedMetric.ViewInstrumentationType = .manual
     ) -> RUMStartViewCommand {
         return RUMStartViewCommand(
             time: time,
             identity: identity,
             name: name,
             path: path,
-            attributes: attributes
+            attributes: attributes,
+            instrumentationType: instrumentationType
         )
     }
 }
@@ -726,7 +729,8 @@ extension RUMScopeDependencies {
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
         viewCache: ViewCache = ViewCache(),
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
-        sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry())
+        sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry()),
+        watchdogTermination: WatchdogTerminationMonitor? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -744,7 +748,8 @@ extension RUMScopeDependencies {
             onSessionStart: onSessionStart,
             viewCache: viewCache,
             fatalErrorContext: fatalErrorContext,
-            sessionEndedMetric: sessionEndedMetric
+            sessionEndedMetric: sessionEndedMetric,
+            watchdogTermination: watchdogTermination
         )
     }
 
@@ -764,7 +769,8 @@ extension RUMScopeDependencies {
         onSessionStart: RUM.SessionListener? = nil,
         viewCache: ViewCache? = nil,
         fatalErrorContext: FatalErrorContextNotifying? = nil,
-        sessionEndedMetric: SessionEndedMetricController? = nil
+        sessionEndedMetric: SessionEndedMetricController? = nil,
+        watchdogTermination: WatchdogTerminationMonitor? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -782,7 +788,8 @@ extension RUMScopeDependencies {
             onSessionStart: onSessionStart ?? self.onSessionStart,
             viewCache: viewCache ?? self.viewCache,
             fatalErrorContext: fatalErrorContext ?? self.fatalErrorContext,
-            sessionEndedMetric: sessionEndedMetric ?? self.sessionEndedMetric
+            sessionEndedMetric: sessionEndedMetric ?? self.sessionEndedMetric,
+            watchdogTermination: watchdogTermination
         )
     }
 }

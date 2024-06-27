@@ -1,0 +1,7 @@
+// Base.dev.local.xcconfig for DEV env (all contributors), sourced from `make repo-setup`
+// - It is git-ignored, so not present for git clones in dependency managers.
+// - It is applied on top of Base.ci.local.xcconfig (for CI) and can be used to disable CI-specific
+// settings for the convenience of local development.
+
+IS_CI = false
+SWIFT_TREAT_WARNINGS_AS_ERRORS = NO

@@ -395,6 +395,12 @@ extension DatadogCoreProtocol {
     public var telemetry: Telemetry { CoreTelemetry(core: self) }
 }
 
+extension DatadogCoreProtocol {
+    /// Provides access to the `Storage` associated with the core.
+    /// - Returns: The `Storage` instance.
+    public var storage: Storage { CoreStorage(core: self) }
+}
+
 extension ConfigurationTelemetry {
     public func merged(with other: Self) -> Self {
         .init(

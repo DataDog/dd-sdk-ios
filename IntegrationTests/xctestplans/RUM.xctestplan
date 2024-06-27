@@ -1,0 +1,41 @@
+{
+  "configurations" : [
+    {
+      "id" : "09CDD920-D143-447E-B9FD-F49185968B98",
+      "name" : "Configuration",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:IntegrationTests.xcodeproj",
+      "identifier" : "61441C2924616F1D003D8BB8",
+      "name" : "IntegrationScenarios"
+    }
+  },
+  "testTargets" : [
+    {
+      "selectedTests" : [
+        "RUMManualInstrumentationScenarioTests\/testRUMManualInstrumentationScenario()",
+        "RUMMobileVitalsScenarioTests\/testRUMMobileVitalsScenario()",
+        "RUMMobileVitalsScenarioTests\/testRUMShortTimeSpentCPUScenario()",
+        "RUMModalViewsScenarioTests\/testRUMModalViewsScenario()",
+        "RUMModalViewsScenarioTests\/testRUMUntrackedModalViewsScenario()",
+        "RUMNavigationControllerScenarioTests\/testRUMNavigationControllerScenario()",
+        "RUMScrubbingScenarioTests\/testRUMScrubbingScenario()",
+        "RUMStopSessionScenarioTests\/testRUMStopSessionScenario()",
+        "RUMSwiftUIScenarioTests\/testSwiftUIScenario()",
+        "RUMTabBarControllerScenarioTests\/testRUMTabBarScenario()",
+        "RUMTapActionScenarioTests\/testRUMTapActionScenario()"
+      ],
+      "target" : {
+        "containerPath" : "container:IntegrationTests.xcodeproj",
+        "identifier" : "61441C2924616F1D003D8BB8",
+        "name" : "IntegrationScenarios"
+      }
+    }
+  ],
+  "version" : 1
+}

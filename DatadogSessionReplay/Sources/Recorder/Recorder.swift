@@ -10,7 +10,7 @@ import DatadogInternal
 
 /// A type managing Session Replay recording.
 internal protocol Recording {
-    func captureNextRecord(_ recorderContext: Recorder.Context)
+    func captureNextRecord(_ recorderContext: Recorder.Context) throws
 }
 
 /// The main engine and the heart beat of Session Replay.
@@ -62,15 +62,10 @@ public class Recorder: Recording {
     private let snapshotProcessor: SnapshotProcessing
     /// Processes resources on a background thread.
     private let resourceProcessor: ResourceProcessing
-    /// Sends telemetry through sdk core.
-    private let telemetry: Telemetry
-    /// The sampling rate for internal telemetry of method call.
-    private let methodCallTelemetrySamplingRate: Float
 
     convenience init(
         snapshotProcessor: SnapshotProcessing,
         resourceProcessor: ResourceProcessing,
-        telemetry: Telemetry,
         additionalNodeRecorders: [NodeRecorder]
     ) throws {
         let windowObserver = KeyWindowObserver()
@@ -87,8 +82,7 @@ public class Recorder: Recording {
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: snapshotProcessor,
-            resourceProcessor: resourceProcessor,
-            telemetry: telemetry
+            resourceProcessor: resourceProcessor
         )
     }
 
@@ -97,17 +91,13 @@ public class Recorder: Recording {
         viewTreeSnapshotProducer: ViewTreeSnapshotProducer,
         touchSnapshotProducer: TouchSnapshotProducer,
         snapshotProcessor: SnapshotProcessing,
-        resourceProcessor: ResourceProcessing,
-        telemetry: Telemetry,
-        methodCallTelemetrySamplingRate: Float = 0.1
+        resourceProcessor: ResourceProcessing
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.viewTreeSnapshotProducer = viewTreeSnapshotProducer
         self.touchSnapshotProducer = touchSnapshotProducer
         self.snapshotProcessor = snapshotProcessor
         self.resourceProcessor = resourceProcessor
-        self.telemetry = telemetry
-        self.methodCallTelemetrySamplingRate = methodCallTelemetrySamplingRate
         uiApplicationSwizzler.swizzle()
     }
 
@@ -119,37 +109,19 @@ public class Recorder: Recording {
 
     /// Initiates the capture of a next record.
     /// **Note**: This is called on the main thread.
-    func captureNextRecord(_ recorderContext: Context) {
-        let methodCalledTrace = telemetry.startMethodCalled(
-            operationName: MethodCallConstants.captureRecordOperationName,
-            callerClass: MethodCallConstants.className,
-            samplingRate: methodCallTelemetrySamplingRate // Effectively 3% * 0.1% = 0.003% of calls
-        )
-        var isSuccessful = true
-        do {
-            guard let viewTreeSnapshot = try viewTreeSnapshotProducer.takeSnapshot(with: recorderContext) else {
-                // There is nothing visible yet (i.e. the key window is not yet ready).
-                return
-            }
-            let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
-            snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
-
-            resourceProcessor.process(
-                resources: viewTreeSnapshot.resources,
-                context: .init(recorderContext.applicationID)
-            )
-        } catch let error {
-            isSuccessful = false
-            telemetry.error("[SR] Failed to take snapshot", error: DDError(error: error))
+    func captureNextRecord(_ recorderContext: Context) throws {
+        guard let viewTreeSnapshot = try viewTreeSnapshotProducer.takeSnapshot(with: recorderContext) else {
+            // There is nothing visible yet (i.e. the key window is not yet ready).
+            return
         }
-        telemetry.stopMethodCalled(methodCalledTrace, isSuccessful: isSuccessful)
-    }
 
-    private enum MethodCallConstants {
-        static let captureRecordOperationName = "Capture Record"
-        static let className = {
-            String(reflecting: Recorder.self)
-        }()
+        let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
+        snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
+
+        resourceProcessor.process(
+            resources: viewTreeSnapshot.resources,
+            context: .init(recorderContext.applicationID)
+        )
     }
 }
 #endif

@@ -126,7 +126,7 @@ internal final class DatadogCore {
     /// Sets current user information.
     ///
     /// Those will be added to logs, traces and RUM events automatically.
-    /// 
+    ///
     /// - Parameters:
     ///   - id: User ID, if any
     ///   - name: Name representing the user, if any
@@ -159,7 +159,7 @@ internal final class DatadogCore {
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
-    /// 
+    ///
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
         if trackingConsent != consentPublisher.consent {
@@ -460,6 +460,9 @@ extension DatadogCore: Flushable {
         // The order of flushing below must be considered cautiously and
         // follow our design choices around SDK core's threading.
 
+        // Reset baggages that need not be persisted across flushes.
+        set(baggage: nil, forKey: LaunchReport.baggageKey)
+
         let features = features.values.compactMap { $0 as? Flushable }
 
         // The flushing is repeated few times, to make sure that operations spawned from other operations
@@ -485,3 +488,23 @@ extension DatadogCore: Flushable {
         }
     }
 }
+
+extension DatadogCore: Storage {
+    /// Returns the most recent modification date of a file in the core directory.
+    /// - Parameter before: The date to compare the last modification date of files.
+    /// - Returns: The latest modified file or `nil` if no files were modified before given date.
+    func mostRecentModifiedFileAt(before: Date) throws -> Date? {
+        try readWriteQueue.sync {
+            let file = try directory.coreDirectory.mostRecentModifiedFile(before: before)
+            return try file?.modifiedAt()
+        }
+    }
+}
+#if SPM_BUILD
+import DatadogPrivate
+#endif
+
+internal let registerObjcExceptionHandlerOnce: () -> Void = {
+    ObjcException.rethrow = __dd_private_ObjcExceptionHandler.rethrow
+    return {}
+}()

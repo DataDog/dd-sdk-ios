@@ -1,0 +1,44 @@
+{
+  "configurations" : [
+    {
+      "id" : "D87CA41D-8EBB-4809-AC70-E3B8317FAAC7",
+      "name" : "Configuration",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:IntegrationTests.xcodeproj",
+      "identifier" : "61441C2924616F1D003D8BB8",
+      "name" : "IntegrationScenarios"
+    }
+  },
+  "testTargets" : [
+    {
+      "skippedTests" : [
+        "CrashReportingWithLoggingScenarioTests",
+        "CrashReportingWithRUMScenarioTests",
+        "IntegrationTests",
+        "RUMManualInstrumentationScenarioTests",
+        "RUMMobileVitalsScenarioTests",
+        "RUMModalViewsScenarioTests",
+        "RUMNavigationControllerScenarioTests",
+        "RUMResourcesScenarioTests",
+        "RUMScrubbingScenarioTests",
+        "RUMStopSessionScenarioTests",
+        "RUMSwiftUIScenarioTests",
+        "RUMTabBarControllerScenarioTests",
+        "RUMTapActionScenarioTests",
+        "TracingURLSessionScenarioTests"
+      ],
+      "target" : {
+        "containerPath" : "container:IntegrationTests.xcodeproj",
+        "identifier" : "61441C2924616F1D003D8BB8",
+        "name" : "IntegrationScenarios"
+      }
+    }
+  ],
+  "version" : 1
+}

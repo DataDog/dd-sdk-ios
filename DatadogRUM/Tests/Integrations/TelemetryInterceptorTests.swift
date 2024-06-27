@@ -20,13 +20,13 @@ class TelemetryInterceptorTests: XCTestCase {
         let interceptor = TelemetryInterceptor(sessionEndedMetric: metricController)
 
         // When
-        metricController.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockAny())
+        metricController.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockAny(), tracksBackgroundEvents: .mockRandom())
         let errorTelemetry: TelemetryMessage = .error(id: .mockAny(), message: .mockAny(), kind: .mockAny(), stack: .mockAny())
         let result = interceptor.receive(message: .telemetry(errorTelemetry), from: NOPDatadogCore())
         XCTAssertFalse(result)
 
         // Then
-        metricController.endMetric(sessionID: sessionID)
+        metricController.endMetric(sessionID: sessionID, with: .mockRandom())
         let metric = try XCTUnwrap(telemetry.messages.lastMetric(named: SessionEndedMetric.Constants.name))
         let rse = try XCTUnwrap(metric.attributes[SessionEndedMetric.Constants.rseKey] as? SessionEndedMetric.Attributes)
         XCTAssertEqual(rse.sdkErrorsCount.total, 1)

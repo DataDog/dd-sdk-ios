@@ -11,7 +11,6 @@ import DatadogInternal
 #warning("Datadog WebView Tracking does not support tvOS")
 #else
 import WebKit
-#endif
 
 @objc(DDWebViewTracking)
 @_spi(objc)
@@ -55,3 +54,4 @@ public final class objc_WebViewTracking: NSObject {
         WebViewTracking.disable(webView: webView)
     }
 }
+#endif

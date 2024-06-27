@@ -7,8 +7,15 @@
 import Foundation
 import DatadogInternal
 
+/// Provides interfaces for accessing common properties and operations for a directory.
+internal protocol DirectoryProtocol: FileProtocol {
+    /// Returns list of subdirectories in the directory.
+    /// - Returns: list of subdirectories.
+    func subdirectories() throws -> [Directory]
+}
+
 /// An abstraction over file system directory where SDK stores its files.
-internal struct Directory {
+internal struct Directory: DirectoryProtocol {
     let url: URL
 
     /// Creates subdirectory with given path under system caches directory.
@@ -19,6 +26,56 @@ internal struct Directory {
 
     init(url: URL) {
         self.url = url
+    }
+
+    func modifiedAt() throws -> Date? {
+        try FileManager.default.attributesOfItem(atPath: url.path)[.modificationDate] as? Date
+    }
+
+    /// Returns list of subdirectories using system APIs.
+    /// - Returns: list of subdirectories.
+    func subdirectories() throws -> [Directory] {
+        try FileManager.default
+            .contentsOfDirectory(at: url, includingPropertiesForKeys: [.isDirectoryKey, .canonicalPathKey])
+            .filter { url in
+                var isDirectory = ObjCBool(false)
+                FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory)
+                return isDirectory.boolValue
+            }
+            .map { url in Directory(url: url) }
+    }
+
+    /// Recursively goes through subdirectories and finds the most recent modified file before given date.
+    /// This includes files in subdirectories, files in this directory and itself.
+    /// - Parameter before: The date to compare the last modification date of files.
+    /// - Returns: The latest modified file or `nil` if no files were modified before given date.
+    func mostRecentModifiedFile(before: Date) throws -> FileProtocol? {
+        let mostRecentModifiedInSubdirectories = try subdirectories()
+            .compactMap { directory in
+                try directory.mostRecentModifiedFile(before: before)
+            }
+            .max { file1, file2 in
+                guard let modifiedAt1 = try file1.modifiedAt(), let modifiedAt2 = try file2.modifiedAt() else {
+                    return false
+                }
+                return modifiedAt1 < modifiedAt2
+            }
+
+        let files = try self.files()
+
+        return try ([self, mostRecentModifiedInSubdirectories].compactMap { $0 } + files)
+            .filter {
+                guard let modifiedAt = try $0.modifiedAt() else {
+                    return false
+                }
+                return modifiedAt < before
+            }
+            .max { file1, file2 in
+                guard let modifiedAt1 = try file1.modifiedAt(), let modifiedAt2 = try file2.modifiedAt() else {
+                    return false
+                }
+                return modifiedAt1 < modifiedAt2
+            }
     }
 
     /// Creates subdirectory with given path by creating intermediate directories if needed.
