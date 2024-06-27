@@ -561,6 +561,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 instrumentationType: (command as? RUMStartViewCommand)?.instrumentationType,
                 in: self.context.sessionID
             )
+
+            // Update the state of the view in watchdog termination monitor
+            // if a watchdog termination occurs in this session, in the next session
+            // a watchdog termination event will be sent using saved view event.
+            dependencies.watchdogTermination?.update(viewEvent: event)
         } else { // if event was dropped by mapper
             version -= 1
         }

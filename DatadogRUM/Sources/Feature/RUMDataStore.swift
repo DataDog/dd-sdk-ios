@@ -31,6 +31,7 @@ internal struct RUMDataStore {
         /// If found during app start it is considered a fatal hang in previous process.
         case fatalAppHangKey = "fatal-app-hang"
         case watchdogAppStateKey = "watchdog-app-state"
+        case watchdogRUMViewEvent = "watchdog-rum-view-event"
     }
 
     /// Encodes values in RUM data store.
