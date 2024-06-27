@@ -104,6 +104,7 @@ class WatchdogTerminationsMonitoringTests: XCTestCase {
         XCTAssertEqual(watchdogCrash.error.message, WatchdogTerminationReporter.Constants.errorMessage)
         XCTAssertEqual(watchdogCrash.error.type, WatchdogTerminationReporter.Constants.errorType)
         XCTAssertEqual(watchdogCrash.error.source, .source)
+        XCTAssertEqual(watchdogCrash.error.category, .watchdogTermination)
     }
 
 
