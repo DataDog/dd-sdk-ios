@@ -52,7 +52,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 ),
                 coreStorage: core,
                 feature: featureScope,
-                reporter: WatchdogTerminationReporter(featureScope: featureScope)
+                reporter: WatchdogTerminationReporter(
+                    featureScope: featureScope,
+                    dateProvider: configuration.dateProvider
+                )
             )
             watchdogTermination = monitor
         }

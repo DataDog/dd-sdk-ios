@@ -27,8 +27,14 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
     /// RUM feature scope.
     private let featureScope: FeatureScope
 
-    init(featureScope: FeatureScope) {
+    private let dateProvider: DateProvider
+
+    init(
+        featureScope: FeatureScope,
+        dateProvider: DateProvider
+    ) {
         self.featureScope = featureScope
+        self.dateProvider = dateProvider
     }
 
     /// Sends the Watchdog Termination event to Datadog.
@@ -41,7 +47,9 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
         let errorDate = date ?? Date(timeIntervalSinceReferenceDate: TimeInterval(viewEvent.date))
 
         DD.logger.debug("Sending Watchdog Termination event")
-        featureScope.eventWriteContext(bypassConsent: true) { context, writer in
+        featureScope.eventWriteContext(bypassConsent: true) { [dateProvider] context, writer in
+            let realDateNow = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
+
             let builder = FatalErrorBuilder(
                 context: context,
                 error: .watchdogTermination,
@@ -56,6 +64,19 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
             )
             let error = builder.createRUMError(with: viewEvent)
             let view = builder.updateRUMViewWithError(viewEvent)
+
+            if realDateNow.timeIntervalSince(errorDate) < FatalErrorBuilder.Constants.viewEventAvailabilityThreshold {
+                DD.logger.debug("Sending Watchdog Termination as RUM error with issuing RUM view update")
+                // It is still OK to send RUM view to previous RUM session.
+                writer.write(value: error)
+                writer.write(value: view)
+            } else {
+                // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.
+                // To avoid inconsistency, we only send the RUM error.
+                DD.logger.debug("Sending Watchdog Termination as RUM error without updating RUM view")
+                writer.write(value: error)
+            }
+
             writer.write(value: error)
             writer.write(value: view)
         }
