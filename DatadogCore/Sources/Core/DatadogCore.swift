@@ -489,7 +489,7 @@ extension DatadogCore: Flushable {
     }
 }
 
-extension DatadogCore: CoreStorage {
+extension DatadogCore: Storage {
     /// Returns the most recent modification date of a file in the core directory.
     /// - Parameter before: The date to compare the last modification date of files.
     /// - Returns: The latest modified file or `nil` if no files were modified before given date.

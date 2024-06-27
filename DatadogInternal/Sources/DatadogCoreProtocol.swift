@@ -6,20 +6,12 @@
 
 import Foundation
 
-/// A Datadog Core protocol that provides persistance related information.
-public protocol CoreStorage: AnyObject {
-    /// Returns the most recent modified file before a given date.
-    /// - Parameter before: The date to compare the last modification date of files.
-    /// - Returns: The most recent modified file or `nil` if no files were modified before the given date.
-    func mostRecentModifiedFileAt(before: Date) throws -> Date?
-}
-
 /// A Datadog Core holds a set of Features and is responsible for managing their storage
 /// and upload mechanism. It also provides a thread-safe scope for writing events.
 ///
 /// Any reference to `DatadogCoreProtocol` must be captured as `weak` within a Feature. This is to avoid
 /// retain cycle of core holding the Feature and vice-versa.
-public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing, CoreStorage {
+public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing, Storage {
     // Remove `DatadogCoreProtocol` conformance to `MessageSending` and `BaggageSharing` once
     // all features are migrated to depend on `FeatureScope` interface.
 

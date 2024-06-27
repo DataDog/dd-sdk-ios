@@ -33,7 +33,7 @@ internal final class WatchdogTerminationMonitor {
     let appStateManager: WatchdogTerminationAppStateManager
     let feature: FeatureScope
     let reporter: WatchdogTerminationReporting
-    weak var coreStorage: CoreStorage?
+    let storage: Storage?
 
     /// The status of the monitor  indicating if it is active or not.
     /// When it is active, it listens to the app state changes and updates the app state in the data store.
@@ -43,7 +43,7 @@ internal final class WatchdogTerminationMonitor {
     init(
         appStateManager: WatchdogTerminationAppStateManager,
         checker: WatchdogTerminationChecker,
-        coreStorage: CoreStorage?,
+        stroage: Storage?,
         feature: FeatureScope,
         reporter: WatchdogTerminationReporting
     ) {
@@ -51,7 +51,7 @@ internal final class WatchdogTerminationMonitor {
         self.appStateManager = appStateManager
         self.feature = feature
         self.reporter = reporter
-        self.coreStorage = coreStorage
+        self.storage = stroage
         self.currentState = .stopped
     }
 
@@ -118,7 +118,7 @@ internal final class WatchdogTerminationMonitor {
     /// - Parameter state: The app state when the Watchdog Termination occurred.
     private func sendWatchTermination(state: WatchdogTerminationAppState, completion: @escaping () -> Void) {
         do {
-            let likelyCrashedAt = try coreStorage?.mostRecentModifiedFileAt(before: runningSince)
+            let likelyCrashedAt = try storage?.mostRecentModifiedFileAt(before: runningSince)
             feature.rumDataStore.value(forKey: .watchdogRUMViewEvent) { [weak self] (viewEvent: RUMViewEvent?) in
                 guard let viewEvent = viewEvent else {
                     DD.logger.error(ErrorMessages.failedToReadViewEvent)

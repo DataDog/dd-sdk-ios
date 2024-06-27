@@ -50,7 +50,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     appStateManager: appStateManager,
                     featureScope: featureScope
                 ),
-                coreStorage: core,
+                stroage: core.storage,
                 feature: featureScope,
                 reporter: WatchdogTerminationReporter(
                     featureScope: featureScope,
