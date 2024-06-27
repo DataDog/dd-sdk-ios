@@ -51,84 +51,42 @@ final class SRSnapshotTests: SnapshotTestCase {
     }
 
     func testDatePickers() throws {
-        let vc1 = show(fixture: .datePickersInline) as! DatePickersInlineViewController
-        vc1.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
-        wait(seconds: 1.0)
+        try takeSnapshotForPicker(
+            fixture: .datePickersInline,
+            waitTime: 1.0,
+            fileNamePrefix: "inline"
+        )
 
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-inline-\(privacyMode)-privacy"),
-                record: shouldRecord
-            )
+        try takeSnapshotForPicker(
+            fixture: .datePickersCompact,
+            waitTime: 1.0,
+            fileNamePrefix: "compact"
+        ) { vc in
+            (vc as! DatePickersCompactViewController).openCalendarPopover()
         }
 
-        let vc2 = show(fixture: .datePickersCompact) as! DatePickersCompactViewController
-        vc2.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
-        vc2.openCalendarPopover()
-        wait(seconds: 1.0)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-compact-\(privacyMode)-privacy"),
-                record: shouldRecord
-            )
-        }
-
-        let vc3 = show(fixture: .datePickersWheels) as! DatePickersWheelsViewController
-        vc3.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
-        wait(seconds: 1.5)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-wheels-\(privacyMode)-privacy"),
-                record: shouldRecord
-            )
-        }
+        try takeSnapshotForPicker(
+            fixture: .datePickersWheels,
+            waitTime: 1.0,
+            fileNamePrefix: "wheels"
+        )
     }
 
     func testTimePickers() throws {
-        show(fixture: .timePickersCountDown)
+        try takeSnapshotFor(.timePickersCountDown, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: "count-down")
 
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-count-down-\(privacyMode)-privacy"),
-                record: shouldRecord
-            )
-        }
+        try takeSnapshotForPicker(
+            fixture: .timePickersWheels,
+            waitTime: 1.0,
+            fileNamePrefix: "wheels"
+        )
 
-        let vc1 = show(fixture: .timePickersWheels) as! TimePickersWheelViewController
-        vc1.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
-        wait(seconds: 1.0)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-wheels-\(privacyMode)-privacy"),
-                record: shouldRecord
-            )
-        }
-
-        let vc2 = show(fixture: .timePickersCompact) as! TimePickersCompactViewController
-        vc2.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
-        vc2.openTimePickerPopover()
-        wait(seconds: 1.0)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-compact-\(privacyMode)-privacy"),
-                record: shouldRecord
-            )
+        try takeSnapshotForPicker(
+            fixture: .timePickersCompact,
+            waitTime: 1.0,
+            fileNamePrefix: "compact"
+        ) { vc in
+            (vc as! TimePickersCompactViewController).openTimePickerPopover()
         }
     }
 
@@ -253,5 +211,31 @@ final class SRSnapshotTests: SnapshotTestCase {
 
         // - Embedded Tab Bar, with unselected item tint color
         try takeSnapshotFor(.embeddedTabbarUnselectedTintColor, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.embeddedTabbarUnselectedTintColor.slug)
+    }
+}
+
+fileprivate extension SRSnapshotTests {
+    private func takeSnapshotForPicker(
+        fixture: Fixture,
+        waitTime: TimeInterval,
+        fileNamePrefix: String,
+        additionalSetup: ((UIViewController) -> Void)? = nil,
+        file: StaticString = #filePath,
+        function: StaticString = #function
+    ) throws {
+        let vc = show(fixture: fixture) as! DateSetting
+        vc.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
+        wait(seconds: waitTime)
+        additionalSetup?(vc as! UIViewController)
+        wait(seconds: 1.0)
+
+        try forPrivacyModes { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-\(privacyMode)-privacy", file: file, function: function),
+                record: shouldRecord
+            )
+        }
     }
 }
