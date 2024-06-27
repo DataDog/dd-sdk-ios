@@ -31,10 +31,11 @@ class SnapshotProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
+        let resourceProcessor = ResourceProcessorSpy()
         let processor = SnapshotProcessor(
             queue: NoQueue(),
             recordWriter: recordWriter,
-            resourceProcessor: ResourceProcessorSpy(),
+            resourceProcessor: resourceProcessor,
             srContextPublisher: srContextPublisher,
             telemetry: TelemetryMock()
         )
@@ -46,6 +47,7 @@ class SnapshotProcessorTests: XCTestCase {
 
         // Then
         XCTAssertEqual(recordWriter.records.count, 1)
+        XCTAssertTrue(resourceProcessor.resources.isEmpty)
 
         let enrichedRecord = try XCTUnwrap(recordWriter.records.first)
         XCTAssertEqual(enrichedRecord.applicationID, rum.applicationID)
@@ -296,7 +298,7 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertEqual(fullSnapshotRecord.data.wireframes.first?.id, Int64(webview.hash), "The hidden webview wireframe should be first")
     }
 
-    func testWhenProcessingViewTreeSnapshot_itRecordResources() throws {
+    func testWhenProcessingViewTreeSnapshot_itRecordsResources() throws {
         let resource: UIImageResource = .mockRandom()
         let builder = UIImageViewWireframesBuilder(
             wireframeID: .mockAny(),

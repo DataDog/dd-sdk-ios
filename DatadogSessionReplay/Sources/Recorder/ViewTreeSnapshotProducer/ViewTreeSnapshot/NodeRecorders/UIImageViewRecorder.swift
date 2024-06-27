@@ -134,11 +134,11 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
             )
         ]
 
-        guard let contentFrame = contentFrame else {
+        guard let contentFrame else {
             return wireframes
         }
 
-        if let imageResource = imageResource {
+        if let imageResource {
             wireframes.append(
                 builder.createImageWireframe(
                     id: imageWireframeID,
