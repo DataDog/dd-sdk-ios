@@ -26,6 +26,7 @@ internal final class WatchdogTerminationMonitor {
         static let failedToReadViewEvent = "Failed to read the view event from the data store"
         static let rumViewEventUpdated = "RUM View event updated"
         static let failedToSendWatchdogTermination = "Failed to send Watchdog Termination event"
+        static let launchTimeFailure = "Failed to send Watchdog Termination event due to not being able to get the launch time"
         static let failedToDecodeLaunchReport = "Fails to decode LaunchReport in RUM"
     }
 
@@ -117,22 +118,30 @@ internal final class WatchdogTerminationMonitor {
     /// to report the event.
     /// - Parameter state: The app state when the Watchdog Termination occurred.
     private func sendWatchTermination(state: WatchdogTerminationAppState, completion: @escaping () -> Void) {
-        do {
-            let likelyCrashedAt = try storage?.mostRecentModifiedFileAt(before: runningSince)
-            feature.rumDataStore.value(forKey: .watchdogRUMViewEvent) { [weak self] (viewEvent: RUMViewEvent?) in
-                guard let viewEvent = viewEvent else {
-                    DD.logger.error(ErrorMessages.failedToReadViewEvent)
-                    self?.feature.telemetry.error(ErrorMessages.failedToReadViewEvent)
+        feature.context { [weak self] context in
+            guard let launchTime = context.launchTime else {
+                DD.logger.error(ErrorMessages.launchTimeFailure)
+                completion()
+                return
+            }
+
+            do {
+                let likelyCrashedAt = try self?.storage?.mostRecentModifiedFileAt(before: launchTime.launchDate)
+                self?.feature.rumDataStore.value(forKey: .watchdogRUMViewEvent) { [weak self] (viewEvent: RUMViewEvent?) in
+                    guard let viewEvent = viewEvent else {
+                        DD.logger.error(ErrorMessages.failedToReadViewEvent)
+                        self?.feature.telemetry.error(ErrorMessages.failedToReadViewEvent)
+                        completion()
+                        return
+                    }
+                    self?.reporter.send(date: likelyCrashedAt, state: state, viewEvent: viewEvent)
                     completion()
-                    return
                 }
-                self?.reporter.send(date: likelyCrashedAt, state: state, viewEvent: viewEvent)
+            } catch {
+                DD.logger.error(ErrorMessages.failedToSendWatchdogTermination, error: error)
+                self?.feature.telemetry.error(ErrorMessages.failedToSendWatchdogTermination, error: error)
                 completion()
             }
-        } catch {
-            DD.logger.error(ErrorMessages.failedToSendWatchdogTermination, error: error)
-            feature.telemetry.error(ErrorMessages.failedToSendWatchdogTermination, error: error)
-            completion()
         }
     }
 

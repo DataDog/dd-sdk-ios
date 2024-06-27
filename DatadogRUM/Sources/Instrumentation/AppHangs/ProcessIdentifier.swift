@@ -17,10 +17,3 @@ import Foundation
 /// - SDK started → RUM enabled → [hang occurs] → pending App Hang saved → SDK stopped → SDK started again → RUM enabled again → pending App Hang loaded
 /// - When restarting RUM , the `processID` check ensures dropping pending hang from the previous instance, preventing false "fatal" hang detection.
 internal let currentProcessID = UUID()
-
-/// Time since the application process started.
-///
-/// Example use case in watchdog termination tracking:
-/// - SDK started -> RUM enabled -> [watchdog termination] -> SDK stopped -> SDK started again -> RUM enabled again -> check if the app was terminated by watchdog
-/// - If true, check any file updates that were done before current process started, that is most close to the watchdog termination.
-internal let runningSince = Date()
