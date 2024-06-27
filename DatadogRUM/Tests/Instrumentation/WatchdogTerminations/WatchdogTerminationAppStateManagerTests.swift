@@ -13,7 +13,6 @@ final class WatchdogTerminationAppStateManagerTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
     var sut: WatchdogTerminationAppStateManager!
     var featureScope: FeatureScopeMock!
-    var context: DatadogContext = .mockWith(applicationStateHistory: .mockAppInBackground())
     // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
@@ -26,14 +25,13 @@ final class WatchdogTerminationAppStateManagerTests: XCTestCase {
         )
     }
 
-    func testAppStart_SetsIsActive() throws {
-        try sut.start()
+    func testUpdateAppState_SetsIsActive() throws {
+        try sut.storeCurrentAppState()
 
         let isActiveExpectation = expectation(description: "isActive is set to true")
 
         // app state changes
-        context.applicationStateHistory.append(.init(state: .active, date: .init()))
-        _ = sut.receive(message: .context(context), from: NOPDatadogCore())
+        sut.updateAppState(state: .active)
         featureScope.rumDataStore.value(forKey: .watchdogAppStateKey) { (appState: WatchdogTerminationAppState?) in
             XCTAssertTrue(appState?.isActive == true)
             isActiveExpectation.fulfill()
@@ -43,8 +41,7 @@ final class WatchdogTerminationAppStateManagerTests: XCTestCase {
         let isBackgroundedExpectation = expectation(description: "isActive is set to false")
 
         // app state changes again
-        context.applicationStateHistory.append(.init(state: .background, date: .init()))
-        _ = sut.receive(message: .context(context), from: NOPDatadogCore())
+        sut.updateAppState(state: .background)
         featureScope.rumDataStore.value(forKey: .watchdogAppStateKey) { (appState: WatchdogTerminationAppState?) in
             XCTAssertTrue(appState?.isActive == false)
             isBackgroundedExpectation.fulfill()
@@ -54,10 +51,9 @@ final class WatchdogTerminationAppStateManagerTests: XCTestCase {
     }
 
     func testDeleteAppState() throws {
-        try sut.start()
+        try sut.storeCurrentAppState()
 
         let isActiveExpectation = expectation(description: "isActive is set")
-        context.applicationStateHistory.append(.init(state: .active, date: .init()))
         featureScope.rumDataStore.value(forKey: .watchdogAppStateKey) { (appState: WatchdogTerminationAppState?) in
             XCTAssertNotNil(appState)
             isActiveExpectation.fulfill()

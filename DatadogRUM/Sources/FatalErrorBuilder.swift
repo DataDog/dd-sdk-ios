@@ -19,11 +19,14 @@ internal struct FatalErrorBuilder {
         static let viewEventAvailabilityThreshold: TimeInterval = 14_400 // 4 hours
     }
 
+    /// Fatal error types.
     enum FatalError {
         /// A crash with given metadata information.
         case crash
         /// A fatal App Hang.
         case hang
+        /// A crash caused by operating system watchdog.
+        case watchdogTermination
     }
 
     /// Current SDK context.
@@ -34,7 +37,7 @@ internal struct FatalErrorBuilder {
     let errorDate: Date
     let errorType: String
     let errorMessage: String
-    let errorStack: String
+    let errorStack: String?
 
     let errorThreads: [RUMErrorEvent.Error.Threads]?
     let errorBinaryImages: [RUMErrorEvent.Error.BinaryImages]?
@@ -77,6 +80,7 @@ internal struct FatalErrorBuilder {
                     switch error {
                     case .crash: return .exception
                     case .hang: return .appHang
+                    case .watchdogTermination: return .watchdogTermination
                     }
                 }(),
                 csp: nil,
@@ -87,6 +91,7 @@ internal struct FatalErrorBuilder {
                     switch error {
                     case .crash: return true
                     case .hang: return true // fatal hangs are considered `@error.is_crash: true`
+                    case .watchdogTermination: return true
                     }
                 }(),
                 message: errorMessage,
@@ -162,6 +167,7 @@ internal struct FatalErrorBuilder {
                         switch error {
                         case .crash: return 1
                         case .hang: return 1 // fatal hangs are considered in `@view.crash.count`
+                        case .watchdogTermination: return 1
                         }
                     }()
                 ),

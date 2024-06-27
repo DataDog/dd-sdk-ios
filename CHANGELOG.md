@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Add support for Watchdog Terminations tracking in RUM. See [#1917][] [#1911][] [#1912][] [#1889][]
 - [IMPROVEMENT] Allow disabling app hang monitoring in ObjC API. See [#1908][]
 
 # 2.13.0 / 13-06-2024
@@ -687,6 +688,10 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1886]: https://github.com/DataDog/dd-sdk-ios/pull/1886
 [#1898]: https://github.com/DataDog/dd-sdk-ios/pull/1898
 [#1908]: https://github.com/DataDog/dd-sdk-ios/pull/1908
+[#1917]: https://github.com/DataDog/dd-sdk-ios/pull/1917
+[#1911]: https://github.com/DataDog/dd-sdk-ios/pull/1911
+[#1912]: https://github.com/DataDog/dd-sdk-ios/pull/1912
+[#1889]: https://github.com/DataDog/dd-sdk-ios/pull/1889
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

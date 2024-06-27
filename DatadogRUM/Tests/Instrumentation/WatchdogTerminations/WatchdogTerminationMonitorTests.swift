@@ -11,9 +11,10 @@ import TestUtilities
 
 final class WatchdogTerminationMonitorTests: XCTestCase {
     let featureScope = FeatureScopeMock()
+
     // swiftlint:disable implicitly_unwrapped_optional
-    private var sut: WatchdogTerminationMonitor!
-    private var core: PassthroughCoreMock!
+    var sut: WatchdogTerminationMonitor!
+    var reporter: WatchdogTerminationReporterMock!
     // swiftlint:enable implicitly_unwrapped_optional
 
     func testApplicationWasInForeground_WatchdogTermination() throws {
@@ -28,12 +29,20 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
             systemBootTime: 1.0,
             vendorId: "foo",
             processId: UUID(),
+            didCrash: false,
             didSend: didSend
         )
-        core.context.applicationStateHistory.append(.init(state: .active, date: .init()))
 
-        // saves the current state
-        sut.start(launchReport: nil)
+        // RUM view update before start, this must be ignored
+        let viewEvent1: RUMViewEvent = .mockRandom()
+        sut.update(viewEvent: viewEvent1)
+
+        // monitor reveives the launch report
+        _ = sut.receive(message: .context(.mockAny()), from: NOPDatadogCore())
+
+        // RUM view update after start
+        let viewEvent2: RUMViewEvent = .mockRandom()
+        sut.update(viewEvent: viewEvent2)
 
         // watchdog termination happens here which causes app launch
         given(
@@ -44,12 +53,19 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
             systemBootTime: 1.0,
             vendorId: "foo",
             processId: UUID(),
+            didCrash: false,
             didSend: didSend
         )
-        core.context.applicationStateHistory.append(.init(state: .active, date: .init()))
-        sut.start(launchReport: .init(didCrash: false))
+
+        // RUM view update before start, this must be ignored
+        let viewEvent3: RUMViewEvent = .mockRandom()
+        sut.update(viewEvent: viewEvent3)
+
+        // monitor reveives the launch report
+        _ = sut.receive(message: .context(.mockAny()), from: NOPDatadogCore())
 
         waitForExpectations(timeout: 1)
+        XCTAssertEqual(reporter.sendParams?.viewEvent.view.id, viewEvent2.view.id)
     }
 
     // MARK: Helpers
@@ -62,6 +78,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         systemBootTime: TimeInterval,
         vendorId: String?,
         processId: UUID,
+        didCrash: Bool,
         didSend: XCTestExpectation
     ) {
         let deviceInfo: DeviceInfo = .init(
@@ -78,26 +95,24 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         )
 
         featureScope.contextMock.version = appVersion
+        featureScope.contextMock.device = deviceInfo
+        featureScope.contextMock.baggages[LaunchReport.baggageKey] = .init(LaunchReport(didCrash: didCrash))
 
         let appStateManager = WatchdogTerminationAppStateManager(
             featureScope: featureScope,
             processId: processId
         )
 
-        let checker = WatchdogTerminationChecker(appStateManager: appStateManager, deviceInfo: deviceInfo)
+        let checker = WatchdogTerminationChecker(appStateManager: appStateManager, featureScope: featureScope)
 
-        let reporter = WatchdogTerminationReporterMock(didSend: didSend)
+        reporter = WatchdogTerminationReporterMock(didSend: didSend)
 
         sut = WatchdogTerminationMonitor(
             appStateManager: appStateManager,
             checker: checker,
-            feature: FeatureScopeMock(),
+            stroage: NOPDatadogCore().storage,
+            feature: featureScope,
             reporter: reporter
-        )
-
-        core = PassthroughCoreMock(
-            context: .mockWith(applicationStateHistory: .mockAppInBackground()),
-            messageReceiver: appStateManager
         )
     }
 }

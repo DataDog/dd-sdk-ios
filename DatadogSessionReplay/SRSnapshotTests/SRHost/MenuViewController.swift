@@ -16,6 +16,8 @@ internal extension Fixture {
             return "Basic Texts"
         case .sliders:
             return "Sliders"
+        case .progressViews:
+            return "Progress Views"
         case .segments:
             return "Segments"
         case .pickers:

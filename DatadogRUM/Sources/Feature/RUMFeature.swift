@@ -39,7 +39,6 @@ internal final class RUMFeature: DatadogRemoteFeature {
         let sessionEndedMetric = SessionEndedMetricController(telemetry: core.telemetry)
 
         var watchdogTermination: WatchdogTerminationMonitor?
-        var watchdogTerminationAppStateManager: WatchdogTerminationAppStateManager?
         if configuration.trackWatchdogTerminations {
             let appStateManager = WatchdogTerminationAppStateManager(
                 featureScope: featureScope,
@@ -49,12 +48,15 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 appStateManager: appStateManager,
                 checker: .init(
                     appStateManager: appStateManager,
-                    deviceInfo: .init()
+                    featureScope: featureScope
                 ),
+                stroage: core.storage,
                 feature: featureScope,
-                reporter: WatchdogTerminationReporter()
+                reporter: WatchdogTerminationReporter(
+                    featureScope: featureScope,
+                    dateProvider: configuration.dateProvider
+                )
             )
-            watchdogTerminationAppStateManager = appStateManager
             watchdogTermination = monitor
         }
 
@@ -96,7 +98,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             onSessionStart: configuration.onSessionStart,
             viewCache: ViewCache(),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
-            sessionEndedMetric: sessionEndedMetric
+            sessionEndedMetric: sessionEndedMetric,
+            watchdogTermination: watchdogTermination
         )
 
         self.monitor = Monitor(
@@ -157,12 +160,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     }
                 }(),
                 eventsMapper: eventsMapper
-            ),
-            LaunchReportReceiver(featureScope: featureScope, watchdogTermination: watchdogTermination),
+            )
         ]
 
-        if let watchdogTerminationAppStateManager = watchdogTerminationAppStateManager {
-            messageReceivers.append(watchdogTerminationAppStateManager)
+        if let watchdogTermination = watchdogTermination {
+            messageReceivers.append(watchdogTermination)
         }
 
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
@@ -195,7 +197,6 @@ extension RUMFeature: Flushable {
     /// **blocks the caller thread**
     func flush() {
         instrumentation.appHangs?.flush()
-        instrumentation.watchdogTermination?.flush()
     }
 }
 

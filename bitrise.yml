@@ -159,7 +159,7 @@ workflows:
             #!/usr/bin/env zsh
             set -e
 
-            cd tools/distribution && make
+            cd tools/distribution && make clean install
             venv/bin/python3 dogfood.py
 
   run_e2e_tests:
