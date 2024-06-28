@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
+
 import Foundation
 import UIKit
 
@@ -16,7 +18,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         // SwiftUI was introduced in iOS 13
-        guard #available(iOS 13, tvOS 13, *) else {
+        guard #available(iOS 13, *) else {
             return nil
         }
 
@@ -221,3 +223,5 @@ extension UIHostingWireframesBuilder.Referential {
         )
     }
 }
+
+#endif

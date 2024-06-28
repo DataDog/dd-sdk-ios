@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
+
 import XCTest
 import TestUtilities
 
@@ -133,3 +135,5 @@ class ReflectionTests: XCTestCase {
         XCTAssertEqual(dict2[Value(value: "key")]?.value, "value")
     }
 }
+
+#endif

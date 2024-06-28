@@ -6,6 +6,8 @@
 
 import Foundation
 
+#if os(iOS)
+
 internal struct StyledTextContentView {
     let text: ResolvedStyledText.StringDrawing
 }
@@ -27,3 +29,5 @@ extension ResolvedStyledText.StringDrawing: Reflection {
         storage = try mirror.descendant(path: "storage")
     }
 }
+
+#endif

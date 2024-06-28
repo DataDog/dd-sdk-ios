@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
+
 import Foundation
 
 /// A `Reflection` object can initialize itself from a
@@ -137,3 +139,5 @@ internal final class LazyReflection<R>: Reflection where R: Reflection {
         self.lazy?[keyPath: keyPath]
     }
 }
+
+#endif

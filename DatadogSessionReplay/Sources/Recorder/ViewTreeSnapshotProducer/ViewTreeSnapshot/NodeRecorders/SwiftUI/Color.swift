@@ -6,7 +6,7 @@
 
 import Foundation
 
-#if canImport(SwiftUI)
+#if os(iOS) && canImport(SwiftUI)
 import SwiftUI
 
 @available(iOS 13.0, *)
