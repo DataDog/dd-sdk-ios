@@ -13,6 +13,7 @@ endif
 ECHO_TITLE=$(REPO_ROOT)/tools/utils/echo_color.sh --title
 ECHO_SUBTITLE=$(REPO_ROOT)/tools/utils/echo_color.sh --subtitle
 ECHO_SUBTITLE2=$(REPO_ROOT)/tools/utils/echo_color.sh --subtitle2
+ECHO_INFO=$(REPO_ROOT)/tools/utils/echo_color.sh --info
 ECHO_ERROR=$(REPO_ROOT)/tools/utils/echo_color.sh --err
 ECHO_WARNING=$(REPO_ROOT)/tools/utils/echo_color.sh --warn
 ECHO_SUCCESS=$(REPO_ROOT)/tools/utils/echo_color.sh --succ
