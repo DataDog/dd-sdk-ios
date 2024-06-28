@@ -64,8 +64,7 @@ class UIImageViewRecorderTests: XCTestCase {
         XCTAssertTrue(semantics is SpecificElement)
         XCTAssertEqual(semantics.subtreeStrategy, .record, "Image view's subtree should be recorded")
         let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
-        XCTAssertFalse(builder.shouldRecordImage)
-        XCTAssertNil(semantics.resources.first as? UIImage)
+        XCTAssertNil(builder.imageResource)
     }
 
     func testWhenShouldRecordImagePredicateReturnsTrue() throws {
@@ -79,8 +78,7 @@ class UIImageViewRecorderTests: XCTestCase {
         XCTAssertTrue(semantics is SpecificElement)
         XCTAssertEqual(semantics.subtreeStrategy, .record, "Image view's subtree should be recorded")
         let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
-        XCTAssertTrue(builder.shouldRecordImage)
-        XCTAssertNotNil(semantics.resources.first)
+        XCTAssertNotNil(builder.imageResource)
     }
 
     func testWhenViewIsNotOfExpectedType() {
