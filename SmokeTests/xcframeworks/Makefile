@@ -40,7 +40,7 @@ clean:
 
 install:
 	@$(call require_param,PLATFORM)
-	@$(ECHO_SUBTITLE2) "make install"
+	@$(ECHO_SUBTITLE2) "make install PLATFORM='$(PLATFORM)'"
 	@$(ECHO_INFO) "Preparing for CURRENT_GIT_REF='${CURRENT_GIT_REF}'"
 	@echo "Using REPO_CLONE_DIR = '$(REPO_CLONE_DIR)'"
 	@echo "Using XCFRAMEWORKS_OUTPUT_DIR = '$(XCFRAMEWORKS_OUTPUT_DIR)'"
@@ -82,8 +82,9 @@ ifeq ($(DD_XCFRAMEWORKS),)
 	@$(ECHO_ERROR) "No DD_XCFRAMEWORKS is defined for PLATFORM='$(PLATFORM)'"
 	@exit 1
 endif
-	@$(ECHO_SUCCESS) "Using SCHEME='$(SCHEME)'"
-	@$(ECHO_SUCCESS) "Using DD_XCFRAMEWORKS='$(DD_XCFRAMEWORKS)'"
+	@$(ECHO_INFO) "Using SCHEME='$(SCHEME)'"
+	@$(ECHO_INFO) "Using DD_XCFRAMEWORKS='$(DD_XCFRAMEWORKS)'"
+	@$(ECHO_INFO) "Using THIRD_PARTY_XCFRAMEWORKS='$(THIRD_PARTY_XCFRAMEWORKS)'"
 	@echo "Check XCFrameworks in $(PWD)/dd-sdk-ios/build/xcframeworks/"
 	@$(foreach xcf,$(DD_XCFRAMEWORKS) $(THIRD_PARTY_XCFRAMEWORKS),\
 		if [ -d "dd-sdk-ios/build/xcframeworks/$(xcf).xcframework" ]; then \

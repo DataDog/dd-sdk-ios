@@ -57,20 +57,20 @@ xcoptions=()
 if [ "$ios" = "true" ]; then
     echo_subtitle2 "Archive $product iOS"
 
-    archive "$product iOS" "generic/platform=iOS" "$ARCHIVE_OUTPUT/$product/ios"
+    archive "$product iOS" "generic/platform=iOS" "$ARCHIVE_OUTPUT/$product/ios" | xcbeautify
     xcoptions+=(-archive "$ARCHIVE_OUTPUT/$product/ios.xcarchive" -framework "$product.framework")
 
-    archive "$product iOS" "generic/platform=iOS Simulator" "$ARCHIVE_OUTPUT/$product/ios-simulator"
+    archive "$product iOS" "generic/platform=iOS Simulator" "$ARCHIVE_OUTPUT/$product/ios-simulator" | xcbeautify
     xcoptions+=(-archive "$ARCHIVE_OUTPUT/$product/ios-simulator.xcarchive" -framework "$product.framework")
 fi
 
 if [ "$tvos" = "true" ]; then
     echo_subtitle2 "Archive $product tvOS"
 
-    archive "$product tvOS" "generic/platform=tvOS" "$ARCHIVE_OUTPUT/$product/tvos"
+    archive "$product tvOS" "generic/platform=tvOS" "$ARCHIVE_OUTPUT/$product/tvos" | xcbeautify
     xcoptions+=(-archive "$ARCHIVE_OUTPUT/$product/tvos.xcarchive" -framework "$product.framework")
 
-    archive "$product tvOS" "generic/platform=tvOS Simulator" "$ARCHIVE_OUTPUT/$product/tvos-simulator"
+    archive "$product tvOS" "generic/platform=tvOS Simulator" "$ARCHIVE_OUTPUT/$product/tvos-simulator" | xcbeautify
     xcoptions+=(-archive "$ARCHIVE_OUTPUT/$product/tvos-simulator.xcarchive" -framework "$product.framework")
 fi
 
