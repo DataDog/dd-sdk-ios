@@ -233,6 +233,7 @@ public class DDRUMConfiguration: NSObject
     public func setURLSessionTracking(_ tracking: DDRUMURLSessionTracking)
     @objc public var trackFrustrations: Bool
     @objc public var trackBackgroundEvents: Bool
+    @objc public var trackWatchdogTerminations: Bool
     @objc public var longTaskThreshold: TimeInterval
     @objc public var appHangThreshold: TimeInterval
     @objc public var vitalsUpdateFrequency: DDRUMVitalsFrequency
@@ -408,6 +409,7 @@ public enum DDRUMActionEventContainerSource: Int
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 public class DDRUMActionEventContainerView: NSObject
     @objc public var id: String
 public class DDRUMActionEventRUMEventAttributes: NSObject
@@ -453,6 +455,7 @@ public enum DDRUMActionEventSource: Int
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 public class DDRUMActionEventRUMSyntheticsTest: NSObject
     @objc public var injected: NSNumber?
     @objc public var resultId: String
@@ -566,6 +569,7 @@ public enum DDRUMErrorEventContainerSource: Int
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 public class DDRUMErrorEventContainerView: NSObject
     @objc public var id: String
 public class DDRUMErrorEventRUMEventAttributes: NSObject
@@ -621,6 +625,7 @@ public enum DDRUMErrorEventErrorCategory: Int
     case aNR
     case appHang
     case exception
+    case watchdogTermination
 public class DDRUMErrorEventErrorCauses: NSObject
     @objc public var message: String
     @objc public var source: DDRUMErrorEventErrorCausesSource
@@ -739,6 +744,7 @@ public enum DDRUMErrorEventSource: Int
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 public class DDRUMErrorEventRUMSyntheticsTest: NSObject
     @objc public var injected: NSNumber?
     @objc public var resultId: String
@@ -851,6 +857,7 @@ public enum DDRUMLongTaskEventContainerSource: Int
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 public class DDRUMLongTaskEventContainerView: NSObject
     @objc public var id: String
 public class DDRUMLongTaskEventRUMEventAttributes: NSObject
@@ -900,6 +907,7 @@ public enum DDRUMLongTaskEventSource: Int
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 public class DDRUMLongTaskEventRUMSyntheticsTest: NSObject
     @objc public var injected: NSNumber?
     @objc public var resultId: String
@@ -1014,6 +1022,7 @@ public enum DDRUMResourceEventContainerSource: Int
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 public class DDRUMResourceEventContainerView: NSObject
     @objc public var id: String
 public class DDRUMResourceEventRUMEventAttributes: NSObject
@@ -1153,6 +1162,7 @@ public enum DDRUMResourceEventSource: Int
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 public class DDRUMResourceEventRUMSyntheticsTest: NSObject
     @objc public var injected: NSNumber?
     @objc public var resultId: String
@@ -1275,6 +1285,7 @@ public enum DDRUMViewEventContainerSource: Int
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 public class DDRUMViewEventContainerView: NSObject
     @objc public var id: String
 public class DDRUMViewEventRUMEventAttributes: NSObject
@@ -1336,6 +1347,7 @@ public enum DDRUMViewEventSource: Int
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 public class DDRUMViewEventRUMSyntheticsTest: NSObject
     @objc public var injected: NSNumber?
     @objc public var resultId: String
@@ -1352,6 +1364,7 @@ public class DDRUMViewEventView: NSObject
     @objc public var crash: DDRUMViewEventViewCrash?
     @objc public var cumulativeLayoutShift: NSNumber?
     @objc public var cumulativeLayoutShiftTargetSelector: String?
+    @objc public var cumulativeLayoutShiftTime: NSNumber?
     @objc public var customTimings: [String: NSNumber]?
     @objc public var domComplete: NSNumber?
     @objc public var domContentLoaded: NSNumber?
@@ -1370,6 +1383,7 @@ public class DDRUMViewEventView: NSObject
     @objc public var inForegroundPeriods: [DDRUMViewEventViewInForegroundPeriods]?
     @objc public var interactionToNextPaint: NSNumber?
     @objc public var interactionToNextPaintTargetSelector: String?
+    @objc public var interactionToNextPaintTime: NSNumber?
     @objc public var isActive: NSNumber?
     @objc public var isSlowRendered: NSNumber?
     @objc public var jsRefreshRate: DDRUMViewEventViewJsRefreshRate?
@@ -1457,6 +1471,7 @@ public class DDRUMVitalEventDD: NSObject
     @objc public var configuration: DDRUMVitalEventDDConfiguration?
     @objc public var formatVersion: NSNumber
     @objc public var session: DDRUMVitalEventDDSession?
+    @objc public var vital: DDRUMVitalEventDDVital?
 public class DDRUMVitalEventDDConfiguration: NSObject
     @objc public var sessionReplaySampleRate: NSNumber?
     @objc public var sessionSampleRate: NSNumber
@@ -1476,6 +1491,8 @@ public enum DDRUMVitalEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
+public class DDRUMVitalEventDDVital: NSObject
+    @objc public var computedValue: NSNumber?
 public class DDRUMVitalEventApplication: NSObject
     @objc public var id: String
 public class DDRUMVitalEventRUMCITest: NSObject
@@ -1520,6 +1537,7 @@ public enum DDRUMVitalEventContainerSource: Int
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 public class DDRUMVitalEventContainerView: NSObject
     @objc public var id: String
 public class DDRUMVitalEventRUMEventAttributes: NSObject
@@ -1565,6 +1583,7 @@ public enum DDRUMVitalEventSource: Int
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 public class DDRUMVitalEventRUMSyntheticsTest: NSObject
     @objc public var injected: NSNumber?
     @objc public var resultId: String
@@ -1581,6 +1600,8 @@ public class DDRUMVitalEventView: NSObject
     @objc public var url: String
 public class DDRUMVitalEventVital: NSObject
     @objc public var custom: [String: NSNumber]?
+    @objc public var details: String?
+    @objc public var duration: NSNumber?
     @objc public var id: String
     @objc public var name: String?
     @objc public var type: DDRUMVitalEventVitalVitalType
@@ -1614,14 +1635,26 @@ public enum DDTelemetryErrorEventSource: Int
     case flutter
     case reactNative
     case unity
+    case kotlinMultiplatform
 public class DDTelemetryErrorEventTelemetry: NSObject
+    @objc public var device: DDTelemetryErrorEventTelemetryRUMTelemetryDevice?
     @objc public var error: DDTelemetryErrorEventTelemetryError?
     @objc public var message: String
+    @objc public var os: DDTelemetryErrorEventTelemetryRUMTelemetryOperatingSystem?
     @objc public var status: String
     @objc public var type: String?
+    @objc public var telemetryInfo: [String: Any]
+public class DDTelemetryErrorEventTelemetryRUMTelemetryDevice: NSObject
+    @objc public var architecture: String?
+    @objc public var brand: String?
+    @objc public var model: String?
 public class DDTelemetryErrorEventTelemetryError: NSObject
     @objc public var kind: String?
     @objc public var stack: String?
+public class DDTelemetryErrorEventTelemetryRUMTelemetryOperatingSystem: NSObject
+    @objc public var build: String?
+    @objc public var name: String?
+    @objc public var version: String?
 public class DDTelemetryErrorEventView: NSObject
     @objc public var id: String
 public class DDTelemetryDebugEvent: NSObject
@@ -1652,11 +1685,22 @@ public enum DDTelemetryDebugEventSource: Int
     case flutter
     case reactNative
     case unity
+    case kotlinMultiplatform
 public class DDTelemetryDebugEventTelemetry: NSObject
+    @objc public var device: DDTelemetryDebugEventTelemetryRUMTelemetryDevice?
     @objc public var message: String
+    @objc public var os: DDTelemetryDebugEventTelemetryRUMTelemetryOperatingSystem?
     @objc public var status: String
     @objc public var type: String?
     @objc public var telemetryInfo: [String: Any]
+public class DDTelemetryDebugEventTelemetryRUMTelemetryDevice: NSObject
+    @objc public var architecture: String?
+    @objc public var brand: String?
+    @objc public var model: String?
+public class DDTelemetryDebugEventTelemetryRUMTelemetryOperatingSystem: NSObject
+    @objc public var build: String?
+    @objc public var name: String?
+    @objc public var version: String?
 public class DDTelemetryDebugEventView: NSObject
     @objc public var id: String
 public class DDTelemetryConfigurationEvent: NSObject
@@ -1687,9 +1731,13 @@ public enum DDTelemetryConfigurationEventSource: Int
     case flutter
     case reactNative
     case unity
+    case kotlinMultiplatform
 public class DDTelemetryConfigurationEventTelemetry: NSObject
     @objc public var configuration: DDTelemetryConfigurationEventTelemetryConfiguration
+    @objc public var device: DDTelemetryConfigurationEventTelemetryRUMTelemetryDevice?
+    @objc public var os: DDTelemetryConfigurationEventTelemetryRUMTelemetryOperatingSystem?
     @objc public var type: String
+    @objc public var telemetryInfo: [String: Any]
 public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var actionNameAttribute: String?
     @objc public var allowFallbackToLocalStorage: NSNumber?
@@ -1702,16 +1750,19 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var compressIntakeRequests: NSNumber?
     @objc public var dartVersion: String?
     @objc public var defaultPrivacyLevel: String?
+    @objc public var enablePrivacyForActionName: NSNumber?
     @objc public var forwardConsoleLogs: DDTelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs?
     @objc public var forwardErrorsToLogs: NSNumber?
     @objc public var forwardReports: DDTelemetryConfigurationEventTelemetryConfigurationForwardReports?
     @objc public var initializationType: String?
     @objc public var mobileVitalsUpdatePeriod: NSNumber?
+    @objc public var plugins: [DDTelemetryConfigurationEventTelemetryConfigurationPlugins]?
     @objc public var premiumSampleRate: NSNumber?
     @objc public var reactNativeVersion: String?
     @objc public var reactVersion: String?
     @objc public var replaySampleRate: NSNumber?
     @objc public var selectedTracingPropagators: [Int]?
+    @objc public var sendLogsAfterSessionExpiration: NSNumber?
     @objc public var sessionReplaySampleRate: NSNumber?
     @objc public var sessionSampleRate: NSNumber?
     @objc public var silentMultipleInit: NSNumber?
@@ -1739,7 +1790,7 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var trackSessionAcrossSubdomains: NSNumber?
     @objc public var trackUserInteractions: NSNumber?
     @objc public var trackViewsManually: NSNumber?
-    @objc public var trackingConsent: String?
+    @objc public var trackingConsent: DDTelemetryConfigurationEventTelemetryConfigurationTrackingConsent
     @objc public var unityVersion: String?
     @objc public var useAllowedTracingOrigins: NSNumber?
     @objc public var useAllowedTracingUrls: NSNumber?
@@ -1761,6 +1812,9 @@ public class DDTelemetryConfigurationEventTelemetryConfigurationForwardConsoleLo
 public class DDTelemetryConfigurationEventTelemetryConfigurationForwardReports: NSObject
     @objc public var stringsArray: [String]?
     @objc public var string: String?
+public class DDTelemetryConfigurationEventTelemetryConfigurationPlugins: NSObject
+    @objc public var name: String
+    @objc public var pluginsInfo: [String: Any]
 public enum DDTelemetryConfigurationEventTelemetryConfigurationSelectedTracingPropagators: Int
     case none
     case datadog
@@ -1771,12 +1825,25 @@ public enum DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjec
     case none
     case all
     case sampled
+public enum DDTelemetryConfigurationEventTelemetryConfigurationTrackingConsent: Int
+    case none
+    case granted
+    case notGranted
+    case pending
 public enum DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy: Int
     case none
     case activityViewTrackingStrategy
     case fragmentViewTrackingStrategy
     case mixedViewTrackingStrategy
     case navigationViewTrackingStrategy
+public class DDTelemetryConfigurationEventTelemetryRUMTelemetryDevice: NSObject
+    @objc public var architecture: String?
+    @objc public var brand: String?
+    @objc public var model: String?
+public class DDTelemetryConfigurationEventTelemetryRUMTelemetryOperatingSystem: NSObject
+    @objc public var build: String?
+    @objc public var name: String?
+    @objc public var version: String?
 public class DDTelemetryConfigurationEventView: NSObject
     @objc public var id: String
 public final class DDSessionReplay: NSObject
