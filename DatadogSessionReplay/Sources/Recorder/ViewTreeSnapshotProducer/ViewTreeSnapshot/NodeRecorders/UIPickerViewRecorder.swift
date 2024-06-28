@@ -71,16 +71,15 @@ internal struct UIPickerViewRecorder: NodeRecorder {
         // in the actual `UIPickerView's` tree their order is opposite (blending is used to make the label
         // pass through the shape). For that reason, we record both kinds of nodes separately and then reorder
         // them in returned semantics:
-        let backgroundRecordingResult = selectionRecorder.record(picker, in: context)
-        let titleRecordingResult = labelsRecorder.record(picker, in: context)
+        let backgroundRecordingNodes = selectionRecorder.record(picker, in: context)
+        let titleRecordingNodes = labelsRecorder.record(picker, in: context)
 
         guard attributes.hasAnyAppearance else {
             // If the root view of `UIPickerView` defines no other appearance (e.g. no custom `.background`), we can
             // safely ignore it, with only forwarding child nodes to final recording.
             return SpecificElement(
                 subtreeStrategy: .ignore,
-                nodes: backgroundRecordingResult.nodes + titleRecordingResult.nodes,
-                resources: backgroundRecordingResult.resources + titleRecordingResult.resources
+                nodes: backgroundRecordingNodes + titleRecordingNodes
             )
         }
 
@@ -93,8 +92,7 @@ internal struct UIPickerViewRecorder: NodeRecorder {
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(
             subtreeStrategy: .ignore,
-            nodes: [node] + backgroundRecordingResult.nodes + titleRecordingResult.nodes,
-            resources: backgroundRecordingResult.resources + titleRecordingResult.resources
+            nodes: [node] + backgroundRecordingNodes + titleRecordingNodes
         )
     }
 }

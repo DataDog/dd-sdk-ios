@@ -25,8 +25,6 @@ internal struct ViewTreeSnapshot {
     let viewportSize: CGSize
     /// An array of nodes recorded for this snapshot - sequenced in DFS order.
     let nodes: [Node]
-    /// An array of resource references recorded for this snapshot - sequenced in DFS order.
-    let resources: [Resource]
     /// A set of webview slot IDs recorded for this and past snapshots.
     let webViewSlotIDs: Set<Int>
 }
@@ -175,8 +173,6 @@ public protocol SessionReplayNodeSemantics {
     var subtreeStrategy: SessionReplayNodeSubtreeStrategy { get }
     /// Nodes that share this semantics.
     var nodes: [SessionReplayNode] { get }
-    /// Resources collected while traversing the subtree of this node.
-    var resources: [SessionReplayResource] { get }
 }
 
 // This alias enables us to have a more unique name exposed through public-internal access level
@@ -213,7 +209,6 @@ internal struct UnknownElement: NodeSemantics {
     static let importance: Int = .min
     let subtreeStrategy: NodeSubtreeStrategy = .record
     let nodes: [Node] = []
-    let resources: [Resource] = []
 
     /// Use `UnknownElement.constant` instead.
     private init () {}
@@ -231,7 +226,6 @@ public struct SessionReplayInvisibleElement: SessionReplayNodeSemantics {
     public static let importance: Int = 0
     public let subtreeStrategy: SessionReplayNodeSubtreeStrategy
     public let nodes: [SessionReplayNode] = []
-    public let resources: [SessionReplayResource] = []
 
     /// Use `InvisibleElement.constant` instead.
     private init () {
@@ -255,7 +249,6 @@ internal struct IgnoredElement: NodeSemantics {
     static var importance: Int = .max
     let subtreeStrategy: NodeSubtreeStrategy
     let nodes: [Node] = []
-    let resources: [Resource] = []
 }
 
 /// A semantics of an UI element that is of `UIView` type. This semantics mean that the element has visual appearance in SR, but
@@ -266,7 +259,6 @@ internal struct AmbiguousElement: NodeSemantics {
     static let importance: Int = 0
     let subtreeStrategy: NodeSubtreeStrategy = .record
     let nodes: [Node]
-    let resources: [Resource]
 }
 
 /// A semantics of an UI element that is one of `UIView` subclasses. This semantics mean that we know its full identity along with set of
@@ -277,16 +269,13 @@ public struct SessionReplaySpecificElement: SessionReplayNodeSemantics {
     public static let importance: Int = .max
     public let subtreeStrategy: SessionReplayNodeSubtreeStrategy
     public let nodes: [SessionReplayNode]
-    public let resources: [SessionReplayResource]
 
     public init(
         subtreeStrategy: SessionReplayNodeSubtreeStrategy,
-        nodes: [SessionReplayNode],
-        resources: [SessionReplayResource] = []
+        nodes: [SessionReplayNode]
     ) {
         self.subtreeStrategy = subtreeStrategy
         self.nodes = nodes
-        self.resources = resources
     }
 }
 

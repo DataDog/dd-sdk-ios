@@ -60,5 +60,35 @@ class WireframesBuilderTests: XCTestCase {
 
         XCTAssertTrue(builder.hiddenWebViewWireframes().isEmpty)
     }
+
+    func testBuildingImageWireframe_ItCreatesAResource() throws {
+        let id: WireframeID = .mockRandom()
+        let resource: MockResource = .mockRandom()
+        let frame: CGRect = .mockRandom()
+        let clip: SRContentClip = .mockRandom()
+        let builder = WireframesBuilder()
+
+        let wireframe = builder.createImageWireframe(
+            id: id,
+            resource: resource,
+            frame: frame,
+            clip: clip
+        )
+
+        guard case let .imageWireframe(wireframe) = wireframe else {
+            return XCTFail("The wireframe must be imageWireframe case")
+        }
+
+        XCTAssertEqual(wireframe.id, id)
+        XCTAssertNil(wireframe.border)
+        XCTAssertEqual(wireframe.clip, clip)
+        XCTAssertEqual(wireframe.height, Int64(withNoOverflow: frame.height))
+        XCTAssertNil(wireframe.shapeStyle)
+        XCTAssertEqual(wireframe.width, Int64(withNoOverflow: frame.width))
+        XCTAssertEqual(wireframe.x, Int64(withNoOverflow: frame.minX))
+        XCTAssertEqual(wireframe.y, Int64(withNoOverflow: frame.minY))
+        XCTAssertEqual(builder.resources.first?.calculateIdentifier(), resource.identifier)
+        XCTAssertEqual(builder.resources.first?.calculateData(), resource.data)
+    }
 }
 #endif
