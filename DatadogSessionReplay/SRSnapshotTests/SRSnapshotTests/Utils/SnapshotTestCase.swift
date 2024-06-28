@@ -35,6 +35,7 @@ internal class SnapshotTestCase: XCTestCase {
         return viewController
     }
 
+    /// Helper method for most snapshot tests
     func takeSnapshotFor(
         _ fixture: Fixture,
         with privacyModes: [SessionReplayPrivacyLevel] = [defaultPrivacyLevel],
@@ -54,6 +55,58 @@ internal class SnapshotTestCase: XCTestCase {
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: snapshotLocation,
+                record: shouldRecord
+            )
+        }
+    }
+
+    /// Helper method for date and time picker snapshot tests
+    func takeSnapshotForPicker(
+        fixture: Fixture,
+        additionalSetup: ((UIViewController) -> Void)? = nil,
+        waitTime: TimeInterval,
+        shouldRecord: Bool,
+        folderPath: String,
+        fileNamePrefix: String,
+        file: StaticString = #filePath,
+        function: StaticString = #function
+    ) throws {
+        let vc = show(fixture: fixture) as! DateSetting
+        vc.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
+        additionalSetup?(vc as! UIViewController)
+        wait(seconds: waitTime)
+
+        try forPrivacyModes { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: folderPath, fileNameSuffix: "-\(fileNamePrefix)-\(privacyMode)-privacy", file: file, function: function),
+                record: shouldRecord
+            )
+        }
+    }
+
+    /// Helper method for snapshot tests showing PopupsViewController
+    func takeSnapshotForPopup(
+        fixture: Fixture,
+        showPopup: (PopupsViewController) -> Void,
+        waitTime: TimeInterval,
+        privacyModes: [SessionReplayPrivacyLevel] = [defaultPrivacyLevel],
+        shouldRecord: Bool,
+        folderPath: String,
+        file: StaticString = #filePath,
+        function: StaticString = #function
+    ) throws {
+        let vc = show(fixture: fixture) as! PopupsViewController
+        showPopup(vc)
+        wait(seconds: waitTime)
+        print("privacyModes:", privacyModes)
+
+        for privacyMode in privacyModes {
+            let image = try takeSnapshot(with: privacyMode)
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: folderPath, fileNameSuffix: "-\(privacyMode)-privacy", file: file, function: function),
                 record: shouldRecord
             )
         }
