@@ -270,6 +270,7 @@ internal class NOPFilesOrchestrator: FilesOrchestratorType {
     func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) { }
 
     var ignoreFilesAgeWhenReading = false
+    var trackName: String = "nop"
 }
 
 extension DataFormat {
