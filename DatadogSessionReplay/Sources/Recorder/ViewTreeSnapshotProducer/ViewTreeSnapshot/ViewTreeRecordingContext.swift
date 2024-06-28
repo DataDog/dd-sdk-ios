@@ -38,7 +38,6 @@ internal extension ViewTreeRecordingContext {
             case alert
             case safari
             case activity
-            case swiftUI
             case other
 
             /// An initializer that takes a `UIViewController` and determines its corresponding `ViewControllerType`.
@@ -52,8 +51,6 @@ internal extension ViewTreeRecordingContext {
                     self = .activity
                 case is SFSafariViewController:
                     self = .safari
-                case is AnyUIHostingViewController:
-                    self = .swiftUI
                 default:
                     self = .other
                 }
@@ -88,8 +85,6 @@ internal extension ViewTreeRecordingContext {
                 return "Activity"
             case .safari:
                 return "Safari"
-            case .swiftUI:
-                return "SwiftUI"
             case .other,
                  .none:
                 return nil
@@ -98,7 +93,4 @@ internal extension ViewTreeRecordingContext {
     }
 }
 
-private protocol AnyUIHostingViewController: AnyObject {}
-@available(iOS 13.0, *)
-extension UIHostingController: AnyUIHostingViewController {}
 #endif

@@ -282,12 +282,14 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testSwiftUI() throws {
         show(fixture: .swiftUI)
 
-        let image = try takeSnapshot()
-        DDAssertSnapshotTest(
-            newImage: image,
-            snapshotLocation: .folder(named: snapshotsFolderPath),
-            record: recordingMode
-        )
+        try forPrivacyModes([.allow, .mask]) { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(privacyMode)-privacy"),
+                record: recordingMode
+            )
+        }
     }
 
     func testNavigationBars() throws {
