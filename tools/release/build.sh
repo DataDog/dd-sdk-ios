@@ -17,6 +17,7 @@ mkdir -p "$artifacts_path"
 REPO_CLONE_PATH="$artifacts_path/dd-sdk-ios"
 XCFRAMEWORKS_OUTPUT_PATH="$artifacts_path/xcframeworks"
 XCFRAMEWORKS_ZIP_NAME="Datadog.xcframework.zip"
+XCFRAMEWORKS_ZIP_PATH="$artifacts_path/$XCFRAMEWORKS_ZIP_NAME"
 
 echo_subtitle "Building artifacts for '$tag' in '$artifacts_path'"
 
@@ -30,7 +31,12 @@ git clone --depth 1 --branch $tag --single-branch git@github.com:DataDog/dd-sdk-
     --output-path $XCFRAMEWORKS_OUTPUT_PATH
 
 # Zip XCFrameworks
+echo_info "Creating '$XCFRAMEWORKS_ZIP_PATH'"
+DIR=$(pwd)
 cd $XCFRAMEWORKS_OUTPUT_PATH && zip -q --symlinks -r $XCFRAMEWORKS_ZIP_NAME *.xcframework
+cd $DIR
+mv -v "$XCFRAMEWORKS_OUTPUT_PATH/$XCFRAMEWORKS_ZIP_NAME" "$XCFRAMEWORKS_ZIP_PATH"
+rm -rf $XCFRAMEWORKS_OUTPUT_PATH
 
 echo_succ "Artifacts are ready in '$artifacts_path':"
 ls $artifacts_path
