@@ -8,6 +8,8 @@
 import Foundation
 import DatadogInternal
 
+@_exported import enum DatadogInternal.SessionReplayPrivacyLevel
+
 extension SessionReplay {
     /// Session Replay feature configuration.
     public struct Configuration {
