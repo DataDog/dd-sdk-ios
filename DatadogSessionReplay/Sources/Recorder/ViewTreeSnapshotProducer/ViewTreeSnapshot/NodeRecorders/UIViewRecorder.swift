@@ -50,7 +50,7 @@ internal class UIViewRecorder: NodeRecorder {
             attributes: attributes
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
-        return AmbiguousElement(nodes: [node], resources: [])
+        return AmbiguousElement(nodes: [node])
     }
 }
 

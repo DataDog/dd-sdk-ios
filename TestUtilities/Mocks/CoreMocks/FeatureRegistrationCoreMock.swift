@@ -5,6 +5,7 @@
  */
 
 import DatadogInternal
+import Foundation
 
 /// Core mock that only allows registering and retrieving features.
 ///
@@ -56,5 +57,9 @@ public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
 
     public func send(message: DatadogInternal.FeatureMessage, else fallback: @escaping () -> Void) {
         // not supported - use different type of core mock if you need this
+    }
+
+    public func mostRecentModifiedFileAt(before: Date) throws -> Date? {
+        return nil
     }
 }

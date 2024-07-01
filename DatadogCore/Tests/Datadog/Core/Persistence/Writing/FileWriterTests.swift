@@ -149,7 +149,8 @@ class FileWriterTests: XCTestCase {
                     maxObjectSize: 23 // 23 bytes is enough for TLV with {"key1":"value1"} JSON
                 ),
                 dateProvider: SystemDateProvider(),
-                telemetry: NOPTelemetry()
+                telemetry: NOPTelemetry(),
+                metricsData: .init(trackName: "rum", consentLabel: .mockAny(), uploaderPerformance: UploadPerformanceMock.noOp)
             ),
             encryption: nil,
             telemetry: NOPTelemetry()
@@ -168,7 +169,7 @@ class FileWriterTests: XCTestCase {
         reader = try BatchDataBlockReader(input: directory.files()[0].stream())
         blocks = try XCTUnwrap(reader.all())
         XCTAssertEqual(blocks.count, 1) // same content as before
-        XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
+        XCTAssertEqual(dd.logger.errorLog?.message, "(rum) Failed to encode value")
         XCTAssertEqual(dd.logger.errorLog?.error?.message, "DataBlock length exceeds limit of 23 bytes")
     }
 
@@ -181,7 +182,8 @@ class FileWriterTests: XCTestCase {
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider(),
-                telemetry: NOPTelemetry()
+                telemetry: NOPTelemetry(),
+                metricsData: .init(trackName: "rum", consentLabel: .mockAny(), uploaderPerformance: UploadPerformanceMock.noOp)
             ),
             encryption: nil,
             telemetry: NOPTelemetry()
@@ -189,7 +191,7 @@ class FileWriterTests: XCTestCase {
 
         writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
 
-        XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
+        XCTAssertEqual(dd.logger.errorLog?.message, "(rum) Failed to encode value")
         XCTAssertEqual(dd.logger.errorLog?.error?.message, "failed to encode `FailingEncodable`.")
     }
 
@@ -202,7 +204,8 @@ class FileWriterTests: XCTestCase {
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider(),
-                telemetry: NOPTelemetry()
+                telemetry: NOPTelemetry(),
+                metricsData: .init(trackName: "rum", consentLabel: .mockAny(), uploaderPerformance: UploadPerformanceMock.noOp)
             ),
             encryption: nil,
             telemetry: NOPTelemetry()
@@ -213,7 +216,7 @@ class FileWriterTests: XCTestCase {
         writer.write(value: ["won't be written"])
         try? directory.files()[0].makeReadWrite()
 
-        XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
+        XCTAssertEqual(dd.logger.errorLog?.message, "(rum) Failed to write 26 bytes to file")
         XCTAssertTrue(dd.logger.errorLog!.error!.message.contains("You don’t have permission"))
     }
 

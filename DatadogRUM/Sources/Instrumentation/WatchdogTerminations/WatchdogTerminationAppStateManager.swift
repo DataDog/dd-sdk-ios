@@ -15,38 +15,48 @@ internal final class WatchdogTerminationAppStateManager {
     @ReadWriteLock
     var lastAppState: AppState?
 
-    /// The status of the app state manager indicating if it is active or not.
-    /// When it is active, it listens to the app state changes and updates the app state in the data store.
-    @ReadWriteLock
-    var isActive: Bool
-
     /// The process identifier of the app whose state is being monitored.
     let processId: UUID
 
     init(featureScope: FeatureScope, processId: UUID) {
         self.featureScope = featureScope
-        self.isActive = false
         self.processId = processId
-    }
-
-    /// Starts the app state monitoring. Depending on the app state changes, it updates the app state in the data store.
-    /// For example, when the app goes to the background, the app state is updated with `isActive = false`.`
-    func start() throws {
-        DD.logger.debug("Start app state monitoring")
-        isActive = true
-        try storeCurrentAppState()
-    }
-
-    /// Stops the app state monitoring.
-    func stop() throws {
-        DD.logger.debug("Stop app state monitoring")
-        isActive = false
     }
 
     /// Deletes the app state from the data store.
     func deleteAppState() {
         DD.logger.debug("Deleting app state from data store")
         featureScope.rumDataStore.removeValue(forKey: .watchdogAppStateKey)
+    }
+
+    /// Updates the app state based on the given application state.
+    ///
+    /// For watchdog termination, we are interested in
+    /// 1. whether the application was terminated using conventions methods or not.
+    /// 2. whether the application was in the foreground or background when it was terminated.
+    ///
+    /// - Parameter state: The application state.
+    func updateAppState(state: AppState) {
+        // this method can be called multiple times for the same state,
+        // so we need to make sure we don't update the state multiple times
+        guard state != lastAppState else {
+            return
+        }
+        switch state {
+        case .active:
+            updateAppState { state in
+                state?.isActive = true
+            }
+        case .inactive, .background:
+            updateAppState { state in
+                state?.isActive = false
+            }
+        case .terminated:
+            updateAppState { state in
+                state?.wasTerminated = true
+            }
+        }
+        lastAppState = state
     }
 
     /// Updates the app state in the data store with the given block.
@@ -61,7 +71,7 @@ internal final class WatchdogTerminationAppStateManager {
     }
 
     /// Builds the current app state and stores it in the data store.
-    private func storeCurrentAppState() throws {
+    func storeCurrentAppState() throws {
         try currentAppState { [self] appState in
             featureScope.rumDataStore.setValue(appState, forKey: .watchdogAppStateKey)
         }
@@ -88,53 +98,10 @@ internal final class WatchdogTerminationAppStateManager {
                 wasTerminated: false,
                 isActive: true,
                 vendorId: context.device.vendorId,
-                processId: self.processId
+                processId: self.processId,
+                trackingConsent: context.trackingConsent
             )
             completion(state)
         }
-    }
-}
-
-extension WatchdogTerminationAppStateManager: FeatureMessageReceiver {
-    /// Receives the feature message and updates the app state based on the context message.
-    /// It relies on `ApplicationStatePublisher` context message to update the app state.
-    /// Other messages are ignored.
-    /// - Parameters:
-    ///   - message: The feature message.
-    ///   - core: The core instance.
-    /// - Returns: Always `false`, because it doesn't block the message propagation.
-    func receive(message: DatadogInternal.FeatureMessage, from core: any DatadogInternal.DatadogCoreProtocol) -> Bool {
-        guard isActive else {
-            return false
-        }
-
-        switch message {
-        case .baggage, .webview, .telemetry:
-            break
-        case .context(let context):
-            let state = context.applicationStateHistory.currentSnapshot.state
-
-            // the message received on multiple times whenever there is change in context
-            // but it may not be the application state, hence we guard against the same state
-            guard state != lastAppState else {
-                return false
-            }
-            switch state {
-            case .active:
-                updateAppState { state in
-                    state?.isActive = true
-                }
-            case .inactive, .background:
-                updateAppState { state in
-                    state?.isActive = false
-                }
-            case .terminated:
-                updateAppState { state in
-                    state?.wasTerminated = true
-                }
-            }
-            lastAppState = state
-        }
-        return false
     }
 }

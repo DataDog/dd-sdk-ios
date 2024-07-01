@@ -156,18 +156,6 @@
                                     </stackView>
                                 </subviews>
                             </stackView>
-                            <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ftc-4B-7Pp">
-                                <rect key="frame" x="0.0" y="591" width="393" height="44"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="44" id="4hr-VJ-mh1"/>
-                                </constraints>
-                                <items>
-                                    <navigationItem title="Navigation Bar" id="u0B-KK-nq3" userLabel="Item">
-                                        <barButtonItem key="leftBarButtonItem" image="paperplane.fill" catalog="system" id="CjQ-rd-Pk8"/>
-                                        <barButtonItem key="rightBarButtonItem" title="Item" image="book" catalog="system" id="hTb-zV-j5a"/>
-                                    </navigationItem>
-                                </items>
-                            </navigationBar>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KxN-zV-mGU">
                                 <rect key="frame" x="260.66666666666669" y="53" width="116.33333333333331" height="60"/>
                                 <constraints>
@@ -191,12 +179,9 @@
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="KxN-zV-mGU" secondAttribute="trailing" constant="16" id="Cj8-dU-3FG"/>
                             <constraint firstItem="zQI-BZ-L2g" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="OAe-l4-L39"/>
                             <constraint firstItem="xxq-Cw-MRl" firstAttribute="centerX" secondItem="vDu-zF-Fre" secondAttribute="centerX" id="OTN-dD-tUV"/>
-                            <constraint firstItem="ftc-4B-7Pp" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="OuL-9P-SDJ"/>
-                            <constraint firstItem="ftc-4B-7Pp" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="P5h-A7-U1M"/>
                             <constraint firstItem="zQI-BZ-L2g" firstAttribute="top" secondItem="xxq-Cw-MRl" secondAttribute="bottom" constant="32" id="SQh-2j-ine"/>
                             <constraint firstItem="KxN-zV-mGU" firstAttribute="leading" secondItem="xxq-Cw-MRl" secondAttribute="trailing" constant="48" id="VVE-7k-3Tk"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="zQI-BZ-L2g" secondAttribute="trailing" id="Wjg-fd-LWW"/>
-                            <constraint firstItem="ftc-4B-7Pp" firstAttribute="top" secondItem="zQI-BZ-L2g" secondAttribute="bottom" constant="32" id="iI1-xG-KJi"/>
                             <constraint firstItem="xxq-Cw-MRl" firstAttribute="top" secondItem="vDu-zF-Fre" secondAttribute="top" constant="8" id="jIN-YZ-8QX"/>
                             <constraint firstItem="KxN-zV-mGU" firstAttribute="centerY" secondItem="xxq-Cw-MRl" secondAttribute="centerY" id="wlR-Fb-T22"/>
                         </constraints>
@@ -205,7 +190,6 @@
                         <outlet property="contentImageView" destination="lus-kO-cFd" id="Uch-4j-NpS"/>
                         <outlet property="customButton" destination="KxN-zV-mGU" id="zX2-X5-J8J"/>
                         <outlet property="customImageView" destination="vKz-Ut-7bS" id="aJg-Sy-OrB"/>
-                        <outlet property="navigationBar" destination="ftc-4B-7Pp" id="Cz6-ki-X2T"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -215,10 +199,8 @@
     </scenes>
     <resources>
         <image name="applelogo" catalog="system" width="105" height="128"/>
-        <image name="book" catalog="system" width="128" height="99"/>
         <image name="dd_logo" width="64" height="74"/>
         <image name="face.dashed.fill" catalog="system" width="128" height="123"/>
-        <image name="paperplane.fill" catalog="system" width="128" height="119"/>
         <namedColor name="AccentColor">
             <color red="0.0" green="0.46000000000000002" blue="0.89000000000000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

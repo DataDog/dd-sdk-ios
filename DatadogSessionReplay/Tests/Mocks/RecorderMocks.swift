@@ -27,7 +27,6 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
             context: .mockRandom(),
             viewportSize: .mockRandom(),
             nodes: .mockRandom(count: .random(in: (5..<50))),
-            resources: .mockRandom(count: .random(in: (5..<50))),
             webViewSlotIDs: .mockRandom()
         )
     }
@@ -37,7 +36,6 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
         context: Recorder.Context = .mockAny(),
         viewportSize: CGSize = .mockAny(),
         nodes: [Node] = .mockAny(),
-        resources: [Resource] = .mockAny(),
         webViewSlotIDs: Set<Int> = .mockAny()
     ) -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
@@ -45,7 +43,6 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
             context: context,
             viewportSize: viewportSize,
             nodes: nodes,
-            resources: resources,
             webViewSlotIDs: webViewSlotIDs
         )
     }
@@ -221,8 +218,7 @@ func mockRandomNodeSemantics() -> NodeSemantics {
         UnknownElement.constant,
         InvisibleElement.constant,
         AmbiguousElement(
-            nodes: .mockRandom(count: .mockRandom(min: 1, max: 5)),
-            resources: .mockRandom(count: .mockRandom(min: 1, max: 5))
+            nodes: .mockRandom(count: .mockRandom(min: 1, max: 5))
         ),
         SpecificElement(subtreeStrategy: .mockRandom(), nodes: .mockRandom(count: .mockRandom(min: 1, max: 5))),
     ]

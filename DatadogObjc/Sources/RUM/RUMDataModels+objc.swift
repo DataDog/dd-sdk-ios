@@ -664,6 +664,7 @@ public enum DDRUMActionEventContainerSource: Int {
         case .reactNative: self = .reactNative
         case .roku: self = .roku
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -676,6 +677,7 @@ public enum DDRUMActionEventContainerSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -686,6 +688,7 @@ public enum DDRUMActionEventContainerSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -889,6 +892,7 @@ public enum DDRUMActionEventSource: Int {
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
         case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
         }
     }
 
@@ -902,6 +906,7 @@ public enum DDRUMActionEventSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -913,6 +918,7 @@ public enum DDRUMActionEventSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -1447,6 +1453,7 @@ public enum DDRUMErrorEventContainerSource: Int {
         case .reactNative: self = .reactNative
         case .roku: self = .roku
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -1459,6 +1466,7 @@ public enum DDRUMErrorEventContainerSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -1469,6 +1477,7 @@ public enum DDRUMErrorEventContainerSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -1722,6 +1731,7 @@ public enum DDRUMErrorEventErrorCategory: Int {
         case .aNR?: self = .aNR
         case .appHang?: self = .appHang
         case .exception?: self = .exception
+        case .watchdogTermination?: self = .watchdogTermination
         }
     }
 
@@ -1731,6 +1741,7 @@ public enum DDRUMErrorEventErrorCategory: Int {
         case .aNR: return .aNR
         case .appHang: return .appHang
         case .exception: return .exception
+        case .watchdogTermination: return .watchdogTermination
         }
     }
 
@@ -1738,6 +1749,7 @@ public enum DDRUMErrorEventErrorCategory: Int {
     case aNR
     case appHang
     case exception
+    case watchdogTermination
 }
 
 @objc
@@ -2264,6 +2276,7 @@ public enum DDRUMErrorEventSource: Int {
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
         case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
         }
     }
 
@@ -2277,6 +2290,7 @@ public enum DDRUMErrorEventSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -2288,6 +2302,7 @@ public enum DDRUMErrorEventSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -2818,6 +2833,7 @@ public enum DDRUMLongTaskEventContainerSource: Int {
         case .reactNative: self = .reactNative
         case .roku: self = .roku
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -2830,6 +2846,7 @@ public enum DDRUMLongTaskEventContainerSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -2840,6 +2857,7 @@ public enum DDRUMLongTaskEventContainerSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -3064,6 +3082,7 @@ public enum DDRUMLongTaskEventSource: Int {
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
         case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
         }
     }
 
@@ -3077,6 +3096,7 @@ public enum DDRUMLongTaskEventSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -3088,6 +3108,7 @@ public enum DDRUMLongTaskEventSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -3626,6 +3647,7 @@ public enum DDRUMResourceEventContainerSource: Int {
         case .reactNative: self = .reactNative
         case .roku: self = .roku
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -3638,6 +3660,7 @@ public enum DDRUMResourceEventContainerSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -3648,6 +3671,7 @@ public enum DDRUMResourceEventContainerSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -4283,6 +4307,7 @@ public enum DDRUMResourceEventSource: Int {
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
         case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
         }
     }
 
@@ -4296,6 +4321,7 @@ public enum DDRUMResourceEventSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -4307,6 +4333,7 @@ public enum DDRUMResourceEventSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -4877,6 +4904,7 @@ public enum DDRUMViewEventContainerSource: Int {
         case .reactNative: self = .reactNative
         case .roku: self = .roku
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -4889,6 +4917,7 @@ public enum DDRUMViewEventContainerSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -4899,6 +4928,7 @@ public enum DDRUMViewEventContainerSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -5188,6 +5218,7 @@ public enum DDRUMViewEventSource: Int {
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
         case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
         }
     }
 
@@ -5201,6 +5232,7 @@ public enum DDRUMViewEventSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -5212,6 +5244,7 @@ public enum DDRUMViewEventSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -6096,6 +6129,7 @@ public enum DDRUMVitalEventContainerSource: Int {
         case .reactNative: self = .reactNative
         case .roku: self = .roku
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -6108,6 +6142,7 @@ public enum DDRUMVitalEventContainerSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -6118,6 +6153,7 @@ public enum DDRUMVitalEventContainerSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -6321,6 +6357,7 @@ public enum DDRUMVitalEventSource: Int {
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
         case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
         }
     }
 
@@ -6334,6 +6371,7 @@ public enum DDRUMVitalEventSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -6345,6 +6383,7 @@ public enum DDRUMVitalEventSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -6431,6 +6470,14 @@ public class DDRUMVitalEventVital: NSObject {
 
     @objc public var custom: [String: NSNumber]? {
         root.swiftModel.vital.custom as [String: NSNumber]?
+    }
+
+    @objc public var details: String? {
+        root.swiftModel.vital.details
+    }
+
+    @objc public var duration: NSNumber? {
+        root.swiftModel.vital.duration as NSNumber?
     }
 
     @objc public var id: String {
@@ -6583,6 +6630,7 @@ public enum DDTelemetryErrorEventSource: Int {
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -6594,6 +6642,7 @@ public enum DDTelemetryErrorEventSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -6603,6 +6652,7 @@ public enum DDTelemetryErrorEventSource: Int {
     case flutter
     case reactNative
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -6834,6 +6884,7 @@ public enum DDTelemetryDebugEventSource: Int {
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -6845,6 +6896,7 @@ public enum DDTelemetryDebugEventSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -6854,6 +6906,7 @@ public enum DDTelemetryDebugEventSource: Int {
     case flutter
     case reactNative
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -7064,6 +7117,7 @@ public enum DDTelemetryConfigurationEventSource: Int {
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -7075,6 +7129,7 @@ public enum DDTelemetryConfigurationEventSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -7084,6 +7139,7 @@ public enum DDTelemetryConfigurationEventSource: Int {
     case flutter
     case reactNative
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -7194,6 +7250,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
     @objc public var mobileVitalsUpdatePeriod: NSNumber? {
         set { root.swiftModel.telemetry.configuration.mobileVitalsUpdatePeriod = newValue?.int64Value }
         get { root.swiftModel.telemetry.configuration.mobileVitalsUpdatePeriod as NSNumber? }
+    }
+
+    @objc public var plugins: [DDTelemetryConfigurationEventTelemetryConfigurationPlugins]? {
+        root.swiftModel.telemetry.configuration.plugins?.map { DDTelemetryConfigurationEventTelemetryConfigurationPlugins(swiftModel: $0) }
     }
 
     @objc public var premiumSampleRate: NSNumber? {
@@ -7466,6 +7526,24 @@ public class DDTelemetryConfigurationEventTelemetryConfigurationForwardReports: 
 }
 
 @objc
+public class DDTelemetryConfigurationEventTelemetryConfigurationPlugins: NSObject {
+    internal var swiftModel: TelemetryConfigurationEvent.Telemetry.Configuration.Plugins
+    internal var root: DDTelemetryConfigurationEventTelemetryConfigurationPlugins { self }
+
+    internal init(swiftModel: TelemetryConfigurationEvent.Telemetry.Configuration.Plugins) {
+        self.swiftModel = swiftModel
+    }
+
+    @objc public var name: String {
+        root.swiftModel.name
+    }
+
+    @objc public var pluginsInfo: [String: Any] {
+        root.swiftModel.pluginsInfo.castToObjectiveC()
+    }
+}
+
+@objc
 public enum DDTelemetryConfigurationEventTelemetryConfigurationSelectedTracingPropagators: Int {
     internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.SelectedTracingPropagators?) {
         switch swift {
@@ -7629,4 +7707,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/30d4b773abb4e33edc9d6053d3c12cd302e948a5
+// Generated from https://github.com/DataDog/rum-events-format/tree/ae8c30a094339995e234fd55831ade0999bf0612

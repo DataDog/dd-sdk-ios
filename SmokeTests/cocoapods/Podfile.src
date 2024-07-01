@@ -1,0 +1,43 @@
+abstract_target 'Common' do
+  pod 'OpenTelemetrySwiftApi', '1.6.0'
+  pod 'DatadogInternal', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+  pod 'DatadogCore', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+  pod 'DatadogLogs', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+  pod 'DatadogTrace', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+  pod 'DatadogRUM', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+  pod 'DatadogCore', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+  pod 'DatadogSessionReplay', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+  pod 'DatadogAlamofireExtension', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+  pod 'DatadogCrashReporting', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+  pod 'DatadogObjc', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+  pod 'Alamofire'
+
+  target 'App Dynamic iOS' do
+    platform :ios, '13.0'
+    use_frameworks!
+    pod 'DatadogWebViewTracking', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+  end
+
+  target 'App Static iOS' do
+    platform :ios, '13.0'
+    pod 'DatadogWebViewTracking', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+
+    target 'App Static iOS Tests' do
+      inherit! :search_paths
+    end
+  end
+
+  target 'App Dynamic tvOS' do
+    platform :tvos, '13.0'
+    use_frameworks!
+  end
+
+  target 'App Static tvOS' do
+    platform :tvos, '13.0'
+
+    target 'App Static tvOS Tests' do
+      inherit! :search_paths
+    end
+  end
+
+end

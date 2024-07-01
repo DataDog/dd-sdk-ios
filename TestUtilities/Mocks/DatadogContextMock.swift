@@ -350,7 +350,7 @@ extension TrackingConsent {
 
 extension String {
     public static func mockAnySource() -> String {
-        return ["ios", "android", "browser", "ios", "react-native", "flutter", "unity"].randomElement()!
+        return ["ios", "android", "browser", "ios", "react-native", "flutter", "unity", "kotlin-multiplatform"].randomElement()!
     }
 
     public static func mockAnySourceType() -> String {

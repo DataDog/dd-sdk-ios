@@ -56,6 +56,7 @@ internal extension RUMViewEvent.Source {
         case .flutter: return .flutter
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 }
@@ -71,6 +72,10 @@ internal extension RUMViewEvent {
             case id = "id"
             case documentVersion = "document_version"
         }
+    }
+
+    enum EventType: String, Codable {
+        case view
     }
 
     /// Creates `Metadata` from the given `RUMViewEvent`.

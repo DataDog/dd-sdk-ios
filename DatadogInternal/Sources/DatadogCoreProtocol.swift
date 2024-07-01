@@ -11,8 +11,7 @@ import Foundation
 ///
 /// Any reference to `DatadogCoreProtocol` must be captured as `weak` within a Feature. This is to avoid
 /// retain cycle of core holding the Feature and vice-versa.
-public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing {
-    // TODO: RUM-3717 
+public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing, Storage {
     // Remove `DatadogCoreProtocol` conformance to `MessageSending` and `BaggageSharing` once
     // all features are migrated to depend on `FeatureScope` interface.
 
@@ -84,7 +83,7 @@ public protocol BaggageSharing {
     ///     // Bar.swift
     ///     core.scope(for: "bar").eventWriteContext { context, writer in
     ///         if let baggage = context.baggages["key"] {
-    ///             try {
+    ///             do {
     ///                 // Try decoding context to expected type:
     ///                 let value: String = try baggage.decode()
     ///                 // If success, handle the `value`.
@@ -308,6 +307,8 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) { }
     /// no-op
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
+    /// no-op
+    public func mostRecentModifiedFileAt(before: Date) throws -> Date? { return nil }
 }
 
 public struct NOPFeatureScope: FeatureScope {
