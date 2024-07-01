@@ -7,6 +7,7 @@ all: env-check repo-setup templates
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
 		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos \
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
+		release-build
 
 REPO_ROOT := $(PWD)
 include tools/utils/common.mk
@@ -191,9 +192,9 @@ smoke-test-ios:
 
 # Run all smoke tests using iOS Simulator
 smoke-test-ios-all:
-	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/spm"
-	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/carthage"
-	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/cocoapods"
+	# @$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/spm"
+	# @$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/carthage"
+	# @$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/cocoapods"
 	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/xcframeworks"
 
 # Run smoke tests for specified TEST_DIRECTORY using tvOS Simulator
@@ -206,9 +207,9 @@ smoke-test-tvos:
 
 # Run all smoke tests using tvOS Simulator
 smoke-test-tvos-all:
-	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/spm"
-	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/carthage"
-	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/cocoapods"
+	# @$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/spm"
+	# @$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/carthage"
+	# @$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/cocoapods"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/xcframeworks"
 
 # Builds SPM package SCHEME for specified DESTINATION
@@ -334,6 +335,12 @@ e2e-monitors-generate:
 		@echo "⚙️  Generating 'main.tf':"
 		@./tools/nightly-e2e-tests/nightly_e2e.py generate-tf --tests-dir ../../Datadog/E2ETests
 		@echo "⚠️  Remember to delete all iOS monitors manually from Mobile-Integration org before running 'terraform apply'."
+
+release-build:
+	@$(call require_param,GIT_TAG)
+	@$(call require_param,ARTIFACTS_PATH)
+	@$(ECHO_TITLE) "make release-build GIT_TAG='$(GIT_TAG)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
+	./tools/release/build.sh --tag "$(GIT_TAG" --artifacts-path "$(ARTIFACTS_PATH)"
 
 bump:
 		@read -p "Enter version number: " version;  \

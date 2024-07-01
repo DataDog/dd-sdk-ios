@@ -185,15 +185,16 @@ Smoke Tests (tvOS):
     - make clean repo-setup ENV=ci
     - make spm-build-macos
 
-.Build Artifacts:
+# ┌──────────────┐
+# │ SDK release: │
+# └──────────────┘
+
+Release (build):
   stage: release:build
-  tags:
-    - macos:ventura
-    - specific:true
   variables:
-    XCODE: "15.2.0"
+    XCODE: "15.3.0"
   script:
-    - ./tools/runner-setup.sh --xcode "$XCODE" --ssh # temporary, waiting for AMI
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --os "17.4" --ssh # temporary, waiting for AMI
     - make env-check
     - make clean repo-setup ENV=ci
-    - ./tools/release.sh 
+    - make release-build GIT_TAG="2.13.0" ARTIFACTS_PATH="artifacts/2.13.0"

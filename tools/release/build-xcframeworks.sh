@@ -1,19 +1,29 @@
 #!/bin/zsh
 
+# Usage:
+# Builds XCFrameworks from the specified repository and exports them to the designated output directory. Note: The repository at --repo-path must be in a clean state before execution.
+
+# Options:
+#   --repo-path: Specifies the path to the root of the 'dd-sdk-ios' repository.
+#   --ios: Includes iOS platform slices in the exported XCFrameworks.
+#   --tvos: Includes tvOS platform slices in the exported XCFrameworks.
+#   --output-path: Defines the path to the output directory where XCFrameworks will be stored under the 'xcframeworks/' subdirectory.
+
 set -eo pipefail
 source ./tools/utils/argparse.sh
 source ./tools/utils/echo_color.sh
 
-set_description "Builds the Datadog xcframework for given --product name."
-define_arg "repo-path" "" "The path to the root of dd-sdk-ios repo." "string" "true"
-define_arg "ios" "false" "Includes iOS platform slices in the xcframework." "store_true"
-define_arg "tvos" "false" "Includes tvOS platform slices in the xcframework." "store_true"
-define_arg "output-path" "" "The path to the output directory to create 'xcframeworks/' directory in." "string" "true"
+set_description "Builds XCFrameworks from the specified repository and exports them to the designated output directory. Note: The repository at --repo-path must be in a clean state before execution."
+define_arg "repo-path" "" "Specifies the path to the root of the 'dd-sdk-ios' repository." "string" "true"
+define_arg "ios" "false" "Includes iOS platform slices in the exported XCFrameworks." "store_true"
+define_arg "tvos" "false" "Includes tvOS platform slices in the exported XCFrameworks." "store_true"
+define_arg "output-path" "" "Defines the path to the output directory where XCFrameworks will be stored under the 'xcframeworks/' subdirectory." "string" "true"
 
 check_for_help "$@"
 parse_args "$@"
 
-rm -rf "$output_path"
+rm -rf "$output_path/archives"
+rm -rf "$output_path/xcframeworks"
 mkdir -p "$output_path/archives"
 mkdir -p "$output_path/xcframeworks"
 
@@ -21,13 +31,11 @@ REPO_PATH=$(realpath "$repo_path")
 ARCHIVES_OUTPUT="$(realpath "$output_path")/archives"
 XCFRAMEWORKS_OUTPUT="$(realpath "$output_path")/xcframeworks"
 
-echo_info "Building xcframeworks"
-echo_info "- REPO_PATH = '$REPO_PATH'"
-echo_info "- ARCHIVES_OUTPUT = '$ARCHIVES_OUTPUT'"
-echo_info "- XCFRAMEWORKS_OUTPUT = '$XCFRAMEWORKS_OUTPUT'"
-
 function check_repo {
     echo_subtitle "Checking repo at '$REPO_PATH'"
+
+    git diff-index --quiet HEAD -- || { echo_err "Error:" "Repository has uncommitted changes."; exit 1; }
+    
     [ -d "Datadog.xcworkspace" ] && echo_succ "Found 'Datadog.xcworkspace' in '$REPO_PATH'" \
         || { echo_err "Error:" "Could not find 'Datadog.xcworkspace' in '$REPO_PATH'." ; exit 1; }
 
@@ -44,7 +52,7 @@ function check_repo {
         echo "$config_files" | awk '{print "- " $0}'
         exit 1
     else
-        echo_succ "The repository is in a clean state (no '*.local.xcconfig' files are present)."
+        echo_succ "The repository is in a clean state and no '*.local.xcconfig' files are present."
     fi
 }
 
@@ -104,8 +112,6 @@ function build_xcframework {
     echo_succ "The '$product.xcframework' was created successfully in '$XCFRAMEWORKS_OUTPUT'"
 }
 
-DIR=$(pwd)
-
 echo_info "cd '$REPO_PATH'"
 cd $REPO_PATH
 
@@ -117,7 +123,13 @@ PLATFORMS=""
 [[ "$ios" == "true" ]] && PLATFORMS+="iOS"
 [[ "$tvos" == "true" ]] && { [ -n "$PLATFORMS" ] && PLATFORMS+=","; PLATFORMS+="tvOS"; }
 
-# Build third-party dependencies
+echo_info "Building xcframeworks:"
+echo_info "- REPO_PATH = '$REPO_PATH'"
+echo_info "- ARCHIVES_OUTPUT = '$ARCHIVES_OUTPUT'"
+echo_info "- XCFRAMEWORKS_OUTPUT = '$XCFRAMEWORKS_OUTPUT'"
+echo_info "- PLATFORMS = '$PLATFORMS'"
+
+# Build third-party XCFrameworks
 echo_subtitle "Running 'carthage bootstrap --platform $PLATFORMS --use-xcframeworks'"
 carthage bootstrap --platform $PLATFORMS --use-xcframeworks
 cp -r "Carthage/Build/CrashReporter.xcframework" "$XCFRAMEWORKS_OUTPUT"
@@ -137,5 +149,3 @@ if [[ "$ios" == "true" ]]; then
     build_xcframework DatadogWebViewTracking "iOS"
     build_xcframework DatadogSessionReplay "iOS"
 fi
-
-cd "$DIR"
