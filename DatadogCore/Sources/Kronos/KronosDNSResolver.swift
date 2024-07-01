@@ -30,6 +30,9 @@ internal final class KronosDNSResolver {
         timeout: TimeInterval = kDefaultTimeout,
         completion: @escaping ([KronosInternetAddress]) -> Void
     ) {
+        #if os(watchOS)
+        completion([])
+        #else
         let callback: CFHostClientCallBack = { host, _, _, info in
             guard let info = info else {
                 return
@@ -79,8 +82,10 @@ internal final class KronosDNSResolver {
         CFHostSetClient(hostReference, callback, &clientContext)
         CFHostScheduleWithRunLoop(hostReference, CFRunLoopGetMain(), CFRunLoopMode.commonModes.rawValue)
         CFHostStartInfoResolution(hostReference, .addresses, nil)
+        #endif
     }
 
+    #if !os(watchOS)
     @objc
     private func onTimeout() {
         defer {
@@ -99,4 +104,5 @@ internal final class KronosDNSResolver {
         CFHostUnscheduleFromRunLoop(hostReference, CFRunLoopGetMain(), CFRunLoopMode.commonModes.rawValue)
         CFHostSetClient(hostReference, nil, nil)
     }
+    #endif
 }

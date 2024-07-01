@@ -9,7 +9,8 @@
 #   --iOS: Flag that prepares the runner instance for iOS testing. Disabled by default.
 #   --tvOS: Flag that prepares the runner instance for tvOS testing. Disabled by default.
 #   --visionOS: Flag that prepares the runner instance for visionOS testing. Disabled by default.
-#   --os: Sets the expected OS version for installed simulators when --iOS, --tvOS or --visionOS flag is set. Default: '17.4'.
+#   --watchOS: Flag that prepares the runner instance for watchOS testing. Disabled by default.
+#   --os: Sets the expected OS version for installed simulators when --iOS, --tvOS, --visionOS or --watchOS flag is set. Default: '17.4'.
 
 set -eo pipefail
 source ./tools/utils/echo_color.sh
@@ -20,7 +21,8 @@ define_arg "xcode" "" "Sets the Xcode version on the runner." "string" "false"
 define_arg "iOS" "false" "Flag that prepares the runner instance for iOS testing. Disabled by default." "store_true"
 define_arg "tvOS" "false" "Flag that prepares the runner instance for tvOS testing. Disabled by default." "store_true"
 define_arg "visionOS" "false" "Flag that prepares the runner instance for visionOS testing. Disabled by default." "store_true"
-define_arg "os" "17.4" "Sets the expected OS version for installed simulators when --iOS, --tvOS or --visionOS flag is set. Default: '17.4'." "string" "false"
+define_arg "watchOS" "false" "Flag that prepares the runner instance for watchOS testing. Disabled by default." "store_true"
+define_arg "os" "17.4" "Sets the expected OS version for installed simulators when --iOS, --tvOS, --visionOS or --watchOS flag is set. Default: '17.4'." "string" "false"
 
 check_for_help "$@"
 parse_args "$@"
@@ -101,5 +103,16 @@ if [ "$visionOS" = "true" ]; then
         xcodebuild -downloadPlatform visionOS -quiet | xcbeautify
     else
         echo_succ "Found some visionOS Simulator runtime supporting OS '$os'. Skipping..."
+    fi
+fi
+
+if [ "$watchOS" = "true" ]; then
+    echo_subtitle "Supply watchOS Simulator runtime ($os)"
+    echo "Check current runner for any watchOS Simulator runtime supporting OS '$os':"
+    if ! xctrace list devices | grep "Apple Watch.*Simulator ($os)"; then
+        echo_warn "Found no watchOS Simulator runtime supporting OS '$os'. Installing..."
+        xcodebuild -downloadPlatform watchOS -quiet | xcbeautify
+    else
+        echo_succ "Found some watchOS Simulator runtime supporting OS '$os'. Skipping..."
     fi
 fi
