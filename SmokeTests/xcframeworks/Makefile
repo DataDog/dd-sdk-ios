@@ -46,7 +46,7 @@ ifeq ($(BUILD_XCFRAMEWORKS_FLAG),)
 endif
 	cd $(REPO_ROOT) && tools/release/build-xcframeworks.sh \
 		--repo-path SmokeTests/xcframeworks/dd-sdk-ios \
-		--output-path SmokeTests/xcframeworks/dd-sdk-ios/build \
+		--output-path SmokeTests/xcframeworks/dd-sdk-ios/build/xcframeworks \
 		$(BUILD_XCFRAMEWORKS_FLAG)
 
 test:

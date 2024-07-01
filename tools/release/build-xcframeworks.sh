@@ -7,7 +7,7 @@
 #   --repo-path: Specifies the path to the root of the 'dd-sdk-ios' repository.
 #   --ios: Includes iOS platform slices in the exported XCFrameworks.
 #   --tvos: Includes tvOS platform slices in the exported XCFrameworks.
-#   --output-path: Defines the path to the output directory where XCFrameworks will be stored under the 'xcframeworks/' subdirectory.
+#   --output-path: Defines the path to the output directory where XCFrameworks will be stored.
 
 set -eo pipefail
 source ./tools/utils/argparse.sh
@@ -17,19 +17,17 @@ set_description "Builds XCFrameworks from the specified repository and exports t
 define_arg "repo-path" "" "Specifies the path to the root of the 'dd-sdk-ios' repository." "string" "true"
 define_arg "ios" "false" "Includes iOS platform slices in the exported XCFrameworks." "store_true"
 define_arg "tvos" "false" "Includes tvOS platform slices in the exported XCFrameworks." "store_true"
-define_arg "output-path" "" "Defines the path to the output directory where XCFrameworks will be stored under the 'xcframeworks/' subdirectory." "string" "true"
+define_arg "output-path" "" "Defines the path to the output directory where XCFrameworks will be stored." "string" "true"
 
 check_for_help "$@"
 parse_args "$@"
 
-rm -rf "$output_path/archives"
-rm -rf "$output_path/xcframeworks"
-mkdir -p "$output_path/archives"
-mkdir -p "$output_path/xcframeworks"
+rm -rf "$output_path"
+mkdir -p "$output_path"
 
 REPO_PATH=$(realpath "$repo_path")
-ARCHIVES_OUTPUT="$(realpath "$output_path")/archives"
-XCFRAMEWORKS_OUTPUT="$(realpath "$output_path")/xcframeworks"
+XCFRAMEWORKS_OUTPUT="$(realpath "$output_path")"
+ARCHIVES_TEMP_OUTPUT="$XCFRAMEWORKS_OUTPUT/archives"
 
 function check_repo {
     echo_subtitle "Checking repo at '$REPO_PATH'"
@@ -86,21 +84,21 @@ function build_xcframework {
     if [[ $platform == *"iOS"* ]]; then
         echo "▸ Archive $product iOS"
 
-        archive "$product iOS" "generic/platform=iOS" "$ARCHIVES_OUTPUT/$product/ios"
-        xcoptions+=(-archive "$ARCHIVES_OUTPUT/$product/ios.xcarchive" -framework "$product.framework")
+        archive "$product iOS" "generic/platform=iOS" "$ARCHIVES_TEMP_OUTPUT/$product/ios"
+        xcoptions+=(-archive "$ARCHIVES_TEMP_OUTPUT/$product/ios.xcarchive" -framework "$product.framework")
 
-        archive "$product iOS" "generic/platform=iOS Simulator" "$ARCHIVES_OUTPUT/$product/ios-simulator"
-        xcoptions+=(-archive "$ARCHIVES_OUTPUT/$product/ios-simulator.xcarchive" -framework "$product.framework")
+        archive "$product iOS" "generic/platform=iOS Simulator" "$ARCHIVES_TEMP_OUTPUT/$product/ios-simulator"
+        xcoptions+=(-archive "$ARCHIVES_TEMP_OUTPUT/$product/ios-simulator.xcarchive" -framework "$product.framework")
     fi
 
     if [[ $platform == *"tvOS"* ]]; then
         echo "▸ Archive $product tvOS"
 
-        archive "$product tvOS" "generic/platform=tvOS" "$ARCHIVES_OUTPUT/$product/tvos"
-        xcoptions+=(-archive "$ARCHIVES_OUTPUT/$product/tvos.xcarchive" -framework "$product.framework")
+        archive "$product tvOS" "generic/platform=tvOS" "$ARCHIVES_TEMP_OUTPUT/$product/tvos"
+        xcoptions+=(-archive "$ARCHIVES_TEMP_OUTPUT/$product/tvos.xcarchive" -framework "$product.framework")
 
-        archive "$product tvOS" "generic/platform=tvOS Simulator" "$ARCHIVES_OUTPUT/$product/tvos-simulator"
-        xcoptions+=(-archive "$ARCHIVES_OUTPUT/$product/tvos-simulator.xcarchive" -framework "$product.framework")
+        archive "$product tvOS" "generic/platform=tvOS Simulator" "$ARCHIVES_TEMP_OUTPUT/$product/tvos-simulator"
+        xcoptions+=(-archive "$ARCHIVES_TEMP_OUTPUT/$product/tvos-simulator.xcarchive" -framework "$product.framework")
     fi
 
     # Datadog class conflicts with module name and Swift emits invalid module interface
@@ -125,7 +123,7 @@ PLATFORMS=""
 
 echo_info "Building xcframeworks:"
 echo_info "- REPO_PATH = '$REPO_PATH'"
-echo_info "- ARCHIVES_OUTPUT = '$ARCHIVES_OUTPUT'"
+echo_info "- ARCHIVES_TEMP_OUTPUT = '$ARCHIVES_TEMP_OUTPUT'"
 echo_info "- XCFRAMEWORKS_OUTPUT = '$XCFRAMEWORKS_OUTPUT'"
 echo_info "- PLATFORMS = '$PLATFORMS'"
 
@@ -149,3 +147,5 @@ if [[ "$ios" == "true" ]]; then
     build_xcframework DatadogWebViewTracking "iOS"
     build_xcframework DatadogSessionReplay "iOS"
 fi
+
+rm -rf "$ARCHIVES_TEMP_OUTPUT"

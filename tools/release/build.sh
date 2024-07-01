@@ -15,10 +15,22 @@ rm -rf "$artifacts_path"
 mkdir -p "$artifacts_path"
 
 REPO_CLONE_PATH="$artifacts_path/dd-sdk-ios"
-XCFRAMEWORKS_OUTPUT_PATH="$artifacts_path"
+XCFRAMEWORKS_OUTPUT_PATH="$artifacts_path/xcframeworks"
+XCFRAMEWORKS_ZIP_NAME="Datadog.xcframework.zip"
 
 echo_subtitle "Building artifacts for '$tag' in '$artifacts_path'"
+
+# Clone a fresh version of the repo to artifacts path. This is to ensure that distribution tool
+# from current repo will operate on a clean version of the repo not altered by any configuration changes.
 git clone --depth 1 --branch $tag --single-branch git@github.com:DataDog/dd-sdk-ios.git $REPO_CLONE_PATH
-./tools/release/build-xcframeworks.sh --repo-path "$REPO_CLONE_PATH" --ios --tvos --output-path $XCFRAMEWORKS_OUTPUT_PATH
+
+# Build XCFrameworks using distribution tools from current repo.
+./tools/release/build-xcframeworks.sh --repo-path "$REPO_CLONE_PATH" \
+    --ios --tvos \
+    --output-path $XCFRAMEWORKS_OUTPUT_PATH
+
+# Zip XCFrameworks
+cd $XCFRAMEWORKS_OUTPUT_PATH && zip -q --symlinks -r $XCFRAMEWORKS_ZIP_NAME *.xcframework
+
 echo_succ "Artifacts are ready in '$artifacts_path':"
 ls $artifacts_path
