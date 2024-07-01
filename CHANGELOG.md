@@ -4,6 +4,10 @@
 - [IMPROVEMENT] Allow disabling app hang monitoring in ObjC API. See [#1908][]
 - [IMPROVEMENT] Update RUM and Telemetry models with KMP source. See [#1925][]
 
+# 2.11.1 / 01-07-2024
+
+- [FIX] Fix compilation issues on Xcode 16 beta. See [#1898][]
+
 # 2.13.0 / 13-06-2024
 
 - [IMPROVEMENT] Bump `IPHONEOS_DEPLOYMENT_TARGET` and `TVOS_DEPLOYMENT_TARGET` from 11 to 12. See [#1891][]
