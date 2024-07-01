@@ -190,7 +190,7 @@ Smoke Tests (tvOS):
 # └──────────────┘
 
 Release (build):
-  stage: release:build
+  stage: smoke-test # change to: release:build
   variables:
     XCODE: "15.3.0"
   script:
