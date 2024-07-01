@@ -26,11 +26,11 @@ rm -rf "$output_path"
 mkdir -p "$output_path"
 
 REPO_PATH=$(realpath "$repo_path")
-XCFRAMEWORKS_OUTPUT="$(realpath "$output_path")"
+XCFRAMEWORKS_OUTPUT=$(realpath "$output_path")
 ARCHIVES_TEMP_OUTPUT="$XCFRAMEWORKS_OUTPUT/archives"
 
-function check_repo {
-    echo_subtitle "Checking repo at '$REPO_PATH'"
+function check_repo_clean_state {
+    echo_subtitle2 "Checking repo at '$REPO_PATH'"
 
     git diff-index --quiet HEAD -- || { echo_err "Error:" "Repository has uncommitted changes."; exit 1; }
     
@@ -59,7 +59,7 @@ function archive {
     local destination="$2"
     local archive_path="$3"
 
-    echo_subtitle2 "Archiving scheme: '$scheme' for destination: '$destination'"
+    echo_subtitle2 "➔ Archiving scheme: '$scheme' for destination: '$destination'"
 
     xcodebuild archive \
         -workspace "Datadog.xcworkspace" \
@@ -79,7 +79,7 @@ function build_xcframework {
     local platform="$2"
     xcoptions=()
 
-    echo_subtitle "Building '$product.xcframework' using platform='$platform"
+    echo_subtitle2 "Building '$product.xcframework' using platform='$platform'"
 
     if [[ $platform == *"iOS"* ]]; then
         echo "▸ Archive $product iOS"
@@ -113,8 +113,7 @@ function build_xcframework {
 echo_info "cd '$REPO_PATH'"
 cd $REPO_PATH
 
-# Check if repo is in clean state
-check_repo
+check_repo_clean_state
 
 # Select PLATFORMS to build ('iOS' | 'tvOS' | 'iOS,tvOS')
 PLATFORMS=""
@@ -128,7 +127,7 @@ echo_info "- XCFRAMEWORKS_OUTPUT = '$XCFRAMEWORKS_OUTPUT'"
 echo_info "- PLATFORMS = '$PLATFORMS'"
 
 # Build third-party XCFrameworks
-echo_subtitle "Running 'carthage bootstrap --platform $PLATFORMS --use-xcframeworks'"
+echo_subtitle2 "Running 'carthage bootstrap --platform $PLATFORMS --use-xcframeworks'"
 carthage bootstrap --platform $PLATFORMS --use-xcframeworks
 cp -r "Carthage/Build/CrashReporter.xcframework" "$XCFRAMEWORKS_OUTPUT"
 cp -r "Carthage/Build/OpenTelemetryApi.xcframework" "$XCFRAMEWORKS_OUTPUT"
