@@ -18,6 +18,8 @@ internal extension Fixture {
             return "Sliders"
         case .progressViews:
             return "Progress Views"
+        case .activityIndicators:
+            return "Activty Indicators"
         case .segments:
             return "Segments"
         case .pickers:

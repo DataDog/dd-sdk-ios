@@ -67,6 +67,19 @@ final class SRSnapshotTests: SnapshotTestCase {
         }
     }
 
+    func testActivityIndicators() throws {
+        show(fixture: .activityIndicators)
+
+        try forPrivacyModes([.allow, .mask]) { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(privacyMode)-privacy"),
+                record: recordingMode
+            )
+        }
+    }
+
     func testSegments() throws {
         show(fixture: .segments)
 
