@@ -340,7 +340,7 @@ release-build:
 	@$(call require_param,GIT_TAG)
 	@$(call require_param,ARTIFACTS_PATH)
 	@$(ECHO_TITLE) "make release-build GIT_TAG='$(GIT_TAG)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
-	./tools/release/build.sh --tag "$(GIT_TAG" --artifacts-path "$(ARTIFACTS_PATH)"
+	./tools/release/build.sh --tag "$(GIT_TAG)" --artifacts-path "$(ARTIFACTS_PATH)"
 
 bump:
 		@read -p "Enter version number: " version;  \

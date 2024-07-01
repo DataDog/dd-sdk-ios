@@ -128,7 +128,7 @@ default:
     - make clean repo-setup ENV=ci
     - make tools-test
 
-Smoke Tests (iOS):
+.Smoke Tests (iOS):
   stage: smoke-test
   tags:
     - macos:ventura
@@ -144,7 +144,7 @@ Smoke Tests (iOS):
     - make spm-build-ios
     - make smoke-test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-Smoke Tests (tvOS):
+.Smoke Tests (tvOS):
   stage: smoke-test
   tags:
     - macos:ventura
