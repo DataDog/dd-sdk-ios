@@ -17,6 +17,7 @@ XCF_ZIP_PATH="$artifacts_path/$XCF_ZIP_NAME"
 temp_dir=$(mktemp -d)
 trap "rm -rf $temp_dir" EXIT INT
 
+echo_subtitle "Validate xcframeworks in '$XCF_ZIP_NAME'"
 echo_info "Uncompressing '$XCF_ZIP_PATH' to '$temp_dir'"
 unzip -q "$XCF_ZIP_PATH" -d "$temp_dir"
 
@@ -34,7 +35,7 @@ function validate_xcframework {
     local framework_name=$1; shift
     local slice=("$@")
 
-    echo_subtitle2 "Validating contents of '$framework_name'"
+    echo_subtitle2 "Validate contents of '$framework_name'"
 
     local framework_path="$XCF_PATH/$framework_name"
     if [[ ! -d "$framework_path" ]]; then
@@ -99,7 +100,6 @@ DATADOG_IOS=("${IOS_SWIFT[@]}" "${IOS_DSYMs[@]}" "${IOS[@]}")
 DATADOG_TVOS=("${TVOS_SWIFT[@]}" "${TVOS_DSYMs[@]}" "${TVOS[@]}")
 
 # Validate xcframeworks from the archive
-echo_subtitle "Validating xcframeworks in '$XCF_ZIP_NAME'"
 validate_xcframework "DatadogInternal.xcframework"          "${DATADOG_IOS[@]}" "${DATADOG_TVOS[@]}"
 validate_xcframework "DatadogCore.xcframework"              "${DATADOG_IOS[@]}" "${DATADOG_TVOS[@]}"
 validate_xcframework "DatadogLogs.xcframework"              "${DATADOG_IOS[@]}" "${DATADOG_TVOS[@]}"
@@ -112,8 +112,8 @@ validate_xcframework "DatadogWebViewTracking.xcframework"   "${DATADOG_IOS[@]}"
 validate_xcframework "OpenTelemetryApi.xcframework"         "${DATADOG_IOS[@]}" "${DATADOG_TVOS[@]}"
 validate_xcframework "CrashReporter.xcframework"            "${IOS[@]}" "${TVOS[@]}"
 
-# Check if archive has any unexpected files
-echo_subtitle "Checking remaining files in '$XCF_ZIP_NAME'"
+# Check if archive has any remaining files
+echo_subtitle "Check unexpected files in '$XCF_ZIP_NAME'"
 remaining_files=$(find "$XCF_PATH" -mindepth 1 -maxdepth 1)
 if [[ -n "$remaining_files" ]]; then
     echo_err "Error:" "Remaining files found but not expected:"
@@ -122,5 +122,5 @@ if [[ -n "$remaining_files" ]]; then
     done
     exit 1
 else
-    echo_succ "No remaining files found. All good."
+    echo_succ "No extra files found. All good."
 fi

@@ -346,6 +346,7 @@ release-validate:
 	@$(call require_param,GIT_TAG)
 	@$(call require_param,ARTIFACTS_PATH)
 	@$(ECHO_TITLE) "make release-validate GIT_TAG='$(GIT_TAG)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
+	./tools/release/validate-version.sh --artifacts-path "$(ARTIFACTS_PATH)" --tag "$(GIT_TAG)"
 	./tools/release/validate-xcframeworks.sh --artifacts-path "$(ARTIFACTS_PATH)"
 
 bump:
