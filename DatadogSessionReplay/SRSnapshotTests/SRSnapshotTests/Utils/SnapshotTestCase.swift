@@ -46,6 +46,8 @@ internal class SnapshotTestCase: XCTestCase {
         function: StaticString = #function
     ) throws {
         show(fixture: fixture)
+        // Give time for the view to appear and lay out properly
+        wait(seconds: 0.2)
 
         try forPrivacyModes(privacyModes) { privacyMode in
             let image = try takeSnapshot(with: privacyMode)

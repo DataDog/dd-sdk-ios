@@ -15,8 +15,7 @@ internal struct UnsupportedViewRecorder: NodeRecorder {
     private let unsupportedViewsPredicates: [(UIView, ViewTreeRecordingContext) -> Bool] = [
         { _, context in context.viewControllerContext.isRootView(of: .safari) },
         { _, context in context.viewControllerContext.isRootView(of: .activity) },
-        { _, context in context.viewControllerContext.isRootView(of: .swiftUI) },
-        { view, _ in view is UIActivityIndicatorView }
+        { _, context in context.viewControllerContext.isRootView(of: .swiftUI) }
     ]
     // swiftlint:enable opening_brace
 

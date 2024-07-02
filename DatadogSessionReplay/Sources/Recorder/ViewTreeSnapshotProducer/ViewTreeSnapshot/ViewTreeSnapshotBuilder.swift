@@ -73,7 +73,8 @@ internal func createDefaultNodeRecorders() -> [NodeRecorder] {
         UIPickerViewRecorder(),
         UIDatePickerRecorder(),
         WKWebViewRecorder(),
-        UIProgressViewRecorder()
+        UIProgressViewRecorder(),
+        UIActivityIndicatorRecorder()
     ]
 }
 #endif

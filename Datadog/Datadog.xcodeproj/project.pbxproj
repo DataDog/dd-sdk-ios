@@ -659,6 +659,8 @@
 		61FDBA15269722B4001D9D43 /* CrashReportMinifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA14269722B4001D9D43 /* CrashReportMinifierTests.swift */; };
 		61FDBA1726974CA9001D9D43 /* DDCrashReportBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1626974CA9001D9D43 /* DDCrashReportBuilderTests.swift */; };
 		61FF282824B8A31E000B3D9B /* RUMEventMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282724B8A31E000B3D9B /* RUMEventMatcher.swift */; };
+		969B3B212C33F80500D62400 /* UIActivityIndicatorRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969B3B202C33F80500D62400 /* UIActivityIndicatorRecorder.swift */; };
+		969B3B232C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969B3B222C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift */; };
 		96E414142C2AF56F005A6119 /* UIProgressViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E414132C2AF56F005A6119 /* UIProgressViewRecorder.swift */; };
 		96E414162C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E414152C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift */; };
 		9E55407C25812D1C00F6E3AD /* RUM+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E55407B25812D1C00F6E3AD /* RUM+objc.swift */; };
@@ -2686,6 +2688,8 @@
 		61FF282F24BC5E2D000B3D9B /* RUMEventFileOutputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventFileOutputTests.swift; sourceTree = "<group>"; };
 		61FF416125EE5FF400CE35EC /* CrashLogReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashLogReceiverTests.swift; sourceTree = "<group>"; };
 		61FF9A4425AC5DEA001058CC /* ViewIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewIdentifier.swift; sourceTree = "<group>"; };
+		969B3B202C33F80500D62400 /* UIActivityIndicatorRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIActivityIndicatorRecorder.swift; sourceTree = "<group>"; };
+		969B3B222C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIActivityIndicatorRecorderTests.swift; sourceTree = "<group>"; };
 		96E414132C2AF56F005A6119 /* UIProgressViewRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIProgressViewRecorder.swift; sourceTree = "<group>"; };
 		96E414152C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIProgressViewRecorderTests.swift; sourceTree = "<group>"; };
 		9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Kronos.xcframework; path = ../Carthage/Build/Kronos.xcframework; sourceTree = "<group>"; };
@@ -3609,6 +3613,7 @@
 		61054E272A6EE10A00AAA894 /* NodeRecorders */ = {
 			isa = PBXGroup;
 			children = (
+				969B3B202C33F80500D62400 /* UIActivityIndicatorRecorder.swift */,
 				61054E282A6EE10A00AAA894 /* UIDatePickerRecorder.swift */,
 				61054E292A6EE10A00AAA894 /* UITextViewRecorder.swift */,
 				61054E2A2A6EE10A00AAA894 /* UIImageViewRecorder.swift */,
@@ -3884,6 +3889,7 @@
 		61054F692A6EE1BA00AAA894 /* NodeRecorders */ = {
 			isa = PBXGroup;
 			children = (
+				969B3B222C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift */,
 				61054F6A2A6EE1BA00AAA894 /* UILabelRecorderTests.swift */,
 				61054F6B2A6EE1BA00AAA894 /* UITextFieldRecorderTests.swift */,
 				61054F6C2A6EE1BA00AAA894 /* UITabBarRecorderTests.swift */,
@@ -8248,6 +8254,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				969B3B212C33F80500D62400 /* UIActivityIndicatorRecorder.swift in Sources */,
 				61054EA22A6EE10B00AAA894 /* Scheduler.swift in Sources */,
 				A7EA88562B17639A00FE2580 /* ResourcesWriter.swift in Sources */,
 				A7B932FB2B1F6A0A00AE6477 /* EnrichedRecord.swift in Sources */,
@@ -8331,6 +8338,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				969B3B232C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift in Sources */,
 				61054FD42A6EE1BA00AAA894 /* SegmentRequestBuilderTests.swift in Sources */,
 				61054FB52A6EE1BA00AAA894 /* UISliderRecorderTests.swift in Sources */,
 				61054FB22A6EE1BA00AAA894 /* UILabelRecorderTests.swift in Sources */,
