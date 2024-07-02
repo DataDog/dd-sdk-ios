@@ -41,6 +41,9 @@ internal struct WatchdogTerminationAppState: Codable {
 
     /// The user's tracking consent at the recoding time.
     let trackingConsent: TrackingConsent
+
+    /// Returns true, if the app is running in a synthetic environment.
+    let syntheticsEnvironment: Bool
 }
 
 extension WatchdogTerminationAppState: CustomDebugStringConvertible {
@@ -56,6 +59,7 @@ extension WatchdogTerminationAppState: CustomDebugStringConvertible {
         - vendorId: \(vendorId ?? "nil")
         - processId: \(processId)
         - trackingConsent: \(trackingConsent)
+        - syntheticsEnvironment: \(syntheticsEnvironment)
         """
     }
 }

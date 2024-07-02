@@ -42,7 +42,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
         if configuration.trackWatchdogTerminations {
             let appStateManager = WatchdogTerminationAppStateManager(
                 featureScope: featureScope,
-                processId: configuration.processID
+                processId: configuration.processID,
+                syntheticsEnvironment: configuration.syntheticsEnvironment
             )
             let monitor = WatchdogTerminationMonitor(
                 appStateManager: appStateManager,

@@ -18,9 +18,17 @@ internal final class WatchdogTerminationAppStateManager {
     /// The process identifier of the app whose state is being monitored.
     let processId: UUID
 
-    init(featureScope: FeatureScope, processId: UUID) {
+    /// Returns true, if the app is running in a synthetic environment.
+    let syntheticsEnvironment: Bool
+
+    init(
+        featureScope: FeatureScope,
+        processId: UUID,
+        syntheticsEnvironment: Bool
+    ) {
         self.featureScope = featureScope
         self.processId = processId
+        self.syntheticsEnvironment = syntheticsEnvironment
     }
 
     /// Deletes the app state from the data store.
@@ -99,7 +107,8 @@ internal final class WatchdogTerminationAppStateManager {
                 isActive: true,
                 vendorId: context.device.vendorId,
                 processId: self.processId,
-                trackingConsent: context.trackingConsent
+                trackingConsent: context.trackingConsent,
+                syntheticsEnvironment: self.syntheticsEnvironment
             )
             completion(state)
         }
