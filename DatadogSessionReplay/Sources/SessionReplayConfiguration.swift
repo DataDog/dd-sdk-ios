@@ -8,7 +8,9 @@
 import Foundation
 import DatadogInternal
 
+// swiftlint:disable duplicate_imports
 @_exported import enum DatadogInternal.SessionReplayPrivacyLevel
+// swiftlint:enable duplicate_imports
 
 extension SessionReplay {
     /// Session Replay feature configuration.
