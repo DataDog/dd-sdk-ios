@@ -10,19 +10,16 @@ import DatadogCore
 
 /// Casts `[String: Any]` attributes to their `Encodable` representation by wrapping each `Any` into `AnyEncodable`.
 internal func castAttributesToSwift(_ attributes: [String: Any]) -> [String: Encodable] {
-    return attributes.mapValues { AnyEncodable($0) }
+    attributes.mapValues { $0 as? Encodable ?? AnyEncodable($0) }
 }
 
 /// Casts `[String: Encodable]` attributes to their `Any` representation by unwrapping each `AnyEncodable` into `Any`.
 internal func castAttributesToObjectiveC(_ attributes: [String: Encodable]) -> [String: Any] {
-    return attributes
-        .compactMapValues { value in (value as? AnyEncodable)?.value }
+    attributes.mapValues { ($0 as? AnyEncodable).map(\.value) ?? $0 }
 }
 
 /// Helper extension to use `castAttributesToObjectiveC(_:)` in auto generated ObjC interop `RUMDataModels`.
 /// Unlike the function it wraps, it has postfix notation which makes it easier to use in generated code.
 internal extension Dictionary where Key == String, Value == Encodable {
-    func castToObjectiveC() -> [String: Any] {
-        return castAttributesToObjectiveC(self)
-    }
+    func castToObjectiveC() -> [String: Any] { castAttributesToObjectiveC(self) }
 }
