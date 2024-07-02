@@ -77,7 +77,7 @@ public extension RUMMonitorProtocol {
     ///   - stack: stack trace of the error. No specific format is required. If not specified, it will be inferred from `file` and `line`.
     ///   - source: the origin of the error.
     ///   - attributes: custom attributes to attach to this error.
-    ///   - file: the file in which the error occurred (the default is the `#filePath` of the caller).
+    ///   - file: the file in which the error occurred (the default is the `#fileID` of the caller).
     ///   - line: the line number on which the error occurred (the default is the `#line` of the caller).
     func addError(
         message: String,
@@ -85,7 +85,7 @@ public extension RUMMonitorProtocol {
         stack: String? = nil,
         source: RUMErrorSource = .custom,
         attributes: [AttributeKey: AttributeValue] = [:],
-        file: StaticString? = #filePath,
+        file: StaticString? = #fileID,
         line: UInt? = #line
     ) {
         addError(

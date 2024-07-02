@@ -7,7 +7,7 @@
 import Foundation
 import TestUtilities
 
-func DDTAssertValidRUMUUID(_ uuid: @autoclosure () throws -> String?, _ message: @autoclosure () -> String = "", file: StaticString = #filePath, line: UInt = #line) {
+func DDTAssertValidRUMUUID(_ uuid: @autoclosure () throws -> String?, _ message: @autoclosure () -> String = "", file: StaticString = #fileID, line: UInt = #line) {
     _DDEvaluateAssertion(message: message(), file: file, line: line) {
         try _DDTAssertValidRUMUUID(uuid())
     }
