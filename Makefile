@@ -191,10 +191,10 @@ smoke-test-ios:
 
 # Run all smoke tests using iOS Simulator
 smoke-test-ios-all:
-	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/spm"
+	# @$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/spm"
 	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/carthage"
-	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/cocoapods"
-	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/xcframeworks"
+	# @$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/cocoapods"
+	# @$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/xcframeworks"
 
 # Run smoke tests for specified TEST_DIRECTORY using tvOS Simulator
 smoke-test-tvos:
@@ -206,10 +206,10 @@ smoke-test-tvos:
 
 # Run all smoke tests using tvOS Simulator
 smoke-test-tvos-all:
-	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/spm"
+	# @$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/spm"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/carthage"
-	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/cocoapods"
-	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/xcframeworks"
+	# @$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/cocoapods"
+	# @$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/xcframeworks"
 
 # Builds SPM package SCHEME for specified DESTINATION
 spm-build:

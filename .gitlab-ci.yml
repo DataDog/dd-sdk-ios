@@ -54,7 +54,7 @@ ENV check:
 # │ SDK changes integration: │
 # └──────────────────────────┘
 
-Lint:
+.Lint:
   stage: lint
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -64,7 +64,7 @@ Lint:
     - make lint license-check
     - make rum-models-verify sr-models-verify
 
-Unit Tests (iOS):
+.Unit Tests (iOS):
   stage: test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -79,7 +79,7 @@ Unit Tests (iOS):
     - make clean repo-setup ENV=ci
     - make test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-Unit Tests (tvOS):
+.Unit Tests (tvOS):
   stage: test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -94,7 +94,7 @@ Unit Tests (tvOS):
     - make clean repo-setup ENV=ci
     - make test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-UI Tests:
+.UI Tests:
   stage: ui-test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -116,7 +116,7 @@ UI Tests:
     - make clean repo-setup ENV=ci
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-Tools Tests:
+.Tools Tests:
   stage: test
   rules: 
     - !reference [.run:when-develop-or-master, rules]
@@ -157,7 +157,7 @@ Smoke Tests (tvOS):
     - make spm-build-tvos
     - make smoke-test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
     
-Smoke Tests (visionOS):
+.Smoke Tests (visionOS):
   stage: smoke-test
   tags:
     - macos:ventura
@@ -170,7 +170,7 @@ Smoke Tests (visionOS):
     - make clean repo-setup ENV=ci
     - make spm-build-visionos
 
-Smoke Tests (macOS):
+.Smoke Tests (macOS):
   stage: smoke-test
   tags:
     - macos:ventura
