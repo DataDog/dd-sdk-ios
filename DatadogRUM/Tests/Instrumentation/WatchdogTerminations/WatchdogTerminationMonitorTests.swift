@@ -100,7 +100,8 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
 
         let appStateManager = WatchdogTerminationAppStateManager(
             featureScope: featureScope,
-            processId: processId
+            processId: processId,
+            syntheticsEnvironment: false
         )
 
         let checker = WatchdogTerminationChecker(appStateManager: appStateManager, featureScope: featureScope)
