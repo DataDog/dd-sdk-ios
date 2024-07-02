@@ -46,7 +46,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.2"),
-        .package(url: "https://github.com/DataDog/opentelemetry-swift-packages.git", branch: "ganeshnj/chore/import-1.6.0-code")
+        .package(url: "https://github.com/DataDog/opentelemetry-swift-packages.git", exact: "1.6.0")
     ],
     targets: [
         .target(
