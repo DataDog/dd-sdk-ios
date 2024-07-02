@@ -201,4 +201,4 @@ Release (build):
     - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --os "17.4" --ssh # temporary, waiting for AMI
     - make env-check
     - make clean repo-setup ENV=ci
-    - make release-build GIT_TAG="$GIT_TAG" ARTIFACTS_PATH="artifacts/$GIT_TAG"
+    - make release-build release-validate GIT_TAG="$GIT_TAG" ARTIFACTS_PATH="artifacts/$GIT_TAG"
