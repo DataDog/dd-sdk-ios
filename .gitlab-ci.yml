@@ -4,9 +4,8 @@ stages:
   - test
   - ui-test
   - smoke-test
-  - release:build
-  - release:validate
-  - release:deploy
+  - release-build
+  - release-publish
 
 variables:
   MAIN_BRANCH: "master"
@@ -128,7 +127,7 @@ default:
     - make clean repo-setup ENV=ci
     - make tools-test
 
-Smoke Tests (iOS):
+.Smoke Tests (iOS):
   stage: smoke-test
   tags:
     - macos:ventura
@@ -144,7 +143,7 @@ Smoke Tests (iOS):
     - make spm-build-ios
     - make smoke-test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-Smoke Tests (tvOS):
+.Smoke Tests (tvOS):
   stage: smoke-test
   tags:
     - macos:ventura
@@ -190,7 +189,7 @@ Smoke Tests (tvOS):
 # └──────────────┘
 
 Release (build):
-  stage: smoke-test # change to: release:build
+  stage: release-build
   variables:
     XCODE: "15.3.0"
     GIT_TAG: "2.13.0"
@@ -202,3 +201,16 @@ Release (build):
     - make env-check
     - make clean repo-setup ENV=ci
     - make release-build release-validate GIT_TAG="$GIT_TAG" ARTIFACTS_PATH="artifacts/$GIT_TAG"
+
+Release (publish):
+  stage: release-publish
+  variables:
+    XCODE: "15.3.0"
+    GIT_TAG: "2.13.0"
+  artifacts:
+    paths:
+      - artifacts
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --os "17.4" --ssh # temporary, waiting for AMI
+    - ls artifacts/
+    - ls artifacts/$GIT_TAG
