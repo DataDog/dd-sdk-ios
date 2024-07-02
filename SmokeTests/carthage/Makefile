@@ -34,6 +34,8 @@ endif
 clean:
 	@$(ECHO_SUBTITLE2) "make clean"
 	rm -rf Carthage
+	rm -f Cartfile.resolved
+	rm -f Cartfile
 
 install:
 	@$(ECHO_SUBTITLE2) "make install"
