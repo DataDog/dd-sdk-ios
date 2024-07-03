@@ -38,37 +38,7 @@ internal struct UIActivityIndicatorRecorder: NodeRecorder {
         let subtreeViewRecorder = ViewTreeRecorder(
             nodeRecorders: [
                 UIImageViewRecorder(
-                    shouldRecordImagePredicate: { imageView in
-
-                        print("animationImages:", imageView.animationImages?.count)
-                        print("animationDuration:", imageView.animationDuration)
-
-                        /*if let animationImages = imageView.animationImages {
-                            for animationImage in animationImages {
-                                print("animationImage:", animationImage)
-                                if animationImage.pngData() != nil {
-                                    print("PNG")
-                                } else if animationImage.jpegData(compressionQuality: 1.0) != nil {
-                                    print("JPEG")
-                                }
-                            }
-                        }*/
-
-                        print("animationKeys():", imageView.layer.animationKeys()?.count)
-
-                        if let animationKeys = imageView.layer.animationKeys() {
-                            for animationKey in animationKeys {
-                                print("animationKey:", animationKey)
-                                if let animation = imageView.layer.animation(forKey: animationKey) {
-                                    print("animation:", animation)
-                                    print("duration: \(animation.duration)")
-                                    print("repeat count: \(animation.repeatCount)")
-                                }
-                            }
-                        }
-
-                        return imageView.image == nil ? false : true
-                    }
+                    shouldRecordImagePredicate: { $0.image != nil }
                 )
             ]
         )

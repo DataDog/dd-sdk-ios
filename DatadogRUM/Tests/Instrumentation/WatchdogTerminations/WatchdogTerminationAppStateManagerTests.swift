@@ -21,7 +21,8 @@ final class WatchdogTerminationAppStateManagerTests: XCTestCase {
         featureScope = FeatureScopeMock()
         sut = WatchdogTerminationAppStateManager(
             featureScope: featureScope,
-            processId: .init()
+            processId: .init(),
+            syntheticsEnvironment: false
         )
     }
 

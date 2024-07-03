@@ -16,6 +16,22 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
         XCTAssertFalse(sut.isWatchdogTermination(launch: .mockRandom(), deviceInfo: .mockWith(isSimulator: false), from: nil, to: .mockRandom()))
     }
 
+    func testSyntheticsEnvironment_NoWatchdogTermination() throws {
+        let previous = WatchdogTerminationAppState(
+            appVersion: .mockAny(),
+            osVersion: .mockAny(),
+            systemBootTime: .mockAny(),
+            isDebugging: true,
+            wasTerminated: .mockAny(),
+            isActive: .mockAny(),
+            vendorId: .mockAny(),
+            processId: .mockAny(),
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: true
+        )
+        XCTAssertFalse(sut.isWatchdogTermination(launch: .mockRandom(), deviceInfo: .mockWith(isSimulator: false), from: previous, to: .mockRandom()))
+    }
+
     func testIsSimulatorBuild_NoWatchdogTermination() throws {
         XCTAssertFalse(sut.isWatchdogTermination(launch: .mockRandom(), deviceInfo: .mockWith(isSimulator: false), from: .mockRandom(), to: .mockRandom()))
     }
@@ -30,7 +46,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: .mockAny(),
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
         XCTAssertFalse(sut.isWatchdogTermination(launch: .mockRandom(), deviceInfo: .mockWith(isSimulator: false), from: previous, to: .mockRandom()))
     }
@@ -45,7 +62,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: .mockAny(),
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         let current = WatchdogTerminationAppState(
@@ -57,7 +75,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: .mockAny(),
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         XCTAssertFalse(sut.isWatchdogTermination(launch: .mockRandom(), deviceInfo: .mockWith(isSimulator: false), from: previous, to: current))
@@ -73,7 +92,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: .mockAny(),
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         let current = WatchdogTerminationAppState(
@@ -85,7 +105,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: .mockAny(),
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         XCTAssertFalse(sut.isWatchdogTermination(launch: .init(didCrash: true), deviceInfo: .mockWith(isSimulator: false), from: previous, to: current))
@@ -101,7 +122,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: .mockAny(),
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         let current = WatchdogTerminationAppState(
@@ -113,7 +135,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: .mockAny(),
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         XCTAssertFalse(sut.isWatchdogTermination(launch: .init(didCrash: false), deviceInfo: .mockWith(isSimulator: false), from: previous, to: current))
@@ -129,7 +152,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: .mockAny(),
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         let current = WatchdogTerminationAppState(
@@ -141,7 +165,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: .mockAny(),
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         XCTAssertFalse(sut.isWatchdogTermination(launch: .init(didCrash: false), deviceInfo: .mockWith(isSimulator: false), from: previous, to: current))
@@ -157,7 +182,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: .mockAny(),
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         let current = WatchdogTerminationAppState(
@@ -169,7 +195,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: .mockAny(),
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         XCTAssertFalse(sut.isWatchdogTermination(launch: .init(didCrash: false), deviceInfo: .mockWith(isSimulator: false), from: previous, to: current))
@@ -185,7 +212,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: "foo",
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         let current = WatchdogTerminationAppState(
@@ -197,7 +225,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: "bar",
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         XCTAssertFalse(sut.isWatchdogTermination(launch: .init(didCrash: false), deviceInfo: .mockWith(isSimulator: false), from: previous, to: current))
@@ -215,7 +244,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: "foo",
             processId: pid,
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         let current = WatchdogTerminationAppState(
@@ -227,7 +257,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: "foo",
             processId: pid,
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         XCTAssertFalse(sut.isWatchdogTermination(launch: .init(didCrash: false), deviceInfo: .mockWith(isSimulator: false), from: previous, to: current))
@@ -243,7 +274,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: false,
             vendorId: "foo",
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         let current = WatchdogTerminationAppState(
@@ -255,7 +287,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: .mockAny(),
             vendorId: "foo",
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         XCTAssertFalse(sut.isWatchdogTermination(launch: .init(didCrash: false), deviceInfo: .mockWith(isSimulator: false), from: previous, to: current))
@@ -271,7 +304,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: true,
             vendorId: "foo",
             processId: UUID(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         let current = WatchdogTerminationAppState(
@@ -283,7 +317,8 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             isActive: true,
             vendorId: "foo",
             processId: UUID(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: false
         )
 
         XCTAssertTrue(sut.isWatchdogTermination(launch: .init(didCrash: false), deviceInfo: .mockWith(isSimulator: false), from: previous, to: current))
