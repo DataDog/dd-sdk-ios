@@ -1,5 +1,6 @@
 # Unreleased
 
+- [IMPROVEMENT] Use `#fileID` over `#filePath` as the default argument in errors. See [#1938][]
 - [FEATURE] Add support for Watchdog Terminations tracking in RUM. See [#1917][] [#1911][] [#1912][] [#1889][]
 - [IMPROVEMENT] Allow disabling app hang monitoring in ObjC API. See [#1908][]
 - [IMPROVEMENT] Update RUM and Telemetry models with KMP source. See [#1925][]
@@ -698,6 +699,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1912]: https://github.com/DataDog/dd-sdk-ios/pull/1912
 [#1889]: https://github.com/DataDog/dd-sdk-ios/pull/1889
 [#1925]: https://github.com/DataDog/dd-sdk-ios/pull/1925
+[#1938]: https://github.com/DataDog/dd-sdk-ios/pull/1938
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
