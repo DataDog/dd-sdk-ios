@@ -61,9 +61,13 @@ internal struct UIImageViewRecorder: NodeRecorder {
         }
 
         let shouldRecordImage = shouldRecordImagePredicate(imageView)
-        let imageResource = shouldRecordImage ? imageView.image.map { image in
+
+        /*let imageResource = shouldRecordImage ? imageView.image.map { image in
             UIImageResource(image: image, tintColor: tintColorProvider(imageView))
-        } : nil
+        } : nil*/
+
+        let imageResource = shouldRecordImage ? getImageResource(from: imageView) : nil
+
 
         let builder = UIImageViewWireframesBuilder(
             wireframeID: ids[0],
@@ -78,6 +82,18 @@ internal struct UIImageViewRecorder: NodeRecorder {
            subtreeStrategy: .record,
            nodes: [node]
        )
+    }
+
+    private func getImageResource(from imageView: UIImageView) -> UIImageResource? {
+        var imageResource = imageView.image.map { image in
+            UIImageResource(image: image, tintColor: tintColorProvider(imageView))
+        }
+
+        if let animationImages = imageView.animationImages {
+            let randomNumber = Int.random(in: 0..<animationImages.count)
+            imageResource = UIImageResource(image: animationImages[randomNumber], tintColor: tintColorProvider(imageView))
+        }
+        return imageResource
     }
 }
 
@@ -208,4 +224,5 @@ fileprivate extension UIImageView {
         return superViewType == "_UIBarBackground"
     }
 }
+
 #endif
