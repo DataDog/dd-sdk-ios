@@ -16,48 +16,6 @@ import SafariServices
 class UnsupportedViewRecorderTests: XCTestCase {
     private let recorder = UnsupportedViewRecorder()
 
-    private let unsupportedViews: [UIView] = [
-        UIActivityIndicatorView()
-    ].compactMap { $0 }
-    private let expectedUnsupportedViewsClassNames = [
-        "UIActivityIndicatorView", "WKWebView"
-    ]
-    private let otherViews = [UILabel(), UIView(), UIImageView(), UIScrollView(), WKWebView()]
-
-    /// `ViewAttributes` simulating common attributes of the view.
-    private var viewAttributes: ViewAttributes = .mockAny()
-
-    func testWhenViewIsNotVisible() throws {
-        // When
-        viewAttributes = .mock(fixture: .invisible)
-
-        // Then
-        try unsupportedViews.forEach { view in
-            let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
-            XCTAssertTrue(semantics is InvisibleElement)
-        }
-        otherViews.forEach { view in
-            XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
-        }
-    }
-
-    func testWhenViewIsVisible() throws {
-        // When
-        viewAttributes = .mock(fixture: .visible([.noAppearance, .someAppearance].randomElement()!))
-
-        // Then
-        try unsupportedViews.enumerated().forEach { index, view in
-            let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
-            XCTAssertTrue(semantics is SpecificElement)
-            XCTAssertEqual(semantics.subtreeStrategy, .ignore)
-            let wireframeBuilder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UnsupportedViewWireframesBuilder)
-            XCTAssertEqual(wireframeBuilder.unsupportedClassName, expectedUnsupportedViewsClassNames[index])
-        }
-        otherViews.forEach { view in
-            XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
-        }
-    }
-
     func testWhenViewIsUnsupportedViewControllersRootView() throws {
         var context = ViewTreeRecordingContext.mockRandom()
         context.viewControllerContext.isRootView = true

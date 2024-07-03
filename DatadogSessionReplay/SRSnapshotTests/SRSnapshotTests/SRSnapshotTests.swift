@@ -34,6 +34,10 @@ final class SRSnapshotTests: SnapshotTestCase {
         try takeSnapshotFor(.progressViews, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
+    func testActivityIndicators() throws {
+        try takeSnapshotFor(.activityIndicators, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+    }
+
     func testSegments() throws {
         try takeSnapshotFor(.segments, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
