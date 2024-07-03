@@ -38,9 +38,7 @@ internal struct UIActivityIndicatorRecorder: NodeRecorder {
         let subtreeViewRecorder = ViewTreeRecorder(
             nodeRecorders: [
                 UIImageViewRecorder(
-                    shouldRecordImagePredicate: { imageView in
-                        return imageView.image == nil ? false : true
-                    }
+                    shouldRecordImagePredicate: { $0.image != nil }
                 )
             ]
         )
