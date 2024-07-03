@@ -16,9 +16,6 @@ import SafariServices
 class UnsupportedViewRecorderTests: XCTestCase {
     private let recorder = UnsupportedViewRecorder()
 
-    /// `ViewAttributes` simulating common attributes of the view.
-    private var viewAttributes: ViewAttributes = .mockAny()
-
     func testWhenViewIsUnsupportedViewControllersRootView() throws {
         var context = ViewTreeRecordingContext.mockRandom()
         context.viewControllerContext.isRootView = true
