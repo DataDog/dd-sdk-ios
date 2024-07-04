@@ -41,6 +41,8 @@ public struct NOPFeatureMessageReceiver: FeatureMessageReceiver {
     }
 }
 
+/// A receiver that combines multiple receivers. It will loop though receivers and stop on the first that is able to
+/// consume the given message.
 public struct CombinedFeatureMessageReceiver: FeatureMessageReceiver {
     let receivers: [FeatureMessageReceiver]
 

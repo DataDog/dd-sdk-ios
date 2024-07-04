@@ -1,4 +1,15 @@
-all: dependencies templates
+all: env-check repo-setup templates
+.PHONY: env-check repo-setup clean templates \
+		lint license-check \
+		test test-ios test-ios-all test-tvos test-tvos-all \
+		ui-test ui-test-all ui-test-podinstall \
+		tools-test \
+		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
+		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos \
+		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
+
+REPO_ROOT := $(PWD)
+include tools/utils/common.mk
 
 define DD_SDK_TESTING_XCCONFIG_CI
 DD_TEST_RUNNER=1\n
@@ -56,24 +67,182 @@ endif
 
 endif
 
-# Prepare project on GitLab CI (this will replace `make dependencies` once we're fully on GitLab).
-dependencies-gitlab:
-		@echo "📝  Source xcconfigs..."
-		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
-		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
-		# We use Xcode 15 on GitLab, so overwrite deployment target in all projects to avoid build errors:
-		@echo "IPHONEOS_DEPLOYMENT_TARGET=12.0\n" >> xcconfigs/Base.local.xcconfig;
-		@echo "⚙️  Carthage bootstrap..."
-		@carthage bootstrap --platform iOS,tvOS --use-xcframeworks
+# Default ENV for setting up the repo
+DEFAULT_ENV := dev
+
+env-check:
+	@$(ECHO_TITLE) "make env-check"
+	./tools/env-check.sh
+
+repo-setup:
+	@:$(eval ENV ?= $(DEFAULT_ENV))
+	@$(ECHO_TITLE) "make repo-setup ENV='$(ENV)'"
+	./tools/repo-setup/repo-setup.sh --env "$(ENV)"
+
+clean:
+	@$(ECHO_TITLE) "make clean"
+	./tools/clean.sh
+
+lint:
+	@$(ECHO_TITLE) "make lint"
+	./tools/lint/run-linter.sh
+
+license-check:
+	@$(ECHO_TITLE) "make license-check"
+	./tools/license/check-license.sh
+
+# Test env for running iOS tests in local:
+DEFAULT_IOS_OS := latest
+DEFAULT_IOS_PLATFORM := iOS Simulator
+DEFAULT_IOS_DEVICE := iPhone 15 Pro
+
+# Test env for running tvOS tests in local:
+DEFAULT_TVOS_OS := latest
+DEFAULT_TVOS_PLATFORM := tvOS Simulator
+DEFAULT_TVOS_DEVICE := Apple TV
+
+# Run unit tests for specified SCHEME
+test:
+	@$(call require_param,SCHEME)
+	@$(call require_param,OS)
+	@$(call require_param,PLATFORM)
+	@$(call require_param,DEVICE)
+	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)'"
+	./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
+
+# Run unit tests for specified SCHEME using iOS Simulator
+test-ios:
+	@$(call require_param,SCHEME)
+	@:$(eval OS ?= $(DEFAULT_IOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_IOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_IOS_DEVICE))
+	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run unit tests for all iOS schemes
+test-ios-all:
+	@$(MAKE) test-ios SCHEME="DatadogCore iOS"
+	@$(MAKE) test-ios SCHEME="DatadogInternal iOS"
+	@$(MAKE) test-ios SCHEME="DatadogRUM iOS"
+	@$(MAKE) test-ios SCHEME="DatadogSessionReplay iOS"
+	@$(MAKE) test-ios SCHEME="DatadogLogs iOS"
+	@$(MAKE) test-ios SCHEME="DatadogTrace iOS"
+	@$(MAKE) test-ios SCHEME="DatadogCrashReporting iOS"
+	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking iOS"
+
+# Run unit tests for specified SCHEME using tvOS Simulator
+test-tvos:
+	@$(call require_param,SCHEME)
+	@:$(eval OS ?= $(DEFAULT_TVOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_TVOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_TVOS_DEVICE))
+	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run unit tests for all tvOS schemes
+test-tvos-all:
+	@$(MAKE) test-tvos SCHEME="DatadogCore tvOS"
+	@$(MAKE) test-tvos SCHEME="DatadogInternal tvOS"
+	@$(MAKE) test-tvos SCHEME="DatadogRUM tvOS"
+	@$(MAKE) test-tvos SCHEME="DatadogLogs tvOS"
+	@$(MAKE) test-tvos SCHEME="DatadogTrace tvOS"
+	@$(MAKE) test-tvos SCHEME="DatadogCrashReporting tvOS"
+
+# Run UI tests for specified TEST_PLAN
+ui-test:
+	@$(call require_param,TEST_PLAN)
+	@:$(eval OS ?= $(DEFAULT_IOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_IOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_IOS_DEVICE))
+	@$(ECHO_TITLE) "make ui-test TEST_PLAN='$(TEST_PLAN)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)'"
+	./tools/ui-test.sh --test-plan "$(TEST_PLAN)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
+
+# Run UI tests for all test plans
+ui-test-all:
+	@$(MAKE) ui-test TEST_PLAN="Default"
+	@$(MAKE) ui-test TEST_PLAN="RUM"
+	@$(MAKE) ui-test TEST_PLAN="CrashReporting"
+	@$(MAKE) ui-test TEST_PLAN="NetworkInstrumentation"
+
+# Update UI test project with latest SDK
+ui-test-podinstall:
+	@$(ECHO_TITLE) "make ui-test-podinstall"
+	cd IntegrationTests/ && bundle exec pod install
+
+# Run tests for repo tools
+tools-test:
+	@$(ECHO_TITLE) "make tools-test"
+	./tools/tools-test.sh
+
+# Run smoke tests
+smoke-test:
+	@$(call require_param,TEST_DIRECTORY)
+	@$(call require_param,OS)
+	@$(call require_param,PLATFORM)
+	@$(call require_param,DEVICE)
+	@$(ECHO_TITLE) "make smoke-test TEST_DIRECTORY='$(TEST_DIRECTORY)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)'"
+	./tools/smoke-test.sh --test-directory "$(TEST_DIRECTORY)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
+
+# Run smoke tests for specified TEST_DIRECTORY using iOS Simulator
+smoke-test-ios:
+	@$(call require_param,TEST_DIRECTORY)
+	@:$(eval OS ?= $(DEFAULT_IOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_IOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_IOS_DEVICE))
+	@$(MAKE) smoke-test TEST_DIRECTORY="$(TEST_DIRECTORY)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run all smoke tests using iOS Simulator
+smoke-test-ios-all:
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/spm"
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/carthage"
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/cocoapods"
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/xcframeworks"
+
+# Run smoke tests for specified TEST_DIRECTORY using tvOS Simulator
+smoke-test-tvos:
+	@$(call require_param,TEST_DIRECTORY)
+	@:$(eval OS ?= $(DEFAULT_TVOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_TVOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_TVOS_DEVICE))
+	@$(MAKE) smoke-test TEST_DIRECTORY="$(TEST_DIRECTORY)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run all smoke tests using tvOS Simulator
+smoke-test-tvos-all:
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/spm"
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/carthage"
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/cocoapods"
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/xcframeworks"
+
+# Builds SPM package SCHEME for specified DESTINATION
+spm-build:
+	@$(call require_param,SCHEME)
+	@$(call require_param,DESTINATION)
+	@$(ECHO_TITLE) "make spm-build SCHEME='$(SCHEME)' DESTINATION='$(DESTINATION)'"
+	./tools/spm-build.sh --scheme "$(SCHEME)" --destination "$(DESTINATION)"
+
+# Builds SPM package for iOS
+spm-build-ios:
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=ios"
+
+# Builds SPM package for tvOS
+spm-build-tvos:
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=tvOS"
+
+# Builds SPM package for visionOS
+spm-build-visionos:
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=visionOS"
+
+# Builds SPM package for macOS (and Mac Catalyst)
+spm-build-macos:
+	# Whole package for Mac Catalyst:
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="platform=macOS,variant=Mac Catalyst"
+	# Only compatible schemes for macOS:
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCore"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogLogs"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogTrace"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCrashReporting"
 
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
 		@cd DatadogSessionReplay/ && swift package generate-xcodeproj
-		@echo "OK 👌"
-
-prepare-integration-tests:
-		@echo "⚙️  Prepare Integration Tests ..."
-		@cd IntegrationTests/ && pod install
 		@echo "OK 👌"
 
 open-sr-snapshot-tests:
@@ -83,51 +252,39 @@ open-sr-snapshot-tests:
 		@open --env DD_TEST_UTILITIES_ENABLED ./DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests.xcworkspace
 
 templates:
-		@echo "⚙️  Installing Xcode templates..."
-		./tools/xcode-templates/install-xcode-templates.sh
-		@echo "OK 👌"
+	@$(ECHO_TITLE) "make templates"
+	./tools/xcode-templates/install-xcode-templates.sh
 
-# Tests if current branch ships a valid SPM package.
-test-spm:
-		@cd dependency-manager-tests/spm && $(MAKE)
+# Generate data models from https://github.com/DataDog/rum-events-format
+models-generate:
+	@$(call require_param,PRODUCT) # 'rum' or 'sr'
+	@$(call require_param,GIT_REF)
+	@$(ECHO_TITLE) "make models-generate PRODUCT='$(PRODUCT)' GIT_REF='$(GIT_REF)'"
+	./tools/rum-models-generator/run.py generate $(PRODUCT) --git_ref=$(GIT_REF)
 
-# Tests if current branch ships a valid Carthage project.
-test-carthage:
-		@cd dependency-manager-tests/carthage && $(MAKE)
+# Validate data models against https://github.com/DataDog/rum-events-format
+models-verify:
+	@$(call require_param,PRODUCT) # 'rum' or 'sr'
+	@$(ECHO_TITLE) "make models-verify PRODUCT='$(PRODUCT)'"
+	./tools/rum-models-generator/run.py verify $(PRODUCT)
 
-# Tests if current branch ships a valid Cocoapods project.
-test-cocoapods:
-		@cd dependency-manager-tests/cocoapods && $(MAKE)
-
-# Tests if current branch ships valid a XCFrameworks project.
-test-xcframeworks:
-		@cd dependency-manager-tests/xcframeworks && $(MAKE)
-
-# Generate RUM data models from rum-events-format JSON Schemas
-#  - run with `git_ref=<commit hash>` argument to generate models for given schema commit or branch name (default is 'master').
+# Generate RUM data models
 rum-models-generate:
-		@echo "⚙️  Generating RUM models..."
-		./tools/rum-models-generator/run.py generate rum --git_ref=$(if $(git_ref),$(git_ref),master)
-		@echo "OK 👌"
+	@:$(eval GIT_REF ?= master)
+	@$(MAKE) models-generate PRODUCT="rum" GIT_REF="$(GIT_REF)"
 
-# Verify if RUM data models follow rum-events-format JSON Schemas
+# Validate RUM data models
 rum-models-verify:
-		@echo "🧪  Verifying RUM models..."
-		./tools/rum-models-generator/run.py verify rum
-		@echo "OK 👌"
+	@$(MAKE) models-verify PRODUCT="rum"
 
-# Generate Session Replay data models from rum-events-format JSON Schemas
-#  - run with `git_ref=<commit hash>` argument to generate models for given schema commit or branch name (default is 'master').
+# Generate SR data models
 sr-models-generate:
-		@echo "⚙️  Generating Session Replay models..."
-		./tools/rum-models-generator/run.py generate sr --git_ref=$(if $(git_ref),$(git_ref),master)
-		@echo "OK 👌"
+	@:$(eval GIT_REF ?= master)
+	@$(MAKE) models-generate PRODUCT="sr" GIT_REF="$(GIT_REF)"
 
-# Verify if Session Replay data models follow rum-events-format JSON Schemas
+# Validate SR data models
 sr-models-verify:
-		@echo "🧪  Verifying Session Replay models..."
-		./tools/rum-models-generator/run.py verify sr
-		@echo "OK 👌"
+	@$(MAKE) models-verify PRODUCT="sr"
 
 sr-push-snapshots:
 		@echo "🎬 ↗️  Pushing SR snapshots to remote repo..."

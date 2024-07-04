@@ -11,6 +11,8 @@ public enum Fixture: CaseIterable {
     case basicShapes
     case basicTexts
     case sliders
+    case progressViews
+    case activityIndicators
     case segments
     case pickers
     case switches
@@ -54,6 +56,10 @@ public enum Fixture: CaseIterable {
             return UIStoryboard.basic.instantiateViewController(withIdentifier: "Texts")
         case .sliders:
             return UIStoryboard.inputElements.instantiateViewController(withIdentifier: "Sliders")
+        case .progressViews:
+            return UIStoryboard.inputElements.instantiateViewController(withIdentifier: "ProgressViews")
+        case .activityIndicators:
+            return UIStoryboard.inputElements.instantiateViewController(withIdentifier: "ActivityIndicators")
         case .segments:
             return UIStoryboard.inputElements.instantiateViewController(withIdentifier: "Segments")
         case .pickers:

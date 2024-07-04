@@ -14,6 +14,12 @@ internal protocol CrashReportSender {
     ///   - report: The crash report.
     ///   - context: The crash context
     func send(report: DDCrashReport, with context: CrashContext)
+
+    /// Send the launch report and context to integrations.
+    ///
+    /// - Parameters:
+    ///   - launch: The launch report.
+    func send(launch: LaunchReport)
 }
 
 /// An object for sending crash reports on the Core message-bus.
@@ -65,5 +71,13 @@ internal struct MessageBusSender: CrashReportSender {
                 )
             }
         )
+    }
+
+    /// Send the launch report and context to integrations.
+    ///
+    /// - Parameters:
+    ///   - launch: The launch report.
+    func send(launch: DatadogInternal.LaunchReport) {
+        core?.set(baggage: launch, forKey: LaunchReport.baggageKey)
     }
 }

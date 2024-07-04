@@ -133,4 +133,8 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
     public func events<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
         writer.events(ofType: type)
     }
+
+    public func mostRecentModifiedFileAt(before: Date) throws -> Date? {
+        return nil
+    }
 }

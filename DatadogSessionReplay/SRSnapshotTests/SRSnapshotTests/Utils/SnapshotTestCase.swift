@@ -7,7 +7,6 @@
 import XCTest
 import SRFixtures
 import TestUtilities
-import DatadogInternal
 @_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import SRHost
@@ -36,26 +35,106 @@ internal class SnapshotTestCase: XCTestCase {
         return viewController
     }
 
+    /// Helper method for most snapshot tests
+    func takeSnapshotFor(
+        _ fixture: Fixture,
+        with privacyModes: [SessionReplayPrivacyLevel] = [defaultPrivacyLevel],
+        shouldRecord: Bool,
+        folderPath: String,
+        fileNamePrefix: String? = nil,
+        file: StaticString = #filePath,
+        function: StaticString = #function
+    ) throws {
+        show(fixture: fixture)
+        // Give time for the view to appear and lay out properly
+        wait(seconds: 0.2)
+
+        try forPrivacyModes(privacyModes) { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            let fileNameSuffix = fileNamePrefix == nil ? "-\(privacyMode)-privacy" : "-\(fileNamePrefix!)-\(privacyMode)-privacy"
+            let snapshotLocation: ImageLocation = .folder(named: folderPath, fileNameSuffix: fileNameSuffix, file: file, function: function)
+
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: snapshotLocation,
+                record: shouldRecord
+            )
+        }
+    }
+
+    /// Helper method for date and time picker snapshot tests
+    func takeSnapshotForPicker(
+        fixture: Fixture,
+        additionalSetup: ((UIViewController) -> Void)? = nil,
+        waitTime: TimeInterval,
+        shouldRecord: Bool,
+        folderPath: String,
+        fileNamePrefix: String,
+        file: StaticString = #filePath,
+        function: StaticString = #function
+    ) throws {
+        let vc = show(fixture: fixture) as! DateSetting
+        vc.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
+        additionalSetup?(vc as! UIViewController)
+        wait(seconds: waitTime)
+
+        try forPrivacyModes { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: folderPath, fileNameSuffix: "-\(fileNamePrefix)-\(privacyMode)-privacy", file: file, function: function),
+                record: shouldRecord
+            )
+        }
+    }
+
+    /// Helper method for snapshot tests showing PopupsViewController
+    func takeSnapshotForPopup(
+        fixture: Fixture,
+        showPopup: (PopupsViewController) -> Void,
+        waitTime: TimeInterval,
+        privacyModes: [SessionReplayPrivacyLevel] = [defaultPrivacyLevel],
+        shouldRecord: Bool,
+        folderPath: String,
+        file: StaticString = #filePath,
+        function: StaticString = #function
+    ) throws {
+        let vc = show(fixture: fixture) as! PopupsViewController
+        showPopup(vc)
+        wait(seconds: waitTime)
+        print("privacyModes:", privacyModes)
+
+        for privacyMode in privacyModes {
+            let image = try takeSnapshot(with: privacyMode)
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: folderPath, fileNameSuffix: "-\(privacyMode)-privacy", file: file, function: function),
+                record: shouldRecord
+            )
+        }
+    }
+
     /// Captures side-by-side snapshot of the app UI and recorded wireframes.
     func takeSnapshot(with privacyLevel: SessionReplayPrivacyLevel = defaultPrivacyLevel) throws -> UIImage {
         let expectWireframes = self.expectation(description: "Wait for wireframes")
         let expectResources = self.expectation(description: "Wait for resources")
 
         // Set up SR recorder:
-        let snapshotProcessor = SnapshotProcessor(
-            queue: NoQueue(),
-            recordWriter: RecordWriter(core: PassthroughCoreMock()),
-            srContextPublisher: SRContextPublisher(core: PassthroughCoreMock()),
-            telemetry: TelemetryMock()
-        )
         let resourceProcessor = ResourceProcessor(
             queue: NoQueue(),
             resourcesWriter: ResourcesWriter(scope: FeatureScopeMock())
         )
+
+        let snapshotProcessor = SnapshotProcessor(
+            queue: NoQueue(),
+            recordWriter: RecordWriter(core: PassthroughCoreMock()),
+            resourceProcessor: resourceProcessor,
+            srContextPublisher: SRContextPublisher(core: PassthroughCoreMock()),
+            telemetry: TelemetryMock()
+        )
+
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,
-            resourceProcessor: resourceProcessor,
-            telemetry: TelemetryMock(),
             additionalNodeRecorders: []
         )
 
@@ -74,7 +153,7 @@ internal class SnapshotTestCase: XCTestCase {
         }
 
         // Capture next record with mock RUM Context
-        recorder.captureNextRecord(
+        try recorder.captureNextRecord(
             .init(privacy: privacyLevel, applicationID: "", sessionID: "", viewID: "", viewServerTimeOffset: 0)
         )
 

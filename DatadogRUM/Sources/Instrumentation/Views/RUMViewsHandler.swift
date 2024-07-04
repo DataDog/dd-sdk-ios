@@ -25,6 +25,9 @@ internal final class RUMViewsHandler {
 
         /// Custom attributes to attach to the View.
         let attributes: [AttributeKey: AttributeValue]
+
+        /// The type of instrumentation that started this view.
+        let instrumentationType: SessionEndedMetric.ViewInstrumentationType
     }
 
     /// The current date provider.
@@ -157,7 +160,8 @@ internal final class RUMViewsHandler {
                 identity: view.identity,
                 name: view.name,
                 path: view.path,
-                attributes: view.attributes
+                attributes: view.attributes,
+                instrumentationType: view.instrumentationType
             )
         )
     }
@@ -205,7 +209,8 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     name: rumView.name,
                     path: rumView.path ?? viewController.canonicalClassName,
                     isUntrackedModal: rumView.isUntrackedModal,
-                    attributes: rumView.attributes
+                    attributes: rumView.attributes,
+                    instrumentationType: .uikit
                 )
             )
         } else if #available(iOS 13, tvOS 13, *), viewController.isModalInPresentation {
@@ -215,7 +220,8 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     name: "RUMUntrackedModal",
                     path: viewController.canonicalClassName,
                     isUntrackedModal: true,
-                    attributes: [:]
+                    attributes: [:],
+                    instrumentationType: .uikit
                 )
             )
         }
@@ -240,7 +246,8 @@ extension RUMViewsHandler: SwiftUIViewHandler {
                 name: name,
                 path: path,
                 isUntrackedModal: false,
-                attributes: attributes
+                attributes: attributes,
+                instrumentationType: .swiftui
             )
         )
     }

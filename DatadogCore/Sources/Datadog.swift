@@ -401,6 +401,8 @@ public enum Datadog {
             throw ProgrammerError(description: "The '\(instanceName)' instance of SDK is already initialized.")
         }
 
+        registerObjcExceptionHandlerOnce()
+
         let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
         if debug {
             consolePrint("⚠️ Overriding verbosity, and upload frequency due to \(LaunchArguments.Debug) launch argument", .warn)

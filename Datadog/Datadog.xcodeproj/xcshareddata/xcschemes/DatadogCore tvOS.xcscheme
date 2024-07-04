@@ -183,51 +183,6 @@
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2DA23AD298D59DC00C6C7E6"
-               BuildableName = "DatadogInternalTests tvOS.xctest"
-               BlueprintName = "DatadogInternalTests tvOS"
-               ReferencedContainer = "container:Datadog.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2A783EE29A534F9003B03BB"
-               BuildableName = "DatadogLogsTests tvOS.xctest"
-               BlueprintName = "DatadogLogsTests tvOS"
-               ReferencedContainer = "container:Datadog.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2C1A55B29C4F2E800946C31"
-               BuildableName = "DatadogTraceTests tvOS.xctest"
-               BlueprintName = "DatadogTraceTests tvOS"
-               ReferencedContainer = "container:Datadog.xcodeproj">
-            </BuildableReference>
-            <SkippedTests>
-               <Test
-                  Identifier = "OTelSpanTests/testSetActive_givenParentSpan()">
-               </Test>
-            </SkippedTests>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D23F8E9A29DDCD38001CFAE8"
-               BuildableName = "DatadogRUMTests tvOS.xctest"
-               BlueprintName = "DatadogRUMTests tvOS"
-               ReferencedContainer = "container:Datadog.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

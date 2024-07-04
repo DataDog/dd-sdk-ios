@@ -1,5 +1,5 @@
 // Base configuration file for all targets.
-// Note: all configuration here will be applied to `Datadog*.framework` produced by Carthage.
+// Note: all configuration here will be applied to artifacts produced by Carthage.
 
 DD_SWIFT_SDK_PRODUCT_NAME=DatadogCore
 DD_OBJC_SDK_PRODUCT_NAME=DatadogObjc
@@ -16,4 +16,13 @@ MACOSX_DEPLOYMENT_TARGET=12.6
 SWIFT_VERSION=5.9
 
 // Include internal base config (git-ignored, so excluded from Carthage build)
+// TODO: RUM-4079 Remove once when we're fully on GitLab
 #include? "Base.local.xcconfig"
+
+// Apply git-ignored overrides for CI environment (if exists)
+// NOTE: This won't exist when SDK is built from source by dependency managers
+#include? "Base.ci.local.xcconfig"
+
+// Apply git-ignored overrides for all DEV environments (if exists)
+// NOTE: This won't exist on CI and when SDK is built from source by dependency managers
+#include? "Base.dev.local.xcconfig"

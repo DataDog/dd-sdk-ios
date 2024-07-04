@@ -93,6 +93,8 @@ class CrashReportSenderMock: CrashReportSender {
     }
 
     var didSendCrashReport: (() -> Void)?
+
+    func send(launch: DatadogInternal.LaunchReport) {}
 }
 
 class RUMCrashReceiverMock: FeatureMessageReceiver {

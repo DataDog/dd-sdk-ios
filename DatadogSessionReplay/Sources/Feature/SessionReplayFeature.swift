@@ -26,22 +26,25 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         configuration: SessionReplay.Configuration
     ) throws {
         let processorsQueue = BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processors")
-        let snapshotProcessor = SnapshotProcessor(
-            queue: processorsQueue,
-            recordWriter: RecordWriter(core: core),
-            srContextPublisher: SRContextPublisher(core: core),
-            telemetry: core.telemetry
-        )
+
         let resourceProcessor = ResourceProcessor(
             queue: processorsQueue,
             resourcesWriter: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
         )
+
+        let snapshotProcessor = SnapshotProcessor(
+            queue: processorsQueue,
+            recordWriter: RecordWriter(core: core),
+            resourceProcessor: resourceProcessor,
+            srContextPublisher: SRContextPublisher(core: core),
+            telemetry: core.telemetry
+        )
+
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,
-            resourceProcessor: resourceProcessor,
-            telemetry: core.telemetry,
             additionalNodeRecorders: configuration._additionalNodeRecorders
         )
+
         let scheduler = MainThreadScheduler(interval: 0.1)
         let contextReceiver = RUMContextReceiver()
 
@@ -59,7 +62,8 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             rumContextObserver: contextReceiver,
             srContextPublisher: SRContextPublisher(core: core),
             recorder: recorder,
-            sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate)
+            sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate),
+            telemetry: core.telemetry
         )
         self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,

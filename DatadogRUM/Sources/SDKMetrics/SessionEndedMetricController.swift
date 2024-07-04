@@ -29,13 +29,14 @@ internal final class SessionEndedMetricController {
     ///   - sessionID: The ID of the session to track.
     ///   - precondition: The precondition that led to starting this session.
     ///   - context: The SDK context at the moment of starting this session.
+    ///   - tracksBackgroundEvents: If background events tracking is enabled for this session.
     /// - Returns: The newly created `SessionEndedMetric` instance.
-    func startMetric(sessionID: RUMUUID, precondition: RUMSessionPrecondition?, context: DatadogContext) {
+    func startMetric(sessionID: RUMUUID, precondition: RUMSessionPrecondition?, context: DatadogContext, tracksBackgroundEvents: Bool) {
         guard sessionID != RUMUUID.nullUUID else {
             return // do not track metric when session is not sampled
         }
         _metricsBySessionID.mutate { metrics in
-            metrics[sessionID] = SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context)
+            metrics[sessionID] = SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context, tracksBackgroundEvents: tracksBackgroundEvents)
             pendingSessionIDs.append(sessionID)
         }
     }
@@ -43,9 +44,15 @@ internal final class SessionEndedMetricController {
     /// Tracks the view event that occurred during the session.
     /// - Parameters:
     ///   - view: the view event to track
+    ///   - instrumentationType: the type of instrumentation used to start this view (only the first value for each `view.id` is tracked; succeeding values
+    ///   will be ignored so it is okay to pass value on first call and then follow with `nil` for next updates of given `view.id`)
     ///   - sessionID: session ID to track this view in (pass `nil` to track it for the last started session)
-    func track(view: RUMViewEvent, in sessionID: RUMUUID?) {
-        updateMetric(for: sessionID) { try $0?.track(view: view) }
+    func track(
+        view: RUMViewEvent,
+        instrumentationType: SessionEndedMetric.ViewInstrumentationType?,
+        in sessionID: RUMUUID?
+    ) {
+        updateMetric(for: sessionID) { try $0?.track(view: view, instrumentationType: instrumentationType) }
     }
 
     /// Tracks the kind of SDK error that occurred during the session.
@@ -56,6 +63,14 @@ internal final class SessionEndedMetricController {
         updateMetric(for: sessionID) { $0?.track(sdkErrorKind: sdkErrorKind) }
     }
 
+    /// Tracks an event missed due to absence of an active view.
+    /// - Parameters:
+    ///   - missedEventType: the type of an event that was missed
+    ///   - sessionID: session ID to track this error in (pass `nil` to track it for the last started session)
+    func track(missedEventType: SessionEndedMetric.MissedEventType, in sessionID: RUMUUID?) {
+        updateMetric(for: sessionID) { $0?.track(missedEventType: missedEventType) }
+    }
+
     /// Signals that the session was stopped with `stopSession()` API.
     /// - Parameter sessionID: session ID to mark as stopped (pass `nil` to track it for the last started session)
     func trackWasStopped(sessionID: RUMUUID?) {
@@ -64,12 +79,12 @@ internal final class SessionEndedMetricController {
 
     /// Ends the metric for a given session, sending it to telemetry and removing it from pending metrics.
     /// - Parameter sessionID: The ID of the session to end the metric for.
-    func endMetric(sessionID: RUMUUID) {
-        guard let metric = metricsBySessionID[sessionID] else {
-            return
-        }
-        telemetry.metric(name: SessionEndedMetric.Constants.name, attributes: metric.asMetricAttributes())
+    func endMetric(sessionID: RUMUUID, with context: DatadogContext) {
         _metricsBySessionID.mutate { metrics in
+            guard let metric = metrics[sessionID] else {
+                return
+            }
+            telemetry.metric(name: SessionEndedMetric.Constants.name, attributes: metric.asMetricAttributes(with: context))
             metrics[sessionID] = nil
             pendingSessionIDs.removeAll(where: { $0 == sessionID }) // O(n), but "ending the metric" is very rare event
         }

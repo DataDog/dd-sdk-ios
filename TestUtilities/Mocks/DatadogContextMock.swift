@@ -133,7 +133,11 @@ extension DeviceInfo {
         osName: String = "iOS",
         osVersion: String = "15.4.1",
         osBuildNumber: String = "13D20",
-        architecture: String = "arm64e"
+        architecture: String = "arm64e",
+        isSimulator: Bool = true,
+        vendorId: String? = "xyz",
+        isDebugging: Bool = false,
+        systemBootTime: TimeInterval = Date.timeIntervalSinceReferenceDate
     ) -> DeviceInfo {
         return .init(
             name: name,
@@ -141,7 +145,11 @@ extension DeviceInfo {
             osName: osName,
             osVersion: osVersion,
             osBuildNumber: osBuildNumber,
-            architecture: architecture
+            architecture: architecture, 
+            isSimulator: isSimulator, 
+            vendorId: vendorId,
+            isDebugging: isDebugging,
+            systemBootTime: systemBootTime
         )
     }
 
@@ -152,7 +160,11 @@ extension DeviceInfo {
             osName: .mockRandom(),
             osVersion: .mockRandom(),
             osBuildNumber: .mockRandom(),
-            architecture: .mockRandom()
+            architecture: .mockRandom(),
+            isSimulator: .mockRandom(),
+            vendorId: .mockRandom(),
+            isDebugging: .mockRandom(),
+            systemBootTime: .mockRandom()
         )
     }
 }
@@ -338,7 +350,7 @@ extension TrackingConsent {
 
 extension String {
     public static func mockAnySource() -> String {
-        return ["ios", "android", "browser", "ios", "react-native", "flutter", "unity"].randomElement()!
+        return ["ios", "android", "browser", "ios", "react-native", "flutter", "unity", "kotlin-multiplatform"].randomElement()!
     }
 
     public static func mockAnySourceType() -> String {

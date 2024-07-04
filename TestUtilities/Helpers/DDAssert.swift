@@ -148,19 +148,19 @@ private func _DDAssertJSONEqual<T, U>(_ expression1: @autoclosure () throws -> T
     }
 }
 
-public func DDAssertJSONEqual(_ expression1: @autoclosure () throws -> Any, _ expression2: @autoclosure () throws -> Any, _ message: @autoclosure () -> String = "", file: StaticString = #filePath, line: UInt = #line) {
+public func DDAssertJSONEqual(_ expression1: @autoclosure () throws -> Any, _ expression2: @autoclosure () throws -> Any, _ message: @autoclosure () -> String = "", file: StaticString = #fileID, line: UInt = #line) {
     _DDEvaluateAssertion(message: message(), file: file, line: line) {
         try _DDAssertJSONEqual(AnyCodable(expression1()), AnyCodable(expression2()))
     }
 }
 
-public func DDAssertJSONEqual<T, U>(_ expression1: @autoclosure () throws -> T, _ expression2: @autoclosure () throws -> U, _ message: @autoclosure () -> String = "", file: StaticString = #filePath, line: UInt = #line) where T: Encodable, U: Encodable {
+public func DDAssertJSONEqual<T, U>(_ expression1: @autoclosure () throws -> T, _ expression2: @autoclosure () throws -> U, _ message: @autoclosure () -> String = "", file: StaticString = #fileID, line: UInt = #line) where T: Encodable, U: Encodable {
     _DDEvaluateAssertion(message: message(), file: file, line: line) {
         try _DDAssertJSONEqual(expression1(), expression2())
     }
 }
 
-public func DDAssertJSONNotEqual<T, U>(_ expression1: @autoclosure () throws -> T, _ expression2: @autoclosure () throws -> U, _ message: @autoclosure () -> String = "", file: StaticString = #filePath, line: UInt = #line) where T: Encodable, U: Encodable {
+public func DDAssertJSONNotEqual<T, U>(_ expression1: @autoclosure () throws -> T, _ expression2: @autoclosure () throws -> U, _ message: @autoclosure () -> String = "", file: StaticString = #fileID, line: UInt = #line) where T: Encodable, U: Encodable {
     _DDEvaluateAssertion(message: message(), file: file, line: line) {
         do {
             try _DDAssertJSONEqual(expression1(), expression2())
@@ -198,13 +198,13 @@ private func _DDAssertDictionariesEqual(_ expression1: @autoclosure () throws ->
     }
 }
 
-public func DDAssertDictionariesEqual(_ expression1: @autoclosure () throws -> [String: Any], _ expression2: @autoclosure () throws -> [String: Any], _ message: @autoclosure () -> String = "", file: StaticString = #filePath, line: UInt = #line) {
+public func DDAssertDictionariesEqual(_ expression1: @autoclosure () throws -> [String: Any], _ expression2: @autoclosure () throws -> [String: Any], _ message: @autoclosure () -> String = "", file: StaticString = #fileID, line: UInt = #line) {
     _DDEvaluateAssertion(message: message(), file: file, line: line) {
         try _DDAssertDictionariesEqual(expression1(), expression2())
     }
 }
 
-public func DDAssertDictionariesNotEqual(_ expression1: @autoclosure () throws -> [String: Any], _ expression2: @autoclosure () throws -> [String: Any], _ message: @autoclosure () -> String = "", file: StaticString = #filePath, line: UInt = #line) {
+public func DDAssertDictionariesNotEqual(_ expression1: @autoclosure () throws -> [String: Any], _ expression2: @autoclosure () throws -> [String: Any], _ message: @autoclosure () -> String = "", file: StaticString = #fileID, line: UInt = #line) {
     _DDEvaluateAssertion(message: message(), file: file, line: line) {
         do {
             try _DDAssertDictionariesEqual(expression1(), expression2())
@@ -216,7 +216,7 @@ public func DDAssertDictionariesNotEqual(_ expression1: @autoclosure () throws -
     }
 }
 
-public func DDAssertThrowsError<T, E: Error>(_ expression: @autoclosure () throws -> T, _ message: @autoclosure () -> String = "", file: StaticString = #filePath, line: UInt = #line, _ errorHandler: (_ error: E) -> Void = { _ in }) {
+public func DDAssertThrowsError<T, E: Error>(_ expression: @autoclosure () throws -> T, _ message: @autoclosure () -> String = "", file: StaticString = #fileID, line: UInt = #line, _ errorHandler: (_ error: E) -> Void = { _ in }) {
     _DDEvaluateAssertion(message: message(), file: file, line: line) {
         do {
              let result = try expression()

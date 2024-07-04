@@ -111,6 +111,13 @@ extension RUM {
         /// Default: `false`.
         public var trackBackgroundEvents: Bool
 
+        /// Determines whether the SDK should track application termination by the watchdog.
+        ///
+        /// Read more about watchdog terminations at https://developer.apple.com/documentation/xcode/addressing-watchdog-terminations
+        ///
+        /// Default: `false`.
+        public var trackWatchdogTerminations: Bool
+
         /// Enables RUM long tasks tracking with the given threshold (in seconds).
         ///
         /// Any operation on the main thread that exceeds this threshold will be reported as a RUM long task.
@@ -284,6 +291,9 @@ extension RUM {
         internal var ciTestExecutionID: String? = ProcessInfo.processInfo.environment["CI_VISIBILITY_TEST_EXECUTION_ID"]
         internal var syntheticsTestId: String? = ProcessInfo.processInfo.environment["_dd.synthetics.test_id"]
         internal var syntheticsResultId: String? = ProcessInfo.processInfo.environment["_dd.synthetics.result_id"]
+        internal var syntheticsEnvironment: Bool {
+            syntheticsTestId != nil || syntheticsResultId != nil
+        }
     }
 }
 
@@ -339,6 +349,7 @@ extension RUM.Configuration {
     ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
     ///   - longTaskThreshold: The threshold for RUM long tasks tracking (in seconds). Default: `0.1`.
     ///   - appHangThreshold: The threshold for App Hangs monitoring (in seconds). Default: `nil`.
+    ///   - trackWatchdogTerminations: Determines whether the SDK should track application termination by the watchdog. Default: `false`.
     ///   - vitalsUpdateFrequency: The preferred frequency for collecting RUM vitals. Default: `.average`.
     ///   - viewEventMapper: Custom mapper for RUM view events. Default: `nil`.
     ///   - resourceEventMapper: Custom mapper for RUM resource events. Default: `nil`.
@@ -358,6 +369,7 @@ extension RUM.Configuration {
         trackBackgroundEvents: Bool = false,
         longTaskThreshold: TimeInterval? = 0.1,
         appHangThreshold: TimeInterval? = nil,
+        trackWatchdogTerminations: Bool = false,
         vitalsUpdateFrequency: VitalsFrequency? = .average,
         viewEventMapper: RUM.ViewEventMapper? = nil,
         resourceEventMapper: RUM.ResourceEventMapper? = nil,
@@ -386,6 +398,7 @@ extension RUM.Configuration {
         self.onSessionStart = onSessionStart
         self.customEndpoint = customEndpoint
         self.telemetrySampleRate = telemetrySampleRate
+        self.trackWatchdogTerminations = trackWatchdogTerminations
     }
 }
 

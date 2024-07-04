@@ -250,7 +250,8 @@ extension Monitor: RUMMonitorProtocol {
                 identity: ViewIdentifier(viewController),
                 name: name ?? viewController.canonicalClassName,
                 path: viewController.canonicalClassName,
-                attributes: attributes
+                attributes: attributes,
+                instrumentationType: .manual
             )
         )
     }
@@ -272,7 +273,8 @@ extension Monitor: RUMMonitorProtocol {
                 identity: ViewIdentifier(key),
                 name: name ?? key,
                 path: key,
-                attributes: attributes
+                attributes: attributes,
+                instrumentationType: .manual
             )
         )
     }

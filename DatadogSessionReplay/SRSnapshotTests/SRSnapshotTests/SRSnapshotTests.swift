@@ -16,271 +16,175 @@ final class SRSnapshotTests: SnapshotTestCase {
     /// Current recording mode:
     /// - `true` - overwrite PNGs with new versions if the difference is higher than the threshold;
     /// - `false` - do not overwrite PNGs, no matter the difference.
-    private var recordingMode = false
+    private var shouldRecord = false
 
     func testBasicShapes() throws {
-        show(fixture: .basicShapes)
-        let image = try takeSnapshot()
-        DDAssertSnapshotTest(
-            newImage: image,
-            snapshotLocation: .folder(named: snapshotsFolderPath),
-            record: recordingMode
-        )
+        try takeSnapshotFor(.basicShapes, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testBasicTexts() throws {
-        show(fixture: .basicTexts)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
+        try takeSnapshotFor(.basicTexts, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testSliders() throws {
-        show(fixture: .sliders)
+        try takeSnapshotFor(.sliders, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+    }
 
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
+    func testProgressViews() throws {
+        try takeSnapshotFor(.progressViews, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+    }
+
+    func testActivityIndicators() throws {
+        try takeSnapshotFor(.activityIndicators, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testSegments() throws {
-        show(fixture: .segments)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
+        try takeSnapshotFor(.segments, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testPickers() throws {
-        show(fixture: .pickers)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
+        try takeSnapshotFor(.pickers, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testSwitches() throws {
-        show(fixture: .switches)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
+        try takeSnapshotFor(.switches, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testTextFields() throws {
-        show(fixture: .textFields)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
+        try takeSnapshotFor(.textFields, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testSteppers() throws {
-        show(fixture: .steppers)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
+        try takeSnapshotFor(.steppers, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testDatePickers() throws {
-        let vc1 = show(fixture: .datePickersInline) as! DatePickersInlineViewController
-        vc1.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
-        wait(seconds: 1.0)
+        try takeSnapshotForPicker(
+            fixture: .datePickersInline, 
+            waitTime: 1.0,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "inline"
+        )
 
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-inline-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
+        try takeSnapshotForPicker(
+            fixture: .datePickersCompact,
+            additionalSetup: { ($0 as! DatePickersCompactViewController).openCalendarPopover() },
+            waitTime: 1.0, 
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "compact"
+        )
 
-        let vc2 = show(fixture: .datePickersCompact) as! DatePickersCompactViewController
-        vc2.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
-        vc2.openCalendarPopover()
-        wait(seconds: 1.0)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-compact-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
-
-        let vc3 = show(fixture: .datePickersWheels) as! DatePickersWheelsViewController
-        vc3.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
-        wait(seconds: 1.5)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-wheels-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
-    }
-
-    func testTimePickers() throws {
-        show(fixture: .timePickersCountDown)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-count-down-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
-
-        let vc1 = show(fixture: .timePickersWheels) as! TimePickersWheelViewController
-        vc1.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
-        wait(seconds: 1.0)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-wheels-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
-
-        let vc2 = show(fixture: .timePickersCompact) as! TimePickersCompactViewController
-        vc2.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
-        vc2.openTimePickerPopover()
-        wait(seconds: 1.0)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-compact-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
-    }
-
-    func testImages() throws {
-        show(fixture: .images)
-
-        try forPrivacyModes([.allow, .mask]) { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
-    }
-
-    func testUnsupportedView() throws {
-        show(fixture: .unsupportedViews)
-
-        let image = try takeSnapshot(with: .allow)
-        DDAssertSnapshotTest(
-            newImage: image,
-            snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-allowAll-privacy"),
-            record: recordingMode
+        try takeSnapshotForPicker(
+            fixture: .datePickersWheels, 
+            waitTime: 1.0,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "wheels"
         )
     }
 
+    func testTimePickers() throws {
+        try takeSnapshotFor(
+            .timePickersCountDown, 
+            with: [.allow, .mask, .maskUserInput],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "count-down"
+        )
+
+        try takeSnapshotForPicker(
+            fixture: .timePickersWheels, 
+            waitTime: 1.0,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "wheels"
+        )
+
+        try takeSnapshotForPicker(
+            fixture: .timePickersCompact,
+            additionalSetup: { ($0 as! DatePickersCompactViewController).openTimePickerPopover() },
+            waitTime: 1.0,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "compact"
+        )
+    }
+
+    func testImages() throws {
+        try takeSnapshotFor(.images, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+    }
+
+    func testUnsupportedView() throws {
+        try takeSnapshotFor(.unsupportedViews, with: [.allow], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+    }
+
     func testAlert() throws {
-        (show(fixture: .popups) as! PopupsViewController).showAlert()
-
-        wait(seconds: 1.0)
-
-        try forPrivacyModes { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
+        try takeSnapshotForPopup(
+            fixture: .popups,
+            showPopup: { $0.showAlert() },
+            waitTime: 1.0,
+            privacyModes: [.allow, .mask, .maskUserInput],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
+        )
     }
 
     func testSafari() throws {
-        (show(fixture: .popups) as! PopupsViewController).showSafari()
-
-        wait(seconds: 1.0)
-
-        let image = try takeSnapshot()
-        DDAssertSnapshotTest(
-            newImage: image,
-            snapshotLocation: .folder(named: snapshotsFolderPath),
-            record: recordingMode
+        try takeSnapshotForPopup(
+            fixture: .popups,
+            showPopup: { $0.showSafari() }, 
+            waitTime: 1.0,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
         )
     }
 
     func testActivity() throws {
-        (show(fixture: .popups) as! PopupsViewController).showActivity()
-
-        wait(seconds: 1.0)
-
-        let image = try takeSnapshot()
-        DDAssertSnapshotTest(
-            newImage: image,
-            snapshotLocation: .folder(named: snapshotsFolderPath),
-            record: recordingMode
+        try takeSnapshotForPopup(
+            fixture: .popups, 
+            showPopup: { $0.showActivity() },
+            waitTime: 1.0,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
         )
     }
 
     func testSwiftUI() throws {
-        show(fixture: .swiftUI)
-
-        let image = try takeSnapshot()
-        DDAssertSnapshotTest(
-            newImage: image,
-            snapshotLocation: .folder(named: snapshotsFolderPath),
-            record: recordingMode
-        )
+        try takeSnapshotFor(.swiftUI, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testNavigationBars() throws {
+        // - Static Navigation Bars -
+
+        // Note: Static Navigation Bars are not representative of realistic rendering at runtime.
+        // Therefore, Embedded Navigation Bars snapshot tests are also included for more accurate simulations.
+
+        // Test Static Navigation Bars without tinted color
+        try takeSnapshotFor(.navigationBars, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.navigationBars.slug)
+
+        // Test Static Navigation Bars with tinted color
+        let vc2 = show(fixture: .navigationBars) as! NavigationBarControllers
+        vc2.setTintColor()
+        wait(seconds: 0.1)
+
+        try forPrivacyModes([.allow, .mask]) { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            let fileNamePrefix = Fixture.navigationBars.slug
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-itemTintColor-\(privacyMode)-privacy"),
+                record: shouldRecord
+            )
+        }
+
+        // - Embedded Navigation Bars -
+
+        // Note: Although Embedded Navigation Bars are more realistic than Static Navigation Bars,
+        // they still lack some realism as their appearance changes when the view is scrolled.
 
         let navBarFixtures: [Fixture] = [
-            .navigationBars,
             .navigationBarDefaultTranslucent,
             .navigationBarDefaultNonTranslucent,
             .navigationBarBlackTranslucent,
@@ -292,7 +196,9 @@ final class SRSnapshotTests: SnapshotTestCase {
         ]
 
         for fixture in navBarFixtures {
-            show(fixture: fixture)
+            let navController = show(fixture: fixture) as! TestNavigationController
+            navController.pushNextView()
+            wait(seconds: 0.5)
 
             try forPrivacyModes([.allow, .mask]) { privacyMode in
                 let image = try takeSnapshot(with: privacyMode)
@@ -300,51 +206,20 @@ final class SRSnapshotTests: SnapshotTestCase {
                 DDAssertSnapshotTest(
                     newImage: image,
                     snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-\(privacyMode)-privacy"),
-                    record: recordingMode
+                    record: shouldRecord
                 )
             }
         }
     }
 
     func testTabBars() throws {
-
         // - Static Tab Bars
-        show(fixture: .tabbar)
-
-        try forPrivacyModes([.allow, .mask]) { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
+        try takeSnapshotFor(.tabbar, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
 
         // - Embedded Tab Bar
-        show(fixture: .embeddedTabbar)
-
-        try forPrivacyModes([.allow, .mask]) { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            let fileNamePrefix = Fixture.embeddedTabbar.slug
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
+        try takeSnapshotFor(.embeddedTabbar, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.embeddedTabbar.slug)
 
         // - Embedded Tab Bar, with unselected item tint color
-        show(fixture: .embeddedTabbarUnselectedTintColor)
-
-        try forPrivacyModes([.allow, .mask]) { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            let fileNamePrefix = Fixture.embeddedTabbarUnselectedTintColor.slug
-            DDAssertSnapshotTest(
-                newImage: image,
-                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-\(privacyMode)-privacy"),
-                record: recordingMode
-            )
-        }
+        try takeSnapshotFor(.embeddedTabbarUnselectedTintColor, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.embeddedTabbarUnselectedTintColor.slug)
     }
-
 }

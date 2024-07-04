@@ -30,6 +30,8 @@ internal struct RUMDataStore {
         /// References pending App Hang information.
         /// If found during app start it is considered a fatal hang in previous process.
         case fatalAppHangKey = "fatal-app-hang"
+        case watchdogAppStateKey = "watchdog-app-state"
+        case watchdogRUMViewEvent = "watchdog-rum-view-event"
     }
 
     /// Encodes values in RUM data store.
@@ -45,7 +47,7 @@ internal struct RUMDataStore {
             let data = try RUMDataStore.encoder.encode(value)
             featureScope.dataStore.setValue(data, forKey: key.rawValue, version: version)
         } catch let error {
-            DD.logger.error("Failed to encode \(type(of: value)) in RUM Data Store")
+            DD.logger.error("Failed to encode \(type(of: value)) in RUM Data Store", error: error)
             featureScope.telemetry.error("Failed to encode \(type(of: value)) in RUM Data Store", error: error)
         }
     }
@@ -64,7 +66,7 @@ internal struct RUMDataStore {
                 let value = try RUMDataStore.decoder.decode(V.self, from: data)
                 callback(value)
             } catch let error {
-                DD.logger.error("Failed to decode \(V.self) from RUM Data Store")
+                DD.logger.error("Failed to decode \(V.self) from RUM Data Store", error: error)
                 featureScope.telemetry.error("Failed to decode \(V.self) from RUM Data Store", error: error)
                 callback(nil)
             }

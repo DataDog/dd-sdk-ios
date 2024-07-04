@@ -358,6 +358,7 @@ public struct RUMActionEvent: RUMDataModel {
             case reactNative = "react-native"
             case roku = "roku"
             case unity = "unity"
+            case kotlinMultiplatform = "kotlin-multiplatform"
         }
 
         /// Attributes of the view's container
@@ -422,6 +423,7 @@ public struct RUMActionEvent: RUMDataModel {
         case reactNative = "react-native"
         case roku = "roku"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// View properties
@@ -650,6 +652,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case reactNative = "react-native"
             case roku = "roku"
             case unity = "unity"
+            case kotlinMultiplatform = "kotlin-multiplatform"
         }
 
         /// Attributes of the view's container
@@ -803,6 +806,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case aNR = "ANR"
             case appHang = "App Hang"
             case exception = "Exception"
+            case watchdogTermination = "Watchdog Termination"
         }
 
         /// Properties for one of the error causes
@@ -1043,6 +1047,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case reactNative = "react-native"
         case roku = "roku"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// View properties
@@ -1291,6 +1296,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case reactNative = "react-native"
             case roku = "roku"
             case unity = "unity"
+            case kotlinMultiplatform = "kotlin-multiplatform"
         }
 
         /// Attributes of the view's container
@@ -1373,6 +1379,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case reactNative = "react-native"
         case roku = "roku"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// View properties
@@ -1605,6 +1612,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case reactNative = "react-native"
             case roku = "roku"
             case unity = "unity"
+            case kotlinMultiplatform = "kotlin-multiplatform"
         }
 
         /// Attributes of the view's container
@@ -1921,6 +1929,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case reactNative = "react-native"
         case roku = "roku"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// View properties
@@ -2184,6 +2193,7 @@ public struct RUMViewEvent: RUMDataModel {
             case reactNative = "react-native"
             case roku = "roku"
             case unity = "unity"
+            case kotlinMultiplatform = "kotlin-multiplatform"
         }
 
         /// Attributes of the view's container
@@ -2304,6 +2314,7 @@ public struct RUMViewEvent: RUMDataModel {
         case reactNative = "react-native"
         case roku = "roku"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// View properties
@@ -2866,6 +2877,7 @@ public struct RUMVitalEvent: RUMDataModel {
             case reactNative = "react-native"
             case roku = "roku"
             case unity = "unity"
+            case kotlinMultiplatform = "kotlin-multiplatform"
         }
 
         /// Attributes of the view's container
@@ -2930,6 +2942,7 @@ public struct RUMVitalEvent: RUMDataModel {
         case reactNative = "react-native"
         case roku = "roku"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// View properties
@@ -2959,6 +2972,12 @@ public struct RUMVitalEvent: RUMDataModel {
         /// User custom vital.
         public let custom: [String: Double]?
 
+        /// Details of the vital. It can be used as a secondary identifier (URL, React component name...)
+        public let details: String?
+
+        /// Duration of the vital in nanoseconds
+        public let duration: Double?
+
         /// UUID of the vital
         public let id: String
 
@@ -2970,6 +2989,8 @@ public struct RUMVitalEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case custom = "custom"
+            case details = "details"
+            case duration = "duration"
             case id = "id"
             case name = "name"
             case type = "type"
@@ -3083,6 +3104,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// The telemetry log information
@@ -3282,6 +3304,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// The telemetry log information
@@ -3461,6 +3484,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// The telemetry configuration information
@@ -3538,6 +3562,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// The period between each Mobile Vital sample (in milliseconds)
             public var mobileVitalsUpdatePeriod: Int64?
+
+            /// The list of plugins enabled
+            public internal(set) var plugins: [Plugins]?
 
             /// The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
             public let premiumSampleRate: Int64?
@@ -3704,6 +3731,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case forwardReports = "forward_reports"
                 case initializationType = "initialization_type"
                 case mobileVitalsUpdatePeriod = "mobile_vitals_update_period"
+                case plugins = "plugins"
                 case premiumSampleRate = "premium_sample_rate"
                 case reactNativeVersion = "react_native_version"
                 case reactVersion = "react_version"
@@ -3839,6 +3867,17 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 }
             }
 
+            public struct Plugins: Codable {
+                /// The name of the plugin
+                public let name: String
+
+                public internal(set) var pluginsInfo: [String: Encodable]
+
+                enum StaticCodingKeys: String, CodingKey {
+                    case name = "name"
+                }
+            }
+
             public enum SelectedTracingPropagators: String, Codable {
                 case datadog = "datadog"
                 case b3 = "b3"
@@ -3914,6 +3953,39 @@ extension TelemetryConfigurationEvent.Telemetry {
         }
 
         self.telemetryInfo = dictionary
+    }
+}
+
+extension TelemetryConfigurationEvent.Telemetry.Configuration.Plugins {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(name, forKey: .name)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try pluginsInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.name = try staticContainer.decode(String.self, forKey: .name)
+
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        }
+
+        self.pluginsInfo = dictionary
     }
 }
 
@@ -4262,4 +4334,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/30d4b773abb4e33edc9d6053d3c12cd302e948a5
+// Generated from https://github.com/DataDog/rum-events-format/tree/ae8c30a094339995e234fd55831ade0999bf0612

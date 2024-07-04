@@ -211,6 +211,8 @@
 		6193DCCD251B6201009B8011 /* RUMTASScreen1ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASScreen1ViewController.swift; sourceTree = "<group>"; };
 		6193DCE0251B692C009B8011 /* RUMTASTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASTableViewController.swift; sourceTree = "<group>"; };
 		6193DCE7251B9AB1009B8011 /* RUMTASCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASCollectionViewController.swift; sourceTree = "<group>"; };
+		61A6F7792C208700005B74D5 /* RUM.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = RUM.xctestplan; sourceTree = "<group>"; };
+		61A6F77A2C20891C005B74D5 /* NetworkInstrumentation.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = NetworkInstrumentation.xctestplan; sourceTree = "<group>"; };
 		61B6811E25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingWithLoggingScenarioTests.swift; sourceTree = "<group>"; };
 		61B6815D25F135890015B4AF /* CrashReportingWithRUMScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingWithRUMScenarioTests.swift; sourceTree = "<group>"; };
 		61B9ED1A2461E12000C0DCFF /* SendLogsFixtureViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendLogsFixtureViewController.swift; sourceTree = "<group>"; };
@@ -257,10 +259,10 @@
 		D2774EE2299E2E90004EC36A /* LogMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogMatcher.swift; sourceTree = "<group>"; };
 		D2774EE3299E2E90004EC36A /* JSONDataMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONDataMatcher.swift; sourceTree = "<group>"; };
 		D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIScenarioTests.swift; sourceTree = "<group>"; };
-		D29495F429967780003518CD /* http-server-mock */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "http-server-mock"; path = "../instrumented-tests/http-server-mock"; sourceTree = "<group>"; };
+		D29495F429967780003518CD /* http-server-mock */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "http-server-mock"; path = "../tools/http-server-mock"; sourceTree = "<group>"; };
 		D2A401D029925A2D00B230A3 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D2AEFF1A29925BEC00A28997 /* DatadogCrashReportingIntegrationTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = DatadogCrashReportingIntegrationTests.xctestplan; sourceTree = "<group>"; };
-		D2AEFF1B29925BEC00A28997 /* DatadogIntegrationTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = DatadogIntegrationTests.xctestplan; sourceTree = "<group>"; };
+		D2AEFF1A29925BEC00A28997 /* CrashReporting.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = CrashReporting.xctestplan; sourceTree = "<group>"; };
+		D2AEFF1B29925BEC00A28997 /* Default.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Default.xctestplan; sourceTree = "<group>"; };
 		D2F5BB35271831C200BDE2A4 /* RUMSwiftUIInstrumentationScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMSwiftUIInstrumentationScenario.storyboard; sourceTree = "<group>"; };
 		D2F5BB372718331800BDE2A4 /* SwiftUIRootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIRootViewController.swift; sourceTree = "<group>"; };
 		D2FCA7482B4D829F0014DC87 /* CSPictureViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSPictureViewController.swift; sourceTree = "<group>"; };
@@ -779,8 +781,10 @@
 		D2AEFF1929925BEC00A28997 /* xctestplans */ = {
 			isa = PBXGroup;
 			children = (
-				D2AEFF1A29925BEC00A28997 /* DatadogCrashReportingIntegrationTests.xctestplan */,
-				D2AEFF1B29925BEC00A28997 /* DatadogIntegrationTests.xctestplan */,
+				D2AEFF1B29925BEC00A28997 /* Default.xctestplan */,
+				61A6F7792C208700005B74D5 /* RUM.xctestplan */,
+				D2AEFF1A29925BEC00A28997 /* CrashReporting.xctestplan */,
+				61A6F77A2C20891C005B74D5 /* NetworkInstrumentation.xctestplan */,
 			);
 			path = xctestplans;
 			sourceTree = "<group>";

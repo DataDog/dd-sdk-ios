@@ -49,6 +49,7 @@ internal struct RUMScopeDependencies {
     let telemetry: Telemetry
     let sessionType: RUMSessionType
     let sessionEndedMetric: SessionEndedMetricController
+    let watchdogTermination: WatchdogTerminationMonitor?
 
     init(
         featureScope: FeatureScope,
@@ -66,7 +67,8 @@ internal struct RUMScopeDependencies {
         onSessionStart: RUM.SessionListener?,
         viewCache: ViewCache,
         fatalErrorContext: FatalErrorContextNotifying,
-        sessionEndedMetric: SessionEndedMetricController
+        sessionEndedMetric: SessionEndedMetricController,
+        watchdogTermination: WatchdogTerminationMonitor?
     ) {
         self.featureScope = featureScope
         self.rumApplicationID = rumApplicationID
@@ -85,6 +87,7 @@ internal struct RUMScopeDependencies {
         self.fatalErrorContext = fatalErrorContext
         self.telemetry = featureScope.telemetry
         self.sessionEndedMetric = sessionEndedMetric
+        self.watchdogTermination = watchdogTermination
 
         if ciTest != nil {
             self.sessionType = .ciTest
