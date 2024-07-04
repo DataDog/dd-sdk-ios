@@ -7,6 +7,9 @@ all: env-check repo-setup templates
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
 		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos \
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
+		release-build release-validate release-publish-github \
+		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs release-publish-legacy-podspecs \
+		set-ci-secret
 
 REPO_ROOT := $(PWD)
 include tools/utils/common.mk
@@ -334,6 +337,62 @@ e2e-monitors-generate:
 		@echo "⚙️  Generating 'main.tf':"
 		@./tools/nightly-e2e-tests/nightly_e2e.py generate-tf --tests-dir ../../Datadog/E2ETests
 		@echo "⚠️  Remember to delete all iOS monitors manually from Mobile-Integration org before running 'terraform apply'."
+
+release-build:
+	@$(call require_param,GIT_TAG)
+	@$(call require_param,ARTIFACTS_PATH)
+	@$(ECHO_TITLE) "make release-build GIT_TAG='$(GIT_TAG)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
+	./tools/release/build.sh --tag "$(GIT_TAG)" --artifacts-path "$(ARTIFACTS_PATH)"
+
+release-validate:
+	@$(call require_param,GIT_TAG)
+	@$(call require_param,ARTIFACTS_PATH)
+	@$(ECHO_TITLE) "make release-validate GIT_TAG='$(GIT_TAG)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
+	./tools/release/validate-version.sh --artifacts-path "$(ARTIFACTS_PATH)" --tag "$(GIT_TAG)"
+	./tools/release/validate-xcframeworks.sh --artifacts-path "$(ARTIFACTS_PATH)"
+
+release-publish-github:
+	@$(call require_param,GIT_TAG)
+	@$(call require_param,ARTIFACTS_PATH)
+	@:$(eval DRY_RUN ?= 1)
+	@:$(eval OVERWRITE_EXISTING ?= 0)
+	@$(ECHO_TITLE) "make release-publish-github GIT_TAG='$(GIT_TAG)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)' DRY_RUN='$(DRY_RUN)' OVERWRITE_EXISTING='$(OVERWRITE_EXISTING)'"
+	DRY_RUN=$(DRY_RUN) OVERWRITE_EXISTING=$(OVERWRITE_EXISTING) ./tools/release/publish-github.sh \
+		 --artifacts-path "$(ARTIFACTS_PATH)" \
+		 --tag "$(GIT_TAG)"
+
+release-publish-podspec:
+	@$(call require_param,PODSPEC_NAME)
+	@$(call require_param,ARTIFACTS_PATH)
+	@:$(eval DRY_RUN ?= 1)
+	@$(ECHO_TITLE) "make release-publish-podspec PODSPEC_NAME='$(PODSPEC_NAME)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)' DRY_RUN='$(DRY_RUN)'"
+	DRY_RUN=$(DRY_RUN) ./tools/release/publish-podspec.sh \
+		 --artifacts-path "$(ARTIFACTS_PATH)" \
+		 --podspec-name "$(PODSPEC_NAME)"
+
+release-publish-internal-podspecs:
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogInternal.podspec"
+
+release-publish-dependent-podspecs:
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogCore.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogLogs.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogTrace.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogRUM.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSessionReplay.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogCrashReporting.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogWebViewTracking.podspec"
+
+release-publish-legacy-podspecs:
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogObjc.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogAlamofireExtension.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDK.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDKObjc.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDKCrashReporting.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDKAlamofireExtension.podspec"
+
+set-ci-secret:
+	@$(ECHO_TITLE) "make set-ci-secret"
+	@./tools/secrets/set-secret.sh
 
 bump:
 		@read -p "Enter version number: " version;  \
