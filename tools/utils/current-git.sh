@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 # Usage:
-# $ ./tools/utils/current_git.sh -h 
+# $ ./tools/utils/current-git.sh -h 
 # Prints the current Git reference, either a tag or a branch name.
 
 # Options:

@@ -9,7 +9,7 @@
 
 set -eo pipefail
 source ./tools/utils/argparse.sh
-source ./tools/utils/echo_color.sh
+source ./tools/utils/echo-color.sh
 
 set_description "Prepares the repository for development and testing in given ENV."
 define_arg "env" "" "Specifies the environment for preparation. Use 'dev' for local development and 'ci' for CI." "string" "true"

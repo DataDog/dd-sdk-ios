@@ -5,7 +5,7 @@
 # Runs tests for repo tools.
 
 set -eo pipefail
-source ./tools/utils/echo_color.sh
+source ./tools/utils/echo-color.sh
 
 test_swift_package() {
     local package_path="$1"

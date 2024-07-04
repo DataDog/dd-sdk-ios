@@ -1,18 +1,20 @@
 #!/bin/zsh
 
 # Usage:
-# ./tools/env_check.sh
+# $ ./tools/env_check.sh
 # Prints environment information and checks if required tools are installed.
 
 set -e
-source ./tools/utils/echo_color.sh
+source ./tools/utils/echo-color.sh
 
 check_if_installed() {
-  if ! command -v $1 >/dev/null 2>&1; then
-    echo_err "Error" "$1 is not installed but it is required for development. Install it and try again."
-    exit 1
-  fi
+    if ! command -v $1 >/dev/null 2>&1; then
+        echo_err "Error" "$1 is not installed but it is required for development. Install it and try again."
+        exit 1
+    fi
 }
+
+echo_subtitle "Check versions of installed tools"
 
 echo_succ "System info:"
 system_profiler SPSoftwareDataType
@@ -48,6 +50,11 @@ check_if_installed gh
 gh --version
 
 echo ""
+echo_succ "vault:"
+check_if_installed vault
+vault -v
+
+echo ""
 echo_succ "bundler:"
 check_if_installed bundler
 bundler --version
@@ -69,4 +76,15 @@ if command -v brew >/dev/null 2>&1; then
     echo ""
     echo_succ "brew:"
     brew -v
+fi
+
+if [ "$CI" = "true" ]; then
+    # Check if all secrets are available:
+    ./tools/secrets/check-secrets.sh
+
+    echo ""
+    echo_succ "CI env:"
+    echo "▸ CI_COMMIT_TAG = ${CI_COMMIT_TAG:-(not set or empty)}"
+    echo "▸ CI_COMMIT_BRANCH = ${CI_COMMIT_BRANCH:-(not set or empty)}"
+    echo "▸ CI_COMMIT_SHA = ${CI_COMMIT_SHA:-(not set or empty)}"
 fi
