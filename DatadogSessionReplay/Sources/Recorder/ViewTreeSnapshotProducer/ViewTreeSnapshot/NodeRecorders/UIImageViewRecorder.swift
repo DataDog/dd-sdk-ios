@@ -17,6 +17,11 @@ internal struct UIImageViewRecorder: NodeRecorder {
         return imageView.isSystemShadow ? IgnoredElement(subtreeStrategy: .ignore) : nil
     }
 
+    /// For animated images only
+    private let fixedFPS: Double = 66
+    // Cache for storing last update timestamp and current frame index per image view
+    private static var cache: [String: (timestamp: DispatchTime, frameIndex: Int)] = [:]
+
     internal init(
         tintColorProvider: @escaping (UIImageView) -> UIColor? = { imageView in
             if #available(iOS 13.0, *), let image = imageView.image {
@@ -26,11 +31,12 @@ internal struct UIImageViewRecorder: NodeRecorder {
             }
         },
         shouldRecordImagePredicate: @escaping (UIImageView) -> Bool = { imageView in
-            if #available(iOS 13.0, *), let image = imageView.image {
+            return true
+            /*if #available(iOS 13.0, *), let image = imageView.image {
                 return image.isContextual || imageView.isSystemControlBackground
             } else {
                 return false
-            }
+            }*/
         }
     ) {
         self.tintColorProvider = tintColorProvider
@@ -53,12 +59,22 @@ internal struct UIImageViewRecorder: NodeRecorder {
         }
 
         let ids = context.ids.nodeIDs(2, view: imageView, nodeRecorder: self)
-        let contentFrame = imageView.image.map {
+        let image = imageView.image ?? imageView.animationImages?.first
+
+        var contentFrame = image.map {
             attributes.frame.contentFrame(
                 for: $0.size,
                 using: imageView.contentMode
             )
         }
+        /*if contentFrame == nil {
+            var contentFrame = imageView.animationImages?.first.map {
+                attributes.frame.contentFrame(
+                    for: $0.size,
+                    using: imageView.contentMode
+                )
+            }
+        }*/
 
         let shouldRecordImage = shouldRecordImagePredicate(imageView)
 
@@ -67,7 +83,6 @@ internal struct UIImageViewRecorder: NodeRecorder {
         } : nil*/
 
         let imageResource = shouldRecordImage ? getImageResource(from: imageView) : nil
-
 
         let builder = UIImageViewWireframesBuilder(
             wireframeID: ids[0],
@@ -85,15 +100,76 @@ internal struct UIImageViewRecorder: NodeRecorder {
     }
 
     private func getImageResource(from imageView: UIImageView) -> UIImageResource? {
-        var imageResource = imageView.image.map { image in
-            UIImageResource(image: image, tintColor: tintColorProvider(imageView))
+        guard let animationImages = imageView.animationImages else {
+            return imageView.image.map { image in
+                UIImageResource(image: image, tintColor: tintColorProvider(imageView))
+            }
         }
 
-        if let animationImages = imageView.animationImages {
-            let randomNumber = Int.random(in: 0..<animationImages.count)
-            imageResource = UIImageResource(image: animationImages[randomNumber], tintColor: tintColorProvider(imageView))
+        let randomNumber = Int.random(in: 0..<animationImages.count)
+        return UIImageResource(image: animationImages[randomNumber], tintColor: tintColorProvider(imageView))
+
+        // Stop
+
+        // Animted images
+        let animationDuration = imageView.animationDuration
+        let numberOfFrames = animationImages.count
+
+        // Calculate the original time per frame and time per snapshot
+        let originalTimePerFrame = animationDuration / Double(numberOfFrames)
+        let timePerSnapshot = 1.0 / fixedFPS
+        print("timePerSnapshot:", timePerSnapshot)
+        // 0.1   // Scheduler interval in seconds, which equals 10 FPS
+        // 1.0 / fixedFPS
+
+        // Calculate total frames to display based on the fixed FPS
+        let totalFramesToDisplay = Int(animationDuration / timePerSnapshot)
+        // Int(fixedFPS * animationDuration)
+
+        let currentTime = DispatchTime.now()
+
+        let imageViewID = imageView.srIdentifier
+        print("imageViewID:", imageViewID)
+
+        var cachedValues: (timestamp: DispatchTime, frameIndex: Int) = (currentTime, 0)
+        if let values = UIImageViewRecorder.cache[imageViewID] {
+            //UIImageViewRecorder.cache[imageViewID] = (currentTime, 0)
+            cachedValues = values
+        } else {
+            UIImageViewRecorder.cache[imageViewID] = (currentTime, 0)
         }
-        return imageResource
+
+        let lastUpdateTimestamp = cachedValues.timestamp
+        var currentFrameIndex = cachedValues.frameIndex
+        print("lastUpdateTimestamp:", lastUpdateTimestamp)
+        print("currentFrameIndex:", currentFrameIndex)
+
+        let elapsedTime = currentTime.uptimeNanoseconds - lastUpdateTimestamp.uptimeNanoseconds
+        let elapsedTimeInSeconds = Double(elapsedTime) / 1_000_000_000
+        print("elapsedTime:", elapsedTime)
+        print("elapsedTimeInSeconds:", elapsedTimeInSeconds)
+
+        // Update the current frame index based on elapsed time and fixed FPS
+        if elapsedTimeInSeconds >= timePerSnapshot {
+            let framesToSkip = Int(elapsedTimeInSeconds / timePerSnapshot)
+            currentFrameIndex = (currentFrameIndex + framesToSkip) % totalFramesToDisplay
+            UIImageViewRecorder.cache[imageViewID] = (currentTime, currentFrameIndex) // Update cache
+            print("framesToSkip:", framesToSkip)
+            print("currentFrameIndex:", currentFrameIndex)
+            print("lastUpdateTimestamp:", lastUpdateTimestamp)
+        }
+
+        // Calculate the frame index in the original images
+        let frameIndex = min((currentFrameIndex * numberOfFrames) / totalFramesToDisplay, numberOfFrames - 1)
+        print("frameIndex:", frameIndex)
+
+        let shouldRecordImage = shouldRecordImagePredicate(imageView)
+
+        let image = animationImages[frameIndex]
+        let imageId = image.dd.srIdentifier
+        print("imageId:", imageId)
+
+        return UIImageResource(image: animationImages[frameIndex], tintColor: tintColorProvider(imageView))
     }
 }
 
@@ -222,6 +298,20 @@ fileprivate extension UIImageView {
         }
         let superViewType = "\(type(of: superview))"
         return superViewType == "_UIBarBackground"
+    }
+}
+
+private var srIdentifierKey: UInt8 = 11
+
+fileprivate extension UIImageView {
+    var srIdentifier: String {
+        if let identifier = objc_getAssociatedObject(self, &srIdentifierKey) as? String {
+            return identifier
+        } else {
+            let identifier = UUID().uuidString
+            objc_setAssociatedObject(self, &srIdentifierKey, identifier, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            return identifier
+        }
     }
 }
 
