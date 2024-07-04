@@ -9,6 +9,7 @@
 - [IMPROVEMENT] Record Activity Indicator in Session Replay. See [#1934][]
 - [IMPROVEMENT] Allow disabling app hang monitoring in ObjC API. See [#1908][]
 - [IMPROVEMENT] Update RUM and Telemetry models with KMP source. See [#1925][]
+- [IMPROVEMENT] Use otel-swift fork that only has APIs. See [#1930][]
 
 # 2.11.1 / 01-07-2024
 
@@ -706,6 +707,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1916]: https://github.com/DataDog/dd-sdk-ios/pull/1916
 [#1917]: https://github.com/DataDog/dd-sdk-ios/pull/1917
 [#1925]: https://github.com/DataDog/dd-sdk-ios/pull/1925
+[#1930]: https://github.com/DataDog/dd-sdk-ios/pull/1930
 [#1934]: https://github.com/DataDog/dd-sdk-ios/pull/1934
 [#1938]: https://github.com/DataDog/dd-sdk-ios/pull/1938
 [@00fa9a]: https://github.com/00FA9A
