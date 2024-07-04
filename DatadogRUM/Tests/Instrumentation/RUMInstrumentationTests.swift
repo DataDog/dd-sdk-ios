@@ -183,7 +183,7 @@ class RUMInstrumentationTests: XCTestCase {
     }
 }
 
-internal func DDAssertActiveSwizzlings(_ expectedSwizzledSelectors: [String], file: StaticString = #filePath, line: UInt = #line) {
+internal func DDAssertActiveSwizzlings(_ expectedSwizzledSelectors: [String], file: StaticString = #fileID, line: UInt = #line) {
     _DDEvaluateAssertion(message: "Only \(expectedSwizzledSelectors) swizzlings should be active", file: file, line: line) {
         let actual = Swizzling.methods.map { "\(method_getName($0))" }.sorted()
         let expected = expectedSwizzledSelectors.sorted()
