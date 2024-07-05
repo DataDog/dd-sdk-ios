@@ -35,8 +35,9 @@ default:
 
 .test-pipeline-job:
   rules:
-    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH || $CI_COMMIT_BRANCH == $MAIN_BRANCH'
-    - changes:
+    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH || $CI_COMMIT_BRANCH == $MAIN_BRANCH' # always on main branches
+    - if: '$CI_COMMIT_BRANCH' # when on other branch with following changes compared to develop
+      changes:
         paths:
           - "Datadog*/**/*"
           - "IntegrationTests/**/*"
@@ -215,9 +216,10 @@ Smoke Tests (macOS):
 
 .release-before-script: &export_MAKE_release_params
   - export GIT_TAG=${RELEASE_GIT_TAG:-$CI_COMMIT_TAG} # CI_COMMIT_TAG if set, otherwise default to RELEASE_GIT_TAG
-  - if [ -z "$GIT_TAG" ]; then echo "GIT_TAG is not set"; exit 1; fi
+  - if [ -z "$GIT_TAG" ]; then echo "GIT_TAG is not set"; exit 1; fi # sanity check
   - export ARTIFACTS_PATH="artifacts/$GIT_TAG"
-  - export DRY_RUN=${${CI_COMMIT_TAG:+0}:-$RELEASE_DRY_RUN} # 0 if CI_COMMIT_TAG is set, otherwise default to RELEASE_DRY_RUN
+  - export DRY_RUN=${CI_COMMIT_TAG:+0} # 0 if CI_COMMIT_TAG is set
+  - export DRY_RUN=${DRY_RUN:-$RELEASE_DRY_RUN} # otherwise default to RELEASE_DRY_RUN
 
 Build Artifacts:
   stage: release-build
