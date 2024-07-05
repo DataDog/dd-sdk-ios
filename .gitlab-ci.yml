@@ -109,7 +109,7 @@ UI Tests:
   stage: ui-test
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    # - !reference [.release-pipeline-job, rules]
   variables:
     XCODE: "15.3.0"
     OS: "17.4"
@@ -144,7 +144,7 @@ Smoke Tests (iOS):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    # - !reference [.release-pipeline-job, rules]
   tags:
     - macos:ventura
     - specific:true
@@ -163,7 +163,7 @@ Smoke Tests (tvOS):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    # - !reference [.release-pipeline-job, rules]
   tags:
     - macos:ventura
     - specific:true
@@ -182,7 +182,7 @@ Smoke Tests (visionOS):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    # - !reference [.release-pipeline-job, rules]
   tags:
     - macos:ventura
     - specific:true
@@ -198,7 +198,7 @@ Smoke Tests (macOS):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
+    # - !reference [.release-pipeline-job, rules]
   tags:
     - macos:ventura
     - specific:true
@@ -214,10 +214,10 @@ Smoke Tests (macOS):
 # └──────────────┘
 
 .release-before-script: &export_MAKE_release_params
-  - export GIT_TAG=${RELEASE_GIT_TAG:-$CI_COMMIT_TAG}
+  - export GIT_TAG=${RELEASE_GIT_TAG:-$CI_COMMIT_TAG} # CI_COMMIT_TAG if set, otherwise default to RELEASE_GIT_TAG
   - if [ -z "$GIT_TAG" ]; then echo "GIT_TAG is not set"; exit 1; fi
   - export ARTIFACTS_PATH="artifacts/$GIT_TAG"
-  - export DRY_RUN=${RELEASE_DRY_RUN:-0}
+  - export DRY_RUN=${${CI_COMMIT_TAG:+0}:-$RELEASE_DRY_RUN} # 0 if CI_COMMIT_TAG is set, otherwise default to RELEASE_DRY_RUN
 
 Build Artifacts:
   stage: release-build
