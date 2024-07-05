@@ -82,8 +82,7 @@ if [ "$CI" = "true" ]; then
     # Check if all secrets are available:
     ./tools/secrets/check-secrets.sh
 
-    echo ""
-    echo_succ "CI env:"
+    echo_subtitle "Print CI env"
     echo "▸ CI_COMMIT_TAG = ${CI_COMMIT_TAG:-(not set or empty)}"
     echo "▸ CI_COMMIT_BRANCH = ${CI_COMMIT_BRANCH:-(not set or empty)}"
     echo "▸ CI_COMMIT_SHA = ${CI_COMMIT_SHA:-(not set or empty)}"
