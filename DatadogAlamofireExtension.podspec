@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogAlamofireExtension"
-  s.version      = "2.15.0-test2"
+  s.version      = "2.15.0-test3"
   s.summary      = "An Official Extensions of Datadog Swift SDK for Alamofire."
 
   s.homepage     = "https://www.datadoghq.com"
