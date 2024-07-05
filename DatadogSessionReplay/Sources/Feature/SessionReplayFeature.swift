@@ -23,7 +23,8 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
 
     init(
         core: DatadogCoreProtocol,
-        configuration: SessionReplay.Configuration
+        configuration: SessionReplay.Configuration,
+        startRecordingImmediately: Bool
     ) throws {
         let processorsQueue = BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processors")
 
@@ -63,7 +64,8 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             srContextPublisher: SRContextPublisher(core: core),
             recorder: recorder,
             sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate),
-            telemetry: core.telemetry
+            telemetry: core.telemetry,
+            startRecordingImmediately: startRecordingImmediately
         )
         self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
@@ -79,6 +81,14 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
                 changeRate: 0.75 // vs 0.1 with `uploadFrequency: .frequent`
             )
         )
+    }
+
+    func startRecording() {
+        self.recordingCoordinator.startRecording()
+    }
+
+    func stopRecording() {
+        self.recordingCoordinator.stopRecording()
     }
 }
 #endif

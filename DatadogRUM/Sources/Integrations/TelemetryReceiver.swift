@@ -303,6 +303,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             sessionReplaySampleRate: nil,
             sessionSampleRate: configuration.sessionSampleRate,
             silentMultipleInit: nil,
+            startRecordingImmediately: configuration.startRecordingImmediately,
             storeContextsAcrossPages: nil,
             telemetryConfigurationSampleRate: nil,
             telemetrySampleRate: configuration.telemetrySampleRate,

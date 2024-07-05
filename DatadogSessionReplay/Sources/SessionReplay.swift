@@ -19,20 +19,53 @@ public enum SessionReplay {
     /// - Parameters:
     ///   - configuration: Configuration of the feature.
     ///   - core: The instance of Datadog SDK to enable Session Replay in (global instance by default).
+    ///   - startRecordingImmediately: When `true`, the recording starts automatically; when `false` it doesn't and the recording will need to be started manually (`true` by default).
     public static func enable(
-        with configuration: SessionReplay.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default
+        with configuration: SessionReplay.Configuration,
+        in core: DatadogCoreProtocol = CoreRegistry.default,
+        startRecordingImmediately: Bool = true
     ) {
         do {
-            try enableOrThrow(with: configuration, in: core)
+            try enableOrThrow(with: configuration, in: core, startRecordingImmediately: startRecordingImmediately)
         } catch let error {
             consolePrint("\(error)", .error)
        }
     }
 
+    /// Starts the recording manually.
+    /// - Parameters:
+    ///   - core: The instance of Datadog SDK to start Session Replay in (global instance by default).
+    public static func startRecording(
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) {
+        do {
+            try startRecording(core: core)
+        } catch let error {
+            consolePrint("\(error)", .error)
+        }
+    }
+
+    /// Stops the recording manually.
+    /// - Parameters:
+    ///   - core: The instance of Datadog SDK to start Session Replay in (global instance by default).
+    public static func stopRecording(
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) {
+        do {
+            try stopRecording(core: core)
+        } catch let error {
+            consolePrint("\(error)", .error)
+        }
+    }
+
+    // MARK: Internal
+
     internal static let maxObjectSize = 10.MB.asUInt64()
 
     internal static func enableOrThrow(
-        with configuration: SessionReplay.Configuration, in core: DatadogCoreProtocol
+        with configuration: SessionReplay.Configuration,
+        in core: DatadogCoreProtocol,
+        startRecordingImmediately: Bool
     ) throws {
         guard !(core is NOPDatadogCore) else {
             throw ProgrammerError(
@@ -45,13 +78,46 @@ public enum SessionReplay {
         let resources = ResourcesFeature(core: core, configuration: configuration)
         try core.register(feature: resources)
 
-        let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)
+        let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration, startRecordingImmediately: startRecordingImmediately)
         try core.register(feature: sessionReplay)
 
         core.telemetry.configuration(
             defaultPrivacyLevel: configuration.defaultPrivacyLevel.rawValue,
-            sessionReplaySampleRate: Int64(withNoOverflow: configuration.replaySampleRate)
+            sessionReplaySampleRate: Int64(withNoOverflow: configuration.replaySampleRate),
+            startRecordingImmediately: startRecordingImmediately
         )
+    }
+
+    internal static func startRecording(core: DatadogCoreProtocol) throws {
+        guard !(core is NOPDatadogCore) else {
+            throw ProgrammerError(
+                description: "Datadog SDK must be initialized before calling `SessionReplay.startRecording()`."
+            )
+        }
+
+        guard let sr = core.feature(named: SessionReplayFeaturneName, type: SessionReplayFeature.self) else {
+            throw ProgrammerError(
+                description: "Session Replay must be initialized before calling `SessionReplay.startRecording()`."
+            )
+        }
+
+        sr.startRecording()
+    }
+
+    internal static func stopRecording(core: DatadogCoreProtocol) throws {
+        guard !(core is NOPDatadogCore) else {
+            throw ProgrammerError(
+                description: "Datadog SDK must be initialized before calling `SessionReplay.stopRecording()`."
+            )
+        }
+
+        guard let sr = core.feature(named: SessionReplayFeaturneName, type: SessionReplayFeature.self) else {
+            throw ProgrammerError(
+                description: "Session Replay must be initialized before calling `SessionReplay.stopRecording()`."
+            )
+        }
+
+        sr.stopRecording()
     }
 }
 #endif

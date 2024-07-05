@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Defines dependency between Session Replay (SR) and RUM modules.
 /// It aims at centralizing documentation of contracts between both products.
@@ -37,4 +38,11 @@ internal struct RUMContext: Codable, Equatable {
     let viewID: String?
     /// Current view related server time offset
     let viewServerTimeOffset: TimeInterval?
+}
+
+extension DatadogContext {
+    /// The value indicating if replay is being performed by Session Replay.
+    var hasReplay: Bool? {
+        try? baggages[RUMDependency.hasReplay]?.decode()
+    }
 }
