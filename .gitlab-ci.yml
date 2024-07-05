@@ -131,7 +131,8 @@ UI Tests:
 Tools Tests:
   stage: test
   rules:
-    - changes:
+    - if: '$CI_COMMIT_BRANCH' # when on branch with following changes compared to develop
+      changes:
         paths:
           - "tools/**/*"
           - "Makefile"
@@ -230,7 +231,7 @@ Build Artifacts:
   artifacts:
     paths:
       - artifacts
-    expire_in: 3 days # TODO: RUM-4079 extend to 6 weeks
+    expire_in: 4 weeks
   before_script:
     - *export_MAKE_release_params
   script:

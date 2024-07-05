@@ -52,8 +52,6 @@ workflows:
     after_run:
     - _make_dependencies
     - run_conditioned_workflows
-    - _deploy_artifacts
-    - _notify_failure_on_slack
 
   _make_dependencies:
     description: |-

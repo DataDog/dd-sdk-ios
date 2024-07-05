@@ -338,12 +338,14 @@ e2e-monitors-generate:
 		@./tools/nightly-e2e-tests/nightly_e2e.py generate-tf --tests-dir ../../Datadog/E2ETests
 		@echo "⚠️  Remember to delete all iOS monitors manually from Mobile-Integration org before running 'terraform apply'."
 
+# Builds release artifacts for given tag
 release-build:
 	@$(call require_param,GIT_TAG)
 	@$(call require_param,ARTIFACTS_PATH)
 	@$(ECHO_TITLE) "make release-build GIT_TAG='$(GIT_TAG)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
 	./tools/release/build.sh --tag "$(GIT_TAG)" --artifacts-path "$(ARTIFACTS_PATH)"
 
+# Validate release artifacts for given tag
 release-validate:
 	@$(call require_param,GIT_TAG)
 	@$(call require_param,ARTIFACTS_PATH)
@@ -351,6 +353,7 @@ release-validate:
 	./tools/release/validate-version.sh --artifacts-path "$(ARTIFACTS_PATH)" --tag "$(GIT_TAG)"
 	./tools/release/validate-xcframeworks.sh --artifacts-path "$(ARTIFACTS_PATH)"
 
+# Publish GitHub asset to GH release
 release-publish-github:
 	@$(call require_param,GIT_TAG)
 	@$(call require_param,ARTIFACTS_PATH)
@@ -361,6 +364,7 @@ release-publish-github:
 		 --artifacts-path "$(ARTIFACTS_PATH)" \
 		 --tag "$(GIT_TAG)"
 
+# Publish Cocoapods podspec to trunk
 release-publish-podspec:
 	@$(call require_param,PODSPEC_NAME)
 	@$(call require_param,ARTIFACTS_PATH)
@@ -370,9 +374,11 @@ release-publish-podspec:
 		 --artifacts-path "$(ARTIFACTS_PATH)" \
 		 --podspec-name "$(PODSPEC_NAME)"
 
+# Publish DatadogInternal podspec
 release-publish-internal-podspecs:
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogInternal.podspec"
 
+# Publish podspecs that depend on DatadogInternal
 release-publish-dependent-podspecs:
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogCore.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogLogs.podspec"
@@ -382,6 +388,7 @@ release-publish-dependent-podspecs:
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogCrashReporting.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogWebViewTracking.podspec"
 
+# Publish legacy podspecs
 release-publish-legacy-podspecs:
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogObjc.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogAlamofireExtension.podspec"
@@ -390,6 +397,7 @@ release-publish-legacy-podspecs:
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDKCrashReporting.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDKAlamofireExtension.podspec"
 
+# Set ot update CI secrets
 set-ci-secret:
 	@$(ECHO_TITLE) "make set-ci-secret"
 	@./tools/secrets/set-secret.sh
