@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Enable DatadogCore, DatadogLogs and DatadogTrace to compile on watchOS platform. See [#1918][] (Thanks [@jfiser-paylocity][]) [#1946][] 
+
 # 2.14.0 / 04-07-2024
 
 - [IMPROVEMENT] Use `#fileID` over `#filePath` as the default argument in errors. See [#1938][]
@@ -708,6 +710,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1917]: https://github.com/DataDog/dd-sdk-ios/pull/1917
 [#1925]: https://github.com/DataDog/dd-sdk-ios/pull/1925
 [#1930]: https://github.com/DataDog/dd-sdk-ios/pull/1930
+[#1918]: https://github.com/DataDog/dd-sdk-ios/pull/1918
+[#1946]: https://github.com/DataDog/dd-sdk-ios/pull/1946
 [#1934]: https://github.com/DataDog/dd-sdk-ios/pull/1934
 [#1938]: https://github.com/DataDog/dd-sdk-ios/pull/1938
 [@00fa9a]: https://github.com/00FA9A
@@ -740,3 +744,4 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@cltnschlosser]: https://github.com/cltnschlosser
 [@alexfanatics]: https://github.com/alexfanatics
 [@changm4n]: https://github.com/changm4n
+[@jfiser-paylocity]: https://github.com/jfiser-paylocity
