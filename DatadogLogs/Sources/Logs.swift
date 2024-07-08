@@ -64,7 +64,8 @@ public enum Logs {
             logEventMapper: logEventMapper,
             dateProvider: configuration.dateProvider,
             customIntakeURL: configuration.customEndpoint,
-            telemetry: core.telemetry
+            telemetry: core.telemetry,
+            backtraceReporter: core.backtraceReporter
         )
 
         do {
