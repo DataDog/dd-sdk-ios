@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
 @testable import DatadogTrace
 @testable import DatadogObjc
 
@@ -26,10 +27,10 @@ class DDTraceConfigurationTests: XCTestCase {
     }
 
     func testTags() {
-        let random = mockRandomAttributes()
+        let random: [String: Any] = mockRandomAttributes()
         objc.tags = random
-        DDAssertDictionariesEqual(objc.tags!, random)
-        DDAssertReflectionEqual(swift.tags!, castAttributesToSwift(random))
+        DDAssertJSONEqual(objc.tags!, random)
+        DDAssertReflectionEqual(swift.tags!, random.dd.swiftAttributes)
     }
 
     func testSetDDTraceURLSessionTracking() {

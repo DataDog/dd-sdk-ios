@@ -111,9 +111,9 @@ internal final class RemoteLogger: LoggerProtocol {
         // capture current tags and attributes before opening the write event context
         let tags = self.tags
         var logAttributes = attributes
-        let isCrash = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorLogIsCrash) as? Bool ?? false
-        let errorFingerprint = logAttributes?.removeValue(forKey: Logs.Attributes.errorFingerprint) as? String
-        let addBinaryImages = logAttributes?.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages) as? Bool ?? false
+        let isCrash = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorLogIsCrash)?.dd.decode() ?? false
+        let errorFingerprint: String? = logAttributes?.removeValue(forKey: Logs.Attributes.errorFingerprint)?.dd.decode()
+        let addBinaryImages = logAttributes?.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages)?.dd.decode() ?? false
         let userAttributes = self.attributes
             .merging(logAttributes ?? [:]) { $1 } // prefer message attributes
         let combinedAttributes: [String: any Encodable]
