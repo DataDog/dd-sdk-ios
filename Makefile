@@ -5,7 +5,7 @@ all: env-check repo-setup templates
 		ui-test ui-test-all ui-test-podinstall \
 		tools-test \
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
-		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos \
+		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos spm-build-watchos \
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
 
 REPO_ROOT := $(PWD)
@@ -229,6 +229,12 @@ spm-build-tvos:
 # Builds SPM package for visionOS
 spm-build-visionos:
 	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=visionOS"
+
+# Builds SPM package for watchOS
+spm-build-watchos:
+	# Build only compatible schemes for watchOS:
+	@$(MAKE) spm-build DESTINATION="generic/platform=watchOS" SCHEME="DatadogCore"
+	@$(MAKE) spm-build DESTINATION="generic/platform=watchOS" SCHEME="DatadogLogs"
 
 # Builds SPM package for macOS (and Mac Catalyst)
 spm-build-macos:
