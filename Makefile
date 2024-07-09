@@ -3,7 +3,7 @@ all: env-check repo-setup templates
 		lint license-check \
 		test test-ios test-ios-all test-tvos test-tvos-all \
 		ui-test ui-test-all ui-test-podinstall \
-		sr-snapshot-test sr-pull-snapshots sr-push-snapshots \
+		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-snapshot-tests-open \
 		tools-test \
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
 		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos \
@@ -257,12 +257,6 @@ xcodeproj-session-replay:
 		@cd DatadogSessionReplay/ && swift package generate-xcodeproj
 		@echo "OK 👌"
 
-open-sr-snapshot-tests:
-		@echo "⚙️  Opening SRSnapshotTests with DD_TEST_UTILITIES_ENABLED ..."
-		@pgrep -q Xcode && killall Xcode && echo "- Xcode killed" || echo "- Xcode not running"
-		@sleep 0.5 && echo "- launching" # Sleep, otherwise, if Xcode was running it often fails with "procNotFound: no eligible process with specified descriptor"
-		@open --env DD_TEST_UTILITIES_ENABLED ./DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests.xcworkspace
-
 templates:
 	@$(ECHO_TITLE) "make templates"
 	./tools/xcode-templates/install-xcode-templates.sh
@@ -299,13 +293,13 @@ sr-models-verify:
 	@$(MAKE) models-verify PRODUCT="sr"
 
 # Pushes current SR snapshots to snapshots repo
-sr-push-snapshots:
-	@$(ECHO_TITLE) "make sr-push-snapshots"
+sr-snapshots-push:
+	@$(ECHO_TITLE) "make sr-snapshots-push"
 	./tools/sr-snapshot-test.sh --push
 
 # Pulls SR snapshots from snapshots repo
-sr-pull-snapshots:
-	@$(ECHO_TITLE) "make sr-pull-snapshots"
+sr-snapshots-pull:
+	@$(ECHO_TITLE) "make sr-snapshots-pull"
 	./tools/sr-snapshot-test.sh --pull
 
 # Run Session Replay snapshot tests
@@ -317,6 +311,11 @@ sr-snapshot-test:
 	@$(ECHO_TITLE) "make sr-snapshot-test OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
 	./tools/sr-snapshot-test.sh \
 		--test --os "$(OS)" --device "$(DEVICE)" --platform "$(PLATFORM)" --artifacts-path "$(ARTIFACTS_PATH)"
+
+# Opens `SRSnapshotTests` project with passing required ENV variables
+sr-snapshot-tests-open:
+	@$(ECHO_TITLE) "make sr-snapshot-tests-open"
+	./tools/sr-snapshot-test.sh --open-project
 
 # Generate api-surface files for Datadog and DatadogObjc.
 api-surface:

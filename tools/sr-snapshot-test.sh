@@ -1,18 +1,32 @@
 #!/bin/zsh
 
+# Usage:
+# $ ./tools/sr-snapshot-test.sh -h
+# Interacts with the SR Snapshot Tests project.
+
+# Options:
+#   --pull: Pulls snapshot images from the snapshots repository
+#   --push: Pushes snapshot images to the snapshots repository
+#   --open-project: Opens the SR Snapshot Tests project in Xcode with the required environment variables
+#   --test: Runs snapshot tests against snapshot images in the current repository
+#   --os: Sets the operating system version for --test, e.g., '17.5'
+#   --platform: Defines the type of simulator platform for --test, e.g., 'iOS Simulator'
+#   --device: Specifies the simulator device for --test, e.g., 'iPhone 15'
+#   --artifacts-path: Path to store the test bundle result
+
 set -eo pipefail
 source ./tools/utils/argparse.sh
 source ./tools/utils/echo-color.sh
 
-set_description "."
-define_arg "pull" "false" "..." "store_true"
-define_arg "push" "false" "..." "store_true"
-define_arg "open-project" "false" "..." "store_true"
-define_arg "test" "false" "..." "store_true"
-define_arg "os" "" "Sets the operating system version for the tests, e.g. '17.5'" "string" "false"
-define_arg "platform" "" "Defines the type of simulator platform for the tests, e.g. 'iOS Simulator'" "string" "false"
-define_arg "device" "" "Specifies the simulator device for running tests, e.g. 'iPhone 15 Pro'" "string" "false"
-define_arg "artifacts-path" "" "Path to artifacts for failed tests." "string" "false"
+set_description "Interacts with the SR Snapshot Tests project."
+define_arg "pull" "false" "Pulls snapshot images from the snapshots repository" "store_true"
+define_arg "push" "false" "Pushes snapshot images to the snapshots repository" "store_true"
+define_arg "open-project" "false" "Opens the SR Snapshot Tests project in Xcode with the required environment variables" "store_true"
+define_arg "test" "false" "Runs snapshot tests against snapshot images in the current repository" "store_true"
+define_arg "os" "" "Sets the operating system version for --test, e.g., '17.5'" "string" "false"
+define_arg "platform" "" "Defines the type of simulator platform for --test, e.g., 'iOS Simulator'" "string" "false"
+define_arg "device" "" "Specifies the simulator device for --test, e.g., 'iPhone 15'" "string" "false"
+define_arg "artifacts-path" "" "Path to store the test bundle result" "string" "false"
 
 check_for_help "$@"
 parse_args "$@"
@@ -58,6 +72,18 @@ test_snapshots() {
     xcodebuild -version
     xcodebuild -workspace "$TEST_WORKSPACE" -destination "$destination" -scheme "$TEST_SCHEME" -resultBundlePath "$TEST_ARTIFACTS_PATH/$TEST_SCHEME.xcresult" test | xcbeautify
 }
+
+open_snapshot_tests_project() {
+    echo_info "Opening SRSnapshotTests with DD_TEST_UTILITIES_ENABLED ..."
+	pgrep -q Xcode && killall Xcode && echo_warn "- Xcode killed" || echo_succ "- Xcode not running"
+	sleep 0.5 && echo "- launching" # Sleep, otherwise, if Xcode was running it often fails with "procNotFound: no eligible process with specified descriptor"
+	open --env DD_TEST_UTILITIES_ENABLED "$TEST_WORKSPACE"
+}
+
+if [ "$open_project" = "true" ]; then
+    open_snapshot_tests_project
+    exit 0
+fi
 
 echo_info "Using"
 echo_info "▸ SNAPSHOTS_CLI_PATH = '$SNAPSHOTS_CLI_PATH'"
