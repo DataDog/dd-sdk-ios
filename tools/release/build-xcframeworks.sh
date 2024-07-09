@@ -23,37 +23,17 @@ define_arg "output-path" "" "The path to the output directory where XCFrameworks
 check_for_help "$@"
 parse_args "$@"
 
-rm -rf "$output_path"
-mkdir -p "$output_path"
 
 REPO_PATH=$(realpath "$repo_path")
+
+echo_info "Clean '$REPO_PATH' with 'git clean -fxd'"
+cd "$REPO_PATH" && git clean -fxd && cd -
+
+echo_info "Create '$output_path'"
+rm -rf "$output_path" && mkdir -p "$output_path"
+
 XCFRAMEWORKS_OUTPUT=$(realpath "$output_path")
 ARCHIVES_TEMP_OUTPUT="$XCFRAMEWORKS_OUTPUT/archives"
-
-check_repo_clean_state() {
-    echo_subtitle2 "Check repo at '$REPO_PATH'"
-
-    git diff-index --quiet HEAD -- || { echo_err "Error:" "Repository has uncommitted changes."; exit 1; }
-    
-    [ -d "Datadog.xcworkspace" ] && echo_succ "Found 'Datadog.xcworkspace' in '$REPO_PATH'" \
-        || { echo_err "Error:" "Could not find 'Datadog.xcworkspace' in '$REPO_PATH'." ; exit 1; }
-
-    [ -f "Cartfile" ] && echo_succ "Found 'Cartfile' in '$REPO_PATH'" \
-        || { echo_err "Error:" "Could not find 'Cartfile' in '$REPO_PATH'." ; exit 1; }
-
-    [ -f "Cartfile.resolved" ] && echo_succ "Found 'Cartfile.resolved' in '$REPO_PATH'" \
-        || { echo_err "Error:" "Could not find 'Cartfile.resolved' in '$REPO_PATH'." ; exit 1; }
-
-    local config_files=$(find . -name "*.local.xcconfig")
-    if [[ -n $config_files ]]; then
-        echo_err "Error:" "The repo at '$REPO_PATH' is not in a clean state."
-        echo "It has following local config files:"
-        echo "$config_files" | awk '{print "- " $0}'
-        exit 1
-    else
-        echo_succ "The repository is in a clean state and no '*.local.xcconfig' files are present."
-    fi
-}
 
 archive() {
     local scheme="$1"
@@ -83,7 +63,7 @@ build_xcframework() {
     echo_subtitle2 "Build '$product.xcframework' using platform='$platform'"
 
     if [[ $platform == *"iOS"* ]]; then
-        echo "▸ Archive $product iOS"
+        echo_info "▸ Archive $product iOS"
 
         archive "$product iOS" "generic/platform=iOS" "$ARCHIVES_TEMP_OUTPUT/$product/ios"
         xcoptions+=(-archive "$ARCHIVES_TEMP_OUTPUT/$product/ios.xcarchive" -framework "$product.framework")
@@ -93,7 +73,7 @@ build_xcframework() {
     fi
 
     if [[ $platform == *"tvOS"* ]]; then
-        echo "▸ Archive $product tvOS"
+        echo_info "▸ Archive $product tvOS"
 
         archive "$product tvOS" "generic/platform=tvOS" "$ARCHIVES_TEMP_OUTPUT/$product/tvos"
         xcoptions+=(-archive "$ARCHIVES_TEMP_OUTPUT/$product/tvos.xcarchive" -framework "$product.framework")
@@ -113,8 +93,6 @@ build_xcframework() {
 
 echo_info "cd '$REPO_PATH'"
 cd $REPO_PATH
-
-check_repo_clean_state
 
 # Select PLATFORMS to build ('iOS' | 'tvOS' | 'iOS,tvOS')
 PLATFORMS=""
