@@ -3,6 +3,7 @@ all: env-check repo-setup templates
 		lint license-check \
 		test test-ios test-ios-all test-tvos test-tvos-all \
 		ui-test ui-test-all ui-test-podinstall \
+		sr-snapshot-test sr-pull-snapshots sr-push-snapshots \
 		tools-test \
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
 		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos \
@@ -103,6 +104,14 @@ DEFAULT_IOS_DEVICE := iPhone 15 Pro
 DEFAULT_TVOS_OS := latest
 DEFAULT_TVOS_PLATFORM := tvOS Simulator
 DEFAULT_TVOS_DEVICE := Apple TV
+
+# Test env for running SR snapshot tests in local:
+DEFAULT_SR_SNAPSHOT_TESTS_OS := 17.5
+DEFAULT_SR_SNAPSHOT_TESTS_PLATFORM := iOS Simulator
+DEFAULT_SR_SNAPSHOT_TESTS_DEVICE := iPhone 15
+
+# Default location for deploying artifacts
+DEFAULT_ARTIFACTS_PATH := artifacts
 
 # Run unit tests for specified SCHEME
 test:
@@ -289,19 +298,25 @@ sr-models-generate:
 sr-models-verify:
 	@$(MAKE) models-verify PRODUCT="sr"
 
+# Pushes current SR snapshots to snapshots repo
 sr-push-snapshots:
-		@echo "🎬 ↗️  Pushing SR snapshots to remote repo..."
-		@cd tools/sr-snapshots && swift run sr-snapshots push \
-			--local-folder ../../DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests/_snapshots_ \
-			--remote-folder ../../../dd-mobile-session-replay-snapshots \
-			--remote-branch "main"
+	@$(ECHO_TITLE) "make sr-push-snapshots"
+	./tools/sr-snapshot-test.sh --push
 
+# Pulls SR snapshots from snapshots repo
 sr-pull-snapshots:
-		@echo "🎬 ↙️  Pulling SR snapshots from remote repo..."
-		@cd tools/sr-snapshots && swift run sr-snapshots pull \
-			--local-folder ../../DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests/_snapshots_ \
-			--remote-folder ../../../dd-mobile-session-replay-snapshots \
-			--remote-branch "main"
+	@$(ECHO_TITLE) "make sr-pull-snapshots"
+	./tools/sr-snapshot-test.sh --pull
+
+# Run Session Replay snapshot tests
+sr-snapshot-test:
+	@:$(eval OS ?= $(DEFAULT_SR_SNAPSHOT_TESTS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_SR_SNAPSHOT_TESTS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_SR_SNAPSHOT_TESTS_DEVICE))
+	@:$(eval ARTIFACTS_PATH ?= $(DEFAULT_ARTIFACTS_PATH))
+	@$(ECHO_TITLE) "make sr-snapshot-test OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
+	./tools/sr-snapshot-test.sh \
+		--test --os "$(OS)" --device "$(DEVICE)" --platform "$(PLATFORM)" --artifacts-path "$(ARTIFACTS_PATH)"
 
 # Generate api-surface files for Datadog and DatadogObjc.
 api-surface:

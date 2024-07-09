@@ -128,6 +128,27 @@ UI Tests:
     - make clean repo-setup ENV=ci
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
+SR Snapshot Tests:
+  stage: ui-test
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  variables:
+    XCODE: "15.4.0"
+    OS: "17.5"
+    PLATFORM: "iOS Simulator"
+    DEVICE: "iPhone 15"
+    ARTIFACTS_PATH: "artifacts"
+  artifacts:
+    paths:
+      - artifacts
+    expire_in: 1 week
+    when: on_failure
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --os "$OS" --ssh # temporary, waiting for AMI
+    - make clean repo-setup ENV=ci
+    - make sr-pull-snapshots sr-snapshot-test OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
+
 Tools Tests:
   stage: test
   rules:
