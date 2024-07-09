@@ -140,10 +140,10 @@ class DDDatadogTests: XCTestCase {
         XCTAssertEqual(userInfo.current.name, "name")
         XCTAssertEqual(userInfo.current.email, "email")
         let extraInfo = userInfo.current.extraInfo
-        XCTAssertEqual(extraInfo["attribute-int"] as? Int, 42)
-        XCTAssertEqual(extraInfo["attribute-double"] as? Double, 42.5)
-        XCTAssertEqual(extraInfo["attribute-string"] as? String, "string value")
-        XCTAssertEqual(extraInfo["foo"] as? String, "bar")
+        XCTAssertEqual(extraInfo["attribute-int"]?.dd.decode(), 42)
+        XCTAssertEqual(extraInfo["attribute-double"]?.dd.decode(), 42.5)
+        XCTAssertEqual(extraInfo["attribute-string"]?.dd.decode(), "string value")
+        XCTAssertEqual(extraInfo["foo"]?.dd.decode(), "bar")
 
         DDDatadog.setUserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
         XCTAssertNil(userInfo.current.id)

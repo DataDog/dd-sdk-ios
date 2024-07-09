@@ -64,26 +64,12 @@ internal typealias RUMErrorSourceType = RUMErrorEvent.Error.SourceType
 
 internal extension RUMErrorSourceType {
     static func extract(from attributes: inout [AttributeKey: AttributeValue]) -> RUMErrorSourceType? {
-        return (attributes.removeValue(forKey: CrossPlatformAttributes.errorSourceType))
-            .flatMap({
-                $0.decoded()
-            })
+        return attributes
+            .removeValue(forKey: CrossPlatformAttributes.errorSourceType)?
+            .dd.decode()
             .flatMap {
-                return RUMErrorEvent.Error.SourceType(rawValue: $0)
+                RUMErrorEvent.Error.SourceType(rawValue: $0)
             }
-    }
-}
-
-internal extension AttributeValue {
-    func decoded<T>() -> T? {
-        switch self {
-        case let codable as AnyCodable:
-            return codable.value as? T
-        case let val as T:
-            return val
-        default:
-            return nil
-        }
     }
 }
 
@@ -194,7 +180,7 @@ internal class Monitor: RUMCommandSubscriber {
         var combinedUserAttributes = attributes
         combinedUserAttributes.merge(rumCommandAttributes: command.attributes)
 
-        if let customTimestampInMiliseconds = combinedUserAttributes.removeValue(forKey: CrossPlatformAttributes.timestampInMilliseconds) as? Int64 {
+        if let customTimestampInMiliseconds: Int64 = combinedUserAttributes.removeValue(forKey: CrossPlatformAttributes.timestampInMilliseconds)?.dd.decode() {
             let customTimeInterval = TimeInterval(fromMilliseconds: customTimestampInMiliseconds)
             mutableCommand.time = Date(timeIntervalSince1970: customTimeInterval)
         }

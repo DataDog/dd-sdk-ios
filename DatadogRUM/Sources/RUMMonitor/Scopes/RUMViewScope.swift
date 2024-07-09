@@ -575,14 +575,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         errorsCount += 1
 
         var commandAttributes = command.attributes
-        let errorFingerprint = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint) as? String
+        let errorFingerprint: String? = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
         var timeSinceAppStart: Int64? = nil
         if let startTime = context.launchTime?.launchDate {
             timeSinceAppStart = command.time.timeIntervalSince(startTime).toInt64Milliseconds
         }
 
         var binaryImages = command.binaryImages?.compactMap { $0.toRUMDataFormat }
-        if commandAttributes.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages) != nil {
+        if commandAttributes.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages)?.dd.decode() == true {
             // Don't try to get binary images if we already have them.
             if binaryImages == nil {
                 // TODO: RUM-4072 Replace full backtrace reporter with simpler binary image fetcher
