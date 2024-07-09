@@ -102,6 +102,7 @@ extension SessionReplayWireframesBuilder {
     ) -> SRWireframe {
         // Save resource
         resources.append(resource)
+        print(">>createImageWireframe, save resource:", resource.calculateIdentifier())
 
         let wireframe = SRImageWireframe(
             base64: nil, // field deprecated - we should use resource endpoint instead

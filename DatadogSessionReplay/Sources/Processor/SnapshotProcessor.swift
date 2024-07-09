@@ -82,6 +82,9 @@ internal class SnapshotProcessor: SnapshotProcessing {
     private func processSync(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?) {
         let builder = WireframesBuilder(webViewSlotIDs: viewTreeSnapshot.webViewSlotIDs)
         let nodes = nodesFlattener.flattenNodes(in: viewTreeSnapshot)
+        print(">nodes:", viewTreeSnapshot.nodes.count)
+        print(">>flattened:", nodes.count)
+        print("diff =", viewTreeSnapshot.nodes.count - nodes.count)
 
         // build wireframe from nodes
         var wireframes: [SRWireframe] = nodes.flatMap { node in

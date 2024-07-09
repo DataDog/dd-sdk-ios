@@ -243,7 +243,7 @@ extension SRImageWireframe {
     @_spi(Internal)
     public static func == (lhs: SRImageWireframe, rhs: SRImageWireframe) -> Bool {
         return lhs.id == rhs.id
-            && lhs.resourceId == rhs.resourceId
+            && lhs.resourceId == rhs.resourceId // doesn't change if commented
             && lhs.border == rhs.border
             && lhs.clip == rhs.clip
             && lhs.height == rhs.height
@@ -257,7 +257,7 @@ extension SRImageWireframe {
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
-        hasher.combine(resourceId)
+        hasher.combine(resourceId)  // doesn't change if commented
         hasher.combine(border)
         hasher.combine(clip)
         hasher.combine(height)

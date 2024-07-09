@@ -30,6 +30,10 @@ internal struct NodesFlattener {
                     && nextNode.viewAttributes.hasAnyAppearance // and the next node brings something visual
                     && !nextNode.viewAttributes.isTranslucent // and the next node is opaque
 
+                if dropPreviousNode {
+                    print("dropped node")
+                }
+
                 return dropPreviousNode ? nil : previousNode
             }
             // Add only node that intersects with the screen bounds

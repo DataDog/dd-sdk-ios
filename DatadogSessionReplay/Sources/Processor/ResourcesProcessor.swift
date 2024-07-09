@@ -24,7 +24,10 @@ internal class ResourceProcessor: ResourceProcessing {
 
     func process(resources: [Resource], context: EnrichedResource.Context) {
         interceptResources?(resources)
+        print(">>process resources")
         queue.run { [weak self] in
+            // Animated images don't seem to enter this block,
+            // so likely resources are never processed.
             let resources = resources
                 .compactMap {
                     let identifier = $0.calculateIdentifier()
@@ -32,6 +35,8 @@ internal class ResourceProcessor: ResourceProcessing {
                     if !isProcessed {
                         self?.processedIdentifiers.insert(identifier)
                     }
+                    print("resource id:", identifier)
+                    print("isProcessed:", isProcessed)
                     return !isProcessed ? EnrichedResource(
                         identifier: identifier,
                         data: $0.calculateData(),

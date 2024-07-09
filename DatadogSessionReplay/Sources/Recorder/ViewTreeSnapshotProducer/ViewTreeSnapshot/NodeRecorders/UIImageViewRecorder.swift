@@ -19,24 +19,28 @@ internal struct UIImageViewRecorder: NodeRecorder {
 
     /// For animated images only
     private let fixedFPS: Double = 66
-    // Cache for storing last update timestamp and current frame index per image view
+    /// Cache for storing last update timestamp and current frame index per image view
     private static var cache: [String: (timestamp: DispatchTime, frameIndex: Int)] = [:]
 
     internal init(
         tintColorProvider: @escaping (UIImageView) -> UIColor? = { imageView in
-            if #available(iOS 13.0, *), let image = imageView.image {
+            let image = imageView.image ?? imageView.animationImages?.first
+            if #available(iOS 13.0, *), let image {
                 return image.isTinted ? imageView.tintColor : nil
             } else {
                 return nil
             }
         },
         shouldRecordImagePredicate: @escaping (UIImageView) -> Bool = { imageView in
-            return true
-            /*if #available(iOS 13.0, *), let image = imageView.image {
+            //return true
+            let image = imageView.image ?? imageView.animationImages?.first
+            if #available(iOS 13.0, *), let image {
+                print("isContextual:", image.isContextual)
+                print("isSystemControlBackground:", imageView.isSystemControlBackground)
                 return image.isContextual || imageView.isSystemControlBackground
             } else {
                 return false
-            }*/
+            }
         }
     ) {
         self.tintColorProvider = tintColorProvider
@@ -54,12 +58,13 @@ internal struct UIImageViewRecorder: NodeRecorder {
         if let semantics = semanticsOverride(imageView, attributes) {
             return semantics
         }
-        guard attributes.hasAnyAppearance || imageView.image != nil else {
+
+        let image = imageView.image ?? imageView.animationImages?.first
+        guard attributes.hasAnyAppearance || image != nil else {
             return InvisibleElement.constant
         }
 
         let ids = context.ids.nodeIDs(2, view: imageView, nodeRecorder: self)
-        let image = imageView.image ?? imageView.animationImages?.first
 
         var contentFrame = image.map {
             attributes.frame.contentFrame(
@@ -67,22 +72,10 @@ internal struct UIImageViewRecorder: NodeRecorder {
                 using: imageView.contentMode
             )
         }
-        /*if contentFrame == nil {
-            var contentFrame = imageView.animationImages?.first.map {
-                attributes.frame.contentFrame(
-                    for: $0.size,
-                    using: imageView.contentMode
-                )
-            }
-        }*/
 
         let shouldRecordImage = shouldRecordImagePredicate(imageView)
-
-        /*let imageResource = shouldRecordImage ? imageView.image.map { image in
-            UIImageResource(image: image, tintColor: tintColorProvider(imageView))
-        } : nil*/
-
         let imageResource = shouldRecordImage ? getImageResource(from: imageView) : nil
+        let animatedImage = imageView.animationImages != nil
 
         let builder = UIImageViewWireframesBuilder(
             wireframeID: ids[0],
@@ -90,8 +83,17 @@ internal struct UIImageViewRecorder: NodeRecorder {
             attributes: attributes,
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
-            imageResource: imageResource
+            imageResource: imageResource,
+            animatedImage: animatedImage
         )
+        if animatedImage {
+            print("animatedImage...")
+            print("wireframeID:", ids[0])
+            print("imageWireframeID:", ids[1])
+            print("imageResource ID:", imageResource?.image.dd.srIdentifier ?? "n")
+            print("contentFrame:", contentFrame)
+        }
+
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(
            subtreeStrategy: .record,
@@ -100,25 +102,32 @@ internal struct UIImageViewRecorder: NodeRecorder {
     }
 
     private func getImageResource(from imageView: UIImageView) -> UIImageResource? {
+        if imageView.animationImages != nil {
+            let staticImage = imageView.image
+            //print("animated iv static image:", staticImage)
+        }
+
         guard let animationImages = imageView.animationImages else {
             return imageView.image.map { image in
                 UIImageResource(image: image, tintColor: tintColorProvider(imageView))
             }
         }
 
+        // Picking random image for testing purposes;
+        // will use getAnimatedImageResource method below after.
         let randomNumber = Int.random(in: 0..<animationImages.count)
-        return UIImageResource(image: animationImages[randomNumber], tintColor: tintColorProvider(imageView))
+        let imageResource = UIImageResource(image: animationImages[randomNumber], tintColor: tintColorProvider(imageView))
+        print("imageResource SR ID:", imageResource.image.dd.srIdentifier)
+        return imageResource
+    }
 
-        // Stop
-
-        // Animted images
+    private func getAnimatedImageResource(imageView: UIImageView, animationImages: [UIImage]) -> UIImageResource {
         let animationDuration = imageView.animationDuration
         let numberOfFrames = animationImages.count
 
         // Calculate the original time per frame and time per snapshot
         let originalTimePerFrame = animationDuration / Double(numberOfFrames)
         let timePerSnapshot = 1.0 / fixedFPS
-        print("timePerSnapshot:", timePerSnapshot)
         // 0.1   // Scheduler interval in seconds, which equals 10 FPS
         // 1.0 / fixedFPS
 
@@ -127,13 +136,11 @@ internal struct UIImageViewRecorder: NodeRecorder {
         // Int(fixedFPS * animationDuration)
 
         let currentTime = DispatchTime.now()
-
         let imageViewID = imageView.srIdentifier
-        print("imageViewID:", imageViewID)
 
+        // Retrieve value from cache for this image view
         var cachedValues: (timestamp: DispatchTime, frameIndex: Int) = (currentTime, 0)
         if let values = UIImageViewRecorder.cache[imageViewID] {
-            //UIImageViewRecorder.cache[imageViewID] = (currentTime, 0)
             cachedValues = values
         } else {
             UIImageViewRecorder.cache[imageViewID] = (currentTime, 0)
@@ -141,35 +148,25 @@ internal struct UIImageViewRecorder: NodeRecorder {
 
         let lastUpdateTimestamp = cachedValues.timestamp
         var currentFrameIndex = cachedValues.frameIndex
-        print("lastUpdateTimestamp:", lastUpdateTimestamp)
-        print("currentFrameIndex:", currentFrameIndex)
 
+        // Calculate time elapsed since last snapshot
         let elapsedTime = currentTime.uptimeNanoseconds - lastUpdateTimestamp.uptimeNanoseconds
         let elapsedTimeInSeconds = Double(elapsedTime) / 1_000_000_000
-        print("elapsedTime:", elapsedTime)
-        print("elapsedTimeInSeconds:", elapsedTimeInSeconds)
 
         // Update the current frame index based on elapsed time and fixed FPS
         if elapsedTimeInSeconds >= timePerSnapshot {
             let framesToSkip = Int(elapsedTimeInSeconds / timePerSnapshot)
             currentFrameIndex = (currentFrameIndex + framesToSkip) % totalFramesToDisplay
-            UIImageViewRecorder.cache[imageViewID] = (currentTime, currentFrameIndex) // Update cache
-            print("framesToSkip:", framesToSkip)
-            print("currentFrameIndex:", currentFrameIndex)
-            print("lastUpdateTimestamp:", lastUpdateTimestamp)
+            // Update cache with new values
+            UIImageViewRecorder.cache[imageViewID] = (currentTime, currentFrameIndex)
         }
 
         // Calculate the frame index in the original images
         let frameIndex = min((currentFrameIndex * numberOfFrames) / totalFramesToDisplay, numberOfFrames - 1)
         print("frameIndex:", frameIndex)
+        let selectedImage = animationImages[frameIndex]
 
-        let shouldRecordImage = shouldRecordImagePredicate(imageView)
-
-        let image = animationImages[frameIndex]
-        let imageId = image.dd.srIdentifier
-        print("imageId:", imageId)
-
-        return UIImageResource(image: animationImages[frameIndex], tintColor: tintColorProvider(imageView))
+        return UIImageResource(image: selectedImage, tintColor: tintColorProvider(imageView))
     }
 }
 
@@ -189,6 +186,8 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
     let clipsToBounds: Bool
 
     let imageResource: UIImageResource?
+
+    let animatedImage: Bool
 
     private var clip: SRContentClip? {
         guard let contentFrame = contentFrame else {
@@ -225,6 +224,10 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 opacity: attributes.alpha
             )
         ]
+
+        if animatedImage {
+            print("animatedImage!")
+        }
 
         guard let contentFrame else {
             return wireframes
