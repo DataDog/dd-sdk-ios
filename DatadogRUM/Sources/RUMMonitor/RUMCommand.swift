@@ -203,7 +203,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
         attributes: [AttributeKey: AttributeValue]
     ) {
         var attributes = attributes
-        let isCrossPlatformCrash: Bool? = attributes.removeValue(forKey: CrossPlatformAttributes.errorIsCrash)?.decoded()
+        let isCrossPlatformCrash: Bool? = attributes.removeValue(forKey: CrossPlatformAttributes.errorIsCrash)?.dd.decode()
         let crossPlatformSourceType = RUMErrorSourceType.extract(from: &attributes)
 
         self.time = time

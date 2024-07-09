@@ -225,12 +225,12 @@ public class DDLogger: NSObject {
 
     @objc
     public func debug(_ message: String, attributes: [String: Any]) {
-        sdkLogger.debug(message, attributes: castAttributesToSwift(attributes))
+        sdkLogger.debug(message, attributes: attributes.dd.swiftAttributes)
     }
 
     @objc
     public func debug(_ message: String, error: NSError, attributes: [String: Any]) {
-        sdkLogger.debug(message, error: error, attributes: castAttributesToSwift(attributes))
+        sdkLogger.debug(message, error: error, attributes: attributes.dd.swiftAttributes)
     }
 
     @objc
@@ -240,12 +240,12 @@ public class DDLogger: NSObject {
 
     @objc
     public func info(_ message: String, attributes: [String: Any]) {
-        sdkLogger.info(message, attributes: castAttributesToSwift(attributes))
+        sdkLogger.info(message, attributes: attributes.dd.swiftAttributes)
     }
 
     @objc
     public func info(_ message: String, error: NSError, attributes: [String: Any]) {
-        sdkLogger.info(message, error: error, attributes: castAttributesToSwift(attributes))
+        sdkLogger.info(message, error: error, attributes: attributes.dd.swiftAttributes)
     }
 
     @objc
@@ -255,12 +255,12 @@ public class DDLogger: NSObject {
 
     @objc
     public func notice(_ message: String, attributes: [String: Any]) {
-        sdkLogger.notice(message, attributes: castAttributesToSwift(attributes))
+        sdkLogger.notice(message, attributes: attributes.dd.swiftAttributes)
     }
 
     @objc
     public func notice(_ message: String, error: NSError, attributes: [String: Any]) {
-        sdkLogger.notice(message, error: error, attributes: castAttributesToSwift(attributes))
+        sdkLogger.notice(message, error: error, attributes: attributes.dd.swiftAttributes)
     }
 
     @objc
@@ -270,12 +270,12 @@ public class DDLogger: NSObject {
 
     @objc
     public func warn(_ message: String, attributes: [String: Any]) {
-        sdkLogger.warn(message, attributes: castAttributesToSwift(attributes))
+        sdkLogger.warn(message, attributes: attributes.dd.swiftAttributes)
     }
 
     @objc
     public func warn(_ message: String, error: NSError, attributes: [String: Any]) {
-        sdkLogger.warn(message, error: error, attributes: castAttributesToSwift(attributes))
+        sdkLogger.warn(message, error: error, attributes: attributes.dd.swiftAttributes)
     }
 
     @objc
@@ -285,12 +285,12 @@ public class DDLogger: NSObject {
 
     @objc
     public func error(_ message: String, attributes: [String: Any]) {
-        sdkLogger.error(message, attributes: castAttributesToSwift(attributes))
+        sdkLogger.error(message, attributes: attributes.dd.swiftAttributes)
     }
 
     @objc
     public func error(_ message: String, error: NSError, attributes: [String: Any]) {
-        sdkLogger.error(message, error: error, attributes: castAttributesToSwift(attributes))
+        sdkLogger.error(message, error: error, attributes: attributes.dd.swiftAttributes)
     }
 
     @objc
@@ -300,12 +300,12 @@ public class DDLogger: NSObject {
 
     @objc
     public func critical(_ message: String, attributes: [String: Any]) {
-        sdkLogger.critical(message, attributes: castAttributesToSwift(attributes))
+        sdkLogger.critical(message, attributes: attributes.dd.swiftAttributes)
     }
 
     @objc
     public func critical(_ message: String, error: NSError, attributes: [String: Any]) {
-        sdkLogger.critical(message, error: error, attributes: castAttributesToSwift(attributes))
+        sdkLogger.critical(message, error: error, attributes: attributes.dd.swiftAttributes)
     }
 
     @objc

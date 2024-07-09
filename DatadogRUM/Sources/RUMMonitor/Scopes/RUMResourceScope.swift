@@ -119,36 +119,32 @@ internal class RUMResourceScope: RUMScope {
         let size: Int64?
 
         // Check trace attributes
-        var traceId: TraceID? = nil
-        if let tid = attributes.removeValue(forKey: CrossPlatformAttributes.traceID) as? String {
-            traceId = .init(tid, representation: .hexadecimal)
-        } else {
-            traceId = spanContext?.traceID
-        }
+        let traceId: TraceID? = attributes.removeValue(forKey: CrossPlatformAttributes.traceID)?
+            .dd.decode()
+            .map { .init($0, representation: .hexadecimal) }
+            ?? spanContext?.traceID
 
-        var spanId: SpanID? = nil
-        if let sid = attributes.removeValue(forKey: CrossPlatformAttributes.spanID) as? String {
-            spanId = .init(sid, representation: .decimal)
-        } else {
-            spanId = spanContext?.spanID
-        }
+        let spanId: SpanID? = attributes.removeValue(forKey: CrossPlatformAttributes.spanID)?
+            .dd.decode()
+            .map { .init($0, representation: .decimal) }
+            ?? spanContext?.spanID
 
-        let traceSamplingRate = (attributes.removeValue(forKey: CrossPlatformAttributes.rulePSR) as? Double) ?? spanContext?.samplingRate
+        let traceSamplingRate = attributes.removeValue(forKey: CrossPlatformAttributes.rulePSR)?.dd.decode() ?? spanContext?.samplingRate
 
         // Check GraphQL attributes
         var graphql: RUMResourceEvent.Resource.Graphql? = nil
-        let graphqlOperationName = (attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationName) as? String)
-        let graphqlPayload = (attributes.removeValue(forKey: CrossPlatformAttributes.graphqlPayload) as? String)
-        let graphqlVariables = (attributes.removeValue(forKey: CrossPlatformAttributes.graphqlVariables) as? String)
-        if let rawGraphqlOperationType = (attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationType) as? String) {
-            if let graphqlOperationType = RUMResourceEvent.Resource.Graphql.OperationType(rawValue: rawGraphqlOperationType) {
-                graphql = .init(
-                    operationName: graphqlOperationName,
-                    operationType: graphqlOperationType,
-                    payload: graphqlPayload,
-                    variables: graphqlVariables
-                )
-            }
+        let graphqlOperationName: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationName)?.dd.decode()
+        let graphqlPayload: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlPayload)?.dd.decode()
+        let graphqlVariables: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlVariables)?.dd.decode()
+        if
+            let rawGraphqlOperationType: String = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationType)?.dd.decode(),
+            let graphqlOperationType = RUMResourceEvent.Resource.Graphql.OperationType(rawValue: rawGraphqlOperationType) {
+            graphql = .init(
+                operationName: graphqlOperationName,
+                operationType: graphqlOperationType,
+                payload: graphqlPayload,
+                variables: graphqlVariables
+            )
         }
 
         /// Metrics values take precedence over other values.
@@ -271,10 +267,9 @@ internal class RUMResourceScope: RUMScope {
     private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand, context: DatadogContext, writer: Writer) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
-        let errorFingerprint = attributes.removeValue(forKey: RUM.Attributes.errorFingerprint) as? String
-        var timeSinceAppStart: Int64? = nil
-        if let startTime = context.launchTime?.launchDate {
-            timeSinceAppStart = command.time.timeIntervalSince(startTime).toInt64Milliseconds
+        let errorFingerprint: String? = attributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
+        let timeSinceAppStart = context.launchTime.map {
+            command.time.timeIntervalSince($0.launchDate).toInt64Milliseconds
         }
 
         let errorEvent = RUMErrorEvent(
