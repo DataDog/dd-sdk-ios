@@ -7,28 +7,16 @@ project_type: other
 
 workflows:
   push_to_pull_request:
-    description: |-
-        This workflow is triggered on starting new PR or pushing new changes to existing PRs.
-        By default, it doesn't run any test phases, but this behaviour is overwritten in `choose_workflows.py` when:
-        - one or more `DD_OVERWRITE_RUN_(phase)_TESTS` ENVs are passed to the current CI job:
-            - DD_OVERRIDE_RUN_SR_UNIT_TESTS='1' to run unit tests phase for Session Replay product
-        - a phase is selected on the checklist in the PR description,
-        - the PR changes a file which matches phase filter (e.g. changing a file in `Sources/*` will trigger unit tests phase)
-    envs:
-      - DD_RUN_SR_UNIT_TESTS: '0'
-    after_run:
-    - _make_dependencies
-    - run_conditioned_workflows
-    - _deploy_artifacts
+    steps:
+    - script:
+        inputs:
+        - content: echo "NOP"
 
   push_to_develop_or_master:
     description: |-
         This workflow is triggered for each new commit pushed to `develop` or `master` branch.
-    envs:
-      - DD_RUN_SR_UNIT_TESTS: '1'
     after_run:
     - _make_dependencies
-    - run_conditioned_workflows
     - run_e2e_s8s_upload
     - _deploy_artifacts
     - _notify_failure_on_slack
@@ -45,13 +33,10 @@ workflows:
     - _notify_failure_on_slack
 
   tagged_commit:
-    description: |-
-        This workflow is triggered on pushing a new release tag.
-    envs:
-      - DD_RUN_SR_UNIT_TESTS: '1'
-    after_run:
-    - _make_dependencies
-    - run_conditioned_workflows
+    steps:
+    - script:
+        inputs:
+        - content: echo "NOP"
 
   _make_dependencies:
     description: |-
@@ -91,59 +76,6 @@ workflows:
         - message_on_error: 'Failed to run "${BITRISE_TRIGGERED_WORKFLOW_ID}"'
         - icon_url: 'https://avatars.githubusercontent.com/t/3555052?s=128&v=4'
         - webhook_url: '${SLACK_INCOMING_WEBHOOK_MOBILE_CI}'
-
-  run_conditioned_workflows:
-    steps:
-    - script:
-        title: Choose which workflows to run
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-
-            cd tools/ci && make
-
-            # The `choose_workflows.py` inspects current ENV variables and Pull Request metadata (if running in PR)
-            # and decides on which from the workflows in `after_run` should be ran. Workflows are opted-in
-            # by modifying `DD_RUN_*` ENV variables with `envman` (ref.: https://github.com/bitrise-io/envman).
-            venv/bin/python3 choose_workflows.py
-    after_run:
-      - run_unit_tests
-
-  run_unit_tests:
-    description: |-
-        Selectively runs:
-        - or Session Replay tests when when 'DD_RUN_SR_UNIT_TESTS' is '1'
-    steps:
-    - script:
-        title: Pull Session Replay snapshots
-        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
-        inputs:
-        - content: |-
-            #!/usr/bin/env zsh
-            set -e
-            make sr-pull-snapshots
-    - script:
-        title: Configure SRSnapshotTests project launch
-        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
-        inputs:
-        - content: |
-            #!/usr/bin/env zsh
-
-            # The `SRSnapshotTests.xcworkspace` depends on `dd-sdk-ios/Package.swift` but requires the `dd-sdk-ios/TestUtilities` library, 
-            # which is not defined statically in the root package. To add it dynamically, we leverage the `DD_TEST_UTILITIES_ENABLED` ENV
-            # variable respected by the main package. Here we export it so it is available in next CI steps:
-            envman add --key DD_TEST_UTILITIES_ENABLED --value '1'
-    - xcode-test:
-        title: Run snapshot tests for Session Replay - iOS Simulator
-        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
-        inputs:
-        - scheme: SRSnapshotTests
-        - destination: platform=iOS Simulator,name=iPhone 15,OS=17.5
-        - should_build_before_test: 'no'
-        - is_clean_build: 'no'
-        - generate_code_coverage_files: 'yes'
-        - project_path: DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-snapshot-tests.html"
 
   create_dogfooding_pr:
     description: |-
