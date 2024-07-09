@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.14.1 / 09-07-2024
+
 - [FIX] Objc attributes interop for KMP. See [#1947][]
 - [FIX] Inject backtrace reporter into Logs feature. See [#1948][]
 
