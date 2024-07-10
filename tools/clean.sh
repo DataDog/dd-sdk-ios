@@ -4,7 +4,7 @@
 # $ ./tools/clean.sh
 
 set -e
-source ./tools/utils/echo_color.sh
+source ./tools/utils/echo-color.sh
 
 clean_dir() {
     local dir="$1"

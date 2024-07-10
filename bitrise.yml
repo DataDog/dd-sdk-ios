@@ -52,9 +52,6 @@ workflows:
     after_run:
     - _make_dependencies
     - run_conditioned_workflows
-    - _deploy_artifacts
-    - start_async_release_jobs
-    - _notify_failure_on_slack
 
   _make_dependencies:
     description: |-
@@ -180,63 +177,6 @@ workflows:
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/E2E-instrumentation-tests.html"
-
-  start_async_release_jobs:
-    description: |-
-        Spins off two parallel CI jobs for releasing the actual artifacts.
-    steps:
-    - build-router-start:
-        title: Start new CI jobs for running 'publish_github_asset' and 'publish_cocoapods_podspecs'.
-        inputs:
-        - access_token: "$BITRISE_PERSONAL_ACCESS_TOKEN"
-        - workflows: |-
-            publish_github_asset
-            publish_cocoapods_podspecs
-        - environment_key_list: |-
-            DD_RELEASE_GIT_TAG
-            DD_RELEASE_DRY_RUN
-
-  publish_github_asset:
-    before_run:
-    - _make_dependencies  # install tooling
-    after_run:
-    - _notify_failure_on_slack
-    description: |-
-        Uploads binaries to Github.
-    steps:
-    - script:
-        title: Publish GH Asset.
-        inputs:
-        - content: |-
-            #!/usr/bin/env zsh
-            set -e
-
-            # Use 'DD_RELEASE_GIT_TAG' ENV if available, otherwise 'BITRISE_GIT_TAG' ENV
-            GIT_TAG="${DD_RELEASE_GIT_TAG:-$(echo "${BITRISE_GIT_TAG}")}"
-
-            cd tools/distribution && make clean install
-            venv/bin/python3 release.py "$GIT_TAG" --only-github
-
-  publish_cocoapods_podspecs:
-    before_run:
-    - _make_dependencies  # install tooling
-    after_run:
-    - _notify_failure_on_slack
-    description: |-
-        Submits all podspecs to Cocoapods.
-    steps:
-    - script:
-        title: Submit podspecs to Cocoapods.
-        inputs:
-        - content: |-
-            #!/usr/bin/env zsh
-            set -e
-
-            # Use 'DD_RELEASE_GIT_TAG' ENV if available, otherwise 'BITRISE_GIT_TAG' ENV
-            GIT_TAG="${DD_RELEASE_GIT_TAG:-$(echo "${BITRISE_GIT_TAG}")}"
-
-            cd tools/distribution && make clean install
-            venv/bin/python3 release.py "$GIT_TAG" --only-cocoapods
 
   run_e2e_s8s_upload:
     description: |-

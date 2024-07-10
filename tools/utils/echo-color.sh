@@ -1,11 +1,12 @@
 #!/bin/zsh
 
 # Usage:
-# ./tools/utils/echo_color.sh [OPTION] "message" [additional_message]
+# ./tools/utils/echo-color.sh [OPTION] "message" [additional_message]
 # This script renders colored output for different types of log messages.
-# It supports error, warning, success messages, and titles, each with distinctive coloring.
+# It supports info, error, warning, success messages, and titles, each with distinctive coloring.
 
 # Options:
+#   --info   Display info message in light blue.
 #   --err    Display the message as an error in red.
 #   --warn   Display the message as a warning in yellow.
 #   --succ   Display the message as a success in green.
@@ -25,6 +26,10 @@ BOLD="\e[1m"
 PURPLE="\e[35m"
 BLUE='\033[34m'
 BLUE_LIGHT='\033[36m'
+
+echo_info() {
+  echo "${BLUE_LIGHT}$1${RESET} $2"
+}
 
 echo_err() {
   echo "${RED}$1${RESET} $2"
@@ -65,6 +70,9 @@ echo_subtitle2() {
 }
 
 case "$1" in
+    --info)
+        echo_info "$2" "$3"
+        ;;
     --err)
         echo_err "$2" "$3"
         ;;

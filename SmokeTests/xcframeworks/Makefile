@@ -5,6 +5,7 @@ include ../../tools/utils/common.mk
 
 ifeq ($(PLATFORM), iOS Simulator)
 SCHEME := App iOS
+BUILD_XCFRAMEWORKS_FLAG := --ios
 EXPECTED_XCFRAMEWORKS := DatadogInternal \
 						DatadogCore \
 						DatadogLogs \
@@ -18,6 +19,7 @@ EXPECTED_XCFRAMEWORKS := DatadogInternal \
 						OpenTelemetryApi
 else ifeq ($(PLATFORM), tvOS Simulator)
 SCHEME := App tvOS
+BUILD_XCFRAMEWORKS_FLAG := --tvos
 EXPECTED_XCFRAMEWORKS := DatadogInternal \
 						DatadogCore \
 						DatadogLogs \
@@ -34,10 +36,18 @@ clean:
 	rm -rf dd-sdk-ios
 
 install:
+	@$(call require_param,PLATFORM)
 	@$(ECHO_SUBTITLE2) "make install"
-	@$(ECHO_SUCCESS) "Preparing for CURRENT_GIT_REF='${CURRENT_GIT_REF}'"
-	git clone --depth 1 --branch ${CURRENT_GIT_REF} https://github.com/DataDog/dd-sdk-ios.git
-	cd dd-sdk-ios && tools/distribution/build-xcframework.sh
+	@$(ECHO_INFO) "Preparing for CURRENT_GIT_REF='${CURRENT_GIT_REF}'"
+	git clone --depth 1 --branch ${CURRENT_GIT_REF} --single-branch git@github.com:DataDog/dd-sdk-ios.git
+ifeq ($(BUILD_XCFRAMEWORKS_FLAG),)
+	@$(ECHO_ERROR) "No BUILD_XCFRAMEWORKS_FLAG is defined for PLATFORM='$(PLATFORM)'"
+	@exit 1
+endif
+	cd $(REPO_ROOT) && tools/release/build-xcframeworks.sh \
+		--repo-path SmokeTests/xcframeworks/dd-sdk-ios \
+		--output-path SmokeTests/xcframeworks/dd-sdk-ios/build/xcframeworks \
+		$(BUILD_XCFRAMEWORKS_FLAG)
 
 test:
 	@$(call require_param,OS)
@@ -52,8 +62,8 @@ ifeq ($(EXPECTED_XCFRAMEWORKS),)
 	@$(ECHO_ERROR) "No EXPECTED_XCFRAMEWORKS is defined for PLATFORM='$(PLATFORM)'"
 	@exit 1
 endif
-	@$(ECHO_SUCCESS) "Using SCHEME='$(SCHEME)'"
-	@$(ECHO_SUCCESS) "Using EXPECTED_XCFRAMEWORKS='$(EXPECTED_XCFRAMEWORKS)'"
+	@$(ECHO_INFO) "Using SCHEME='$(SCHEME)'"
+	@$(ECHO_INFO) "Using EXPECTED_XCFRAMEWORKS='$(EXPECTED_XCFRAMEWORKS)'"
 	@echo "Check XCFrameworks in $(PWD)/dd-sdk-ios/build/xcframeworks/"
 	@$(foreach xcf,$(EXPECTED_XCFRAMEWORKS),\
 		if [ -d "dd-sdk-ios/build/xcframeworks/$(xcf).xcframework" ]; then \
