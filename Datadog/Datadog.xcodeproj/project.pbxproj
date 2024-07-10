@@ -54,7 +54,6 @@
 		3C5D691F2B76825500C4E07E /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
 		3C5D69222B76826000C4E07E /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
 		3C62C3612C3E852F00C7E336 /* MultiSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C62C3602C3E852F00C7E336 /* MultiSelector.swift */; };
-		3C62C3622C3E852F00C7E336 /* MultiSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C62C3602C3E852F00C7E336 /* MultiSelector.swift */; };
 		3C6C7FE72B459AAA006F5CBC /* OTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */; };
 		3C6C7FE82B459AAA006F5CBC /* OTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */; };
 		3C6C7FE92B459AAA006F5CBC /* OTelSpanBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE12B459AAA006F5CBC /* OTelSpanBuilder.swift */; };
@@ -8825,7 +8824,6 @@
 			files = (
 				1434A4672B7F8D880072E3BB /* DebugOTelTracingViewController.swift in Sources */,
 				D2F44FC3299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift in Sources */,
-				3C62C3622C3E852F00C7E336 /* MultiSelector.swift in Sources */,
 				D240680827CE6C9E00C04F44 /* ConsoleOutputInterceptor.swift in Sources */,
 				D240681E27CE6C9E00C04F44 /* ExampleAppDelegate.swift in Sources */,
 				D240682B27CE6C9E00C04F44 /* UIButton+Disabling.swift in Sources */,
