@@ -43,4 +43,33 @@ extension GraphicsImage.Contents: Reflection {
     }
 }
 
+@available(iOS 13.0, *)
+extension SwiftUI.Image.Orientation {
+    var uiImageOrientation: UIImage.Orientation {
+        switch self {
+        case .up:           return .up
+        case .upMirrored:   return .upMirrored
+        case .down:         return .down
+        case .downMirrored: return .downMirrored
+        case .left:         return .left
+        case .leftMirrored: return .leftMirrored
+        case .right:        return .right
+        case .rightMirrored: return .rightMirrored
+        }
+    }
+}
+
+@available(iOS 13.0, *)
+extension GraphicsImage {
+    var uiImage: UIImage? {
+        contents.map {
+            UIImage(
+                cgImage: $0.cgImage,
+                scale: scale,
+                orientation: orientation.uiImageOrientation
+            )
+        }
+    }
+}
+
 #endif

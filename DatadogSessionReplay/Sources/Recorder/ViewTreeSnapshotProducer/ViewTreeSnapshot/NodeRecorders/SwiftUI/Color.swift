@@ -4,9 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
-
 #if os(iOS) && canImport(SwiftUI)
+import Foundation
 import SwiftUI
 
 @available(iOS 13.0, *)
@@ -40,6 +39,18 @@ extension SwiftUI.Color._Resolved: Reflection {
 extension ResolvedPaint: Reflection {
     init(_ mirror: Mirror) throws {
         paint = try mirror.descendant(path: "paint")
+    }
+}
+
+@available(iOS 13.0, *)
+extension SwiftUI.Color._Resolved {
+    var cgColor: CGColor {
+        CGColor(
+            red: CGFloat(linearRed),
+            green: CGFloat(linearGreen),
+            blue: CGFloat(linearBlue),
+            alpha: CGFloat(opacity)
+        )
     }
 }
 
