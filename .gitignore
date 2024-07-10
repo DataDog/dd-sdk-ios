@@ -7,8 +7,6 @@ Carthage/Build
 Carthage/Checkouts
 
 xcuserdata/
-instrumented-tests/DatadogSDKTesting.*
-instrumented-tests/LICENSE
 
 *.local.xcconfig
 
@@ -20,3 +18,7 @@ __pycache__
 *.swp
 .venv
 .vscode
+*.pytest_cache
+
+# CI job artifacts
+artifacts/

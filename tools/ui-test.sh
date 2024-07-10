@@ -11,7 +11,7 @@
 #   --test-plan: Identifies the test plan to run
 
 set -eo pipefail
-source ./tools/utils/echo_color.sh
+source ./tools/utils/echo-color.sh
 source ./tools/utils/argparse.sh
 
 set_description "Executes UI tests for a specified --test-plan using the provided --os, --platform, and --device."

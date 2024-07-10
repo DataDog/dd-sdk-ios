@@ -11,10 +11,12 @@
 #   --visionOS: Flag that prepares the runner instance for visionOS testing. Disabled by default.
 #   --watchOS: Flag that prepares the runner instance for watchOS testing. Disabled by default.
 #   --os: Sets the expected OS version for installed simulators when --iOS, --tvOS, --visionOS or --watchOS flag is set. Default: '17.4'.
+#   --ssh: Flag that adds ssh configuration for interacting with GitHub repositories. Disabled by default.
 
 set -eo pipefail
-source ./tools/utils/echo_color.sh
+source ./tools/utils/echo-color.sh
 source ./tools/utils/argparse.sh
+source ./tools/secrets/get-secret.sh
 
 set_description "This script is for TEMPORARY. It supplements missing components on the runner. It will be removed once all configurations are integrated into the AMI."
 define_arg "xcode" "" "Sets the Xcode version on the runner." "string" "false"
@@ -23,6 +25,7 @@ define_arg "tvOS" "false" "Flag that prepares the runner instance for tvOS testi
 define_arg "visionOS" "false" "Flag that prepares the runner instance for visionOS testing. Disabled by default." "store_true"
 define_arg "watchOS" "false" "Flag that prepares the runner instance for watchOS testing. Disabled by default." "store_true"
 define_arg "os" "17.4" "Sets the expected OS version for installed simulators when --iOS, --tvOS, --visionOS or --watchOS flag is set. Default: '17.4'." "string" "false"
+define_arg "ssh" "false" "Flag that adds ssh configuration for interacting with GitHub repositories. Disabled by default." "store_true"
 
 check_for_help "$@"
 parse_args "$@"
@@ -114,5 +117,29 @@ if [ "$watchOS" = "true" ]; then
         xcodebuild -downloadPlatform watchOS -quiet | xcbeautify
     else
         echo_succ "Found some watchOS Simulator runtime supporting OS '$os'. Skipping..."
+    fi
+fi
+
+if [ "$ssh" = "true" ]; then
+    # Adds SSH config, so we can git clone GH repos.
+    echo_subtitle "Add SSH configuration"
+    SSH_KEY_PATH="$HOME/.ssh/id_ed25519"
+    SSH_CONFIG_PATH="$HOME/.ssh/config"
+
+    if [ ! -f "$SSH_KEY_PATH" ] || [ ! -f "$SSH_CONFIG_PATH" ]; then
+        echo_warn "Found no SSH key or SSH config file. Configuring..."
+        get_secret $DD_IOS_SECRET__SSH_KEY > $SSH_KEY_PATH
+        chmod 600 "$SSH_KEY_PATH"
+
+        cat <<EOF > "$HOME/.ssh/config"
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile $SSH_KEY_PATH
+    StrictHostKeyChecking no
+EOF
+        echo_succ "Finished SSH setup."
+    else
+        echo_succ "Found both SSH key and SSH config file. Skipping..."
     fi
 fi

@@ -12,8 +12,8 @@
 
 set -eo pipefail
 source ./tools/utils/argparse.sh
-source ./tools/utils/echo_color.sh
-source ./tools/utils/current_git.sh
+source ./tools/utils/echo-color.sh
+source ./tools/utils/current-git.sh
 
 set_description "Executes smoke tests in the specified --test-directory, using the provided --os, --platform, and --device."
 define_arg "test-directory" "" "Specifies the directory where the smoke tests are located" "string" "true"

@@ -220,7 +220,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
 
             // Override sessionID using standard `SDKMetricFields`, otherwise use current RUM session ID:
             var attributes = attributes
-            let sessionIDOverride = attributes.removeValue(forKey: SDKMetricFields.sessionIDOverrideKey) as? String
+            let sessionIDOverride: String? = attributes.removeValue(forKey: SDKMetricFields.sessionIDOverrideKey)?.dd.decode()
             let sessionID = sessionIDOverride ?? rum?.sessionID
 
             let event = TelemetryDebugEvent(
