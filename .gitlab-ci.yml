@@ -136,7 +136,7 @@ Smoke Tests (iOS):
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 15 Pro"
   script:
-    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --os "$OS" # temporary, waiting for AMI
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --os "$OS" # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make spm-build-ios
     - make smoke-test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
@@ -152,7 +152,7 @@ Smoke Tests (tvOS):
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
   script:
-    - ./tools/runner-setup.sh --xcode "$XCODE" --tvOS --os "$OS" # temporary, waiting for AMI
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --os "$OS" # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make spm-build-tvos
     - make smoke-test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"

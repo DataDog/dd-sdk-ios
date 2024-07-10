@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Reduces `DDSpan` tags and log attributes by extracting values that require separate handling.
 ///
@@ -61,15 +62,15 @@ internal struct SpanTagsReducer {
         }
 
         // extract resource name from `mutableSpanTags`
-        if let resourceName = mutableSpanTags.removeValue(forKey: SpanTags.resource) as? String {
+        if let resourceName: String = mutableSpanTags.removeValue(forKey: SpanTags.resource)?.dd.decode() {
             extractedResourceName = resourceName
         }
 
-        if let operationName = mutableSpanTags.removeValue(forKey: SpanTags.operation) as? String {
+        if let operationName: String = mutableSpanTags.removeValue(forKey: SpanTags.operation)?.dd.decode() {
             extractedOperationName = operationName
         }
 
-        if let serviceName = mutableSpanTags.removeValue(forKey: SpanTags.service) as? String {
+        if let serviceName: String = mutableSpanTags.removeValue(forKey: SpanTags.service)?.dd.decode() {
             extractedServiceName = serviceName
         }
 

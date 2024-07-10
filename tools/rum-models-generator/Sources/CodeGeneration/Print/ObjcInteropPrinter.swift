@@ -495,9 +495,9 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             // Normally, `[Key: Any]` <> `[Key: Any]` interoperability wouldn't require casting.
             // However our SDK bridges `[String: Any]` attributes passed in Objective-C API to their `[String: Encodable]` representation
             // in underlying Swift SDK. This is done with `AnyEncodable` type erasure. To return these attributes back
-            // to the user, `AnyEncodable` must be unpacked to its original `Any` value. This is done in `.castToObjectiveC()` extension
+            // to the user, `AnyEncodable` must be unpacked to its original `Any` value. This is done in `.dd.objCAttributes` extension
             // defined in `DatadogObjc` module. Here we just emit its invocation:
-            return optionality + ".castToObjectiveC()"
+            return optionality + ".dd.objCAttributes"
         default:
             throw Exception.unimplemented("Cannot print `swiftToObjcCast()` for \(type(of: objcType)).")
         }
