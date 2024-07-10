@@ -168,12 +168,7 @@ internal struct UIHostingWireframesBuilder: NodeWireframesBuilder {
             } ?? builder.createShapeWireframe(
                 id: Int64(content.seed.value),
                 frame: referential.convert(frame: item.frame),
-                backgroundColor: CGColor(
-                    red: CGFloat(paint.paint.linearRed),
-                    green: CGFloat(paint.paint.linearGreen),
-                    blue: CGFloat(paint.paint.linearBlue),
-                    alpha: CGFloat(paint.paint.opacity)
-                ),
+                backgroundColor: paint.paint.cgColor,
                 opacity: CGFloat(paint.paint.opacity)
             )
         case .color:
@@ -186,6 +181,18 @@ internal struct UIHostingWireframesBuilder: NodeWireframesBuilder {
                 cornerRadius: info?.cornerRadius,
                 opacity: info?.alpha
             )
+        case let .image(graphics):
+            return graphics.uiImage.map { image in
+                builder.createImageWireframe(
+                    id: Int64(content.seed.value),
+                    resource: UIImageResource(
+                        image: image,
+                        tintColor: graphics.maskColor.map { UIColor(cgColor: $0.cgColor) }
+                    ),
+                    frame: referential.convert(frame: item.frame),
+                    clip: nil
+                )
+            }
         case .platformView:
             return nil // Should be recorded by UIKit recorder
         case .unknown:

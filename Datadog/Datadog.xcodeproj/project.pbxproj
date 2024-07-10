@@ -730,6 +730,7 @@
 		D20605CB2875A83F0047275C /* ContextValueReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605C62875A77D0047275C /* ContextValueReader.swift */; };
 		D206BB852A41CA6800F43BA2 /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D207317C29A5226A00ECBF94 /* DatadogLogs.framework */; };
 		D206BB8A2A41CA7000F43BA2 /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D20731B429A5279D00ECBF94 /* DatadogLogs.framework */; };
+		D206F9232C2320BA00541022 /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = D206F9222C2320BA00541022 /* Image.swift */; };
 		D207318429A5226B00ECBF94 /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D207317C29A5226A00ECBF94 /* DatadogLogs.framework */; platformFilter = ios; };
 		D207319529A522F600ECBF94 /* LogsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616F1FAF283E227100651A3A /* LogsFeature.swift */; };
 		D207319629A522F600ECBF94 /* ConsoleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6194E4BB2878AF7600EB6307 /* ConsoleLogger.swift */; };
@@ -2769,6 +2770,7 @@
 		D20605B82875729E0047275C /* ContextValuePublisherMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextValuePublisherMock.swift; sourceTree = "<group>"; };
 		D20605BB28757BFB0047275C /* KronosClockMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KronosClockMock.swift; sourceTree = "<group>"; };
 		D20605C62875A77D0047275C /* ContextValueReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextValueReader.swift; sourceTree = "<group>"; };
+		D206F9222C2320BA00541022 /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
 		D207317C29A5226A00ECBF94 /* DatadogLogs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogLogs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D207318329A5226A00ECBF94 /* DatadogLogsTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogLogsTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D20731B429A5279D00ECBF94 /* DatadogLogs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogLogs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -6062,6 +6064,7 @@
 				D25A19082C1B07C30035747B /* Color.swift */,
 				D25A190A2C1B07C30035747B /* DisplayList.swift */,
 				D25A190B2C1B07C30035747B /* Text.swift */,
+				D206F9222C2320BA00541022 /* Image.swift */,
 			);
 			path = SwiftUI;
 			sourceTree = "<group>";
@@ -8308,6 +8311,7 @@
 				D25A19122C1B07C40035747B /* Text.swift in Sources */,
 				61054E992A6EE10A00AAA894 /* WireframesBuilder.swift in Sources */,
 				61054E892A6EE10A00AAA894 /* NodeIDGenerator.swift in Sources */,
+				D206F9232C2320BA00541022 /* Image.swift in Sources */,
 				61054E962A6EE10A00AAA894 /* Diff+SRWireframes.swift in Sources */,
 				D22C5BD02A98A6660024CC1F /* Baggages.swift in Sources */,
 				61054E902A6EE10A00AAA894 /* SegmentJSON.swift in Sources */,

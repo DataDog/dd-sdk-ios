@@ -81,4 +81,5 @@ extension UIImage {
         return scaledImage ?? UIImage()
     }
 }
+
 #endif

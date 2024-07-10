@@ -94,6 +94,7 @@ internal struct DisplayList {
             case text(StyledTextContentView, CGSize)
             case platformView
             case color(Color._Resolved)
+            case image(GraphicsImage)
             case unknown
         }
 
@@ -231,6 +232,9 @@ extension DisplayList.Content.Value: Reflection {
         } else if let any = mirror.descendant("color") {
             let content = try Color._Resolved(reflecting: any)
             self = .color(content)
+        } else if let any = mirror.descendant("image") {
+            let image = try GraphicsImage(reflecting: any)
+            self = .image(image)
         } else {
             self = .unknown
         }
