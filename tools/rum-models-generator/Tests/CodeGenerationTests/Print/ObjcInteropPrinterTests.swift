@@ -1280,11 +1280,11 @@ final class ObjcInteropPrinterTests: XCTestCase {
             }
 
             @objc public var immutableCodables: [String: Any] {
-                root.swiftModel.immutableCodables.castToObjectiveC()
+                root.swiftModel.immutableCodables.dd.objCAttributes
             }
 
             @objc public var optionalImmutableCodables: [String: Any]? {
-                root.swiftModel.optionalImmutableCodables?.castToObjectiveC()
+                root.swiftModel.optionalImmutableCodables?.dd.objCAttributes
             }
         }
 

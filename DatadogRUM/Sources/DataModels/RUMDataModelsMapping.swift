@@ -56,6 +56,7 @@ internal extension RUMViewEvent.Source {
         case .flutter: return .flutter
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 }

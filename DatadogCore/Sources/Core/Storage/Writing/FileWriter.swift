@@ -37,25 +37,44 @@ internal struct FileWriter: Writer {
     ///  - value: Encodable value to write.
     ///  - metadata: Encodable metadata to write.
     func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
-        do {
-            var encoded: Data = .init()
-            if let metadata = metadata {
+        var encoded: Data = .init()
+        if let metadata = metadata {
+            do {
                 let encodedMetadata = try encode(value: metadata, blockType: .eventMetadata)
                 encoded.append(encodedMetadata)
+            } catch {
+                DD.logger.error("(\(orchestrator.trackName)) Failed to encode metadata", error: error)
+                telemetry.error("(\(orchestrator.trackName)) Failed to encode metadata", error: error)
             }
+        }
 
+        do {
             let encodedValue = try encode(value: value, blockType: .event)
             encoded.append(encodedValue)
+        } catch {
+            DD.logger.error("(\(orchestrator.trackName)) Failed to encode value", error: error)
+            telemetry.error("(\(orchestrator.trackName)) Failed to encode value", error: error)
+            return
+        }
 
-            // Make sure both event and event metadata are written to the same file.
-            // This is to avoid a situation where event is written to one file and event metadata to another.
-            // If this happens, the reader will not be able to match event with its metadata.
-            let writeSize = UInt64(encoded.count)
-            let file = try orchestrator.getWritableFile(writeSize: writeSize)
+        // Make sure both event and event metadata are written to the same file.
+        // This is to avoid a situation where event is written to one file and event metadata to another.
+        // If this happens, the reader will not be able to match event with its metadata.
+        let writeSize = UInt64(encoded.count)
+        let file: WritableFile
+        do {
+            file = try orchestrator.getWritableFile(writeSize: writeSize)
+        } catch {
+            DD.logger.error("(\(orchestrator.trackName)) Failed to get writable file for \(writeSize) bytes", error: error)
+            telemetry.error("(\(orchestrator.trackName)) Failed to get writable file for \(writeSize) bytes", error: error)
+            return
+        }
+
+        do {
             try file.append(data: encoded)
         } catch {
-            DD.logger.error("Failed to write data", error: error)
-            telemetry.error("Failed to write data to file", error: error)
+            DD.logger.error("(\(orchestrator.trackName)) Failed to write \(writeSize) bytes to file", error: error)
+            telemetry.error("(\(orchestrator.trackName)) Failed to write \(writeSize) bytes to file", error: error)
         }
     }
 

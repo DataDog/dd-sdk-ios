@@ -15,7 +15,7 @@ clean:
 
 install:
 	@$(ECHO_SUBTITLE2) "make install"
-	@$(ECHO_SUCCESS) "Preparing for CURRENT_GIT_REF='${CURRENT_GIT_REF}'"
+	@$(ECHO_INFO) "Preparing for CURRENT_GIT_REF='${CURRENT_GIT_REF}'"
 	cp -r SPMProject.xcodeproj.src SPMProject.xcodeproj
 	sed "s|GIT_REFERENCE|${CURRENT_GIT_REF}|g" SPMProject.xcodeproj.src/project.pbxproj | \
 		sed "s|GIT_REMOTE|${CURRENT_GIT_REF}|g" > SPMProject.xcodeproj/project.pbxproj
@@ -29,7 +29,7 @@ ifeq ($(SCHEME),)
 	@$(ECHO_ERROR) "No SCHEME is defined for PLATFORM='$(PLATFORM)'"
 	@exit 1
 endif
-	@$(ECHO_SUCCESS) "Using SCHEME='$(SCHEME)'"
+	@$(ECHO_INFO) "Using SCHEME='$(SCHEME)'"
 	set -eo pipefail; \
 	xcodebuild -version; \
 	xcodebuild -project "SPMProject.xcodeproj" -destination "platform=$(PLATFORM),name=$(DEVICE),OS=$(OS)" -scheme "$(SCHEME)" test | xcbeautify

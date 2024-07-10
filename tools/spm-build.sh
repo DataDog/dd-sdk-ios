@@ -9,7 +9,7 @@
 #   --scheme: Identifies the scheme to build
 
 set -eo pipefail
-source ./tools/utils/echo_color.sh
+source ./tools/utils/echo-color.sh
 source ./tools/utils/argparse.sh
 
 set_description "Builds SPM package for a specified --scheme and --destination."

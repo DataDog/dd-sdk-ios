@@ -182,7 +182,7 @@ class NodeSemanticsTests: XCTestCase {
     func testImportance() {
         let unknownElement = UnknownElement.constant
         let invisibleElement = InvisibleElement.constant
-        let ambiguousElement = AmbiguousElement(nodes: [], resources: [])
+        let ambiguousElement = AmbiguousElement(nodes: [])
         let specificElement = SpecificElement(subtreeStrategy: .mockAny(), nodes: [])
 
         XCTAssertGreaterThan(

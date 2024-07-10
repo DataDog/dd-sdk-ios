@@ -40,6 +40,8 @@ internal class SnapshotProcessor: SnapshotProcessing {
     private let queue: Queue
     /// Writes records to `DatadogCore`.
     private let recordWriter: RecordWriting
+    /// Processes resources on a background thread.
+    private let resourceProcessor: ResourceProcessing
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
 
@@ -59,11 +61,13 @@ internal class SnapshotProcessor: SnapshotProcessing {
     init(
         queue: Queue,
         recordWriter: RecordWriting,
+        resourceProcessor: ResourceProcessing,
         srContextPublisher: SRContextPublisher,
         telemetry: Telemetry
     ) {
         self.queue = queue
         self.recordWriter = recordWriter
+        self.resourceProcessor = resourceProcessor
         self.srContextPublisher = srContextPublisher
         self.telemetry = telemetry
         self.recordsBuilder = RecordsBuilder(telemetry: telemetry)
@@ -138,6 +142,11 @@ internal class SnapshotProcessor: SnapshotProcessing {
         // Track state:
         lastSnapshot = viewTreeSnapshot
         lastWireframes = wireframes
+
+        resourceProcessor.process(
+            resources: builder.resources,
+            context: .init(viewTreeSnapshot.context.applicationID)
+        )
     }
 
     private func trackRecord(key: String, value: Int64) {

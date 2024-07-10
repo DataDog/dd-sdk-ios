@@ -46,3 +46,6 @@ extension DatadogExtended {
         set {}
     }
 }
+
+extension Array: DatadogExtended {}
+extension Dictionary: DatadogExtended {}

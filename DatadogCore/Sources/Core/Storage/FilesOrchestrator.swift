@@ -15,6 +15,7 @@ internal protocol FilesOrchestratorType: AnyObject {
     func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason)
 
     var ignoreFilesAgeWhenReading: Bool { get set }
+    var trackName: String { get }
 }
 
 /// Orchestrates files in a single directory.
@@ -51,6 +52,10 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
     /// An extra information to include in metrics or `nil` if metrics should not be reported for this orchestrator.
     let metricsData: MetricsData?
+
+    var trackName: String {
+        metricsData?.trackName ?? "Unknown"
+    }
 
     init(
         directory: Directory,

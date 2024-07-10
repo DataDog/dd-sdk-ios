@@ -358,6 +358,7 @@ public struct RUMActionEvent: RUMDataModel {
             case reactNative = "react-native"
             case roku = "roku"
             case unity = "unity"
+            case kotlinMultiplatform = "kotlin-multiplatform"
         }
 
         /// Attributes of the view's container
@@ -422,6 +423,7 @@ public struct RUMActionEvent: RUMDataModel {
         case reactNative = "react-native"
         case roku = "roku"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// View properties
@@ -650,6 +652,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case reactNative = "react-native"
             case roku = "roku"
             case unity = "unity"
+            case kotlinMultiplatform = "kotlin-multiplatform"
         }
 
         /// Attributes of the view's container
@@ -1044,6 +1047,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case reactNative = "react-native"
         case roku = "roku"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// View properties
@@ -1292,6 +1296,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case reactNative = "react-native"
             case roku = "roku"
             case unity = "unity"
+            case kotlinMultiplatform = "kotlin-multiplatform"
         }
 
         /// Attributes of the view's container
@@ -1374,6 +1379,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case reactNative = "react-native"
         case roku = "roku"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// View properties
@@ -1606,6 +1612,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case reactNative = "react-native"
             case roku = "roku"
             case unity = "unity"
+            case kotlinMultiplatform = "kotlin-multiplatform"
         }
 
         /// Attributes of the view's container
@@ -1922,6 +1929,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case reactNative = "react-native"
         case roku = "roku"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// View properties
@@ -2185,6 +2193,7 @@ public struct RUMViewEvent: RUMDataModel {
             case reactNative = "react-native"
             case roku = "roku"
             case unity = "unity"
+            case kotlinMultiplatform = "kotlin-multiplatform"
         }
 
         /// Attributes of the view's container
@@ -2305,6 +2314,7 @@ public struct RUMViewEvent: RUMDataModel {
         case reactNative = "react-native"
         case roku = "roku"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// View properties
@@ -2867,6 +2877,7 @@ public struct RUMVitalEvent: RUMDataModel {
             case reactNative = "react-native"
             case roku = "roku"
             case unity = "unity"
+            case kotlinMultiplatform = "kotlin-multiplatform"
         }
 
         /// Attributes of the view's container
@@ -2931,6 +2942,7 @@ public struct RUMVitalEvent: RUMDataModel {
         case reactNative = "react-native"
         case roku = "roku"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// View properties
@@ -3092,6 +3104,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// The telemetry log information
@@ -3291,6 +3304,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// The telemetry log information
@@ -3470,6 +3484,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// The telemetry configuration information
@@ -4319,4 +4334,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/970df2f84ac7ba69a6146e4d766e7ad414e6332c
+// Generated from https://github.com/DataDog/rum-events-format/tree/ae8c30a094339995e234fd55831ade0999bf0612

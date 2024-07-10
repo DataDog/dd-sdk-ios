@@ -28,8 +28,8 @@ public class DDTraceConfiguration: NSObject {
     }
 
     @objc public var tags: [String: Any]? {
-        set { swiftConfig.tags = newValue.map { castAttributesToSwift($0) } }
-        get { swiftConfig.tags.map { castAttributesToObjectiveC($0) } }
+        set { swiftConfig.tags = newValue?.dd.swiftAttributes }
+        get { swiftConfig.tags?.dd.objCAttributes }
     }
 
     @objc

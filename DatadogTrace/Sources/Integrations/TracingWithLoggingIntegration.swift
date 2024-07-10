@@ -75,9 +75,9 @@ internal struct TracingWithLoggingIntegration {
         var userAttributes = fields
 
         // get the log message and optional error kind
-        let errorKind = userAttributes.removeValue(forKey: OTLogFields.errorKind) as? String
-        let message = (userAttributes.removeValue(forKey: OTLogFields.message) as? String) ?? message ?? Constants.defaultLogMessage
-        let errorStack = userAttributes.removeValue(forKey: OTLogFields.stack) as? String
+        let errorKind: String? = userAttributes.removeValue(forKey: OTLogFields.errorKind)?.dd.decode()
+        let message = userAttributes.removeValue(forKey: OTLogFields.message)?.dd.decode() ?? message ?? Constants.defaultLogMessage
+        let errorStack: String? = userAttributes.removeValue(forKey: OTLogFields.stack)?.dd.decode()
 
         // infer the log level
         let isErrorEvent = fields[OTLogFields.event] as? String == "error"

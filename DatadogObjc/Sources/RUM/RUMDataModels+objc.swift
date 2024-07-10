@@ -664,6 +664,7 @@ public enum DDRUMActionEventContainerSource: Int {
         case .reactNative: self = .reactNative
         case .roku: self = .roku
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -676,6 +677,7 @@ public enum DDRUMActionEventContainerSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -686,6 +688,7 @@ public enum DDRUMActionEventContainerSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -710,7 +713,7 @@ public class DDRUMActionEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.castToObjectiveC()
+        root.swiftModel.context!.contextInfo.dd.objCAttributes
     }
 }
 
@@ -889,6 +892,7 @@ public enum DDRUMActionEventSource: Int {
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
         case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
         }
     }
 
@@ -902,6 +906,7 @@ public enum DDRUMActionEventSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -913,6 +918,7 @@ public enum DDRUMActionEventSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -957,7 +963,7 @@ public class DDRUMActionEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.castToObjectiveC()
+        root.swiftModel.usr!.usrInfo.dd.objCAttributes
     }
 }
 
@@ -1447,6 +1453,7 @@ public enum DDRUMErrorEventContainerSource: Int {
         case .reactNative: self = .reactNative
         case .roku: self = .roku
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -1459,6 +1466,7 @@ public enum DDRUMErrorEventContainerSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -1469,6 +1477,7 @@ public enum DDRUMErrorEventContainerSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -1493,7 +1502,7 @@ public class DDRUMErrorEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.castToObjectiveC()
+        root.swiftModel.context!.contextInfo.dd.objCAttributes
     }
 }
 
@@ -2169,7 +2178,7 @@ public class DDRUMErrorEventFeatureFlags: NSObject {
     }
 
     @objc public var featureFlagsInfo: [String: Any] {
-        root.swiftModel.featureFlags!.featureFlagsInfo.castToObjectiveC()
+        root.swiftModel.featureFlags!.featureFlagsInfo.dd.objCAttributes
     }
 }
 
@@ -2267,6 +2276,7 @@ public enum DDRUMErrorEventSource: Int {
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
         case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
         }
     }
 
@@ -2280,6 +2290,7 @@ public enum DDRUMErrorEventSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -2291,6 +2302,7 @@ public enum DDRUMErrorEventSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -2335,7 +2347,7 @@ public class DDRUMErrorEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.castToObjectiveC()
+        root.swiftModel.usr!.usrInfo.dd.objCAttributes
     }
 }
 
@@ -2821,6 +2833,7 @@ public enum DDRUMLongTaskEventContainerSource: Int {
         case .reactNative: self = .reactNative
         case .roku: self = .roku
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -2833,6 +2846,7 @@ public enum DDRUMLongTaskEventContainerSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -2843,6 +2857,7 @@ public enum DDRUMLongTaskEventContainerSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -2867,7 +2882,7 @@ public class DDRUMLongTaskEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.castToObjectiveC()
+        root.swiftModel.context!.contextInfo.dd.objCAttributes
     }
 }
 
@@ -3067,6 +3082,7 @@ public enum DDRUMLongTaskEventSource: Int {
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
         case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
         }
     }
 
@@ -3080,6 +3096,7 @@ public enum DDRUMLongTaskEventSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -3091,6 +3108,7 @@ public enum DDRUMLongTaskEventSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -3135,7 +3153,7 @@ public class DDRUMLongTaskEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.castToObjectiveC()
+        root.swiftModel.usr!.usrInfo.dd.objCAttributes
     }
 }
 
@@ -3629,6 +3647,7 @@ public enum DDRUMResourceEventContainerSource: Int {
         case .reactNative: self = .reactNative
         case .roku: self = .roku
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -3641,6 +3660,7 @@ public enum DDRUMResourceEventContainerSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -3651,6 +3671,7 @@ public enum DDRUMResourceEventContainerSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -3675,7 +3696,7 @@ public class DDRUMResourceEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.castToObjectiveC()
+        root.swiftModel.context!.contextInfo.dd.objCAttributes
     }
 }
 
@@ -4286,6 +4307,7 @@ public enum DDRUMResourceEventSource: Int {
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
         case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
         }
     }
 
@@ -4299,6 +4321,7 @@ public enum DDRUMResourceEventSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -4310,6 +4333,7 @@ public enum DDRUMResourceEventSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -4354,7 +4378,7 @@ public class DDRUMResourceEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.castToObjectiveC()
+        root.swiftModel.usr!.usrInfo.dd.objCAttributes
     }
 }
 
@@ -4880,6 +4904,7 @@ public enum DDRUMViewEventContainerSource: Int {
         case .reactNative: self = .reactNative
         case .roku: self = .roku
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -4892,6 +4917,7 @@ public enum DDRUMViewEventContainerSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -4902,6 +4928,7 @@ public enum DDRUMViewEventContainerSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -4926,7 +4953,7 @@ public class DDRUMViewEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.castToObjectiveC()
+        root.swiftModel.context!.contextInfo.dd.objCAttributes
     }
 }
 
@@ -5062,7 +5089,7 @@ public class DDRUMViewEventFeatureFlags: NSObject {
     }
 
     @objc public var featureFlagsInfo: [String: Any] {
-        root.swiftModel.featureFlags!.featureFlagsInfo.castToObjectiveC()
+        root.swiftModel.featureFlags!.featureFlagsInfo.dd.objCAttributes
     }
 }
 
@@ -5191,6 +5218,7 @@ public enum DDRUMViewEventSource: Int {
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
         case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
         }
     }
 
@@ -5204,6 +5232,7 @@ public enum DDRUMViewEventSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -5215,6 +5244,7 @@ public enum DDRUMViewEventSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -5259,7 +5289,7 @@ public class DDRUMViewEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.castToObjectiveC()
+        root.swiftModel.usr!.usrInfo.dd.objCAttributes
     }
 }
 
@@ -6099,6 +6129,7 @@ public enum DDRUMVitalEventContainerSource: Int {
         case .reactNative: self = .reactNative
         case .roku: self = .roku
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -6111,6 +6142,7 @@ public enum DDRUMVitalEventContainerSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -6121,6 +6153,7 @@ public enum DDRUMVitalEventContainerSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -6145,7 +6178,7 @@ public class DDRUMVitalEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.castToObjectiveC()
+        root.swiftModel.context!.contextInfo.dd.objCAttributes
     }
 }
 
@@ -6324,6 +6357,7 @@ public enum DDRUMVitalEventSource: Int {
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
         case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
         }
     }
 
@@ -6337,6 +6371,7 @@ public enum DDRUMVitalEventSource: Int {
         case .reactNative: return .reactNative
         case .roku: return .roku
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -6348,6 +6383,7 @@ public enum DDRUMVitalEventSource: Int {
     case reactNative
     case roku
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -6392,7 +6428,7 @@ public class DDRUMVitalEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.castToObjectiveC()
+        root.swiftModel.usr!.usrInfo.dd.objCAttributes
     }
 }
 
@@ -6594,6 +6630,7 @@ public enum DDTelemetryErrorEventSource: Int {
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -6605,6 +6642,7 @@ public enum DDTelemetryErrorEventSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -6614,6 +6652,7 @@ public enum DDTelemetryErrorEventSource: Int {
     case flutter
     case reactNative
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -6649,7 +6688,7 @@ public class DDTelemetryErrorEventTelemetry: NSObject {
     }
 
     @objc public var telemetryInfo: [String: Any] {
-        root.swiftModel.telemetry.telemetryInfo.castToObjectiveC()
+        root.swiftModel.telemetry.telemetryInfo.dd.objCAttributes
     }
 }
 
@@ -6845,6 +6884,7 @@ public enum DDTelemetryDebugEventSource: Int {
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -6856,6 +6896,7 @@ public enum DDTelemetryDebugEventSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -6865,6 +6906,7 @@ public enum DDTelemetryDebugEventSource: Int {
     case flutter
     case reactNative
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -6896,7 +6938,7 @@ public class DDTelemetryDebugEventTelemetry: NSObject {
     }
 
     @objc public var telemetryInfo: [String: Any] {
-        root.swiftModel.telemetry.telemetryInfo.castToObjectiveC()
+        root.swiftModel.telemetry.telemetryInfo.dd.objCAttributes
     }
 }
 
@@ -7075,6 +7117,7 @@ public enum DDTelemetryConfigurationEventSource: Int {
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
         case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
@@ -7086,6 +7129,7 @@ public enum DDTelemetryConfigurationEventSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
         }
     }
 
@@ -7095,6 +7139,7 @@ public enum DDTelemetryConfigurationEventSource: Int {
     case flutter
     case reactNative
     case unity
+    case kotlinMultiplatform
 }
 
 @objc
@@ -7122,7 +7167,7 @@ public class DDTelemetryConfigurationEventTelemetry: NSObject {
     }
 
     @objc public var telemetryInfo: [String: Any] {
-        root.swiftModel.telemetry.telemetryInfo.castToObjectiveC()
+        root.swiftModel.telemetry.telemetryInfo.dd.objCAttributes
     }
 }
 
@@ -7494,7 +7539,7 @@ public class DDTelemetryConfigurationEventTelemetryConfigurationPlugins: NSObjec
     }
 
     @objc public var pluginsInfo: [String: Any] {
-        root.swiftModel.pluginsInfo.castToObjectiveC()
+        root.swiftModel.pluginsInfo.dd.objCAttributes
     }
 }
 
@@ -7662,4 +7707,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/970df2f84ac7ba69a6146e4d766e7ad414e6332c
+// Generated from https://github.com/DataDog/rum-events-format/tree/ae8c30a094339995e234fd55831ade0999bf0612

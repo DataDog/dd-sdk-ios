@@ -34,13 +34,12 @@ internal struct ViewTreeSnapshotBuilder {
             ids: idsGenerator,
             webViewCache: webViewCache
         )
-        let recording = viewTreeRecorder.record(rootView, in: context)
+        let nodes = viewTreeRecorder.record(rootView, in: context)
         let snapshot = ViewTreeSnapshot(
             date: recorderContext.date.addingTimeInterval(recorderContext.viewServerTimeOffset ?? 0),
             context: recorderContext,
             viewportSize: rootView.bounds.size,
-            nodes: recording.nodes,
-            resources: recording.resources,
+            nodes: nodes,
             webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash))
         )
         return snapshot
@@ -74,7 +73,8 @@ internal func createDefaultNodeRecorders() -> [NodeRecorder] {
         UIPickerViewRecorder(),
         UIDatePickerRecorder(),
         WKWebViewRecorder(),
-        UIProgressViewRecorder()
+        UIProgressViewRecorder(),
+        UIActivityIndicatorRecorder()
     ]
 }
 #endif

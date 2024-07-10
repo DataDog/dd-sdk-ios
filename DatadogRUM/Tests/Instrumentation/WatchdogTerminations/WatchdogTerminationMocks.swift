@@ -20,7 +20,8 @@ extension WatchdogTerminationAppState: RandomMockable, AnyMockable {
             isActive: .mockAny(),
             vendorId: .mockAny(),
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: .mockRandom()
         )
     }
 
@@ -34,7 +35,8 @@ extension WatchdogTerminationAppState: RandomMockable, AnyMockable {
             isActive: .mockRandom(),
             vendorId: .mockRandom(),
             processId: .mockAny(),
-            trackingConsent: .mockRandom()
+            trackingConsent: .mockRandom(),
+            syntheticsEnvironment: .mockRandom()
         )
     }
 }
@@ -78,7 +80,8 @@ extension WatchdogTerminationAppStateManager: RandomMockable {
     public static func mockRandom() -> WatchdogTerminationAppStateManager {
         return .init(
             featureScope: FeatureScopeMock(),
-            processId: .mockRandom()
+            processId: .mockRandom(),
+            syntheticsEnvironment: .mockRandom()
         )
     }
 }

@@ -67,6 +67,13 @@ internal final class WatchdogTerminationChecker {
             return false
         }
 
+        // We can't reliably tell if it was a Watchdog Termination or not if the app was running in a synthetic environment.
+        // Synthetics uses terminateApp API https://github.com/appium/appium-xcuitest-driver/blob/main/lib/real-device.js#L216
+        // for restarting the app which we can't distinguish from Watchdog Termination.
+        guard previous.syntheticsEnvironment == false else {
+            return false
+        }
+
         // Watchdog Termination detection doesn't work on simulators.
         guard deviceInfo.isSimulator == false else {
             return false

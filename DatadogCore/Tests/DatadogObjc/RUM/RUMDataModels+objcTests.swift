@@ -17,8 +17,8 @@ class RUMDataModels_objcTests: XCTestCase {
 
         // Given
         var swiftView: RUMViewEvent = .mockRandom()
-        swiftView.context?.contextInfo = castAttributesToSwift(expectedContextAttributes)
-        swiftView.usr?.usrInfo = castAttributesToSwift(expectedUserInfoAttributes)
+        swiftView.context?.contextInfo = expectedContextAttributes.dd.swiftAttributes
+        swiftView.usr?.usrInfo = expectedUserInfoAttributes.dd.swiftAttributes
 
         let objcView = DDRUMViewEvent(swiftModel: swiftView)
 
@@ -37,8 +37,8 @@ class RUMDataModels_objcTests: XCTestCase {
 
         // Given
         var swiftResource: RUMResourceEvent = .mockRandom()
-        swiftResource.context?.contextInfo = castAttributesToSwift(expectedContextAttributes)
-        swiftResource.usr?.usrInfo = castAttributesToSwift(expectedUserInfoAttributes)
+        swiftResource.context?.contextInfo = expectedContextAttributes.dd.swiftAttributes
+        swiftResource.usr?.usrInfo = expectedUserInfoAttributes.dd.swiftAttributes
 
         let objcResource = DDRUMResourceEvent(swiftModel: swiftResource)
 
@@ -57,8 +57,8 @@ class RUMDataModels_objcTests: XCTestCase {
 
         // Given
         var swiftAction: RUMActionEvent = .mockRandom()
-        swiftAction.context?.contextInfo = castAttributesToSwift(expectedContextAttributes)
-        swiftAction.usr?.usrInfo = castAttributesToSwift(expectedUserInfoAttributes)
+        swiftAction.context?.contextInfo = expectedContextAttributes.dd.swiftAttributes
+        swiftAction.usr?.usrInfo = expectedUserInfoAttributes.dd.swiftAttributes
 
         let objcAction = DDRUMActionEvent(swiftModel: swiftAction)
 
@@ -77,8 +77,8 @@ class RUMDataModels_objcTests: XCTestCase {
 
         // Given
         var swiftError: RUMErrorEvent = .mockRandom()
-        swiftError.context?.contextInfo = castAttributesToSwift(expectedContextAttributes)
-        swiftError.usr?.usrInfo = castAttributesToSwift(expectedUserInfoAttributes)
+        swiftError.context?.contextInfo = expectedContextAttributes.dd.swiftAttributes
+        swiftError.usr?.usrInfo = expectedUserInfoAttributes.dd.swiftAttributes
 
         let objcError = DDRUMErrorEvent(swiftModel: swiftError)
 
@@ -97,8 +97,8 @@ class RUMDataModels_objcTests: XCTestCase {
 
         // Given
         var swiftLongTask: RUMLongTaskEvent = .mockRandom()
-        swiftLongTask.context?.contextInfo = castAttributesToSwift(expectedContextAttributes)
-        swiftLongTask.usr?.usrInfo = castAttributesToSwift(expectedUserInfoAttributes)
+        swiftLongTask.context?.contextInfo = expectedContextAttributes.dd.swiftAttributes
+        swiftLongTask.usr?.usrInfo = expectedUserInfoAttributes.dd.swiftAttributes
 
         let objcLongTask = DDRUMLongTaskEvent(swiftModel: swiftLongTask)
 

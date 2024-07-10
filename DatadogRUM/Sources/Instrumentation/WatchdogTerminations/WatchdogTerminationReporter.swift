@@ -76,9 +76,6 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
                 DD.logger.debug("Sending Watchdog Termination as RUM error without updating RUM view")
                 writer.write(value: error)
             }
-
-            writer.write(value: error)
-            writer.write(value: view)
         }
     }
 }
