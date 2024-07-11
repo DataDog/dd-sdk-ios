@@ -79,10 +79,10 @@ extension DeviceInfo {
     ///
     /// - Parameters:
     ///   - processInfo: The current process information.
-    ///   - device: The `DeviceProtocol` description.
+    ///   - device: The device description.
     public init(
         processInfo: ProcessInfo = .processInfo,
-        device: DeviceProtocol = DeviceFactory.current,
+        device: _UIDevice = .dd.current,
         sysctl: SysctlProviding = Sysctl()
     ) {
         var architecture = "unknown"
@@ -166,5 +166,27 @@ extension DeviceInfo {
             systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate
         )
     }
+}
+#endif
+
+#if canImport(WatchKit)
+import WatchKit
+
+public typealias _UIDevice = WKInterfaceDevice
+
+extension _UIDevice: DatadogExtended {}
+extension DatadogExtension where ExtendedType == _UIDevice {
+    /// Returns the shared device object.
+    public static var current: ExtendedType { .current() }
+}
+#elseif canImport(UIKit)
+import UIKit
+
+public typealias _UIDevice = UIDevice
+
+extension _UIDevice: DatadogExtended {}
+extension DatadogExtension where ExtendedType == _UIDevice {
+    /// Returns the shared device object.
+    public static var current: ExtendedType { .current }
 }
 #endif

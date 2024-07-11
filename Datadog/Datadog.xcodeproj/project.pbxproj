@@ -1680,8 +1680,6 @@
 		E1C853142AA9B9A300C74BCF /* TelemetryMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C853132AA9B9A300C74BCF /* TelemetryMocks.swift */; };
 		E1C853152AA9B9A300C74BCF /* TelemetryMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C853132AA9B9A300C74BCF /* TelemetryMocks.swift */; };
 		E1D5AEA724B4D45B007F194B /* Versioning.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D5AEA624B4D45A007F194B /* Versioning.swift */; };
-		E2AA55E42C32C6AF002FEF28 /* DeviceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AA55E32C32C6AF002FEF28 /* DeviceProtocol.swift */; };
-		E2AA55E52C32C6AF002FEF28 /* DeviceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AA55E32C32C6AF002FEF28 /* DeviceProtocol.swift */; };
 		E2AA55E72C32C6D9002FEF28 /* ApplicationNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AA55E62C32C6D9002FEF28 /* ApplicationNotifications.swift */; };
 		E2AA55E82C32C6D9002FEF28 /* ApplicationNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AA55E62C32C6D9002FEF28 /* ApplicationNotifications.swift */; };
 		E2AA55EA2C32C76A002FEF28 /* WatchKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AA55E92C32C76A002FEF28 /* WatchKitExtensions.swift */; };
@@ -3033,7 +3031,6 @@
 		E1D202E924C065CF00D1AF3A /* ActiveSpansPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpansPool.swift; sourceTree = "<group>"; };
 		E1D203FB24C1884500D1AF3A /* ActiveSpansPoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpansPoolTests.swift; sourceTree = "<group>"; };
 		E1D5AEA624B4D45A007F194B /* Versioning.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Versioning.swift; sourceTree = "<group>"; };
-		E2AA55E32C32C6AF002FEF28 /* DeviceProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceProtocol.swift; sourceTree = "<group>"; };
 		E2AA55E62C32C6D9002FEF28 /* ApplicationNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationNotifications.swift; sourceTree = "<group>"; };
 		E2AA55E92C32C76A002FEF28 /* WatchKitExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WatchKitExtensions.swift; sourceTree = "<group>"; };
 		F637AED12697404200516F32 /* UIKitRUMUserActionsPredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMUserActionsPredicate.swift; sourceTree = "<group>"; };
@@ -5827,7 +5824,6 @@
 				D23039BA298D5235001A1FA3 /* DatadogContext.swift */,
 				D23039BB298D5235001A1FA3 /* TrackingConsent.swift */,
 				D23039BC298D5235001A1FA3 /* DeviceInfo.swift */,
-				E2AA55E32C32C6AF002FEF28 /* DeviceProtocol.swift */,
 				D23039BE298D5235001A1FA3 /* LaunchTime.swift */,
 				D2F8235229915E12003C7E99 /* DatadogSite.swift */,
 				6174D6122BFDF16C00EC7469 /* BundleType.swift */,
@@ -8597,7 +8593,6 @@
 				D2160CC929C0DED100FAA9A5 /* DatadogURLSessionDelegate.swift in Sources */,
 				D2EBEE2929BA160F00B15732 /* HTTPHeadersWriter.swift in Sources */,
 				D2432CF929EDB22C00D93657 /* Flushable.swift in Sources */,
-				E2AA55E42C32C6AF002FEF28 /* DeviceProtocol.swift in Sources */,
 				D23039F7298D5236001A1FA3 /* AttributesSanitizer.swift in Sources */,
 				D23039EB298D5236001A1FA3 /* DatadogFeature.swift in Sources */,
 				D2BEEDBA2B33638F0065F3AC /* NetworkInstrumentationSwizzler.swift in Sources */,
@@ -9566,7 +9561,6 @@
 				D2160CCA29C0DED100FAA9A5 /* DatadogURLSessionDelegate.swift in Sources */,
 				D2EBEE3729BA161100B15732 /* HTTPHeadersWriter.swift in Sources */,
 				D2432CFA29EDB22C00D93657 /* Flushable.swift in Sources */,
-				E2AA55E52C32C6AF002FEF28 /* DeviceProtocol.swift in Sources */,
 				D2DA235D298D57AA00C6C7E6 /* AttributesSanitizer.swift in Sources */,
 				D2DA235E298D57AA00C6C7E6 /* DatadogFeature.swift in Sources */,
 				D2BEEDBB2B3363900065F3AC /* NetworkInstrumentationSwizzler.swift in Sources */,
