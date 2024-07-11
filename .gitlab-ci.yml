@@ -147,7 +147,7 @@ SR Snapshot Tests:
   script:
     - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --os "$OS" --ssh # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
-    - make sr-pull-snapshots sr-snapshot-test OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
+    - make sr-snapshots-pull sr-snapshot-test OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
 
 Tools Tests:
   stage: test
