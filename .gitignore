@@ -7,8 +7,8 @@ Carthage/Build
 Carthage/Checkouts
 
 xcuserdata/
-
 *.local.xcconfig
+E2ETests/code-signing
 
 # Ignore files for Python tools:
 .idea

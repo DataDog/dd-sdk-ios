@@ -17,7 +17,7 @@ get_secret() {
         vault login -method=aws -no-print
     else
         if vault token lookup &>/dev/null; then
-            echo_succ "Reading '$secret_name' secret in local env. You are already authenticated with 'vault'." >&2
+            echo "Reading '$secret_name' secret in local env. You are already authenticated with 'vault'." >&2
         else
             echo_warn "Reading '$secret_name' secret in local env. You will now be authenticated with OIDC in your web browser." >&2
             vault login -method=oidc -no-print

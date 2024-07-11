@@ -12,6 +12,7 @@
 #   --watchOS: Flag that prepares the runner instance for watchOS testing. Disabled by default.
 #   --os: Sets the expected OS version for installed simulators when --iOS, --tvOS, --visionOS or --watchOS flag is set. Default: '17.4'.
 #   --ssh: Flag that adds ssh configuration for interacting with GitHub repositories. Disabled by default.
+#   --datadog-ci: Flag that installs 'datadog-ci' on the runner. Disabled by default.
 
 set -eo pipefail
 source ./tools/utils/echo-color.sh
@@ -26,6 +27,7 @@ define_arg "visionOS" "false" "Flag that prepares the runner instance for vision
 define_arg "watchOS" "false" "Flag that prepares the runner instance for watchOS testing. Disabled by default." "store_true"
 define_arg "os" "17.4" "Sets the expected OS version for installed simulators when --iOS, --tvOS, --visionOS or --watchOS flag is set. Default: '17.4'." "string" "false"
 define_arg "ssh" "false" "Flag that adds ssh configuration for interacting with GitHub repositories. Disabled by default." "store_true"
+define_arg "datadog-ci" "false" "Flag that installs 'datadog-ci' on the runner. Disabled by default." "store_true"
 
 check_for_help "$@"
 parse_args "$@"
@@ -141,5 +143,18 @@ EOF
         echo_succ "Finished SSH setup."
     else
         echo_succ "Found both SSH key and SSH config file. Skipping..."
+    fi
+fi
+
+if [ "$datadog_ci" = "true" ]; then
+    echo_subtitle "Supply datadog-ci"
+    echo "Check current runner for existing 'datadog-ci' installation:"
+    if ! command -v datadog-ci >/dev/null 2>&1; then
+        echo_warn "Found no 'datadog-ci'. Installing..."
+        npm install -g @datadog/datadog-ci
+    else
+        echo_succ "'datadog-ci' already installed. Skipping..."
+        echo "datadog-ci version:"
+        datadog-ci version
     fi
 fi

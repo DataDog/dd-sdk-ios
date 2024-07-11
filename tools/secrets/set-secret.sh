@@ -45,6 +45,8 @@ get_secret_value_from_input() {
 }
 
 get_secret_value_from_file() {
+    local base64_encode="$1"
+
     echo_info "Enter the file path to read the value for '$SECRET_NAME':"
     read "SECRET_FILE"
     echo
@@ -53,7 +55,12 @@ get_secret_value_from_file() {
     echo_info "Using '$SECRET_FILE'"
 
     if [[ -f "$SECRET_FILE" ]]; then
-        SECRET_VALUE=$(cat "$SECRET_FILE")
+        if [ "$base64_encode" = "true" ]; then
+            echo_info "Encoding value with base64"
+            SECRET_VALUE=$(cat "$SECRET_FILE" | base64)
+        else
+            SECRET_VALUE=$(cat "$SECRET_FILE")
+        fi
     else
         echo_err "Error: File '$SECRET_FILE' does not exist."
         exit 1
@@ -64,9 +71,10 @@ select_input_method() {
     echo
     echo_info "How would you like to provide the secret value?"
     echo "1) Enter manually"
-    echo "2) Read from a file"
+    echo "2) Read from text file"
+    echo "3) Read from arbitrary file and encode with base64"
     while true; do
-        echo_info "Enter your choice (1 or 2):"
+        echo_info "Enter your choice:"
         read "input_method"
         case $input_method in
             1)
@@ -77,8 +85,12 @@ select_input_method() {
                 get_secret_value_from_file
                 break
                 ;;
+            3)
+                get_secret_value_from_file "true"
+                break
+                ;;
             *)
-                echo_err "Invalid choice. Please enter 1 or 2."
+                echo_err "Invalid choice."
                 ;;
         esac
     done

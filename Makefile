@@ -7,6 +7,7 @@ all: env-check repo-setup templates
 		tools-test \
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
 		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos spm-build-watchos \
+		e2e-build-upload \
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
 		release-build release-validate release-publish-github \
 		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs release-publish-legacy-podspecs \
@@ -259,6 +260,13 @@ spm-build-macos:
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogTrace"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCrashReporting"
 
+# Builds a new version of the E2E app and publishes it to synthetics.
+e2e-build-upload:
+	@$(call require_param,ARTIFACTS_PATH)
+	@:$(eval DRY_RUN ?= 1)
+	@$(ECHO_TITLE) "make e2e-build-upload ARTIFACTS_PATH='$(ARTIFACTS_PATH)' DRY_RUN='$(DRY_RUN)'"
+	DRY_RUN=$(DRY_RUN) ./tools/e2e-build-upload.sh --artifacts-path "$(ARTIFACTS_PATH)"
+
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
 		@cd DatadogSessionReplay/ && swift package generate-xcodeproj
@@ -430,6 +438,3 @@ bump:
 		git add . ; \
 		git commit -m "Bumped version to $$version"; \
 		echo Bumped version to $$version
-
-e2e-upload:
-		./tools/code-sign.sh -- $(MAKE) -C E2ETests
