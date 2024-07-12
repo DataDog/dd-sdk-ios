@@ -49,7 +49,7 @@ internal final class Recorder {
             return aggregators
         }
 
-        core?.scope(for: MetricFeature.name)?.eventWriteContext { context, writer in
+        core?.scope(for: MetricFeature.self).eventWriteContext { context, writer in
             aggregators.forEach { (metadata, aggregator) in
                 let metadata = Submission.Metadata(
                     name: "\(context.source).\(context.applicationBundleIdentifier).\(metadata.name)" ,

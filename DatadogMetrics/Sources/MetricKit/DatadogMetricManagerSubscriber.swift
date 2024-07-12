@@ -121,7 +121,7 @@ internal final class DatadogMetricSubscriber: NSObject, MXMetricManagerSubscribe
 extension DatadogMetricSubscriber {
 
     func record<UnitType>(name: String, timestamp: Date, _ measure: Measurement<UnitType>) {
-        core?.scope(for: MetricFeature.name)?.eventWriteContext { context, writer in
+        core?.scope(for: MetricFeature.self).eventWriteContext { context, writer in
             let serie = Serie(
                 type: .gauge,
                 interval: nil,
@@ -149,7 +149,7 @@ extension DatadogMetricSubscriber {
     }
 
     func record<UnitType>(name: String, timestamp: Date, _ histogram: MXHistogram<UnitType>) {
-        core?.scope(for: MetricFeature.name)?.eventWriteContext { context, writer in
+        core?.scope(for: MetricFeature.self).eventWriteContext { context, writer in
             let metric = "\(context.source).\(context.applicationBundleIdentifier).\(name)"
             let tags = [
                 "service:\(context.service)",
