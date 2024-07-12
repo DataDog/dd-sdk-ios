@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Enable DatadogCore, DatadogLogs and DatadogTrace to compile on watchOS platform. See [#1918][] (Thanks [@jfiser-paylocity][]) [#1946][] 
+
 # 2.14.1 / 09-07-2024
 
 - [FIX] Objc attributes interop for KMP. See [#1947][]
@@ -713,6 +715,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1917]: https://github.com/DataDog/dd-sdk-ios/pull/1917
 [#1925]: https://github.com/DataDog/dd-sdk-ios/pull/1925
 [#1930]: https://github.com/DataDog/dd-sdk-ios/pull/1930
+[#1918]: https://github.com/DataDog/dd-sdk-ios/pull/1918
+[#1946]: https://github.com/DataDog/dd-sdk-ios/pull/1946
 [#1934]: https://github.com/DataDog/dd-sdk-ios/pull/1934
 [#1938]: https://github.com/DataDog/dd-sdk-ios/pull/1938
 [#1947]: https://github.com/DataDog/dd-sdk-ios/pull/1947
@@ -747,3 +751,4 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@cltnschlosser]: https://github.com/cltnschlosser
 [@alexfanatics]: https://github.com/alexfanatics
 [@changm4n]: https://github.com/changm4n
+[@jfiser-paylocity]: https://github.com/jfiser-paylocity

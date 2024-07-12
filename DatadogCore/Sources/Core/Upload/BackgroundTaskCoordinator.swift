@@ -20,6 +20,7 @@ internal protocol BackgroundTaskCoordinator {
 import UIKit
 import DatadogInternal
 
+#if !os(watchOS)
 /// Bridge protocol that calls corresponding `UIApplication` interface for background tasks. Allows easier testablity.
 internal protocol UIKitAppBackgroundTaskCoordinator {
     func beginBgTask(_ handler: (() -> Void)?) -> UIBackgroundTaskIdentifier
@@ -69,6 +70,7 @@ internal class AppBackgroundTaskCoordinator: BackgroundTaskCoordinator {
         self.currentTaskId = nil
     }
 }
+#endif
 
 /// Bridge protocol that matches `ProcessInfo` interface for background activity. Allows easier testablity.
 internal protocol ProcessInfoActivityCoordinator {

@@ -211,6 +211,19 @@ Smoke Tests (macOS):
     - make clean repo-setup ENV=ci
     - make spm-build-macos
 
+Smoke Tests (watchOS):
+  stage: smoke-test
+  tags:
+    - macos:ventura
+    - specific:true
+  variables:
+    XCODE: "15.2.0"
+    OS: "10.2"
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --watchOS --os "$OS" # temporary, waiting for AMI
+    - make clean repo-setup ENV=ci
+    - make spm-build-watchos
+
 # ┌──────────────┐
 # │ SDK release: │
 # └──────────────┘
