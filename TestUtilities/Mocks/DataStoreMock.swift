@@ -18,15 +18,19 @@ public class DataStoreMock: DataStore {
     public func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
         storage[key] = .value(value, version)
     }
-    
+
     public func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
         callback(storage[key] ?? .noValue)
     }
-    
+
     public func removeValue(forKey key: String) {
         storage[key] = nil
     }
-    
+
+    public func clearAllData() {
+        storage.removeAll()
+    }
+
     // MARK: - Side Effects Observation
 
     public func value(forKey key: String) -> DataStoreValueResult? {
