@@ -6,12 +6,12 @@
 
 #if os(iOS)
 import UIKit
+import DatadogInternal
 
 internal struct UIImageViewRecorder: NodeRecorder {
     internal let identifier: UUID
 
     private let tintColorProvider: (UIImageView) -> UIColor?
-    private let shouldRecordImagePredicate: (UIImageView) -> Bool
     /// An option for overriding default semantics from parent recorder.
     var semanticsOverride: (UIImageView, ViewAttributes) -> NodeSemantics? = { imageView, _ in
         return imageView.isSystemShadow ? IgnoredElement(subtreeStrategy: .ignore) : nil
@@ -25,18 +25,10 @@ internal struct UIImageViewRecorder: NodeRecorder {
             } else {
                 return nil
             }
-        },
-        shouldRecordImagePredicate: @escaping (UIImageView) -> Bool = { imageView in
-            if #available(iOS 13.0, *), let image = imageView.image {
-                return image.isContextual || imageView.isSystemControlBackground
-            } else {
-                return false
-            }
         }
     ) {
         self.identifier = identifier
         self.tintColorProvider = tintColorProvider
-        self.shouldRecordImagePredicate = shouldRecordImagePredicate
     }
 
     func semantics(
@@ -62,7 +54,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             )
         }
 
-        let shouldRecordImage = shouldRecordImagePredicate(imageView)
+        let shouldRecordImage = context.recorder.imageRecordingLevel.recordingPredicate(imageView)
         let imageResource = shouldRecordImage ? imageView.image.map { image in
             UIImageResource(image: image, tintColor: tintColorProvider(imageView))
         } : nil
@@ -208,6 +200,23 @@ fileprivate extension UIImageView {
         }
         let superViewType = "\(type(of: superview))"
         return superViewType == "_UIBarBackground"
+    }
+}
+
+fileprivate extension ImageRecordingLevel {
+    var recordingPredicate: (UIImageView) -> Bool {
+        switch self {
+        case .all: return { _ in true }
+        case .contextual: return { imageView in
+            if #available(iOS 13.0, *), let image = imageView.image {
+                return image.isContextual || imageView.isSystemControlBackground
+            } else {
+                return false
+            }
+        }
+        case .none:
+            return { _ in false }
+        }
     }
 }
 #endif

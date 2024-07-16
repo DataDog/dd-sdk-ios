@@ -24,6 +24,8 @@ public class Recorder: Recording {
     public struct Context: Equatable {
         /// The content recording policy from the moment of requesting snapshot.
         public let privacy: SessionReplayPrivacyLevel
+        /// The image recording level from the moment of requesting snapshot.
+        public let imageRecordingLevel: ImageRecordingLevel
         /// Current RUM application ID - standard UUID string, lowecased.
         let applicationID: String
         /// Current RUM session ID - standard UUID string, lowecased.
@@ -37,6 +39,7 @@ public class Recorder: Recording {
 
         internal init(
             privacy: PrivacyLevel,
+            imageRecordingLevel: ImageRecordingLevel,
             applicationID: String,
             sessionID: String,
             viewID: String,
@@ -44,6 +47,7 @@ public class Recorder: Recording {
             date: Date = Date()
         ) {
             self.privacy = privacy
+            self.imageRecordingLevel = imageRecordingLevel
             self.applicationID = applicationID
             self.sessionID = sessionID
             self.viewID = viewID
@@ -68,7 +72,9 @@ public class Recorder: Recording {
         let windowObserver = KeyWindowObserver()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
             windowObserver: windowObserver,
-            snapshotBuilder: ViewTreeSnapshotBuilder(additionalNodeRecorders: additionalNodeRecorders)
+            snapshotBuilder: ViewTreeSnapshotBuilder(
+                additionalNodeRecorders: additionalNodeRecorders
+            )
         )
         let touchSnapshotProducer = WindowTouchSnapshotProducer(
             windowObserver: windowObserver
