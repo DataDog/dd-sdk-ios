@@ -55,8 +55,8 @@ upload() {
 }
 
 echo_info "Publishing '$GH_ASSET_PATH' to '$tag' release in '$REPO_NAME'"
-echo "▸ Using DRY_RUN = $DRY_RUN"
-echo "▸ Using OVERWRITE_EXISTING = $OVERWRITE_EXISTING"
+echo_info "▸ Using DRY_RUN = $DRY_RUN"
+echo_info "▸ Using OVERWRITE_EXISTING = $OVERWRITE_EXISTING"
 
 authenticate
 upload

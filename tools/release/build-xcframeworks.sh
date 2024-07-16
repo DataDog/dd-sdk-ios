@@ -99,11 +99,11 @@ PLATFORMS=""
 [[ "$ios" == "true" ]] && PLATFORMS+="iOS"
 [[ "$tvos" == "true" ]] && { [ -n "$PLATFORMS" ] && PLATFORMS+=","; PLATFORMS+="tvOS"; }
 
-echo_info "Building xcframeworks:"
-echo_info "- REPO_PATH = '$REPO_PATH'"
-echo_info "- ARCHIVES_TEMP_OUTPUT = '$ARCHIVES_TEMP_OUTPUT'"
-echo_info "- XCFRAMEWORKS_OUTPUT = '$XCFRAMEWORKS_OUTPUT'"
-echo_info "- PLATFORMS = '$PLATFORMS'"
+echo_info "Building xcframeworks"
+echo_info "▸ REPO_PATH = '$REPO_PATH'"
+echo_info "▸ ARCHIVES_TEMP_OUTPUT = '$ARCHIVES_TEMP_OUTPUT'"
+echo_info "▸ XCFRAMEWORKS_OUTPUT = '$XCFRAMEWORKS_OUTPUT'"
+echo_info "▸ PLATFORMS = '$PLATFORMS'"
 
 # Build third-party XCFrameworks
 echo_subtitle2 "Run 'carthage bootstrap --platform $PLATFORMS --use-xcframeworks'"
