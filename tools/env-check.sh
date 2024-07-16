@@ -79,6 +79,16 @@ if command -v brew >/dev/null 2>&1; then
 fi
 
 if [ "$CI" = "true" ]; then
+    echo ""
+    echo_succ "npm:"
+    check_if_installed npm
+    npm --version
+
+    echo ""
+    echo_succ "datadog-ci:"
+    check_if_installed datadog-ci
+    datadog-ci version
+
     # Check if all secrets are available:
     ./tools/secrets/check-secrets.sh
 

@@ -17,9 +17,7 @@ workflows:
         This workflow is triggered for each new commit pushed to `develop` or `master` branch.
     after_run:
     - _make_dependencies
-    - run_e2e_s8s_upload
     - _deploy_artifacts
-    - _notify_failure_on_slack
 
   push_to_dogfooding:
     after_run:
@@ -109,34 +107,3 @@ workflows:
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/E2E-instrumentation-tests.html"
-
-  run_e2e_s8s_upload:
-    description: |-
-        Upload E2E application to Synthetics.
-    steps:
-    - script:
-        title: Upload E2E application to Synthetics.
-        run_if: '{{enveq "BITRISE_GIT_BRANCH" "develop"}}'
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -e
-
-            # prepare certificate
-            export P12_PATH=e2e_cert.p12
-            export P12_PASSWORD=$E2E_CERTIFICATE_P12_PASSWORD
-            echo $E2E_CERTIFICATE_P12_BASE64 | base64 --decode -o $P12_PATH
-
-            # prepare provisioning profile
-            export PP_PATH=e2e.mobileprovision
-            echo $E2E_PROVISIONING_PROFILE_BASE64 | base64 --decode -o $PP_PATH
-
-            # prepare xcconfig
-            echo $E2E_XCCONFIG_BASE64 | base64 --decode -o E2ETests/xcconfigs/E2E.local.xcconfig
-
-            # prepare for synthetics upload
-            export DATADOG_API_KEY=$E2E_S8S_API_KEY
-            export DATADOG_APP_KEY=$E2E_S8S_APPLICATION_KEY
-            export S8S_APPLICATION_ID=$E2E_S8S_APPLICATION_ID
-
-            make e2e-upload

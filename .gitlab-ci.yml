@@ -4,6 +4,7 @@ stages:
   - test
   - ui-test
   - smoke-test
+  - e2e-test
   - release-build
   - release-publish
 
@@ -61,6 +62,7 @@ ENV check:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
   script:
+    - ./tools/runner-setup.sh --datadog-ci # temporary, waiting for AMI
     - make env-check
 
 # ┌──────────────────────────┐
@@ -244,6 +246,27 @@ Smoke Tests (watchOS):
     - ./tools/runner-setup.sh --xcode "$XCODE" --watchOS --os "$OS" # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make spm-build-watchos
+
+# ┌──────────────────────┐
+# │ E2E Test app upload: │
+# └──────────────────────┘
+
+E2E Test (upload to s8s):
+  stage: e2e-test
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+  variables:
+    XCODE: "15.3.0"
+    OS: "17.4"
+  artifacts:
+    paths:
+      - artifacts
+    expire_in: 2 weeks
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --os "$OS" --datadog-ci # temporary, waiting for AMI
+    - make clean
+    - export DRY_RUN=${DRY_RUN:-0} # default to 0 if not specified
+    - make e2e-build-upload ARTIFACTS_PATH="artifacts/e2e"
 
 # ┌──────────────┐
 # │ SDK release: │
