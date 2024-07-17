@@ -53,6 +53,7 @@
 		3C5D636D2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5D636B2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift */; };
 		3C5D691F2B76825500C4E07E /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
 		3C5D69222B76826000C4E07E /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
+		3C62C3612C3E852F00C7E336 /* MultiSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C62C3602C3E852F00C7E336 /* MultiSelector.swift */; };
 		3C6C7FE72B459AAA006F5CBC /* OTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */; };
 		3C6C7FE82B459AAA006F5CBC /* OTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */; };
 		3C6C7FE92B459AAA006F5CBC /* OTelSpanBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE12B459AAA006F5CBC /* OTelSpanBuilder.swift */; };
@@ -2109,6 +2110,7 @@
 		3C43A3862C188970000BFB21 /* WatchdogTerminationMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationMonitorTests.swift; sourceTree = "<group>"; };
 		3C5D63682B55512B00FEB4BA /* OTelTraceState+Datadog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OTelTraceState+Datadog.swift"; sourceTree = "<group>"; };
 		3C5D636B2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OTelTraceState+DatadogTests.swift"; sourceTree = "<group>"; };
+		3C62C3602C3E852F00C7E336 /* MultiSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiSelector.swift; sourceTree = "<group>"; };
 		3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpan.swift; sourceTree = "<group>"; };
 		3C6C7FE12B459AAA006F5CBC /* OTelSpanBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpanBuilder.swift; sourceTree = "<group>"; };
 		3C6C7FE22B459AAA006F5CBC /* OTelTraceId+Datadog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OTelTraceId+Datadog.swift"; sourceTree = "<group>"; };
@@ -4622,6 +4624,7 @@
 				61441C902461A648003D8BB8 /* ConsoleOutputInterceptor.swift */,
 				61441C912461A648003D8BB8 /* UIButton+Disabling.swift */,
 				D2F44FC1299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift */,
+				3C62C3602C3E852F00C7E336 /* MultiSelector.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -8419,6 +8422,7 @@
 				618236892710560900125326 /* DebugWebviewViewController.swift in Sources */,
 				61F74AF426F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift in Sources */,
 				1434A4662B7F8D880072E3BB /* DebugOTelTracingViewController.swift in Sources */,
+				3C62C3612C3E852F00C7E336 /* MultiSelector.swift in Sources */,
 				61E5333824B84EE2003D6C4E /* DebugRUMViewController.swift in Sources */,
 				61441C0524616DE9003D8BB8 /* ExampleAppDelegate.swift in Sources */,
 				61020C2C2758E853005EEAEA /* DebugBackgroundEventsViewController.swift in Sources */,

@@ -7,7 +7,7 @@
 import Foundation
 
 /// Defines whether the trace context should be injected into all requests or only sampled ones.
-public enum TraceContextInjection {
+public enum TraceContextInjection: CaseIterable {
     /// Injects trace context into all requests irrespective of the sampling decision.
     case all
 
