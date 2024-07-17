@@ -807,6 +807,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case appHang = "App Hang"
             case exception = "Exception"
             case watchdogTermination = "Watchdog Termination"
+            case memoryWarning = "Memory Warning"
         }
 
         /// Properties for one of the error causes
@@ -4334,4 +4335,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ae8c30a094339995e234fd55831ade0999bf0612
+// Generated from https://github.com/DataDog/rum-events-format/tree/c853be6db33125c8767ae563d2af47b92636c4e1

@@ -2,6 +2,7 @@
 
 - [FEATURE] Enable DatadogCore, DatadogLogs and DatadogTrace to compile on watchOS platform. See [#1918][] (Thanks [@jfiser-paylocity][]) [#1946][] 
 - [IMPROVEMENT] Ability to clear feature data storage using `clearAllData` API. See [#1940][]
+- [IMPROVEMENT] Send memory warning as RUM error.
 
 # 2.14.1 / 09-07-2024
 
