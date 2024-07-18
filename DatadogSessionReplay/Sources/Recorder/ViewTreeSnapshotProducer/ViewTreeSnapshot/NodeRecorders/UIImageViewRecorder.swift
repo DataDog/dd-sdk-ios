@@ -153,7 +153,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 builder.createPlaceholderWireframe(
                     id: imageWireframeID,
                     frame: clipsToBounds ? relativeIntersectedRect : contentFrame,
-                    label: "Content Image"
+                    label: "Image"
                 )
             )
         }
