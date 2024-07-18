@@ -1732,6 +1732,7 @@ public enum DDRUMErrorEventErrorCategory: Int {
         case .appHang?: self = .appHang
         case .exception?: self = .exception
         case .watchdogTermination?: self = .watchdogTermination
+        case .memoryWarning?: self = .memoryWarning
         }
     }
 
@@ -1742,6 +1743,7 @@ public enum DDRUMErrorEventErrorCategory: Int {
         case .appHang: return .appHang
         case .exception: return .exception
         case .watchdogTermination: return .watchdogTermination
+        case .memoryWarning: return .memoryWarning
         }
     }
 
@@ -1750,6 +1752,7 @@ public enum DDRUMErrorEventErrorCategory: Int {
     case appHang
     case exception
     case watchdogTermination
+    case memoryWarning
 }
 
 @objc
@@ -7707,4 +7710,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ae8c30a094339995e234fd55831ade0999bf0612
+// Generated from https://github.com/DataDog/rum-events-format/tree/31c73753ff5c954cf9aef475c91ec0b413743f77

@@ -40,6 +40,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// Instruments Watchdog Terminations.
     let watchdogTermination: WatchdogTerminationMonitor?
 
+    let memoryWarningMonitor: MemoryWarningMonitor?
+
     // MARK: - Initialization
 
     init(
@@ -53,7 +55,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         backtraceReporter: BacktraceReporting,
         fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID,
-        watchdogTermination: WatchdogTerminationMonitor?
+        watchdogTermination: WatchdogTerminationMonitor?,
+        memoryWarningMonitor: MemoryWarningMonitor
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI instrumentation)
         // and only swizzle `UIViewController` if UIKit instrumentation is configured:
@@ -125,12 +128,14 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.longTasks = longTasks
         self.appHangs = appHangs
         self.watchdogTermination = watchdogTermination
+        self.memoryWarningMonitor = memoryWarningMonitor
 
         // Enable configured instrumentations:
         self.viewControllerSwizzler?.swizzle()
         self.uiApplicationSwizzler?.swizzle()
         self.longTasks?.start()
         self.appHangs?.start()
+        self.memoryWarningMonitor?.start()
     }
 
     deinit {
@@ -140,6 +145,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         longTasks?.stop()
         appHangs?.stop()
         watchdogTermination?.stop()
+        memoryWarningMonitor?.stop()
     }
 
     func publish(to subscriber: RUMCommandSubscriber) {
@@ -147,5 +153,6 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         actionsHandler?.publish(to: subscriber)
         longTasks?.publish(to: subscriber)
         appHangs?.nonFatalHangsHandler.publish(to: subscriber)
+        memoryWarningMonitor?.reporter.publish(to: subscriber)
     }
 }
