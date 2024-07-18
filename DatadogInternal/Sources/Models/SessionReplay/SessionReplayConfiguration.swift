@@ -20,16 +20,15 @@ public enum SessionReplayPrivacyLevel: String {
     case maskUserInput = "mask_user_input"
 }
 
-/// The level of image recording to be applied in the session replay.
-public enum ImageRecordingLevel {
-    /// All images including the ones downloaded from the Internet during the app runtime.
-    case all
-    /// Only images that are contextually relevant (SF Symbols and images loaded using UIImage(named:) that are bundled within the application package).
-    case contextual
-    /// No images are recorded.
-    case none
+/// Available privacy levels for image masking in the Session Replay.
+public enum SessionReplayImagePrivacyLevel {
+    /// Only SF Symbols and images loaded using UIImage(named:) that are bundled within the application package will be recorded.
+    case maskContent
+    /// No images will be recorded.
+    case maskAll
+    /// All images including the ones downloaded from the Internet during the app runtime will be recorded.
+    case maskNone
 }
-
 
 /// The Session Replay shared configuration.
 ///
@@ -45,8 +44,8 @@ public enum ImageRecordingLevel {
 public protocol SessionReplayConfiguration {
     /// The privacy level to use for the web view replay recording.
     var privacyLevel: SessionReplayPrivacyLevel { get }
-    /// The image recording level to use for the session replay.
-    var imageRecordingLevel: ImageRecordingLevel { get }
+    /// The image privacy level to use for the session replay.
+    var imagePrivacyLevel: SessionReplayImagePrivacyLevel { get }
 }
 
 extension DatadogFeature where Self: SessionReplayConfiguration {

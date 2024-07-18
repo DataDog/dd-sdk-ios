@@ -53,9 +53,9 @@ class UIImageViewRecorderTests: XCTestCase {
         XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UIImageViewWireframesBuilder)
     }
 
-    func testWhenShouldRecordImagePredicateReturnsFalse() throws {
+    func testWhenShouldRecordImagePredicateOverrideReturnsFalse() throws {
         // When
-        let recorder = UIImageViewRecorder(identifier: UUID(), shouldRecordImagePredicate: { _ in return false })
+        let recorder = UIImageViewRecorder(shouldRecordImagePredicateOverride: { _ in return false })
         imageView.image = UIImage()
         viewAttributes = .mock(fixture: .visible())
 
@@ -67,14 +67,70 @@ class UIImageViewRecorderTests: XCTestCase {
         XCTAssertNil(builder.imageResource)
     }
 
-    func testWhenShouldRecordImagePredicateReturnsTrue() throws {
+    func testWhenShouldRecordImagePredicateOverrideReturnsTrue() throws {
         // When
-        let recorder = UIImageViewRecorder(identifier: UUID(), shouldRecordImagePredicate: { _ in return true })
+        let recorder = UIImageViewRecorder(shouldRecordImagePredicateOverride: { _ in return true })
         imageView.image = UIImage()
         viewAttributes = .mock(fixture: .visible())
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .record, "Image view's subtree should be recorded")
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
+        XCTAssertNotNil(builder.imageResource)
+    }
+
+    func testWhenMaskAllImagePrivacy_itDoesNotRecordImage() throws {
+        // Given
+        let imagePrivacy = ImagePrivacyLevel.maskAll
+        let context = ViewTreeRecordingContext.mockWith(recorder: .mockWith(imagePrivacy: imagePrivacy))
+
+        // When
+        let recorder = UIImageViewRecorder()
+        imageView.image = UIImage()
+        viewAttributes = .mock(fixture: .visible())
+
+        // Then
+        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: context))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .record, "Image view's subtree should be recorded")
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
+        XCTAssertNil(builder.imageResource)
+    }
+
+    func testWhenMaskNoneImagePrivacy_itDoesRecordImage() throws {
+        // Given
+        let imagePrivacy = ImagePrivacyLevel.maskNone
+        let context = ViewTreeRecordingContext.mockWith(recorder: .mockWith(imagePrivacy: imagePrivacy))
+
+        // When
+        let recorder = UIImageViewRecorder()
+        imageView.image = UIImage()
+        viewAttributes = .mock(fixture: .visible())
+
+        // Then
+        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: context))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .record, "Image view's subtree should be recorded")
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
+        XCTAssertNotNil(builder.imageResource)
+    }
+
+    func testWhenMaskContentImagePrivacy_itDoesRecordSFSymbolImage() throws {
+        // Given
+        let imagePrivacy = ImagePrivacyLevel.maskContent
+        let context = ViewTreeRecordingContext.mockWith(recorder: .mockWith(imagePrivacy: imagePrivacy))
+
+        // When
+        let recorder = UIImageViewRecorder()
+        if #available(iOS 13.0, *) {
+            imageView.image = UIImage(systemName: "star")
+        }
+        viewAttributes = .mock(fixture: .visible())
+
+        // Then
+        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: context))
         XCTAssertTrue(semantics is SpecificElement)
         XCTAssertEqual(semantics.subtreeStrategy, .record, "Image view's subtree should be recorded")
         let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)

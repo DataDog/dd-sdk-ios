@@ -15,7 +15,7 @@ internal class RecordingCoordinator {
     let scheduler: Scheduler
     let sampler: Sampler
     let privacy: PrivacyLevel
-    let imageRecordingLevel: ImageRecordingLevel
+    let imagePrivacy: ImagePrivacyLevel
     let srContextPublisher: SRContextPublisher
 
     private var currentRUMContext: RUMContext? = nil
@@ -29,7 +29,7 @@ internal class RecordingCoordinator {
     init(
         scheduler: Scheduler,
         privacy: PrivacyLevel,
-        imageRecordingLevel: ImageRecordingLevel,
+        imagePrivacy: ImagePrivacyLevel,
         rumContextObserver: RUMContextObserver,
         srContextPublisher: SRContextPublisher,
         recorder: Recording,
@@ -41,7 +41,7 @@ internal class RecordingCoordinator {
         self.scheduler = scheduler
         self.sampler = sampler
         self.privacy = privacy
-        self.imageRecordingLevel = imageRecordingLevel
+        self.imagePrivacy = imagePrivacy
         self.srContextPublisher = srContextPublisher
         self.telemetry = telemetry
         self.methodCallTelemetrySamplingRate = methodCallTelemetrySamplingRate
@@ -80,7 +80,7 @@ internal class RecordingCoordinator {
 
         let recorderContext = Recorder.Context(
             privacy: privacy,
-            imageRecordingLevel: imageRecordingLevel,
+            imagePrivacy: imagePrivacy,
             applicationID: rumContext.applicationID,
             sessionID: rumContext.sessionID,
             viewID: viewID,

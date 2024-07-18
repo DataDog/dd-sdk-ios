@@ -13,7 +13,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?
     let privacyLevel: SessionReplayPrivacyLevel
-    let imageRecordingLevel: ImageRecordingLevel
+    let imagePrivacyLevel: ImagePrivacyLevel
 
     // MARK: - Main Components
 
@@ -50,7 +50,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         let contextReceiver = RUMContextReceiver()
 
         self.privacyLevel = configuration.defaultPrivacyLevel
-        self.imageRecordingLevel = configuration.defaultImageRecordingLevel
+        self.imagePrivacyLevel = configuration.defaultImagePrivacyLevel
         self.messageReceiver = CombinedFeatureMessageReceiver([
             contextReceiver,
             WebViewRecordReceiver(
@@ -61,7 +61,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         self.recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
             privacy: configuration.defaultPrivacyLevel,
-            imageRecordingLevel: configuration.defaultImageRecordingLevel,
+            imagePrivacy: configuration.defaultImagePrivacyLevel,
             rumContextObserver: contextReceiver,
             srContextPublisher: SRContextPublisher(core: core),
             recorder: recorder,
