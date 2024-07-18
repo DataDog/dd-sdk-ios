@@ -17,7 +17,7 @@ function files {
 		-not -path "*Carthage/Build/*" \
 		-not -path "*Carthage/Checkouts/*" \
 		-not -path "./tools/rum-models-generator/rum-events-format/*" \
-		-not -path "*/tools/distribution/venv/*" \
+		-not -path "*/tools/dogfooding/venv/*" \
 		-not -path "*/tools/ci/venv/*" \
 		-not -path "*.xcframework/*" \
 		-not -path "*.xcarchive/*" \

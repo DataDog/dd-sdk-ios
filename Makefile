@@ -9,6 +9,7 @@ all: env-check repo-setup templates
 		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos spm-build-watchos \
 		e2e-build-upload \
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
+		dogfood-shopist dogfood-datadog-app \
 		release-build release-validate release-publish-github \
 		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs release-publish-legacy-podspecs \
 		set-ci-secret
@@ -366,6 +367,18 @@ e2e-monitors-generate:
 		@echo "⚙️  Generating 'main.tf':"
 		@./tools/nightly-e2e-tests/nightly_e2e.py generate-tf --tests-dir ../../Datadog/E2ETests
 		@echo "⚠️  Remember to delete all iOS monitors manually from Mobile-Integration org before running 'terraform apply'."
+
+# Creates dogfooding PR in shopist-ios
+dogfood-shopist:
+	@:$(eval DRY_RUN ?= 1)
+	@$(ECHO_TITLE) "make dogfood-shopist DRY_RUN='$(DRY_RUN)'"
+	DRY_RUN=$(DRY_RUN) ./tools/dogfooding/dogfood.sh --shopist
+
+# Creates dogfooding PR in datadog-ios
+dogfood-datadog-app:
+	@:$(eval DRY_RUN ?= 1)
+	@$(ECHO_TITLE) "make dogfood-datadog-app DRY_RUN='$(DRY_RUN)'"
+	DRY_RUN=$(DRY_RUN) ./tools/dogfooding/dogfood.sh --datadog-app
 
 # Builds release artifacts for given tag
 release-build:

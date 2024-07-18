@@ -15,14 +15,16 @@ workflows:
   push_to_develop_or_master:
     description: |-
         This workflow is triggered for each new commit pushed to `develop` or `master` branch.
-    after_run:
-    - _make_dependencies
-    - _deploy_artifacts
+    steps:
+    - script:
+        inputs:
+        - content: echo "NOP"
 
   push_to_dogfooding:
-    after_run:
-    - create_dogfooding_pr
-    - _notify_failure_on_slack
+    steps:
+    - script:
+        inputs:
+        - content: echo "NOP"
 
   run_nightly_e2e_tests:
     after_run:
@@ -74,20 +76,6 @@ workflows:
         - message_on_error: 'Failed to run "${BITRISE_TRIGGERED_WORKFLOW_ID}"'
         - icon_url: 'https://avatars.githubusercontent.com/t/3555052?s=128&v=4'
         - webhook_url: '${SLACK_INCOMING_WEBHOOK_MOBILE_CI}'
-
-  create_dogfooding_pr:
-    description: |-
-        Creates PRs to repositories using `dd-sdk-ios`.
-    steps:
-    - script:
-        title: Create PR to Datadog mobile app project
-        inputs:
-        - content: |-
-            #!/usr/bin/env zsh
-            set -e
-
-            cd tools/distribution && make clean install
-            venv/bin/python3 dogfood.py
 
   run_e2e_tests:
     description: |-

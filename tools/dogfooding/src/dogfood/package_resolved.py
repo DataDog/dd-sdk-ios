@@ -8,6 +8,7 @@ import json
 from dataclasses import dataclass
 from copy import deepcopy
 from typing import Optional
+from src.utils import print_info, print_succ
 
 
 @dataclass()
@@ -79,7 +80,7 @@ class PackageResolvedFile(PackageResolvedContent):
     wrapped: PackageResolvedContent
 
     def __init__(self, path: str):
-        print(f'⚙️ Opening {path}')
+        print_info(f'▸ Opening {path}')
         self.path = path
         with open(path, 'r') as file:
             self.packages = json.load(file)
@@ -100,7 +101,7 @@ class PackageResolvedFile(PackageResolvedContent):
         """
         Saves changes to initial `path`.
         """
-        print(f'⚙️ Saving {self.path}')
+        print_info(f'▸ Saving {self.path}')
         with open(self.path, 'w') as file:
             json.dump(
                 self.packages,
@@ -116,7 +117,7 @@ class PackageResolvedFile(PackageResolvedContent):
         Prints the content of this file.
         """
         with open(self.path, 'r') as file:
-            print(f'⚙️ Content of {file.name}:')
+            print_info(f'▸ Content of {file.name}:')
             print(file.read())
 
     def has_dependency(self, package_id: PackageID) -> bool:
@@ -176,7 +177,7 @@ class PackageResolvedContentV1(PackageResolvedContent):
         return package_id.v1 in [p['package'] for p in pins]
 
     def update_dependency(self, package_id: PackageID, new_branch: Optional[str], new_revision: str, new_version: Optional[str]):
-        print(f'⚙️ ️ Updating "{package_id.v1}" in {self.path} (V1):')
+        print_info(f'▸ Updating "{package_id.v1}" in {self.path} (V1):')
         package = self.__get_package(package_id=package_id)
 
         old_state = deepcopy(package['state'])
@@ -190,11 +191,11 @@ class PackageResolvedContentV1(PackageResolvedContent):
         diff = old_state.items() ^ new_state.items()
 
         if len(diff) > 0:
-            print(f'✏️️ Updated "{package_id.v1}" in {self.path}:')
+            print_info(f'▸ Updated "{package_id.v1}" in {self.path}:')
             print(f'    → old: {old_state}')
             print(f'    → new: {new_state}')
         else:
-            print(f'✏️️ "{package_id.v1}" is up-to-date in {self.path}')
+            print_succ(f'▸ "{package_id.v1}" is up-to-date in {self.path}')
 
     def add_dependency(self, package_id: PackageID, repository_url: str, branch: Optional[str], revision: str, version: Optional[str]):
         pins = self.packages['object']['pins']
@@ -216,7 +217,7 @@ class PackageResolvedContentV1(PackageResolvedContent):
 
         pins.insert(index, new_pin)
 
-        print(f'✏️️ Added "{package_id.v1}" at index {index} in {self.path}:')
+        print_info(f'▸ Added "{package_id.v1}" at index {index} in {self.path}:')
         print(f'    → branch: {branch}')
         print(f'    → revision: {revision}')
         print(f'    → version: {version}')
@@ -276,7 +277,7 @@ class PackageResolvedContentV2(PackageResolvedContent):
         return package_id.v2 in [p['identity'] for p in pins]
 
     def update_dependency(self, package_id: PackageID, new_branch: Optional[str], new_revision: str, new_version: Optional[str]):
-        print(f'⚙️ ️ Updating "{package_id.v2}" in {self.path} (V2):')
+        print_info(f'▸ Updating "{package_id.v2}" in {self.path} (V2):')
         package = self.__get_package(package_id=package_id)
 
         old_state = deepcopy(package['state'])
@@ -301,11 +302,11 @@ class PackageResolvedContentV2(PackageResolvedContent):
         diff = old_state.items() ^ new_state.items()
 
         if len(diff) > 0:
-            print(f'✏️️ Updated "{package_id.v2}" in {self.path}:')
+            print_info(f'▸ Updated "{package_id.v2}" in {self.path}:')
             print(f'    → old: {old_state}')
             print(f'    → new: {new_state}')
         else:
-            print(f'✏️️ "{package_id.v2}" is up-to-date in {self.path}')
+            print_succ(f'▸ "{package_id.v2}" is up-to-date in {self.path}')
 
     def add_dependency(self, package_id: PackageID, repository_url: str, branch: Optional[str], revision: str, version: Optional[str]):
         pins = self.packages['pins']
@@ -332,7 +333,7 @@ class PackageResolvedContentV2(PackageResolvedContent):
 
         pins.insert(index, new_pin)
 
-        print(f'✏️️ Added "{package_id.v2}" at index {index} in {self.path}:')
+        print_info(f'▸ Added "{package_id.v2}" at index {index} in {self.path}:')
         print(f'    → branch: {branch}')
         print(f'    → revision: {revision}')
         print(f'    → version: {version}')
