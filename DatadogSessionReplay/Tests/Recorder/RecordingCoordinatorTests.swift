@@ -166,12 +166,14 @@ class RecordingCoordinatorTests: XCTestCase {
     private func prepareRecordingCoordinator(
         sampler: Sampler = .mockKeepAll(),
         privacy: PrivacyLevel = .allow,
+        imagePrivacy: ImagePrivacyLevel = .maskContent,
         telemetry: Telemetry = NOPTelemetry(),
         methodCallTelemetrySamplingRate: Float = 0
     ) {
         recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
-            privacy: privacy,
+            privacy: privacy, 
+            imagePrivacy: imagePrivacy,
             rumContextObserver: rumContextObserver,
             srContextPublisher: contextPublisher,
             recorder: recordingMock,

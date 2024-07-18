@@ -16,3 +16,13 @@ extension SessionReplayPrivacyLevel: AnyMockable, RandomMockable {
         [.allow, .mask, .maskUserInput].randomElement()!
     }
 }
+
+extension SessionReplayImagePrivacyLevel: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self {
+        .maskContent
+    }
+
+    public static func mockRandom() -> Self {
+        [.maskContent, .maskAll, .maskNone].randomElement()!
+    }
+}

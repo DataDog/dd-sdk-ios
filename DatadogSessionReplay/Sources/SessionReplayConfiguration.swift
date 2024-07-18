@@ -32,8 +32,8 @@ extension SessionReplay {
 
         /// Defines image recording level.
         ///
-        /// Default: `.contextual`.
-        public var defaultImageRecordingLevel: ImageRecordingLevel
+        /// Default: `.maskContent`.
+        public var defaultImagePrivacyLevel: SessionReplayImagePrivacyLevel
 
         /// Custom server url for sending replay data.
         ///
@@ -50,17 +50,17 @@ extension SessionReplay {
         /// - Parameters:
         ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
         ///   - defaultPrivacyLevel: The way sensitive content (e.g. text) should be masked. Default: `.mask`.
-        ///   - defaultImageRecordingLevel: Image recording level. Default: `.contextual`.
+        ///   - defaultImageRecordingLevel: Image recording privacy level. Default: `.maskContent`.
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
         public init(
             replaySampleRate: Float,
             defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,
-            defaultImageRecordingLevel: ImageRecordingLevel = .contextual,
+            defaultImagePrivacyLevel: SessionReplayImagePrivacyLevel = .maskContent,
             customEndpoint: URL? = nil
         ) {
             self.replaySampleRate = replaySampleRate
             self.defaultPrivacyLevel = defaultPrivacyLevel
-            self.defaultImageRecordingLevel = defaultImageRecordingLevel
+            self.defaultImagePrivacyLevel = defaultImagePrivacyLevel
             self.customEndpoint = customEndpoint
         }
 
