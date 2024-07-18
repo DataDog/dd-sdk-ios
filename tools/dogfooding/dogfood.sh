@@ -33,10 +33,10 @@ DOGFOODED_COMMIT="$(current_git_commit)"
 DOGFOODED_COMMIT_SHORT="$(current_git_commit_short)"
 DOGFOODING_BRANCH_NAME="dogfooding-$DOGFOODED_COMMIT_SHORT" # the name of the branch to create in dependant repo
 
-if [[ "$DOGFOODED_BRANCH" != "develop" ]]; then
-    DRY_RUN=1
-    echo_warn "DOGFOODED_BRANCH is not 'develop'. Enforcing DRY_RUN=1."
-fi
+# if [[ "$DOGFOODED_BRANCH" != "develop" ]]; then
+#     DRY_RUN=1
+#     echo_warn "DOGFOODED_BRANCH is not 'develop'. Enforcing DRY_RUN=1."
+# fi
 
 echo_info "▸ PWD = '$(pwd)'"
 echo_info "▸ DRY_RUN = '$DRY_RUN'"
@@ -235,12 +235,14 @@ if [ "$shopist" = "true" ]; then
     clone_repo "git@github.com:DataDog/shopist-ios.git" $DEFAULT_BRANCH $CLONE_PATH
 
     # Generate CHANGELOG:
-    read_last_dogfooded_commit "$CLONE_PATH/Shopist/Shopist.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
-    CHANGELOG=$(print_changelog_since_last_dogfooded_commit)
+    # read_last_dogfooded_commit "$CLONE_PATH/Shopist/Shopist.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+    # CHANGELOG=$(print_changelog_since_last_dogfooded_commit)
+    CHANGELOG="Test"
     
     # Update dd-sdk-ios version:
-    update_dependant_package_resolved "$CLONE_PATH/Shopist/Shopist.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
-    update_dependant_sdk_version "$CLONE_PATH/Shopist/Shopist/DogfoodingConfig.swift"
+    # update_dependant_package_resolved "$CLONE_PATH/Shopist/Shopist.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+    # update_dependant_sdk_version "$CLONE_PATH/Shopist/Shopist/DogfoodingConfig.swift"
+    echo "test change" >> "$CLONE_PATH/README.md"
 
     # Push & create PR:
     commit_repo $CLONE_PATH
