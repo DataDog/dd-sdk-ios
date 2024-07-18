@@ -72,9 +72,7 @@ public class Recorder: Recording {
         let windowObserver = KeyWindowObserver()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
             windowObserver: windowObserver,
-            snapshotBuilder: ViewTreeSnapshotBuilder(
-                additionalNodeRecorders: additionalNodeRecorders
-            )
+            snapshotBuilder: ViewTreeSnapshotBuilder(additionalNodeRecorders: additionalNodeRecorders)
         )
         let touchSnapshotProducer = WindowTouchSnapshotProducer(
             windowObserver: windowObserver
