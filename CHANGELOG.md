@@ -1,8 +1,8 @@
 # Unreleased
 
-- [FEATURE] Enable DatadogCore, DatadogLogs and DatadogTrace to compile on watchOS platform. See [#1918][] (Thanks [@jfiser-paylocity][]) [#1946][] 
+- [FEATURE] Enable DatadogCore, DatadogLogs and DatadogTrace to compile on watchOS platform. See [#1918][] (Thanks [@jfiser-paylocity][]) [#1946][]
 - [IMPROVEMENT] Ability to clear feature data storage using `clearAllData` API. See [#1940][]
-- [IMPROVEMENT] Send memory warning as RUM error.
+- [IMPROVEMENT] Send memory warning as RUM error. See [#1955][]
 
 # 2.14.1 / 09-07-2024
 
@@ -724,6 +724,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1947]: https://github.com/DataDog/dd-sdk-ios/pull/1947
 [#1948]: https://github.com/DataDog/dd-sdk-ios/pull/1948
 [#1940]: https://github.com/DataDog/dd-sdk-ios/pull/1940
+[#1955]: https://github.com/DataDog/dd-sdk-ios/pull/1955
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
