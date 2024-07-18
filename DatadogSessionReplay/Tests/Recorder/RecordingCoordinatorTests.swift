@@ -172,7 +172,7 @@ class RecordingCoordinatorTests: XCTestCase {
     ) {
         recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
-            privacy: privacy, 
+            privacy: privacy,
             imagePrivacy: imagePrivacy,
             rumContextObserver: rumContextObserver,
             srContextPublisher: contextPublisher,
