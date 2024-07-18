@@ -48,9 +48,7 @@ internal struct ViewTreeSnapshotBuilder {
 }
 
 extension ViewTreeSnapshotBuilder {
-    init(
-        additionalNodeRecorders: [NodeRecorder]
-    ) {
+    init(additionalNodeRecorders: [NodeRecorder]) {
         self.init(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders() + additionalNodeRecorders),
             idsGenerator: NodeIDGenerator()
