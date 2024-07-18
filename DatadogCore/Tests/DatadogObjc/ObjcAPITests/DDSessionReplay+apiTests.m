@@ -16,6 +16,7 @@
 - (void)testConfiguration {
     DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100];
     configuration.defaultPrivacyLevel = DDSessionReplayConfigurationPrivacyLevelAllow;
+    configuration.defaultImagePrivacyLevel = DDSessionReplayConfigurationImagePrivacyLevelMaskNone;
     configuration.customEndpoint = [NSURL new];
 
     [DDSessionReplay enableWith:configuration];

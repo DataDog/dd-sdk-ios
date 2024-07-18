@@ -54,6 +54,14 @@ public final class DDSessionReplayConfiguration: NSObject {
         get { .init(_swift.defaultPrivacyLevel) }
     }
 
+    /// Defines the way images should be masked.
+    ///
+    /// Default: `.maskContent`.
+    @objc public var defaultImagePrivacyLevel: DDSessionReplayConfigurationImagePrivacyLevel {
+        set { _swift.defaultImagePrivacyLevel = newValue._swift }
+        get { .init(_swift.defaultImagePrivacyLevel) }
+    }
+
     /// Custom server url for sending replay data.
     ///
     /// Default: `nil`.
@@ -103,6 +111,33 @@ public enum DDSessionReplayConfigurationPrivacyLevel: Int {
         case .allow: self = .allow
         case .mask: self = .mask
         case .maskUserInput: self = .maskUserInput
+        }
+    }
+}
+
+/// Available image privacy levels for image masking.
+@objc
+public enum DDSessionReplayConfigurationImagePrivacyLevel: Int {
+    /// Only SF Symbols and images loaded using UIImage(named:) that are bundled within the application package will be recorded.
+    case maskContent
+    /// No images will be recorded.
+    case maskAll
+    /// All images including the ones downloaded from the Internet during the app runtime will be recorded.
+    case maskNone
+
+    internal var _swift: SessionReplayImagePrivacyLevel {
+        switch self {
+        case .maskContent: return .maskContent
+        case .maskAll: return .maskAll
+        case .maskNone: return .maskNone
+        }
+    }
+
+    internal init(_ swift: SessionReplayImagePrivacyLevel) {
+        switch swift {
+        case .maskContent: self = .maskContent
+        case .maskAll: self = .maskAll
+        case .maskNone: self = .maskNone
         }
     }
 }
