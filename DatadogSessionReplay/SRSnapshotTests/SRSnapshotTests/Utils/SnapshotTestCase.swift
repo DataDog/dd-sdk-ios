@@ -7,7 +7,6 @@
 import XCTest
 import SRFixtures
 import TestUtilities
-import DatadogInternal
 @_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import SRHost

@@ -6,7 +6,6 @@
 
 #if os(iOS)
 import UIKit
-import DatadogInternal
 
 internal struct UIImageViewRecorder: NodeRecorder {
     internal let identifier: UUID
