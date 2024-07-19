@@ -140,27 +140,35 @@ resolve_dd_sdk_ios_package() {
     swift package --package-path "$SDK_PACKAGE_PATH" show-dependencies
 }
 
-# Reads sdk_version from current commit and stores it in DOGFOODED_SDK_VERSION variable.
+# Reads sdk_version from current `dd-sdk-ios` commit and stores it in DOGFOODED_SDK_VERSION variable.
 read_dogfooded_version() {
     echo_subtitle "Read sdk_version from '$SDK_VERSION_FILE_PATH'"
     sdk_version=$(grep 'internal let __sdkVersion' "$SDK_VERSION_FILE_PATH" | awk -F'"' '{print $2}')
-    DOGFOODED_SDK_VERSION="$sdk_version-$DOGFOODED_COMMIT_SHORT" # e.g. '2.14.1-b5215c02'
+    # Version format is `<sdk-version>+<commit SHA short>` utilizing build metadata from https://semver.org/
+    # E.g.: 2.14.1+2f9a7df8
+    DOGFOODED_SDK_VERSION="$sdk_version+$DOGFOODED_COMMIT_SHORT"
     echo_info "▸ SDK version is '$sdk_version'"
     echo_succ "▸ Using '$DOGFOODED_SDK_VERSION' for dogfooding"
 }
 
-# Reads the hash of previously dogfooded commit to LAST_DOGFOODED_COMMIT variable.
-read_last_dogfooded_commit() {
-    local package_resolved_path="$1"
-    echo_subtitle "Get last dogfooded commit hash in '$REPO_NAME' repo"
-    output=$(make run PARAMS="read-dogfooded-hash.py --repo-package-resolved-path '$package_resolved_path'")
-    echo "$output"
-    LAST_DOGFOODED_COMMIT=$(echo "$output" | awk -F 'DOGFOODED_HASH=' '/DOGFOODED_HASH/ {print $2}')
+# Reads the hash of dogfooded commit from sdk version file in dependant project.
+read_dogfooded_commit() {
+    local version_file="$1"
+    echo_subtitle "Read dogfooded commit from '$version_file'" >&2
+
+    echo_info "▸ Parsing '$version_file':" >&2
+    echo_info ">>> '$version_file' begin" >&2
+    cat "$version_file" >&2
+    echo_info "<<< '$version_file' end" >&2
+
+    dogfooded_commit_sha=$(grep '__dogfoodedSDKVersion = "' "$version_file" | awk -F '[+""]' '{print $(NF-1)}')
+    echo "$dogfooded_commit_sha"
 }
 
-# Prints changes since LAST_DOGFOODED_COMMIT.
-print_changelog_since_last_dogfooded_commit() {
+# Prints changelog from provided commit to current one.
+print_changelog() {
     echo_subtitle "Generate changelog" >&2
+    local from_commit="$1"
 
     if [ "$CI" = "true" ]; then
         # Fetch branch history and unshallow in GitLab which only does shallow clone by default
@@ -169,9 +177,9 @@ print_changelog_since_last_dogfooded_commit() {
     fi
 
     # Read git history from last dogfooded commit to current:
-    echo_info "▸ Reading commits ($LAST_DOGFOODED_COMMIT..HEAD):" >&2
+    echo_info "▸ Reading commits ($from_commit..HEAD):" >&2
     git_log=$(git --no-pager log \
-                    --pretty=oneline "$LAST_DOGFOODED_COMMIT..HEAD" \
+                    --pretty=oneline "$from_commit..HEAD" \
                     --ancestry-path "origin/$DOGFOODED_BRANCH"
     )
     echo_info ">>> git log begin" >&2
@@ -181,7 +189,7 @@ print_changelog_since_last_dogfooded_commit() {
     # Extract only merge commits:
     CHANGELOG=$(echo "$git_log" | grep -o 'Merge pull request #[0-9]\+' | awk -F'#' '{print "- https://github.com/DataDog/dd-sdk-ios/pull/"$2}' || true)
     if [ -z "$CHANGELOG" ]; then
-        CHANGELOG="- Empty (no PRs merged since https://github.com/DataDog/dd-sdk-ios/commit/$LAST_DOGFOODED_COMMIT)"
+        CHANGELOG="- Empty (no PRs merged since https://github.com/DataDog/dd-sdk-ios/commit/$from_commit)"
     fi
 
     echo_info "▸ Changelog:" >&2
@@ -208,11 +216,6 @@ update_dependant_sdk_version() {
     local version_file="$1"
     echo_subtitle "Update 'sdk_version' in '$version_file'"
 
-    echo_info ">>> '$version_file' before"
-    cat "$version_file"
-    echo_info "<<< '$version_file' before"
-
-    # sed -i '' "s/internal let __dogfoodedSDKVersion = \".*\"/internal let __dogfoodedSDKVersion = \"$DOGFOODED_SDK_VERSION\"/" "$version_file"
     sed -i '' -E "s/(let __dogfoodedSDKVersion = \")[^\"]*(\")/\1${DOGFOODED_SDK_VERSION}\2/" "$version_file"
     echo_succ "▸ Updated '$version_file' to:"
 
@@ -235,8 +238,8 @@ if [ "$shopist" = "true" ]; then
     clone_repo "git@github.com:DataDog/shopist-ios.git" $DEFAULT_BRANCH $CLONE_PATH
 
     # Generate CHANGELOG:
-    read_last_dogfooded_commit "$CLONE_PATH/Shopist/Shopist.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
-    CHANGELOG=$(print_changelog_since_last_dogfooded_commit)
+    LAST_DOGFOODED_COMMIT=$(read_dogfooded_commit "$CLONE_PATH/Shopist/Shopist/DogfoodingConfig.swift")
+    CHANGELOG=$(print_changelog "$LAST_DOGFOODED_COMMIT")
     
     # Update dd-sdk-ios version:
     update_dependant_package_resolved "$CLONE_PATH/Shopist/Shopist.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
@@ -256,8 +259,8 @@ if [ "$datadog_app" = "true" ]; then
     clone_repo "git@github.com:DataDog/datadog-ios.git" $DEFAULT_BRANCH $CLONE_PATH
 
     # Generate CHANGELOG:
-    read_last_dogfooded_commit "$CLONE_PATH/DatadogApp.xcworkspace/xcshareddata/swiftpm/Package.resolved"
-    CHANGELOG=$(print_changelog_since_last_dogfooded_commit)
+    LAST_DOGFOODED_COMMIT=$(read_dogfooded_commit "$CLONE_PATH/Targets/DogLogger/Datadog/DogfoodingConfig.swift")
+    CHANGELOG=$(print_changelog "$LAST_DOGFOODED_COMMIT")
     
     # Update dd-sdk-ios version:
     update_dependant_package_resolved "$CLONE_PATH/DatadogApp.xcworkspace/xcshareddata/swiftpm/Package.resolved"
