@@ -1,7 +1,7 @@
 #!/bin/zsh
 
-source ./tools/utils/echo-color.sh
-source ./tools/secrets/config.sh
+source "${REPO_ROOT:-.}/tools/utils/echo-color.sh"
+source "${REPO_ROOT:-.}/tools/secrets/config.sh"
 
 # Usage:
 #   get_secret <secret_name>

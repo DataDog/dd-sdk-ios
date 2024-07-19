@@ -46,7 +46,7 @@ ifeq ($(CARTHAGE_PLATFORM),)
 	@exit 1
 endif
 	@$(ECHO_INFO) "Using CARTHAGE_PLATFORM='$(CARTHAGE_PLATFORM)'"
-	carthage update --platform $(CARTHAGE_PLATFORM) --use-xcframeworks
+	REPO_ROOT=$(REPO_ROOT) $(REPO_ROOT)/tools/carthage-shim.sh update --platform $(CARTHAGE_PLATFORM) --use-xcframeworks
 
 test:
 	@$(call require_param,OS)
