@@ -694,6 +694,7 @@
 		A728ADAC2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */; };
 		A728ADB02934EB0900397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
 		A728ADB12934EB0C00397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
+		A72C7CCB2C4A888400AAF599 /* ImagePrivacyLevelMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = A72C7CCA2C4A888400AAF599 /* ImagePrivacyLevelMocks.swift */; };
 		A73A54982B16406900E1F7E3 /* ResourcesFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A73A54972B16406900E1F7E3 /* ResourcesFeature.swift */; };
 		A74A72812B0CEE4900771FEB /* ResourceRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72802B0CEE4900771FEB /* ResourceRequestBuilder.swift */; };
 		A74A72852B10CC6700771FEB /* ResourceRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72842B10CC6700771FEB /* ResourceRequestBuilderTests.swift */; };
@@ -2739,6 +2740,7 @@
 		A728ADA52934DF2400397996 /* W3CHTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
 		A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "W3CHTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
 		A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDW3CHTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
+		A72C7CCA2C4A888400AAF599 /* ImagePrivacyLevelMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePrivacyLevelMocks.swift; sourceTree = "<group>"; };
 		A73A54972B16406900E1F7E3 /* ResourcesFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesFeature.swift; sourceTree = "<group>"; };
 		A74A72802B0CEE4900771FEB /* ResourceRequestBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResourceRequestBuilder.swift; sourceTree = "<group>"; };
 		A74A72842B10CC6700771FEB /* ResourceRequestBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceRequestBuilderTests.swift; sourceTree = "<group>"; };
@@ -3965,6 +3967,7 @@
 				A74A72882B10D95D00771FEB /* MultipartBuilderSpy.swift */,
 				A71265852B17980C007D63CE /* MockFeature.swift */,
 				A7D952892B28BD94004C79B1 /* ResourceProcessorSpy.swift */,
+				A72C7CCA2C4A888400AAF599 /* ImagePrivacyLevelMocks.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -8435,6 +8438,7 @@
 				61054FD02A6EE1BA00AAA894 /* SRContextPublisherTests.swift in Sources */,
 				61054F9B2A6EE1BA00AAA894 /* QueueTests.swift in Sources */,
 				D2056C212BBFE05A0085BC76 /* WireframesBuilderTests.swift in Sources */,
+				A72C7CCB2C4A888400AAF599 /* ImagePrivacyLevelMocks.swift in Sources */,
 				61054F992A6EE1BA00AAA894 /* ColorsTests.swift in Sources */,
 				61054FBF2A6EE1BA00AAA894 /* UIPickerViewRecorderTests.swift in Sources */,
 				61054FAE2A6EE1BA00AAA894 /* TouchIdentifierGeneratorTests.swift in Sources */,

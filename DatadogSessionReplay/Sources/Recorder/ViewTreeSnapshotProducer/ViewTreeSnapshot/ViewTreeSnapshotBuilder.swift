@@ -8,7 +8,6 @@
 import Foundation
 import UIKit
 import WebKit
-import DatadogInternal
 
 /// Builds `ViewTreeSnapshot` for given root view.
 ///

@@ -25,7 +25,7 @@ public class Recorder: Recording {
         /// The content recording policy from the moment of requesting snapshot.
         public let privacy: SessionReplayPrivacyLevel
         /// The image recording policy from the moment of requesting snapshot.
-        public let imagePrivacy: SessionReplayImagePrivacyLevel
+        public let imagePrivacy: ImagePrivacyLevel
         /// Current RUM application ID - standard UUID string, lowecased.
         let applicationID: String
         /// Current RUM session ID - standard UUID string, lowecased.

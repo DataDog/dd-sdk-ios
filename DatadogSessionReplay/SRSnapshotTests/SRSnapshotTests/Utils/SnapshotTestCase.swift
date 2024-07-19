@@ -16,7 +16,7 @@ private var defaultPrivacyLevel: SessionReplayPrivacyLevel {
     return SessionReplay.Configuration(replaySampleRate: 100).defaultPrivacyLevel
 }
 
-private var defaultImagePrivacyLevel: SessionReplayImagePrivacyLevel {
+private var defaultImagePrivacyLevel: ImagePrivacyLevel {
     return SessionReplay.Configuration(replaySampleRate: 100).defaultImagePrivacyLevel
 }
 
@@ -44,7 +44,7 @@ internal class SnapshotTestCase: XCTestCase {
     func takeSnapshotFor(
         _ fixture: Fixture,
         with privacyModes: [SessionReplayPrivacyLevel] = [defaultPrivacyLevel],
-        imagePrivacyLevel: SessionReplayImagePrivacyLevel = defaultImagePrivacyLevel,
+        imagePrivacyLevel: ImagePrivacyLevel = defaultImagePrivacyLevel,
         shouldRecord: Bool,
         folderPath: String,
         fileNamePrefix: String? = nil,
@@ -123,7 +123,7 @@ internal class SnapshotTestCase: XCTestCase {
     /// Captures side-by-side snapshot of the app UI and recorded wireframes.
     func takeSnapshot(
         with privacyLevel: SessionReplayPrivacyLevel = defaultPrivacyLevel,
-        imagePrivacyLevel: SessionReplayImagePrivacyLevel = defaultImagePrivacyLevel
+        imagePrivacyLevel: ImagePrivacyLevel = defaultImagePrivacyLevel
     ) throws -> UIImage {
         let expectWireframes = self.expectation(description: "Wait for wireframes")
         let expectResources = self.expectation(description: "Wait for resources")
