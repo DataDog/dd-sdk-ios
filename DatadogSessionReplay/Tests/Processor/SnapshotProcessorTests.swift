@@ -306,7 +306,8 @@ class SnapshotProcessorTests: XCTestCase {
             attributes: .mockAny(),
             contentFrame: .mockAny(),
             clipsToBounds: .mockAny(),
-            imageResource: resource
+            imageResource: resource,
+            imagePrivacyLevel: .maskContent
         )
         let snapshot: ViewTreeSnapshot = .mockWith(
             context: .mockRandom(),

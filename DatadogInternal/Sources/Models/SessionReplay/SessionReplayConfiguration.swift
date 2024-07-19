@@ -22,7 +22,7 @@ public enum SessionReplayPrivacyLevel: String {
 
 /// Available privacy levels for image masking in the Session Replay.
 public enum SessionReplayImagePrivacyLevel {
-    /// Only SF Symbols and images loaded using UIImage(named:) that are bundled within the application package will be recorded.
+    /// Only SF Symbols and images loaded using UIImage(named:) that are bundled within the application will be recorded.
     case maskContent
     /// No images will be recorded.
     case maskAll
