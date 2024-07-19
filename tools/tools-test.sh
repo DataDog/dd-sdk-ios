@@ -18,8 +18,8 @@ test_swift_package tools/http-server-mock
 test_swift_package tools/rum-models-generator
 test_swift_package tools/sr-snapshots
 
-# Test release & dogfood automation:
-echo_subtitle "Run 'make clean install test' in ./tools/distribution"
-cd tools/distribution && make clean install test
+# Test dogfooding automation:
+echo_subtitle "Run 'make clean install test' in ./tools/dogfooding"
+cd tools/dogfooding && make clean install test
 cd -
 

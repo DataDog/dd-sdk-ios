@@ -27,5 +27,6 @@ endef
 
 CURRENT_GIT_TAG := $(shell $(REPO_ROOT)/tools/utils/current-git.sh --print-tag)
 CURRENT_GIT_BRANCH := $(shell $(REPO_ROOT)/tools/utils/current-git.sh --print-branch)
+CURRENT_GIT_COMMIT := $(shell $(REPO_ROOT)/tools/utils/current-git.sh --print-commit)
 CURRENT_GIT_COMMIT_SHORT := $(shell $(REPO_ROOT)/tools/utils/current-git.sh --print-commit-short)
 CURRENT_GIT_REF := $(shell $(REPO_ROOT)/tools/utils/current-git.sh --print)

@@ -28,17 +28,21 @@ function current_git_branch() {
     fi
 }
 
-# Prints current commit sha (short)
-function current_git_commit_short() {
-    if [[ -n "$CI_COMMIT_SHORT_SHA" ]]; then
-        echo "$CI_COMMIT_SHORT_SHA"
+# Prints current git commit (full SHA)
+function current_git_commit() {
+    if [[ -n "$CI_COMMIT_SHA" ]]; then
+        echo "$CI_COMMIT_SHA"
     else
-        local git_commit_short=$(git rev-parse --short HEAD)
-        echo "$git_commit_short"
+        echo "$(git rev-parse HEAD)"
     fi
 }
 
-# Prints current tag (if any) and current branch otherwise.
+# Prints the first eight characters of current commit SHA
+function current_git_commit_short() {
+    echo $(current_git_commit | cut -c 1-8)
+}
+
+# Prints current tag (if any) or current branch.
 function current_git_ref() {
     local tag=$(current_git_tag)
     if [[ -n "$tag" ]]; then
@@ -57,6 +61,9 @@ case "$1" in
         ;;
     --print-branch)
         current_git_branch
+        ;;
+    --print-commit)
+        current_git_commit
         ;;
     --print-commit-short)
         current_git_commit_short

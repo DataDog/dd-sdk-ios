@@ -5,6 +5,7 @@ stages:
   - ui-test
   - smoke-test
   - e2e-test
+  - dogfood
   - release-build
   - release-publish
 
@@ -267,6 +268,28 @@ E2E Test (upload to s8s):
     - make clean
     - export DRY_RUN=${DRY_RUN:-0} # default to 0 if not specified
     - make e2e-build-upload ARTIFACTS_PATH="artifacts/e2e"
+
+# ┌─────────────────┐
+# │ SDK dogfooding: │
+# └─────────────────┘
+
+Dogfood (Shopist):
+  stage: dogfood
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+      when: manual
+  script:
+    - ./tools/runner-setup.sh --ssh # temporary, waiting for AMI
+    - DRY_RUN=0 make dogfood-shopist
+
+Dogfood (Datadog app):
+  stage: dogfood
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+      when: manual
+  script:
+    - ./tools/runner-setup.sh --ssh # temporary, waiting for AMI
+    - DRY_RUN=0 make dogfood-datadog-app
 
 # ┌──────────────┐
 # │ SDK release: │
