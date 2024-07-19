@@ -72,7 +72,8 @@ internal struct UIImageViewRecorder: NodeRecorder {
             attributes: attributes,
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
-            imageResource: imageResource
+            imageResource: imageResource,
+            imagePrivacyLevel: context.recorder.imagePrivacy
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(
@@ -98,6 +99,8 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
     let clipsToBounds: Bool
 
     let imageResource: UIImageResource?
+
+    let imagePrivacyLevel: ImagePrivacyLevel
 
     private var clip: SRContentClip? {
         guard let contentFrame = contentFrame else {
@@ -153,7 +156,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 builder.createPlaceholderWireframe(
                     id: imageWireframeID,
                     frame: clipsToBounds ? relativeIntersectedRect : contentFrame,
-                    label: "Image"
+                    label: imagePrivacyLevel == .maskContent ? "Content Image" : "Image"
                 )
             )
         }
