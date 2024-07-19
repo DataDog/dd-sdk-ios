@@ -20,6 +20,7 @@ class SessionReplayConfigurationTests: XCTestCase {
         // Then
         XCTAssertEqual(config.replaySampleRate, random)
         XCTAssertEqual(config.defaultPrivacyLevel, .mask)
+        XCTAssertEqual(config.defaultImagePrivacyLevel, .maskContent)
         XCTAssertNil(config.customEndpoint)
         XCTAssertEqual(config._additionalNodeRecorders.count, 0)
     }

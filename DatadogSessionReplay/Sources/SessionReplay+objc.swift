@@ -57,7 +57,7 @@ public final class DDSessionReplayConfiguration: NSObject {
     /// Defines the way images should be masked.
     ///
     /// Default: `.maskContent`.
-    @objc public var defaultImagePrivacyLevel: DDSessionReplayConfigurationImagePrivacyLevel {
+    @objc public var defaultImagePrivacyLevel: DDImagePrivacyLevel {
         set { _swift.defaultImagePrivacyLevel = newValue._swift }
         get { .init(_swift.defaultImagePrivacyLevel) }
     }
@@ -117,7 +117,7 @@ public enum DDSessionReplayConfigurationPrivacyLevel: Int {
 
 /// Available image privacy levels for image masking.
 @objc
-public enum DDSessionReplayConfigurationImagePrivacyLevel: Int {
+public enum DDImagePrivacyLevel: Int {
     /// Only SF Symbols and images loaded using UIImage(named:) that are bundled within the application package will be recorded.
     case maskContent
     /// No images will be recorded.
@@ -125,7 +125,7 @@ public enum DDSessionReplayConfigurationImagePrivacyLevel: Int {
     /// All images including the ones downloaded from the Internet during the app runtime will be recorded.
     case maskNone
 
-    internal var _swift: SessionReplayImagePrivacyLevel {
+    internal var _swift: ImagePrivacyLevel {
         switch self {
         case .maskContent: return .maskContent
         case .maskAll: return .maskAll
@@ -133,7 +133,7 @@ public enum DDSessionReplayConfigurationImagePrivacyLevel: Int {
         }
     }
 
-    internal init(_ swift: SessionReplayImagePrivacyLevel) {
+    internal init(_ swift: ImagePrivacyLevel) {
         switch swift {
         case .maskContent: self = .maskContent
         case .maskAll: self = .maskAll
