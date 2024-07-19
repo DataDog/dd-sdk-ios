@@ -7,12 +7,17 @@
 import XCTest
 import SRFixtures
 import TestUtilities
+import DatadogInternal
 @_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import SRHost
 
 private var defaultPrivacyLevel: SessionReplayPrivacyLevel {
     return SessionReplay.Configuration(replaySampleRate: 100).defaultPrivacyLevel
+}
+
+private var defaultImagePrivacyLevel: SessionReplayImagePrivacyLevel {
+    return SessionReplay.Configuration(replaySampleRate: 100).defaultImagePrivacyLevel
 }
 
 internal class SnapshotTestCase: XCTestCase {
@@ -39,6 +44,7 @@ internal class SnapshotTestCase: XCTestCase {
     func takeSnapshotFor(
         _ fixture: Fixture,
         with privacyModes: [SessionReplayPrivacyLevel] = [defaultPrivacyLevel],
+        imagePrivacyLevel: SessionReplayImagePrivacyLevel = defaultImagePrivacyLevel,
         shouldRecord: Bool,
         folderPath: String,
         fileNamePrefix: String? = nil,
@@ -50,7 +56,7 @@ internal class SnapshotTestCase: XCTestCase {
         wait(seconds: 0.2)
 
         try forPrivacyModes(privacyModes) { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
+            let image = try takeSnapshot(with: privacyMode, imagePrivacyLevel: imagePrivacyLevel)
             let fileNameSuffix = fileNamePrefix == nil ? "-\(privacyMode)-privacy" : "-\(fileNamePrefix!)-\(privacyMode)-privacy"
             let snapshotLocation: ImageLocation = .folder(named: folderPath, fileNameSuffix: fileNameSuffix, file: file, function: function)
 
@@ -115,7 +121,10 @@ internal class SnapshotTestCase: XCTestCase {
     }
 
     /// Captures side-by-side snapshot of the app UI and recorded wireframes.
-    func takeSnapshot(with privacyLevel: SessionReplayPrivacyLevel = defaultPrivacyLevel) throws -> UIImage {
+    func takeSnapshot(
+        with privacyLevel: SessionReplayPrivacyLevel = defaultPrivacyLevel,
+        imagePrivacyLevel: SessionReplayImagePrivacyLevel = defaultImagePrivacyLevel
+    ) throws -> UIImage {
         let expectWireframes = self.expectation(description: "Wait for wireframes")
         let expectResources = self.expectation(description: "Wait for resources")
 
@@ -154,7 +163,14 @@ internal class SnapshotTestCase: XCTestCase {
 
         // Capture next record with mock RUM Context
         try recorder.captureNextRecord(
-            .init(privacy: privacyLevel, applicationID: "", sessionID: "", viewID: "", viewServerTimeOffset: 0)
+            .init(
+                privacy: privacyLevel, 
+                imagePrivacy: imagePrivacyLevel,
+                applicationID: "",
+                sessionID: "",
+                viewID: "",
+                viewServerTimeOffset: 0
+            )
         )
 
         waitForExpectations(timeout: 30) // very pessimistic timeout to mitigate CI lags
