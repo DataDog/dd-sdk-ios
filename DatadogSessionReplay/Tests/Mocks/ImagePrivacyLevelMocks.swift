@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import DatadogSessionReplay
 import TestUtilities
 
@@ -16,3 +17,4 @@ extension ImagePrivacyLevel: AnyMockable, RandomMockable {
         [.maskContent, .maskAll, .maskNone].randomElement()!
     }
 }
+#endif
