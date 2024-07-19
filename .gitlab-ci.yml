@@ -42,6 +42,7 @@ default:
         paths:
           - "Datadog*/**/*"
           - "IntegrationTests/**/*"
+          - "SmokeTests/**/*"
           - "TestUtilities/**/*"
           - "*" # match any file in the root directory
         compare_to: 'develop' # cannot use $DEVELOP_BRANCH var due to: https://gitlab.com/gitlab-org/gitlab/-/issues/369916
@@ -236,6 +237,9 @@ Smoke Tests (macOS):
 
 Smoke Tests (watchOS):
   stage: smoke-test
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
   tags:
     - macos:ventura
     - specific:true
