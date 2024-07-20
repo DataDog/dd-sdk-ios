@@ -44,7 +44,7 @@ internal final class WatchdogTerminationMonitor {
     init(
         appStateManager: WatchdogTerminationAppStateManager,
         checker: WatchdogTerminationChecker,
-        stroage: Storage?,
+        storage: Storage?,
         feature: FeatureScope,
         reporter: WatchdogTerminationReporting
     ) {
@@ -52,7 +52,7 @@ internal final class WatchdogTerminationMonitor {
         self.appStateManager = appStateManager
         self.feature = feature
         self.reporter = reporter
-        self.storage = stroage
+        self.storage = storage
         self.currentState = .stopped
     }
 

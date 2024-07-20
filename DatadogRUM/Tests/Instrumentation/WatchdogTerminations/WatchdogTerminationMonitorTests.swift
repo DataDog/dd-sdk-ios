@@ -111,7 +111,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         sut = WatchdogTerminationMonitor(
             appStateManager: appStateManager,
             checker: checker,
-            stroage: NOPDatadogCore().storage,
+            storage: NOPDatadogCore().storage,
             feature: featureScope,
             reporter: reporter
         )
