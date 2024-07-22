@@ -6,7 +6,7 @@ The Snapshot Tests project is an additional layer of integration testing for the
 
 The `SRSnapshotTests.xcworkspace` depends on `dd-sdk-ios/Package.swift` but requires the `dd-sdk-ios/TestUtilities` library, which is not defined statically in the root package. To add it dynamically, we leverage the `DD_TEST_UTILITIES_ENABLED` ENV variable respected by the main package.
 
-To open the project, use script from the `tools/` directory:
+To open the project, use the `sr-snapshot-test.sh` script from the `tools/` directory:
 ```
 ./tools/sr-snapshot-test.sh open-project
 ```
