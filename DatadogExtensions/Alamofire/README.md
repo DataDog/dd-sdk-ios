@@ -1,3 +1,9 @@
+## **Deprecated**
+
+**Note:** The `DatadogAlamofireExtension` pod is deprecated and will no longer be maintained. Please refer to the [Integrated Libraries][6] documentation on how to instrument Alamofire with the Datadog iOS SDK.
+
+---
+
 # Datadog Integration for Alamofire
 
 `DatadogAlamofireExtension` enables `Alamofire.Session` auto instrumentation with Datadog SDK.
@@ -49,3 +55,4 @@ Pull requests are welcome. First, open an issue to discuss what you would like t
 [3]: https://swift.org/package-manager/
 [4]: https://docs.datadoghq.com/tracing/setup_overview/setup/ios/
 [5]: https://docs.datadoghq.com/real_user_monitoring/ios
+[6]: https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/integrated_libraries/ios

@@ -2,6 +2,11 @@ Pod::Spec.new do |s|
   s.name         = "DatadogAlamofireExtension"
   s.version      = "2.14.1"
   s.summary      = "An Official Extensions of Datadog Swift SDK for Alamofire."
+  s.description  = <<-DESC
+                   The DatadogAlamofireExtension pod is deprecated and will no longer be maintained.
+                   Please refer to the following documentation on how to instrument Alamofire with the Datadog iOS SDK:
+                   https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/integrated_libraries/ios
+                   DESC
 
   s.homepage     = "https://www.datadoghq.com"
   s.social_media_url   = "https://twitter.com/datadoghq"
@@ -13,6 +18,8 @@ Pod::Spec.new do |s|
     "Ganesh Jangir" => "ganesh.jangir@datadoghq.com",
     "Maciej Burda" => "maciej.burda@datadoghq.com"
   }
+
+  s.deprecated = true
 
   s.swift_version = '5.9'
   s.ios.deployment_target = '12.0'
