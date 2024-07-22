@@ -278,6 +278,7 @@ Dogfood (Shopist):
   rules:
     - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
       when: manual
+      allow_failure: true
   script:
     - ./tools/runner-setup.sh --ssh # temporary, waiting for AMI
     - DRY_RUN=0 make dogfood-shopist
@@ -287,6 +288,7 @@ Dogfood (Datadog app):
   rules:
     - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
       when: manual
+      allow_failure: true
   script:
     - ./tools/runner-setup.sh --ssh # temporary, waiting for AMI
     - DRY_RUN=0 make dogfood-datadog-app
