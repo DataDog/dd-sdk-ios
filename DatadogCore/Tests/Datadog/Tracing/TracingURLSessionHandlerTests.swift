@@ -109,12 +109,13 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(span.tags[OTTags.httpUrl], request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpMethod], "GET")
         XCTAssertEqual(span.tags[SpanTags.errorType], "domain - 123")
+        XCTAssertEqual(span.tags[SpanTags.kind], "client")
         XCTAssertEqual(
             span.tags[SpanTags.errorStack],
             "Error Domain=domain Code=123 \"network error\" UserInfo={NSLocalizedDescription=network error}"
         )
         XCTAssertEqual(span.tags[SpanTags.errorMessage], "network error")
-        XCTAssertEqual(span.tags.count, 7)
+        XCTAssertEqual(span.tags.count, 8)
 
         let log: LogEvent = try XCTUnwrap(core.events().last, "It should send error log")
         XCTAssertEqual(log.status, .error)
@@ -178,11 +179,12 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(span.tags[OTTags.httpStatusCode], "404")
         XCTAssertEqual(span.tags[SpanTags.errorType], "HTTPURLResponse - 404")
         XCTAssertEqual(span.tags[SpanTags.errorMessage], "404 not found")
+        XCTAssertEqual(span.tags[SpanTags.kind], "client")
         XCTAssertEqual(
             span.tags[SpanTags.errorStack],
             "Error Domain=HTTPURLResponse Code=404 \"404 not found\" UserInfo={NSLocalizedDescription=404 not found}"
         )
-        XCTAssertEqual(span.tags.count, 8)
+        XCTAssertEqual(span.tags.count, 9)
 
         let log: LogEvent = try XCTUnwrap(core.events().last, "It should send error log")
         XCTAssertEqual(log.status, .error)
