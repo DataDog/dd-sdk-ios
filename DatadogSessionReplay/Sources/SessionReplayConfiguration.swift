@@ -55,7 +55,7 @@ extension SessionReplay {
         public init(
             replaySampleRate: Float,
             defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,
-            defaultImagePrivacyLevel: ImagePrivacyLevel = .maskContent,
+            defaultImagePrivacyLevel: ImagePrivacyLevel = .maskNonBundledImages,
             customEndpoint: URL? = nil
         ) {
             self.replaySampleRate = replaySampleRate
