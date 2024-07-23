@@ -119,7 +119,7 @@ class UIImageViewRecorderTests: XCTestCase {
 
     func testWhenMaskContentImagePrivacy_itDoesRecordSFSymbolImage() throws {
         // Given
-        let imagePrivacy = ImagePrivacyLevel.maskContent
+        let imagePrivacy = ImagePrivacyLevel.maskNonBundledImages
         let context = ViewTreeRecordingContext.mockWith(recorder: .mockWith(imagePrivacy: imagePrivacy))
 
         // When

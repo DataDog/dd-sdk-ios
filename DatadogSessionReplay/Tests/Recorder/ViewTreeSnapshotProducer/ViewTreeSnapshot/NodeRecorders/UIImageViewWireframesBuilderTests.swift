@@ -27,7 +27,7 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
             contentFrame: CGRect(x: 10, y: 10, width: 200, height: 200),
             clipsToBounds: true,
             imageResource: .mockRandom(),
-            imagePrivacyLevel: .maskContent
+            imagePrivacyLevel: .maskNonBundledImages
         )
 
         let wireframes = builder.buildWireframes(with: wireframesBuilder)
@@ -58,7 +58,7 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
             contentFrame: CGRect(x: 10, y: 10, width: 200, height: 200),
             clipsToBounds: true,
             imageResource: nil,
-            imagePrivacyLevel: .maskContent
+            imagePrivacyLevel: .maskNonBundledImages
         )
 
         let wireframes = builder.buildWireframes(with: wireframesBuilder)

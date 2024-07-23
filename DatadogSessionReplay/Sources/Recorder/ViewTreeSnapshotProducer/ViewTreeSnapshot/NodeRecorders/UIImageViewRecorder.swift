@@ -155,7 +155,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 builder.createPlaceholderWireframe(
                     id: imageWireframeID,
                     frame: clipsToBounds ? relativeIntersectedRect : contentFrame,
-                    label: imagePrivacyLevel == .maskContent ? "Content Image" : "Image"
+                    label: imagePrivacyLevel == .maskNonBundledImages ? "Content Image" : "Image"
                 )
             )
         }
@@ -216,7 +216,7 @@ fileprivate extension ImagePrivacyLevel {
     var shouldRecordImagePredicate: (UIImageView) -> Bool {
         switch self {
         case .maskNone: return { _ in true }
-        case .maskContent: return { imageView in
+        case .maskNonBundledImages: return { imageView in
             if #available(iOS 13.0, *), let image = imageView.image {
                 return image.isContextual || imageView.isSystemControlBackground
             } else {
