@@ -10,7 +10,7 @@ import XCTest
 @testable import DatadogSessionReplay
 
 class UIActivityIndicatorRecorderTests: XCTestCase {
-    private let recorder = UIActivityIndicatorRecorder()
+    private let recorder = UIActivityIndicatorRecorder(identifier: UUID())
     private let activityIndicator = UIActivityIndicatorView()
     private var viewAttributes: ViewAttributes = .mockAny()
 
