@@ -23,6 +23,9 @@ DD_IOS_SECRET__E2E_XCCONFIG_BASE64="e2e.xcconfig.base64"
 DD_IOS_SECRET__E2E_S8S_API_KEY="e2e.s8s.api.key"
 DD_IOS_SECRET__E2E_S8S_APP_KEY="e2e.s8s.app.key"
 DD_IOS_SECRET__E2E_S8S_APPLICATION_ID="e2e.s8s.app.id"
+DD_IOS_SECRET__BENCHMARK_PROVISIONING_PROFILE_BASE64="benchmark.provisioning.profile.base64"
+DD_IOS_SECRET__BENCHMARK_XCCONFIG_BASE64="benchmark.xcconfig.base64"
+DD_IOS_SECRET__BENCHMARK_S8S_APPLICATION_ID="benchmark.s8s.app.id"
 
 idx=0
 declare -A DD_IOS_SECRETS
@@ -38,3 +41,6 @@ DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__E2E_XCCONFIG_BASE64 | Base64-encoded
 DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__E2E_S8S_API_KEY | DATADOG_API_KEY for uploading E2E app to synthetics"
 DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__E2E_S8S_APP_KEY | DATADOG_APP_KEY for uploading E2E app to synthetics"
 DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__E2E_S8S_APPLICATION_ID | Synthetics app ID for E2E tests"
+DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__BENCHMARK_PROVISIONING_PROFILE_BASE64 | Base64-encoded provisioning profile file for signing Benchmark app"
+DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__BENCHMARK_XCCONFIG_BASE64 | Base64-encoded xcconfig file for Benchmark app"
+DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__BENCHMARK_S8S_APPLICATION_ID | Synthetics app ID for Benchmark tests"
