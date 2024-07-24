@@ -8,7 +8,8 @@
 import UIKit
 
 internal struct UITextFieldRecorder: NodeRecorder {
-    let identifier = UUID()
+    internal let identifier: UUID
+
     /// `UIViewRecorder` for recording appearance of the text field.
     private let backgroundViewRecorder: UIViewRecorder
     /// `UIImageViewRecorder` for recording icons that are displayed in text field.
@@ -25,9 +26,10 @@ internal struct UITextFieldRecorder: NodeRecorder {
         }
     }
 
-    init() {
-        self.backgroundViewRecorder = UIViewRecorder()
-        self.iconsRecorder = UIImageViewRecorder()
+    init(identifier: UUID) {
+        self.identifier = identifier
+        self.backgroundViewRecorder = UIViewRecorder(identifier: identifier)
+        self.iconsRecorder = UIImageViewRecorder(identifier: identifier)
         self.subtreeRecorder = ViewTreeRecorder(nodeRecorders: [backgroundViewRecorder, iconsRecorder])
     }
 
