@@ -58,23 +58,23 @@ extension ViewTreeSnapshotBuilder {
 /// An arrays of default node recorders executed for the root view-tree hierarchy.
 internal func createDefaultNodeRecorders() -> [NodeRecorder] {
     return [
-        UnsupportedViewRecorder(),
-        UIViewRecorder(),
-        UILabelRecorder(),
-        UIImageViewRecorder(),
-        UITextFieldRecorder(),
-        UITextViewRecorder(),
-        UISwitchRecorder(),
-        UISliderRecorder(),
-        UISegmentRecorder(),
-        UIStepperRecorder(),
-        UINavigationBarRecorder(),
-        UITabBarRecorder(),
-        UIPickerViewRecorder(),
-        UIDatePickerRecorder(),
-        WKWebViewRecorder(),
-        UIProgressViewRecorder(),
-        UIActivityIndicatorRecorder()
+        UnsupportedViewRecorder(identifier: UUID()),
+        UIViewRecorder(identifier: UUID()),
+        UILabelRecorder(identifier: UUID()),
+        UIImageViewRecorder(identifier: UUID()),
+        UITextFieldRecorder(identifier: UUID()),
+        UITextViewRecorder(identifier: UUID()),
+        UISwitchRecorder(identifier: UUID()),
+        UISliderRecorder(identifier: UUID()),
+        UISegmentRecorder(identifier: UUID()),
+        UIStepperRecorder(identifier: UUID()),
+        UINavigationBarRecorder(identifier: UUID()),
+        UITabBarRecorder(identifier: UUID()),
+        UIPickerViewRecorder(identifier: UUID()),
+        UIDatePickerRecorder(identifier: UUID()),
+        WKWebViewRecorder(identifier: UUID()),
+        UIProgressViewRecorder(identifier: UUID()),
+        UIActivityIndicatorRecorder(identifier: UUID())
     ]
 }
 #endif
