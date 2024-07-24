@@ -169,15 +169,19 @@ extension WatchdogTerminationMonitor: FeatureMessageReceiver {
     ///   - core: The core instance.
     /// - Returns: Always `false`, because it doesn't block the message propagation.
     func receive(message: DatadogInternal.FeatureMessage, from core: any DatadogInternal.DatadogCoreProtocol) -> Bool {
-        feature.context { [weak self] context in
+        guard case .context(let context) = message else {
+            return false
+        }
+
+        if currentState == .stopped {
             do {
                 guard let launchReport = try context.baggages[LaunchReport.baggageKey]?.decode(type: LaunchReport.self) else {
-                    return
+                    return false
                 }
-                self?.start(launchReport: launchReport)
+                self.start(launchReport: launchReport)
             } catch {
                 DD.logger.error(ErrorMessages.failedToDecodeLaunchReport, error: error)
-                self?.feature.telemetry.error(ErrorMessages.failedToDecodeLaunchReport, error: error)
+                self.feature.telemetry.error(ErrorMessages.failedToDecodeLaunchReport, error: error)
             }
         }
 
