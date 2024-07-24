@@ -10,7 +10,7 @@ import XCTest
 @testable import DatadogSessionReplay
 
 class UISliderRecorderTests: XCTestCase {
-    private let recorder = UISliderRecorder()
+    private let recorder = UISliderRecorder(identifier: UUID())
     private let slider = UISlider()
     private var viewAttributes: ViewAttributes = .mockAny()
 

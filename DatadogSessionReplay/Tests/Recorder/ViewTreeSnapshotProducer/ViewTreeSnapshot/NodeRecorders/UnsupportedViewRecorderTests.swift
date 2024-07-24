@@ -14,7 +14,7 @@ import SafariServices
 
 @available(iOS 13.0, *)
 class UnsupportedViewRecorderTests: XCTestCase {
-    private let recorder = UnsupportedViewRecorder()
+    private let recorder = UnsupportedViewRecorder(identifier: UUID())
 
     func testWhenViewIsUnsupportedViewControllersRootView() throws {
         var context = ViewTreeRecordingContext.mockRandom()
