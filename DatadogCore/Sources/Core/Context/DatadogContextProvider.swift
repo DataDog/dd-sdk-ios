@@ -40,9 +40,7 @@ internal final class DatadogContextProvider {
     /// The current `context`.
     ///
     /// The value must be accessed from the `queue` only.
-    private var context: DatadogContext {
-        didSet { receivers.forEach { $0(context) } }
-    }
+    private var context: DatadogContext
 
     /// The queue used to synchronize the access to the `DatadogContext`.
     internal let queue = DispatchQueue(
@@ -110,7 +108,12 @@ internal final class DatadogContextProvider {
     ///
     /// - Parameter block: The block closure called with the current context.
     func write(block: @escaping (inout DatadogContext) -> Void) {
-        queue.async { block(&self.context) }
+        queue.async {
+            block(&self.context)
+            self.receivers.forEach { receiver in
+                receiver(self.context)
+            }
+        }
     }
 
     /// Subscribes a context's property to a publisher.
