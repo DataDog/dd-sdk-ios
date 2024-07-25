@@ -55,7 +55,7 @@ class UIImageViewRecorderTests: XCTestCase {
 
     func testWhenShouldRecordImagePredicateOverrideReturnsFalse() throws {
         // When
-        let recorder = UIImageViewRecorder(shouldRecordImagePredicateOverride: { _ in return false })
+        let recorder = UIImageViewRecorder(identifier: UUID(), shouldRecordImagePredicateOverride: { _ in return false })
         imageView.image = UIImage()
         viewAttributes = .mock(fixture: .visible())
 
@@ -69,7 +69,7 @@ class UIImageViewRecorderTests: XCTestCase {
 
     func testWhenShouldRecordImagePredicateOverrideReturnsTrue() throws {
         // When
-        let recorder = UIImageViewRecorder(shouldRecordImagePredicateOverride: { _ in return true })
+        let recorder = UIImageViewRecorder(identifier: UUID(), shouldRecordImagePredicateOverride: { _ in return true })
         imageView.image = UIImage()
         viewAttributes = .mock(fixture: .visible())
 
@@ -87,7 +87,7 @@ class UIImageViewRecorderTests: XCTestCase {
         let context = ViewTreeRecordingContext.mockWith(recorder: .mockWith(imagePrivacy: imagePrivacy))
 
         // When
-        let recorder = UIImageViewRecorder()
+        let recorder = UIImageViewRecorder(identifier: UUID())
         imageView.image = UIImage()
         viewAttributes = .mock(fixture: .visible())
 
@@ -105,7 +105,7 @@ class UIImageViewRecorderTests: XCTestCase {
         let context = ViewTreeRecordingContext.mockWith(recorder: .mockWith(imagePrivacy: imagePrivacy))
 
         // When
-        let recorder = UIImageViewRecorder()
+        let recorder = UIImageViewRecorder(identifier: UUID())
         imageView.image = UIImage()
         viewAttributes = .mock(fixture: .visible())
 
@@ -123,7 +123,7 @@ class UIImageViewRecorderTests: XCTestCase {
         let context = ViewTreeRecordingContext.mockWith(recorder: .mockWith(imagePrivacy: imagePrivacy))
 
         // When
-        let recorder = UIImageViewRecorder()
+        let recorder = UIImageViewRecorder(identifier: UUID())
         if #available(iOS 13.0, *) {
             imageView.image = UIImage(systemName: "star")
         }
