@@ -24,6 +24,8 @@ public class Recorder: Recording {
     public struct Context: Equatable {
         /// The content recording policy from the moment of requesting snapshot.
         public let privacy: SessionReplayPrivacyLevel
+        /// The image recording policy from the moment of requesting snapshot.
+        public let imagePrivacy: ImagePrivacyLevel
         /// Current RUM application ID - standard UUID string, lowecased.
         let applicationID: String
         /// Current RUM session ID - standard UUID string, lowecased.
@@ -37,6 +39,7 @@ public class Recorder: Recording {
 
         internal init(
             privacy: PrivacyLevel,
+            imagePrivacy: ImagePrivacyLevel,
             applicationID: String,
             sessionID: String,
             viewID: String,
@@ -44,6 +47,7 @@ public class Recorder: Recording {
             date: Date = Date()
         ) {
             self.privacy = privacy
+            self.imagePrivacy = imagePrivacy
             self.applicationID = applicationID
             self.sessionID = sessionID
             self.viewID = viewID

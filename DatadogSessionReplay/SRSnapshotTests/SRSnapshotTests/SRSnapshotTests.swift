@@ -113,7 +113,32 @@ final class SRSnapshotTests: SnapshotTestCase {
     }
 
     func testImages() throws {
-        try takeSnapshotFor(.images, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(
+            .images,
+            with: [.allow, .mask],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
+        )
+    }
+
+    func testImages_MaskAll() throws {
+        try takeSnapshotFor(
+            .images,
+            with: [.allow, .mask],
+            imagePrivacyLevel: .maskAll,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
+        )
+    }
+
+    func testImages_MaskNone() throws {
+        try takeSnapshotFor(
+            .images,
+            with: [.allow, .mask],
+            imagePrivacyLevel: .maskNone,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
+        )
     }
 
     func testUnsupportedView() throws {
