@@ -12,7 +12,7 @@ import TestUtilities
 
 // swiftlint:disable opening_brace
 class UITextFieldRecorderTests: XCTestCase {
-    private let recorder = UITextFieldRecorder()
+    private let recorder = UITextFieldRecorder(identifier: UUID())
     /// The label under test.
     private let textField = UITextField(frame: .mockAny())
     /// `ViewAttributes` simulating common attributes of text field's `UIView`.

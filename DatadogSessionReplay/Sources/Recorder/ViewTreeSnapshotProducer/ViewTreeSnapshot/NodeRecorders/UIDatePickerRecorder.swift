@@ -8,10 +8,18 @@
 import UIKit
 
 internal struct UIDatePickerRecorder: NodeRecorder {
-    let identifier = UUID()
-    private let wheelsStyleRecorder = WheelsStyleDatePickerRecorder()
-    private let compactStyleRecorder = CompactStyleDatePickerRecorder()
-    private let inlineStyleRecorder = InlineStyleDatePickerRecorder()
+    internal let identifier: UUID
+
+    private let wheelsStyleRecorder: WheelsStyleDatePickerRecorder
+    private let compactStyleRecorder: CompactStyleDatePickerRecorder
+    private let inlineStyleRecorder: InlineStyleDatePickerRecorder
+
+    init(identifier: UUID) {
+        self.identifier = identifier
+        self.wheelsStyleRecorder = WheelsStyleDatePickerRecorder(identifier: identifier)
+        self.compactStyleRecorder = CompactStyleDatePickerRecorder(identifier: identifier)
+        self.inlineStyleRecorder = InlineStyleDatePickerRecorder(identifier: identifier)
+    }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let datePicker = view as? UIDatePicker else {
@@ -70,15 +78,20 @@ internal struct UIDatePickerRecorder: NodeRecorder {
 }
 
 private struct WheelsStyleDatePickerRecorder {
-    let pickerTreeRecorder = ViewTreeRecorder(
-        nodeRecorders: [
-            UIPickerViewRecorder(
-                textObfuscator: { context in
-                    return context.recorder.privacy.staticTextObfuscator
-                }
-            )
-        ]
-    )
+    private let pickerTreeRecorder: ViewTreeRecorder
+
+    init(identifier: UUID) {
+        self.pickerTreeRecorder = ViewTreeRecorder(
+            nodeRecorders: [
+                UIPickerViewRecorder(
+                    identifier: identifier,
+                    textObfuscator: { context in
+                        return context.recorder.privacy.staticTextObfuscator
+                    }
+                )
+            ]
+        )
+    }
 
     func record(_ view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> [Node] {
         return pickerTreeRecorder.record(view, in: context)
@@ -90,9 +103,10 @@ private struct InlineStyleDatePickerRecorder {
     let labelRecorder: UILabelRecorder
     let subtreeRecorder: ViewTreeRecorder
 
-    init() {
-        self.viewRecorder = UIViewRecorder()
+    init(identifier: UUID) {
+        self.viewRecorder = UIViewRecorder(identifier: identifier)
         self.labelRecorder = UILabelRecorder(
+            identifier: identifier,
             textObfuscator: { context in
                 return context.recorder.privacy.staticTextObfuscator
             }
@@ -101,8 +115,8 @@ private struct InlineStyleDatePickerRecorder {
             nodeRecorders: [
                 viewRecorder,
                 labelRecorder,
-                UIImageViewRecorder(),
-                UISegmentRecorder(), // iOS 14.x uses `UISegmentedControl` for "AM | PM"
+                UIImageViewRecorder(identifier: identifier),
+                UISegmentRecorder(identifier: identifier), // iOS 14.x uses `UISegmentedControl` for "AM | PM"
             ]
         )
     }
@@ -132,16 +146,21 @@ private struct InlineStyleDatePickerRecorder {
 }
 
 private struct CompactStyleDatePickerRecorder {
-    let subtreeRecorder = ViewTreeRecorder(
-        nodeRecorders: [
-            UIViewRecorder(),
-            UILabelRecorder(
-                textObfuscator: { context in
-                    return context.recorder.privacy.staticTextObfuscator
-                }
-            )
-        ]
-    )
+    let subtreeRecorder: ViewTreeRecorder
+
+    init(identifier: UUID) {
+        self.subtreeRecorder = ViewTreeRecorder(
+            nodeRecorders: [
+                UIViewRecorder(identifier: identifier),
+                UILabelRecorder(
+                    identifier: identifier,
+                    textObfuscator: { context in
+                        return context.recorder.privacy.staticTextObfuscator
+                    }
+                )
+            ]
+        )
+    }
 
     func record(_ view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> [Node] {
         return subtreeRecorder.record(view, in: context)

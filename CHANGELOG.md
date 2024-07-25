@@ -5,6 +5,7 @@
 - [IMPROVEMENT] Send memory warning as RUM error. See [#1955][]
 - [IMPROVEMENT] Decorate network span kind as `client`. See [#1963][]
 - [FIX] Fix CPU spikes when Watchdog Terminations tracking is enabled. See [#1968][]
+- [FIX] Fix CPU spike when recording UITabBar using SessionReplay. See [#1967][]
 
 # 2.14.1 / 09-07-2024
 
@@ -729,6 +730,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1955]: https://github.com/DataDog/dd-sdk-ios/pull/1955
 [#1963]: https://github.com/DataDog/dd-sdk-ios/pull/1963
 [#1968]: https://github.com/DataDog/dd-sdk-ios/pull/1968
+[#1967]: https://github.com/DataDog/dd-sdk-ios/pull/1967
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
