@@ -10,12 +10,13 @@ ifndef REPO_ROOT
 $(error "REPO_ROOT is not set but it is required. It must resolve to the repo root folder.")
 endif
 
-ECHO_TITLE=$(REPO_ROOT)/tools/utils/echo_color.sh --title
-ECHO_SUBTITLE=$(REPO_ROOT)/tools/utils/echo_color.sh --subtitle
-ECHO_SUBTITLE2=$(REPO_ROOT)/tools/utils/echo_color.sh --subtitle2
-ECHO_ERROR=$(REPO_ROOT)/tools/utils/echo_color.sh --err
-ECHO_WARNING=$(REPO_ROOT)/tools/utils/echo_color.sh --warn
-ECHO_SUCCESS=$(REPO_ROOT)/tools/utils/echo_color.sh --succ
+ECHO_TITLE=$(REPO_ROOT)/tools/utils/echo-color.sh --title
+ECHO_SUBTITLE=$(REPO_ROOT)/tools/utils/echo-color.sh --subtitle
+ECHO_SUBTITLE2=$(REPO_ROOT)/tools/utils/echo-color.sh --subtitle2
+ECHO_INFO=$(REPO_ROOT)/tools/utils/echo-color.sh --info
+ECHO_ERROR=$(REPO_ROOT)/tools/utils/echo-color.sh --err
+ECHO_WARNING=$(REPO_ROOT)/tools/utils/echo-color.sh --warn
+ECHO_SUCCESS=$(REPO_ROOT)/tools/utils/echo-color.sh --succ
 
 define require_param
     if [ -z "$${$(1)}" ]; then \
@@ -24,6 +25,8 @@ define require_param
     fi
 endef
 
-CURRENT_GIT_TAG := $(shell $(REPO_ROOT)/tools/utils/current_git.sh --print-tag)
-CURRENT_GIT_BRANCH := $(shell $(REPO_ROOT)/tools/utils/current_git.sh --print-branch)
-CURRENT_GIT_REF := $(shell $(REPO_ROOT)/tools/utils/current_git.sh --print)
+CURRENT_GIT_TAG := $(shell $(REPO_ROOT)/tools/utils/current-git.sh --print-tag)
+CURRENT_GIT_BRANCH := $(shell $(REPO_ROOT)/tools/utils/current-git.sh --print-branch)
+CURRENT_GIT_COMMIT := $(shell $(REPO_ROOT)/tools/utils/current-git.sh --print-commit)
+CURRENT_GIT_COMMIT_SHORT := $(shell $(REPO_ROOT)/tools/utils/current-git.sh --print-commit-short)
+CURRENT_GIT_REF := $(shell $(REPO_ROOT)/tools/utils/current-git.sh --print)

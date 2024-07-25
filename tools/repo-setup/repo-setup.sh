@@ -9,7 +9,7 @@
 
 set -eo pipefail
 source ./tools/utils/argparse.sh
-source ./tools/utils/echo_color.sh
+source ./tools/utils/echo-color.sh
 
 set_description "Prepares the repository for development and testing in given ENV."
 define_arg "env" "" "Specifies the environment for preparation. Use 'dev' for local development and 'ci' for CI." "string" "true"
@@ -34,7 +34,7 @@ if [[ "$env" == "$ENV_DEV" ]]; then
 fi
 
 bundle install
-carthage bootstrap --platform iOS,tvOS --use-xcframeworks
+./tools/carthage-shim.sh bootstrap --platform iOS,tvOS --use-xcframeworks
 
 echo_succ "Using OpenTelemetryApi version: $(cat ./Carthage/Build/.OpenTelemetryApi.version | grep 'commitish' | awk -F'"' '{print $4}')"
 echo_succ "Using PLCrashReporter version: $(cat ./Carthage/Build/.plcrashreporter.version | grep 'commitish' | awk -F'"' '{print $4}')"

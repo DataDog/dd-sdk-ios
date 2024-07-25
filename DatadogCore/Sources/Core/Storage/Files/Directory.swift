@@ -7,6 +7,10 @@
 import Foundation
 import DatadogInternal
 
+extension Data {
+    static let empty = Data()
+}
+
 /// Provides interfaces for accessing common properties and operations for a directory.
 internal protocol DirectoryProtocol: FileProtocol {
     /// Returns list of subdirectories in the directory.
@@ -106,9 +110,7 @@ internal struct Directory: DirectoryProtocol {
     /// Creates file with given name.
     func createFile(named fileName: String) throws -> File {
         let fileURL = url.appendingPathComponent(fileName, isDirectory: false)
-        guard FileManager.default.createFile(atPath: fileURL.path, contents: nil, attributes: nil) == true else {
-            throw InternalError(description: "Cannot create file at path: \(fileURL.path)")
-        }
+        try Data.empty.write(to: fileURL, options: .atomic)
         return File(url: fileURL)
     }
 

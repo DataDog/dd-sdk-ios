@@ -25,7 +25,8 @@ class RUMInstrumentationTests: XCTestCase {
             backtraceReporter: BacktraceReporterMock(),
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
-            watchdogTermination: .mockRandom()
+            watchdogTermination: .mockRandom(),
+            memoryWarningMonitor: .mockRandom()
         )
 
         // Then
@@ -51,7 +52,8 @@ class RUMInstrumentationTests: XCTestCase {
             backtraceReporter: BacktraceReporterMock(),
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
-            watchdogTermination: .mockRandom()
+            watchdogTermination: .mockRandom(),
+            memoryWarningMonitor: .mockRandom()
         )
 
         // Then
@@ -74,7 +76,8 @@ class RUMInstrumentationTests: XCTestCase {
             backtraceReporter: BacktraceReporterMock(),
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
-            watchdogTermination: .mockRandom()
+            watchdogTermination: .mockRandom(),
+            memoryWarningMonitor: .mockRandom()
         )
 
         // Then
@@ -100,7 +103,8 @@ class RUMInstrumentationTests: XCTestCase {
             backtraceReporter: BacktraceReporterMock(),
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
-            watchdogTermination: .mockRandom()
+            watchdogTermination: .mockRandom(),
+            memoryWarningMonitor: .mockRandom()
         )
 
         // Then
@@ -122,7 +126,8 @@ class RUMInstrumentationTests: XCTestCase {
             backtraceReporter: BacktraceReporterMock(),
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
-            watchdogTermination: .mockRandom()
+            watchdogTermination: .mockRandom(),
+            memoryWarningMonitor: .mockRandom()
         )
 
         // Then
@@ -144,7 +149,8 @@ class RUMInstrumentationTests: XCTestCase {
             backtraceReporter: BacktraceReporterMock(),
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
-            watchdogTermination: .mockRandom()
+            watchdogTermination: .mockRandom(),
+            memoryWarningMonitor: .mockRandom()
         )
 
         // Then
@@ -166,7 +172,8 @@ class RUMInstrumentationTests: XCTestCase {
             backtraceReporter: BacktraceReporterMock(),
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
-            watchdogTermination: .mockRandom()
+            watchdogTermination: .mockRandom(),
+            memoryWarningMonitor: .mockRandom()
         )
         let subscriber = RUMCommandSubscriberMock()
 

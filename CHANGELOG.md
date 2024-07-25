@@ -1,5 +1,14 @@
 # Unreleased
 
+# 2.15.0 / 25-07-2024
+
+- [FEATURE] Enable DatadogCore, DatadogLogs and DatadogTrace to compile on watchOS platform. See [#1918][] (Thanks [@jfiser-paylocity][]) [#1946][]
+- [IMPROVEMENT] Ability to clear feature data storage using `clearAllData` API. See [#1940][]
+- [IMPROVEMENT] Send memory warning as RUM error. See [#1955][]
+- [IMPROVEMENT] Decorate network span kind as `client`. See [#1963][]
+- [FIX] Fix CPU spikes when Watchdog Terminations tracking is enabled. See [#1968][]
+- [FIX] Fix CPU spike when recording UITabBar using SessionReplay. See [#1967][]
+
 # 2.14.1 / 09-07-2024
 
 - [FIX] Objc attributes interop for KMP. See [#1947][]
@@ -14,6 +23,7 @@
 - [IMPROVEMENT] Record Activity Indicator in Session Replay. See [#1934][]
 - [IMPROVEMENT] Allow disabling app hang monitoring in ObjC API. See [#1908][]
 - [IMPROVEMENT] Update RUM and Telemetry models with KMP source. See [#1925][]
+- [IMPROVEMENT] Use otel-swift fork that only has APIs. See [#1930][]
 
 # 2.11.1 / 01-07-2024
 
@@ -711,10 +721,18 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1916]: https://github.com/DataDog/dd-sdk-ios/pull/1916
 [#1917]: https://github.com/DataDog/dd-sdk-ios/pull/1917
 [#1925]: https://github.com/DataDog/dd-sdk-ios/pull/1925
+[#1930]: https://github.com/DataDog/dd-sdk-ios/pull/1930
+[#1918]: https://github.com/DataDog/dd-sdk-ios/pull/1918
+[#1946]: https://github.com/DataDog/dd-sdk-ios/pull/1946
 [#1934]: https://github.com/DataDog/dd-sdk-ios/pull/1934
 [#1938]: https://github.com/DataDog/dd-sdk-ios/pull/1938
 [#1947]: https://github.com/DataDog/dd-sdk-ios/pull/1947
 [#1948]: https://github.com/DataDog/dd-sdk-ios/pull/1948
+[#1940]: https://github.com/DataDog/dd-sdk-ios/pull/1940
+[#1955]: https://github.com/DataDog/dd-sdk-ios/pull/1955
+[#1963]: https://github.com/DataDog/dd-sdk-ios/pull/1963
+[#1968]: https://github.com/DataDog/dd-sdk-ios/pull/1968
+[#1967]: https://github.com/DataDog/dd-sdk-ios/pull/1967
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
@@ -745,3 +763,4 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@cltnschlosser]: https://github.com/cltnschlosser
 [@alexfanatics]: https://github.com/alexfanatics
 [@changm4n]: https://github.com/changm4n
+[@jfiser-paylocity]: https://github.com/jfiser-paylocity

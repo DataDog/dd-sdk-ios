@@ -27,12 +27,12 @@ clean:
 
 install:
 	@$(ECHO_SUBTITLE2) "make install"
-	@$(ECHO_SUCCESS) "Preparing for CURRENT_GIT_REF='${CURRENT_GIT_REF}'"
+	@$(ECHO_INFO) "Preparing for CURRENT_GIT_REF='${CURRENT_GIT_REF}'"
 ifeq ($(COCOAPODS_GIT_REF),)
 	@$(ECHO_ERROR) "No COCOAPODS_GIT_REF is defined for CURRENT_GIT_REF='$(CURRENT_GIT_REF)'"
 	@exit 1
 endif
-	@$(ECHO_SUCCESS) "Using COCOAPODS_GIT_REF='$(COCOAPODS_GIT_REF)'"
+	@$(ECHO_INFO) "Using COCOAPODS_GIT_REF='$(COCOAPODS_GIT_REF)'"
 	sed "s|GIT_REFERENCE|${COCOAPODS_GIT_REF}|g" Podfile.src > Podfile
 	bundle exec pod update
 

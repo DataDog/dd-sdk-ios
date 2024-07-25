@@ -108,6 +108,12 @@ internal final class RUMFeature: DatadogRemoteFeature {
             dateProvider: configuration.dateProvider
         )
 
+        let memoryWarningReporter = MemoryWarningReporter()
+        let memoryWarningMonitor = MemoryWarningMonitor(
+            backtraceReporter: core.backtraceReporter,
+            memoryWarningReporter: memoryWarningReporter
+        )
+
         self.instrumentation = RUMInstrumentation(
             featureScope: featureScope,
             uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
@@ -119,7 +125,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             backtraceReporter: core.backtraceReporter,
             fatalErrorContext: dependencies.fatalErrorContext,
             processID: configuration.processID,
-            watchdogTermination: watchdogTermination
+            watchdogTermination: watchdogTermination,
+            memoryWarningMonitor: memoryWarningMonitor
         )
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,

@@ -4,10 +4,21 @@ stages:
   - test
   - ui-test
   - smoke-test
+  - e2e-test
+  - dogfood
+  - release-build
+  - release-publish
 
 variables:
   MAIN_BRANCH: "master"
   DEVELOP_BRANCH: "develop"
+  # Prefilled variables for running a pipeline manually:
+  # Ref.: https://docs.gitlab.com/ee/ci/pipelines/index.html#prefill-variables-in-manual-pipelines
+  RELEASE_GIT_TAG:
+    description: "The Git tag for the release pipeline. If set, release pipeline will be triggered for the given tag."
+  RELEASE_DRY_RUN:
+    value: "1"
+    description: "Controls the dry run mode for the release pipeline. If set to '1', the pipeline will execute all steps but will not publish artifacts. If set to '0', the pipeline will run fully."
 
 default:
   tags:
@@ -18,36 +29,42 @@ default:
 # │ Utility jobs: │
 # └───────────────┘
 
-# Trigger jobs on 'develop' and 'master' branches
-.run:when-develop-or-master:
-  rules:
-    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH || $CI_COMMIT_BRANCH == $MAIN_BRANCH'
-      when: always
+# Utility jobs define rules for including or excluding dependent jobs from the pipeline.
+#
+# Ref.: https://docs.gitlab.com/ee/ci/jobs/job_rules.html
+# > Rules are evaluated in order until the first match. When a match is found, the job is either included or excluded
+# > from the pipeline, depending on the configuration.
 
-# Trigger jobs on SDK code changes, comparing against 'develop' branch
-.run:if-sdk-modified:
+.test-pipeline-job:
   rules:
-    - changes:
+    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH || $CI_COMMIT_BRANCH == $MAIN_BRANCH' # always on main branches
+    - if: '$CI_COMMIT_BRANCH' # when on other branch with following changes compared to develop
+      changes:
         paths:
           - "Datadog*/**/*"
           - "IntegrationTests/**/*"
+          - "SmokeTests/**/*"
           - "TestUtilities/**/*"
           - "*" # match any file in the root directory
-        compare_to: 'develop' # cannot use variable due to: https://gitlab.com/gitlab-org/gitlab/-/issues/369916
+        compare_to: 'develop' # cannot use $DEVELOP_BRANCH var due to: https://gitlab.com/gitlab-org/gitlab/-/issues/369916
 
-# Trigger jobs on changes in `tools/*`, comparing against 'develop' branch
-.run:if-tools-modified:
-  rules:
-    - changes:
-        paths:
-          - "tools/**/*"
-          - "Makefile"
-          - ".gitlab-ci.yml"
-        compare_to: 'develop'
+.release-pipeline-job:
+  rules: 
+    - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
+
+.release-pipeline-delayed-job:
+  rules: 
+    - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
+      when: delayed
+      start_in: 20 minutes
 
 ENV check:
   stage: pre
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
   script:
+    - ./tools/runner-setup.sh --datadog-ci # temporary, waiting for AMI
     - make env-check
 
 # ┌──────────────────────────┐
@@ -57,8 +74,7 @@ ENV check:
 Lint:
   stage: lint
   rules: 
-    - !reference [.run:when-develop-or-master, rules]
-    - !reference [.run:if-sdk-modified, rules]
+    - !reference [.test-pipeline-job, rules]
   script:
     - make clean repo-setup ENV=ci
     - make lint license-check
@@ -67,8 +83,8 @@ Lint:
 Unit Tests (iOS):
   stage: test
   rules: 
-    - !reference [.run:when-develop-or-master, rules]
-    - !reference [.run:if-sdk-modified, rules]
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
   variables:
     XCODE: "15.3.0"
     OS: "17.4"
@@ -82,8 +98,8 @@ Unit Tests (iOS):
 Unit Tests (tvOS):
   stage: test
   rules: 
-    - !reference [.run:when-develop-or-master, rules]
-    - !reference [.run:if-sdk-modified, rules]
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
   variables:
     XCODE: "15.3.0"
     OS: "17.4"
@@ -97,8 +113,8 @@ Unit Tests (tvOS):
 UI Tests:
   stage: ui-test
   rules: 
-    - !reference [.run:when-develop-or-master, rules]
-    - !reference [.run:if-sdk-modified, rules]
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
   variables:
     XCODE: "15.3.0"
     OS: "17.4"
@@ -116,17 +132,46 @@ UI Tests:
     - make clean repo-setup ENV=ci
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
+SR Snapshot Tests:
+  stage: ui-test
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  variables:
+    XCODE: "15.4.0"
+    OS: "17.5"
+    PLATFORM: "iOS Simulator"
+    DEVICE: "iPhone 15"
+    ARTIFACTS_PATH: "artifacts"
+  artifacts:
+    paths:
+      - artifacts
+    expire_in: 1 week
+    when: on_failure
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --os "$OS" --ssh # temporary, waiting for AMI
+    - make clean repo-setup ENV=ci
+    - make sr-snapshots-pull sr-snapshot-test OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
+
 Tools Tests:
   stage: test
-  rules: 
-    - !reference [.run:when-develop-or-master, rules]
-    - !reference [.run:if-tools-modified, rules]
+  rules:
+    - if: '$CI_COMMIT_BRANCH' # when on branch with following changes compared to develop
+      changes:
+        paths:
+          - "tools/**/*"
+          - "Makefile"
+          - ".gitlab-ci.yml"
+        compare_to: 'develop'
   script:
     - make clean repo-setup ENV=ci
     - make tools-test
 
 Smoke Tests (iOS):
   stage: smoke-test
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
   tags:
     - macos:ventura
     - specific:true
@@ -136,13 +181,16 @@ Smoke Tests (iOS):
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 15 Pro"
   script:
-    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --os "$OS" # temporary, waiting for AMI
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --os "$OS" --ssh # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make spm-build-ios
     - make smoke-test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
 Smoke Tests (tvOS):
   stage: smoke-test
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
   tags:
     - macos:ventura
     - specific:true
@@ -152,13 +200,16 @@ Smoke Tests (tvOS):
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
   script:
-    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --os "$OS" # temporary, waiting for AMI
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --os "$OS" --ssh # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make spm-build-tvos
     - make smoke-test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
     
 Smoke Tests (visionOS):
   stage: smoke-test
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
   tags:
     - macos:ventura
     - specific:true
@@ -172,6 +223,9 @@ Smoke Tests (visionOS):
 
 Smoke Tests (macOS):
   stage: smoke-test
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
   tags:
     - macos:ventura
     - specific:true
@@ -181,3 +235,149 @@ Smoke Tests (macOS):
     - ./tools/runner-setup.sh --xcode "$XCODE" # temporary, waiting for AMI
     - make clean repo-setup ENV=ci
     - make spm-build-macos
+
+Smoke Tests (watchOS):
+  stage: smoke-test
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  tags:
+    - macos:ventura
+    - specific:true
+  variables:
+    XCODE: "15.2.0"
+    OS: "10.2"
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --watchOS --os "$OS" # temporary, waiting for AMI
+    - make clean repo-setup ENV=ci
+    - make spm-build-watchos
+
+# ┌──────────────────────┐
+# │ E2E Test app upload: │
+# └──────────────────────┘
+
+E2E Test (upload to s8s):
+  stage: e2e-test
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+  variables:
+    XCODE: "15.3.0"
+    OS: "17.4"
+  artifacts:
+    paths:
+      - artifacts
+    expire_in: 2 weeks
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --os "$OS" --datadog-ci # temporary, waiting for AMI
+    - make clean
+    - export DRY_RUN=${DRY_RUN:-0} # default to 0 if not specified
+    - make e2e-build-upload ARTIFACTS_PATH="artifacts/e2e"
+
+# ┌─────────────────┐
+# │ SDK dogfooding: │
+# └─────────────────┘
+
+Dogfood (Shopist):
+  stage: dogfood
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+      when: manual
+      allow_failure: true
+  script:
+    - ./tools/runner-setup.sh --ssh # temporary, waiting for AMI
+    - DRY_RUN=0 make dogfood-shopist
+
+Dogfood (Datadog app):
+  stage: dogfood
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+      when: manual
+      allow_failure: true
+  script:
+    - ./tools/runner-setup.sh --ssh # temporary, waiting for AMI
+    - DRY_RUN=0 make dogfood-datadog-app
+
+# ┌──────────────┐
+# │ SDK release: │
+# └──────────────┘
+
+.release-before-script: &export_MAKE_release_params
+  - export GIT_TAG=${RELEASE_GIT_TAG:-$CI_COMMIT_TAG} # CI_COMMIT_TAG if set, otherwise default to RELEASE_GIT_TAG
+  - if [ -z "$GIT_TAG" ]; then echo "GIT_TAG is not set"; exit 1; fi # sanity check
+  - export ARTIFACTS_PATH="artifacts/$GIT_TAG"
+  - export DRY_RUN=${CI_COMMIT_TAG:+0} # 0 if CI_COMMIT_TAG is set
+  - export DRY_RUN=${DRY_RUN:-$RELEASE_DRY_RUN} # otherwise default to RELEASE_DRY_RUN
+
+Build Artifacts:
+  stage: release-build
+  rules: 
+    - !reference [.release-pipeline-job, rules]
+  variables:
+    XCODE: "15.3.0"
+  artifacts:
+    paths:
+      - artifacts
+    expire_in: 4 weeks
+  before_script:
+    - *export_MAKE_release_params
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --os "17.4" --ssh # temporary, waiting for AMI
+    - make env-check
+    - make clean
+    - make release-build release-validate
+
+Publish GH Asset:
+  stage: release-publish
+  rules: 
+    - !reference [.release-pipeline-job, rules]
+  variables:
+    XCODE: "15.3.0"
+  before_script:
+    - *export_MAKE_release_params
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --os "17.4" # temporary, waiting for AMI
+    - make env-check
+    - make clean
+    - make release-publish-github
+
+Publish CP podspecs (internal):
+  stage: release-publish
+  rules: 
+    - !reference [.release-pipeline-job, rules]
+  variables:
+    XCODE: "15.3.0"
+  before_script:
+    - *export_MAKE_release_params
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --os "17.4" # temporary, waiting for AMI
+    - make env-check
+    - make clean
+    - make release-publish-internal-podspecs
+
+Publish CP podspecs (dependent):
+  stage: release-publish
+  rules: 
+    - !reference [.release-pipeline-delayed-job, rules]
+  variables:
+    XCODE: "15.3.0"
+  before_script:
+    - *export_MAKE_release_params
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --os "17.4" # temporary, waiting for AMI
+    - make env-check
+    - make clean
+    - make release-publish-dependent-podspecs
+
+Publish CP podspecs (legacy):
+  stage: release-publish
+  rules: 
+    - !reference [.release-pipeline-delayed-job, rules]
+  variables:
+    XCODE: "15.3.0"
+  before_script:
+    - *export_MAKE_release_params
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --os "17.4" # temporary, waiting for AMI
+    - make env-check
+    - make clean
+    - make release-publish-legacy-podspecs
