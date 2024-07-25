@@ -10,7 +10,7 @@ import Foundation
 /// Available privacy levels for image masking in the Session Replay.
 public enum ImagePrivacyLevel {
     /// Only SF Symbols and images loaded using UIImage(named:) that are bundled within the application will be recorded.
-    case maskNonBundledImages
+    case maskNonBundledOnly
 
     /// No images will be recorded.
     case maskAll

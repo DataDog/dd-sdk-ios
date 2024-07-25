@@ -10,11 +10,11 @@ import TestUtilities
 
 extension ImagePrivacyLevel: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
-        .maskNonBundledImages
+        .maskNonBundledOnly
     }
 
     public static func mockRandom() -> Self {
-        [.maskNonBundledImages, .maskAll, .maskNone].randomElement()!
+        [.maskNonBundledOnly, .maskAll, .maskNone].randomElement()!
     }
 }
 #endif

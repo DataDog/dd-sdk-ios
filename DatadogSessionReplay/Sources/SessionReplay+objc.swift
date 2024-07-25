@@ -119,7 +119,7 @@ public enum DDSessionReplayConfigurationPrivacyLevel: Int {
 @objc
 public enum DDImagePrivacyLevel: Int {
     /// Only SF Symbols and images loaded using UIImage(named:) that are bundled within the application package will be recorded.
-    case maskNonBundledImages
+    case maskNonBundledOnly
     /// No images will be recorded.
     case maskAll
     /// All images including the ones downloaded from the Internet during the app runtime will be recorded.
@@ -127,7 +127,7 @@ public enum DDImagePrivacyLevel: Int {
 
     internal var _swift: ImagePrivacyLevel {
         switch self {
-        case .maskNonBundledImages: return .maskNonBundledImages
+        case .maskNonBundledOnly: return .maskNonBundledOnly
         case .maskAll: return .maskAll
         case .maskNone: return .maskNone
         }
@@ -135,7 +135,7 @@ public enum DDImagePrivacyLevel: Int {
 
     internal init(_ swift: ImagePrivacyLevel) {
         switch swift {
-        case .maskNonBundledImages: self = .maskNonBundledImages
+        case .maskNonBundledOnly: self = .maskNonBundledOnly
         case .maskAll: self = .maskAll
         case .maskNone: self = .maskNone
         }
