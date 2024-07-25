@@ -12,7 +12,7 @@ import TestUtilities
 
 // swiftlint:disable opening_brace
 class UIImageViewRecorderTests: XCTestCase {
-    private let recorder = UIImageViewRecorder()
+    private let recorder = UIImageViewRecorder(identifier: UUID())
     /// The view under test.
     private let imageView = UIImageView()
     /// `ViewAttributes` simulating common attributes of image view's `UIView`.
@@ -55,7 +55,7 @@ class UIImageViewRecorderTests: XCTestCase {
 
     func testWhenShouldRecordImagePredicateReturnsFalse() throws {
         // When
-        let recorder = UIImageViewRecorder(shouldRecordImagePredicate: { _ in return false })
+        let recorder = UIImageViewRecorder(identifier: UUID(), shouldRecordImagePredicate: { _ in return false })
         imageView.image = UIImage()
         viewAttributes = .mock(fixture: .visible())
 
@@ -69,7 +69,7 @@ class UIImageViewRecorderTests: XCTestCase {
 
     func testWhenShouldRecordImagePredicateReturnsTrue() throws {
         // When
-        let recorder = UIImageViewRecorder(shouldRecordImagePredicate: { _ in return true })
+        let recorder = UIImageViewRecorder(identifier: UUID(), shouldRecordImagePredicate: { _ in return true })
         imageView.image = UIImage()
         viewAttributes = .mock(fixture: .visible())
 

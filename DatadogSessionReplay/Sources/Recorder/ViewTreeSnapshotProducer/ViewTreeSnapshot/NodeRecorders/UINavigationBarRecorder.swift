@@ -8,7 +8,11 @@
 import UIKit
 
 internal struct UINavigationBarRecorder: NodeRecorder {
-    let identifier = UUID()
+    internal let identifier: UUID
+
+    init(identifier: UUID) {
+        self.identifier = identifier
+    }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let navigationBar = view as? UINavigationBar else {

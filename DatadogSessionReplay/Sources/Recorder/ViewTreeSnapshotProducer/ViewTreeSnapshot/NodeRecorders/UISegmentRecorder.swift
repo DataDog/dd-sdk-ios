@@ -8,7 +8,11 @@
 import UIKit
 
 internal struct UISegmentRecorder: NodeRecorder {
-    let identifier = UUID()
+    internal let identifier: UUID
+
+    init(identifier: UUID) {
+        self.identifier = identifier
+    }
     var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating = { context in
         return context.recorder.privacy.inputAndOptionTextObfuscator
     }
