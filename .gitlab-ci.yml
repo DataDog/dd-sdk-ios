@@ -5,6 +5,7 @@ stages:
   - ui-test
   - smoke-test
   - e2e-test
+  - benchmark-test
   - dogfood
   - release-build
   - release-publish
@@ -265,6 +266,27 @@ E2E Test (upload to s8s):
     - make clean
     - export DRY_RUN=${DRY_RUN:-0} # default to 0 if not specified
     - make e2e-build-upload ARTIFACTS_PATH="artifacts/e2e"
+
+# ┌────────────────────────────┐
+# │ Benchmark Test app upload: │
+# └────────────────────────────┘
+
+Benchmark Test (upload to s8s):
+  stage: benchmark-test
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+  variables:
+    XCODE: "15.3.0"
+    OS: "17.4"
+  artifacts:
+    paths:
+      - artifacts
+    expire_in: 2 weeks
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --os "$OS" --datadog-ci # temporary, waiting for AMI
+    - make clean
+    - export DRY_RUN=${DRY_RUN:-0} # default to 0 if not specified
+    - make benchmark-build-upload ARTIFACTS_PATH="artifacts/benchmark"
 
 # ┌─────────────────┐
 # │ SDK dogfooding: │
