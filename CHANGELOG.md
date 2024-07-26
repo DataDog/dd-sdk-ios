@@ -1,5 +1,10 @@
 # Unreleased
 
+# 2.14.2 / 26-07-2024
+
+- [FIX] Fix CPU spikes when Watchdog Terminations tracking is enabled. See #1968
+- [FIX] Fix CPU spike when recording UITabBar using SessionReplay. See #1967
+
 # 2.14.1 / 09-07-2024
 
 - [FIX] Objc attributes interop for KMP. See [#1947][]
