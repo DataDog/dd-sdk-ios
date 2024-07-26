@@ -2,6 +2,11 @@
 
 - [FIX] Refresh rate vital for variable refresh rate displays when over performing. See [#1973][]
 
+# 2.14.2 / 26-07-2024
+
+- [FIX] Fix CPU spikes when Watchdog Terminations tracking is enabled. See #1968
+- [FIX] Fix CPU spike when recording UITabBar using SessionReplay. See #1967
+
 # 2.15.0 / 25-07-2024
 
 - [FEATURE] Enable DatadogCore, DatadogLogs and DatadogTrace to compile on watchOS platform. See [#1918][] (Thanks [@jfiser-paylocity][]) [#1946][]
