@@ -19,6 +19,7 @@ variables:
   # Prefilled variables for running a pipeline manually:
   # Ref.: https://docs.gitlab.com/ee/ci/pipelines/index.html#prefill-variables-in-manual-pipelines
   RELEASE_GIT_TAG:
+    value: "2.15.0"
     description: "The Git tag for the release pipeline. If set, release pipeline will be triggered for the given tag."
   RELEASE_DRY_RUN:
     value: "1"
@@ -84,7 +85,7 @@ Lint:
     - make lint license-check
     - make rum-models-verify sr-models-verify
 
-Unit Tests (iOS):
+.Unit Tests (iOS):
   stage: test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -97,7 +98,7 @@ Unit Tests (iOS):
     - make clean repo-setup ENV=ci
     - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-Unit Tests (tvOS):
+.Unit Tests (tvOS):
   stage: test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -110,7 +111,7 @@ Unit Tests (tvOS):
     - make clean repo-setup ENV=ci
     - make test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-UI Tests:
+.UI Tests:
   stage: ui-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -130,7 +131,7 @@ UI Tests:
     - make clean repo-setup ENV=ci
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-SR Snapshot Tests:
+.SR Snapshot Tests:
   stage: ui-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -149,7 +150,7 @@ SR Snapshot Tests:
     - make clean repo-setup ENV=ci
     - make sr-snapshots-pull sr-snapshot-test OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
 
-Tools Tests:
+.Tools Tests:
   stage: test
   rules:
     - if: '$CI_COMMIT_BRANCH' # when on branch with following changes compared to develop
@@ -163,7 +164,7 @@ Tools Tests:
     - make clean repo-setup ENV=ci
     - make tools-test
 
-Smoke Tests (iOS):
+.Smoke Tests (iOS):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -182,7 +183,7 @@ Smoke Tests (iOS):
     - make spm-build-ios
     - make smoke-test-ios-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-Smoke Tests (tvOS):
+.Smoke Tests (tvOS):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -201,7 +202,7 @@ Smoke Tests (tvOS):
     - make spm-build-tvos
     - make smoke-test-tvos-all OS="$OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
     
-Smoke Tests (visionOS):
+.Smoke Tests (visionOS):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -217,7 +218,7 @@ Smoke Tests (visionOS):
     - make clean repo-setup ENV=ci
     - make spm-build-visionos
 
-Smoke Tests (macOS):
+.Smoke Tests (macOS):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -232,7 +233,7 @@ Smoke Tests (macOS):
     - make clean repo-setup ENV=ci
     - make spm-build-macos
 
-Smoke Tests (watchOS):
+.Smoke Tests (watchOS):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
