@@ -5,18 +5,24 @@
  */
 
 import Foundation
+
+#if OTEL_API
+#error("Benchmarks depends on opentelemetry-swift. Please open the project with 'make benchmark-tests-open'.")
+#endif
+
+#if OTEL_SWIFT
 import OpenTelemetrySdk
 
 public final class DatadogExporter: SpanExporter, MetricExporter {
     private let session: URLSession
     
-    convenience init() {
+    public convenience init() {
         let configuration: URLSessionConfiguration = .ephemeral
         configuration.urlCache = nil
         self.init(session: URLSession(configuration: configuration))
     }
 
-    init(session: URLSession) {
+    public init(session: URLSession) {
         self.session = session
     }
 
@@ -36,3 +42,5 @@ public final class DatadogExporter: SpanExporter, MetricExporter {
 
     }
 }
+
+#endif

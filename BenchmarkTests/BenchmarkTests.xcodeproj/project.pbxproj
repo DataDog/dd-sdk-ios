@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D23DD32D2C58D80C00B90C4C /* DatadogBenchmarks in Frameworks */ = {isa = PBXBuildFile; productRef = D23DD32C2C58D80C00B90C4C /* DatadogBenchmarks */; };
 		D276069F2C514F37002D2A14 /* SessionReplay.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D27606962C514F37002D2A14 /* SessionReplay.storyboard */; };
 		D27606A02C514F37002D2A14 /* SessionReplayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27606972C514F37002D2A14 /* SessionReplayController.swift */; };
 		D27606A12C514F37002D2A14 /* SessionReplayScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27606982C514F37002D2A14 /* SessionReplayScenario.swift */; };
@@ -18,7 +19,6 @@
 		D27606AB2C514F77002D2A14 /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = D27606AA2C514F77002D2A14 /* DatadogRUM */; };
 		D27606AD2C514F77002D2A14 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = D27606AC2C514F77002D2A14 /* DatadogSessionReplay */; };
 		D27606AF2C514F77002D2A14 /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = D27606AE2C514F77002D2A14 /* DatadogTrace */; };
-		D27606B12C514F77002D2A14 /* DatadogBenchmarks in Frameworks */ = {isa = PBXBuildFile; productRef = D27606B02C514F77002D2A14 /* DatadogBenchmarks */; };
 		D29F75502C4AA07E00288638 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29F754F2C4AA07E00288638 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -36,8 +36,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		D247578B2C53ECBB00DF1397 /* dd-sdk-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "dd-sdk-ios"; path = ..; sourceTree = "<group>"; };
-		D27606952C514EED002D2A14 /* Benchmarks */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Benchmarks; sourceTree = SOURCE_ROOT; };
 		D27606962C514F37002D2A14 /* SessionReplay.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = SessionReplay.storyboard; sourceTree = "<group>"; };
 		D27606972C514F37002D2A14 /* SessionReplayController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayController.swift; sourceTree = "<group>"; };
 		D27606982C514F37002D2A14 /* SessionReplayScenario.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayScenario.swift; sourceTree = "<group>"; };
@@ -47,9 +45,11 @@
 		D27606B22C526908002D2A14 /* Benchmarks.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Benchmarks.local.xcconfig; sourceTree = "<group>"; };
 		D27606B32C526908002D2A14 /* Runner.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Runner.xcconfig; sourceTree = "<group>"; };
 		D27606B42C526908002D2A14 /* Synthetics.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Synthetics.xcconfig; sourceTree = "<group>"; };
+		D277C84A2C58D3210072343C /* Benchmarks */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Benchmarks; sourceTree = "<group>"; };
 		D29F754D2C4AA07E00288638 /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D29F754F2C4AA07E00288638 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D29F755D2C4AA08000288638 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D2CA7E862C57F9B800AAB380 /* dd-sdk-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "dd-sdk-ios"; path = ..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,7 +60,7 @@
 				D27606A92C514F77002D2A14 /* DatadogLogs in Frameworks */,
 				D27606AF2C514F77002D2A14 /* DatadogTrace in Frameworks */,
 				D27606AD2C514F77002D2A14 /* DatadogSessionReplay in Frameworks */,
-				D27606B12C514F77002D2A14 /* DatadogBenchmarks in Frameworks */,
+				D23DD32D2C58D80C00B90C4C /* DatadogBenchmarks in Frameworks */,
 				D27606AB2C514F77002D2A14 /* DatadogRUM in Frameworks */,
 				D27606A72C514F77002D2A14 /* DatadogCore in Frameworks */,
 			);
@@ -120,8 +120,8 @@
 		D29F75482C4A9F9500288638 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				D27606952C514EED002D2A14 /* Benchmarks */,
-				D247578B2C53ECBB00DF1397 /* dd-sdk-ios */,
+				D277C84A2C58D3210072343C /* Benchmarks */,
+				D2CA7E862C57F9B800AAB380 /* dd-sdk-ios */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -160,7 +160,7 @@
 				D27606AA2C514F77002D2A14 /* DatadogRUM */,
 				D27606AC2C514F77002D2A14 /* DatadogSessionReplay */,
 				D27606AE2C514F77002D2A14 /* DatadogTrace */,
-				D27606B02C514F77002D2A14 /* DatadogBenchmarks */,
+				D23DD32C2C58D80C00B90C4C /* DatadogBenchmarks */,
 			);
 			productName = Runner;
 			productReference = D29F754D2C4AA07E00288638 /* Runner.app */;
@@ -191,7 +191,6 @@
 			);
 			mainGroup = D29F75272C4A9EFA00288638;
 			packageReferences = (
-				D29F75612C4AA8C200288638 /* XCRemoteSwiftPackageReference "opentelemetry-swift" */,
 			);
 			productRefGroup = D29F75312C4A9EFA00288638 /* Products */;
 			projectDirPath = "";
@@ -298,7 +297,6 @@
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -449,7 +447,6 @@
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -482,7 +479,6 @@
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -525,18 +521,11 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		D29F75612C4AA8C200288638 /* XCRemoteSwiftPackageReference "opentelemetry-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/open-telemetry/opentelemetry-swift";
-			requirement = {
-				kind = exactVersion;
-				version = 1.6.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
+		D23DD32C2C58D80C00B90C4C /* DatadogBenchmarks */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogBenchmarks;
+		};
 		D27606A62C514F77002D2A14 /* DatadogCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DatadogCore;
@@ -556,10 +545,6 @@
 		D27606AE2C514F77002D2A14 /* DatadogTrace */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DatadogTrace;
-		};
-		D27606B02C514F77002D2A14 /* DatadogBenchmarks */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = DatadogBenchmarks;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -276,6 +276,11 @@ benchmark-build-upload:
 	@$(ECHO_TITLE) "make benchmark-build-upload ARTIFACTS_PATH='$(ARTIFACTS_PATH)' DRY_RUN='$(DRY_RUN)'"
 	DRY_RUN=$(DRY_RUN) ./tools/benchmark-build-upload.sh --artifacts-path "$(ARTIFACTS_PATH)"
 
+# Opens `BenchmarkTests` project with passing required ENV variables
+benchmark-tests-open:
+	@$(ECHO_TITLE) "benchmark-tests-open"
+	@$(MAKE) -C BenchmarkTests open
+
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
 		@cd DatadogSessionReplay/ && swift package generate-xcodeproj
@@ -453,9 +458,9 @@ set-ci-secret:
 	@./tools/secrets/set-secret.sh
 
 bump:
-		@read -p "Enter version number: " version;  \
-		echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > DatadogCore/Sources/Versioning.swift; \
-		./tools/podspec_bump_version.sh $$version; \
-		git add . ; \
-		git commit -m "Bumped version to $$version"; \
-		echo Bumped version to $$version
+	@read -p "Enter version number: " version;  \
+	echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > DatadogCore/Sources/Versioning.swift; \
+	./tools/podspec_bump_version.sh $$version; \
+	git add . ; \
+	git commit -m "Bumped version to $$version"; \
+	echo Bumped version to $$version

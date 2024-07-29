@@ -55,3 +55,9 @@ upload:
 		--mobileApplicationId "${S8S_APPLICATION_ID}" \
 		--versionName "$(VERSION)" \
 		--latest
+
+open:
+	@$(ECHO_SUBTITLE2) "make open"
+	@pgrep -q Xcode && killall Xcode && $(ECHO_WARNING) "- Xcode killed" || $(ECHO_SUCCESS) "- Xcode not running"
+	@sleep 0.5 &&  $(ECHO_INFO) "- launching"
+	@open --env OTEL_SWIFT BenchmarkTests.xcodeproj

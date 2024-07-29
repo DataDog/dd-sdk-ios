@@ -18,6 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.rootViewController = scenario.start(info: info)
         window?.makeKeyAndVisible()
+
         return true
     }
 }
