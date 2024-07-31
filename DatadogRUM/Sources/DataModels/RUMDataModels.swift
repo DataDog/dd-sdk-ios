@@ -3594,6 +3594,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether initialization fails silently if the SDK is already initialized
             public let silentMultipleInit: Bool?
 
+            /// Whether Session Replay should automatically start a recording when enabled
+            public var startRecordingImmediately: Bool?
+
             /// Whether the session replay start is handled manually
             public var startSessionReplayRecordingManually: Bool?
 
@@ -3742,6 +3745,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case silentMultipleInit = "silent_multiple_init"
+                case startRecordingImmediately = "start_recording_immediately"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
                 case storeContextsAcrossPages = "store_contexts_across_pages"
                 case telemetryConfigurationSampleRate = "telemetry_configuration_sample_rate"
@@ -4335,4 +4339,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/31c73753ff5c954cf9aef475c91ec0b413743f77
+// Generated from https://github.com/DataDog/rum-events-format/tree/41d2cb901a87fa025843c85568c16d3e199fea4c

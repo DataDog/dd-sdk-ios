@@ -7299,6 +7299,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.silentMultipleInit as NSNumber?
     }
 
+    @objc public var startRecordingImmediately: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.startRecordingImmediately = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.startRecordingImmediately as NSNumber? }
+    }
+
     @objc public var startSessionReplayRecordingManually: NSNumber? {
         set { root.swiftModel.telemetry.configuration.startSessionReplayRecordingManually = newValue?.boolValue }
         get { root.swiftModel.telemetry.configuration.startSessionReplayRecordingManually as NSNumber? }
@@ -7710,4 +7715,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/31c73753ff5c954cf9aef475c91ec0b413743f77
+// Generated from https://github.com/DataDog/rum-events-format/tree/41d2cb901a87fa025843c85568c16d3e199fea4c
