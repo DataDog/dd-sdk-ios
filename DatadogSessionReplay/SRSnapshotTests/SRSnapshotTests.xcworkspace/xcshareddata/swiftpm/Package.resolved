@@ -1,0 +1,41 @@
+{
+  "pins" : [
+    {
+      "identity" : "framer",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ncreated/Framer",
+      "state" : {
+        "branch" : "ncreated-patch-1",
+        "revision" : "2a5669490efef2c866692f2b3ebcf778816d3ef1"
+      }
+    },
+    {
+      "identity" : "framing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ncreated/Framing.git",
+      "state" : {
+        "revision" : "64459fe73419d56fadd6e428edba75e441ddbf71",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "opentelemetry-swift-packages",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/DataDog/opentelemetry-swift-packages.git",
+      "state" : {
+        "revision" : "adcfc3d7fc6ad411bb576cfa4512c2d3f8b2dbc7",
+        "version" : "1.6.0"
+      }
+    },
+    {
+      "identity" : "plcrashreporter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/microsoft/plcrashreporter.git",
+      "state" : {
+        "revision" : "6752f71de206f6a53fa6a758c3660fd9a7fe7527",
+        "version" : "1.11.2"
+      }
+    }
+  ],
+  "version" : 2
+}
