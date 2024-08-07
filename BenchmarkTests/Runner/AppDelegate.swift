@@ -5,20 +5,76 @@
  */
 
 import UIKit
+import DatadogInternal
+import DatadogBenchmarks
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        let info = try! TestInfo() // crash if test info are missing or malformed
+        guard
+            let scenario = SyntheticScenario(),
+            let run = SyntheticRun()
+        else {
+            return false
+        }
 
-        let scenario: Scenario = SyntheticScenario() ?? DefaultScenario()
+        let applicationInfo = try! AppInfo() // crash if info are missing or malformed
+
+        switch run {
+        case .baseline, .metrics:
+            // measure metrics during baseline and metrics runs
+            Benchmarks.metrics(
+                with: Benchmarks.Configuration(
+                    info: applicationInfo,
+                    scenario: scenario,
+                    run: run
+                )
+            )
+        case .profiling:
+            // collect profiles
+            break
+        }
+
+        if run != .baseline {
+            // instrument the application with Datadog SDK
+            // when not in baseline run
+            scenario.instrument(with: applicationInfo)
+        }
 
         window = UIWindow(frame: UIScreen.main.bounds)
-        window?.rootViewController = scenario.start(info: info)
+        window?.rootViewController = scenario.initialViewController
         window?.makeKeyAndVisible()
 
         return true
+    }
+}
+
+extension Benchmarks.Configuration {
+    init(
+        info: AppInfo,
+        scenario: SyntheticScenario,
+        run: SyntheticRun,
+        bundle: Bundle = .main,
+        sysctl: SysctlProviding = Sysctl(),
+        device: UIDevice = .current
+    ) {
+        self.init(
+            clientToken: info.clientToken,
+            apiKey: info.apiKey,
+            context: Benchmarks.Configuration.Context(
+                applicationIdentifier: bundle.bundleIdentifier!,
+                applicationName: bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as! String,
+                applicationVersion: bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String,
+                sdkVersion: "",
+                deviceModel: try! sysctl.model(),
+                osName: device.systemName,
+                osVersion: device.systemVersion,
+                run: run.rawValue,
+                scenario: scenario.name,
+                branch: ""
+            )
+        )
     }
 }
