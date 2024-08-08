@@ -175,3 +175,9 @@ public extension Array {
         return all.first
     }
 }
+
+extension Dictionary where Key == Int, Value == String {
+    public static func + (lhs: Self, rhs: Self) -> Self {
+        lhs.merging(rhs) { _, new in new }
+    }
+}
