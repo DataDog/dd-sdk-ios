@@ -7,7 +7,6 @@
 import Foundation
 
 extension URL {
-
     var components: URLComponents? {
         URLComponents(url: self, resolvingAgainstBaseURL: true)
     }
@@ -33,7 +32,6 @@ extension URL {
         append([queryItem])
     }
 
-
     /// Returns the first query item with the given name.
     /// - Parameter name: The name of the query item to return.
     /// - Returns: The first query item with the given name, or `nil` if no such query item exists.
@@ -44,7 +42,6 @@ extension URL {
 
         return components.queryItems?.first { $0.name == name }
     }
-
 
     /// Removes a query item from the URL.
     /// - Parameter name: The name of the query item to remove.

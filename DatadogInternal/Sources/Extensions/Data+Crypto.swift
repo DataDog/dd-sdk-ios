@@ -9,7 +9,7 @@ import CommonCrypto
 
 extension Data {
     public func sha1() -> String {
-        let hash = withUnsafeBytes { (bytes) -> [UInt8] in
+        let hash = withUnsafeBytes { bytes -> [UInt8] in
             var hash: [UInt8] = Array(repeating: 0, count: Int(CC_SHA1_DIGEST_LENGTH))
             CC_SHA1(bytes.baseAddress, CC_LONG(count), &hash)
             return hash
