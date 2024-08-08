@@ -5,11 +5,11 @@
 
 ## CI
 
-CI continuously builds, signs, and uploads a runner application to Synthetics which runs predefined tests daily.
+CI continuously builds, signs, and uploads a runner application to Synthetics which runs predefined tests.
 
 ### Build
 
-Before building the application, the `BenchmarkTests/xcconfigs/Benchmark.local.xcconfig` configuration file must be present and contain the `Mobile - Integration Org` client token and RUM application ID, and API Key. These values are sensitive and must be securely stored.
+Before building the application, make sure the `BenchmarkTests/xcconfigs/Benchmark.local.xcconfig` configuration file is present and contains the `Mobile - Integration Org` client token, RUM application ID, and API Key. These values are sensitive and must be securely stored.
 
 ```ini
 CLIENT_TOKEN=
@@ -19,7 +19,7 @@ API_KEY=
 
 ### Sign
 
-To sign the runner application, the certificate and provision profile defined in [Synthetics.xcconfig](xcconfigs/Synthetics.xcconfig) and in [exportOptions.plist](exportOptions.plist) needs to be installed on the build machine. These files are sensitive and must be securely stored. Make sure to update both files when updating the certificate and provisioning profile, otherwise signing fails.
+To sign the runner application, the certificate and provision profile defined in [Synthetics.xcconfig](xcconfigs/Synthetics.xcconfig) and in [exportOptions.plist](exportOptions.plist) needs to be installed on the build machine. The certificate and profile are sensitive files and must be securely stored. Make sure to update both files when updating the certificate and provisioning profile, otherwise signing fails.
 
 > [!NOTE]
 > Certificate & Provisioning Profile are also available through the [App Store Connect API](https://developer.apple.com/documentation/appstoreconnectapi). But we don't have the tooling in place.
@@ -50,7 +50,7 @@ import UIKit
 import DatadogCore
 import DatadogLogs
 
-struct SessionReplayWebViewScenario: Scenario {
+struct LogsScenario: Scenario {
 
     func start(info: TestInfo) -> UIViewController {
 
@@ -66,18 +66,8 @@ struct SessionReplayWebViewScenario: Scenario {
 }
 ```
 
-The test should then be added to the [`SyntheticScenario`](Runner/Scenarios/Scenario.swift) enumeration so it can be selected, either manually or by setting the `BENCHMARK_SCENARIO` environment variable.
+Add the test to the [`SyntheticScenario`](Runner/Scenarios/Scenario.swift) enumeration so it can be selected, either manually or by setting the `BENCHMARK_SCENARIO` environment variable.
 
+### Synthetics Configuration
 
-### Adding the test in synthetics
-
-**Note:** When creating a test in Synthetics, make sure to always run on the _latest version_.
-
-You can skip the scenario selection screen by setting the **Process Arguments** of the Synthetic test:
-```json
-{
-  "BENCHMARK_SCENARIO": "<name of the test>"
-}
-```
-
-The test's name must match the [`SyntheticScenario`](Runner/Scenarios/Scenario.swift) enum case.
+Please refer to [Confluence page (internal)](https://datadoghq.atlassian.net/wiki/spaces/RUMP/pages/3981476482/Benchmarks+iOS)
