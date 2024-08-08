@@ -278,7 +278,7 @@ benchmark-build-upload:
 
 # Opens `BenchmarkTests` project with passing required ENV variables
 benchmark-tests-open:
-	@$(ECHO_TITLE) "benchmark-tests-open"
+	@$(ECHO_TITLE) "make benchmark-tests-open"
 	@$(MAKE) -C BenchmarkTests open
 
 xcodeproj-session-replay:
