@@ -27,13 +27,15 @@ class DataUploaderTests: XCTestCase {
         // When
         let uploadStatus = try uploader.upload(
             events: .mockAny(),
-            context: .mockAny()
+            context: .mockAny(),
+            previous: nil
         )
 
         // Then
         let expectedUploadStatus = DataUploadStatus(
             httpResponse: randomResponse,
-            ddRequestID: randomRequest.value(forHTTPHeaderField: "DD-REQUEST-ID")
+            ddRequestID: randomRequest.value(forHTTPHeaderField: "DD-REQUEST-ID"),
+            attempt: 0
         )
 
         DDAssertReflectionEqual(uploadStatus, expectedUploadStatus)
@@ -46,21 +48,41 @@ class DataUploaderTests: XCTestCase {
         let randomError = NSError(domain: .mockRandom(), code: .mockRandom(), userInfo: [NSLocalizedDescriptionKey: randomErrorDescription])
         let randomRequest: URLRequest = .mockAny()
 
+        let httpClient = HTTPClientMock(error: randomError)
         let uploader = DataUploader(
-            httpClient: HTTPClientMock(error: randomError),
+            httpClient: httpClient,
             requestBuilder: FeatureRequestBuilderMock(request: randomRequest)
         )
 
         // When
-        let uploadStatus = try uploader.upload(
+        let firstUploadStatus = try uploader.upload(
             events: .mockAny(),
-            context: .mockAny()
+            context: .mockAny(),
+            previous: nil
         )
 
         // Then
-        let expectedUploadStatus = DataUploadStatus(networkError: randomError)
+        let expectedFirstUploadStatus = DataUploadStatus(networkError: randomError, attempt: 0)
 
-        DDAssertReflectionEqual(uploadStatus, expectedUploadStatus)
+        DDAssertReflectionEqual(firstUploadStatus, expectedFirstUploadStatus)
+        XCTAssertNotNil(httpClient.requestsSent().last)
+        let firstRequest = httpClient.requestsSent().last!
+        XCTAssertEqual(firstRequest.url?.queryItem("ddtags")?.value, "retry_count:1")
+
+        // When
+        let secondUploadStatus = try uploader.upload(
+            events: .mockAny(),
+            context: .mockAny(),
+            previous: firstUploadStatus
+        )
+
+        // Then
+        let expectedSecondUploadStatus = DataUploadStatus(networkError: randomError, attempt: 1)
+
+        DDAssertReflectionEqual(secondUploadStatus, expectedSecondUploadStatus)
+        XCTAssertNotNil(httpClient.requestsSent().last)
+        let secondRequest = httpClient.requestsSent().last!
+        XCTAssertEqual(secondRequest.url?.queryItem("ddtags")?.value, "retry_count:2,last_failure_status:\(randomError.code)")
     }
 
     func testWhenRequestCannotBeCreated_itThrows() throws {
@@ -73,7 +95,7 @@ class DataUploaderTests: XCTestCase {
         )
 
         // When & Then
-        XCTAssertThrowsError(try uploader.upload(events: .mockAny(), context: .mockAny())) { error in
+        XCTAssertThrowsError(try uploader.upload(events: .mockAny(), context: .mockAny(), previous: nil)) { error in
             XCTAssertTrue(error is ErrorMock)
         }
     }
