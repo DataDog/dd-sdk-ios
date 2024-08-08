@@ -75,9 +75,7 @@ test_snapshots() {
 
 open_snapshot_tests_project() {
     echo_info "Opening SRSnapshotTests with DD_TEST_UTILITIES_ENABLED ..."
-	pgrep -q Xcode && killall Xcode && echo_warn "- Xcode killed" || echo_succ "- Xcode not running"
-	sleep 0.5 && echo "- launching" # Sleep, otherwise, if Xcode was running it often fails with "procNotFound: no eligible process with specified descriptor"
-	open --env DD_TEST_UTILITIES_ENABLED "$TEST_WORKSPACE"
+    open --new --env DD_TEST_UTILITIES_ENABLED "$TEST_WORKSPACE"
 }
 
 if [ "$open_project" = "true" ]; then
