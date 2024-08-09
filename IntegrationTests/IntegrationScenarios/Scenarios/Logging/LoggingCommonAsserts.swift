@@ -22,7 +22,7 @@ extension LoggingCommonAsserts {
             XCTAssertEqual(request.httpMethod, "POST")
 
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddsource=ios`
-            let pathRegex = #"^(.*)(\?ddsource=ios)$"#
+            let pathRegex = #"^(.*)(\?ddsource=ios)(,retry_count:\#(numberPattern))$"#
             XCTAssertTrue(
                 request.path.matches(regex: pathRegex),
                 """
@@ -40,6 +40,7 @@ extension LoggingCommonAsserts {
             XCTAssertEqual(request.httpHeaders["DD-EVP-ORIGIN"], "ios", file: file, line: line)
             XCTAssertEqual(request.httpHeaders["DD-EVP-ORIGIN-VERSION"]?.matches(regex: semverRegex), true, file: file, line: line)
             XCTAssertEqual(request.httpHeaders["DD-REQUEST-ID"]?.matches(regex: ddRequestIDRegex), true, file: file, line: line)
+            XCTAssertEqual(request.httpHeaders["DD-IDEMPOTENCY-KEY"]?.matches(regex: sha1Regex), true, file: file, line: line)
         }
     }
 }
