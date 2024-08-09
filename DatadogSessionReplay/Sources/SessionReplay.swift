@@ -19,14 +19,12 @@ public enum SessionReplay {
     /// - Parameters:
     ///   - configuration: Configuration of the feature.
     ///   - core: The instance of Datadog SDK to enable Session Replay in (global instance by default).
-    ///   - startRecordingImmediately: When `true`, the recording starts automatically; when `false` it doesn't and the recording will need to be started manually (`true` by default).
     public static func enable(
         with configuration: SessionReplay.Configuration,
-        in core: DatadogCoreProtocol = CoreRegistry.default,
-        startRecordingImmediately: Bool = true
+        in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         do {
-            try enableOrThrow(with: configuration, in: core, startRecordingImmediately: startRecordingImmediately)
+            try enableOrThrow(with: configuration, in: core)
         } catch let error {
             consolePrint("\(error)", .error)
        }
@@ -64,8 +62,7 @@ public enum SessionReplay {
 
     internal static func enableOrThrow(
         with configuration: SessionReplay.Configuration,
-        in core: DatadogCoreProtocol,
-        startRecordingImmediately: Bool
+        in core: DatadogCoreProtocol
     ) throws {
         guard !(core is NOPDatadogCore) else {
             throw ProgrammerError(
@@ -78,13 +75,13 @@ public enum SessionReplay {
         let resources = ResourcesFeature(core: core, configuration: configuration)
         try core.register(feature: resources)
 
-        let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration, startRecordingImmediately: startRecordingImmediately)
+        let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)
         try core.register(feature: sessionReplay)
 
         core.telemetry.configuration(
             defaultPrivacyLevel: configuration.defaultPrivacyLevel.rawValue,
             sessionReplaySampleRate: Int64(withNoOverflow: configuration.replaySampleRate),
-            startRecordingImmediately: startRecordingImmediately
+            startRecordingImmediately: configuration.startRecordingImmediately
         )
     }
 
@@ -95,7 +92,7 @@ public enum SessionReplay {
             )
         }
 
-        guard let sr = core.feature(named: SessionReplayFeaturneName, type: SessionReplayFeature.self) else {
+        guard let sr = core.get(feature: SessionReplayFeature.self) else {
             throw ProgrammerError(
                 description: "Session Replay must be initialized before calling `SessionReplay.startRecording()`."
             )
@@ -111,7 +108,7 @@ public enum SessionReplay {
             )
         }
 
-        guard let sr = core.feature(named: SessionReplayFeaturneName, type: SessionReplayFeature.self) else {
+        guard let sr = core.get(feature: SessionReplayFeature.self) else {
             throw ProgrammerError(
                 description: "Session Replay must be initialized before calling `SessionReplay.stopRecording()`."
             )

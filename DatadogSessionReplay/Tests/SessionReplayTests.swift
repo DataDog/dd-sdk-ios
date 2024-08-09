@@ -81,10 +81,10 @@ class SessionReplayTests: XCTestCase {
         SessionReplay.enable(
             with: SessionReplay.Configuration(
                 replaySampleRate: Float(sampleRate),
-                defaultPrivacyLevel: privacyLevel
+                defaultPrivacyLevel: privacyLevel,
+                startRecordingImmediately: startRecordingImmediately
             ),
-            in: core,
-            startRecordingImmediately: startRecordingImmediately
+            in: core
         )
 
         // Then
@@ -188,10 +188,10 @@ class SessionReplayTests: XCTestCase {
 
     func testWhenEnabledWithStartRecordingImmediatelyTrue_itStartsRecording() throws {
         // Given
-        config = SessionReplay.Configuration(replaySampleRate: 42)
+        config = SessionReplay.Configuration(replaySampleRate: 42, startRecordingImmediately: true)
 
         // When
-        SessionReplay.enable(with: config, in: core, startRecordingImmediately: true)
+        SessionReplay.enable(with: config, in: core)
 
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
@@ -200,10 +200,10 @@ class SessionReplayTests: XCTestCase {
 
     func testWhenEnabledWithStartRecordingImmediatelyFalse_itDoesNotStartRecording() throws {
         // Given
-        config = SessionReplay.Configuration(replaySampleRate: 42)
+        config = SessionReplay.Configuration(replaySampleRate: 42, startRecordingImmediately: false)
 
         // When
-        SessionReplay.enable(with: config, in: core, startRecordingImmediately: false)
+        SessionReplay.enable(with: config, in: core)
 
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
@@ -212,8 +212,8 @@ class SessionReplayTests: XCTestCase {
 
     func testStartRecordingManually() throws {
         // Given
-        config = SessionReplay.Configuration(replaySampleRate: 42)
-        SessionReplay.enable(with: config, in: core, startRecordingImmediately: false)
+        config = SessionReplay.Configuration(replaySampleRate: 42, startRecordingImmediately: false)
+        SessionReplay.enable(with: config, in: core)
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
 
         // When
@@ -225,8 +225,8 @@ class SessionReplayTests: XCTestCase {
 
     func testStopRecordingManually() throws {
         // Given
-        config = SessionReplay.Configuration(replaySampleRate: 42)
-        SessionReplay.enable(with: config, in: core, startRecordingImmediately: true)
+        config = SessionReplay.Configuration(replaySampleRate: 42, startRecordingImmediately: true)
+        SessionReplay.enable(with: config, in: core)
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
 
         // When

@@ -20,6 +20,7 @@ internal class RecordingCoordinator {
     let srContextPublisher: SRContextPublisher
 
     private var currentRUMContext: RUMContext? = nil
+    @ReadWriteLock
     private var isSampled = false
 
     /// `recordingEnabled` is used to track when the user 
