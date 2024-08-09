@@ -22,7 +22,7 @@ extension LoggingCommonAsserts {
             XCTAssertEqual(request.httpMethod, "POST")
 
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddsource=ios`
-            let pathRegex = #"^(.*)(\?ddsource=ios&ddtags=retry_count:\#(numberPattern)$"#
+            let pathRegex = #"^(.*)(\?ddsource=ios&ddtags=retry_count:\#(numberPattern))$"#
             XCTAssertTrue(
                 request.path.matches(regex: pathRegex),
                 "Request path doesn't match the expected regex. ✉️ path: \(request.path) 🧪 expected regex: \(pathRegex)",
