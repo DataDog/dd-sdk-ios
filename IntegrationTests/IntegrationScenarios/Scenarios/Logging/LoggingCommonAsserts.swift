@@ -25,11 +25,7 @@ extension LoggingCommonAsserts {
             let pathRegex = #"^(.*)(\?ddsource=ios)(,retry_count:\#(numberPattern))$"#
             XCTAssertTrue(
                 request.path.matches(regex: pathRegex),
-                """
-                Request path doesn't match the expected regex.
-                ✉️ path: \(request.path)
-                🧪 expected regex: \(pathRegex)
-                """,
+                "Request path doesn't match the expected regex. ✉️ path: \(request.path) 🧪 expected regex: \(pathRegex)",
                 file: file,
                 line: line
             )

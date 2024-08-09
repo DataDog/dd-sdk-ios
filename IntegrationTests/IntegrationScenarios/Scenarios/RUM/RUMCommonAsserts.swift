@@ -25,11 +25,7 @@ extension RUMCommonAsserts {
             let pathRegex = #"^(.*)(\?ddsource=ios&ddtags=service:ui-tests-service-name,version:1.0,sdk_version:)\#(semverPattern)(,env:integration)(,retry_count:\#(numberPattern))$"#
             XCTAssertTrue(
                 request.path.matches(regex: pathRegex),
-                """
-                Request path doesn't match the expected regex.
-                ✉️ path: \(request.path)
-                🧪 expected regex:  \(pathRegex)
-                """,
+                "Request path doesn't match the expected regex. ✉️ path: \(request.path) 🧪 expected regex:  \(pathRegex)",
                 file: file,
                 line: line
             )
