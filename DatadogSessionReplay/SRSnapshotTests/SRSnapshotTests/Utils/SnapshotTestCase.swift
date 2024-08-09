@@ -154,7 +154,7 @@ internal class SnapshotTestCase: XCTestCase {
 
         // Capture next record with mock RUM Context
         try recorder.captureNextRecord(
-            .init(privacy: privacyLevel, applicationID: "", sessionID: "", viewID: "", viewServerTimeOffset: 0)
+            .init(privacy: privacyLevel, touchPrivacy: .show, applicationID: "", sessionID: "", viewID: "", viewServerTimeOffset: 0)
         )
 
         waitForExpectations(timeout: 30) // very pessimistic timeout to mitigate CI lags

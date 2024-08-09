@@ -8,6 +8,7 @@
 import DatadogInternal
 
 internal typealias PrivacyLevel = SessionReplayPrivacyLevel
+internal typealias TouchPrivacyLevel = SessionReplayTouchPrivacyLevel
 
 /// Text obfuscation strategies for different text types.
 @_spi(Internal)
