@@ -54,6 +54,14 @@ public final class DDSessionReplayConfiguration: NSObject {
         get { .init(_swift.defaultPrivacyLevel) }
     }
 
+    /// Defines the way user touches (e.g. tap) should be masked.
+    ///
+    /// Default: `.mask`.
+    @objc public var touchPrivacyLevel: DDSessionReplayConfigurationTouchPrivacyLevel {
+        set { _swift.touchPrivacyLevel = newValue._swift }
+        get { .init(_swift.touchPrivacyLevel) }
+    }
+
     /// Custom server url for sending replay data.
     ///
     /// Default: `nil`.
@@ -62,6 +70,22 @@ public final class DDSessionReplayConfiguration: NSObject {
         get { _swift.customEndpoint }
     }
 
+    /// Creates Session Replay configuration.
+    ///
+    /// - Parameters:
+    ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
+    ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked. Default: `.hide`.
+    @objc
+    public required init(
+        sampleRate: Float
+    ) {
+        _swift = SessionReplay.Configuration(
+            sampleRate: sampleRate
+        )
+        super.init()
+    }
+
+    // TODO: RUM-5764 Deprecate former API
     /// Creates Session Replay configuration.
     ///
     /// - Parameters:
@@ -103,6 +127,31 @@ public enum DDSessionReplayConfigurationPrivacyLevel: Int {
         case .allow: self = .allow
         case .mask: self = .mask
         case .maskUserInput: self = .maskUserInput
+        }
+    }
+}
+
+/// Available privacy levels for content masking.
+@objc
+public enum DDSessionReplayConfigurationTouchPrivacyLevel: Int {
+    /// Show all touches.
+    case show
+
+    /// Hide all touches.
+    case hide
+
+    internal var _swift: SessionReplayTouchPrivacyLevel {
+        switch self {
+        case .show: return .show
+        case .hide: return .hide
+        default: return .hide
+        }
+    }
+
+    internal init(_ swift: SessionReplayTouchPrivacyLevel) {
+        switch swift {
+        case .show: self = .show
+        case .hide: self = .hide
         }
     }
 }

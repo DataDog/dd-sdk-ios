@@ -20,6 +20,15 @@ public enum SessionReplayPrivacyLevel: String {
     case maskUserInput = "mask_user_input"
 }
 
+/// Available privacy levels for touch masking in Session Replay.
+public enum SessionReplayTouchPrivacyLevel: String {
+    /// Show all user touches.
+    case show
+
+    /// Hide all user touches.
+    case hide
+}
+
 /// The Session Replay shared configuration.
 ///
 /// The Feature object  named `session-replay` will be registered to the core
@@ -34,6 +43,8 @@ public enum SessionReplayPrivacyLevel: String {
 public protocol SessionReplayConfiguration {
     /// The privacy level to use for the web view replay recording.
     var privacyLevel: SessionReplayPrivacyLevel { get }
+    /// The touch privacy level to use for the web view replay recording.
+    var touchPrivacyLevel: SessionReplayTouchPrivacyLevel { get }
 }
 
 extension DatadogFeature where Self: SessionReplayConfiguration {
