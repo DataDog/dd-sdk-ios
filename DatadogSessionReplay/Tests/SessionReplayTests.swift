@@ -26,6 +26,8 @@ class SessionReplayTests: XCTestCase {
         XCTAssertEqual(FeatureRegistrationCoreMock.referenceCount, 0)
     }
 
+    // MARK: - Initialization Tests
+
     func testWhenEnabled_itRegistersSessionReplayFeature() {
         // When
         SessionReplay.enable(with: config, in: core)
@@ -71,6 +73,7 @@ class SessionReplayTests: XCTestCase {
         // Given
         let sampleRate: Int64 = .mockRandom(min: 0, max: 100)
         let privacyLevel: SessionReplayPrivacyLevel = .mockRandom()
+        let startRecordingImmediately: Bool = .mockRandom()
         let messageReceiver = FeatureMessageReceiverMock()
         let core = PassthroughCoreMock(messageReceiver: messageReceiver)
 
@@ -78,7 +81,8 @@ class SessionReplayTests: XCTestCase {
         SessionReplay.enable(
             with: SessionReplay.Configuration(
                 replaySampleRate: Float(sampleRate),
-                defaultPrivacyLevel: privacyLevel
+                defaultPrivacyLevel: privacyLevel,
+                startRecordingImmediately: startRecordingImmediately
             ),
             in: core
         )
@@ -87,6 +91,7 @@ class SessionReplayTests: XCTestCase {
         let configuration = try XCTUnwrap(messageReceiver.messages.firstTelemetry?.asConfiguration)
         XCTAssertEqual(configuration.sessionReplaySampleRate, sampleRate)
         XCTAssertEqual(configuration.defaultPrivacyLevel, privacyLevel.rawValue)
+        XCTAssertEqual(configuration.startRecordingImmediately, startRecordingImmediately)
     }
 
     func testWhenEnabledWithReplaySampleRate() throws {
@@ -162,6 +167,73 @@ class SessionReplayTests: XCTestCase {
         // Then
         XCTAssertNil(core.get(feature: SessionReplayFeature.self))
         XCTAssertNil(core.get(feature: ResourcesFeature.self))
+    }
+
+    // MARK: - Recording Tests
+
+    func testWhenStartInNOPCore_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
+        // When
+        SessionReplay.startRecording(in: NOPDatadogCore())
+
+        // Then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: Datadog SDK must be initialized before calling `SessionReplay.startRecording()`."
+        )
+    }
+
+    func testWhenEnabledWithStartRecordingImmediatelyTrue_itStartsRecording() throws {
+        // Given
+        config = SessionReplay.Configuration(replaySampleRate: 42, startRecordingImmediately: true)
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+
+        // Then
+        let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
+        XCTAssertEqual(sr.recordingCoordinator.recordingEnabled, true)
+    }
+
+    func testWhenEnabledWithStartRecordingImmediatelyFalse_itDoesNotStartRecording() throws {
+        // Given
+        config = SessionReplay.Configuration(replaySampleRate: 42, startRecordingImmediately: false)
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+
+        // Then
+        let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
+        XCTAssertEqual(sr.recordingCoordinator.recordingEnabled, false)
+    }
+
+    func testStartRecordingManually() throws {
+        // Given
+        config = SessionReplay.Configuration(replaySampleRate: 42, startRecordingImmediately: false)
+        SessionReplay.enable(with: config, in: core)
+        let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
+
+        // When
+        SessionReplay.startRecording(in: core)
+
+        // Then
+        XCTAssertEqual(sr.recordingCoordinator.recordingEnabled, true)
+    }
+
+    func testStopRecordingManually() throws {
+        // Given
+        config = SessionReplay.Configuration(replaySampleRate: 42, startRecordingImmediately: true)
+        SessionReplay.enable(with: config, in: core)
+        let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
+
+        // When
+        SessionReplay.stopRecording(in: core)
+
+        // Then
+        XCTAssertEqual(sr.recordingCoordinator.recordingEnabled, false)
     }
 }
 #endif

@@ -25,6 +25,7 @@ public struct ConfigurationTelemetry: Equatable {
     public let sessionReplaySampleRate: Int64?
     public let sessionSampleRate: Int64?
     public let silentMultipleInit: Bool?
+    public let startRecordingImmediately: Bool?
     public let startSessionReplayRecordingManually: Bool?
     public let telemetryConfigurationSampleRate: Int64?
     public let telemetrySampleRate: Int64?
@@ -259,6 +260,7 @@ extension Telemetry {
         sessionReplaySampleRate: Int64? = nil,
         sessionSampleRate: Int64? = nil,
         silentMultipleInit: Bool? = nil,
+        startRecordingImmediately: Bool? = nil,
         startSessionReplayRecordingManually: Bool? = nil,
         telemetryConfigurationSampleRate: Int64? = nil,
         telemetrySampleRate: Int64? = nil,
@@ -309,6 +311,7 @@ extension Telemetry {
             sessionReplaySampleRate: sessionReplaySampleRate,
             sessionSampleRate: sessionSampleRate,
             silentMultipleInit: silentMultipleInit,
+            startRecordingImmediately: startRecordingImmediately,
             startSessionReplayRecordingManually: startSessionReplayRecordingManually,
             telemetryConfigurationSampleRate: telemetryConfigurationSampleRate,
             telemetrySampleRate: telemetrySampleRate,
@@ -422,6 +425,7 @@ extension ConfigurationTelemetry {
             sessionReplaySampleRate: other.sessionReplaySampleRate ?? sessionReplaySampleRate,
             sessionSampleRate: other.sessionSampleRate ?? sessionSampleRate,
             silentMultipleInit: other.silentMultipleInit ?? silentMultipleInit,
+            startRecordingImmediately: other.startRecordingImmediately ?? startRecordingImmediately,
             startSessionReplayRecordingManually: other.startSessionReplayRecordingManually ?? startSessionReplayRecordingManually,
             telemetryConfigurationSampleRate: other.telemetryConfigurationSampleRate ?? telemetryConfigurationSampleRate,
             telemetrySampleRate: other.telemetrySampleRate ?? telemetrySampleRate,

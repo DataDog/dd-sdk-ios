@@ -29,6 +29,7 @@ extension ConfigurationTelemetry {
             sessionReplaySampleRate: .mockRandom(),
             sessionSampleRate: .mockRandom(),
             silentMultipleInit: .mockRandom(),
+            startRecordingImmediately: .mockRandom(),
             startSessionReplayRecordingManually: .mockRandom(),
             telemetryConfigurationSampleRate: .mockRandom(),
             telemetrySampleRate: .mockRandom(),
