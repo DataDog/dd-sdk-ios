@@ -44,6 +44,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// Background task coordinator responsible for registering and ending background tasks for UIKit targets.
     private var backgroundTaskCoordinator: BackgroundTaskCoordinator?
 
+    private var previousUploadStatus: DataUploadStatus?
+
     init(
         queue: DispatchQueue,
         fileReader: Reader,
@@ -113,8 +115,11 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 do {
                     let uploadStatus = try self.dataUploader.upload(
                         events: batch.events,
-                        context: context
+                        context: context,
+                        previous: previousUploadStatus
                     )
+                    previousUploadStatus = uploadStatus
+
                     if uploadStatus.needsRetry {
                         DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
                         self.delay.increase()
@@ -129,6 +134,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                             batch,
                             reason: .intakeCode(responseCode: uploadStatus.responseCode)
                         )
+                        previousUploadStatus = nil
                     }
 
                     if let error = uploadStatus.error {
@@ -144,6 +150,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 } catch let error {
                     // If upload can't be initiated do not retry, so drop the batch:
                     self.fileReader.markBatchAsRead(batch, reason: .invalid)
+                    previousUploadStatus = nil
                     self.telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
                 }
             }
@@ -173,12 +180,21 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     // metrics or telemetry. This is legitimate as long as `flush()` routine is only available for testing
                     // purposes and never run in production apps.
                     self.fileReader.markBatchAsRead(nextBatch, reason: .flushed)
+                    previousUploadStatus = nil
                 }
                 do {
                     // Try uploading the batch and do one more retry on failure.
-                    _ = try self.dataUploader.upload(events: nextBatch.events, context: self.contextProvider.read())
+                    previousUploadStatus = try self.dataUploader.upload(
+                        events: nextBatch.events,
+                        context: self.contextProvider.read(),
+                        previous: previousUploadStatus
+                    )
                 } catch {
-                    _ = try? self.dataUploader.upload(events: nextBatch.events, context: self.contextProvider.read())
+                    previousUploadStatus = try? self.dataUploader.upload(
+                        events: nextBatch.events,
+                        context: self.contextProvider.read(),
+                        previous: previousUploadStatus
+                    )
                 }
             }
         }
