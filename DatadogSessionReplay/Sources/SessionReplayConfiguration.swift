@@ -10,6 +10,7 @@ import DatadogInternal
 
 // swiftlint:disable duplicate_imports
 @_exported import enum DatadogInternal.SessionReplayPrivacyLevel
+@_exported import enum DatadogInternal.SessionReplayTouchPrivacyLevel
 // swiftlint:enable duplicate_imports
 
 extension SessionReplay {
@@ -30,6 +31,11 @@ extension SessionReplay {
         /// Default: `.mask`.
         public var defaultPrivacyLevel: SessionReplayPrivacyLevel
 
+        /// Defines the way user touches (e.g. tap) should be masked.
+        ///
+        /// Default: `.hide`.
+        public var touchPrivacyLevel: SessionReplayTouchPrivacyLevel
+
         /// Custom server url for sending replay data.
         ///
         /// Default: `nil`.
@@ -43,6 +49,23 @@ extension SessionReplay {
 
         /// Creates Session Replay configuration
         /// - Parameters:
+        ///   - sampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
+        ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked. Default: `.hide`.
+        ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
+        public init(
+            sampleRate: Float,
+            touchPrivacyLevel: SessionReplayTouchPrivacyLevel = .hide,
+            customEndpoint: URL? = nil
+        ) {
+            self.replaySampleRate = sampleRate
+            self.defaultPrivacyLevel = .mask
+            self.touchPrivacyLevel = touchPrivacyLevel
+            self.customEndpoint = customEndpoint
+        }
+
+        // TODO: RUM-5764 Deprecate former API
+        /// Creates Session Replay configuration.
+        /// - Parameters:
         ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
         ///   - defaultPrivacyLevel: The way sensitive content (e.g. text) should be masked. Default: `.mask`.
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
@@ -53,6 +76,7 @@ extension SessionReplay {
         ) {
             self.replaySampleRate = replaySampleRate
             self.defaultPrivacyLevel = defaultPrivacyLevel
+            self.touchPrivacyLevel = .hide
             self.customEndpoint = customEndpoint
         }
 
