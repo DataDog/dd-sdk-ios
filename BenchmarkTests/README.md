@@ -52,7 +52,15 @@ import DatadogLogs
 
 struct LogsScenario: Scenario {
 
-    func start(info: TestInfo) -> UIViewController {
+    /// The initial view-controller of the scenario
+    let initialViewController: UIViewController = LoggerViewController()
+
+    /// Start instrumenting the application by enabling the Datadog SDK and
+    /// its Features.
+    ///
+    /// - Parameter info: The application information to use during SDK
+    /// initialisation.
+    func instrument(with info: AppInfo) {
 
         Datadog.initialize(
             with: .benchmark(info: info), // SDK init with the benchmark configuration
@@ -60,13 +68,11 @@ struct LogsScenario: Scenario {
         )
 
         Logs.enable()
-
-        return LoggerViewController()
     }
 }
 ```
 
-Add the test to the [`SyntheticScenario`](Runner/Scenarios/Scenario.swift) enumeration so it can be selected, either manually or by setting the `BENCHMARK_SCENARIO` environment variable.
+Add the test to the [`SyntheticScenario`](Runner/Scenarios/SyntheticScenario.swift#L12) object so it can be selected by setting the `BENCHMARK_SCENARIO` environment variable.
 
 ### Synthetics Configuration
 
