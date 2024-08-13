@@ -27,12 +27,6 @@ DD_IOS_SECRET__BENCHMARK_PROVISIONING_PROFILE_BASE64="benchmark.provisioning.pro
 DD_IOS_SECRET__BENCHMARK_XCCONFIG_BASE64="benchmark.xcconfig.base64"
 DD_IOS_SECRET__BENCHMARK_S8S_APPLICATION_ID="benchmark.s8s.app.id"
 
-# To remove
-DD_IOS_SECRET__E2E_CERTIFICATE_P12_BASE64="e2e.certificate.p12.base64"
-DD_IOS_SECRET__E2E_CERTIFICATE_P12_PASSWORD="e2e.certificate.p12.password"
-DD_IOS_SECRET__E2E_S8S_API_KEY="e2e.s8s.api.key"
-DD_IOS_SECRET__E2E_S8S_APP_KEY="e2e.s8s.app.key"
-
 idx=0
 declare -A DD_IOS_SECRETS
 DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__TEST_SECRET | test secret to see if things work, free to change but not delete"
@@ -50,9 +44,3 @@ DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__E2E_S8S_APPLICATION_ID | Synthetics 
 DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__BENCHMARK_PROVISIONING_PROFILE_BASE64 | Base64-encoded provisioning profile file for signing Benchmark app"
 DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__BENCHMARK_XCCONFIG_BASE64 | Base64-encoded xcconfig file for Benchmark app"
 DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__BENCHMARK_S8S_APPLICATION_ID | Synthetics app ID for Benchmark tests"
-
-# To remove
-DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__E2E_CERTIFICATE_P12_BASE64 | Base64-encoded '.p12' certificate file for signing E2E app (to be removed, use dev.certificate.p12.base64 instead)"
-DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__E2E_CERTIFICATE_P12_PASSWORD | Password to '$DD_IOS_SECRET__E2E_CERTIFICATE_P12_BASE64' certificate(to be removed, use dev.certificate.p12.password instead)"
-DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__E2E_S8S_API_KEY | DATADOG_API_KEY for uploading E2E app to synthetics"
-DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__E2E_S8S_APP_KEY | DATADOG_APP_KEY for uploading E2E app to synthetics"
