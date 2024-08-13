@@ -13,7 +13,7 @@ enum MetricExporterError: Error {
 
 /// Replacement of otel `DatadogExporter` for metrics.
 ///
-/// This version doesn not store data to disk, it uploads to the intake directly.
+/// This version does not store data to disk, it uploads to the intake directly.
 /// Additionally, it does not crash.
 final class MetricExporter: Exporter, OpenTelemetrySdk.MetricExporter {
     struct Configuration {
@@ -29,6 +29,7 @@ final class MetricExporter: Exporter, OpenTelemetrySdk.MetricExporter {
         case gauge = 3
     }
 
+    /// https://docs.datadoghq.com/api/latest/metrics/#submit-metrics
     internal struct Serie: Codable {
         struct Point: Codable {
             let timestamp: Int64
@@ -66,15 +67,19 @@ final class MetricExporter: Exporter, OpenTelemetrySdk.MetricExporter {
 
     func export(metrics: [Metric], shouldCancel: (() -> Bool)?) -> MetricExporterResultCode {
         do {
-            let series = try metrics.map { try export(metric: $0) }
+            let series = try metrics.map(transform)
             try submit(series: series)
             return.success
         } catch {
             return .failureNotRetryable
         }
     }
-
-    func export(metric: Metric) throws -> Serie {
+    
+    /// Transforms otel `Metric` to Datadog `serie`.
+    ///
+    /// - Parameter metric: The otel metric
+    /// - Returns: The timeserie.
+    func transform(_ metric: Metric) throws -> Serie {
         var tags: Set<String> = []
 
         let points: [Serie.Point] = try metric.data.map { data in
@@ -113,7 +118,10 @@ final class MetricExporter: Exporter, OpenTelemetrySdk.MetricExporter {
             tags: Array(tags)
         )
     }
-
+    
+    /// Submit timeseries to the Metrics intake.
+    ///
+    /// - Parameter series: The timeseries.
     func submit(series: [Serie]) throws {
         var data = try series.reduce(Data()) { data, serie in
             try data + encoder.encode(serie) + separator

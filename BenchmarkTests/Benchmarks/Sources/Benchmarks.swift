@@ -15,8 +15,13 @@ import OpenTelemetrySdk
 let instrumentationName = "benchmarks"
 let instrumentationVersion = "1.0.0"
 
+/// Benchmark entrypoint to configure opentelemetry with metrics meters
+/// and tracer.
 public enum Benchmarks {
+    /// Configuration of the Benchmarks library.
     public struct Configuration {
+        /// Context of Benchmarks measures.
+        /// The context properties will be added metrics as tags.
         public struct Context {
             var applicationIdentifier: String
             var applicationName: String
@@ -68,7 +73,10 @@ public enum Benchmarks {
             self.context = context
         }
     }
-
+    
+    /// Configure OpenTelemetry metrics meter and start measuring Memory.
+    ///
+    /// - Parameter configuration: The Benchmark configuration.
     public static func metrics(with configuration: Configuration) {
         let loggerProvider = LoggerProviderBuilder()
             .build()
