@@ -8,6 +8,8 @@
 #   --print: Outputs the current Git reference to STDOUT (tag if available, branch otherwise)
 #   --print-tag: Outputs the current Git tag to STDOUT (if available)
 #   --print-branch: Outputs the current Git branch to STDOUT
+#   --print-commit: Outputs the current Git commit (full SHA)
+#   --print-commit-short: Outputs the first eight characters of the current commit SHA
 
 set -eo pipefail
 

@@ -12,6 +12,9 @@
 
 set -eo pipefail
 source ./tools/utils/argparse.sh
+source ./tools/utils/echo-color.sh
+source ./tools/utils/current-git.sh
+source ./tools/secrets/get-secret.sh
 
 set_description "Executes unit tests for a specified --scheme, using the provided --os, --platform, and --device."
 define_arg "scheme" "" "Identifies the test scheme to execute" "string" "true"
@@ -25,6 +28,42 @@ parse_args "$@"
 WORKSPACE="Datadog.xcworkspace"
 DESTINATION="platform=$platform,name=$device,OS=$os"
 SCHEME=$scheme
+
+# Enables Datadog Test Visibility to trace tests execution
+# Ref.: https://docs.datadoghq.com/tests/setup/swift/
+setup_test_visibility() {
+    export DD_TEST_RUNNER=1
+
+    # Base:
+    export DD_API_KEY=$(get_secret $DD_IOS_SECRET__TEST_VISIBILITY_API_KEY)
+    export DD_ENV=$([[ "$CI" = "true" ]] && echo "ci" || echo "local")
+    export DD_SERVICE=dd-sdk-ios
+    export SRCROOT="$\(SRCROOT\)"
+
+    # Auto-instrumentation:
+    export DD_ENABLE_STDOUT_INSTRUMENTATION=0
+    export DD_ENABLE_STDERR_INSTRUMENTATION=0
+    export DD_DISABLE_NETWORK_INSTRUMENTATION=1
+    export DD_DISABLE_RUM_INTEGRATION=1
+    export DD_DISABLE_SOURCE_LOCATION=0
+    export DD_DISABLE_CRASH_HANDLER=0
+
+    echo_info "CI Test Visibility setup:"
+    echo "▸ DD_TEST_RUNNER=$DD_TEST_RUNNER"
+    echo "▸ DD_ENV=$DD_ENV"
+    echo "▸ DD_SERVICE=$DD_SERVICE"
+    echo "▸ SRCROOT=$SRCROOT"
+    echo "▸ DD_ENABLE_STDOUT_INSTRUMENTATION=$DD_ENABLE_STDOUT_INSTRUMENTATION"
+    echo "▸ DD_ENABLE_STDERR_INSTRUMENTATION=$DD_ENABLE_STDERR_INSTRUMENTATION"
+    echo "▸ DD_DISABLE_NETWORK_INSTRUMENTATION=$DD_DISABLE_NETWORK_INSTRUMENTATION"
+    echo "▸ DD_DISABLE_RUM_INTEGRATION=$DD_DISABLE_RUM_INTEGRATION"
+    echo "▸ DD_DISABLE_SOURCE_LOCATION=$DD_DISABLE_SOURCE_LOCATION"
+    echo "▸ DD_DISABLE_CRASH_HANDLER=$DD_DISABLE_CRASH_HANDLER"
+}
+
+if [ "$USE_TEST_VISIBILITY" = "1" ]; then
+    setup_test_visibility
+fi
 
 set -x
 
