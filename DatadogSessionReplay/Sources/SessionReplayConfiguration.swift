@@ -54,15 +54,15 @@ extension SessionReplay {
 
         /// Creates Session Replay configuration
         /// - Parameters:
-        ///   - sampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
+        ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
         ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked. Default: `.hide`.
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
         public init(
-            sampleRate: Float,
-            touchPrivacyLevel: SessionReplayTouchPrivacyLevel = .hide,
+            replaySampleRate: Float,
+            touchPrivacyLevel: SessionReplayTouchPrivacyLevel,
             customEndpoint: URL? = nil
         ) {
-            self.replaySampleRate = sampleRate
+            self.replaySampleRate = replaySampleRate
             self.defaultPrivacyLevel = .mask
             self.touchPrivacyLevel = touchPrivacyLevel
             self.customEndpoint = customEndpoint
