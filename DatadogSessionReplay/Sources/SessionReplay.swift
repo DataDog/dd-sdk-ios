@@ -86,12 +86,6 @@ public enum SessionReplay {
     }
 
     internal static func startRecording(core: DatadogCoreProtocol) throws {
-        guard !(core is NOPDatadogCore) else {
-            throw ProgrammerError(
-                description: "Datadog SDK must be initialized before calling `SessionReplay.startRecording()`."
-            )
-        }
-
         guard let sr = core.get(feature: SessionReplayFeature.self) else {
             throw ProgrammerError(
                 description: "Session Replay must be initialized before calling `SessionReplay.startRecording()`."
@@ -102,19 +96,8 @@ public enum SessionReplay {
     }
 
     internal static func stopRecording(core: DatadogCoreProtocol) throws {
-        guard !(core is NOPDatadogCore) else {
-            throw ProgrammerError(
-                description: "Datadog SDK must be initialized before calling `SessionReplay.stopRecording()`."
-            )
-        }
-
-        guard let sr = core.get(feature: SessionReplayFeature.self) else {
-            throw ProgrammerError(
-                description: "Session Replay must be initialized before calling `SessionReplay.stopRecording()`."
-            )
-        }
-
-        sr.stopRecording()
+        let sr = core.get(feature: SessionReplayFeature.self)
+        sr?.stopRecording()
     }
 }
 #endif

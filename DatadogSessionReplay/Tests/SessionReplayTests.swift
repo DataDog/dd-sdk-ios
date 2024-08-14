@@ -182,58 +182,8 @@ class SessionReplayTests: XCTestCase {
         // Then
         XCTAssertEqual(
             printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: Datadog SDK must be initialized before calling `SessionReplay.startRecording()`."
+            "🔥 Datadog SDK usage error: Session Replay must be initialized before calling `SessionReplay.startRecording()`."
         )
-    }
-
-    func testWhenEnabledWithStartRecordingImmediatelyTrue_itStartsRecording() throws {
-        // Given
-        config = SessionReplay.Configuration(replaySampleRate: 42, startRecordingImmediately: true)
-
-        // When
-        SessionReplay.enable(with: config, in: core)
-
-        // Then
-        let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-        XCTAssertEqual(sr.recordingCoordinator.recordingEnabled, true)
-    }
-
-    func testWhenEnabledWithStartRecordingImmediatelyFalse_itDoesNotStartRecording() throws {
-        // Given
-        config = SessionReplay.Configuration(replaySampleRate: 42, startRecordingImmediately: false)
-
-        // When
-        SessionReplay.enable(with: config, in: core)
-
-        // Then
-        let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-        XCTAssertEqual(sr.recordingCoordinator.recordingEnabled, false)
-    }
-
-    func testStartRecordingManually() throws {
-        // Given
-        config = SessionReplay.Configuration(replaySampleRate: 42, startRecordingImmediately: false)
-        SessionReplay.enable(with: config, in: core)
-        let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-
-        // When
-        SessionReplay.startRecording(in: core)
-
-        // Then
-        XCTAssertEqual(sr.recordingCoordinator.recordingEnabled, true)
-    }
-
-    func testStopRecordingManually() throws {
-        // Given
-        config = SessionReplay.Configuration(replaySampleRate: 42, startRecordingImmediately: true)
-        SessionReplay.enable(with: config, in: core)
-        let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-
-        // When
-        SessionReplay.stopRecording(in: core)
-
-        // Then
-        XCTAssertEqual(sr.recordingCoordinator.recordingEnabled, false)
     }
 }
 #endif

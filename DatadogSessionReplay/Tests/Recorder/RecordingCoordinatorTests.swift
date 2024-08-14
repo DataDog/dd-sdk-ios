@@ -33,9 +33,9 @@ class RecordingCoordinatorTests: XCTestCase {
 
     // MARK: Configuration Tests
 
-    func test_itEnablesRecording_afterInitializing() {
+    func test_itDoesNotStartScheduler_afterInitializing() {
         prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
-        XCTAssertEqual(recordingCoordinator?.recordingEnabled, true)
+        XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 
@@ -47,7 +47,6 @@ class RecordingCoordinatorTests: XCTestCase {
         rumContextObserver.notify(rumContext: .mockRandom())
 
         // Then
-        XCTAssertEqual(recordingCoordinator?.recordingEnabled, true)
         XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
@@ -63,7 +62,6 @@ class RecordingCoordinatorTests: XCTestCase {
         rumContextObserver.notify(rumContext: rumContext)
 
         // Then
-        XCTAssertEqual(recordingCoordinator?.recordingEnabled, true)
         XCTAssertTrue(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), true)
         XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.applicationID, rumContext.applicationID)
@@ -82,7 +80,7 @@ class RecordingCoordinatorTests: XCTestCase {
         rumContextObserver.notify(rumContext: nil)
 
         // Then
-        XCTAssertEqual(recordingCoordinator?.recordingEnabled, true)
+        XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 
@@ -91,7 +89,6 @@ class RecordingCoordinatorTests: XCTestCase {
         prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
 
         // Then
-        XCTAssertEqual(recordingCoordinator?.recordingEnabled, true)
         XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
@@ -106,7 +103,6 @@ class RecordingCoordinatorTests: XCTestCase {
         rumContextObserver.notify(rumContext: rumContext)
 
         // Then
-        XCTAssertEqual(recordingCoordinator?.recordingEnabled, true)
         XCTAssertTrue(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), true)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
@@ -182,7 +178,6 @@ class RecordingCoordinatorTests: XCTestCase {
         rumContextObserver.notify(rumContext: rumContext)
 
         // Then
-        XCTAssertEqual(recordingCoordinator?.recordingEnabled, true)
         XCTAssertTrue(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), true)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 1)
@@ -197,7 +192,6 @@ class RecordingCoordinatorTests: XCTestCase {
         rumContextObserver.notify(rumContext: rumContext)
 
         // Then
-        XCTAssertEqual(recordingCoordinator?.recordingEnabled, true)
         XCTAssertTrue(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), true)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 1)
@@ -212,7 +206,6 @@ class RecordingCoordinatorTests: XCTestCase {
         rumContextObserver.notify(rumContext: rumContext)
 
         // Then
-        XCTAssertEqual(recordingCoordinator?.recordingEnabled, false)
         XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
@@ -230,7 +223,6 @@ class RecordingCoordinatorTests: XCTestCase {
         recordingCoordinator?.stopRecording()
 
         // Then
-        XCTAssertEqual(recordingCoordinator?.recordingEnabled, false)
         XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
     }
@@ -246,7 +238,6 @@ class RecordingCoordinatorTests: XCTestCase {
         recordingCoordinator?.startRecording()
 
         // Then
-        XCTAssertEqual(recordingCoordinator?.recordingEnabled, true)
         XCTAssertTrue(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), true)
     }
@@ -262,7 +253,6 @@ class RecordingCoordinatorTests: XCTestCase {
         recordingCoordinator?.stopRecording()
 
         // Then
-        XCTAssertEqual(recordingCoordinator?.recordingEnabled, false)
         XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
     }

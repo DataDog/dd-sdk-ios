@@ -20,13 +20,11 @@ internal class RecordingCoordinator {
     let srContextPublisher: SRContextPublisher
 
     private var currentRUMContext: RUMContext? = nil
-    @ReadWriteLock
     private var isSampled = false
 
     /// `recordingEnabled` is used to track when the user 
     /// has enabled or disabled the recording for Session Replay.
-    @ReadWriteLock
-    private(set) var recordingEnabled = false
+    private var recordingEnabled = false
 
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
@@ -67,14 +65,18 @@ internal class RecordingCoordinator {
 
     /// Enables recording based on user request.
     func startRecording() {
-        recordingEnabled = true
-        evaluateRecordingConditions()
+        scheduler.queue.run { [weak self] in
+            self?.recordingEnabled = true
+            self?.evaluateRecordingConditions()
+        }
     }
 
     /// Disables recording based on user request.
     func stopRecording() {
-        recordingEnabled = false
-        evaluateRecordingConditions()
+        scheduler.queue.run { [weak self] in
+            self?.recordingEnabled = false
+            self?.evaluateRecordingConditions()
+        }
     }
 
     // MARK: Private
