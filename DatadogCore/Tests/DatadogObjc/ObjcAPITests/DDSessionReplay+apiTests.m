@@ -23,7 +23,7 @@
 }
 
 - (void)testConfigurationWithNewApi {
-    DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithSampleRate:100];
+    DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100 touchPrivacyLevel:DDSessionReplayConfigurationTouchPrivacyLevelShow];
     configuration.defaultPrivacyLevel = DDSessionReplayConfigurationPrivacyLevelAllow;
     configuration.touchPrivacyLevel = DDSessionReplayConfigurationTouchPrivacyLevelShow;
     configuration.customEndpoint = [NSURL new];
