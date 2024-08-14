@@ -33,6 +33,14 @@ internal struct SegmentRequestBuilder: FeatureRequestBuilder {
         with context: DatadogContext,
         execution: ExecutionContext
     ) throws -> URLRequest {
+        var tags = [
+            "retry_count:\(execution.attempt + 1)"
+        ]
+
+        if let previousResponseCode = execution.previousResponseCode {
+            tags.append("last_failure_status:\(previousResponseCode)")
+        }
+
         guard !events.isEmpty else {
             throw InternalError(description: "[SR] batch events must not be empty.")
         }
@@ -48,15 +56,17 @@ internal struct SegmentRequestBuilder: FeatureRequestBuilder {
             .map { try SegmentJSON($0.data, source: source) }
             .merge()
 
-        return try createRequest(segments: segments, context: context)
+        return try createRequest(segments: segments, context: context, tags: tags)
     }
 
-    private func createRequest(segments: [SegmentJSON], context: DatadogContext) throws -> URLRequest {
+    private func createRequest(segments: [SegmentJSON], context: DatadogContext, tags: [String]) throws -> URLRequest {
         var multipart = multipartBuilder
 
         let builder = URLRequestBuilder(
             url: url(with: context),
-            queryItems: [],
+            queryItems: [
+                .ddtags(tags: tags)
+            ],
             headers: [
                 .contentTypeHeader(contentType: .multipartFormData(boundary: multipart.boundary)),
                 .userAgentHeader(appName: context.applicationName, appVersion: context.version, device: context.device),
