@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import QuartzCore
 
 // The `TASK_VM_INFO_COUNT` and `TASK_VM_INFO_REV1_COUNT` macros are too
 // complex for the Swift C importer, so we have to define them ourselves.
@@ -36,5 +37,58 @@ public enum Memory {
         }
 
         return Double(info.phys_footprint)
+    }
+}
+
+/// FPS aggregator to measure the minimal frame rate.
+internal final class FPS {
+    private class CADisplayLinker {
+        weak var fps: FPS?
+
+        init() { }
+
+        @objc func tick(link: CADisplayLink) {
+            guard let fps else {
+                return
+            }
+
+            pthread_mutex_lock(&fps.mutex)
+            let rate = 1 / (link.targetTimestamp - link.timestamp)
+            fps.min = fps.min.map { Swift.min($0, rate) } ?? rate
+            pthread_mutex_unlock(&fps.mutex)
+        }
+    }
+
+    private var displayLink: CADisplayLink
+    private var mutex = pthread_mutex_t()
+    private var min: Double?
+    
+    /// The minimum FPS value that was measured.
+    /// Call `reset` to reset the measure window.
+    var minimumRate: Double? {
+        pthread_mutex_lock(&mutex)
+        defer { pthread_mutex_unlock(&mutex) }
+        return min
+    }
+
+    /// Resets the minimum frame rate to `nil`.
+    func reset() {
+        pthread_mutex_lock(&mutex)
+        min = nil
+        pthread_mutex_unlock(&mutex)
+    }
+
+    required init() {
+        let linker = CADisplayLinker()
+        displayLink = CADisplayLink(target: linker, selector: #selector(CADisplayLinker.tick(link:)))
+
+        linker.fps = self
+        pthread_mutex_init(&mutex, nil)
+        displayLink.add(to: RunLoop.main, forMode: .common)
+    }
+
+    deinit {
+        displayLink.invalidate()
+        pthread_mutex_destroy(&mutex)
     }
 }
