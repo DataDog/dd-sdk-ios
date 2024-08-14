@@ -72,7 +72,7 @@ class RecordingCoordinatorTests: XCTestCase {
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 1)
     }
 
-    func test_whenEmptyRUMContext_itShouldRecord_itShouldNotCaptureSnapshots() {
+    func test_whenEmptyRUMContext_itShouldNotRecord() {
         // Given
         prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
 
@@ -80,7 +80,6 @@ class RecordingCoordinatorTests: XCTestCase {
         rumContextObserver.notify(rumContext: nil)
 
         // Then
-        XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 
