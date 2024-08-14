@@ -5,7 +5,7 @@
 
 ## CI
 
-CI continuously builds, signs, and uploads a runner application to Synthetics which runs predefined tests.
+CI continuously builds, signs, and uploads a runner application to Synthetics, which runs predefined tests.
 
 ### Build
 
