@@ -25,7 +25,7 @@ class ResourceRequestBuilderTests: XCTestCase {
         let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When
-        let request = try builder.request(for: mockEvents, with: .mockRandom())
+        let request = try builder.request(for: mockEvents, with: .mockRandom(), execution: .mockAny())
 
         // Then
         XCTAssertEqual(request.httpMethod, "POST")
@@ -37,7 +37,7 @@ class ResourceRequestBuilderTests: XCTestCase {
 
         // When
         func url(for site: DatadogSite) throws -> String {
-            let request = try builder.request(for: mockEvents, with: .mockWith(site: site))
+            let request = try builder.request(for: mockEvents, with: .mockWith(site: site), execution: .mockAny())
             return request.url!.absoluteStringWithoutQuery!
         }
 
@@ -57,7 +57,7 @@ class ResourceRequestBuilderTests: XCTestCase {
 
         // When
         func url(for site: DatadogSite) throws -> String {
-            let request = try builder.request(for: mockEvents, with: .mockWith(site: site))
+            let request = try builder.request(for: mockEvents, with: .mockWith(site: site), execution: .mockAny())
             return request.url!.absoluteStringWithoutQuery!
         }
 
@@ -76,7 +76,7 @@ class ResourceRequestBuilderTests: XCTestCase {
         let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When
-        let request = try builder.request(for: mockEvents, with: .mockRandom())
+        let request = try builder.request(for: mockEvents, with: .mockRandom(), execution: .mockAny())
 
         // Then
         XCTAssertEqual(request.url!.query, nil)
@@ -108,7 +108,7 @@ class ResourceRequestBuilderTests: XCTestCase {
         )
 
         // When
-        let request = try builder.request(for: mockEvents, with: context)
+        let request = try builder.request(for: mockEvents, with: context, execution: .mockAny())
 
         // Then
         let contentType = try XCTUnwrap(request.allHTTPHeaderFields?["Content-Type"])
@@ -132,7 +132,7 @@ class ResourceRequestBuilderTests: XCTestCase {
         let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock(), multipartBuilder: multipartSpy)
 
         // When
-        let request = try builder.request(for: mockEvents, with: .mockRandom())
+        let request = try builder.request(for: mockEvents, with: .mockRandom(), execution: .mockAny())
 
         // Then
         let contentType = try XCTUnwrap(request.allHTTPHeaderFields?["Content-Type"])
@@ -154,7 +154,7 @@ class ResourceRequestBuilderTests: XCTestCase {
         let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When, Then
-        XCTAssertThrowsError(try builder.request(for: [.mockWith(data: "abc".utf8Data)], with: .mockRandom()))
+        XCTAssertThrowsError(try builder.request(for: [.mockWith(data: "abc".utf8Data)], with: .mockRandom(), execution: .mockAny()))
     }
 }
 #endif
