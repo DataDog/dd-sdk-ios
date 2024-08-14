@@ -74,16 +74,16 @@ class SegmentRequestBuilderTests: XCTestCase {
         XCTAssertEqual(try url(for: .us1_fed), expectedURL)
     }
 
-    func testItSetsNoQueryParameters() throws {
+    func testItSetsQueryParameters() throws {
         // Given
         let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
         let context: DatadogContext = .mockRandom()
 
         // When
-        let request = try builder.request(for: mockEvents, with: context, execution: .mockAny())
+        let request = try builder.request(for: mockEvents, with: context, execution: .mockWith(previousResponseCode: nil, attempt: 0))
 
         // Then
-        XCTAssertEqual(request.url!.query, nil)
+        XCTAssertEqual(request.url!.query, "ddtags=retry_count:1")
     }
 
     func testItSetsHTTPHeaders() throws {

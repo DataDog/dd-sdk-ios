@@ -71,15 +71,15 @@ class ResourceRequestBuilderTests: XCTestCase {
         XCTAssertEqual(try url(for: .us1_fed), expectedURL)
     }
 
-    func testItSetsNoQueryParameters() throws {
+    func testItSetsQueryParameters() throws {
         // Given
         let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When
-        let request = try builder.request(for: mockEvents, with: .mockRandom(), execution: .mockAny())
+        let request = try builder.request(for: mockEvents, with: .mockRandom(), execution: .init(previousResponseCode: nil, attempt: 0))
 
         // Then
-        XCTAssertEqual(request.url!.query, nil)
+        XCTAssertEqual(request.url!.query, "ddtags=retry_count:1")
     }
 
     func testItSetsHTTPHeaders() throws {
