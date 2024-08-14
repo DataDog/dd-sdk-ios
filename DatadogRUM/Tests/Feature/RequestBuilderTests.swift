@@ -107,12 +107,8 @@ class RequestBuilderTests: XCTestCase {
         let request = builder.request(for: mockEvents, with: context, execution: execution)
 
         // Then
-        XCTAssertEqual(
-            request.url?.query,
-            """
-            ddsource=\(randomSource)&ddtags=service:\(randomService),version:\(randomVersion),sdk_version:\(randomSDKVersion),env:\(randomEnv),retry_count:\(randomAttempt),last_failure_status:\(randomStatus)
-            """
-        )
+        let expextedQuery = "ddsource=\(randomSource)&ddtags=service:\(randomService),version:\(randomVersion),sdk_version:\(randomSDKVersion),env:\(randomEnv),retry_count:\(randomAttempt + 1),last_failure_status:\(randomStatus)"
+        XCTAssertEqual(request.url?.query, expextedQuery)
     }
 
     func testItSetsVariantAsExtraQueryParameter() {
