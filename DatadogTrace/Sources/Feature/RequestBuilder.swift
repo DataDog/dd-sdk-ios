@@ -19,10 +19,24 @@ internal struct TracingRequestBuilder: FeatureRequestBuilder {
     /// Telemetry interface.
     let telemetry: Telemetry
 
-    func request(for events: [Event], with context: DatadogContext) -> URLRequest {
+    func request(
+        for events: [Event],
+        with context: DatadogContext,
+        execution: ExecutionContext
+    ) -> URLRequest {
+        var tags = [
+            "retry_count:\(execution.attempt + 1)"
+        ]
+
+        if let previousResponseCode = execution.previousResponseCode {
+            tags.append("last_failure_status:\(previousResponseCode)")
+        }
+
         let builder = URLRequestBuilder(
             url: url(with: context),
-            queryItems: [],
+            queryItems: [
+                .ddtags(tags: tags)
+            ],
             headers: [
                 .contentTypeHeader(contentType: .textPlainUTF8),
                 .userAgentHeader(

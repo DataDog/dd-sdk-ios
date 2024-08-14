@@ -26,8 +26,12 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
         self.multipartBuilder = multipartBuilder
     }
 
-    func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
-        let decoder = JSONDecoder()
+    func request(
+        for events: [Event],
+        with context: DatadogContext,
+        execution: ExecutionContext
+    ) throws -> URLRequest {
+    let decoder = JSONDecoder()
         let resources = try events.map { event in
             try decoder.decode(EnrichedResource.self, from: event.data)
         }

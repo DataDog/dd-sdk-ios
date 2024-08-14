@@ -27,13 +27,15 @@ class DataUploaderTests: XCTestCase {
         // When
         let uploadStatus = try uploader.upload(
             events: .mockAny(),
-            context: .mockAny()
+            context: .mockAny(),
+            previous: nil
         )
 
         // Then
         let expectedUploadStatus = DataUploadStatus(
             httpResponse: randomResponse,
-            ddRequestID: randomRequest.value(forHTTPHeaderField: "DD-REQUEST-ID")
+            ddRequestID: randomRequest.value(forHTTPHeaderField: "DD-REQUEST-ID"),
+            attempt: 0
         )
 
         DDAssertReflectionEqual(uploadStatus, expectedUploadStatus)
@@ -54,11 +56,12 @@ class DataUploaderTests: XCTestCase {
         // When
         let uploadStatus = try uploader.upload(
             events: .mockAny(),
-            context: .mockAny()
+            context: .mockAny(),
+            previous: nil
         )
 
         // Then
-        let expectedUploadStatus = DataUploadStatus(networkError: randomError)
+        let expectedUploadStatus = DataUploadStatus(networkError: randomError, attempt: 0)
 
         DDAssertReflectionEqual(uploadStatus, expectedUploadStatus)
     }
@@ -73,7 +76,7 @@ class DataUploaderTests: XCTestCase {
         )
 
         // When & Then
-        XCTAssertThrowsError(try uploader.upload(events: .mockAny(), context: .mockAny())) { error in
+        XCTAssertThrowsError(try uploader.upload(events: .mockAny(), context: .mockAny(), previous: nil)) { error in
             XCTAssertTrue(error is ErrorMock)
         }
     }

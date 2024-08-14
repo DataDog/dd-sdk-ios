@@ -91,7 +91,7 @@ class RUMFeatureTests: XCTestCase {
         XCTAssertEqual(
             requestURL.query,
             """
-            ddsource=\(randomSource)&ddtags=service:\(randomServiceName),version:\(randomApplicationVersion),sdk_version:\(randomSDKVersion),env:\(randomEnvironmentName)
+            ddsource=\(randomSource)&ddtags=service:\(randomServiceName),version:\(randomApplicationVersion),sdk_version:\(randomSDKVersion),env:\(randomEnvironmentName),retry_count:1
             """
         )
         XCTAssertEqual(

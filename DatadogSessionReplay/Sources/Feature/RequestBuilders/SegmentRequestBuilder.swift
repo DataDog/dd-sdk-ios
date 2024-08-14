@@ -28,7 +28,11 @@ internal struct SegmentRequestBuilder: FeatureRequestBuilder {
         self.multipartBuilder = multipartBuilder
     }
 
-    func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
+    func request(
+        for events: [Event],
+        with context: DatadogContext,
+        execution: ExecutionContext
+    ) throws -> URLRequest {
         guard !events.isEmpty else {
             throw InternalError(description: "[SR] batch events must not be empty.")
         }
