@@ -27,17 +27,18 @@ class DDSessionReplayTests: XCTestCase {
         XCTAssertNil(config._swift.customEndpoint)
     }
 
-    func testDefaultConfigurationWithNewApi() {
+    func testConfigurationWithNewApi() {
         // Given
+        let touchPrivacy: DDSessionReplayConfigurationTouchPrivacyLevel = [.show, .hide].randomElement()!
         let sampleRate: Float = .mockRandom(min: 0, max: 100)
 
         // When
-        let config = DDSessionReplayConfiguration(sampleRate: sampleRate)
+        let config = DDSessionReplayConfiguration(replaySampleRate: sampleRate, touchPrivacyLevel: touchPrivacy)
 
         // Then
         XCTAssertEqual(config._swift.replaySampleRate, sampleRate)
         XCTAssertEqual(config._swift.defaultPrivacyLevel, .mask)
-        XCTAssertEqual(config._swift.touchPrivacyLevel, .hide)
+        XCTAssertEqual(config._swift.touchPrivacyLevel, touchPrivacy._swift)
         XCTAssertNil(config._swift.customEndpoint)
     }
 
@@ -70,7 +71,7 @@ class DDSessionReplayTests: XCTestCase {
         let url: URL = .mockRandom()
 
         // When
-        let config = DDSessionReplayConfiguration(sampleRate: 100)
+        let config = DDSessionReplayConfiguration(replaySampleRate: 100, touchPrivacyLevel: .hide)
         config.replaySampleRate = sampleRate
         config.defaultPrivacyLevel = privacy
         config.touchPrivacyLevel = touchPrivacy
@@ -125,9 +126,10 @@ class DDSessionReplayTests: XCTestCase {
         // Given
         let core = FeatureRegistrationCoreMock()
         CoreRegistry.register(default: core)
+        let touchPrivacy: DDSessionReplayConfigurationTouchPrivacyLevel = [.show, .hide].randomElement()!
         defer { CoreRegistry.unregisterDefault() }
 
-        let config = DDSessionReplayConfiguration(sampleRate: 42)
+        let config = DDSessionReplayConfiguration(replaySampleRate: 42, touchPrivacyLevel: touchPrivacy)
 
         // When
         DDSessionReplay.enable(with: config)
@@ -137,7 +139,7 @@ class DDSessionReplayTests: XCTestCase {
         let requestBuilder = try XCTUnwrap(sr.requestBuilder as? DatadogSessionReplay.SegmentRequestBuilder)
         XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, 42)
         XCTAssertEqual(sr.recordingCoordinator.privacy, .mask)
-        XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, .hide)
+        XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, touchPrivacy._swift)
         XCTAssertNil(requestBuilder.customUploadURL)
     }
 }

@@ -77,10 +77,12 @@ public final class DDSessionReplayConfiguration: NSObject {
     ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked. Default: `.hide`.
     @objc
     public required init(
-        sampleRate: Float
+        replaySampleRate: Float,
+        touchPrivacyLevel: DDSessionReplayConfigurationTouchPrivacyLevel
     ) {
         _swift = SessionReplay.Configuration(
-            sampleRate: sampleRate
+            replaySampleRate: replaySampleRate,
+            touchPrivacyLevel: touchPrivacyLevel._swift
         )
         super.init()
     }
