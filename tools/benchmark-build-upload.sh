@@ -1,8 +1,8 @@
 #!/bin/zsh
 
 # Usage:
-# $ ./tools/e2e-build-upload.sh -h
-# Publishes IPA of a new version of the E2E app to synthetics.
+# $ ./tools/benchmark-build-upload.sh -h
+# Publishes IPA of a new version of the Benchmark app to synthetics.
 
 # Options:
 #   --artifacts-path: Path where the IPA artifact will be exported.
@@ -17,33 +17,33 @@ source ./tools/utils/echo-color.sh
 source ./tools/utils/code-sign.sh
 source ./tools/secrets/get-secret.sh
 
-set_description "Publishes IPA a new version of the E2E app to synthetics."
+set_description "Publishes IPA a new version of the Benchamrk app to synthetics."
 define_arg "artifacts-path" "" "Path where the IPA artifact will be exported." "string" "true"
 
 check_for_help "$@"
 parse_args "$@"
 
-E2E_DIR="E2ETests"
-E2E_XCCONFIG_PATH="$E2E_DIR/xcconfigs/E2E.local.xcconfig"
-E2E_CODESIGN_DIR="$E2E_DIR/code-signing"
-P12_PATH="$E2E_CODESIGN_DIR/e2e_cert.p12"
-PP_PATH="$E2E_CODESIGN_DIR/e2e.mobileprovision"
+BENCHMARK_DIR="BenchmarkTests"
+BENCHMARK_XCCONFIG_PATH="$BENCHMARK_DIR/xcconfigs/Benchmarks.local.xcconfig"
+BENCHMARK_CODESIGN_DIR="$BENCHMARK_DIR/benchmark-signing"
+P12_PATH="$BENCHMARK_CODESIGN_DIR/cert.p12"
+PP_PATH="$BENCHMARK_CODESIGN_DIR/runner.mobileprovision"
 
 ARTIFACTS_PATH="$(realpath .)/$artifacts_path"
 
 create_xcconfig() {
-    echo_subtitle "Create '$E2E_XCCONFIG_PATH'"
-    get_secret $DD_IOS_SECRET__E2E_XCCONFIG_BASE64 | base64 --decode -o $E2E_XCCONFIG_PATH
-    echo_succ "▸ '$E2E_XCCONFIG_PATH' ready"
+    echo_subtitle "Create '$BENCHMARK_XCCONFIG_PATH'"
+    get_secret $DD_IOS_SECRET__BENCHMARK_XCCONFIG_BASE64 | base64 --decode -o $BENCHMARK_XCCONFIG_PATH
+    echo_succ "▸ '$BENCHMARK_XCCONFIG_PATH' ready"
 }
 
 create_codesign_files() {
-    echo_subtitle "Create codesign files in '$E2E_CODESIGN_DIR'"
-    rm -rf "$E2E_CODESIGN_DIR"
-    mkdir -p "$E2E_CODESIGN_DIR"
+    echo_subtitle "Create codesign files in '$BENCHMARK_CODESIGN_DIR'"
+    rm -rf "$BENCHMARK_CODESIGN_DIR"
+    mkdir -p "$BENCHMARK_CODESIGN_DIR"
     get_secret $DD_IOS_SECRET__DEV_CERTIFICATE_P12_BASE64 | base64 --decode -o $P12_PATH
     echo_succ "▸ $P12_PATH - ready"
-    get_secret $DD_IOS_SECRET__E2E_PROVISIONING_PROFILE_BASE64 | base64 --decode -o $PP_PATH
+    get_secret $DD_IOS_SECRET__BENCHMARK_PROVISIONING_PROFILE_BASE64 | base64 --decode -o $PP_PATH
     echo_succ "▸ $PP_PATH - ready"
 }
 
@@ -58,8 +58,8 @@ keychain_import \
     --p12 $P12_PATH \
     --p12-password $(get_secret "$DD_IOS_SECRET__DEV_CERTIFICATE_P12_PASSWORD")
 
-echo_subtitle "Run 'make clean archive export upload ARTIFACTS_PATH=\"$ARTIFACTS_PATH\"' in '$E2E_DIR'"
-cd "$E2E_DIR" 
+echo_subtitle "Run 'make clean archive export upload ARTIFACTS_PATH=\"$ARTIFACTS_PATH\"' in '$BENCHMARK_DIR'"
+cd "$BENCHMARK_DIR" 
 make clean archive export ARTIFACTS_PATH="$ARTIFACTS_PATH"
 
 if [ "$DRY_RUN" = "1" ] || [ "$DRY_RUN" = "true" ]; then
@@ -67,6 +67,6 @@ if [ "$DRY_RUN" = "1" ] || [ "$DRY_RUN" = "true" ]; then
 else
     export DATADOG_API_KEY=$(get_secret $DD_IOS_SECRET__MI_S8S_API_KEY)
     export DATADOG_APP_KEY=$(get_secret $DD_IOS_SECRET__MI_S8S_APP_KEY)
-    export S8S_APPLICATION_ID=$(get_secret $DD_IOS_SECRET__E2E_S8S_APPLICATION_ID)
+    export S8S_APPLICATION_ID=$(get_secret $DD_IOS_SECRET__BENCHMARK_S8S_APPLICATION_ID)
     make upload ARTIFACTS_PATH="$ARTIFACTS_PATH"
 fi

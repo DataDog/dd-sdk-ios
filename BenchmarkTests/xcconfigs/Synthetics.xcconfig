@@ -1,0 +1,6 @@
+#include "Runner.xcconfig"
+
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = Apple Development: Robot Bitrise (9HKDHCMCGH)
+DEVELOPMENT_TEAM = JKFCB4CN7C
+PROVISIONING_PROFILE_SPECIFIER = Datadog Benchmark Runner

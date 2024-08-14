@@ -8,6 +8,7 @@ all: env-check repo-setup templates
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
 		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos spm-build-watchos \
 		e2e-build-upload \
+		benchmark-build-upload \
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
 		dogfood-shopist dogfood-datadog-app \
 		release-build release-validate release-publish-github \
@@ -268,6 +269,18 @@ e2e-build-upload:
 	@$(ECHO_TITLE) "make e2e-build-upload ARTIFACTS_PATH='$(ARTIFACTS_PATH)' DRY_RUN='$(DRY_RUN)'"
 	DRY_RUN=$(DRY_RUN) ./tools/e2e-build-upload.sh --artifacts-path "$(ARTIFACTS_PATH)"
 
+# Builds a new version of the Benchmark app and publishes it to synthetics.
+benchmark-build-upload:
+	@$(call require_param,ARTIFACTS_PATH)
+	@:$(eval DRY_RUN ?= 1)
+	@$(ECHO_TITLE) "make benchmark-build-upload ARTIFACTS_PATH='$(ARTIFACTS_PATH)' DRY_RUN='$(DRY_RUN)'"
+	DRY_RUN=$(DRY_RUN) ./tools/benchmark-build-upload.sh --artifacts-path "$(ARTIFACTS_PATH)"
+
+# Opens `BenchmarkTests` project with passing required ENV variables
+benchmark-tests-open:
+	@$(ECHO_TITLE) "make benchmark-tests-open"
+	@$(MAKE) -C BenchmarkTests open
+
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
 		@cd DatadogSessionReplay/ && swift package generate-xcodeproj
@@ -445,9 +458,9 @@ set-ci-secret:
 	@./tools/secrets/set-secret.sh
 
 bump:
-		@read -p "Enter version number: " version;  \
-		echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > DatadogCore/Sources/Versioning.swift; \
-		./tools/podspec_bump_version.sh $$version; \
-		git add . ; \
-		git commit -m "Bumped version to $$version"; \
-		echo Bumped version to $$version
+	@read -p "Enter version number: " version;  \
+	echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > DatadogCore/Sources/Versioning.swift; \
+	./tools/podspec_bump_version.sh $$version; \
+	git add . ; \
+	git commit -m "Bumped version to $$version"; \
+	echo Bumped version to $$version

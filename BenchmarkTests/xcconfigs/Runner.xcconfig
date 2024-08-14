@@ -1,0 +1,9 @@
+CLIENT_TOKEN = // the Client Token on Mobile Integration Org
+RUM_APPLICATION_ID = // the RUM Application ID on Mobile Integration Org
+API_KEY = // the API Key on Mobile Integration Org
+
+DD_ENV[config=*] = benchmarks
+DD_ENV[config=Debug] = development
+DD_SITE = us1
+
+#include? "Benchmarks.local.xcconfig"
