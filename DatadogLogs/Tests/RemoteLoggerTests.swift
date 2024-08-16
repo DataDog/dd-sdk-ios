@@ -22,6 +22,8 @@ private class ErrorMessageReceiverMock: FeatureMessageReceiver {
         let source: String
         /// The Log attributes
         let attributes: [String: AnyCodable]
+        /// Binary images
+        let binaryImages: [BinaryImage]?
     }
 
     var errors: [ErrorMessage] = []
@@ -41,7 +43,34 @@ private class ErrorMessageReceiverMock: FeatureMessageReceiver {
 }
 
 class RemoteLoggerTests: XCTestCase {
-    func testItSendsErrorAlongWithErrorLog() throws {
+    // MARK: - Message Bus / Message Reciever
+    func testWhenNonErrorLogged_itDoesNotPostsToMessageBus() throws {
+        let messageReceiver = ErrorMessageReceiverMock()
+
+        let core = PassthroughCoreMock(
+            expectation: expectation(description: "Send error"),
+            messageReceiver: messageReceiver
+        )
+
+        // Given
+        let logger = RemoteLogger(
+            core: core,
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false
+        )
+
+        // When
+        logger.info("Info message")
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        XCTAssertEqual(messageReceiver.errors.count, 0)
+    }
+
+    func testWhenErrorLogged_itPostsToMessageBus() throws {
         let messageReceiver = ErrorMessageReceiverMock()
 
         let core = PassthroughCoreMock(
@@ -68,7 +97,7 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(messageReceiver.errors.first?.message, "Error message")
     }
 
-    func testItDoesNotSendErrorAlongWithCrossPlatformCrashLog() throws {
+    func testWhenCrossPlatformCrashErrorLogged_itDoesNotPostToMessageBus() throws {
         let messageReceiver = ErrorMessageReceiverMock()
 
         let core = PassthroughCoreMock(
@@ -92,6 +121,126 @@ class RemoteLoggerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         XCTAssertEqual(messageReceiver.errors.count, 0)
+    }
+
+    func testWhenAttributesContainIncludeBinaryImages_itPostsBinaryImagesToMessageBus() throws {
+        let messageReceiver = ErrorMessageReceiverMock()
+        let stubBacktrace: BacktraceReport = .mockRandom()
+        let logsFeature = LogsFeature.mockWith(
+            backtraceReporter: BacktraceReporterMock(backtrace: stubBacktrace)
+        )
+        let core = SingleFeatureCoreMock(
+            feature: logsFeature,
+            expectation: expectation(description: "Send log"),
+            messageReceiver: messageReceiver
+        )
+        let logger = RemoteLogger(
+            core: core,
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false
+        )
+
+        // When
+        logger.error("Information message", error: ErrorMock(), attributes: [CrossPlatformAttributes.includeBinaryImages: true])
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        XCTAssertEqual(messageReceiver.errors.count, 1)
+        // This is removed because binary images are sent in the message, so the additional attribute isn't needed
+        XCTAssertNil(messageReceiver.errors.first?.attributes[CrossPlatformAttributes.includeBinaryImages])
+        XCTAssertEqual(messageReceiver.errors.first?.binaryImages?.count, stubBacktrace.binaryImages.count)
+        let error = messageReceiver.errors.first
+        for i in 0..<stubBacktrace.binaryImages.count {
+            if let logBacktrace = error?.binaryImages![i] {
+                let errorBacktrace = stubBacktrace.binaryImages[i]
+                XCTAssertEqual(logBacktrace.libraryName, errorBacktrace.libraryName)
+                XCTAssertEqual(logBacktrace.uuid, errorBacktrace.uuid)
+                XCTAssertEqual(logBacktrace.architecture, errorBacktrace.architecture)
+                XCTAssertEqual(logBacktrace.isSystemLibrary, errorBacktrace.isSystemLibrary)
+                XCTAssertEqual(logBacktrace.loadAddress, errorBacktrace.loadAddress)
+                XCTAssertEqual(logBacktrace.maxAddress, errorBacktrace.maxAddress)
+            }
+        }
+    }
+
+    func testWhenErrorLogged_itPostsToMessageBus_withOtherCrossPlatformAttributesIntact() throws {
+        let messageReceiver = ErrorMessageReceiverMock()
+
+        let core = PassthroughCoreMock(
+            expectation: expectation(description: "Send error"),
+            messageReceiver: messageReceiver
+        )
+
+        // Given
+        let logger = RemoteLogger(
+            core: core,
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false
+        )
+
+        // When
+        let mockFingerprint: String = .mockRandom()
+        logger.error(
+            "Error message",
+            error: nil,
+            attributes: [
+                CrossPlatformAttributes.errorSourceType: "flutter",
+                Logs.Attributes.errorFingerprint: mockFingerprint
+            ]
+        )
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        XCTAssertEqual(messageReceiver.errors.count, 1)
+        let error = messageReceiver.errors.first
+        XCTAssertEqual(error?.attributes[CrossPlatformAttributes.errorSourceType]?.value as? String, "flutter")
+        XCTAssertEqual(error?.attributes[Logs.Attributes.errorFingerprint]?.value as? String, mockFingerprint)
+    }
+
+    func testWhenErrorLoggedFromInternal_itPostsToMessageBus_withSourceTypeInjected() throws {
+        let messageReceiver = ErrorMessageReceiverMock()
+
+        let core = PassthroughCoreMock(
+            expectation: expectation(description: "Send error"),
+            messageReceiver: messageReceiver
+        )
+
+        // Given
+        let logger = RemoteLogger(
+            core: core,
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false
+        )
+
+        // When
+        let mockFingerprint: String = .mockRandom()
+        logger._internal.log(
+            level: .error,
+            message: "Error message",
+            errorKind: .mockAny(),
+            errorMessage: .mockRandom(),
+            stackTrace: .mockAny(),
+            attributes: [
+                CrossPlatformAttributes.errorSourceType: "flutter",
+                Logs.Attributes.errorFingerprint: mockFingerprint
+            ]
+        )
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        XCTAssertEqual(messageReceiver.errors.count, 1)
+        let error = messageReceiver.errors.first
+        XCTAssertEqual(error?.attributes[CrossPlatformAttributes.errorSourceType]?.value as? String, "flutter")
+        XCTAssertEqual(error?.attributes[Logs.Attributes.errorFingerprint]?.value as? String, mockFingerprint)
     }
 
     // MARK: - Attributes

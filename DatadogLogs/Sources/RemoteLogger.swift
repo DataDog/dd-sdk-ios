@@ -189,6 +189,15 @@ internal final class RemoteLogger: LoggerProtocol {
                     return
                 }
 
+                // Add back in fingerprint and error source type
+                var busCombinedAttributes = combinedAttributes
+                if let errorSourcetype = error?.sourceType {
+                    busCombinedAttributes[CrossPlatformAttributes.errorSourceType] = errorSourcetype
+                }
+                if let errorFingerprint = errorFingerprint {
+                    busCombinedAttributes[Logs.Attributes.errorFingerprint] = errorFingerprint
+                }
+
                 self.core?.send(
                     message: .baggage(
                         key: ErrorMessage.key,
@@ -197,7 +206,7 @@ internal final class RemoteLogger: LoggerProtocol {
                             message: log.error?.message ?? log.message,
                             type: log.error?.kind,
                             stack: log.error?.stack,
-                            attributes: .init(combinedAttributes),
+                            attributes: .init(busCombinedAttributes),
                             binaryImages: binaryImages
                         )
                     )
