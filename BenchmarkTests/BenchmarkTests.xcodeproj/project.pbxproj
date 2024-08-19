@@ -184,6 +184,7 @@
 		D231DCA92C73356D00F3F66C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/WebViewController.storyboard; sourceTree = "<group>"; };
 		D231DCAB2C73356D00F3F66C /* WebViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewController.swift; sourceTree = "<group>"; };
 		D231DCF82C7342D500F3F66C /* ModuleBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleBundle.swift; sourceTree = "<group>"; };
+		D231DCFA2C735FC200F3F66C /* LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 		D24BFD462C6B916B00AB9604 /* SyntheticScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticScenario.swift; sourceTree = "<group>"; };
 		D27606982C514F37002D2A14 /* SessionReplayScenario.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayScenario.swift; sourceTree = "<group>"; };
 		D276069B2C514F37002D2A14 /* Scenario.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scenario.swift; sourceTree = "<group>"; };
@@ -227,6 +228,7 @@
 		D231DC322C73355800F3F66C /* UIKitCatalog */ = {
 			isa = PBXGroup;
 			children = (
+				D256FB522C737F5800377260 /* LICENSE */,
 				D231DC412C73356D00F3F66C /* ActivityIndicatorViewController.storyboard */,
 				D231DC422C73356D00F3F66C /* ActivityIndicatorViewController.swift */,
 				D231DC442C73356D00F3F66C /* AlertControllerViewController.storyboard */,
@@ -297,6 +299,14 @@
 				D231DCF82C7342D500F3F66C /* ModuleBundle.swift */,
 			);
 			path = UIKitCatalog;
+			sourceTree = "<group>";
+		};
+		D256FB522C737F5800377260 /* LICENSE */ = {
+			isa = PBXGroup;
+			children = (
+				D231DCFA2C735FC200F3F66C /* LICENSE.txt */,
+			);
+			path = LICENSE;
 			sourceTree = "<group>";
 		};
 		D27606992C514F37002D2A14 /* SessionReplay */ = {
