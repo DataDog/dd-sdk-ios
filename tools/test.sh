@@ -48,6 +48,9 @@ setup_test_visibility() {
     export DD_DISABLE_SOURCE_LOCATION=0
     export DD_DISABLE_CRASH_HANDLER=0
 
+    # Git metadata:
+    export DD_GIT_REPOSITORY_URL="git@github.com:DataDog/dd-sdk-ios.git"
+
     echo_info "CI Test Visibility setup:"
     echo "▸ DD_TEST_RUNNER=$DD_TEST_RUNNER"
     echo "▸ DD_ENV=$DD_ENV"
@@ -59,6 +62,7 @@ setup_test_visibility() {
     echo "▸ DD_DISABLE_RUM_INTEGRATION=$DD_DISABLE_RUM_INTEGRATION"
     echo "▸ DD_DISABLE_SOURCE_LOCATION=$DD_DISABLE_SOURCE_LOCATION"
     echo "▸ DD_DISABLE_CRASH_HANDLER=$DD_DISABLE_CRASH_HANDLER"
+    echo "▸ DD_GIT_REPOSITORY_URL=$DD_GIT_REPOSITORY_URL"
 }
 
 if [ "$USE_TEST_VISIBILITY" = "1" ]; then
