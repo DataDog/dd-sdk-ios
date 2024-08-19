@@ -15,7 +15,7 @@ enum MetricExporterError: Error {
 ///
 /// This version does not store data to disk, it uploads to the intake directly.
 /// Additionally, it does not crash.
-final class MetricExporter: Exporter, OpenTelemetrySdk.MetricExporter {
+final class MetricExporter: OpenTelemetrySdk.MetricExporter {
     struct Configuration {
         let apiKey: String
         let version: String
@@ -50,6 +50,7 @@ final class MetricExporter: Exporter, OpenTelemetrySdk.MetricExporter {
         let tags: [String]
     }
 
+    let session: URLSession
     let encoder = JSONEncoder()
     let configuration: Configuration
 
@@ -61,8 +62,10 @@ final class MetricExporter: Exporter, OpenTelemetrySdk.MetricExporter {
     // swiftlint:enable force_unwrapping
 
     required init(configuration: Configuration) {
+        let sessionConfiguration: URLSessionConfiguration = .ephemeral
+        sessionConfiguration.urlCache = nil
+        self.session = URLSession(configuration: sessionConfiguration)
         self.configuration = configuration
-        super.init()
     }
 
     func export(metrics: [Metric], shouldCancel: (() -> Bool)?) -> MetricExporterResultCode {
