@@ -72,7 +72,7 @@ extension Benchmarks.Configuration {
                 osName: device.systemName,
                 osVersion: device.systemVersion,
                 run: run.rawValue,
-                scenario: scenario.name,
+                scenario: scenario.name.rawValue,
                 branch: ""
             )
         )

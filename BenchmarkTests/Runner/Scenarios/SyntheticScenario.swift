@@ -10,27 +10,32 @@ import UIKit
 /// The Synthetics Scenario reads the `BENCHMARK_SCENARIO` environment
 /// variable to instantiate a `Scenario` compliant object.
 internal struct SyntheticScenario: Scenario {
+    internal enum Name: String {
+        case sessionReplay
+
+    }
     /// The scenario's name.
-    let name: String
-    
+    let name: Name
+
     /// The underlying scenario.
     private let _scenario: Scenario
     
     /// Creates the scenario by reading the `BENCHMARK_SCENARIO` value from the
-    /// environment vairables.
+    /// environment variables.
     ///
-    /// - Parameter processInfo: The `ProcessInfo` with environment vairables
+    /// - Parameter processInfo: The `ProcessInfo` with environment variables
     /// configured
     init?(processInfo: ProcessInfo = .processInfo) {
-        guard let name = processInfo.environment["BENCHMARK_SCENARIO"] else {
+        guard 
+            let rawValue = processInfo.environment["BENCHMARK_SCENARIO"],
+            let name = Name(rawValue: rawValue)
+        else {
             return nil
         }
 
         switch name {
-        case "sessionReplay":
+        case .sessionReplay:
             _scenario = SessionReplayScenario()
-        default:
-            return nil
         }
 
         self.name = name
@@ -52,9 +57,9 @@ internal enum SyntheticRun: String {
     case profiling
 
     /// Creates the scenario by reading the `BENCHMARK_RUN` value from the
-    /// environment vairables.
+    /// environment variables.
     ///
-    /// - Parameter processInfo: The `ProcessInfo` with environment vairables
+    /// - Parameter processInfo: The `ProcessInfo` with environment variables
     /// configured
     init?(processInfo: ProcessInfo = .processInfo) {
         guard
