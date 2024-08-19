@@ -99,6 +99,16 @@
             value = "$(DD_GIT_REPOSITORY_URL)"
             isEnabled = "YES">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_GIT_BRANCH"
+            value = "$(DD_GIT_BRANCH)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_GIT_TAG"
+            value = "$(DD_GIT_TAG)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
       </EnvironmentVariables>
       <CodeCoverageTargets>
          <BuildableReference
