@@ -24,10 +24,6 @@ echo "\n"
 echo_info "git --no-pager branch -a:"
 git --no-pager branch -a
 
-echo "done"
-
-exit 1
-
 echo_succ "System info:"
 system_profiler SPSoftwareDataType
 
@@ -111,3 +107,6 @@ if [ "$CI" = "true" ]; then
     echo "▸ RELEASE_GIT_TAG = ${RELEASE_GIT_TAG:-(not set or empty)}"
     echo "▸ RELEASE_DRY_RUN = ${RELEASE_DRY_RUN:-(not set or empty)}"
 fi
+
+echo "done"
+exit 1
