@@ -65,9 +65,6 @@ default:
 
 ENV check:
   stage: pre
-  rules: 
-    - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
   script:
     - ./tools/runner-setup.sh --datadog-ci
     - make env-check
