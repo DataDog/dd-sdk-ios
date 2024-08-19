@@ -24,6 +24,10 @@ echo "\n"
 echo_info "git --no-pager branch -a:"
 git --no-pager branch -a
 
+echo "\n"
+echo_info "export -p"
+export -p
+
 echo_succ "System info:"
 system_profiler SPSoftwareDataType
 
