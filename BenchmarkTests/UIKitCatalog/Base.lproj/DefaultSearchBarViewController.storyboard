@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17132" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="aTT-8g-UdL">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17105"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Default Search Bar-->
+        <scene sceneID="mvP-iV-Ror">
+            <objects>
+                <viewController storyboardIdentifier="DefaultSearchBarViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="aTT-8g-UdL" customClass="DefaultSearchBarViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="VZF-3b-rcm">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <searchBar contentMode="redraw" translatesAutoresizingMaskIntoConstraints="NO" id="wag-WL-u6e">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="56"/>
+                                <textInputTraits key="textInputTraits"/>
+                                <scopeButtonTitles>
+                                    <string>Title</string>
+                                    <string>Title</string>
+                                </scopeButtonTitles>
+                                <connections>
+                                    <outlet property="delegate" destination="aTT-8g-UdL" id="Ixz-nw-Grc"/>
+                                </connections>
+                            </searchBar>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="xFq-dM-TAS"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="xFq-dM-TAS" firstAttribute="trailing" secondItem="wag-WL-u6e" secondAttribute="trailing" id="2FT-aX-eAh"/>
+                            <constraint firstItem="wag-WL-u6e" firstAttribute="top" secondItem="xFq-dM-TAS" secondAttribute="top" id="qYe-Wb-MuF"/>
+                            <constraint firstItem="wag-WL-u6e" firstAttribute="leading" secondItem="xFq-dM-TAS" secondAttribute="leading" id="vMl-TJ-bf9"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Default Search Bar" id="Dg6-3W-EW9"/>
+                    <connections>
+                        <outlet property="searchBar" destination="wag-WL-u6e" id="bq7-b9-vrt"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="i9P-Ig-Qfb" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="9126" y="4175"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

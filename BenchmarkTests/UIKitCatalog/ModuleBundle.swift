@@ -4,7 +4,12 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import UIKit
+import Foundation
 
-class SessionReplayController: UIViewController {
+private class ModuleClass { }
+
+extension Bundle {
+    static var module: Bundle { Bundle(for: ModuleClass.self) }
 }
+
+public let bundle: Bundle = .module
