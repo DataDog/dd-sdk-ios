@@ -16,6 +16,18 @@ check_if_installed() {
 
 echo_subtitle "Check versions of installed tools"
 
+echo_succ "Git clone:"
+echo_info "git rev-parse --abbrev-ref HEAD"
+git rev-parse --abbrev-ref HEAD
+
+echo "\n"
+echo_info "git --no-pager branch -a:"
+git --no-pager branch -a
+
+echo "done"
+
+exit 1
+
 echo_succ "System info:"
 system_profiler SPSoftwareDataType
 
