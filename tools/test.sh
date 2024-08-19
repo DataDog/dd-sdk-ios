@@ -50,7 +50,7 @@ setup_test_visibility() {
 
     # Git metadata:
     # - While `dd-sdk-swift-testing` can read Git metadata from `.git` folder, following info must be overwritten
-    # due to our GH → GitLab mirroring configuration.
+    # due to our GH → GitLab mirroring configuration (otherwise it will point to GitLab mirror not GH repo).
     export DD_GIT_REPOSITORY_URL="git@github.com:DataDog/dd-sdk-ios.git"
     export DD_GIT_BRANCH=$(current_git_branch)
     export DD_GIT_TAG=$(current_git_tag)
