@@ -23,7 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let applicationInfo = try! AppInfo() // crash if info are missing or malformed
 
         switch run {
-        case .baseline, .metrics:
+        case .baseline, .instrumented:
             // measure metrics during baseline and metrics runs
             Benchmarks.metrics(
                 with: Benchmarks.Configuration(
