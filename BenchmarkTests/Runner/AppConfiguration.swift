@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 import DatadogCore
 
-/// Test info reads configuration from `Info.plist`.
+/// Application info reads configuration from `Info.plist`.
 ///
 /// The expected format is as follow:
 ///
@@ -27,7 +27,7 @@ import DatadogCore
 ///             <string>$(DD_SITE)</string>
 ///         </dict>
 ///     </dict>
-struct TestInfo: Decodable {
+struct AppInfo: Decodable {
     let clientToken: String
     let applicationID: String
     let apiKey: String
@@ -43,7 +43,7 @@ struct TestInfo: Decodable {
     }
 }
 
-extension TestInfo {
+extension AppInfo {
     init(bundle: Bundle = .main) throws {
         let decoder = AnyDecoder()
         let obj = bundle.object(forInfoDictionaryKey: "DatadogConfiguration")
@@ -51,7 +51,7 @@ extension TestInfo {
     }
 }
 
-extension TestInfo {
+extension AppInfo {
     static var empty: Self {
         .init(
             clientToken: "",
@@ -66,7 +66,7 @@ extension TestInfo {
 extension DatadogSite: Decodable {}
 
 extension Datadog.Configuration {
-    static func benchmark(info: TestInfo) -> Self {
+    static func benchmark(info: AppInfo) -> Self {
         .init(
             clientToken: info.clientToken,
             env: info.env,

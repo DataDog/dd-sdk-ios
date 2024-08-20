@@ -8,10 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		D23DD32D2C58D80C00B90C4C /* DatadogBenchmarks in Frameworks */ = {isa = PBXBuildFile; productRef = D23DD32C2C58D80C00B90C4C /* DatadogBenchmarks */; };
+		D24BFD472C6B916B00AB9604 /* SyntheticScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24BFD462C6B916B00AB9604 /* SyntheticScenario.swift */; };
 		D276069F2C514F37002D2A14 /* SessionReplay.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D27606962C514F37002D2A14 /* SessionReplay.storyboard */; };
 		D27606A02C514F37002D2A14 /* SessionReplayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27606972C514F37002D2A14 /* SessionReplayController.swift */; };
 		D27606A12C514F37002D2A14 /* SessionReplayScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27606982C514F37002D2A14 /* SessionReplayScenario.swift */; };
-		D27606A22C514F37002D2A14 /* DefaultScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D276069A2C514F37002D2A14 /* DefaultScenario.swift */; };
 		D27606A32C514F37002D2A14 /* Scenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D276069B2C514F37002D2A14 /* Scenario.swift */; };
 		D27606A42C514F37002D2A14 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D276069D2C514F37002D2A14 /* AppConfiguration.swift */; };
 		D27606A72C514F77002D2A14 /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = D27606A62C514F77002D2A14 /* DatadogCore */; };
@@ -36,10 +36,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D24BFD462C6B916B00AB9604 /* SyntheticScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticScenario.swift; sourceTree = "<group>"; };
 		D27606962C514F37002D2A14 /* SessionReplay.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = SessionReplay.storyboard; sourceTree = "<group>"; };
 		D27606972C514F37002D2A14 /* SessionReplayController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayController.swift; sourceTree = "<group>"; };
 		D27606982C514F37002D2A14 /* SessionReplayScenario.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayScenario.swift; sourceTree = "<group>"; };
-		D276069A2C514F37002D2A14 /* DefaultScenario.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultScenario.swift; sourceTree = "<group>"; };
 		D276069B2C514F37002D2A14 /* Scenario.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scenario.swift; sourceTree = "<group>"; };
 		D276069D2C514F37002D2A14 /* AppConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
 		D27606B22C526908002D2A14 /* Benchmarks.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Benchmarks.local.xcconfig; sourceTree = "<group>"; };
@@ -82,9 +82,9 @@
 		D276069C2C514F37002D2A14 /* Scenarios */ = {
 			isa = PBXGroup;
 			children = (
-				D27606992C514F37002D2A14 /* SessionReplay */,
-				D276069A2C514F37002D2A14 /* DefaultScenario.swift */,
 				D276069B2C514F37002D2A14 /* Scenario.swift */,
+				D24BFD462C6B916B00AB9604 /* SyntheticScenario.swift */,
+				D27606992C514F37002D2A14 /* SessionReplay */,
 			);
 			path = Scenarios;
 			sourceTree = "<group>";
@@ -219,8 +219,8 @@
 			files = (
 				D27606A42C514F37002D2A14 /* AppConfiguration.swift in Sources */,
 				D29F75502C4AA07E00288638 /* AppDelegate.swift in Sources */,
-				D27606A22C514F37002D2A14 /* DefaultScenario.swift in Sources */,
 				D27606A12C514F37002D2A14 /* SessionReplayScenario.swift in Sources */,
+				D24BFD472C6B916B00AB9604 /* SyntheticScenario.swift in Sources */,
 				D27606A32C514F37002D2A14 /* Scenario.swift in Sources */,
 				D27606A02C514F37002D2A14 /* SessionReplayController.swift in Sources */,
 			);
@@ -295,6 +295,7 @@
 				CURRENT_PROJECT_VERSION = f34790fea;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Datadog Benchmark Runner";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -442,6 +443,7 @@
 				CURRENT_PROJECT_VERSION = f34790fea;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Datadog Benchmark Runner";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -470,6 +472,7 @@
 				CURRENT_PROJECT_VERSION = f34790fea;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Datadog Benchmark Runner";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
