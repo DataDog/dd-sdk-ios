@@ -164,6 +164,17 @@ Tools Tests:
     - make clean repo-setup ENV=ci
     - make tools-test
 
+Benchmark Build:
+  stage: test
+  rules:
+    - if: '$CI_COMMIT_BRANCH' # when on branch with following changes compared to develop
+      changes:
+        paths:
+          - "BenchmarkTests/**/*"
+        compare_to: 'develop'
+  script:
+    - make benchmark-build
+
 Smoke Tests (iOS):
   stage: smoke-test
   rules: 
@@ -265,7 +276,7 @@ E2E Test (upload to s8s):
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --datadog-ci
     - make clean
     - export DRY_RUN=${DRY_RUN:-0} # default to 0 if not specified
-    - make e2e-build-upload ARTIFACTS_PATH="artifacts/e2e"
+    - make e2e-upload ARTIFACTS_PATH="artifacts/e2e"
 
 # ┌────────────────────────────┐
 # │ Benchmark Test app upload: │
@@ -283,7 +294,7 @@ Benchmark Test (upload to s8s):
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --datadog-ci
     - make clean
     - export DRY_RUN=${DRY_RUN:-0} # default to 0 if not specified
-    - make benchmark-build-upload ARTIFACTS_PATH="artifacts/benchmark"
+    - make benchmark-upload ARTIFACTS_PATH="artifacts/benchmark"
 
 # ┌─────────────────┐
 # │ SDK dogfooding: │
