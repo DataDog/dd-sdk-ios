@@ -77,7 +77,8 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
                     return nil
                 }
                 let expectedFPS = 1.0 / expectedCurrentFrameDuration
-                fps = currentFPS * (Self.backendSupportedFrameRate / expectedFPS)
+                let normalizedFPS = currentFPS * (Self.backendSupportedFrameRate / expectedFPS)
+                fps = min(normalizedFPS, Self.backendSupportedFrameRate)
             } else {
                 fps = currentFPS
             }

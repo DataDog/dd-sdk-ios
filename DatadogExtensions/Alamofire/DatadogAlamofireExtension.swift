@@ -8,6 +8,7 @@ import DatadogInternal
 import Alamofire
 
 /// An `Alamofire.EventMonitor` which instruments `Alamofire.Session` with Datadog RUM and Tracing.
+@available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 public class DDEventMonitor: EventMonitor {
     /// The instance of the SDK core notified by this monitor.
     private weak var core: DatadogCoreProtocol?
@@ -39,6 +40,7 @@ public class DDEventMonitor: EventMonitor {
 }
 
 /// An `Alamofire.RequestInterceptor` which instruments `Alamofire.Session` with Datadog RUM and Tracing.
+@available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 public class DDRequestInterceptor: RequestInterceptor {
 /// The instance of the SDK core notified by this monitor.
     private weak var core: DatadogCoreProtocol?

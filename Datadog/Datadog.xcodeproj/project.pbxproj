@@ -738,8 +738,6 @@
 		D20605BA2875729E0047275C /* ContextValuePublisherMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605B82875729E0047275C /* ContextValuePublisherMock.swift */; };
 		D20605C42875895C0047275C /* KronosClockMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605BB28757BFB0047275C /* KronosClockMock.swift */; };
 		D20605C52875895E0047275C /* KronosClockMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605BB28757BFB0047275C /* KronosClockMock.swift */; };
-		D20605CA2875A83D0047275C /* ContextValueReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605C62875A77D0047275C /* ContextValueReader.swift */; };
-		D20605CB2875A83F0047275C /* ContextValueReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605C62875A77D0047275C /* ContextValueReader.swift */; };
 		D206BB852A41CA6800F43BA2 /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D207317C29A5226A00ECBF94 /* DatadogLogs.framework */; };
 		D206BB8A2A41CA7000F43BA2 /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D20731B429A5279D00ECBF94 /* DatadogLogs.framework */; };
 		D207318429A5226B00ECBF94 /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D207317C29A5226A00ECBF94 /* DatadogLogs.framework */; platformFilter = ios; };
@@ -1270,8 +1268,6 @@
 		D29CDD3328211A2200F7DAA5 /* TLVBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CDD3128211A2200F7DAA5 /* TLVBlock.swift */; };
 		D2A1EE23287740B500D28DFB /* ApplicationStatePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE22287740B500D28DFB /* ApplicationStatePublisher.swift */; };
 		D2A1EE24287740B500D28DFB /* ApplicationStatePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE22287740B500D28DFB /* ApplicationStatePublisher.swift */; };
-		D2A1EE26287C35DE00D28DFB /* ContextValueReaderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE25287C35DE00D28DFB /* ContextValueReaderMock.swift */; };
-		D2A1EE27287C35DE00D28DFB /* ContextValueReaderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE25287C35DE00D28DFB /* ContextValueReaderMock.swift */; };
 		D2A1EE32287DA51900D28DFB /* UserInfoPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE31287DA51900D28DFB /* UserInfoPublisher.swift */; };
 		D2A1EE33287DA51900D28DFB /* UserInfoPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE31287DA51900D28DFB /* UserInfoPublisher.swift */; };
 		D2A1EE35287EB8DB00D28DFB /* ServerOffsetPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE34287EB8DB00D28DFB /* ServerOffsetPublisherTests.swift */; };
@@ -2782,7 +2778,6 @@
 		D20605B5287572640047275C /* DatadogContextProviderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogContextProviderMock.swift; sourceTree = "<group>"; };
 		D20605B82875729E0047275C /* ContextValuePublisherMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextValuePublisherMock.swift; sourceTree = "<group>"; };
 		D20605BB28757BFB0047275C /* KronosClockMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KronosClockMock.swift; sourceTree = "<group>"; };
-		D20605C62875A77D0047275C /* ContextValueReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextValueReader.swift; sourceTree = "<group>"; };
 		D207317C29A5226A00ECBF94 /* DatadogLogs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogLogs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D207318329A5226A00ECBF94 /* DatadogLogsTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogLogsTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D20731B429A5279D00ECBF94 /* DatadogLogs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogLogs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2960,7 +2955,6 @@
 		D29CDD3128211A2200F7DAA5 /* TLVBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TLVBlock.swift; sourceTree = "<group>"; };
 		D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIActionModifier.swift; sourceTree = "<group>"; };
 		D2A1EE22287740B500D28DFB /* ApplicationStatePublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationStatePublisher.swift; sourceTree = "<group>"; };
-		D2A1EE25287C35DE00D28DFB /* ContextValueReaderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextValueReaderMock.swift; sourceTree = "<group>"; };
 		D2A1EE31287DA51900D28DFB /* UserInfoPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfoPublisher.swift; sourceTree = "<group>"; };
 		D2A1EE34287EB8DB00D28DFB /* ServerOffsetPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerOffsetPublisherTests.swift; sourceTree = "<group>"; };
 		D2A1EE37287EBE4200D28DFB /* NetworkConnectionInfoPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConnectionInfoPublisherTests.swift; sourceTree = "<group>"; };
@@ -5712,7 +5706,6 @@
 			children = (
 				D20605B5287572640047275C /* DatadogContextProviderMock.swift */,
 				D20605B82875729E0047275C /* ContextValuePublisherMock.swift */,
-				D2A1EE25287C35DE00D28DFB /* ContextValueReaderMock.swift */,
 			);
 			path = DatadogCore;
 			sourceTree = "<group>";
@@ -6467,7 +6460,6 @@
 			children = (
 				D2EFA867286DA85700F1FAA6 /* DatadogContextProvider.swift */,
 				D20605A2287464F40047275C /* ContextValuePublisher.swift */,
-				D20605C62875A77D0047275C /* ContextValueReader.swift */,
 				D20605A5287476230047275C /* ServerOffsetPublisher.swift */,
 				D20605A82874C1CD0047275C /* NetworkConnectionInfoPublisher.swift */,
 				D20605B12874E1660047275C /* CarrierInfoPublisher.swift */,
@@ -8047,7 +8039,6 @@
 				9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */,
 				D2FB125D292FBB56005B13F8 /* Datadog+Internal.swift in Sources */,
 				D2A7840F29A53B2F003B03BB /* Directory.swift in Sources */,
-				D20605CB2875A83F0047275C /* ContextValueReader.swift in Sources */,
 				61D3E0DB277B23F1008BE766 /* KronosNSTimer+ClosureKit.swift in Sources */,
 				D20605A92874C1CD0047275C /* NetworkConnectionInfoPublisher.swift in Sources */,
 				614396722A67D74F00197326 /* BatchMetrics.swift in Sources */,
@@ -8236,7 +8227,6 @@
 				61F930C52BA1C4EB005F0EE2 /* TLVBlockReaderTests.swift in Sources */,
 				6172472725D673D7007085B3 /* CrashContextTests.swift in Sources */,
 				61A2CC242A44454D0000FF25 /* DDRUMTests.swift in Sources */,
-				D2A1EE26287C35DE00D28DFB /* ContextValueReaderMock.swift in Sources */,
 				D25CFAA329C8644E00E3A43D /* Casting+Tracing.swift in Sources */,
 				61BAD46A26415FCE001886CA /* OTSpanTests.swift in Sources */,
 				61B5E42726DFB145000B0A5F /* DDDatadog+apiTests.m in Sources */,
@@ -9304,7 +9294,6 @@
 				D29CDD3328211A2200F7DAA5 /* TLVBlock.swift in Sources */,
 				D2612F48290197C700509B7D /* LaunchTimePublisher.swift in Sources */,
 				A70A82662A935F210072F5DC /* BackgroundTaskCoordinator.swift in Sources */,
-				D20605CA2875A83D0047275C /* ContextValueReader.swift in Sources */,
 				D2A1EE24287740B500D28DFB /* ApplicationStatePublisher.swift in Sources */,
 				D2CB6E2927C50EAE00A62B57 /* KronosInternetAddress.swift in Sources */,
 				6128F5722BA223D100D35B08 /* DataStore+TLV.swift in Sources */,
@@ -9511,7 +9500,6 @@
 				D28F836629C9E6A200EF8EA2 /* DatadogTraceFeatureTests.swift in Sources */,
 				612C13D72AAB35EB0086B5D1 /* SRSegmentMatcher.swift in Sources */,
 				6147989A2A459B2E0095CB02 /* DDTraceConfigurationTests.swift in Sources */,
-				D2A1EE27287C35DE00D28DFB /* ContextValueReaderMock.swift in Sources */,
 				D2CB6F7E27C520D400A62B57 /* OTSpanTests.swift in Sources */,
 				D2CB6F7F27C520D400A62B57 /* DDDatadog+apiTests.m in Sources */,
 				D2CB6F8027C520D400A62B57 /* TracingWithLoggingIntegrationTests.swift in Sources */,
