@@ -128,6 +128,15 @@ public enum Benchmarks {
             }
         }
 
+        let fps = FPS()
+        _ = meter.createDoubleObservableGauge(name: "ios.benchmark.fps.min") { metric in
+            if let value = fps.minimumRate {
+                metric.observe(value: value, labels: labels)
+            }
+
+            fps.reset()
+        }
+
         OpenTelemetry.registerMeterProvider(meterProvider: meterProvider)
     }
 }
