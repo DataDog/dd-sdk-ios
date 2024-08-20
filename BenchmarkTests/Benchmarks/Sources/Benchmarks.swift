@@ -21,7 +21,7 @@ public enum Benchmarks {
     /// Configuration of the Benchmarks library.
     public struct Configuration {
         /// Context of Benchmarks measures.
-        /// The context properties will be added metrics as tags.
+        /// The context properties will be added to metrics as tags.
         public struct Context {
             var applicationIdentifier: String
             var applicationName: String

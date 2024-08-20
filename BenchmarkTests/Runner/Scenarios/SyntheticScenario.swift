@@ -10,9 +10,9 @@ import UIKit
 /// The Synthetics Scenario reads the `BENCHMARK_SCENARIO` environment
 /// variable to instantiate a `Scenario` compliant object.
 internal struct SyntheticScenario: Scenario {
+    /// The Synthetics benchmark scenario value.
     internal enum Name: String {
         case sessionReplay
-
     }
     /// The scenario's name.
     let name: Name
@@ -50,10 +50,10 @@ internal struct SyntheticScenario: Scenario {
     }
 }
 
-/// The Synthetics benchark run value.
+/// The Synthetics benchmark run value.
 internal enum SyntheticRun: String {
     case baseline
-    case metrics
+    case instrumented
     case profiling
 
     /// Creates the scenario by reading the `BENCHMARK_RUN` value from the
