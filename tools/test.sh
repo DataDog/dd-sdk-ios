@@ -52,8 +52,10 @@ setup_test_visibility() {
     # - While `dd-sdk-swift-testing` can read Git metadata from `.git` folder, following info must be overwritten
     # due to our GH → GitLab mirroring configuration (otherwise it will point to GitLab mirror not GH repo).
     export DD_GIT_REPOSITORY_URL="git@github.com:DataDog/dd-sdk-ios.git"
-    export DD_GIT_BRANCH=$(current_git_branch)
-    export DD_GIT_TAG=$(current_git_tag)
+    # export DD_GIT_BRANCH=$(current_git_branch)
+    # export DD_GIT_TAG=$(current_git_tag)
+
+    export DD_TRACE_DEBUG=1
 
     echo_info "CI Test Visibility setup:"
     echo "▸ DD_TEST_RUNNER=$DD_TEST_RUNNER"
@@ -67,8 +69,8 @@ setup_test_visibility() {
     echo "▸ DD_DISABLE_SOURCE_LOCATION=$DD_DISABLE_SOURCE_LOCATION"
     echo "▸ DD_DISABLE_CRASH_HANDLER=$DD_DISABLE_CRASH_HANDLER"
     echo "▸ DD_GIT_REPOSITORY_URL=$DD_GIT_REPOSITORY_URL"
-    echo "▸ DD_GIT_BRANCH=$DD_GIT_BRANCH"
-    echo "▸ DD_GIT_TAG=$DD_GIT_TAG"
+    # echo "▸ DD_GIT_BRANCH=$DD_GIT_BRANCH"
+    # echo "▸ DD_GIT_TAG=$DD_GIT_TAG"
 }
 
 if [ "$USE_TEST_VISIBILITY" = "1" ]; then
@@ -78,4 +80,4 @@ fi
 set -x
 
 xcodebuild -version
-xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test | xcbeautify
+xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test

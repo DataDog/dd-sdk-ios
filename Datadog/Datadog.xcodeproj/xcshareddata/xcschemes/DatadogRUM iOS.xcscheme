@@ -109,6 +109,11 @@
             value = "$(DD_GIT_TAG)"
             isEnabled = "YES">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TRACE_DEBUG"
+            value = "$(DD_TRACE_DEBUG)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
       </EnvironmentVariables>
       <CodeCoverageTargets>
          <BuildableReference
