@@ -114,7 +114,7 @@ Unit Tests (iOS, Test Visibility shadow):
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - cp .git git-copy
+    - cp -r .git git-copy
     - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
 
 .Unit Tests (tvOS):
