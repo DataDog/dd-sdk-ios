@@ -50,7 +50,16 @@ internal struct SyntheticScenario: Scenario {
     }
 }
 
-/// The Synthetics benchmark run value.
+/// The Synthetics benchmark run.
+///
+/// The run specifies the execution context of a benchmark scenrio.
+/// Each execution will collect different type of benchmarking data:
+///     - The `baseline` run collects various metrics during the scenario execution **without**
+///     the Datadog SDK being initialised.
+///     -  The `instrumented` run collects the same metrics as `baseline` but **with** the
+///     Datadog SDK initialised. Comparing the `baseline` and `instrumented` runs will provide
+///     the overhead of the SDK for each metric.
+///     - The `profiling` run will only collect traces of the SDK internal processes.
 internal enum SyntheticRun: String {
     case baseline
     case instrumented
