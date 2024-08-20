@@ -28,12 +28,17 @@ internal struct DataUploadConditions {
     }
 
     func blockersForUpload(with context: DatadogContext) -> [Blocker] {
+        var blockers: [Blocker] = []
+        #if !os(watchOS)
         guard let reachability = context.networkConnectionInfo?.reachability else {
             // when `NetworkConnectionInfo` is not yet available
             return [.networkReachability(description: "unknown")]
         }
         let networkIsReachable = reachability == .yes || reachability == .maybe
-        var blockers: [Blocker] = networkIsReachable ? [] : [.networkReachability(description: reachability.rawValue)]
+        if !networkIsReachable {
+            blockers = [.networkReachability(description: reachability.rawValue)]
+        }
+        #endif
 
         guard let battery = context.batteryStatus, battery.state != .unknown else {
             // Note: in RUMS-132 we got the report on `.unknown` battery state reporing `-1` battery level on iPad device
