@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.16.0 / 20-08-2024
+
 - [FIX] Refresh rate vital for variable refresh rate displays when over performing. See [#1973][]
 - [FIX] Alamofire extension types are deprecated now. See [#1988][]
 
