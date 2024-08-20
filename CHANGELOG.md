@@ -2,6 +2,7 @@
 
 - [FIX] Refresh rate vital for variable refresh rate displays when over performing. See [#1973][]
 - [FIX] Alamofire extension types are deprecated now. See [#1988][]
+- [FEATURE] Add image privacy level configuration for Session Replay. See [#1959][]
 
 # 2.14.2 / 26-07-2024
 
@@ -16,7 +17,6 @@
 - [IMPROVEMENT] Decorate network span kind as `client`. See [#1963][]
 - [FIX] Fix CPU spikes when Watchdog Terminations tracking is enabled. See [#1968][]
 - [FIX] Fix CPU spike when recording UITabBar using SessionReplay. See [#1967][]
-- [FEATURE] Add image privacy level configuration for Session Replay. See [#1959][]
 
 # 2.14.1 / 09-07-2024
 
