@@ -128,6 +128,19 @@ public enum Benchmarks {
             }
         }
 
+        _ = meter.createDoubleObservableGauge(name: "ios.benchmark.cpu") { metric in
+            do {
+                let usage = try CPU.usage()
+                metric.observe(value: usage, labels: labels)
+            } catch {
+                logger.logRecordBuilder()
+                    .setSeverity(.error)
+                    .setAttributes(labels.mapValues { .string($0) })
+                    .setBody("Failed to read CPU Metric: \(error)")
+                    .emit()
+            }
+        }
+
         let fps = FPS()
         _ = meter.createDoubleObservableGauge(name: "ios.benchmark.fps.min") { metric in
             if let value = fps.minimumRate {
