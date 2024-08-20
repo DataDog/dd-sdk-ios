@@ -80,4 +80,5 @@ fi
 set -x
 
 xcodebuild -version
+xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" build > /dev/null
 xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test
