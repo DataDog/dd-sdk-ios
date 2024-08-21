@@ -22,9 +22,11 @@ internal protocol Recording {
 public class Recorder: Recording {
     /// The context of recording next snapshot.
     public struct Context: Equatable {
-        /// The content recording policy from the moment of requesting snapshot.
+        /// The content recording policy at the moment of requesting snapshot.
         public let privacy: SessionReplayPrivacyLevel
-        /// The content recording policy from the moment of requesting snapshot.
+        /// The content recording policy for texts and inputs at the moment of requesting snapshot.
+        public let textAndInputPrivacy: SessionReplayTextAndInputPrivacyLevel
+        /// The content recording policy for touches at the moment of requesting snapshot.
         public let touchPrivacy: SessionReplayTouchPrivacyLevel
         /// Current RUM application ID - standard UUID string, lowecased.
         let applicationID: String
@@ -39,6 +41,7 @@ public class Recorder: Recording {
 
         internal init(
             privacy: PrivacyLevel,
+            textAndInputPrivacy: TextAndInputPrivacyLevel,
             touchPrivacy: TouchPrivacyLevel,
             applicationID: String,
             sessionID: String,
@@ -47,6 +50,7 @@ public class Recorder: Recording {
             date: Date = Date()
         ) {
             self.privacy = privacy
+            self.textAndInputPrivacy = textAndInputPrivacy
             self.touchPrivacy = touchPrivacy
             self.applicationID = applicationID
             self.sessionID = sessionID
