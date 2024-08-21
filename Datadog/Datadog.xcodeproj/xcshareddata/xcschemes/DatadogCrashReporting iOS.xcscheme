@@ -33,9 +33,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "61B7885B25C180CB002675B5"
-            BuildableName = "DatadogCrashReportingTests iOS.xctest"
-            BlueprintName = "DatadogCrashReportingTests iOS"
+            BlueprintIdentifier = "61B7885325C180CB002675B5"
+            BuildableName = "DatadogCrashReporting.framework"
+            BlueprintName = "DatadogCrashReporting iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -53,32 +53,17 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_API_KEY"
-            value = "$(DD_SDK_SWIFT_TESTING_APIKEY)"
+            value = "$(DD_API_KEY)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_ENV"
-            value = "$(DD_SDK_SWIFT_TESTING_ENV)"
+            value = "$(DD_ENV)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_SERVICE"
-            value = "$(DD_SDK_SWIFT_TESTING_SERVICE)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "DD_DISABLE_SDKIOS_INTEGRATION"
-            value = "1"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "DD_DISABLE_HEADERS_INJECTION"
-            value = "1"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "DD_DISABLE_NETWORK_INSTRUMENTATION"
-            value = "$(DD_DISABLE_NETWORK_INSTRUMENTATION)"
+            value = "$(DD_SERVICE)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
@@ -87,58 +72,118 @@
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "BITRISE_SOURCE_DIR"
-            value = "$(BITRISE_SOURCE_DIR)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "BITRISE_TRIGGERED_WORKFLOW_ID"
-            value = "$(BITRISE_TRIGGERED_WORKFLOW_ID)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "BITRISE_BUILD_SLUG"
-            value = "$(BITRISE_BUILD_SLUG)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "BITRISE_BUILD_NUMBER"
-            value = "$(BITRISE_BUILD_NUMBER)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "BITRISE_BUILD_URL"
-            value = "$(BITRISE_BUILD_URL)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
             key = "DD_ENABLE_STDOUT_INSTRUMENTATION"
-            value = "1"
+            value = "$(DD_ENABLE_STDOUT_INSTRUMENTATION)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_ENABLE_STDERR_INSTRUMENTATION"
-            value = "1"
+            value = "$(DD_ENABLE_STDERR_INSTRUMENTATION)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_APPLICATION_KEY"
-            value = "$(DD_SDK_SWIFT_TESTING_APPLICATION_KEY)"
+            key = "DD_DISABLE_NETWORK_INSTRUMENTATION"
+            value = "$(DD_DISABLE_NETWORK_INSTRUMENTATION)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_CIVISIBILITY_GIT_UPLOAD_ENABLED"
-            value = "1"
+            key = "DD_DISABLE_RUM_INTEGRATION"
+            value = "$(DD_DISABLE_RUM_INTEGRATION)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_CIVISIBILITY_ITR_ENABLED"
-            value = "0"
+            key = "DD_DISABLE_SOURCE_LOCATION"
+            value = "$(DD_DISABLE_SOURCE_LOCATION)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_CIVISIBILITY_EXCLUDED_BRANCHES"
-            value = "develop,release/*,hotfix/*"
+            key = "DD_DISABLE_CRASH_HANDLER"
+            value = "$(DD_DISABLE_CRASH_HANDLER)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_GIT_REPOSITORY_URL"
+            value = "$(DD_GIT_REPOSITORY_URL)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TRACE_DEBUG"
+            value = "$(DD_TRACE_DEBUG)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "GITLAB_CI"
+            value = "$(GITLAB_CI)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PROJECT_DIR"
+            value = "$(CI_PROJECT_DIR)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_JOB_STAGE"
+            value = "$(CI_JOB_STAGE)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_JOB_NAME"
+            value = "$(CI_JOB_NAME)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_JOB_URL"
+            value = "$(CI_JOB_URL)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PIPELINE_ID"
+            value = "$(CI_PIPELINE_ID)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PIPELINE_IID"
+            value = "$(CI_PIPELINE_IID)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PIPELINE_URL"
+            value = "$(CI_PIPELINE_URL)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PROJECT_PATH"
+            value = "$(CI_PROJECT_PATH)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_SHA"
+            value = "$(CI_COMMIT_SHA)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_BRANCH"
+            value = "$(CI_COMMIT_BRANCH)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_TAG"
+            value = "$(CI_COMMIT_TAG)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_MESSAGE"
+            value = "$(CI_COMMIT_MESSAGE)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_AUTHOR"
+            value = "$(CI_COMMIT_AUTHOR)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_TIMESTAMP"
+            value = "$(CI_COMMIT_TIMESTAMP)"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

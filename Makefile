@@ -116,14 +116,18 @@ DEFAULT_SR_SNAPSHOT_TESTS_DEVICE := iPhone 15
 # Default location for deploying artifacts
 DEFAULT_ARTIFACTS_PATH := artifacts
 
+# Whether Test Visibility product is enabled by default
+DEFAULT_USE_TEST_VISIBILITY := 0
+
 # Run unit tests for specified SCHEME
 test:
 	@$(call require_param,SCHEME)
 	@$(call require_param,OS)
 	@$(call require_param,PLATFORM)
 	@$(call require_param,DEVICE)
-	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)'"
-	./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
+	@:$(eval USE_TEST_VISIBILITY ?= $(DEFAULT_USE_TEST_VISIBILITY))
+	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' USE_TEST_VISIBILITY='$(USE_TEST_VISIBILITY)'"
+	USE_TEST_VISIBILITY=$(USE_TEST_VISIBILITY) ./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
 
 # Run unit tests for specified SCHEME using iOS Simulator
 test-ios:

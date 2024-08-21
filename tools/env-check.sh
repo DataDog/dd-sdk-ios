@@ -93,9 +93,25 @@ if [ "$CI" = "true" ]; then
     ./tools/secrets/check-secrets.sh
 
     echo_subtitle "Print CI env"
-    echo "▸ CI_COMMIT_TAG = ${CI_COMMIT_TAG:-(not set or empty)}"
-    echo "▸ CI_COMMIT_BRANCH = ${CI_COMMIT_BRANCH:-(not set or empty)}"
+    # GitLab:
+    echo "▸ GITLAB_CI = ${GITLAB_CI:-(not set or empty)}"
+    echo "▸ CI_PROJECT_DIR = ${CI_PROJECT_DIR:-(not set or empty)}"
+    echo "▸ CI_JOB_STAGE = ${CI_JOB_STAGE:-(not set or empty)}"
+    echo "▸ CI_JOB_NAME = ${CI_JOB_NAME:-(not set or empty)}"
+    echo "▸ CI_JOB_URL = ${CI_JOB_URL:-(not set or empty)}"
+    echo "▸ CI_PIPELINE_ID = ${CI_PIPELINE_ID:-(not set or empty)}"
+    echo "▸ CI_PIPELINE_IID = ${CI_PIPELINE_IID:-(not set or empty)}"
+    echo "▸ CI_PIPELINE_URL = ${CI_PIPELINE_URL:-(not set or empty)}"
+    echo "▸ CI_PROJECT_PATH = ${CI_PROJECT_PATH:-(not set or empty)}"
+    echo "▸ CI_PROJECT_URL = ${CI_PROJECT_URL:-(not set or empty)}"
     echo "▸ CI_COMMIT_SHA = ${CI_COMMIT_SHA:-(not set or empty)}"
+    echo "▸ CI_REPOSITORY_URL = ${CI_REPOSITORY_URL:-(not set or empty)}"
+    echo "▸ CI_COMMIT_BRANCH = ${CI_COMMIT_BRANCH:-(not set or empty)}"
+    echo "▸ CI_COMMIT_TAG = ${CI_COMMIT_TAG:-(not set or empty)}"
+    echo "▸ CI_COMMIT_MESSAGE = ${CI_COMMIT_MESSAGE:-(not set or empty)}"
+    echo "▸ CI_COMMIT_AUTHOR = ${CI_COMMIT_AUTHOR:-(not set or empty)}"
+    echo "▸ CI_COMMIT_TIMESTAMP = ${CI_COMMIT_TIMESTAMP:-(not set or empty)}"
+    # Custom:
     echo "▸ RELEASE_GIT_TAG = ${RELEASE_GIT_TAG:-(not set or empty)}"
     echo "▸ RELEASE_DRY_RUN = ${RELEASE_DRY_RUN:-(not set or empty)}"
 fi

@@ -96,7 +96,21 @@ Unit Tests (iOS):
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+    - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
+
+Unit Tests (iOS, Test Visibility shadow):
+  stage: test
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  variables:
+    PLATFORM: "iOS Simulator"
+    DEVICE: "iPhone 15 Pro"
+  allow_failure: true
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - make clean repo-setup ENV=ci
+    - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
 
 Unit Tests (tvOS):
   stage: test
@@ -109,7 +123,7 @@ Unit Tests (tvOS):
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+    - make test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
 
 UI Tests:
   stage: ui-test
