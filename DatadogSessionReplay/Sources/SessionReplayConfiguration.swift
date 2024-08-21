@@ -68,12 +68,14 @@ extension SessionReplay {
             replaySampleRate: Float,
             textAndInputPrivacyLevel: SessionReplayTextAndInputPrivacyLevel,
             touchPrivacyLevel: SessionReplayTouchPrivacyLevel,
+            startRecordingImmediately: Bool = true,
             customEndpoint: URL? = nil
         ) {
             self.replaySampleRate = replaySampleRate
             self.defaultPrivacyLevel = .mask
             self.textAndInputPrivacyLevel = textAndInputPrivacyLevel
             self.touchPrivacyLevel = touchPrivacyLevel
+            self.startRecordingImmediately = startRecordingImmediately
             self.customEndpoint = customEndpoint
         }
 
