@@ -16,6 +16,7 @@
 - (void)testConfiguration {
     DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100];
     configuration.defaultPrivacyLevel = DDSessionReplayConfigurationPrivacyLevelAllow;
+    configuration.textAndInputPrivacyLevel = DDSessionReplayConfigurationTextAndInputPrivacyLevelMaskSensitiveInputs;
     configuration.touchPrivacyLevel = DDSessionReplayConfigurationTouchPrivacyLevelShow;
     configuration.customEndpoint = [NSURL new];
 
@@ -23,8 +24,9 @@
 }
 
 - (void)testConfigurationWithNewApi {
-    DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100 touchPrivacyLevel:DDSessionReplayConfigurationTouchPrivacyLevelShow];
+    DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100 textAndInputPrivacyLevel:DDSessionReplayConfigurationTextAndInputPrivacyLevelMaskSensitiveInputs touchPrivacyLevel:DDSessionReplayConfigurationTouchPrivacyLevelHide];
     configuration.defaultPrivacyLevel = DDSessionReplayConfigurationPrivacyLevelAllow;
+    configuration.textAndInputPrivacyLevel = DDSessionReplayConfigurationTextAndInputPrivacyLevelMaskAllInputs;
     configuration.touchPrivacyLevel = DDSessionReplayConfigurationTouchPrivacyLevelShow;
     configuration.customEndpoint = [NSURL new];
 
