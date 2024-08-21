@@ -1,10 +1,11 @@
 # Unreleased
 
+- [IMPROVEMENT] Send retry information with network requests (eg. retry_count, last_failure_status and idempotency key). See [#1991][]
+
 # 2.16.0 / 20-08-2024
 
 - [FIX] Refresh rate vital for variable refresh rate displays when over performing. See [#1973][]
 - [FIX] Alamofire extension types are deprecated now. See [#1988][]
-- [IMPROVEMENT] Send retry information with network requests (eg. retry_count, last_failure_status and idempotency key). See [#1991][]
 
 # 2.14.2 / 26-07-2024
 
