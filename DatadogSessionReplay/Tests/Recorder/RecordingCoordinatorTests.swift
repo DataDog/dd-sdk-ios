@@ -259,6 +259,7 @@ class RecordingCoordinatorTests: XCTestCase {
     private func prepareRecordingCoordinator(
         sampler: Sampler = .mockKeepAll(),
         privacy: PrivacyLevel = .allow,
+        textAndInputPrivacy: TextAndInputPrivacyLevel = .maskSensitiveInputs,
         touchPrivacy: TouchPrivacyLevel = .show,
         telemetry: Telemetry = NOPTelemetry(),
         methodCallTelemetrySamplingRate: Float = 0,
@@ -267,6 +268,7 @@ class RecordingCoordinatorTests: XCTestCase {
         recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
             privacy: privacy,
+            textAndInputPrivacy: textAndInputPrivacy,
             touchPrivacy: touchPrivacy,
             rumContextObserver: rumContextObserver,
             srContextPublisher: contextPublisher,
