@@ -53,7 +53,7 @@ class StepperViewController: BaseTableViewController {
         stepper.maximumValue = 20
         stepper.stepValue = 1
         
-        stepper.tintColor = UIColor(named: "tinted_stepper_control")!
+        stepper.tintColor = UIColor(named: "tinted_stepper_control", in: .module, compatibleWith: nil)!
         stepper.setDecrementImage(stepper.decrementImage(for: .normal), for: .normal)
         stepper.setIncrementImage(stepper.incrementImage(for: .normal), for: .normal)
 

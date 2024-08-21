@@ -170,7 +170,7 @@ class TextViewController: UIViewController {
     
     func configureTextView() {
         textView.font = font
-        textView.backgroundColor = UIColor(named: "text_view_background")
+        textView.backgroundColor = UIColor(named: "text_view_background", in: .module, compatibleWith: nil)
         
         textView.isScrollEnabled = true
 

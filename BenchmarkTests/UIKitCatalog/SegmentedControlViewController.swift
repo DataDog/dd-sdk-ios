@@ -58,7 +58,7 @@ class SegmentedControlViewController: BaseTableViewController {
 
     func configureTintedSegmentedControl(_ segmentedControl: UISegmentedControl) {
         // Use a dynamic tinted "green" color (separate one for Light Appearance and separate one for Dark Appearance).
-        segmentedControl.selectedSegmentTintColor = UIColor(named: "tinted_segmented_control")!
+        segmentedControl.selectedSegmentTintColor = UIColor(named: "tinted_segmented_control", in: .module, compatibleWith: nil)!
         segmentedControl.selectedSegmentIndex = 1
 
         segmentedControl.addTarget(self, action: #selector(SegmentedControlViewController.selectedSegmentDidChange(_:)), for: .valueChanged)
