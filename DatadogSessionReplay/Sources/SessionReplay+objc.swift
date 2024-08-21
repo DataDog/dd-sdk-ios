@@ -54,6 +54,14 @@ public final class DDSessionReplayConfiguration: NSObject {
         get { .init(_swift.defaultPrivacyLevel) }
     }
 
+    /// Defines the way texts and inputs (e.g. labels, textfields, checkboxes) should be masked.
+    ///
+    /// Default: `.maskAll`.
+    @objc public var textAndInputPrivacyLevel: DDSessionReplayConfigurationTextAndInputPrivacyLevel {
+        set { _swift.textAndInputPrivacyLevel = newValue._swift }
+        get { .init(_swift.textAndInputPrivacyLevel) }
+    }
+
     /// Defines the way user touches (e.g. tap) should be masked.
     ///
     /// Default: `.mask`.
@@ -74,14 +82,17 @@ public final class DDSessionReplayConfiguration: NSObject {
     ///
     /// - Parameters:
     ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
+    ///   - textAndInputPrivacyLevel: The way texts and inputs (e.g. label, textfield, checkbox) should be masked. Default: `.maskAll`.
     ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked. Default: `.hide`.
     @objc
     public required init(
         replaySampleRate: Float,
+        textAndInputPrivacyLevel: DDSessionReplayConfigurationTextAndInputPrivacyLevel,
         touchPrivacyLevel: DDSessionReplayConfigurationTouchPrivacyLevel
     ) {
         _swift = SessionReplay.Configuration(
             replaySampleRate: replaySampleRate,
+            textAndInputPrivacyLevel: textAndInputPrivacyLevel._swift,
             touchPrivacyLevel: touchPrivacyLevel._swift
         )
         super.init()
@@ -129,6 +140,36 @@ public enum DDSessionReplayConfigurationPrivacyLevel: Int {
         case .allow: self = .allow
         case .mask: self = .mask
         case .maskUserInput: self = .maskUserInput
+        }
+    }
+}
+
+/// Available privacy levels for text and input masking.
+@objc
+public enum DDSessionReplayConfigurationTextAndInputPrivacyLevel: Int {
+    /// Show all text except sensitive input (eg. password fields).
+    case maskSensitiveInputs
+
+    /// Mask all text and input, eg. textfields, switches, checkboxes.
+    case maskAllInputs
+
+    /// Mask all text and input.
+    case maskAll
+
+    internal var _swift: SessionReplayTextAndInputPrivacyLevel {
+        switch self {
+        case .maskSensitiveInputs: return .maskSensitiveInputs
+        case .maskAllInputs: return .maskAllInputs
+        case .maskAll: return .maskAll
+        default: return .maskAll
+        }
+    }
+
+    internal init(_ swift: SessionReplayTextAndInputPrivacyLevel) {
+        switch swift {
+        case .maskSensitiveInputs: self = .maskSensitiveInputs
+        case .maskAllInputs: self = .maskAllInputs
+        case .maskAll: self = .maskAll
         }
     }
 }
