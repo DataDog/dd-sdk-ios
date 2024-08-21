@@ -165,7 +165,7 @@ Tools Tests:
     - make tools-test
 
 Benchmark Build:
-  stage: test
+  stage: smoke-test
   rules:
     - if: '$CI_COMMIT_BRANCH' # when on branch with following changes compared to develop
       changes:
