@@ -859,6 +859,8 @@
 		D22743EA29DEC9A9001A7EF9 /* RUMDataModelMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22743E829DEC9A9001A7EF9 /* RUMDataModelMocks.swift */; };
 		D22743EB29DEC9E6001A7EF9 /* Casting+RUM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61411B0F24EC15AC0012EAB2 /* Casting+RUM.swift */; };
 		D22743EC29DEC9E6001A7EF9 /* Casting+RUM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61411B0F24EC15AC0012EAB2 /* Casting+RUM.swift */; };
+		D227A0A42C7622EA00C83324 /* BenchmarkProfiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D227A0A32C7622EA00C83324 /* BenchmarkProfiler.swift */; };
+		D227A0A52C7622EA00C83324 /* BenchmarkProfiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D227A0A32C7622EA00C83324 /* BenchmarkProfiler.swift */; };
 		D22C5BC82A98A0B20024CC1F /* Baggages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22C5BC52A989D130024CC1F /* Baggages.swift */; };
 		D22C5BC92A98A0B30024CC1F /* Baggages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22C5BC52A989D130024CC1F /* Baggages.swift */; };
 		D22C5BCB2A98A5400024CC1F /* Baggages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22C5BCA2A98A5400024CC1F /* Baggages.swift */; };
@@ -2826,6 +2828,7 @@
 		D2216EC22A96632F00ADAEC8 /* FeatureBaggageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureBaggageTests.swift; sourceTree = "<group>"; };
 		D224430C29E95D6600274EC7 /* CrashReportReceiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CrashReportReceiverTests.swift; sourceTree = "<group>"; };
 		D22743E829DEC9A9001A7EF9 /* RUMDataModelMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDataModelMocks.swift; sourceTree = "<group>"; };
+		D227A0A32C7622EA00C83324 /* BenchmarkProfiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkProfiler.swift; sourceTree = "<group>"; };
 		D22C1F5B271484B400922024 /* LogEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventMapper.swift; sourceTree = "<group>"; };
 		D22C5BC52A989D130024CC1F /* Baggages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Baggages.swift; sourceTree = "<group>"; };
 		D22C5BCA2A98A5400024CC1F /* Baggages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Baggages.swift; sourceTree = "<group>"; };
@@ -5805,6 +5808,14 @@
 			path = Integrations;
 			sourceTree = "<group>";
 		};
+		D227A0A22C76229400C83324 /* Benchmarks */ = {
+			isa = PBXGroup;
+			children = (
+				D227A0A32C7622EA00C83324 /* BenchmarkProfiler.swift */,
+			);
+			path = Benchmarks;
+			sourceTree = "<group>";
+		};
 		D22C1F5A2714849700922024 /* Scrubbing */ = {
 			isa = PBXGroup;
 			children = (
@@ -5816,6 +5827,7 @@
 		D23039A6298D513D001A1FA3 /* DatadogInternal */ = {
 			isa = PBXGroup;
 			children = (
+				D227A0A22C76229400C83324 /* Benchmarks */,
 				6167E6DF2B81203A00C3CA2D /* Models */,
 				D23039CA298D5235001A1FA3 /* Attributes */,
 				D23039C3298D5235001A1FA3 /* Codable */,
@@ -8655,6 +8667,7 @@
 				D21A94F22B8397CA00AC4256 /* WebViewMessage.swift in Sources */,
 				D23039EC298D5236001A1FA3 /* LaunchTime.swift in Sources */,
 				6175C3512BCE66DB006FAAB0 /* TraceContext.swift in Sources */,
+				D227A0A42C7622EA00C83324 /* BenchmarkProfiler.swift in Sources */,
 				D23039EE298D5236001A1FA3 /* FeatureMessageReceiver.swift in Sources */,
 				D23039DE298D5235001A1FA3 /* Writer.swift in Sources */,
 				D23039FA298D5236001A1FA3 /* Telemetry.swift in Sources */,
@@ -9633,6 +9646,7 @@
 				D21A94F32B8397CA00AC4256 /* WebViewMessage.swift in Sources */,
 				D2DA2364298D57AA00C6C7E6 /* LaunchTime.swift in Sources */,
 				6175C3522BCE66DB006FAAB0 /* TraceContext.swift in Sources */,
+				D227A0A52C7622EA00C83324 /* BenchmarkProfiler.swift in Sources */,
 				D2DA2365298D57AA00C6C7E6 /* FeatureMessageReceiver.swift in Sources */,
 				D2DA2366298D57AA00C6C7E6 /* Writer.swift in Sources */,
 				D2DA2367298D57AA00C6C7E6 /* Telemetry.swift in Sources */,
