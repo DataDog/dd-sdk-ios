@@ -59,6 +59,7 @@ setup_test_visibility() {
 
     echo_info "CI Test Visibility setup:"
     echo "▸ DD_TEST_RUNNER=$DD_TEST_RUNNER"
+    echo "▸ DD_API_KEY=$([[ -n "$DD_API_KEY" ]] && echo '***' || echo '')"
     echo "▸ DD_ENV=$DD_ENV"
     echo "▸ DD_SERVICE=$DD_SERVICE"
     echo "▸ SRCROOT=$SRCROOT"
@@ -68,8 +69,23 @@ setup_test_visibility() {
     echo "▸ DD_DISABLE_RUM_INTEGRATION=$DD_DISABLE_RUM_INTEGRATION"
     echo "▸ DD_DISABLE_SOURCE_LOCATION=$DD_DISABLE_SOURCE_LOCATION"
     echo "▸ DD_DISABLE_CRASH_HANDLER=$DD_DISABLE_CRASH_HANDLER"
-    echo "▸ DD_TRACE_DEBUG=$DD_TRACE_DEBUG"
     echo "▸ DD_GIT_REPOSITORY_URL=$DD_GIT_REPOSITORY_URL"
+    echo "▸ DD_TRACE_DEBUG=$DD_TRACE_DEBUG"
+    echo "▸ GITLAB_CI=$GITLAB_CI"
+    echo "▸ CI_PROJECT_DIR=$CI_PROJECT_DIR"
+    echo "▸ CI_JOB_STAGE=$CI_JOB_STAGE"
+    echo "▸ CI_JOB_NAME=$CI_JOB_NAME"
+    echo "▸ CI_JOB_URL=$CI_JOB_URL"
+    echo "▸ CI_PIPELINE_ID=$CI_PIPELINE_ID"
+    echo "▸ CI_PIPELINE_IID=$CI_PIPELINE_IID"
+    echo "▸ CI_PIPELINE_URL=$CI_PIPELINE_URL"
+    echo "▸ CI_PROJECT_PATH=$CI_PROJECT_PATH"
+    echo "▸ CI_COMMIT_SHA=$CI_COMMIT_SHA"
+    echo "▸ CI_COMMIT_BRANCH=$CI_COMMIT_BRANCH"
+    echo "▸ CI_COMMIT_TAG=$CI_COMMIT_TAG"
+    echo "▸ CI_COMMIT_MESSAGE=$CI_COMMIT_MESSAGE"
+    echo "▸ CI_COMMIT_AUTHOR=$CI_COMMIT_AUTHOR"
+    echo "▸ CI_COMMIT_TIMESTAMP=$CI_COMMIT_TIMESTAMP"
 }
 
 if [ "$USE_TEST_VISIBILITY" = "1" ]; then

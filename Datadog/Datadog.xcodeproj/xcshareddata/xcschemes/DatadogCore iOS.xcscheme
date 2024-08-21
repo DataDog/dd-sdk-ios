@@ -176,11 +176,6 @@
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "CI_REPOSITORY_URL"
-            value = "$(CI_REPOSITORY_URL)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
             key = "CI_COMMIT_BRANCH"
             value = "$(CI_COMMIT_BRANCH)"
             isEnabled = "YES">
