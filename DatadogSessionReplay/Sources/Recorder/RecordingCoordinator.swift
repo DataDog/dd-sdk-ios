@@ -17,6 +17,7 @@ internal class RecordingCoordinator {
     let scheduler: Scheduler
     let sampler: Sampler
     let privacy: PrivacyLevel
+    let textAndInputPrivacy: TextAndInputPrivacyLevel
     let touchPrivacy: TouchPrivacyLevel
     let srContextPublisher: SRContextPublisher
 
@@ -35,6 +36,7 @@ internal class RecordingCoordinator {
     init(
         scheduler: Scheduler,
         privacy: PrivacyLevel,
+        textAndInputPrivacy: TextAndInputPrivacyLevel,
         touchPrivacy: TouchPrivacyLevel,
         rumContextObserver: RUMContextObserver,
         srContextPublisher: SRContextPublisher,
@@ -48,6 +50,7 @@ internal class RecordingCoordinator {
         self.scheduler = scheduler
         self.sampler = sampler
         self.privacy = privacy
+        self.textAndInputPrivacy = textAndInputPrivacy
         self.touchPrivacy = touchPrivacy
         self.srContextPublisher = srContextPublisher
         self.telemetry = telemetry
@@ -122,6 +125,7 @@ internal class RecordingCoordinator {
 
         let recorderContext = Recorder.Context(
             privacy: privacy,
+            textAndInputPrivacy: textAndInputPrivacy,
             touchPrivacy: touchPrivacy,
             applicationID: rumContext.applicationID,
             sessionID: rumContext.sessionID,
