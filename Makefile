@@ -8,7 +8,7 @@ all: env-check repo-setup templates
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
 		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos spm-build-watchos \
 		e2e-upload \
-		benchmark-upload \
+		benchmark-build benchmark-upload \
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
 		dogfood-shopist dogfood-datadog-app \
 		release-build release-validate release-publish-github \
