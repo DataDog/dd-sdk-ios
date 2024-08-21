@@ -112,6 +112,10 @@
 		3CCECDB02BC688120013C125 /* SpanIDGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCECDAE2BC688120013C125 /* SpanIDGeneratorTests.swift */; };
 		3CCECDB22BC68A0A0013C125 /* SpanIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCECDB12BC68A0A0013C125 /* SpanIDTests.swift */; };
 		3CCECDB32BC68A0A0013C125 /* SpanIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCECDB12BC68A0A0013C125 /* SpanIDTests.swift */; };
+		3CD3A13A2C6C99ED00436A69 /* Data+Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C3C9E2B2C64F3CA003AF22F /* Data+Crypto.swift */; };
+		3CD3A13B2C6C99ED00436A69 /* Data+Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C3C9E2B2C64F3CA003AF22F /* Data+Crypto.swift */; };
+		3CD3A13C2C6C99FE00436A69 /* Data+CryptoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C3C9E2E2C64F470003AF22F /* Data+CryptoTests.swift */; };
+		3CD3A13D2C6C99FE00436A69 /* Data+CryptoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C3C9E2E2C64F470003AF22F /* Data+CryptoTests.swift */; };
 		3CDA3F7E2BCD866D005D2C13 /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 3CDA3F7D2BCD866D005D2C13 /* DatadogSDKTesting */; };
 		3CDA3F802BCD8687005D2C13 /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 3CDA3F7F2BCD8687005D2C13 /* DatadogSDKTesting */; };
 		3CE11A1129F7BE0900202522 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
@@ -2112,6 +2116,8 @@
 		3C32359C2B55386C000B4258 /* OTelSpanLink.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpanLink.swift; sourceTree = "<group>"; };
 		3C32359F2B55387A000B4258 /* OTelSpanLinkTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpanLinkTests.swift; sourceTree = "<group>"; };
 		3C33E4062BEE35A7003B2988 /* RUMContextMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMContextMocks.swift; sourceTree = "<group>"; };
+		3C3C9E2B2C64F3CA003AF22F /* Data+Crypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Crypto.swift"; sourceTree = "<group>"; };
+		3C3C9E2E2C64F470003AF22F /* Data+CryptoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+CryptoTests.swift"; sourceTree = "<group>"; };
 		3C3EF2AF2C1AEBAB009E9E57 /* LaunchReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchReport.swift; sourceTree = "<group>"; };
 		3C43A3862C188970000BFB21 /* WatchdogTerminationMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationMonitorTests.swift; sourceTree = "<group>"; };
 		3C4CF9972C47CC8C006DE1C0 /* MemoryWarningMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryWarningMonitorTests.swift; sourceTree = "<group>"; };
@@ -5922,6 +5928,7 @@
 		D23039D6298D5235001A1FA3 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				3C3C9E2B2C64F3CA003AF22F /* Data+Crypto.swift */,
 				D23039D8298D5235001A1FA3 /* DatadogExtended.swift */,
 				D23354FB2A42E32000AFCAE2 /* InternalExtended.swift */,
 				D23039D7298D5235001A1FA3 /* Foundation+Datadog.swift */,
@@ -6134,6 +6141,7 @@
 		D263BCB129DB014900FA0E21 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				3C3C9E2E2C64F470003AF22F /* Data+CryptoTests.swift */,
 				D263BCB229DB014900FA0E21 /* FixedWidthInteger+ConvenienceTests.swift */,
 				D263BCB329DB014900FA0E21 /* TimeInterval+ConvenienceTests.swift */,
 			);
@@ -8677,6 +8685,7 @@
 				D23039E8298D5236001A1FA3 /* DatadogContext.swift in Sources */,
 				D23039FF298D5236001A1FA3 /* Foundation+Datadog.swift in Sources */,
 				D2F8235329915E12003C7E99 /* DatadogSite.swift in Sources */,
+				3CD3A13A2C6C99ED00436A69 /* Data+Crypto.swift in Sources */,
 				D2D3199A29E98D970004F169 /* DefaultJSONEncoder.swift in Sources */,
 				6128F56A2BA2237300D35B08 /* DataStore.swift in Sources */,
 				3C3EF2B02C1AEBAB009E9E57 /* LaunchReport.swift in Sources */,
@@ -9653,6 +9662,7 @@
 				D2DA2374298D57AA00C6C7E6 /* DatadogContext.swift in Sources */,
 				D2DA2375298D57AA00C6C7E6 /* Foundation+Datadog.swift in Sources */,
 				D2F8235429915E12003C7E99 /* DatadogSite.swift in Sources */,
+				3CD3A13B2C6C99ED00436A69 /* Data+Crypto.swift in Sources */,
 				D2D3199B29E98D970004F169 /* DefaultJSONEncoder.swift in Sources */,
 				6128F56B2BA2237300D35B08 /* DataStore.swift in Sources */,
 				3C3EF2B12C1AEBAB009E9E57 /* LaunchReport.swift in Sources */,
@@ -9731,6 +9741,7 @@
 				D2160CD429C0DF6700FAA9A5 /* NetworkInstrumentationFeatureTests.swift in Sources */,
 				D263BCB629DB014900FA0E21 /* TimeInterval+ConvenienceTests.swift in Sources */,
 				D2DA23AA298D58F400C6C7E6 /* FeatureMessageReceiverTests.swift in Sources */,
+				3CD3A13D2C6C99FE00436A69 /* Data+CryptoTests.swift in Sources */,
 				D2DA23A8298D58F400C6C7E6 /* DeviceInfoTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -9781,6 +9792,7 @@
 				D2160CD529C0DF6700FAA9A5 /* NetworkInstrumentationFeatureTests.swift in Sources */,
 				D263BCB729DB014900FA0E21 /* TimeInterval+ConvenienceTests.swift in Sources */,
 				D2DA23B8298D59DC00C6C7E6 /* FeatureMessageReceiverTests.swift in Sources */,
+				3CD3A13C2C6C99FE00436A69 /* Data+CryptoTests.swift in Sources */,
 				D2DA23BA298D59DC00C6C7E6 /* DeviceInfoTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

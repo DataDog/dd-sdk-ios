@@ -19,7 +19,11 @@ internal class FeatureRequestBuilderMock: FeatureRequestBuilder {
         self.init(factory: { _, _ in request })
     }
 
-    func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
+    func request(
+        for events: [Event],
+        with context: DatadogContext,
+        execution: ExecutionContext
+    ) throws -> URLRequest {
         return try factory(events, context)
     }
 }
@@ -28,7 +32,11 @@ internal class FeatureRequestBuilderSpy: FeatureRequestBuilder {
     /// Records parameters passed to `requet(for:with:)`
     private(set) var requestParameters: [(events: [Event], context: DatadogContext)] = []
 
-    func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
+    func request(
+        for events: [Event],
+        with context: DatadogContext,
+        execution: ExecutionContext
+    ) throws -> URLRequest {
         requestParameters.append((events: events, context: context))
         return .mockAny()
     }
@@ -37,7 +45,11 @@ internal class FeatureRequestBuilderSpy: FeatureRequestBuilder {
 internal struct FailingRequestBuilderMock: FeatureRequestBuilder {
     let error: Error
 
-    func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
+    func request(
+        for events: [Event],
+        with context: DatadogContext,
+        execution: ExecutionContext
+    ) throws -> URLRequest {
         throw error
     }
 }
