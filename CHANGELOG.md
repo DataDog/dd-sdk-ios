@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FIX] Propagate global Tracer tags to OpenTelemetry span attributes. See [#2000][]
 - [IMPROVEMENT] Send retry information with network requests (eg. retry_count, last_failure_status and idempotency key). See [#1991][]
 
 # 2.16.0 / 20-08-2024
@@ -747,6 +748,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1967]: https://github.com/DataDog/dd-sdk-ios/pull/1967
 [#1973]: https://github.com/DataDog/dd-sdk-ios/pull/1973
 [#1988]: https://github.com/DataDog/dd-sdk-ios/pull/1988
+[#2000]: https://github.com/DataDog/dd-sdk-ios/pull/2000
 [#1991]: https://github.com/DataDog/dd-sdk-ios/pull/1991
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
