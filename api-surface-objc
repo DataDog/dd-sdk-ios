@@ -89,6 +89,7 @@ public enum DDLogLevel: Int
 public class DDLogsConfiguration: NSObject
     @objc public var customEndpoint: URL?
     public init(customEndpoint: URL? = nil)
+    public func setEventMapper(_ mapper: @escaping (DDLogEvent) -> DDLogEvent?)
 public class DDLogs: NSObject
     public static func enable(with configuration: DDLogsConfiguration = .init())
     public static func addAttribute(forKey key: String, value: Any)
@@ -129,6 +130,102 @@ public class DDLogger: NSObject
     public func add(tag: String)
     public func remove(tag: String)
     public static func create(with configuration: DDLoggerConfiguration = .init()) -> DDLogger
+public class DDLogEvent: NSObject
+    @objc public var date: Date
+    @objc public var status: DDLogEventStatus
+    @objc public var message: String
+    @objc public var error: DDLogEventError?
+    @objc public var serviceName: String
+    @objc public var environment: String
+    @objc public var loggerName: String
+    @objc public var loggerVersion: String
+    @objc public var threadName: String?
+    @objc public var applicationVersion: String
+    @objc public var applicationBuildNumber: String
+    @objc public var buildId: String?
+    @objc public var variant: String?
+    @objc public var dd: DDLogEventDd
+    @objc public var os: DDLogEventOperatingSystem
+    @objc public var userInfo: DDLogEventUserInfo
+    @objc public var networkConnectionInfo: DDLogEventNetworkConnectionInfo?
+    @objc public var mobileCarrierInfo: DDLogEventCarrierInfo?
+    @objc public var attributes: DDLogEventAttributes
+    @objc public var tags: [String]?
+public enum DDLogEventStatus: Int
+    case debug
+    case info
+    case notice
+    case warn
+    case error
+    case critical
+    case emergency
+public class DDLogEventAttributes: NSObject
+    @objc public var userAttributes: [String: Any]
+public class DDLogEventUserInfo: NSObject
+    @objc public var id: String?
+    @objc public var name: String?
+    @objc public var email: String?
+    @objc public var extraInfo: [String: Any]
+public class DDLogEventError: NSObject
+    @objc public var kind: String?
+    @objc public var message: String?
+    @objc public var stack: String?
+    @objc public var sourceType: String
+    @objc public var fingerprint: String?
+    @objc public var binaryImages: [DDLogEventBinaryImage]?
+public class DDLogEventBinaryImage: NSObject
+    @objc public var arch: String?
+    @objc public var isSystem: Bool
+    @objc public var loadAddress: String?
+    @objc public var maxAddress: String?
+    @objc public var name: String
+    @objc public var uuid: String
+public class DDLogEventOperatingSystem: NSObject
+    @objc public var name: String
+    @objc public var version: String
+    @objc public var build: String?
+public class DDLogEventDd: NSObject
+    @objc public var device: DDLogEventDeviceInfo
+public class DDLogEventDeviceInfo: NSObject
+    @objc public var brand: String
+    @objc public var name: String
+    @objc public var model: String
+    @objc public var architecture: String
+public class DDLogEventNetworkConnectionInfo: NSObject
+    @objc public var reachability: DDLogEventReachability
+    @objc public var availableInterfaces: [Int]?
+    @objc public var supportsIPv4: NSNumber?
+    @objc public var supportsIPv6: NSNumber?
+    @objc public var isExpensive: NSNumber?
+    @objc public var isConstrained: NSNumber?
+public enum DDLogEventReachability: Int
+    case yes
+    case maybe
+    case no
+public enum DDLogEventInterface: Int
+    case wifi
+    case wiredEthernet
+    case cellular
+    case loopback
+    case other
+public class DDLogEventCarrierInfo: NSObject
+    @objc public var carrierName: String?
+    @objc public var carrierISOCountryCode: String?
+    @objc public var carrierAllowsVOIP: Bool
+    @objc public var radioAccessTechnology: DDLogEventRadioAccessTechnology
+public enum DDLogEventRadioAccessTechnology: Int
+    case GPRS
+    case Edge
+    case WCDMA
+    case HSDPA
+    case HSUPA
+    case CDMA1x
+    case CDMAEVDORev0
+    case CDMAEVDORevA
+    case CDMAEVDORevB
+    case eHRPD
+    case LTE
+    case unknown
 public protocol OTSpan
     var context: OTSpanContext
     var tracer: OTTracer
@@ -626,6 +723,7 @@ public enum DDRUMErrorEventErrorCategory: Int
     case appHang
     case exception
     case watchdogTermination
+    case memoryWarning
 public class DDRUMErrorEventErrorCauses: NSObject
     @objc public var message: String
     @objc public var source: DDRUMErrorEventErrorCausesSource
@@ -1766,6 +1864,7 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var sessionReplaySampleRate: NSNumber?
     @objc public var sessionSampleRate: NSNumber?
     @objc public var silentMultipleInit: NSNumber?
+    @objc public var startRecordingImmediately: NSNumber?
     @objc public var startSessionReplayRecordingManually: NSNumber?
     @objc public var storeContextsAcrossPages: NSNumber?
     @objc public var telemetryConfigurationSampleRate: NSNumber?

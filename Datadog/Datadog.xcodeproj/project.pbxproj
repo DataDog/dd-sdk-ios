@@ -1695,6 +1695,8 @@
 		E2AA55E82C32C6D9002FEF28 /* ApplicationNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AA55E62C32C6D9002FEF28 /* ApplicationNotifications.swift */; };
 		E2AA55EA2C32C76A002FEF28 /* WatchKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AA55E92C32C76A002FEF28 /* WatchKitExtensions.swift */; };
 		E2AA55EC2C32C78B002FEF28 /* WatchKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AA55E92C32C76A002FEF28 /* WatchKitExtensions.swift */; };
+		F6E106542C75E0D000716DC6 /* LogsDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E106532C75E0D000716DC6 /* LogsDataModels+objc.swift */; };
+		F6E106552C75E0D000716DC6 /* LogsDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E106532C75E0D000716DC6 /* LogsDataModels+objc.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3051,6 +3053,7 @@
 		E2AA55E62C32C6D9002FEF28 /* ApplicationNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationNotifications.swift; sourceTree = "<group>"; };
 		E2AA55E92C32C76A002FEF28 /* WatchKitExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WatchKitExtensions.swift; sourceTree = "<group>"; };
 		F637AED12697404200516F32 /* UIKitRUMUserActionsPredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMUserActionsPredicate.swift; sourceTree = "<group>"; };
+		F6E106532C75E0D000716DC6 /* LogsDataModels+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogsDataModels+objc.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -6279,6 +6282,7 @@
 			isa = PBXGroup;
 			children = (
 				61133C0C2423983800786299 /* Logs+objc.swift */,
+				F6E106532C75E0D000716DC6 /* LogsDataModels+objc.swift */,
 			);
 			path = Logs;
 			sourceTree = "<group>";
@@ -8278,6 +8282,7 @@
 				9E55407C25812D1C00F6E3AD /* RUM+objc.swift in Sources */,
 				D2A434AA2A8E40A20028E329 /* SessionReplay+objc.swift in Sources */,
 				615A4A8D24A356A000233986 /* OTSpanContext+objc.swift in Sources */,
+				F6E106542C75E0D000716DC6 /* LogsDataModels+objc.swift in Sources */,
 				61133C112423983800786299 /* DatadogConfiguration+objc.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -9528,6 +9533,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F6E106552C75E0D000716DC6 /* LogsDataModels+objc.swift in Sources */,
 				D2CB6F9927C5217A00A62B57 /* Casting.swift in Sources */,
 				D2CB6F9A27C5217A00A62B57 /* RUMDataModels+objc.swift in Sources */,
 				D2CB6F9B27C5217A00A62B57 /* DDSpanContext+objc.swift in Sources */,
