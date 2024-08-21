@@ -100,13 +100,83 @@
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_GIT_BRANCH"
-            value = "$(DD_GIT_BRANCH)"
+            key = "DD_TRACE_DEBUG"
+            value = "$(DD_TRACE_DEBUG)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DD_GIT_TAG"
-            value = "$(DD_GIT_TAG)"
+            key = "GITLAB_CI"
+            value = "$(GITLAB_CI)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PROJECT_DIR"
+            value = "$(CI_PROJECT_DIR)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_JOB_STAGE"
+            value = "$(CI_JOB_STAGE)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_JOB_NAME"
+            value = "$(CI_JOB_NAME)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_JOB_URL"
+            value = "$(CI_JOB_URL)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PIPELINE_ID"
+            value = "$(CI_PIPELINE_ID)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PIPELINE_IID"
+            value = "$(CI_PIPELINE_IID)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PIPELINE_URL"
+            value = "$(CI_PIPELINE_URL)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PROJECT_PATH"
+            value = "$(CI_PROJECT_PATH)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_SHA"
+            value = "$(CI_COMMIT_SHA)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_BRANCH"
+            value = "$(CI_COMMIT_BRANCH)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_TAG"
+            value = "$(CI_COMMIT_TAG)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_MESSAGE"
+            value = "$(CI_COMMIT_MESSAGE)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_AUTHOR"
+            value = "$(CI_COMMIT_AUTHOR)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_TIMESTAMP"
+            value = "$(CI_COMMIT_TIMESTAMP)"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

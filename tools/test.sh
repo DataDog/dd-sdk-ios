@@ -48,15 +48,18 @@ setup_test_visibility() {
     export DD_DISABLE_SOURCE_LOCATION=0
     export DD_DISABLE_CRASH_HANDLER=0
 
+    # Debugging:
+    # - If `DD_TRACE_DEBUG` is enabled, the `dd-sdk-swift-testing` will print extra debug logs.
+    export DD_TRACE_DEBUG=0
+
     # Git metadata:
     # - While `dd-sdk-swift-testing` can read Git metadata from `.git` folder, following info must be overwritten
     # due to our GH → GitLab mirroring configuration (otherwise it will point to GitLab mirror not GH repo).
     export DD_GIT_REPOSITORY_URL="git@github.com:DataDog/dd-sdk-ios.git"
-    export DD_GIT_BRANCH=$(current_git_branch)
-    export DD_GIT_TAG=$(current_git_tag)
 
     echo_info "CI Test Visibility setup:"
     echo "▸ DD_TEST_RUNNER=$DD_TEST_RUNNER"
+    echo "▸ DD_API_KEY=$([[ -n "$DD_API_KEY" ]] && echo '***' || echo '')"
     echo "▸ DD_ENV=$DD_ENV"
     echo "▸ DD_SERVICE=$DD_SERVICE"
     echo "▸ SRCROOT=$SRCROOT"
@@ -67,8 +70,22 @@ setup_test_visibility() {
     echo "▸ DD_DISABLE_SOURCE_LOCATION=$DD_DISABLE_SOURCE_LOCATION"
     echo "▸ DD_DISABLE_CRASH_HANDLER=$DD_DISABLE_CRASH_HANDLER"
     echo "▸ DD_GIT_REPOSITORY_URL=$DD_GIT_REPOSITORY_URL"
-    echo "▸ DD_GIT_BRANCH=$DD_GIT_BRANCH"
-    echo "▸ DD_GIT_TAG=$DD_GIT_TAG"
+    echo "▸ DD_TRACE_DEBUG=$DD_TRACE_DEBUG"
+    echo "▸ GITLAB_CI=$GITLAB_CI"
+    echo "▸ CI_PROJECT_DIR=$CI_PROJECT_DIR"
+    echo "▸ CI_JOB_STAGE=$CI_JOB_STAGE"
+    echo "▸ CI_JOB_NAME=$CI_JOB_NAME"
+    echo "▸ CI_JOB_URL=$CI_JOB_URL"
+    echo "▸ CI_PIPELINE_ID=$CI_PIPELINE_ID"
+    echo "▸ CI_PIPELINE_IID=$CI_PIPELINE_IID"
+    echo "▸ CI_PIPELINE_URL=$CI_PIPELINE_URL"
+    echo "▸ CI_PROJECT_PATH=$CI_PROJECT_PATH"
+    echo "▸ CI_COMMIT_SHA=$CI_COMMIT_SHA"
+    echo "▸ CI_COMMIT_BRANCH=$CI_COMMIT_BRANCH"
+    echo "▸ CI_COMMIT_TAG=$CI_COMMIT_TAG"
+    echo "▸ CI_COMMIT_MESSAGE=$CI_COMMIT_MESSAGE"
+    echo "▸ CI_COMMIT_AUTHOR=$CI_COMMIT_AUTHOR"
+    echo "▸ CI_COMMIT_TIMESTAMP=$CI_COMMIT_TIMESTAMP"
 }
 
 if [ "$USE_TEST_VISIBILITY" = "1" ]; then
