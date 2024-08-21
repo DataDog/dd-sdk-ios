@@ -21,18 +21,16 @@ extension LoggingCommonAsserts {
         requests.forEach { request in
             XCTAssertEqual(request.httpMethod, "POST")
 
-            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddsource=ios`
-            let pathRegex = #"^(.*)(\?ddsource=ios)$"#
-            XCTAssertTrue(
-                request.path.matches(regex: pathRegex),
-                """
-                Request path doesn't match the expected regex.
-                ✉️ path: \(request.path)
-                🧪 expected regex: \(pathRegex)
-                """,
-                file: file,
-                line: line
-            )
+            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddsource=ios&ddtags=retry_count:1`
+            XCTAssertNotNil(request.path, file: file, line: line)
+            XCTAssertNotNil(request.queryItems)
+            XCTAssertEqual(request.queryItems!.count, 2)
+            XCTAssertEqual(request.queryItems?.value(name: "ddsource"), "ios", file: file, line: line)
+
+            let ddtags = request.queryItems?.ddtags()
+            XCTAssertNotNil(ddtags, file: file, line: line)
+            XCTAssertEqual(ddtags?.count, 1, file: file, line: line)
+            XCTAssertEqual(ddtags?["retry_count"], "1", file: file, line: line)
 
             XCTAssertEqual(request.httpHeaders["Content-Type"], "application/json", file: file, line: line)
             XCTAssertEqual(request.httpHeaders["User-Agent"]?.matches(regex: userAgentRegex), true, file: file, line: line)

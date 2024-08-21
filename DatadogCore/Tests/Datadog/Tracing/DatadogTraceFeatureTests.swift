@@ -84,8 +84,9 @@ class DatadogTraceFeatureTests: XCTestCase {
         let request = server.waitAndReturnRequests(count: 1)[0]
         let requestURL = try XCTUnwrap(request.url)
         XCTAssertEqual(request.httpMethod, "POST")
-        XCTAssertEqual(requestURL.absoluteString, randomUploadURL.absoluteString)
-        XCTAssertNil(requestURL.query)
+        XCTAssertEqual(requestURL.host, randomUploadURL.host)
+        XCTAssertEqual(requestURL.path, randomUploadURL.path)
+        XCTAssertEqual(requestURL.query, "ddtags=retry_count:1")
         XCTAssertEqual(
             request.allHTTPHeaderFields?["User-Agent"],
             """

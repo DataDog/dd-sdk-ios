@@ -47,8 +47,15 @@ class DataUploadWorkerTests: XCTestCase {
         uploadExpectation.expectedFulfillmentCount = 3
 
         let dataUploader = DataUploaderMock(
-            uploadStatus: DataUploadStatus(httpResponse: .mockResponseWith(statusCode: 200), ddRequestID: nil),
-            onUpload: uploadExpectation.fulfill
+            uploadStatus: DataUploadStatus(
+                httpResponse: .mockResponseWith(statusCode: 200),
+                ddRequestID: nil,
+                attempt: 0
+            ),
+            onUpload: { previousUploadStatus in
+                XCTAssertNil(previousUploadStatus)
+                uploadExpectation.fulfill()
+            }
         )
 
         // Given
@@ -84,8 +91,15 @@ class DataUploadWorkerTests: XCTestCase {
         uploadExpectation.expectedFulfillmentCount = 2
 
         let dataUploader = DataUploaderMock(
-            uploadStatus: DataUploadStatus(httpResponse: .mockResponseWith(statusCode: 200), ddRequestID: nil),
-            onUpload: uploadExpectation.fulfill
+            uploadStatus: DataUploadStatus(
+                httpResponse: .mockResponseWith(statusCode: 200),
+                ddRequestID: nil,
+                attempt: 0
+            ),
+            onUpload: { previousUploadStatus in
+                XCTAssertNil(previousUploadStatus)
+                uploadExpectation.fulfill()
+            }
         )
 
         // Given
@@ -120,7 +134,10 @@ class DataUploadWorkerTests: XCTestCase {
         let startUploadExpectation = self.expectation(description: "Upload has started")
 
         let mockDataUploader = DataUploaderMock(uploadStatus: .mockWith(needsRetry: false))
-        mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
+        mockDataUploader.onUpload = { previousUploadStatus in
+            XCTAssertNil(previousUploadStatus)
+            startUploadExpectation.fulfill()
+        }
 
         // Given
         writer.write(value: ["key": "value"])
@@ -150,7 +167,8 @@ class DataUploadWorkerTests: XCTestCase {
         let initiatingUploadExpectation = self.expectation(description: "Upload is being initiated")
 
         let mockDataUploader = DataUploaderMock(uploadStatus: .mockRandom())
-        mockDataUploader.onUpload = {
+        mockDataUploader.onUpload = { previousUploadStatus in
+            XCTAssertNil(previousUploadStatus)
             initiatingUploadExpectation.fulfill()
             throw ErrorMock("Failed to prepare upload")
         }
@@ -183,7 +201,10 @@ class DataUploadWorkerTests: XCTestCase {
         let startUploadExpectation = self.expectation(description: "Upload has started")
 
         let mockDataUploader = DataUploaderMock(uploadStatus: .mockWith(needsRetry: true))
-        mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
+        mockDataUploader.onUpload = { previousUploadStatus in
+            XCTAssertNil(previousUploadStatus)
+            startUploadExpectation.fulfill()
+        }
 
         // Given
         writer.write(value: ["key": "value"])
@@ -207,6 +228,55 @@ class DataUploadWorkerTests: XCTestCase {
 
         // Then
         XCTAssertEqual(try orchestrator.directory.files().count, 1, "When upload finishes with `needsRetry: true`, data should be preserved")
+    }
+
+    func testGivenDataToUpload_whenUploadFinishesAndNeedsToBeRetried_thenPreviousUploadStatusIsNotNil() {
+        let startUploadExpectation = self.expectation(description: "Upload has started")
+        startUploadExpectation.expectedFulfillmentCount = 3
+
+        let mockDataUploader = DataUploaderMock(
+            uploadStatuses: [
+                .mockWith(needsRetry: true, attempt: 0),
+                .mockWith(needsRetry: true, attempt: 1),
+                .mockWith(needsRetry: false, attempt: 2)
+            ]
+        )
+
+        var attempt: UInt = 0
+        mockDataUploader.onUpload = { previousUploadStatus in
+            if attempt == 0 {
+                XCTAssertNil(previousUploadStatus)
+            } else {
+                XCTAssertNotNil(previousUploadStatus)
+                XCTAssertEqual(previousUploadStatus?.attempt, attempt - 1)
+            }
+
+            attempt += 1
+            startUploadExpectation.fulfill()
+        }
+
+        // Given
+        writer.write(value: ["key": "value"])
+        XCTAssertEqual(try orchestrator.directory.files().count, 1)
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: mockDataUploader,
+            contextProvider: .mockAny(),
+            uploadConditions: .alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
+        )
+
+        wait(for: [startUploadExpectation], timeout: 5)
+        worker.cancelSynchronously()
+
+        // Then
+        XCTAssertEqual(try orchestrator.directory.files().count, 0)
     }
 
     // MARK: - Upload Interval Changes
@@ -275,7 +345,8 @@ class DataUploadWorkerTests: XCTestCase {
                 needsRetry: true,
                 error: .httpError(statusCode: 500)
             )
-        ) {
+        ) { previousUploadStatus in
+            XCTAssertNil(previousUploadStatus)
             uploadAttemptExpectation.fulfill()
         }
 
@@ -352,7 +423,10 @@ class DataUploadWorkerTests: XCTestCase {
         // When
         let startUploadExpectation = self.expectation(description: "Upload has started")
         let mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
-        mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
+        mockDataUploader.onUpload = { previousUploadStatus in
+            XCTAssertNil(previousUploadStatus)
+            startUploadExpectation.fulfill()
+        }
 
         let worker = DataUploadWorker(
             queue: uploaderQueue,
@@ -398,7 +472,10 @@ class DataUploadWorkerTests: XCTestCase {
         // When
         let startUploadExpectation = self.expectation(description: "Upload has started")
         let mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
-        mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
+        mockDataUploader.onUpload = { previousUploadStatus in
+            XCTAssertNil(previousUploadStatus)
+            startUploadExpectation.fulfill()
+        }
 
         let worker = DataUploadWorker(
             queue: uploaderQueue,
@@ -433,7 +510,10 @@ class DataUploadWorkerTests: XCTestCase {
         // When
         let startUploadExpectation = self.expectation(description: "Upload has started")
         let mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
-        mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
+        mockDataUploader.onUpload = { previousUploadStatus in
+            XCTAssertNil(previousUploadStatus)
+            startUploadExpectation.fulfill()
+        }
 
         let worker = DataUploadWorker(
             queue: uploaderQueue,
@@ -467,7 +547,10 @@ class DataUploadWorkerTests: XCTestCase {
         // When
         let startUploadExpectation = self.expectation(description: "Upload has started")
         let mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
-        mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
+        mockDataUploader.onUpload = { previousUploadStatus in
+            XCTAssertNil(previousUploadStatus)
+            startUploadExpectation.fulfill()
+        }
 
         let worker = DataUploadWorker(
             queue: uploaderQueue,
@@ -500,7 +583,8 @@ class DataUploadWorkerTests: XCTestCase {
         // When
         let initiatingUploadExpectation = self.expectation(description: "Upload is being initiated")
         let mockDataUploader = DataUploaderMock(uploadStatus: .mockRandom())
-        mockDataUploader.onUpload = {
+        mockDataUploader.onUpload = { previousUploadStatus in
+            XCTAssertNil(previousUploadStatus)
             initiatingUploadExpectation.fulfill()
             throw ErrorMock("Failed to prepare upload")
         }
@@ -565,7 +649,10 @@ class DataUploadWorkerTests: XCTestCase {
 
         let dataUploader = DataUploaderMock(
             uploadStatus: .mockWith(needsRetry: false),
-            onUpload: uploadExpectation.fulfill
+            onUpload: { previousUploadStatus in
+                XCTAssertNil(previousUploadStatus)
+                uploadExpectation.fulfill()
+            }
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
