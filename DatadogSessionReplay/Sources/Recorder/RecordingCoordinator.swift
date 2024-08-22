@@ -128,7 +128,7 @@ internal class RecordingCoordinator {
         let methodCalledTrace = telemetry.startMethodCalled(
             operationName: MethodCallConstants.captureRecordOperationName,
             callerClass: MethodCallConstants.className,
-            samplingRate: methodCallTelemetrySamplingRate // Effectively 3% * 0.1% = 0.003% of calls
+            sampleRate: methodCallTelemetrySamplingRate // Effectively 3% * 0.1% = 0.003% of calls
         )
 
         var isSuccessful = false

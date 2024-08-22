@@ -84,7 +84,11 @@ internal final class SessionEndedMetricController {
             guard let metric = metrics[sessionID] else {
                 return
             }
-            telemetry.metric(name: SessionEndedMetric.Constants.name, attributes: metric.asMetricAttributes(with: context))
+            telemetry.metric(
+                name: SessionEndedMetric.Constants.name,
+                attributes: metric.asMetricAttributes(with: context),
+                sampleRate: MetricTelemetry.defaultSampleRate
+            )
             metrics[sessionID] = nil
             pendingSessionIDs.removeAll(where: { $0 == sessionID }) // O(n), but "ending the metric" is very rare event
         }
