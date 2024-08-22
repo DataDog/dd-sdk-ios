@@ -121,7 +121,7 @@ public class Recorder: Recording {
             return
         }
 
-        let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
+        let touchSnapshot = recorderContext.touchPrivacy == .show ? touchSnapshotProducer.takeSnapshot(context: recorderContext) : nil
         snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
     }
 }
