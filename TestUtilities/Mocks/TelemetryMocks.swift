@@ -76,21 +76,21 @@ public class TelemetryMock: Telemetry, CustomStringConvertible {
             description.append("\n - [error] \(message), kind: \(kind), stack: \(stack)")
         case .configuration(let configuration):
             description.append("\n- [configuration] \(configuration)")
-        case let .metric(name, attributes):
-            let attributesString = attributes.map({ "\($0.key): \($0.value)" }).joined(separator: ", ")
-            description.append("\n- [metric] '\(name)' (" + attributesString + ")")
+        case let .metric(metric):
+            let attributesString = metric.attributes.map({ "\($0.key): \($0.value)" }).joined(separator: ", ")
+            description.append("\n- [metric] '\(metric.name)' (" + attributesString + ")")
         }
     }
 }
 
 public extension Array where Element == TelemetryMessage {
     /// Returns properties of the first metric message of given name.
-    func firstMetric(named metricName: String) -> (name: String, attributes: [String: Encodable])? {
+    func firstMetric(named metricName: String) -> MetricTelemetry? {
         return compactMap({ $0.asMetric }).filter({ $0.name == metricName }).first
     }
 
     /// Returns properties of the first metric message of given name.
-    func lastMetric(named metricName: String) -> (name: String, attributes: [String: Encodable])? {
+    func lastMetric(named metricName: String) -> MetricTelemetry? {
         return compactMap({ $0.asMetric }).filter({ $0.name == metricName }).last
     }
 
@@ -136,11 +136,11 @@ public extension TelemetryMessage {
     }
 
     /// Extracts metric attributes if this is metric message.
-    var asMetric: (name: String, attributes: [String: Encodable])? {
-        guard case let .metric(name, attributes) = self else {
+    var asMetric: MetricTelemetry? {
+        guard case let .metric(metric) = self else {
             return nil
         }
-        return (name: name, attributes: attributes)
+        return metric
     }
 }
 

@@ -58,11 +58,18 @@ public struct ConfigurationTelemetry: Equatable {
     public let useWorkerUrl: Bool?
 }
 
+public struct MetricTelemetry {
+    /// The name of the metric.
+    public let name: String
+    /// The attributes associated with this metric.
+    public let attributes: [String: Encodable]
+}
+
 public enum TelemetryMessage {
     case debug(id: String, message: String, attributes: [String: Encodable]?)
     case error(id: String, message: String, kind: String, stack: String)
     case configuration(ConfigurationTelemetry)
-    case metric(name: String, attributes: [String: Encodable])
+    case metric(MetricTelemetry)
 }
 
 /// The `Telemetry` protocol defines methods to collect debug information
@@ -106,7 +113,7 @@ public extension Telemetry {
     ///   - isSuccessful: A flag indicating if the method call was successful.
     func stopMethodCalled(_ metric: MethodCalledTrace?, isSuccessful: Bool = true) {
         if let metric = metric {
-            send(telemetry: metric.asTelemetryMetric(isSuccessful: isSuccessful))
+            send(telemetry: .metric(metric.asTelemetryMetric(isSuccessful: isSuccessful)))
         }
     }
 }
@@ -117,12 +124,12 @@ public struct MethodCalledTrace {
     let callerClass: String
     let startTime = Date()
 
-    var exectutionTime: Int64 {
+    private var exectutionTime: Int64 {
         return -startTime.timeIntervalSinceNow.toInt64Nanoseconds
     }
 
-    func asTelemetryMetric(isSuccessful: Bool) -> TelemetryMessage {
-        return .metric(
+    func asTelemetryMetric(isSuccessful: Bool) -> MetricTelemetry {
+        return MetricTelemetry(
             name: MethodCalledMetric.name,
             attributes: [
                 MethodCalledMetric.executionTime: exectutionTime,
@@ -354,7 +361,7 @@ extension Telemetry {
     ///   - name: The name of this metric.
     ///   - attributes: Parameters associated with this metric.
     public func metric(name: String, attributes: [String: Encodable]) {
-        send(telemetry: .metric(name: name, attributes: attributes))
+        send(telemetry: .metric(MetricTelemetry(name: name, attributes: attributes)))
     }
 }
 

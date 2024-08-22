@@ -82,8 +82,8 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             error(id: id, message: message, kind: kind, stack: stack)
         case .configuration(let configuration):
             send(configuration: configuration)
-        case let .metric(name, attributes):
-            metric(name: name, attributes: attributes)
+        case let .metric(metric):
+            send(metric: metric)
         }
 
         return true
@@ -208,7 +208,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         }
     }
 
-    private func metric(name: String, attributes: [String: Encodable]) {
+    private func send(metric: MetricTelemetry) {
         guard metricsExtraSampler.sample() else {
             return
         }
@@ -219,7 +219,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 
             // Override sessionID using standard `SDKMetricFields`, otherwise use current RUM session ID:
-            var attributes = attributes
+            var attributes = metric.attributes
             let sessionIDOverride: String? = attributes.removeValue(forKey: SDKMetricFields.sessionIDOverrideKey)?.dd.decode()
             let sessionID = sessionIDOverride ?? rum?.sessionID
 
@@ -234,7 +234,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(
                     device: .init(context.device),
-                    message: "[Mobile Metric] \(name)",
+                    message: "[Mobile Metric] \(metric.name)",
                     os: .init(context.device),
                     telemetryInfo: attributes
                 ),
