@@ -56,15 +56,18 @@ extension SessionReplay {
         /// - Parameters:
         ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
         ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked. Default: `.hide`.
+        ///   - startRecordingImmediately: If the recording should start automatically. When `true`, the recording starts automatically; when `false` it doesn't, and the recording will need to be started manually. Default: `true`.
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
         public init(
             replaySampleRate: Float,
             touchPrivacyLevel: SessionReplayTouchPrivacyLevel,
+            startRecordingImmediately: Bool = true,
             customEndpoint: URL? = nil
         ) {
             self.replaySampleRate = replaySampleRate
             self.defaultPrivacyLevel = .mask
             self.touchPrivacyLevel = touchPrivacyLevel
+            self.startRecordingImmediately = startRecordingImmediately
             self.customEndpoint = customEndpoint
         }
 
