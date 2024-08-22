@@ -15,10 +15,10 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     let featureScope: FeatureScope
     let dateProvider: DateProvider
 
+    /// Sampler for all telemetry events.
     let sampler: Sampler
-
+    /// Additional sampler for configuration telemetry events, applied in addition to the `sampler`.
     let configurationExtraSampler: Sampler
-    let metricsExtraSampler: Sampler
 
     /// Keeps track of current session
     @ReadWriteLock
@@ -39,19 +39,16 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     ///   - dateProvider: Current device time provider.
     ///   - sampler: Telemetry events sampler.
     ///   - configurationExtraSampler: Extra sampler for configuration events (applied on top of `sampler`).
-    ///   - metricsExtraSampler: Extra sampler for metric events (applied on top of `sampler`).
     init(
         featureScope: FeatureScope,
         dateProvider: DateProvider,
         sampler: Sampler,
-        configurationExtraSampler: Sampler,
-        metricsExtraSampler: Sampler
+        configurationExtraSampler: Sampler
     ) {
         self.featureScope = featureScope
         self.dateProvider = dateProvider
         self.sampler = sampler
         self.configurationExtraSampler = configurationExtraSampler
-        self.metricsExtraSampler = metricsExtraSampler
     }
 
     /// Receives a message from the bus.
@@ -209,7 +206,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     }
 
     private func send(metric: MetricTelemetry) {
-        guard metricsExtraSampler.sample() else {
+        guard Sampler(samplingRate: metric.sampleRate).sample() else {
             return
         }
 

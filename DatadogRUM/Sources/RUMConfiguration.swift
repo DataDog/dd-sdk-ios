@@ -264,16 +264,10 @@ extension RUM {
 
         // MARK: - Internal
 
-        /// An extra sampling rate for configuration telemetry events.
-        ///
-        /// It is applied on top of the value configured in public `telemetrySampleRate`.
-        /// It can be overwritten by `InternalConfiguration`.
+        /// An extra sampling rate for configuration telemetry events. It is applied on top of the value configured in public `telemetrySampleRate`.
         internal var configurationTelemetrySampleRate: Float = 20.0
-
-        /// An extra sampling rate for metric events.
-        ///
-        /// It is applied on top of the value configured in public `telemetrySampleRate`.
-        internal var metricsTelemetrySampleRate: Float = 15
+        /// The sample rate for "RUM Session Ended" telemetry. It is applied on top of the value configured in public `telemetrySampleRate`.
+        internal var sessionEndedMetricSampleRate: Float = MetricTelemetry.defaultSampleRate
 
         internal var uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
 

@@ -36,7 +36,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
 
         let featureScope = core.scope(for: RUMFeature.self)
-        let sessionEndedMetric = SessionEndedMetricController(telemetry: core.telemetry)
+        let sessionEndedMetric = SessionEndedMetricController(
+            telemetry: core.telemetry,
+            sampleRate: configuration.sessionEndedMetricSampleRate
+        )
 
         var watchdogTermination: WatchdogTerminationMonitor?
         if configuration.trackWatchdogTerminations {
@@ -139,8 +142,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 featureScope: featureScope,
                 dateProvider: configuration.dateProvider,
                 sampler: Sampler(samplingRate: configuration.telemetrySampleRate),
-                configurationExtraSampler: Sampler(samplingRate: configuration.configurationTelemetrySampleRate),
-                metricsExtraSampler: Sampler(samplingRate: configuration.metricsTelemetrySampleRate)
+                configurationExtraSampler: Sampler(samplingRate: configuration.configurationTelemetrySampleRate)
             ),
             ErrorMessageReceiver(
                 featureScope: featureScope,

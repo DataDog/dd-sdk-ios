@@ -130,15 +130,14 @@ class TelemetryTests: XCTestCase {
         XCTAssertEqual(metric.sampleRate, 4.21)
     }
 
-    // TODO: RUM-5083 Enable this test
-//    func testMetricTelemetryDefaultSampleRate() throws {
-//        // When
-//        telemetry.metric(name: "metric name", attributes: [:])
-//
-//        // Then
-//        let metric = try XCTUnwrap(telemetry.messages.compactMap({ $0.asMetric }).first)
-//        XCTAssertEqual(metric.sampleRate, MetricTelemetry.defaultSampleRate)
-//    }
+    func testMetricTelemetryDefaultSampleRate() throws {
+        // When
+        telemetry.metric(name: "metric name", attributes: [:])
+
+        // Then
+        let metric = try XCTUnwrap(telemetry.messages.compactMap({ $0.asMetric }).first)
+        XCTAssertEqual(metric.sampleRate, MetricTelemetry.defaultSampleRate)
+    }
 
     func testStartingMethodCalledMetricTrace_whenSampled() throws {
         XCTAssertNotNil(telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), sampleRate: 100))

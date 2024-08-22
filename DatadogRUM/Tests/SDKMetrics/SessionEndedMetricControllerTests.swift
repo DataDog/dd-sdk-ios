@@ -18,7 +18,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         let errorKinds: [String] = .mockRandom(count: 5)
 
         // Given
-        let controller = SessionEndedMetricController(telemetry: telemetry)
+        let controller = SessionEndedMetricController(telemetry: telemetry, sampleRate: 4.2)
         controller.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
 
         // When
@@ -34,6 +34,8 @@ class SessionEndedMetricControllerTests: XCTestCase {
         XCTAssertEqual(metric.sdkErrorsCount.total, errorKinds.count)
         XCTAssertEqual(metric.noViewEventsCount.actions, 1)
         XCTAssertEqual(metric.wasStopped, true)
+        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: SessionEndedMetric.Constants.name))
+        XCTAssertEqual(metricTelemetry.sampleRate, 4.2)
     }
 
     func testTrackingMultipleSessionsWithExplicitSessionID() throws {
@@ -41,7 +43,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         let sessionID2: RUMUUID = .mockRandom()
 
         // When
-        let controller = SessionEndedMetricController(telemetry: telemetry)
+        let controller = SessionEndedMetricController(telemetry: telemetry, sampleRate: 100)
         controller.startMetric(sessionID: sessionID1, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
         controller.startMetric(sessionID: sessionID2, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
         // Session 1:
@@ -73,7 +75,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         let sessionID2: RUMUUID = .mockRandom()
 
         // When
-        let controller = SessionEndedMetricController(telemetry: telemetry)
+        let controller = SessionEndedMetricController(telemetry: telemetry, sampleRate: 100)
         controller.startMetric(sessionID: sessionID1, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
         controller.startMetric(sessionID: sessionID2, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
         // Track latest session (`sessionID: nil`)
@@ -96,7 +98,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
 
     func testTrackingSessionEndedMetricIsThreadSafe() {
         let sessionIDs: [RUMUUID] = .mockRandom(count: 10)
-        let controller = SessionEndedMetricController(telemetry: telemetry)
+        let controller = SessionEndedMetricController(telemetry: telemetry, sampleRate: 100)
 
         // swiftlint:disable opening_brace
         callConcurrently(
