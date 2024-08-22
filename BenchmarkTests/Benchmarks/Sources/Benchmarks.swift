@@ -11,6 +11,7 @@
 import Foundation
 import OpenTelemetryApi
 import OpenTelemetrySdk
+import DatadogExporter
 
 let instrumentationName = "benchmarks"
 let instrumentationVersion = "1.0.0"
@@ -151,5 +152,30 @@ public enum Benchmarks {
         }
 
         OpenTelemetry.registerMeterProvider(meterProvider: meterProvider)
+    }
+
+    /// Configure and register a OpenTelemetry Tracer.
+    ///
+    /// - Parameter configuration: The Benchmark configuration.
+    public static func tracer(with configuration: Configuration) {
+        let exporterConfiguration = ExporterConfiguration(
+            serviceName: configuration.context.applicationIdentifier,
+            resource: "Benchmark Tracer",
+            applicationName: configuration.context.applicationName,
+            applicationVersion: configuration.context.applicationVersion,
+            environment: "benchmarks",
+            apiKey: configuration.apiKey,
+            endpoint: .us1,
+            uploadCondition: { true }
+        )
+        
+        let exporter = try! DatadogExporter(config: exporterConfiguration)
+        let processor = SimpleSpanProcessor(spanExporter: exporter)
+
+        let provider = TracerProviderBuilder()
+            .add(spanProcessor: processor)
+            .build()
+
+        OpenTelemetry.registerTracerProvider(tracerProvider: provider)
     }
 }

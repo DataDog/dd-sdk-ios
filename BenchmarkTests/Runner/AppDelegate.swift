@@ -33,7 +33,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 )
             )
         case .profiling:
-            // collect profiles
+            // Collect traces during profiling run
+            Benchmarks.tracer(
+                with: Benchmarks.Configuration(
+                    info: applicationInfo,
+                    scenario: scenario,
+                    run: run
+                )
+            )
+            
+            DatadogInternal.profiler = Profiler()
             break
         }
 
