@@ -541,6 +541,7 @@ public struct RUMErrorEvent: RUMDataModel
             case appHang = "App Hang"
             case exception = "Exception"
             case watchdogTermination = "Watchdog Termination"
+            case memoryWarning = "Memory Warning"
         public struct Causes: Codable
             public var message: String
             public let source: Source
@@ -1320,6 +1321,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel
             public var sessionReplaySampleRate: Int64?
             public let sessionSampleRate: Int64?
             public let silentMultipleInit: Bool?
+            public var startRecordingImmediately: Bool?
             public var startSessionReplayRecordingManually: Bool?
             public let storeContextsAcrossPages: Bool?
             public let telemetryConfigurationSampleRate: Int64?
@@ -1588,7 +1590,7 @@ public extension RUMMonitorProtocol
     func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue] = [:])
     func startView(key: String,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
     func stopView(key: String,attributes: [AttributeKey: AttributeValue] = [:])
-    func addError(message: String,type: String? = nil,stack: String? = nil,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #filePath,line: UInt? = #line)
+    func addError(message: String,type: String? = nil,stack: String? = nil,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #fileID,line: UInt? = #line)
     func addError(error: Error,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:])
     func startResource(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue] = [:])
     func startResource(resourceKey: String,url: URL,attributes: [AttributeKey: AttributeValue] = [:])
@@ -2048,11 +2050,14 @@ public enum DDSessionReplayConfigurationPrivacyLevel: Int
     case mask
     case maskUserInput
 public enum SessionReplay
-    public static func enable(with configuration: SessionReplay.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func enable(with configuration: SessionReplay.Configuration,in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func startRecording(in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func stopRecording(in core: DatadogCoreProtocol = CoreRegistry.default)
 [?] extension SessionReplay
     public struct Configuration
         public var replaySampleRate: Float
         public var defaultPrivacyLevel: SessionReplayPrivacyLevel
+        public var startRecordingImmediately: Bool
         public var customEndpoint: URL?
-        public init(replaySampleRate: Float,defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,customEndpoint: URL? = nil)
+        public init(replaySampleRate: Float,defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
         public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder])
