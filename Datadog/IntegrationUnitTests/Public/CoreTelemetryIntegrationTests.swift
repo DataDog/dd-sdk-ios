@@ -35,8 +35,8 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         #sourceLocation()
         core.telemetry.metric(name: "Metric Name", attributes: ["metric.attribute": 42], sampleRate: 100)
         core.telemetry.stopMethodCalled(
-            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), sampleRate: 100),
-            sampleRate: 100
+            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
+            tailSampleRate: 100
         )
 
         // Then
@@ -80,8 +80,8 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.error("Error Telemetry")
         core.telemetry.metric(name: "Metric Name", attributes: [:], sampleRate: 100)
         core.telemetry.stopMethodCalled(
-            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), sampleRate: 100),
-            sampleRate: 100
+            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
+            tailSampleRate: 100
         )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
@@ -126,8 +126,8 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.error("Error Telemetry")
         core.telemetry.metric(name: "Metric Name", attributes: [:], sampleRate: 100)
         core.telemetry.stopMethodCalled(
-            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), sampleRate: 100),
-            sampleRate: 100
+            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
+            tailSampleRate: 100
         )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
@@ -173,8 +173,8 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.error("Error Telemetry")
         core.telemetry.metric(name: "Metric Name", attributes: [:], sampleRate: 100)
         core.telemetry.stopMethodCalled(
-            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), sampleRate: 100),
-            sampleRate: 100
+            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
+            tailSampleRate: 100
         )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
