@@ -13,34 +13,34 @@ class PrivacyLevelTests: XCTestCase {
     // MARK: - Text obfuscation strategies
 
     func testSensitiveTextObfuscation() {
-        XCTAssertTrue(PrivacyLevel.allow.sensitiveTextObfuscator is FixLengthMaskObfuscator)
-        XCTAssertTrue(PrivacyLevel.mask.sensitiveTextObfuscator is FixLengthMaskObfuscator)
-        XCTAssertTrue(PrivacyLevel.maskUserInput.sensitiveTextObfuscator is FixLengthMaskObfuscator)
+        XCTAssertTrue(TextAndInputPrivacyLevel.maskSensitiveInputs.sensitiveTextObfuscator is FixLengthMaskObfuscator)
+        XCTAssertTrue(TextAndInputPrivacyLevel.maskAllInputs.sensitiveTextObfuscator is FixLengthMaskObfuscator)
+        XCTAssertTrue(TextAndInputPrivacyLevel.maskAll.sensitiveTextObfuscator is FixLengthMaskObfuscator)
     }
 
     func testInputAndOptionTextObfuscation() {
-        XCTAssertTrue(PrivacyLevel.allow.inputAndOptionTextObfuscator is NOPTextObfuscator)
-        XCTAssertTrue(PrivacyLevel.mask.inputAndOptionTextObfuscator is FixLengthMaskObfuscator)
-        XCTAssertTrue(PrivacyLevel.maskUserInput.inputAndOptionTextObfuscator is FixLengthMaskObfuscator)
+        XCTAssertTrue(TextAndInputPrivacyLevel.maskSensitiveInputs.inputAndOptionTextObfuscator is NOPTextObfuscator)
+        XCTAssertTrue(TextAndInputPrivacyLevel.maskAllInputs.inputAndOptionTextObfuscator is FixLengthMaskObfuscator)
+        XCTAssertTrue(TextAndInputPrivacyLevel.maskAll.inputAndOptionTextObfuscator is FixLengthMaskObfuscator)
     }
 
     func testStaticTextObfuscation() {
-        XCTAssertTrue(PrivacyLevel.allow.staticTextObfuscator is NOPTextObfuscator)
-        XCTAssertTrue(PrivacyLevel.mask.staticTextObfuscator is SpacePreservingMaskObfuscator)
-        XCTAssertTrue(PrivacyLevel.maskUserInput.staticTextObfuscator is NOPTextObfuscator)    }
+        XCTAssertTrue(TextAndInputPrivacyLevel.maskSensitiveInputs.staticTextObfuscator is NOPTextObfuscator)
+        XCTAssertTrue(TextAndInputPrivacyLevel.maskAllInputs.staticTextObfuscator is NOPTextObfuscator)
+        XCTAssertTrue(TextAndInputPrivacyLevel.maskAll.staticTextObfuscator is SpacePreservingMaskObfuscator)    }
 
     func testHintTextObfuscation() {
-        XCTAssertTrue(PrivacyLevel.allow.hintTextObfuscator is NOPTextObfuscator)
-        XCTAssertTrue(PrivacyLevel.mask.hintTextObfuscator is FixLengthMaskObfuscator)
-        XCTAssertTrue(PrivacyLevel.maskUserInput.hintTextObfuscator is NOPTextObfuscator)
+        XCTAssertTrue(TextAndInputPrivacyLevel.maskSensitiveInputs.hintTextObfuscator is NOPTextObfuscator)
+        XCTAssertTrue(TextAndInputPrivacyLevel.maskAllInputs.hintTextObfuscator is NOPTextObfuscator)
+        XCTAssertTrue(TextAndInputPrivacyLevel.maskAll.hintTextObfuscator is FixLengthMaskObfuscator)
     }
 
     // MARK: - Convenience helpers
 
     func testShouldMaskInputElements() {
-        XCTAssertFalse(PrivacyLevel.allow.shouldMaskInputElements)
-        XCTAssertTrue(PrivacyLevel.mask.shouldMaskInputElements)
-        XCTAssertTrue(PrivacyLevel.maskUserInput.shouldMaskInputElements)
+        XCTAssertFalse(TextAndInputPrivacyLevel.maskSensitiveInputs.shouldMaskInputElements)
+        XCTAssertTrue(TextAndInputPrivacyLevel.maskAllInputs.shouldMaskInputElements)
+        XCTAssertTrue(TextAndInputPrivacyLevel.maskAll.shouldMaskInputElements)
     }
 }
 #endif

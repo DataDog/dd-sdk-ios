@@ -21,7 +21,7 @@ public enum SessionReplayPrivacyLevel: String {
 }
 
 /// Available privacy levels for text and input masking in Session Replay.
-public enum SessionReplayTextAndInputPrivacyLevel: String {
+public enum SessionReplayTextAndInputPrivacyLevel: String, CaseIterable {
     /// Show all texts except sensitive inputs, eg. password fields.
     case maskSensitiveInputs = "mask_sensitive_inputs"
 
@@ -44,10 +44,10 @@ public enum SessionReplayTextAndInputPrivacyLevel: String {
 ///     )
 ///
 public protocol SessionReplayConfiguration {
-    /// The privacy level to use for the web view replay recording.
+    // TODO: RUM-5766 - Pass correct privacy level to webviews
+    /// Deprecated
+    /// Former global privacy level to use in Session Replay.
     var privacyLevel: SessionReplayPrivacyLevel { get }
-    /// The text and input privacy level to use for the web view replay recording.
-    var textAndInputPrivacyLevel: SessionReplayTextAndInputPrivacyLevel { get }
 }
 
 extension DatadogFeature where Self: SessionReplayConfiguration {
