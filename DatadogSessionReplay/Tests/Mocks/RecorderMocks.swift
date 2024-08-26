@@ -459,6 +459,7 @@ extension Recorder.Context: AnyMockable, RandomMockable {
         return Recorder.Context(
             privacy: .mockRandom(),
             textAndInputPrivacy: .mockRandom(),
+            imagePrivacy: .mockRandom(),
             touchPrivacy: .mockRandom(),
             rumContext: .mockRandom(),
             date: .mockRandom()
@@ -469,12 +470,14 @@ extension Recorder.Context: AnyMockable, RandomMockable {
         date: Date = .mockAny(),
         privacy: PrivacyLevel = .mockAny(),
         textAndInputPrivacy: TextAndInputPrivacyLevel = .mockAny(),
+        imagePrivacy: ImagePrivacyLevel = .mockAny(),
         touchPrivacy: TouchPrivacyLevel = .mockAny(),
         rumContext: RUMContext = .mockAny()
     ) -> Recorder.Context {
         return Recorder.Context(
             privacy: privacy,
             textAndInputPrivacy: textAndInputPrivacy,
+            imagePrivacy: imagePrivacy,
             touchPrivacy: touchPrivacy,
             rumContext: rumContext,
             date: date
@@ -484,6 +487,7 @@ extension Recorder.Context: AnyMockable, RandomMockable {
     init(
         privacy: PrivacyLevel,
         textAndInputPrivacy: TextAndInputPrivacyLevel,
+        imagePrivacy: ImagePrivacyLevel,
         touchPrivacy: TouchPrivacyLevel,
         rumContext: RUMContext,
         date: Date = Date()
@@ -491,6 +495,7 @@ extension Recorder.Context: AnyMockable, RandomMockable {
         self.init(
             privacy: privacy,
             textAndInputPrivacy: textAndInputPrivacy,
+            imagePrivacy: imagePrivacy,
             touchPrivacy: touchPrivacy,
             applicationID: rumContext.applicationID,
             sessionID: rumContext.sessionID,

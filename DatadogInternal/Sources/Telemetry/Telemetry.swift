@@ -19,6 +19,7 @@ public struct ConfigurationTelemetry: Equatable {
     public let dartVersion: String?
     public let defaultPrivacyLevel: String?
     public let forwardErrorsToLogs: Bool?
+    public let imagePrivacyLevel: String?
     public let initializationType: String?
     public let mobileVitalsUpdatePeriod: Int64?
     public let reactNativeVersion: String?
@@ -27,9 +28,9 @@ public struct ConfigurationTelemetry: Equatable {
     public let sessionSampleRate: Int64?
     public let silentMultipleInit: Bool?
     public let startRecordingImmediately: Bool?
-    public let startSessionReplayRecordingManually: Bool?
     public let telemetryConfigurationSampleRate: Int64?
     public let telemetrySampleRate: Int64?
+    public let touchPrivacyLevel: String?
     public let tracerAPI: String?
     public let tracerAPIVersion: String?
     public let traceSampleRate: Int64?
@@ -326,6 +327,7 @@ extension Telemetry {
         dartVersion: String? = nil,
         defaultPrivacyLevel: String? = nil,
         forwardErrorsToLogs: Bool? = nil,
+        imagePrivacyLevel: String? = nil,
         initializationType: String? = nil,
         mobileVitalsUpdatePeriod: Int64? = nil,
         reactNativeVersion: String? = nil,
@@ -334,9 +336,9 @@ extension Telemetry {
         sessionSampleRate: Int64? = nil,
         silentMultipleInit: Bool? = nil,
         startRecordingImmediately: Bool? = nil,
-        startSessionReplayRecordingManually: Bool? = nil,
         telemetryConfigurationSampleRate: Int64? = nil,
         telemetrySampleRate: Int64? = nil,
+        touchPrivacyLevel: String? = nil,
         tracerAPI: String? = nil,
         tracerAPIVersion: String? = nil,
         traceSampleRate: Int64? = nil,
@@ -377,6 +379,7 @@ extension Telemetry {
             dartVersion: dartVersion,
             defaultPrivacyLevel: defaultPrivacyLevel,
             forwardErrorsToLogs: forwardErrorsToLogs,
+            imagePrivacyLevel: imagePrivacyLevel,
             initializationType: initializationType,
             mobileVitalsUpdatePeriod: mobileVitalsUpdatePeriod,
             reactNativeVersion: reactNativeVersion,
@@ -385,9 +388,9 @@ extension Telemetry {
             sessionSampleRate: sessionSampleRate,
             silentMultipleInit: silentMultipleInit,
             startRecordingImmediately: startRecordingImmediately,
-            startSessionReplayRecordingManually: startSessionReplayRecordingManually,
             telemetryConfigurationSampleRate: telemetryConfigurationSampleRate,
             telemetrySampleRate: telemetrySampleRate,
+            touchPrivacyLevel: touchPrivacyLevel,
             tracerAPI: tracerAPI,
             tracerAPIVersion: tracerAPIVersion,
             traceSampleRate: traceSampleRate,
@@ -498,6 +501,7 @@ extension ConfigurationTelemetry {
             dartVersion: other.dartVersion ?? dartVersion,
             defaultPrivacyLevel: other.defaultPrivacyLevel ?? defaultPrivacyLevel,
             forwardErrorsToLogs: other.forwardErrorsToLogs ?? forwardErrorsToLogs,
+            imagePrivacyLevel: other.imagePrivacyLevel ?? imagePrivacyLevel,
             initializationType: other.initializationType ?? initializationType,
             mobileVitalsUpdatePeriod: other.mobileVitalsUpdatePeriod ?? mobileVitalsUpdatePeriod,
             reactNativeVersion: other.reactNativeVersion ?? reactNativeVersion,
@@ -506,9 +510,9 @@ extension ConfigurationTelemetry {
             sessionSampleRate: other.sessionSampleRate ?? sessionSampleRate,
             silentMultipleInit: other.silentMultipleInit ?? silentMultipleInit,
             startRecordingImmediately: other.startRecordingImmediately ?? startRecordingImmediately,
-            startSessionReplayRecordingManually: other.startSessionReplayRecordingManually ?? startSessionReplayRecordingManually,
             telemetryConfigurationSampleRate: other.telemetryConfigurationSampleRate ?? telemetryConfigurationSampleRate,
             telemetrySampleRate: other.telemetrySampleRate ?? telemetrySampleRate,
+            touchPrivacyLevel: other.touchPrivacyLevel ?? touchPrivacyLevel,
             tracerAPI: other.tracerAPI ?? tracerAPI,
             tracerAPIVersion: other.tracerAPIVersion ?? tracerAPIVersion,
             traceSampleRate: other.traceSampleRate ?? traceSampleRate,

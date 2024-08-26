@@ -43,7 +43,7 @@ internal struct UIActivityIndicatorRecorder: NodeRecorder {
             nodeRecorders: [
                 UIImageViewRecorder(
                     identifier: identifier,
-                    shouldRecordImagePredicate: { $0.image != nil }
+                    shouldRecordImagePredicateOverride: { $0.image != nil }
                 )
             ]
         )

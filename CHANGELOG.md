@@ -6,6 +6,7 @@
 - [FEATURE] Add Logs event mapper to ObjC API. See [#2008][]
 - [IMPROVEMENT] Send retry information with network requests (eg. retry_count, last_failure_status and idempotency key). See [#1991][]
 - [FIX] Ignore network reachability on watchOS . See [#2005][] (Thanks [@jfiser-paylocity][])
+- [FEATURE] Add image privacy level configuration for Session Replay. See [#2012][]
 
 # 2.16.0 / 20-08-2024
 
@@ -760,6 +761,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1998]: https://github.com/DataDog/dd-sdk-ios/pull/1998
 [#1998]: https://github.com/DataDog/dd-sdk-ios/pull/1966
 [#2026]: https://github.com/DataDog/dd-sdk-ios/pull/2026
+[#2012]: https://github.com/DataDog/dd-sdk-ios/pull/2012
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
