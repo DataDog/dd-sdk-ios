@@ -456,10 +456,6 @@ release-publish-dependent-podspecs:
 release-publish-legacy-podspecs:
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogObjc.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogAlamofireExtension.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDK.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDKObjc.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDKCrashReporting.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDKAlamofireExtension.podspec"
 
 # Set ot update CI secrets
 set-ci-secret:
