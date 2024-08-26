@@ -66,7 +66,7 @@ extension Benchmarks.Configuration {
             context: Benchmarks.Configuration.Context(
                 applicationIdentifier: bundle.bundleIdentifier!,
                 applicationName: bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as! String,
-                applicationVersion: bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String,
+                applicationVersion: bundle.object(forInfoDictionaryKey: "CFBundleVersion") as! String,
                 sdkVersion: "",
                 deviceModel: try! sysctl.model(),
                 osName: device.systemName,
