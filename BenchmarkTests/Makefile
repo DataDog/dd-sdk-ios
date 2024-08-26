@@ -14,6 +14,18 @@ ifdef ARTIFACTS_PATH
 	rm -rf "$(IPA_PATH)"
 endif
 
+build:
+	@$(ECHO_SUBTITLE2) "make build"
+	set -eo pipefail; \
+	OTEL_SWIFT=1 xcodebuild \
+		-project BenchmarkTests.xcodeproj \
+		-scheme Runner \
+		-sdk iphonesimulator \
+		-configuration Release \
+		-destination generic/platform=iOS\ Simulator \
+	| xcbeautify
+	@$(ECHO_SUCCESS) "BenchmarkTests compiles"
+
 archive:
 	@:$(eval VERSION ?= $(CURRENT_GIT_COMMIT_SHORT))
 	@$(ECHO_SUBTITLE2) "make archive VERSION='$(VERSION)'"
