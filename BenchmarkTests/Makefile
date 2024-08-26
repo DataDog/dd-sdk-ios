@@ -29,7 +29,7 @@ build:
 archive:
 	@:$(eval VERSION ?= $(CURRENT_GIT_COMMIT_SHORT))
 	@$(ECHO_SUBTITLE2) "make archive VERSION='$(VERSION)'"
-	@xcrun agvtool new-marketing-version "$(VERSION)"
+	@xcrun agvtool new-version "$(VERSION)"
 	set -eo pipefail; \
 	OTEL_SWIFT=1 xcodebuild \
 		-project BenchmarkTests.xcodeproj \
