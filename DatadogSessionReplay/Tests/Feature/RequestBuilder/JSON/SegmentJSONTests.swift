@@ -146,6 +146,7 @@ class SegmentJSONTests: XCTestCase {
         let context = Recorder.Context(
             privacy: .mockRandom(),
             textAndInputPrivacy: .mockRandom(),
+            imagePrivacy: .mockRandom(),
             touchPrivacy: .mockRandom(),
             rumContext: RUMContext(
                 applicationID: segment.application.id,

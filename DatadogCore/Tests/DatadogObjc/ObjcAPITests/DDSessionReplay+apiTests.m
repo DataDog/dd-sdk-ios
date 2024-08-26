@@ -16,18 +16,20 @@
 - (void)testConfiguration {
     DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100];
     configuration.defaultPrivacyLevel = DDSessionReplayConfigurationPrivacyLevelAllow;
-    configuration.textAndInputPrivacyLevel = DDSessionReplayConfigurationTextAndInputPrivacyLevelMaskSensitiveInputs;
-    configuration.touchPrivacyLevel = DDSessionReplayConfigurationTouchPrivacyLevelShow;
     configuration.customEndpoint = [NSURL new];
 
     [DDSessionReplay enableWith:configuration];
 }
 
 - (void)testConfigurationWithNewApi {
-    DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100 textAndInputPrivacyLevel:DDSessionReplayConfigurationTextAndInputPrivacyLevelMaskSensitiveInputs touchPrivacyLevel:DDSessionReplayConfigurationTouchPrivacyLevelHide];
-    configuration.defaultPrivacyLevel = DDSessionReplayConfigurationPrivacyLevelAllow;
-    configuration.textAndInputPrivacyLevel = DDSessionReplayConfigurationTextAndInputPrivacyLevelMaskAllInputs;
-    configuration.touchPrivacyLevel = DDSessionReplayConfigurationTouchPrivacyLevelShow;
+    DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100
+                                                                                        textAndInputPrivacyLevel:DDSessionReplayConfigurationTextAndInputPrivacyLevelMaskAll
+                                                                                               imagePrivacyLevel:DDImagePrivacyLevelMaskNone
+                                                                                               touchPrivacyLevel:DDTouchPrivacyLevelShow];
+
+    configuration.textAndInputPrivacyLevel = DDSessionReplayConfigurationTextAndInputPrivacyLevelMaskSensitiveInputs;
+    configuration.imagePrivacyLevel = DDImagePrivacyLevelMaskAll;
+    configuration.touchPrivacyLevel = DDTouchPrivacyLevelHide;
     configuration.customEndpoint = [NSURL new];
 
     [DDSessionReplay enableWith:configuration];

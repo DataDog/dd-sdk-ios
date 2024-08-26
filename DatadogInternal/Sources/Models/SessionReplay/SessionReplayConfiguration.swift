@@ -32,15 +32,6 @@ public enum SessionReplayTextAndInputPrivacyLevel: String {
     case maskAll = "mask_all"
 }
 
-/// Available privacy levels for touch masking in Session Replay.
-public enum SessionReplayTouchPrivacyLevel: String {
-    /// Show all user touches.
-    case show
-
-    /// Hide all user touches.
-    case hide
-}
-
 /// The Session Replay shared configuration.
 ///
 /// The Feature object  named `session-replay` will be registered to the core
@@ -55,8 +46,6 @@ public enum SessionReplayTouchPrivacyLevel: String {
 public protocol SessionReplayConfiguration {
     /// The privacy level to use for the web view replay recording.
     var privacyLevel: SessionReplayPrivacyLevel { get }
-    /// The touch privacy level to use for the web view replay recording.
-    var touchPrivacyLevel: SessionReplayTouchPrivacyLevel { get }
     /// The text and input privacy level to use for the web view replay recording.
     var textAndInputPrivacyLevel: SessionReplayTextAndInputPrivacyLevel { get }
 }

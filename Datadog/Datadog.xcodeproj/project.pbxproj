@@ -688,6 +688,7 @@
 		9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
 		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9EE5AD8226205B82001E699E /* DDNSURLSessionDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE5AD8126205B82001E699E /* DDNSURLSessionDelegateTests.swift */; };
+		A709D52C2C774B4E00D56627 /* TouchPrivacyLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A709D52B2C774B4E00D56627 /* TouchPrivacyLevel.swift */; };
 		A70A82652A935F210072F5DC /* BackgroundTaskCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */; };
 		A70A82662A935F210072F5DC /* BackgroundTaskCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */; };
 		A70ADCD22B583B1300321BC9 /* UIImageResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70ADCD12B583B1300321BC9 /* UIImageResource.swift */; };
@@ -698,6 +699,7 @@
 		A728ADAC2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */; };
 		A728ADB02934EB0900397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
 		A728ADB12934EB0C00397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
+		A72C7CCB2C4A888400AAF599 /* ImagePrivacyLevelMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = A72C7CCA2C4A888400AAF599 /* ImagePrivacyLevelMocks.swift */; };
 		A73A54982B16406900E1F7E3 /* ResourcesFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A73A54972B16406900E1F7E3 /* ResourcesFeature.swift */; };
 		A74A72812B0CEE4900771FEB /* ResourceRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72802B0CEE4900771FEB /* ResourceRequestBuilder.swift */; };
 		A74A72852B10CC6700771FEB /* ResourceRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72842B10CC6700771FEB /* ResourceRequestBuilderTests.swift */; };
@@ -708,6 +710,7 @@
 		A79B0F65292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F63292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m */; };
 		A79B0F66292BD7CA008742B3 /* B3HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F5E292BA435008742B3 /* B3HTTPHeadersWriter+objc.swift */; };
 		A79B0F67292BD7CC008742B3 /* B3HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F5E292BA435008742B3 /* B3HTTPHeadersWriter+objc.swift */; };
+		A7ACC2C22C49212700303AC9 /* ImagePrivacyLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7ACC2C12C49212700303AC9 /* ImagePrivacyLevel.swift */; };
 		A7B932F52B1F694000AE6477 /* ResourcesProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B932F42B1F694000AE6477 /* ResourcesProcessor.swift */; };
 		A7B932FB2B1F6A0A00AE6477 /* EnrichedRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B932F72B1F6A0A00AE6477 /* EnrichedRecord.swift */; };
 		A7B932FC2B1F6A0A00AE6477 /* SRDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B932F82B1F6A0A00AE6477 /* SRDataModels.swift */; };
@@ -724,6 +727,7 @@
 		A7DA18072AB0CA5E00F76337 /* DDUIKitRUMActionsPredicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7DA18062AB0CA4700F76337 /* DDUIKitRUMActionsPredicateTests.swift */; };
 		A7EA11622AB0CE6C00C73970 /* DDUIKitRUMActionsPredicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7DA18062AB0CA4700F76337 /* DDUIKitRUMActionsPredicateTests.swift */; };
 		A7EA88562B17639A00FE2580 /* ResourcesWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7EA88552B17639A00FE2580 /* ResourcesWriter.swift */; };
+		A7F21B062C77702300706D06 /* TouchPrivacyLevelMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F21B052C77702300706D06 /* TouchPrivacyLevelMocks.swift */; };
 		A7F651302B7655DE004B0EDB /* UIImageResourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F6512F2B7655DE004B0EDB /* UIImageResourceTests.swift */; };
 		A7FA98CE2BA1A6930018D6B5 /* MethodCalledMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7FA98CD2BA1A6930018D6B5 /* MethodCalledMetric.swift */; };
 		A7FA98CF2BA1A6930018D6B5 /* MethodCalledMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7FA98CD2BA1A6930018D6B5 /* MethodCalledMetric.swift */; };
@@ -2737,6 +2741,7 @@
 		9EC8B5D92668197B000F7529 /* VitalCPUReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReader.swift; sourceTree = "<group>"; };
 		9EC8B5ED2668E4DB000F7529 /* VitalCPUReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReaderTests.swift; sourceTree = "<group>"; };
 		9EE5AD8126205B82001E699E /* DDNSURLSessionDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNSURLSessionDelegateTests.swift; sourceTree = "<group>"; };
+		A709D52B2C774B4E00D56627 /* TouchPrivacyLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchPrivacyLevel.swift; sourceTree = "<group>"; };
 		A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundTaskCoordinator.swift; sourceTree = "<group>"; };
 		A70ADCD12B583B1300321BC9 /* UIImageResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageResource.swift; sourceTree = "<group>"; };
 		A71013D52B178FAD00101E60 /* ResourcesWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesWriterTests.swift; sourceTree = "<group>"; };
@@ -2748,6 +2753,7 @@
 		A728ADA52934DF2400397996 /* W3CHTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
 		A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "W3CHTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
 		A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDW3CHTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
+		A72C7CCA2C4A888400AAF599 /* ImagePrivacyLevelMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePrivacyLevelMocks.swift; sourceTree = "<group>"; };
 		A73A54972B16406900E1F7E3 /* ResourcesFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesFeature.swift; sourceTree = "<group>"; };
 		A74A72802B0CEE4900771FEB /* ResourceRequestBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResourceRequestBuilder.swift; sourceTree = "<group>"; };
 		A74A72842B10CC6700771FEB /* ResourceRequestBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceRequestBuilderTests.swift; sourceTree = "<group>"; };
@@ -2759,6 +2765,7 @@
 		A79B0F5E292BA435008742B3 /* B3HTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "B3HTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
 		A79B0F60292BB071008742B3 /* B3HTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = B3HTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
 		A79B0F63292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDB3HTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
+		A7ACC2C12C49212700303AC9 /* ImagePrivacyLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePrivacyLevel.swift; sourceTree = "<group>"; };
 		A7B932F42B1F694000AE6477 /* ResourcesProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesProcessor.swift; sourceTree = "<group>"; };
 		A7B932F72B1F6A0A00AE6477 /* EnrichedRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnrichedRecord.swift; sourceTree = "<group>"; };
 		A7B932F82B1F6A0A00AE6477 /* SRDataModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRDataModels.swift; sourceTree = "<group>"; };
@@ -2771,6 +2778,7 @@
 		A7DA18022AB0C8A700F76337 /* DDUIKitRUMViewsPredicateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDUIKitRUMViewsPredicateTests.swift; sourceTree = "<group>"; };
 		A7DA18062AB0CA4700F76337 /* DDUIKitRUMActionsPredicateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDUIKitRUMActionsPredicateTests.swift; sourceTree = "<group>"; };
 		A7EA88552B17639A00FE2580 /* ResourcesWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesWriter.swift; sourceTree = "<group>"; };
+		A7F21B052C77702300706D06 /* TouchPrivacyLevelMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchPrivacyLevelMocks.swift; sourceTree = "<group>"; };
 		A7F6512F2B7655DE004B0EDB /* UIImageResourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageResourceTests.swift; sourceTree = "<group>"; };
 		A7F773D32924EA2D00AC1A62 /* B3HTTPHeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = B3HTTPHeaders.swift; sourceTree = "<group>"; };
 		A7F773DB29253F8B00AC1A62 /* B3HTTPHeadersWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = B3HTTPHeadersWriter.swift; sourceTree = "<group>"; };
@@ -3581,6 +3589,8 @@
 				61054E192A6EE10A00AAA894 /* RecordingCoordinator.swift */,
 				61054E112A6EE10A00AAA894 /* Recorder.swift */,
 				61054E122A6EE10A00AAA894 /* PrivacyLevel.swift */,
+				A7ACC2C12C49212700303AC9 /* ImagePrivacyLevel.swift */,
+				A709D52B2C774B4E00D56627 /* TouchPrivacyLevel.swift */,
 				61054E0E2A6EE10A00AAA894 /* WindowObserver */,
 				61054E1A2A6EE10A00AAA894 /* TouchSnapshotProducer */,
 				61054E212A6EE10A00AAA894 /* ViewTreeSnapshotProducer */,
@@ -3974,6 +3984,8 @@
 				A74A72882B10D95D00771FEB /* MultipartBuilderSpy.swift */,
 				A71265852B17980C007D63CE /* MockFeature.swift */,
 				A7D952892B28BD94004C79B1 /* ResourceProcessorSpy.swift */,
+				A72C7CCA2C4A888400AAF599 /* ImagePrivacyLevelMocks.swift */,
+				A7F21B052C77702300706D06 /* TouchPrivacyLevelMocks.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -8318,6 +8330,7 @@
 				61054E812A6EE10A00AAA894 /* UIStepperRecorder.swift in Sources */,
 				61054E632A6EE10A00AAA894 /* SessionReplayConfiguration.swift in Sources */,
 				61054E702A6EE10A00AAA894 /* TouchSnapshotProducer.swift in Sources */,
+				A7ACC2C22C49212700303AC9 /* ImagePrivacyLevel.swift in Sources */,
 				D2C5D52B2B84F6AB00B63F36 /* WebViewRecordReceiver.swift in Sources */,
 				61054E652A6EE10A00AAA894 /* AppWindowObserver.swift in Sources */,
 				A74A72812B0CEE4900771FEB /* ResourceRequestBuilder.swift in Sources */,
@@ -8355,6 +8368,7 @@
 				61054E952A6EE10A00AAA894 /* SnapshotProcessor.swift in Sources */,
 				61054E722A6EE10A00AAA894 /* TouchIdentifierGenerator.swift in Sources */,
 				A7B932F52B1F694000AE6477 /* ResourcesProcessor.swift in Sources */,
+				A709D52C2C774B4E00D56627 /* TouchPrivacyLevel.swift in Sources */,
 				61054E742A6EE10A00AAA894 /* ViewTreeSnapshotProducer.swift in Sources */,
 				61054E7E2A6EE10A00AAA894 /* NodeRecorder.swift in Sources */,
 				61054E6F2A6EE10A00AAA894 /* UIApplicationSwizzler.swift in Sources */,
@@ -8414,6 +8428,7 @@
 				61054FBC2A6EE1BA00AAA894 /* UIStepperRecorderTests.swift in Sources */,
 				61054FCB2A6EE1BA00AAA894 /* QueueMocks.swift in Sources */,
 				61054FC42A6EE1BA00AAA894 /* RecorderTests.swift in Sources */,
+				A7F21B062C77702300706D06 /* TouchPrivacyLevelMocks.swift in Sources */,
 				61054FC22A6EE1BA00AAA894 /* ViewTreeSnapshotTests.swift in Sources */,
 				D2BCB2A32B7B9683005C2AAB /* WKWebViewRecorderTests.swift in Sources */,
 				61054FC62A6EE1BA00AAA894 /* CoreGraphicsMocks.swift in Sources */,
@@ -8456,6 +8471,7 @@
 				61054FD02A6EE1BA00AAA894 /* SRContextPublisherTests.swift in Sources */,
 				61054F9B2A6EE1BA00AAA894 /* QueueTests.swift in Sources */,
 				D2056C212BBFE05A0085BC76 /* WireframesBuilderTests.swift in Sources */,
+				A72C7CCB2C4A888400AAF599 /* ImagePrivacyLevelMocks.swift in Sources */,
 				61054F992A6EE1BA00AAA894 /* ColorsTests.swift in Sources */,
 				61054FBF2A6EE1BA00AAA894 /* UIPickerViewRecorderTests.swift in Sources */,
 				61054FAE2A6EE1BA00AAA894 /* TouchIdentifierGeneratorTests.swift in Sources */,
