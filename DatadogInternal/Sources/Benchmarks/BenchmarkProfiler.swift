@@ -53,26 +53,11 @@ public protocol BenchmarkSpan {
     func stop()
 }
 
-private final class NOPBenchmarkProfiler: BenchmarkProfiler {
-    /// Returns no-op tracer shared instance.
-    func tracer(operation: @autoclosure () -> String) -> BenchmarkTracer {
-        NOPBenchmarkTracer.shared
-    }
-}
-
-private final class NOPBenchmarkTracer: BenchmarkTracer {
-    /// The no-op tracer shared instance.
-    static let shared: BenchmarkTracer = NOPBenchmarkTracer()
-
-    /// Returns no-op span shared instance.
-    func startSpan(named: @autoclosure () -> String) -> BenchmarkSpan {
-        NOPBenchmarkSpan.shared
-    }
-}
-
-private final class NOPBenchmarkSpan: BenchmarkSpan {
-    /// The no-op span shared instance.
-    static let shared: BenchmarkSpan = NOPBenchmarkSpan()
+private final class NOPBenchmarkProfiler: BenchmarkProfiler, BenchmarkTracer, BenchmarkSpan {
+    /// no-op
+    func tracer(operation: @autoclosure () -> String) -> BenchmarkTracer { self }
+    /// no-op
+    func startSpan(named: @autoclosure () -> String) -> BenchmarkSpan { self }
     /// no-op
     func stop() {}
 }
