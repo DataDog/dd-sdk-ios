@@ -53,7 +53,7 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "BENCHMARK_RUN"
-            value = "metrics"
+            value = "instrumented"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
