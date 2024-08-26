@@ -26,8 +26,10 @@ public class Recorder: Recording {
         public let privacy: SessionReplayPrivacyLevel
         /// The content recording policy for texts and inputs at the moment of requesting snapshot.
         public let textAndInputPrivacy: SessionReplayTextAndInputPrivacyLevel
-        /// The content recording policy for touches at the moment of requesting snapshot.
-        public let touchPrivacy: SessionReplayTouchPrivacyLevel
+        /// The image recording policy from the moment of requesting snapshot.
+        public let imagePrivacy: ImagePrivacyLevel
+        /// The content recording policy from the moment of requesting snapshot.
+        public let touchPrivacy: TouchPrivacyLevel
         /// Current RUM application ID - standard UUID string, lowecased.
         let applicationID: String
         /// Current RUM session ID - standard UUID string, lowecased.
@@ -42,6 +44,7 @@ public class Recorder: Recording {
         internal init(
             privacy: PrivacyLevel,
             textAndInputPrivacy: TextAndInputPrivacyLevel,
+            imagePrivacy: ImagePrivacyLevel,
             touchPrivacy: TouchPrivacyLevel,
             applicationID: String,
             sessionID: String,
@@ -51,6 +54,7 @@ public class Recorder: Recording {
         ) {
             self.privacy = privacy
             self.textAndInputPrivacy = textAndInputPrivacy
+            self.imagePrivacy = imagePrivacy
             self.touchPrivacy = touchPrivacy
             self.applicationID = applicationID
             self.sessionID = sessionID

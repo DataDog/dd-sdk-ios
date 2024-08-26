@@ -81,8 +81,10 @@ public enum SessionReplay {
         // TODO: RUM-5782 Add new privacy levels to config telemetry
         core.telemetry.configuration(
             defaultPrivacyLevel: configuration.defaultPrivacyLevel.rawValue,
+            imagePrivacyLevel: configuration.imagePrivacyLevel.rawValue,
             sessionReplaySampleRate: Int64(withNoOverflow: configuration.replaySampleRate),
-            startRecordingImmediately: configuration.startRecordingImmediately
+            startRecordingImmediately: configuration.startRecordingImmediately,
+            touchPrivacyLevel: configuration.touchPrivacyLevel.rawValue
         )
     }
 

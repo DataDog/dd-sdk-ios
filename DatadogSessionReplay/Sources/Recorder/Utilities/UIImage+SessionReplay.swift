@@ -11,6 +11,7 @@ import DatadogInternal
 import CryptoKit
 
 private var srIdentifierKey: UInt8 = 11
+
 extension UIImage: DatadogExtended {}
 extension DatadogExtension where ExtendedType: UIImage {
     var srIdentifier: String {
@@ -35,13 +36,14 @@ extension DatadogExtension where ExtendedType: UIImage {
     }
 }
 
-extension UIColor {
+extension UIColor: DatadogExtended {}
+extension DatadogExtension where ExtendedType: UIColor {
     var srIdentifier: String {
-        if let hash = objc_getAssociatedObject(self, &srIdentifierKey) as? String {
+        if let hash = objc_getAssociatedObject(type, &srIdentifierKey) as? String {
             return hash
         } else {
             let hash = computeIdentifier()
-            objc_setAssociatedObject(self, &srIdentifierKey, hash, .OBJC_ASSOCIATION_RETAIN)
+            objc_setAssociatedObject(type, &srIdentifierKey, hash, .OBJC_ASSOCIATION_RETAIN)
             return hash
         }
     }
@@ -51,8 +53,14 @@ extension UIColor {
         var g: CGFloat = 0
         var b: CGFloat = 0
         var a: CGFloat = 0
-        getRed(&r, green: &g, blue: &b, alpha: &a)
-        return String(format: "%02X%02X%02X%02X", Int(round(r * 255)), Int(round(g * 255)), Int(round(b * 255)), Int(round(a * 255)))
+        type.getRed(&r, green: &g, blue: &b, alpha: &a)
+        return String(
+            format: "%02X%02X%02X%02X",
+            Int(round(r * 255)),
+            Int(round(g * 255)),
+            Int(round(b * 255)),
+            Int(round(a * 255))
+        )
     }
 }
 #endif

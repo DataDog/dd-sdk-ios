@@ -14,7 +14,8 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
     let performanceOverride: PerformancePresetOverride?
     let privacyLevel: SessionReplayPrivacyLevel
     let textAndInputPrivacyLevel: SessionReplayTextAndInputPrivacyLevel
-    let touchPrivacyLevel: SessionReplayTouchPrivacyLevel
+    let imagePrivacyLevel: ImagePrivacyLevel
+    let touchPrivacyLevel: TouchPrivacyLevel
 
     // MARK: - Main Components
 
@@ -60,11 +61,13 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         self.privacyLevel = configuration.defaultPrivacyLevel
         self.textAndInputPrivacyLevel = configuration.textAndInputPrivacyLevel
         self.touchPrivacyLevel = configuration.touchPrivacyLevel
+        self.imagePrivacyLevel = configuration.imagePrivacyLevel
 
         self.recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
             privacy: configuration.defaultPrivacyLevel,
             textAndInputPrivacy: configuration.textAndInputPrivacyLevel,
+            imagePrivacy: configuration.imagePrivacyLevel,
             touchPrivacy: configuration.touchPrivacyLevel,
             rumContextObserver: contextReceiver,
             srContextPublisher: SRContextPublisher(core: core),

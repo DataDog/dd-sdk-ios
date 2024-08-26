@@ -26,13 +26,3 @@ extension SessionReplayTextAndInputPrivacyLevel: AnyMockable, RandomMockable {
         [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
     }
 }
-
-extension SessionReplayTouchPrivacyLevel: AnyMockable, RandomMockable {
-    public static func mockAny() -> Self {
-        .show
-    }
-
-    public static func mockRandom() -> Self {
-        [.show, .hide].randomElement()!
-    }
-}

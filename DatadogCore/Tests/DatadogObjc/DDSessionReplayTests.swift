@@ -31,11 +31,17 @@ class DDSessionReplayTests: XCTestCase {
     func testConfigurationWithNewApi() {
         // Given
         let textAndInputPrivacy: DDSessionReplayConfigurationTextAndInputPrivacyLevel = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
-        let touchPrivacy: DDSessionReplayConfigurationTouchPrivacyLevel = [.show, .hide].randomElement()!
+        let touchPrivacy: DDTouchPrivacyLevel = [.show, .hide].randomElement()!
+        let imagePrivacy: DDImagePrivacyLevel = [.maskAll, .maskNonBundledOnly, .maskNone].randomElement()!
         let sampleRate: Float = .mockRandom(min: 0, max: 100)
 
         // When
-        let config = DDSessionReplayConfiguration(replaySampleRate: sampleRate, textAndInputPrivacyLevel: textAndInputPrivacy, touchPrivacyLevel: touchPrivacy)
+        let config = DDSessionReplayConfiguration(
+            replaySampleRate: sampleRate,
+            textAndInputPrivacyLevel: textAndInputPrivacy,
+            imagePrivacyLevel: imagePrivacy,
+            touchPrivacyLevel: touchPrivacy
+        )
 
         // Then
         XCTAssertEqual(config._swift.replaySampleRate, sampleRate)
@@ -50,7 +56,8 @@ class DDSessionReplayTests: XCTestCase {
         let sampleRate: Float = .mockRandom(min: 0, max: 100)
         let privacy: DDSessionReplayConfigurationPrivacyLevel = [.allow, .mask, .maskUserInput].randomElement()!
         let textAndInputPrivacy: DDSessionReplayConfigurationTextAndInputPrivacyLevel = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
-        let touchPrivacy: DDSessionReplayConfigurationTouchPrivacyLevel = [.show, .hide].randomElement()!
+        let imagePrivacy: DDImagePrivacyLevel = [.maskAll, .maskNonBundledOnly, .maskNone].randomElement()!
+        let touchPrivacy: DDTouchPrivacyLevel = [.show, .hide].randomElement()!
         let url: URL = .mockRandom()
 
         // When
@@ -58,6 +65,7 @@ class DDSessionReplayTests: XCTestCase {
         config.replaySampleRate = sampleRate
         config.defaultPrivacyLevel = privacy
         config.textAndInputPrivacyLevel = textAndInputPrivacy
+        config.imagePrivacyLevel = imagePrivacy
         config.touchPrivacyLevel = touchPrivacy
         config.customEndpoint = url
 
@@ -65,6 +73,7 @@ class DDSessionReplayTests: XCTestCase {
         XCTAssertEqual(config._swift.replaySampleRate, sampleRate)
         XCTAssertEqual(config._swift.defaultPrivacyLevel, privacy._swift)
         XCTAssertEqual(config._swift.textAndInputPrivacyLevel, textAndInputPrivacy._swift)
+        XCTAssertEqual(config._swift.imagePrivacyLevel, imagePrivacy._swift)
         XCTAssertEqual(config._swift.touchPrivacyLevel, touchPrivacy._swift)
         XCTAssertEqual(config._swift.customEndpoint, url)
     }
@@ -74,14 +83,21 @@ class DDSessionReplayTests: XCTestCase {
         let sampleRate: Float = .mockRandom(min: 0, max: 100)
         let privacy: DDSessionReplayConfigurationPrivacyLevel = [.allow, .mask, .maskUserInput].randomElement()!
         let textAndInputPrivacy: DDSessionReplayConfigurationTextAndInputPrivacyLevel = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
-        let touchPrivacy: DDSessionReplayConfigurationTouchPrivacyLevel = [.show, .hide].randomElement()!
+        let imagePrivacy: DDImagePrivacyLevel = [.maskAll, .maskNonBundledOnly, .maskNone].randomElement()!
+        let touchPrivacy: DDTouchPrivacyLevel = [.show, .hide].randomElement()!
         let url: URL = .mockRandom()
 
         // When
-        let config = DDSessionReplayConfiguration(replaySampleRate: 100, textAndInputPrivacyLevel: .maskAll, touchPrivacyLevel: .hide)
+        let config = DDSessionReplayConfiguration(
+            replaySampleRate: 100,
+            textAndInputPrivacyLevel: .maskAll,
+            imagePrivacyLevel: .maskAll,
+            touchPrivacyLevel: .hide
+        )
         config.replaySampleRate = sampleRate
         config.defaultPrivacyLevel = privacy
         config.textAndInputPrivacyLevel = textAndInputPrivacy
+        config.imagePrivacyLevel = imagePrivacy
         config.touchPrivacyLevel = touchPrivacy
         config.customEndpoint = url
 
@@ -89,6 +105,7 @@ class DDSessionReplayTests: XCTestCase {
         XCTAssertEqual(config._swift.replaySampleRate, sampleRate)
         XCTAssertEqual(config._swift.defaultPrivacyLevel, privacy._swift)
         XCTAssertEqual(config._swift.textAndInputPrivacyLevel, textAndInputPrivacy._swift)
+        XCTAssertEqual(config._swift.imagePrivacyLevel, imagePrivacy._swift)
         XCTAssertEqual(config._swift.touchPrivacyLevel, touchPrivacy._swift)
         XCTAssertEqual(config._swift.customEndpoint, url)
     }
@@ -113,12 +130,22 @@ class DDSessionReplayTests: XCTestCase {
         XCTAssertEqual(DDSessionReplayConfigurationTextAndInputPrivacyLevel(.maskSensitiveInputs), .maskSensitiveInputs)
     }
 
-    func testTouchPrivacyLevelsInterop() {
-        XCTAssertEqual(DDSessionReplayConfigurationTouchPrivacyLevel.show._swift, .show)
-        XCTAssertEqual(DDSessionReplayConfigurationTouchPrivacyLevel.hide._swift, .hide)
+    func testImagePrivacyLevelsInterop() {
+        XCTAssertEqual(DDImagePrivacyLevel.maskAll._swift, .maskAll)
+        XCTAssertEqual(DDImagePrivacyLevel.maskNonBundledOnly._swift, .maskNonBundledOnly)
+        XCTAssertEqual(DDImagePrivacyLevel.maskNone._swift, .maskNone)
 
-        XCTAssertEqual(DDSessionReplayConfigurationTouchPrivacyLevel(.show), .show)
-        XCTAssertEqual(DDSessionReplayConfigurationTouchPrivacyLevel(.hide), .hide)
+        XCTAssertEqual(DDImagePrivacyLevel(.maskAll), .maskAll)
+        XCTAssertEqual(DDImagePrivacyLevel(.maskNonBundledOnly), .maskNonBundledOnly)
+        XCTAssertEqual(DDImagePrivacyLevel(.maskNone), .maskNone)
+    }
+
+    func testTouchPrivacyLevelsInterop() {
+        XCTAssertEqual(DDTouchPrivacyLevel.show._swift, .show)
+        XCTAssertEqual(DDTouchPrivacyLevel.hide._swift, .hide)
+
+        XCTAssertEqual(DDTouchPrivacyLevel(.show), .show)
+        XCTAssertEqual(DDTouchPrivacyLevel(.hide), .hide)
     }
 
     func testWhenEnabled() throws {
@@ -138,6 +165,7 @@ class DDSessionReplayTests: XCTestCase {
         XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, 42)
         XCTAssertEqual(sr.recordingCoordinator.privacy, .mask)
         XCTAssertEqual(sr.recordingCoordinator.textAndInputPrivacy, .maskAll)
+        XCTAssertEqual(sr.recordingCoordinator.imagePrivacy, .maskAll)
         XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, .hide)
         XCTAssertNil(requestBuilder.customUploadURL)
     }
@@ -147,10 +175,16 @@ class DDSessionReplayTests: XCTestCase {
         let core = FeatureRegistrationCoreMock()
         CoreRegistry.register(default: core)
         let textAndInputPrivacy: DDSessionReplayConfigurationTextAndInputPrivacyLevel = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
-        let touchPrivacy: DDSessionReplayConfigurationTouchPrivacyLevel = [.show, .hide].randomElement()!
+        let imagePrivacy: DDImagePrivacyLevel = [.maskAll, .maskNonBundledOnly, .maskNone].randomElement()!
+        let touchPrivacy: DDTouchPrivacyLevel = [.show, .hide].randomElement()!
         defer { CoreRegistry.unregisterDefault() }
 
-        let config = DDSessionReplayConfiguration(replaySampleRate: 42, textAndInputPrivacyLevel: textAndInputPrivacy, touchPrivacyLevel: touchPrivacy)
+        let config = DDSessionReplayConfiguration(
+            replaySampleRate: 42,
+            textAndInputPrivacyLevel: textAndInputPrivacy,
+            imagePrivacyLevel: imagePrivacy,
+            touchPrivacyLevel: touchPrivacy
+        )
 
         // When
         DDSessionReplay.enable(with: config)
@@ -161,9 +195,9 @@ class DDSessionReplayTests: XCTestCase {
         XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, 42)
         XCTAssertEqual(sr.recordingCoordinator.privacy, .mask)
         XCTAssertEqual(sr.recordingCoordinator.textAndInputPrivacy, textAndInputPrivacy._swift)
+        XCTAssertEqual(sr.recordingCoordinator.imagePrivacy, imagePrivacy._swift)
         XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, touchPrivacy._swift)
         XCTAssertNil(requestBuilder.customUploadURL)
     }
 }
-
 #endif
