@@ -7866,4 +7866,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/5158bc1d54b6e88f2d47c9d6ac9f53c417ef8870
+// Generated from https://github.com/DataDog/rum-events-format/tree/86e7c73b800f5297bac06b68689c1944342dc4a0
