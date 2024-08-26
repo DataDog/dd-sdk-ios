@@ -81,6 +81,8 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             send(configuration: configuration)
         case let .metric(metric):
             send(metric: metric)
+        case .usage(let usage):
+            send(usage: usage)
         }
 
         return true
@@ -156,6 +158,35 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                     error: .init(kind: kind, stack: stack),
                     message: message,
                     os: .init(context.device),
+                    telemetryInfo: [:]
+                ),
+                version: context.sdkVersion,
+                view: rum?.viewID.map { .init(id: $0) }
+            )
+
+            writer.write(value: event)
+        }
+    }
+
+    private func send(usage: DatadogInternal.UsageTelemetry) {
+        let date = dateProvider.now
+
+        self.record(event: nil) { context, writer in
+            let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
+
+            let event = TelemetryUsageEvent(
+                dd: .init(),
+                action: rum?.userActionID.map { .init(id: $0) },
+                application: rum.map { .init(id: $0.applicationID) },
+                date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+                experimentalFeatures: nil,
+                service: "dd-sdk-ios",
+                session: rum.map { .init(id: $0.sessionID) },
+                source: .init(rawValue: context.source) ?? .ios,
+                telemetry: .init(
+                    device: .init(context.device),
+                    os: .init(context.device),
+                    usage: .init(usage),
                     telemetryInfo: [:]
                 ),
                 version: context.sdkVersion,
@@ -269,6 +300,52 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                     operation(context, writer)
                 }
             }
+        }
+    }
+}
+
+private extension TelemetryUsageEvent.Telemetry.Usage {
+    init(_ usage: UsageTelemetry) {
+        switch usage {
+        case .setTrackingConsent(let consent):
+            self = .telemetryCommonFeaturesUsage(value: .setTrackingConsent(value: .init(trackingConsent: .init(consent: consent))))
+        case .stopSession:
+            self = .telemetryCommonFeaturesUsage(value: .stopSession(value: .init()))
+        case .startView:
+            self = .telemetryCommonFeaturesUsage(value: .startView(value: .init()))
+        case .addAction:
+            self = .telemetryCommonFeaturesUsage(value: .addAction(value: .init()))
+        case .addError:
+            self = .telemetryCommonFeaturesUsage(value: .addError(value: .init()))
+        case .setGlobalContext:
+            self = .telemetryCommonFeaturesUsage(value: .setGlobalContext(value: .init()))
+        case .setUser:
+            self = .telemetryCommonFeaturesUsage(value: .setUser(value: .init()))
+        case .addFeatureFlagEvaluation:
+            self = .telemetryCommonFeaturesUsage(value: .addFeatureFlagEvaluation(value: .init()))
+        case .addViewLoadingTime(let viewLoadingTime):
+            self = .telemetryMobileFeaturesUsage(
+                value: .addViewLoadingTime(
+                    value: .init(
+                        noActiveView: viewLoadingTime.noActiveView,
+                        noView: viewLoadingTime.noView,
+                        overwritten: viewLoadingTime.overwritten
+                    )
+                )
+            )
+        }
+    }
+}
+
+private extension TelemetryUsageEvent.Telemetry.Usage.TelemetryCommonFeaturesUsage.SetTrackingConsent.TrackingConsent {
+    init(consent: DatadogInternal.TrackingConsent) {
+        switch consent {
+        case .granted:
+            self = .granted
+        case .notGranted:
+            self = .notGranted
+        case .pending:
+            self = .pending
         }
     }
 }

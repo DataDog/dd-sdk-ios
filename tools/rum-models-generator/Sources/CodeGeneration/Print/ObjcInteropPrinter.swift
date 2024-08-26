@@ -36,6 +36,12 @@ import Foundation
 ///     }
 ///
 public class ObjcInteropPrinter: BasePrinter, CodePrinter {
+    /// List of types which are not exposed to Obj-c.
+    /// Including the nested types of these types.
+    let typesToSkip: Set<String> = [
+        "TelemetryUsageEvent"
+    ]
+
     public init(objcTypeNamesPrefix: String) {
         self.objcTypeNamesPrefix = objcTypeNamesPrefix
     }
@@ -43,8 +49,14 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
     // MARK: - CodePrinter
 
     public func print(code: GeneratedCode) throws -> String {
+        let filteredTypes = code.swiftTypes.filter {
+            guard let typeName = $0.typeName else {
+                return true
+            }
+            return !typesToSkip.contains(typeName)
+        }
         let objcInteropTransformer = SwiftToObjcInteropTypeTransformer()
-        let objcInteropTypes = try objcInteropTransformer.transform(swiftTypes: code.swiftTypes)
+        let objcInteropTypes = try objcInteropTransformer.transform(swiftTypes: filteredTypes)
         return try print(objcInteropTypes: objcInteropTypes)
     }
 

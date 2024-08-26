@@ -692,7 +692,17 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
-            longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
+            longTask: .init(
+                blockingDuration: nil,
+                duration: taskDurationInNs,
+                entryType: nil,
+                firstUiEventTimestamp: nil,
+                id: nil,
+                isFrozenFrame: isFrozenFrame,
+                renderStart: nil,
+                scripts: nil,
+                styleAndLayoutStart: nil
+            ),
             os: .init(context: context),
             service: context.service,
             session: .init(

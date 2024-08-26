@@ -6,6 +6,7 @@
 
 import Foundation
 
+/// Defines the type of configuration telemetry events supported by the SDK.
 public struct ConfigurationTelemetry: Equatable {
     public let actionNameAttribute: String?
     public let allowFallbackToLocalStorage: Bool?
@@ -79,11 +80,48 @@ public struct MetricTelemetry {
     public let sampleRate: Float
 }
 
+/// Describes the type of the usage telemetry events supported by the SDK.
+public enum UsageTelemetry {
+    /// setTrackingConsent API
+    case setTrackingConsent(TrackingConsent)
+    /// stopSession API
+    case stopSession
+    /// startView API
+    case startView
+    /// addAction API
+    case addAction
+    /// addError API
+    case addError
+    /// setGlobalContext, setGlobalContextProperty, addAttribute APIs
+    case setGlobalContext
+    /// setUser, setUserProperty, setUserInfo APIs
+    case setUser
+    /// addFeatureFlagEvaluation API
+    case addFeatureFlagEvaluation
+    /// addFeatureFlagEvaluation API
+    case addViewLoadingTime(ViewLoadingTime)
+
+    /// Describes the properties of `addViewLoadingTime` usage telemetry.
+    public struct ViewLoadingTime {
+        /// Whether the available view is not active
+        public let noActiveView: Bool
+        /// Whether the view is not available
+        public let noView: Bool
+        /// Whether the loading time was overwritten
+        public let overwritten: Bool
+    }
+}
+
+/// Defines different types of telemetry messages supported by the SDK.
 public enum TelemetryMessage {
+    /// A debug log message.
     case debug(id: String, message: String, attributes: [String: Encodable]?)
+    /// An execution error.
     case error(id: String, message: String, kind: String, stack: String)
+    /// A configuration telemetry.
     case configuration(ConfigurationTelemetry)
     case metric(MetricTelemetry)
+    case usage(UsageTelemetry)
 }
 
 /// The `Telemetry` protocol defines methods to collect debug information
