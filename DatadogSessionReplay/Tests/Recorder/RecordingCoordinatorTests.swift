@@ -54,8 +54,10 @@ class RecordingCoordinatorTests: XCTestCase {
 
     func test_whenSampled_itStartsScheduler_andShouldRecord() {
         // Given
-        let privacy = PrivacyLevel.mockRandom()
-        prepareRecordingCoordinator(privacy: privacy)
+        let textAndInputPrivacy = TextAndInputPrivacyLevel.mockRandom()
+        let imagePrivacy = ImagePrivacyLevel.mockRandom()
+        let touchPrivacy = TouchPrivacyLevel.mockRandom()
+        prepareRecordingCoordinator(textAndInputPrivacy: textAndInputPrivacy, imagePrivacy: imagePrivacy, touchPrivacy: touchPrivacy)
 
         // When
         let rumContext = RUMContext.mockRandom()
@@ -68,7 +70,9 @@ class RecordingCoordinatorTests: XCTestCase {
         XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.sessionID, rumContext.sessionID)
         XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.viewID, rumContext.viewID)
         XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.viewServerTimeOffset, rumContext.viewServerTimeOffset)
-        XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.privacy, privacy)
+        XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.textAndInputPrivacy, textAndInputPrivacy)
+        XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.imagePrivacy, imagePrivacy)
+        XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.touchPrivacy, touchPrivacy)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 1)
     }
 
@@ -258,7 +262,6 @@ class RecordingCoordinatorTests: XCTestCase {
 
     private func prepareRecordingCoordinator(
         sampler: Sampler = .mockKeepAll(),
-        privacy: PrivacyLevel = .allow,
         textAndInputPrivacy: TextAndInputPrivacyLevel = .maskSensitiveInputs,
         imagePrivacy: ImagePrivacyLevel = .maskNonBundledOnly,
         touchPrivacy: TouchPrivacyLevel = .show,
@@ -268,7 +271,6 @@ class RecordingCoordinatorTests: XCTestCase {
     ) {
         recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
-            privacy: privacy,
             textAndInputPrivacy: textAndInputPrivacy,
             imagePrivacy: imagePrivacy,
             touchPrivacy: touchPrivacy,

@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import Foundation
+
 /// Available privacy levels for touch masking in Session Replay.
 public enum TouchPrivacyLevel: String {
     /// Show all user touches.
