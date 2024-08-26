@@ -78,7 +78,7 @@ public enum Benchmarks {
     /// Configure OpenTelemetry metrics meter and start measuring Memory.
     ///
     /// - Parameter configuration: The Benchmark configuration.
-    public static func metrics(with configuration: Configuration) {
+    public static func enableMetrics(with configuration: Configuration) {
         let loggerProvider = LoggerProviderBuilder()
             .build()
 
@@ -157,7 +157,7 @@ public enum Benchmarks {
     /// Configure and register a OpenTelemetry Tracer.
     ///
     /// - Parameter configuration: The Benchmark configuration.
-    public static func tracer(with configuration: Configuration) {
+    public static func enableTracer(with configuration: Configuration) {
         let exporterConfiguration = ExporterConfiguration(
             serviceName: configuration.context.applicationIdentifier,
             resource: "Benchmark Tracer",

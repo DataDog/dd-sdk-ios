@@ -25,7 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         switch run {
         case .baseline, .instrumented:
             // measure metrics during baseline and metrics runs
-            Benchmarks.metrics(
+            Benchmarks.enableMetrics(
                 with: Benchmarks.Configuration(
                     info: applicationInfo,
                     scenario: scenario,
@@ -34,7 +34,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             )
         case .profiling:
             // Collect traces during profiling run
-            Benchmarks.tracer(
+            Benchmarks.enableTracer(
                 with: Benchmarks.Configuration(
                     info: applicationInfo,
                     scenario: scenario,
