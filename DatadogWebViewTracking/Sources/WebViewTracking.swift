@@ -111,6 +111,7 @@ public enum WebViewTracking {
             type: SessionReplayConfiguration.self
         )
 
+        // TODO: RUM-5766 - Pass correct privacy level to webviews
         let privacyLevel = sessionReplay?.privacyLevel ?? .mask
 
         // Share native capabilities with Browser SDK

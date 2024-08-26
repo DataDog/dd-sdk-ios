@@ -115,6 +115,7 @@ public final class DDSessionReplayConfiguration: NSObject {
     /// - Parameters:
     ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
     @objc
+    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use the new initializer with `replaySampleRate:textAndInputPrivacyLevel:imagePrivacyLevel:touchPrivacyLevel:` parameters instead.")
     public required init(
         replaySampleRate: Float
     ) {

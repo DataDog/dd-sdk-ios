@@ -16,7 +16,6 @@ internal class RecordingCoordinator {
     let recorder: Recording
     let scheduler: Scheduler
     let sampler: Sampler
-    let privacy: PrivacyLevel
     let textAndInputPrivacy: TextAndInputPrivacyLevel
     let imagePrivacy: ImagePrivacyLevel
     let touchPrivacy: TouchPrivacyLevel
@@ -36,7 +35,6 @@ internal class RecordingCoordinator {
 
     init(
         scheduler: Scheduler,
-        privacy: PrivacyLevel,
         textAndInputPrivacy: TextAndInputPrivacyLevel,
         imagePrivacy: ImagePrivacyLevel,
         touchPrivacy: TouchPrivacyLevel,
@@ -51,7 +49,6 @@ internal class RecordingCoordinator {
         self.recorder = recorder
         self.scheduler = scheduler
         self.sampler = sampler
-        self.privacy = privacy
         self.textAndInputPrivacy = textAndInputPrivacy
         self.imagePrivacy = imagePrivacy
         self.touchPrivacy = touchPrivacy
@@ -127,7 +124,6 @@ internal class RecordingCoordinator {
         }
 
         let recorderContext = Recorder.Context(
-            privacy: privacy,
             textAndInputPrivacy: textAndInputPrivacy,
             imagePrivacy: imagePrivacy,
             touchPrivacy: touchPrivacy,

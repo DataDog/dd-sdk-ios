@@ -24,6 +24,7 @@ class DDSessionReplayTests: XCTestCase {
         XCTAssertEqual(config._swift.replaySampleRate, sampleRate)
         XCTAssertEqual(config._swift.defaultPrivacyLevel, .mask)
         XCTAssertEqual(config._swift.textAndInputPrivacyLevel, .maskAll)
+        XCTAssertEqual(config._swift.imagePrivacyLevel, .maskAll)
         XCTAssertEqual(config._swift.touchPrivacyLevel, .hide)
         XCTAssertNil(config._swift.customEndpoint)
     }
@@ -45,7 +46,6 @@ class DDSessionReplayTests: XCTestCase {
 
         // Then
         XCTAssertEqual(config._swift.replaySampleRate, sampleRate)
-        XCTAssertEqual(config._swift.defaultPrivacyLevel, .mask)
         XCTAssertEqual(config._swift.textAndInputPrivacyLevel, textAndInputPrivacy._swift)
         XCTAssertEqual(config._swift.touchPrivacyLevel, touchPrivacy._swift)
         XCTAssertNil(config._swift.customEndpoint)
@@ -163,7 +163,6 @@ class DDSessionReplayTests: XCTestCase {
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
         let requestBuilder = try XCTUnwrap(sr.requestBuilder as? DatadogSessionReplay.SegmentRequestBuilder)
         XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, 42)
-        XCTAssertEqual(sr.recordingCoordinator.privacy, .mask)
         XCTAssertEqual(sr.recordingCoordinator.textAndInputPrivacy, .maskAll)
         XCTAssertEqual(sr.recordingCoordinator.imagePrivacy, .maskAll)
         XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, .hide)
@@ -193,7 +192,6 @@ class DDSessionReplayTests: XCTestCase {
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
         let requestBuilder = try XCTUnwrap(sr.requestBuilder as? DatadogSessionReplay.SegmentRequestBuilder)
         XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, 42)
-        XCTAssertEqual(sr.recordingCoordinator.privacy, .mask)
         XCTAssertEqual(sr.recordingCoordinator.textAndInputPrivacy, textAndInputPrivacy._swift)
         XCTAssertEqual(sr.recordingCoordinator.imagePrivacy, imagePrivacy._swift)
         XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, touchPrivacy._swift)

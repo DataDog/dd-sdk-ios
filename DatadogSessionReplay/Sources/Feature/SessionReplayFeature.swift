@@ -65,7 +65,6 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
 
         self.recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
-            privacy: configuration.defaultPrivacyLevel,
             textAndInputPrivacy: configuration.textAndInputPrivacyLevel,
             imagePrivacy: configuration.imagePrivacyLevel,
             touchPrivacy: configuration.touchPrivacyLevel,

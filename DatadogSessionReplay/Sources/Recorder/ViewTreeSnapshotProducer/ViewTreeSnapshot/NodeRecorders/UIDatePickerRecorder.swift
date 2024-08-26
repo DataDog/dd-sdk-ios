@@ -86,7 +86,7 @@ private struct WheelsStyleDatePickerRecorder {
                 UIPickerViewRecorder(
                     identifier: identifier,
                     textObfuscator: { context in
-                        return context.recorder.privacy.staticTextObfuscator
+                        return context.recorder.textAndInputPrivacy.staticTextObfuscator
                     }
                 )
             ]
@@ -108,7 +108,7 @@ private struct InlineStyleDatePickerRecorder {
         self.labelRecorder = UILabelRecorder(
             identifier: identifier,
             textObfuscator: { context in
-                return context.recorder.privacy.staticTextObfuscator
+                return context.recorder.textAndInputPrivacy.staticTextObfuscator
             }
         )
         self.subtreeRecorder = ViewTreeRecorder(
@@ -123,7 +123,7 @@ private struct InlineStyleDatePickerRecorder {
 
     func record(_ view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> [Node] {
         viewRecorder.semanticsOverride = { _, viewAttributes in
-            if context.recorder.privacy.shouldMaskInputElements {
+            if context.recorder.textAndInputPrivacy.shouldMaskInputElements {
                 let isSquare = viewAttributes.frame.width == viewAttributes.frame.height
                 let isCircle = isSquare && viewAttributes.layerCornerRadius == viewAttributes.frame.width * 0.5
                 if isCircle {
@@ -133,7 +133,7 @@ private struct InlineStyleDatePickerRecorder {
             return nil
         }
 
-        if context.recorder.privacy.shouldMaskInputElements {
+        if context.recorder.textAndInputPrivacy.shouldMaskInputElements {
             labelRecorder.builderOverride = { builder in
                 var builder = builder
                 builder.textColor = SystemColors.label
@@ -155,7 +155,7 @@ private struct CompactStyleDatePickerRecorder {
                 UILabelRecorder(
                     identifier: identifier,
                     textObfuscator: { context in
-                        return context.recorder.privacy.staticTextObfuscator
+                        return context.recorder.textAndInputPrivacy.staticTextObfuscator
                     }
                 )
             ]

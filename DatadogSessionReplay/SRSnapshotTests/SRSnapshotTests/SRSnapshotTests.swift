@@ -23,39 +23,39 @@ final class SRSnapshotTests: SnapshotTestCase {
     }
 
     func testBasicTexts() throws {
-        try takeSnapshotFor(.basicTexts, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(.basicTexts, with: allTextAndInputPrivacyLevels, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testSliders() throws {
-        try takeSnapshotFor(.sliders, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(.sliders, with: allTextAndInputPrivacyLevels, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testProgressViews() throws {
-        try takeSnapshotFor(.progressViews, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(.progressViews, with: [.maskSensitiveInputs, .maskAll], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testActivityIndicators() throws {
-        try takeSnapshotFor(.activityIndicators, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(.activityIndicators, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testSegments() throws {
-        try takeSnapshotFor(.segments, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(.segments, with: allTextAndInputPrivacyLevels, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testPickers() throws {
-        try takeSnapshotFor(.pickers, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(.pickers, with: allTextAndInputPrivacyLevels, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testSwitches() throws {
-        try takeSnapshotFor(.switches, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(.switches, with: allTextAndInputPrivacyLevels, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testTextFields() throws {
-        try takeSnapshotFor(.textFields, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(.textFields, with: allTextAndInputPrivacyLevels, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testSteppers() throws {
-        try takeSnapshotFor(.steppers, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(.steppers, with: allTextAndInputPrivacyLevels, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testDatePickers() throws {
@@ -88,7 +88,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testTimePickers() throws {
         try takeSnapshotFor(
             .timePickersCountDown, 
-            with: [.allow, .mask, .maskUserInput],
+            with: allTextAndInputPrivacyLevels,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath,
             fileNamePrefix: "count-down"
@@ -115,7 +115,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testImages() throws {
         try takeSnapshotFor(
             .images,
-            with: [.allow, .mask],
+            with: [.maskSensitiveInputs, .maskAll],
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath
         )
@@ -124,7 +124,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testImages_MaskAll() throws {
         try takeSnapshotFor(
             .images,
-            with: [.allow, .mask],
+            with: [.maskSensitiveInputs, .maskAll],
             imagePrivacyLevel: .maskAll,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath
@@ -134,7 +134,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testImages_MaskNone() throws {
         try takeSnapshotFor(
             .images,
-            with: [.allow, .mask],
+            with: [.maskSensitiveInputs, .maskAll],
             imagePrivacyLevel: .maskNone,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath
@@ -142,7 +142,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     }
 
     func testUnsupportedView() throws {
-        try takeSnapshotFor(.unsupportedViews, with: [.allow], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(.unsupportedViews, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testAlert() throws {
@@ -150,7 +150,7 @@ final class SRSnapshotTests: SnapshotTestCase {
             fixture: .popups,
             showPopup: { $0.showAlert() },
             waitTime: 1.0,
-            privacyModes: [.allow, .mask, .maskUserInput],
+            textPrivacyModes: allTextAndInputPrivacyLevels,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath
         )
@@ -177,7 +177,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     }
 
     func testSwiftUI() throws {
-        try takeSnapshotFor(.swiftUI, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(.swiftUI, with: [.maskSensitiveInputs, .maskAll], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testNavigationBars() throws {
@@ -187,14 +187,14 @@ final class SRSnapshotTests: SnapshotTestCase {
         // Therefore, Embedded Navigation Bars snapshot tests are also included for more accurate simulations.
 
         // Test Static Navigation Bars without tinted color
-        try takeSnapshotFor(.navigationBars, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.navigationBars.slug)
+        try takeSnapshotFor(.navigationBars, with: [.maskSensitiveInputs, .maskAll], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.navigationBars.slug)
 
         // Test Static Navigation Bars with tinted color
         let vc2 = show(fixture: .navigationBars) as! NavigationBarControllers
         vc2.setTintColor()
         wait(seconds: 0.1)
 
-        try forPrivacyModes([.allow, .mask]) { privacyMode in
+        try forPrivacyModes([.maskSensitiveInputs, .maskAll]) { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             let fileNamePrefix = Fixture.navigationBars.slug
             DDAssertSnapshotTest(
@@ -225,7 +225,7 @@ final class SRSnapshotTests: SnapshotTestCase {
             navController.pushNextView()
             wait(seconds: 0.5)
 
-            try forPrivacyModes([.allow, .mask]) { privacyMode in
+            try forPrivacyModes([.maskSensitiveInputs, .maskAll]) { privacyMode in
                 let image = try takeSnapshot(with: privacyMode)
                 let fileNamePrefix = fixture.slug
                 DDAssertSnapshotTest(
@@ -239,12 +239,12 @@ final class SRSnapshotTests: SnapshotTestCase {
 
     func testTabBars() throws {
         // - Static Tab Bars
-        try takeSnapshotFor(.tabbar, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(.tabbar, with: [.maskSensitiveInputs, .maskAll], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
 
         // - Embedded Tab Bar
-        try takeSnapshotFor(.embeddedTabbar, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.embeddedTabbar.slug)
+        try takeSnapshotFor(.embeddedTabbar, with: [.maskSensitiveInputs, .maskAll], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.embeddedTabbar.slug)
 
         // - Embedded Tab Bar, with unselected item tint color
-        try takeSnapshotFor(.embeddedTabbarUnselectedTintColor, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.embeddedTabbarUnselectedTintColor.slug)
+        try takeSnapshotFor(.embeddedTabbarUnselectedTintColor, with: [.maskSensitiveInputs, .maskAll], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.embeddedTabbarUnselectedTintColor.slug)
     }
 }
