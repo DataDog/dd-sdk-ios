@@ -15,7 +15,7 @@ public enum ImagePrivacyLevel: String {
     /// No images will be recorded.
     case maskAll = "mask_all"
 
-    /// All images including the ones downloaded from the Internet or genereated during the app runtime will be recorded.
+    /// All images will be recorded, including the ones downloaded from the Internet or generated during the app runtime.
     case maskNone = "mask_none"
 }
 #endif

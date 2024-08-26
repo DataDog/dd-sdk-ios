@@ -7,7 +7,6 @@
 - [IMPROVEMENT] Send retry information with network requests (eg. retry_count, last_failure_status and idempotency key). See [#1991][]
 - [IMPROVEMENT] Enable app launch time on mac, macCatalyst and visionOS. See [#1888][] (Thanks [@Hengyu][])
 - [FIX] Ignore network reachability on watchOS . See [#2005][] (Thanks [@jfiser-paylocity][])
-- [FEATURE] Add image privacy level configuration for Session Replay. See [#2012][]
 
 # 2.16.0 / 20-08-2024
 
