@@ -10,7 +10,6 @@ import DatadogInternal
 
 // swiftlint:disable duplicate_imports
 @_exported import enum DatadogInternal.SessionReplayPrivacyLevel
-@_exported import enum DatadogInternal.SessionReplayTouchPrivacyLevel
 @_exported import enum DatadogInternal.SessionReplayTextAndInputPrivacyLevel
 // swiftlint:enable duplicate_imports
 
@@ -37,10 +36,15 @@ extension SessionReplay {
         /// Default: `.maskAll`.
         public var textAndInputPrivacyLevel: SessionReplayTextAndInputPrivacyLevel
 
+        /// Defines image privacy level.
+        ///
+        /// Default: `.maskAll`.
+        public var imagePrivacyLevel: ImagePrivacyLevel
+
         /// Defines the way user touches (e.g. tap) should be masked.
         ///
         /// Default: `.hide`.
-        public var touchPrivacyLevel: SessionReplayTouchPrivacyLevel
+        public var touchPrivacyLevel: TouchPrivacyLevel
 
         /// Defines it the recording should start automatically. When `true`, the recording starts automatically; when `false` it doesn't, and the recording will need to be started manually.
         ///
@@ -63,18 +67,21 @@ extension SessionReplay {
         ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
         ///   - textAndInputPrivacyLevel: The way texts and inputs (e.g. label, textfield, checkbox) should be masked. Default: `.maskAll`.
         ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked. Default: `.hide`.
-        ///   - startRecordingImmediately: If the recording should start automatically. When `true`, the recording starts automatically; when `false` it doesn't, and the recording will need to be started manually. Default: `true`.
+        ///   - defaultImageRecordingLevel: Image recording privacy level. Default: `.maskAll`.
+
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
         public init(
             replaySampleRate: Float,
             textAndInputPrivacyLevel: SessionReplayTextAndInputPrivacyLevel,
-            touchPrivacyLevel: SessionReplayTouchPrivacyLevel,
+            imagePrivacyLevel: ImagePrivacyLevel = .maskAll,
+            touchPrivacyLevel: TouchPrivacyLevel = .hide,
             startRecordingImmediately: Bool = true,
             customEndpoint: URL? = nil
         ) {
             self.replaySampleRate = replaySampleRate
             self.defaultPrivacyLevel = .mask
             self.textAndInputPrivacyLevel = textAndInputPrivacyLevel
+            self.imagePrivacyLevel = imagePrivacyLevel
             self.touchPrivacyLevel = touchPrivacyLevel
             self.startRecordingImmediately = startRecordingImmediately
             self.customEndpoint = customEndpoint
@@ -96,6 +103,7 @@ extension SessionReplay {
             self.replaySampleRate = replaySampleRate
             self.defaultPrivacyLevel = defaultPrivacyLevel
             self.textAndInputPrivacyLevel = .maskAll
+            self.imagePrivacyLevel = .maskAll
             self.touchPrivacyLevel = .hide
             self.startRecordingImmediately = startRecordingImmediately
             self.customEndpoint = customEndpoint

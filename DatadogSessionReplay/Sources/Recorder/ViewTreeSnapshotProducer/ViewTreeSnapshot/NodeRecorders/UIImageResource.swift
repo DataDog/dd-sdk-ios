@@ -20,7 +20,7 @@ internal struct UIImageResource {
 extension UIImageResource: Resource {
     func calculateIdentifier() -> String {
         var identifier = image.dd.srIdentifier
-        if let tintColorIdentifier = tintColor?.srIdentifier {
+        if let tintColorIdentifier = tintColor?.dd.srIdentifier {
             identifier += tintColorIdentifier
         }
         return identifier
