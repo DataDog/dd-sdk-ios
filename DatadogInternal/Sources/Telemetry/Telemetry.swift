@@ -58,11 +58,32 @@ public struct ConfigurationTelemetry: Equatable {
     public let useWorkerUrl: Bool?
 }
 
+public struct MetricTelemetry {
+    /// The default sample rate for metric events (15%), applied in addition to the telemetry sample rate (20% by default).
+    public static let defaultSampleRate: Float = 15
+
+    /// The name of the metric.
+    public let name: String
+
+    /// The attributes associated with this metric.
+    public let attributes: [String: Encodable]
+
+    /// The sample rate for this metric, applied in addition to the telemetry sample rate.
+    ///
+    /// Must be a value between `0` (reject all) and `100` (keep all).
+    ///
+    /// Note: This sample rate is compounded with the telemetry sample rate. For example, if the telemetry sample rate is 20% (default)
+    /// and this metric's sample rate is 15%, the effective sample rate for this metric will be 3%.
+    ///
+    /// This sample rate is applied in the telemetry receiver, after the metric has been processed by the SDK core (tail-based sampling).
+    public let sampleRate: Float
+}
+
 public enum TelemetryMessage {
     case debug(id: String, message: String, attributes: [String: Encodable]?)
     case error(id: String, message: String, kind: String, stack: String)
     case configuration(ConfigurationTelemetry)
-    case metric(name: String, attributes: [String: Encodable])
+    case metric(MetricTelemetry)
 }
 
 /// The `Telemetry` protocol defines methods to collect debug information
@@ -75,20 +96,28 @@ public protocol Telemetry {
 }
 
 public extension Telemetry {
-    /// Starts a method call.
+    /// Starts timing a method call using the "Method Called" metric.
     ///
     /// - Parameters:
-    ///   - operationName: Platform agnostic name of the operation.
-    ///   - callerClass: The name of the class that calls the method.
-    ///   - samplingRate: The sampling rate of the method call. Value between `0.0` and `100.0`, where `0.0` means NO event will be processed and `100.0` means ALL events will be processed. Note that this value is multiplicated by telemetry sampling (by default 20%) and metric events sampling (hardcoded to 15%). Making it effectively 3% sampling rate for sending events, when this value is set to `100`.
+    ///   - operationName: A platform-agnostic name for the operation.
+    ///   - callerClass: The name of the class that invokes the method.
+    ///   - headSampleRate: The sample rate for **head-based** sampling of the method call metric. Must be a value between `0` (reject all) and `100` (keep all).
     ///
-    /// - Returns: A `MethodCalledTrace` instance to be used to stop the method call and measure it's execution time. It can be `nil` if the method call is not sampled.
+    /// Note: The head sample rate is compounded with the tail sample rate, which is configured in `stopMethodCalled()`. Both are applied
+    /// in addition to the telemetry sample rate. For example, if the telemetry sample rate is 20% (default), the head sample rate is 1%, and the tail sample
+    /// rate is 15% (default), the effective sample rate will be 20% x 1% x 15% = 0.03%.
+    ///
+    /// Unlike the telemetry sample rate and tail-based sampling in `stopMethodCalled()`, this sample rate is applied at the start of the method call timing.
+    /// This head-based sampling reduces the impact of processing high-frequency metrics in the SDK core, as most samples can be dropped
+    /// before being passed to the message bus.
+    ///
+    /// - Returns: A `MethodCalledTrace` instance for stopping the method call and measuring its execution time, or `nil` if the method call is not sampled.
     func startMethodCalled(
         operationName: String,
         callerClass: String,
-        samplingRate: Float = 100.0
+        headSampleRate: Float
     ) -> MethodCalledTrace? {
-        if Sampler(samplingRate: samplingRate).sample() {
+        if Sampler(samplingRate: headSampleRate).sample() {
             return MethodCalledTrace(
                 operationName: operationName,
                 callerClass: callerClass
@@ -98,15 +127,38 @@ public extension Telemetry {
         }
     }
 
-    /// Stops a method call, transforms method call metric to telemetry message,
-    /// and transmits on the message-bus of the core.
+    /// Stops timing a method call and posts a value for the "Method Called" metric.
     ///
-    /// - Parameters
+    /// This method applies tail-based sampling in addition to the head-based sampling applied in `startMethodCalled()`.
+    /// The tail sample rate is compounded with the head sample rate and the telemetry sample rate to determine the effective sample rate.
+    ///
+    /// - Parameters:
     ///   - metric: The `MethodCalledTrace` instance.
-    ///   - isSuccessful: A flag indicating if the method call was successful.
-    func stopMethodCalled(_ metric: MethodCalledTrace?, isSuccessful: Bool = true) {
+    ///   - isSuccessful: A flag indicating whether the method call was successful.
+    ///   - tailSampleRate: The sample rate for **tail-based** sampling of the metric, applied in telemetry receiver after the metric is processed by the SDK core.
+    ///     Defaults to `MetricTelemetry.defaultSampleRate` (15%).
+    func stopMethodCalled(
+        _ metric: MethodCalledTrace?,
+        isSuccessful: Bool = true,
+        tailSampleRate: Float = MetricTelemetry.defaultSampleRate
+    ) {
         if let metric = metric {
-            send(telemetry: metric.asTelemetryMetric(isSuccessful: isSuccessful))
+            let executionTime = -metric.startTime.timeIntervalSinceNow.toInt64Nanoseconds
+            send(
+                telemetry: .metric(
+                    MetricTelemetry(
+                        name: MethodCalledMetric.name,
+                        attributes: [
+                            MethodCalledMetric.executionTime: executionTime,
+                            MethodCalledMetric.operationName: metric.operationName,
+                            MethodCalledMetric.callerClass: metric.callerClass,
+                            MethodCalledMetric.isSuccessful: isSuccessful,
+                            SDKMetricFields.typeKey: MethodCalledMetric.typeValue
+                        ],
+                        sampleRate: tailSampleRate
+                    )
+                )
+            )
         }
     }
 }
@@ -116,23 +168,6 @@ public struct MethodCalledTrace {
     let operationName: String
     let callerClass: String
     let startTime = Date()
-
-    var exectutionTime: Int64 {
-        return -startTime.timeIntervalSinceNow.toInt64Nanoseconds
-    }
-
-    func asTelemetryMetric(isSuccessful: Bool) -> TelemetryMessage {
-        return .metric(
-            name: MethodCalledMetric.name,
-            attributes: [
-                MethodCalledMetric.executionTime: exectutionTime,
-                MethodCalledMetric.operationName: operationName,
-                MethodCalledMetric.callerClass: callerClass,
-                MethodCalledMetric.isSuccessful: isSuccessful,
-                SDKMetricFields.typeKey: MethodCalledMetric.typeValue
-            ]
-        )
-    }
 }
 
 extension Telemetry {
@@ -345,16 +380,23 @@ extension Telemetry {
         ))
     }
 
-    /// Collect metric value.
+    /// Collects a metric value.
     ///
-    /// Metrics are reported as debug telemetry. Unlike regular events, they are not subject to duplicates filtering and
-    /// are get sampled with a different rate. Metric attributes are used to create facets for later querying and graphing.
+    /// Metrics are reported as debug telemetry. Unlike regular events, they are not subject to duplicate filtering and
+    /// are sampled at a different rate. Metric attributes are used to create facets for later querying and graphing.
     ///
     /// - Parameters:
-    ///   - name: The name of this metric.
-    ///   - attributes: Parameters associated with this metric.
-    public func metric(name: String, attributes: [String: Encodable]) {
-        send(telemetry: .metric(name: name, attributes: attributes))
+    ///   - name: The name of the metric.
+    ///   - attributes: The attributes associated with this metric.
+    ///   - sampleRate: The sample rate for this metric, applied in addition to the telemetry sample rate (15% by default).
+    ///     Must be a value between `0` (reject all) and `100` (keep all).
+    ///
+    ///     Note: This sample rate is compounded with the telemetry sample rate. For example, if the telemetry sample rate is 20% (default)
+    ///     and this metric's sample rate is 15%, the effective sample rate for this metric will be 3%.
+    ///
+    ///     This sample rate is applied in the telemetry receiver, after the metric has been processed by the SDK core (tail-based sampling).
+    public func metric(name: String, attributes: [String: Encodable], sampleRate: Float = MetricTelemetry.defaultSampleRate) {
+        send(telemetry: .metric(MetricTelemetry(name: name, attributes: attributes, sampleRate: sampleRate)))
     }
 }
 

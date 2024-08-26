@@ -15,10 +15,10 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     let featureScope: FeatureScope
     let dateProvider: DateProvider
 
+    /// Sampler for all telemetry events.
     let sampler: Sampler
-
+    /// Additional sampler for configuration telemetry events, applied in addition to the `sampler`.
     let configurationExtraSampler: Sampler
-    let metricsExtraSampler: Sampler
 
     /// Keeps track of current session
     @ReadWriteLock
@@ -39,19 +39,16 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     ///   - dateProvider: Current device time provider.
     ///   - sampler: Telemetry events sampler.
     ///   - configurationExtraSampler: Extra sampler for configuration events (applied on top of `sampler`).
-    ///   - metricsExtraSampler: Extra sampler for metric events (applied on top of `sampler`).
     init(
         featureScope: FeatureScope,
         dateProvider: DateProvider,
         sampler: Sampler,
-        configurationExtraSampler: Sampler,
-        metricsExtraSampler: Sampler
+        configurationExtraSampler: Sampler
     ) {
         self.featureScope = featureScope
         self.dateProvider = dateProvider
         self.sampler = sampler
         self.configurationExtraSampler = configurationExtraSampler
-        self.metricsExtraSampler = metricsExtraSampler
     }
 
     /// Receives a message from the bus.
@@ -82,8 +79,8 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             error(id: id, message: message, kind: kind, stack: stack)
         case .configuration(let configuration):
             send(configuration: configuration)
-        case let .metric(name, attributes):
-            metric(name: name, attributes: attributes)
+        case let .metric(metric):
+            send(metric: metric)
         }
 
         return true
@@ -208,8 +205,8 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         }
     }
 
-    private func metric(name: String, attributes: [String: Encodable]) {
-        guard metricsExtraSampler.sample() else {
+    private func send(metric: MetricTelemetry) {
+        guard Sampler(samplingRate: metric.sampleRate).sample() else {
             return
         }
 
@@ -219,7 +216,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 
             // Override sessionID using standard `SDKMetricFields`, otherwise use current RUM session ID:
-            var attributes = attributes
+            var attributes = metric.attributes
             let sessionIDOverride: String? = attributes.removeValue(forKey: SDKMetricFields.sessionIDOverrideKey)?.dd.decode()
             let sessionID = sessionIDOverride ?? rum?.sessionID
 
@@ -234,7 +231,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(
                     device: .init(context.device),
-                    message: "[Mobile Metric] \(name)",
+                    message: "[Mobile Metric] \(metric.name)",
                     os: .init(context.device),
                     telemetryInfo: attributes
                 ),

@@ -250,7 +250,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
                 BatchDeletedMetric.inBackgroundKey: false
-            ]
+            ],
+            sampleRate: MetricTelemetry.defaultSampleRate
         )
     }
 
@@ -276,7 +277,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 BatchClosedMetric.batchSizeKey: lastWritableFileApproximatedSize,
                 BatchClosedMetric.batchEventsCountKey: lastWritableFileObjectsCount,
                 BatchClosedMetric.batchDurationKey: batchDuration.toMilliseconds
-            ]
+            ],
+            sampleRate: MetricTelemetry.defaultSampleRate
         )
     }
 }
