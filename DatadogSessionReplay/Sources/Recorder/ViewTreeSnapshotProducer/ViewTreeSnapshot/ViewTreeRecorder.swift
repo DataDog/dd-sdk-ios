@@ -28,6 +28,9 @@ internal struct ViewTreeRecorder {
         view: UIView,
         context: ViewTreeRecordingContext
     ) {
+        let span = context.benchmarkTracer.startSpan(named: "<UIView>")
+        defer { span.stop() }
+
         var context = context
         if let viewController = view.next as? UIViewController {
             context.viewControllerContext.parentType = .init(viewController)
@@ -61,6 +64,9 @@ internal struct ViewTreeRecorder {
         var semantics: NodeSemantics = UnknownElement.constant
 
         for nodeRecorder in nodeRecorders {
+            let span = context.benchmarkTracer.startSpan(named: String(describing: type(of: nodeRecorder)))
+            defer { span.stop() }
+
             guard let nextSemantics = nodeRecorder.semantics(of: view, with: attributes, in: context) else {
                 continue
             }

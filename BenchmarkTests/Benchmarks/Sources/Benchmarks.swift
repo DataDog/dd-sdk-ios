@@ -156,14 +156,25 @@ public enum Benchmarks {
             environment: "benchmarks",
             apiKey: configuration.apiKey,
             endpoint: .us1,
-            uploadCondition: { true }
+            uploadCondition: { true },
+            performancePreset: .instantDataDelivery
         )
         
         let exporter = try! DatadogExporter(config: exporterConfiguration)
         let processor = SimpleSpanProcessor(spanExporter: exporter)
 
         let provider = TracerProviderBuilder()
+            .with(resource: Resource(attributes: [
+                "device_model": configuration.context.deviceModel,
+                "os": configuration.context.osName,
+                "os_version": configuration.context.osVersion,
+                "run": configuration.context.run,
+                "scenario": configuration.context.scenario,
+                "sdk_version": configuration.context.sdkVersion,
+                "branch": configuration.context.branch,
+            ].mapValues { .string($0) }))
             .add(spanProcessor: processor)
+            .with(sampler: Samplers.traceIdRatio(ratio: 0.01))
             .build()
 
         OpenTelemetry.registerTracerProvider(tracerProvider: provider)

@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 import WebKit
+import DatadogInternal
 
 /// Builds `ViewTreeSnapshot` for given root view.
 ///
@@ -19,6 +20,8 @@ internal struct ViewTreeSnapshotBuilder {
     let idsGenerator: NodeIDGenerator
     /// The webviews cache.
     let webViewCache: NSHashTable<WKWebView> = .weakObjects()
+
+    let benchmarkTracer: BenchmarkTracer = profiler.tracer(operation: "ViewTreeSnapshotBuilder")
 
     /// Builds the `ViewTreeSnapshot` for given root view.
     ///
@@ -32,9 +35,14 @@ internal struct ViewTreeSnapshotBuilder {
             recorder: recorderContext,
             coordinateSpace: rootView,
             ids: idsGenerator,
-            webViewCache: webViewCache
+            webViewCache: webViewCache,
+            benchmarkTracer: benchmarkTracer
         )
+
+        let span = benchmarkTracer.startSpan(named: "record")
         let nodes = viewTreeRecorder.record(rootView, in: context)
+        span.stop()
+
         let snapshot = ViewTreeSnapshot(
             date: recorderContext.date.addingTimeInterval(recorderContext.viewServerTimeOffset ?? 0),
             context: recorderContext,
