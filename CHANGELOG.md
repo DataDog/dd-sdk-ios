@@ -6,7 +6,6 @@
 - [FEATURE] Add Logs event mapper to ObjC API. See [#2008][]
 - [IMPROVEMENT] Send retry information with network requests (eg. retry_count, last_failure_status and idempotency key). See [#1991][]
 - [FIX] Ignore network reachability on watchOS . See [#2005][] (Thanks [@jfiser-paylocity][])
-- [FEATURE] Add image privacy level configuration for Session Replay. See [#2012][]
 
 # 2.16.0 / 20-08-2024
 
