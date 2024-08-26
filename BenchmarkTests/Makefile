@@ -58,4 +58,4 @@ upload:
 
 open:
 	@$(ECHO_SUBTITLE2) "make open"
-	@open --env BENCHMARK --env OTEL_SWIFT --new BenchmarkTests.xcodeproj
+	@open --env DD_BENCHMARK --env OTEL_SWIFT --new BenchmarkTests.xcodeproj

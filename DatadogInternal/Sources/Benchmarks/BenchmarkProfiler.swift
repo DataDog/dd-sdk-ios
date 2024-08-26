@@ -6,7 +6,7 @@
 
 import Foundation
 
-#if BENCHMARK
+#if DD_BENCHMARK
 /// The profiler endpoint to collect data for benchmarking.
 public var profiler: BenchmarkProfiler = NOPBenchmarkProfiler()
 #else
@@ -26,6 +26,7 @@ public protocol BenchmarkProfiler {
     /// Returns a `BenchmarkTracer` instance for the given operation.
     ///
     /// The profiler must return the same instance of a tracer for the same operation.
+    /// 
     /// - Parameter operation: The tracer operation name. The parameter is an auto-closure
     /// to not intialise the value if the profiler is no-op.
     /// - Returns: The tracer instance.
@@ -36,7 +37,7 @@ public protocol BenchmarkProfiler {
 /// This tracer can be used to measure CPU Time of inner operation of the SDK.
 /// In production, the Benchmark Tracer is no-op.
 public protocol BenchmarkTracer {
-    /// Create and starts a span at the current time..
+    /// Creates and starts a span at the current time.
     ///
     /// The span will be activated automatically and linked to its parent in this tracer context.
     ///

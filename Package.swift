@@ -7,8 +7,8 @@ let opentelemetry = ProcessInfo.processInfo.environment["OTEL_SWIFT"] != nil ?
     (name: "opentelemetry-swift", url: "https://github.com/open-telemetry/opentelemetry-swift.git") :
     (name: "opentelemetry-swift-packages", url: "https://github.com/DataDog/opentelemetry-swift-packages.git")
 
-let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment["BENCHMARK"] != nil ?
-    [.define("BENCHMARK")] : []
+let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment["DD_BENCHMARK"] != nil ?
+    [.define("DD_BENCHMARK")] : []
 
 let package = Package(
     name: "Datadog",
