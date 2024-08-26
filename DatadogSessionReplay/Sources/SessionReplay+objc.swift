@@ -192,7 +192,7 @@ public enum DDImagePrivacyLevel: Int {
     case maskNonBundledOnly
     /// No images will be recorded.
     case maskAll
-    /// All images including the ones downloaded from the Internet during the app runtime will be recorded.
+    /// All images will be recorded, including the ones downloaded from the Internet or generated during the app runtime.
     case maskNone
 
     internal var _swift: ImagePrivacyLevel {
