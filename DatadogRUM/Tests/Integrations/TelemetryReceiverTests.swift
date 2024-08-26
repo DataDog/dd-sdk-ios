@@ -477,9 +477,9 @@ class TelemetryReceiverTests: XCTestCase {
         let operationName = String.mockRandom()
         let callerClass = String.mockRandom()
         let isSuccessful = Bool.random()
-        let trace = telemetry.startMethodCalled(operationName: operationName, callerClass: callerClass, sampleRate: 100)
+        let trace = telemetry.startMethodCalled(operationName: operationName, callerClass: callerClass, headSampleRate: 100)
         Thread.sleep(forTimeInterval: 0.001)
-        telemetry.stopMethodCalled(trace, isSuccessful: isSuccessful, sampleRate: 100)
+        telemetry.stopMethodCalled(trace, isSuccessful: isSuccessful, tailSampleRate: 100)
 
         // Then
         let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
@@ -511,7 +511,7 @@ class TelemetryReceiverTests: XCTestCase {
         let trace = telemetry.startMethodCalled(
             operationName: .mockAny(),
             callerClass: .mockAny(),
-            sampleRate: 0
+            headSampleRate: 0
         )
         telemetry.stopMethodCalled(trace, isSuccessful: true)
 
