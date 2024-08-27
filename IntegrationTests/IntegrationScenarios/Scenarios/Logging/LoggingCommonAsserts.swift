@@ -28,9 +28,7 @@ extension LoggingCommonAsserts {
             XCTAssertEqual(request.queryItems?.value(name: "ddsource"), "ios", file: file, line: line)
 
             let ddtags = request.queryItems?.ddtags()
-            XCTAssertNotNil(ddtags, file: file, line: line)
-            XCTAssertEqual(ddtags?.count, 1, file: file, line: line)
-            XCTAssertEqual(ddtags?["retry_count"], "1", file: file, line: line)
+            XCTAssertNil(ddtags, file: file, line: line)
 
             XCTAssertEqual(request.httpHeaders["Content-Type"], "application/json", file: file, line: line)
             XCTAssertEqual(request.httpHeaders["User-Agent"]?.matches(regex: userAgentRegex), true, file: file, line: line)

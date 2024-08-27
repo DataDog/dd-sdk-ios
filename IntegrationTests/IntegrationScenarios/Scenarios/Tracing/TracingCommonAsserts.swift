@@ -39,9 +39,7 @@ extension TracingCommonAsserts {
             XCTAssertEqual(request.queryItems!.count, 1)
 
             let ddtags = request.queryItems?.ddtags()
-            XCTAssertNotNil(ddtags)
-            XCTAssertEqual(ddtags?.count, 1)
-            XCTAssertEqual(ddtags!["retry_count"], "1")
+            XCTAssertNil(ddtags)
 
             XCTAssertEqual(request.httpHeaders["Content-Type"], "text/plain;charset=UTF-8", file: file, line: line)
             XCTAssertEqual(request.httpHeaders["User-Agent"]?.matches(regex: userAgentRegex), true, file: file, line: line)
