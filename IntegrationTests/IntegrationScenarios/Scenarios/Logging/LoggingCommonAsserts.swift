@@ -24,7 +24,7 @@ extension LoggingCommonAsserts {
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddsource=ios&ddtags=retry_count:1`
             XCTAssertNotNil(request.path, file: file, line: line)
             XCTAssertNotNil(request.queryItems)
-            XCTAssertEqual(request.queryItems!.count, 2)
+            XCTAssertEqual(request.queryItems!.count, 1)
             XCTAssertEqual(request.queryItems?.value(name: "ddsource"), "ios", file: file, line: line)
 
             let ddtags = request.queryItems?.ddtags()
