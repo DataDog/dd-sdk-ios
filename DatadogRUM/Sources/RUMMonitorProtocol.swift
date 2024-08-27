@@ -325,6 +325,13 @@ public protocol RUMMonitorProtocol: AnyObject {
     var debug: Bool { set get }
 }
 
+extension RUMMonitorProtocol {
+    /// Itcannot be declared '@_spi' without a default implementation in a protocol extension
+    func addViewLoadingTime() {
+        // no-op
+    }
+}
+
 // MARK: - NOP moniotor
 
 internal class NOPMonitor: RUMMonitorProtocol {
