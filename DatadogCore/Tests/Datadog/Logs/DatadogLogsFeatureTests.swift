@@ -84,7 +84,7 @@ class DatadogLogsFeatureTests: XCTestCase {
         let requestURL = try XCTUnwrap(request.url)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(requestURL.absoluteString.starts(with: randomUploadURL.absoluteString + "?"))
-        XCTAssertEqual(requestURL.query, "ddsource=\(randomSource)&ddtags=retry_count:1")
+        XCTAssertEqual(requestURL.query, "ddsource=\(randomSource)")
         XCTAssertEqual(
             request.allHTTPHeaderFields?["User-Agent"],
             """
