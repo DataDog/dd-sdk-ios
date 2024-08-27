@@ -31,7 +31,7 @@ archive:
 	@$(ECHO_SUBTITLE2) "make archive VERSION='$(VERSION)'"
 	@xcrun agvtool new-version "$(VERSION)"
 	set -eo pipefail; \
-	OTEL_SWIFT=1 xcodebuild \
+	BENCHMARK=1 OTEL_SWIFT=1 xcodebuild \
 		-project BenchmarkTests.xcodeproj \
 		-scheme Runner \
 		-sdk iphoneos \
@@ -70,4 +70,4 @@ upload:
 
 open:
 	@$(ECHO_SUBTITLE2) "make open"
-	@open --new --env OTEL_SWIFT BenchmarkTests.xcodeproj
+	@open --env DD_BENCHMARK --env OTEL_SWIFT --new BenchmarkTests.xcodeproj

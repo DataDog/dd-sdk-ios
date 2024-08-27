@@ -25,7 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         switch run {
         case .baseline, .instrumented:
             // measure metrics during baseline and metrics runs
-            Benchmarks.metrics(
+            Benchmarks.enableMetrics(
                 with: Benchmarks.Configuration(
                     info: applicationInfo,
                     scenario: scenario,
@@ -33,7 +33,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 )
             )
         case .profiling:
-            // collect profiles
+            // Collect traces during profiling run
+            Benchmarks.enableTracer(
+                with: Benchmarks.Configuration(
+                    info: applicationInfo,
+                    scenario: scenario,
+                    run: run
+                )
+            )
+            
+            DatadogInternal.profiler = Profiler()
             break
         }
 

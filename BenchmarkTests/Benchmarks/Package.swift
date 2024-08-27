@@ -31,9 +31,10 @@ func addOpenTelemetryDependency(_ version: Version) {
                 name: "DatadogBenchmarks",
                 dependencies: [
                     .product(name: "OpenTelemetryApi", package: "opentelemetry-swift"),
-                    .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift")
+                    .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift"),
+                    .product(name: "DatadogExporter", package: "opentelemetry-swift")
                 ],
-                swiftSettings: [.unsafeFlags(["-DOTEL_SWIFT"])]
+                swiftSettings: [.define("OTEL_SWIFT")]
             )
         ]
 
@@ -48,7 +49,7 @@ func addOpenTelemetryDependency(_ version: Version) {
                 dependencies: [
                     .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-packages")
                 ],
-                swiftSettings: [.unsafeFlags(["-DOTEL_API"])]
+                swiftSettings: [.define("OTEL_API")]
             )
         ]
     }
