@@ -32,19 +32,10 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         with context: DatadogContext,
         execution: ExecutionContext
     ) -> URLRequest {
-        var tags = [
-            "retry_count:\(execution.attempt + 1)"
-        ]
-
-        if let previousResponseCode = execution.previousResponseCode {
-            tags.append("last_failure_status:\(previousResponseCode)")
-        }
-
         let builder = URLRequestBuilder(
             url: url(with: context),
             queryItems: [
                 .ddsource(source: context.source),
-                .ddtags(tags: tags)
             ],
             headers: [
                 .contentTypeHeader(contentType: .applicationJSON),
