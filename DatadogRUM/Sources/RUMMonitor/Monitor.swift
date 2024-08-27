@@ -275,6 +275,15 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
+    func addViewLoadingTime() {
+        process(
+            command: RUMAddViewLoadingTime(
+                time: dateProvider.now,
+                attributes: [:]
+            )
+        )
+    }
+
     // MARK: - custom timings
 
     func addTiming(name: String) {
