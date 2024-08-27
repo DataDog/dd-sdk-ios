@@ -35,13 +35,10 @@ extension TracingCommonAsserts {
 
             // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddtags=retry_count:1`
             XCTAssertFalse(request.path.isEmpty)
-            XCTAssertNotNil(request.queryItems)
-            XCTAssertEqual(request.queryItems!.count, 1)
+            XCTAssertNil(request.queryItems)
 
             let ddtags = request.queryItems?.ddtags()
-            XCTAssertNotNil(ddtags)
-            XCTAssertEqual(ddtags?.count, 1)
-            XCTAssertEqual(ddtags!["retry_count"], "1")
+            XCTAssertNil(ddtags)
 
             XCTAssertEqual(request.httpHeaders["Content-Type"], "text/plain;charset=UTF-8", file: file, line: line)
             XCTAssertEqual(request.httpHeaders["User-Agent"]?.matches(regex: userAgentRegex), true, file: file, line: line)

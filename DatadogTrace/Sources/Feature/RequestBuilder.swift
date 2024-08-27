@@ -24,19 +24,9 @@ internal struct TracingRequestBuilder: FeatureRequestBuilder {
         with context: DatadogContext,
         execution: ExecutionContext
     ) -> URLRequest {
-        var tags = [
-            "retry_count:\(execution.attempt + 1)"
-        ]
-
-        if let previousResponseCode = execution.previousResponseCode {
-            tags.append("last_failure_status:\(previousResponseCode)")
-        }
-
         let builder = URLRequestBuilder(
             url: url(with: context),
-            queryItems: [
-                .ddtags(tags: tags)
-            ],
+            queryItems: [],
             headers: [
                 .contentTypeHeader(contentType: .textPlainUTF8),
                 .userAgentHeader(
