@@ -72,7 +72,7 @@ class SessionReplayTests: XCTestCase {
     }
 
     func testWhenEnabledWithDefaultConfigurationWithNewAPI() throws {
-        let textAndInputPrivacy: SessionReplayTextAndInputPrivacyLevel = .mockRandom()
+        let textAndInputPrivacy: TextAndInputPrivacyLevel = .mockRandom()
         let imagePrivacy: ImagePrivacyLevel = .mockRandom()
         let touchPrivacy: TouchPrivacyLevel = .mockRandom()
         config = SessionReplay.Configuration(
@@ -136,31 +136,27 @@ class SessionReplayTests: XCTestCase {
     }
 
     func testWhenEnabledWithRandomPrivacyLevel() throws {
-        let textAndInputPrivacy: SessionReplayTextAndInputPrivacyLevel = .mockRandom()
-        config.textAndInputPrivacyLevel = textAndInputPrivacy
-        let randomImagePrivacy: ImagePrivacyLevel = .mockRandom()
-        config.imagePrivacyLevel = randomImagePrivacy
-        let randomTouchPrivacy: TouchPrivacyLevel = .mockRandom()
-        config.touchPrivacyLevel = randomTouchPrivacy
+        let randomPrivacy: SessionReplayPrivacyLevel = .mockRandom()
+        config.defaultPrivacyLevel = randomPrivacy
+        let newPrivacyLevels = SessionReplay.Configuration.convertPrivacyLevel(from: randomPrivacy)
 
         // When
         SessionReplay.enable(with: config, in: core)
 
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-        XCTAssertEqual(sr.recordingCoordinator.textAndInputPrivacy, textAndInputPrivacy)
-        XCTAssertEqual(sr.recordingCoordinator.imagePrivacy, randomImagePrivacy)
-        XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, randomTouchPrivacy)
+        XCTAssertEqual(sr.recordingCoordinator.textAndInputPrivacy, newPrivacyLevels.textAndInputPrivacy)
+        XCTAssertEqual(sr.recordingCoordinator.imagePrivacy, newPrivacyLevels.imagePrivacy)
+        XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, newPrivacyLevels.touchPrivacy)
     }
 
     func testWhenEnabledWithRandomPrivacyLevelWithNewAPI() throws {
         config = SessionReplay.Configuration(
             replaySampleRate: 42,
-            textAndInputPrivacyLevel: .maskAll,
-            touchPrivacyLevel: .hide
+            textAndInputPrivacyLevel: .mockRandom()
         )
 
-        let randomTextAndInputPrivacy: SessionReplayTextAndInputPrivacyLevel = .mockRandom()
+        let randomTextAndInputPrivacy: TextAndInputPrivacyLevel = .mockRandom()
         config.textAndInputPrivacyLevel = randomTextAndInputPrivacy
         let randomImagePrivacy: ImagePrivacyLevel = .mockRandom()
         config.imagePrivacyLevel = randomImagePrivacy

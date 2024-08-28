@@ -13,7 +13,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?
     let privacyLevel: SessionReplayPrivacyLevel
-    let textAndInputPrivacyLevel: SessionReplayTextAndInputPrivacyLevel
+    let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
     let touchPrivacyLevel: TouchPrivacyLevel
 
