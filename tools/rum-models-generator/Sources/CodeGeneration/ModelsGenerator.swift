@@ -32,6 +32,19 @@ public struct GeneratedCode {
         return try decorator.decorate(code: self)
     }
 
+    /// Skips list of types which should not be included in generated code.
+    /// - Parameter types: a set of type names to skip
+    /// - Returns: a new schema with skipped types.
+    public func skip(types typesToSkip: Set<String>) -> GeneratedCode {
+        let filteredTypes = swiftTypes.filter {
+            guard let typeName = $0.typeName else {
+                return true
+            }
+            return !typesToSkip.contains(typeName)
+        }
+        return GeneratedCode(swiftTypes: filteredTypes)
+    }
+
     /// Renders generated code with provided template.
     public func print(using template: OutputTemplate, and printer: CodePrinter) throws -> String {
         let codeText = try printer.print(code: self)

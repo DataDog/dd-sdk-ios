@@ -119,6 +119,8 @@ DEFAULT_ARTIFACTS_PATH := artifacts
 # Whether Test Visibility product is enabled by default
 DEFAULT_USE_TEST_VISIBILITY := 0
 
+SKIP_OBJC_TYPES ?= TelemetryUsageEvent
+
 # Run unit tests for specified SCHEME
 test:
 	@$(call require_param,SCHEME)
@@ -304,18 +306,17 @@ models-generate:
 	@$(call require_param,PRODUCT) # 'rum' or 'sr'
 	@$(call require_param,GIT_REF)
 	@$(ECHO_TITLE) "make models-generate PRODUCT='$(PRODUCT)' GIT_REF='$(GIT_REF)'"
-	./tools/rum-models-generator/run.py generate $(PRODUCT) --git_ref=$(GIT_REF)
-
+	./tools/rum-models-generator/run.py generate $(PRODUCT) --git_ref=$(GIT_REF) --skip_objc $(SKIP_OBJC_TYPES)
 # Validate data models against https://github.com/DataDog/rum-events-format
 models-verify:
 	@$(call require_param,PRODUCT) # 'rum' or 'sr'
 	@$(ECHO_TITLE) "make models-verify PRODUCT='$(PRODUCT)'"
-	./tools/rum-models-generator/run.py verify $(PRODUCT)
+	./tools/rum-models-generator/run.py verify $(PRODUCT) --skip_objc $(SKIP_OBJC_TYPES)
 
 # Generate RUM data models
 rum-models-generate:
 	@:$(eval GIT_REF ?= master)
-	@$(MAKE) models-generate PRODUCT="rum" GIT_REF="$(GIT_REF)"
+	@$(MAKE) models-generate PRODUCT="rum" GIT_REF="$(GIT_REF)" SKIP_OBJC=
 
 # Validate RUM data models
 rum-models-verify:
