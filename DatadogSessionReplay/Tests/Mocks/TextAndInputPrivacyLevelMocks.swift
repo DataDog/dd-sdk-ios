@@ -4,15 +4,17 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
-import DatadogInternal
+#if os(iOS)
+import DatadogSessionReplay
+import TestUtilities
 
-extension SessionReplayPrivacyLevel: AnyMockable, RandomMockable {
+extension TextAndInputPrivacyLevel: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
-        .allow
+        .maskSensitiveInputs
     }
 
     public static func mockRandom() -> Self {
-        [.allow, .mask, .maskUserInput].randomElement()!
+        [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
     }
 }
+#endif

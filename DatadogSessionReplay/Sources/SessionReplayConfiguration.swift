@@ -10,7 +10,6 @@ import DatadogInternal
 
 // swiftlint:disable duplicate_imports
 @_exported import enum DatadogInternal.SessionReplayPrivacyLevel
-@_exported import enum DatadogInternal.SessionReplayTextAndInputPrivacyLevel
 // swiftlint:enable duplicate_imports
 
 extension SessionReplay {
@@ -29,12 +28,20 @@ extension SessionReplay {
         /// Defines the way sensitive content (e.g. text) should be masked.
         ///
         /// Default: `.mask`.
-        public var defaultPrivacyLevel: SessionReplayPrivacyLevel
+        public var defaultPrivacyLevel: SessionReplayPrivacyLevel {
+            /// Whenever a new `defaultPrivacyLevel` is set, it converts it to the new privacy levels.
+            didSet {
+                let newPrivacyLevels = Self.convertPrivacyLevel(from: defaultPrivacyLevel)
+                self.textAndInputPrivacyLevel = newPrivacyLevels.textAndInputPrivacy
+                self.imagePrivacyLevel = newPrivacyLevels.imagePrivacy
+                self.touchPrivacyLevel = newPrivacyLevels.touchPrivacy
+            }
+        }
 
         /// Defines the way text and input (e.g. textfields, checkboxes) should be masked.
         ///
         /// Default: `.maskAll`.
-        public var textAndInputPrivacyLevel: SessionReplayTextAndInputPrivacyLevel
+        public var textAndInputPrivacyLevel: TextAndInputPrivacyLevel
 
         /// Defines image privacy level.
         ///
@@ -72,7 +79,7 @@ extension SessionReplay {
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
         public init(
             replaySampleRate: Float,
-            textAndInputPrivacyLevel: SessionReplayTextAndInputPrivacyLevel,
+            textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
             imagePrivacyLevel: ImagePrivacyLevel = .maskAll,
             touchPrivacyLevel: TouchPrivacyLevel = .hide,
             startRecordingImmediately: Bool = true,
@@ -87,7 +94,6 @@ extension SessionReplay {
             self.customEndpoint = customEndpoint
         }
 
-        // TODO: RUM-5764 Deprecate former API
         /// Creates Session Replay configuration.
         /// - Parameters:
         ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
@@ -116,8 +122,8 @@ extension SessionReplay {
             self._additionalNodeRecorders = additionalNodeRecorders
         }
 
-        /// Private method to convert deprecated `SessionReplayPrivacyLevel` to the new privacy levels.
-        private static func convertPrivacyLevel(from oldPrivacyLevel: SessionReplayPrivacyLevel)
+        /// Method to convert deprecated `SessionReplayPrivacyLevel` to the new privacy levels.
+        internal static func convertPrivacyLevel(from oldPrivacyLevel: SessionReplayPrivacyLevel)
         -> (
             textAndInputPrivacy: TextAndInputPrivacyLevel,
             imagePrivacy: ImagePrivacyLevel,

@@ -53,7 +53,6 @@ class WebViewTrackingTests: XCTestCase {
             static let name = "session-replay"
             let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
             let privacyLevel: SessionReplayPrivacyLevel
-            let textAndInputPrivacyLevel: SessionReplayTextAndInputPrivacyLevel
         }
 
         let mockSanitizer = HostsSanitizerMock()
@@ -61,8 +60,7 @@ class WebViewTrackingTests: XCTestCase {
 
         let host: String = .mockRandom()
         let sr = SessionReplayFeature(
-            privacyLevel: .mockRandom(),
-            textAndInputPrivacyLevel: .mockRandom()
+            privacyLevel: .mockRandom()
         )
 
         WebViewTracking.enable(

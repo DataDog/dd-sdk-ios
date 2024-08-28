@@ -236,9 +236,9 @@ class SnapshotProcessorTests: XCTestCase {
         let snapshot = ViewTreeSnapshot(
             date: time,
             context: .init(
-                textAndInputPrivacy: .maskSensitiveInputs,
+                textAndInputPrivacy: .mockRandom(),
                 imagePrivacy: .mockRandom(),
-                touchPrivacy: .show,
+                touchPrivacy: .mockRandom(),
                 rumContext: rum,
                 date: time
             ),
@@ -446,9 +446,9 @@ class SnapshotProcessorTests: XCTestCase {
         snapshotBuilder.createSnapshot(
             of: viewTree,
             with: .init(
-                textAndInputPrivacy: .maskSensitiveInputs,
+                textAndInputPrivacy: .mockRandom(),
                 imagePrivacy: .mockRandom(),
-                touchPrivacy: .show,
+                touchPrivacy: .mockRandom(),
                 rumContext: rumContext,
                 date: date
             )
