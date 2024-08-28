@@ -316,7 +316,7 @@ models-verify:
 # Generate RUM data models
 rum-models-generate:
 	@:$(eval GIT_REF ?= master)
-	@$(MAKE) models-generate PRODUCT="rum" GIT_REF="$(GIT_REF)" SKIP_OBJC=
+	@$(MAKE) models-generate PRODUCT="rum" GIT_REF="$(GIT_REF)"
 
 # Validate RUM data models
 rum-models-verify:
