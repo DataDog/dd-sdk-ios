@@ -4467,13 +4467,13 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public let feature: String = "addViewLoadingTime"
 
                     /// Whether the available view is not active
-                    public let noActiveView: Bool?
+                    public let noActiveView: Bool
 
                     /// Whether the view is not available
-                    public let noView: Bool?
+                    public let noView: Bool
 
                     /// Whether the loading time was overwritten
-                    public let overwritten: Bool?
+                    public let overwritten: Bool
 
                     enum CodingKeys: String, CodingKey {
                         case feature = "feature"
@@ -4879,4 +4879,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/5158bc1d54b6e88f2d47c9d6ac9f53c417ef8870
+// Generated from https://github.com/DataDog/rum-events-format/tree/ec07c062cbbb2f19b49d08f72bc95703b502906d
