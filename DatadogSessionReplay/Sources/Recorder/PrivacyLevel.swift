@@ -7,8 +7,6 @@
 #if os(iOS)
 import DatadogInternal
 
-internal typealias TextAndInputPrivacyLevel = SessionReplayTextAndInputPrivacyLevel
-
 /// Text obfuscation strategies for different text types.
 @_spi(Internal)
 public extension TextAndInputPrivacyLevel {
@@ -47,7 +45,7 @@ public extension TextAndInputPrivacyLevel {
 
     /// Returns "Hint Text" obfuscator for given `TextAndInputPrivacyLevel`.
     ///
-    /// In Session Replay, "Hint Text" is a static text in editable text elements or option selectors, displayed when there isn't any value set. (eg. `UITextField.placeholder`) (?)
+    /// In Session Replay, "Hint Text" is a static text in editable text elements or option selectors, displayed when there isn't any value set. (eg. `UITextField.placeholder`)
     var hintTextObfuscator: SessionReplayTextObfuscating {
         switch self {
         case .maskSensitiveInputs:  return NOPTextObfuscator()

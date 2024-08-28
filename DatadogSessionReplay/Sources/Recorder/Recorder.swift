@@ -23,7 +23,7 @@ public class Recorder: Recording {
     /// The context of recording next snapshot.
     public struct Context: Equatable {
         /// The content recording policy for texts and inputs at the moment of requesting snapshot.
-        public let textAndInputPrivacy: SessionReplayTextAndInputPrivacyLevel
+        public let textAndInputPrivacy: TextAndInputPrivacyLevel
         /// The image recording policy from the moment of requesting snapshot.
         public let imagePrivacy: ImagePrivacyLevel
         /// The content recording policy from the moment of requesting snapshot.

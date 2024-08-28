@@ -109,7 +109,6 @@ public final class DDSessionReplayConfiguration: NSObject {
         super.init()
     }
 
-    // TODO: RUM-5764 Deprecate former API
     /// Creates Session Replay configuration.
     ///
     /// - Parameters:
@@ -168,7 +167,7 @@ public enum DDSessionReplayConfigurationTextAndInputPrivacyLevel: Int {
     /// Mask all text and input.
     case maskAll
 
-    internal var _swift: SessionReplayTextAndInputPrivacyLevel {
+    internal var _swift: TextAndInputPrivacyLevel {
         switch self {
         case .maskSensitiveInputs: return .maskSensitiveInputs
         case .maskAllInputs: return .maskAllInputs
@@ -177,7 +176,7 @@ public enum DDSessionReplayConfigurationTextAndInputPrivacyLevel: Int {
         }
     }
 
-    internal init(_ swift: SessionReplayTextAndInputPrivacyLevel) {
+    internal init(_ swift: TextAndInputPrivacyLevel) {
         switch swift {
         case .maskSensitiveInputs: self = .maskSensitiveInputs
         case .maskAllInputs: self = .maskAllInputs

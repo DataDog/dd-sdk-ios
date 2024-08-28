@@ -20,18 +20,6 @@ public enum SessionReplayPrivacyLevel: String {
     case maskUserInput = "mask_user_input"
 }
 
-/// Available privacy levels for text and input masking in Session Replay.
-public enum SessionReplayTextAndInputPrivacyLevel: String, CaseIterable {
-    /// Show all texts except sensitive inputs, eg. password fields.
-    case maskSensitiveInputs = "mask_sensitive_inputs"
-
-    /// Mask all inputs fields, eg. textfields, switches, checkboxes.
-    case maskAllInputs = "mask_all_inputs"
-
-    /// Mask all texts and inputs, eg. labels.
-    case maskAll = "mask_all"
-}
-
 /// The Session Replay shared configuration.
 ///
 /// The Feature object  named `session-replay` will be registered to the core

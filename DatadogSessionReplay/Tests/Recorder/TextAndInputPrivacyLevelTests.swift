@@ -9,7 +9,7 @@ import XCTest
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
-class PrivacyLevelTests: XCTestCase {
+class TextAndInputPrivacyLevelTests: XCTestCase {
     // MARK: - Text obfuscation strategies
 
     func testSensitiveTextObfuscation() {
