@@ -78,13 +78,13 @@ public enum SessionReplay {
         let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)
         try core.register(feature: sessionReplay)
 
-        // TODO: RUM-5782 Add new privacy levels to config telemetry
         core.telemetry.configuration(
             defaultPrivacyLevel: configuration.defaultPrivacyLevel.rawValue,
+            textAndInputPrivacyLevel: configuration.textAndInputPrivacyLevel.rawValue,
             imagePrivacyLevel: configuration.imagePrivacyLevel.rawValue,
+            touchPrivacyLevel: configuration.touchPrivacyLevel.rawValue,
             sessionReplaySampleRate: Int64(withNoOverflow: configuration.replaySampleRate),
-            startRecordingImmediately: configuration.startRecordingImmediately,
-            touchPrivacyLevel: configuration.touchPrivacyLevel.rawValue
+            startRecordingImmediately: configuration.startRecordingImmediately
         )
     }
 
