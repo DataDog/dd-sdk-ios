@@ -51,7 +51,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// The start time of this View.
     let viewStartTime: Date
     /// The load time of this View.
-    var viewLoadingTime: TimeInterval?
+    private(set) var viewLoadingTime: TimeInterval?
 
     /// Server time offset for date correction.
     ///
