@@ -17,7 +17,7 @@ endif
 build:
 	@$(ECHO_SUBTITLE2) "make build"
 	set -eo pipefail; \
-	OTEL_SWIFT=1 xcodebuild \
+	DD_BENCHMARK=1 OTEL_SWIFT=1 xcodebuild \
 		-project BenchmarkTests.xcodeproj \
 		-scheme Runner \
 		-sdk iphonesimulator \
@@ -31,7 +31,7 @@ archive:
 	@$(ECHO_SUBTITLE2) "make archive VERSION='$(VERSION)'"
 	@xcrun agvtool new-version "$(VERSION)"
 	set -eo pipefail; \
-	BENCHMARK=1 OTEL_SWIFT=1 xcodebuild \
+	DD_BENCHMARK=1 OTEL_SWIFT=1 xcodebuild \
 		-project BenchmarkTests.xcodeproj \
 		-scheme Runner \
 		-sdk iphoneos \
