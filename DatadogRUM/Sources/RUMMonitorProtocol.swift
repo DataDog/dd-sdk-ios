@@ -326,7 +326,7 @@ public protocol RUMMonitorProtocol: AnyObject {
 }
 
 extension RUMMonitorProtocol {
-    /// Itcannot be declared '@_spi' without a default implementation in a protocol extension
+    /// It cannot be declared '@_spi' without a default implementation in a protocol extension
     func addViewLoadingTime() {
         // no-op
     }
