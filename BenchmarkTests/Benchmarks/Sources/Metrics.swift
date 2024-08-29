@@ -12,13 +12,125 @@ import QuartzCore
 let TASK_VM_INFO_COUNT = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
 let TASK_VM_INFO_REV1_COUNT = mach_msg_type_number_t(MemoryLayout.offset(of: \task_vm_info_data_t.min_address)! / MemoryLayout<integer_t>.size)
 
-enum MachError: Error {
+internal enum MachError: Error {
     case task_info(return: kern_return_t)
     case task_threads(return: kern_return_t)
     case thread_info(return: kern_return_t)
 }
 
-public enum Memory {
+/// Aggregate metric values and compute `min`, `max`, `sum`, `avg`, and `count`.
+internal class MetricAggregator<T> where T: Numeric {
+    internal struct Aggregation {
+        let min: T
+        let max: T
+        let sum: T
+        let count: Int
+        let avg: Double
+    }
+
+    private var mutex = pthread_mutex_t()
+    private var _aggregation: Aggregation?
+
+    var aggregation: Aggregation? {
+        pthread_mutex_lock(&mutex)
+        defer { pthread_mutex_unlock(&mutex) }
+        return _aggregation
+    }
+
+    /// Resets the minimum frame rate to `nil`.
+    func reset() {
+        pthread_mutex_lock(&mutex)
+        _aggregation = nil
+        pthread_mutex_unlock(&mutex)
+    }
+
+    deinit {
+        pthread_mutex_destroy(&mutex)
+    }
+}
+
+extension MetricAggregator where T: BinaryInteger {
+    /// Records a `BinaryInteger` value.
+    ///
+    /// - Parameter value: The value to record.
+    func record(value: T) {
+        pthread_mutex_lock(&mutex)
+        _aggregation = _aggregation.map {
+            let sum = $0.sum + value
+            let count = $0.count + 1
+            return Aggregation(
+                min: Swift.min($0.min, value),
+                max: Swift.max($0.max, value),
+                sum: sum,
+                count: count,
+                avg: Double(sum) / Double(count)
+            )
+        } ?? Aggregation(min: value, max: value, sum: value, count: 1, avg: Double(value))
+        pthread_mutex_unlock(&mutex)
+    }
+}
+
+extension MetricAggregator where T: BinaryFloatingPoint {
+    /// Records a `BinaryFloatingPoint` value.
+    ///
+    /// - Parameter value: The value to record.
+    func record(value: T) {
+        pthread_mutex_lock(&mutex)
+        _aggregation = _aggregation.map {
+            let sum = $0.sum + value
+            let count = $0.count + 1
+            return Aggregation(
+                min: Swift.min($0.min, value),
+                max: Swift.max($0.max, value),
+                sum: sum,
+                count: count,
+                avg: Double(sum) / Double(count)
+            )
+        } ?? Aggregation(min: value, max: value, sum: value, count: 1, avg: Double(value))
+        pthread_mutex_unlock(&mutex)
+    }
+}
+
+/// Collect Memory footprint metric.
+///
+/// Based on a timer, the `Memory` aggregator will periodically record the memory footprint.
+internal final class Memory: MetricAggregator<Double> {
+    /// Dispatch source object for monitoring timer events.
+    private let timer: DispatchSourceTimer
+    
+    /// Create a `Memory` aggregator to periodically record the memory footprint on the
+    /// provided queue.
+    ///
+    /// By default, the timer is scheduled with 100 ms interval with 10 ms leeway.
+    ///
+    /// - Parameters:
+    ///   - queue: The queue on which to execute the timer handler.
+    ///   - interval: The timer interval, default to 100 ms.
+    ///   - leeway: The timer leeway, default to 10 ms.
+    required init(
+        queue: DispatchQueue,
+        every interval: DispatchTimeInterval = .milliseconds(100),
+        leeway: DispatchTimeInterval = .milliseconds(10)
+    ) {
+        timer = DispatchSource.makeTimerSource(queue: queue)
+        super.init()
+
+        timer.setEventHandler { [weak self] in
+            guard let self, let footprint = try? self.footprint() else {
+                return
+            }
+
+            self.record(value: footprint)
+        }
+
+        timer.schedule(deadline: .now(), repeating: interval, leeway: leeway)
+        timer.activate()
+    }
+
+    deinit {
+        timer.cancel()
+    }
+
     /// Collects single sample of current memory footprint.
     ///
     /// The computation is based on https://developer.apple.com/forums/thread/105088
@@ -26,7 +138,7 @@ public enum Memory {
     /// gauge and _Allocations Instrument_.
     ///
     /// - Returns: Current memory footprint in bytes, `throws` if failed to read.
-    static func footprint() throws -> Double {
+    private func footprint() throws -> Double {
         var info = task_vm_info_data_t()
         var count = TASK_VM_INFO_COUNT
         let kr = withUnsafeMutablePointer(to: &info) {
@@ -43,14 +155,53 @@ public enum Memory {
     }
 }
 
-public enum CPU {
+/// Collect CPU usage metric.
+///
+/// Based on a timer, the `CPU` aggregator will periodically record the CPU usage.
+internal final class CPU: MetricAggregator<Double> {
+    /// Dispatch source object for monitoring timer events.
+    private let timer: DispatchSourceTimer
+
+    /// Create a `CPU` aggregator to periodically record the CPU usage on the
+    /// provided queue.
+    ///
+    /// By default, the timer is scheduled with 100 ms interval with 10 ms leeway.
+    ///
+    /// - Parameters:
+    ///   - queue: The queue on which to execute the timer handler.
+    ///   - interval: The timer interval, default to 100 ms.
+    ///   - leeway: The timer leeway, default to 10 ms.
+    init(
+        queue: DispatchQueue,
+        every interval: DispatchTimeInterval = .milliseconds(100),
+        leeway: DispatchTimeInterval = .milliseconds(10)
+    ) {
+        self.timer = DispatchSource.makeTimerSource(queue: queue)
+        super.init()
+
+        timer.setEventHandler { [weak self] in
+            guard let self, let usage = try? self.usage() else {
+                return
+            }
+
+            self.record(value: usage)
+        }
+
+        timer.schedule(deadline: .now(), repeating: interval, leeway: leeway)
+        timer.activate()
+    }
+
+    deinit {
+        timer.cancel()
+    }
+
     /// Collect single sample of current cpu usage.
     ///
     /// The computation is based on https://gist.github.com/hisui/10004131#file-cpu-usage-cpp
     /// It reads the `cpu_usage` from all thread to compute the application usage percentage.
     ///
     /// - Returns: The cpu usage of all threads.
-    static func usage() throws -> Double {
+    private func usage() throws -> Double {
         var threads_list: thread_act_array_t?
         var threads_count = mach_msg_type_number_t()
         let kr = withUnsafeMutablePointer(to: &threads_list) {
@@ -89,8 +240,8 @@ public enum CPU {
     }
 }
 
-/// FPS aggregator to measure the minimal frame rate.
-internal final class FPS {
+/// Collect Frame rate metric based on ``CADisplayLinker`` timer.
+internal final class FPS: MetricAggregator<Int> {
     private class CADisplayLinker {
         weak var fps: FPS?
 
@@ -101,43 +252,23 @@ internal final class FPS {
                 return
             }
 
-            pthread_mutex_lock(&fps.mutex)
             let rate = 1 / (link.targetTimestamp - link.timestamp)
-            fps.min = fps.min.map { Swift.min($0, rate) } ?? rate
-            pthread_mutex_unlock(&fps.mutex)
+            fps.record(value: lround(rate))
         }
     }
 
     private var displayLink: CADisplayLink
-    private var mutex = pthread_mutex_t()
-    private var min: Double?
-    
-    /// The minimum FPS value that was measured.
-    /// Call `reset` to reset the measure window.
-    var minimumRate: Double? {
-        pthread_mutex_lock(&mutex)
-        defer { pthread_mutex_unlock(&mutex) }
-        return min
-    }
 
-    /// Resets the minimum frame rate to `nil`.
-    func reset() {
-        pthread_mutex_lock(&mutex)
-        min = nil
-        pthread_mutex_unlock(&mutex)
-    }
-
-    required init() {
+    override init() {
         let linker = CADisplayLinker()
         displayLink = CADisplayLink(target: linker, selector: #selector(CADisplayLinker.tick(link:)))
+        super.init()
 
         linker.fps = self
-        pthread_mutex_init(&mutex, nil)
         displayLink.add(to: RunLoop.main, forMode: .common)
     }
 
     deinit {
         displayLink.invalidate()
-        pthread_mutex_destroy(&mutex)
     }
 }

@@ -79,9 +79,6 @@ public enum Benchmarks {
     ///
     /// - Parameter configuration: The Benchmark configuration.
     public static func enableMetrics(with configuration: Configuration) {
-        let loggerProvider = LoggerProviderBuilder()
-            .build()
-
         let metricExporter = MetricExporter(
             configuration: MetricExporter.Configuration(
                 apiKey: configuration.apiKey,
@@ -94,10 +91,6 @@ public enum Benchmarks {
             .with(processor: MetricProcessorSdk())
             .with(exporter: metricExporter)
             .with(resource: Resource())
-            .build()
-
-        let logger = loggerProvider
-            .loggerBuilder(instrumentationScopeName: instrumentationName)
             .build()
 
         let meter = meterProvider.get(
@@ -116,35 +109,32 @@ public enum Benchmarks {
             "branch": configuration.context.branch,
         ]
 
+        let queue = DispatchQueue(label: "com.datadoghq.benchmarks.metrics", qos: .utility)
+
+        let memory = Memory(queue: queue)
         _ = meter.createDoubleObservableGauge(name: "ios.benchmark.memory") { metric in
-            do {
-                let mem = try Memory.footprint()
-                metric.observe(value: mem, labels: labels)
-            } catch {
-                logger.logRecordBuilder()
-                    .setSeverity(.error)
-                    .setAttributes(labels.mapValues { .string($0) })
-                    .setBody("Failed to read Memory Metric: \(error)")
-                    .emit()
+            // report the maximum memory footprint that was recorded during push interval
+            if let value = memory.aggregation?.max {
+                metric.observe(value: value, labels: labels)
             }
+
+            memory.reset()
         }
 
+        let cpu = CPU(queue: queue)
         _ = meter.createDoubleObservableGauge(name: "ios.benchmark.cpu") { metric in
-            do {
-                let usage = try CPU.usage()
-                metric.observe(value: usage, labels: labels)
-            } catch {
-                logger.logRecordBuilder()
-                    .setSeverity(.error)
-                    .setAttributes(labels.mapValues { .string($0) })
-                    .setBody("Failed to read CPU Metric: \(error)")
-                    .emit()
+            // report the average cpu usage that was recorded during push interval
+            if let value = cpu.aggregation?.avg {
+                metric.observe(value: value, labels: labels)
             }
+
+            cpu.reset()
         }
 
         let fps = FPS()
-        _ = meter.createDoubleObservableGauge(name: "ios.benchmark.fps.min") { metric in
-            if let value = fps.minimumRate {
+        _ = meter.createIntObservableGauge(name: "ios.benchmark.fps.min") { metric in
+            // report the minimum frame rate that was recorded during push interval
+            if let value = fps.aggregation?.min {
                 metric.observe(value: value, labels: labels)
             }
 
