@@ -81,9 +81,7 @@ Lint:
   rules: 
     - !reference [.test-pipeline-job, rules]
   script:
-    - make clean repo-setup ENV=ci
-    - make lint license-check
-    - make rum-models-verify sr-models-verify
+    - exit 1
 
 Unit Tests (iOS):
   stage: test
