@@ -28,6 +28,7 @@ extension SessionReplay {
         /// Defines the way sensitive content (e.g. text) should be masked.
         ///
         /// Default: `.mask`.
+        @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use the new privacy levels instead.")
         public var defaultPrivacyLevel: SessionReplayPrivacyLevel {
             /// Whenever a new `defaultPrivacyLevel` is set, it converts it to the new privacy levels.
             didSet {
@@ -80,8 +81,8 @@ extension SessionReplay {
         public init(
             replaySampleRate: Float,
             textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
-            imagePrivacyLevel: ImagePrivacyLevel = .maskAll,
-            touchPrivacyLevel: TouchPrivacyLevel = .hide,
+            imagePrivacyLevel: ImagePrivacyLevel,
+            touchPrivacyLevel: TouchPrivacyLevel,
             startRecordingImmediately: Bool = true,
             customEndpoint: URL? = nil
         ) {
@@ -100,7 +101,7 @@ extension SessionReplay {
         ///   - defaultPrivacyLevel: The way sensitive content (e.g. text) should be masked. Default: `.mask`.
         ///   - startRecordingImmediately: If the recording should start automatically. When `true`, the recording starts automatically; when `false` it doesn't, and the recording will need to be started manually. Default: `true`.
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
-        @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `SessionReplay.Configuration(replaySampleRate:textAndInputPrivacy:imagePrivacy:touchPrivacy:)` instead.")
+        @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(replaySampleRate:textAndInputPrivacyLevel:imagePrivacyLevel:touchPrivacyLevel:)` instead.")
         public init(
             replaySampleRate: Float,
             defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,

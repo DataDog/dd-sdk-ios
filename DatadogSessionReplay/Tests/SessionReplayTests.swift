@@ -153,7 +153,9 @@ class SessionReplayTests: XCTestCase {
     func testWhenEnabledWithRandomPrivacyLevelWithNewAPI() throws {
         config = SessionReplay.Configuration(
             replaySampleRate: 42,
-            textAndInputPrivacyLevel: .mockRandom()
+            textAndInputPrivacyLevel: .mockRandom(),
+            imagePrivacyLevel: .mockRandom(),
+            touchPrivacyLevel: .mockRandom()
         )
 
         let randomTextAndInputPrivacy: TextAndInputPrivacyLevel = .mockRandom()

@@ -11,15 +11,10 @@ import TestUtilities
 @testable import DatadogSessionReplay
 @testable import SRHost
 
-private var defaultTextAndInputPrivacyLevel: TextAndInputPrivacyLevel {
-    return .maskSensitiveInputs
-}
+private var defaultImagePrivacyLevel: ImagePrivacyLevel = .maskNonBundledOnly
+private var defaultTextAndInputPrivacyLevel: TextAndInputPrivacyLevel = .maskSensitiveInputs
 internal var allTextAndInputPrivacyLevels: [TextAndInputPrivacyLevel] {
     return TextAndInputPrivacyLevel.allCases
-}
-
-private var defaultImagePrivacyLevel: ImagePrivacyLevel {
-    return .maskNonBundledOnly
 }
 
 internal class SnapshotTestCase: XCTestCase {
