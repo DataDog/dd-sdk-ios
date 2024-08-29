@@ -271,9 +271,7 @@ internal struct RUMAddViewLoadingTime: RUMCommand, RUMViewScopePropagatableAttri
     let canStartBackgroundView = false // no, it doesn't make sense to start "Background" view on receiving custom timing, as it will be `0ns` timing
     let isUserInteraction = false // a custom view timing is not an interactive event
 
-    /// The name of the timing. It will be used as a JSON key, whereas the value will be the timing duration,
-    /// measured since the start of the View.
-    let missedEventType: SessionEndedMetric.MissedEventType? = nil
+    let missedEventType: SessionEndedMetric.MissedEventType? = .viewLoadingTime
 }
 
 internal struct RUMAddViewTimingCommand: RUMCommand, RUMViewScopePropagatableAttributes {
