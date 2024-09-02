@@ -17,7 +17,7 @@ public enum SessionReplayPrivacyLevel: String {
     case mask
 
     /// Mask input elements, but record all other content.
-    case maskUserInput = "mask_user_input"
+    case maskUserInput = "mask-user-input"
 }
 
 /// The Session Replay shared configuration.
@@ -32,9 +32,10 @@ public enum SessionReplayPrivacyLevel: String {
 ///     )
 ///
 public protocol SessionReplayConfiguration {
-    // TODO: RUM-5766 - Pass correct privacy level to webviews
-    /// Deprecated
-    /// Former global privacy level to use in Session Replay.
+    /// Global privacy level to use in Session Replay.
+    /// Although this setting is deprecated on mobile,
+    /// it is still needed to configure the browser SDK,
+    /// which currently does not support fine-grained privacy options.
     var privacyLevel: SessionReplayPrivacyLevel { get }
 }
 

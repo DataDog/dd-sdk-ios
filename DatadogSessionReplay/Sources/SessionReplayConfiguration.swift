@@ -92,10 +92,10 @@ extension SessionReplay {
             customEndpoint: URL? = nil
         ) {
             self.replaySampleRate = replaySampleRate
-            self.defaultPrivacyLevel = .mask
             self.textAndInputPrivacyLevel = textAndInputPrivacyLevel
             self.imagePrivacyLevel = imagePrivacyLevel
             self.touchPrivacyLevel = touchPrivacyLevel
+            self.defaultPrivacyLevel = Self.determineWebViewPrivacyLevel(textPrivacy: textAndInputPrivacyLevel, imagePrivacy: imagePrivacyLevel, touchPrivacy: touchPrivacyLevel)
             self.startRecordingImmediately = startRecordingImmediately
             self.customEndpoint = customEndpoint
             self.isConfiguredWithNewApi = true
@@ -156,6 +156,35 @@ extension SessionReplay {
                     imagePrivacy: .maskAll,
                     touchPrivacy: .hide
                 )
+            }
+        }
+
+        internal static func determineWebViewPrivacyLevel(
+            textPrivacy: TextAndInputPrivacyLevel,
+            imagePrivacy: ImagePrivacyLevel,
+            touchPrivacy: TouchPrivacyLevel
+        ) -> SessionReplayPrivacyLevel {
+            switch (textPrivacy, imagePrivacy, touchPrivacy) {
+            case (.maskSensitiveInputs, .maskNone, .show):
+                return .allow
+            case (.maskSensitiveInputs, .maskNone, .hide):
+                return .mask
+            case (.maskSensitiveInputs, .maskNonBundledOnly, _):
+                return .mask
+            case (.maskSensitiveInputs, .maskAll, _):
+                return .mask
+
+            case (.maskAllInputs, .maskNone, .show):
+                return .maskUserInput
+            case (.maskAllInputs, .maskNone, .hide):
+                return .mask
+            case (.maskAllInputs, .maskNonBundledOnly, _):
+                return .mask
+            case (.maskAllInputs, .maskAll, _):
+                return .mask
+
+            case (.maskAll, _, _):
+                return .mask
             }
         }
     }

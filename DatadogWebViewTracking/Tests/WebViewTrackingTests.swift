@@ -12,7 +12,6 @@ import TestUtilities
 import DatadogInternal
 @testable import DatadogWebViewTracking
 
-// TODO: RUM-5766 - Pass correct privacy level to webviews
 class WebViewTrackingTests: XCTestCase {
     func testItAddsUserScript() throws {
         let mockSanitizer = HostsSanitizerMock()
