@@ -109,6 +109,13 @@ public protocol RUMMonitorProtocol: AnyObject {
         attributes: [AttributeKey: AttributeValue]
     )
 
+    /// Adds view loading time to current RUM view based on the time elapsed since the view was started.
+    /// This method should be called only once per view.
+    /// If the view is not started, this method does nothing.
+    /// If the view is not active, this method does nothing.
+    @_spi(Experimental)
+    func addViewLoadingTime()
+
     // MARK: - custom timings
 
     /// Records a specific timing within the current RUM view.
@@ -187,7 +194,7 @@ public protocol RUMMonitorProtocol: AnyObject {
     )
 
     /// Adds temporal metrics to given RUM resource.
-    /// 
+    ///
     /// It must be called before the resource is stopped.
     /// - Parameters:
     ///   - resourceKey: the key representing the resource. It must match the one used to start the resource.
@@ -282,7 +289,7 @@ public protocol RUMMonitorProtocol: AnyObject {
     )
 
     /// Stops RUM action.
-    /// 
+    ///
     /// The action must be first started with `startAction(type:)`.
     /// - Parameters:
     ///   - type: the type of the action. It should match type passed when starting this action.
@@ -318,6 +325,13 @@ public protocol RUMMonitorProtocol: AnyObject {
     var debug: Bool { set get }
 }
 
+extension RUMMonitorProtocol {
+    /// It cannot be declared '@_spi' without a default implementation in a protocol extension
+    func addViewLoadingTime() {
+        // no-op
+    }
+}
+
 // MARK: - NOP moniotor
 
 internal class NOPMonitor: RUMMonitorProtocol {
@@ -338,6 +352,7 @@ internal class NOPMonitor: RUMMonitorProtocol {
     func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) { warn() }
     func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopView(key: String, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func addViewLoadingTime() { warn() }
     func addTiming(name: String) { warn() }
     func addError(message: String, type: String?, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], file: StaticString?, line: UInt?) { warn() }
     func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) { warn() }

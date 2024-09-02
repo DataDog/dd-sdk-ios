@@ -265,6 +265,15 @@ internal struct RUMAddCurrentViewMemoryWarningCommand: RUMErrorCommand {
     let missedEventType: SessionEndedMetric.MissedEventType? = .error
 }
 
+internal struct RUMAddViewLoadingTime: RUMCommand, RUMViewScopePropagatableAttributes {
+    var time: Date
+    var attributes: [AttributeKey: AttributeValue]
+    let canStartBackgroundView = false // no, it doesn't make sense to start "Background" view on receiving custom timing, as it will be `0ns` timing
+    let isUserInteraction = false // a custom view timing is not an interactive event
+
+    let missedEventType: SessionEndedMetric.MissedEventType? = .viewLoadingTime
+}
+
 internal struct RUMAddViewTimingCommand: RUMCommand, RUMViewScopePropagatableAttributes {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]

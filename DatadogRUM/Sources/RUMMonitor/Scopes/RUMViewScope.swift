@@ -50,6 +50,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     let viewName: String
     /// The start time of this View.
     let viewStartTime: Date
+    /// The load time of this View.
+    private(set) var viewLoadingTime: TimeInterval?
 
     /// Server time offset for date correction.
     ///
@@ -197,6 +199,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             needsViewUpdate = true
         case let command as RUMStopViewCommand where identity == command.identity:
             isActiveView = false
+            needsViewUpdate = true
+        case let command as RUMAddViewLoadingTime where isActiveView:
+            viewLoadingTime = command.time.timeIntervalSince(viewStartTime)
             needsViewUpdate = true
         case let command as RUMAddViewTimingCommand where isActiveView:
             customTimings[command.timingName] = command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
@@ -534,7 +539,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 largestContentfulPaint: nil,
                 largestContentfulPaintTargetSelector: nil,
                 loadEvent: nil,
-                loadingTime: nil,
+                loadingTime: viewLoadingTime?.toInt64Nanoseconds,
                 loadingType: nil,
                 longTask: .init(count: longTasksCount),
                 memoryAverage: memoryInfo?.meanValue,

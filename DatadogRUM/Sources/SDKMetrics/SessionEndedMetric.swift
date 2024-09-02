@@ -114,6 +114,7 @@ internal class SessionEndedMetric {
         case resource
         case error
         case longTask
+        case viewLoadingTime
     }
 
     /// Tracks the number of RUM events missed due to absence of an active RUM view.
