@@ -65,14 +65,17 @@ private struct RootCommand: ParsableCommand {
         @Option(help: "Convention of decorating generated code: 'rum' (default) or 'sr'.")
         var convention: Convention = .rum
 
+        @Option(help: "List of type names to skip from code generation.")
+        var skip: [String] = []
+
         func run() {
             do {
                 let schemaURL = URL(fileURLWithPath: path)
                 switch convention {
                 case .rum:
-                    print(try generateRUMObjcInteropModels(from: schemaURL))
+                    print(try generateRUMObjcInteropModels(from: schemaURL, skip: .init(skip)))
                 case .sessionReplay:
-                    print(try generateSRObjcInteropModels(from: schemaURL))
+                    print(try generateSRObjcInteropModels(from: schemaURL, skip: .init(skip)))
                 }
             } catch {
                 print("Failed to generate Objc models: \(error)")

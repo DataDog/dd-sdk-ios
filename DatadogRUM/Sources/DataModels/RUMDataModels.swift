@@ -1337,19 +1337,108 @@ public struct RUMLongTaskEvent: RUMDataModel {
 
     /// Long Task properties
     public struct LongTask: Codable {
-        /// Duration in ns of the long task
+        /// Duration in ns for which the animation frame was being blocked
+        public let blockingDuration: Int64?
+
+        /// Duration in ns of the long task or long animation frame
         public let duration: Int64
 
-        /// UUID of the long task
+        /// Type of the event: long task or long animation frame
+        public let entryType: EntryType?
+
+        /// Start time of of the first UI event (mouse/keyboard and so on) to be handled during the course of this frame
+        public let firstUiEventTimestamp: Double?
+
+        /// UUID of the long task or long animation frame
         public let id: String?
 
         /// Whether this long task is considered a frozen frame
         public let isFrozenFrame: Bool?
 
+        /// Start time of the rendering cycle, which includes requestAnimationFrame callbacks, style and layout calculation, resize observer and intersection observer callbacks
+        public let renderStart: Double?
+
+        /// A list of long scripts that were executed over the course of the long frame
+        public let scripts: [Scripts]?
+
+        /// Start time of the time period spent in style and layout calculations
+        public let styleAndLayoutStart: Double?
+
         enum CodingKeys: String, CodingKey {
+            case blockingDuration = "blocking_duration"
             case duration = "duration"
+            case entryType = "entry_type"
+            case firstUiEventTimestamp = "first_ui_event_timestamp"
             case id = "id"
             case isFrozenFrame = "is_frozen_frame"
+            case renderStart = "render_start"
+            case scripts = "scripts"
+            case styleAndLayoutStart = "style_and_layout_start"
+        }
+
+        /// Type of the event: long task or long animation frame
+        public enum EntryType: String, Codable {
+            case longTask = "long-task"
+            case longAnimationFrame = "long-animation-frame"
+        }
+
+        public struct Scripts: Codable {
+            /// Duration in ns between startTime and when the subsequent microtask queue has finished processing
+            public let duration: Int64?
+
+            /// Time after compilation
+            public let executionStart: Double?
+
+            /// Duration in ns of the the total time spent processing forced layout and style inside this function
+            public let forcedStyleAndLayoutDuration: Int64?
+
+            /// Information about the invoker of the script
+            public let invoker: String?
+
+            /// Type of the invoker of the script
+            public let invokerType: InvokerType?
+
+            /// Duration in ns of the total time spent in 'pausing' synchronous operations (alert, synchronous XHR)
+            public let pauseDuration: Int64?
+
+            /// The script character position where available (or -1 if not found)
+            public let sourceCharPosition: Int64?
+
+            /// The script function name where available (or empty if not found)
+            public let sourceFunctionName: String?
+
+            /// The script resource name where available (or empty if not found)
+            public let sourceUrl: String?
+
+            /// Time the entry function was invoked
+            public let startTime: Double?
+
+            /// The container (the top-level document, or an <iframe>) the long animation frame occurred in
+            public let windowAttribution: String?
+
+            enum CodingKeys: String, CodingKey {
+                case duration = "duration"
+                case executionStart = "execution_start"
+                case forcedStyleAndLayoutDuration = "forced_style_and_layout_duration"
+                case invoker = "invoker"
+                case invokerType = "invoker_type"
+                case pauseDuration = "pause_duration"
+                case sourceCharPosition = "source_char_position"
+                case sourceFunctionName = "source_function_name"
+                case sourceUrl = "source_url"
+                case startTime = "start_time"
+                case windowAttribution = "window_attribution"
+            }
+
+            /// Type of the invoker of the script
+            public enum InvokerType: String, Codable {
+                case userCallback = "user-callback"
+                case eventListener = "event-listener"
+                case resolvePromise = "resolve-promise"
+                case rejectPromise = "reject-promise"
+                case classicScript = "classic-script"
+                case moduleScript = "module-script"
+            }
         }
     }
 
@@ -3558,6 +3647,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The reports from the Reporting API tracked
             public let forwardReports: ForwardReports?
 
+            /// Session replay image privacy level
+            public var imagePrivacyLevel: String?
+
             /// The type of initialization the SDK used, in case multiple are supported
             public var initializationType: String?
 
@@ -3611,6 +3703,12 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// The percentage of telemetry usage events sent after being sampled by telemetry_sample_rate
             public let telemetryUsageSampleRate: Int64?
+
+            /// Session replay text and input privacy level
+            public var textAndInputPrivacyLevel: String?
+
+            /// Session replay touch privacy level
+            public var touchPrivacyLevel: String?
 
             /// The opt-in configuration to add trace context
             public var traceContextInjection: TraceContextInjection?
@@ -3733,6 +3831,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case forwardConsoleLogs = "forward_console_logs"
                 case forwardErrorsToLogs = "forward_errors_to_logs"
                 case forwardReports = "forward_reports"
+                case imagePrivacyLevel = "image_privacy_level"
                 case initializationType = "initialization_type"
                 case mobileVitalsUpdatePeriod = "mobile_vitals_update_period"
                 case plugins = "plugins"
@@ -3751,6 +3850,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case telemetryConfigurationSampleRate = "telemetry_configuration_sample_rate"
                 case telemetrySampleRate = "telemetry_sample_rate"
                 case telemetryUsageSampleRate = "telemetry_usage_sample_rate"
+                case textAndInputPrivacyLevel = "text_and_input_privacy_level"
+                case touchPrivacyLevel = "touch_privacy_level"
                 case traceContextInjection = "trace_context_injection"
                 case traceSampleRate = "trace_sample_rate"
                 case tracerApi = "tracer_api"
@@ -3991,6 +4092,445 @@ extension TelemetryConfigurationEvent.Telemetry.Configuration.Plugins {
         }
 
         self.pluginsInfo = dictionary
+    }
+}
+
+/// Schema of all properties of a telemetry usage event
+public struct TelemetryUsageEvent: RUMDataModel {
+    /// Internal properties
+    public let dd: DD
+
+    /// Action properties
+    public let action: Action?
+
+    /// Application properties
+    public let application: Application?
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// Enabled experimental features
+    public let experimentalFeatures: [String]?
+
+    /// The SDK generating the telemetry event
+    public let service: String
+
+    /// Session properties
+    public let session: Session?
+
+    /// The source of this event
+    public let source: Source
+
+    /// The telemetry usage information
+    public internal(set) var telemetry: Telemetry
+
+    /// Telemetry event type. Should specify telemetry only.
+    public let type: String = "telemetry"
+
+    /// The version of the SDK generating the telemetry event
+    public let version: String
+
+    /// View properties
+    public let view: View?
+
+    enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case action = "action"
+        case application = "application"
+        case date = "date"
+        case experimentalFeatures = "experimental_features"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case telemetry = "telemetry"
+        case type = "type"
+        case version = "version"
+        case view = "view"
+    }
+
+    /// Internal properties
+    public struct DD: Codable {
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        enum CodingKeys: String, CodingKey {
+            case formatVersion = "format_version"
+        }
+    }
+
+    /// Action properties
+    public struct Action: Codable {
+        /// UUID of the action
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// Application properties
+    public struct Application: Codable {
+        /// UUID of the application
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable {
+        /// UUID of the session
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
+    }
+
+    /// The telemetry usage information
+    public struct Telemetry: Codable {
+        /// Device properties
+        public let device: RUMTelemetryDevice?
+
+        /// OS properties
+        public let os: RUMTelemetryOperatingSystem?
+
+        /// Telemetry type
+        public let type: String = "usage"
+
+        public let usage: Usage
+
+        public internal(set) var telemetryInfo: [String: Encodable]
+
+        enum StaticCodingKeys: String, CodingKey {
+            case device = "device"
+            case os = "os"
+            case type = "type"
+            case usage = "usage"
+        }
+
+        public enum Usage: Codable {
+            case telemetryCommonFeaturesUsage(value: TelemetryCommonFeaturesUsage)
+            case telemetryMobileFeaturesUsage(value: TelemetryMobileFeaturesUsage)
+
+            // MARK: - Codable
+
+            public func encode(to encoder: Encoder) throws {
+                // Encode only the associated value, without encoding enum case
+                var container = encoder.singleValueContainer()
+
+                switch self {
+                case .telemetryCommonFeaturesUsage(let value):
+                    try container.encode(value)
+                case .telemetryMobileFeaturesUsage(let value):
+                    try container.encode(value)
+                }
+            }
+
+            public init(from decoder: Decoder) throws {
+                // Decode enum case from associated value
+                let container = try decoder.singleValueContainer()
+
+                if let value = try? container.decode(TelemetryCommonFeaturesUsage.self) {
+                    self = .telemetryCommonFeaturesUsage(value: value)
+                    return
+                }
+                if let value = try? container.decode(TelemetryMobileFeaturesUsage.self) {
+                    self = .telemetryMobileFeaturesUsage(value: value)
+                    return
+                }
+                let error = DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription: """
+                    Failed to decode `Usage`.
+                    Ran out of possibilities when trying to decode the value of associated type.
+                    """
+                )
+                throw DecodingError.typeMismatch(Usage.self, error)
+            }
+
+            /// Schema of features usage common across SDKs
+            public enum TelemetryCommonFeaturesUsage: Codable {
+                case setTrackingConsent(value: SetTrackingConsent)
+                case stopSession(value: StopSession)
+                case startView(value: StartView)
+                case addAction(value: AddAction)
+                case addError(value: AddError)
+                case setGlobalContext(value: SetGlobalContext)
+                case setUser(value: SetUser)
+                case addFeatureFlagEvaluation(value: AddFeatureFlagEvaluation)
+
+                // MARK: - Codable
+
+                public func encode(to encoder: Encoder) throws {
+                    // Encode only the associated value, without encoding enum case
+                    var container = encoder.singleValueContainer()
+
+                    switch self {
+                    case .setTrackingConsent(let value):
+                        try container.encode(value)
+                    case .stopSession(let value):
+                        try container.encode(value)
+                    case .startView(let value):
+                        try container.encode(value)
+                    case .addAction(let value):
+                        try container.encode(value)
+                    case .addError(let value):
+                        try container.encode(value)
+                    case .setGlobalContext(let value):
+                        try container.encode(value)
+                    case .setUser(let value):
+                        try container.encode(value)
+                    case .addFeatureFlagEvaluation(let value):
+                        try container.encode(value)
+                    }
+                }
+
+                public init(from decoder: Decoder) throws {
+                    // Decode enum case from associated value
+                    let container = try decoder.singleValueContainer()
+
+                    if let value = try? container.decode(SetTrackingConsent.self) {
+                        self = .setTrackingConsent(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(StopSession.self) {
+                        self = .stopSession(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(StartView.self) {
+                        self = .startView(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(AddAction.self) {
+                        self = .addAction(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(AddError.self) {
+                        self = .addError(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(SetGlobalContext.self) {
+                        self = .setGlobalContext(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(SetUser.self) {
+                        self = .setUser(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(AddFeatureFlagEvaluation.self) {
+                        self = .addFeatureFlagEvaluation(value: value)
+                        return
+                    }
+                    let error = DecodingError.Context(
+                        codingPath: container.codingPath,
+                        debugDescription: """
+                        Failed to decode `TelemetryCommonFeaturesUsage`.
+                        Ran out of possibilities when trying to decode the value of associated type.
+                        """
+                    )
+                    throw DecodingError.typeMismatch(TelemetryCommonFeaturesUsage.self, error)
+                }
+
+                public struct SetTrackingConsent: Codable {
+                    /// setTrackingConsent API
+                    public let feature: String = "set-tracking-consent"
+
+                    /// The tracking consent value set by the user
+                    public let trackingConsent: TrackingConsent
+
+                    enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                        case trackingConsent = "tracking_consent"
+                    }
+
+                    /// The tracking consent value set by the user
+                    public enum TrackingConsent: String, Codable {
+                        case granted = "granted"
+                        case notGranted = "not-granted"
+                        case pending = "pending"
+                    }
+                }
+
+                public struct StopSession: Codable {
+                    /// stopSession API
+                    public let feature: String = "stop-session"
+
+                    enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+                }
+
+                public struct StartView: Codable {
+                    /// startView API
+                    public let feature: String = "start-view"
+
+                    enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+                }
+
+                public struct AddAction: Codable {
+                    /// addAction API
+                    public let feature: String = "add-action"
+
+                    enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+                }
+
+                public struct AddError: Codable {
+                    /// addError API
+                    public let feature: String = "add-error"
+
+                    enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+                }
+
+                public struct SetGlobalContext: Codable {
+                    /// setGlobalContext, setGlobalContextProperty, addAttribute APIs
+                    public let feature: String = "set-global-context"
+
+                    enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+                }
+
+                public struct SetUser: Codable {
+                    /// setUser, setUserProperty, setUserInfo APIs
+                    public let feature: String = "set-user"
+
+                    enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+                }
+
+                public struct AddFeatureFlagEvaluation: Codable {
+                    /// addFeatureFlagEvaluation API
+                    public let feature: String = "add-feature-flag-evaluation"
+
+                    enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+                }
+            }
+
+            /// Schema of mobile specific features usage
+            public enum TelemetryMobileFeaturesUsage: Codable {
+                case addViewLoadingTime(value: AddViewLoadingTime)
+
+                // MARK: - Codable
+
+                public func encode(to encoder: Encoder) throws {
+                    // Encode only the associated value, without encoding enum case
+                    var container = encoder.singleValueContainer()
+
+                    switch self {
+                    case .addViewLoadingTime(let value):
+                        try container.encode(value)
+                    }
+                }
+
+                public init(from decoder: Decoder) throws {
+                    // Decode enum case from associated value
+                    let container = try decoder.singleValueContainer()
+
+                    if let value = try? container.decode(AddViewLoadingTime.self) {
+                        self = .addViewLoadingTime(value: value)
+                        return
+                    }
+                    let error = DecodingError.Context(
+                        codingPath: container.codingPath,
+                        debugDescription: """
+                        Failed to decode `TelemetryMobileFeaturesUsage`.
+                        Ran out of possibilities when trying to decode the value of associated type.
+                        """
+                    )
+                    throw DecodingError.typeMismatch(TelemetryMobileFeaturesUsage.self, error)
+                }
+
+                public struct AddViewLoadingTime: Codable {
+                    /// addViewLoadingTime API
+                    public let feature: String = "addViewLoadingTime"
+
+                    /// Whether the available view is not active
+                    public let noActiveView: Bool
+
+                    /// Whether the view is not available
+                    public let noView: Bool
+
+                    /// Whether the loading time was overwritten
+                    public let overwritten: Bool
+
+                    enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                        case noActiveView = "no_active_view"
+                        case noView = "no_view"
+                        case overwritten = "overwritten"
+                    }
+                }
+            }
+        }
+    }
+
+    /// View properties
+    public struct View: Codable {
+        /// UUID of the view
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+}
+
+extension TelemetryUsageEvent.Telemetry {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(device, forKey: .device)
+        try staticContainer.encodeIfPresent(os, forKey: .os)
+        try staticContainer.encodeIfPresent(usage, forKey: .usage)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try telemetryInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.device = try staticContainer.decodeIfPresent(RUMTelemetryDevice.self, forKey: .device)
+        self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
+        self.usage = try staticContainer.decode(Usage.self, forKey: .usage)
+
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        }
+
+        self.telemetryInfo = dictionary
     }
 }
 
@@ -4339,4 +4879,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/41d2cb901a87fa025843c85568c16d3e199fea4c
+// Generated from https://github.com/DataDog/rum-events-format/tree/ec07c062cbbb2f19b49d08f72bc95703b502906d

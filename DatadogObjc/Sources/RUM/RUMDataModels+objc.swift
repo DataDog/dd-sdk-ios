@@ -2991,8 +2991,20 @@ public class DDRUMLongTaskEventLongTask: NSObject {
         self.root = root
     }
 
+    @objc public var blockingDuration: NSNumber? {
+        root.swiftModel.longTask.blockingDuration as NSNumber?
+    }
+
     @objc public var duration: NSNumber {
         root.swiftModel.longTask.duration as NSNumber
+    }
+
+    @objc public var entryType: DDRUMLongTaskEventLongTaskEntryType {
+        .init(swift: root.swiftModel.longTask.entryType)
+    }
+
+    @objc public var firstUiEventTimestamp: NSNumber? {
+        root.swiftModel.longTask.firstUiEventTimestamp as NSNumber?
     }
 
     @objc public var id: String? {
@@ -3002,6 +3014,130 @@ public class DDRUMLongTaskEventLongTask: NSObject {
     @objc public var isFrozenFrame: NSNumber? {
         root.swiftModel.longTask.isFrozenFrame as NSNumber?
     }
+
+    @objc public var renderStart: NSNumber? {
+        root.swiftModel.longTask.renderStart as NSNumber?
+    }
+
+    @objc public var scripts: [DDRUMLongTaskEventLongTaskScripts]? {
+        root.swiftModel.longTask.scripts?.map { DDRUMLongTaskEventLongTaskScripts(swiftModel: $0) }
+    }
+
+    @objc public var styleAndLayoutStart: NSNumber? {
+        root.swiftModel.longTask.styleAndLayoutStart as NSNumber?
+    }
+}
+
+@objc
+public enum DDRUMLongTaskEventLongTaskEntryType: Int {
+    internal init(swift: RUMLongTaskEvent.LongTask.EntryType?) {
+        switch swift {
+        case nil: self = .none
+        case .longTask?: self = .longTask
+        case .longAnimationFrame?: self = .longAnimationFrame
+        }
+    }
+
+    internal var toSwift: RUMLongTaskEvent.LongTask.EntryType? {
+        switch self {
+        case .none: return nil
+        case .longTask: return .longTask
+        case .longAnimationFrame: return .longAnimationFrame
+        }
+    }
+
+    case none
+    case longTask
+    case longAnimationFrame
+}
+
+@objc
+public class DDRUMLongTaskEventLongTaskScripts: NSObject {
+    internal var swiftModel: RUMLongTaskEvent.LongTask.Scripts
+    internal var root: DDRUMLongTaskEventLongTaskScripts { self }
+
+    internal init(swiftModel: RUMLongTaskEvent.LongTask.Scripts) {
+        self.swiftModel = swiftModel
+    }
+
+    @objc public var duration: NSNumber? {
+        root.swiftModel.duration as NSNumber?
+    }
+
+    @objc public var executionStart: NSNumber? {
+        root.swiftModel.executionStart as NSNumber?
+    }
+
+    @objc public var forcedStyleAndLayoutDuration: NSNumber? {
+        root.swiftModel.forcedStyleAndLayoutDuration as NSNumber?
+    }
+
+    @objc public var invoker: String? {
+        root.swiftModel.invoker
+    }
+
+    @objc public var invokerType: DDRUMLongTaskEventLongTaskScriptsInvokerType {
+        .init(swift: root.swiftModel.invokerType)
+    }
+
+    @objc public var pauseDuration: NSNumber? {
+        root.swiftModel.pauseDuration as NSNumber?
+    }
+
+    @objc public var sourceCharPosition: NSNumber? {
+        root.swiftModel.sourceCharPosition as NSNumber?
+    }
+
+    @objc public var sourceFunctionName: String? {
+        root.swiftModel.sourceFunctionName
+    }
+
+    @objc public var sourceUrl: String? {
+        root.swiftModel.sourceUrl
+    }
+
+    @objc public var startTime: NSNumber? {
+        root.swiftModel.startTime as NSNumber?
+    }
+
+    @objc public var windowAttribution: String? {
+        root.swiftModel.windowAttribution
+    }
+}
+
+@objc
+public enum DDRUMLongTaskEventLongTaskScriptsInvokerType: Int {
+    internal init(swift: RUMLongTaskEvent.LongTask.Scripts.InvokerType?) {
+        switch swift {
+        case nil: self = .none
+        case .userCallback?: self = .userCallback
+        case .eventListener?: self = .eventListener
+        case .resolvePromise?: self = .resolvePromise
+        case .rejectPromise?: self = .rejectPromise
+        case .classicScript?: self = .classicScript
+        case .moduleScript?: self = .moduleScript
+        }
+    }
+
+    internal var toSwift: RUMLongTaskEvent.LongTask.Scripts.InvokerType? {
+        switch self {
+        case .none: return nil
+        case .userCallback: return .userCallback
+        case .eventListener: return .eventListener
+        case .resolvePromise: return .resolvePromise
+        case .rejectPromise: return .rejectPromise
+        case .classicScript: return .classicScript
+        case .moduleScript: return .moduleScript
+        }
+    }
+
+    case none
+    case userCallback
+    case eventListener
+    case resolvePromise
+    case rejectPromise
+    case classicScript
+    case moduleScript
 }
 
 @objc
@@ -7245,6 +7381,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.forwardReports != nil ? DDTelemetryConfigurationEventTelemetryConfigurationForwardReports(root: root) : nil
     }
 
+    @objc public var imagePrivacyLevel: String? {
+        set { root.swiftModel.telemetry.configuration.imagePrivacyLevel = newValue }
+        get { root.swiftModel.telemetry.configuration.imagePrivacyLevel }
+    }
+
     @objc public var initializationType: String? {
         set { root.swiftModel.telemetry.configuration.initializationType = newValue }
         get { root.swiftModel.telemetry.configuration.initializationType }
@@ -7323,6 +7464,16 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     @objc public var telemetryUsageSampleRate: NSNumber? {
         root.swiftModel.telemetry.configuration.telemetryUsageSampleRate as NSNumber?
+    }
+
+    @objc public var textAndInputPrivacyLevel: String? {
+        set { root.swiftModel.telemetry.configuration.textAndInputPrivacyLevel = newValue }
+        get { root.swiftModel.telemetry.configuration.textAndInputPrivacyLevel }
+    }
+
+    @objc public var touchPrivacyLevel: String? {
+        set { root.swiftModel.telemetry.configuration.touchPrivacyLevel = newValue }
+        get { root.swiftModel.telemetry.configuration.touchPrivacyLevel }
     }
 
     @objc public var traceContextInjection: DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjection {
@@ -7715,4 +7866,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/41d2cb901a87fa025843c85568c16d3e199fea4c
+// Generated from https://github.com/DataDog/rum-events-format/tree/ec07c062cbbb2f19b49d08f72bc95703b502906d
