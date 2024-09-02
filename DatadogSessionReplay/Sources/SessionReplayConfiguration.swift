@@ -39,6 +39,11 @@ extension SessionReplay {
             }
         }
 
+        /// Indicates if the configuration was set with the new API.
+        ///
+        /// Set to `false` when initiated with deprecated API, and to `true` when initiated with new API.
+        private(set) var isConfiguredWithNewApi: Bool
+
         /// Defines the way text and input (e.g. textfields, checkboxes) should be masked.
         ///
         /// Default: `.maskAll`.
@@ -93,6 +98,7 @@ extension SessionReplay {
             self.touchPrivacyLevel = touchPrivacyLevel
             self.startRecordingImmediately = startRecordingImmediately
             self.customEndpoint = customEndpoint
+            self.isConfiguredWithNewApi = true
         }
 
         /// Creates Session Replay configuration.
@@ -116,6 +122,7 @@ extension SessionReplay {
             self.touchPrivacyLevel = newPrivacyLevels.touchPrivacy
             self.startRecordingImmediately = startRecordingImmediately
             self.customEndpoint = customEndpoint
+            self.isConfiguredWithNewApi = false
         }
 
         @_spi(Internal)
