@@ -119,9 +119,9 @@ class SessionReplayTests: XCTestCase {
         let configuration = try XCTUnwrap(messageReceiver.messages.firstTelemetry?.asConfiguration)
         XCTAssertEqual(configuration.sessionReplaySampleRate, sampleRate)
         XCTAssertEqual(configuration.defaultPrivacyLevel, privacyLevel.rawValue)
-        XCTAssertEqual(configuration.textAndInputPrivacyLevel, newPrivacyLevels.textAndInputPrivacy.rawValue)
-        XCTAssertEqual(configuration.imagePrivacyLevel, newPrivacyLevels.imagePrivacy.rawValue)
-        XCTAssertEqual(configuration.touchPrivacyLevel, newPrivacyLevels.touchPrivacy.rawValue)
+        XCTAssertNil(configuration.textAndInputPrivacyLevel)
+        XCTAssertNil(configuration.imagePrivacyLevel)
+        XCTAssertNil(configuration.touchPrivacyLevel)
         XCTAssertEqual(configuration.startRecordingImmediately, startRecordingImmediately)
     }
 
@@ -150,6 +150,7 @@ class SessionReplayTests: XCTestCase {
         // Then
         let configuration = try XCTUnwrap(messageReceiver.messages.firstTelemetry?.asConfiguration)
         XCTAssertEqual(configuration.sessionReplaySampleRate, sampleRate)
+        XCTAssertNil(configuration.defaultPrivacyLevel)
         XCTAssertEqual(configuration.textAndInputPrivacyLevel, textAndInputLevel.rawValue)
         XCTAssertEqual(configuration.imagePrivacyLevel, imageLevel.rawValue)
         XCTAssertEqual(configuration.touchPrivacyLevel, touchLevel.rawValue)
