@@ -186,7 +186,7 @@ class RemoteLoggerTests: XCTestCase {
 
     // MARK: - Attributes
 
-    func testWhenAddingAndRemovingLoggerAttributes_itSendsLogsWithCurrentLoggerAttributes() throws {
+    func testWhenAddingAndRemovingLoggerAttributes_itSendsLogsWithCurrentAttributes() throws {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -199,16 +199,16 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // When
-        logger.info("INFO message 1")
+        logger.info("INFO message")
 
         logger.addAttribute(forKey: "attribute-1", value: "value A")
-        logger.info("INFO message 2")
+        logger.info("INFO message")
         
         logger.addAttribute(forKey: "attribute-2", value: "value B")
-        logger.info("INFO message 3")
+        logger.info("INFO message")
         
         logger.removeAttribute(forKey: "attribute-1")
-        logger.info("INFO message 4")
+        logger.info("INFO message")
 
         // Then
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
@@ -384,6 +384,45 @@ class RemoteLoggerTests: XCTestCase {
             XCTAssertEqual(logBacktrace.loadAddress, errorBacktrace.loadAddress)
             XCTAssertEqual(logBacktrace.maxAddress, errorBacktrace.maxAddress)
         }
+    }
+
+    // MARK: - Tags
+
+    func testWhenAddingAndRemovingLoggerTags_itSendsLogsWithCurrentTags() throws {
+        // Given
+        let logger = RemoteLogger(
+            featureScope: featureScope,
+            globalAttributes: .mockAny(),
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
+        )
+
+        // When
+        logger.info("INFO message")
+
+        logger.add(tag: "tag1")
+        logger.info("INFO message")
+
+        logger.addTag(withKey: "tag2", value: "value")
+        logger.info("INFO message")
+
+        logger.remove(tag: "tag1")
+        logger.info("INFO message")
+
+        logger.removeTag(withKey: "tag2")
+        logger.info("INFO message")
+
+        // Then
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
+        XCTAssertEqual(logs.count, 5)
+        XCTAssertNil(logs[0].tags)
+        XCTAssertEqual(logs[1].tags, ["tag1"])
+        XCTAssertEqual(Set(logs[2].tags ?? []), Set(["tag2:value", "tag1"]))
+        XCTAssertEqual(logs[3].tags, ["tag2:value"])
+        XCTAssertNil(logs[4].tags)
     }
 
     // MARK: - RUM Integration

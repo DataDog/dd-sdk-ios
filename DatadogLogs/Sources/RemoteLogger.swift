@@ -9,7 +9,7 @@ import DatadogInternal
 
 /// `Logger` sending logs to Datadog.
 internal final class RemoteLogger: LoggerProtocol, Sendable {
-    struct Configuration {
+    struct Configuration: @unchecked Sendable {
         /// The `service` value for logs.
         /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
         let service: String?
@@ -28,7 +28,7 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
     /// Logs feature scope.
     let featureScope: FeatureScope
     /// Configuration specific to this logger.
-    internal let configuration: Configuration
+    let configuration: Configuration
     /// Date provider for logs.
     private let dateProvider: DateProvider
     /// Integration with RUM. It is used to correlate Logs with RUM events by injecting RUM context to `LogEvent`.
@@ -42,8 +42,7 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
     /// Logger-specific attributes.
     private let loggerAttributes: SynchronizedAttributes
     /// Logger-specific tags.
-    @ReadWriteLock
-    private var tags: Set<String> = []
+    private let loggerTags: SynchronizedTags
     /// Backtrace reporter for attaching binary images to cross-platform errors.
     private let backtraceReporter: BacktraceReporting?
 
@@ -59,6 +58,7 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
         self.featureScope = featureScope
         self.globalAttributes = globalAttributes
         self.loggerAttributes = SynchronizedAttributes(attributes: [:])
+        self.loggerTags = SynchronizedTags(tags: [])
         self.configuration = configuration
         self.dateProvider = dateProvider
         self.rumContextIntegration = rumContextIntegration
@@ -79,19 +79,19 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
     // MARK: - Tags
 
     func addTag(withKey key: String, value: String) {
-        _tags.mutate { $0.insert("\(key):\(value)") }
+        loggerTags.addTag("\(key):\(value)")
     }
 
     func removeTag(withKey key: String) {
-        _tags.mutate { $0 = $0.filter { !$0.hasPrefix("\(key):") } }
+        loggerTags.removeTags(where: { $0.hasPrefix("\(key):") })
     }
 
     func add(tag: String) {
-        _tags.mutate { $0.insert(tag) }
+        loggerTags.addTag(tag)
     }
 
     func remove(tag: String) {
-        _tags.mutate { $0.remove(tag) }
+        loggerTags.removeTag(tag)
     }
 
     // MARK: - Logging
@@ -113,7 +113,7 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
         let threadName = Thread.current.dd.name
 
         // capture current tags and attributes before opening the write event context
-        let tags = self.tags
+        let tags = loggerTags.getTags()
         let globalAttributes = globalAttributes.getAttributes()
         let loggerAttributes = loggerAttributes.getAttributes()
         var logAttributes = attributes
