@@ -18,7 +18,7 @@ internal final class SynchronizedAttributes: Sendable {
     /// Initializes a new instance of `SynchronizedAttributes` with the provided dictionary.
     ///
     /// - Parameter attributes: A dictionary of initial attributes.
-    init(attributes: [String : Encodable]) {
+    init(attributes: [String: Encodable]) {
         self.attributes = .init(wrappedValue: attributes)
     }
 
@@ -45,4 +45,3 @@ internal final class SynchronizedAttributes: Sendable {
         return attributes.wrappedValue
     }
 }
-

@@ -68,10 +68,10 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
 
     // MARK: - Attributes
 
-    func addAttribute(forKey key: AttributeKey, value: AttributeValue) { 
+    func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
         loggerAttributes.addAttribute(key: key, value: value)
     }
-    
+
     func removeAttribute(forKey key: AttributeKey) {
         loggerAttributes.removeAttribute(forKey: key)
     }
@@ -130,7 +130,9 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
         featureScope.eventWriteContext { [weak self] context, writer in
-            guard let self else { return }
+            guard let self else {
+                return
+            }
 
             var internalAttributes: [String: Encodable] = [:]
 

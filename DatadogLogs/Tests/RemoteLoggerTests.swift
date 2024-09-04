@@ -203,10 +203,10 @@ class RemoteLoggerTests: XCTestCase {
 
         logger.addAttribute(forKey: "attribute-1", value: "value A")
         logger.info("INFO message")
-        
+
         logger.addAttribute(forKey: "attribute-2", value: "value B")
         logger.info("INFO message")
-        
+
         logger.removeAttribute(forKey: "attribute-1")
         logger.info("INFO message")
 
@@ -447,7 +447,7 @@ class RemoteLoggerTests: XCTestCase {
         // When
         featureScope.contextMock = .mockWith(
             baggages: [
-                "rum" : .init([
+                "rum": .init([
                     "application.id": applicationID,
                     "session.id": sessionID,
                     "view.id": viewID,
@@ -511,7 +511,7 @@ class RemoteLoggerTests: XCTestCase {
         // When
         featureScope.contextMock = .mockWith(
             baggages: [
-                "rum" : .init("malformed RUM context")
+                "rum": .init("malformed RUM context")
             ]
         )
         logger.info("message")
@@ -550,7 +550,7 @@ class RemoteLoggerTests: XCTestCase {
         // When
         featureScope.contextMock = .mockWith(
             baggages: [
-                "span_context" : .init([
+                "span_context": .init([
                     "dd.trace_id": traceID.toString(representation: .hexadecimal),
                     "dd.span_id": spanID.toString(representation: .decimal)
                 ])
@@ -607,7 +607,7 @@ class RemoteLoggerTests: XCTestCase {
         // When
         featureScope.contextMock = .mockWith(
             baggages: [
-                "span_context" : .init("malformed Span context")
+                "span_context": .init("malformed Span context")
             ]
         )
         logger.info("message")
