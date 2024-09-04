@@ -332,3 +332,9 @@ extension LogEvent.Attributes: Equatable {
             && String(describing: lhsInternalAttributesSorted) == String(describing: rhsInternalAttributesSorted)
     }
 }
+
+extension GlobalAttributes: AnyMockable {
+    public static func mockAny() -> GlobalAttributes {
+        return GlobalAttributes(attributes: [:])
+    }
+}

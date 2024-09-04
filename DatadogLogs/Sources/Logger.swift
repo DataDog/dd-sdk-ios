@@ -155,7 +155,7 @@ public struct Logger {
 
             return RemoteLogger(
                 featureScope: core.scope(for: LogsFeature.self),
-                core: core,
+                globalAttributes: feature.attributes,
                 configuration: RemoteLogger.Configuration(
                     service: configuration.service,
                     name: configuration.name,
@@ -166,7 +166,8 @@ public struct Logger {
                 ),
                 dateProvider: feature.dateProvider,
                 rumContextIntegration: configuration.bundleWithRumEnabled,
-                activeSpanIntegration: configuration.bundleWithTraceEnabled
+                activeSpanIntegration: configuration.bundleWithTraceEnabled,
+                backtraceReporter: feature.backtraceReporter
             )
         }()
 

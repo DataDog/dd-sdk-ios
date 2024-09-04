@@ -33,11 +33,12 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: NOPDatadogCore(),
+            globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
         )
 
         // When
@@ -51,11 +52,12 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: NOPDatadogCore(),
+            globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
         )
 
         // When
@@ -71,11 +73,12 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: NOPDatadogCore(),
+            globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
         )
 
         // When
@@ -87,17 +90,14 @@ class RemoteLoggerTests: XCTestCase {
 
     func testWhenAttributesContainIncludeBinaryImages_itPostsBinaryImagesToMessageBus() throws {
         let stubBacktrace: BacktraceReport = .mockRandom()
-        let logsFeature = LogsFeature.mockWith(
-            backtraceReporter: BacktraceReporterMock(backtrace: stubBacktrace)
-        )
-        let core = SingleFeatureCoreMock(feature: logsFeature)
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: core,
+            globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock(backtrace: stubBacktrace)
         )
 
         // When
@@ -125,11 +125,12 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: NOPDatadogCore(),
+            globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
         )
 
         // When
@@ -154,11 +155,12 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: NOPDatadogCore(),
+            globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
         )
 
         // When
@@ -184,24 +186,22 @@ class RemoteLoggerTests: XCTestCase {
 
     // MARK: - Attributes
 
-    func testWhenFeatureHasAttributes_itSendsAttributesOnLog() throws {
+    func testGivenGlobalAttributeAvailable_whenSendingLog_itSendsLogWithGlobalAttribute() throws {
+        let attributeKey = String.mockRandom()
+        let attributeValue = String.mockRandom()
+
         // Given
-        let logsFeature = LogsFeature.mockAny()
-        let core = SingleFeatureCoreMock(feature: logsFeature)
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: core,
+            globalAttributes: GlobalAttributes(attributes: [attributeKey: attributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
         )
 
         // When
-        let attributeKey = String.mockRandom()
-        let attributeValue = String.mockRandom()
-        logsFeature.addAttribute(forKey: attributeKey, value: attributeValue)
-
         logger.info("Information message")
 
         // Then
@@ -212,26 +212,24 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(log.attributes.userAttributes[attributeKey] as? String, attributeValue)
     }
 
-    func testWhenFeatureHasAttributes_andLoggerHasAttributes_itSendsLoggerAttributesOnLog() throws {
+    func testGivenGlobalAndLoggerAttributeAvailable_whenSendingLog_itSendsLogWithLoggerAttribute() throws {
+        let attributeKey = String.mockRandom()
+        let globalAttributeValue = String.mockRandom()
+        let loggerAttributeValue = String.mockRandom()
+
         // Given
-        let logsFeature = LogsFeature.mockAny()
-        let core = SingleFeatureCoreMock(feature: logsFeature)
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: core,
+            globalAttributes: GlobalAttributes(attributes: [attributeKey: globalAttributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
         )
-
-        // When
-        let attributeKey = String.mockRandom()
-        let featureAttributeValue = String.mockRandom()
-        let loggerAttributeValue = String.mockRandom()
-        logsFeature.addAttribute(forKey: attributeKey, value: featureAttributeValue)
         logger.addAttribute(forKey: attributeKey, value: loggerAttributeValue)
 
+        // When
         logger.info("Information message")
 
         // Then
@@ -242,52 +240,49 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(log.attributes.userAttributes[attributeKey] as? String, loggerAttributeValue)
     }
 
-    func testWhenFeatureHasAttributes_andLogCallHasAttributes_itSendsLogCallAttributesOnLog() throws {
+    func testGivenGlobalAndLoggerAndLogAttributeAvailable_whenSendingLog_itSendsLogWithLogAttribute() throws {
+        let attributeKey = String.mockRandom()
+        let globalAttributeValue = String.mockRandom()
+        let loggerAttributeValue = String.mockRandom()
+        let logAttributeValue = String.mockRandom()
+
         // Given
-        let logsFeature = LogsFeature.mockAny()
-        let core = SingleFeatureCoreMock(feature: logsFeature)
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: core,
+            globalAttributes: GlobalAttributes(attributes: [attributeKey: globalAttributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
         )
+        logger.addAttribute(forKey: attributeKey, value: loggerAttributeValue)
 
         // When
-        let attributeKey = String.mockRandom()
-        let featureAttributeValue = String.mockRandom()
-        logsFeature.addAttribute(forKey: attributeKey, value: featureAttributeValue)
-
-        let logCallValue = String.mockRandom()
-        logger.info("Information message", attributes: [attributeKey: logCallValue])
+        logger.info("Information message", attributes: [attributeKey: logAttributeValue])
 
         // Then
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
-        XCTAssertEqual(log.attributes.userAttributes[attributeKey] as? String, logCallValue)
+        XCTAssertEqual(log.attributes.userAttributes[attributeKey] as? String, logAttributeValue)
     }
 
     func testItSendsGlobalAttributesErrorAlongWithErrorLog() throws {
+        let attributeKey = String.mockRandom()
+        let attributeValue = String.mockRandom()
+
         // Given
-        let logsFeature = LogsFeature.mockAny()
-        let core = SingleFeatureCoreMock(feature: logsFeature)
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: core,
+            globalAttributes: GlobalAttributes(attributes: [attributeKey: attributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
         )
-
-        // When
-        let attributeKey = String.mockRandom()
-        let attributeValue = String.mockRandom()
-        logsFeature.addAttribute(forKey: attributeKey, value: attributeValue)
 
         // When
         logger.error("Error message")
@@ -300,15 +295,14 @@ class RemoteLoggerTests: XCTestCase {
 
     func testWhenAttributesContainErrorFingerprint_itAddsItToTheLogEvent() throws {
         // Given
-        let logsFeature = LogsFeature.mockAny()
-        let core = SingleFeatureCoreMock(feature: logsFeature)
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: core,
+            globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
         )
 
         // When
@@ -326,17 +320,14 @@ class RemoteLoggerTests: XCTestCase {
 
     func testWhenAttributesContainIncludeBinaryImages_itAddsBinaryImagesToLogEvent() throws {
         let stubBacktrace: BacktraceReport = .mockRandom()
-        let logsFeature = LogsFeature.mockWith(
-            backtraceReporter: BacktraceReporterMock(backtrace: stubBacktrace)
-        )
-        let core = SingleFeatureCoreMock(feature: logsFeature)
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: core,
+            globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock(backtrace: stubBacktrace)
         )
 
         // When
@@ -368,11 +359,12 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: NOPDatadogCore(),
+            globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: true,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
         )
 
         let applicationID: String = .mockRandom()
@@ -409,11 +401,12 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: NOPDatadogCore(),
+            globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: true,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
         )
 
         // When
@@ -435,11 +428,12 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: NOPDatadogCore(),
+            globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: true,
-            activeSpanIntegration: false
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
         )
 
         // When
@@ -470,11 +464,12 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: NOPDatadogCore(),
+            globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: true
+            activeSpanIntegration: true,
+            backtraceReporter: BacktraceReporterMock()
         )
 
         let traceID: TraceID = .mock(.mockRandom(), .mockRandom())
@@ -504,11 +499,12 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: NOPDatadogCore(),
+            globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: true
+            activeSpanIntegration: true,
+            backtraceReporter: BacktraceReporterMock()
         )
 
         // When
@@ -528,11 +524,12 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            core: NOPDatadogCore(),
+            globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
-            activeSpanIntegration: true
+            activeSpanIntegration: true,
+            backtraceReporter: BacktraceReporterMock()
         )
 
         // When

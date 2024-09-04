@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// `Logger` sending logs to Datadog.
-internal final class RemoteLogger: LoggerProtocol {
+internal final class RemoteLogger: LoggerProtocol, @unchecked Sendable {
     struct Configuration {
         /// The `service` value for logs.
         /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
@@ -27,8 +27,6 @@ internal final class RemoteLogger: LoggerProtocol {
 
     /// Logs feature scope.
     let featureScope: FeatureScope
-    /// `DatadogCore` instance managing this logger.
-    private weak var core: DatadogCoreProtocol?
     /// Configuration specific to this logger.
     internal let configuration: Configuration
     /// Date provider for logs.
@@ -39,27 +37,33 @@ internal final class RemoteLogger: LoggerProtocol {
     /// Integration with Tracing. It is used to correlate Logs with Spans by injecting `Span` context to `LogEvent`.
     /// Can be `false` if the integration is disabled for this logger.
     internal let activeSpanIntegration: Bool
+    /// Global attributes shared with all logger instances.
+    let globalAttributes: GlobalAttributes
     /// Logger-specific attributes.
     @ReadWriteLock
     private var attributes: [String: Encodable] = [:]
     /// Logger-specific tags.
     @ReadWriteLock
     private var tags: Set<String> = []
+    /// Backtrace reporter for attaching binary images to cross-platform errors.
+    private let backtraceReporter: BacktraceReporting?
 
     init(
         featureScope: FeatureScope,
-        core: DatadogCoreProtocol,
+        globalAttributes: GlobalAttributes,
         configuration: Configuration,
         dateProvider: DateProvider,
         rumContextIntegration: Bool,
-        activeSpanIntegration: Bool
+        activeSpanIntegration: Bool,
+        backtraceReporter: BacktraceReporting?
     ) {
         self.featureScope = featureScope
-        self.core = core
+        self.globalAttributes = globalAttributes
         self.configuration = configuration
         self.dateProvider = dateProvider
         self.rumContextIntegration = rumContextIntegration
         self.activeSpanIntegration = activeSpanIntegration
+        self.backtraceReporter = backtraceReporter
     }
 
     // MARK: - Attributes
@@ -104,10 +108,6 @@ internal final class RemoteLogger: LoggerProtocol {
             return
         }
 
-        let logsFeature = self.core?.get(feature: LogsFeature.self)
-
-        let globalAttributes = logsFeature?.getAttributes()
-
         // on user thread:
         let date = dateProvider.now
         let threadName = Thread.current.dd.name
@@ -115,17 +115,17 @@ internal final class RemoteLogger: LoggerProtocol {
         // capture current tags and attributes before opening the write event context
         let tags = self.tags
         var logAttributes = attributes
+        let loggerAttributes = self.attributes
+        let globalAttributes = self.globalAttributes.getAttributes()
+
         let isCrash = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorLogIsCrash)?.dd.decode() ?? false
         let errorFingerprint: String? = logAttributes?.removeValue(forKey: Logs.Attributes.errorFingerprint)?.dd.decode()
         let addBinaryImages = logAttributes?.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages)?.dd.decode() ?? false
-        let userAttributes = self.attributes
-            .merging(logAttributes ?? [:]) { $1 } // prefer message attributes
-        let combinedAttributes: [String: any Encodable]
-        if let globalAttributes = globalAttributes {
-            combinedAttributes = globalAttributes.merging(userAttributes) { $1 }
-        } else {
-            combinedAttributes = userAttributes
-        }
+        let userAttributes = loggerAttributes
+            .merging(logAttributes ?? [:]) { $1 } // prefer `logAttributes``
+
+        let combinedAttributes: [String: any Encodable] = globalAttributes
+            .merging(userAttributes) { $1 } // prefer `userAttribute`
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
@@ -164,7 +164,7 @@ internal final class RemoteLogger: LoggerProtocol {
             var binaryImages: [BinaryImage]?
             if addBinaryImages {
                 // TODO: RUM-4072 Replace full backtrace reporter with simpler binary image fetcher
-                binaryImages = try? logsFeature?.backtraceReporter?.generateBacktrace()?.binaryImages
+                binaryImages = try? self.backtraceReporter?.generateBacktrace()?.binaryImages
             }
 
             let builder = LogEventBuilder(

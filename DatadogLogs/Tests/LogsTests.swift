@@ -106,7 +106,7 @@ class LogsTests: XCTestCase {
 
         // Then
         let feature = try XCTUnwrap(core.get(feature: LogsFeature.self))
-        XCTAssertEqual(feature.getAttributes()[attributeKey] as? String, attributeValue)
+        XCTAssertEqual(feature.attributes.getAttributes()[attributeKey] as? String, attributeValue)
     }
 
     func testLogsRemoveAttributeForwardedToFeature() throws {
@@ -123,7 +123,7 @@ class LogsTests: XCTestCase {
 
         // Then
         let feature = try XCTUnwrap(core.get(feature: LogsFeature.self))
-        XCTAssertNil(feature.getAttributes()[attributeKey])
+        XCTAssertNil(feature.attributes.getAttributes()[attributeKey])
     }
 
     func testItSendsGlobalLogUpdates_whenAddAttribute() throws {
