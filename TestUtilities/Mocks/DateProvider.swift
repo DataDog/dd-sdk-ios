@@ -8,23 +8,26 @@ import Foundation
 import DatadogInternal
 
 /// Simple `DateProvider` mock that returns given date.
-public class DateProviderMock: DateProvider {
+public final class DateProviderMock: DateProvider {
+    private let _now: ReadWriteLock<Date>
+
     public init(now: Date = Date()) {
-        self.now = now
+        self._now = .init(wrappedValue: now)
     }
 
-    @ReadWriteLock
-    public var now: Date
+    public var now: Date {
+        get { _now.wrappedValue }
+        set { _now.wrappedValue = newValue }
+    }
 }
 
 /// `DateProvider` mock returning consecutive dates in custom intervals, starting from given reference date.
-public class RelativeDateProvider: DateProvider {
-    private(set) var date: Date
+public final class RelativeDateProvider: DateProvider {
+    private let date: ReadWriteLock<Date>
     internal let timeInterval: TimeInterval
-    private let queue = DispatchQueue(label: "queue-RelativeDateProvider-\(UUID().uuidString)")
 
     private init(date: Date, timeInterval: TimeInterval) {
-        self.date = date
+        self.date = .init(wrappedValue: date)
         self.timeInterval = timeInterval
     }
 
@@ -38,20 +41,12 @@ public class RelativeDateProvider: DateProvider {
 
     /// Returns current date and advances next date by `timeInterval`.
     public var now: Date {
-        defer {
-            queue.async {
-                self.date.addTimeInterval(self.timeInterval)
-            }
-        }
-        return queue.sync {
-            return date
-        }
+        defer { date.mutate { $0.addTimeInterval(timeInterval) } }
+        return date.wrappedValue
     }
 
     /// Pushes time forward by given number of seconds.
     public func advance(bySeconds seconds: TimeInterval) {
-        queue.async {
-            self.date = self.date.addingTimeInterval(seconds)
-        }
+        date.mutate { $0.addTimeInterval(seconds) }
     }
 }

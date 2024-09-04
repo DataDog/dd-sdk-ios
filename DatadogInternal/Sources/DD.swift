@@ -30,7 +30,7 @@ import OSLog
 #endif
 
 /// Function printing `String` content to console.
-public var consolePrint: (String, CoreLoggerLevel) -> Void = { message, level in
+public var consolePrint: @Sendable (String, CoreLoggerLevel) -> Void = { message, level in
     #if canImport(OSLog)
     if #available(iOS 14.0, tvOS 14.0, *) {
         switch level {

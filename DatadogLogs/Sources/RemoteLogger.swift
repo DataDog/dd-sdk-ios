@@ -26,7 +26,7 @@ internal final class RemoteLogger: LoggerProtocol {
     }
 
     /// `DatadogCore` instance managing this logger.
-    internal weak var core: DatadogCoreProtocol?
+    private weak var core: DatadogCoreProtocol?
     /// Configuration specific to this logger.
     internal let configuration: Configuration
     /// Date provider for logs.
