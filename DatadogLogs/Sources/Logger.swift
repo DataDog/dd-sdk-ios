@@ -136,13 +136,13 @@ public struct Logger {
     private static func createOrThrow(with configuration: Configuration, in core: DatadogCoreProtocol) throws -> LoggerProtocol {
         if core is NOPDatadogCore {
             throw ProgrammerError(
-                description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`."
+                description: "`Datadog.initialize()` must be called prior to `Logger.create()`."
             )
         }
 
         guard let feature = core.get(feature: LogsFeature.self) else {
             throw ProgrammerError(
-                description: "`Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
+                description: "`Logger.create()` produces a non-functional logger because the `Logs` feature was not enabled."
             )
         }
 
@@ -154,6 +154,7 @@ public struct Logger {
             }
 
             return RemoteLogger(
+                featureScope: core.scope(for: LogsFeature.self),
                 core: core,
                 configuration: RemoteLogger.Configuration(
                     service: configuration.service,

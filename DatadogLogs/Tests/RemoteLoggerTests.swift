@@ -7,11 +7,14 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
-
 @testable import DatadogLogs
 
-private class ErrorMessageReceiverMock: FeatureMessageReceiver {
-    struct ErrorMessage: Decodable {
+class RemoteLoggerTests: XCTestCase {
+    private let featureScope = FeatureScopeMock()
+
+    // MARK: - Sending Error Message over Message Bus
+
+    private struct ExpectedErrorMessage: Decodable {
         /// The Log error message
         let message: String
         /// The Log error type
@@ -26,35 +29,11 @@ private class ErrorMessageReceiverMock: FeatureMessageReceiver {
         let binaryImages: [BinaryImage]?
     }
 
-    var errors: [ErrorMessage] = []
-
-    /// Adds RUM Error with given message and stack to current RUM View.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard
-            let error = try? message.baggage(forKey: "error", type: ErrorMessage.self)
-        else {
-            return false
-        }
-
-        self.errors.append(error)
-
-        return true
-    }
-}
-
-class RemoteLoggerTests: XCTestCase {
-    // MARK: - Message Bus / Message Reciever
     func testWhenNonErrorLogged_itDoesNotPostsToMessageBus() throws {
-        let messageReceiver = ErrorMessageReceiverMock()
-
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send error"),
-            messageReceiver: messageReceiver
-        )
-
         // Given
         let logger = RemoteLogger(
-            core: core,
+            featureScope: featureScope,
+            core: NOPDatadogCore(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
@@ -65,22 +44,14 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("Info message")
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        XCTAssertEqual(messageReceiver.errors.count, 0)
+        XCTAssertEqual(featureScope.messagesSent().count, 0)
     }
 
     func testWhenErrorLogged_itPostsToMessageBus() throws {
-        let messageReceiver = ErrorMessageReceiverMock()
-
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send error"),
-            messageReceiver: messageReceiver
-        )
-
         // Given
         let logger = RemoteLogger(
-            core: core,
+            featureScope: featureScope,
+            core: NOPDatadogCore(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
@@ -91,23 +62,16 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Error message")
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        XCTAssertEqual(messageReceiver.errors.count, 1)
-        XCTAssertEqual(messageReceiver.errors.first?.message, "Error message")
+        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
+        let error: ExpectedErrorMessage = try errorBaggage.decode()
+        XCTAssertEqual(error.message, "Error message")
     }
 
     func testWhenCrossPlatformCrashErrorLogged_itDoesNotPostToMessageBus() throws {
-        let messageReceiver = ErrorMessageReceiverMock()
-
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send error"),
-            messageReceiver: messageReceiver
-        )
-
         // Given
         let logger = RemoteLogger(
-            core: core,
+            featureScope: featureScope,
+            core: NOPDatadogCore(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
@@ -118,23 +82,17 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Error message", error: nil, attributes: [CrossPlatformAttributes.errorLogIsCrash: true])
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        XCTAssertEqual(messageReceiver.errors.count, 0)
+        XCTAssertEqual(featureScope.messagesSent().count, 0)
     }
 
     func testWhenAttributesContainIncludeBinaryImages_itPostsBinaryImagesToMessageBus() throws {
-        let messageReceiver = ErrorMessageReceiverMock()
         let stubBacktrace: BacktraceReport = .mockRandom()
         let logsFeature = LogsFeature.mockWith(
             backtraceReporter: BacktraceReporterMock(backtrace: stubBacktrace)
         )
-        let core = SingleFeatureCoreMock(
-            feature: logsFeature,
-            expectation: expectation(description: "Send log"),
-            messageReceiver: messageReceiver
-        )
+        let core = SingleFeatureCoreMock(feature: logsFeature)
         let logger = RemoteLogger(
+            featureScope: featureScope,
             core: core,
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -146,37 +104,28 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Information message", error: ErrorMock(), attributes: [CrossPlatformAttributes.includeBinaryImages: true])
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        XCTAssertEqual(messageReceiver.errors.count, 1)
+        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
+        let error: ExpectedErrorMessage = try errorBaggage.decode()
         // This is removed because binary images are sent in the message, so the additional attribute isn't needed
-        XCTAssertNil(messageReceiver.errors.first?.attributes[CrossPlatformAttributes.includeBinaryImages])
-        XCTAssertEqual(messageReceiver.errors.first?.binaryImages?.count, stubBacktrace.binaryImages.count)
-        let error = messageReceiver.errors.first
+        XCTAssertNil(error.attributes[CrossPlatformAttributes.includeBinaryImages])
+        XCTAssertEqual(error.binaryImages?.count, stubBacktrace.binaryImages.count)
         for i in 0..<stubBacktrace.binaryImages.count {
-            if let logBacktrace = error?.binaryImages![i] {
-                let errorBacktrace = stubBacktrace.binaryImages[i]
-                XCTAssertEqual(logBacktrace.libraryName, errorBacktrace.libraryName)
-                XCTAssertEqual(logBacktrace.uuid, errorBacktrace.uuid)
-                XCTAssertEqual(logBacktrace.architecture, errorBacktrace.architecture)
-                XCTAssertEqual(logBacktrace.isSystemLibrary, errorBacktrace.isSystemLibrary)
-                XCTAssertEqual(logBacktrace.loadAddress, errorBacktrace.loadAddress)
-                XCTAssertEqual(logBacktrace.maxAddress, errorBacktrace.maxAddress)
-            }
+            let logBacktrace = error.binaryImages![i]
+            let errorBacktrace = stubBacktrace.binaryImages[i]
+            XCTAssertEqual(logBacktrace.libraryName, errorBacktrace.libraryName)
+            XCTAssertEqual(logBacktrace.uuid, errorBacktrace.uuid)
+            XCTAssertEqual(logBacktrace.architecture, errorBacktrace.architecture)
+            XCTAssertEqual(logBacktrace.isSystemLibrary, errorBacktrace.isSystemLibrary)
+            XCTAssertEqual(logBacktrace.loadAddress, errorBacktrace.loadAddress)
+            XCTAssertEqual(logBacktrace.maxAddress, errorBacktrace.maxAddress)
         }
     }
 
     func testWhenErrorLogged_itPostsToMessageBus_withOtherCrossPlatformAttributesIntact() throws {
-        let messageReceiver = ErrorMessageReceiverMock()
-
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send error"),
-            messageReceiver: messageReceiver
-        )
-
         // Given
         let logger = RemoteLogger(
-            core: core,
+            featureScope: featureScope,
+            core: NOPDatadogCore(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
@@ -195,25 +144,17 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        XCTAssertEqual(messageReceiver.errors.count, 1)
-        let error = messageReceiver.errors.first
-        XCTAssertEqual(error?.attributes[CrossPlatformAttributes.errorSourceType]?.value as? String, "flutter")
-        XCTAssertEqual(error?.attributes[Logs.Attributes.errorFingerprint]?.value as? String, mockFingerprint)
+        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
+        let error: ExpectedErrorMessage = try errorBaggage.decode()
+        XCTAssertEqual(error.attributes[CrossPlatformAttributes.errorSourceType]?.value as? String, "flutter")
+        XCTAssertEqual(error.attributes[Logs.Attributes.errorFingerprint]?.value as? String, mockFingerprint)
     }
 
     func testWhenErrorLoggedFromInternal_itPostsToMessageBus_withSourceTypeInjected() throws {
-        let messageReceiver = ErrorMessageReceiverMock()
-
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send error"),
-            messageReceiver: messageReceiver
-        )
-
         // Given
         let logger = RemoteLogger(
-            core: core,
+            featureScope: featureScope,
+            core: NOPDatadogCore(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
@@ -235,12 +176,10 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        XCTAssertEqual(messageReceiver.errors.count, 1)
-        let error = messageReceiver.errors.first
-        XCTAssertEqual(error?.attributes[CrossPlatformAttributes.errorSourceType]?.value as? String, "flutter")
-        XCTAssertEqual(error?.attributes[Logs.Attributes.errorFingerprint]?.value as? String, mockFingerprint)
+        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
+        let error: ExpectedErrorMessage = try errorBaggage.decode()
+        XCTAssertEqual(error.attributes[CrossPlatformAttributes.errorSourceType]?.value as? String, "flutter")
+        XCTAssertEqual(error.attributes[Logs.Attributes.errorFingerprint]?.value as? String, mockFingerprint)
     }
 
     // MARK: - Attributes
@@ -248,11 +187,9 @@ class RemoteLoggerTests: XCTestCase {
     func testWhenFeatureHasAttributes_itSendsAttributesOnLog() throws {
         // Given
         let logsFeature = LogsFeature.mockAny()
-        let core = SingleFeatureCoreMock(
-            feature: logsFeature,
-            expectation: expectation(description: "Send log")
-        )
+        let core = SingleFeatureCoreMock(feature: logsFeature)
         let logger = RemoteLogger(
+            featureScope: featureScope,
             core: core,
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -268,9 +205,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("Information message")
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let logs = core.events(ofType: LogEvent.self)
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
@@ -280,11 +215,9 @@ class RemoteLoggerTests: XCTestCase {
     func testWhenFeatureHasAttributes_andLoggerHasAttributes_itSendsLoggerAttributesOnLog() throws {
         // Given
         let logsFeature = LogsFeature.mockAny()
-        let core = SingleFeatureCoreMock(
-            feature: logsFeature,
-            expectation: expectation(description: "Send log")
-        )
+        let core = SingleFeatureCoreMock(feature: logsFeature)
         let logger = RemoteLogger(
+            featureScope: featureScope,
             core: core,
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -302,9 +235,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("Information message")
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let logs = core.events(ofType: LogEvent.self)
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
@@ -314,11 +245,9 @@ class RemoteLoggerTests: XCTestCase {
     func testWhenFeatureHasAttributes_andLogCallHasAttributes_itSendsLogCallAttributesOnLog() throws {
         // Given
         let logsFeature = LogsFeature.mockAny()
-        let core = SingleFeatureCoreMock(
-            feature: logsFeature,
-            expectation: expectation(description: "Send log")
-        )
+        let core = SingleFeatureCoreMock(feature: logsFeature)
         let logger = RemoteLogger(
+            featureScope: featureScope,
             core: core,
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -335,9 +264,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("Information message", attributes: [attributeKey: logCallValue])
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let logs = core.events(ofType: LogEvent.self)
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
@@ -346,16 +273,10 @@ class RemoteLoggerTests: XCTestCase {
 
     func testItSendsGlobalAttributesErrorAlongWithErrorLog() throws {
         // Given
-        let messageReceiver = ErrorMessageReceiverMock()
-
         let logsFeature = LogsFeature.mockAny()
-        let core = SingleFeatureCoreMock(
-            feature: logsFeature,
-            expectation: expectation(description: "Send error"),
-            messageReceiver: messageReceiver
-        )
-
+        let core = SingleFeatureCoreMock(feature: logsFeature)
         let logger = RemoteLogger(
+            featureScope: featureScope,
             core: core,
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -372,21 +293,17 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Error message")
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        XCTAssertEqual(messageReceiver.errors.count, 1)
-        let error = try XCTUnwrap(messageReceiver.errors.first)
+        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
+        let error: ExpectedErrorMessage = try errorBaggage.decode()
         XCTAssertEqual(error.attributes[attributeKey]?.value as? String, attributeValue)
     }
 
     func testWhenAttributesContainErrorFingerprint_itAddsItToTheLogEvent() throws {
         // Given
         let logsFeature = LogsFeature.mockAny()
-        let core = SingleFeatureCoreMock(
-            feature: logsFeature,
-            expectation: expectation(description: "Send log")
-        )
+        let core = SingleFeatureCoreMock(feature: logsFeature)
         let logger = RemoteLogger(
+            featureScope: featureScope,
             core: core,
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -399,9 +316,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Information message", error: ErrorMock(), attributes: [Logs.Attributes.errorFingerprint: randomErrorFingerprint])
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let logs = core.events(ofType: LogEvent.self)
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
@@ -414,11 +329,9 @@ class RemoteLoggerTests: XCTestCase {
         let logsFeature = LogsFeature.mockWith(
             backtraceReporter: BacktraceReporterMock(backtrace: stubBacktrace)
         )
-        let core = SingleFeatureCoreMock(
-            feature: logsFeature,
-            expectation: expectation(description: "Send log")
-        )
+        let core = SingleFeatureCoreMock(feature: logsFeature)
         let logger = RemoteLogger(
+            featureScope: featureScope,
             core: core,
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -430,9 +343,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Information message", error: ErrorMock(), attributes: [CrossPlatformAttributes.includeBinaryImages: true])
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let logs = core.events(ofType: LogEvent.self)
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
@@ -454,13 +365,10 @@ class RemoteLoggerTests: XCTestCase {
     // MARK: - RUM Integration
 
     func testWhenRUMIntegrationIsEnabled_itSendsLogWithRUMContext() throws {
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send log")
-        )
-
         // Given
         let logger = RemoteLogger(
-            core: core,
+            featureScope: featureScope,
+            core: NOPDatadogCore(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: true,
@@ -473,22 +381,21 @@ class RemoteLoggerTests: XCTestCase {
         let actionID: String = .mockRandom()
 
         // When
-        core.set(
-            baggage: [
-                "application.id": applicationID,
-                "session.id": sessionID,
-                "view.id": viewID,
-                "user_action.id": actionID
-            ],
-            forKey: "rum"
+        featureScope.contextMock = .mockWith(
+            baggages: [
+                "rum" : .init([
+                    "application.id": applicationID,
+                    "session.id": sessionID,
+                    "view.id": viewID,
+                    "user_action.id": actionID
+                ])
+            ]
         )
 
         logger.info("message")
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let logs = core.events(ofType: LogEvent.self)
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
@@ -499,15 +406,10 @@ class RemoteLoggerTests: XCTestCase {
     }
 
     func testWhenRUMIntegrationIsEnabled_withNoRUMContext_itDoesNotSendTelemetryError() throws {
-        let telemetryReceiver = TelemetryReceiverMock()
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send log"),
-            messageReceiver: telemetryReceiver
-        )
-
         // Given
         let logger = RemoteLogger(
-            core: core,
+            featureScope: featureScope,
+            core: NOPDatadogCore(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: true,
@@ -515,14 +417,10 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // When
-        core.set(baggage: nil, forKey: "rum")
-
         logger.info("message")
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let logs = core.events(ofType: LogEvent.self)
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
@@ -530,19 +428,14 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertNil(log.attributes.internalAttributes?["session_id"])
         XCTAssertNil(log.attributes.internalAttributes?["view.id"])
         XCTAssertNil(log.attributes.internalAttributes?["user_action.id"])
-        XCTAssertTrue(telemetryReceiver.messages.isEmpty)
+        XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
     }
 
     func testWhenRUMIntegrationIsEnabled_withMalformedRUMContext_itSendsTelemetryError() throws {
-        let telemetryReceiver = TelemetryReceiverMock()
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send log"),
-            messageReceiver: telemetryReceiver
-        )
-
         // Given
         let logger = RemoteLogger(
-            core: core,
+            featureScope: featureScope,
+            core: NOPDatadogCore(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: true,
@@ -550,14 +443,15 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // When
-        core.set(baggage: "malformed RUM context", forKey: "rum")
-
+        featureScope.contextMock = .mockWith(
+            baggages: [
+                "rum" : .init("malformed RUM context")
+            ]
+        )
         logger.info("message")
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let logs = core.events(ofType: LogEvent.self)
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
@@ -566,20 +460,17 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertNil(log.attributes.internalAttributes?["view.id"])
         XCTAssertNil(log.attributes.internalAttributes?["user_action.id"])
 
-        let error = try XCTUnwrap(telemetryReceiver.messages.first?.asError)
+        let error = try XCTUnwrap(featureScope.telemetryMock.messages.firstError())
         XCTAssert(error.message.contains("Fails to decode RUM context from Logs - typeMismatch"))
     }
 
     // MARK: - Span Integration
 
     func testWhenActiveSpanIntegrationIsEnabled_itSendsLogWithSpanContext() throws {
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send log")
-        )
-
         // Given
         let logger = RemoteLogger(
-            core: core,
+            featureScope: featureScope,
+            core: NOPDatadogCore(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
@@ -590,20 +481,18 @@ class RemoteLoggerTests: XCTestCase {
         let spanID: SpanID = .mock(.mockRandom())
 
         // When
-        core.set(
-            baggage: [
-                "dd.trace_id": traceID.toString(representation: .hexadecimal),
-                "dd.span_id": spanID.toString(representation: .decimal)
-            ],
-            forKey: "span_context"
+        featureScope.contextMock = .mockWith(
+            baggages: [
+                "span_context" : .init([
+                    "dd.trace_id": traceID.toString(representation: .hexadecimal),
+                    "dd.span_id": spanID.toString(representation: .decimal)
+                ])
+            ]
         )
-
         logger.info("message")
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let logs = core.events(ofType: LogEvent.self)
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
@@ -612,15 +501,10 @@ class RemoteLoggerTests: XCTestCase {
     }
 
     func testWhenActiveSpanIntegrationIsEnabled_withNoActiveSpan_itDoesNotSendTelemetryError() throws {
-        let telemetryReceiver = TelemetryReceiverMock()
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send log"),
-            messageReceiver: telemetryReceiver
-        )
-
         // Given
         let logger = RemoteLogger(
-            core: core,
+            featureScope: featureScope,
+            core: NOPDatadogCore(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
@@ -628,32 +512,23 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // When
-        core.set(baggage: nil, forKey: "span_context")
-
         logger.info("message")
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let logs = core.events(ofType: LogEvent.self)
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
         XCTAssertNil(log.attributes.internalAttributes?["dd.trace_id"])
         XCTAssertNil(log.attributes.internalAttributes?["dd.span_id"])
-        XCTAssertTrue(telemetryReceiver.messages.isEmpty)
+        XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
     }
 
     func testWhenActiveSpanIntegrationIsEnabled_withMalformedRUMContext_itSendsTelemetryError() throws {
-        let telemetryReceiver = TelemetryReceiverMock()
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send log"),
-            messageReceiver: telemetryReceiver
-        )
-
         // Given
         let logger = RemoteLogger(
-            core: core,
+            featureScope: featureScope,
+            core: NOPDatadogCore(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
@@ -661,21 +536,22 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // When
-        core.set(baggage: "malformed Span context", forKey: "span_context")
-
+        featureScope.contextMock = .mockWith(
+            baggages: [
+                "span_context" : .init("malformed Span context")
+            ]
+        )
         logger.info("message")
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let logs = core.events(ofType: LogEvent.self)
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
         XCTAssertNil(log.attributes.internalAttributes?["dd.trace_id"])
         XCTAssertNil(log.attributes.internalAttributes?["dd.span_id"])
 
-        let error = try XCTUnwrap(telemetryReceiver.messages.first?.asError)
+        let error = try XCTUnwrap(featureScope.telemetryMock.messages.firstError())
         XCTAssert(error.message.contains("Fails to decode Span context from Logs - typeMismatch"))
     }
 }

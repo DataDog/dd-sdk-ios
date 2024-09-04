@@ -25,6 +25,8 @@ internal final class RemoteLogger: LoggerProtocol {
         let sampler: Sampler
     }
 
+    /// Logs feature scope.
+    let featureScope: FeatureScope
     /// `DatadogCore` instance managing this logger.
     private weak var core: DatadogCoreProtocol?
     /// Configuration specific to this logger.
@@ -45,12 +47,14 @@ internal final class RemoteLogger: LoggerProtocol {
     private var tags: Set<String> = []
 
     init(
+        featureScope: FeatureScope,
         core: DatadogCoreProtocol,
         configuration: Configuration,
         dateProvider: DateProvider,
         rumContextIntegration: Bool,
         activeSpanIntegration: Bool
     ) {
+        self.featureScope = featureScope
         self.core = core
         self.configuration = configuration
         self.dateProvider = dateProvider
@@ -125,7 +129,9 @@ internal final class RemoteLogger: LoggerProtocol {
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
-        core?.scope(for: LogsFeature.self).eventWriteContext { context, writer in
+        featureScope.eventWriteContext { [weak self] context, writer in
+            guard let self else { return }
+
             var internalAttributes: [String: Encodable] = [:]
 
             // When bundle with RUM is enabled, link RUM context (if available):
@@ -137,7 +143,7 @@ internal final class RemoteLogger: LoggerProtocol {
                     internalAttributes[LogEvent.Attributes.RUM.viewID] = rum.viewID
                     internalAttributes[LogEvent.Attributes.RUM.actionID] = rum.userActionID
                 } catch {
-                    self.core?.telemetry
+                    self.featureScope.telemetry
                         .error("Fails to decode RUM context from Logs", error: error)
                 }
             }
@@ -149,7 +155,7 @@ internal final class RemoteLogger: LoggerProtocol {
                     internalAttributes[LogEvent.Attributes.Trace.traceID] = trace.traceID?.toString(representation: .hexadecimal)
                     internalAttributes[LogEvent.Attributes.Trace.spanID] = trace.spanID?.toString(representation: .decimal)
                 } catch {
-                    self.core?.telemetry
+                    self.featureScope.telemetry
                         .error("Fails to decode Span context from Logs", error: error)
                 }
             }
@@ -198,7 +204,7 @@ internal final class RemoteLogger: LoggerProtocol {
                     busCombinedAttributes[Logs.Attributes.errorFingerprint] = errorFingerprint
                 }
 
-                self.core?.send(
+                self.featureScope.send(
                     message: .baggage(
                         key: ErrorMessage.key,
                         value: ErrorMessage(
