@@ -186,6 +186,39 @@ class RemoteLoggerTests: XCTestCase {
 
     // MARK: - Attributes
 
+    func testWhenAddingAndRemovingLoggerAttributes_itSendsLogsWithCurrentLoggerAttributes() throws {
+        // Given
+        let logger = RemoteLogger(
+            featureScope: featureScope,
+            globalAttributes: .mockAny(),
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
+        )
+
+        // When
+        logger.info("INFO message 1")
+
+        logger.addAttribute(forKey: "attribute-1", value: "value A")
+        logger.info("INFO message 2")
+        
+        logger.addAttribute(forKey: "attribute-2", value: "value B")
+        logger.info("INFO message 3")
+        
+        logger.removeAttribute(forKey: "attribute-1")
+        logger.info("INFO message 4")
+
+        // Then
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
+        XCTAssertEqual(logs.count, 4)
+        XCTAssertEqual(logs[0].attributes.userAttributes.count, 0)
+        XCTAssertEqual(logs[1].attributes.userAttributes as? [String: String], ["attribute-1": "value A"])
+        XCTAssertEqual(logs[2].attributes.userAttributes as? [String: String], ["attribute-1": "value A", "attribute-2": "value B"])
+        XCTAssertEqual(logs[3].attributes.userAttributes as? [String: String], ["attribute-2": "value B"])
+    }
+
     func testGivenGlobalAttributeAvailable_whenSendingLog_itSendsLogWithGlobalAttribute() throws {
         let attributeKey = String.mockRandom()
         let attributeValue = String.mockRandom()
@@ -193,7 +226,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            globalAttributes: GlobalAttributes(attributes: [attributeKey: attributeValue]),
+            globalAttributes: SynchronizedAttributes(attributes: [attributeKey: attributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
@@ -220,7 +253,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            globalAttributes: GlobalAttributes(attributes: [attributeKey: globalAttributeValue]),
+            globalAttributes: SynchronizedAttributes(attributes: [attributeKey: globalAttributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
@@ -249,7 +282,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            globalAttributes: GlobalAttributes(attributes: [attributeKey: globalAttributeValue]),
+            globalAttributes: SynchronizedAttributes(attributes: [attributeKey: globalAttributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,
@@ -276,7 +309,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            globalAttributes: GlobalAttributes(attributes: [attributeKey: attributeValue]),
+            globalAttributes: SynchronizedAttributes(attributes: [attributeKey: attributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
             rumContextIntegration: false,

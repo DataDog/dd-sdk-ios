@@ -19,7 +19,7 @@ internal struct LogsFeature: DatadogRemoteFeature {
     let backtraceReporter: BacktraceReporting?
 
     /// Global attributes attached to every log event.
-    let attributes: GlobalAttributes
+    let attributes: SynchronizedAttributes
 
     /// Time provider.
     let dateProvider: DateProvider
@@ -59,6 +59,6 @@ internal struct LogsFeature: DatadogRemoteFeature {
         self.messageReceiver = messageReceiver
         self.dateProvider = dateProvider
         self.backtraceReporter = backtraceReporter
-        self.attributes = GlobalAttributes(attributes: [:])
+        self.attributes = SynchronizedAttributes(attributes: [:])
     }
 }

@@ -408,8 +408,8 @@
 		615CC40C2694A56D0005F08C /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615CC40B2694A56D0005F08C /* SwiftExtensions.swift */; };
 		615CC4102694A64D0005F08C /* SwiftExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615CC40F2694A64D0005F08C /* SwiftExtensionTests.swift */; };
 		615CC4132695957C0005F08C /* CrashReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615CC4122695957C0005F08C /* CrashReportTests.swift */; };
-		615D52B82C888C1F00F8B8FC /* GlobalAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615D52B72C888C1F00F8B8FC /* GlobalAttributes.swift */; };
-		615D52B92C888C1F00F8B8FC /* GlobalAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615D52B72C888C1F00F8B8FC /* GlobalAttributes.swift */; };
+		615D52B82C888C1F00F8B8FC /* SynchronizedAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615D52B72C888C1F00F8B8FC /* SynchronizedAttributes.swift */; };
+		615D52B92C888C1F00F8B8FC /* SynchronizedAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615D52B72C888C1F00F8B8FC /* SynchronizedAttributes.swift */; };
 		6167C79326665D6900D4CF07 /* E2EUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167C79226665D6900D4CF07 /* E2EUtils.swift */; };
 		6167C7952666622800D4CF07 /* LoggingE2EHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167C7942666622800D4CF07 /* LoggingE2EHelpers.swift */; };
 		6167E6D32B7F8B3300C3CA2D /* AppHangsMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E6D22B7F8B3300C3CA2D /* AppHangsMonitor.swift */; };
@@ -2451,7 +2451,7 @@
 		615CC40B2694A56D0005F08C /* SwiftExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
 		615CC40F2694A64D0005F08C /* SwiftExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtensionTests.swift; sourceTree = "<group>"; };
 		615CC4122695957C0005F08C /* CrashReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportTests.swift; sourceTree = "<group>"; };
-		615D52B72C888C1F00F8B8FC /* GlobalAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalAttributes.swift; sourceTree = "<group>"; };
+		615D52B72C888C1F00F8B8FC /* SynchronizedAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedAttributes.swift; sourceTree = "<group>"; };
 		615D9E2626048EAF006DC6D1 /* DatadogCrashReporting.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogCrashReporting.xcconfig; sourceTree = "<group>"; };
 		615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensions.swift; sourceTree = "<group>"; };
 		6161247825CA9CA6009901BE /* CrashReporting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReporting.swift; sourceTree = "<group>"; };
@@ -4228,7 +4228,7 @@
 				61133BC22423979B00786299 /* LogEventEncoder.swift */,
 				61133BC32423979B00786299 /* LogEventBuilder.swift */,
 				61133BC42423979B00786299 /* LogEventSanitizer.swift */,
-				615D52B72C888C1F00F8B8FC /* GlobalAttributes.swift */,
+				615D52B72C888C1F00F8B8FC /* SynchronizedAttributes.swift */,
 			);
 			path = Log;
 			sourceTree = "<group>";
@@ -8589,7 +8589,7 @@
 				D242C29E2A14D6A6004B4980 /* RemoteLogger.swift in Sources */,
 				D20731B529A528DA00ECBF94 /* LogEventBuilder.swift in Sources */,
 				D243BBF529A620CC000B9CEC /* MessageReceivers.swift in Sources */,
-				615D52B82C888C1F00F8B8FC /* GlobalAttributes.swift in Sources */,
+				615D52B82C888C1F00F8B8FC /* SynchronizedAttributes.swift in Sources */,
 				D22C5BC92A98A0B30024CC1F /* Baggages.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -8628,7 +8628,7 @@
 				D242C29F2A14D6A7004B4980 /* RemoteLogger.swift in Sources */,
 				D20731B629A528DA00ECBF94 /* LogEventBuilder.swift in Sources */,
 				D243BBF629A620CC000B9CEC /* MessageReceivers.swift in Sources */,
-				615D52B92C888C1F00F8B8FC /* GlobalAttributes.swift in Sources */,
+				615D52B92C888C1F00F8B8FC /* SynchronizedAttributes.swift in Sources */,
 				D22C5BC82A98A0B20024CC1F /* Baggages.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

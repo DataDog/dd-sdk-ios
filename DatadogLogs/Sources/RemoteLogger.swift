@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// `Logger` sending logs to Datadog.
-internal final class RemoteLogger: LoggerProtocol, @unchecked Sendable {
+internal final class RemoteLogger: LoggerProtocol, Sendable {
     struct Configuration {
         /// The `service` value for logs.
         /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
@@ -38,10 +38,9 @@ internal final class RemoteLogger: LoggerProtocol, @unchecked Sendable {
     /// Can be `false` if the integration is disabled for this logger.
     internal let activeSpanIntegration: Bool
     /// Global attributes shared with all logger instances.
-    let globalAttributes: GlobalAttributes
+    private let globalAttributes: SynchronizedAttributes
     /// Logger-specific attributes.
-    @ReadWriteLock
-    private var attributes: [String: Encodable] = [:]
+    private let loggerAttributes: SynchronizedAttributes
     /// Logger-specific tags.
     @ReadWriteLock
     private var tags: Set<String> = []
@@ -50,7 +49,7 @@ internal final class RemoteLogger: LoggerProtocol, @unchecked Sendable {
 
     init(
         featureScope: FeatureScope,
-        globalAttributes: GlobalAttributes,
+        globalAttributes: SynchronizedAttributes,
         configuration: Configuration,
         dateProvider: DateProvider,
         rumContextIntegration: Bool,
@@ -59,6 +58,7 @@ internal final class RemoteLogger: LoggerProtocol, @unchecked Sendable {
     ) {
         self.featureScope = featureScope
         self.globalAttributes = globalAttributes
+        self.loggerAttributes = SynchronizedAttributes(attributes: [:])
         self.configuration = configuration
         self.dateProvider = dateProvider
         self.rumContextIntegration = rumContextIntegration
@@ -68,12 +68,12 @@ internal final class RemoteLogger: LoggerProtocol, @unchecked Sendable {
 
     // MARK: - Attributes
 
-    func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
-        _attributes.mutate { $0[key] = value }
+    func addAttribute(forKey key: AttributeKey, value: AttributeValue) { 
+        loggerAttributes.addAttribute(key: key, value: value)
     }
-
+    
     func removeAttribute(forKey key: AttributeKey) {
-        _attributes.mutate { $0.removeValue(forKey: key) }
+        loggerAttributes.removeAttribute(forKey: key)
     }
 
     // MARK: - Tags
@@ -114,9 +114,9 @@ internal final class RemoteLogger: LoggerProtocol, @unchecked Sendable {
 
         // capture current tags and attributes before opening the write event context
         let tags = self.tags
+        let globalAttributes = globalAttributes.getAttributes()
+        let loggerAttributes = loggerAttributes.getAttributes()
         var logAttributes = attributes
-        let loggerAttributes = self.attributes
-        let globalAttributes = self.globalAttributes.getAttributes()
 
         let isCrash = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorLogIsCrash)?.dd.decode() ?? false
         let errorFingerprint: String? = logAttributes?.removeValue(forKey: Logs.Attributes.errorFingerprint)?.dd.decode()

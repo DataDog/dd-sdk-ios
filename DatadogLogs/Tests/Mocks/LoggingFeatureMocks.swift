@@ -333,8 +333,8 @@ extension LogEvent.Attributes: Equatable {
     }
 }
 
-extension GlobalAttributes: AnyMockable {
-    public static func mockAny() -> GlobalAttributes {
-        return GlobalAttributes(attributes: [:])
+extension SynchronizedAttributes: AnyMockable {
+    public static func mockAny() -> SynchronizedAttributes {
+        return SynchronizedAttributes(attributes: [:])
     }
 }
