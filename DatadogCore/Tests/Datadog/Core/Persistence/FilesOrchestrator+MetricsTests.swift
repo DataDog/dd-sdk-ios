@@ -38,7 +38,8 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             metricsData: FilesOrchestrator.MetricsData(
                 trackName: "track name",
                 consentLabel: "consent value",
-                uploaderPerformance: upload
+                uploaderPerformance: upload,
+                backgroundTasksEnabled: .mockAny()
             )
         )
     }
