@@ -51,11 +51,9 @@ class WebViewTrackingTests: XCTestCase {
         struct SessionReplayFeature: DatadogFeature, SessionReplayConfiguration {
             static let name = "session-replay"
             let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
-            let privacyLevel: SessionReplayPrivacyLevel
             let textAndInputPrivacyLevel: DatadogInternal.TextAndInputPrivacyLevel
             let imagePrivacyLevel: DatadogInternal.ImagePrivacyLevel
             let touchPrivacyLevel: DatadogInternal.TouchPrivacyLevel
-            let isConfiguredWithNewApi: Bool
         }
 
         let mockSanitizer = HostsSanitizerMock()
@@ -63,11 +61,14 @@ class WebViewTrackingTests: XCTestCase {
 
         let host: String = .mockRandom()
         let sr = SessionReplayFeature(
-            privacyLevel: .mockRandom(),
             textAndInputPrivacyLevel: .mockRandom(),
             imagePrivacyLevel: .mockRandom(),
-            touchPrivacyLevel: .mockRandom(),
-            isConfiguredWithNewApi: false
+            touchPrivacyLevel: .mockRandom()
+        )
+        let privacyLevel = WebViewTracking.determineWebViewPrivacyLevel(
+            textPrivacy: sr.textAndInputPrivacyLevel,
+            imagePrivacy: sr.imagePrivacyLevel,
+            touchPrivacy: sr.touchPrivacyLevel
         )
 
         WebViewTracking.enable(
@@ -92,7 +93,7 @@ class WebViewTrackingTests: XCTestCase {
                 return '["records"]'
             },
             getPrivacyLevel() {
-                return '\(sr.privacyLevel.rawValue)'
+                return '\(privacyLevel.rawValue)'
             }
         }
         """)

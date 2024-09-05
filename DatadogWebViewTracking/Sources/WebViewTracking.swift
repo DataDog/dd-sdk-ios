@@ -111,10 +111,7 @@ public enum WebViewTracking {
             type: SessionReplayConfiguration.self
         )
 
-        var privacyLevel: SessionReplayPrivacyLevel = .mask
-        if let sessionReplay {
-            privacyLevel = sessionReplay.isConfiguredWithNewApi ? Self.determineWebViewPrivacyLevel(textPrivacy: sessionReplay.textAndInputPrivacyLevel, imagePrivacy: sessionReplay.imagePrivacyLevel, touchPrivacy: sessionReplay.touchPrivacyLevel) : sessionReplay.privacyLevel
-        }
+        let privacyLevel = sessionReplay != nil ? Self.determineWebViewPrivacyLevel(textPrivacy: sessionReplay!.textAndInputPrivacyLevel, imagePrivacy: sessionReplay!.imagePrivacyLevel, touchPrivacy: sessionReplay!.touchPrivacyLevel) : .mask   // swiftlint:disable:this force_unwrapping
 
         // Share native capabilities with Browser SDK
         let capabilities = sessionReplay != nil ? "\"records\"" : ""

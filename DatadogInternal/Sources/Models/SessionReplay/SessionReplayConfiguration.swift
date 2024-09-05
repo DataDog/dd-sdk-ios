@@ -71,16 +71,10 @@ public enum TouchPrivacyLevel: String {
 ///     )
 ///
 public protocol SessionReplayConfiguration {
-    /// Global privacy level to use in Session Replay.
-    /// Although this setting is deprecated on mobile,
-    /// it is still needed to configure the browser SDK for the web integration,
-    /// which currently does not support fine-grained privacy options.
-    var privacyLevel: SessionReplayPrivacyLevel { get }
     /// Fine-Grained privacy levels to use in Session Replay.
     var textAndInputPrivacyLevel: TextAndInputPrivacyLevel { get }
     var imagePrivacyLevel: ImagePrivacyLevel { get }
     var touchPrivacyLevel: TouchPrivacyLevel { get }
-    var isConfiguredWithNewApi: Bool { get }
 }
 
 extension DatadogFeature where Self: SessionReplayConfiguration {

@@ -79,10 +79,10 @@ public enum SessionReplay {
         try core.register(feature: sessionReplay)
 
         core.telemetry.configuration(
-            defaultPrivacyLevel: !configuration.isConfiguredWithNewApi ? configuration.defaultPrivacyLevel.rawValue : nil,
-            textAndInputPrivacyLevel: configuration.isConfiguredWithNewApi ? configuration.textAndInputPrivacyLevel.rawValue : nil,
-            imagePrivacyLevel: configuration.isConfiguredWithNewApi ? configuration.imagePrivacyLevel.rawValue : nil,
-            touchPrivacyLevel: configuration.isConfiguredWithNewApi ? configuration.touchPrivacyLevel.rawValue : nil,
+            defaultPrivacyLevel: nil,
+            textAndInputPrivacyLevel: configuration.textAndInputPrivacyLevel.rawValue,
+            imagePrivacyLevel: configuration.imagePrivacyLevel.rawValue,
+            touchPrivacyLevel: configuration.touchPrivacyLevel.rawValue,
             sessionReplaySampleRate: Int64(withNoOverflow: configuration.replaySampleRate),
             startRecordingImmediately: configuration.startRecordingImmediately
         )
