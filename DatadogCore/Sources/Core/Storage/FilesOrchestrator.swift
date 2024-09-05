@@ -48,6 +48,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         let consentLabel: String
         /// The preset for uploader performance in this feature to include in metric.
         let uploaderPerformance: UploadPerformancePreset
+        /// The present configuration of background upload in this feature to include in metric.
+        let backgroundTasksEnabled: Bool
     }
 
     /// An extra information to include in metrics or `nil` if metrics should not be reported for this orchestrator.
@@ -249,7 +251,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 BatchDeletedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
                 BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
-                BatchDeletedMetric.inBackgroundKey: false
+                BatchDeletedMetric.inBackgroundKey: metricsData.backgroundTasksEnabled
             ],
             sampleRate: BatchDeletedMetric.sampleRate
         )
