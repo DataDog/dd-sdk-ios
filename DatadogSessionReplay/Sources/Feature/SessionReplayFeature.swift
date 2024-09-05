@@ -16,6 +16,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
     let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
     let touchPrivacyLevel: TouchPrivacyLevel
+    let isConfiguredWithNewApi: Bool
 
     // MARK: - Main Components
 
@@ -60,8 +61,9 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
 
         self.privacyLevel = configuration.defaultPrivacyLevel
         self.textAndInputPrivacyLevel = configuration.textAndInputPrivacyLevel
-        self.touchPrivacyLevel = configuration.touchPrivacyLevel
         self.imagePrivacyLevel = configuration.imagePrivacyLevel
+        self.touchPrivacyLevel = configuration.touchPrivacyLevel
+        self.isConfiguredWithNewApi = configuration.isConfiguredWithNewApi
 
         self.recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,

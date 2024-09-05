@@ -10,6 +10,9 @@ import DatadogInternal
 
 // swiftlint:disable duplicate_imports
 @_exported import enum DatadogInternal.SessionReplayPrivacyLevel
+@_exported import enum DatadogInternal.TextAndInputPrivacyLevel
+@_exported import enum DatadogInternal.ImagePrivacyLevel
+@_exported import enum DatadogInternal.TouchPrivacyLevel
 // swiftlint:enable duplicate_imports
 
 extension SessionReplay {
@@ -29,7 +32,7 @@ extension SessionReplay {
         ///
         /// Default: `.mask`.
         @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use the new privacy levels instead.")
-        public var defaultPrivacyLevel: SessionReplayPrivacyLevel {
+        public var defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask {
             /// Whenever a new `defaultPrivacyLevel` is set, it converts it to the new privacy levels.
             didSet {
                 let newPrivacyLevels = Self.convertPrivacyLevel(from: defaultPrivacyLevel)
@@ -95,7 +98,6 @@ extension SessionReplay {
             self.textAndInputPrivacyLevel = textAndInputPrivacyLevel
             self.imagePrivacyLevel = imagePrivacyLevel
             self.touchPrivacyLevel = touchPrivacyLevel
-            self.defaultPrivacyLevel = Self.determineWebViewPrivacyLevel(textPrivacy: textAndInputPrivacyLevel, imagePrivacy: imagePrivacyLevel, touchPrivacy: touchPrivacyLevel)
             self.startRecordingImmediately = startRecordingImmediately
             self.customEndpoint = customEndpoint
             self.isConfiguredWithNewApi = true
@@ -156,35 +158,6 @@ extension SessionReplay {
                     imagePrivacy: .maskAll,
                     touchPrivacy: .hide
                 )
-            }
-        }
-
-        internal static func determineWebViewPrivacyLevel(
-            textPrivacy: TextAndInputPrivacyLevel,
-            imagePrivacy: ImagePrivacyLevel,
-            touchPrivacy: TouchPrivacyLevel
-        ) -> SessionReplayPrivacyLevel {
-            switch (textPrivacy, imagePrivacy, touchPrivacy) {
-            case (.maskSensitiveInputs, .maskNone, .show):
-                return .allow
-            case (.maskSensitiveInputs, .maskNone, .hide):
-                return .mask
-            case (.maskSensitiveInputs, .maskNonBundledOnly, _):
-                return .mask
-            case (.maskSensitiveInputs, .maskAll, _):
-                return .mask
-
-            case (.maskAllInputs, .maskNone, .show):
-                return .maskUserInput
-            case (.maskAllInputs, .maskNone, .hide):
-                return .mask
-            case (.maskAllInputs, .maskNonBundledOnly, _):
-                return .mask
-            case (.maskAllInputs, .maskAll, _):
-                return .mask
-
-            case (.maskAll, _, _):
-                return .mask
             }
         }
     }

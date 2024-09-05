@@ -111,7 +111,10 @@ public enum WebViewTracking {
             type: SessionReplayConfiguration.self
         )
 
-        let privacyLevel = sessionReplay?.privacyLevel ?? .mask
+        var privacyLevel: SessionReplayPrivacyLevel = .mask
+        if let sessionReplay {
+            privacyLevel = sessionReplay.isConfiguredWithNewApi ? Self.determineWebViewPrivacyLevel(textPrivacy: sessionReplay.textAndInputPrivacyLevel, imagePrivacy: sessionReplay.imagePrivacyLevel, touchPrivacy: sessionReplay.touchPrivacyLevel) : sessionReplay.privacyLevel
+        }
 
         // Share native capabilities with Browser SDK
         let capabilities = sessionReplay != nil ? "\"records\"" : ""
@@ -142,6 +145,35 @@ public enum WebViewTracking {
             )
         )
     }
+
+    internal static func determineWebViewPrivacyLevel(
+            textPrivacy: TextAndInputPrivacyLevel,
+            imagePrivacy: ImagePrivacyLevel,
+            touchPrivacy: TouchPrivacyLevel
+        ) -> SessionReplayPrivacyLevel {
+            switch (textPrivacy, imagePrivacy, touchPrivacy) {
+            case (.maskSensitiveInputs, .maskNone, .show):
+                return .allow
+            case (.maskSensitiveInputs, .maskNone, .hide):
+                return .mask
+            case (.maskSensitiveInputs, .maskNonBundledOnly, _):
+                return .mask
+            case (.maskSensitiveInputs, .maskAll, _):
+                return .mask
+
+            case (.maskAllInputs, .maskNone, .show):
+                return .maskUserInput
+            case (.maskAllInputs, .maskNone, .hide):
+                return .mask
+            case (.maskAllInputs, .maskNonBundledOnly, _):
+                return .mask
+            case (.maskAllInputs, .maskAll, _):
+                return .mask
+
+            case (.maskAll, _, _):
+                return .mask
+            }
+        }
 #endif
 }
 

@@ -8,6 +8,8 @@ import Foundation
 
 public let SessionReplayFeaturneName = "session-replay"
 
+// MARK: Deprecated Global Privacy Level
+
 /// Available privacy levels for content masking in Session Replay.
 public enum SessionReplayPrivacyLevel: String {
     /// Record all content.
@@ -19,6 +21,43 @@ public enum SessionReplayPrivacyLevel: String {
     /// Mask input elements, but record all other content.
     case maskUserInput = "mask-user-input"
 }
+
+// MARK: Fine-Grained Privacy Levels
+
+/// Available privacy levels for text and input masking in Session Replay.
+public enum TextAndInputPrivacyLevel: String, CaseIterable {
+    /// Show all texts except sensitive inputs, eg. password fields.
+    case maskSensitiveInputs = "mask_sensitive_inputs"
+
+    /// Mask all inputs fields, eg. textfields, switches, checkboxes.
+    case maskAllInputs = "mask_all_inputs"
+
+    /// Mask all texts and inputs, eg. labels.
+    case maskAll = "mask_all"
+}
+
+/// Available privacy levels for image masking in the Session Replay.
+public enum ImagePrivacyLevel: String {
+    /// Only SF Symbols and images loaded using UIImage(named:) that are bundled within the application will be recorded.
+    case maskNonBundledOnly = "mask_non_bundled_only"
+
+    /// No images will be recorded.
+    case maskAll = "mask_all"
+
+    /// All images will be recorded, including the ones downloaded from the Internet or generated during the app runtime.
+    case maskNone = "mask_none"
+}
+
+/// Available privacy levels for touch masking in Session Replay.
+public enum TouchPrivacyLevel: String {
+    /// Show all user touches.
+    case show
+
+    /// Hide all user touches.
+    case hide
+}
+
+// MARK: SessionReplayConfiguration
 
 /// The Session Replay shared configuration.
 ///
@@ -34,9 +73,14 @@ public enum SessionReplayPrivacyLevel: String {
 public protocol SessionReplayConfiguration {
     /// Global privacy level to use in Session Replay.
     /// Although this setting is deprecated on mobile,
-    /// it is still needed to configure the browser SDK,
+    /// it is still needed to configure the browser SDK for the web integration,
     /// which currently does not support fine-grained privacy options.
     var privacyLevel: SessionReplayPrivacyLevel { get }
+    /// Fine-Grained privacy levels to use in Session Replay.
+    var textAndInputPrivacyLevel: TextAndInputPrivacyLevel { get }
+    var imagePrivacyLevel: ImagePrivacyLevel { get }
+    var touchPrivacyLevel: TouchPrivacyLevel { get }
+    var isConfiguredWithNewApi: Bool { get }
 }
 
 extension DatadogFeature where Self: SessionReplayConfiguration {
