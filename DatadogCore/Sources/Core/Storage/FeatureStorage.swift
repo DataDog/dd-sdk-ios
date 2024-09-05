@@ -134,7 +134,7 @@ extension FeatureStorage {
                 return FilesOrchestrator.MetricsData(
                     trackName: trackName,
                     consentLabel: BatchMetric.consentGrantedValue,
-                    uploaderPerformance: performance, 
+                    uploaderPerformance: performance,
                     backgroundTasksEnabled: backgroundTasksEnabled
                 )
             }
@@ -148,7 +148,7 @@ extension FeatureStorage {
                 return FilesOrchestrator.MetricsData(
                     trackName: trackName,
                     consentLabel: BatchMetric.consentPendingValue,
-                    uploaderPerformance: performance, 
+                    uploaderPerformance: performance,
                     backgroundTasksEnabled: backgroundTasksEnabled
                 )
             }
