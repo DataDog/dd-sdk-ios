@@ -108,9 +108,9 @@ internal struct Directory: DirectoryProtocol {
     }
 
     /// Creates file with given name.
-    func createFile(named fileName: String) throws -> File {
+    func createFile(named fileName: String, data: Data = .empty) throws -> File {
         let fileURL = url.appendingPathComponent(fileName, isDirectory: false)
-        try Data.empty.write(to: fileURL, options: .atomic)
+        try data.write(to: fileURL, options: .atomic)
         return File(url: fileURL)
     }
 

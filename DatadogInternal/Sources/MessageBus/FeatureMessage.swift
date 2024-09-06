@@ -31,10 +31,15 @@ public enum FeatureMessage {
     /// from a Feature or Integration.
     case context(DatadogContext)
 
-    /// A telemtry message.
+    /// A telemetry message.
     ///
     /// The core can send telemtry data coming from all Features.
     case telemetry(TelemetryMessage)
+
+    /// A configuration message.
+    ///
+    /// The core can send configuration updates.
+    case configuration(Configuration)
 }
 
 extension FeatureMessage {

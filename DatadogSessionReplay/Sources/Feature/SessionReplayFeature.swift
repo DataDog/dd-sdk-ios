@@ -12,7 +12,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?
-    let privacyLevel: SessionReplayPrivacyLevel
+    var privacyLevel: SessionReplayPrivacyLevel { recordingCoordinator.privacy }
 
     // MARK: - Main Components
 
@@ -23,7 +23,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
 
     init(
         core: DatadogCoreProtocol,
-        configuration: SessionReplay.Configuration
+        configuration: InternalConfiguration
     ) throws {
         let processorsQueue = BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processors")
 
@@ -42,18 +42,18 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
 
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,
-            additionalNodeRecorders: configuration._additionalNodeRecorders
+            additionalNodeRecorders: configuration.additionalNodeRecorders
         )
 
         let scheduler = MainThreadScheduler(interval: 0.1)
         let contextReceiver = RUMContextReceiver()
 
-        self.privacyLevel = configuration.defaultPrivacyLevel
         self.messageReceiver = CombinedFeatureMessageReceiver([
             contextReceiver,
             WebViewRecordReceiver(
                 scope: core.scope(for: SessionReplayFeature.self)
-            )
+            ),
+            ConfigurationReceiver()
         ])
 
         self.recordingCoordinator = RecordingCoordinator(
@@ -62,7 +62,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             rumContextObserver: contextReceiver,
             srContextPublisher: SRContextPublisher(core: core),
             recorder: recorder,
-            sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate),
+            sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sampleRate),
             telemetry: core.telemetry,
             startRecordingImmediately: configuration.startRecordingImmediately
         )

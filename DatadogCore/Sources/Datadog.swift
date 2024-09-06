@@ -46,7 +46,7 @@ public enum Datadog {
         }
 
         /// Defines the frequency at which Datadog SDK will try to upload data batches.
-        public enum UploadFrequency {
+        public enum UploadFrequency: String, Decodable {
             /// Try to upload batched data frequently.
             case frequent
             /// Try to upload batched data with a medium frequency.
@@ -56,7 +56,7 @@ public enum Datadog {
         }
 
         /// Defines the maximum amount of batches processed sequentially without a delay within one reading/uploading cycle.
-        public enum BatchProcessingLevel {
+        public enum BatchProcessingLevel: String, Decodable {
             case low
             case medium
             case high
@@ -74,16 +74,16 @@ public enum Datadog {
         }
 
         /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.
-        public var clientToken: String
+        public var clientToken: String?
 
         /// The environment name which will be sent to Datadog. This can be used
         /// To filter events on different environments (e.g. "staging" or "production").
-        public var env: String
+        public var env: String?
 
         /// The Datadog server site where data is sent.
         ///
         /// Default value is `.us1`.
-        public var site: DatadogSite
+        public var site: DatadogSite?
 
         /// The service name associated with data send to Datadog.
         ///
@@ -100,7 +100,7 @@ public enum Datadog {
         /// This value impacts the frequency of performing network requests by the SDK.
         ///
         /// `.average` by default.
-        public var uploadFrequency: UploadFrequency
+        public var uploadFrequency: UploadFrequency?
 
         /// Proxy configuration attributes.
         /// This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
@@ -126,7 +126,7 @@ public enum Datadog {
         /// Batch provessing level, defining the maximum number of batches processed sequencially without a delay within one reading/uploading cycle.
         ///
         /// `.medium` by default.
-        public var batchProcessingLevel: BatchProcessingLevel
+        public var batchProcessingLevel: BatchProcessingLevel?
 
         /// Flag that determines if UIApplication methods [`beginBackgroundTask(expirationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplication/1623031-beginbackgroundtaskwithexpiratio) and [`endBackgroundTask:`](https://developer.apple.com/documentation/uikit/uiapplication/1622970-endbackgroundtask)
         /// are utilized to perform background uploads. It may extend the amount of time the app is operating in background by 30 seconds.
@@ -134,7 +134,7 @@ public enum Datadog {
         /// Tasks are normally stopped when there's nothing to upload or when encountering any upload blocker such us no internet connection or low battery.
         ///
         /// `false` by default.
-        public var backgroundTasksEnabled: Bool
+        public var backgroundTasksEnabled: Bool?
 
         /// Creates a Datadog SDK Configuration object.
         ///
@@ -179,18 +179,18 @@ public enum Datadog {
         ///                                 any upload blocker such us no internet connection or low battery.
         ///                                 By default it's set to `false`.
         public init(
-            clientToken: String,
-            env: String,
-            site: DatadogSite = .us1,
+            clientToken: String? = nil,
+            env: String? = nil,
+            site: DatadogSite? = nil,
             service: String? = nil,
             bundle: Bundle = .main,
             batchSize: BatchSize = .medium,
-            uploadFrequency: UploadFrequency = .average,
+            uploadFrequency: UploadFrequency? = nil,
             proxyConfiguration: [AnyHashable: Any]? = nil,
             encryption: DataEncryption? = nil,
             serverDateProvider: ServerDateProvider? = nil,
-            batchProcessingLevel: BatchProcessingLevel = .medium,
-            backgroundTasksEnabled: Bool = false
+            batchProcessingLevel: BatchProcessingLevel? = nil,
+            backgroundTasksEnabled: Bool? = nil
         ) {
             self.clientToken = clientToken
             self.env = env
@@ -218,6 +218,9 @@ public enum Datadog {
         /// Sets additional configuration attributes.
         /// This can be used to tweak internal features of the SDK.
         internal var additionalConfiguration: [String: Any] = [:]
+
+        /// Local Configuration
+        internal var localConfiguration: [String: Any] = [:]
 
         /// Default date provider used by the SDK and all products.
         internal var dateProvider: DateProvider = SystemDateProvider()
@@ -364,7 +367,7 @@ public enum Datadog {
     ///                     stable between application runs.
     @discardableResult
     public static func initialize(
-        with configuration: Configuration,
+        with configuration: Configuration = .init(),
         trackingConsent: TrackingConsent,
         instanceName: String = CoreRegistry.defaultInstanceName
     ) -> DatadogCoreProtocol {
@@ -403,6 +406,17 @@ public enum Datadog {
 
         registerObjcExceptionHandlerOnce()
 
+        let config = try ConfigurationFile(from: configuration.bundle)
+        let site = configuration.site ?? config?.site ?? .us1
+
+        guard let clientToken = configuration.clientToken ?? config?.clientToken else {
+            throw ProgrammerError(description: "Missing Client Token")
+        }
+
+        guard let env = configuration.env ?? config?.env else {
+            throw ProgrammerError(description: "Missing Client Token")
+        }
+
         let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
         if debug {
             consolePrint("⚠️ Overriding verbosity, and upload frequency due to \(LaunchArguments.Debug) launch argument", .warn)
@@ -426,31 +440,35 @@ public enum Datadog {
         let sdkVersion = configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String ?? __sdkVersion
         let buildId = configuration.additionalConfiguration[CrossPlatformAttributes.buildId] as? String
         let nativeSourceType = configuration.additionalConfiguration[CrossPlatformAttributes.nativeSourceType] as? String
+        let uploadFrequency: Datadog.Configuration.UploadFrequency = configuration.uploadFrequency ?? config?.uploadFrequency ?? .average
+        let batchProcessingLevel: Datadog.Configuration.BatchProcessingLevel = configuration.batchProcessingLevel ?? config?.batchProcessingLevel ?? .medium
 
         let performance = PerformancePreset(
             batchSize: debug ? .small : configuration.batchSize,
-            uploadFrequency: debug ? .frequent : configuration.uploadFrequency,
+            uploadFrequency: debug ? .frequent : uploadFrequency,
             bundleType: bundleType
         )
         let isRunFromExtension = bundleType == .iOSAppExtension
 
+        let directory = try CoreDirectory(
+            in: configuration.systemDirectory(),
+            instanceName: instanceName,
+            site: site
+        )
+
         // Set default `DatadogCore`:
         let core = DatadogCore(
-            directory: try CoreDirectory(
-                in: configuration.systemDirectory(),
-                instanceName: instanceName,
-                site: configuration.site
-            ),
+            directory: directory,
             dateProvider: configuration.dateProvider,
             initialConsent: trackingConsent,
             performance: performance,
             httpClient: configuration.httpClientFactory(configuration.proxyConfiguration),
             encryption: configuration.encryption,
             contextProvider: DatadogContextProvider(
-                site: configuration.site,
-                clientToken: try ifValid(clientToken: configuration.clientToken),
+                site: site,
+                clientToken: try ifValid(clientToken: clientToken),
                 service: service,
-                env: try ifValid(env: configuration.env),
+                env: try ifValid(env: env),
                 version: applicationVersion,
                 buildNumber: applicationBuildNumber,
                 buildId: buildId,
@@ -469,14 +487,21 @@ public enum Datadog {
                 serverDateProvider: configuration.serverDateProvider
             ),
             applicationVersion: applicationVersion,
-            maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
-            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
-            isRunFromExtension: isRunFromExtension
+            maxBatchesPerUpload: batchProcessingLevel.maxBatchesPerUpload,
+            backgroundTasksEnabled: configuration.backgroundTasksEnabled ?? config?.backgroundUpload ?? false,
+            isRunFromExtension: isRunFromExtension,
+            configuration: try config.map { config in
+                try RemoteConfiguration(
+                    directory: directory.coreDirectory.url,
+                    endpoint: config.configURL,
+                    properties: config.properties
+                )
+            }
         )
 
         core.telemetry.configuration(
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
-            batchProcessingLevel: Int64(exactly: configuration.batchProcessingLevel.maxBatchesPerUpload),
+            batchProcessingLevel: Int64(exactly: batchProcessingLevel.maxBatchesPerUpload),
             batchSize: performance.uploaderWindow.toInt64Milliseconds,
             batchUploadFrequency: performance.minUploadDelay.toInt64Milliseconds,
             useLocalEncryption: configuration.encryption != nil,

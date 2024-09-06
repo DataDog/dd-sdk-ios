@@ -333,18 +333,18 @@ public class DDRUMConfiguration: NSObject {
         swiftConfig = .init(applicationID: applicationID)
     }
 
-    @objc public var applicationID: String {
+    @objc public var applicationID: String? {
         swiftConfig.applicationID
     }
 
-    @objc public var sessionSampleRate: Float {
-        set { swiftConfig.sessionSampleRate = newValue }
-        get { swiftConfig.sessionSampleRate }
+    @objc public var sessionSampleRate: NSNumber? {
+        set { swiftConfig.sessionSampleRate = newValue?.floatValue }
+        get { swiftConfig.sessionSampleRate.map { .init(value: $0) } }
     }
 
-    @objc public var telemetrySampleRate: Float {
-        set { swiftConfig.telemetrySampleRate = newValue }
-        get { swiftConfig.telemetrySampleRate }
+    @objc public var telemetrySampleRate: NSNumber? {
+        set { swiftConfig.telemetrySampleRate = newValue?.floatValue }
+        get { swiftConfig.telemetrySampleRate.map { .init(value: $0) } }
     }
 
     @objc public var uiKitViewsPredicate: DDUIKitRUMViewsPredicate? {
@@ -362,19 +362,19 @@ public class DDRUMConfiguration: NSObject {
         swiftConfig.urlSessionTracking = tracking.swiftConfig
     }
 
-    @objc public var trackFrustrations: Bool {
-        set { swiftConfig.trackFrustrations = newValue }
-        get { swiftConfig.trackFrustrations }
+    @objc public var trackFrustrations: NSNumber? {
+        set { swiftConfig.trackFrustrations = newValue?.boolValue }
+        get { swiftConfig.trackFrustrations.map { .init(value: $0) } }
     }
 
-    @objc public var trackBackgroundEvents: Bool {
-        set { swiftConfig.trackBackgroundEvents = newValue }
-        get { swiftConfig.trackBackgroundEvents }
+    @objc public var trackBackgroundEvents: NSNumber? {
+        set { swiftConfig.trackBackgroundEvents = newValue?.boolValue }
+        get { swiftConfig.trackBackgroundEvents.map { .init(value: $0) } }
     }
 
-    @objc public var trackWatchdogTerminations: Bool {
-        set { swiftConfig.trackWatchdogTerminations = newValue }
-        get { swiftConfig.trackWatchdogTerminations }
+    @objc public var trackWatchdogTerminations: NSNumber? {
+        set { swiftConfig.trackWatchdogTerminations = newValue?.boolValue }
+        get { swiftConfig.trackWatchdogTerminations.map { .init(value: $0) } }
     }
 
     @objc public var longTaskThreshold: TimeInterval {

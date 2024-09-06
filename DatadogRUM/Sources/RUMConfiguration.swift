@@ -48,7 +48,7 @@ extension RUM {
     /// RUM feature configuration.
     public struct Configuration {
         /// An unique identifier of the RUM application in Datadog.
-        public let applicationID: String
+        public var applicationID: String?
 
         /// The sampling rate for RUM sessions.
         ///
@@ -56,7 +56,7 @@ extension RUM {
         /// and 100 means all will be uploaded.
         ///
         /// Default: `100.0`.
-        public var sessionSampleRate: Float
+        public var sessionSampleRate: Float?
 
         /// The predicate for automatically tracking `UIViewControllers` as RUM views.
         ///
@@ -100,7 +100,7 @@ extension RUM {
         /// RUM detects "error taps"  when an error follows a RUM tap action.
         ///
         /// Default: `true`.
-        public var trackFrustrations: Bool
+        public var trackFrustrations: Bool?
 
         /// Determines whether RUM events should be tracked when no view is active (including when the app is in the background).
         ///
@@ -109,14 +109,14 @@ extension RUM {
         /// Note: Enabling this option may increase the number of sessions tracked and result in higher billing.
         ///
         /// Default: `false`.
-        public var trackBackgroundEvents: Bool
+        public var trackBackgroundEvents: Bool?
 
         /// Determines whether the SDK should track application termination by the watchdog.
         ///
         /// Read more about watchdog terminations at https://developer.apple.com/documentation/xcode/addressing-watchdog-terminations
         ///
         /// Default: `false`.
-        public var trackWatchdogTerminations: Bool
+        public var trackWatchdogTerminations: Bool?
 
         /// Enables RUM long tasks tracking with the given threshold (in seconds).
         ///
@@ -215,7 +215,7 @@ extension RUM {
         ///
         /// It must be a number between 0.0 and 100.0, where 0 means no telemetry will be sent,
         /// and 100 means all telemetry will be uploaded. The default value is 20.0.
-        public var telemetrySampleRate: Float
+        public var telemetrySampleRate: Float?
 
         // MARK: - Nested Types
 
@@ -253,7 +253,7 @@ extension RUM {
         }
 
         /// Frequency for collecting RUM vitals.
-        public enum VitalsFrequency: String {
+        public enum VitalsFrequency: String, Decodable {
             /// Every `100ms`.
             case frequent
             /// Every `500ms`.
@@ -265,30 +265,122 @@ extension RUM {
         // MARK: - Internal
 
         /// An extra sampling rate for configuration telemetry events. It is applied on top of the value configured in public `telemetrySampleRate`.
-        internal var configurationTelemetrySampleRate: Float = 20.0
+        internal var configurationTelemetrySampleRate: Float?
         /// The sample rate for "RUM Session Ended" telemetry. It is applied on top of the value configured in public `telemetrySampleRate`.
-        internal var sessionEndedMetricSampleRate: Float = MetricTelemetry.defaultSampleRate
-
-        internal var uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
-
-        internal var traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
-        internal var spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator()
-
-        internal var dateProvider: DateProvider = SystemDateProvider()
+        internal var sessionEndedMetricSampleRate: Float?
+        internal var uuidGenerator: RUMUUIDGenerator?
+        internal var traceIDGenerator: TraceIDGenerator?
+        internal var spanIDGenerator: SpanIDGenerator?
+        internal var dateProvider: DateProvider?
         /// The main queue, subject to App Hangs monitoring.
-        internal var mainQueue: DispatchQueue = .main
+        internal var mainQueue: DispatchQueue?
         /// Identifier of the current process, used to check if fatal App Hang originated in a previous process instance.
-        internal var processID: UUID = currentProcessID
+        internal var processID: UUID?
+        internal var debugSDK: Bool?
+        internal var debugViews: Bool?
+        internal var ciTestExecutionID: String?
+        internal var syntheticsTestId: String?
+        internal var syntheticsResultId: String?
 
-        internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
-        internal var debugViews: Bool = ProcessInfo.processInfo.arguments.contains("DD_DEBUG_RUM")
-        internal var ciTestExecutionID: String? = ProcessInfo.processInfo.environment["CI_VISIBILITY_TEST_EXECUTION_ID"]
-        internal var syntheticsTestId: String? = ProcessInfo.processInfo.environment["_dd.synthetics.test_id"]
-        internal var syntheticsResultId: String? = ProcessInfo.processInfo.environment["_dd.synthetics.result_id"]
-        internal var syntheticsEnvironment: Bool {
-            syntheticsTestId != nil || syntheticsResultId != nil
+        /// Creates RUM configuration.
+        /// - Parameters:
+        ///   - applicationID: The RUM application identifier.
+        ///   - sessionSampleRate: The sampling rate for RUM sessions. Must be a value between `0` and `100`. Default: `100`.
+        ///   - uiKitViewsPredicate: The predicate for automatically tracking `UIViewControllers` as RUM views. Default: `nil`.
+        ///   - uiKitActionsPredicate: The predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`.
+        ///   - urlSessionTracking: The configuration for automatic RUM resources tracking. Default: `nil`.
+        ///   - trackFrustrations: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
+        ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
+        ///   - longTaskThreshold: The threshold for RUM long tasks tracking (in seconds). Default: `0.1`.
+        ///   - appHangThreshold: The threshold for App Hangs monitoring (in seconds). Default: `nil`.
+        ///   - trackWatchdogTerminations: Determines whether the SDK should track application termination by the watchdog. Default: `false`.
+        ///   - vitalsUpdateFrequency: The preferred frequency for collecting RUM vitals. Default: `.average`.
+        ///   - viewEventMapper: Custom mapper for RUM view events. Default: `nil`.
+        ///   - resourceEventMapper: Custom mapper for RUM resource events. Default: `nil`.
+        ///   - actionEventMapper: Custom mapper for RUM action events. Default: `nil`.
+        ///   - errorEventMapper: Custom mapper for RUM error events. Default: `nil`.
+        ///   - longTaskEventMapper: Custom mapper for RUM long task events. Default: `nil`.
+        ///   - onSessionStart: RUM session start callback. Default: `nil`.
+        ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
+        ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
+        public init(
+            applicationID: String? = nil,
+            sessionSampleRate: Float? = nil,
+            uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
+            uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,
+            urlSessionTracking: URLSessionTracking? = nil,
+            trackFrustrations: Bool? = nil,
+            trackBackgroundEvents: Bool? = nil,
+            longTaskThreshold: TimeInterval? = nil,
+            appHangThreshold: TimeInterval? = nil,
+            trackWatchdogTerminations: Bool? = nil,
+            vitalsUpdateFrequency: VitalsFrequency? = nil,
+            viewEventMapper: RUM.ViewEventMapper? = nil,
+            resourceEventMapper: RUM.ResourceEventMapper? = nil,
+            actionEventMapper: RUM.ActionEventMapper? = nil,
+            errorEventMapper: RUM.ErrorEventMapper? = nil,
+            longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
+            onSessionStart: RUM.SessionListener? = nil,
+            customEndpoint: URL? = nil,
+            telemetrySampleRate: Float? = nil
+        ) {
+            self.applicationID = applicationID
+            self.sessionSampleRate = sessionSampleRate
+            self.uiKitViewsPredicate = uiKitViewsPredicate
+            self.uiKitActionsPredicate = uiKitActionsPredicate
+            self.urlSessionTracking = urlSessionTracking
+            self.trackFrustrations = trackFrustrations
+            self.trackBackgroundEvents = trackBackgroundEvents
+            self.longTaskThreshold = longTaskThreshold
+            self.appHangThreshold = appHangThreshold
+            self.vitalsUpdateFrequency = vitalsUpdateFrequency
+            self.viewEventMapper = viewEventMapper
+            self.resourceEventMapper = resourceEventMapper
+            self.actionEventMapper = actionEventMapper
+            self.errorEventMapper = errorEventMapper
+            self.longTaskEventMapper = longTaskEventMapper
+            self.onSessionStart = onSessionStart
+            self.customEndpoint = customEndpoint
+            self.telemetrySampleRate = telemetrySampleRate
+            self.trackWatchdogTerminations = trackWatchdogTerminations
         }
     }
+}
+
+internal struct InternalConfiguration {
+    let applicationID: String
+    let sessionSampleRate: Float
+    let uiKitViewsPredicate: UIKitRUMViewsPredicate?
+    let uiKitActionsPredicate: UIKitRUMActionsPredicate?
+    let urlSessionTracking: RUM.Configuration.URLSessionTracking?
+    let trackFrustrations: Bool
+    let trackBackgroundEvents: Bool
+    let trackWatchdogTerminations: Bool
+    let longTaskThreshold: TimeInterval?
+    let appHangThreshold: TimeInterval?
+    let vitalsUpdateFrequency: RUM.Configuration.VitalsFrequency?
+    let viewEventMapper: RUM.ViewEventMapper?
+    let resourceEventMapper: RUM.ResourceEventMapper?
+    let actionEventMapper: RUM.ActionEventMapper?
+    let errorEventMapper: RUM.ErrorEventMapper?
+    let longTaskEventMapper: RUM.LongTaskEventMapper?
+    let onSessionStart: RUM.SessionListener?
+    let customEndpoint: URL?
+    let telemetrySampleRate: Float
+    let configurationTelemetrySampleRate: Float
+    let sessionEndedMetricSampleRate: Float
+    let uuidGenerator: RUMUUIDGenerator
+    let traceIDGenerator: TraceIDGenerator
+    let spanIDGenerator: SpanIDGenerator
+    let dateProvider: DateProvider
+    let mainQueue: DispatchQueue
+    let processID: UUID
+    let debugSDK: Bool
+    let debugViews: Bool
+    let ciTestExecutionID: String?
+    let syntheticsTestId: String?
+    let syntheticsResultId: String?
+    var syntheticsEnvironment: Bool { syntheticsTestId != nil || syntheticsResultId != nil }
 }
 
 extension RUM.Configuration.URLSessionTracking {
@@ -331,68 +423,74 @@ extension RUM.Configuration.URLSessionTracking {
     }
 }
 
-extension RUM.Configuration {
-    /// Creates RUM configuration.
-    /// - Parameters:
-    ///   - applicationID: The RUM application identifier.
-    ///   - sessionSampleRate: The sampling rate for RUM sessions. Must be a value between `0` and `100`. Default: `100`.
-    ///   - uiKitViewsPredicate: The predicate for automatically tracking `UIViewControllers` as RUM views. Default: `nil`.
-    ///   - uiKitActionsPredicate: The predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`.
-    ///   - urlSessionTracking: The configuration for automatic RUM resources tracking. Default: `nil`.
-    ///   - trackFrustrations: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
-    ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
-    ///   - longTaskThreshold: The threshold for RUM long tasks tracking (in seconds). Default: `0.1`.
-    ///   - appHangThreshold: The threshold for App Hangs monitoring (in seconds). Default: `nil`.
-    ///   - trackWatchdogTerminations: Determines whether the SDK should track application termination by the watchdog. Default: `false`.
-    ///   - vitalsUpdateFrequency: The preferred frequency for collecting RUM vitals. Default: `.average`.
-    ///   - viewEventMapper: Custom mapper for RUM view events. Default: `nil`.
-    ///   - resourceEventMapper: Custom mapper for RUM resource events. Default: `nil`.
-    ///   - actionEventMapper: Custom mapper for RUM action events. Default: `nil`.
-    ///   - errorEventMapper: Custom mapper for RUM error events. Default: `nil`.
-    ///   - longTaskEventMapper: Custom mapper for RUM long task events. Default: `nil`.
-    ///   - onSessionStart: RUM session start callback. Default: `nil`.
-    ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
-    ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
-    public init(
-        applicationID: String,
-        sessionSampleRate: Float = 100,
-        uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
-        uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,
-        urlSessionTracking: URLSessionTracking? = nil,
-        trackFrustrations: Bool = true,
-        trackBackgroundEvents: Bool = false,
-        longTaskThreshold: TimeInterval? = 0.1,
-        appHangThreshold: TimeInterval? = nil,
-        trackWatchdogTerminations: Bool = false,
-        vitalsUpdateFrequency: VitalsFrequency? = .average,
-        viewEventMapper: RUM.ViewEventMapper? = nil,
-        resourceEventMapper: RUM.ResourceEventMapper? = nil,
-        actionEventMapper: RUM.ActionEventMapper? = nil,
-        errorEventMapper: RUM.ErrorEventMapper? = nil,
-        longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
-        onSessionStart: RUM.SessionListener? = nil,
-        customEndpoint: URL? = nil,
-        telemetrySampleRate: Float = 20
-    ) {
-        self.applicationID = applicationID
-        self.sessionSampleRate = sessionSampleRate
-        self.uiKitViewsPredicate = uiKitViewsPredicate
-        self.uiKitActionsPredicate = uiKitActionsPredicate
-        self.urlSessionTracking = urlSessionTracking
-        self.trackFrustrations = trackFrustrations
-        self.trackBackgroundEvents = trackBackgroundEvents
-        self.longTaskThreshold = longTaskThreshold
-        self.appHangThreshold = appHangThreshold
-        self.vitalsUpdateFrequency = vitalsUpdateFrequency
-        self.viewEventMapper = viewEventMapper
-        self.resourceEventMapper = resourceEventMapper
-        self.actionEventMapper = actionEventMapper
-        self.errorEventMapper = errorEventMapper
-        self.longTaskEventMapper = longTaskEventMapper
-        self.onSessionStart = onSessionStart
-        self.customEndpoint = customEndpoint
-        self.telemetrySampleRate = telemetrySampleRate
-        self.trackWatchdogTerminations = trackWatchdogTerminations
+extension InternalConfiguration {
+    init(configuration: RUM.Configuration, file: ConfigurationFile?, process: ProcessInfo = .processInfo) throws {
+        guard let applicationID = configuration.applicationID ?? file?.applicationID else {
+            throw ProgrammerError(description: "Missing RUM application ID")
+        }
+
+        self.init(
+            applicationID: applicationID,
+            sessionSampleRate: configuration.sessionSampleRate ?? file?.sessionSampleRate ?? 100,
+            uiKitViewsPredicate: configuration.uiKitViewsPredicate ?? (file?.automaticUIKitInstrumentation == true ? DefaultUIKitRUMViewsPredicate() : nil),
+            uiKitActionsPredicate: configuration.uiKitActionsPredicate ?? (file?.automaticUIKitInstrumentation == true ? DefaultUIKitRUMActionsPredicate() : nil),
+            urlSessionTracking: configuration.urlSessionTracking,
+            trackFrustrations: configuration.trackFrustrations ?? file?.trackFrustrations ?? true,
+            trackBackgroundEvents: configuration.trackBackgroundEvents ?? file?.trackBackgroundEvents ?? false,
+            trackWatchdogTerminations: configuration.trackWatchdogTerminations ?? file?.trackWatchdogTerminations ?? false,
+            longTaskThreshold: configuration.longTaskThreshold ?? file?.longTaskThreshold ?? 0.1,
+            appHangThreshold: configuration.appHangThreshold ?? file?.appHangThreshold,
+            vitalsUpdateFrequency: configuration.vitalsUpdateFrequency ?? file?.vitalsUpdateFrequency ?? .average,
+            viewEventMapper: configuration.viewEventMapper,
+            resourceEventMapper: configuration.resourceEventMapper,
+            actionEventMapper: configuration.actionEventMapper,
+            errorEventMapper: configuration.errorEventMapper,
+            longTaskEventMapper: configuration.longTaskEventMapper,
+            onSessionStart: configuration.onSessionStart,
+            customEndpoint: configuration.customEndpoint ?? file?.customEndpoint,
+            telemetrySampleRate: configuration.telemetrySampleRate ?? file?.telemetrySampleRate ?? 20,
+            configurationTelemetrySampleRate: configuration.configurationTelemetrySampleRate ?? 20, 
+            sessionEndedMetricSampleRate: configuration.sessionEndedMetricSampleRate ?? MetricTelemetry.defaultSampleRate,
+            uuidGenerator: configuration.uuidGenerator ?? DefaultRUMUUIDGenerator(),
+            traceIDGenerator: configuration.traceIDGenerator ?? DefaultTraceIDGenerator(),
+            spanIDGenerator: configuration.spanIDGenerator ?? DefaultSpanIDGenerator(),
+            dateProvider: configuration.dateProvider ?? SystemDateProvider(),
+            mainQueue: configuration.mainQueue ?? .main,
+            processID: configuration.processID ?? currentProcessID,
+            debugSDK: configuration.debugSDK ?? process.arguments.contains(LaunchArguments.Debug),
+            debugViews: configuration.debugViews ?? process.arguments.contains("DD_DEBUG_RUM"),
+            ciTestExecutionID: configuration.ciTestExecutionID ?? process.environment["CI_VISIBILITY_TEST_EXECUTION_ID"],
+            syntheticsTestId: configuration.syntheticsTestId ?? process.environment["_dd.synthetics.test_id"],
+            syntheticsResultId: configuration.syntheticsResultId ?? process.environment["_dd.synthetics.result_id"]
+        )
+    }
+}
+
+internal struct ConfigurationFile: Decodable {
+    let applicationID: String
+    let sessionSampleRate: Float?
+    let trackFrustrations: Bool?
+    let trackBackgroundEvents: Bool?
+    let trackWatchdogTerminations: Bool?
+    let longTaskThreshold: TimeInterval?
+    let appHangThreshold: TimeInterval?
+    let vitalsUpdateFrequency: RUM.Configuration.VitalsFrequency?
+    let customEndpoint: URL?
+    let telemetrySampleRate: Float?
+    let automaticUIKitInstrumentation: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case applicationID = "application_id"
+        case sessionSampleRate = "sample_rate"
+        case trackFrustrations = "track_frustrations"
+        case trackBackgroundEvents = "track_background_events"
+        case longTaskThreshold = "long_task_threashold"
+        case appHangThreshold = "app_hang_threshold"
+        case trackWatchdogTerminations = "track_watchdog_termination"
+        case telemetrySampleRate = "telemetry_sample_rate"
+        case vitalsUpdateFrequency = "vitals_update_frequency"
+        case customEndpoint = "custom_endpoint"
+        case automaticUIKitInstrumentation = "automatic_uikit_instrumentation"
     }
 }
 
@@ -403,7 +501,7 @@ extension InternalExtension where ExtendedType == RUM.Configuration {
     ///
     /// It is mostly used to enable or disable telemetry events when running test scenarios.
     /// Expects value between `0.0` and `100.0`.
-    public var configurationTelemetrySampleRate: Float {
+    public var configurationTelemetrySampleRate: Float? {
         get { type.configurationTelemetrySampleRate }
         set { type.configurationTelemetrySampleRate = newValue }
     }

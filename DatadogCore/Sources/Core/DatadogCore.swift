@@ -71,6 +71,9 @@ internal final class DatadogCore {
     /// Maximum number of batches per upload.
     internal let maxBatchesPerUpload: Int
 
+    /// Shared Configuration
+    internal let configuration: RemoteConfiguration?
+
     /// Creates a core instance.
     ///
     /// - Parameters:
@@ -93,7 +96,8 @@ internal final class DatadogCore {
         applicationVersion: String,
         maxBatchesPerUpload: Int,
         backgroundTasksEnabled: Bool,
-        isRunFromExtension: Bool = false
+        isRunFromExtension: Bool = false,
+        configuration: RemoteConfiguration? = nil
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
@@ -104,6 +108,7 @@ internal final class DatadogCore {
         self.maxBatchesPerUpload = maxBatchesPerUpload
         self.backgroundTasksEnabled = backgroundTasksEnabled
         self.isRunFromExtension = isRunFromExtension
+        self.configuration = configuration
         self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
         self.consentPublisher = TrackingConsentPublisher(consent: initialConsent)
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
@@ -113,6 +118,10 @@ internal final class DatadogCore {
         // connect the core to the message bus.
         // the bus will keep a weak ref to the core.
         bus.connect(core: self)
+
+        // connect core to remote configuration.
+        // the configuration will keep a weak ref to the core.
+        configuration?.connect(core: self)
 
         // forward any context change on the message-bus
         self.contextProvider.publish { [weak self] context in
@@ -310,6 +319,10 @@ extension DatadogCore: DatadogCoreProtocol {
 
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         bus.send(message: message, else: fallback)
+    }
+
+    func configuration<T>(_ type: T.Type, forKey key: String) -> T? where T : Decodable {
+        configuration?.property(type, forKey: key)
     }
 }
 

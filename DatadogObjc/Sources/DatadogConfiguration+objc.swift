@@ -10,9 +10,9 @@ import DatadogCore
 
 @objc
 public class DDSite: NSObject {
-    internal let sdkSite: DatadogSite
+    internal let sdkSite: DatadogSite?
 
-    internal init(sdkSite: DatadogSite) {
+    internal init(sdkSite: DatadogSite?) {
         self.sdkSite = sdkSite
     }
 
@@ -65,20 +65,23 @@ public enum DDUploadFrequency: Int {
     case frequent
     case average
     case rare
+    case none
 
-    internal var swiftType: Datadog.Configuration.UploadFrequency {
+    internal var swiftType: Datadog.Configuration.UploadFrequency? {
         switch self {
         case .frequent: return .frequent
         case .average: return .average
         case .rare: return .rare
+        case .none: return nil
         }
     }
 
-    internal init(swiftType: Datadog.Configuration.UploadFrequency) {
+    internal init(swiftType: Datadog.Configuration.UploadFrequency?) {
         switch swiftType {
         case .frequent: self = .frequent
         case .average: self = .average
         case .rare: self = .rare
+        case .none: self = .none
         }
     }
 }
@@ -88,20 +91,23 @@ public enum DDBatchProcessingLevel: Int {
     case low
     case medium
     case high
+    case none
 
-    internal var swiftType: Datadog.Configuration.BatchProcessingLevel {
+    internal var swiftType: Datadog.Configuration.BatchProcessingLevel? {
         switch self {
         case .low: return .low
         case .medium: return .medium
         case .high: return .high
+        case .none: return nil
         }
     }
 
-    internal init(swiftType: Datadog.Configuration.BatchProcessingLevel) {
+    internal init(swiftType: Datadog.Configuration.BatchProcessingLevel?) {
         switch swiftType {
         case .low: self = .low
         case .medium: self = .medium
         case .high: self = .high
+        case .none: self = .none
         }
     }
 }
@@ -173,14 +179,14 @@ public class DDConfiguration: NSObject {
     internal var sdkConfiguration: Datadog.Configuration
 
     /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.
-    @objc public var clientToken: String {
+    @objc public var clientToken: String? {
         get { sdkConfiguration.clientToken }
         set { sdkConfiguration.clientToken = newValue }
     }
 
     /// The environment name which will be sent to Datadog. This can be used
     /// To filter events on different environments (e.g. "staging" or "production").
-    @objc public var env: String {
+    @objc public var env: String? {
         get { sdkConfiguration.env }
         set { sdkConfiguration.env = newValue }
     }
@@ -188,9 +194,9 @@ public class DDConfiguration: NSObject {
     /// The Datadog server site where data is sent.
     ///
     /// Default value is `.us1`.
-    @objc public var site: DDSite {
+    @objc public var site: DDSite? {
         get { DDSite(sdkSite: sdkConfiguration.site) }
-        set { sdkConfiguration.site = newValue.sdkSite }
+        set { sdkConfiguration.site = newValue?.sdkSite }
     }
 
     /// The service name associated with data send to Datadog.

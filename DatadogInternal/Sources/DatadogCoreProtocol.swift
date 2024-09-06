@@ -51,6 +51,14 @@ public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing, 
     ///   - type: The Feature instance type.
     /// - Returns: The scope for requested feature type.
     func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature
+    
+    /// Return a Configuration object of type T.
+    ///
+    /// - Parameters:
+    ///   - type: The configuration type.
+    ///   - key: The configuration key.
+    /// - Returns: The configuration object if available.
+    func configuration<T>(_ type: T.Type, forKey key: String) -> T? where T: Decodable
 }
 
 public protocol MessageSending {
@@ -100,6 +108,14 @@ public protocol BaggageSharing {
 }
 
 extension DatadogCoreProtocol {
+    /// Return a Configuration object of type T.
+    ///
+    /// - Parameters:
+    ///   - key: The configuration key.
+    /// - Returns: The configuration object if available.
+    func configuration<T>(forKey key: String) -> T? where T: Decodable {
+        configuration(T.self, forKey: key)
+    }
     /// Returns a `DatadogFeature` conforming type from the
     /// Feature registry.
     ///
@@ -295,7 +311,7 @@ public extension FeatureScope {
 }
 
 /// No-op implementation of `DatadogFeatureRegistry`.
-public class NOPDatadogCore: DatadogCoreProtocol {
+public class NOPDatadogCore: DatadogCoreProtocol {   
     public init() { }
     /// no-op
     public func register<T>(feature: T) throws where T: DatadogFeature { }
@@ -308,7 +324,9 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     /// no-op
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
     /// no-op
-    public func mostRecentModifiedFileAt(before: Date) throws -> Date? { return nil }
+    public func mostRecentModifiedFileAt(before: Date) throws -> Date? { nil }
+    /// no-op/// no-op
+    public func configuration<T>(_ type: T.Type, forKey key: String) -> T? where T : Decodable { nil }
 }
 
 public struct NOPFeatureScope: FeatureScope {

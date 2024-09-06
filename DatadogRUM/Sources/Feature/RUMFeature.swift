@@ -19,11 +19,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
     let instrumentation: RUMInstrumentation
 
-    let configuration: RUM.Configuration
+    let configuration: InternalConfiguration
 
     init(
         in core: DatadogCoreProtocol,
-        configuration: RUM.Configuration
+        configuration: InternalConfiguration
     ) throws {
         self.configuration = configuration
         let eventsMapper = RUMEventsMapper(

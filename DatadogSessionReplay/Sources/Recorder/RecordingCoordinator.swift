@@ -16,8 +16,10 @@ internal class RecordingCoordinator {
     let recorder: Recording
     let scheduler: Scheduler
     let sampler: Sampler
-    let privacy: PrivacyLevel
     let srContextPublisher: SRContextPublisher
+
+    @ReadWriteLock
+    var privacy: PrivacyLevel
 
     private var currentRUMContext: RUMContext? = nil
     private var isSampled = false

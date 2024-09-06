@@ -43,9 +43,9 @@ public final class DDSessionReplayConfiguration: NSObject {
     /// Note: This sample rate is applied in addition to the RUM sample rate. For example, if RUM uses a sample rate of 80%
     /// and Session Replay uses a sample rate of 20%, it means that out of all user sessions, 80% will be included in RUM,
     /// and within those sessions, only 20% will have replays.
-    @objc public var replaySampleRate: Float {
-        set { _swift.replaySampleRate = newValue }
-        get { _swift.replaySampleRate }
+    @objc public var replaySampleRate: NSNumber? {
+        set { _swift.replaySampleRate = newValue?.floatValue }
+        get { _swift.replaySampleRate.map { .init(value: $0) } }
     }
 
     /// Defines the way sensitive content (e.g. text) should be masked.
@@ -91,20 +91,23 @@ public enum DDSessionReplayConfigurationPrivacyLevel: Int {
     /// Mask input elements, but record all other content.
     case maskUserInput
 
-    internal var _swift: SessionReplayPrivacyLevel {
+    case none
+
+    internal var _swift: SessionReplayPrivacyLevel? {
         switch self {
         case .allow: return .allow
         case .mask: return .mask
         case .maskUserInput: return .maskUserInput
-        default: return .mask
+        default: return .none
         }
     }
 
-    internal init(_ swift: SessionReplayPrivacyLevel) {
+    internal init(_ swift: SessionReplayPrivacyLevel?) {
         switch swift {
         case .allow: self = .allow
         case .mask: self = .mask
         case .maskUserInput: self = .maskUserInput
+        case .none: self = .none
         }
     }
 }

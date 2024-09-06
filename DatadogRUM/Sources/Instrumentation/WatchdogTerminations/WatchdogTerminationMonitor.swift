@@ -192,7 +192,7 @@ extension WatchdogTerminationMonitor: FeatureMessageReceiver {
         }
 
         switch message {
-        case .baggage, .webview, .telemetry:
+        case .baggage, .webview, .telemetry, .configuration:
             break
         case .context(let context):
             let state = context.applicationStateHistory.currentSnapshot.state
