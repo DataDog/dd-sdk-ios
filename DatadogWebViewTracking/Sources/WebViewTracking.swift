@@ -111,7 +111,13 @@ public enum WebViewTracking {
             type: SessionReplayConfiguration.self
         )
 
-        let privacyLevel = sessionReplay != nil ? Self.determineWebViewPrivacyLevel(textPrivacy: sessionReplay!.textAndInputPrivacyLevel, imagePrivacy: sessionReplay!.imagePrivacyLevel, touchPrivacy: sessionReplay!.touchPrivacyLevel) : .mask   // swiftlint:disable:this force_unwrapping
+        let privacyLevel = sessionReplay.map {
+            Self.determineWebViewPrivacyLevel(
+                textPrivacy: $0.textAndInputPrivacyLevel,
+                imagePrivacy: $0.imagePrivacyLevel,
+                touchPrivacy: $0.touchPrivacyLevel
+            )
+        } ?? .mask
 
         // Share native capabilities with Browser SDK
         let capabilities = sessionReplay != nil ? "\"records\"" : ""
@@ -143,6 +149,10 @@ public enum WebViewTracking {
         )
     }
 
+    /// Conversion matrix from global privacy level to fine-grained privaly levels.
+    /// Although `SessionReplayPrivacyLevel` is deprecated on mobile,
+    /// it is still needed to configure the browser SDK for the web integration,
+    /// which currently doesn't support fine-grained priavcy options.
     internal static func determineWebViewPrivacyLevel(
             textPrivacy: TextAndInputPrivacyLevel,
             imagePrivacy: ImagePrivacyLevel,
