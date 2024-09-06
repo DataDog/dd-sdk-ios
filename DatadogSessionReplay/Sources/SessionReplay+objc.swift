@@ -58,7 +58,7 @@ public final class DDSessionReplayConfiguration: NSObject {
     /// Defines the way texts and inputs (e.g. labels, textfields, checkboxes) should be masked.
     ///
     /// Default: `.maskAll`.
-    @objc public var textAndInputPrivacyLevel: DDSessionReplayConfigurationTextAndInputPrivacyLevel {
+    @objc public var textAndInputPrivacyLevel: DDTextAndInputPrivacyLevel {
         set { _swift.textAndInputPrivacyLevel = newValue._swift }
         get { .init(_swift.textAndInputPrivacyLevel) }
     }
@@ -97,7 +97,7 @@ public final class DDSessionReplayConfiguration: NSObject {
     @objc
     public required init(
         replaySampleRate: Float,
-        textAndInputPrivacyLevel: DDSessionReplayConfigurationTextAndInputPrivacyLevel,
+        textAndInputPrivacyLevel: DDTextAndInputPrivacyLevel,
         imagePrivacyLevel: DDImagePrivacyLevel,
         touchPrivacyLevel: DDTouchPrivacyLevel
     ) {
@@ -158,7 +158,7 @@ public enum DDSessionReplayConfigurationPrivacyLevel: Int {
 
 /// Available privacy levels for text and input masking.
 @objc
-public enum DDSessionReplayConfigurationTextAndInputPrivacyLevel: Int {
+public enum DDTextAndInputPrivacyLevel: Int {
     /// Show all text except sensitive input (eg. password fields).
     case maskSensitiveInputs
 

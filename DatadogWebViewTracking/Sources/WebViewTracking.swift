@@ -111,8 +111,13 @@ public enum WebViewTracking {
             type: SessionReplayConfiguration.self
         )
 
-        // TODO: RUM-5766 - Pass correct privacy level to webviews
-        let privacyLevel = sessionReplay?.privacyLevel ?? .mask
+        let privacyLevel = sessionReplay.map {
+            Self.determineWebViewPrivacyLevel(
+                textPrivacy: $0.textAndInputPrivacyLevel,
+                imagePrivacy: $0.imagePrivacyLevel,
+                touchPrivacy: $0.touchPrivacyLevel
+            )
+        } ?? .mask
 
         // Share native capabilities with Browser SDK
         let capabilities = sessionReplay != nil ? "\"records\"" : ""
@@ -143,6 +148,39 @@ public enum WebViewTracking {
             )
         )
     }
+
+    /// Conversion matrix from global privacy level to fine-grained privaly levels.
+    /// Although `SessionReplayPrivacyLevel` is deprecated on mobile,
+    /// it is still needed to configure the browser SDK for the web integration,
+    /// which currently doesn't support fine-grained priavcy options.
+    internal static func determineWebViewPrivacyLevel(
+            textPrivacy: TextAndInputPrivacyLevel,
+            imagePrivacy: ImagePrivacyLevel,
+            touchPrivacy: TouchPrivacyLevel
+        ) -> SessionReplayPrivacyLevel {
+            switch (textPrivacy, imagePrivacy, touchPrivacy) {
+            case (.maskSensitiveInputs, .maskNone, .show):
+                return .allow
+            case (.maskSensitiveInputs, .maskNone, .hide):
+                return .mask
+            case (.maskSensitiveInputs, .maskNonBundledOnly, _):
+                return .mask
+            case (.maskSensitiveInputs, .maskAll, _):
+                return .mask
+
+            case (.maskAllInputs, .maskNone, .show):
+                return .maskUserInput
+            case (.maskAllInputs, .maskNone, .hide):
+                return .mask
+            case (.maskAllInputs, .maskNonBundledOnly, _):
+                return .mask
+            case (.maskAllInputs, .maskAll, _):
+                return .mask
+
+            case (.maskAll, _, _):
+                return .mask
+            }
+        }
 #endif
 }
 

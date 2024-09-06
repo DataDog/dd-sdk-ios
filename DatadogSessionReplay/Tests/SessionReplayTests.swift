@@ -71,7 +71,7 @@ class SessionReplayTests: XCTestCase {
         XCTAssertNil((r.requestBuilder as? ResourceRequestBuilder)?.customUploadURL)
     }
 
-    func testWhenEnabledWithDefaultConfigurationWithNewAPI() throws {
+    func testWhenEnabledWithNewAPI() throws {
         let textAndInputPrivacy: TextAndInputPrivacyLevel = .mockRandom()
         let imagePrivacy: ImagePrivacyLevel = .mockRandom()
         let touchPrivacy: TouchPrivacyLevel = .mockRandom()
@@ -96,65 +96,19 @@ class SessionReplayTests: XCTestCase {
         XCTAssertNil((r.requestBuilder as? ResourceRequestBuilder)?.customUploadURL)
     }
 
-    func testWhenEnabled_itSendsConfigurationTelemetry() throws {
-        // Given
-        let sampleRate: Int64 = .mockRandom(min: 0, max: 100)
-        let privacyLevel: SessionReplayPrivacyLevel = .mockRandom()
-        let startRecordingImmediately: Bool = .mockRandom()
-        let messageReceiver = FeatureMessageReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: messageReceiver)
-        let newPrivacyLevels = SessionReplay.Configuration.convertPrivacyLevel(from: privacyLevel)
+    func testWhenEnabledWithRandomPrivacyLevel() throws {
+        let randomPrivacy: SessionReplayPrivacyLevel = .mockRandom()
+        config.defaultPrivacyLevel = randomPrivacy
 
         // When
-        SessionReplay.enable(
-            with: SessionReplay.Configuration(
-                replaySampleRate: Float(sampleRate),
-                defaultPrivacyLevel: privacyLevel,
-                startRecordingImmediately: startRecordingImmediately
-            ),
-            in: core
-        )
+        SessionReplay.enable(with: config, in: core)
 
         // Then
-        let configuration = try XCTUnwrap(messageReceiver.messages.firstTelemetry?.asConfiguration)
-        XCTAssertEqual(configuration.sessionReplaySampleRate, sampleRate)
-        XCTAssertEqual(configuration.defaultPrivacyLevel, privacyLevel.rawValue)
-        XCTAssertNil(configuration.textAndInputPrivacyLevel)
-        XCTAssertNil(configuration.imagePrivacyLevel)
-        XCTAssertNil(configuration.touchPrivacyLevel)
-        XCTAssertEqual(configuration.startRecordingImmediately, startRecordingImmediately)
-    }
-
-    func testWhenEnabled_itSendsConfigurationTelemetry_withNewApi() throws {
-        // Given
-        let sampleRate: Int64 = .mockRandom(min: 0, max: 100)
-        let textAndInputLevel: TextAndInputPrivacyLevel = .mockRandom()
-        let imageLevel: ImagePrivacyLevel = .mockRandom()
-        let touchLevel: TouchPrivacyLevel = .mockRandom()
-        let startRecordingImmediately: Bool = .mockRandom()
-        let messageReceiver = FeatureMessageReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: messageReceiver)
-
-        // When
-        SessionReplay.enable(
-            with: SessionReplay.Configuration(
-                replaySampleRate: Float(sampleRate),
-                textAndInputPrivacyLevel: textAndInputLevel,
-                imagePrivacyLevel: imageLevel,
-                touchPrivacyLevel: touchLevel,
-                startRecordingImmediately: startRecordingImmediately
-            ),
-            in: core
-        )
-
-        // Then
-        let configuration = try XCTUnwrap(messageReceiver.messages.firstTelemetry?.asConfiguration)
-        XCTAssertEqual(configuration.sessionReplaySampleRate, sampleRate)
-        XCTAssertNil(configuration.defaultPrivacyLevel)
-        XCTAssertEqual(configuration.textAndInputPrivacyLevel, textAndInputLevel.rawValue)
-        XCTAssertEqual(configuration.imagePrivacyLevel, imageLevel.rawValue)
-        XCTAssertEqual(configuration.touchPrivacyLevel, touchLevel.rawValue)
-        XCTAssertEqual(configuration.startRecordingImmediately, startRecordingImmediately)
+        let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
+        let newPrivacyLevels = SessionReplay.Configuration.convertPrivacyLevel(from: randomPrivacy)
+        XCTAssertEqual(sr.recordingCoordinator.textAndInputPrivacy, newPrivacyLevels.textAndInputPrivacy)
+        XCTAssertEqual(sr.recordingCoordinator.imagePrivacy, newPrivacyLevels.imagePrivacy)
+        XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, newPrivacyLevels.touchPrivacy)
     }
 
     func testWhenEnabledWithReplaySampleRate() throws {
@@ -167,46 +121,6 @@ class SessionReplayTests: XCTestCase {
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
         XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, random)
-    }
-
-    func testWhenEnabledWithRandomPrivacyLevel() throws {
-        let randomPrivacy: SessionReplayPrivacyLevel = .mockRandom()
-        config.defaultPrivacyLevel = randomPrivacy
-        let newPrivacyLevels = SessionReplay.Configuration.convertPrivacyLevel(from: randomPrivacy)
-
-        // When
-        SessionReplay.enable(with: config, in: core)
-
-        // Then
-        let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-        XCTAssertEqual(sr.recordingCoordinator.textAndInputPrivacy, newPrivacyLevels.textAndInputPrivacy)
-        XCTAssertEqual(sr.recordingCoordinator.imagePrivacy, newPrivacyLevels.imagePrivacy)
-        XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, newPrivacyLevels.touchPrivacy)
-    }
-
-    func testWhenEnabledWithRandomPrivacyLevelWithNewAPI() throws {
-        config = SessionReplay.Configuration(
-            replaySampleRate: 42,
-            textAndInputPrivacyLevel: .mockRandom(),
-            imagePrivacyLevel: .mockRandom(),
-            touchPrivacyLevel: .mockRandom()
-        )
-
-        let randomTextAndInputPrivacy: TextAndInputPrivacyLevel = .mockRandom()
-        config.textAndInputPrivacyLevel = randomTextAndInputPrivacy
-        let randomImagePrivacy: ImagePrivacyLevel = .mockRandom()
-        config.imagePrivacyLevel = randomImagePrivacy
-        let randomTouchPrivacy: TouchPrivacyLevel = .mockRandom()
-        config.touchPrivacyLevel = randomTouchPrivacy
-
-        // When
-        SessionReplay.enable(with: config, in: core)
-
-        // Then
-        let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-        XCTAssertEqual(sr.recordingCoordinator.textAndInputPrivacy, randomTextAndInputPrivacy)
-        XCTAssertEqual(sr.recordingCoordinator.imagePrivacy, randomImagePrivacy)
-        XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, randomTouchPrivacy)
     }
 
     func testWhenEnabledWithCustomEndpoint() throws {
@@ -258,6 +172,69 @@ class SessionReplayTests: XCTestCase {
         // Then
         XCTAssertNil(core.get(feature: SessionReplayFeature.self))
         XCTAssertNil(core.get(feature: ResourcesFeature.self))
+    }
+
+    // MARK: Telemetry
+
+    func testWhenEnabled_itSendsConfigurationTelemetry() throws {
+        // Given
+        let sampleRate: Int64 = .mockRandom(min: 0, max: 100)
+        let privacyLevel: SessionReplayPrivacyLevel = .mockRandom()
+        let startRecordingImmediately: Bool = .mockRandom()
+        let messageReceiver = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: messageReceiver)
+
+        // When
+        SessionReplay.enable(
+            with: SessionReplay.Configuration(
+                replaySampleRate: Float(sampleRate),
+                defaultPrivacyLevel: privacyLevel,
+                startRecordingImmediately: startRecordingImmediately
+            ),
+            in: core
+        )
+
+        // Then
+        let configuration = try XCTUnwrap(messageReceiver.messages.firstTelemetry?.asConfiguration)
+        XCTAssertEqual(configuration.sessionReplaySampleRate, sampleRate)
+        XCTAssertNil(configuration.defaultPrivacyLevel)
+        let newPrivacyLevels = SessionReplay.Configuration.convertPrivacyLevel(from: privacyLevel)
+        XCTAssertEqual(configuration.textAndInputPrivacyLevel, newPrivacyLevels.textAndInputPrivacy.rawValue)
+        XCTAssertEqual(configuration.imagePrivacyLevel, newPrivacyLevels.imagePrivacy.rawValue)
+        XCTAssertEqual(configuration.touchPrivacyLevel, newPrivacyLevels.touchPrivacy.rawValue)
+        XCTAssertEqual(configuration.startRecordingImmediately, startRecordingImmediately)
+    }
+
+    func testWhenEnabled_itSendsConfigurationTelemetry_withNewApi() throws {
+        // Given
+        let sampleRate: Int64 = .mockRandom(min: 0, max: 100)
+        let textAndInputLevel: TextAndInputPrivacyLevel = .mockRandom()
+        let imageLevel: ImagePrivacyLevel = .mockRandom()
+        let touchLevel: TouchPrivacyLevel = .mockRandom()
+        let startRecordingImmediately: Bool = .mockRandom()
+        let messageReceiver = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: messageReceiver)
+
+        // When
+        SessionReplay.enable(
+            with: SessionReplay.Configuration(
+                replaySampleRate: Float(sampleRate),
+                textAndInputPrivacyLevel: textAndInputLevel,
+                imagePrivacyLevel: imageLevel,
+                touchPrivacyLevel: touchLevel,
+                startRecordingImmediately: startRecordingImmediately
+            ),
+            in: core
+        )
+
+        // Then
+        let configuration = try XCTUnwrap(messageReceiver.messages.firstTelemetry?.asConfiguration)
+        XCTAssertEqual(configuration.sessionReplaySampleRate, sampleRate)
+        XCTAssertNil(configuration.defaultPrivacyLevel)
+        XCTAssertEqual(configuration.textAndInputPrivacyLevel, textAndInputLevel.rawValue)
+        XCTAssertEqual(configuration.imagePrivacyLevel, imageLevel.rawValue)
+        XCTAssertEqual(configuration.touchPrivacyLevel, touchLevel.rawValue)
+        XCTAssertEqual(configuration.startRecordingImmediately, startRecordingImmediately)
     }
 
     // MARK: - Recording Tests

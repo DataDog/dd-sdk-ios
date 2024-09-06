@@ -23,7 +23,7 @@
 
 - (void)testConfigurationWithNewApi {
     DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100
-                                                   textAndInputPrivacyLevel:DDSessionReplayConfigurationTextAndInputPrivacyLevelMaskAll
+                                                   textAndInputPrivacyLevel:DDTextAndInputPrivacyLevelMaskAll
                                                    imagePrivacyLevel:DDImagePrivacyLevelMaskNone
                                                    touchPrivacyLevel:DDTouchPrivacyLevelShow];
     configuration.customEndpoint = [NSURL new];

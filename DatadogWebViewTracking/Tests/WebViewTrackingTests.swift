@@ -12,7 +12,6 @@ import TestUtilities
 import DatadogInternal
 @testable import DatadogWebViewTracking
 
-// TODO: RUM-5766 - Pass correct privacy level to webviews
 class WebViewTrackingTests: XCTestCase {
     func testItAddsUserScript() throws {
         let mockSanitizer = HostsSanitizerMock()
@@ -52,7 +51,9 @@ class WebViewTrackingTests: XCTestCase {
         struct SessionReplayFeature: DatadogFeature, SessionReplayConfiguration {
             static let name = "session-replay"
             let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
-            let privacyLevel: SessionReplayPrivacyLevel
+            let textAndInputPrivacyLevel: DatadogInternal.TextAndInputPrivacyLevel
+            let imagePrivacyLevel: DatadogInternal.ImagePrivacyLevel
+            let touchPrivacyLevel: DatadogInternal.TouchPrivacyLevel
         }
 
         let mockSanitizer = HostsSanitizerMock()
@@ -60,7 +61,14 @@ class WebViewTrackingTests: XCTestCase {
 
         let host: String = .mockRandom()
         let sr = SessionReplayFeature(
-            privacyLevel: .mockRandom()
+            textAndInputPrivacyLevel: .mockRandom(),
+            imagePrivacyLevel: .mockRandom(),
+            touchPrivacyLevel: .mockRandom()
+        )
+        let privacyLevel = WebViewTracking.determineWebViewPrivacyLevel(
+            textPrivacy: sr.textAndInputPrivacyLevel,
+            imagePrivacy: sr.imagePrivacyLevel,
+            touchPrivacy: sr.touchPrivacyLevel
         )
 
         WebViewTracking.enable(
@@ -85,7 +93,7 @@ class WebViewTrackingTests: XCTestCase {
                 return '["records"]'
             },
             getPrivacyLevel() {
-                return '\(sr.privacyLevel.rawValue)'
+                return '\(privacyLevel.rawValue)'
             }
         }
         """)

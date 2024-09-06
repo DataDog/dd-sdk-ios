@@ -10,6 +10,9 @@ import DatadogInternal
 
 // swiftlint:disable duplicate_imports
 @_exported import enum DatadogInternal.SessionReplayPrivacyLevel
+@_exported import enum DatadogInternal.TextAndInputPrivacyLevel
+@_exported import enum DatadogInternal.ImagePrivacyLevel
+@_exported import enum DatadogInternal.TouchPrivacyLevel
 // swiftlint:enable duplicate_imports
 
 extension SessionReplay {
@@ -29,7 +32,7 @@ extension SessionReplay {
         ///
         /// Default: `.mask`.
         @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use the new privacy levels instead.")
-        public var defaultPrivacyLevel: SessionReplayPrivacyLevel {
+        public var defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask {
             /// Whenever a new `defaultPrivacyLevel` is set, it converts it to the new privacy levels.
             didSet {
                 let newPrivacyLevels = Self.convertPrivacyLevel(from: defaultPrivacyLevel)
@@ -38,11 +41,6 @@ extension SessionReplay {
                 self.touchPrivacyLevel = newPrivacyLevels.touchPrivacy
             }
         }
-
-        /// Indicates if the configuration was set with the new API.
-        ///
-        /// Set to `false` when initiated with deprecated API, and to `true` when initiated with new API.
-        private(set) var isConfiguredWithNewApi: Bool
 
         /// Defines the way text and input (e.g. textfields, checkboxes) should be masked.
         ///
@@ -92,13 +90,11 @@ extension SessionReplay {
             customEndpoint: URL? = nil
         ) {
             self.replaySampleRate = replaySampleRate
-            self.defaultPrivacyLevel = .mask
             self.textAndInputPrivacyLevel = textAndInputPrivacyLevel
             self.imagePrivacyLevel = imagePrivacyLevel
             self.touchPrivacyLevel = touchPrivacyLevel
             self.startRecordingImmediately = startRecordingImmediately
             self.customEndpoint = customEndpoint
-            self.isConfiguredWithNewApi = true
         }
 
         /// Creates Session Replay configuration.
@@ -122,7 +118,6 @@ extension SessionReplay {
             self.touchPrivacyLevel = newPrivacyLevels.touchPrivacy
             self.startRecordingImmediately = startRecordingImmediately
             self.customEndpoint = customEndpoint
-            self.isConfiguredWithNewApi = false
         }
 
         @_spi(Internal)

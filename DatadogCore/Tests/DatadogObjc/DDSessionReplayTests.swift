@@ -31,7 +31,7 @@ class DDSessionReplayTests: XCTestCase {
 
     func testConfigurationWithNewApi() {
         // Given
-        let textAndInputPrivacy: DDSessionReplayConfigurationTextAndInputPrivacyLevel = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
+        let textAndInputPrivacy: DDTextAndInputPrivacyLevel = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
         let touchPrivacy: DDTouchPrivacyLevel = [.show, .hide].randomElement()!
         let imagePrivacy: DDImagePrivacyLevel = [.maskAll, .maskNonBundledOnly, .maskNone].randomElement()!
         let sampleRate: Float = .mockRandom(min: 0, max: 100)
@@ -47,6 +47,7 @@ class DDSessionReplayTests: XCTestCase {
         // Then
         XCTAssertEqual(config._swift.replaySampleRate, sampleRate)
         XCTAssertEqual(config._swift.textAndInputPrivacyLevel, textAndInputPrivacy._swift)
+        XCTAssertEqual(config._swift.imagePrivacyLevel, imagePrivacy._swift)
         XCTAssertEqual(config._swift.touchPrivacyLevel, touchPrivacy._swift)
         XCTAssertNil(config._swift.customEndpoint)
     }
@@ -55,7 +56,7 @@ class DDSessionReplayTests: XCTestCase {
         // Given
         let sampleRate: Float = .mockRandom(min: 0, max: 100)
         let privacy: DDSessionReplayConfigurationPrivacyLevel = [.allow, .mask, .maskUserInput].randomElement()!
-        let textAndInputPrivacy: DDSessionReplayConfigurationTextAndInputPrivacyLevel = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
+        let textAndInputPrivacy: DDTextAndInputPrivacyLevel = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
         let imagePrivacy: DDImagePrivacyLevel = [.maskAll, .maskNonBundledOnly, .maskNone].randomElement()!
         let touchPrivacy: DDTouchPrivacyLevel = [.show, .hide].randomElement()!
         let url: URL = .mockRandom()
@@ -81,8 +82,7 @@ class DDSessionReplayTests: XCTestCase {
     func testConfigurationOverridesWithNewApi() {
         // Given
         let sampleRate: Float = .mockRandom(min: 0, max: 100)
-        let privacy: DDSessionReplayConfigurationPrivacyLevel = [.allow, .mask, .maskUserInput].randomElement()!
-        let textAndInputPrivacy: DDSessionReplayConfigurationTextAndInputPrivacyLevel = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
+        let textAndInputPrivacy: DDTextAndInputPrivacyLevel = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
         let imagePrivacy: DDImagePrivacyLevel = [.maskAll, .maskNonBundledOnly, .maskNone].randomElement()!
         let touchPrivacy: DDTouchPrivacyLevel = [.show, .hide].randomElement()!
         let url: URL = .mockRandom()
@@ -95,7 +95,6 @@ class DDSessionReplayTests: XCTestCase {
             touchPrivacyLevel: .hide
         )
         config.replaySampleRate = sampleRate
-        config.defaultPrivacyLevel = privacy
         config.textAndInputPrivacyLevel = textAndInputPrivacy
         config.imagePrivacyLevel = imagePrivacy
         config.touchPrivacyLevel = touchPrivacy
@@ -103,7 +102,6 @@ class DDSessionReplayTests: XCTestCase {
 
         // Then
         XCTAssertEqual(config._swift.replaySampleRate, sampleRate)
-        XCTAssertEqual(config._swift.defaultPrivacyLevel, privacy._swift)
         XCTAssertEqual(config._swift.textAndInputPrivacyLevel, textAndInputPrivacy._swift)
         XCTAssertEqual(config._swift.imagePrivacyLevel, imagePrivacy._swift)
         XCTAssertEqual(config._swift.touchPrivacyLevel, touchPrivacy._swift)
@@ -121,13 +119,13 @@ class DDSessionReplayTests: XCTestCase {
     }
 
     func testTextAndInputPrivacyLevelsInterop() {
-        XCTAssertEqual(DDSessionReplayConfigurationTextAndInputPrivacyLevel.maskAll._swift, .maskAll)
-        XCTAssertEqual(DDSessionReplayConfigurationTextAndInputPrivacyLevel.maskAllInputs._swift, .maskAllInputs)
-        XCTAssertEqual(DDSessionReplayConfigurationTextAndInputPrivacyLevel.maskSensitiveInputs._swift, .maskSensitiveInputs)
+        XCTAssertEqual(DDTextAndInputPrivacyLevel.maskAll._swift, .maskAll)
+        XCTAssertEqual(DDTextAndInputPrivacyLevel.maskAllInputs._swift, .maskAllInputs)
+        XCTAssertEqual(DDTextAndInputPrivacyLevel.maskSensitiveInputs._swift, .maskSensitiveInputs)
 
-        XCTAssertEqual(DDSessionReplayConfigurationTextAndInputPrivacyLevel(.maskAll), .maskAll)
-        XCTAssertEqual(DDSessionReplayConfigurationTextAndInputPrivacyLevel(.maskAllInputs), .maskAllInputs)
-        XCTAssertEqual(DDSessionReplayConfigurationTextAndInputPrivacyLevel(.maskSensitiveInputs), .maskSensitiveInputs)
+        XCTAssertEqual(DDTextAndInputPrivacyLevel(.maskAll), .maskAll)
+        XCTAssertEqual(DDTextAndInputPrivacyLevel(.maskAllInputs), .maskAllInputs)
+        XCTAssertEqual(DDTextAndInputPrivacyLevel(.maskSensitiveInputs), .maskSensitiveInputs)
     }
 
     func testImagePrivacyLevelsInterop() {
@@ -173,7 +171,7 @@ class DDSessionReplayTests: XCTestCase {
         // Given
         let core = FeatureRegistrationCoreMock()
         CoreRegistry.register(default: core)
-        let textAndInputPrivacy: DDSessionReplayConfigurationTextAndInputPrivacyLevel = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
+        let textAndInputPrivacy: DDTextAndInputPrivacyLevel = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
         let imagePrivacy: DDImagePrivacyLevel = [.maskAll, .maskNonBundledOnly, .maskNone].randomElement()!
         let touchPrivacy: DDTouchPrivacyLevel = [.show, .hide].randomElement()!
         defer { CoreRegistry.unregisterDefault() }
