@@ -32,6 +32,205 @@ import DatadogInternal
 /// ```
 ///     
 public enum Datadog {
+    /// Configuration of Datadog SDK.
+    public struct Configuration {
+        /// Defines the Datadog SDK policy when batching data together before uploading it to Datadog servers.
+        /// Smaller batches mean smaller but more network requests, whereas larger batches mean fewer but larger network requests.
+        public enum BatchSize {
+            /// Prefer small sized data batches.
+            case small
+            /// Prefer medium sized data batches.
+            case medium
+            /// Prefer large sized data batches.
+            case large
+        }
+
+        /// Defines the frequency at which Datadog SDK will try to upload data batches.
+        public enum UploadFrequency: String, Decodable {
+            /// Try to upload batched data frequently.
+            case frequent
+            /// Try to upload batched data with a medium frequency.
+            case average
+            /// Try to upload batched data rarely.
+            case rare
+        }
+
+        /// Defines the maximum amount of batches processed sequentially without a delay within one reading/uploading cycle.
+        public enum BatchProcessingLevel: String, Decodable {
+            case low
+            case medium
+            case high
+
+            var maxBatchesPerUpload: Int {
+                switch self {
+                case .low:
+                    return 1
+                case .medium:
+                    return 10
+                case .high:
+                    return 100
+                }
+            }
+        }
+
+        /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.
+        public var clientToken: String?
+
+        /// The environment name which will be sent to Datadog. This can be used
+        /// To filter events on different environments (e.g. "staging" or "production").
+        public var env: String?
+
+        /// The Datadog server site where data is sent.
+        ///
+        /// Default value is `.us1`.
+        public var site: DatadogSite?
+
+        /// The service name associated with data send to Datadog.
+        ///
+        /// Default value is set to application bundle identifier.
+        public var service: String?
+
+        /// The preferred size of batched data uploaded to Datadog servers.
+        /// This value impacts the size and number of requests performed by the SDK.
+        ///
+        /// `.medium` by default.
+        public var batchSize: BatchSize
+
+        /// The preferred frequency of uploading data to Datadog servers.
+        /// This value impacts the frequency of performing network requests by the SDK.
+        ///
+        /// `.average` by default.
+        public var uploadFrequency: UploadFrequency?
+
+        /// Proxy configuration attributes.
+        /// This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
+        ///
+        /// Ref.: https://developer.apple.com/documentation/foundation/urlsessionconfiguration/1411499-connectionproxydictionary
+        public var proxyConfiguration: [AnyHashable: Any]?
+
+        /// SeData encryption to use for on-disk data persistency by providing an object
+        /// complying with `DataEncryption` protocol.
+        public var encryption: DataEncryption?
+
+        /// A custom NTP synchronization interface.
+        ///
+        /// By default, the Datadog SDK synchronizes with dedicated NTP pools provided by the
+        /// https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
+        /// implementation will result in desynchronization of the SDK instance and the Datadog servers.
+        /// This can lead to significant time shift in RUM sessions or distributed traces.
+        public var serverDateProvider: ServerDateProvider
+
+        /// The bundle object that contains the current executable.
+        public var bundle: Bundle
+
+        /// Batch provessing level, defining the maximum number of batches processed sequencially without a delay within one reading/uploading cycle.
+        ///
+        /// `.medium` by default.
+        public var batchProcessingLevel: BatchProcessingLevel?
+
+        /// Flag that determines if UIApplication methods [`beginBackgroundTask(expirationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplication/1623031-beginbackgroundtaskwithexpiratio) and [`endBackgroundTask:`](https://developer.apple.com/documentation/uikit/uiapplication/1622970-endbackgroundtask)
+        /// are utilized to perform background uploads. It may extend the amount of time the app is operating in background by 30 seconds.
+        ///
+        /// Tasks are normally stopped when there's nothing to upload or when encountering any upload blocker such us no internet connection or low battery.
+        ///
+        /// `false` by default.
+        public var backgroundTasksEnabled: Bool?
+
+        /// Creates a Datadog SDK Configuration object.
+        ///
+        /// - Parameters:
+        ///   - clientToken:                Either the RUM client token (which supports RUM, Logging and APM) or regular client token,
+        ///                                 only for Logging and APM.
+        ///
+        ///   - env:                        The environment name which will be sent to Datadog. This can be used
+        ///                                 To filter events on different environments (e.g. "staging" or "production").
+        ///
+        ///   - site:                       Datadog site endpoint, default value is `.us1`.
+        ///
+        ///   - service:                    The service name associated with data send to Datadog.
+        ///                                 Default value is set to application bundle identifier.
+        ///
+        ///   - bundle:                     The bundle object that contains the current executable.
+        ///
+        ///   - batchSize:                  The preferred size of batched data uploaded to Datadog servers.
+        ///                                 This value impacts the size and number of requests performed by the SDK.
+        ///                                 `.medium` by default.
+        ///
+        ///   - uploadFrequency:            The preferred frequency of uploading data to Datadog servers.
+        ///                                 This value impacts the frequency of performing network requests by the SDK.
+        ///                                 `.average` by default.
+        ///
+        ///   - proxyConfiguration:         A proxy configuration attributes.
+        ///                                 This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
+        ///
+        ///   - encryption:                 Data encryption to use for on-disk data persistency by providing an object
+        ///                                 complying with `DataEncryption` protocol.
+        ///
+        ///   - serverDateProvider:         A custom NTP synchronization interface.
+        ///                                 By default, the Datadog SDK synchronizes with dedicated NTP pools provided by the
+        ///                                 https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
+        ///                                 implementation will result in desynchronization of the SDK instance and the Datadog servers.
+        ///                                 This can lead to significant time shift in RUM sessions or distributed traces.
+        ///   - backgroundTasksEnabled:     A flag that determines if `UIApplication` methods
+        ///                                 `beginBackgroundTask(expirationHandler:)` and `endBackgroundTask:`
+        ///                                 are used to perform background uploads.
+        ///                                 It may extend the amount of time the app is operating in background by 30 seconds.
+        ///                                 Tasks are normally stopped when there's nothing to upload or when encountering
+        ///                                 any upload blocker such us no internet connection or low battery.
+        ///                                 By default it's set to `false`.
+        public init(
+            clientToken: String? = nil,
+            env: String? = nil,
+            site: DatadogSite? = nil,
+            service: String? = nil,
+            bundle: Bundle = .main,
+            batchSize: BatchSize = .medium,
+            uploadFrequency: UploadFrequency? = nil,
+            proxyConfiguration: [AnyHashable: Any]? = nil,
+            encryption: DataEncryption? = nil,
+            serverDateProvider: ServerDateProvider? = nil,
+            batchProcessingLevel: BatchProcessingLevel? = nil,
+            backgroundTasksEnabled: Bool? = nil
+        ) {
+            self.clientToken = clientToken
+            self.env = env
+            self.site = site
+            self.service = service
+            self.bundle = bundle
+            self.batchSize = batchSize
+            self.uploadFrequency = uploadFrequency
+            self.proxyConfiguration = proxyConfiguration
+            self.encryption = encryption
+            self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
+            self.batchProcessingLevel = batchProcessingLevel
+            self.backgroundTasksEnabled = backgroundTasksEnabled
+        }
+
+        // MARK: - Internal
+
+        /// Obtains OS directory where SDK creates its root folder.
+        /// All instances of the SDK use the same root folder, but each creates its own subdirectory.
+        internal var systemDirectory: () throws -> Directory = { try Directory.cache() }
+
+        /// Default process information.
+        internal var processInfo: ProcessInfo = .processInfo
+
+        /// Sets additional configuration attributes.
+        /// This can be used to tweak internal features of the SDK.
+        internal var additionalConfiguration: [String: Any] = [:]
+
+        /// Local Configuration
+        internal var localConfiguration: [String: Any] = [:]
+
+        /// Default date provider used by the SDK and all products.
+        internal var dateProvider: DateProvider = SystemDateProvider()
+
+        /// Creates `HTTPClient` with given proxy configuration attributes.
+        internal var httpClientFactory: ([AnyHashable: Any]?) -> HTTPClient = { proxyConfiguration in
+            URLSessionClient(proxyConfiguration: proxyConfiguration)
+        }
+    }
+
     /// Verbosity level of Datadog SDK. Can be used for debugging purposes.
     /// If set, internal events occurring inside SDK will be printed to debugger console if their level is equal or greater than `verbosityLevel`.
     /// Default is `nil`.
@@ -245,7 +444,7 @@ public enum Datadog {
     ///                     stable between application runs.
     @discardableResult
     public static func initialize(
-        with configuration: Configuration,
+        with configuration: Configuration = .init(),
         trackingConsent: TrackingConsent,
         instanceName: String = CoreRegistry.defaultInstanceName
     ) -> DatadogCoreProtocol {

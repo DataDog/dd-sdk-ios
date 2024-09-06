@@ -18,10 +18,10 @@ internal class ResourcesFeature: DatadogRemoteFeature {
 
     init(
         core: DatadogCoreProtocol,
-        configuration: SessionReplay.Configuration
+        customEndpoint: URL?
     ) {
         self.requestBuilder = ResourceRequestBuilder(
-            customUploadURL: configuration.customEndpoint,
+            customUploadURL: customEndpoint,
             telemetry: core.telemetry
         )
         self.performanceOverride = PerformancePresetOverride(

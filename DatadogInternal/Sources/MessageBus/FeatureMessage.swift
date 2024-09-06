@@ -26,4 +26,9 @@ public enum FeatureMessage {
     ///
     /// The core can send telemetry data coming from all Features.
     case telemetry(TelemetryMessage)
+
+    /// A configuration message.
+    ///
+    /// The core can send configuration updates.
+    case configuration(Configuration)
 }

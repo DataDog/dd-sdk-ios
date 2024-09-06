@@ -6,7 +6,7 @@
 
 import Foundation
 
-public enum DatadogSite: String {
+public enum DatadogSite: String, Decodable {
     /// US based servers.
     /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
     case us1

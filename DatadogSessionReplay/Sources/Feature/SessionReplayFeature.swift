@@ -25,7 +25,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
 
     init(
         core: DatadogCoreProtocol,
-        configuration: SessionReplay.Configuration
+        configuration: InternalConfiguration
     ) throws {
         let processorsQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.processors", qos: .utility)
         // The telemetry queue targets the processors queue with a lower qos.
@@ -63,7 +63,8 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             contextReceiver,
             WebViewRecordReceiver(
                 scope: core.scope(for: SessionReplayFeature.self)
-            )
+            ),
+            ConfigurationReceiver()
         ])
 
         self.textAndInputPrivacyLevel = configuration.textAndInputPrivacyLevel

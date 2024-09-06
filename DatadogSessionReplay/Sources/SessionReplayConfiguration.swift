@@ -26,7 +26,7 @@ extension SessionReplay {
         /// Note: This sample rate is applied in addition to the RUM sample rate. For example, if RUM uses a sample rate of 80%
         /// and Session Replay uses a sample rate of 20%, it means that out of all user sessions, 80% will be included in RUM,
         /// and within those sessions, only 20% will have replays.
-        public var replaySampleRate: Float
+        public var replaySampleRate: Float?
 
         /// Defines the way text and input (e.g. textfields, checkboxes) should be masked.
         ///
@@ -46,7 +46,7 @@ extension SessionReplay {
         /// Defines it the recording should start automatically. When `true`, the recording starts automatically; when `false` it doesn't, and the recording will need to be started manually.
         ///
         /// Default: `true`.
-        public var startRecordingImmediately: Bool
+        public var startRecordingImmediately: Bool?
 
         /// Custom server url for sending replay data.
         ///
@@ -58,7 +58,7 @@ extension SessionReplay {
 
         // MARK: - Internal
 
-        internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
+        internal var debugSDK: Bool? = nil
 
         internal var _additionalNodeRecorders: [NodeRecorder] = []
 
@@ -132,4 +132,46 @@ extension SessionReplay.Configuration.FeatureFlags {
     }
 }
 
+
+internal struct ConfigurationFile: Decodable {
+    let replaySampleRate: Float
+    let defaultPrivacyLevel: SessionReplayPrivacyLevel?
+    let customEndpoint: URL?
+
+    enum CodingKeys: String, CodingKey {
+        case replaySampleRate = "sample_rate"
+        case defaultPrivacyLevel = "privacy_level"
+        case customEndpoint = "custom_endpoint"
+    }
+}
+
+internal struct InternalConfiguration {
+    let sampleRate: Float
+    let defaultPrivacyLevel: SessionReplayPrivacyLevel
+    let startRecordingImmediately: Bool
+    let customEndpoint: URL?
+    let debugSDK: Bool
+    let additionalNodeRecorders: [NodeRecorder]
+}
+
+extension InternalConfiguration {
+    init(configuration: SessionReplay.Configuration, file: ConfigurationFile?, process: ProcessInfo = .processInfo) throws {
+        guard let sampleRate = configuration.replaySampleRate ?? file?.replaySampleRate else {
+            throw ProgrammerError(description: "Missing Session Replay sample rate")
+        }
+
+        guard let defaultPrivacyLevel = configuration.defaultPrivacyLevel ?? file?.defaultPrivacyLevel else {
+            throw ProgrammerError(description: "Missing Session Replay privacy lvel")
+        }
+
+        self.init(
+            sampleRate: sampleRate,
+            defaultPrivacyLevel: defaultPrivacyLevel,
+            startRecordingImmediately: configuration.startRecordingImmediately ?? true,
+            customEndpoint: configuration.customEndpoint ?? file?.customEndpoint,
+            debugSDK: configuration.debugSDK ?? process.arguments.contains(LaunchArguments.Debug),
+            additionalNodeRecorders: configuration._additionalNodeRecorders
+        )
+    }
+}
 #endif

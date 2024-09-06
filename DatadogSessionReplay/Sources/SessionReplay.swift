@@ -20,7 +20,7 @@ public enum SessionReplay {
     ///   - configuration: Configuration of the feature.
     ///   - core: The instance of Datadog SDK to enable Session Replay in (global instance by default).
     public static func enable(
-        with configuration: SessionReplay.Configuration,
+        with configuration: SessionReplay.Configuration = .init(),
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         do {
@@ -74,6 +74,9 @@ public enum SessionReplay {
             )
         }
 
+        let file = core.configuration(ConfigurationFile.self, forKey: "sr")
+        let configuration = try InternalConfiguration(configuration: configuration, file: file)
+
         guard !CoreRegistry.isFeatureEnabled(feature: SessionReplayFeature.self) else {
             core.telemetry.debug("Session Replay has already been enabled")
             throw ProgrammerError(
@@ -81,10 +84,11 @@ public enum SessionReplay {
             )
         }
 
-        guard configuration.replaySampleRate > 0 else {
+        guard configuration.sampleRate > 0 else {
             return
         }
-        let resources = ResourcesFeature(core: core, configuration: configuration)
+
+        let resources = ResourcesFeature(core: core, customEndpoint: configuration.customEndpoint)
         try core.register(feature: resources)
 
         let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)

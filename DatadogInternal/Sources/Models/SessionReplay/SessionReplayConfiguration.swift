@@ -11,7 +11,7 @@ public let SessionReplayFeatureName = "session-replay"
 // MARK: Deprecated Global Privacy Level
 
 /// Available privacy levels for content masking in Session Replay.
-public enum SessionReplayPrivacyLevel: String {
+public enum SessionReplayPrivacyLevel: String, Decodable {
     /// Record all content.
     case allow
 

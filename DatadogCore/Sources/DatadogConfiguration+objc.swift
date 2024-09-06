@@ -13,7 +13,7 @@ import DatadogInternal
 public final class objc_DatadogSite: NSObject {
     internal let sdkSite: DatadogSite
 
-    internal init(sdkSite: DatadogSite) {
+    internal init(sdkSite: DatadogSite?) {
         self.sdkSite = sdkSite
     }
 
@@ -66,20 +66,23 @@ public enum objc_UploadFrequency: Int {
     case frequent
     case average
     case rare
+    case none
 
-    internal var swiftType: Datadog.Configuration.UploadFrequency {
+    internal var swiftType: Datadog.Configuration.UploadFrequency? {
         switch self {
         case .frequent: return .frequent
         case .average: return .average
         case .rare: return .rare
+        case .none: return nil
         }
     }
 
-    internal init(swiftType: Datadog.Configuration.UploadFrequency) {
+    internal init(swiftType: Datadog.Configuration.UploadFrequency?) {
         switch swiftType {
         case .frequent: self = .frequent
         case .average: self = .average
         case .rare: self = .rare
+        case .none: self = .none
         }
     }
 }
@@ -90,20 +93,23 @@ public enum objc_BatchProcessingLevel: Int {
     case low
     case medium
     case high
+    case none
 
-    internal var swiftType: Datadog.Configuration.BatchProcessingLevel {
+    internal var swiftType: Datadog.Configuration.BatchProcessingLevel? {
         switch self {
         case .low: return .low
         case .medium: return .medium
         case .high: return .high
+        case .none: return nil
         }
     }
 
-    internal init(swiftType: Datadog.Configuration.BatchProcessingLevel) {
+    internal init(swiftType: Datadog.Configuration.BatchProcessingLevel?) {
         switch swiftType {
         case .low: self = .low
         case .medium: self = .medium
         case .high: self = .high
+        case .none: self = .none
         }
     }
 }

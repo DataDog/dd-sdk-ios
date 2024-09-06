@@ -25,7 +25,7 @@ public final class objc_SessionReplay: NSObject {
     /// - Parameters:
     ///   - configuration: Configuration of the feature.
     @objc
-    public static func enable(with configuration: objc_SessionReplayConfiguration) {
+    public static func enable(with configuration: objc_SessionReplayConfiguration? = nil) {
         SessionReplay.enable(with: configuration._swift)
     }
 
@@ -57,9 +57,9 @@ public final class objc_SessionReplayConfiguration: NSObject {
     /// Note: This sample rate is applied in addition to the RUM sample rate. For example, if RUM uses a sample rate of 80%
     /// and Session Replay uses a sample rate of 20%, it means that out of all user sessions, 80% will be included in RUM,
     /// and within those sessions, only 20% will have replays.
-    @objc public var replaySampleRate: Float {
-        set { _swift.replaySampleRate = newValue }
-        get { _swift.replaySampleRate }
+    @objc public var replaySampleRate: NSNumber? {
+        set { _swift.replaySampleRate = newValue?.floatValue }
+        get { _swift.replaySampleRate.map { .init(value: $0) } }
     }
 
     /// Defines the way texts and inputs (e.g. labels, textfields, checkboxes) should be masked.
