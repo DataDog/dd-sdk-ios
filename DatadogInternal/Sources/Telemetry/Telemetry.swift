@@ -126,7 +126,7 @@ public struct UsageTelemetry: SampledTelemetry {
         }
     }
 
-    /// The default sample rate for metric events (15%), applied in addition to the telemetry sample rate (20% by default).
+    /// The default sample rate for usage telemetry events (15%), applied in addition to the telemetry sample rate (20% by default).
     public static let defaultSampleRate: Float = 15
 
     /// The usage telemetry event.
