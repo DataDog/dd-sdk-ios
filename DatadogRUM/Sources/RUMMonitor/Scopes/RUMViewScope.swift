@@ -200,25 +200,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMStopViewCommand where identity == command.identity:
             isActiveView = false
             needsViewUpdate = true
-        case let command as RUMAddViewLoadingTime:
-            if isActiveView {
-                if viewLoadingTime == nil {
-                    let time = command.time.timeIntervalSince(viewStartTime)
-                    viewLoadingTime = time
-                    needsViewUpdate = true
-                    DD.logger.debug("View loading time \(time)ns added to the view \(viewName)")
-                    dependencies.telemetry.send(telemetry: .usage(.init(event: .addViewLoadingTime(.init(noActiveView: false, noView: false, overwritten: false)))))
-                } else if command.overwrite {
-                    let time = command.time.timeIntervalSince(viewStartTime)
-                    viewLoadingTime = time
-                    needsViewUpdate = true
-                    DD.logger.warn("View loading time already exists for the view \(viewName). Replacing the existing \(String(describing: viewLoadingTime))ns with the new \(time)ns loading time.")
-                    dependencies.telemetry.send(telemetry: .usage(.init(event: .addViewLoadingTime(.init(noActiveView: false, noView: false, overwritten: true)))))
-                }
-            } else {
-                DD.logger.warn("View \(viewName) is not active. Skipping adding the loading time.")
-                dependencies.telemetry.send(telemetry: .usage(.init(event: .addViewLoadingTime(.init(noActiveView: true, noView: false, overwritten: command.overwrite)))))
-            }
+        case let command as RUMAddViewLoadingTime where isActiveView:
+            addViewLoadingTime(on: command)
         case let command as RUMAddViewTimingCommand where isActiveView:
             customTimings[command.timingName] = command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
             needsViewUpdate = true
@@ -283,6 +266,22 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     }
 
     // MARK: - RUMCommands Processing
+
+    private func addViewLoadingTime(on command: RUMAddViewLoadingTime) {
+        if viewLoadingTime == nil {
+            let time = command.time.timeIntervalSince(viewStartTime)
+            viewLoadingTime = time
+            needsViewUpdate = true
+            DD.logger.debug("View loading time \(time)ns added to the view \(viewName)")
+            dependencies.telemetry.send(telemetry: .usage(.init(event: .addViewLoadingTime(.init(noActiveView: false, noView: false, overwritten: false)))))
+        } else if command.overwrite {
+            let time = command.time.timeIntervalSince(viewStartTime)
+            viewLoadingTime = time
+            needsViewUpdate = true
+            DD.logger.warn("View loading time already exists for the view \(viewName). Replacing the existing \(String(describing: viewLoadingTime))ns with the new \(time)ns loading time.")
+            dependencies.telemetry.send(telemetry: .usage(.init(event: .addViewLoadingTime(.init(noActiveView: false, noView: false, overwritten: true)))))
+        }
+    }
 
     private func startResource(on command: RUMStartResourceCommand) {
         resourceScopes[command.resourceKey] = RUMResourceScope(
