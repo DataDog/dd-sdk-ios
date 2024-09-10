@@ -132,14 +132,14 @@ public struct UsageTelemetry: SampledTelemetry {
     /// The usage telemetry event.
     public let event: Event
 
-    /// The sample rate for this metric, applied in addition to the telemetry sample rate.
+    /// The sample rate for usage event, applied in addition to the telemetry sample rate.
     ///
     /// Must be a value between `0` (reject all) and `100` (keep all).
     ///
     /// Note: This sample rate is compounded with the telemetry sample rate. For example, if the telemetry sample rate is 20% (default)
-    /// and this metric's sample rate is 15%, the effective sample rate for this metric will be 3%.
+    /// and this event's sample rate is 15%, the effective sample rate for this event will be 3%.
     ///
-    /// This sample rate is applied in the telemetry receiver, after the metric has been processed by the SDK core (tail-based sampling).
+    /// This sample rate is applied in the telemetry receiver, after the event has been processed by the SDK core (tail-based sampling).
     public let sampleRate: Float
 
     public init(event: Event, sampleRate: Float = Self.defaultSampleRate) {
