@@ -228,9 +228,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             dependencies.fatalErrorContext.view = nil
         }
 
-        if let command = command as? RUMAddViewLoadingTime, viewScopes.isEmpty {
-            DD.logger.warn("No active view found to add the loading time")
-            dependencies.telemetry.send(telemetry: .usage(.init(event: .addViewLoadingTime(.init(noActiveView: false, noView: true, overwritten: command.overwrite)))))
+        if let command = command as? RUMAddViewLoadingTime {
+            if viewScopes.isEmpty {
+                DD.logger.warn("No view found to add the loading time.")
+                dependencies.telemetry.send(telemetry: .usage(.init(event: .addViewLoadingTime(.init(noActiveView: false, noView: true, overwritten: command.overwrite)))))
+            } else if !hasActiveView {
+                DD.logger.warn("No active view found to add the loading time.")
+                dependencies.telemetry.send(telemetry: .usage(.init(event: .addViewLoadingTime(.init(noActiveView: true, noView: false, overwritten: command.overwrite)))))
+            }
         }
 
         return isActive || !viewScopes.isEmpty
