@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// An interface of 3rd party crash reporter used by the DatadogCrashReporting.
-internal protocol ThirdPartyCrashReporter {
+internal protocol ThirdPartyCrashReporter: Sendable {
     /// Initializes and enables the crash reporter.
     init() throws
 

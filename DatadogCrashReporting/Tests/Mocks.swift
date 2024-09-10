@@ -6,10 +6,9 @@
 
 import DatadogInternal
 import CrashReporter
-
 @testable import DatadogCrashReporting
 
-internal class ThirdPartyCrashReporterMock: ThirdPartyCrashReporter {
+internal final class ThirdPartyCrashReporterMock: ThirdPartyCrashReporter, @unchecked Sendable {
     static var initializationError: Error?
 
     var pendingCrashReport: DDCrashReport?
