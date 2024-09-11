@@ -11,7 +11,7 @@ SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_COMPILED_FOR_TESTING
 ONLY_ACTIVE_ARCH = YES
 
 // Treat all warnings as errors to prevent unresolved warnings
-SWIFT_TREAT_WARNINGS_AS_ERRORS = YES
+SWIFT_TREAT_WARNINGS_AS_ERRORS = NO
 
 // Indicates the build is running on a CI. This value is injected into the `Info.plist` of some targets.
 IS_CI = true

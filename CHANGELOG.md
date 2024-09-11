@@ -1,6 +1,7 @@
 # 2.17.0 / 11-09-2024
 
 - [FEATURE] Add support for view loading API (addViewLoadingTime). See [#2026][]
+- [FEATURE] Add Fine-Grained Masking options to Session Replay. See [#2043][]
 - [IMPROVEMENT] Drop support for deprecated cocoapod specs. See [#1998][]
 - [FIX] Propagate global Tracer tags to OpenTelemetry span attributes. See [#2000][]
 - [FEATURE] Add Logs event mapper to ObjC API. See [#2008][]
@@ -764,6 +765,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1998]: https://github.com/DataDog/dd-sdk-ios/pull/1998
 [#1966]: https://github.com/DataDog/dd-sdk-ios/pull/1966
 [#2026]: https://github.com/DataDog/dd-sdk-ios/pull/2026
+[#2043]: https://github.com/DataDog/dd-sdk-ios/pull/2043
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

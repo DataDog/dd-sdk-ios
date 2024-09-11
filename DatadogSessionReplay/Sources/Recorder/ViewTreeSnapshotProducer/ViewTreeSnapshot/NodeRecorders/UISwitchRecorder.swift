@@ -36,7 +36,7 @@ internal struct UISwitchRecorder: NodeRecorder {
             isEnabled: `switch`.isEnabled,
             isDarkMode: `switch`.usesDarkMode,
             isOn: `switch`.isOn,
-            isMasked: context.recorder.privacy.shouldMaskInputElements,
+            isMasked: context.recorder.textAndInputPrivacy.shouldMaskInputElements,
             thumbTintColor: `switch`.thumbTintColor?.cgColor,
             onTintColor: `switch`.onTintColor?.cgColor,
             offTintColor: `switch`.tintColor?.cgColor
