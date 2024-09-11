@@ -1,4 +1,4 @@
-# Unreleased
+# 2.17.0 / 11-09-2024
 
 - [FEATURE] Add support for view loading API (addViewLoadingTime). See [#2026][]
 - [IMPROVEMENT] Drop support for deprecated cocoapod specs. See [#1998][]
