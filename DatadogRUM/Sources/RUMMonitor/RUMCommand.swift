@@ -272,6 +272,7 @@ internal struct RUMAddViewLoadingTime: RUMCommand, RUMViewScopePropagatableAttri
     let isUserInteraction = false // a custom view timing is not an interactive event
 
     let missedEventType: SessionEndedMetric.MissedEventType? = .viewLoadingTime
+    let overwrite: Bool
 }
 
 internal struct RUMAddViewTimingCommand: RUMCommand, RUMViewScopePropagatableAttributes {

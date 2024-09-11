@@ -113,8 +113,9 @@ public protocol RUMMonitorProtocol: AnyObject {
     /// This method should be called only once per view.
     /// If the view is not started, this method does nothing.
     /// If the view is not active, this method does nothing.
+    /// - Parameter overwrite: if true, overwrites the previosuly calculated view loading time.
     @_spi(Experimental)
-    func addViewLoadingTime()
+    func addViewLoadingTime(overwrite: Bool)
 
     // MARK: - custom timings
 
@@ -327,7 +328,7 @@ public protocol RUMMonitorProtocol: AnyObject {
 
 extension RUMMonitorProtocol {
     /// It cannot be declared '@_spi' without a default implementation in a protocol extension
-    func addViewLoadingTime() {
+    func addViewLoadingTime(overwrite: Bool) {
         // no-op
     }
 }
@@ -352,7 +353,7 @@ internal class NOPMonitor: RUMMonitorProtocol {
     func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) { warn() }
     func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopView(key: String, attributes: [AttributeKey: AttributeValue]) { warn() }
-    func addViewLoadingTime() { warn() }
+    func addViewLoadingTime(overwrite: Bool) { warn() }
     func addTiming(name: String) { warn() }
     func addError(message: String, type: String?, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], file: StaticString?, line: UInt?) { warn() }
     func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) { warn() }
