@@ -57,11 +57,17 @@ default:
   rules: 
     - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
 
-.release-pipeline-delayed-job:
+.release-pipeline-20m-delayed-job:
   rules: 
     - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
       when: delayed
       start_in: 20 minutes
+
+.release-pipeline-40m-delayed-job:
+  rules: 
+    - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
+      when: delayed
+      start_in: 40 minutes
 
 ENV check:
   stage: pre
@@ -375,7 +381,7 @@ Publish CP podspecs (internal):
 Publish CP podspecs (dependent):
   stage: release-publish
   rules: 
-    - !reference [.release-pipeline-delayed-job, rules]
+    - !reference [.release-pipeline-20m-delayed-job, rules]
   before_script:
     - *export_MAKE_release_params
   script:
@@ -387,7 +393,7 @@ Publish CP podspecs (dependent):
 Publish CP podspecs (legacy):
   stage: release-publish
   rules: 
-    - !reference [.release-pipeline-delayed-job, rules]
+    - !reference [.release-pipeline-40m-delayed-job, rules]
   before_script:
     - *export_MAKE_release_params
   script:
