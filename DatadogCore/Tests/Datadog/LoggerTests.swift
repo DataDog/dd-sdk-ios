@@ -986,7 +986,7 @@ class LoggerTests: XCTestCase {
         )
         XCTAssertEqual(
             dd.logger.criticalLog?.error?.message,
-            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.builder.build()`."
+            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.create()`."
         )
         XCTAssertTrue(logger is NOPLogger)
     }
@@ -1009,7 +1009,7 @@ class LoggerTests: XCTestCase {
         )
         XCTAssertEqual(
             dd.logger.criticalLog?.error?.message,
-            "🔥 Datadog SDK usage error: `Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
+            "🔥 Datadog SDK usage error: `Logger.create()` produces a non-functional logger because the `Logs` feature was not enabled."
         )
         XCTAssertTrue(logger is NOPLogger)
     }

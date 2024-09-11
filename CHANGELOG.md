@@ -1,4 +1,4 @@
-# Unreleased
+# 2.17.0 / 11-09-2024
 
 - [FEATURE] Add support for view loading API (addViewLoadingTime). See [#2026][]
 - [FEATURE] Add Fine-Grained Masking options to Session Replay. See [#2043][]
@@ -8,6 +8,7 @@
 - [IMPROVEMENT] Send retry information with network requests (eg. retry_count, last_failure_status and idempotency key). See [#1991][]
 - [IMPROVEMENT] Enable app launch time on mac, macCatalyst and visionOS. See [#1888][] (Thanks [@Hengyu][])
 - [FIX] Ignore network reachability on watchOS . See [#2005][] (Thanks [@jfiser-paylocity][])
+- [FEATURE] Add Start / Stop API to Session Replay (start/stopRecording). See [#1986][]
 
 # 2.16.0 / 20-08-2024
 
@@ -757,11 +758,12 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1988]: https://github.com/DataDog/dd-sdk-ios/pull/1988
 [#2000]: https://github.com/DataDog/dd-sdk-ios/pull/2000
 [#1991]: https://github.com/DataDog/dd-sdk-ios/pull/1991
+[#1986]: https://github.com/DataDog/dd-sdk-ios/pull/1986
 [#1888]: https://github.com/DataDog/dd-sdk-ios/pull/1888
 [#2008]: https://github.com/DataDog/dd-sdk-ios/pull/2008
 [#2005]: https://github.com/DataDog/dd-sdk-ios/pull/2005
 [#1998]: https://github.com/DataDog/dd-sdk-ios/pull/1998
-[#1998]: https://github.com/DataDog/dd-sdk-ios/pull/1966
+[#1966]: https://github.com/DataDog/dd-sdk-ios/pull/1966
 [#2026]: https://github.com/DataDog/dd-sdk-ios/pull/2026
 [#2043]: https://github.com/DataDog/dd-sdk-ios/pull/2043
 [@00fa9a]: https://github.com/00FA9A

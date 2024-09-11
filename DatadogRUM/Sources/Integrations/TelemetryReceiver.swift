@@ -80,12 +80,20 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         case .configuration(let configuration):
             send(configuration: configuration)
         case let .metric(metric):
-            send(metric: metric)
+            if sampled(event: metric) {
+                send(metric: metric)
+            }
         case .usage(let usage):
-            send(usage: usage)
+            if sampled(event: usage) {
+                send(usage: usage)
+            }
         }
 
         return true
+    }
+
+    private func sampled(event: SampledTelemetry) -> Bool {
+        return Sampler(samplingRate: event.sampleRate).sample()
     }
 
     /// Sends a `TelemetryDebugEvent` event.
@@ -237,10 +245,6 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     }
 
     private func send(metric: MetricTelemetry) {
-        guard Sampler(samplingRate: metric.sampleRate).sample() else {
-            return
-        }
-
         let date = dateProvider.now
 
         record(event: nil) { context, writer in
@@ -306,7 +310,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
 
 private extension TelemetryUsageEvent.Telemetry.Usage {
     init(_ usage: UsageTelemetry) {
-        switch usage {
+        switch usage.event {
         case .setTrackingConsent(let consent):
             self = .telemetryCommonFeaturesUsage(value: .setTrackingConsent(value: .init(trackingConsent: .init(consent: consent))))
         case .stopSession:

@@ -8,8 +8,8 @@ import Foundation
 import DatadogInternal
 
 /// `Logger` sending logs to Datadog.
-internal final class RemoteLogger: LoggerProtocol {
-    struct Configuration {
+internal final class RemoteLogger: LoggerProtocol, Sendable {
+    struct Configuration: @unchecked Sendable {
         /// The `service` value for logs.
         /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
         let service: String?
@@ -25,10 +25,10 @@ internal final class RemoteLogger: LoggerProtocol {
         let sampler: Sampler
     }
 
-    /// `DatadogCore` instance managing this logger.
-    internal weak var core: DatadogCoreProtocol?
+    /// Logs feature scope.
+    let featureScope: FeatureScope
     /// Configuration specific to this logger.
-    internal let configuration: Configuration
+    let configuration: Configuration
     /// Date provider for logs.
     private let dateProvider: DateProvider
     /// Integration with RUM. It is used to correlate Logs with RUM events by injecting RUM context to `LogEvent`.
@@ -37,53 +37,61 @@ internal final class RemoteLogger: LoggerProtocol {
     /// Integration with Tracing. It is used to correlate Logs with Spans by injecting `Span` context to `LogEvent`.
     /// Can be `false` if the integration is disabled for this logger.
     internal let activeSpanIntegration: Bool
+    /// Global attributes shared with all logger instances.
+    private let globalAttributes: SynchronizedAttributes
     /// Logger-specific attributes.
-    @ReadWriteLock
-    private var attributes: [String: Encodable] = [:]
+    private let loggerAttributes: SynchronizedAttributes
     /// Logger-specific tags.
-    @ReadWriteLock
-    private var tags: Set<String> = []
+    private let loggerTags: SynchronizedTags
+    /// Backtrace reporter for attaching binary images to cross-platform errors.
+    private let backtraceReporter: BacktraceReporting?
 
     init(
-        core: DatadogCoreProtocol,
+        featureScope: FeatureScope,
+        globalAttributes: SynchronizedAttributes,
         configuration: Configuration,
         dateProvider: DateProvider,
         rumContextIntegration: Bool,
-        activeSpanIntegration: Bool
+        activeSpanIntegration: Bool,
+        backtraceReporter: BacktraceReporting?
     ) {
-        self.core = core
+        self.featureScope = featureScope
+        self.globalAttributes = globalAttributes
+        self.loggerAttributes = SynchronizedAttributes(attributes: [:])
+        self.loggerTags = SynchronizedTags(tags: [])
         self.configuration = configuration
         self.dateProvider = dateProvider
         self.rumContextIntegration = rumContextIntegration
         self.activeSpanIntegration = activeSpanIntegration
+        self.backtraceReporter = backtraceReporter
     }
 
     // MARK: - Attributes
 
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
-        _attributes.mutate { $0[key] = value }
+        loggerAttributes.addAttribute(key: key, value: value)
     }
 
     func removeAttribute(forKey key: AttributeKey) {
-        _attributes.mutate { $0.removeValue(forKey: key) }
+        loggerAttributes.removeAttribute(forKey: key)
     }
 
     // MARK: - Tags
 
     func addTag(withKey key: String, value: String) {
-        _tags.mutate { $0.insert("\(key):\(value)") }
+        loggerTags.addTag("\(key):\(value)")
     }
 
     func removeTag(withKey key: String) {
-        _tags.mutate { $0 = $0.filter { !$0.hasPrefix("\(key):") } }
+        loggerTags.removeTags(where: { $0.hasPrefix("\(key):") })
     }
 
     func add(tag: String) {
-        _tags.mutate { $0.insert(tag) }
+        loggerTags.addTag(tag)
     }
 
     func remove(tag: String) {
-        _tags.mutate { $0.remove(tag) }
+        loggerTags.removeTag(tag)
     }
 
     // MARK: - Logging
@@ -100,32 +108,32 @@ internal final class RemoteLogger: LoggerProtocol {
             return
         }
 
-        let logsFeature = self.core?.get(feature: LogsFeature.self)
-
-        let globalAttributes = logsFeature?.getAttributes()
-
         // on user thread:
         let date = dateProvider.now
         let threadName = Thread.current.dd.name
 
         // capture current tags and attributes before opening the write event context
-        let tags = self.tags
+        let tags = loggerTags.getTags()
+        let globalAttributes = globalAttributes.getAttributes()
+        let loggerAttributes = loggerAttributes.getAttributes()
         var logAttributes = attributes
+
         let isCrash = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorLogIsCrash)?.dd.decode() ?? false
         let errorFingerprint: String? = logAttributes?.removeValue(forKey: Logs.Attributes.errorFingerprint)?.dd.decode()
         let addBinaryImages = logAttributes?.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages)?.dd.decode() ?? false
-        let userAttributes = self.attributes
-            .merging(logAttributes ?? [:]) { $1 } // prefer message attributes
-        let combinedAttributes: [String: any Encodable]
-        if let globalAttributes = globalAttributes {
-            combinedAttributes = globalAttributes.merging(userAttributes) { $1 }
-        } else {
-            combinedAttributes = userAttributes
-        }
+        let userAttributes = loggerAttributes
+            .merging(logAttributes ?? [:]) { $1 } // prefer `logAttributes``
+
+        let combinedAttributes: [String: any Encodable] = globalAttributes
+            .merging(userAttributes) { $1 } // prefer `userAttribute`
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
-        core?.scope(for: LogsFeature.self).eventWriteContext { context, writer in
+        featureScope.eventWriteContext { [weak self] context, writer in
+            guard let self else {
+                return
+            }
+
             var internalAttributes: [String: Encodable] = [:]
 
             // When bundle with RUM is enabled, link RUM context (if available):
@@ -137,7 +145,7 @@ internal final class RemoteLogger: LoggerProtocol {
                     internalAttributes[LogEvent.Attributes.RUM.viewID] = rum.viewID
                     internalAttributes[LogEvent.Attributes.RUM.actionID] = rum.userActionID
                 } catch {
-                    self.core?.telemetry
+                    self.featureScope.telemetry
                         .error("Fails to decode RUM context from Logs", error: error)
                 }
             }
@@ -149,7 +157,7 @@ internal final class RemoteLogger: LoggerProtocol {
                     internalAttributes[LogEvent.Attributes.Trace.traceID] = trace.traceID?.toString(representation: .hexadecimal)
                     internalAttributes[LogEvent.Attributes.Trace.spanID] = trace.spanID?.toString(representation: .decimal)
                 } catch {
-                    self.core?.telemetry
+                    self.featureScope.telemetry
                         .error("Fails to decode Span context from Logs", error: error)
                 }
             }
@@ -158,7 +166,7 @@ internal final class RemoteLogger: LoggerProtocol {
             var binaryImages: [BinaryImage]?
             if addBinaryImages {
                 // TODO: RUM-4072 Replace full backtrace reporter with simpler binary image fetcher
-                binaryImages = try? logsFeature?.backtraceReporter?.generateBacktrace()?.binaryImages
+                binaryImages = try? self.backtraceReporter?.generateBacktrace()?.binaryImages
             }
 
             let builder = LogEventBuilder(
@@ -198,7 +206,7 @@ internal final class RemoteLogger: LoggerProtocol {
                     busCombinedAttributes[Logs.Attributes.errorFingerprint] = errorFingerprint
                 }
 
-                self.core?.send(
+                self.featureScope.send(
                     message: .baggage(
                         key: ErrorMessage.key,
                         value: ErrorMessage(

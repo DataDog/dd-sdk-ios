@@ -3262,6 +3262,8 @@ extension TelemetryErrorEvent.Telemetry {
         try staticContainer.encodeIfPresent(error, forKey: .error)
         try staticContainer.encodeIfPresent(message, forKey: .message)
         try staticContainer.encodeIfPresent(os, forKey: .os)
+        try staticContainer.encodeIfPresent(status, forKey: .status)
+        try staticContainer.encodeIfPresent(type, forKey: .type)
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
@@ -3443,6 +3445,8 @@ extension TelemetryDebugEvent.Telemetry {
         try staticContainer.encodeIfPresent(device, forKey: .device)
         try staticContainer.encodeIfPresent(message, forKey: .message)
         try staticContainer.encodeIfPresent(os, forKey: .os)
+        try staticContainer.encodeIfPresent(status, forKey: .status)
+        try staticContainer.encodeIfPresent(type, forKey: .type)
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
@@ -4032,6 +4036,7 @@ extension TelemetryConfigurationEvent.Telemetry {
         try staticContainer.encodeIfPresent(configuration, forKey: .configuration)
         try staticContainer.encodeIfPresent(device, forKey: .device)
         try staticContainer.encodeIfPresent(os, forKey: .os)
+        try staticContainer.encodeIfPresent(type, forKey: .type)
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
@@ -4503,6 +4508,7 @@ extension TelemetryUsageEvent.Telemetry {
         var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
         try staticContainer.encodeIfPresent(device, forKey: .device)
         try staticContainer.encodeIfPresent(os, forKey: .os)
+        try staticContainer.encodeIfPresent(type, forKey: .type)
         try staticContainer.encodeIfPresent(usage, forKey: .usage)
 
         // Encode dynamic properties:

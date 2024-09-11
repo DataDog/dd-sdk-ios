@@ -15,13 +15,15 @@ import DatadogInternal
 ///     let printFunction = PrintFunctionMock()
 ///     consolePrint = printFunction.print
 ///
-public class PrintFunctionMock {
+public class PrintFunctionMock: @unchecked Sendable {
+    @ReadWriteLock
     public private(set) var printedMessages: [String] = []
 
     public var printedMessage: String? { printedMessages.last }
 
     public init() { }
 
+    @Sendable
     public func print(message: String, level: CoreLoggerLevel) {
         printedMessages.append(message)
     }

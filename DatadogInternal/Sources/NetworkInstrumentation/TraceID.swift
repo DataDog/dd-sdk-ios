@@ -195,12 +195,11 @@ public protocol TraceIDGenerator {
     func generate() -> TraceID
 }
 
-/// A Default `TraceID` genarator.
+/// A Default `TraceID` generator.
+/// TraceId are 128 bit and follows a specific format:
+/// <32-bit unix seconds> <32 bits of zero> <64 random bits>
 public struct DefaultTraceIDGenerator: TraceIDGenerator {
-    /// Describes the lower and upper boundary of tracing ID generation.
-    ///
-    /// * Lower: starts with `1` as `0` is reserved for historical reason: 0 == "unset", ref: dd-trace-java:DDId.java.
-    /// * Upper: equals to `2 ^ 63 - 1` as some tracers can't handle the `2 ^ 64 -1` range, ref: dd-trace-java:DDId.java.
+    /// Describes the lower and upper boundary of lower part of the trace ID.
     public static let defaultGenerationRange = (1...UInt64.max)
 
     /// The generator's range.
