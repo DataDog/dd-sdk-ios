@@ -7,7 +7,7 @@
 import Foundation
 
 /// Provides current device time information.
-public protocol DateProvider {
+public protocol DateProvider: Sendable {
     /// Current device time.
     ///
     /// A specific point in time, independent of any calendar or time zone.

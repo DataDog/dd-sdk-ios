@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17154" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="hIc-I2-PiV">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17124"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Color Picker-->
+        <scene sceneID="gkd-fd-9L5">
+            <objects>
+                <viewController storyboardIdentifier="ColorPickerViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="hIc-I2-PiV" customClass="ColorPickerViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="EB5-Ny-mbq">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jh0-Q9-KCm">
+                                <rect key="frame" x="96" y="68" width="183" height="161"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="161" id="74l-f9-un2"/>
+                                    <constraint firstAttribute="width" constant="183" id="Sx7-8a-1h0"/>
+                                </constraints>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AUx-k8-3oK">
+                                <rect key="frame" x="18" y="68" width="43" height="30"/>
+                                <state key="normal" title="Picker"/>
+                                <connections>
+                                    <action selector="presentColorPickerByButton:" destination="hIc-I2-PiV" eventType="touchUpInside" id="e17-Pb-PoT"/>
+                                </connections>
+                            </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="coy-eq-4c1">
+                                <rect key="frame" x="18" y="106" width="32" height="32"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="32" id="0E9-RA-Leh"/>
+                                    <constraint firstAttribute="width" constant="32" id="92h-Fu-TUK"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="4kY-K9-p6O"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="AUx-k8-3oK" firstAttribute="top" secondItem="4kY-K9-p6O" secondAttribute="top" constant="24" id="Djw-Wh-pTC"/>
+                            <constraint firstItem="jh0-Q9-KCm" firstAttribute="centerX" secondItem="4kY-K9-p6O" secondAttribute="centerX" id="ONW-ef-5lM"/>
+                            <constraint firstItem="AUx-k8-3oK" firstAttribute="leading" secondItem="4kY-K9-p6O" secondAttribute="leading" constant="18" id="RLz-JH-nah"/>
+                            <constraint firstItem="coy-eq-4c1" firstAttribute="top" secondItem="AUx-k8-3oK" secondAttribute="bottom" constant="8" symbolic="YES" id="V1j-pI-jh1"/>
+                            <constraint firstItem="jh0-Q9-KCm" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="AUx-k8-3oK" secondAttribute="trailing" constant="8" symbolic="YES" id="fUw-oV-IOc"/>
+                            <constraint firstItem="coy-eq-4c1" firstAttribute="leading" secondItem="4kY-K9-p6O" secondAttribute="leading" constant="18" id="gik-Ns-AOy"/>
+                            <constraint firstItem="jh0-Q9-KCm" firstAttribute="top" secondItem="4kY-K9-p6O" secondAttribute="top" constant="24" id="rM5-Cm-nV4"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Color Picker" id="dbS-ug-Aqt">
+                        <barButtonItem key="rightBarButtonItem" title="Picker" id="Fs7-Gm-UHj">
+                            <connections>
+                                <action selector="presentColorPickerByBarButton:" destination="hIc-I2-PiV" id="qhG-t5-kTb"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
+                    <connections>
+                        <outlet property="colorView" destination="jh0-Q9-KCm" id="2zU-fc-9B4"/>
+                        <outlet property="pickerButton" destination="AUx-k8-3oK" id="7Pq-2T-USs"/>
+                        <outlet property="pickerWellView" destination="coy-eq-4c1" id="CbM-kw-T4C"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="TYZ-t7-BMO" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1224.8" y="3367.4662668665669"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

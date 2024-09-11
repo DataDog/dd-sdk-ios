@@ -1,0 +1,173 @@
+/*
+See LICENSE folder for this sample’s licensing information.
+
+Abstract:
+Strings used across the application via the NSLocalizedString API.
+*/
+
+"OK" = "OK";
+"Cancel" = "Cancel";
+"Confirm" = "Confirm";
+"Destructive Choice" = "Destructive Choice";
+"Safe Choice" = "Safe Choice";
+"A Short Title Is Best" = "A Short Title Is Best";
+"A message needs to be a short, complete sentence." = "A message needs to be a short, complete sentence.";
+"Choice One" = "Choice One";
+"Choice Two" = "Choice Two";
+"Button" = "Button";
+"Pressed" = "Pressed";
+"X Button" = "X Button";
+"Image" = "Image";
+"bold" = "bold";
+"highlighted" = "highlighted";
+"underlined" = "underlined";
+"tinted" = "tinted";
+"Placeholder text" = "Placeholder text";
+"Enter search text" = "Enter search text";
+"Red color component value" = "Red color component value";
+"Green color component value" = "Green color component value";
+"Blue color component value" = "Blue color component value";
+"Animated" = "A slide show of images";
+
+"Airplane" = "Airplane";
+"Gift" = "Gift";
+"Burst" = "Burst";
+
+"An error occurred:" = "An error occurred:";
+
+"ButtonsTitle" = "Buttons";
+"MenuButtonsTitle" = "Menu Buttons";
+"PointerInteractionButtonsTitle" = "Pointer Interaction";
+"PageControlTitle" = "Page Controls";
+"SearchBarsTitle" = "Search Bars";
+"SegmentedControlsTitle" = "Segmented Controls";
+"SlidersTitle" = "Sliders";
+"SteppersTitle" = "Steppers";
+"SwitchesTitle" = "Switches";
+"TextFieldsTitle" = "Text Fields";
+
+"ActivityIndicatorsTitle" = "Activity Indicators";
+"AlertControllersTitle" = "Alert Controllers";
+
+"ImagesTitle" = "Image Views";
+"ImageViewTitle" = "Image View";
+"SymbolsTitle" = "SF Symbol";
+
+"ProgressViewsTitle" = "Progress Views";
+"StackViewsTitle" = "Stack Views";
+"TextViewTitle" = "Text View";
+"ToolbarsTitle" = "Toolbars";
+"VisualEffectTitle" = "Visual Effect";
+"WebViewTitle" = "Web View";
+
+"DatePickerTitle" = "Date Picker";
+"PickerViewTitle" = "Picker View";
+"ColorPickerTitle" = "Color Picker";
+"FontPickerTitle" = "Font Picker";
+"ImagePickerTitle" = "Image Picker";
+
+"DefaultSearchBarTitle" = "Default Search Bar";
+"CustomSearchBarTitle" = "Custom Search Bar";
+
+"DefaultToolBarTitle" = "Default Toolbar";
+"TintedToolbarTitle" = "Tinted Toolbar";
+"CustomToolbarBarTitle" = "Custom Toolbar";
+
+"ChooseItemTitle" = "Choose an item:";
+"ItemTitle" = "Item %@";
+
+"SampleFontTitle" = "Sample Font";
+
+"CheckTitle" = "Check";
+"SearchTitle" = "Search";
+"ToolsTitle" = "Tools";
+
+"DefaultPageControlTitle" = "Page Control";
+"CustomPageControlTitle" = "Custom Page Control";
+
+"SwitchTitle" = "Title";
+
+"DefaultSwitchTitle" = "Default";
+"CheckboxSwitchTitle" = "Checkbox";
+"TintedSwitchTitle" = "Tinted";
+
+"ImageToolTipTitle" = "This is a list of flower photos obtained from the sample's asset library.";
+"GrayStyleButtonToolTipTitle" = "This is a gray-style system button.";
+"TintedStyleButtonToolTipTitle" = "This is a tinted-style system button.";
+"FilledStyleButtonToolTipTitle" = "This is a filled-style system button.";
+"CapsuleStyleButtonToolTipTitle" = "This is a capsule-style system button.";
+"CartFilledButtonToolTipTitle" = "Button cart is filled";
+"CartEmptyButtonToolTipTitle" = "Button cart is empty";
+"XButtonToolTipTitle" = "X Button";
+"PersonButtonToolTipTitle" = "Person Button";
+"VisualEffectToolTipTitle" = "This demonstrates how to use a UIVisualEffectView on top of an UIImageView and underneath a UITextView.";
+
+"VisualEffectTextContent" = "This is a UITextView with text content placed inside a UIVisualEffectView. This is a UITextView with text content placed inside a UIVisualEffectView. This is a UITextView with text content placed inside a UIVisualEffectView.";
+
+"DefaultTitle" = "Default";
+"DetailDisclosureTitle" = "Detail Disclosure";
+"AddContactTitle" = "Add Contact";
+"CloseTitle" = "Close";
+"GrayTitle" = "Gray";
+"TintedTitle" = "Tinted";
+"FilledTitle" = "Filled";
+"CornerStyleTitle" = "Corner Style";
+"ToggleTitle" = "Toggle";
+"ButtonColorTitle" = "Colored Title";
+
+"ImageTitle" = "Image";
+"AttributedStringTitle" = "Attributed String";
+"SymbolTitle" = "Symbol";
+
+"LargeSymbolTitle" = "Large Symbol";
+"SymbolStringTitle" = "Symbol + String";
+"StringSymbolTitle" = "String + Symbol";
+"MultiTitleTitle" = "Multi-Title";
+"BackgroundTitle" = "Background";
+
+"UpdateActivityHandlerTitle" = "Update Activity Handler";
+"UpdateHandlerTitle" = "Update Handler";
+"UpdateImageHandlerTitle" = "Update Handler (Button Image)";
+
+"AddToCartTitle" = "Add to Cart";
+
+"DropDownTitle" = "Drop Down";
+"DropDownProgTitle" = "Drop Down Programmatic";
+"DropDownMultiActionTitle" = "Drop Down Multi-Action";
+"DropDownButtonSubMenuTitle" = "Drop Down Submenu";
+"PopupSelection" = "Popup Selection";
+"PopupMenuTitle" = "Popup Menu";
+
+"CustomSegmentsTitle" = "Custom Segments";
+"CustomBackgroundTitle" = "Custom Background";
+"ActionBasedTitle" = "Action Based";
+
+"CustomTitle" = "Custom";
+"MinMaxImagesTitle" = "Min and Max Images";
+
+"DefaultStepperTitle" = "Default Stepper";
+"TintedStepperTitle" = "Tinted Stepper";
+"CustomStepperTitle" = "Custom Stepper";
+
+"PlainSymbolTitle" = "Default";
+"TintedSymbolTitle" = "Tinted";
+"LargeSymbolTitle" = "Large";
+"HierarchicalSymbolTitle" = "Hierarchical Color";
+"PaletteSymbolTitle" = "Palette Color";
+"PreferringMultiColorSymbolTitle" = "Preferring Multi-Color";
+
+"DefaultTextFieldTitle" = "Default";
+"TintedTextFieldTitle" = "Tinted";
+"SecuretTextFieldTitle" = "Secure";
+"SpecificKeyboardTextFieldTitle" = "Specific Keyboard";
+"CustomTextFieldTitle" = "Custom";
+"SearchTextFieldTitle" = "Search";
+
+"MediumIndicatorTitle" = "Medium";
+"LargeIndicatorTitle" = "Large";
+"MediumTintedIndicatorTitle" = "Medium Tinted";
+"LargeTintedIndicatorTitle" = "Large Tinted";
+
+"ProgressDefaultTitle" = "Default";
+"ProgressBarTitle" = "Bar";
+"ProgressTintedTitle" = "Tinted";

@@ -53,10 +53,7 @@ internal final class DatadogCore {
 
     /// Registry for Features.
     @ReadWriteLock
-    private(set) var stores: [String: (
-        storage: FeatureStorage,
-        upload: FeatureUpload
-    )] = [:]
+    private(set) var stores: [String: (storage: FeatureStorage, upload: FeatureUpload)] = [:]
 
     /// Registry for Features.
     @ReadWriteLock
@@ -171,6 +168,7 @@ internal final class DatadogCore {
     /// Clears all data that has not already yet been uploaded Datadog servers.
     func clearAllData() {
         allStorages.forEach { $0.clearAllData() }
+        allDataStores.forEach { $0.clearAllData() }
     }
 
     /// Adds a message receiver to the bus.
@@ -195,6 +193,13 @@ internal final class DatadogCore {
     /// A list of upload units of currently registered Features.
     private var allUploads: [FeatureUpload] {
         stores.values.map { $0.upload }
+    }
+
+    private var allDataStores: [DataStore] {
+        features.values.compactMap { feature in
+            let featureType = type(of: feature) as DatadogFeature.Type
+            return scope(for: featureType).dataStore
+        }
     }
 
     /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
@@ -308,7 +313,7 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 }
 
-internal class CoreFeatureScope<Feature>: FeatureScope where Feature: DatadogFeature {
+internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope where Feature: DatadogFeature {
     private weak var core: DatadogCore?
     private let store: FeatureDataStore
 

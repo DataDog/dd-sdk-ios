@@ -487,7 +487,17 @@ extension RUMLongTaskEvent: RandomMockable {
             date: .mockRandom(),
             device: .mockRandom(),
             display: nil,
-            longTask: .init(duration: .mockRandom(), id: .mockRandom(), isFrozenFrame: .mockRandom()),
+            longTask: .init(
+                blockingDuration: nil,
+                duration: .mockRandom(),
+                entryType: nil,
+                firstUiEventTimestamp: nil,
+                id: nil,
+                isFrozenFrame: .mockRandom(),
+                renderStart: .mockRandom(),
+                scripts: nil,
+                styleAndLayoutStart: nil
+            ),
             os: .mockRandom(),
             service: .mockRandom(),
             session: .init(

@@ -8,6 +8,8 @@
 #   --print: Outputs the current Git reference to STDOUT (tag if available, branch otherwise)
 #   --print-tag: Outputs the current Git tag to STDOUT (if available)
 #   --print-branch: Outputs the current Git branch to STDOUT
+#   --print-commit: Outputs the current Git commit (full SHA)
+#   --print-commit-short: Outputs the first eight characters of the current commit SHA
 
 set -eo pipefail
 
@@ -28,7 +30,21 @@ function current_git_branch() {
     fi
 }
 
-# Prints current tag (if any) and current branch otherwise.
+# Prints current git commit (full SHA)
+function current_git_commit() {
+    if [[ -n "$CI_COMMIT_SHA" ]]; then
+        echo "$CI_COMMIT_SHA"
+    else
+        echo "$(git rev-parse HEAD)"
+    fi
+}
+
+# Prints the first eight characters of current commit SHA
+function current_git_commit_short() {
+    echo $(current_git_commit | cut -c 1-8)
+}
+
+# Prints current tag (if any) or current branch.
 function current_git_ref() {
     local tag=$(current_git_tag)
     if [[ -n "$tag" ]]; then
@@ -47,6 +63,12 @@ case "$1" in
         ;;
     --print-branch)
         current_git_branch
+        ;;
+    --print-commit)
+        current_git_commit
+        ;;
+    --print-commit-short)
+        current_git_commit_short
         ;;
     *)
         ;;

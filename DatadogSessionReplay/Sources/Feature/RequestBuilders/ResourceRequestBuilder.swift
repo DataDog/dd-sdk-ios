@@ -26,20 +26,34 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
         self.multipartBuilder = multipartBuilder
     }
 
-    func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
+    func request(
+        for events: [Event],
+        with context: DatadogContext,
+        execution: ExecutionContext
+    ) throws -> URLRequest {
+        var tags = [
+            "retry_count:\(execution.attempt + 1)"
+        ]
+
+        if let previousResponseCode = execution.previousResponseCode {
+            tags.append("last_failure_status:\(previousResponseCode)")
+        }
+
         let decoder = JSONDecoder()
         let resources = try events.map { event in
             try decoder.decode(EnrichedResource.self, from: event.data)
         }
-        return try createRequest(resources: resources, context: context)
+        return try createRequest(resources: resources, context: context, tags: tags)
     }
 
-    private func createRequest(resources: [EnrichedResource], context: DatadogContext) throws -> URLRequest {
+    private func createRequest(resources: [EnrichedResource], context: DatadogContext, tags: [String]) throws -> URLRequest {
         var multipart = multipartBuilder
 
         let builder = URLRequestBuilder(
             url: url(with: context),
-            queryItems: [],
+            queryItems: [
+                .ddtags(tags: tags)
+            ],
             headers: [
                 .contentTypeHeader(contentType: .multipartFormData(boundary: multipart.boundary)),
                 .userAgentHeader(appName: context.applicationName, appVersion: context.version, device: context.device),

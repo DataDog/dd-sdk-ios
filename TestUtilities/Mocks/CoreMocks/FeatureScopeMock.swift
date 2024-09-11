@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-public class FeatureScopeMock: FeatureScope {
+public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     private struct EventWriterMock: Writer {
         weak var scope: FeatureScopeMock?
         let bypassConsent: Bool

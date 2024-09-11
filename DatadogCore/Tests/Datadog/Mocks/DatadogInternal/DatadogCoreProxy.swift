@@ -146,7 +146,7 @@ private struct FeatureScopeProxy: FeatureScope {
     }
 }
 
-private class FeatureScopeInterceptor {
+private final class FeatureScopeInterceptor: @unchecked Sendable {
     struct InterceptingWriter: Writer {
         static let jsonEncoder = JSONEncoder.dd.default()
 

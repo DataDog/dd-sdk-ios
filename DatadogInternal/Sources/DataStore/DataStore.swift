@@ -61,6 +61,12 @@ public protocol DataStore {
     ///
     /// - Parameter key: The unique identifier for the value to be deleted. Must be a valid file name, as it will be persisted in files.
     func removeValue(forKey key: String)
+
+    /// Clears all data that has not already yet been uploaded Datadog servers.
+    ///
+    /// Note: This may impact the SDK's ability to detect App Hangs and Watchdog Terminations
+    /// or other features that rely on data persisted in the data store.
+    func clearAllData()
 }
 
 public extension DataStore {
@@ -83,4 +89,6 @@ public struct NOPDataStore: DataStore {
     public func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {}
     /// no-op
     public func removeValue(forKey key: String) {}
+    /// no-op
+    public func clearAllData() {}
 }

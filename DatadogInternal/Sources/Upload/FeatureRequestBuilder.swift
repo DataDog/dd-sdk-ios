@@ -25,5 +25,30 @@ public protocol FeatureRequestBuilder {
     ///   - context: The current core context.
     ///   - events: The events data to be uploaded.
     /// - Returns: The URL request.
-    func request(for events: [Event], with context: DatadogContext) throws -> URLRequest
+    func request(
+        for events: [Event],
+        with context: DatadogContext,
+        execution: ExecutionContext
+    ) throws -> URLRequest
+}
+
+/// Represents the context in which the request is being executed.
+public struct ExecutionContext {
+    /// HTTP status code of the previous response.
+    public let previousResponseCode: Int?
+
+    /// The current attempt number.
+    public let attempt: UInt
+
+    /// Initializes the execution context.
+    /// - Parameters:
+    ///   - previousResponseCode: Previous HTTP status code, if available.
+    ///   - attempt: The current attempt number.
+    public init(
+        previousResponseCode: Int?,
+        attempt: UInt
+    ) {
+        self.previousResponseCode = previousResponseCode
+        self.attempt = attempt
+    }
 }

@@ -1,0 +1,44 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "telemetry/usage/common-features-schema.json",
+    "title": "TelemetryCommonFeaturesUsage",
+    "type": "object",
+    "description": "Schema of features usage common across SDKs",
+    "oneOf": [
+      {
+        "required": ["feature", "tracking_consent"],
+        "properties": {
+          "feature": {
+            "type": "string",
+            "description": "setTrackingConsent API",
+            "const": "set-tracking-consent"
+          },
+          "tracking_consent": {
+            "type": "string",
+            "description": "The tracking consent value set by the user",
+            "enum": ["granted", "not-granted", "pending"]
+          }
+        }
+      },
+      {
+        "required": ["feature"],
+        "properties": {
+          "feature": {
+            "type": "string",
+            "description": "stopSession API",
+            "const": "stop-session"
+          }
+        }
+      },
+      {
+        "required": ["feature"],
+        "properties": {
+          "feature": {
+            "type": "string",
+            "description": "startView API",
+            "const": "start-view"
+          }
+        }
+      }
+    ]
+  }

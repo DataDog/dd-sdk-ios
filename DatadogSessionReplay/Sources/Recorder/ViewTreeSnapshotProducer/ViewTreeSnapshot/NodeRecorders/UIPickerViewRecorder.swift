@@ -17,7 +17,8 @@ import UIKit
 /// - Instead, we infer the value by traversing picker's subtree and finding texts that have no "3D wheel" effect applied.
 /// - If privacy mode is elevated, we don't replace individual characters with "x" letter - instead we change whole options to fixed-width mask value.
 internal struct UIPickerViewRecorder: NodeRecorder {
-    let identifier = UUID()
+    internal let identifier: UUID
+
     /// Records all shapes in picker's subtree.
     /// It is used to capture the background of selected option.
     private let selectionRecorder: ViewTreeRecorder
@@ -26,14 +27,17 @@ internal struct UIPickerViewRecorder: NodeRecorder {
     private let labelsRecorder: ViewTreeRecorder
 
     init(
+        identifier: UUID,
         textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = { context in
             return context.recorder.privacy.inputAndOptionTextObfuscator
         }
     ) {
-        self.selectionRecorder = ViewTreeRecorder(nodeRecorders: [UIViewRecorder()])
+        self.identifier = identifier
+        self.selectionRecorder = ViewTreeRecorder(nodeRecorders: [UIViewRecorder(identifier: identifier)])
         self.labelsRecorder = ViewTreeRecorder(
             nodeRecorders: [
                 UIViewRecorder(
+                    identifier: identifier,
                     semanticsOverride: { view, attributes in
                         if #available(iOS 13.0, *) {
                             if !attributes.isVisible || attributes.alpha < 1 || !CATransform3DIsIdentity(view.transform3D) {
@@ -46,6 +50,7 @@ internal struct UIPickerViewRecorder: NodeRecorder {
                     }
                 ),
                 UILabelRecorder(
+                    identifier: identifier,
                     builderOverride: { builder in
                         var builder = builder
                         builder.textAlignment = .center

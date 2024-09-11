@@ -48,7 +48,7 @@ private enum FileError: Error {
 
 /// An immutable `struct` designed to provide optimized and thread safe interface for file manipulation.
 /// It doesn't own the file, which means the file presence is not guaranteed - the file can be deleted by OS at any time (e.g. due to memory pressure).
-internal struct File: WritableFile, ReadableFile, FileProtocol {
+internal struct File: WritableFile, ReadableFile, FileProtocol, Equatable {
     let url: URL
     let name: String
 

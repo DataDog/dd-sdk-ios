@@ -10,7 +10,7 @@ import XCTest
 @testable import DatadogSessionReplay
 
 class UIViewRecorderTests: XCTestCase {
-    private let recorder = UIViewRecorder()
+    private let recorder = UIViewRecorder(identifier: UUID())
     /// The view under test.
     private let view = UIView()
     /// `ViewAttributes` simulating common attributes of the view.

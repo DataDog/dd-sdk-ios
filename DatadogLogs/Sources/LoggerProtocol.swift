@@ -39,7 +39,7 @@ extension CoreLoggerLevel {
 ///
 ///     // logger reference
 ///     var logger = Logger.create()
-public protocol LoggerProtocol {
+public protocol LoggerProtocol: Sendable {
     /// General purpose logging method.
     /// Sends a log with certain `level`, `message`, `error` and `attributes`.
     ///

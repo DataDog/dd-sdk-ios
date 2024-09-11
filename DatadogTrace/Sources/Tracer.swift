@@ -42,6 +42,9 @@ public enum SpanTags {
     internal static let rumViewID = "_dd.view.id"
     /// Internal tag used to encode the RUM action ID, linking the span to the current RUM session.
     internal static let rumActionID = "_dd.action.id"
+    /// Internal tag used to encode the span kind. This can be either "client" or "server" for RPC spans,
+    /// and "producer" or "consumer" for messaging spans.
+    internal static let kind = "span.kind"
 }
 
 /// A class for manual interaction with the Trace feature. It records spans that are sent to Datadog APM.

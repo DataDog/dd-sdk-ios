@@ -37,11 +37,8 @@ public struct NOPGitClient: GitClient {
     public func push() throws {}
 }
 
-/// Naive implementation of basic git client that uses GitHub CLI under the hood.
-///
-/// It executes git commands directly in shell and requires `gh` CLI to be preinstalled on host (https://cli.github.com/)
-/// and authorised for cloning private repositories.
-public class GitHubGitClient: GitClient {
+/// Basic git client
+public class BasicGitClient: GitClient {
     /// Repo's SSH for git clone.
     private let ssh: String
     /// The name of git branch that this client will operate on.
@@ -79,22 +76,8 @@ public class GitHubGitClient: GitClient {
             print("ℹ️   Repo does not exist and will be cloned to \(repoDirectory.path())")
         }
 
-        print("ℹ️   Checking if `gh` CLI is installed")
-        guard try cli.shellResult("which gh").status == 0 else {
-            throw GitClientError(
-                description: """
-                `GitHubGitClient` requires `gh` CLI to be preinstalled and authorised on host.
-                Download it from https://cli.github.com/
-                """
-            )
-        }
-        print("ℹ️   OK")
-
-        print("ℹ️   Checking if `gh` CLI is authorised:")
-        try cli.shell("gh auth status")
-
         print("ℹ️   Cloning repo (branch: '\(branch)'):")
-        try cli.shell("gh repo clone \(ssh) '\(repoDirectory.path())' -- --branch \(branch) --single-branch")
+        try cli.shell("git clone --branch \(branch) --single-branch \(ssh) '\(repoDirectory.path())'")
         self.repoDirectory = repoDirectory
     }
 

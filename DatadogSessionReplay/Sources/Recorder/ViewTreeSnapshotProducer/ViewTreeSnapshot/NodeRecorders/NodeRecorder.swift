@@ -21,7 +21,10 @@ public protocol SessionReplayNodeRecorder {
     /// - Returns: the value of `NodeSemantics` or `nil` if the view is a member of view subclass other than the one this recorder is specialised for.
     func semantics(of view: UIView, with attributes: SessionReplayViewAttributes, in context: SessionReplayViewTreeRecordingContext) -> SessionReplayNodeSemantics?
 
-    /// Unique identifier of the node recorder.
+    /// Unique identifier for the node recorder, used to generate unique wireframe IDs.
+    ///
+    /// Note: Node recorders of the same type but with different UUIDs will generate different IDs for the same views.
+    /// To maintain consistency, propagate the parent UUID when nesting node recorders.
     var identifier: UUID { get }
 }
 

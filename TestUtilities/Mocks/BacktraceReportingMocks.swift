@@ -7,10 +7,12 @@
 import Foundation
 import DatadogInternal
 
-public struct BacktraceReporterMock: BacktraceReporting {
+public struct BacktraceReporterMock: BacktraceReporting, @unchecked Sendable {
     /// The backtrace that will be returned by this mock.
+    @ReadWriteLock
     public var backtrace: BacktraceReport?
     /// The error thrown that will be thrown by this mock during backtrace generation. It takes priority over returning the `backtrace` value.
+    @ReadWriteLock
     public var backtraceGenerationError: Error?
     
     /// Creates backtrace reporter mock.

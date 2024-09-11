@@ -8,7 +8,11 @@
 import UIKit
 
 internal final class UITabBarRecorder: NodeRecorder {
-    let identifier = UUID()
+    internal let identifier: UUID
+
+    init(identifier: UUID) {
+        self.identifier = identifier
+    }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let tabBar = view as? UITabBar else {
@@ -32,6 +36,7 @@ internal final class UITabBarRecorder: NodeRecorder {
         let subtreeViewRecorder = ViewTreeRecorder(
             nodeRecorders: [
                 UIImageViewRecorder(
+                    identifier: identifier,
                     tintColorProvider: { imageView in
                         guard let imageViewImage = imageView.image else {
                             return nil
@@ -58,9 +63,9 @@ internal final class UITabBarRecorder: NodeRecorder {
                         return tabBar.tintColor ?? SystemColors.systemBlue
                     }
                 ),
-                UILabelRecorder(),
+                UILabelRecorder(identifier: identifier),
                 // This is for recording the badge view
-                UIViewRecorder()
+                UIViewRecorder(identifier: identifier)
             ]
         )
 

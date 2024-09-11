@@ -71,6 +71,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "batch_age": expectedBatchAge.toMilliseconds,
             "batch_removal_reason": "intake-code-202",
         ])
+        XCTAssertEqual(metric.sampleRate, BatchDeletedMetric.sampleRate)
     }
 
     func testWhenObsoleteFileIsDeleted_itSendsBatchDeletedMetric() throws {
@@ -100,6 +101,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "batch_age": (storage.maxFileAgeForRead + 1).toMilliseconds,
             "batch_removal_reason": "obsolete",
         ])
+        XCTAssertEqual(metric.sampleRate, BatchDeletedMetric.sampleRate)
     }
 
     func testWhenDirectoryIsPurged_itSendsBatchDeletedMetrics() throws {
@@ -132,6 +134,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "batch_age": expectedBatchAge.toMilliseconds,
             "batch_removal_reason": "purged",
         ])
+        XCTAssertEqual(metric.sampleRate, BatchDeletedMetric.sampleRate)
     }
 
     // MARK: - "Batch Closed" Metric
@@ -170,5 +173,6 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "batch_events_count": expectedWrites.count,
             "batch_duration": expectedWriteDelays.reduce(0, +).toMilliseconds
         ])
+        XCTAssertEqual(metric.sampleRate, BatchClosedMetric.sampleRate)
     }
 }

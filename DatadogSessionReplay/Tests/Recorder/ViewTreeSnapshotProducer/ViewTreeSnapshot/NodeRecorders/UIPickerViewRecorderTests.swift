@@ -10,7 +10,7 @@ import XCTest
 @testable import DatadogSessionReplay
 
 class UIPickerViewRecorderTests: XCTestCase {
-    private let recorder = UIPickerViewRecorder()
+    private let recorder = UIPickerViewRecorder(identifier: UUID())
     private let picker = UIPickerView()
     private var viewAttributes: ViewAttributes = .mockAny()
 

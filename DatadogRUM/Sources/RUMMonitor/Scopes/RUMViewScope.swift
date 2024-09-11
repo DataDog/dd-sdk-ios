@@ -50,6 +50,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     let viewName: String
     /// The start time of this View.
     let viewStartTime: Date
+    /// The load time of this View.
+    private(set) var viewLoadingTime: TimeInterval?
 
     /// Server time offset for date correction.
     ///
@@ -198,6 +200,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMStopViewCommand where identity == command.identity:
             isActiveView = false
             needsViewUpdate = true
+        case let command as RUMAddViewLoadingTime where isActiveView:
+            addViewLoadingTime(on: command)
         case let command as RUMAddViewTimingCommand where isActiveView:
             customTimings[command.timingName] = command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
             needsViewUpdate = true
@@ -262,6 +266,22 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     }
 
     // MARK: - RUMCommands Processing
+
+    private func addViewLoadingTime(on command: RUMAddViewLoadingTime) {
+        if viewLoadingTime == nil {
+            let time = command.time.timeIntervalSince(viewStartTime)
+            viewLoadingTime = time
+            needsViewUpdate = true
+            DD.logger.debug("View loading time \(time)ns added to the view \(viewName)")
+            dependencies.telemetry.send(telemetry: .usage(.init(event: .addViewLoadingTime(.init(noActiveView: false, noView: false, overwritten: false)))))
+        } else if command.overwrite {
+            let time = command.time.timeIntervalSince(viewStartTime)
+            viewLoadingTime = time
+            needsViewUpdate = true
+            DD.logger.warn("View loading time already exists for the view \(viewName). Replacing the existing \(String(describing: viewLoadingTime))ns with the new \(time)ns loading time.")
+            dependencies.telemetry.send(telemetry: .usage(.init(event: .addViewLoadingTime(.init(noActiveView: false, noView: false, overwritten: true)))))
+        }
+    }
 
     private func startResource(on command: RUMStartResourceCommand) {
         resourceScopes[command.resourceKey] = RUMResourceScope(
@@ -534,7 +554,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 largestContentfulPaint: nil,
                 largestContentfulPaintTargetSelector: nil,
                 loadEvent: nil,
-                loadingTime: nil,
+                loadingTime: viewLoadingTime?.toInt64Nanoseconds,
                 loadingType: nil,
                 longTask: .init(count: longTasksCount),
                 memoryAverage: memoryInfo?.meanValue,
@@ -692,7 +712,17 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
-            longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
+            longTask: .init(
+                blockingDuration: nil,
+                duration: taskDurationInNs,
+                entryType: nil,
+                firstUiEventTimestamp: nil,
+                id: nil,
+                isFrozenFrame: isFrozenFrame,
+                renderStart: nil,
+                scripts: nil,
+                styleAndLayoutStart: nil
+            ),
             os: .init(context: context),
             service: context.service,
             session: .init(

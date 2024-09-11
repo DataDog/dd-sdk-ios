@@ -9,8 +9,8 @@ import Foundation
 /// A property wrapper using a fair, POSIX conforming reader-writer lock for atomic
 /// access to the value.  It is optimised for concurrent reads and exclusive writes.
 ///
-/// The wrapper is a class to prevent copying the lock, it creates and initilaizes a `pthread_rwlock_t`.
-/// An additional method `mutate` allow to safely mutate the value in-place (to read it
+/// The wrapper is a class to prevent copying the lock, it creates and initializes a `pthread_rwlock_t`.
+/// An additional method `mutate` allows to safely mutate the value in-place (to read it
 /// and write it while obtaining the lock only once).
 @propertyWrapper
 public final class ReadWriteLock<Value>: @unchecked Sendable {

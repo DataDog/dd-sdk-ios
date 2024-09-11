@@ -137,6 +137,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             return
         }
 
+        span.setTag(key: SpanTags.kind, value: "client")
+
         let url = interception.request.url?.absoluteString ?? "unknown_url"
 
         if let requestUrl = interception.request.url {

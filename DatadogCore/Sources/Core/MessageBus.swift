@@ -72,7 +72,7 @@ internal final class MessageBus {
     }
 
     /// Removes the given key and its associated receiver from the bus.
-    /// 
+    ///
     /// - Parameter key: The key to remove along with its associated receiver.
     func removeReceiver(forKey key: String) {
         queue.async { self.bus.removeValue(forKey: key) }

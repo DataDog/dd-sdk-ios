@@ -3,12 +3,20 @@
 import PackageDescription
 import Foundation
 
+let opentelemetry = ProcessInfo.processInfo.environment["OTEL_SWIFT"] != nil ? 
+    (name: "opentelemetry-swift", url: "https://github.com/open-telemetry/opentelemetry-swift.git") :
+    (name: "opentelemetry-swift-packages", url: "https://github.com/DataDog/opentelemetry-swift-packages.git")
+
+let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment["DD_BENCHMARK"] != nil ?
+    [.define("DD_BENCHMARK")] : []
+
 let package = Package(
     name: "Datadog",
     platforms: [
         .iOS(.v12),
         .tvOS(.v12),
-        .macOS(.v12)
+        .macOS(.v12),
+        .watchOS(.v7)
     ],
     products: [
         .library(
@@ -46,7 +54,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.2"),
-        .package(url: "https://github.com/DataDog/opentelemetry-swift-packages.git", exact: "1.6.0")
+        .package(url: opentelemetry.url, exact: "1.6.0"),
     ],
     targets: [
         .target(
@@ -80,7 +88,8 @@ let package = Package(
 
         .target(
             name: "DatadogInternal",
-            path: "DatadogInternal/Sources"
+            path: "DatadogInternal/Sources",
+            swiftSettings: internalSwiftSettings
         ),
         .testTarget(
             name: "DatadogInternalTests",
@@ -111,7 +120,7 @@ let package = Package(
             name: "DatadogTrace",
             dependencies: [
                 .target(name: "DatadogInternal"),
-                .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-packages")
+                .product(name: "OpenTelemetryApi", package: opentelemetry.name)
             ],
             path: "DatadogTrace/Sources"
         ),
@@ -205,7 +214,6 @@ let package = Package(
         )
     ]
 )
-
 
 // If the `DD_TEST_UTILITIES_ENABLED` development ENV is set, export additional utility packages.
 // To set this ENV for Xcode projects that fetch this package locally, use `open --env DD_TEST_UTILITIES_ENABLED path/to/<project or workspace>`.

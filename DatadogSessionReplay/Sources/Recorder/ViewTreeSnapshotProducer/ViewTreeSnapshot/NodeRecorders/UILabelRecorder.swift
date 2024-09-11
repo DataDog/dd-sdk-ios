@@ -8,18 +8,20 @@
 import UIKit
 
 internal class UILabelRecorder: NodeRecorder {
-    let identifier = UUID()
+    internal let identifier: UUID
 
     /// An option for customizing wireframes builder created by this recorder.
     var builderOverride: (UILabelWireframesBuilder) -> UILabelWireframesBuilder
     var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating
 
     init(
+        identifier: UUID,
         builderOverride: @escaping (UILabelWireframesBuilder) -> UILabelWireframesBuilder = { $0 },
         textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = { context in
             return context.recorder.privacy.staticTextObfuscator
         }
     ) {
+        self.identifier = identifier
         self.builderOverride = builderOverride
         self.textObfuscator = textObfuscator
     }

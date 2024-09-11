@@ -6,31 +6,20 @@
 
 import Foundation
 
-public protocol DateFormatterType {
+public protocol DateFormatterType: Sendable {
     func string(from date: Date) -> String
     func date(from string: String) -> Date?
 }
 
-extension ISO8601DateFormatter: DateFormatterType {}
-extension DateFormatter: DateFormatterType {}
+extension ISO8601DateFormatter: DateFormatterType, @unchecked Sendable {}
+extension DateFormatter: DateFormatterType, @unchecked Sendable {}
 
 /// Date formatter producing `ISO8601` string representation of a given date.
 /// Should be used to encode dates in messages send to the server.
 public let iso8601DateFormatter: DateFormatterType = {
-    // As there is a known crash in iOS 11.0 and 11.1 when using `.withFractionalSeconds` option in `ISO8601DateFormatter`,
-    // we use different `DateFormatterType` implementation depending on the OS version. The problem was fixed by Apple in iOS 11.2.
-    if #available(iOS 11.2, *) {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions.insert(.withFractionalSeconds)
-        return formatter
-    } else {
-        let iso8601Formatter = DateFormatter()
-        iso8601Formatter.locale = Locale(identifier: "en_US_POSIX")
-        iso8601Formatter.timeZone = TimeZone(abbreviation: "UTC")! // swiftlint:disable:this force_unwrapping
-        iso8601Formatter.calendar = Calendar(identifier: .gregorian)
-        iso8601Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" // ISO8601 format
-        return iso8601Formatter
-    }
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions.insert(.withFractionalSeconds)
+    return formatter
 }()
 
 /// Date formatter producing string representation of a given date for user-facing features (like console output).

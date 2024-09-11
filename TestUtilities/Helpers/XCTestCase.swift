@@ -36,6 +36,18 @@ extension XCTestCase {
         }
     }
 
+    /// Calls given closures concurrently from multiple threads.
+    /// Each closure will be called the number of times given by `iterations` count and iteration number passed as parameter.
+    public func callConcurrently(closures: [(Int) -> Void], iterations: Int = 1) {
+        var moreClosures: [(Int) -> Void] = []
+        (0..<iterations).forEach { _ in moreClosures.append(contentsOf: closures) }
+        let randomizedClosures = moreClosures.shuffled()
+
+        DispatchQueue.concurrentPerform(iterations: randomizedClosures.count) { iteration in
+            randomizedClosures[iteration](iteration)
+        }
+    }
+
     /// Waits until given `condition` returns `true` and then fulfills the `expectation`.
     /// It executes `condition()` block on the main thread, in every run loop.
     public func wait(until condition: @escaping () -> Bool, andThenFulfill expectation: XCTestExpectation) {

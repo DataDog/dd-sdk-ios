@@ -15,10 +15,10 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     let featureScope: FeatureScope
     let dateProvider: DateProvider
 
+    /// Sampler for all telemetry events.
     let sampler: Sampler
-
+    /// Additional sampler for configuration telemetry events, applied in addition to the `sampler`.
     let configurationExtraSampler: Sampler
-    let metricsExtraSampler: Sampler
 
     /// Keeps track of current session
     @ReadWriteLock
@@ -39,19 +39,16 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     ///   - dateProvider: Current device time provider.
     ///   - sampler: Telemetry events sampler.
     ///   - configurationExtraSampler: Extra sampler for configuration events (applied on top of `sampler`).
-    ///   - metricsExtraSampler: Extra sampler for metric events (applied on top of `sampler`).
     init(
         featureScope: FeatureScope,
         dateProvider: DateProvider,
         sampler: Sampler,
-        configurationExtraSampler: Sampler,
-        metricsExtraSampler: Sampler
+        configurationExtraSampler: Sampler
     ) {
         self.featureScope = featureScope
         self.dateProvider = dateProvider
         self.sampler = sampler
         self.configurationExtraSampler = configurationExtraSampler
-        self.metricsExtraSampler = metricsExtraSampler
     }
 
     /// Receives a message from the bus.
@@ -82,11 +79,21 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             error(id: id, message: message, kind: kind, stack: stack)
         case .configuration(let configuration):
             send(configuration: configuration)
-        case let .metric(name, attributes):
-            metric(name: name, attributes: attributes)
+        case let .metric(metric):
+            if sampled(event: metric) {
+                send(metric: metric)
+            }
+        case .usage(let usage):
+            if sampled(event: usage) {
+                send(usage: usage)
+            }
         }
 
         return true
+    }
+
+    private func sampled(event: SampledTelemetry) -> Bool {
+        return Sampler(samplingRate: event.sampleRate).sample()
     }
 
     /// Sends a `TelemetryDebugEvent` event.
@@ -169,6 +176,35 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         }
     }
 
+    private func send(usage: DatadogInternal.UsageTelemetry) {
+        let date = dateProvider.now
+
+        self.record(event: nil) { context, writer in
+            let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
+
+            let event = TelemetryUsageEvent(
+                dd: .init(),
+                action: rum?.userActionID.map { .init(id: $0) },
+                application: rum.map { .init(id: $0.applicationID) },
+                date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+                experimentalFeatures: nil,
+                service: "dd-sdk-ios",
+                session: rum.map { .init(id: $0.sessionID) },
+                source: .init(rawValue: context.source) ?? .ios,
+                telemetry: .init(
+                    device: .init(context.device),
+                    os: .init(context.device),
+                    usage: .init(usage),
+                    telemetryInfo: [:]
+                ),
+                version: context.sdkVersion,
+                view: rum?.viewID.map { .init(id: $0) }
+            )
+
+            writer.write(value: event)
+        }
+    }
+
     /// Sends the configuration telemetry.
     ///
     /// The configuration can be partial, the telemetry should support accumulation of
@@ -208,18 +244,14 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         }
     }
 
-    private func metric(name: String, attributes: [String: Encodable]) {
-        guard metricsExtraSampler.sample() else {
-            return
-        }
-
+    private func send(metric: MetricTelemetry) {
         let date = dateProvider.now
 
         record(event: nil) { context, writer in
             let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 
             // Override sessionID using standard `SDKMetricFields`, otherwise use current RUM session ID:
-            var attributes = attributes
+            var attributes = metric.attributes
             let sessionIDOverride: String? = attributes.removeValue(forKey: SDKMetricFields.sessionIDOverrideKey)?.dd.decode()
             let sessionID = sessionIDOverride ?? rum?.sessionID
 
@@ -234,7 +266,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(
                     device: .init(context.device),
-                    message: "[Mobile Metric] \(name)",
+                    message: "[Mobile Metric] \(metric.name)",
                     os: .init(context.device),
                     telemetryInfo: attributes
                 ),
@@ -276,6 +308,52 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     }
 }
 
+private extension TelemetryUsageEvent.Telemetry.Usage {
+    init(_ usage: UsageTelemetry) {
+        switch usage.event {
+        case .setTrackingConsent(let consent):
+            self = .telemetryCommonFeaturesUsage(value: .setTrackingConsent(value: .init(trackingConsent: .init(consent: consent))))
+        case .stopSession:
+            self = .telemetryCommonFeaturesUsage(value: .stopSession(value: .init()))
+        case .startView:
+            self = .telemetryCommonFeaturesUsage(value: .startView(value: .init()))
+        case .addAction:
+            self = .telemetryCommonFeaturesUsage(value: .addAction(value: .init()))
+        case .addError:
+            self = .telemetryCommonFeaturesUsage(value: .addError(value: .init()))
+        case .setGlobalContext:
+            self = .telemetryCommonFeaturesUsage(value: .setGlobalContext(value: .init()))
+        case .setUser:
+            self = .telemetryCommonFeaturesUsage(value: .setUser(value: .init()))
+        case .addFeatureFlagEvaluation:
+            self = .telemetryCommonFeaturesUsage(value: .addFeatureFlagEvaluation(value: .init()))
+        case .addViewLoadingTime(let viewLoadingTime):
+            self = .telemetryMobileFeaturesUsage(
+                value: .addViewLoadingTime(
+                    value: .init(
+                        noActiveView: viewLoadingTime.noActiveView,
+                        noView: viewLoadingTime.noView,
+                        overwritten: viewLoadingTime.overwritten
+                    )
+                )
+            )
+        }
+    }
+}
+
+private extension TelemetryUsageEvent.Telemetry.Usage.TelemetryCommonFeaturesUsage.SetTrackingConsent.TrackingConsent {
+    init(consent: DatadogInternal.TrackingConsent) {
+        switch consent {
+        case .granted:
+            self = .granted
+        case .notGranted:
+            self = .notGranted
+        case .pending:
+            self = .pending
+        }
+    }
+}
+
 private extension TelemetryConfigurationEvent.Telemetry.Configuration {
     init(_ configuration: DatadogInternal.ConfigurationTelemetry) {
         self.init(
@@ -303,6 +381,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             sessionReplaySampleRate: nil,
             sessionSampleRate: configuration.sessionSampleRate,
             silentMultipleInit: nil,
+            startRecordingImmediately: configuration.startRecordingImmediately,
             storeContextsAcrossPages: nil,
             telemetryConfigurationSampleRate: nil,
             telemetrySampleRate: configuration.telemetrySampleRate,

@@ -8,6 +8,9 @@
 #   --artifacts-path: The path to build artifacts.
 #   --podspec-name: The name of podspec file to publish.
 
+# ENVs:
+# - DRY_RUN: Set to '1' to do everything except publishing podspecs to Cocoapods trunk.
+
 set -eo pipefail
 source ./tools/utils/argparse.sh
 source ./tools/utils/echo-color.sh

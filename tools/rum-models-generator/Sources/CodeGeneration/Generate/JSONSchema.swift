@@ -38,10 +38,19 @@ internal class JSONSchema: Decodable {
         case integer
     }
 
-    struct SchemaConstant: Decodable {
-        enum Value: Equatable {
+    struct SchemaConstant: Decodable, Equatable {
+        enum Value: Equatable, CustomStringConvertible {
             case integer(value: Int)
             case string(value: String)
+
+            var description: String {
+                switch self {
+                case .integer(let value):
+                    return "\(value)"
+                case .string(let value):
+                    return value
+                }
+            }
         }
 
         let value: Value
@@ -59,6 +68,10 @@ internal class JSONSchema: Decodable {
                     "The value on key path: `\(prettyKeyPath)` is not supported by `JSONSchemaDefinition.ConstantValue`."
                 )
             }
+        }
+
+        init(value: Value) {
+            self.value = value
         }
     }
 
@@ -210,11 +223,28 @@ internal class JSONSchema: Decodable {
             merge(with: schema)
         }
 
-        // TODO: RUM-4571 [iOS] Generate RUM models for Usage Telemetry
-        // With addition of the "usage telemetry" the RUM schema was updated with unsupported constructs.
-        // To avoid `🚧 Unimplemented: "Building `SwiftAssociatedTypeEnum` case label for JSONObject is not supported` failure
-        // here we explicitly ignore the "usage" sub-schema.
-        oneOf = oneOf?.filter { $0.ref != "telemetry/usage-schema.json" }
+        oneOf = oneOf?.compactMap { obj in
+            if obj.title == "TelemetryCommonFeaturesUsage" || obj.title == "TelemetryMobileFeaturesUsage" {
+                // transform telemetry spec to mobile compatible
+                guard let oneOf = obj.oneOf else {
+                    return obj
+                }
+
+                // promote `feature` property to `title` if `title` is missing
+                for one in oneOf {
+                    if one.title == nil {
+                        one.title = one.properties?["feature"]?.const?.value.description
+                    }
+                }
+
+                return obj
+            } else if obj.title == "TelemetryBrowserFeaturesUsage" {
+                // skip browser telemetry
+                return nil
+            } else {
+                return obj
+            }
+        }
     }
 
     // MARK: - Schemas Merging

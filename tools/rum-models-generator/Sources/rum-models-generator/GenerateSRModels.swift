@@ -43,6 +43,6 @@ internal func generateSRSwiftModels(from schema: URL) throws -> String {
         .print(using: template, and: printer)
 }
 
-internal func generateSRObjcInteropModels(from schema: URL) throws -> String {
+internal func generateSRObjcInteropModels(from schema: URL, skip: Set<String>) throws -> String {
     throw Exception.unimplemented("Generating Objc-interop code for Session Replay models is not supported.")
 }

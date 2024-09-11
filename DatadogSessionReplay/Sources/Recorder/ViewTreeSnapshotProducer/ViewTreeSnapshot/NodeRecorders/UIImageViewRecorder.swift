@@ -8,7 +8,7 @@
 import UIKit
 
 internal struct UIImageViewRecorder: NodeRecorder {
-    internal let identifier = UUID()
+    internal let identifier: UUID
 
     private let tintColorProvider: (UIImageView) -> UIColor?
     private let shouldRecordImagePredicate: (UIImageView) -> Bool
@@ -18,6 +18,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
     }
 
     internal init(
+        identifier: UUID,
         tintColorProvider: @escaping (UIImageView) -> UIColor? = { imageView in
             if #available(iOS 13.0, *), let image = imageView.image {
                 return image.isTinted ? imageView.tintColor : nil
@@ -33,6 +34,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             }
         }
     ) {
+        self.identifier = identifier
         self.tintColorProvider = tintColorProvider
         self.shouldRecordImagePredicate = shouldRecordImagePredicate
     }

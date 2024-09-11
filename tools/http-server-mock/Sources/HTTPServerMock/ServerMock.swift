@@ -42,10 +42,28 @@ fileprivate extension Request {
             }
         }
 
-        self.path = intermediateRequest.path
+        self.path = Self.path(pathWithQuery: intermediateRequest.path)
+        self.queryItems = Self.queryItems(pathWithQuery: intermediateRequest.path)
         self.httpMethod = intermediateRequest.method
         self.httpHeaders = headers
         self.httpBody = bodyData
+    }
+
+    static func path(pathWithQuery: String) -> String {
+        guard let url = URL(string: pathWithQuery) else {
+            return pathWithQuery
+        }
+
+        return url.path
+    }
+
+    static func queryItems(pathWithQuery: String) -> [URLQueryItem]? {
+        guard let url = URL(string: pathWithQuery) else {
+            return []
+        }
+
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        return components?.queryItems
     }
 }
 

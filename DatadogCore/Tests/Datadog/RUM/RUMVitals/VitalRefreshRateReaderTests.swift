@@ -220,6 +220,34 @@ class VitalRefreshRateReaderTests: XCTestCase {
         let thirdFps = reader.framesPerSecond(provider: frameInfoProvider)
         XCTAssertEqual(thirdFps, 42.85714285714286)
     }
+
+    /* Rate representation
+     *
+     * 0----------8ms---------16ms--------24ms--------32ms
+     * |   6ms   |   6ms   |   6ms   |   6ms   |
+     *
+    */
+    func testFramesPerSecond_givenAdaptiveSyncDisplayWithQuickerThanExpectedFrames() {
+        let reader = VitalRefreshRateReader(notificationCenter: mockNotificationCenter)
+        var frameInfoProvider = FrameInfoProviderMock(maximumDeviceFramesPerSecond: 120)
+
+        // first frame recorded
+        frameInfoProvider.currentFrameTimestamp = 0
+        frameInfoProvider.nextFrameTimestamp = 0.008
+        let firstFps = reader.framesPerSecond(provider: frameInfoProvider)
+        XCTAssertNil(firstFps)
+
+        // second frame recorded
+        frameInfoProvider.currentFrameTimestamp = 0.006
+        frameInfoProvider.nextFrameTimestamp = 0.014
+        let secondFps = reader.framesPerSecond(provider: frameInfoProvider)
+        XCTAssertEqual(secondFps, 60)
+
+        // third frame recorded
+        frameInfoProvider.currentFrameTimestamp = 0.012
+        let thirdFps = reader.framesPerSecond(provider: frameInfoProvider)
+        XCTAssertEqual(thirdFps, 60)
+    }
 }
 
 struct FrameInfoProviderMock: FrameInfoProvider {

@@ -71,6 +71,18 @@ public class DDLogsConfiguration: NSObject {
             customEndpoint: customEndpoint
         )
     }
+
+    /// Sets the custom mapper for `DDLogEvent`. This can be used to modify logs before they are send to Datadog.
+    ///
+    /// The implementation should obtain a mutable version of the `DDLogEvent`, modify it and return it. Returning `nil` will result
+    /// with dropping the Log event entirely, so it won't be send to Datadog.
+    @objc
+    public func setEventMapper(_ mapper: @escaping (DDLogEvent) -> DDLogEvent?) {
+        configuration.eventMapper = { swiftEvent in
+            let objcEvent = DDLogEvent(swiftModel: swiftEvent)
+            return mapper(objcEvent)?.swiftModel
+        }
+    }
 }
 
 @objc

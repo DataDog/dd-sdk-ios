@@ -38,7 +38,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         sut.update(viewEvent: viewEvent1)
 
         // monitor reveives the launch report
-        _ = sut.receive(message: .context(.mockAny()), from: NOPDatadogCore())
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
 
         // RUM view update after start
         let viewEvent2: RUMViewEvent = .mockRandom()
@@ -62,7 +62,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         sut.update(viewEvent: viewEvent3)
 
         // monitor reveives the launch report
-        _ = sut.receive(message: .context(.mockAny()), from: NOPDatadogCore())
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
 
         waitForExpectations(timeout: 1)
         XCTAssertEqual(reporter.sendParams?.viewEvent.view.id, viewEvent2.view.id)

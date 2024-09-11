@@ -289,7 +289,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(span.tags[OTTags.httpUrl], request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpMethod], "POST")
         XCTAssertEqual(span.tags[OTTags.httpStatusCode], "200")
-        XCTAssertEqual(span.tags.count, 5)
+        XCTAssertEqual(span.tags[OTTags.spanKind], "client")
+        XCTAssertEqual(span.tags.count, 6)
     }
 
     func testGivenFirstPartyIncompleteInterception_whenInterceptionCompletes_itDoesNotSendTheSpan() throws {

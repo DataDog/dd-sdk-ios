@@ -3,7 +3,7 @@
 # Checks if all secret values are available in current env.
 #
 # Usage:
-# $ ./tools/secrets/set-secret.sh
+# $ ./tools/secrets/check-secrets.sh
 #
 # Note:
 # - Requires `vault` to be installed

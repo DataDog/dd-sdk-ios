@@ -100,12 +100,14 @@ class CrashReportingPluginTests: XCTestCase {
 
     // MARK: - Handling Errors
 
+    private let printFunction = PrintFunctionMock()
+
     func testGivenPendingCrashReport_whenItsLoadingFails_itPrintsError() throws {
         let expectation = self.expectation(description: "No Crash Report was delivered to the caller.")
-        var errorPrinted: String?
 
-        consolePrint = { message, _ in errorPrinted = message }
-        defer { consolePrint = { message, _ in print(message) } }
+        let previousPrint = consolePrint
+        consolePrint = printFunction.print
+        defer { consolePrint = previousPrint }
 
         let crashReporter = try ThirdPartyCrashReporterMock()
         let plugin = PLCrashReporterPlugin { crashReporter }
@@ -126,16 +128,15 @@ class CrashReportingPluginTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertFalse(crashReporter.hasPurgedPendingCrashReport)
         XCTAssertEqual(
-            errorPrinted,
+            printFunction.printedMessage,
             "🔥 DatadogCrashReporting error: failed to load crash report: Reading error"
         )
     }
 
     func testWhenCrashReporterCannotBeEnabled_itPrintsError() {
-        var errorPrinted: String?
-
-        consolePrint = { message, _ in errorPrinted = message }
-        defer { consolePrint = { message, _ in print(message) } }
+        let previousPrint = consolePrint
+        consolePrint = printFunction.print
+        defer { consolePrint = previousPrint }
 
         // When
         ThirdPartyCrashReporterMock.initializationError = ErrorMock("Initialization error")
@@ -145,7 +146,7 @@ class CrashReportingPluginTests: XCTestCase {
         _ = PLCrashReporterPlugin { try ThirdPartyCrashReporterMock() }
 
         XCTAssertEqual(
-            errorPrinted,
+            printFunction.printedMessage,
             "🔥 DatadogCrashReporting error: failed to enable crash reporter: Initialization error"
         )
     }

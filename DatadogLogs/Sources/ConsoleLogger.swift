@@ -23,12 +23,12 @@ internal final class ConsoleLogger: LoggerProtocol {
     /// The prefix to use when rendering log.
     private let prefix: String
     /// The function used to render log.
-    private let printFunction: (String, CoreLoggerLevel) -> Void
+    private let printFunction: @Sendable (String, CoreLoggerLevel) -> Void
 
     init(
         configuration: Configuration,
         dateProvider: DateProvider,
-        printFunction: @escaping (String, CoreLoggerLevel) -> Void
+        printFunction: @escaping @Sendable (String, CoreLoggerLevel) -> Void
     ) {
         self.dateProvider = dateProvider
         self.timeFormatter = presentationDateFormatter(withTimeZone: configuration.timeZone)

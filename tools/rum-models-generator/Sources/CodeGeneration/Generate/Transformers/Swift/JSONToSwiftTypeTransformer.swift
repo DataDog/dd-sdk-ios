@@ -229,7 +229,9 @@ internal class JSONToSwiftTypeTransformer {
                 }
             }
 
-            caseLabels = try jsonUnion.types.map { try labelNameFromType(of: $0.type) }
+            caseLabels = try jsonUnion.types.map {
+                try labelNameFromType(of: $0.type)
+            }
         }
 
         return SwiftAssociatedTypeEnum(

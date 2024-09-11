@@ -12,7 +12,7 @@ import TestUtilities
 
 // swiftlint:disable opening_brace
 class UILabelRecorderTests: XCTestCase {
-    private let recorder = UILabelRecorder()
+    private let recorder = UILabelRecorder(identifier: UUID())
     /// The label under test.
     private let label = UILabel()
     /// `ViewAttributes` simulating common attributes of label's `UIView`.

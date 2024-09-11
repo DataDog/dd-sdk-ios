@@ -35,11 +35,22 @@ internal struct CoreDirectory {
             authorized: try coreDirectory.createSubdirectory(path: "\(name)/v2")
         )
     }
+
+    /// Obtains the path to the data store for given Feature.
+    ///
+    /// Note: `FeatureDataStore` directory is created on-demand which may happen before `FeatureDirectories` are created.
+    /// Hence, this method only returns the path and let the caller decide if the directory should be created.
+    ///
+    /// - Parameter name: The given Feature name.
+    /// - Returns: The path to the data store for given Feature.
+    func getDataStorePath(forFeatureNamed name: String) -> String {
+        return "\(FeatureDataStore.Constants.dataStoreVersion)/" + name
+    }
 }
 
 internal extension CoreDirectory {
     /// Creates the core directory.
-    /// 
+    ///
     /// - Parameters:
     ///   - osDirectory: the root OS directory (`/Library/Caches`) to create core directory inside.
     ///   - instanceName: The core instance name.

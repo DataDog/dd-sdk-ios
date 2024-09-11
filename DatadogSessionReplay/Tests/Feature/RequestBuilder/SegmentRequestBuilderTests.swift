@@ -28,7 +28,7 @@ class SegmentRequestBuilderTests: XCTestCase {
         let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When
-        let request = try builder.request(for: mockEvents, with: .mockAny())
+        let request = try builder.request(for: mockEvents, with: .mockAny(), execution: .mockAny())
 
         // Then
         XCTAssertEqual(request.httpMethod, "POST")
@@ -40,7 +40,7 @@ class SegmentRequestBuilderTests: XCTestCase {
 
         // When
         func url(for site: DatadogSite) throws -> String {
-            let request = try builder.request(for: mockEvents, with: .mockWith(site: site))
+            let request = try builder.request(for: mockEvents, with: .mockWith(site: site), execution: .mockAny())
             return request.url!.absoluteStringWithoutQuery!
         }
 
@@ -60,7 +60,7 @@ class SegmentRequestBuilderTests: XCTestCase {
 
         // When
         func url(for site: DatadogSite) throws -> String {
-            let request = try builder.request(for: mockEvents, with: .mockWith(site: site))
+            let request = try builder.request(for: mockEvents, with: .mockWith(site: site), execution: .mockAny())
             return request.url!.absoluteStringWithoutQuery!
         }
 
@@ -74,16 +74,16 @@ class SegmentRequestBuilderTests: XCTestCase {
         XCTAssertEqual(try url(for: .us1_fed), expectedURL)
     }
 
-    func testItSetsNoQueryParameters() throws {
+    func testItSetsQueryParameters() throws {
         // Given
         let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
         let context: DatadogContext = .mockRandom()
 
         // When
-        let request = try builder.request(for: mockEvents, with: context)
+        let request = try builder.request(for: mockEvents, with: context, execution: .mockWith(previousResponseCode: nil, attempt: 0))
 
         // Then
-        XCTAssertEqual(request.url!.query, nil)
+        XCTAssertEqual(request.url!.query, "ddtags=retry_count:1")
     }
 
     func testItSetsHTTPHeaders() throws {
@@ -112,7 +112,7 @@ class SegmentRequestBuilderTests: XCTestCase {
         )
 
         // When
-        let request = try builder.request(for: mockEvents, with: context)
+        let request = try builder.request(for: mockEvents, with: context, execution: .mockAny())
 
         // Then
         let contentType = try XCTUnwrap(request.allHTTPHeaderFields?["Content-Type"])
@@ -152,7 +152,7 @@ class SegmentRequestBuilderTests: XCTestCase {
         }
 
         // When
-        let request = try builder.request(for: events, with: .mockWith(source: "ios"))
+        let request = try builder.request(for: events, with: .mockWith(source: "ios"), execution: .mockAny())
 
         // Then
         let contentType = try XCTUnwrap(request.allHTTPHeaderFields?["Content-Type"])
@@ -235,7 +235,7 @@ class SegmentRequestBuilderTests: XCTestCase {
         let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When, Then
-        XCTAssertThrowsError(try builder.request(for: [.mockWith(data: "abc".utf8Data)], with: .mockAny()))
+        XCTAssertThrowsError(try builder.request(for: [.mockWith(data: "abc".utf8Data)], with: .mockAny(), execution: .mockAny()))
     }
 
     func testWhenSourceIsInvalid_itSendsErrorTelemetry() throws {
@@ -244,7 +244,7 @@ class SegmentRequestBuilderTests: XCTestCase {
         let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: telemetry)
 
         // When
-        _ = try builder.request(for: mockEvents, with: .mockWith(source: "invalid source"))
+        _ = try builder.request(for: mockEvents, with: .mockWith(source: "invalid source"), execution: .mockAny())
 
         // Then
         XCTAssertTrue(

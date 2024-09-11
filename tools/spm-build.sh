@@ -49,4 +49,6 @@ trap restore_workspace EXIT INT
 echo_subtitle "Run 'xcodebuild build -scheme $scheme -destination "$destination" | xcbeautify'"
 
 set -x
+
+xcodebuild -version
 xcodebuild build -scheme "$scheme" -destination "$destination" | xcbeautify

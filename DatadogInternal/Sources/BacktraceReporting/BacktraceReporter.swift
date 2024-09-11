@@ -17,7 +17,7 @@ public extension Thread {
 }
 
 /// A protocol for types capable of generating backtrace reports.
-public protocol BacktraceReporting {
+public protocol BacktraceReporting: Sendable {
     /// Generates a backtrace report for given thread ID.
     ///
     /// The thread given by `threadID` will be promoted in the main stack of returned `BacktraceReport` (`report.stack`).
@@ -41,7 +41,7 @@ public extension BacktraceReporting {
     }
 }
 
-internal struct CoreBacktraceReporter: BacktraceReporting {
+internal struct CoreBacktraceReporter: BacktraceReporting, @unchecked Sendable {
     /// A weak core reference.
     private weak var core: DatadogCoreProtocol?
 

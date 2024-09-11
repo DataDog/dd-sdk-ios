@@ -23,6 +23,7 @@ public struct URLRequestBuilder {
         public static let ddEVPOriginHeaderField = "DD-EVP-ORIGIN"
         public static let ddEVPOriginVersionHeaderField = "DD-EVP-ORIGIN-VERSION"
         public static let ddRequestIDHeaderField = "DD-REQUEST-ID"
+        public static let ddIdempotencyKeyHeaderField = "DD-IDEMPOTENCY-KEY"
 
         public enum ContentType {
             case applicationJSON
@@ -90,6 +91,13 @@ public struct URLRequestBuilder {
         /// An optional Datadog header for debugging Intake requests by their ID.
         public static func ddRequestIDHeader() -> HTTPHeader {
             return HTTPHeader(field: ddRequestIDHeaderField, value: { UUID().uuidString })
+        }
+
+        /// An optional Datadog header for ensuring idempotent requests.
+        /// - Parameter key: The idempotency key.
+        /// - Returns: Header with the idempotency key.
+        public static func ddIdempotencyKeyHeader(key: String) -> HTTPHeader {
+            return HTTPHeader(field: ddIdempotencyKeyHeaderField, value: { key })
         }
     }
     /// Upload `URL`.

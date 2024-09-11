@@ -8,7 +8,9 @@
 #   --tag: The tag to publish GitHub asset to.
 #   --artifacts-path: Path to build artifacts.
 #   --overwrite-existing: Overwrite existing GH asset.
-#   --dry-run: Do everything except publishing the GitHub asset.
+
+# ENVs:
+# - DRY_RUN: Set to '1' to do everything except publishing the GitHub asset.
 
 set -eo pipefail
 source ./tools/utils/argparse.sh
@@ -18,7 +20,6 @@ source ./tools/secrets/get-secret.sh
 set_description "Publishes GitHub asset to GH release."
 define_arg "tag" "" "The tag to publish GitHub asset to." "string" "true"
 define_arg "overwrite-existing" "false" "Overwrite existing GH asset." "store_true"
-define_arg "dry-run" "false" "Do everything except publishing the GitHub asset." "store_true"
 define_arg "artifacts-path" "" "Path to build artifacts." "string" "true"
 
 check_for_help "$@"
@@ -55,8 +56,8 @@ upload() {
 }
 
 echo_info "Publishing '$GH_ASSET_PATH' to '$tag' release in '$REPO_NAME'"
-echo "▸ Using DRY_RUN = $DRY_RUN"
-echo "▸ Using OVERWRITE_EXISTING = $OVERWRITE_EXISTING"
+echo_info "▸ Using DRY_RUN = $DRY_RUN"
+echo_info "▸ Using OVERWRITE_EXISTING = $OVERWRITE_EXISTING"
 
 authenticate
 upload

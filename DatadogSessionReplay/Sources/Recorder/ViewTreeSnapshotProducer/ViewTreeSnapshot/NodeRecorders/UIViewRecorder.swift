@@ -8,14 +8,16 @@
 import UIKit
 
 internal class UIViewRecorder: NodeRecorder {
-    let identifier = UUID()
+    internal let identifier: UUID
 
     /// An option for overriding default semantics from parent recorder.
     var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics?
 
     init(
+        identifier: UUID,
         semanticsOverride: @escaping (UIView, ViewAttributes) -> NodeSemantics? = { _, _ in nil }
     ) {
+        self.identifier = identifier
         self.semanticsOverride = semanticsOverride
     }
 

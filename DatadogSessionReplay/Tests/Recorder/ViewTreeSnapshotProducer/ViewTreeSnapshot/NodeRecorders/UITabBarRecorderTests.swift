@@ -6,11 +6,13 @@
 
 #if os(iOS)
 import XCTest
+import TestUtilities
+
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
 class UITabBarRecorderTests: XCTestCase {
-    private let recorder = UITabBarRecorder()
+    private let recorder = UITabBarRecorder(identifier: UUID())
 
     func testWhenViewIsOfExpectedType() throws {
         // When
@@ -30,6 +32,24 @@ class UITabBarRecorderTests: XCTestCase {
 
         // Then
         XCTAssertNil(recorder.semantics(of: view, with: .mockAny(), in: .mockAny()))
+    }
+
+    func testWhenRecordingSubviewTwice() {
+        // Given
+        let tabBar = UITabBar.mock(withFixture: .visible(.someAppearance))
+        tabBar.items = [UITabBarItem(title: "first", image: UIImage(), tag: 0)]
+        let viewAttributes = ViewAttributes(frameInRootView: tabBar.frame, view: tabBar)
+
+        // When
+        let semantics1 = recorder.semantics(of: tabBar, with: viewAttributes, in: .mockAny())
+        let semantics2 = recorder.semantics(of: tabBar, with: viewAttributes, in: .mockAny())
+
+        let builder = SessionReplayWireframesBuilder()
+        let wireframes1 = semantics1?.nodes.flatMap { $0.wireframesBuilder.buildWireframes(with: builder) }
+        let wireframes2 = semantics2?.nodes.flatMap { $0.wireframesBuilder.buildWireframes(with: builder) }
+
+        // Then
+        DDAssertReflectionEqual(wireframes1, wireframes2)
     }
 }
 #endif

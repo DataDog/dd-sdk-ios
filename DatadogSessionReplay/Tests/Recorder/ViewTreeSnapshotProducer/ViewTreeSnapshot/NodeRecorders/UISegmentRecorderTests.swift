@@ -10,7 +10,7 @@ import XCTest
 @testable import DatadogSessionReplay
 
 class UISegmentRecorderTests: XCTestCase {
-    private let recorder = UISegmentRecorder()
+    private let recorder = UISegmentRecorder(identifier: UUID())
     private let segment = UISegmentedControl(items: ["first", "second", "third"])
     private var viewAttributes: ViewAttributes = .mockAny()
 

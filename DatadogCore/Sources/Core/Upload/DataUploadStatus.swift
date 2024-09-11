@@ -72,28 +72,32 @@ internal struct DataUploadStatus {
     let userDebugDescription: String
 
     let error: DataUploadError?
+
+    let attempt: UInt
 }
 
 extension DataUploadStatus {
     // MARK: - Initialization
 
-    init(httpResponse: HTTPURLResponse, ddRequestID: String?) {
+    init(httpResponse: HTTPURLResponse, ddRequestID: String?, attempt: UInt) {
         let statusCode = HTTPResponseStatusCode(rawValue: httpResponse.statusCode) ?? .unexpected
 
         self.init(
             needsRetry: statusCode.needsRetry,
             responseCode: httpResponse.statusCode,
-            userDebugDescription: "[response code: \(httpResponse.statusCode) (\(statusCode)), request ID: \(ddRequestID ?? "(???)")]",
-            error: DataUploadError(status: httpResponse.statusCode)
+            userDebugDescription: "[response code: \(httpResponse.statusCode) (\(statusCode)), request ID: \(ddRequestID ?? "(???)")",
+            error: DataUploadError(status: httpResponse.statusCode),
+            attempt: attempt
         )
     }
 
-    init(networkError: Error) {
+    init(networkError: Error, attempt: UInt) {
         self.init(
             needsRetry: true, // retry this upload as it failed due to network transport isse
             responseCode: nil,
             userDebugDescription: "[error: \(DDError(error: networkError).message)]", // e.g. "[error: A data connection is not currently allowed]"
-            error: DataUploadError(networkError: networkError)
+            error: DataUploadError(networkError: networkError),
+            attempt: attempt
         )
     }
 }

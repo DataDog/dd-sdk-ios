@@ -27,7 +27,7 @@ import DatadogInternal
 ///     try core.register(feature: feature)
 ///     core.get(feature: MyCustomFeature.self) // returns nil
 ///
-open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
+open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Sendable {
     /// Counts references to `PassthroughCoreMock` instances, so we can prevent memory
     /// leaks of SDK core in `DatadogTestsObserver`.
     public static var referenceCount = 0

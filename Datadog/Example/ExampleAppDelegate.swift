@@ -64,6 +64,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Enable Trace
         Trace.enable(
             with: Trace.Configuration(
+                tags: ["testing-tag": "my-value"], 
                 networkInfoEnabled: true,
                 customEndpoint: Environment.readCustomTraceURL()
             )

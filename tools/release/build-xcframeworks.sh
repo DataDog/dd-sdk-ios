@@ -25,6 +25,7 @@ parse_args "$@"
 
 
 REPO_PATH=$(realpath "$repo_path")
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo_info "Clean '$REPO_PATH' with 'git clean -fxd'"
 cd "$REPO_PATH" && git clean -fxd && cd -
@@ -99,15 +100,16 @@ PLATFORMS=""
 [[ "$ios" == "true" ]] && PLATFORMS+="iOS"
 [[ "$tvos" == "true" ]] && { [ -n "$PLATFORMS" ] && PLATFORMS+=","; PLATFORMS+="tvOS"; }
 
-echo_info "Building xcframeworks:"
-echo_info "- REPO_PATH = '$REPO_PATH'"
-echo_info "- ARCHIVES_TEMP_OUTPUT = '$ARCHIVES_TEMP_OUTPUT'"
-echo_info "- XCFRAMEWORKS_OUTPUT = '$XCFRAMEWORKS_OUTPUT'"
-echo_info "- PLATFORMS = '$PLATFORMS'"
+echo_info "Building xcframeworks"
+echo_info "▸ REPO_PATH = '$REPO_PATH'"
+echo_info "▸ ARCHIVES_TEMP_OUTPUT = '$ARCHIVES_TEMP_OUTPUT'"
+echo_info "▸ XCFRAMEWORKS_OUTPUT = '$XCFRAMEWORKS_OUTPUT'"
+echo_info "▸ PLATFORMS = '$PLATFORMS'"
 
 # Build third-party XCFrameworks
 echo_subtitle2 "Run 'carthage bootstrap --platform $PLATFORMS --use-xcframeworks'"
-carthage bootstrap --platform $PLATFORMS --use-xcframeworks
+export REPO_ROOT=$(realpath "$SCRIPT_DIR/../..") 
+$REPO_ROOT/tools/carthage-shim.sh bootstrap --platform $PLATFORMS --use-xcframeworks
 cp -r "Carthage/Build/CrashReporter.xcframework" "$XCFRAMEWORKS_OUTPUT"
 cp -r "Carthage/Build/OpenTelemetryApi.xcframework" "$XCFRAMEWORKS_OUTPUT"
 

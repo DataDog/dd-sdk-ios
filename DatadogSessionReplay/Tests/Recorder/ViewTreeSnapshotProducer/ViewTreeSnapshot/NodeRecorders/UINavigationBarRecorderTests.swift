@@ -10,7 +10,7 @@ import XCTest
 @testable import DatadogSessionReplay
 
 class UINavigationBarRecorderTests: XCTestCase {
-    private let recorder = UINavigationBarRecorder()
+    private let recorder = UINavigationBarRecorder(identifier: UUID())
 
     func testWhenViewIsOfExpectedType() throws {
         // Given

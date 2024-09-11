@@ -26,7 +26,6 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         // Given
         var config = RUM.Configuration(applicationID: .mockAny())
         config.telemetrySampleRate = 100
-        config.metricsTelemetrySampleRate = 100
         RUM.enable(with: config, in: core)
 
         // When
@@ -34,9 +33,10 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         #sourceLocation(file: "File.swift", line: 42)
         core.telemetry.error("Error Telemetry")
         #sourceLocation()
-        core.telemetry.metric(name: "Metric Name", attributes: ["metric.attribute": 42])
+        core.telemetry.metric(name: "Metric Name", attributes: ["metric.attribute": 42], sampleRate: 100)
         core.telemetry.stopMethodCalled(
-            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom())
+            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
+            tailSampleRate: 100
         )
 
         // Then
@@ -69,7 +69,6 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         // Given
         var config = RUM.Configuration(applicationID: "rum-app-id")
         config.telemetrySampleRate = 100
-        config.metricsTelemetrySampleRate = 100
         RUM.enable(with: config, in: core)
 
         // When
@@ -79,9 +78,10 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         // Then
         core.telemetry.debug("Debug Telemetry")
         core.telemetry.error("Error Telemetry")
-        core.telemetry.metric(name: "Metric Name", attributes: [:])
+        core.telemetry.metric(name: "Metric Name", attributes: [:], sampleRate: 100)
         core.telemetry.stopMethodCalled(
-            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom())
+            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
+            tailSampleRate: 100
         )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
@@ -116,7 +116,6 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         // Given
         var config = RUM.Configuration(applicationID: "rum-app-id")
         config.telemetrySampleRate = 100
-        config.metricsTelemetrySampleRate = 100
         RUM.enable(with: config, in: core)
 
         // When
@@ -125,9 +124,10 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         // Then
         core.telemetry.debug("Debug Telemetry")
         core.telemetry.error("Error Telemetry")
-        core.telemetry.metric(name: "Metric Name", attributes: [:])
+        core.telemetry.metric(name: "Metric Name", attributes: [:], sampleRate: 100)
         core.telemetry.stopMethodCalled(
-            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom())
+            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
+            tailSampleRate: 100
         )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
@@ -162,7 +162,6 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         // Given
         var config = RUM.Configuration(applicationID: "rum-app-id")
         config.telemetrySampleRate = 100
-        config.metricsTelemetrySampleRate = 100
         RUM.enable(with: config, in: core)
 
         // When
@@ -172,9 +171,10 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         // Then
         core.telemetry.debug("Debug Telemetry")
         core.telemetry.error("Error Telemetry")
-        core.telemetry.metric(name: "Metric Name", attributes: [:])
+        core.telemetry.metric(name: "Metric Name", attributes: [:], sampleRate: 100)
         core.telemetry.stopMethodCalled(
-            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom())
+            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
+            tailSampleRate: 100
         )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)

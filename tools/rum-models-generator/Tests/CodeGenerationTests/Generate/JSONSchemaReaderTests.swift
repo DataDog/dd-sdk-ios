@@ -91,4 +91,26 @@ final class JSONSchemaReaderTests: XCTestCase {
         XCTAssertEqual(schema.anyOf?[2].oneOf?[0].properties?["propertyInC1"]?.type, .integer)
         XCTAssertEqual(schema.anyOf?[2].oneOf?[1].properties?["propertyInC2"]?.type, .string)
     }
+
+    func testReadingSchemaWithOneOfWithoutTitle() throws {
+        let file = Bundle.module.url(forResource: "Fixtures/fixture-schema-with-oneof-without-title", withExtension: "json")!
+
+        let schema = try JSONSchemaReader().read(file)
+
+        XCTAssertEqual(schema.title, "TelemetryCommonFeaturesUsage")
+
+        XCTAssertEqual(schema.oneOf?.count, 3)
+
+        XCTAssertEqual(schema.oneOf?[0].properties?["feature"]?.type, .string)
+        XCTAssertEqual(schema.oneOf?[0].properties?["feature"]?.description, "setTrackingConsent API")
+        XCTAssertEqual(schema.oneOf?[0].properties?["feature"]?.const, .init(value: .string(value: "set-tracking-consent")))
+
+        XCTAssertEqual(schema.oneOf?[0].properties?["tracking_consent"]?.type, .string)
+        XCTAssertEqual(schema.oneOf?[0].properties?["tracking_consent"]?.enum, [.string("granted"), .string("not-granted"), .string("pending")])
+        XCTAssertEqual(schema.oneOf?[0].properties?["tracking_consent"]?.description, "The tracking consent value set by the user")
+
+        XCTAssertEqual(schema.oneOf?[1].properties?["feature"]?.type, .string)
+        XCTAssertEqual(schema.oneOf?[1].properties?["feature"]?.description, "stopSession API")
+        XCTAssertEqual(schema.oneOf?[1].properties?["feature"]?.const, .init(value: .string(value: "stop-session")))
+    }
 }

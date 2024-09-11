@@ -38,6 +38,9 @@ internal enum BatchDeletedMetric {
     static let name = "Batch Deleted"
     /// Metric type value.
     static let typeValue = "batch deleted"
+    /// The sample rate for this metric.
+    /// It is applied in addition to the telemetry sample rate (20% by default).
+    static let sampleRate: Float = 1.5 // 1.5%
     /// The key for uploader's delay options.
     static let uploaderDelayKey = "uploader_delay"
     /// The min delay of uploads for this track (in ms).
@@ -107,6 +110,9 @@ internal enum BatchClosedMetric {
     static let name = "Batch Closed"
     /// Metric type value.
     static let typeValue = "batch closed"
+    /// The sample rate for this metric.
+    /// It is applied in addition to the telemetry sample rate (20% by default).
+    static let sampleRate: Float = 1.5 // 1.5%
     /// The default duration since last write (in ms) after which the uploader considers the file to be "ready for upload".
     static let uploaderWindowKey = "uploader_window"
 

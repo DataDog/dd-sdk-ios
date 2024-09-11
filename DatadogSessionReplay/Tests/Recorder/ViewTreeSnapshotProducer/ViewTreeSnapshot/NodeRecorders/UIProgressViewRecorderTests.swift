@@ -10,7 +10,7 @@ import XCTest
 @testable import DatadogSessionReplay
 
 class UIProgressViewRecorderTests: XCTestCase {
-    private let recorder = UIProgressViewRecorder()
+    private let recorder = UIProgressViewRecorder(identifier: UUID())
     private let progressView = UIProgressView()
     private var viewAttributes: ViewAttributes = .mockAny()
 
