@@ -7,8 +7,8 @@ all: env-check repo-setup templates
 		tools-test \
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
 		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos spm-build-watchos \
-		e2e-build-upload \
-		benchmark-build-upload \
+		e2e-upload \
+		benchmark-build benchmark-upload \
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
 		dogfood-shopist dogfood-datadog-app \
 		release-build release-validate release-publish-github \
@@ -116,14 +116,20 @@ DEFAULT_SR_SNAPSHOT_TESTS_DEVICE := iPhone 15
 # Default location for deploying artifacts
 DEFAULT_ARTIFACTS_PATH := artifacts
 
+# Whether Test Visibility product is enabled by default
+DEFAULT_USE_TEST_VISIBILITY := 0
+
+SKIP_OBJC_TYPES ?= TelemetryUsageEvent
+
 # Run unit tests for specified SCHEME
 test:
 	@$(call require_param,SCHEME)
 	@$(call require_param,OS)
 	@$(call require_param,PLATFORM)
 	@$(call require_param,DEVICE)
-	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)'"
-	./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
+	@:$(eval USE_TEST_VISIBILITY ?= $(DEFAULT_USE_TEST_VISIBILITY))
+	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' USE_TEST_VISIBILITY='$(USE_TEST_VISIBILITY)'"
+	USE_TEST_VISIBILITY=$(USE_TEST_VISIBILITY) ./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
 
 # Run unit tests for specified SCHEME using iOS Simulator
 test-ios:
@@ -263,17 +269,22 @@ spm-build-macos:
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCrashReporting"
 
 # Builds a new version of the E2E app and publishes it to synthetics.
-e2e-build-upload:
+e2e-upload:
 	@$(call require_param,ARTIFACTS_PATH)
 	@:$(eval DRY_RUN ?= 1)
-	@$(ECHO_TITLE) "make e2e-build-upload ARTIFACTS_PATH='$(ARTIFACTS_PATH)' DRY_RUN='$(DRY_RUN)'"
+	@$(ECHO_TITLE) "make e2e-upload ARTIFACTS_PATH='$(ARTIFACTS_PATH)' DRY_RUN='$(DRY_RUN)'"
 	DRY_RUN=$(DRY_RUN) ./tools/e2e-build-upload.sh --artifacts-path "$(ARTIFACTS_PATH)"
 
+# Builds the Benchmark app.
+benchmark-build:
+	@$(ECHO_TITLE) "make benchmark-build"
+	@$(MAKE) -C BenchmarkTests build
+
 # Builds a new version of the Benchmark app and publishes it to synthetics.
-benchmark-build-upload:
+benchmark-upload:
 	@$(call require_param,ARTIFACTS_PATH)
 	@:$(eval DRY_RUN ?= 1)
-	@$(ECHO_TITLE) "make benchmark-build-upload ARTIFACTS_PATH='$(ARTIFACTS_PATH)' DRY_RUN='$(DRY_RUN)'"
+	@$(ECHO_TITLE) "make benchmark-upload ARTIFACTS_PATH='$(ARTIFACTS_PATH)' DRY_RUN='$(DRY_RUN)'"
 	DRY_RUN=$(DRY_RUN) ./tools/benchmark-build-upload.sh --artifacts-path "$(ARTIFACTS_PATH)"
 
 # Opens `BenchmarkTests` project with passing required ENV variables
@@ -295,13 +306,12 @@ models-generate:
 	@$(call require_param,PRODUCT) # 'rum' or 'sr'
 	@$(call require_param,GIT_REF)
 	@$(ECHO_TITLE) "make models-generate PRODUCT='$(PRODUCT)' GIT_REF='$(GIT_REF)'"
-	./tools/rum-models-generator/run.py generate $(PRODUCT) --git_ref=$(GIT_REF)
-
+	./tools/rum-models-generator/run.py generate $(PRODUCT) --git_ref=$(GIT_REF) --skip_objc $(SKIP_OBJC_TYPES)
 # Validate data models against https://github.com/DataDog/rum-events-format
 models-verify:
 	@$(call require_param,PRODUCT) # 'rum' or 'sr'
 	@$(ECHO_TITLE) "make models-verify PRODUCT='$(PRODUCT)'"
-	./tools/rum-models-generator/run.py verify $(PRODUCT)
+	./tools/rum-models-generator/run.py verify $(PRODUCT) --skip_objc $(SKIP_OBJC_TYPES)
 
 # Generate RUM data models
 rum-models-generate:
@@ -447,10 +457,6 @@ release-publish-dependent-podspecs:
 release-publish-legacy-podspecs:
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogObjc.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogAlamofireExtension.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDK.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDKObjc.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDKCrashReporting.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDKAlamofireExtension.podspec"
 
 # Set ot update CI secrets
 set-ci-secret:

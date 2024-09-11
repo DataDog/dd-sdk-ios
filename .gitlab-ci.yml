@@ -57,11 +57,17 @@ default:
   rules: 
     - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
 
-.release-pipeline-delayed-job:
+.release-pipeline-20m-delayed-job:
   rules: 
     - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
       when: delayed
       start_in: 20 minutes
+
+.release-pipeline-40m-delayed-job:
+  rules: 
+    - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
+      when: delayed
+      start_in: 40 minutes
 
 ENV check:
   stage: pre
@@ -96,7 +102,7 @@ Unit Tests (iOS):
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+    - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
 
 Unit Tests (tvOS):
   stage: test
@@ -109,7 +115,7 @@ Unit Tests (tvOS):
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+    - make test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
 
 UI Tests:
   stage: ui-test
@@ -163,6 +169,17 @@ Tools Tests:
   script:
     - make clean repo-setup ENV=ci
     - make tools-test
+
+Benchmark Build:
+  stage: smoke-test
+  rules:
+    - if: '$CI_COMMIT_BRANCH' # when on branch with following changes compared to develop
+      changes:
+        paths:
+          - "BenchmarkTests/**/*"
+        compare_to: 'develop'
+  script:
+    - make benchmark-build
 
 Smoke Tests (iOS):
   stage: smoke-test
@@ -265,7 +282,7 @@ E2E Test (upload to s8s):
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --datadog-ci
     - make clean
     - export DRY_RUN=${DRY_RUN:-0} # default to 0 if not specified
-    - make e2e-build-upload ARTIFACTS_PATH="artifacts/e2e"
+    - make e2e-upload ARTIFACTS_PATH="artifacts/e2e"
 
 # ┌────────────────────────────┐
 # │ Benchmark Test app upload: │
@@ -275,6 +292,7 @@ Benchmark Test (upload to s8s):
   stage: benchmark-test
   rules:
     - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+      allow_failure: true
   artifacts:
     paths:
       - artifacts
@@ -283,7 +301,7 @@ Benchmark Test (upload to s8s):
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --datadog-ci
     - make clean
     - export DRY_RUN=${DRY_RUN:-0} # default to 0 if not specified
-    - make benchmark-build-upload ARTIFACTS_PATH="artifacts/benchmark"
+    - make benchmark-upload ARTIFACTS_PATH="artifacts/benchmark"
 
 # ┌─────────────────┐
 # │ SDK dogfooding: │
@@ -363,7 +381,7 @@ Publish CP podspecs (internal):
 Publish CP podspecs (dependent):
   stage: release-publish
   rules: 
-    - !reference [.release-pipeline-delayed-job, rules]
+    - !reference [.release-pipeline-20m-delayed-job, rules]
   before_script:
     - *export_MAKE_release_params
   script:
@@ -375,7 +393,7 @@ Publish CP podspecs (dependent):
 Publish CP podspecs (legacy):
   stage: release-publish
   rules: 
-    - !reference [.release-pipeline-delayed-job, rules]
+    - !reference [.release-pipeline-40m-delayed-job, rules]
   before_script:
     - *export_MAKE_release_params
   script:

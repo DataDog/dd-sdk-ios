@@ -63,7 +63,8 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             srContextPublisher: SRContextPublisher(core: core),
             recorder: recorder,
             sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate),
-            telemetry: core.telemetry
+            telemetry: core.telemetry,
+            startRecordingImmediately: configuration.startRecordingImmediately
         )
         self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
@@ -79,6 +80,14 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
                 changeRate: 0.75 // vs 0.1 with `uploadFrequency: .frequent`
             )
         )
+    }
+
+    func startRecording() {
+        self.recordingCoordinator.startRecording()
+    }
+
+    func stopRecording() {
+        self.recordingCoordinator.stopRecording()
     }
 }
 #endif

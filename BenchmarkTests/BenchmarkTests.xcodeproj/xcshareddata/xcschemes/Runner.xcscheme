@@ -50,6 +50,18 @@
             ReferencedContainer = "container:BenchmarkTests.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "BENCHMARK_RUN"
+            value = "instrumented"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BENCHMARK_SCENARIO"
+            value = "sessionReplay"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

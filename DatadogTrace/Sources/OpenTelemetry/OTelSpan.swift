@@ -167,7 +167,13 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         isRecording = false
         tags = attributes.tags
 
-        // There is no need to lock here, because `DDSpan` is thread-safe
+        // set global tags
+        for (key, value) in tracer.tags {
+            ddSpan.setTag(key: key, value: value)
+        }
+
+        // set local tags
+        // local takes precedence over global
         for (key, value) in tags {
             ddSpan.setTag(key: key, value: value)
         }

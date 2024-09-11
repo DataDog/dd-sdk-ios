@@ -22,17 +22,29 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     /// Telemetry interface.
     let telemetry: Telemetry
 
-    func request(for events: [Event], with context: DatadogContext) -> URLRequest {
+    func request(
+        for events: [Event],
+        with context: DatadogContext,
+        execution: ExecutionContext
+    ) -> URLRequest {
         var tags = [
             "service:\(context.service)",
             "version:\(context.version)",
             "sdk_version:\(context.sdkVersion)",
-            "env:\(context.env)",
+            "env:\(context.env)"
         ]
 
         if let variant = context.variant {
             tags.append("variant:\(variant)")
         }
+
+        tags.append("retry_count:\(execution.attempt + 1)")
+        if let previousResponseCode = execution.previousResponseCode {
+            tags.append("last_failure_status:\(previousResponseCode)")
+        }
+
+        let filteredEvents = eventsFilter.filter(events: events)
+        let data = format.format(filteredEvents.map { $0.data })
 
         let builder = URLRequestBuilder(
             url: url(with: context),
@@ -51,12 +63,11 @@ internal struct RequestBuilder: FeatureRequestBuilder {
                 .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),
                 .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
                 .ddRequestIDHeader(),
+                .ddIdempotencyKeyHeader(key: data.sha1())
             ],
             telemetry: telemetry
         )
 
-        let filteredEvents = eventsFilter.filter(events: events)
-        let data = format.format(filteredEvents.map { $0.data })
         return builder.uploadRequest(with: data)
     }
 

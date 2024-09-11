@@ -92,6 +92,11 @@ public extension URL {
         components?.query = nil // drop query params
         return components?.url?.absoluteString
     }
+
+    func queryItem(_ name: String) -> URLQueryItem? {
+        let components = URLComponents(url: self, resolvingAgainstBaseURL: false)
+        return components?.queryItems?.first { $0.name == name }
+    }
 }
 
 extension URLRequest {
@@ -173,5 +178,11 @@ public extension Array {
             )
         }
         return all.first
+    }
+}
+
+extension Dictionary where Key == Int, Value == String {
+    public static func + (lhs: Self, rhs: Self) -> Self {
+        lhs.merging(rhs) { _, new in new }
     }
 }

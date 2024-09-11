@@ -91,8 +91,8 @@ class RUMTests: XCTestCase {
         let crashReportReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: CrashReportReceiver.self)
         XCTAssertEqual(monitor.scopes.dependencies.rumApplicationID, applicationID)
         XCTAssertEqual(monitor.scopes.dependencies.sessionSampler.samplingRate, 100)
+        XCTAssertEqual(monitor.scopes.dependencies.sessionEndedMetric.sampleRate, 15)
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 20)
-        XCTAssertEqual(telemetryReceiver?.metricsExtraSampler.samplingRate, 15)
         XCTAssertEqual(crashReportReceiver?.sessionSampler.samplingRate, 100)
     }
 

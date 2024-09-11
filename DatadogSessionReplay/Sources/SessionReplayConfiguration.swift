@@ -30,6 +30,11 @@ extension SessionReplay {
         /// Default: `.mask`.
         public var defaultPrivacyLevel: SessionReplayPrivacyLevel
 
+        /// Defines it the recording should start automatically. When `true`, the recording starts automatically; when `false` it doesn't, and the recording will need to be started manually.
+        ///
+        /// Default: `true`.
+        public var startRecordingImmediately: Bool
+
         /// Custom server url for sending replay data.
         ///
         /// Default: `nil`.
@@ -45,14 +50,17 @@ extension SessionReplay {
         /// - Parameters:
         ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
         ///   - defaultPrivacyLevel: The way sensitive content (e.g. text) should be masked. Default: `.mask`.
+        ///   - startRecordingImmediately: If the recording should start automatically. When `true`, the recording starts automatically; when `false` it doesn't, and the recording will need to be started manually. Default: `true`.
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
         public init(
             replaySampleRate: Float,
             defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,
+            startRecordingImmediately: Bool = true,
             customEndpoint: URL? = nil
         ) {
             self.replaySampleRate = replaySampleRate
             self.defaultPrivacyLevel = defaultPrivacyLevel
+            self.startRecordingImmediately = startRecordingImmediately
             self.customEndpoint = customEndpoint
         }
 

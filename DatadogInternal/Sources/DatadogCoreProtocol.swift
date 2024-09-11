@@ -222,7 +222,7 @@ extension BaggageSharing {
 }
 
 /// Feature scope provides a context and a writer to build a record event.
-public protocol FeatureScope: MessageSending, BaggageSharing {
+public protocol FeatureScope: MessageSending, BaggageSharing, Sendable {
     /// Retrieve the core context and event writer.
     ///
     /// The Feature scope provides the current Datadog context and event writer for building and recording events.

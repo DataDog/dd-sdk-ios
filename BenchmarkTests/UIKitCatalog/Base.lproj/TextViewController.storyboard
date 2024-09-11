@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14810.12" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="pUP-b0-VMf">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14766.15"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Text View-->
+        <scene sceneID="DT7-pA-8MW">
+            <objects>
+                <viewController id="pUP-b0-VMf" customClass="TextViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="eAJ-am-dgQ">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" usesAttributedText="YES" translatesAutoresizingMaskIntoConstraints="NO" id="V59-C7-Tgr">
+                                <rect key="frame" x="16" y="0.0" width="343" height="647"/>
+                                <attributedString key="attributedText">
+                                    <fragment>
+                                        <string key="content">This is a UITextView that uses attributed text. You can programmatically modify the display of the text by making it bold, highlighted, underlined, tinted, symbols, and more. These attributes are defined in NSAttributedString.h. You can even embed attachments in an NSAttributedString!
+
+</string>
+                                        <attributes>
+                                            <color key="NSColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <font key="NSFont" size="14" name="HelveticaNeue"/>
+                                            <integer key="NSLigature" value="0"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" defaultTabInterval="33.700000000000003" tighteningFactorForTruncation="0.0" allowsDefaultTighteningForTruncation="NO">
+                                                <tabStops>
+                                                    <textTab alignment="left" location="33.700000762939453">
+                                                        <options/>
+                                                    </textTab>
+                                                </tabStops>
+                                            </paragraphStyle>
+                                        </attributes>
+                                    </fragment>
+                                </attributedString>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                <connections>
+                                    <outlet property="delegate" destination="pUP-b0-VMf" id="Tzq-IQ-rRK"/>
+                                </connections>
+                            </textView>
+                        </subviews>
+                        <color key="backgroundColor" xcode11CocoaTouchSystemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="bSK-Jp-Ogb" firstAttribute="bottom" secondItem="V59-C7-Tgr" secondAttribute="bottom" constant="20" id="9rv-7g-PRc"/>
+                            <constraint firstItem="V59-C7-Tgr" firstAttribute="top" secondItem="bSK-Jp-Ogb" secondAttribute="top" id="dbh-pc-3hv"/>
+                            <constraint firstItem="bSK-Jp-Ogb" firstAttribute="trailing" secondItem="V59-C7-Tgr" secondAttribute="trailing" constant="16" id="e3E-yJ-Jhr"/>
+                            <constraint firstItem="V59-C7-Tgr" firstAttribute="leading" secondItem="bSK-Jp-Ogb" secondAttribute="leading" constant="16" id="pw6-zy-Ygc"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="bSK-Jp-Ogb"/>
+                    </view>
+                    <navigationItem key="navigationItem" title="Text View" id="ZRc-vB-83q"/>
+                    <connections>
+                        <outlet property="textView" destination="V59-C7-Tgr" id="XcF-yp-sdb"/>
+                        <outlet property="textViewBottomLayoutGuideConstraint" destination="9rv-7g-PRc" id="ZfA-Y5-QqU"/>
+                        <outlet property="view" destination="eAJ-am-dgQ" id="Bmb-io-4kq"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="wVk-pN-HXB" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="8016.8000000000002" y="3367.4662668665669"/>
+        </scene>
+    </scenes>
+</document>

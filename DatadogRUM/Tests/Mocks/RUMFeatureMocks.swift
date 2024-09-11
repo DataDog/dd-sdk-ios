@@ -64,15 +64,13 @@ extension TelemetryReceiver: AnyMockable {
         featureScope: FeatureScope = NOPFeatureScope(),
         dateProvider: DateProvider = SystemDateProvider(),
         sampler: Sampler = .mockKeepAll(),
-        configurationExtraSampler: Sampler = .mockKeepAll(),
-        metricsExtraSampler: Sampler = .mockKeepAll()
+        configurationExtraSampler: Sampler = .mockKeepAll()
     ) -> Self {
         .init(
             featureScope: featureScope,
             dateProvider: dateProvider,
             sampler: sampler,
-            configurationExtraSampler: configurationExtraSampler,
-            metricsExtraSampler: metricsExtraSampler
+            configurationExtraSampler: configurationExtraSampler
         )
     }
 }
@@ -775,7 +773,7 @@ extension RUMScopeDependencies {
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
         viewCache: ViewCache = ViewCache(),
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
-        sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry()),
+        sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0),
         watchdogTermination: WatchdogTerminationMonitor = .mockRandom()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(

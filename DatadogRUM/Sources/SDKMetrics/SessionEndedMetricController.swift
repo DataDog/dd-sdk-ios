@@ -17,11 +17,16 @@ internal final class SessionEndedMetricController {
 
     /// Telemetry endpoint for sending metrics.
     private let telemetry: Telemetry
+    /// The sample rate for "RUM Session Ended" metric.
+    internal let sampleRate: Float
 
     /// Initializes a new instance of the metric controller.
-    /// - Parameter telemetry: The telemetry endpoint used for sending metrics.
-    init(telemetry: Telemetry) {
+    /// - Parameters:
+    ///    - telemetry: The telemetry endpoint used for sending metrics.
+    ///    - sampleRate: The sample rate for "RUM Session Ended" metric.
+    init(telemetry: Telemetry, sampleRate: Float) {
         self.telemetry = telemetry
+        self.sampleRate = sampleRate
     }
 
     /// Starts a new metric for a given session.
@@ -84,7 +89,11 @@ internal final class SessionEndedMetricController {
             guard let metric = metrics[sessionID] else {
                 return
             }
-            telemetry.metric(name: SessionEndedMetric.Constants.name, attributes: metric.asMetricAttributes(with: context))
+            telemetry.metric(
+                name: SessionEndedMetric.Constants.name,
+                attributes: metric.asMetricAttributes(with: context),
+                sampleRate: sampleRate
+            )
             metrics[sessionID] = nil
             pendingSessionIDs.removeAll(where: { $0 == sessionID }) // O(n), but "ending the metric" is very rare event
         }

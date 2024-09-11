@@ -11,8 +11,15 @@ import DatadogCore
 import DatadogRUM
 import DatadogSessionReplay
 
+import UIKitCatalog
+
 struct SessionReplayScenario: Scenario {
-    func start(info: TestInfo) -> UIViewController {
+    var initialViewController: UIViewController {
+        let storyboard = UIStoryboard(name: "Main", bundle: UIKitCatalog.bundle)
+        return storyboard.instantiateInitialViewController()!
+    }
+
+    func instrument(with info: AppInfo) {
         Datadog.initialize(
             with: .benchmark(info: info),
             trackingConsent: .granted
@@ -34,8 +41,5 @@ struct SessionReplayScenario: Scenario {
         )
 
         RUMMonitor.shared().addAttribute(forKey: "scenario", value: "SessionReplay")
-
-        let storyboard = UIStoryboard(name: "SessionReplay", bundle: nil)
-        return storyboard.instantiateInitialViewController()!
     }
 }

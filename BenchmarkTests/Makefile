@@ -14,12 +14,24 @@ ifdef ARTIFACTS_PATH
 	rm -rf "$(IPA_PATH)"
 endif
 
+build:
+	@$(ECHO_SUBTITLE2) "make build"
+	set -eo pipefail; \
+	DD_BENCHMARK=1 OTEL_SWIFT=1 xcodebuild \
+		-project BenchmarkTests.xcodeproj \
+		-scheme Runner \
+		-sdk iphonesimulator \
+		-configuration Release \
+		-destination generic/platform=iOS\ Simulator \
+	| xcbeautify
+	@$(ECHO_SUCCESS) "BenchmarkTests compiles"
+
 archive:
 	@:$(eval VERSION ?= $(CURRENT_GIT_COMMIT_SHORT))
 	@$(ECHO_SUBTITLE2) "make archive VERSION='$(VERSION)'"
 	@xcrun agvtool new-version "$(VERSION)"
 	set -eo pipefail; \
-	OTEL_SWIFT=1 xcodebuild \
+	DD_BENCHMARK=1 OTEL_SWIFT=1 xcodebuild \
 		-project BenchmarkTests.xcodeproj \
 		-scheme Runner \
 		-sdk iphoneos \
@@ -58,4 +70,4 @@ upload:
 
 open:
 	@$(ECHO_SUBTITLE2) "make open"
-	@open --new --env OTEL_SWIFT BenchmarkTests.xcodeproj
+	@open --env DD_BENCHMARK --env OTEL_SWIFT --new BenchmarkTests.xcodeproj

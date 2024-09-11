@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17132" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="srd-Os-5SR">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17105"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Page Control-->
+        <scene sceneID="dMs-Pg-XoX">
+            <objects>
+                <viewController storyboardIdentifier="PageControlViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="srd-Os-5SR" customClass="PageControlViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="KHl-03-rZm">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="3" translatesAutoresizingMaskIntoConstraints="NO" id="iUb-xD-abW">
+                                <rect key="frame" x="16" y="639.5" width="343" height="27.5"/>
+                                <color key="pageIndicatorTintColor" red="0.66666666669999997" green="0.66666666669999997" blue="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="currentPageIndicatorTintColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </pageControl>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GkA-xO-cxz">
+                                <rect key="frame" x="40" y="79" width="295" height="548"/>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="F5O-8y-7mB"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="GkA-xO-cxz" firstAttribute="top" secondItem="F5O-8y-7mB" secondAttribute="top" constant="35" id="5Jn-ca-psu"/>
+                            <constraint firstItem="F5O-8y-7mB" firstAttribute="centerX" secondItem="GkA-xO-cxz" secondAttribute="centerX" id="6ww-c0-eQv"/>
+                            <constraint firstItem="GkA-xO-cxz" firstAttribute="centerX" secondItem="iUb-xD-abW" secondAttribute="centerX" id="Kaf-Dc-22V"/>
+                            <constraint firstItem="F5O-8y-7mB" firstAttribute="trailing" secondItem="GkA-xO-cxz" secondAttribute="trailing" constant="40" id="QY1-Gz-Dqb"/>
+                            <constraint firstItem="F5O-8y-7mB" firstAttribute="bottom" secondItem="GkA-xO-cxz" secondAttribute="bottom" constant="40" id="Ypi-w7-Fwd"/>
+                            <constraint firstItem="iUb-xD-abW" firstAttribute="leading" secondItem="KHl-03-rZm" secondAttribute="leadingMargin" id="aKA-0e-L9l"/>
+                            <constraint firstItem="iUb-xD-abW" firstAttribute="trailing" secondItem="KHl-03-rZm" secondAttribute="trailingMargin" id="l5n-Lq-4kr"/>
+                            <constraint firstItem="F5O-8y-7mB" firstAttribute="bottom" secondItem="iUb-xD-abW" secondAttribute="bottom" id="sMy-OH-NSQ"/>
+                            <constraint firstItem="GkA-xO-cxz" firstAttribute="leading" secondItem="F5O-8y-7mB" secondAttribute="leading" constant="40" id="vyK-81-yoh"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Page Control" id="GyX-to-cBo"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
+                    <connections>
+                        <outlet property="colorView" destination="GkA-xO-cxz" id="0dz-kC-PyW"/>
+                        <outlet property="pageControl" destination="iUb-xD-abW" id="vEu-qJ-hga"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="C3x-4E-BlE" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="9719" y="4180"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

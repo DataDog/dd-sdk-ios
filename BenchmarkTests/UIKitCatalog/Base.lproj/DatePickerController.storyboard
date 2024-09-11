@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17132" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="7Xn-ho-KP8">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17105"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Date Picker-->
+        <scene sceneID="zWi-9k-VNG">
+            <objects>
+                <viewController storyboardIdentifier="DatePickerController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="7Xn-ho-KP8" customClass="DatePickerController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="LFl-gd-u3P">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <datePicker contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="dateAndTime" minuteInterval="1" translatesAutoresizingMaskIntoConstraints="NO" id="ebB-3n-o8C">
+                                <rect key="frame" x="27.5" y="225.5" width="320" height="216"/>
+                            </datePicker>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="02B-Y8-Hxk">
+                                <rect key="frame" x="16" y="460.5" width="343" height="20.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="qI8-L8-DCK"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="02B-Y8-Hxk" firstAttribute="top" secondItem="ebB-3n-o8C" secondAttribute="bottom" constant="19" id="An0-A4-IS5"/>
+                            <constraint firstAttribute="leadingMargin" secondItem="02B-Y8-Hxk" secondAttribute="leading" id="Gik-bp-oJf"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="02B-Y8-Hxk" secondAttribute="trailing" id="Mif-nA-opd"/>
+                            <constraint firstItem="ebB-3n-o8C" firstAttribute="centerY" secondItem="LFl-gd-u3P" secondAttribute="centerY" id="iLb-96-Kao"/>
+                            <constraint firstItem="ebB-3n-o8C" firstAttribute="centerX" secondItem="qI8-L8-DCK" secondAttribute="centerX" id="tvU-Ae-9RL"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Date Picker" id="ywp-Wr-kTt"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
+                    <connections>
+                        <outlet property="dateLabel" destination="02B-Y8-Hxk" id="dzo-fF-tBd"/>
+                        <outlet property="datePicker" destination="ebB-3n-o8C" id="jzR-uA-bOS"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="UIz-m3-LkY" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1639" y="3368"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

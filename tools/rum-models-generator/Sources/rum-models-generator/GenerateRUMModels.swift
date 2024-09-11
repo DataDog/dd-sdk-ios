@@ -40,7 +40,7 @@ internal func generateRUMSwiftModels(from schema: URL) throws -> String {
         .print(using: template, and: printer)
 }
 
-internal func generateRUMObjcInteropModels(from schema: URL) throws -> String {
+internal func generateRUMObjcInteropModels(from schema: URL, skip typesToSkip: Set<String>) throws -> String {
     let generator = ModelsGenerator()
 
     let template = OutputTemplate(
@@ -69,6 +69,7 @@ internal func generateRUMObjcInteropModels(from schema: URL) throws -> String {
 
     return try generator
         .generateCode(from: schema)
+        .skip(types: typesToSkip)
         .decorate(using: RUMCodeDecorator())
         .print(using: template, and: printer)
 }

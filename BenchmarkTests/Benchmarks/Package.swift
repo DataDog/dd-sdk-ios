@@ -9,7 +9,7 @@ let package = Package(
     products: [
         .library(
             name: "DatadogBenchmarks",
-            targets: ["Benchmarks"]
+            targets: ["DatadogBenchmarks"]
         )
     ]
 )
@@ -28,12 +28,13 @@ func addOpenTelemetryDependency(_ version: Version) {
 
         package.targets = [
             .target(
-                name: "Benchmarks",
+                name: "DatadogBenchmarks",
                 dependencies: [
                     .product(name: "OpenTelemetryApi", package: "opentelemetry-swift"),
-                    .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift")
+                    .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift"),
+                    .product(name: "DatadogExporter", package: "opentelemetry-swift")
                 ],
-                swiftSettings: [.unsafeFlags(["-DOTEL_SWIFT"])]
+                swiftSettings: [.define("OTEL_SWIFT")]
             )
         ]
 
@@ -44,11 +45,11 @@ func addOpenTelemetryDependency(_ version: Version) {
 
         package.targets = [
             .target(
-                name: "Benchmarks",
+                name: "DatadogBenchmarks",
                 dependencies: [
                     .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-packages")
                 ],
-                swiftSettings: [.unsafeFlags(["-DOTEL_API"])]
+                swiftSettings: [.define("OTEL_API")]
             )
         ]
     }
