@@ -7,16 +7,17 @@
 #if os(iOS)
 import XCTest
 import UIKit
+import DatadogInternal
 import TestUtilities
 @testable import DatadogSessionReplay
 
 class UIKitExtensionsTests: XCTestCase {
     func testUsesDarkMode() {
         guard #available(iOS 13.0, *) else {
-            XCTAssertFalse(UIView().usesDarkMode) // always false prior to iOS 13.x
+            XCTAssertFalse(UIView().dd.usesDarkMode) // always false prior to iOS 13.x
             return
         }
-        class MockView: NSObject, UITraitEnvironment {
+        class MockView: NSObject, DatadogExtended, UITraitEnvironment {
             var traitCollection: UITraitCollection = .init(userInterfaceStyle: .unspecified)
             func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {}
         }
@@ -30,13 +31,13 @@ class UIKitExtensionsTests: XCTestCase {
         darkView.traitCollection = .init(userInterfaceStyle: .dark)
 
         // Then
-        XCTAssertFalse(lightView.usesDarkMode)
-        XCTAssertTrue(darkView.usesDarkMode)
+        XCTAssertFalse(lightView.dd.usesDarkMode)
+        XCTAssertTrue(darkView.dd.usesDarkMode)
     }
 
     // swiftlint:disable opening_brace
     func testIsSensitiveText() {
-       class Mock: NSObject, UITextInputTraits {
+       class Mock: NSObject, DatadogExtended, UITextInputTraits {
             var isSecureTextEntry = false
             var textContentType: UITextContentType! = nil // swiftlint:disable:this implicitly_unwrapped_optional
         }
@@ -44,12 +45,12 @@ class UIKitExtensionsTests: XCTestCase {
         // Given
         let sensitiveTextMock = Mock()
         let nonSensitiveTextMock = Mock()
-        let nonSensitiveContentTypes = UITextContentType.allCases.subtracting(sensitiveContentTypes)
+        let nonSensitiveContentTypes = UITextContentType.allCases.subtracting(Mock.dd.sensitiveTypes)
 
         // When
         oneOrMoreOf([
             { sensitiveTextMock.isSecureTextEntry = true },
-            { sensitiveTextMock.textContentType = sensitiveContentTypes.randomElement() },
+            { sensitiveTextMock.textContentType = Mock.dd.sensitiveTypes.randomElement() },
         ])
         oneOrMoreOf([
             { nonSensitiveTextMock.isSecureTextEntry = false },
@@ -58,8 +59,8 @@ class UIKitExtensionsTests: XCTestCase {
         ])
 
         // Then
-        XCTAssertTrue(sensitiveTextMock.isSensitiveText)
-        XCTAssertFalse(nonSensitiveTextMock.isSensitiveText)
+        XCTAssertTrue(sensitiveTextMock.dd.isSensitiveText)
+        XCTAssertFalse(nonSensitiveTextMock.dd.isSensitiveText)
     }
     // swiftlint:enable opening_brace
 }
