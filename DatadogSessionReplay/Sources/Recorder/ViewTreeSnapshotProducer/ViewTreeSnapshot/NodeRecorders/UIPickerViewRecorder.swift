@@ -29,7 +29,7 @@ internal struct UIPickerViewRecorder: NodeRecorder {
     init(
         identifier: UUID,
         textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = { context in
-            return context.recorder.privacy.inputAndOptionTextObfuscator
+            return context.recorder.textAndInputPrivacy.inputAndOptionTextObfuscator
         }
     ) {
         self.identifier = identifier

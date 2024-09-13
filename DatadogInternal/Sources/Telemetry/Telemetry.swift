@@ -17,8 +17,11 @@ public struct ConfigurationTelemetry: Equatable {
     public let batchSize: Int64?
     public let batchUploadFrequency: Int64?
     public let dartVersion: String?
-    public let defaultPrivacyLevel: String?
     public let forwardErrorsToLogs: Bool?
+    public let defaultPrivacyLevel: String?
+    public let textAndInputPrivacyLevel: String?
+    public let imagePrivacyLevel: String?
+    public let touchPrivacyLevel: String?
     public let initializationType: String?
     public let mobileVitalsUpdatePeriod: Int64?
     public let reactNativeVersion: String?
@@ -27,7 +30,6 @@ public struct ConfigurationTelemetry: Equatable {
     public let sessionSampleRate: Int64?
     public let silentMultipleInit: Bool?
     public let startRecordingImmediately: Bool?
-    public let startSessionReplayRecordingManually: Bool?
     public let telemetryConfigurationSampleRate: Int64?
     public let telemetrySampleRate: Int64?
     public let tracerAPI: String?
@@ -360,8 +362,11 @@ extension Telemetry {
         batchSize: Int64? = nil,
         batchUploadFrequency: Int64? = nil,
         dartVersion: String? = nil,
-        defaultPrivacyLevel: String? = nil,
         forwardErrorsToLogs: Bool? = nil,
+        defaultPrivacyLevel: String? = nil,
+        textAndInputPrivacyLevel: String? = nil,
+        imagePrivacyLevel: String? = nil,
+        touchPrivacyLevel: String? = nil,
         initializationType: String? = nil,
         mobileVitalsUpdatePeriod: Int64? = nil,
         reactNativeVersion: String? = nil,
@@ -370,7 +375,6 @@ extension Telemetry {
         sessionSampleRate: Int64? = nil,
         silentMultipleInit: Bool? = nil,
         startRecordingImmediately: Bool? = nil,
-        startSessionReplayRecordingManually: Bool? = nil,
         telemetryConfigurationSampleRate: Int64? = nil,
         telemetrySampleRate: Int64? = nil,
         tracerAPI: String? = nil,
@@ -411,8 +415,11 @@ extension Telemetry {
             batchSize: batchSize,
             batchUploadFrequency: batchUploadFrequency,
             dartVersion: dartVersion,
-            defaultPrivacyLevel: defaultPrivacyLevel,
             forwardErrorsToLogs: forwardErrorsToLogs,
+            defaultPrivacyLevel: defaultPrivacyLevel,
+            textAndInputPrivacyLevel: textAndInputPrivacyLevel,
+            imagePrivacyLevel: imagePrivacyLevel,
+            touchPrivacyLevel: touchPrivacyLevel,
             initializationType: initializationType,
             mobileVitalsUpdatePeriod: mobileVitalsUpdatePeriod,
             reactNativeVersion: reactNativeVersion,
@@ -421,7 +428,6 @@ extension Telemetry {
             sessionSampleRate: sessionSampleRate,
             silentMultipleInit: silentMultipleInit,
             startRecordingImmediately: startRecordingImmediately,
-            startSessionReplayRecordingManually: startSessionReplayRecordingManually,
             telemetryConfigurationSampleRate: telemetryConfigurationSampleRate,
             telemetrySampleRate: telemetrySampleRate,
             tracerAPI: tracerAPI,
@@ -532,8 +538,11 @@ extension ConfigurationTelemetry {
             batchSize: other.batchSize ?? batchSize,
             batchUploadFrequency: other.batchUploadFrequency ?? batchUploadFrequency,
             dartVersion: other.dartVersion ?? dartVersion,
-            defaultPrivacyLevel: other.defaultPrivacyLevel ?? defaultPrivacyLevel,
             forwardErrorsToLogs: other.forwardErrorsToLogs ?? forwardErrorsToLogs,
+            defaultPrivacyLevel: other.defaultPrivacyLevel ?? defaultPrivacyLevel,
+            textAndInputPrivacyLevel: other.textAndInputPrivacyLevel ?? textAndInputPrivacyLevel,
+            imagePrivacyLevel: other.imagePrivacyLevel ?? imagePrivacyLevel,
+            touchPrivacyLevel: other.touchPrivacyLevel ?? touchPrivacyLevel,
             initializationType: other.initializationType ?? initializationType,
             mobileVitalsUpdatePeriod: other.mobileVitalsUpdatePeriod ?? mobileVitalsUpdatePeriod,
             reactNativeVersion: other.reactNativeVersion ?? reactNativeVersion,
@@ -542,7 +551,6 @@ extension ConfigurationTelemetry {
             sessionSampleRate: other.sessionSampleRate ?? sessionSampleRate,
             silentMultipleInit: other.silentMultipleInit ?? silentMultipleInit,
             startRecordingImmediately: other.startRecordingImmediately ?? startRecordingImmediately,
-            startSessionReplayRecordingManually: other.startSessionReplayRecordingManually ?? startSessionReplayRecordingManually,
             telemetryConfigurationSampleRate: other.telemetryConfigurationSampleRate ?? telemetryConfigurationSampleRate,
             telemetrySampleRate: other.telemetrySampleRate ?? telemetrySampleRate,
             tracerAPI: other.tracerAPI ?? tracerAPI,

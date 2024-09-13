@@ -8,7 +8,7 @@ The `SRSnapshotTests.xcworkspace` depends on `dd-sdk-ios/Package.swift` but requ
 
 To open the project, use `make` at the repository root:
 ```
-make open-sr-snapshot-tests
+make sr-snapshot-tests-open
 ```
 
 Otherwise, if launched directly tests will not compile due to `Missing package product 'TestUtilities'`.
@@ -19,12 +19,17 @@ PNG files are stored in a separate repository. To manage them, use `make` at the
 
 To push new or updated local PNGs to the remote repo:
 ```
-make sr-push-snapshots
+make sr-snapshots-push
 ```
 
 To pull PNGs from the remote repo:
 ```
-make sr-pull-snapshots
+make sr-snapshots-pull
+```
+
+To test the snapshot comparison locally:
+```
+make sr-snapshot-test
 ```
 
 **Note**: Both commands require the [GitHub CLI](https://cli.github.com/) to be installed and authorized on the machine.

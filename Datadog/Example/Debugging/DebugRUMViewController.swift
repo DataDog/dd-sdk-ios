@@ -219,7 +219,7 @@ class DebugRUMViewController: UIViewController {
             )
         case "usage":
             telemetry.send(
-                telemetry: .usage(.setTrackingConsent(.granted))
+                telemetry: .usage(.init(event: .setTrackingConsent(.granted), sampleRate: 100))
             )
         default:
             break

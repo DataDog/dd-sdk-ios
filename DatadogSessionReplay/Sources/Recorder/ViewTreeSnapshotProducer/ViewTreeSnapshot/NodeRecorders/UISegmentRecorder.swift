@@ -14,7 +14,7 @@ internal struct UISegmentRecorder: NodeRecorder {
         self.identifier = identifier
     }
     var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating = { context in
-        return context.recorder.privacy.inputAndOptionTextObfuscator
+        return context.recorder.textAndInputPrivacy.inputAndOptionTextObfuscator
     }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
@@ -35,7 +35,7 @@ internal struct UISegmentRecorder: NodeRecorder {
             backgroundWireframeID: ids[0],
             segmentWireframeIDs: Array(ids[1..<ids.count]),
             segmentTitles: (0..<segment.numberOfSegments).map { segment.titleForSegment(at: $0) },
-            selectedSegmentIndex: context.recorder.privacy.shouldMaskInputElements ? nil : segment.selectedSegmentIndex,
+            selectedSegmentIndex: context.recorder.textAndInputPrivacy.shouldMaskInputElements ? nil : segment.selectedSegmentIndex,
             selectedSegmentTintColor: {
                 if #available(iOS 13.0, *) {
                     return segment.selectedSegmentTintColor

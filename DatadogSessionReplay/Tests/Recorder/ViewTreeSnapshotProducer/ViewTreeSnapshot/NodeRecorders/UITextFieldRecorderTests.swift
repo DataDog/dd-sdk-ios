@@ -75,16 +75,16 @@ class UITextFieldRecorderTests: XCTestCase {
         viewAttributes = .mock(fixture: .visible())
 
         // Then
-        func textObfuscator(in privacyMode: PrivacyLevel) throws -> TextObfuscating {
+        func textObfuscator(in privacyMode: TextAndInputPrivacyLevel) throws -> TextObfuscating {
             return try recorder
-                .semantics(of: textField, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: privacyMode)))
+                .semantics(of: textField, with: viewAttributes, in: .mockWith(recorder: .mockWith(textAndInputPrivacy: privacyMode)))
                 .expectWireframeBuilder(ofType: UITextFieldWireframesBuilder.self)
                 .textObfuscator
         }
 
-        XCTAssertTrue(try textObfuscator(in: .allow) is NOPTextObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .mask) is FixLengthMaskObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is FixLengthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskSensitiveInputs) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskAllInputs) is FixLengthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskAll) is FixLengthMaskObfuscator)
 
         // When
         oneOrMoreOf([
@@ -100,9 +100,9 @@ class UITextFieldRecorderTests: XCTestCase {
         textField.placeholder = .mockRandom()
 
         // Then
-        XCTAssertTrue(try textObfuscator(in: .allow) is NOPTextObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .mask) is FixLengthMaskObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskSensitiveInputs) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskAllInputs) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskAll) is FixLengthMaskObfuscator)
     }
 }
 // swiftlint:enable opening_brace

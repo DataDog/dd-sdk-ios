@@ -16,3 +16,33 @@ extension SessionReplayPrivacyLevel: AnyMockable, RandomMockable {
         [.allow, .mask, .maskUserInput].randomElement()!
     }
 }
+
+extension TextAndInputPrivacyLevel: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self {
+        .maskSensitiveInputs
+    }
+
+    public static func mockRandom() -> Self {
+        [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
+    }
+}
+
+extension ImagePrivacyLevel: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self {
+        .maskNonBundledOnly
+    }
+
+    public static func mockRandom() -> Self {
+        [.maskNonBundledOnly, .maskAll, .maskNone].randomElement()!
+    }
+}
+
+extension TouchPrivacyLevel: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self {
+        .show
+    }
+
+    public static func mockRandom() -> Self {
+        [.show, .hide].randomElement()!
+    }
+}

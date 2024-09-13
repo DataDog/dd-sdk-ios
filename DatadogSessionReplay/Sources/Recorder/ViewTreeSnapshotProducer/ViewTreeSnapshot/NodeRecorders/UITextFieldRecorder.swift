@@ -18,11 +18,11 @@ internal struct UITextFieldRecorder: NodeRecorder {
 
     var textObfuscator: (ViewTreeRecordingContext, _ isSensitive: Bool, _ isPlaceholder: Bool) -> TextObfuscating = { context, isSensitive, isPlaceholder in
         if isPlaceholder {
-            return context.recorder.privacy.hintTextObfuscator
+            return context.recorder.textAndInputPrivacy.hintTextObfuscator
         } else if isSensitive {
-            return context.recorder.privacy.sensitiveTextObfuscator
+            return context.recorder.textAndInputPrivacy.sensitiveTextObfuscator
         } else {
-            return context.recorder.privacy.inputAndOptionTextObfuscator
+            return context.recorder.textAndInputPrivacy.inputAndOptionTextObfuscator
         }
     }
 
