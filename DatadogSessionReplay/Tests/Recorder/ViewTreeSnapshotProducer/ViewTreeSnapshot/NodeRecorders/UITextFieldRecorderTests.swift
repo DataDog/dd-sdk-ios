@@ -18,6 +18,13 @@ class UITextFieldRecorderTests: XCTestCase {
     /// `ViewAttributes` simulating common attributes of text field's `UIView`.
     private var viewAttributes: ViewAttributes = .mockAny()
 
+    private func textObfuscator(in privacyMode: TextAndInputPrivacyLevel) throws -> TextObfuscating {
+        try recorder
+            .semantics(of: textField, with: viewAttributes, in: .mockWith(recorder: .mockWith(textAndInputPrivacy: privacyMode)))
+            .expectWireframeBuilder(ofType: UITextFieldWireframesBuilder.self)
+            .textObfuscator
+    }
+
     func testWhenTextFieldIsNotVisible() throws {
         // When
         viewAttributes = .mock(fixture: .invisible)
@@ -69,40 +76,36 @@ class UITextFieldRecorderTests: XCTestCase {
         XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
     }
 
-    func testTextObfuscationInDifferentPrivacyModes() throws {
+    func testTextObfuscationOfNoSensitiveText() throws {
         // When
         textField.text = .mockRandom()
+        textField.isSecureTextEntry = false // non-sensitive
+        textField.textContentType = nil // non-sensitive
         viewAttributes = .mock(fixture: .visible())
 
         // Then
-        func textObfuscator(in privacyMode: TextAndInputPrivacyLevel) throws -> TextObfuscating {
-            return try recorder
-                .semantics(of: textField, with: viewAttributes, in: .mockWith(recorder: .mockWith(textAndInputPrivacy: privacyMode)))
-                .expectWireframeBuilder(ofType: UITextFieldWireframesBuilder.self)
-                .textObfuscator
-        }
-
         XCTAssertTrue(try textObfuscator(in: .maskSensitiveInputs) is NOPTextObfuscator)
         XCTAssertTrue(try textObfuscator(in: .maskAllInputs) is FixLengthMaskObfuscator)
         XCTAssertTrue(try textObfuscator(in: .maskAll) is FixLengthMaskObfuscator)
+    }
 
+    func testTextObfuscationOfSensitiveText() throws {
         // When
+        textField.text = .mockRandom()
         oneOrMoreOf([
             { self.textField.isSecureTextEntry = true },
-            { self.textField.textContentType = sensitiveContentTypes.randomElement() },
+            { self.textField.textContentType = UITextField.dd.sensitiveTypes.randomElement() },
         ])
 
         // Then
         XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLengthMaskObfuscator)
 
         // When
-        textField.text = nil
-        textField.placeholder = .mockRandom()
+        textField.isSecureTextEntry = false // non-sensitive
+        textField.textContentType = nil // non-sensitive
 
-        // Then
-        XCTAssertTrue(try textObfuscator(in: .maskSensitiveInputs) is NOPTextObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskAllInputs) is NOPTextObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskAll) is FixLengthMaskObfuscator)
+        // Then - it keeps obfuscating
+        XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLengthMaskObfuscator)
     }
 }
 // swiftlint:enable opening_brace

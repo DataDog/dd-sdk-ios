@@ -1,6 +1,7 @@
 # Unreleased
 
 - [IMPROVEMENT] Add overwrite required (breaking) param to addViewLoadingTime & usage telemetry. See [#2040][]
+- [FEATURE] Prevent "show password" features from revealing sensitive texts. See [#2050][]
 
 # 2.17.0 / 11-09-2024
 
@@ -771,6 +772,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2026]: https://github.com/DataDog/dd-sdk-ios/pull/2026
 [#2043]: https://github.com/DataDog/dd-sdk-ios/pull/2043
 [#2040]: https://github.com/DataDog/dd-sdk-ios/pull/2040
+[#2050]: https://github.com/DataDog/dd-sdk-ios/pull/2050
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
