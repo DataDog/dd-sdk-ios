@@ -13,13 +13,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        guard
-            let scenario = SyntheticScenario(),
-            let run = SyntheticRun()
-        else {
+        guard let scenario = SyntheticScenario() else {
             return false
         }
 
+        let run = SyntheticRun()
         let applicationInfo = try! AppInfo() // crash if info are missing or malformed
 
         switch run {
@@ -43,6 +41,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             )
             
             DatadogInternal.profiler = Profiler()
+        case .none:
             break
         }
 
