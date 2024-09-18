@@ -681,6 +681,7 @@
 		61FDBA1726974CA9001D9D43 /* DDCrashReportBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1626974CA9001D9D43 /* DDCrashReportBuilderTests.swift */; };
 		61FF282824B8A31E000B3D9B /* RUMEventMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282724B8A31E000B3D9B /* RUMEventMatcher.swift */; };
 		962C41A92CB00FD60050B747 /* DDSessionReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A434AD2A8E426C0028E329 /* DDSessionReplayTests.swift */; };
+		966253B62C98807400B90B63 /* PrivacyLevel+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966253B52C98807400B90B63 /* PrivacyLevel+SessionReplay.swift */; };
 		969B3B212C33F80500D62400 /* UIActivityIndicatorRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969B3B202C33F80500D62400 /* UIActivityIndicatorRecorder.swift */; };
 		969B3B232C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969B3B222C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift */; };
 		96E414142C2AF56F005A6119 /* UIProgressViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E414132C2AF56F005A6119 /* UIProgressViewRecorder.swift */; };
@@ -2733,6 +2734,7 @@
 		61FF282F24BC5E2D000B3D9B /* RUMEventFileOutputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventFileOutputTests.swift; sourceTree = "<group>"; };
 		61FF416125EE5FF400CE35EC /* CrashLogReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashLogReceiverTests.swift; sourceTree = "<group>"; };
 		61FF9A4425AC5DEA001058CC /* ViewIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewIdentifier.swift; sourceTree = "<group>"; };
+		966253B52C98807400B90B63 /* PrivacyLevel+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PrivacyLevel+SessionReplay.swift"; sourceTree = "<group>"; };
 		969B3B202C33F80500D62400 /* UIActivityIndicatorRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIActivityIndicatorRecorder.swift; sourceTree = "<group>"; };
 		969B3B222C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIActivityIndicatorRecorderTests.swift; sourceTree = "<group>"; };
 		96E414132C2AF56F005A6119 /* UIProgressViewRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIProgressViewRecorder.swift; sourceTree = "<group>"; };
@@ -3630,6 +3632,8 @@
 				61054E152A6EE10A00AAA894 /* UIView+SessionReplay.swift */,
 				61054E142A6EE10A00AAA894 /* UIImage+SessionReplay.swift */,
 				D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */,
+				966253B52C98807400B90B63 /* PrivacyLevel+SessionReplay.swift */,
+				61054E152A6EE10A00AAA894 /* UIKitExtensions.swift */,
 				61054E162A6EE10A00AAA894 /* CFType+Safety.swift */,
 				61054E172A6EE10A00AAA894 /* SystemColors.swift */,
 				61054E182A6EE10A00AAA894 /* CGRect+ContentFrame.swift */,
@@ -8401,6 +8405,7 @@
 				D2BCB2A12B7B8107005C2AAB /* WKWebViewRecorder.swift in Sources */,
 				61054E712A6EE10A00AAA894 /* TouchSnapshot.swift in Sources */,
 				61054E8A2A6EE10A00AAA894 /* WindowViewTreeSnapshotProducer.swift in Sources */,
+				966253B62C98807400B90B63 /* PrivacyLevel+SessionReplay.swift in Sources */,
 				61054E7A2A6EE10A00AAA894 /* UIImageViewRecorder.swift in Sources */,
 				A7B932FC2B1F6A0A00AE6477 /* SRDataModels.swift in Sources */,
 				A795069C2B974C8200AC4814 /* SessionReplay+objc.swift in Sources */,
