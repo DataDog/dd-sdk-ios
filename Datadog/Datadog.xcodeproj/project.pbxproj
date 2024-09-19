@@ -694,6 +694,7 @@
 		96F69D6D2CBE94A900A6178B /* DatadogCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B78EA296D7B63009C6B92 /* DatadogCoreTests.swift */; };
 		96F69D6E2CBE94F500A6178B /* MockFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71265852B17980C007D63CE /* MockFeature.swift */; };
 		96F69D6F2CBE94F600A6178B /* MockFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71265852B17980C007D63CE /* MockFeature.swift */; };
+		96E863722C9C547B0023BF78 /* SessionReplayOverrideTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863712C9C547B0023BF78 /* SessionReplayOverrideTests.swift */; };
 		9E55407C25812D1C00F6E3AD /* RUM+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E55407B25812D1C00F6E3AD /* RUM+objc.swift */; };
 		9E58E8E324615EDA008E5063 /* JSONEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */; };
 		9E5B6D2E270C84B4002499B8 /* RUMMonitorE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5B6D2D270C84B4002499B8 /* RUMMonitorE2ETests.swift */; };
