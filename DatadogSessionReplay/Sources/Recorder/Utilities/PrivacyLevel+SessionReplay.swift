@@ -7,51 +7,78 @@
 //
 
 #if os(iOS)
-import Foundation
 import UIKit
 import DatadogInternal
-import ObjectiveC
 
-private var associatedSessionReplayOverrideKey: UInt8 = 3
+// MARK: - DatadogExtension for UIView
 
-/// Extension for `UIView` to add the ability to override Session Replay privacy settings.
+/// Extension on `DatadogExtension` to provide access to `SessionReplayOverride` for any `UIView`.
 extension DatadogExtension where ExtendedType: UIView {
-    /// Provides access to privacy overrides for the current view.
-    /// This allows setting specific privacy levels for text & input, image, and touch masking, as well as hiding the view.
-    /// Usage: `myView.dd.sessionReplayOverride.textAndInputPrivacy = .maskNone`
-    public var sessionReplayOverride: SessionReplayOverride {
+    /// Provides access to Session Replay override settings for the view.
+    /// Usage: `myView.dd.sessionReplayOverride.textAndInputPrivacy = .maskNone`.
+    public var sessionReplayOverride: SessionReplayOverrideExtension<ExtendedType> {
         get {
-            if let override = objc_getAssociatedObject(self, &associatedSessionReplayOverrideKey) as? SessionReplayOverride {
-                return override
-            } else {
-                return SessionReplayOverride()
-            }
+            return SessionReplayOverrideExtension(self.type)
         }
-        set {
-            objc_setAssociatedObject(self, &associatedSessionReplayOverrideKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        }
+        set {}
     }
 }
 
-/// Structure encapsulating all privacy levels that can be overridden at the view level.
-public struct SessionReplayOverride {
-    /// Privacy levels for masking within the view.
-    /// For each property, if `nil`, the global privacy configuration is applied.
-    public var textAndInputPrivacy: TextAndInputPrivacyLevel?
-    public var imagePrivacy: ImagePrivacyLevel?
-    public var touchPrivacy: TouchPrivacyLevel?
-    public var hiddenPrivacy: HiddenPrivacyLevel?
+// MARK: - Associated Keys
 
-    public init(
-        textAndInputPrivacy: TextAndInputPrivacyLevel? = nil,
-        imagePrivacy: ImagePrivacyLevel? = nil,
-        touchPrivacy: TouchPrivacyLevel? = nil,
-        hiddenPrivacy: HiddenPrivacyLevel? = nil
-    ) {
-        self.textAndInputPrivacy = textAndInputPrivacy
-        self.imagePrivacy = imagePrivacy
-        self.touchPrivacy = touchPrivacy
-        self.hiddenPrivacy = hiddenPrivacy
+private var associatedTextAndInputPrivacyKey: UInt8 = 3
+private var associatedImagePrivacyKey: UInt8 = 4
+private var associatedTouchPrivacyKey: UInt8 = 5
+private var associatedHiddenPrivacyKey: UInt8 = 6
+
+// MARK: - SessionReplayOverrideExtension
+
+/// `UIView` extension  to manage the Session Replay privacy override settings.
+public struct SessionReplayOverrideExtension<ExtendedType> {
+    private let view: ExtendedType
+
+    public init(_ view: ExtendedType) {
+        self.view = view
+    }
+
+    /// Text and input privacy override (e.g., mask or unmask specific text fields, labels, etc.).
+    public var textAndInputPrivacy: TextAndInputPrivacyLevel? {
+        get {
+            return objc_getAssociatedObject(view as AnyObject, &associatedTextAndInputPrivacyKey) as? TextAndInputPrivacyLevel
+        }
+        set {
+            objc_setAssociatedObject(view as AnyObject, &associatedTextAndInputPrivacyKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
+    }
+
+    /// Image privacy override (e.g., mask or unmask specific images).
+    public var imagePrivacy: ImagePrivacyLevel? {
+        get {
+            return objc_getAssociatedObject(view as AnyObject, &associatedImagePrivacyKey) as? ImagePrivacyLevel
+        }
+        set {
+            objc_setAssociatedObject(view as AnyObject, &associatedImagePrivacyKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
+    }
+
+    /// Touch privacy override (e.g., hide or show touch interactions on specific views).
+    public var touchPrivacy: TouchPrivacyLevel? {
+        get {
+            return objc_getAssociatedObject(view as AnyObject, &associatedTouchPrivacyKey) as? TouchPrivacyLevel
+        }
+        set {
+            objc_setAssociatedObject(view as AnyObject, &associatedTouchPrivacyKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
+    }
+
+    /// Hidden privacy override (e.g., mark a view as hidden, rendering it as an opaque wireframe in replays).
+    public var hiddenPrivacy: HiddenPrivacyLevel? {
+        get {
+            return objc_getAssociatedObject(view as AnyObject, &associatedHiddenPrivacyKey) as? HiddenPrivacyLevel
+        }
+        set {
+            objc_setAssociatedObject(view as AnyObject, &associatedHiddenPrivacyKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
     }
 }
 #endif
