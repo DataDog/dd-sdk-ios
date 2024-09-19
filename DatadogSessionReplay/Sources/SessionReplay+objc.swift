@@ -225,7 +225,7 @@ public enum DDImagePrivacyLevel: Int {
     }
 }
 
-/// Available privacy levels for content masking.
+/// Available privacy levels for touch masking.
 @objc
 public enum DDTouchPrivacyLevel: Int {
     /// Show all touches.
@@ -249,5 +249,4 @@ public enum DDTouchPrivacyLevel: Int {
         }
     }
 }
-
 #endif
