@@ -116,19 +116,17 @@ extension UIImage: RandomMockable {
         let bitsPerComponent: Int = 8
         let bytesPerRow = bytesPerPixel * width
         let totalBytes = bytesPerRow * height
-        let colorSpace = CGColorSpaceCreateDeviceRGB()
 
         var bitmapBytes = [UInt8].mockRandom(count: totalBytes)
-        let bitmapData = Data(bytes: &bitmapBytes, count: totalBytes)
 
         let bitmapContext = CGContext(
-            data: UnsafeMutableRawPointer(mutating: (bitmapData as NSData).bytes),
+            data: &bitmapBytes,
             width: width,
             height: height,
             bitsPerComponent: bitsPerComponent,
             bytesPerRow: bytesPerRow,
-            space: colorSpace,
-            bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+            space: CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
         )
         let cgImage = bitmapContext!.makeImage()!
         return UIImage(cgImage: cgImage) as! Self
