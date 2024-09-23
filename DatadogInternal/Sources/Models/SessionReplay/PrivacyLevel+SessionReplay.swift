@@ -6,7 +6,6 @@
 
 #if os(iOS)
 import UIKit
-import DatadogInternal
 
 // MARK: - DatadogExtension for UIView
 
