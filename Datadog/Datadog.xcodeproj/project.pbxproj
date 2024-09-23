@@ -697,6 +697,8 @@
 		96E863722C9C547B0023BF78 /* SessionReplayOverrideTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863712C9C547B0023BF78 /* SessionReplayOverrideTests.swift */; };
 		96E863742C9C64180023BF78 /* SessionReplayOverrides+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863732C9C64180023BF78 /* SessionReplayOverrides+objc.swift */; };
 		96E863772C9C7ECF0023BF78 /* DDSessionReplayOverridesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863752C9C7E800023BF78 /* DDSessionReplayOverridesTests.swift */; };
+		96E863802CA1B59C0023BF78 /* PrivacyLevel+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966253B52C98807400B90B63 /* PrivacyLevel+SessionReplay.swift */; };
+		96E863812CA1B59D0023BF78 /* PrivacyLevel+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966253B52C98807400B90B63 /* PrivacyLevel+SessionReplay.swift */; };
 		9E55407C25812D1C00F6E3AD /* RUM+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E55407B25812D1C00F6E3AD /* RUM+objc.swift */; };
 		9E58E8E324615EDA008E5063 /* JSONEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */; };
 		9E5B6D2E270C84B4002499B8 /* RUMMonitorE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5B6D2D270C84B4002499B8 /* RUMMonitorE2ETests.swift */; };
@@ -6480,6 +6482,7 @@
 			isa = PBXGroup;
 			children = (
 				D2EA0F452C0E1AE200CB20F8 /* SessionReplayConfiguration.swift */,
+				966253B52C98807400B90B63 /* PrivacyLevel+SessionReplay.swift */,
 			);
 			path = SessionReplay;
 			sourceTree = "<group>";
@@ -8425,7 +8428,6 @@
 				D2BCB2A12B7B8107005C2AAB /* WKWebViewRecorder.swift in Sources */,
 				61054E712A6EE10A00AAA894 /* TouchSnapshot.swift in Sources */,
 				61054E8A2A6EE10A00AAA894 /* WindowViewTreeSnapshotProducer.swift in Sources */,
-				966253B62C98807400B90B63 /* PrivacyLevel+SessionReplay.swift in Sources */,
 				61054E7A2A6EE10A00AAA894 /* UIImageViewRecorder.swift in Sources */,
 				A7B932FC2B1F6A0A00AE6477 /* SRDataModels.swift in Sources */,
 				A795069C2B974C8200AC4814 /* SessionReplay+objc.swift in Sources */,
@@ -8766,6 +8768,7 @@
 				D2160C9A29C0DE5700FAA9A5 /* FirstPartyHosts.swift in Sources */,
 				D2EBEE2229BA160F00B15732 /* TracePropagationHeadersReader.swift in Sources */,
 				D2303A02298D5236001A1FA3 /* ReadWriteLock.swift in Sources */,
+				96E863802CA1B59C0023BF78 /* PrivacyLevel+SessionReplay.swift in Sources */,
 				D2EBEE2429BA160F00B15732 /* W3CHTTPHeadersReader.swift in Sources */,
 				A7FA98CE2BA1A6930018D6B5 /* MethodCalledMetric.swift in Sources */,
 				D23039E8298D5236001A1FA3 /* DatadogContext.swift in Sources */,
@@ -9754,6 +9757,7 @@
 				D2160C9B29C0DE5700FAA9A5 /* FirstPartyHosts.swift in Sources */,
 				D2EBEE3029BA161100B15732 /* TracePropagationHeadersReader.swift in Sources */,
 				D2DA2373298D57AA00C6C7E6 /* ReadWriteLock.swift in Sources */,
+				96E863812CA1B59D0023BF78 /* PrivacyLevel+SessionReplay.swift in Sources */,
 				D2EBEE3229BA161100B15732 /* W3CHTTPHeadersReader.swift in Sources */,
 				A7FA98CF2BA1A6930018D6B5 /* MethodCalledMetric.swift in Sources */,
 				D2DA2374298D57AA00C6C7E6 /* DatadogContext.swift in Sources */,
