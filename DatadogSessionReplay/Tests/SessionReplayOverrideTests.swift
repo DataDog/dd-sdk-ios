@@ -18,7 +18,7 @@ class SessionReplayOverrideTests: XCTestCase {
         XCTAssertNil(view.dd.sessionReplayOverride.textAndInputPrivacy)
         XCTAssertNil(view.dd.sessionReplayOverride.imagePrivacy)
         XCTAssertNil(view.dd.sessionReplayOverride.touchPrivacy)
-        XCTAssertNil(view.dd.sessionReplayOverride.hiddenPrivacy)
+        XCTAssertNil(view.dd.sessionReplayOverride.hidden)
     }
 
     func testWithOverrides() {
@@ -29,13 +29,13 @@ class SessionReplayOverrideTests: XCTestCase {
         view.dd.sessionReplayOverride.textAndInputPrivacy = .maskAllInputs
         view.dd.sessionReplayOverride.imagePrivacy = .maskAll
         view.dd.sessionReplayOverride.touchPrivacy = .hide
-        view.dd.sessionReplayOverride.hiddenPrivacy = true
+        view.dd.sessionReplayOverride.hidden = true
 
         // Then
         XCTAssertEqual(view.dd.sessionReplayOverride.textAndInputPrivacy, .maskAllInputs)
         XCTAssertEqual(view.dd.sessionReplayOverride.imagePrivacy, .maskAll)
         XCTAssertEqual(view.dd.sessionReplayOverride.touchPrivacy, .hide)
-        XCTAssertEqual(view.dd.sessionReplayOverride.hiddenPrivacy, true)
+        XCTAssertEqual(view.dd.sessionReplayOverride.hidden, true)
     }
 
     func testRemovingOverrides() {
@@ -44,19 +44,19 @@ class SessionReplayOverrideTests: XCTestCase {
         view.dd.sessionReplayOverride.textAndInputPrivacy = .maskAllInputs
         view.dd.sessionReplayOverride.imagePrivacy = .maskAll
         view.dd.sessionReplayOverride.touchPrivacy = .hide
-        view.dd.sessionReplayOverride.hiddenPrivacy = true
+        view.dd.sessionReplayOverride.hidden = true
 
         // When
         view.dd.sessionReplayOverride.textAndInputPrivacy = nil
         view.dd.sessionReplayOverride.imagePrivacy = nil
         view.dd.sessionReplayOverride.touchPrivacy = nil
-        view.dd.sessionReplayOverride.hiddenPrivacy = nil
+        view.dd.sessionReplayOverride.hidden = nil
 
         // Then
         XCTAssertNil(view.dd.sessionReplayOverride.textAndInputPrivacy)
         XCTAssertNil(view.dd.sessionReplayOverride.imagePrivacy)
         XCTAssertNil(view.dd.sessionReplayOverride.touchPrivacy)
-        XCTAssertNil(view.dd.sessionReplayOverride.hiddenPrivacy)
+        XCTAssertNil(view.dd.sessionReplayOverride.hidden)
     }
 }
 #endif

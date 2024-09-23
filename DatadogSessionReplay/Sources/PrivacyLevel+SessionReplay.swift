@@ -39,41 +39,51 @@ public final class SessionReplayOverrideExtension {
     /// Text and input privacy override (e.g., mask or unmask specific text fields, labels, etc.).
     public var textAndInputPrivacy: TextAndInputPrivacyLevel? {
         get {
-            return objc_getAssociatedObject(view as AnyObject, &associatedTextAndInputPrivacyKey) as? TextAndInputPrivacyLevel
+            return objc_getAssociatedObject(view, &associatedTextAndInputPrivacyKey) as? TextAndInputPrivacyLevel
         }
         set {
-            objc_setAssociatedObject(view as AnyObject, &associatedTextAndInputPrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
+            objc_setAssociatedObject(view, &associatedTextAndInputPrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
         }
     }
 
     /// Image privacy override (e.g., mask or unmask specific images).
     public var imagePrivacy: ImagePrivacyLevel? {
         get {
-            return objc_getAssociatedObject(view as AnyObject, &associatedImagePrivacyKey) as? ImagePrivacyLevel
+            return objc_getAssociatedObject(view, &associatedImagePrivacyKey) as? ImagePrivacyLevel
         }
         set {
-            objc_setAssociatedObject(view as AnyObject, &associatedImagePrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
+            objc_setAssociatedObject(view, &associatedImagePrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
         }
     }
 
     /// Touch privacy override (e.g., hide or show touch interactions on specific views).
     public var touchPrivacy: TouchPrivacyLevel? {
         get {
-            return objc_getAssociatedObject(view as AnyObject, &associatedTouchPrivacyKey) as? TouchPrivacyLevel
+            return objc_getAssociatedObject(view, &associatedTouchPrivacyKey) as? TouchPrivacyLevel
         }
         set {
-            objc_setAssociatedObject(view as AnyObject, &associatedTouchPrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
+            objc_setAssociatedObject(view, &associatedTouchPrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
         }
     }
 
     /// Hidden privacy override (e.g., mark a view as hidden, rendering it as an opaque wireframe in replays).
-    public var hiddenPrivacy: Bool? {
+    public var hidden: Bool? {
         get {
-            return objc_getAssociatedObject(view as AnyObject, &associatedHiddenPrivacyKey) as? Bool
+            return objc_getAssociatedObject(view, &associatedHiddenPrivacyKey) as? Bool
         }
         set {
-            objc_setAssociatedObject(view as AnyObject, &associatedHiddenPrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
+            objc_setAssociatedObject(view, &associatedHiddenPrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
         }
+    }
+}
+
+extension SessionReplayOverrideExtension: Equatable {
+    public static func == (lhs: SessionReplayOverrideExtension, rhs: SessionReplayOverrideExtension) -> Bool {
+        return lhs.view === rhs.view
+        && lhs.textAndInputPrivacy == rhs.textAndInputPrivacy
+        && lhs.imagePrivacy == rhs.imagePrivacy
+        && lhs.touchPrivacy == rhs.touchPrivacy
+        && lhs.hidden == rhs.hidden
     }
 }
 #endif
