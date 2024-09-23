@@ -51,24 +51,24 @@ class DDSessionReplayOverrideTests: XCTestCase {
         let override = DDSessionReplayOverride()
 
         // When setting hiddenPrivacy via Swift
-        override._swift.hiddenPrivacy = true
-        XCTAssertEqual(override.hiddenPrivacy, NSNumber(value: true))
+        override._swift.hidden = true
+        XCTAssertEqual(override.hidden, NSNumber(value: true))
 
-        override._swift.hiddenPrivacy = false
-        XCTAssertEqual(override.hiddenPrivacy, NSNumber(value: false))
+        override._swift.hidden = false
+        XCTAssertEqual(override.hidden, NSNumber(value: false))
 
-        override._swift.hiddenPrivacy = nil
-        XCTAssertNil(override.hiddenPrivacy)
+        override._swift.hidden = nil
+        XCTAssertNil(override.hidden)
 
         // When setting hiddenPrivacy via Objective-C
-        override.hiddenPrivacy = NSNumber(value: true)
-        XCTAssertEqual(override._swift.hiddenPrivacy, true)
+        override.hidden = NSNumber(value: true)
+        XCTAssertEqual(override._swift.hidden, true)
 
-        override.hiddenPrivacy = NSNumber(value: false)
-        XCTAssertEqual(override._swift.hiddenPrivacy, false)
+        override.hidden = NSNumber(value: false)
+        XCTAssertEqual(override._swift.hidden, false)
 
-        override.hiddenPrivacy = nil
-        XCTAssertNil(override._swift.hiddenPrivacy)
+        override.hidden = nil
+        XCTAssertNil(override._swift.hidden)
     }
 
     func testSettingAndRemovingPrivacyOverridesObjc() {
@@ -77,31 +77,31 @@ class DDSessionReplayOverrideTests: XCTestCase {
         let textAndInputPrivacy: DDTextAndInputPrivacyLevelOverride = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
         let imagePrivacy: DDImagePrivacyLevelOverride = [.maskAll, .maskNonBundledOnly, .maskNone].randomElement()!
         let touchPrivacy: DDTouchPrivacyLevelOverride = [.show, .hide].randomElement()!
-        let hiddenPrivacy: NSNumber? = [true, false].randomElement().map { NSNumber(value: $0) } ?? nil
+        let hidden: NSNumber? = [true, false].randomElement().map { NSNumber(value: $0) } ?? nil
 
         // When
         override.textAndInputPrivacy = textAndInputPrivacy
         override.imagePrivacy = imagePrivacy
         override.touchPrivacy = touchPrivacy
-        override.hiddenPrivacy = hiddenPrivacy
+        override.hidden = hidden
 
         // Then
         XCTAssertEqual(override.textAndInputPrivacy, textAndInputPrivacy)
         XCTAssertEqual(override.imagePrivacy, imagePrivacy)
         XCTAssertEqual(override.touchPrivacy, touchPrivacy)
-        XCTAssertEqual(override.hiddenPrivacy, hiddenPrivacy)
+        XCTAssertEqual(override.hidden, hidden)
 
         // When
         override.textAndInputPrivacy = .none
         override.imagePrivacy = .none
         override.touchPrivacy = .none
-        override.hiddenPrivacy = false
+        override.hidden = false
 
         // Then
         XCTAssertEqual(override.textAndInputPrivacy, .none)
         XCTAssertEqual(override.imagePrivacy, .none)
         XCTAssertEqual(override.touchPrivacy, .none)
-        XCTAssertEqual(override.hiddenPrivacy, false)
+        XCTAssertEqual(override.hidden, false)
     }
 }
 #endif

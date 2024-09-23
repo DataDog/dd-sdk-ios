@@ -57,5 +57,19 @@ class UIViewRecorderTests: XCTestCase {
         XCTAssertTrue(semantics is AmbiguousElement)
         XCTAssertEqual(semantics.subtreeStrategy, .record)
     }
+
+    func testWhenViewHasHiddenOverride() throws {
+        // Given
+        viewAttributes = .mock(fixture: .visible(.someAppearance))
+        viewAttributes.sessionReplayOverride = .mockWith(hidden: true)
+
+        // When
+        let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
+
+        // Then
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .ignore)
+        XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UIViewWireframesBuilder)
+    }
 }
 #endif

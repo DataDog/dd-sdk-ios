@@ -77,7 +77,8 @@ extension ViewAttributes: AnyMockable, RandomMockable {
         layerCornerRadius: CGFloat = .mockAny(),
         alpha: CGFloat = .mockAny(),
         isHidden: Bool = .mockAny(),
-        intrinsicContentSize: CGSize = .mockAny()
+        intrinsicContentSize: CGSize = .mockAny(),
+        sessionReplayOverride: SessionReplayOverrideExtension? = .mockAny()
     ) -> ViewAttributes {
         return .init(
             frame: frame,
@@ -87,7 +88,8 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             layerCornerRadius: layerCornerRadius,
             alpha: alpha,
             isHidden: isHidden,
-            intrinsicContentSize: intrinsicContentSize
+            intrinsicContentSize: intrinsicContentSize,
+            sessionReplayOverride: sessionReplayOverride
         )
     }
 
@@ -575,6 +577,35 @@ internal extension Optional where Wrapped == NodeSemantics {
         let builders: [T] = try expectWireframeBuilders(file: file, line: line)
         XCTAssertEqual(builders.count, 1, "Expected single \(T.self), found none", file: file, line: line)
         return try XCTUnwrap(builders.first, file: file, line: line)
+    }
+}
+
+extension SessionReplayOverrideExtension: AnyMockable, RandomMockable {
+    public static func mockAny() -> SessionReplayOverrideExtension {
+        return mockWith()
+    }
+
+    public static func mockRandom() -> SessionReplayOverrideExtension {
+        return mockWith(
+            textAndInputPrivacy: .mockRandom(),
+            imagePrivacy: .mockRandom(),
+            touchPrivacy: .mockRandom(),
+            hidden: .mockRandom()
+        )
+    }
+
+    public static func mockWith(
+        textAndInputPrivacy: TextAndInputPrivacyLevel? = nil,
+        imagePrivacy: ImagePrivacyLevel? = nil,
+        touchPrivacy: TouchPrivacyLevel? = nil,
+        hidden: Bool? = nil
+    ) -> SessionReplayOverrideExtension {
+        let override = SessionReplayOverrideExtension(UIView.mockRandom())
+        override.textAndInputPrivacy = textAndInputPrivacy
+        override.imagePrivacy = imagePrivacy
+        override.touchPrivacy = touchPrivacy
+        override.hidden = hidden
+        return override
     }
 }
 #endif

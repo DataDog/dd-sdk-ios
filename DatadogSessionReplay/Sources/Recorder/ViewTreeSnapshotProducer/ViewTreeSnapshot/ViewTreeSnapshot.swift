@@ -123,6 +123,9 @@ public struct SessionReplayViewAttributes: Equatable {
     /// Example 1: A view with blue background of alpha `0.5` is considered "translucent".
     /// Example 2: A view with blue semi-transparent background, but alpha `1` is also conisdered "translucent".
     var isTranslucent: Bool { !isVisible || alpha < 1 || backgroundColor?.alpha ?? 0 < 1 }
+
+    /// If the view has privacy overrides, which take precedence over global masking privacy levels.
+    var sessionReplayOverride: SessionReplayOverrideExtension?
 }
 
 // This alias enables us to have a more unique name exposed through public-internal access level
@@ -138,6 +141,7 @@ extension ViewAttributes {
         self.alpha = view.alpha
         self.isHidden = view.isHidden
         self.intrinsicContentSize = view.intrinsicContentSize
+        self.sessionReplayOverride = view.dd.sessionReplayOverride
     }
 }
 
