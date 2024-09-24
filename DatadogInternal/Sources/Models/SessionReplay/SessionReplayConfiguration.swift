@@ -57,15 +57,6 @@ public enum TouchPrivacyLevel: String {
     case hide
 }
 
-/// Privacy level for overriding global privacy settings in Session Replay.
-public enum HiddenPrivacyLevel: String {
-    /// Hides the view and replace it with an opaque gray wireframe, ignoring all child views and interactions.
-    case hide
-
-    /// Removes the override, and apply the global or inherited privacy level instead.
-    case none
-}
-
 // MARK: SessionReplayConfiguration
 
 /// The Session Replay shared configuration.

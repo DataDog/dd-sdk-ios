@@ -44,7 +44,7 @@ public struct SessionReplayOverrideExtension<ExtendedType> {
             return objc_getAssociatedObject(view as AnyObject, &associatedTextAndInputPrivacyKey) as? TextAndInputPrivacyLevel
         }
         set {
-            objc_setAssociatedObject(view as AnyObject, &associatedTextAndInputPrivacyKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            objc_setAssociatedObject(view as AnyObject, &associatedTextAndInputPrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
         }
     }
 
@@ -54,7 +54,7 @@ public struct SessionReplayOverrideExtension<ExtendedType> {
             return objc_getAssociatedObject(view as AnyObject, &associatedImagePrivacyKey) as? ImagePrivacyLevel
         }
         set {
-            objc_setAssociatedObject(view as AnyObject, &associatedImagePrivacyKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            objc_setAssociatedObject(view as AnyObject, &associatedImagePrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
         }
     }
 
@@ -64,17 +64,17 @@ public struct SessionReplayOverrideExtension<ExtendedType> {
             return objc_getAssociatedObject(view as AnyObject, &associatedTouchPrivacyKey) as? TouchPrivacyLevel
         }
         set {
-            objc_setAssociatedObject(view as AnyObject, &associatedTouchPrivacyKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            objc_setAssociatedObject(view as AnyObject, &associatedTouchPrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
         }
     }
 
     /// Hidden privacy override (e.g., mark a view as hidden, rendering it as an opaque wireframe in replays).
-    public var hiddenPrivacy: HiddenPrivacyLevel? {
+    public var hiddenPrivacy: Bool? {
         get {
-            return objc_getAssociatedObject(view as AnyObject, &associatedHiddenPrivacyKey) as? HiddenPrivacyLevel
+            return objc_getAssociatedObject(view as AnyObject, &associatedHiddenPrivacyKey) as? Bool
         }
         set {
-            objc_setAssociatedObject(view as AnyObject, &associatedHiddenPrivacyKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            objc_setAssociatedObject(view as AnyObject, &associatedHiddenPrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
         }
     }
 }

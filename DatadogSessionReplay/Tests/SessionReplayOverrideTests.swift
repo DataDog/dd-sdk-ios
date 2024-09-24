@@ -29,13 +29,13 @@ class SessionReplayOverrideTests: XCTestCase {
         view.dd.sessionReplayOverride.textAndInputPrivacy = .maskAllInputs
         view.dd.sessionReplayOverride.imagePrivacy = .maskAll
         view.dd.sessionReplayOverride.touchPrivacy = .hide
-        view.dd.sessionReplayOverride.hiddenPrivacy = .hide
+        view.dd.sessionReplayOverride.hiddenPrivacy = true
 
         // Then
         XCTAssertEqual(view.dd.sessionReplayOverride.textAndInputPrivacy, .maskAllInputs)
         XCTAssertEqual(view.dd.sessionReplayOverride.imagePrivacy, .maskAll)
         XCTAssertEqual(view.dd.sessionReplayOverride.touchPrivacy, .hide)
-        XCTAssertEqual(view.dd.sessionReplayOverride.hiddenPrivacy, .hide)
+        XCTAssertEqual(view.dd.sessionReplayOverride.hiddenPrivacy, true)
     }
 
     func testRemovingOverrides() {
@@ -44,7 +44,7 @@ class SessionReplayOverrideTests: XCTestCase {
         view.dd.sessionReplayOverride.textAndInputPrivacy = .maskAllInputs
         view.dd.sessionReplayOverride.imagePrivacy = .maskAll
         view.dd.sessionReplayOverride.touchPrivacy = .hide
-        view.dd.sessionReplayOverride.hiddenPrivacy = .hide
+        view.dd.sessionReplayOverride.hiddenPrivacy = true
 
         // When
         view.dd.sessionReplayOverride.textAndInputPrivacy = nil
