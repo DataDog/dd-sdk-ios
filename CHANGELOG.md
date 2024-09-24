@@ -1,6 +1,6 @@
 # Unreleased
 
-# 2.18.0 / 24-09-2024
+# 2.18.0 / 25-09-2024
 - [IMPROVEMENT] Add overwrite required (breaking) param to addViewLoadingTime & usage telemetry. See [#2040][]
 - [FEATURE] Prevent "show password" features from revealing sensitive texts. See [#2050][]
 
