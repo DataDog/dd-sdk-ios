@@ -40,9 +40,20 @@ public final class DDSessionReplayOverride: NSObject {
     }
 
     /// Hidden privacy override (e.g., mark a view as hidden, rendering it as an opaque wireframe in replays).
-    @objc public var hiddenPrivacy: DDHiddenPrivacyLevelOverride {
-        get { return .init(_swift.hiddenPrivacy) }
-        set { _swift.hiddenPrivacy = newValue._swift }
+    @objc public var hiddenPrivacy: NSNumber? {
+        get {
+            guard let hiddenPrivacy = _swift.hiddenPrivacy else {
+                return nil
+            }
+            return NSNumber(value: hiddenPrivacy)
+        }
+        set {
+            if let newValue = newValue {
+                _swift.hiddenPrivacy = newValue.boolValue
+            } else {
+                _swift.hiddenPrivacy = nil
+            }
+        }
     }
 }
 
@@ -120,28 +131,6 @@ public enum DDTouchPrivacyLevelOverride: Int {
         case .show: self = .show
         case .hide: self = .hide
         case nil: self = .none
-        }
-    }
-}
-
-/// Hidden privacy override (e.g., mark a view as hidden, rendering it as an opaque wireframe in replays).
-@objc
-public enum DDHiddenPrivacyLevelOverride: Int {
-    case none  // Represents `nil` in Swift
-    case hide
-
-    internal var _swift: HiddenPrivacyLevel? {
-        switch self {
-        case .none: return nil
-        case .hide: return .hide
-        }
-    }
-
-    internal init(_ swift: HiddenPrivacyLevel?) {
-        if let swift = swift {
-            self = (swift == .hide) ? .hide : .none
-        } else {
-            self = .none
         }
     }
 }

@@ -48,11 +48,27 @@ class DDSessionReplayOverrideTests: XCTestCase {
     }
 
     func testHiddenPrivacyLevelsOverrideInterop() {
-        XCTAssertEqual(DDHiddenPrivacyLevelOverride.hide._swift, .hide)
-        XCTAssertNil(DDHiddenPrivacyLevelOverride.none._swift)
+        let override = DDSessionReplayOverride()
 
-        XCTAssertEqual(DDHiddenPrivacyLevelOverride(.hide), .hide)
-        XCTAssertEqual(DDHiddenPrivacyLevelOverride(nil), .none)
+        // When setting hiddenPrivacy via Swift
+        override._swift.hiddenPrivacy = true
+        XCTAssertEqual(override.hiddenPrivacy, NSNumber(value: true))
+
+        override._swift.hiddenPrivacy = false
+        XCTAssertEqual(override.hiddenPrivacy, NSNumber(value: false))
+
+        override._swift.hiddenPrivacy = nil
+        XCTAssertNil(override.hiddenPrivacy)
+
+        // When setting hiddenPrivacy via Objective-C
+        override.hiddenPrivacy = NSNumber(value: true)
+        XCTAssertEqual(override._swift.hiddenPrivacy, true)
+
+        override.hiddenPrivacy = NSNumber(value: false)
+        XCTAssertEqual(override._swift.hiddenPrivacy, false)
+
+        override.hiddenPrivacy = nil
+        XCTAssertNil(override._swift.hiddenPrivacy)
     }
 
     func testSettingAndRemovingPrivacyOverridesObjc() {
@@ -61,7 +77,7 @@ class DDSessionReplayOverrideTests: XCTestCase {
         let textAndInputPrivacy: DDTextAndInputPrivacyLevelOverride = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
         let imagePrivacy: DDImagePrivacyLevelOverride = [.maskAll, .maskNonBundledOnly, .maskNone].randomElement()!
         let touchPrivacy: DDTouchPrivacyLevelOverride = [.show, .hide].randomElement()!
-        let hiddenPrivacy: DDHiddenPrivacyLevelOverride = [.hide, .none].randomElement()!
+        let hiddenPrivacy: NSNumber? = [true, false].randomElement().map { NSNumber(value: $0) } ?? nil
 
         // When
         override.textAndInputPrivacy = textAndInputPrivacy
@@ -79,13 +95,13 @@ class DDSessionReplayOverrideTests: XCTestCase {
         override.textAndInputPrivacy = .none
         override.imagePrivacy = .none
         override.touchPrivacy = .none
-        override.hiddenPrivacy = .none
+        override.hiddenPrivacy = false
 
         // Then
         XCTAssertEqual(override.textAndInputPrivacy, .none)
         XCTAssertEqual(override.imagePrivacy, .none)
         XCTAssertEqual(override.touchPrivacy, .none)
-        XCTAssertEqual(override.hiddenPrivacy, .none)
+        XCTAssertEqual(override.hiddenPrivacy, false)
     }
 }
 #endif
