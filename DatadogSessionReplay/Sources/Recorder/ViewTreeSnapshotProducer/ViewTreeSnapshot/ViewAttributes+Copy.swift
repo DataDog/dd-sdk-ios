@@ -25,6 +25,7 @@ extension ViewAttributes {
         var alpha: CGFloat
         var isHidden: Bool
         var intrinsicContentSize: CGSize
+        var overrides: Overrides
 
         fileprivate init(original: ViewAttributes) {
             self.frame = original.frame
@@ -35,6 +36,7 @@ extension ViewAttributes {
             self.alpha = original.alpha
             self.isHidden = original.isHidden
             self.intrinsicContentSize = original.intrinsicContentSize
+            self.overrides = original.overrides
         }
 
         fileprivate func toViewAttributes() -> ViewAttributes {
@@ -46,7 +48,8 @@ extension ViewAttributes {
                 layerCornerRadius: layerCornerRadius,
                 alpha: alpha,
                 isHidden: isHidden,
-                intrinsicContentSize: intrinsicContentSize
+                intrinsicContentSize: intrinsicContentSize,
+                overrides: overrides
             )
         }
     }

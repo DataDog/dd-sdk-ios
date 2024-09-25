@@ -85,8 +85,8 @@ private struct WheelsStyleDatePickerRecorder {
             nodeRecorders: [
                 UIPickerViewRecorder(
                     identifier: identifier,
-                    textObfuscator: { context in
-                        return context.recorder.textAndInputPrivacy.staticTextObfuscator
+                    textObfuscator: { context, viewAttributes in
+                        return viewAttributes.resolveTextAndInputPrivacyLevel(in: context).staticTextObfuscator
                     }
                 )
             ]
@@ -107,8 +107,8 @@ private struct InlineStyleDatePickerRecorder {
         self.viewRecorder = UIViewRecorder(identifier: identifier)
         self.labelRecorder = UILabelRecorder(
             identifier: identifier,
-            textObfuscator: { context in
-                return context.recorder.textAndInputPrivacy.staticTextObfuscator
+            textObfuscator: { context, viewAttributes in
+                return viewAttributes.resolveTextAndInputPrivacyLevel(in: context).staticTextObfuscator
             }
         )
         self.subtreeRecorder = ViewTreeRecorder(
@@ -154,8 +154,8 @@ private struct CompactStyleDatePickerRecorder {
                 UIViewRecorder(identifier: identifier),
                 UILabelRecorder(
                     identifier: identifier,
-                    textObfuscator: { context in
-                        return context.recorder.textAndInputPrivacy.staticTextObfuscator
+                    textObfuscator: { context, viewAttributes in
+                        return viewAttributes.resolveTextAndInputPrivacyLevel(in: context).staticTextObfuscator
                     }
                 )
             ]

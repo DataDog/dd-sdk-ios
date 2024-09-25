@@ -64,7 +64,8 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             layerCornerRadius: .mockRandom(min: 0, max: 5),
             alpha: .mockRandom(min: 0, max: 1),
             isHidden: .mockRandom(),
-            intrinsicContentSize: .mockRandom()
+            intrinsicContentSize: .mockRandom(),
+            overrides: .mockAny()
         )
     }
 
@@ -78,7 +79,7 @@ extension ViewAttributes: AnyMockable, RandomMockable {
         alpha: CGFloat = .mockAny(),
         isHidden: Bool = .mockAny(),
         intrinsicContentSize: CGSize = .mockAny(),
-        sessionReplayOverride: SessionReplayOverrideExtension? = .mockAny()
+        overrides: Overrides = .mockAny()
     ) -> ViewAttributes {
         return .init(
             frame: frame,
@@ -89,7 +90,7 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             alpha: alpha,
             isHidden: isHidden,
             intrinsicContentSize: intrinsicContentSize,
-            sessionReplayOverride: sessionReplayOverride
+            overrides: overrides
         )
     }
 
@@ -173,7 +174,8 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             layerCornerRadius: .mockRandom(min: 0, max: 4),
             alpha: alpha ?? .mockRandom(min: 0.01, max: 1),
             isHidden: isHidden ?? .mockRandom(),
-            intrinsicContentSize: (frame ?? .mockRandom(minWidth: 10, minHeight: 10)).size
+            intrinsicContentSize: (frame ?? .mockRandom(minWidth: 10, minHeight: 10)).size,
+            overrides: .mockAny()
         )
 
         // consistency check:
@@ -529,7 +531,7 @@ internal func mockUIView<View: UIView>(with attributes: ViewAttributes) -> View 
     // Consistency check - to make sure computed properties in `ViewAttributes` captured
     // for mocked view are equal the these from requested `attributes`.
     let expectedAttributes = attributes
-    let actualAttributes = ViewAttributes(frameInRootView: view.frame, view: view)
+    let actualAttributes = ViewAttributes(frameInRootView: view.frame, view: view, overrides: .mockAny())
 
     assert(
         actualAttributes.isVisible == expectedAttributes.isVisible,
@@ -580,12 +582,12 @@ internal extension Optional where Wrapped == NodeSemantics {
     }
 }
 
-extension SessionReplayOverrideExtension: AnyMockable, RandomMockable {
-    public static func mockAny() -> SessionReplayOverrideExtension {
+extension Overrides: AnyMockable, RandomMockable {
+    public static func mockAny() -> Overrides {
         return mockWith()
     }
 
-    public static func mockRandom() -> SessionReplayOverrideExtension {
+    public static func mockRandom() -> Overrides {
         return mockWith(
             textAndInputPrivacy: .mockRandom(),
             imagePrivacy: .mockRandom(),
@@ -599,8 +601,8 @@ extension SessionReplayOverrideExtension: AnyMockable, RandomMockable {
         imagePrivacy: ImagePrivacyLevel? = nil,
         touchPrivacy: TouchPrivacyLevel? = nil,
         hide: Bool? = nil
-    ) -> SessionReplayOverrideExtension {
-        let override = SessionReplayOverrideExtension(UIView.mockRandom())
+    ) -> Overrides {
+        let override = Overrides(UIView.mockRandom())
         override.textAndInputPrivacy = textAndInputPrivacy
         override.imagePrivacy = imagePrivacy
         override.touchPrivacy = touchPrivacy

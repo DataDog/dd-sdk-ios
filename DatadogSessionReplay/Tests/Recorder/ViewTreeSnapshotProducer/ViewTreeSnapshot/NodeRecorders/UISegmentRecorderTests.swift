@@ -54,5 +54,18 @@ class UISegmentRecorderTests: XCTestCase {
         // Then
         XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
     }
+
+    func testWhenSegmentHasTextPrivacyOverride() throws {
+        // Given
+        viewAttributes = .mock(fixture: .visible())
+        viewAttributes.overrides = .mockWith(textAndInputPrivacy: .maskAll)
+
+        // When
+        let semantics = try XCTUnwrap(recorder.semantics(of: segment, with: viewAttributes, in: .mockAny()) as? SpecificElement)
+
+        // Then
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UISegmentWireframesBuilder)
+        XCTAssertTrue(builder.textObfuscator is FixLengthMaskObfuscator)
+    }
 }
 #endif

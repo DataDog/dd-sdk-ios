@@ -14,12 +14,12 @@ private var associatedSROverrideKey: UInt8 = 0
 /// Objective-C accessible extension for UIView
 @objc
 public extension UIView {
-    @objc var ddSessionReplayOverride: DDSessionReplayOverride {
+    @objc var ddSessionReplayOverrides: DDSessionReplayOverrides {
         get {
-            if let override = objc_getAssociatedObject(self, &associatedSROverrideKey) as? DDSessionReplayOverride {
+            if let override = objc_getAssociatedObject(self, &associatedSROverrideKey) as? DDSessionReplayOverrides {
                 return override
             } else {
-                let override = DDSessionReplayOverride()
+                let override = DDSessionReplayOverrides()
                 objc_setAssociatedObject(self, &associatedSROverrideKey, override, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
                 return override
             }
@@ -32,13 +32,13 @@ public extension UIView {
 
 /// A wrapper class for Objective-C compatibility, providing overrides for Session Replay privacy settings.
 @objc
-public final class DDSessionReplayOverride: NSObject {
+public final class DDSessionReplayOverrides: NSObject {
     /// Internal Swift equivalent of the Session Replay Override, tied to the view.
-    internal var _swift: SessionReplayOverrideExtension
+    internal var _swift: SessionReplayOverrides
 
     @objc
     override public init() {
-        _swift = SessionReplayOverrideExtension(UIView())
+        _swift = SessionReplayOverrides(UIView())
         super.init()
     }
 

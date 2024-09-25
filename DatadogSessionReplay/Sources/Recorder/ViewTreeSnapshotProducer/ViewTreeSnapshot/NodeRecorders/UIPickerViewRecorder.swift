@@ -11,7 +11,7 @@ import UIKit
 ///
 /// The look of picker view in SR is approximated by capturing the text from "selected row" and ignoring all other values on the wheel:
 /// - If the picker defines multiple components, there will be multiple selected values.
-/// - We can't request `picker.dataSource` to receive the value - doing so will result in calling applicaiton code, which could be
+/// - We can't request `picker.dataSource` to receive the value - doing so will result in calling application code, which could be
 /// dangerous (if the code is faulty) and may significantly slow down the performance (e.g. if the underlying source requires database fetch).
 /// - Similarly, we don't call `picker.delegate` to avoid running application code outside `UIKit's` lifecycle.
 /// - Instead, we infer the value by traversing picker's subtree and finding texts that have no "3D wheel" effect applied.
@@ -28,8 +28,8 @@ internal struct UIPickerViewRecorder: NodeRecorder {
 
     init(
         identifier: UUID,
-        textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = { context in
-            return context.recorder.textAndInputPrivacy.inputAndOptionTextObfuscator
+        textObfuscator: @escaping (ViewTreeRecordingContext, ViewAttributes) -> TextObfuscating = { context, viewAttributes in
+            return viewAttributes.resolveTextAndInputPrivacyLevel(in: context).inputAndOptionTextObfuscator
         }
     ) {
         self.identifier = identifier
