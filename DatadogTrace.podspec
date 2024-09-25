@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogTrace"
-  s.version      = "2.17.0"
+  s.version      = "2.18.0"
   s.summary      = "Datadog Trace Module."
 
   s.homepage     = "https://www.datadoghq.com"

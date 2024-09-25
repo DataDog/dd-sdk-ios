@@ -16,13 +16,13 @@ internal struct UITextViewRecorder: NodeRecorder {
 
     var textObfuscator: (ViewTreeRecordingContext, _ isSensitive: Bool, _ isEditable: Bool) -> TextObfuscating = { context, isSensitive, isEditable in
         if isSensitive {
-            return context.recorder.privacy.sensitiveTextObfuscator
+            return context.recorder.textAndInputPrivacy.sensitiveTextObfuscator
         }
 
         if isEditable {
-            return context.recorder.privacy.inputAndOptionTextObfuscator
+            return context.recorder.textAndInputPrivacy.inputAndOptionTextObfuscator
         } else {
-            return context.recorder.privacy.staticTextObfuscator
+            return context.recorder.textAndInputPrivacy.staticTextObfuscator
         }
     }
 
@@ -41,7 +41,7 @@ internal struct UITextViewRecorder: NodeRecorder {
             textAlignment: textView.textAlignment,
             textColor: textView.textColor?.cgColor ?? UIColor.black.cgColor,
             font: textView.font,
-            textObfuscator: textObfuscator(context, textView.isSensitiveText, textView.isEditable),
+            textObfuscator: textObfuscator(context, textView.dd.isSensitiveText, textView.isEditable),
             contentRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)

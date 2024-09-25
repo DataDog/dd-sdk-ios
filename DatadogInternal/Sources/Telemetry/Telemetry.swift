@@ -17,8 +17,11 @@ public struct ConfigurationTelemetry: Equatable {
     public let batchSize: Int64?
     public let batchUploadFrequency: Int64?
     public let dartVersion: String?
-    public let defaultPrivacyLevel: String?
     public let forwardErrorsToLogs: Bool?
+    public let defaultPrivacyLevel: String?
+    public let textAndInputPrivacyLevel: String?
+    public let imagePrivacyLevel: String?
+    public let touchPrivacyLevel: String?
     public let initializationType: String?
     public let mobileVitalsUpdatePeriod: Int64?
     public let reactNativeVersion: String?
@@ -27,7 +30,6 @@ public struct ConfigurationTelemetry: Equatable {
     public let sessionSampleRate: Int64?
     public let silentMultipleInit: Bool?
     public let startRecordingImmediately: Bool?
-    public let startSessionReplayRecordingManually: Bool?
     public let telemetryConfigurationSampleRate: Int64?
     public let telemetrySampleRate: Int64?
     public let tracerAPI: String?
@@ -59,7 +61,13 @@ public struct ConfigurationTelemetry: Equatable {
     public let useWorkerUrl: Bool?
 }
 
-public struct MetricTelemetry {
+/// A telemetry event that can be sampled in addition to the global telemetry sample rate.
+public protocol SampledTelemetry {
+    /// The sample rate for this metric, applied in addition to the telemetry sample rate.
+    var sampleRate: Float { get }
+}
+
+public struct MetricTelemetry: SampledTelemetry {
     /// The default sample rate for metric events (15%), applied in addition to the telemetry sample rate (20% by default).
     public static let defaultSampleRate: Float = 15
 
@@ -81,34 +89,64 @@ public struct MetricTelemetry {
 }
 
 /// Describes the type of the usage telemetry events supported by the SDK.
-public enum UsageTelemetry {
-    /// setTrackingConsent API
-    case setTrackingConsent(TrackingConsent)
-    /// stopSession API
-    case stopSession
-    /// startView API
-    case startView
-    /// addAction API
-    case addAction
-    /// addError API
-    case addError
-    /// setGlobalContext, setGlobalContextProperty, addAttribute APIs
-    case setGlobalContext
-    /// setUser, setUserProperty, setUserInfo APIs
-    case setUser
-    /// addFeatureFlagEvaluation API
-    case addFeatureFlagEvaluation
-    /// addFeatureFlagEvaluation API
-    case addViewLoadingTime(ViewLoadingTime)
+public struct UsageTelemetry: SampledTelemetry {
+    /// Supported usage telemetry events.
+    public enum Event {
+        /// setTrackingConsent API
+        case setTrackingConsent(TrackingConsent)
+        /// stopSession API
+        case stopSession
+        /// startView API
+        case startView
+        /// addAction API
+        case addAction
+        /// addError API
+        case addError
+        /// setGlobalContext, setGlobalContextProperty, addAttribute APIs
+        case setGlobalContext
+        /// setUser, setUserProperty, setUserInfo APIs
+        case setUser
+        /// addFeatureFlagEvaluation API
+        case addFeatureFlagEvaluation
+        /// addFeatureFlagEvaluation API
+        case addViewLoadingTime(ViewLoadingTime)
 
-    /// Describes the properties of `addViewLoadingTime` usage telemetry.
-    public struct ViewLoadingTime {
-        /// Whether the available view is not active
-        public let noActiveView: Bool
-        /// Whether the view is not available
-        public let noView: Bool
-        /// Whether the loading time was overwritten
-        public let overwritten: Bool
+        /// Describes the properties of `addViewLoadingTime` usage telemetry.
+        public struct ViewLoadingTime {
+            /// Whether the available view is not active
+            public let noActiveView: Bool
+            /// Whether the view is not available
+            public let noView: Bool
+            /// Whether the loading time was overwritten
+            public let overwritten: Bool
+
+            public init(noActiveView: Bool, noView: Bool, overwritten: Bool) {
+                self.noActiveView = noActiveView
+                self.noView = noView
+                self.overwritten = overwritten
+            }
+        }
+    }
+
+    /// The default sample rate for usage telemetry events (15%), applied in addition to the telemetry sample rate (20% by default).
+    public static let defaultSampleRate: Float = 15
+
+    /// The usage telemetry event.
+    public let event: Event
+
+    /// The sample rate for usage event, applied in addition to the telemetry sample rate.
+    ///
+    /// Must be a value between `0` (reject all) and `100` (keep all).
+    ///
+    /// Note: This sample rate is compounded with the telemetry sample rate. For example, if the telemetry sample rate is 20% (default)
+    /// and this event's sample rate is 15%, the effective sample rate for this event will be 3%.
+    ///
+    /// This sample rate is applied in the telemetry receiver, after the event has been processed by the SDK core (tail-based sampling).
+    public let sampleRate: Float
+
+    public init(event: Event, sampleRate: Float = Self.defaultSampleRate) {
+        self.event = event
+        self.sampleRate = sampleRate
     }
 }
 
@@ -324,8 +362,11 @@ extension Telemetry {
         batchSize: Int64? = nil,
         batchUploadFrequency: Int64? = nil,
         dartVersion: String? = nil,
-        defaultPrivacyLevel: String? = nil,
         forwardErrorsToLogs: Bool? = nil,
+        defaultPrivacyLevel: String? = nil,
+        textAndInputPrivacyLevel: String? = nil,
+        imagePrivacyLevel: String? = nil,
+        touchPrivacyLevel: String? = nil,
         initializationType: String? = nil,
         mobileVitalsUpdatePeriod: Int64? = nil,
         reactNativeVersion: String? = nil,
@@ -334,7 +375,6 @@ extension Telemetry {
         sessionSampleRate: Int64? = nil,
         silentMultipleInit: Bool? = nil,
         startRecordingImmediately: Bool? = nil,
-        startSessionReplayRecordingManually: Bool? = nil,
         telemetryConfigurationSampleRate: Int64? = nil,
         telemetrySampleRate: Int64? = nil,
         tracerAPI: String? = nil,
@@ -375,8 +415,11 @@ extension Telemetry {
             batchSize: batchSize,
             batchUploadFrequency: batchUploadFrequency,
             dartVersion: dartVersion,
-            defaultPrivacyLevel: defaultPrivacyLevel,
             forwardErrorsToLogs: forwardErrorsToLogs,
+            defaultPrivacyLevel: defaultPrivacyLevel,
+            textAndInputPrivacyLevel: textAndInputPrivacyLevel,
+            imagePrivacyLevel: imagePrivacyLevel,
+            touchPrivacyLevel: touchPrivacyLevel,
             initializationType: initializationType,
             mobileVitalsUpdatePeriod: mobileVitalsUpdatePeriod,
             reactNativeVersion: reactNativeVersion,
@@ -385,7 +428,6 @@ extension Telemetry {
             sessionSampleRate: sessionSampleRate,
             silentMultipleInit: silentMultipleInit,
             startRecordingImmediately: startRecordingImmediately,
-            startSessionReplayRecordingManually: startSessionReplayRecordingManually,
             telemetryConfigurationSampleRate: telemetryConfigurationSampleRate,
             telemetrySampleRate: telemetrySampleRate,
             tracerAPI: tracerAPI,
@@ -496,8 +538,11 @@ extension ConfigurationTelemetry {
             batchSize: other.batchSize ?? batchSize,
             batchUploadFrequency: other.batchUploadFrequency ?? batchUploadFrequency,
             dartVersion: other.dartVersion ?? dartVersion,
-            defaultPrivacyLevel: other.defaultPrivacyLevel ?? defaultPrivacyLevel,
             forwardErrorsToLogs: other.forwardErrorsToLogs ?? forwardErrorsToLogs,
+            defaultPrivacyLevel: other.defaultPrivacyLevel ?? defaultPrivacyLevel,
+            textAndInputPrivacyLevel: other.textAndInputPrivacyLevel ?? textAndInputPrivacyLevel,
+            imagePrivacyLevel: other.imagePrivacyLevel ?? imagePrivacyLevel,
+            touchPrivacyLevel: other.touchPrivacyLevel ?? touchPrivacyLevel,
             initializationType: other.initializationType ?? initializationType,
             mobileVitalsUpdatePeriod: other.mobileVitalsUpdatePeriod ?? mobileVitalsUpdatePeriod,
             reactNativeVersion: other.reactNativeVersion ?? reactNativeVersion,
@@ -506,7 +551,6 @@ extension ConfigurationTelemetry {
             sessionSampleRate: other.sessionSampleRate ?? sessionSampleRate,
             silentMultipleInit: other.silentMultipleInit ?? silentMultipleInit,
             startRecordingImmediately: other.startRecordingImmediately ?? startRecordingImmediately,
-            startSessionReplayRecordingManually: other.startSessionReplayRecordingManually ?? startSessionReplayRecordingManually,
             telemetryConfigurationSampleRate: other.telemetryConfigurationSampleRate ?? telemetryConfigurationSampleRate,
             telemetrySampleRate: other.telemetrySampleRate ?? telemetrySampleRate,
             tracerAPI: other.tracerAPI ?? tracerAPI,

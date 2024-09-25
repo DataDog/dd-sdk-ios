@@ -22,8 +22,12 @@ internal protocol Recording {
 public class Recorder: Recording {
     /// The context of recording next snapshot.
     public struct Context: Equatable {
+        /// The content recording policy for texts and inputs at the moment of requesting snapshot.
+        public let textAndInputPrivacy: TextAndInputPrivacyLevel
+        /// The image recording policy from the moment of requesting snapshot.
+        public let imagePrivacy: ImagePrivacyLevel
         /// The content recording policy from the moment of requesting snapshot.
-        public let privacy: SessionReplayPrivacyLevel
+        public let touchPrivacy: TouchPrivacyLevel
         /// Current RUM application ID - standard UUID string, lowecased.
         let applicationID: String
         /// Current RUM session ID - standard UUID string, lowecased.
@@ -36,14 +40,18 @@ public class Recorder: Recording {
         let date: Date
 
         internal init(
-            privacy: PrivacyLevel,
+            textAndInputPrivacy: TextAndInputPrivacyLevel,
+            imagePrivacy: ImagePrivacyLevel,
+            touchPrivacy: TouchPrivacyLevel,
             applicationID: String,
             sessionID: String,
             viewID: String,
             viewServerTimeOffset: TimeInterval?,
             date: Date = Date()
         ) {
-            self.privacy = privacy
+            self.textAndInputPrivacy = textAndInputPrivacy
+            self.imagePrivacy = imagePrivacy
+            self.touchPrivacy = touchPrivacy
             self.applicationID = applicationID
             self.sessionID = sessionID
             self.viewID = viewID
@@ -109,7 +117,7 @@ public class Recorder: Recording {
             return
         }
 
-        let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
+        let touchSnapshot = recorderContext.touchPrivacy == .show ? touchSnapshotProducer.takeSnapshot(context: recorderContext) : nil
         snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
     }
 }

@@ -493,7 +493,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.startView(key: "ActiveView")
 
         // When
-        monitor.addViewLoadingTime()
+        monitor.addViewLoadingTime(overwrite: false)
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self).filter { $0.view.name == "ActiveView" }
@@ -510,7 +510,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.stopView(key: "InactiveView")
 
         // When
-        monitor.addViewLoadingTime()
+        monitor.addViewLoadingTime(overwrite: false)
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self).filter { $0.view.name == "InactiveView" }
@@ -523,7 +523,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.startView(key: "ActiveView")
 
         // When
-        monitor.addViewLoadingTime()
+        monitor.addViewLoadingTime(overwrite: false)
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self).filter { $0.view.name == "ActiveView" }
@@ -535,7 +535,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         let old = lastView.view.loadingTime!
 
         // When
-        monitor.addViewLoadingTime()
+        monitor.addViewLoadingTime(overwrite: false)
 
         // Then
         let viewEvents2 = featureScope.eventsWritten(ofType: RUMViewEvent.self).filter { $0.view.name == "ActiveView" }
@@ -544,7 +544,19 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertNotNil(lastView2.view.loadingTime)
         XCTAssertTrue(lastView2.view.loadingTime! > 0)
 
-        XCTAssertTrue(lastView2.view.loadingTime! > old)
+        XCTAssertEqual(lastView2.view.loadingTime!, old)
+
+        // When
+        monitor.addViewLoadingTime(overwrite: true)
+
+        // Then
+        let viewEvents3 = featureScope.eventsWritten(ofType: RUMViewEvent.self).filter { $0.view.name == "ActiveView" }
+        let lastView3 = try XCTUnwrap(viewEvents3.last)
+
+        XCTAssertNotNil(lastView3.view.loadingTime)
+        XCTAssertTrue(lastView3.view.loadingTime! > 0)
+
+        XCTAssertTrue(lastView3.view.loadingTime! > old)
     }
 
     // MARK: - Updating Fatal Error Context With Global Attributes

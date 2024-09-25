@@ -65,7 +65,8 @@ extension Datadog.Configuration {
         .init(
             clientToken: info.clientToken,
             env: info.env,
-            site: info.site
+            site: info.site,
+            uploadFrequency: .frequent
         )
     }
 }

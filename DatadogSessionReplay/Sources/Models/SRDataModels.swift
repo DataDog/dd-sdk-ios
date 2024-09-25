@@ -452,7 +452,7 @@ public struct SRWebviewWireframe: Codable, Hashable {
     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
     public let id: Int64
 
-    /// Whether this web-view is visible or not.
+    /// Whether this webview is visible or not.
     public let isVisible: Bool?
 
     /// The style of this wireframe.
@@ -974,7 +974,7 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
                     public let id: Int64
 
-                    /// Whether this web-view is visible or not.
+                    /// Whether this webview is visible or not.
                     public let isVisible: Bool?
 
                     /// The style of this wireframe.
@@ -1330,4 +1330,4 @@ public enum SRRecord: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/be033e3251da4a20891a774f9843c489a693c80d
+// Generated from https://github.com/DataDog/rum-events-format/tree/500d32fb7d050f634cf417c28f1e0b7181b2c704

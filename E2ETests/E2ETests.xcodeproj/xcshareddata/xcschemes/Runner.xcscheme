@@ -66,6 +66,11 @@
             value = "sessionReplayWebView"
             isEnabled = "NO">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "E2E_SCENARIO"
+            value = "trace"
+            isEnabled = "YES">
+         </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
