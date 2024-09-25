@@ -2,12 +2,12 @@
 
 # 2.18.0 / 25-09-2024
 - [IMPROVEMENT] Add overwrite required (breaking) param to addViewLoadingTime & usage telemetry. See [#2040][]
-- [FEATURE] Prevent "show password" features from revealing sensitive texts. See [#2050][]
+- [FEATURE] Prevent "show password" features from revealing sensitive texts in Session Replay. See [#2050][]
+- [FEATURE] Add Fine-Grained Masking configuration options to Session Replay. See [#2043][]
 
 # 2.17.0 / 11-09-2024
 
 - [FEATURE] Add support for view loading experimental API (addViewLoadingTime). See [#2026][]
-- [FEATURE] Add Fine-Grained Masking options to Session Replay. See [#2043][]
 - [IMPROVEMENT] Drop support for deprecated cocoapod specs. See [#1998][]
 - [FIX] Propagate global Tracer tags to OpenTelemetry span attributes. See [#2000][]
 - [FEATURE] Add Logs event mapper to ObjC API. See [#2008][]
