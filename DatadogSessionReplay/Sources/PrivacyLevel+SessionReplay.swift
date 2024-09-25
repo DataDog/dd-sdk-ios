@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import UIKit
+import DatadogInternal
 
 // MARK: - DatadogExtension for UIView
 
@@ -13,11 +14,8 @@ import UIKit
 extension DatadogExtension where ExtendedType: UIView {
     /// Provides access to Session Replay override settings for the view.
     /// Usage: `myView.dd.sessionReplayOverride.textAndInputPrivacy = .maskNone`.
-    public var sessionReplayOverride: SessionReplayOverrideExtension<ExtendedType> {
-        get {
-            return SessionReplayOverrideExtension(self.type)
-        }
-        set {}
+    public var sessionReplayOverride: SessionReplayOverrideExtension {
+        return SessionReplayOverrideExtension(self.type)
     }
 }
 
@@ -31,10 +29,10 @@ private var associatedHiddenPrivacyKey: UInt8 = 6
 // MARK: - SessionReplayOverrideExtension
 
 /// `UIView` extension  to manage the Session Replay privacy override settings.
-public struct SessionReplayOverrideExtension<ExtendedType> {
-    private let view: ExtendedType
+public final class SessionReplayOverrideExtension {
+    private let view: UIView
 
-    public init(_ view: ExtendedType) {
+    public init(_ view: UIView) {
         self.view = view
     }
 
