@@ -23,7 +23,7 @@ class SessionReplayOverrideTests: XCTestCase {
 
     func testWithOverrides() {
         // Given
-        var view = UIView()
+        let view = UIView()
 
         // When
         view.dd.sessionReplayOverride.textAndInputPrivacy = .maskAllInputs
@@ -40,7 +40,7 @@ class SessionReplayOverrideTests: XCTestCase {
 
     func testRemovingOverrides() {
         // Given
-        var view = UIView()
+        let view = UIView()
         view.dd.sessionReplayOverride.textAndInputPrivacy = .maskAllInputs
         view.dd.sessionReplayOverride.imagePrivacy = .maskAll
         view.dd.sessionReplayOverride.touchPrivacy = .hide
