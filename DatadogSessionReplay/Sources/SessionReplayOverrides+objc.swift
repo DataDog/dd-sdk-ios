@@ -13,7 +13,7 @@ import UIKit
 @objc
 public final class DDSessionReplayOverride: NSObject {
     /// Internal Swift equivalent of the Session Replay Override, tied to the view.
-    internal var _swift: SessionReplayOverrideExtension<UIView>
+    internal var _swift: SessionReplayOverrideExtension
 
     @objc
     override public init() {
