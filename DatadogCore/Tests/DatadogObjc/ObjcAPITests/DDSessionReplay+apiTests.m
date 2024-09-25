@@ -37,48 +37,48 @@
     [DDSessionReplay stopRecording];
 }
 
-// MARK: Overrides
+// MARK: Privacy Overrides
 - (void)testSettingAndGettingOverrides {
     // Given
     UIView *view = [[UIView alloc] init];
-    DDSessionReplayOverride *override = [[DDSessionReplayOverride alloc] init];
+    DDSessionReplayOverrides *override = [[DDSessionReplayOverrides alloc] init];
 
     // When
-    view.ddSessionReplayOverride = override;
-    view.ddSessionReplayOverride.textAndInputPrivacy = DDTextAndInputPrivacyLevelOverrideMaskAll;
-    view.ddSessionReplayOverride.imagePrivacy = DDImagePrivacyLevelOverrideMaskAll;
-    view.ddSessionReplayOverride.touchPrivacy = DDTouchPrivacyLevelOverrideHide;
-    view.ddSessionReplayOverride.hide = @YES;
+    view.ddSessionReplayOverrides = override;
+    view.ddSessionReplayOverrides.textAndInputPrivacy = DDTextAndInputPrivacyLevelOverrideMaskAll;
+    view.ddSessionReplayOverrides.imagePrivacy = DDImagePrivacyLevelOverrideMaskAll;
+    view.ddSessionReplayOverrides.touchPrivacy = DDTouchPrivacyLevelOverrideHide;
+    view.ddSessionReplayOverrides.hide = @YES;
 
     // Then
-    XCTAssertEqual(view.ddSessionReplayOverride.textAndInputPrivacy, DDTextAndInputPrivacyLevelOverrideMaskAll);
-    XCTAssertEqual(view.ddSessionReplayOverride.imagePrivacy, DDImagePrivacyLevelOverrideMaskAll);
-    XCTAssertEqual(view.ddSessionReplayOverride.touchPrivacy, DDTouchPrivacyLevelOverrideHide);
-    XCTAssertTrue(view.ddSessionReplayOverride.hide.boolValue);
+    XCTAssertEqual(view.ddSessionReplayOverrides.textAndInputPrivacy, DDTextAndInputPrivacyLevelOverrideMaskAll);
+    XCTAssertEqual(view.ddSessionReplayOverrides.imagePrivacy, DDImagePrivacyLevelOverrideMaskAll);
+    XCTAssertEqual(view.ddSessionReplayOverrides.touchPrivacy, DDTouchPrivacyLevelOverrideHide);
+    XCTAssertTrue(view.ddSessionReplayOverrides.hide.boolValue);
 }
 
 - (void)testClearingOverride {
     // Given
     UIView *view = [[UIView alloc] init];
-    DDSessionReplayOverride *override = [[DDSessionReplayOverride alloc] init];
+    DDSessionReplayOverrides *overrides = [[DDSessionReplayOverrides alloc] init];
 
     // Set initial values
-    view.ddSessionReplayOverride = override;
-    view.ddSessionReplayOverride.textAndInputPrivacy = DDTextAndInputPrivacyLevelOverrideMaskAll;
-    view.ddSessionReplayOverride.imagePrivacy = DDImagePrivacyLevelOverrideMaskAll;
-    view.ddSessionReplayOverride.touchPrivacy = DDTouchPrivacyLevelOverrideHide;
-    view.ddSessionReplayOverride.hide = @YES;
+    view.ddSessionReplayOverrides = overrides;
+    view.ddSessionReplayOverrides.textAndInputPrivacy = DDTextAndInputPrivacyLevelOverrideMaskAll;
+    view.ddSessionReplayOverrides.imagePrivacy = DDImagePrivacyLevelOverrideMaskAll;
+    view.ddSessionReplayOverrides.touchPrivacy = DDTouchPrivacyLevelOverrideHide;
+    view.ddSessionReplayOverrides.hide = @YES;
 
     // When
-    view.ddSessionReplayOverride.textAndInputPrivacy = DDTextAndInputPrivacyLevelOverrideNone;
-    view.ddSessionReplayOverride.imagePrivacy = DDImagePrivacyLevelOverrideNone;
-    view.ddSessionReplayOverride.touchPrivacy = DDTouchPrivacyLevelOverrideNone;
-    view.ddSessionReplayOverride.hide = nil;
+    view.ddSessionReplayOverrides.textAndInputPrivacy = DDTextAndInputPrivacyLevelOverrideNone;
+    view.ddSessionReplayOverrides.imagePrivacy = DDImagePrivacyLevelOverrideNone;
+    view.ddSessionReplayOverrides.touchPrivacy = DDTouchPrivacyLevelOverrideNone;
+    view.ddSessionReplayOverrides.hide = nil;
 
     // Then
-    XCTAssertEqual(view.ddSessionReplayOverride.textAndInputPrivacy, DDTextAndInputPrivacyLevelOverrideNone);
-    XCTAssertEqual(view.ddSessionReplayOverride.imagePrivacy, DDImagePrivacyLevelOverrideNone);
-    XCTAssertEqual(view.ddSessionReplayOverride.touchPrivacy, DDTouchPrivacyLevelOverrideNone);
-    XCTAssertNil(view.ddSessionReplayOverride.hide);
+    XCTAssertEqual(view.ddSessionReplayOverrides.textAndInputPrivacy, DDTextAndInputPrivacyLevelOverrideNone);
+    XCTAssertEqual(view.ddSessionReplayOverrides.imagePrivacy, DDImagePrivacyLevelOverrideNone);
+    XCTAssertEqual(view.ddSessionReplayOverrides.touchPrivacy, DDTouchPrivacyLevelOverrideNone);
+    XCTAssertNil(view.ddSessionReplayOverrides.hide);
 }
 @end

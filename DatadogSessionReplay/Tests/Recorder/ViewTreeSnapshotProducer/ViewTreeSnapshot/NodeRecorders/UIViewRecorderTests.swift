@@ -61,7 +61,7 @@ class UIViewRecorderTests: XCTestCase {
     func testWhenViewHasHiddenOverride() throws {
         // Given
         viewAttributes = .mock(fixture: .visible(.someAppearance))
-        viewAttributes.sessionReplayOverride = .mockWith(hide: true)
+        viewAttributes.overrides = .mockWith(hide: true)
 
         // When
         let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
