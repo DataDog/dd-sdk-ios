@@ -9,6 +9,27 @@ import Foundation
 import DatadogInternal
 import UIKit
 
+private var associatedSROverrideKey: UInt8 = 0
+
+/// Objective-C accessible extension for UIView
+@objc
+public extension UIView {
+    @objc var ddSessionReplayOverride: DDSessionReplayOverride {
+        get {
+            if let override = objc_getAssociatedObject(self, &associatedSROverrideKey) as? DDSessionReplayOverride {
+                return override
+            } else {
+                let override = DDSessionReplayOverride()
+                objc_setAssociatedObject(self, &associatedSROverrideKey, override, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+                return override
+            }
+        }
+        set {
+            objc_setAssociatedObject(self, &associatedSROverrideKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
+    }
+}
+
 /// A wrapper class for Objective-C compatibility, providing overrides for Session Replay privacy settings.
 @objc
 public final class DDSessionReplayOverride: NSObject {
@@ -40,18 +61,18 @@ public final class DDSessionReplayOverride: NSObject {
     }
 
     /// Hidden privacy override (e.g., mark a view as hidden, rendering it as an opaque wireframe in replays).
-    @objc public var hidden: NSNumber? {
+    @objc public var hide: NSNumber? {
         get {
-            guard let hidden = _swift.hidden else {
+            guard let hide = _swift.hide else {
                 return nil
             }
-            return NSNumber(value: hidden)
+            return NSNumber(value: hide)
         }
         set {
             if let newValue = newValue {
-                _swift.hidden = newValue.boolValue
+                _swift.hide = newValue.boolValue
             } else {
-                _swift.hidden = nil
+                _swift.hide = nil
             }
         }
     }

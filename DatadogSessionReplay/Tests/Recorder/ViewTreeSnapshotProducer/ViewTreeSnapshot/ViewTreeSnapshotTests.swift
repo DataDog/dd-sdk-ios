@@ -188,7 +188,7 @@ class ViewAttributesTests: XCTestCase {
         XCTAssertNil(attributes.sessionReplayOverride?.textAndInputPrivacy)
         XCTAssertNil(attributes.sessionReplayOverride?.imagePrivacy)
         XCTAssertNil(attributes.sessionReplayOverride?.touchPrivacy)
-        XCTAssertNil(attributes.sessionReplayOverride?.hidden)
+        XCTAssertNil(attributes.sessionReplayOverride?.hide)
     }
 
     func testItCapturesViewAttributesWithOverrides() {
@@ -198,7 +198,7 @@ class ViewAttributesTests: XCTestCase {
         view.dd.sessionReplayOverride.textAndInputPrivacy = overrides.textAndInputPrivacy
         view.dd.sessionReplayOverride.imagePrivacy = overrides.imagePrivacy
         view.dd.sessionReplayOverride.touchPrivacy = overrides.touchPrivacy
-        view.dd.sessionReplayOverride.hidden = overrides.hidden
+        view.dd.sessionReplayOverride.hide = overrides.hide
 
         // When
         let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
@@ -207,7 +207,7 @@ class ViewAttributesTests: XCTestCase {
         XCTAssertEqual(attributes.sessionReplayOverride?.textAndInputPrivacy, overrides.textAndInputPrivacy)
         XCTAssertEqual(attributes.sessionReplayOverride?.imagePrivacy, overrides.imagePrivacy)
         XCTAssertEqual(attributes.sessionReplayOverride?.touchPrivacy, overrides.touchPrivacy)
-        XCTAssertEqual(attributes.sessionReplayOverride?.hidden, overrides.hidden)
+        XCTAssertEqual(attributes.sessionReplayOverride?.hide, overrides.hide)
     }
 }
 // swiftlint:enable opening_brace
