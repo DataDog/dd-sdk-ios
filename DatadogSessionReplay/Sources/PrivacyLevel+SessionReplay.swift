@@ -67,7 +67,7 @@ public final class SessionReplayOverrideExtension {
     }
 
     /// Hidden privacy override (e.g., mark a view as hidden, rendering it as an opaque wireframe in replays).
-    public var hidden: Bool? {
+    public var hide: Bool? {
         get {
             return objc_getAssociatedObject(view, &associatedHiddenPrivacyKey) as? Bool
         }
@@ -83,7 +83,7 @@ extension SessionReplayOverrideExtension: Equatable {
         && lhs.textAndInputPrivacy == rhs.textAndInputPrivacy
         && lhs.imagePrivacy == rhs.imagePrivacy
         && lhs.touchPrivacy == rhs.touchPrivacy
-        && lhs.hidden == rhs.hidden
+        && lhs.hide == rhs.hide
     }
 }
 #endif
