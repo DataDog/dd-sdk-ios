@@ -31,4 +31,8 @@
     [DDSessionReplay enableWith:configuration];
 }
 
+- (void)testStartAndStopRecording {
+    [DDSessionReplay startRecording];
+    [DDSessionReplay stopRecording];
+}
 @end

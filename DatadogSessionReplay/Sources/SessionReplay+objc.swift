@@ -26,6 +26,18 @@ public final class DDSessionReplay: NSObject {
     public static func enable(with configuration: DDSessionReplayConfiguration) {
         SessionReplay.enable(with: configuration._swift)
     }
+
+    /// Starts the recording manually.
+    @objc
+    public static func startRecording() {
+        SessionReplay.startRecording(in: CoreRegistry.default)
+    }
+
+    /// Stops the recording manually.
+    @objc
+    public static func stopRecording() {
+        SessionReplay.stopRecording(in: CoreRegistry.default)
+    }
 }
 
 /// Session Replay feature configuration.
