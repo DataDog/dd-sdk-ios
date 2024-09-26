@@ -11,7 +11,7 @@ import DatadogInternal
 import TestUtilities
 @testable import DatadogSessionReplay
 
-class UIKitExtensionsTests: XCTestCase {
+class UIViewSessionReplayTests: XCTestCase {
     func testUsesDarkMode() {
         guard #available(iOS 13.0, *) else {
             XCTAssertFalse(UIView().dd.usesDarkMode) // always false prior to iOS 13.x
