@@ -590,7 +590,7 @@ extension SessionReplayOverrideExtension: AnyMockable, RandomMockable {
             textAndInputPrivacy: .mockRandom(),
             imagePrivacy: .mockRandom(),
             touchPrivacy: .mockRandom(),
-            hidden: .mockRandom()
+            hide: .mockRandom()
         )
     }
 
@@ -598,13 +598,13 @@ extension SessionReplayOverrideExtension: AnyMockable, RandomMockable {
         textAndInputPrivacy: TextAndInputPrivacyLevel? = nil,
         imagePrivacy: ImagePrivacyLevel? = nil,
         touchPrivacy: TouchPrivacyLevel? = nil,
-        hidden: Bool? = nil
+        hide: Bool? = nil
     ) -> SessionReplayOverrideExtension {
         let override = SessionReplayOverrideExtension(UIView.mockRandom())
         override.textAndInputPrivacy = textAndInputPrivacy
         override.imagePrivacy = imagePrivacy
         override.touchPrivacy = touchPrivacy
-        override.hidden = hidden
+        override.hide = hide
         return override
     }
 }

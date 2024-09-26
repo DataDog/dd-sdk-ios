@@ -41,7 +41,7 @@ internal class UIViewRecorder: NodeRecorder {
             return semantics
         }
 
-        if attributes.sessionReplayOverride?.hidden == true {
+        if attributes.sessionReplayOverride?.hide == true {
             let builder = UIViewWireframesBuilder(
                 wireframeID: context.ids.nodeID(view: view, nodeRecorder: self),
                 attributes: attributes
@@ -75,7 +75,7 @@ internal struct UIViewWireframesBuilder: NodeWireframesBuilder {
     }
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
-        if attributes.sessionReplayOverride?.hidden == true {
+        if attributes.sessionReplayOverride?.hide == true {
             return [
                 builder.createPlaceholderWireframe(id: wireframeID, frame: wireframeRect, label: "Hidden")
             ]
