@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import UIKit
+import DatadogInternal
 
 internal struct UIImageResource {
     private let image: UIImage
@@ -19,29 +20,11 @@ internal struct UIImageResource {
 
 extension UIImageResource: Resource {
     func calculateIdentifier() -> String {
-        var identifier = image.dd.srIdentifier
-        if let tintColorIdentifier = tintColor?.dd.srIdentifier {
-            identifier += tintColorIdentifier
-        }
-        return identifier
+        tintColor.map { image.dd.identifier + $0 .dd.identifier } ?? image.dd.identifier
     }
 
     func calculateData() -> Data {
-        guard let tintColor = tintColor else {
-            return image.scaledDownToApproximateSize(SessionReplay.maxObjectSize)
-        }
-        if #available(iOS 13.0, *), image.isSymbolImage {
-            return image.withTintColor(tintColor)
-                .scaledDownToApproximateSize(SessionReplay.maxObjectSize)
-        } else {
-            return manuallyTintedImageData()
-        }
-    }
-
-    /// Provides mitigation for template images that fail to tint programatically outside of `UIImageView` or other system container.
-    private func manuallyTintedImageData() -> Data {
-        return image
-            .scaledDownToApproximateSize(SessionReplay.maxObjectSize, tint: tintColor)
+        image.dd.pngData(tintColor: tintColor) ?? Data()
     }
 }
 #endif

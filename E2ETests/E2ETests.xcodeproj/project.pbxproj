@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3CA93B992C93063F00BC28C4 /* OpenTelemetryTraceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CA93B982C93063F00BC28C4 /* OpenTelemetryTraceView.swift */; };
+		3CA93B9B2C930A5600BC28C4 /* OpenTelemetryTraceScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CA93B9A2C930A5600BC28C4 /* OpenTelemetryTraceScenario.swift */; };
 		D292E3BB2BD7BCDF0083453D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D292E3BA2BD7BCDF0083453D /* AppDelegate.swift */; };
 		D2A6109B2BE11A74000AA6AB /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = D2A6109A2BE11A74000AA6AB /* DatadogCore */; };
 		D2A6109D2BE11A74000AA6AB /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = D2A6109C2BE11A74000AA6AB /* DatadogCrashReporting */; };
@@ -25,6 +27,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3CA93B982C93063F00BC28C4 /* OpenTelemetryTraceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenTelemetryTraceView.swift; sourceTree = "<group>"; };
+		3CA93B9A2C930A5600BC28C4 /* OpenTelemetryTraceScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenTelemetryTraceScenario.swift; sourceTree = "<group>"; };
 		D20B99882BE101690074F98E /* dd-sdk-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "dd-sdk-ios"; path = ..; sourceTree = "<group>"; };
 		D2720E2B2BD8FE2F008ADF5D /* E2E.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = E2E.local.xcconfig; sourceTree = "<group>"; };
 		D2720E2D2BD8FE2F008ADF5D /* Runner.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Runner.xcconfig; sourceTree = "<group>"; };
@@ -60,6 +64,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3CA93B952C92F19100BC28C4 /* OpenTelemetryTrace */ = {
+			isa = PBXGroup;
+			children = (
+				3CA93B982C93063F00BC28C4 /* OpenTelemetryTraceView.swift */,
+				3CA93B9A2C930A5600BC28C4 /* OpenTelemetryTraceScenario.swift */,
+			);
+			path = OpenTelemetryTrace;
+			sourceTree = "<group>";
+		};
 		D20B99872BE101690074F98E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -111,9 +124,10 @@
 		D2A610AE2BE12724000AA6AB /* Scenarios */ = {
 			isa = PBXGroup;
 			children = (
-				D2A610AF2BE12739000AA6AB /* Scenario.swift */,
 				D2A610B12BE14D01000AA6AB /* DefaultScenario.swift */,
+				D2A610AF2BE12739000AA6AB /* Scenario.swift */,
 				D2C0289E2BE14F1B00B5D7D3 /* SessionReplayWebView */,
+				3CA93B952C92F19100BC28C4 /* OpenTelemetryTrace */,
 			);
 			path = Scenarios;
 			sourceTree = "<group>";
@@ -208,8 +222,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				D292E3BB2BD7BCDF0083453D /* AppDelegate.swift in Sources */,
+				3CA93B9B2C930A5600BC28C4 /* OpenTelemetryTraceScenario.swift in Sources */,
 				D2A610AD2BE125F0000AA6AB /* AppConfiguration.swift in Sources */,
 				D2C028A02BE14F5700B5D7D3 /* SessionReplayWebViewScenario.swift in Sources */,
+				3CA93B992C93063F00BC28C4 /* OpenTelemetryTraceView.swift in Sources */,
 				D2C028A22BE14FD300B5D7D3 /* SessionReplayWebViewController.swift in Sources */,
 				D2A610B22BE14D01000AA6AB /* DefaultScenario.swift in Sources */,
 				D2A610B02BE12739000AA6AB /* Scenario.swift in Sources */,
@@ -290,7 +306,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -441,7 +457,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -473,7 +489,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

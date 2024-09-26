@@ -9,6 +9,7 @@ stages:
   - dogfood
   - release-build
   - release-publish
+  - post
 
 variables:
   MAIN_BRANCH: "master"
@@ -401,3 +402,14 @@ Publish CP podspecs (legacy):
     - make env-check
     - make clean
     - make release-publish-legacy-podspecs
+
+# ┌────────────────┐
+# │ Notifications: │
+# └────────────────┘
+
+# This job runs at the end of every successful pipeline.
+# It syncs the GitLab pipeline status with GitHub status checks.
+Sync GH Checks:
+  stage: post
+  script:
+    - echo "All good"

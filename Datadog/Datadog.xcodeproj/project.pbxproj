@@ -155,7 +155,7 @@
 		61054E672A6EE10A00AAA894 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E112A6EE10A00AAA894 /* Recorder.swift */; };
 		61054E682A6EE10A00AAA894 /* PrivacyLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E122A6EE10A00AAA894 /* PrivacyLevel.swift */; };
 		61054E692A6EE10A00AAA894 /* UIImage+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E142A6EE10A00AAA894 /* UIImage+SessionReplay.swift */; };
-		61054E6A2A6EE10A00AAA894 /* UIKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E152A6EE10A00AAA894 /* UIKitExtensions.swift */; };
+		61054E6A2A6EE10A00AAA894 /* UIView+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E152A6EE10A00AAA894 /* UIView+SessionReplay.swift */; };
 		61054E6B2A6EE10A00AAA894 /* CFType+Safety.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E162A6EE10A00AAA894 /* CFType+Safety.swift */; };
 		61054E6C2A6EE10A00AAA894 /* SystemColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E172A6EE10A00AAA894 /* SystemColors.swift */; };
 		61054E6D2A6EE10A00AAA894 /* CGRect+ContentFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E182A6EE10A00AAA894 /* CGRect+ContentFrame.swift */; };
@@ -202,14 +202,13 @@
 		61054E992A6EE10A00AAA894 /* WireframesBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E512A6EE10A00AAA894 /* WireframesBuilder.swift */; };
 		61054E9A2A6EE10A00AAA894 /* NodesFlattener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E532A6EE10A00AAA894 /* NodesFlattener.swift */; };
 		61054E9B2A6EE10B00AAA894 /* CGRectExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E552A6EE10A00AAA894 /* CGRectExtensions.swift */; };
-		61054E9C2A6EE10B00AAA894 /* UIImage+Scaling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E562A6EE10A00AAA894 /* UIImage+Scaling.swift */; };
 		61054E9E2A6EE10B00AAA894 /* Queue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E582A6EE10A00AAA894 /* Queue.swift */; };
 		61054E9F2A6EE10B00AAA894 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E592A6EE10A00AAA894 /* Errors.swift */; };
 		61054EA02A6EE10B00AAA894 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E5A2A6EE10A00AAA894 /* Colors.swift */; };
 		61054EA12A6EE10B00AAA894 /* MainThreadScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E5C2A6EE10A00AAA894 /* MainThreadScheduler.swift */; };
 		61054EA22A6EE10B00AAA894 /* Scheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E5D2A6EE10A00AAA894 /* Scheduler.swift */; };
 		61054F952A6EE1BA00AAA894 /* SessionReplayConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F3D2A6EE1B900AAA894 /* SessionReplayConfigurationTests.swift */; };
-		61054F972A6EE1BA00AAA894 /* UIImage+ScalingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F402A6EE1B900AAA894 /* UIImage+ScalingTests.swift */; };
+		61054F972A6EE1BA00AAA894 /* UIImage+SessionReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F402A6EE1B900AAA894 /* UIImage+SessionReplayTests.swift */; };
 		61054F982A6EE1BA00AAA894 /* CGRectExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F412A6EE1B900AAA894 /* CGRectExtensionsTests.swift */; };
 		61054F992A6EE1BA00AAA894 /* ColorsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F422A6EE1B900AAA894 /* ColorsTests.swift */; };
 		61054F9A2A6EE1BA00AAA894 /* CFType+SafetyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F432A6EE1B900AAA894 /* CFType+SafetyTests.swift */; };
@@ -226,7 +225,7 @@
 		61054FA62A6EE1BA00AAA894 /* SnapshotProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F562A6EE1BA00AAA894 /* SnapshotProcessorTests.swift */; };
 		61054FA72A6EE1BA00AAA894 /* NodesFlattenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F582A6EE1BA00AAA894 /* NodesFlattenerTests.swift */; };
 		61054FA82A6EE1BA00AAA894 /* RecordingCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F5A2A6EE1BA00AAA894 /* RecordingCoordinatorTests.swift */; };
-		61054FAA2A6EE1BA00AAA894 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F5D2A6EE1BA00AAA894 /* UIKitExtensionsTests.swift */; };
+		61054FAA2A6EE1BA00AAA894 /* UIView+SessionReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F5D2A6EE1BA00AAA894 /* UIView+SessionReplayTests.swift */; };
 		61054FAC2A6EE1BA00AAA894 /* CGRect+ContentFrameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F5F2A6EE1BA00AAA894 /* CGRect+ContentFrameTests.swift */; };
 		61054FAD2A6EE1BA00AAA894 /* WindowTouchSnapshotProducerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F612A6EE1BA00AAA894 /* WindowTouchSnapshotProducerTests.swift */; };
 		61054FAE2A6EE1BA00AAA894 /* TouchIdentifierGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F632A6EE1BA00AAA894 /* TouchIdentifierGeneratorTests.swift */; };
@@ -839,6 +838,7 @@
 		D2216EC12A94DE2900ADAEC8 /* FeatureBaggage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2216EBF2A94DE2800ADAEC8 /* FeatureBaggage.swift */; };
 		D2216EC32A96649500ADAEC8 /* FeatureBaggageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2216EC22A96632F00ADAEC8 /* FeatureBaggageTests.swift */; };
 		D2216EC42A96649700ADAEC8 /* FeatureBaggageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2216EC22A96632F00ADAEC8 /* FeatureBaggageTests.swift */; };
+		D22442C52CA301DA002E71E4 /* UIColor+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */; };
 		D224430429E9588100274EC7 /* TelemetryReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */; };
 		D224430529E9588500274EC7 /* TelemetryReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */; };
 		D224430629E95C2C00274EC7 /* MessageBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA429E072D7004D0AE8 /* MessageBus.swift */; };
@@ -2189,7 +2189,7 @@
 		61054E112A6EE10A00AAA894 /* Recorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
 		61054E122A6EE10A00AAA894 /* PrivacyLevel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PrivacyLevel.swift; sourceTree = "<group>"; };
 		61054E142A6EE10A00AAA894 /* UIImage+SessionReplay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+SessionReplay.swift"; sourceTree = "<group>"; };
-		61054E152A6EE10A00AAA894 /* UIKitExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIKitExtensions.swift; sourceTree = "<group>"; };
+		61054E152A6EE10A00AAA894 /* UIView+SessionReplay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIView+SessionReplay.swift"; sourceTree = "<group>"; };
 		61054E162A6EE10A00AAA894 /* CFType+Safety.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CFType+Safety.swift"; sourceTree = "<group>"; };
 		61054E172A6EE10A00AAA894 /* SystemColors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SystemColors.swift; sourceTree = "<group>"; };
 		61054E182A6EE10A00AAA894 /* CGRect+ContentFrame.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGRect+ContentFrame.swift"; sourceTree = "<group>"; };
@@ -2236,14 +2236,13 @@
 		61054E512A6EE10A00AAA894 /* WireframesBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WireframesBuilder.swift; sourceTree = "<group>"; };
 		61054E532A6EE10A00AAA894 /* NodesFlattener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodesFlattener.swift; sourceTree = "<group>"; };
 		61054E552A6EE10A00AAA894 /* CGRectExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGRectExtensions.swift; sourceTree = "<group>"; };
-		61054E562A6EE10A00AAA894 /* UIImage+Scaling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+Scaling.swift"; sourceTree = "<group>"; };
 		61054E582A6EE10A00AAA894 /* Queue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Queue.swift; sourceTree = "<group>"; };
 		61054E592A6EE10A00AAA894 /* Errors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
 		61054E5A2A6EE10A00AAA894 /* Colors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		61054E5C2A6EE10A00AAA894 /* MainThreadScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainThreadScheduler.swift; sourceTree = "<group>"; };
 		61054E5D2A6EE10A00AAA894 /* Scheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scheduler.swift; sourceTree = "<group>"; };
 		61054F3D2A6EE1B900AAA894 /* SessionReplayConfigurationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayConfigurationTests.swift; sourceTree = "<group>"; };
-		61054F402A6EE1B900AAA894 /* UIImage+ScalingTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+ScalingTests.swift"; sourceTree = "<group>"; };
+		61054F402A6EE1B900AAA894 /* UIImage+SessionReplayTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+SessionReplayTests.swift"; sourceTree = "<group>"; };
 		61054F412A6EE1B900AAA894 /* CGRectExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGRectExtensionsTests.swift; sourceTree = "<group>"; };
 		61054F422A6EE1B900AAA894 /* ColorsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ColorsTests.swift; sourceTree = "<group>"; };
 		61054F432A6EE1B900AAA894 /* CFType+SafetyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CFType+SafetyTests.swift"; sourceTree = "<group>"; };
@@ -2260,7 +2259,7 @@
 		61054F562A6EE1BA00AAA894 /* SnapshotProcessorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SnapshotProcessorTests.swift; sourceTree = "<group>"; };
 		61054F582A6EE1BA00AAA894 /* NodesFlattenerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodesFlattenerTests.swift; sourceTree = "<group>"; };
 		61054F5A2A6EE1BA00AAA894 /* RecordingCoordinatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecordingCoordinatorTests.swift; sourceTree = "<group>"; };
-		61054F5D2A6EE1BA00AAA894 /* UIKitExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIKitExtensionsTests.swift; sourceTree = "<group>"; };
+		61054F5D2A6EE1BA00AAA894 /* UIView+SessionReplayTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIView+SessionReplayTests.swift"; sourceTree = "<group>"; };
 		61054F5F2A6EE1BA00AAA894 /* CGRect+ContentFrameTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGRect+ContentFrameTests.swift"; sourceTree = "<group>"; };
 		61054F612A6EE1BA00AAA894 /* WindowTouchSnapshotProducerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WindowTouchSnapshotProducerTests.swift; sourceTree = "<group>"; };
 		61054F632A6EE1BA00AAA894 /* TouchIdentifierGeneratorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchIdentifierGeneratorTests.swift; sourceTree = "<group>"; };
@@ -2838,6 +2837,7 @@
 		D21C26ED28AFB65B005DD405 /* ErrorMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D2216EBF2A94DE2800ADAEC8 /* FeatureBaggage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureBaggage.swift; sourceTree = "<group>"; };
 		D2216EC22A96632F00ADAEC8 /* FeatureBaggageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureBaggageTests.swift; sourceTree = "<group>"; };
+		D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+SessionReplay.swift"; sourceTree = "<group>"; };
 		D224430C29E95D6600274EC7 /* CrashReportReceiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CrashReportReceiverTests.swift; sourceTree = "<group>"; };
 		D22743E829DEC9A9001A7EF9 /* RUMDataModelMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDataModelMocks.swift; sourceTree = "<group>"; };
 		D227A0A32C7622EA00C83324 /* BenchmarkProfiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkProfiler.swift; sourceTree = "<group>"; };
@@ -3613,8 +3613,9 @@
 		61054E132A6EE10A00AAA894 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				61054E152A6EE10A00AAA894 /* UIView+SessionReplay.swift */,
 				61054E142A6EE10A00AAA894 /* UIImage+SessionReplay.swift */,
-				61054E152A6EE10A00AAA894 /* UIKitExtensions.swift */,
+				D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */,
 				61054E162A6EE10A00AAA894 /* CFType+Safety.swift */,
 				61054E172A6EE10A00AAA894 /* SystemColors.swift */,
 				61054E182A6EE10A00AAA894 /* CGRect+ContentFrame.swift */,
@@ -3785,7 +3786,6 @@
 			isa = PBXGroup;
 			children = (
 				61054E552A6EE10A00AAA894 /* CGRectExtensions.swift */,
-				61054E562A6EE10A00AAA894 /* UIImage+Scaling.swift */,
 				61054E582A6EE10A00AAA894 /* Queue.swift */,
 				61054E592A6EE10A00AAA894 /* Errors.swift */,
 				61054E5A2A6EE10A00AAA894 /* Colors.swift */,
@@ -3807,7 +3807,7 @@
 		61054F3E2A6EE1B900AAA894 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				61054F402A6EE1B900AAA894 /* UIImage+ScalingTests.swift */,
+				61054F402A6EE1B900AAA894 /* UIImage+SessionReplayTests.swift */,
 				61054F412A6EE1B900AAA894 /* CGRectExtensionsTests.swift */,
 				61054F422A6EE1B900AAA894 /* ColorsTests.swift */,
 				61054F432A6EE1B900AAA894 /* CFType+SafetyTests.swift */,
@@ -3899,7 +3899,7 @@
 		61054F5B2A6EE1BA00AAA894 /* Utilties */ = {
 			isa = PBXGroup;
 			children = (
-				61054F5D2A6EE1BA00AAA894 /* UIKitExtensionsTests.swift */,
+				61054F5D2A6EE1BA00AAA894 /* UIView+SessionReplayTests.swift */,
 				61054F5F2A6EE1BA00AAA894 /* CGRect+ContentFrameTests.swift */,
 			);
 			path = Utilties;
@@ -8352,14 +8352,13 @@
 				61054E6B2A6EE10A00AAA894 /* CFType+Safety.swift in Sources */,
 				61054E852A6EE10A00AAA894 /* UISegmentRecorder.swift in Sources */,
 				61054E982A6EE10A00AAA894 /* RecordsBuilder.swift in Sources */,
-				61054E9C2A6EE10B00AAA894 /* UIImage+Scaling.swift in Sources */,
 				61054EA12A6EE10B00AAA894 /* MainThreadScheduler.swift in Sources */,
 				61054E7C2A6EE10A00AAA894 /* UINavigationBarRecorder.swift in Sources */,
 				96E414142C2AF56F005A6119 /* UIProgressViewRecorder.swift in Sources */,
 				61054E772A6EE10A00AAA894 /* ViewTreeRecorder.swift in Sources */,
 				61054E9E2A6EE10B00AAA894 /* Queue.swift in Sources */,
 				61054E872A6EE10A00AAA894 /* ViewAttributes+Copy.swift in Sources */,
-				61054E6A2A6EE10A00AAA894 /* UIKitExtensions.swift in Sources */,
+				61054E6A2A6EE10A00AAA894 /* UIView+SessionReplay.swift in Sources */,
 				61054E7D2A6EE10A00AAA894 /* UITextFieldRecorder.swift in Sources */,
 				61054E832A6EE10A00AAA894 /* UISwitchRecorder.swift in Sources */,
 				61054E9A2A6EE10A00AAA894 /* NodesFlattener.swift in Sources */,
@@ -8391,6 +8390,7 @@
 				61054E7F2A6EE10A00AAA894 /* UISliderRecorder.swift in Sources */,
 				61054E842A6EE10A00AAA894 /* UITabBarRecorder.swift in Sources */,
 				61054E682A6EE10A00AAA894 /* PrivacyLevel.swift in Sources */,
+				D22442C52CA301DA002E71E4 /* UIColor+SessionReplay.swift in Sources */,
 				61054E8E2A6EE10A00AAA894 /* SRContextPublisher.swift in Sources */,
 				61054E732A6EE10A00AAA894 /* WindowTouchSnapshotProducer.swift in Sources */,
 				A70ADCD22B583B1300321BC9 /* UIImageResource.swift in Sources */,
@@ -8460,14 +8460,14 @@
 				61054FC92A6EE1BA00AAA894 /* RecorderMocks.swift in Sources */,
 				61054FBB2A6EE1BA00AAA894 /* UISwitchRecorderTests.swift in Sources */,
 				A7F651302B7655DE004B0EDB /* UIImageResourceTests.swift in Sources */,
-				61054F972A6EE1BA00AAA894 /* UIImage+ScalingTests.swift in Sources */,
+				61054F972A6EE1BA00AAA894 /* UIImage+SessionReplayTests.swift in Sources */,
 				61054FB02A6EE1BA00AAA894 /* ViewTreeSnapshotBuilderTests.swift in Sources */,
 				61054FD32A6EE1BA00AAA894 /* MultipartFormDataTests.swift in Sources */,
 				61054FB12A6EE1BA00AAA894 /* NodeIDGeneratorTests.swift in Sources */,
 				61054F9C2A6EE1BA00AAA894 /* SwiftExtensionsTests.swift in Sources */,
 				61054FA72A6EE1BA00AAA894 /* NodesFlattenerTests.swift in Sources */,
 				61054F9D2A6EE1BA00AAA894 /* MainThreadSchedulerTests.swift in Sources */,
-				61054FAA2A6EE1BA00AAA894 /* UIKitExtensionsTests.swift in Sources */,
+				61054FAA2A6EE1BA00AAA894 /* UIView+SessionReplayTests.swift in Sources */,
 				61054FA52A6EE1BA00AAA894 /* RecordsBuilderTests.swift in Sources */,
 				61054FD02A6EE1BA00AAA894 /* SRContextPublisherTests.swift in Sources */,
 				61054F9B2A6EE1BA00AAA894 /* QueueTests.swift in Sources */,

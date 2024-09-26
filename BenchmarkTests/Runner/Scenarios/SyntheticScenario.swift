@@ -64,20 +64,17 @@ internal enum SyntheticRun: String {
     case baseline
     case instrumented
     case profiling
+    case none
 
     /// Creates the scenario by reading the `BENCHMARK_RUN` value from the
     /// environment variables.
     ///
     /// - Parameter processInfo: The `ProcessInfo` with environment variables
     /// configured
-    init?(processInfo: ProcessInfo = .processInfo) {
-        guard
-            let rawValue = processInfo.environment["BENCHMARK_RUN"],
-            let run = Self(rawValue: rawValue)
-        else {
-            return nil
-        }
-
-        self = run
+    init(processInfo: ProcessInfo = .processInfo) {
+        self = processInfo
+            .environment["BENCHMARK_RUN"]
+            .flatMap(Self.init(rawValue:))
+        ?? .none
     }
 }

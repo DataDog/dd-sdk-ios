@@ -32,6 +32,8 @@ protocol Scenario {
 enum SyntheticScenario: String, CaseIterable {
     /// The `Session Replay WebView` Synthetics Test. id: `ks5-ba9-ck5`
     case sessionReplayWebView
+    
+    case trace
 
     /// Creates the scenario defined by the`E2E_SCENARIO` environment variable.
     ///
@@ -53,6 +55,8 @@ enum SyntheticScenario: String, CaseIterable {
         switch self {
         case .sessionReplayWebView:
             return SessionReplayWebViewScenario()
+        case .trace:
+            return TraceScenario()
         }
     }
 }
