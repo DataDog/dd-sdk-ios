@@ -159,9 +159,17 @@ internal final class DatadogCore {
     ///
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
-        if trackingConsent != consentPublisher.consent {
-            allStorages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
-            consentPublisher.consent = trackingConsent
+        // There could be events in the queue that were collected before the consent change
+        // but not written to the disk yet, which must be migrated to the new consent.
+        // We synchronize this by reading the context because to obtain a file writer, we need to read the context.
+        // which is performed via CoreFeatureScope.eventWriteContext(bypassConsent:,block:) API.
+        contextProvider.read { _ in
+            if trackingConsent != self.consentPublisher.consent {
+                self.allStorages.forEach {
+                    $0.migrateUnauthorizedData(toConsent: trackingConsent)
+                }
+                self.consentPublisher.consent = trackingConsent
+            }
         }
     }
 

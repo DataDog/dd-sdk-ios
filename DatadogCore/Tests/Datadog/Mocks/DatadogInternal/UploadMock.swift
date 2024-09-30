@@ -30,6 +30,7 @@ internal class FeatureRequestBuilderMock: FeatureRequestBuilder {
 
 internal class FeatureRequestBuilderSpy: FeatureRequestBuilder {
     /// Records parameters passed to `requet(for:with:)`
+    @ReadWriteLock
     private(set) var requestParameters: [(events: [Event], context: DatadogContext)] = []
 
     func request(

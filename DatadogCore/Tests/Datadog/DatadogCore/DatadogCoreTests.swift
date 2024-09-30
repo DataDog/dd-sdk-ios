@@ -132,6 +132,61 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 1, "It should send only one request")
     }
 
+    func testWhenWritingEventsWithPendingConsentThenGranted_itUploadsAllEvents() throws {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .mockRandom(),
+            performance: .init(batchSize: .large, uploadFrequency: .frequent, bundleType: .iOSApp),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+
+        let requestBuilderSpy = FeatureRequestBuilderSpy()
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
+        let scope = core.scope(for: FeatureMock.self)
+
+        // When
+        core.set(trackingConsent: .notGranted)
+        scope.eventWriteContext(bypassConsent: true) { context, writer in
+            writer.write(value: FeatureMock.Event(event: "not granted"))
+        }
+
+        core.set(trackingConsent: .granted)
+        scope.eventWriteContext(bypassConsent: true) { context, writer in
+            writer.write(value: FeatureMock.Event(event: "granted"))
+        }
+
+        // wait for 10 seconds asynchronously to make sure events are flushed and sent
+        // we don't want to manually flush because that's not how the SDK is used in production
+        waitForEvents(requestBuilder: requestBuilderSpy)
+
+        let uploadedEvents = requestBuilderSpy.requestParameters
+            .flatMap { $0.events }
+            .map { $0.data.utf8String }
+
+        XCTAssertEqual(
+            uploadedEvents,
+            [
+                #"{"event":"not granted"}"#,
+                #"{"event":"granted"}"#
+            ],
+            "It should upload all events"
+        )
+        XCTAssertEqual(requestBuilderSpy.requestParameters.count, 1, "It should send only one request")
+    }
+
+    private func waitForEvents(requestBuilder: FeatureRequestBuilderSpy) {
+       while requestBuilder.requestParameters.isEmpty {
+           Thread.sleep(forTimeInterval: .fromMilliseconds(1))
+       }
+    }
+
     func testWhenFeatureBaggageIsUpdated_thenNewValueIsImmediatellyAvailable() throws {
         // Given
         let core = DatadogCore(
