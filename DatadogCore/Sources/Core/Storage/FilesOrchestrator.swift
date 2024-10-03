@@ -251,7 +251,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 BatchDeletedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
                 BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
-                BatchDeletedMetric.inBackgroundKey: metricsData.backgroundTasksEnabled
+                BatchDeletedMetric.inBackgroundKey: false,
+                BatchDeletedMetric.backgroundTasksEnabled: metricsData.backgroundTasksEnabled
             ],
             sampleRate: BatchDeletedMetric.sampleRate
         )
