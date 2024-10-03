@@ -54,8 +54,10 @@ internal enum BatchDeletedMetric {
     static let batchAgeKey = "batch_age"
     /// The reason of batch deletion.
     static let batchRemovalReasonKey = "batch_removal_reason"
-    /// If the background upload was enabled.
+    /// If the batch was deleted in the background.
     static let inBackgroundKey = "in_background"
+    /// If the background tasks were enabled.
+    static let backgroundTasksEnabled = "background_tasks_enabled"
 
     /// Allowed values for `batchRemovalReasonKey`.
     enum RemovalReason {
