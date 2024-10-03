@@ -40,6 +40,8 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
 
     // MARK: - UIEventHandler
 
+    static var anyTouchTrigger: (() -> Void)?
+
     /// Delegate of `UIApplicationSwizzler` - called each time when `UIApplication` receives an `UIEvent`.
     func notify_sendEvent(application: UIApplication, event: UIEvent) {
         guard event.type == .touches,
@@ -62,6 +64,9 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
                     position: touch.location(in: window)
                 )
             )
+        }
+        if !touches.isEmpty {
+            Self.anyTouchTrigger?()
         }
     }
 }
