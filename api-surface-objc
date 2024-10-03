@@ -2,6 +2,15 @@
 # API surface for DatadogObjc:
 # ----------------------------------
 
+public class DDInternalLogger: NSObject
+    public static func consolePrint(_ message: String, _ level: DDCoreLoggerLevel)
+    public static func telemetryDebug(id: String, message: String)
+    public static func telemetryError(id: String, message: String, kind: String?, stack: String?)
+public enum DDCoreLoggerLevel: Int
+    case debug
+    case warn
+    case error
+    case critical
 open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate
     override public init()
     public init(additionalFirstPartyHostsWithHeaderTypes: [String: Set<DDTracingHeaderType>])
