@@ -48,7 +48,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             additionalNodeRecorders: configuration._additionalNodeRecorders
         )
 
-        let scheduler = MainThreadScheduler(interval: 0.1)
+        let scheduler = MainThreadScheduler(interval: 15)
         let contextReceiver = RUMContextReceiver()
 
         self.messageReceiver = CombinedFeatureMessageReceiver([
