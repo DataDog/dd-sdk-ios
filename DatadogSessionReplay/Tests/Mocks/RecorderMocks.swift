@@ -10,6 +10,7 @@ import XCTest
 import UIKit
 import WebKit
 
+import DatadogInternal
 @_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
@@ -337,7 +338,8 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             recorder: .mockRandom(),
             coordinateSpace: UIView.mockRandom(),
             ids: NodeIDGenerator(),
-            webViewCache: .weakObjects()
+            webViewCache: .weakObjects(),
+            benchmarkTracer: NOPBenchmarkTracer()
         )
     }
 
@@ -351,7 +353,8 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             recorder: recorder,
             coordinateSpace: coordinateSpace,
             ids: ids,
-            webViewCache: webViewCache
+            webViewCache: webViewCache,
+            benchmarkTracer: NOPBenchmarkTracer()
         )
     }
 }

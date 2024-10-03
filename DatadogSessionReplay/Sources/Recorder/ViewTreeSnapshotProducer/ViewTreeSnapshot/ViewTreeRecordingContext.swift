@@ -9,6 +9,7 @@ import Foundation
 import SafariServices
 import SwiftUI
 import WebKit
+import DatadogInternal
 
 /// The context of recording subtree hierarchy.
 ///
@@ -25,6 +26,8 @@ public struct SessionReplayViewTreeRecordingContext {
     var viewControllerContext: ViewControllerContext = .init()
     /// Webviews caching.
     let webViewCache: NSHashTable<WKWebView>
+
+    let benchmarkTracer: BenchmarkTracer
 }
 
 // This alias enables us to have a more unique name exposed through public-internal access level
