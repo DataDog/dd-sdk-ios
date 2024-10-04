@@ -120,7 +120,6 @@ internal class RecordingCoordinator: UIViewHandler, UIEventHandler {
         guard event.type == .touches, event.allTouches?.isEmpty == false else {
             return
         }
-        print("Touch")
         scheduler.queue.run { [weak self] in
             self?.captureNextRecord()
         }
