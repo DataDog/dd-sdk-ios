@@ -7,12 +7,17 @@
 #if os(iOS)
 import Foundation
 import DatadogInternal
+import UIKit
 
 /// Object is responsible for getting the RUM context, randomising the sampling rate,
-/// managing the recording state, starting/stopping the recording scheduler as needed,
+/// managing the recording state, starting/stopping the recording as needed,
 /// and propagating `has_replay` to other features.
-
-internal class RecordingCoordinator: UIViewHandler {
+///
+/// The `RecordingCoordinator` is responsible for orchestrating the process of capturing
+/// snapshots on the main thread.
+///
+/// It has 3 recording triggers: `layoutSubviews` notifications, touch notifications, and periodic timer.
+internal class RecordingCoordinator: UIViewHandler, UIEventHandler {
     let recorder: Recording
     let scheduler: Scheduler
     let sampler: Sampler
@@ -35,6 +40,10 @@ internal class RecordingCoordinator: UIViewHandler {
 
     private lazy var uiViewSwizzler: UIViewSwizzler? = {
         try? UIViewSwizzler(handler: self)
+    }()
+
+    private lazy var uiApplicationSwizzler: UIApplicationSwizzler? = {
+        try? UIApplicationSwizzler(handler: self)
     }()
 
     init(
@@ -91,21 +100,27 @@ internal class RecordingCoordinator: UIViewHandler {
     private func evaluateRecordingConditions() {
        if recordingEnabled && isSampled {
            uiViewSwizzler?.swizzle()
-           WindowTouchSnapshotProducer.anyTouchTrigger = { [weak self] in
-               self?.scheduler.queue.run {
-                   self?.captureNextRecord()
-               }
-           }
+           uiApplicationSwizzler?.swizzle()
            scheduler.start()
        } else {
            uiViewSwizzler?.unswizzle()
-           WindowTouchSnapshotProducer.anyTouchTrigger = nil
+           uiApplicationSwizzler?.unswizzle()
            scheduler.stop()
        }
        updateHasReplay()
     }
 
     func notify_layoutSubviews(view: UIView) {
+        scheduler.queue.run { [weak self] in
+            self?.captureNextRecord()
+        }
+    }
+
+    func notify_sendEvent(application: UIApplication, event: UIEvent) {
+        guard event.type == .touches, event.allTouches?.isEmpty == false else {
+            return
+        }
+        print("Touch")
         scheduler.queue.run { [weak self] in
             self?.captureNextRecord()
         }
@@ -186,56 +201,6 @@ internal class RecordingCoordinator: UIViewHandler {
     private enum MethodCallConstants {
         static let captureRecordOperationName = "Capture Record"
         static let className = "Recorder"
-    }
-}
-
-import UIKit
-import DatadogInternal
-
-internal protocol UIViewHandler: AnyObject {
-    func notify_layoutSubviews(view: UIView)
-}
-
-internal class UIViewSwizzler {
-    let layoutSubviews: LayoutSubviews
-
-    init(handler: UIViewHandler) throws {
-        self.layoutSubviews = try LayoutSubviews(handler: handler)
-    }
-
-    func swizzle() {
-        layoutSubviews.swizzle()
-    }
-
-    internal func unswizzle() {
-        layoutSubviews.unswizzle()
-    }
-
-    // MARK: - Swizzlings
-
-    /// Swizzles the `UIViewController.viewDidAppear()`
-    class LayoutSubviews: MethodSwizzler <
-    @convention(c) (UIView, Selector) -> Void,
-    @convention(block) (UIView) -> Void
-    > {
-        private static let selector = #selector(UIView.layoutSubviews)
-        private let method: Method
-        private let handler: UIViewHandler
-
-        init(handler: UIViewHandler) throws {
-            self.method = try dd_class_getInstanceMethod(UIView.self, Self.selector)
-            self.handler = handler
-        }
-
-        func swizzle() {
-            typealias Signature = @convention(block) (UIView) -> Void
-            swizzle(method) { previousImplementation -> Signature in
-                return { [weak handler = self.handler] view  in
-                    handler?.notify_layoutSubviews(view: view)
-                    previousImplementation(view, Self.selector)
-                }
-            }
-        }
     }
 }
 #endif
