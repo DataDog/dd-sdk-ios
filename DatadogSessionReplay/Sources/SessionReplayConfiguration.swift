@@ -81,8 +81,8 @@ extension SessionReplay {
         ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked. Default: `.hide`.
         ///   - startRecordingImmediately: If the recording should start automatically. When `true`, the recording starts automatically; when `false` it doesn't, and the recording will need to be started manually. Default: `true`.
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
-        public init(
-            replaySampleRate: Float,
+        public init(    // swiftlint:disable:this function_default_parameter_at_end
+            replaySampleRate: Float = 100,
             textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
             imagePrivacyLevel: ImagePrivacyLevel,
             touchPrivacyLevel: TouchPrivacyLevel,
@@ -105,7 +105,7 @@ extension SessionReplay {
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
         @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(replaySampleRate:textAndInputPrivacyLevel:imagePrivacyLevel:touchPrivacyLevel:)` instead.")
         public init(
-            replaySampleRate: Float,
+            replaySampleRate: Float = 100,
             defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,
             startRecordingImmediately: Bool = true,
             customEndpoint: URL? = nil
