@@ -125,14 +125,14 @@ public struct SessionReplayViewAttributes: Equatable {
     var isTranslucent: Bool { !isVisible || alpha < 1 || backgroundColor?.alpha ?? 0 < 1 }
 
     /// If the view has privacy overrides, which take precedence over global masking privacy levels.
-    var overrides: Overrides
+    var overrides: PrivacyOverrides
 }
 
 // This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias ViewAttributes = SessionReplayViewAttributes
 
 extension ViewAttributes {
-    init(frameInRootView: CGRect, view: UIView, overrides: SessionReplayOverrides) {
+    init(frameInRootView: CGRect, view: UIView, overrides: SessionReplayPrivacyOverrides) {
         self.frame = frameInRootView
         self.backgroundColor = view.backgroundColor?.cgColor.safeCast
         self.layerBorderColor = view.layer.borderColor?.safeCast

@@ -27,7 +27,7 @@ internal struct ViewTreeRecorder {
         nodes: inout [Node],
         view: UIView,
         context: ViewTreeRecordingContext,
-        overrides: Overrides
+        overrides: PrivacyOverrides
     ) {
         var context = context
         if let viewController = view.next as? UIViewController {
@@ -46,7 +46,7 @@ internal struct ViewTreeRecorder {
         switch semantics.subtreeStrategy {
         case .record:
             for subview in view.subviews {
-                let subviewOverrides = SessionReplayOverrides.merge(subview.dd.sessionReplayOverrides, with: overrides)
+                let subviewOverrides = SessionReplayPrivacyOverrides.merge(subview.dd.sessionReplayOverrides, with: overrides)
                 recordRecursively(nodes: &nodes, view: subview, context: context, overrides: subviewOverrides)
             }
         case .ignore:
@@ -54,7 +54,7 @@ internal struct ViewTreeRecorder {
         }
     }
 
-    private func nodeSemantics(for view: UIView, in context: ViewTreeRecordingContext, overrides: Overrides) -> NodeSemantics {
+    private func nodeSemantics(for view: UIView, in context: ViewTreeRecordingContext, overrides: PrivacyOverrides) -> NodeSemantics {
         let attributes = ViewAttributes(
             frameInRootView: view.convert(view.bounds, to: context.coordinateSpace),
             view: view,

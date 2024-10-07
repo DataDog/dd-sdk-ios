@@ -14,8 +14,8 @@ import DatadogInternal
 extension DatadogExtension where ExtendedType: UIView {
     /// Provides access to Session Replay override settings for the view.
     /// Usage: `myView.dd.sessionReplayOverrides.textAndInputPrivacy = .maskNone`.
-    public var sessionReplayOverrides: SessionReplayOverrides {
-        return SessionReplayOverrides(self.type)
+    public var sessionReplayOverrides: SessionReplayPrivacyOverrides {
+        return SessionReplayPrivacyOverrides(self.type)
     }
 }
 
@@ -29,7 +29,7 @@ private var associatedHiddenPrivacyKey: UInt8 = 6
 // MARK: - SessionReplayOverrides
 
 /// `UIView` extension  to manage the Session Replay privacy override settings.
-public final class SessionReplayOverrides {
+public final class SessionReplayPrivacyOverrides {
     private let view: UIView
 
     public init(_ view: UIView) {
@@ -77,8 +77,8 @@ public final class SessionReplayOverrides {
     }
 }
 
-extension Overrides: Equatable {
-    public static func == (lhs: SessionReplayOverrides, rhs: SessionReplayOverrides) -> Bool {
+extension PrivacyOverrides: Equatable {
+    public static func == (lhs: SessionReplayPrivacyOverrides, rhs: SessionReplayPrivacyOverrides) -> Bool {
         return lhs.view === rhs.view
         && lhs.textAndInputPrivacy == rhs.textAndInputPrivacy
         && lhs.imagePrivacy == rhs.imagePrivacy
@@ -87,10 +87,10 @@ extension Overrides: Equatable {
     }
 }
 
-extension Overrides {
+extension PrivacyOverrides {
     /// Merges child and parent overrides, giving precedence to the child’s overrides, if set.
     /// If the child has no overrides set, it inherits its parent’s overrides.
-    internal static func merge(_ child: Overrides, with parent: Overrides) -> Overrides {
+    internal static func merge(_ child: PrivacyOverrides, with parent: PrivacyOverrides) -> PrivacyOverrides {
         let merged = child
 
         // Apply child overrides if present
@@ -109,5 +109,5 @@ extension Overrides {
 }
 
 // This alias enables us to have a more unique name exposed through public-internal access level
-internal typealias Overrides = SessionReplayOverrides
+internal typealias PrivacyOverrides = SessionReplayPrivacyOverrides
 #endif

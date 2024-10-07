@@ -161,7 +161,7 @@ class ViewAttributesTests: XCTestCase {
         let color: CGColor = .mockRandom()
         let float: CGFloat = .mockRandom()
         let boolean: Bool = .mockRandom()
-        let overrides: Overrides = .mockRandom()
+        let overrides: PrivacyOverrides = .mockRandom()
         let attributes = ViewAttributes(frameInRootView: view.frame, view: view, overrides: overrides).copy {
             $0.frame = rect
             $0.backgroundColor = color
@@ -240,7 +240,7 @@ class ViewAttributesTests: XCTestCase {
         let childView = UIView.mock(withFixture: .visible(.someAppearance))
         parentView.addSubview(childView)
 
-        let parentOverrides: Overrides = .mockRandom()
+        let parentOverrides: PrivacyOverrides = .mockRandom()
         parentView.dd.sessionReplayOverrides.textAndInputPrivacy = parentOverrides.textAndInputPrivacy
         parentView.dd.sessionReplayOverrides.imagePrivacy = parentOverrides.imagePrivacy
         parentView.dd.sessionReplayOverrides.touchPrivacy = parentOverrides.touchPrivacy
