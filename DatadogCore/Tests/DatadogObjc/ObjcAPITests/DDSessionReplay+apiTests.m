@@ -41,7 +41,7 @@
 - (void)testSettingAndGettingOverrides {
     // Given
     UIView *view = [[UIView alloc] init];
-    DDSessionReplayOverrides *override = [[DDSessionReplayOverrides alloc] init];
+    DDSessionReplayPrivacyOverrides *override = [[DDSessionReplayPrivacyOverrides alloc] init];
 
     // When
     view.ddSessionReplayOverrides = override;
@@ -60,7 +60,7 @@
 - (void)testClearingOverride {
     // Given
     UIView *view = [[UIView alloc] init];
-    DDSessionReplayOverrides *overrides = [[DDSessionReplayOverrides alloc] init];
+    DDSessionReplayPrivacyOverrides *overrides = [[DDSessionReplayPrivacyOverrides alloc] init];
 
     // Set initial values
     view.ddSessionReplayOverrides = overrides;

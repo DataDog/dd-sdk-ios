@@ -118,21 +118,21 @@ class SessionReplayOverridesTests: XCTestCase {
 
     func testMergeParentAndChildOverrides() {
         // Given
-        let overrides: Overrides = .mockRandom()
+        let overrides: PrivacyOverrides = .mockRandom()
 
-        let childOverrides: Overrides = .mockAny()
+        let childOverrides: PrivacyOverrides = .mockAny()
         childOverrides.textAndInputPrivacy = overrides.textAndInputPrivacy
         // We set the `hide` override on the child because in the merge process,
         // the child's override takes precedence. If the parent's `hide` is `false`,
         // the final merged value will end up as `nil`, which makes the test fail.
         childOverrides.hide = overrides.hide
 
-        let parentOverrides: Overrides = .mockAny()
+        let parentOverrides: PrivacyOverrides = .mockAny()
         parentOverrides.imagePrivacy = overrides.imagePrivacy
         parentOverrides.touchPrivacy = overrides.touchPrivacy
 
         // When
-        let merged = SessionReplayOverrides.merge(childOverrides, with: parentOverrides)
+        let merged = SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides)
 
         // Then
         XCTAssertEqual(merged.textAndInputPrivacy, overrides.textAndInputPrivacy)
@@ -143,11 +143,11 @@ class SessionReplayOverridesTests: XCTestCase {
 
     func testMergeWithNilParentOverrides() {
         // Given
-        let childOverrides: Overrides = .mockRandom()
-        let parentOverrides: Overrides = .mockAny()
+        let childOverrides: PrivacyOverrides = .mockRandom()
+        let parentOverrides: PrivacyOverrides = .mockAny()
 
         // When
-        let merged = SessionReplayOverrides.merge(childOverrides, with: parentOverrides)
+        let merged = SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides)
 
         // Then
         XCTAssertEqual(merged.textAndInputPrivacy, childOverrides.textAndInputPrivacy)
@@ -158,11 +158,11 @@ class SessionReplayOverridesTests: XCTestCase {
 
     func testMergeWithNilChildOverrides() {
         // Given
-        let childOverrides: Overrides = .mockAny()
-        let parentOverrides: Overrides = .mockRandom()
+        let childOverrides: PrivacyOverrides = .mockAny()
+        let parentOverrides: PrivacyOverrides = .mockRandom()
 
         // When
-        let merged = SessionReplayOverrides.merge(childOverrides, with: parentOverrides)
+        let merged = SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides)
 
         // Then
         XCTAssertEqual(merged.textAndInputPrivacy, parentOverrides.textAndInputPrivacy)
@@ -173,13 +173,13 @@ class SessionReplayOverridesTests: XCTestCase {
 
     func testMergeWhenChildHideOverrideIsNotNilAndParentHideOverrideIsTrue() {
         // Given
-        let childOverrides: Overrides = .mockRandom()
+        let childOverrides: PrivacyOverrides = .mockRandom()
         childOverrides.hide = false
-        let parentOverrides: Overrides = .mockRandom()
+        let parentOverrides: PrivacyOverrides = .mockRandom()
         parentOverrides.hide = true
 
         // When
-        let merged = SessionReplayOverrides.merge(childOverrides, with: parentOverrides)
+        let merged = SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides)
 
         // Then
         XCTAssertEqual(merged.textAndInputPrivacy, childOverrides.textAndInputPrivacy)

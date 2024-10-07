@@ -156,7 +156,7 @@ class UIImageViewRecorderTests: XCTestCase {
 
         imageView.image = UIImage()
         let overrideImagePrivacy: ImagePrivacyLevel = .maskAll
-        let overrides: Overrides = .mockWith(imagePrivacy: overrideImagePrivacy)
+        let overrides: PrivacyOverrides = .mockWith(imagePrivacy: overrideImagePrivacy)
         viewAttributes = .mockWith(overrides: overrides)
 
         // When

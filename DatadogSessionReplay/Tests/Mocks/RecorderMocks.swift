@@ -79,7 +79,7 @@ extension ViewAttributes: AnyMockable, RandomMockable {
         alpha: CGFloat = .mockAny(),
         isHidden: Bool = .mockAny(),
         intrinsicContentSize: CGSize = .mockAny(),
-        overrides: Overrides = .mockAny()
+        overrides: PrivacyOverrides = .mockAny()
     ) -> ViewAttributes {
         return .init(
             frame: frame,
@@ -582,12 +582,12 @@ internal extension Optional where Wrapped == NodeSemantics {
     }
 }
 
-extension Overrides: AnyMockable, RandomMockable {
-    public static func mockAny() -> Overrides {
+extension PrivacyOverrides: AnyMockable, RandomMockable {
+    public static func mockAny() -> PrivacyOverrides {
         return mockWith()
     }
 
-    public static func mockRandom() -> Overrides {
+    public static func mockRandom() -> PrivacyOverrides {
         return mockWith(
             textAndInputPrivacy: .mockRandom(),
             imagePrivacy: .mockRandom(),
@@ -601,8 +601,8 @@ extension Overrides: AnyMockable, RandomMockable {
         imagePrivacy: ImagePrivacyLevel? = nil,
         touchPrivacy: TouchPrivacyLevel? = nil,
         hide: Bool? = nil
-    ) -> Overrides {
-        let override = Overrides(UIView.mockRandom())
+    ) -> PrivacyOverrides {
+        let override = PrivacyOverrides(UIView.mockRandom())
         override.textAndInputPrivacy = textAndInputPrivacy
         override.imagePrivacy = imagePrivacy
         override.touchPrivacy = touchPrivacy

@@ -49,7 +49,7 @@ class DDSessionReplayOverrideTests: XCTestCase {
     }
 
     func testHiddenPrivacyLevelsOverrideInterop() {
-        let override = DDSessionReplayOverrides()
+        let override = DDSessionReplayPrivacyOverrides()
 
         // When setting hiddenPrivacy via Swift
         override._swift.hide = true
@@ -75,7 +75,7 @@ class DDSessionReplayOverrideTests: XCTestCase {
     // MARK: Setting Overrides
     func testSettingAndRemovingPrivacyOverridesObjc() {
         // Given
-        let override = DDSessionReplayOverrides()
+        let override = DDSessionReplayPrivacyOverrides()
         let textAndInputPrivacy: DDTextAndInputPrivacyLevelOverride = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
         let imagePrivacy: DDImagePrivacyLevelOverride = [.maskAll, .maskNonBundledOnly, .maskNone].randomElement()!
         let touchPrivacy: DDTouchPrivacyLevelOverride = [.show, .hide].randomElement()!
@@ -109,7 +109,7 @@ class DDSessionReplayOverrideTests: XCTestCase {
     func testSettingAndGettingOverridesFromObjC() {
             // Given
             let view = UIView()
-            let override = DDSessionReplayOverrides()
+            let override = DDSessionReplayPrivacyOverrides()
 
             // When
             view.ddSessionReplayOverrides = override
@@ -128,7 +128,7 @@ class DDSessionReplayOverrideTests: XCTestCase {
         func testClearingOverridesFromObjC() {
             // Given
             let view = UIView()
-            let override = DDSessionReplayOverrides()
+            let override = DDSessionReplayPrivacyOverrides()
 
             // Set initial values
             view.ddSessionReplayOverrides = override

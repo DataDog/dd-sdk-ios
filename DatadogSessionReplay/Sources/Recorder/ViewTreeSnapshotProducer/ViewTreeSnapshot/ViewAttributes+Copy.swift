@@ -25,7 +25,7 @@ extension ViewAttributes {
         var alpha: CGFloat
         var isHidden: Bool
         var intrinsicContentSize: CGSize
-        var overrides: Overrides
+        var overrides: PrivacyOverrides
 
         fileprivate init(original: ViewAttributes) {
             self.frame = original.frame
