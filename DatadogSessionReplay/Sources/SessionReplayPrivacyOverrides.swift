@@ -10,12 +10,12 @@ import DatadogInternal
 
 // MARK: - DatadogExtension for UIView
 
-/// Extension on `DatadogExtension` to provide access to `SessionReplayOverride` for any `UIView`.
+/// Extension to provide access to `SessionReplayOverrides` for any `UIView`.
 extension DatadogExtension where ExtendedType: UIView {
     /// Provides access to Session Replay override settings for the view.
-    /// Usage: `myView.dd.sessionReplayOverride.textAndInputPrivacy = .maskNone`.
-    public var sessionReplayOverride: SessionReplayOverrideExtension {
-        return SessionReplayOverrideExtension(self.type)
+    /// Usage: `myView.dd.sessionReplayOverrides.textAndInputPrivacy = .maskNone`.
+    public var sessionReplayOverrides: SessionReplayPrivacyOverrides {
+        return SessionReplayPrivacyOverrides(self.type)
     }
 }
 
@@ -26,10 +26,10 @@ private var associatedImagePrivacyKey: UInt8 = 4
 private var associatedTouchPrivacyKey: UInt8 = 5
 private var associatedHiddenPrivacyKey: UInt8 = 6
 
-// MARK: - SessionReplayOverrideExtension
+// MARK: - SessionReplayOverrides
 
 /// `UIView` extension  to manage the Session Replay privacy override settings.
-public final class SessionReplayOverrideExtension {
+public final class SessionReplayPrivacyOverrides {
     private let view: UIView
 
     public init(_ view: UIView) {
@@ -77,8 +77,8 @@ public final class SessionReplayOverrideExtension {
     }
 }
 
-extension SessionReplayOverrideExtension: Equatable {
-    public static func == (lhs: SessionReplayOverrideExtension, rhs: SessionReplayOverrideExtension) -> Bool {
+extension PrivacyOverrides: Equatable {
+    public static func == (lhs: SessionReplayPrivacyOverrides, rhs: SessionReplayPrivacyOverrides) -> Bool {
         return lhs.view === rhs.view
         && lhs.textAndInputPrivacy == rhs.textAndInputPrivacy
         && lhs.imagePrivacy == rhs.imagePrivacy
@@ -86,4 +86,28 @@ extension SessionReplayOverrideExtension: Equatable {
         && lhs.hide == rhs.hide
     }
 }
+
+extension PrivacyOverrides {
+    /// Merges child and parent overrides, giving precedence to the child’s overrides, if set.
+    /// If the child has no overrides set, it inherits its parent’s overrides.
+    internal static func merge(_ child: PrivacyOverrides, with parent: PrivacyOverrides) -> PrivacyOverrides {
+        let merged = child
+
+        // Apply child overrides if present
+        merged.textAndInputPrivacy = merged.textAndInputPrivacy ?? parent.textAndInputPrivacy
+        merged.imagePrivacy = merged.imagePrivacy ?? parent.imagePrivacy
+        merged.touchPrivacy = merged.touchPrivacy ?? parent.touchPrivacy
+        /// `hide` is a boolean, so we explicitly check if either the parent or the child has it set to `true`.
+        ///  `false` and `nil` behave the same way, it deactivates the `hide` override.
+        /// In practice, this check should not hit, as parent views with `hide = true` should ignore their children.
+        if merged.hide == true || parent.hide == true {
+            merged.hide = true
+        }
+
+        return merged
+    }
+}
+
+// This alias enables us to have a more unique name exposed through public-internal access level
+internal typealias PrivacyOverrides = SessionReplayPrivacyOverrides
 #endif

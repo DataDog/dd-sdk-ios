@@ -13,7 +13,7 @@ import DatadogInternal
 @testable import DatadogSessionReplay
 
 class DDSessionReplayOverrideTests: XCTestCase {
-    // MARK: Overrides Interoperability
+    // MARK: Privacy Overrides Interoperability
     func testTextAndInputPrivacyLevelsOverrideInterop() {
         XCTAssertEqual(DDTextAndInputPrivacyLevelOverride.maskAll._swift, .maskAll)
         XCTAssertEqual(DDTextAndInputPrivacyLevelOverride.maskAllInputs._swift, .maskAllInputs)
@@ -49,7 +49,7 @@ class DDSessionReplayOverrideTests: XCTestCase {
     }
 
     func testHiddenPrivacyLevelsOverrideInterop() {
-        let override = DDSessionReplayOverride()
+        let override = DDSessionReplayPrivacyOverrides()
 
         // When setting hiddenPrivacy via Swift
         override._swift.hide = true
@@ -75,7 +75,7 @@ class DDSessionReplayOverrideTests: XCTestCase {
     // MARK: Setting Overrides
     func testSettingAndRemovingPrivacyOverridesObjc() {
         // Given
-        let override = DDSessionReplayOverride()
+        let override = DDSessionReplayPrivacyOverrides()
         let textAndInputPrivacy: DDTextAndInputPrivacyLevelOverride = [.maskAll, .maskAllInputs, .maskSensitiveInputs].randomElement()!
         let imagePrivacy: DDImagePrivacyLevelOverride = [.maskAll, .maskNonBundledOnly, .maskNone].randomElement()!
         let touchPrivacy: DDTouchPrivacyLevelOverride = [.show, .hide].randomElement()!
@@ -109,45 +109,45 @@ class DDSessionReplayOverrideTests: XCTestCase {
     func testSettingAndGettingOverridesFromObjC() {
             // Given
             let view = UIView()
-            let override = DDSessionReplayOverride()
+            let override = DDSessionReplayPrivacyOverrides()
 
             // When
-            view.ddSessionReplayOverride = override
+            view.ddSessionReplayOverrides = override
             override.textAndInputPrivacy = .maskAll
             override.imagePrivacy = .maskAll
             override.touchPrivacy = .hide
             override.hide = NSNumber(value: true)
 
             // Then
-            XCTAssertEqual(view.ddSessionReplayOverride.textAndInputPrivacy, .maskAll)
-            XCTAssertEqual(view.ddSessionReplayOverride.imagePrivacy, .maskAll)
-            XCTAssertEqual(view.ddSessionReplayOverride.touchPrivacy, .hide)
-            XCTAssertEqual(view.ddSessionReplayOverride.hide?.boolValue, true)
+            XCTAssertEqual(view.ddSessionReplayOverrides.textAndInputPrivacy, .maskAll)
+            XCTAssertEqual(view.ddSessionReplayOverrides.imagePrivacy, .maskAll)
+            XCTAssertEqual(view.ddSessionReplayOverrides.touchPrivacy, .hide)
+            XCTAssertEqual(view.ddSessionReplayOverrides.hide?.boolValue, true)
         }
 
         func testClearingOverridesFromObjC() {
             // Given
             let view = UIView()
-            let override = DDSessionReplayOverride()
+            let override = DDSessionReplayPrivacyOverrides()
 
             // Set initial values
-            view.ddSessionReplayOverride = override
+            view.ddSessionReplayOverrides = override
             override.textAndInputPrivacy = .maskAll
             override.imagePrivacy = .maskAll
             override.touchPrivacy = .hide
             override.hide = NSNumber(value: true)
 
             // When
-            view.ddSessionReplayOverride.textAndInputPrivacy = .none
-            view.ddSessionReplayOverride.imagePrivacy = .none
-            view.ddSessionReplayOverride.touchPrivacy = .none
-            view.ddSessionReplayOverride.hide = nil
+            view.ddSessionReplayOverrides.textAndInputPrivacy = .none
+            view.ddSessionReplayOverrides.imagePrivacy = .none
+            view.ddSessionReplayOverrides.touchPrivacy = .none
+            view.ddSessionReplayOverrides.hide = nil
 
             // Then
-            XCTAssertEqual(view.ddSessionReplayOverride.textAndInputPrivacy, .none)
-            XCTAssertEqual(view.ddSessionReplayOverride.imagePrivacy, .none)
-            XCTAssertEqual(view.ddSessionReplayOverride.touchPrivacy, .none)
-            XCTAssertNil(view.ddSessionReplayOverride.hide)
+            XCTAssertEqual(view.ddSessionReplayOverrides.textAndInputPrivacy, .none)
+            XCTAssertEqual(view.ddSessionReplayOverrides.imagePrivacy, .none)
+            XCTAssertEqual(view.ddSessionReplayOverrides.touchPrivacy, .none)
+            XCTAssertNil(view.ddSessionReplayOverrides.hide)
         }
 }
 #endif

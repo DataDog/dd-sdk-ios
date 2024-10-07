@@ -12,12 +12,13 @@ import XCTest
 
 // swiftlint:disable opening_brace
 class ViewAttributesTests: XCTestCase {
+    // MARK: Appearance
     func testItCapturesViewAttributes() {
         // Given
-        let view: UIView = .mockRandom()
+        let view = UIView.mockRandom()
 
         // When
-        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+        let attributes = createViewAttributes(with: view)
 
         // Then
         XCTAssertEqual(attributes.frame, view.frame)
@@ -28,6 +29,10 @@ class ViewAttributesTests: XCTestCase {
         XCTAssertEqual(attributes.alpha, view.alpha)
         XCTAssertEqual(attributes.isHidden, view.isHidden)
         XCTAssertEqual(attributes.intrinsicContentSize, view.intrinsicContentSize)
+        XCTAssertNil(attributes.overrides.textAndInputPrivacy)
+        XCTAssertNil(attributes.overrides.imagePrivacy)
+        XCTAssertNil(attributes.overrides.touchPrivacy)
+        XCTAssertNil(attributes.overrides.hide)
     }
 
     func testWhenViewIsVisible() {
@@ -40,7 +45,7 @@ class ViewAttributesTests: XCTestCase {
         view.frame = .mockRandom(minWidth: 0.01, minHeight: 0.01)
 
         // Then
-        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+        let attributes = createViewAttributes(with: view)
         XCTAssertTrue(attributes.isVisible)
     }
 
@@ -56,7 +61,7 @@ class ViewAttributesTests: XCTestCase {
         ])
 
         // Then
-        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+        let attributes = createViewAttributes(with: view)
         XCTAssertFalse(attributes.isVisible)
     }
 
@@ -79,7 +84,7 @@ class ViewAttributesTests: XCTestCase {
         ])
 
         // Then
-        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+        let attributes = createViewAttributes(with: view)
         XCTAssertTrue(attributes.hasAnyAppearance)
     }
 
@@ -102,7 +107,7 @@ class ViewAttributesTests: XCTestCase {
         ])
 
         // Then
-        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+        let attributes = createViewAttributes(with: view)
         XCTAssertFalse(attributes.hasAnyAppearance)
     }
 
@@ -119,7 +124,7 @@ class ViewAttributesTests: XCTestCase {
         ])
 
         // Then
-        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+        let attributes = createViewAttributes(with: view)
         XCTAssertTrue(attributes.isTranslucent)
     }
 
@@ -134,7 +139,7 @@ class ViewAttributesTests: XCTestCase {
         view.backgroundColor = .mockRandomWith(alpha: 1)
 
         // Then
-        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+        let attributes = createViewAttributes(with: view)
         XCTAssertFalse(attributes.isTranslucent)
     }
 
@@ -144,7 +149,7 @@ class ViewAttributesTests: XCTestCase {
         view.setValue("invalid color", forKeyPath: "layer.borderColor")
 
         // When
-        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+        let attributes = createViewAttributes(with: view)
 
         // Then
         XCTAssertNil(attributes.layerBorderColor)
@@ -156,7 +161,8 @@ class ViewAttributesTests: XCTestCase {
         let color: CGColor = .mockRandom()
         let float: CGFloat = .mockRandom()
         let boolean: Bool = .mockRandom()
-        let attributes = ViewAttributes(frameInRootView: view.frame, view: view).copy {
+        let overrides: PrivacyOverrides = .mockRandom()
+        let attributes = ViewAttributes(frameInRootView: view.frame, view: view, overrides: overrides).copy {
             $0.frame = rect
             $0.backgroundColor = color
             $0.layerBorderColor = color
@@ -165,6 +171,7 @@ class ViewAttributesTests: XCTestCase {
             $0.alpha = float
             $0.isHidden = boolean
             $0.intrinsicContentSize = rect.size
+            $0.overrides = overrides
         }
         XCTAssertEqual(attributes.frame, rect)
         XCTAssertEqual(attributes.backgroundColor, color)
@@ -174,40 +181,75 @@ class ViewAttributesTests: XCTestCase {
         XCTAssertEqual(attributes.alpha, float)
         XCTAssertEqual(attributes.isHidden, boolean)
         XCTAssertEqual(attributes.intrinsicContentSize, rect.size)
+        XCTAssertEqual(attributes.overrides, overrides)
     }
 
-    // MARK: Overrides
+    // MARK: Privacy Overrides
+
     func testItDefaultsToNilWhenNoOverrideIsSet() {
         // Given
-        let view: UIView = .mockRandom()
+        let view: UIView = .mockAny()
 
         // When
-        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+        let attributes = createViewAttributes(with: view)
 
         // Then
-        XCTAssertNil(attributes.sessionReplayOverride?.textAndInputPrivacy)
-        XCTAssertNil(attributes.sessionReplayOverride?.imagePrivacy)
-        XCTAssertNil(attributes.sessionReplayOverride?.touchPrivacy)
-        XCTAssertNil(attributes.sessionReplayOverride?.hide)
+        XCTAssertNil(attributes.overrides.textAndInputPrivacy)
+        XCTAssertNil(attributes.overrides.imagePrivacy)
+        XCTAssertNil(attributes.overrides.touchPrivacy)
+        XCTAssertNil(attributes.overrides.hide)
     }
 
-    func testItCapturesViewAttributesWithOverrides() {
+    func testChildViewInheritsParentHideOverride() {
         // Given
-        let view: UIView = .mockRandom()
-        let overrides = SessionReplayOverrideExtension.mockRandom()
-        view.dd.sessionReplayOverride.textAndInputPrivacy = overrides.textAndInputPrivacy
-        view.dd.sessionReplayOverride.imagePrivacy = overrides.imagePrivacy
-        view.dd.sessionReplayOverride.touchPrivacy = overrides.touchPrivacy
-        view.dd.sessionReplayOverride.hide = overrides.hide
+        let childView = UIView.mock(withFixture: .visible(.someAppearance))
+        let parentView = UIView.mock(withFixture: .visible(.someAppearance))
+        parentView.addSubview(childView)
+        parentView.dd.sessionReplayOverrides.hide = true
+
+        let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
 
         // When
-        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+        let nodes = recorder.record(parentView, in: .mockRandom())
 
         // Then
-        XCTAssertEqual(attributes.sessionReplayOverride?.textAndInputPrivacy, overrides.textAndInputPrivacy)
-        XCTAssertEqual(attributes.sessionReplayOverride?.imagePrivacy, overrides.imagePrivacy)
-        XCTAssertEqual(attributes.sessionReplayOverride?.touchPrivacy, overrides.touchPrivacy)
-        XCTAssertEqual(attributes.sessionReplayOverride?.hide, overrides.hide)
+        XCTAssertEqual(nodes.count, 1)
+    }
+
+    func testChildViewHideOverrideSetToFalseDoesNotOverrideParentHideOverride() {
+        // Given
+        let parentView = UIView.mock(withFixture: .visible(.someAppearance))
+        let childView = UIView.mock(withFixture: .visible(.someAppearance))
+        parentView.addSubview(childView)
+
+        parentView.dd.sessionReplayOverrides.hide = true
+        childView.dd.sessionReplayOverrides.hide = false
+
+        let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
+
+        // When
+        let nodes = recorder.record(parentView, in: .mockRandom())
+
+        // Then
+        XCTAssertEqual(nodes.count, 1, "Child view overrides parent's hidden state, so it should be recorded.")
+    }
+
+    func testChildViewInheritsParentOverrides() {
+        // Given
+        let parentView = UIView.mock(withFixture: .visible(.someAppearance))
+        let childView = UIView.mock(withFixture: .visible(.someAppearance))
+        parentView.addSubview(childView)
+
+        let parentOverrides: PrivacyOverrides = .mockRandom()
+        parentView.dd.sessionReplayOverrides.textAndInputPrivacy = parentOverrides.textAndInputPrivacy
+        parentView.dd.sessionReplayOverrides.imagePrivacy = parentOverrides.imagePrivacy
+        parentView.dd.sessionReplayOverrides.touchPrivacy = parentOverrides.touchPrivacy
+
+        let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
+        let nodes = recorder.record(parentView, in: .mockRandom())
+
+        // Then
+        XCTAssertEqual(nodes.count, 2)
     }
 }
 // swiftlint:enable opening_brace
@@ -250,6 +292,12 @@ class NodeSemanticsTests: XCTestCase {
             .ignore,
             "Subtree should not be recorded for 'invisible' elements as nothing in it will be visible anyway"
         )
+    }
+}
+
+extension ViewAttributesTests {
+    func createViewAttributes(with view: UIView) -> ViewAttributes {
+        return ViewAttributes(frameInRootView: view.frame, view: view, overrides: .mockAny())
     }
 }
 #endif

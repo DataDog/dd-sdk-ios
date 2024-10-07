@@ -125,14 +125,14 @@ public struct SessionReplayViewAttributes: Equatable {
     var isTranslucent: Bool { !isVisible || alpha < 1 || backgroundColor?.alpha ?? 0 < 1 }
 
     /// If the view has privacy overrides, which take precedence over global masking privacy levels.
-    var sessionReplayOverride: SessionReplayOverrideExtension?
+    var overrides: PrivacyOverrides
 }
 
 // This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias ViewAttributes = SessionReplayViewAttributes
 
 extension ViewAttributes {
-    init(frameInRootView: CGRect, view: UIView) {
+    init(frameInRootView: CGRect, view: UIView, overrides: SessionReplayPrivacyOverrides) {
         self.frame = frameInRootView
         self.backgroundColor = view.backgroundColor?.cgColor.safeCast
         self.layerBorderColor = view.layer.borderColor?.safeCast
@@ -141,7 +141,21 @@ extension ViewAttributes {
         self.alpha = view.alpha
         self.isHidden = view.isHidden
         self.intrinsicContentSize = view.intrinsicContentSize
-        self.sessionReplayOverride = view.dd.sessionReplayOverride
+        self.overrides = overrides
+    }
+}
+
+extension ViewAttributes {
+    /// Resolves the effective privacy level for text and input elements by considering the view's local override.
+    /// Falls back to the global privacy setting in the absence of local overrides.
+    func resolveTextAndInputPrivacyLevel(in context: ViewTreeRecordingContext) -> TextAndInputPrivacyLevel {
+        return self.overrides.textAndInputPrivacy ?? context.recorder.textAndInputPrivacy
+    }
+
+    /// Resolves the effective privacy level for image elements by considering the view's local override.
+    /// Falls back to the global privacy setting in the absence of local overrides.
+    func resolveImagePrivacyLevel(in context: ViewTreeRecordingContext) -> ImagePrivacyLevel {
+        return self.overrides.imagePrivacy ?? context.recorder.imagePrivacy
     }
 }
 

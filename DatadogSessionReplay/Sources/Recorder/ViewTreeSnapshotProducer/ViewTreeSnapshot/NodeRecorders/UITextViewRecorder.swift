@@ -14,15 +14,17 @@ internal struct UITextViewRecorder: NodeRecorder {
         self.identifier = identifier
     }
 
-    var textObfuscator: (ViewTreeRecordingContext, _ isSensitive: Bool, _ isEditable: Bool) -> TextObfuscating = { context, isSensitive, isEditable in
+    var textObfuscator: (ViewTreeRecordingContext, _ viewAttributes: ViewAttributes, _ isSensitive: Bool, _ isEditable: Bool) -> TextObfuscating = { context, viewAttributes, isSensitive, isEditable in
+        let resolvedPrivacyLevel = viewAttributes.resolveTextAndInputPrivacyLevel(in: context)
+
         if isSensitive {
-            return context.recorder.textAndInputPrivacy.sensitiveTextObfuscator
+            return resolvedPrivacyLevel.sensitiveTextObfuscator
         }
 
         if isEditable {
-            return context.recorder.textAndInputPrivacy.inputAndOptionTextObfuscator
+            return resolvedPrivacyLevel.inputAndOptionTextObfuscator
         } else {
-            return context.recorder.textAndInputPrivacy.staticTextObfuscator
+            return resolvedPrivacyLevel.staticTextObfuscator
         }
     }
 
@@ -41,7 +43,7 @@ internal struct UITextViewRecorder: NodeRecorder {
             textAlignment: textView.textAlignment,
             textColor: textView.textColor?.cgColor ?? UIColor.black.cgColor,
             font: textView.font,
-            textObfuscator: textObfuscator(context, textView.dd.isSensitiveText, textView.isEditable),
+            textObfuscator: textObfuscator(context, attributes, textView.dd.isSensitiveText, textView.isEditable),
             contentRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
