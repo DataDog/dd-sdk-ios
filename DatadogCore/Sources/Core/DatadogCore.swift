@@ -255,6 +255,7 @@ extension DatadogCore: DatadogCoreProtocol {
                 dateProvider: dateProvider,
                 performance: performancePreset,
                 encryption: encryption,
+                backgroundTasksEnabled: backgroundTasksEnabled,
                 telemetry: telemetry
             )
 
