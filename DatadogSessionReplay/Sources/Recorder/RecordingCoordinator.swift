@@ -169,7 +169,6 @@ internal class RecordingCoordinator: RecordingCoordinating {
             }
 
             telemetry.stopMethodCalled(methodCalledTrace, isSuccessful: isSuccessful)
-
         }
     }
 
