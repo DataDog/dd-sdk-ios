@@ -10,8 +10,8 @@ import DatadogInternal
 
 #if !os(tvOS)
 
-/// `SwiftUI.ViewModifier` for RUM which invoke `addUserAction` from the
-/// global RUM Monitor when the modified view receives a tap.
+/// `SwiftUI.ViewModifier` which notifes RUM instrumentation when modified view is tapped.
+/// It makes an entry point to RUM actions instrumentation in SwiftUI.
 @available(iOS 13, *)
 internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
     /// The SDK core instance.
@@ -32,8 +32,11 @@ internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
                 guard let core = core else {
                     return // core was deallocated
                 }
-                RUMMonitor.shared(in: core)
-                    .addAction(type: .tap, name: name, attributes: attributes)
+                guard let feature = core.get(feature: RUMFeature.self) else {
+                    return // RUM not enabled
+                }
+                feature.instrumentation.actionsHandler
+                    .notify_viewModifierTapped(actionName: name, actionAttributes: attributes)
             }
         )
     }
