@@ -21,6 +21,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
 
     /// Orchestrates the process of triggering next snapshot.
     let recordingTrigger: RecordingTrigger
+    /// Orchestrates the process of capturing next snapshots on the main thread.
     let recordingCoordinator: RecordingCoordinator
 
     // MARK: - Initialization

@@ -1,6 +1,6 @@
 # Unreleased
-
 - [IMPROVEMENT] Add ObjC API for the internal logging/telemetry. See [#2073][]
+- [IMPROVEMENT] Session Replay recording is event-triggered instead of scheduled. See [#2074]
 
 # 2.18.0 / 25-09-2024
 - [IMPROVEMENT] Add overwrite required (breaking) param to addViewLoadingTime & usage telemetry. See [#2040][]
@@ -777,6 +777,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2040]: https://github.com/DataDog/dd-sdk-ios/pull/2040
 [#2050]: https://github.com/DataDog/dd-sdk-ios/pull/2050
 [#2073]: https://github.com/DataDog/dd-sdk-ios/pull/2073
+[#2074]: https://github.com/DataDog/dd-sdk-ios/pull/2074
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
