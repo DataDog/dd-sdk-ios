@@ -32,6 +32,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     /// This User Action's UUID.
     let actionUUID: RUMUUID
+    /// The type of instrumentation that issued an action that created this scope.
+    let instrumentation: InstrumentationType
     /// The start time of this User Action.
     private let actionStartTime: Date
 
@@ -70,6 +72,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         startTime: Date,
         serverTimeOffset: TimeInterval,
         isContinuous: Bool,
+        instrumentation: InstrumentationType,
         onActionEventSent: @escaping (RUMActionEvent) -> Void
     ) {
         self.parent = parent
@@ -82,6 +85,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         self.serverTimeOffset = serverTimeOffset
         self.isContinuous = isContinuous
         self.lastActivityTime = startTime
+        self.instrumentation = instrumentation
         self.onActionEventSent = onActionEventSent
     }
 

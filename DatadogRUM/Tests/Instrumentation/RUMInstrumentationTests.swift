@@ -183,7 +183,7 @@ class RUMInstrumentationTests: XCTestCase {
         // Then
         withExtendedLifetime(instrumentation) {
             XCTAssertIdentical(instrumentation.viewsHandler.subscriber, subscriber)
-            XCTAssertIdentical((instrumentation.actionsHandler as? UIKitRUMUserActionsHandler)?.subscriber, subscriber)
+            XCTAssertIdentical((instrumentation.actionsHandler as? RUMActionsHandler)?.subscriber, subscriber)
             XCTAssertIdentical(instrumentation.longTasks?.subscriber, subscriber)
             XCTAssertIdentical(instrumentation.appHangs?.nonFatalHangsHandler.subscriber, subscriber)
         }
