@@ -19,7 +19,8 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
 
     // MARK: - Main Components
 
-    /// Orchestrates the process of capturing next snapshots on the main thread.
+    /// Orchestrates the process of triggering next snapshot.
+    let recordingTrigger: RecordingTrigger
     let recordingCoordinator: RecordingCoordinator
 
     // MARK: - Initialization
@@ -48,7 +49,6 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             additionalNodeRecorders: configuration._additionalNodeRecorders
         )
 
-        let scheduler = MainThreadScheduler(interval: 15)
         let contextReceiver = RUMContextReceiver()
 
         self.messageReceiver = CombinedFeatureMessageReceiver([
@@ -63,8 +63,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         self.imagePrivacyLevel = configuration.imagePrivacyLevel
         self.touchPrivacyLevel = configuration.touchPrivacyLevel
 
-        self.recordingCoordinator = RecordingCoordinator(
-            scheduler: scheduler,
+        let recordingCoordinator = RecordingCoordinator(
             textAndInputPrivacy: configuration.textAndInputPrivacyLevel,
             imagePrivacy: configuration.imagePrivacyLevel,
             touchPrivacy: configuration.touchPrivacyLevel,
@@ -72,8 +71,12 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             srContextPublisher: SRContextPublisher(core: core),
             recorder: recorder,
             sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate),
-            telemetry: core.telemetry,
-            startRecordingImmediately: configuration.startRecordingImmediately
+            telemetry: core.telemetry
+        )
+        self.recordingCoordinator = recordingCoordinator
+        self.recordingTrigger = try RecordingTrigger(
+            recordingCoordinator: recordingCoordinator,
+            shouldStartWatchingTriggers: configuration.startRecordingImmediately
         )
         self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
@@ -92,11 +95,11 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
     }
 
     func startRecording() {
-        self.recordingCoordinator.startRecording()
+        recordingTrigger.startWatchingTriggers()
     }
 
     func stopRecording() {
-        self.recordingCoordinator.stopRecording()
+        recordingTrigger.stopWatchingTriggers()
     }
 }
 #endif

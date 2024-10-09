@@ -16,11 +16,11 @@ class RecordingCoordinatorTests: XCTestCase {
     var recordingCoordinator: RecordingCoordinator?
 
     private var recordingMock = RecordingMock()
-    private var scheduler = TestScheduler()
     private var rumContextObserver = RUMContextObserverMock()
     private lazy var contextPublisher: SRContextPublisher = {
         SRContextPublisher(core: core)
     }()
+    private let queue = TestSyncQueue()
 
     override func setUpWithError() throws {
         core = PassthroughCoreMock()
@@ -33,26 +33,25 @@ class RecordingCoordinatorTests: XCTestCase {
 
     // MARK: Configuration Tests
 
-    func test_itDoesNotStartScheduler_afterInitializing() {
+    func test_itDoesNotStart_afterInitializing() {
         prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
-        XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 
-    func test_whenNotSampled_itStopsScheduler_andShouldNotRecord() {
+    func test_whenNotSampledAndTriggered_andShouldNotRecord() {
         // Given
         prepareRecordingCoordinator(sampler: .mockRejectAll())
 
         // When
         rumContextObserver.notify(rumContext: .mockRandom())
+        recordingCoordinator?.captureNextRecord()
 
         // Then
-        XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 
-    func test_whenSampled_itStartsScheduler_andShouldRecord() {
+    func test_whenSampledAndTriggered_andShouldRecord() {
         // Given
         let textAndInputPrivacy = TextAndInputPrivacyLevel.mockRandom()
         let imagePrivacy = ImagePrivacyLevel.mockRandom()
@@ -62,9 +61,9 @@ class RecordingCoordinatorTests: XCTestCase {
         // When
         let rumContext = RUMContext.mockRandom()
         rumContextObserver.notify(rumContext: rumContext)
+        recordingCoordinator?.captureNextRecord()
 
         // Then
-        XCTAssertTrue(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), true)
         XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.applicationID, rumContext.applicationID)
         XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.sessionID, rumContext.sessionID)
@@ -76,37 +75,38 @@ class RecordingCoordinatorTests: XCTestCase {
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 1)
     }
 
-    func test_whenEmptyRUMContext_itShouldNotRecord() {
+    func test_whenEmptyRUMContextAndTriggered_itShouldNotRecord() {
         // Given
         prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
 
         // When
         rumContextObserver.notify(rumContext: nil)
+        recordingCoordinator?.captureNextRecord()
 
         // Then
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 
-    func test_whenNoRUMContext_itShouldNotRecord() {
+    func test_whenNoRUMContextAndTriggered_itShouldNotRecord() {
         // Given
         prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
+        recordingCoordinator?.captureNextRecord()
 
         // Then
-        XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 
-    func test_whenRUMContextWithoutViewID_itShouldRecord_itShouldNotCaptureSnapshots() {
+    func test_whenRUMContextWithoutViewIDAndTriggered_itShouldRecord_itShouldNotCaptureSnapshots() {
         // Given
         prepareRecordingCoordinator()
 
         // When
         let rumContext = RUMContext.mockWith(viewID: nil)
         rumContextObserver.notify(rumContext: rumContext)
+        recordingCoordinator?.captureNextRecord()
 
         // Then
-        XCTAssertTrue(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), true)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
@@ -125,6 +125,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // When
         rumContextObserver.notify(rumContext: .mockRandom())
+        recordingCoordinator?.captureNextRecord()
 
         // Then
         let error = telemetry.messages.firstError()
@@ -145,13 +146,13 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // When
         rumContextObserver.notify(rumContext: .mockRandom())
+        recordingCoordinator?.captureNextRecord()
 
         // Then
         let error = telemetry.messages.firstError()
         XCTAssertEqual(error?.message, "[SR] Failed to take snapshot due to Objective-C runtime exception - snapshot creation error")
         XCTAssertEqual(error?.kind, "ErrorMock")
         XCTAssertEqual(error?.stack, "snapshot creation error")
-        XCTAssertFalse(scheduler.isRunning)
     }
 
     func test_whenCapturingSnapshot_itSendsMethodCalledTelemetry() throws {
@@ -164,6 +165,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // When
         rumContextObserver.notify(rumContext: .mockRandom())
+        recordingCoordinator?.captureNextRecord()
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.last?.asMetric)
@@ -179,9 +181,9 @@ class RecordingCoordinatorTests: XCTestCase {
         // When
         let rumContext = RUMContext.mockRandom()
         rumContextObserver.notify(rumContext: rumContext)
+        recordingCoordinator?.captureNextRecord()
 
         // Then
-        XCTAssertTrue(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), true)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 1)
     }
@@ -193,9 +195,9 @@ class RecordingCoordinatorTests: XCTestCase {
         // When
         let rumContext = RUMContext.mockRandom()
         rumContextObserver.notify(rumContext: rumContext)
+        recordingCoordinator?.captureNextRecord()
 
         // Then
-        XCTAssertTrue(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), true)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 1)
     }
@@ -209,7 +211,6 @@ class RecordingCoordinatorTests: XCTestCase {
         rumContextObserver.notify(rumContext: rumContext)
 
         // Then
-        XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
@@ -226,7 +227,6 @@ class RecordingCoordinatorTests: XCTestCase {
         recordingCoordinator?.stopRecording()
 
         // Then
-        XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
     }
 
@@ -241,7 +241,6 @@ class RecordingCoordinatorTests: XCTestCase {
         recordingCoordinator?.startRecording()
 
         // Then
-        XCTAssertTrue(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), true)
     }
 
@@ -256,7 +255,6 @@ class RecordingCoordinatorTests: XCTestCase {
         recordingCoordinator?.stopRecording()
 
         // Then
-        XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
     }
 
@@ -270,7 +268,6 @@ class RecordingCoordinatorTests: XCTestCase {
         startRecordingImmediately: Bool = true
     ) {
         recordingCoordinator = RecordingCoordinator(
-            scheduler: scheduler,
             textAndInputPrivacy: textAndInputPrivacy,
             imagePrivacy: imagePrivacy,
             touchPrivacy: touchPrivacy,
@@ -280,7 +277,8 @@ class RecordingCoordinatorTests: XCTestCase {
             sampler: sampler,
             telemetry: telemetry,
             startRecordingImmediately: startRecordingImmediately,
-            methodCallTelemetrySamplingRate: methodCallTelemetrySamplingRate
+            methodCallTelemetrySamplingRate: methodCallTelemetrySamplingRate,
+            queue: queue
         )
     }
 }
@@ -301,6 +299,12 @@ final class RecordingMock: Recording {
         captureNextRecordReceivedRecorderContext = recorderContext
         captureNextRecordReceivedInvocations.append(recorderContext)
         try captureNextRecordClosure?(recorderContext)
+    }
+}
+
+final class TestSyncQueue: Queue {
+    func run(_ block: @escaping () -> Void) {
+        block()
     }
 }
 #endif
