@@ -122,7 +122,9 @@ internal class RecordingCoordinator: RecordingCoordinating {
     /// Captures the next recording if conditions are met.
     func captureNextRecord() {
         queue.run { [weak self] in
-            guard let self = self else { return }
+            guard let self = self else {
+                return
+            }
             guard isSampled == true && recordingEnabled == true else {
                 return
             }
