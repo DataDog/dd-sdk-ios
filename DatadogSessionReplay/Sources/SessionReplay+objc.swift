@@ -10,8 +10,10 @@ import DatadogInternal
 #if os(iOS)
 
 /// An entry point to Datadog Session Replay feature.
-@objc
-public final class DDSessionReplay: NSObject {
+@objc(DDSessionReplay)
+@objcMembers
+@_spi(objc)
+public final class objc_SessionReplay: NSObject {
     override private init() { }
 
     /// Enables Datadog Session Replay feature.
@@ -23,7 +25,7 @@ public final class DDSessionReplay: NSObject {
     /// - Parameters:
     ///   - configuration: Configuration of the feature.
     @objc
-    public static func enable(with configuration: DDSessionReplayConfiguration) {
+    public static func enable(with configuration: objc_SessionReplayConfiguration) {
         SessionReplay.enable(with: configuration._swift)
     }
 
@@ -41,8 +43,10 @@ public final class DDSessionReplay: NSObject {
 }
 
 /// Session Replay feature configuration.
-@objc
-public final class DDSessionReplayConfiguration: NSObject {
+@objc(DDSessionReplayConfiguration)
+@objcMembers
+@_spi(objc)
+public final class objc_SessionReplayConfiguration: NSObject {
     internal var _swift: SessionReplay.Configuration = .init(replaySampleRate: 0)
 
     /// The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
@@ -62,7 +66,7 @@ public final class DDSessionReplayConfiguration: NSObject {
     ///
     /// Default: `.mask`.
     @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use the new privacy levels instead.")
-    @objc public var defaultPrivacyLevel: DDSessionReplayConfigurationPrivacyLevel {
+    @objc public var defaultPrivacyLevel: objc_SessionReplayConfigurationPrivacyLevel {
         set { _swift.defaultPrivacyLevel = newValue._swift }
         get { .init(_swift.defaultPrivacyLevel) }
     }
@@ -70,7 +74,7 @@ public final class DDSessionReplayConfiguration: NSObject {
     /// Defines the way texts and inputs (e.g. labels, textfields, checkboxes) should be masked.
     ///
     /// Default: `.maskAll`.
-    @objc public var textAndInputPrivacyLevel: DDTextAndInputPrivacyLevel {
+    @objc public var textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel {
         set { _swift.textAndInputPrivacyLevel = newValue._swift }
         get { .init(_swift.textAndInputPrivacyLevel) }
     }
@@ -78,7 +82,7 @@ public final class DDSessionReplayConfiguration: NSObject {
     /// Defines the way images should be masked.
     ///
     /// Default: `.maskAll`.
-    @objc public var imagePrivacyLevel: DDImagePrivacyLevel {
+    @objc public var imagePrivacyLevel: objc_ImagePrivacyLevel {
         set { _swift.imagePrivacyLevel = newValue._swift }
         get { .init(_swift.imagePrivacyLevel) }
     }
@@ -86,7 +90,7 @@ public final class DDSessionReplayConfiguration: NSObject {
     /// Defines the way user touches (e.g. tap) should be masked.
     ///
     /// Default: `.mask`.
-    @objc public var touchPrivacyLevel: DDTouchPrivacyLevel {
+    @objc public var touchPrivacyLevel: objc_TouchPrivacyLevel {
         set { _swift.touchPrivacyLevel = newValue._swift }
         get { .init(_swift.touchPrivacyLevel) }
     }
@@ -109,9 +113,9 @@ public final class DDSessionReplayConfiguration: NSObject {
     @objc
     public required init(
         replaySampleRate: Float,
-        textAndInputPrivacyLevel: DDTextAndInputPrivacyLevel,
-        imagePrivacyLevel: DDImagePrivacyLevel,
-        touchPrivacyLevel: DDTouchPrivacyLevel
+        textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,
+        imagePrivacyLevel: objc_ImagePrivacyLevel,
+        touchPrivacyLevel: objc_TouchPrivacyLevel
     ) {
         _swift = SessionReplay.Configuration(
             replaySampleRate: replaySampleRate,
@@ -139,8 +143,9 @@ public final class DDSessionReplayConfiguration: NSObject {
 }
 
 /// Available privacy levels for content masking.
-@objc
-public enum DDSessionReplayConfigurationPrivacyLevel: Int {
+@objc(DDSessionReplayConfigurationPrivacyLevel)
+@_spi(objc)
+public enum objc_SessionReplayConfigurationPrivacyLevel: Int {
     /// Record all content.
     case allow
 
@@ -155,7 +160,6 @@ public enum DDSessionReplayConfigurationPrivacyLevel: Int {
         case .allow: return .allow
         case .mask: return .mask
         case .maskUserInput: return .maskUserInput
-        default: return .mask
         }
     }
 
@@ -169,8 +173,9 @@ public enum DDSessionReplayConfigurationPrivacyLevel: Int {
 }
 
 /// Available privacy levels for text and input masking.
-@objc
-public enum DDTextAndInputPrivacyLevel: Int {
+@objc(DDTextAndInputPrivacyLevel)
+@_spi(objc)
+public enum objc_TextAndInputPrivacyLevel: Int {
     /// Show all text except sensitive input (eg. password fields).
     case maskSensitiveInputs
 
@@ -185,7 +190,6 @@ public enum DDTextAndInputPrivacyLevel: Int {
         case .maskSensitiveInputs: return .maskSensitiveInputs
         case .maskAllInputs: return .maskAllInputs
         case .maskAll: return .maskAll
-        default: return .maskAll
         }
     }
 
@@ -199,8 +203,9 @@ public enum DDTextAndInputPrivacyLevel: Int {
 }
 
 /// Available image privacy levels for image masking.
-@objc
-public enum DDImagePrivacyLevel: Int {
+@objc(DDImagePrivacyLevel)
+@_spi(objc)
+public enum objc_ImagePrivacyLevel: Int {
     /// Only SF Symbols and images loaded using UIImage(named:) that are bundled within the application package will be recorded.
     case maskNonBundledOnly
     /// No images will be recorded.
@@ -226,8 +231,9 @@ public enum DDImagePrivacyLevel: Int {
 }
 
 /// Available privacy levels for touch masking.
-@objc
-public enum DDTouchPrivacyLevel: Int {
+@objc(DDTouchPrivacyLevel)
+@_spi(objc)
+public enum objc_TouchPrivacyLevel: Int {
     /// Show all touches.
     case show
 
@@ -238,7 +244,6 @@ public enum DDTouchPrivacyLevel: Int {
         switch self {
         case .show: return .show
         case .hide: return .hide
-        default: return .hide
         }
     }
 

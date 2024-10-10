@@ -2159,32 +2159,32 @@ public struct SessionReplaySpecificElement: SessionReplayNodeSemantics
     public let subtreeStrategy: SessionReplayNodeSubtreeStrategy
     public let nodes: [SessionReplayNode]
     public init(subtreeStrategy: SessionReplayNodeSubtreeStrategy,nodes: [SessionReplayNode])
-public final class DDSessionReplay: NSObject
-    public static func enable(with configuration: DDSessionReplayConfiguration)
+public final class objc_SessionReplay: NSObject
+    public static func enable(with configuration: objc_SessionReplayConfiguration)
     public static func startRecording()
     public static func stopRecording()
-public final class DDSessionReplayConfiguration: NSObject
+public final class objc_SessionReplayConfiguration: NSObject
     @objc public var replaySampleRate: Float
-    @objc public var defaultPrivacyLevel: DDSessionReplayConfigurationPrivacyLevel
-    @objc public var textAndInputPrivacyLevel: DDTextAndInputPrivacyLevel
-    @objc public var imagePrivacyLevel: DDImagePrivacyLevel
-    @objc public var touchPrivacyLevel: DDTouchPrivacyLevel
+    @objc public var defaultPrivacyLevel: objc_SessionReplayConfigurationPrivacyLevel
+    @objc public var textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel
+    @objc public var imagePrivacyLevel: objc_ImagePrivacyLevel
+    @objc public var touchPrivacyLevel: objc_TouchPrivacyLevel
     @objc public var customEndpoint: URL?
-    public required init(replaySampleRate: Float,textAndInputPrivacyLevel: DDTextAndInputPrivacyLevel,imagePrivacyLevel: DDImagePrivacyLevel,touchPrivacyLevel: DDTouchPrivacyLevel)
+    public required init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel)
     public required init(replaySampleRate: Float)
-public enum DDSessionReplayConfigurationPrivacyLevel: Int
+public enum objc_SessionReplayConfigurationPrivacyLevel: Int
     case allow
     case mask
     case maskUserInput
-public enum DDTextAndInputPrivacyLevel: Int
+public enum objc_TextAndInputPrivacyLevel: Int
     case maskSensitiveInputs
     case maskAllInputs
     case maskAll
-public enum DDImagePrivacyLevel: Int
+public enum objc_ImagePrivacyLevel: Int
     case maskNonBundledOnly
     case maskAll
     case maskNone
-public enum DDTouchPrivacyLevel: Int
+public enum objc_TouchPrivacyLevel: Int
     case show
     case hide
 public enum SessionReplay
