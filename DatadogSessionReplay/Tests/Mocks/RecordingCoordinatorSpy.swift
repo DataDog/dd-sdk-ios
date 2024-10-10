@@ -1,11 +1,10 @@
-//
-//  RecordingCoordinatorSpy.swift
-//  Datadog
-//
-//  Created by Maciej Burda on 08/10/2024.
-//  Copyright © 2024 Datadog. All rights reserved.
-//
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
 
+#if os(iOS)
 @testable import DatadogSessionReplay
 
 class RecordingCoordinatorSpy: RecordingCoordinating {
@@ -28,3 +27,4 @@ class RecordingCoordinatorSpy: RecordingCoordinating {
         captureNextRecordCalledCount += 1
     }
 }
+#endif
