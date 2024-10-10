@@ -52,6 +52,22 @@ class SessionReplayTests: XCTestCase {
         )
     }
 
+    func testWhenEnabledMultipleTimes_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+        SessionReplay.enable(with: config, in: core)
+
+        // Then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: Session Replay is already enabled and does not support multiple instances. The existing instance will continue to be used."
+        )
+    }
+
     // MARK: - Configuration Tests
 
     func testWhenEnabledWithDefaultConfiguration() throws {
