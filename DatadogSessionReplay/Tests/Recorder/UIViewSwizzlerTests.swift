@@ -6,11 +6,9 @@
 
 #if os(iOS)
 import XCTest
-//@testable import DatadogInternal
-//@_spi(Internal)
 @testable import DatadogSessionReplay
 
-class UIApplicationSwizzlerTests: XCTestCase {
+class UIViewSwizzlerTests: XCTestCase {
     private let handler = UIViewHandlerMock()
     private lazy var swizzler = try! UIViewSwizzler(handler: handler)
 

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 import DatadogInternal
 
@@ -53,3 +54,4 @@ internal class UIViewSwizzler {
         }
     }
 }
+#endif

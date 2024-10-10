@@ -20,7 +20,7 @@ class RecordingCoordinatorTests: XCTestCase {
     private lazy var contextPublisher: SRContextPublisher = {
         SRContextPublisher(core: core)
     }()
-    private let queue = TestSyncQueue()
+    private let queue = NoQueue()
 
     override func setUpWithError() throws {
         core = PassthroughCoreMock()
@@ -188,33 +188,6 @@ class RecordingCoordinatorTests: XCTestCase {
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 1)
     }
 
-    func test_whenStartRecordingImmediatelyIsTrue_itShouldRecord() throws {
-        // Given
-        prepareRecordingCoordinator(startRecordingImmediately: true)
-
-        // When
-        let rumContext = RUMContext.mockRandom()
-        rumContextObserver.notify(rumContext: rumContext)
-        recordingCoordinator?.captureNextRecord()
-
-        // Then
-        XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), true)
-        XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 1)
-    }
-
-    func test_whenStartRecordingImmediatelyIsFalse_shouldNotRecord() throws {
-        // Given
-        prepareRecordingCoordinator(startRecordingImmediately: false)
-
-        // When
-        let rumContext = RUMContext.mockRandom()
-        rumContextObserver.notify(rumContext: rumContext)
-
-        // Then
-        XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
-        XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
-    }
-
     // MARK: Start / Stop API Tests
 
     func test_whenStopRecording_shouldStopRecord() throws {
@@ -264,8 +237,7 @@ class RecordingCoordinatorTests: XCTestCase {
         imagePrivacy: ImagePrivacyLevel = .maskNonBundledOnly,
         touchPrivacy: TouchPrivacyLevel = .show,
         telemetry: Telemetry = NOPTelemetry(),
-        methodCallTelemetrySamplingRate: Float = 0,
-        startRecordingImmediately: Bool = true
+        methodCallTelemetrySamplingRate: Float = 0
     ) {
         recordingCoordinator = RecordingCoordinator(
             textAndInputPrivacy: textAndInputPrivacy,
@@ -276,7 +248,6 @@ class RecordingCoordinatorTests: XCTestCase {
             recorder: recordingMock,
             sampler: sampler,
             telemetry: telemetry,
-            startRecordingImmediately: startRecordingImmediately,
             methodCallTelemetrySamplingRate: methodCallTelemetrySamplingRate,
             queue: queue
         )
@@ -299,12 +270,6 @@ final class RecordingMock: Recording {
         captureNextRecordReceivedRecorderContext = recorderContext
         captureNextRecordReceivedInvocations.append(recorderContext)
         try captureNextRecordClosure?(recorderContext)
-    }
-}
-
-final class TestSyncQueue: Queue {
-    func run(_ block: @escaping () -> Void) {
-        block()
     }
 }
 #endif

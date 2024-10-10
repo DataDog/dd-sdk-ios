@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 @testable import DatadogSessionReplay
 
@@ -67,7 +68,7 @@ class RecordingTriggerTests: XCTestCase {
         XCTAssertEqual(recordingCoordinatorSpy.captureNextRecordCalledCount, 0)
     }
 
-    func testStartsWatchingImmediately() {
+    func testStartsWatchingImmediately() throws {
         recordingCoordinatorSpy = RecordingCoordinatorSpy()
         recordingTrigger = try RecordingTrigger(
             recordingCoordinator: recordingCoordinatorSpy,
@@ -88,3 +89,4 @@ class RecordingTriggerTests: XCTestCase {
         }
     }
 }
+#endif
