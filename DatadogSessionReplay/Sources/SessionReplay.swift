@@ -69,6 +69,14 @@ public enum SessionReplay {
                 description: "Datadog SDK must be initialized before calling `SessionReplay.enable(with:)`."
             )
         }
+
+        guard core.get(feature: SessionReplayFeature.self) == nil else {
+            core.telemetry.send(telemetry: .debug(id: "1", message: "Session Replay has already been enabled", attributes: nil))
+            throw ProgrammerError(
+                description: "Session Replay is already enabled and does not support multiple instances. The existing instance will continue to be used."
+            )
+        }
+
         guard configuration.replaySampleRate > 0 else {
             return
         }
