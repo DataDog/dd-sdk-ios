@@ -9,18 +9,18 @@ import TestUtilities
 import DatadogInternal
 @testable import DatadogRUM
 
-class UIKitRUMUserActionsHandlerTests: XCTestCase {
+class RUMActionsHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()
 
-    private func touchHandler(with predicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate()) -> UIKitRUMUserActionsHandler {
-        let handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider, predicate: predicate)
+    private func touchHandler(with predicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate()) -> RUMActionsHandler {
+        let handler = RUMActionsHandler(dateProvider: dateProvider, predicate: predicate)
         handler.publish(to: commandSubscriber)
         return handler
     }
 
-    private func pressHandler(with predicate: UIPressRUMActionsPredicate = DefaultUIKitRUMActionsPredicate()) -> UIKitRUMUserActionsHandler {
-        let handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider, predicate: predicate)
+    private func pressHandler(with predicate: UIPressRUMActionsPredicate = DefaultUIKitRUMActionsPredicate()) -> RUMActionsHandler {
+        let handler = RUMActionsHandler(dateProvider: dateProvider, predicate: predicate)
         handler.publish(to: commandSubscriber)
         return handler
     }
@@ -39,7 +39,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
 
     // MARK: - Scenarios For Accepting Tap Events
 
-    func testGivenViewWithAccessibilityIdentifier_whenSingleTouchEnds_itSendsRUMAction() {
+    func testGivenUIKitViewWithAccessibilityIdentifier_whenSingleTouchEnds_itSendsRUMAction() {
         // Given
         let handler = touchHandler()
         let fixtures: [(view: UIView, expectedRUMActionName: String)] = [
@@ -78,12 +78,13 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
             let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, expectedRUMActionName)
             XCTAssertEqual(command?.actionType, .tap)
+            XCTAssertEqual(command?.instrumentation, .uikit)
             XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
             XCTAssertEqual(command?.attributes.count, 0)
         }
     }
 
-    func testGivenViewWithNoAccessibilityIdentifier_whenSingleTouchEnds_itSendsRUMAction() {
+    func testGivenUIKitViewWithNoAccessibilityIdentifier_whenSingleTouchEnds_itSendsRUMAction() {
         // Given
         let handler = touchHandler()
         let fixtures: [(view: UIView, expectedRUMActionName: String)] = [
@@ -115,6 +116,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
             let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, expectedRUMActionName)
             XCTAssertEqual(command?.actionType, .tap)
+            XCTAssertEqual(command?.instrumentation, .uikit)
             XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
             XCTAssertEqual(command?.attributes.count, 0)
         }
@@ -122,7 +124,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
 
     // MARK: - Scenarios For Ignoring Tap Events
 
-    func testGivenAnyViewWithUnrecognizedHierarchy_whenTouchEnds_itGetsIgnored() {
+    func testGivenAnyUIKitViewWithUnrecognizedHierarchy_whenTouchEnds_itGetsIgnored() {
         // Given
         let handler = touchHandler()
         let superview = UIView().attached(to: mockAppWindow)
@@ -138,7 +140,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
-    func testGivenAnyViewPresentedInKeyboardWindow_whenTouchEnds_itGetsIgnoredForPrivacyReason() {
+    func testGivenAnyUIKitViewPresentedInKeyboardWindow_whenTouchEnds_itGetsIgnoredForPrivacyReason() {
         let mockKeyboardWindow = MockUIRemoteKeyboardWindow(frame: .zero)
 
         // Given
@@ -170,7 +172,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
-    func testItIgnoresSingleTouchEventWithPhaseOtherThanEnded() {
+    func testItIgnoresSingleUIKitTouchEventWithPhaseOtherThanEnded() {
         // Given
         let handler = touchHandler()
         let view = UIControl().attached(to: mockAppWindow)
@@ -194,7 +196,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         }
     }
 
-    func testItIgnoresMultitouchEvents() {
+    func testItIgnoresUIKitMultitouchEvents() {
         // Given
         let handler = touchHandler()
         let view = UIControl().attached(to: mockAppWindow)
@@ -214,7 +216,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
-    func testItIgnoresEventsWithNoTouch() {
+    func testItIgnoresUIKitEventsWithNoTouch() {
         // Given
         let handler = touchHandler()
 
@@ -228,7 +230,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
-    func testGivenTouchEvent_itAppliesUserAttributesAndCustomName() {
+    func testGivenUIKitTouchEvent_itAppliesUserAttributesAndCustomName() {
         // Given
         let mockAttributes: [AttributeKey: AttributeValue] = mockRandomAttributes()
         let handler = touchHandler(
@@ -253,7 +255,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         DDAssertDictionariesEqual(command!.attributes, mockAttributes)
     }
 
-    func testGivenUserActionPredicateReturnsNil_itDoesntSendTapAction() {
+    func testGivenUIKitActionPredicateReturnsNil_itDoesntSendTapAction() {
         // Given
         let handler = touchHandler(
             with: MockUIKitRUMActionsPredicate(actionOverride: nil)
@@ -275,7 +277,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
 
     // MARK: - Scenarios For Accepting Click Events
 
-    func testGivenUIPress_whenSinglePressEnds_itSendsRUMAction() {
+    func testGivenUIKitPressEvent_whenSinglePressEnds_itSendsRUMAction() {
         // Given
         let handler = pressHandler()
         let fixtures: [(event: UIEvent, expect: String)] = [
@@ -308,6 +310,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
             let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, expect)
             XCTAssertEqual(command?.actionType, .click)
+            XCTAssertEqual(command?.instrumentation, .uikit)
             XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
             XCTAssertEqual(command?.attributes.count, 0)
         }
@@ -315,7 +318,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
 
     // MARK: - Scenarios For Ignoring Tap Events
 
-    func testGivenAnyViewPresentedInKeyboardWindow_whenPressEnds_itGetsIgnoredForPrivacyReason() {
+    func testGivenAnyUIKitViewPresentedInKeyboardWindow_whenPressEnds_itGetsIgnoredForPrivacyReason() {
         let mockKeyboardWindow = MockUIRemoteKeyboardWindow(frame: .zero)
 
         // Given
@@ -347,7 +350,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
-    func testItIgnoresSinglePressEventWithPhaseOtherThanEnded() {
+    func testItIgnoresSingleUIKitPressEventWithPhaseOtherThanEnded() {
         // Given
         let handler = pressHandler()
         let view = UIControl().attached(to: mockAppWindow)
@@ -366,7 +369,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         }
     }
 
-    func testItIgnoresMultiPressEvents() {
+    func testItIgnoresUIKitMultiPressEvents() {
         // Given
         let handler = pressHandler()
         let view = UIControl().attached(to: mockAppWindow)
@@ -386,7 +389,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
-    func testGivenPressEvent_ItAppliesUserAttributesAndCustomName() {
+    func testGivenUIKitPressEvent_ItAppliesUserAttributesAndCustomName() {
         // Given
         let mockAttributes: [AttributeKey: AttributeValue] = mockRandomAttributes()
         let handler = pressHandler(
@@ -411,7 +414,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         DDAssertDictionariesEqual(command!.attributes, mockAttributes)
     }
 
-    func testGivenUserActionPredicateReturnsNil_itDoesntSendClickAction() {
+    func testGivenUIKitActionPredicateReturnsNil_itDoesntSendClickAction() {
         // Given
         let handler = pressHandler(
             with: MockUIKitRUMActionsPredicate(actionOverride: nil)
@@ -429,6 +432,29 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
 
         // Then
         XCTAssertNil(commandSubscriber.lastReceivedCommand)
+    }
+
+    // MARK: - SwiftUI Actions
+
+    func testWhenSwiftUIViewModifierIsTapped_itSendsRUMAction() throws {
+        // Given
+        let handler = oneOf([
+            { self.touchHandler() },
+            { self.pressHandler() }
+        ])
+
+        // When
+        let actionName: String = .mockRandom()
+        let actionAttributes = mockRandomAttributes()
+        handler.notify_viewModifierTapped(actionName: actionName, actionAttributes: actionAttributes)
+
+        // Then
+        let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
+        XCTAssertEqual(command.name, actionName)
+        XCTAssertEqual(command.actionType, .tap)
+        XCTAssertEqual(command.instrumentation, .swiftui)
+        XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
+        DDAssertReflectionEqual(command.attributes, actionAttributes)
     }
 }
 
