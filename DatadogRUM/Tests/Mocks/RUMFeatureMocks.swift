@@ -567,11 +567,12 @@ extension RUMStartUserActionCommand: AnyMockable, RandomMockable {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
+        instrumentation: InstrumentationType = .manual,
         actionType: RUMActionType = .swipe,
         name: String = .mockAny()
     ) -> RUMStartUserActionCommand {
         return RUMStartUserActionCommand(
-            time: time, attributes: attributes, actionType: actionType, name: name
+            time: time, attributes: attributes, instrumentation: instrumentation, actionType: actionType, name: name
         )
     }
 }
@@ -615,11 +616,12 @@ extension RUMAddUserActionCommand: AnyMockable, RandomMockable {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
+        instrumentation: InstrumentationType = .manual,
         actionType: RUMActionType = .tap,
         name: String = .mockAny()
     ) -> RUMAddUserActionCommand {
         return RUMAddUserActionCommand(
-            time: time, attributes: attributes, actionType: actionType, name: name
+            time: time, attributes: attributes, instrumentation: instrumentation, actionType: actionType, name: name
         )
     }
 }
@@ -1007,6 +1009,7 @@ extension RUMUserActionScope {
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
         isContinuous: Bool = .mockAny(),
+        instrumentation: InstrumentationType = .manual,
         onActionEventSent: @escaping (RUMActionEvent) -> Void = { _ in }
     ) -> RUMUserActionScope {
         return RUMUserActionScope(
@@ -1018,6 +1021,7 @@ extension RUMUserActionScope {
                 startTime: startTime,
                 serverTimeOffset: serverTimeOffset,
                 isContinuous: isContinuous,
+                instrumentation: instrumentation,
                 onActionEventSent: onActionEventSent
         )
     }
