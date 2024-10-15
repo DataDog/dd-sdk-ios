@@ -456,6 +456,7 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMAddUserActionCommand(
                 time: dateProvider.now,
                 attributes: attributes,
+                instrumentation: .manual,
                 actionType: type,
                 name: name
             )
@@ -467,6 +468,7 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStartUserActionCommand(
                 time: dateProvider.now,
                 attributes: attributes,
+                instrumentation: .manual,
                 actionType: type,
                 name: name
             )

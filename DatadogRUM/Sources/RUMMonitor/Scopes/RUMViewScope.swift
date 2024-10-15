@@ -221,10 +221,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             if command.actionType == .custom {
                 // send it instantly without waiting for child events (e.g. resource associated to this action)
                 sendDiscreteCustomUserAction(on: command, context: context, writer: writer)
-            } else if userActionScope == nil {
-                addDiscreteUserAction(on: command)
+            } else if let actionScope = userActionScope {
+                if command.instrumentation.priority > actionScope.instrumentation.priority {
+                    addDiscreteUserAction(on: command)
+                } else {
+                    reportActionDropped(type: command.actionType, name: command.name)
+                }
             } else {
-                reportActionDropped(type: command.actionType, name: command.name)
+                addDiscreteUserAction(on: command)
             }
 
         // Error command
@@ -316,6 +320,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             isContinuous: true,
+            instrumentation: command.instrumentation,
             onActionEventSent: { [weak self] event in
                 self?.onActionEventSent(event)
             }
@@ -332,6 +337,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             isContinuous: false,
+            instrumentation: command.instrumentation,
             onActionEventSent: { [weak self] event in
                 self?.onActionEventSent(event)
             }
