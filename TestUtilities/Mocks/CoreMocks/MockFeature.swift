@@ -4,10 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if os(iOS)
 import Foundation
 import DatadogInternal
-import DatadogSessionReplay
 
 internal class MockFeature: DatadogRemoteFeature {
     static var name = "mock-feature"
@@ -21,4 +19,3 @@ internal class MockRequestBuilder: FeatureRequestBuilder {
         URLRequest.mockAny()
     }
 }
-#endif
