@@ -17,12 +17,14 @@ class SessionReplayTests: XCTestCase {
 
     override func setUpWithError() throws {
         core = FeatureRegistrationCoreMock()
+        CoreRegistry.register(default: core)
         config = SessionReplay.Configuration(replaySampleRate: 100)
     }
 
     override func tearDown() {
         core = nil
         config = nil
+        CoreRegistry.unregisterDefault()
         XCTAssertEqual(FeatureRegistrationCoreMock.referenceCount, 0)
     }
 
