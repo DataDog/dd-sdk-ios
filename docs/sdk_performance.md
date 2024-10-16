@@ -2,29 +2,29 @@
 
 ## Methodology
 
-Following benchmarks were collected by running Datadog iOS SDK ([fe86f81](https://github.com/DataDog/dd-sdk-ios/commit/fe86f8151e0a7932bb397f98cb166a9c81f5dac9)) in open source application: [Beam](https://github.com/awkward/beam). Performance data was recorded with Xcode 14.3 (14E222b) Debug Navigator and network traffic was recorded with [Charles Proxy 4.6.4](https://www.charlesproxy.com/download/latest-release/) installed on macOS.
+The following benchmarks were collected by running Datadog iOS SDK ([fe86f81](https://github.com/DataDog/dd-sdk-ios/commit/fe86f8151e0a7932bb397f98cb166a9c81f5dac9)) in open source application: [Beam](https://github.com/awkward/beam). Performance data was recorded with Xcode 14.3 (14E222b) Debug Navigator and network traffic was recorded with [Charles Proxy 4.6.4](https://www.charlesproxy.com/download/latest-release/) installed on macOS.
 
 **3** **configurations** were measured:
 
-- running app with SDK not initialised;
+- running app with SDK not initialized;
 
-- running app with SDK initialised and data collection enabled (`trackingConsent: .granted`);
+- running app with SDK initialized and data collection enabled (`trackingConsent: .granted`);
 
-- running app with SDK initialised but data collection disabled (`trackingConsent: .notGranted`).
+- running app with SDK initialized but data collection disabled (`trackingConsent: .notGranted`).
 
-**Application info:**
+**Application info**:
 
 [Beam](https://github.com/awkward/beam) is an open source Reddit client, available on the App Store (see [Beam for reddit](https://apps.apple.com/us/app/beam-for-reddit/id937987469)). All tests were performed for [759623f](https://github.com/awkward/beam/commit/759623fae6df021d9a04ab5ef63cb6520029fba6) commit using `Release` configuration with debugger attached.
 
-**iOS Device info:**
+**iOS Device info**:
 
-All data was collected on iPhone 13 (MLPF3F/A), running iOS 16.4.1 (a) with 42,54GB of available memory (out of 128GB). This device had 147 apps installed, but no other application was running during tests. Device was connected to LTE network and WIFI interface.
+All data was collected on iPhone 13 (MLPF3F/A), running iOS 16.4.1 (a) with 42,54GB of available memory (out of 128GB). This device had 147 apps installed, but no other applications were running during the tests. The device was connected to the LTE network and WIFI interface.
 
 ## Results
 
 Rows represent individual test runs and columns represent each scenario:
 
-- “SDK not initialised” - SDK is installed, but not initialised.
+- “SDK not initialized” - SDK is installed, but not initialized.
 
 - “Consent granted” - SDK is initialized with data collection enabled (tracking consent: `.granted`).
 
@@ -40,7 +40,7 @@ Rows represent individual test runs and columns represent each scenario:
 |#4|36%|42%|38%|
 |#5|44%|37%|36%|
 
-<u>no significant difference in CPU pick</u>
+<u>No significant difference in CPU pick</u>.
 
 ### Max RAM (in MBs)
 
@@ -53,7 +53,7 @@ Rows represent individual test runs and columns represent each scenario:
 |#5|66.6MB|72.7 MB|77.3 MB|
 
 
-<u>no significant difference in RAM pick</u>
+<u>No significant difference in RAM pick</u>.
 
 ### High CPU Utilization (% of periods with CPU utilization higher than 20%)
 
@@ -67,7 +67,7 @@ CPU usage of greater than 20%. High CPU utilization rapidly drains a device’s 
 |#4|2.9%|3.1%|3.3%|
 |#5|3%|2.8%|3.4%|
 
-<u>no significant difference in high CPU utilization</u>
+<u>No significant difference in high CPU utilization</u>.
 
 ### Battery Utilization - Overhead
 
@@ -81,7 +81,7 @@ Overhead represents energy use as a result of bringing up radios and other syste
 |#4|40.6%|43.5%|37.9%|
 |#5|40.1%|44%|36.7%|
 
-We see a minor decrease of overhead when the SDK is not initialized or without consent but <u>it is not significant enough to measure an impact</u>
+We see a minor decrease of overhead when the SDK is not initialized or without consent but <u>it is not significant enough to measure an impact</u>.
 
 ### Network Utilization (Uploads / Downloads)
 
@@ -95,7 +95,7 @@ This table includes data sent and received by Datadog SDK only.
 |#4|n/a|U: 21.86 KB / D: 1.68 KB|U: 0 KB / D: 0 KB|
 |#5|n/a|U: 22.02 KB / D: 1.68 KB|U: 0 KB / D: 0 KB|
 
-<u>no increase in energy use due to networking</u>
+<u>No increase in energy use due to networking</u>.
 
 ### Disk Usage (Reads / Writes)
 
@@ -107,7 +107,7 @@ This table includes data sent and received by Datadog SDK only.
 |#4|R: 32.5 MB / W: 43.1 MB|R: 30.6 MB / W: 45.4 MB|R: 34.5 MB / W: 43.1 MB|
 |#5|R: 29.4 MB / W: 43.9 MB|R: 33.1 MB / W: 45.8 MB|R: 32.2 MB MB / W: 50.5 MB|
 
-<u>no significant impact on disk usage</u>.
+<u>No significant impact on disk usage</u>.
 
 ### Application Launch Time (cold start in seconds)
 
@@ -121,7 +121,7 @@ The application launch time is the time interval between the application process
 |#4|0.607|0.413|0.536|
 |#5|1.132|0.331|0.920|
 
-<u>no significant difference in application launch time</u>
+<u>No significant difference in application launch time</u>.
 
 ### Bundle Size
 
@@ -131,21 +131,21 @@ The application launch time is the time interval between the application process
 
 ## Appendix
 
-**Test scenario:**
+**Test scenario**:
 
 The test scenario was designed to simulate typical app usage (browsing reddits, user profiles and their comments). To eliminate external factors and noise (like another process being woken up or the app executing slightly different logic) the scenario was run multiple times:
 
-- 5 times for each of 3 configurations to record performance data with Xcode Debug Navigator,
+- 5 times for each of 3 configurations to record performance data with Xcode Debug Navigator.
 
-- 5 times for “SDK initialised and data collection enabled” to record network traffic with Charles Proxy,
+- 5 times for “SDK initialized and data collection enabled” to record network traffic with Charles Proxy.
 
-- 1 time for “SDK not initialised” and “data collection disabled” scenarios to record network traffic.
+- 1 time for “SDK not initialized” and “data collection disabled” scenarios to record network traffic.
 
 Each test run took exactly `2min 30s`:
 
-1.  Install the app on device.
+1.  Install the app on the device.
 
-2.  Launch the app, dismiss onboarding screen (_“Explore without account”_) and push notifications alert.
+2.  Launch the app, dismiss onboarding screen (_“Explore without account”_), and push notifications alert.
 
 3.  `20s`: Wait.
 
@@ -153,21 +153,21 @@ Each test run took exactly `2min 30s`:
 
 5.  `20s`: Wait.
 
-6.  `30s`: Repeat step 4th with browsing “DYI” reddit and searching for “soccer”.
+6.  `30s`: Repeat step 4 with browsing “DYI” reddit and searching for “soccer”.
 
 7.  `50s`: Wait.
 
-8.  Pause the App process and record measurements.
+8.  Pause the app process and record measurements.
 
-**Measurements:**
+**Measurements**:
 
-All performance results were collected using Xcode 14.3 Debug Navigator. The app process was paused `2min 30s` after launch and its state was dumped by taking screenshots of navigator sections: CPU, Memory, Energy, Disk, Network and GPU.
+All performance results were collected using Xcode 14.3 Debug Navigator. The app process was paused `2min 30s` after launch and its state was dumped by taking screenshots of navigator sections: CPU, Memory, Energy, Disk, Network, and GPU.
 
-Network traffic was recorded with Charles Proxy 4.6.4\. The proxy was enabled before each run and disabled after `2min 30s`.
+Network traffic was recorded with Charles Proxy 4.6.4. The proxy was enabled before each run and disabled after `2min 30s`.
 
 **Instrumentation:**
 
-The SDK was initialized with basic RUM instrumentation for tracking views, actions and resources:
+The SDK was initialized with basic RUM instrumentation for tracking views, actions, and resources:
 
 ```swift
 Datadog.initialize(
