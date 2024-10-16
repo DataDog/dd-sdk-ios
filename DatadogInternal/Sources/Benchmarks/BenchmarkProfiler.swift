@@ -61,3 +61,11 @@ private final class NOPBenchmarkProfiler: BenchmarkProfiler, BenchmarkTracer, Be
     /// no-op
     func stop() {}
 }
+
+public final class NOPBenchmarkTracer: BenchmarkTracer, BenchmarkSpan {
+    public init() {}
+    /// no-op
+    public func startSpan(named: @autoclosure () -> String) -> BenchmarkSpan { self }
+    /// no-op
+    public func stop() {}
+}
