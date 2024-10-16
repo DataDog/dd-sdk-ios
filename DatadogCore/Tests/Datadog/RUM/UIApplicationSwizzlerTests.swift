@@ -11,7 +11,7 @@ import XCTest
 #if !os(tvOS)
 
 class UIApplicationSwizzlerTests: XCTestCase {
-    private let handler = UIKitRUMUserActionsHandlerMock()
+    private let handler = RUMActionsHandlerMock()
     private lazy var swizzler = try! UIApplicationSwizzler(handler: handler)
 
     override func setUp() {
