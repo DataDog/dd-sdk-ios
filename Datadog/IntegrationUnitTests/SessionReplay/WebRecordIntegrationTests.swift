@@ -91,6 +91,58 @@ class WebRecordIntegrationTests: XCTestCase {
             "slotId": expectedSlotID
         ])
     }
+
+    func testWebRecordIntegrationWithNewSessionReplayConfigurationAPI() throws {
+        // Given
+        let randomApplicationID: String = .mockRandom()
+        let randomUUID: UUID = .mockRandom()
+        let randomBrowserViewID: UUID = .mockRandom()
+
+        SessionReplay.enable(with: SessionReplay.Configuration(
+            replaySampleRate: 100,
+            textAndInputPrivacyLevel: .mockRandom(),
+            imagePrivacyLevel: .mockRandom(),
+            touchPrivacyLevel: .mockRandom()
+        ), in: core)
+        RUM.enable(with: .mockWith(applicationID: randomApplicationID) {
+            $0.uuidGenerator = RUMUUIDGeneratorMock(uuid: randomUUID)
+        }, in: core)
+
+        let body = """
+        {
+            "eventType": "record",
+            "event": {
+                "timestamp" : \(1635932927012),
+                "type": 2
+            },
+            "view": { "id": "\(randomBrowserViewID.uuidString.lowercased())" }
+        }
+        """
+
+        // When
+        RUMMonitor.shared(in: core).startView(key: "web-view")
+        controller.send(body: body, from: webView)
+        controller.flush()
+
+        // Then
+        let segments = try core.waitAndReturnEventsData(ofFeature: SessionReplayFeature.name)
+            .map { try SegmentJSON($0, source: .ios) }
+        let segment = try XCTUnwrap(segments.first)
+
+        let expectedUUID = randomUUID.uuidString.lowercased()
+        let expectedSlotID = String(webView.hash)
+
+        XCTAssertEqual(segment.applicationID, randomApplicationID)
+        XCTAssertEqual(segment.sessionID, expectedUUID)
+        XCTAssertEqual(segment.viewID, randomBrowserViewID.uuidString.lowercased())
+
+        let record = try XCTUnwrap(segment.records.first)
+        DDAssertDictionariesEqual(record, [
+            "timestamp": 1_635_932_927_012 + 123.toInt64Milliseconds,
+            "type": 2,
+            "slotId": expectedSlotID
+        ])
+    }
 }
 
 #endif
