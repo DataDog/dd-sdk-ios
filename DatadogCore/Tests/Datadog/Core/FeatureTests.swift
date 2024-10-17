@@ -23,6 +23,7 @@ class FeatureStorageTests: XCTestCase {
             dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
             performance: .mockRandom(),
             encryption: nil,
+            backgroundTasksEnabled: .mockRandom(),
             telemetry: NOPTelemetry()
         )
         temporaryFeatureDirectories.create()
