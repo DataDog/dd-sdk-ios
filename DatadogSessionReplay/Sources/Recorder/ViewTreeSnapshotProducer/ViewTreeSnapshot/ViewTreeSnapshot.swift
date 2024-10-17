@@ -74,35 +74,71 @@ internal typealias Resource = SessionReplayResource
 @_spi(Internal)
 public struct SessionReplayViewAttributes: Equatable {
     /// The view's `frame`, in VTS's root view's coordinate space (usually, the screen coordinate space).
-    public let frame: CGRect
+    public internal(set) var frame: CGRect
+
+    /// The view's clipping frame, in VTS's root view's coordinate space.
+    public internal(set) var clip: CGRect
 
     /// Original view's `.backgroundColor`.
-    public let backgroundColor: CGColor?
+    public internal(set) var backgroundColor: CGColor?
 
     /// Original view's `layer.borderColor`.
-    public let layerBorderColor: CGColor?
+    public internal(set) var layerBorderColor: CGColor?
 
     /// Original view's `layer.borderWidth`.
-    public let layerBorderWidth: CGFloat
+    public internal(set) var layerBorderWidth: CGFloat
 
     /// Original view's `layer.cornerRadius`.
-    public let layerCornerRadius: CGFloat
+    public internal(set) var layerCornerRadius: CGFloat
 
     /// Original view's `.alpha` (between `0.0` and `1.0`).
-    public let alpha: CGFloat
+    public internal(set) var alpha: CGFloat
 
     /// Original view's `.isHidden`.
-    let isHidden: Bool
+    var isHidden: Bool
 
     /// Original view's `.intrinsicContentSize`.
-    let intrinsicContentSize: CGSize
+    var intrinsicContentSize: CGSize
+
+    /// If the view has privacy overrides, which take precedence over global masking privacy levels.
+    var overrides: PrivacyOverrides
+}
+
+// This alias enables us to have a more unique name exposed through public-internal access level
+internal typealias ViewAttributes = SessionReplayViewAttributes
+
+extension ViewAttributes {
+    /// Creates value-type view description.
+    ///
+    /// - Parameters:
+    ///   - view: The view instance.
+    ///   - frame: The view frame in root view's coordinate space.
+    ///   - clip: The clipping frame in root view's coordinate space.
+    init(view: UIView, frame: CGRect, clip: CGRect, overrides: SessionReplayPrivacyOverrides) {
+        self.frame = frame
+        self.clip = clip
+        self.backgroundColor = view.backgroundColor?.cgColor.safeCast
+        self.layerBorderColor = view.layer.borderColor?.safeCast
+        self.layerBorderWidth = view.layer.borderWidth
+        self.layerCornerRadius = view.layer.cornerRadius
+        self.alpha = view.alpha
+        self.isHidden = view.isHidden
+        self.intrinsicContentSize = view.intrinsicContentSize
+        self.overrides = overrides
+    }
 
     /// If the view is technically visible (different than `!isHidden` because it also considers `alpha` and `frame != .zero`).
-    /// A view can be technically visible, but it may have no appearance in practise (e.g. if its colors use `0` alpha component).
+    /// A view can be technically visible, but it may have no appearance in practise (e.g. if its colors use `0` alpha component, or outside
+    /// of clipping frame).
     ///
     /// Example 1: A view is invisible if it has `.zero` size or it is fully transparent (`alpha == 0`).
     /// Example 2: A view can be visible if it has fully transparent background color, but its `alpha` is `0.5` or it occupies non-zero area.
-    var isVisible: Bool { !isHidden && alpha > 0 && frame != .zero }
+    var isVisible: Bool {
+        !isHidden &&
+        alpha > 0 &&
+        frame != .zero &&
+        !frame.intersection(clip).isEmpty
+    }
 
     /// If the view has any visible appearance (considering: background color + border style).
     /// In other words: if this view brings anything visual.
@@ -123,26 +159,6 @@ public struct SessionReplayViewAttributes: Equatable {
     /// Example 1: A view with blue background of alpha `0.5` is considered "translucent".
     /// Example 2: A view with blue semi-transparent background, but alpha `1` is also conisdered "translucent".
     var isTranslucent: Bool { !isVisible || alpha < 1 || backgroundColor?.alpha ?? 0 < 1 }
-
-    /// If the view has privacy overrides, which take precedence over global masking privacy levels.
-    var overrides: PrivacyOverrides
-}
-
-// This alias enables us to have a more unique name exposed through public-internal access level
-internal typealias ViewAttributes = SessionReplayViewAttributes
-
-extension ViewAttributes {
-    init(frameInRootView: CGRect, view: UIView, overrides: SessionReplayPrivacyOverrides) {
-        self.frame = frameInRootView
-        self.backgroundColor = view.backgroundColor?.cgColor.safeCast
-        self.layerBorderColor = view.layer.borderColor?.safeCast
-        self.layerBorderWidth = view.layer.borderWidth
-        self.layerCornerRadius = view.layer.cornerRadius
-        self.alpha = view.alpha
-        self.isHidden = view.isHidden
-        self.intrinsicContentSize = view.intrinsicContentSize
-        self.overrides = overrides
-    }
 }
 
 extension ViewAttributes {
