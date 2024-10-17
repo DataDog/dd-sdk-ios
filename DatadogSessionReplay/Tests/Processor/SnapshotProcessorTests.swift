@@ -311,7 +311,6 @@ class SnapshotProcessorTests: XCTestCase {
             imageWireframeID: .mockAny(),
             attributes: .mockAny(),
             contentFrame: .mockAny(),
-            clipsToBounds: .mockAny(),
             imageResource: resource,
             imagePrivacyLevel: .maskNonBundledOnly
         )

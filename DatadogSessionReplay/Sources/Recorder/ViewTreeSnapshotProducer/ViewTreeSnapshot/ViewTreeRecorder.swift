@@ -36,7 +36,17 @@ internal struct ViewTreeRecorder {
             context.viewControllerContext.isRootView = false
         }
 
-        let semantics = nodeSemantics(for: view, in: context)
+        // Convert the frame in root view space
+        let frame = view.convert(view.bounds, to: context.coordinateSpace)
+
+        if view.clipsToBounds {
+            // Propagate view's clipping intersection when clipsToBounds is
+            // enabled.
+            context.clip = frame.intersection(context.clip)
+        }
+
+        let attributes = ViewAttributes(view: view, frame: frame, clip: context.clip)
+        let semantics = nodeSemantics(for: view, with: attributes, in: context)
 
         if !semantics.nodes.isEmpty {
             nodes.append(contentsOf: semantics.nodes)
@@ -52,12 +62,7 @@ internal struct ViewTreeRecorder {
         }
     }
 
-    private func nodeSemantics(for view: UIView, in context: ViewTreeRecordingContext) -> NodeSemantics {
-        let attributes = ViewAttributes(
-            frameInRootView: view.convert(view.bounds, to: context.coordinateSpace),
-            view: view
-        )
-
+    private func nodeSemantics(for view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics {
         var semantics: NodeSemantics = UnknownElement.constant
 
         for nodeRecorder in nodeRecorders {

@@ -32,7 +32,8 @@ internal struct ViewTreeSnapshotBuilder {
             recorder: recorderContext,
             coordinateSpace: rootView,
             ids: idsGenerator,
-            webViewCache: webViewCache
+            webViewCache: webViewCache,
+            clip: rootView.bounds
         )
         let nodes = viewTreeRecorder.record(rootView, in: context)
         let snapshot = ViewTreeSnapshot(
