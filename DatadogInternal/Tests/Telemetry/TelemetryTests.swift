@@ -109,12 +109,13 @@ class TelemetryTests: XCTestCase {
 
     func testSendingConfigurationTelemetry() throws {
         // When
-        telemetry.configuration(batchSize: 123, batchUploadFrequency: 456) // only some values
+        telemetry.configuration(backgroundTasksEnabled: true, batchSize: 123, batchUploadFrequency: 456) // only some values
 
         // Then
         let configuration = try XCTUnwrap(telemetry.messages.firstConfiguration())
         XCTAssertEqual(configuration.batchSize, 123)
         XCTAssertEqual(configuration.batchUploadFrequency, 456)
+        XCTAssertEqual(configuration.backgroundTasksEnabled, true)
     }
 
     // MARK: - Metric Telemetry
