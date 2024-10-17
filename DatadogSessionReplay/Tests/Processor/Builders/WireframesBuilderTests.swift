@@ -18,7 +18,7 @@ class WireframesBuilderTests: XCTestCase {
 
         slots.forEach { id in
             let frame: CGRect = .mockRandom()
-            let wireframe = builder.visibleWebViewWireframe(id: id, frame: frame)
+            let wireframe = builder.visibleWebViewWireframe(id: id, frame: frame, clip: frame)
             guard case let .webviewWireframe(wireframe) = wireframe else {
                 return XCTFail("The wireframe must be webviewWireframe case")
             }
@@ -65,7 +65,7 @@ class WireframesBuilderTests: XCTestCase {
         let id: WireframeID = .mockRandom()
         let resource: MockResource = .mockRandom()
         let frame: CGRect = .mockRandom()
-        let clip: SRContentClip = .mockRandom()
+        let clip = frame.insetBy(dx: 1, dy: 1)
         let builder = WireframesBuilder()
 
         let wireframe = builder.createImageWireframe(
@@ -81,7 +81,7 @@ class WireframesBuilderTests: XCTestCase {
 
         XCTAssertEqual(wireframe.id, id)
         XCTAssertNil(wireframe.border)
-        XCTAssertEqual(wireframe.clip, clip)
+        XCTAssertEqual(wireframe.clip, .init(bottom: 1, left: 1, right: 1, top: 1))
         XCTAssertEqual(wireframe.height, Int64(withNoOverflow: frame.height))
         XCTAssertNil(wireframe.shapeStyle)
         XCTAssertEqual(wireframe.width, Int64(withNoOverflow: frame.width))
@@ -89,6 +89,36 @@ class WireframesBuilderTests: XCTestCase {
         XCTAssertEqual(wireframe.y, Int64(withNoOverflow: frame.minY))
         XCTAssertEqual(builder.resources.first?.calculateIdentifier(), resource.identifier)
         XCTAssertEqual(builder.resources.first?.calculateData(), resource.data)
+    }
+
+    func testContentClip_fromRectIntersection() {
+        let frame: CGRect = .mockRandom()
+        let clip = SRContentClip(
+            frame,
+            intersecting: frame.insetBy(dx: 10, dy: 10)
+        )
+
+        // Inner clip return value
+        XCTAssertEqual(clip?.top, 10)
+        XCTAssertEqual(clip?.left, 10)
+        XCTAssertEqual(clip?.bottom, 10)
+        XCTAssertEqual(clip?.right, 10)
+
+        // outer clip returns nil
+        XCTAssertNil(
+            SRContentClip(
+                frame,
+                intersecting: frame.insetBy(dx: -10, dy: -10)
+            )
+        )
+
+        // Not intersecting clip returns nil
+        XCTAssertNil(
+            SRContentClip(
+                frame,
+                intersecting: frame.offsetBy(dx: frame.width, dy: frame.height)
+            )
+        )
     }
 }
 #endif

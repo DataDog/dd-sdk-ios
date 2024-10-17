@@ -28,6 +28,7 @@ internal struct UIStepperRecorder: NodeRecorder {
 
         let builder = UIStepperWireframesBuilder(
             wireframeRect: stepperFrame,
+            wireframeClip: attributes.clip,
             cornerRadius: stepper.subviews.first?.layer.cornerRadius ?? 0,
             backgroundWireframeID: ids[0],
             dividerWireframeID: ids[1],
@@ -44,6 +45,7 @@ internal struct UIStepperRecorder: NodeRecorder {
 
 internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
     let wireframeRect: CGRect
+    let wireframeClip: CGRect
     let cornerRadius: CGFloat
     let backgroundWireframeID: WireframeID
     let dividerWireframeID: WireframeID
@@ -57,6 +59,7 @@ internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
         let background = builder.createShapeWireframe(
             id: backgroundWireframeID,
             frame: wireframeRect,
+            clip: wireframeClip,
             borderColor: nil,
             borderWidth: nil,
             backgroundColor: SystemColors.tertiarySystemFill,
@@ -69,6 +72,7 @@ internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
                 origin: CGPoint(x: 0, y: verticalMargin),
                 size: CGSize(width: 1, height: wireframeRect.size.height - 2 * verticalMargin)
             ).putInside(wireframeRect, horizontalAlignment: .center, verticalAlignment: .middle),
+            clip: wireframeClip,
             backgroundColor: SystemColors.placeholderText
         )
 
@@ -78,18 +82,21 @@ internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
         let minus = builder.createShapeWireframe(
             id: minusWireframeID,
             frame: horizontalElementRect.putInside(leftButtonFrame, horizontalAlignment: .center, verticalAlignment: .middle),
+            clip: wireframeClip,
             backgroundColor: isMinusEnabled ? SystemColors.label : SystemColors.placeholderText,
             cornerRadius: horizontalElementRect.size.height
         )
         let plusHorizontal = builder.createShapeWireframe(
             id: plusHorizontalWireframeID,
             frame: horizontalElementRect.putInside(rightButtonFrame, horizontalAlignment: .center, verticalAlignment: .middle),
+            clip: wireframeClip,
             backgroundColor: isPlusEnabled ? SystemColors.label : SystemColors.placeholderText,
             cornerRadius: horizontalElementRect.size.height
         )
         let plusVertical = builder.createShapeWireframe(
             id: plusVerticalWireframeID,
             frame: verticalElementRect.putInside(rightButtonFrame, horizontalAlignment: .center, verticalAlignment: .middle),
+            clip: wireframeClip,
             backgroundColor: isPlusEnabled ? SystemColors.label : SystemColors.placeholderText,
             cornerRadius: verticalElementRect.size.width
         )
