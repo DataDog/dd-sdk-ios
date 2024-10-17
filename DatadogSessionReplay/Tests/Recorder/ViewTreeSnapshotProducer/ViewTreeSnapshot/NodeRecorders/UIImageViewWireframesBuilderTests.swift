@@ -25,7 +25,6 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
             imageWireframeID: imageWireframeID,
             attributes: ViewAttributes.mock(fixture: .visible(.someAppearance)),
             contentFrame: CGRect(x: 10, y: 10, width: 200, height: 200),
-            clipsToBounds: true,
             imageResource: .mockRandom(),
             imagePrivacyLevel: .maskNonBundledOnly
         )
@@ -56,7 +55,6 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
             imageWireframeID: placeholderWireframeID,
             attributes: ViewAttributes.mock(fixture: .visible(.someAppearance)),
             contentFrame: CGRect(x: 10, y: 10, width: 200, height: 200),
-            clipsToBounds: true,
             imageResource: nil,
             imagePrivacyLevel: .maskNonBundledOnly
         )

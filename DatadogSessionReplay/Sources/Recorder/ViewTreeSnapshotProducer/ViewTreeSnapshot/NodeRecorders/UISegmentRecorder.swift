@@ -75,8 +75,7 @@ internal struct UISegmentWireframesBuilder: NodeWireframesBuilder {
         let background = builder.createShapeWireframe(
             id: backgroundWireframeID,
             frame: wireframeRect,
-            borderColor: nil,
-            borderWidth: nil,
+            clip: attributes.clip,
             backgroundColor: attributes.backgroundColor ?? SystemColors.tertiarySystemFill,
             cornerRadius: 8,
             opacity: attributes.alpha
@@ -103,6 +102,7 @@ internal struct UISegmentWireframesBuilder: NodeWireframesBuilder {
             return builder.createTextWireframe(
                 id: segmentWireframeIDs[idx],
                 frame: segmentRects[idx],
+                clip: attributes.clip,
                 text: textObfuscator.mask(text: segmentTitles[idx] ?? ""),
                 textFrame: segmentRects[idx],
                 textAlignment: .init(horizontal: .center, vertical: .center),
