@@ -25,6 +25,8 @@ public struct SessionReplayViewTreeRecordingContext {
     var viewControllerContext: ViewControllerContext = .init()
     /// Webviews caching.
     let webViewCache: NSHashTable<WKWebView>
+    /// The clipping rect to apply to wireframes.
+    var clip: CGRect
 }
 
 // This alias enables us to have a more unique name exposed through public-internal access level

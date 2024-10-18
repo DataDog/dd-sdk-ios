@@ -54,6 +54,7 @@ internal struct UnsupportedViewWireframesBuilder: NodeWireframesBuilder {
             builder.createPlaceholderWireframe(
                 id: wireframeID,
                 frame: attributes.frame,
+                clip: attributes.clip,
                 label: unsupportedClassName
             )
         ]

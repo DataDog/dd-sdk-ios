@@ -114,6 +114,7 @@ internal struct UITabBarWireframesBuilder: NodeWireframesBuilder {
             builder.createShapeWireframe(
                 id: wireframeID,
                 frame: wireframeRect,
+                clip: attributes.clip,
                 borderColor: UIColor.lightGray.withAlphaComponent(0.5).cgColor,
                 borderWidth: 0.5,
                 backgroundColor: color,

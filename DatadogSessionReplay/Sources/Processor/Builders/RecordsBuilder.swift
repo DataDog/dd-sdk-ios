@@ -129,7 +129,7 @@ internal class RecordsBuilder {
         from snapshot: ViewTreeSnapshot,
         lastSnapshot: ViewTreeSnapshot
     ) -> SRRecord? {
-        guard lastSnapshot.viewportSize.aspectRatio != snapshot.viewportSize.aspectRatio else {
+        guard lastSnapshot.viewportSize.dd.aspectRatio != snapshot.viewportSize.dd.aspectRatio else {
             return nil
         }
         return .incrementalSnapshotRecord(

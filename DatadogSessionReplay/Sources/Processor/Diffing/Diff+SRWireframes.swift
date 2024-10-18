@@ -76,7 +76,18 @@ internal protocol MutableWireframe {
 
 /// Syntactic sugar to return `new` value if it's different than `old`.
 private func use<V: Equatable>(_ new: V?, ifDifferentThan old: V?) -> V? {
-    return new == old ? nil : new
+    new == old ? nil : new
+}
+
+/// Apply dedicated merge for Content Clip where we need to reset value to `0` when the value is **back** to `nil`.
+/// That is because the player assumes no change when value is `nil`, but `nil` also means no clipping.
+private func use(_ new: SRContentClip?, ifDifferentThan old: SRContentClip?) -> SRContentClip? {
+    new != old ? SRContentClip(
+        bottom: new?.bottom ?? old?.bottom.map { _ in 0 },
+        left: new?.left ?? old?.left.map { _ in 0 },
+        right: new?.right ?? old?.right.map { _ in 0 },
+        top: new?.top ?? old?.top.map { _ in 0 }
+    ) : nil
 }
 
 extension SRWireframe: MutableWireframe {
@@ -104,7 +115,6 @@ extension SRShapeWireframe: MutableWireframe {
                 toType: type
             )
         }
-        // print string of enum of otherWireframe
 
         guard other.id == id else {
             throw WireframeMutationError.idMismatch
@@ -269,4 +279,5 @@ extension SRImageWireframe {
         hasher.combine(y)
     }
 }
+
 #endif
