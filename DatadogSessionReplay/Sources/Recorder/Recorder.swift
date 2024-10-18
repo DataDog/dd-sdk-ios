@@ -71,7 +71,8 @@ public class Recorder: Recording {
 
     convenience init(
         snapshotProcessor: SnapshotProcessing,
-        additionalNodeRecorders: [NodeRecorder]
+        additionalNodeRecorders: [NodeRecorder],
+        globalTouchPrivacy: TouchPrivacyLevel
     ) throws {
         let windowObserver = KeyWindowObserver()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
@@ -79,7 +80,8 @@ public class Recorder: Recording {
             snapshotBuilder: ViewTreeSnapshotBuilder(additionalNodeRecorders: additionalNodeRecorders)
         )
         let touchSnapshotProducer = WindowTouchSnapshotProducer(
-            windowObserver: windowObserver
+            windowObserver: windowObserver,
+            globalTouchPrivacy: globalTouchPrivacy
         )
 
         self.init(
@@ -117,7 +119,7 @@ public class Recorder: Recording {
             return
         }
 
-        let touchSnapshot = recorderContext.touchPrivacy == .show ? touchSnapshotProducer.takeSnapshot(context: recorderContext) : nil
+        let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
         snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
     }
 }
