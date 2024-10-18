@@ -75,11 +75,13 @@ private extension SRWireframe {
 private extension SRShapeWireframe {
     func toFrame() -> BlueprintFrame {
         BlueprintFrame(
-            x: CGFloat(x),
-            y: CGFloat(y),
-            width: CGFloat(width),
-            height: CGFloat(height),
-            style: frameStyle(border: border, style: shapeStyle),
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            border: border,
+            style: shapeStyle,
+            clip: clip,
             content: nil
         )
     }
@@ -88,12 +90,14 @@ private extension SRShapeWireframe {
 private extension SRTextWireframe {
     func toFrame() -> BlueprintFrame {
         BlueprintFrame(
-            x: CGFloat(x),
-            y: CGFloat(y),
-            width: CGFloat(width),
-            height: CGFloat(height),
-            style: frameStyle(border: border, style: shapeStyle),
-            content: frameContent(text: text, textStyle: textStyle, textPosition: textPosition)
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            border: border,
+            style: shapeStyle,
+            clip: clip,
+            content: .init(text: text, textStyle: textStyle, textPosition: textPosition)
         )
     }
 }
@@ -101,12 +105,14 @@ private extension SRTextWireframe {
 private extension SRImageWireframe {
     func toFrame(imageData: Data?) -> BlueprintFrame {
         BlueprintFrame(
-            x: CGFloat(x),
-            y: CGFloat(y),
-            width: CGFloat(width),
-            height: CGFloat(height),
-            style: frameStyle(border: border, style: shapeStyle),
-            content: frameContent(imageData: imageData)
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            border: border,
+            style: shapeStyle,
+            clip: clip,
+            content: .init(imageData: imageData)
         )
     }
 }
@@ -114,12 +120,14 @@ private extension SRImageWireframe {
 private extension SRWebviewWireframe {
     func toFrame() -> BlueprintFrame {
         BlueprintFrame(
-            x: CGFloat(x),
-            y: CGFloat(y),
-            width: CGFloat(width),
-            height: CGFloat(height),
-            style: frameStyle(border: border, style: shapeStyle),
-            content: frameContent(
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            border: border,
+            style: shapeStyle,
+            clip: clip,
+            content: .init(
                 text: "WKWebView",
                 textStyle: nil,
                 textPosition: SRTextPosition(
@@ -134,19 +142,18 @@ private extension SRWebviewWireframe {
 private extension SRPlaceholderWireframe {
     func toFrame() -> BlueprintFrame {
         BlueprintFrame(
-            x: CGFloat(x),
-            y: CGFloat(y),
-            width: CGFloat(width),
-            height: CGFloat(height),
-            style: frameStyle(
-                border: .init(color: "#000000FF", width: 4),
-                style: .init(
-                    backgroundColor: "#A9A9A9FF",
-                    cornerRadius: 0,
-                    opacity: 1
-                )
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            border: .init(color: "#000000FF", width: 4),
+            style: .init(
+                backgroundColor: "#A9A9A9FF",
+                cornerRadius: 0,
+                opacity: 1
             ),
-            content: frameContent(
+            clip: clip,
+            content: .init(
                 text: label ?? "Placeholder",
                 textStyle: .init(color: "#000000FF", family: "-apple-system", size: 24),
                 textPosition: .init(
@@ -158,71 +165,109 @@ private extension SRPlaceholderWireframe {
     }
 }
 
-
-private func frameStyle(border: SRShapeBorder?, style: SRShapeStyle?) -> BlueprintFrame.Style {
-    var fs = BlueprintFrame.Style(
-        lineWidth: 0,
-        lineColor: .clear,
-        fillColor: .clear,
-        cornerRadius: 0,
-        opacity: 1
-    )
-
-    if let border = border {
-        fs.lineWidth = CGFloat(border.width)
-        fs.lineColor = UIColor(hexString: border.color)
-    }
-
-    if let style = style {
-        fs.fillColor = style.backgroundColor.flatMap { UIColor(hexString: $0) } ?? fs.fillColor
-        fs.cornerRadius = style.cornerRadius.flatMap { CGFloat($0) } ?? fs.cornerRadius
-        fs.opacity = style.opacity.flatMap { CGFloat($0) } ?? fs.opacity
-    }
-
-    return fs
-}
-
-private func frameContent(text: String, textStyle: SRTextStyle?, textPosition: SRTextPosition?) -> BlueprintFrame.Content {
-    var horizontalAlignment: BlueprintFrame.Content.Alignment = .leading
-    var verticalAlignment: BlueprintFrame.Content.Alignment = .leading
-
-    if let textPosition = textPosition {
-        switch textPosition.alignment?.horizontal {
-        case .left?:    horizontalAlignment = .leading
-        case .center?:  horizontalAlignment = .center
-        case .right?:   horizontalAlignment = .trailing
-        default:        break
-        }
-        switch textPosition.alignment?.vertical {
-        case .top?:     verticalAlignment = .leading
-        case .center?:  verticalAlignment = .center
-        case .bottom?:  verticalAlignment = .trailing
-        default:        break
-        }
-    }
-
-    let contentType: BlueprintFrame.Content.ContentType
-    if let textStyle = textStyle {
-        contentType = .text(
-            text: text,
-            color: UIColor(hexString: textStyle.color),
-            font: .systemFont(ofSize: CGFloat(textStyle.size))
+private extension BlueprintFrame {
+    init(
+        x: Int64,
+        y: Int64,
+        width: Int64,
+        height: Int64,
+        border: SRShapeBorder?,
+        style: SRShapeStyle?, 
+        clip: SRContentClip?,
+        content: BlueprintFrame.Content?
+    ) {
+        var frame = BlueprintFrame(
+            x: CGFloat(x),
+            y: CGFloat(y),
+            width: CGFloat(width),
+            height: CGFloat(height),
+            content: content
         )
-    } else {
-        contentType = .text(text: text, color: .clear, font: .systemFont(ofSize: 8))
+
+        var fs = BlueprintFrame.Style(
+            lineWidth: 0,
+            lineColor: .clear,
+            fillColor: .clear,
+            cornerRadius: 0,
+            opacity: 1
+        )
+
+        if let border = border {
+            fs.lineWidth = CGFloat(border.width)
+            fs.lineColor = UIColor(hexString: border.color)
+        }
+
+        if let style = style {
+            fs.fillColor = style.backgroundColor.flatMap { UIColor(hexString: $0) } ?? fs.fillColor
+            fs.cornerRadius = style.cornerRadius.flatMap { CGFloat($0) } ?? fs.cornerRadius
+            fs.opacity = style.opacity.flatMap { CGFloat($0) } ?? fs.opacity
+        }
+
+        if let clip = clip {
+            fs.clip = CGRect(
+                x: frame.x,
+                y: frame.y,
+                width: frame.width,
+                height: frame.height
+            ).inset(
+                by: UIEdgeInsets(
+                    top: clip.top.map { CGFloat($0) } ?? 0,
+                    left: clip.left.map { CGFloat($0) } ?? 0,
+                    bottom: clip.bottom.map { CGFloat($0) } ?? 0,
+                    right: clip.right.map { CGFloat($0) } ?? 0
+                )
+            )
+        }
+
+        frame.style = fs
+        self = frame
     }
 
-    return .init(
-        contentType: contentType,
-        horizontalAlignment: horizontalAlignment,
-        verticalAlignment: verticalAlignment
-    )
 }
 
-private func frameContent(imageData: Data?) -> BlueprintFrame.Content {
-    let image = UIImage(data: imageData ?? Data(), scale: UIScreen.main.scale) ?? UIImage()
-    let contentType: BlueprintFrame.Content.ContentType = .image(image: image)
-    return .init(contentType: contentType)
+extension BlueprintFrame.Content {
+    init(text: String, textStyle: SRTextStyle?, textPosition: SRTextPosition?) {
+        var horizontalAlignment: BlueprintFrame.Content.Alignment = .leading
+        var verticalAlignment: BlueprintFrame.Content.Alignment = .leading
+
+        if let textPosition = textPosition {
+            switch textPosition.alignment?.horizontal {
+            case .left?:    horizontalAlignment = .leading
+            case .center?:  horizontalAlignment = .center
+            case .right?:   horizontalAlignment = .trailing
+            default:        break
+            }
+            switch textPosition.alignment?.vertical {
+            case .top?:     verticalAlignment = .leading
+            case .center?:  verticalAlignment = .center
+            case .bottom?:  verticalAlignment = .trailing
+            default:        break
+            }
+        }
+
+        let contentType: BlueprintFrame.Content.ContentType
+        if let textStyle = textStyle {
+            contentType = .text(
+                text: text,
+                color: UIColor(hexString: textStyle.color),
+                font: .systemFont(ofSize: CGFloat(textStyle.size))
+            )
+        } else {
+            contentType = .text(text: text, color: .clear, font: .systemFont(ofSize: 8))
+        }
+
+        self.init(
+            contentType: contentType,
+            horizontalAlignment: horizontalAlignment,
+            verticalAlignment: verticalAlignment
+        )
+    }
+
+    init(imageData: Data?) {
+        let image = UIImage(data: imageData ?? Data(), scale: UIScreen.main.scale) ?? UIImage()
+        let contentType: BlueprintFrame.Content.ContentType = .image(image: image)
+        self.init(contentType: contentType)
+    }
 }
 
 private extension UIColor {

@@ -565,7 +565,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ncreated/Framer";
 			requirement = {
-				branch = "ncreated-patch-1";
+				branch = main;
 				kind = branch;
 			};
 		};
