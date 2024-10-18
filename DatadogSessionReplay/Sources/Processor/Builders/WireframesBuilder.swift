@@ -349,7 +349,7 @@ extension SRContentClip {
         let right = frame.maxX - intersection.maxX
 
         // more reliable than intersection == frame
-        if bottom.isZero, bottom.isZero, bottom.isZero, bottom.isZero {
+        if top.isZero, left.isZero, bottom.isZero, right.isZero {
             return nil
         }
 
