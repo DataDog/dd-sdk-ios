@@ -140,7 +140,8 @@ internal class SnapshotTestCase: XCTestCase {
 
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,
-            additionalNodeRecorders: []
+            additionalNodeRecorders: [], 
+            globalTouchPrivacy: .show
         )
 
         // Set up wireframes interception:

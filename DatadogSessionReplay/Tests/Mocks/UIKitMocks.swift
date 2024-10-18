@@ -46,10 +46,12 @@ extension UIView: AnyMockable, RandomMockable {
 class UITouchMock: UITouch {
     var _phase: UITouch.Phase
     var _location: CGPoint
+    var _mockedView: UIView
 
-    init(phase: UITouch.Phase = .began, location: CGPoint = .zero) {
+    init(phase: UITouch.Phase = .began, location: CGPoint = .zero, view: UIView = UIView()) {
         self._phase = phase
         self._location = location
+        self._mockedView = view
     }
 
     override var phase: UITouch.Phase {
@@ -59,6 +61,10 @@ class UITouchMock: UITouch {
 
     override func location(in view: UIView?) -> CGPoint {
         return _location
+    }
+
+    override var view: UIView {
+        return _mockedView
     }
 }
 
