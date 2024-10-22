@@ -680,27 +680,21 @@
 		61FDBA15269722B4001D9D43 /* CrashReportMinifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA14269722B4001D9D43 /* CrashReportMinifierTests.swift */; };
 		61FDBA1726974CA9001D9D43 /* DDCrashReportBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1626974CA9001D9D43 /* DDCrashReportBuilderTests.swift */; };
 		61FF282824B8A31E000B3D9B /* RUMEventMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282724B8A31E000B3D9B /* RUMEventMatcher.swift */; };
-		962C41A72CA431370050B747 /* SessionReplayPrivacyOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966253B52C98807400B90B63 /* SessionReplayPrivacyOverrides.swift */; };
-		962C41A82CA431AA0050B747 /* DDSessionReplayOverridesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863752C9C7E800023BF78 /* DDSessionReplayOverridesTests.swift */; };
+		962C41A82CA431AA0050B747 /* DDSessionReplayPrivacyOverridesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863752C9C7E800023BF78 /* DDSessionReplayPrivacyOverridesTests.swift */; };
 		962C41A92CB00FD60050B747 /* DDSessionReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A434AD2A8E426C0028E329 /* DDSessionReplayTests.swift */; };
-		962C41A72CA431370050B747 /* PrivacyLevel+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966253B52C98807400B90B63 /* PrivacyLevel+SessionReplay.swift */; };
-		962C41A72CA431370050B747 /* SessionReplayPrivacyOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966253B52C98807400B90B63 /* SessionReplayPrivacyOverrides.swift */; };
-		962C41A82CA431AA0050B747 /* DDSessionReplayOverridesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863752C9C7E800023BF78 /* DDSessionReplayOverridesTests.swift */; };
+		966DAAB92CC7AD2E00424222 /* SessionReplayPrivacyOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966DAAB82CC7AD2E00424222 /* SessionReplayPrivacyOverrides.swift */; };
+		966DAABB2CC7ADC700424222 /* SessionReplayPrivacyOverrides+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966DAABA2CC7ADC700424222 /* SessionReplayPrivacyOverrides+objc.swift */; };
+		966DAABD2CC7ADEC00424222 /* UIView+SessionReplayPrivacyOverrides+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966DAABC2CC7ADEC00424222 /* UIView+SessionReplayPrivacyOverrides+objc.swift */; };
+		966DAAC02CC7AF0300424222 /* PrivacyOverridesMock+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966DAABE2CC7AEEB00424222 /* PrivacyOverridesMock+objc.swift */; };
 		969B3B212C33F80500D62400 /* UIActivityIndicatorRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969B3B202C33F80500D62400 /* UIActivityIndicatorRecorder.swift */; };
 		969B3B232C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969B3B222C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift */; };
 		96E414142C2AF56F005A6119 /* UIProgressViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E414132C2AF56F005A6119 /* UIProgressViewRecorder.swift */; };
 		96E414162C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E414152C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift */; };
-		96E863722C9C547B0023BF78 /* SessionReplayOverrideTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863712C9C547B0023BF78 /* SessionReplayOverrideTests.swift */; };
-		96E863742C9C64180023BF78 /* SessionReplayOverrides+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863732C9C64180023BF78 /* SessionReplayOverrides+objc.swift */; };
+		96E863722C9C547B0023BF78 /* SessionReplayPrivacyOverrideTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863712C9C547B0023BF78 /* SessionReplayPrivacyOverrideTests.swift */; };
 		96F69D6C2CBE94A800A6178B /* DatadogCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B78EA296D7B63009C6B92 /* DatadogCoreTests.swift */; };
 		96F69D6D2CBE94A900A6178B /* DatadogCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B78EA296D7B63009C6B92 /* DatadogCoreTests.swift */; };
 		96F69D6E2CBE94F500A6178B /* MockFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71265852B17980C007D63CE /* MockFeature.swift */; };
 		96F69D6F2CBE94F600A6178B /* MockFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71265852B17980C007D63CE /* MockFeature.swift */; };
-		96E863722C9C547B0023BF78 /* SessionReplayOverrideTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863712C9C547B0023BF78 /* SessionReplayOverrideTests.swift */; };
-		96E863742C9C64180023BF78 /* SessionReplayOverrides+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863732C9C64180023BF78 /* SessionReplayOverrides+objc.swift */; };
-		96E863772C9C7ECF0023BF78 /* DDSessionReplayOverridesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863752C9C7E800023BF78 /* DDSessionReplayOverridesTests.swift */; };
-		96E863802CA1B59C0023BF78 /* PrivacyLevel+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966253B52C98807400B90B63 /* PrivacyLevel+SessionReplay.swift */; };
-		96E863812CA1B59D0023BF78 /* PrivacyLevel+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966253B52C98807400B90B63 /* PrivacyLevel+SessionReplay.swift */; };
 		9E55407C25812D1C00F6E3AD /* RUM+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E55407B25812D1C00F6E3AD /* RUM+objc.swift */; };
 		9E58E8E324615EDA008E5063 /* JSONEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */; };
 		9E5B6D2E270C84B4002499B8 /* RUMMonitorE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5B6D2D270C84B4002499B8 /* RUMMonitorE2ETests.swift */; };
@@ -2745,15 +2739,16 @@
 		61FF282F24BC5E2D000B3D9B /* RUMEventFileOutputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventFileOutputTests.swift; sourceTree = "<group>"; };
 		61FF416125EE5FF400CE35EC /* CrashLogReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashLogReceiverTests.swift; sourceTree = "<group>"; };
 		61FF9A4425AC5DEA001058CC /* ViewIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewIdentifier.swift; sourceTree = "<group>"; };
-		966253B52C98807400B90B63 /* SessionReplayPrivacyOverrides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayPrivacyOverrides.swift; sourceTree = "<group>"; };
-		966253B52C98807400B90B63 /* PrivacyLevel+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PrivacyLevel+SessionReplay.swift"; sourceTree = "<group>"; };
+		966DAAB82CC7AD2E00424222 /* SessionReplayPrivacyOverrides.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayPrivacyOverrides.swift; sourceTree = "<group>"; };
+		966DAABA2CC7ADC700424222 /* SessionReplayPrivacyOverrides+objc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SessionReplayPrivacyOverrides+objc.swift"; sourceTree = "<group>"; };
+		966DAABC2CC7ADEC00424222 /* UIView+SessionReplayPrivacyOverrides+objc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIView+SessionReplayPrivacyOverrides+objc.swift"; sourceTree = "<group>"; };
+		966DAABE2CC7AEEB00424222 /* PrivacyOverridesMock+objc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "PrivacyOverridesMock+objc.swift"; sourceTree = "<group>"; };
 		969B3B202C33F80500D62400 /* UIActivityIndicatorRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIActivityIndicatorRecorder.swift; sourceTree = "<group>"; };
 		969B3B222C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIActivityIndicatorRecorderTests.swift; sourceTree = "<group>"; };
 		96E414132C2AF56F005A6119 /* UIProgressViewRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIProgressViewRecorder.swift; sourceTree = "<group>"; };
 		96E414152C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIProgressViewRecorderTests.swift; sourceTree = "<group>"; };
-		96E863712C9C547B0023BF78 /* SessionReplayOverrideTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayOverrideTests.swift; sourceTree = "<group>"; };
-		96E863732C9C64180023BF78 /* SessionReplayOverrides+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SessionReplayOverrides+objc.swift"; sourceTree = "<group>"; };
-		96E863752C9C7E800023BF78 /* DDSessionReplayOverridesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSessionReplayOverridesTests.swift; sourceTree = "<group>"; };
+		96E863712C9C547B0023BF78 /* SessionReplayPrivacyOverrideTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayPrivacyOverrideTests.swift; sourceTree = "<group>"; };
+		96E863752C9C7E800023BF78 /* DDSessionReplayPrivacyOverridesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSessionReplayPrivacyOverridesTests.swift; sourceTree = "<group>"; };
 		9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Kronos.xcframework; path = ../Carthage/Build/Kronos.xcframework; sourceTree = "<group>"; };
 		9E26E6B824C87693000B3270 /* RUMDataModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMDataModels.swift; sourceTree = "<group>"; };
 		9E2EF44E2694FA14008A7DAE /* VitalInfoSamplerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalInfoSamplerTests.swift; sourceTree = "<group>"; };
@@ -3577,10 +3572,11 @@
 			isa = PBXGroup;
 			children = (
 				61054E0C2A6EE10A00AAA894 /* SessionReplay.swift */,
+				966DAAB82CC7AD2E00424222 /* SessionReplayPrivacyOverrides.swift */,
 				61054E0B2A6EE10A00AAA894 /* SessionReplayConfiguration.swift */,
-				966253B52C98807400B90B63 /* SessionReplayPrivacyOverrides.swift */,
 				A795069B2B974C8100AC4814 /* SessionReplay+objc.swift */,
-				96E863732C9C64180023BF78 /* SessionReplayOverrides+objc.swift */,
+				966DAABA2CC7ADC700424222 /* SessionReplayPrivacyOverrides+objc.swift */,
+				966DAABC2CC7ADEC00424222 /* UIView+SessionReplayPrivacyOverrides+objc.swift */,
 				61054E3B2A6EE10A00AAA894 /* Feature */,
 				61054E482A6EE10A00AAA894 /* Processor */,
 				61054E0D2A6EE10A00AAA894 /* Recorder */,
@@ -3595,12 +3591,11 @@
 		61054E022A6EE0DB00AAA894 /* DatadogSessionReplayTests */ = {
 			isa = PBXGroup;
 			children = (
-				96E863712C9C547B0023BF78 /* SessionReplayOverrideTests.swift */,
+				96E863712C9C547B0023BF78 /* SessionReplayPrivacyOverrideTests.swift */,
 				61054F482A6EE1B900AAA894 /* SessionReplayTests.swift */,
 				61054F3D2A6EE1B900AAA894 /* SessionReplayConfigurationTests.swift */,
-				96E863752C9C7E800023BF78 /* DDSessionReplayOverridesTests.swift */,
 				D2A434AD2A8E426C0028E329 /* DDSessionReplayTests.swift */,
-				96E863752C9C7E800023BF78 /* DDSessionReplayOverridesTests.swift */,
+				96E863752C9C7E800023BF78 /* DDSessionReplayPrivacyOverridesTests.swift */,
 				61054F882A6EE1BA00AAA894 /* Feature */,
 				61054F922A6EE1BA00AAA894 /* Helpers */,
 				61054F7D2A6EE1BA00AAA894 /* Mocks */,
@@ -3652,8 +3647,6 @@
 				61054E142A6EE10A00AAA894 /* UIImage+SessionReplay.swift */,
 				D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */,
 				61054E152A6EE10A00AAA894 /* UIView+SessionReplay.swift */,
-				966253B52C98807400B90B63 /* PrivacyLevel+SessionReplay.swift */,
-				61054E152A6EE10A00AAA894 /* UIKitExtensions.swift */,
 				61054E162A6EE10A00AAA894 /* CFType+Safety.swift */,
 				61054E172A6EE10A00AAA894 /* SystemColors.swift */,
 				61054E182A6EE10A00AAA894 /* CGRect+ContentFrame.swift */,
@@ -4010,6 +4003,7 @@
 		61054F7D2A6EE1BA00AAA894 /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
+				966DAABE2CC7AEEB00424222 /* PrivacyOverridesMock+objc.swift */,
 				3C33E4062BEE35A7003B2988 /* RUMContextMocks.swift */,
 				61054F7E2A6EE1BA00AAA894 /* UIKitMocks.swift */,
 				61054F7F2A6EE1BA00AAA894 /* CoreGraphicsMocks.swift */,
@@ -4355,8 +4349,6 @@
 				A7DA18062AB0CA4700F76337 /* DDUIKitRUMActionsPredicateTests.swift */,
 				9EE5AD8126205B82001E699E /* DDNSURLSessionDelegateTests.swift */,
 				3CCCA5C62ABAF5230029D7BD /* DDURLSessionInstrumentationConfigurationTests.swift */,
-				D2A434AD2A8E426C0028E329 /* DDSessionReplayTests.swift */,
-				96E863752C9C7E800023BF78 /* DDSessionReplayOverridesTests.swift */,
 				61D03BDE273404BB00367DE0 /* RUM */,
 				F603F1282CAEA4E90088E6B7 /* DDInternalLoggerTests.swift */,
 			);
@@ -6485,7 +6477,6 @@
 			isa = PBXGroup;
 			children = (
 				D2EA0F452C0E1AE200CB20F8 /* SessionReplayConfiguration.swift */,
-				966253B52C98807400B90B63 /* PrivacyLevel+SessionReplay.swift */,
 			);
 			path = SessionReplay;
 			sourceTree = "<group>";
@@ -8209,7 +8200,6 @@
 				6147989C2A459E2B0095CB02 /* DDTrace+apiTests.m in Sources */,
 				D22743EB29DEC9E6001A7EF9 /* Casting+RUM.swift in Sources */,
 				61DA8CB2286215DE0074A606 /* CryptographyTests.swift in Sources */,
-				96E863772C9C7ECF0023BF78 /* DDSessionReplayOverridesTests.swift in Sources */,
 				615A4A8924A34FD700233986 /* DDTracerTests.swift in Sources */,
 				6128F58A2BA9860B00D35B08 /* DataStoreFileReaderTests.swift in Sources */,
 				61A2CC212A443D330000FF25 /* DDRUMConfigurationTests.swift in Sources */,
@@ -8378,6 +8368,7 @@
 				61054E822A6EE10A00AAA894 /* UILabelRecorder.swift in Sources */,
 				A73A54982B16406900E1F7E3 /* ResourcesFeature.swift in Sources */,
 				61054E6C2A6EE10A00AAA894 /* SystemColors.swift in Sources */,
+				966DAAB92CC7AD2E00424222 /* SessionReplayPrivacyOverrides.swift in Sources */,
 				61054E812A6EE10A00AAA894 /* UIStepperRecorder.swift in Sources */,
 				61054E632A6EE10A00AAA894 /* SessionReplayConfiguration.swift in Sources */,
 				61054E702A6EE10A00AAA894 /* TouchSnapshotProducer.swift in Sources */,
@@ -8390,7 +8381,6 @@
 				61054E612A6EE10A00AAA894 /* SRCompression.swift in Sources */,
 				61054E8F2A6EE10A00AAA894 /* SegmentRequestBuilder.swift in Sources */,
 				61054E8B2A6EE10A00AAA894 /* SessionReplayFeature.swift in Sources */,
-				96E863742C9C64180023BF78 /* SessionReplayOverrides+objc.swift in Sources */,
 				61054E992A6EE10A00AAA894 /* WireframesBuilder.swift in Sources */,
 				61054E892A6EE10A00AAA894 /* NodeIDGenerator.swift in Sources */,
 				61054E962A6EE10A00AAA894 /* Diff+SRWireframes.swift in Sources */,
@@ -8403,11 +8393,11 @@
 				61054EA12A6EE10B00AAA894 /* MainThreadScheduler.swift in Sources */,
 				61054E7C2A6EE10A00AAA894 /* UINavigationBarRecorder.swift in Sources */,
 				96E414142C2AF56F005A6119 /* UIProgressViewRecorder.swift in Sources */,
-				962C41A72CA431370050B747 /* SessionReplayPrivacyOverrides.swift in Sources */,
 				61054E772A6EE10A00AAA894 /* ViewTreeRecorder.swift in Sources */,
 				61054E9E2A6EE10B00AAA894 /* Queue.swift in Sources */,
 				61054E872A6EE10A00AAA894 /* ViewAttributes+Copy.swift in Sources */,
 				61054E6A2A6EE10A00AAA894 /* UIView+SessionReplay.swift in Sources */,
+				966DAABD2CC7ADEC00424222 /* UIView+SessionReplayPrivacyOverrides+objc.swift in Sources */,
 				61054E7D2A6EE10A00AAA894 /* UITextFieldRecorder.swift in Sources */,
 				61054E832A6EE10A00AAA894 /* UISwitchRecorder.swift in Sources */,
 				61054E9A2A6EE10A00AAA894 /* NodesFlattener.swift in Sources */,
@@ -8442,6 +8432,7 @@
 				D22442C52CA301DA002E71E4 /* UIColor+SessionReplay.swift in Sources */,
 				61054E8E2A6EE10A00AAA894 /* SRContextPublisher.swift in Sources */,
 				61054E732A6EE10A00AAA894 /* WindowTouchSnapshotProducer.swift in Sources */,
+				966DAABB2CC7ADC700424222 /* SessionReplayPrivacyOverrides+objc.swift in Sources */,
 				A70ADCD22B583B1300321BC9 /* UIImageResource.swift in Sources */,
 				61054E792A6EE10A00AAA894 /* UITextViewRecorder.swift in Sources */,
 				61054E9B2A6EE10B00AAA894 /* CGRectExtensions.swift in Sources */,
@@ -8482,6 +8473,7 @@
 				61054FC22A6EE1BA00AAA894 /* ViewTreeSnapshotTests.swift in Sources */,
 				D2BCB2A32B7B9683005C2AAB /* WKWebViewRecorderTests.swift in Sources */,
 				61054FC62A6EE1BA00AAA894 /* CoreGraphicsMocks.swift in Sources */,
+				966DAAC02CC7AF0300424222 /* PrivacyOverridesMock+objc.swift in Sources */,
 				61054FCA2A6EE1BA00AAA894 /* TestScheduler.swift in Sources */,
 				962C41A92CB00FD60050B747 /* DDSessionReplayTests.swift in Sources */,
 				61054FBD2A6EE1BA00AAA894 /* UIViewRecorderTests.swift in Sources */,
@@ -8502,7 +8494,7 @@
 				61054FB92A6EE1BA00AAA894 /* UINavigationBarRecorderTests.swift in Sources */,
 				61054FA62A6EE1BA00AAA894 /* SnapshotProcessorTests.swift in Sources */,
 				61054FB72A6EE1BA00AAA894 /* UISegmentRecorderTests.swift in Sources */,
-				96E863722C9C547B0023BF78 /* SessionReplayOverrideTests.swift in Sources */,
+				96E863722C9C547B0023BF78 /* SessionReplayPrivacyOverrideTests.swift in Sources */,
 				A7D9528A2B28BD94004C79B1 /* ResourceProcessorSpy.swift in Sources */,
 				A7D9528C2B28C18D004C79B1 /* ResourceProcessorTests.swift in Sources */,
 				A74A72892B10D95D00771FEB /* MultipartBuilderSpy.swift in Sources */,
@@ -8520,7 +8512,7 @@
 				61054FAA2A6EE1BA00AAA894 /* UIView+SessionReplayTests.swift in Sources */,
 				61054FA52A6EE1BA00AAA894 /* RecordsBuilderTests.swift in Sources */,
 				61054FD02A6EE1BA00AAA894 /* SRContextPublisherTests.swift in Sources */,
-				962C41A82CA431AA0050B747 /* DDSessionReplayOverridesTests.swift in Sources */,
+				962C41A82CA431AA0050B747 /* DDSessionReplayPrivacyOverridesTests.swift in Sources */,
 				61054F9B2A6EE1BA00AAA894 /* QueueTests.swift in Sources */,
 				D2056C212BBFE05A0085BC76 /* WireframesBuilderTests.swift in Sources */,
 				61054F992A6EE1BA00AAA894 /* ColorsTests.swift in Sources */,
@@ -8771,7 +8763,6 @@
 				D2160C9A29C0DE5700FAA9A5 /* FirstPartyHosts.swift in Sources */,
 				D2EBEE2229BA160F00B15732 /* TracePropagationHeadersReader.swift in Sources */,
 				D2303A02298D5236001A1FA3 /* ReadWriteLock.swift in Sources */,
-				96E863802CA1B59C0023BF78 /* PrivacyLevel+SessionReplay.swift in Sources */,
 				D2EBEE2429BA160F00B15732 /* W3CHTTPHeadersReader.swift in Sources */,
 				A7FA98CE2BA1A6930018D6B5 /* MethodCalledMetric.swift in Sources */,
 				D23039E8298D5236001A1FA3 /* DatadogContext.swift in Sources */,
@@ -9760,7 +9751,6 @@
 				D2160C9B29C0DE5700FAA9A5 /* FirstPartyHosts.swift in Sources */,
 				D2EBEE3029BA161100B15732 /* TracePropagationHeadersReader.swift in Sources */,
 				D2DA2373298D57AA00C6C7E6 /* ReadWriteLock.swift in Sources */,
-				96E863812CA1B59D0023BF78 /* PrivacyLevel+SessionReplay.swift in Sources */,
 				D2EBEE3229BA161100B15732 /* W3CHTTPHeadersReader.swift in Sources */,
 				A7FA98CF2BA1A6930018D6B5 /* MethodCalledMetric.swift in Sources */,
 				D2DA2374298D57AA00C6C7E6 /* DatadogContext.swift in Sources */,

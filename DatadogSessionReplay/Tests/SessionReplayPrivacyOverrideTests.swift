@@ -10,7 +10,7 @@ import UIKit
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
-class SessionReplayOverridesTests: XCTestCase {
+class SessionReplayPrivacyOverridesTests: XCTestCase {
     // MARK: Setting overrides
     func testWhenNoOverrideIsSet_itDefaultsToNil() {
         // Given
@@ -160,6 +160,9 @@ class SessionReplayOverridesTests: XCTestCase {
         // Given
         let childOverrides: PrivacyOverrides = .mockAny()
         let parentOverrides: PrivacyOverrides = .mockRandom()
+        /// We explicitly set `hide` to `true` in the parent override because the child’s `hide` is `nil`.
+        /// In the merge logic, `true` takes precedence, and `false` behaves the same as `nil`, meaning no override.
+        parentOverrides.hide = true
 
         // When
         let merged = SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides)

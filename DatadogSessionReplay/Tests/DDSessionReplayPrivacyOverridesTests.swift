@@ -12,7 +12,7 @@ import DatadogInternal
 @_spi(objc)
 @testable import DatadogSessionReplay
 
-class DDSessionReplayOverrideTests: XCTestCase {
+class DDSessionReplayPrivacyOverrideTests: XCTestCase {
     // MARK: Privacy Overrides Interoperability
     func testTextAndInputPrivacyLevelsOverrideInterop() {
         XCTAssertEqual(objc_TextAndInputPrivacyLevelOverride.maskAll._swift, .maskAll)
