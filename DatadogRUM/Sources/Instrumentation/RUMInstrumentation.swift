@@ -55,12 +55,17 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         backtraceReporter: BacktraceReporting,
         fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID,
+        notificationCenter: NotificationCenter,
         watchdogTermination: WatchdogTerminationMonitor?,
         memoryWarningMonitor: MemoryWarningMonitor
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI instrumentation)
         // and only swizzle `UIViewController` if UIKit instrumentation is configured:
-        let viewsHandler = RUMViewsHandler(dateProvider: dateProvider, predicate: uiKitRUMViewsPredicate)
+        let viewsHandler = RUMViewsHandler(
+            dateProvider: dateProvider,
+            predicate: uiKitRUMViewsPredicate,
+            notificationCenter: notificationCenter
+        )
         let viewControllerSwizzler: UIViewControllerSwizzler? = {
             do {
                 if uiKitRUMViewsPredicate != nil {

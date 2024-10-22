@@ -401,7 +401,8 @@ extension DatadogContextProvider {
         sdkInitDate: Date,
         device: DeviceInfo,
         dateProvider: DateProvider,
-        serverDateProvider: ServerDateProvider
+        serverDateProvider: ServerDateProvider,
+        notificationCenter: NotificationCenter
     ) {
         let context = DatadogContext(
             site: site,
@@ -442,14 +443,17 @@ extension DatadogContextProvider {
         #endif
 
         #if os(iOS) && !targetEnvironment(simulator)
-        subscribe(\.batteryStatus, to: BatteryStatusPublisher())
-        subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher())
+        subscribe(\.batteryStatus, to: BatteryStatusPublisher(notificationCenter: notificationCenter))
+        subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher(notificationCenter: notificationCenter))
         #endif
 
         #if os(iOS) || os(tvOS)
         DispatchQueue.main.async {
             // must be call on the main thread to read `UIApplication.State`
-            let applicationStatePublisher = ApplicationStatePublisher(dateProvider: dateProvider)
+            let applicationStatePublisher = ApplicationStatePublisher(
+                notificationCenter: notificationCenter,
+                dateProvider: dateProvider
+            )
             self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
         }
         #endif

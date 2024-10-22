@@ -114,7 +114,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
         let memoryWarningReporter = MemoryWarningReporter()
         let memoryWarningMonitor = MemoryWarningMonitor(
             backtraceReporter: core.backtraceReporter,
-            memoryWarningReporter: memoryWarningReporter
+            memoryWarningReporter: memoryWarningReporter,
+            notificationCenter: configuration.notificationCenter
         )
 
         self.instrumentation = RUMInstrumentation(
@@ -128,6 +129,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             backtraceReporter: core.backtraceReporter,
             fatalErrorContext: dependencies.fatalErrorContext,
             processID: configuration.processID,
+            notificationCenter: configuration.notificationCenter,
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: memoryWarningMonitor
         )

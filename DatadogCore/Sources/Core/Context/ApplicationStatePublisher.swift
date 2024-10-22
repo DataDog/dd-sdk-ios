@@ -60,14 +60,14 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     ///
     /// - Parameters:
     ///   - initialState: The initial application state.
+    ///   - notificationCenter: The notification center where this publisher observes `UIApplication` notifications.
     ///   - queue: The queue for publishing the history.
     ///   - dateProvider: The date provider for the Application state snapshot timestamp.
-    ///   - notificationCenter: The notification center where this publisher observes `UIApplication` notifications.
     init(
         initialState: AppState,
+        notificationCenter: NotificationCenter,
         queue: DispatchQueue = ApplicationStatePublisher.defaultQueue,
-        dateProvider: DateProvider = SystemDateProvider(),
-        notificationCenter: NotificationCenter = .default
+        dateProvider: DateProvider = SystemDateProvider()
     ) {
         let initialValue = AppStateHistory(
             initialState: initialState,
@@ -87,21 +87,21 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     /// **Note**: It must be called on the main thread.
     ///
     /// - Parameters:
+    ///   - notificationCenter: The notification center where this publisher observes `UIApplication` notifications.
     ///   - applicationState: The current shared `UIApplication` state.
     ///   - queue: The queue for publishing the history.
     ///   - dateProvider: The date provider for the Application state snapshot timestamp.
-    ///   - notificationCenter: The notification center where this publisher observes `UIApplication` notifications.
     convenience init(
+        notificationCenter: NotificationCenter,
         applicationState: ApplicationState = ApplicationStatePublisher.currentApplicationState,
         queue: DispatchQueue = ApplicationStatePublisher.defaultQueue,
-        dateProvider: DateProvider = SystemDateProvider(),
-        notificationCenter: NotificationCenter = .default
+        dateProvider: DateProvider = SystemDateProvider()
     ) {
         self.init(
             initialState: AppState(applicationState),
+            notificationCenter: notificationCenter,
             queue: queue,
-            dateProvider: dateProvider,
-            notificationCenter: notificationCenter
+            dateProvider: dateProvider
         )
     }
 

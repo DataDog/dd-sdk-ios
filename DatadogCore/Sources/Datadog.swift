@@ -226,6 +226,9 @@ public enum Datadog {
         internal var httpClientFactory: ([AnyHashable: Any]?) -> HTTPClient = { proxyConfiguration in
             URLSessionClient(proxyConfiguration: proxyConfiguration)
         }
+
+        /// The default notification center used for subscribing to app lifecycle events and system notifications.
+        internal var notificationCenter: NotificationCenter = .default
     }
 
     /// Verbosity level of Datadog SDK. Can be used for debugging purposes.
@@ -466,7 +469,8 @@ public enum Datadog {
                 sdkInitDate: configuration.dateProvider.now,
                 device: DeviceInfo(),
                 dateProvider: configuration.dateProvider,
-                serverDateProvider: configuration.serverDateProvider
+                serverDateProvider: configuration.serverDateProvider,
+                notificationCenter: configuration.notificationCenter
             ),
             applicationVersion: applicationVersion,
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,

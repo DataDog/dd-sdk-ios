@@ -18,7 +18,7 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
     private let telemetry: Telemetry
 
     init(
-        notificationCenter: NotificationCenter = .default,
+        notificationCenter: NotificationCenter,
         telemetry: Telemetry = NOPTelemetry()
     ) {
         self.telemetry = telemetry

@@ -17,8 +17,8 @@ class LowPowerModePublisherTests: XCTestCase {
         // Given
         let isLowPowerModeEnabled: Bool = .random()
         let publisher = LowPowerModePublisher(
-            processInfo: ProcessInfoMock(isLowPowerModeEnabled: isLowPowerModeEnabled),
-            notificationCenter: notificationCenter
+            notificationCenter: notificationCenter,
+            processInfo: ProcessInfoMock(isLowPowerModeEnabled: isLowPowerModeEnabled)
         )
 
         XCTAssertEqual(publisher.initialValue, isLowPowerModeEnabled)
