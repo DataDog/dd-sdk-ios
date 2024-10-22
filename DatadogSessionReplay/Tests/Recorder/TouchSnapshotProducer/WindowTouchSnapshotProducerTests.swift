@@ -22,8 +22,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
 
         // Given
         let producer = WindowTouchSnapshotProducer(
-            windowObserver: mockWindowObserver,
-            globalTouchPrivacy: .mockAny()
+            windowObserver: mockWindowObserver
         )
 
         // When
@@ -52,8 +51,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
 
         // Given
         let producer = WindowTouchSnapshotProducer(
-            windowObserver: mockWindowObserver,
-            globalTouchPrivacy: .mockAny()
+            windowObserver: mockWindowObserver
         )
 
         // When
@@ -76,8 +74,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
 
         // Given
         let producer = WindowTouchSnapshotProducer(
-            windowObserver: mockWindowObserver,
-            globalTouchPrivacy: .mockAny()
+            windowObserver: mockWindowObserver
         )
 
         // When
@@ -110,8 +107,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         // Given
         let touchEvent1 = UITouchEventMock(touches: (0..<2).map { _ in UITouchMock(phase: .moved) })
         let producer = WindowTouchSnapshotProducer(
-            windowObserver: mockWindowObserver,
-            globalTouchPrivacy: .mockAny()
+            windowObserver: mockWindowObserver
         )
 
         // When
@@ -129,8 +125,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         let touch = UITouchMock(phase: .began, location: .mockRandom(), view: view)
 
         let producer = WindowTouchSnapshotProducer(
-            windowObserver: mockWindowObserver,
-            globalTouchPrivacy: .mockRandom()
+            windowObserver: mockWindowObserver
         )
 
         // When
@@ -152,8 +147,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         let touch = UITouchMock(phase: .began, location: .mockRandom(), view: childView)
 
         let producer = WindowTouchSnapshotProducer(
-            windowObserver: mockWindowObserver,
-            globalTouchPrivacy: .mockRandom()
+            windowObserver: mockWindowObserver
         )
 
         // When
@@ -172,8 +166,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         let touchEvent = UITouchEventMock(touches: [touch])
 
         let producer = WindowTouchSnapshotProducer(
-            windowObserver: mockWindowObserver,
-            globalTouchPrivacy: .mockRandom()
+            windowObserver: mockWindowObserver
         )
 
         // When
@@ -196,8 +189,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         let touchEvent = UITouchEventMock(touches: [touch])
 
         let producer = WindowTouchSnapshotProducer(
-            windowObserver: mockWindowObserver,
-            globalTouchPrivacy: .mockRandom()
+            windowObserver: mockWindowObserver
         )
 
         // When
@@ -217,8 +209,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         let touchEvent = UITouchEventMock(touches: [touch])
 
         let producer = WindowTouchSnapshotProducer(
-            windowObserver: mockWindowObserver,
-            globalTouchPrivacy: .mockRandom()
+            windowObserver: mockWindowObserver
         )
 
         // When
@@ -242,8 +233,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         let touchEvent = UITouchEventMock(touches: [touch])
 
         let producer = WindowTouchSnapshotProducer(
-            windowObserver: mockWindowObserver,
-            globalTouchPrivacy: .mockRandom()
+            windowObserver: mockWindowObserver
         )
 
         // When
