@@ -119,12 +119,17 @@ internal class RecordingCoordinator: RecordingTriggerDelegate {
         srContextPublisher.setHasReplay(hasReplay)
     }
 
-    private var lastFrameTimestamp: Date?
-    private var shouldSkipFrame: Bool {
-        return dateProvider.now.timeIntervalSince(lastFrameTimestamp ?? .distantPast) < Constants.throttingRate
+    private var lastTriggerTimestamp: Date?
+
+    private var shouldSkipTrigger: Bool {
+        return dateProvider.now.timeIntervalSince(lastTriggerTimestamp ?? .distantPast) < Constants.throttingRate
     }
 
     func didTrigger() {
+        guard shouldSkipTrigger == false else {
+            return
+        }
+        lastTriggerTimestamp = Date()
         captureNextRecord()
     }
 
@@ -137,15 +142,12 @@ internal class RecordingCoordinator: RecordingTriggerDelegate {
             guard isSampled == true && recordingEnabled == true else {
                 return
             }
-            guard shouldSkipFrame == false else {
-                return
-            }
+
             // We don't capture any snapshots if the RUM context has no view ID.
             guard let rumContext = currentRUMContext,
                   let viewID = rumContext.viewID else {
                 return
             }
-            lastFrameTimestamp = Date()
 
             let recorderContext = Recorder.Context(
                 textAndInputPrivacy: textAndInputPrivacy,
