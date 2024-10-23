@@ -718,7 +718,6 @@
 		A79B0F67292BD7CC008742B3 /* B3HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F5E292BA435008742B3 /* B3HTTPHeadersWriter+objc.swift */; };
 		A7A68C202CB5546100170580 /* RecordingTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7A68C1F2CB5545E00170580 /* RecordingTrigger.swift */; };
 		A7A68C222CB5747600170580 /* RecordingTriggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7A68C212CB5747100170580 /* RecordingTriggerTests.swift */; };
-		A7A68C242CB5764900170580 /* RecordingCoordinatorSpy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7A68C232CB5763800170580 /* RecordingCoordinatorSpy.swift */; };
 		A7B932F52B1F694000AE6477 /* ResourcesProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B932F42B1F694000AE6477 /* ResourcesProcessor.swift */; };
 		A7B932FB2B1F6A0A00AE6477 /* EnrichedRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B932F72B1F6A0A00AE6477 /* EnrichedRecord.swift */; };
 		A7B932FC2B1F6A0A00AE6477 /* SRDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B932F82B1F6A0A00AE6477 /* SRDataModels.swift */; };
@@ -2780,7 +2779,6 @@
 		A79B0F63292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDB3HTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
 		A7A68C1F2CB5545E00170580 /* RecordingTrigger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingTrigger.swift; sourceTree = "<group>"; };
 		A7A68C212CB5747100170580 /* RecordingTriggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingTriggerTests.swift; sourceTree = "<group>"; };
-		A7A68C232CB5763800170580 /* RecordingCoordinatorSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingCoordinatorSpy.swift; sourceTree = "<group>"; };
 		A7B932F42B1F694000AE6477 /* ResourcesProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesProcessor.swift; sourceTree = "<group>"; };
 		A7B932F72B1F6A0A00AE6477 /* EnrichedRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnrichedRecord.swift; sourceTree = "<group>"; };
 		A7B932F82B1F6A0A00AE6477 /* SRDataModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRDataModels.swift; sourceTree = "<group>"; };
@@ -3985,7 +3983,6 @@
 				A74A72862B10CE4100771FEB /* ResourceMocks.swift */,
 				A74A72882B10D95D00771FEB /* MultipartBuilderSpy.swift */,
 				A7D952892B28BD94004C79B1 /* ResourceProcessorSpy.swift */,
-				A7A68C232CB5763800170580 /* RecordingCoordinatorSpy.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -8438,10 +8435,8 @@
 				61054FCB2A6EE1BA00AAA894 /* QueueMocks.swift in Sources */,
 				61054FC42A6EE1BA00AAA894 /* RecorderTests.swift in Sources */,
 				61054FC22A6EE1BA00AAA894 /* ViewTreeSnapshotTests.swift in Sources */,
-				A7A68C242CB5764900170580 /* RecordingCoordinatorSpy.swift in Sources */,
 				D2BCB2A32B7B9683005C2AAB /* WKWebViewRecorderTests.swift in Sources */,
 				61054FC62A6EE1BA00AAA894 /* CoreGraphicsMocks.swift in Sources */,
-				61054FCA2A6EE1BA00AAA894 /* TestScheduler.swift in Sources */,
 				962C41A92CB00FD60050B747 /* DDSessionReplayTests.swift in Sources */,
 				61054FBD2A6EE1BA00AAA894 /* UIViewRecorderTests.swift in Sources */,
 				61054F952A6EE1BA00AAA894 /* SessionReplayConfigurationTests.swift in Sources */,

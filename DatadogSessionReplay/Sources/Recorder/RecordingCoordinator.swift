@@ -16,13 +16,7 @@ import DatadogInternal
 /// snapshots on the main thread.
 ///
 /// Subsequent requests to capture snapshots are throttled to avoid performance issues.
-internal protocol RecordingCoordinating: AnyObject {
-    func startRecording() -> Bool
-    func stopRecording()
-    func captureNextRecord()
-}
-
-internal class RecordingCoordinator: RecordingCoordinating {
+internal class RecordingCoordinator: RecordingTriggerDelegate {
     let recorder: Recording
     let sampler: Sampler
     let textAndInputPrivacy: TextAndInputPrivacyLevel
@@ -31,7 +25,7 @@ internal class RecordingCoordinator: RecordingCoordinating {
     let srContextPublisher: SRContextPublisher
 
     private var currentRUMContext: RUMContext? = nil
-    private var isSampled: Bool
+    private var isSampled: Bool = false
 
     /// `recordingEnabled` is used to track when the user
     /// has enabled or disabled the recording for Session Replay.
@@ -44,9 +38,7 @@ internal class RecordingCoordinator: RecordingCoordinating {
 
     private let dateProvider: DateProvider
 
-    private var uiViewSwizzler: UIViewSwizzler? = nil
-
-    private var uiApplicationSwizzler: UIApplicationSwizzler? = nil
+    private var recordingTrigger: RecordingTriggering
 
     private let queue: Queue
 
@@ -61,11 +53,11 @@ internal class RecordingCoordinator: RecordingCoordinating {
         telemetry: Telemetry,
         methodCallTelemetrySamplingRate: Float = 0.1,
         dateProvider: DateProvider = SystemDateProvider(),
+        recordingTrigger: RecordingTriggering,
         queue: Queue = MainAsyncQueue()
-    ) {
+    ) throws {
         self.recorder = recorder
         self.sampler = sampler
-        self.isSampled = sampler.sample()
         self.textAndInputPrivacy = textAndInputPrivacy
         self.imagePrivacy = imagePrivacy
         self.touchPrivacy = touchPrivacy
@@ -73,7 +65,10 @@ internal class RecordingCoordinator: RecordingCoordinating {
         self.telemetry = telemetry
         self.methodCallTelemetrySamplingRate = methodCallTelemetrySamplingRate
         self.dateProvider = dateProvider
+        self.recordingTrigger = recordingTrigger
         self.queue = queue
+
+        self.recordingTrigger.delegate = self
 
         srContextPublisher.setHasReplay(false)
 
@@ -84,29 +79,36 @@ internal class RecordingCoordinator: RecordingCoordinating {
     }
 
     /// Enables recording based on user request.
-    @discardableResult
-    func startRecording() -> Bool {
+    func startRecording() {
         recordingEnabled = true
-        updateHasReplay()
-        return recordingEnabled && isSampled
+        evaluateRecordingConditions()
     }
 
     /// Disables recording based on user request.
     func stopRecording() {
         recordingEnabled = false
+        evaluateRecordingConditions()
+    }
+
+    private func evaluateRecordingConditions() {
+        if recordingEnabled && isSampled {
+            recordingTrigger.startWatchingTriggers()
+        } else {
+            recordingTrigger.stopWatchingTriggers()
+        }
         updateHasReplay()
     }
 
     // MARK: Private
 
     private func onRUMContextChanged(rumContext: RUMContext?) {
-        if currentRUMContext?.sessionID != rumContext?.sessionID && currentRUMContext != nil {
+        if currentRUMContext?.sessionID != rumContext?.sessionID {
             isSampled = sampler.sample()
         }
 
         currentRUMContext = rumContext
 
-        updateHasReplay()
+        evaluateRecordingConditions()
     }
 
     /// Updates the `has_replay` flag to indicate if recording is active.
@@ -122,22 +124,25 @@ internal class RecordingCoordinator: RecordingCoordinating {
         return dateProvider.now.timeIntervalSince(lastFrameTimestamp ?? .distantPast) < Constants.throttingRate
     }
 
+    func didTrigger() {
+        captureNextRecord()
+    }
+
     /// Captures the next recording if conditions are met.
-    func captureNextRecord() {
-        guard isSampled == true && recordingEnabled == true else {
-            return
-        }
-        // We don't capture any snapshots if the RUM context has no view ID.
-        guard let rumContext = currentRUMContext,
-              let viewID = rumContext.viewID else {
-            return
-        }
-        // Skip frame if there's pressure on processing
+    private func captureNextRecord() {
         guard shouldSkipFrame == false else {
             return
         }
         queue.run { [weak self] in
             guard let self = self else {
+                return
+            }
+            guard isSampled == true && recordingEnabled == true else {
+                return
+            }
+            // We don't capture any snapshots if the RUM context has no view ID.
+            guard let rumContext = currentRUMContext,
+                  let viewID = rumContext.viewID else {
                 return
             }
             lastFrameTimestamp = Date()

@@ -11,72 +11,47 @@ import XCTest
 class RecordingTriggerTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
     var recordingTrigger: RecordingTrigger!
-    var recordingCoordinatorSpy: RecordingCoordinatorSpy!
+    var recordingTriggerDelegateSpy: RecordingTriggerDelegateSpy!
     // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
-        recordingCoordinatorSpy = RecordingCoordinatorSpy()
-        recordingTrigger = try RecordingTrigger(
-            recordingCoordinator: recordingCoordinatorSpy,
-            shouldStartWatchingTriggers: false
-        )
+        recordingTrigger = try RecordingTrigger()
+        recordingTriggerDelegateSpy = RecordingTriggerDelegateSpy()
+        recordingTrigger.delegate = recordingTriggerDelegateSpy
     }
 
     override func tearDownWithError() throws {
         recordingTrigger = nil
-        recordingCoordinatorSpy = nil
+        recordingTriggerDelegateSpy = nil
     }
 
     func testRecordingTriggersInitialization() {
-        XCTAssertEqual(recordingCoordinatorSpy.startRecordingCalledCount, 0)
-        XCTAssertEqual(recordingCoordinatorSpy.stopRecordingCalledCount, 0)
-        XCTAssertEqual(recordingCoordinatorSpy.captureNextRecordCalledCount, 0)
+        XCTAssertEqual(recordingTriggerDelegateSpy.didTriggerCalledCount, 0)
     }
 
     func testStartAndStopRecordingTriggers() {
         recordingTrigger.startWatchingTriggers()
 
-        XCTAssertEqual(recordingCoordinatorSpy.startRecordingCalledCount, 1)
-        XCTAssertEqual(recordingCoordinatorSpy.stopRecordingCalledCount, 0)
-        XCTAssertEqual(recordingCoordinatorSpy.captureNextRecordCalledCount, 0)
+        XCTAssertEqual(recordingTriggerDelegateSpy.didTriggerCalledCount, 1)
 
         randomTrigger()
 
-        XCTAssertEqual(recordingCoordinatorSpy.startRecordingCalledCount, 1)
-        XCTAssertEqual(recordingCoordinatorSpy.stopRecordingCalledCount, 0)
-        XCTAssertEqual(recordingCoordinatorSpy.captureNextRecordCalledCount, 1)
+        XCTAssertEqual(recordingTriggerDelegateSpy.didTriggerCalledCount, 1)
 
         recordingTrigger.stopWatchingTriggers()
 
-        XCTAssertEqual(recordingCoordinatorSpy.startRecordingCalledCount, 1)
-        XCTAssertEqual(recordingCoordinatorSpy.stopRecordingCalledCount, 1)
-        XCTAssertEqual(recordingCoordinatorSpy.captureNextRecordCalledCount, 1)
+        XCTAssertEqual(recordingTriggerDelegateSpy.didTriggerCalledCount, 1)
 
         randomTrigger()
 
-        XCTAssertEqual(recordingCoordinatorSpy.startRecordingCalledCount, 1)
-        XCTAssertEqual(recordingCoordinatorSpy.stopRecordingCalledCount, 1)
-        XCTAssertEqual(recordingCoordinatorSpy.captureNextRecordCalledCount, 1)
+        XCTAssertEqual(recordingTriggerDelegateSpy.didTriggerCalledCount, 1)
     }
 
     func testNotifySendEventDoesNotTriggerOnInvalidEvent() {
         recordingTrigger.startWatchingTriggers()
         UIApplication.shared.sendEvent(UIEvent())
 
-        XCTAssertEqual(recordingCoordinatorSpy.startRecordingCalledCount, 1)
-        XCTAssertEqual(recordingCoordinatorSpy.stopRecordingCalledCount, 0)
-        XCTAssertEqual(recordingCoordinatorSpy.captureNextRecordCalledCount, 0)
-    }
-
-    func testStartsWatchingImmediately() throws {
-        recordingCoordinatorSpy = RecordingCoordinatorSpy()
-        recordingTrigger = try RecordingTrigger(
-            recordingCoordinator: recordingCoordinatorSpy,
-            shouldStartWatchingTriggers: true
-        )
-        XCTAssertEqual(recordingCoordinatorSpy.startRecordingCalledCount, 1)
-        XCTAssertEqual(recordingCoordinatorSpy.stopRecordingCalledCount, 0)
-        XCTAssertEqual(recordingCoordinatorSpy.captureNextRecordCalledCount, 0)
+        XCTAssertEqual(recordingTriggerDelegateSpy.didTriggerCalledCount, 0)
     }
 
     private func randomTrigger() {
@@ -87,6 +62,13 @@ class RecordingTriggerTests: XCTestCase {
         } else {
             UIView().layoutSubviews()
         }
+    }
+}
+
+class RecordingTriggerDelegateSpy: RecordingTriggerDelegate {
+    var didTriggerCalledCount = 0
+    func didTrigger() {
+        didTriggerCalledCount += 1
     }
 }
 #endif

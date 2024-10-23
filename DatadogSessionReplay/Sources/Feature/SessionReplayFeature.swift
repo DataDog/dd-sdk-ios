@@ -19,8 +19,6 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
 
     // MARK: - Main Components
 
-    /// Orchestrates the process of triggering next snapshot.
-    let recordingTrigger: RecordingTrigger
     /// Orchestrates the process of capturing next snapshots on the main thread.
     let recordingCoordinator: RecordingCoordinator
 
@@ -64,7 +62,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         self.imagePrivacyLevel = configuration.imagePrivacyLevel
         self.touchPrivacyLevel = configuration.touchPrivacyLevel
 
-        let recordingCoordinator = RecordingCoordinator(
+        let recordingCoordinator = try RecordingCoordinator(
             textAndInputPrivacy: configuration.textAndInputPrivacyLevel,
             imagePrivacy: configuration.imagePrivacyLevel,
             touchPrivacy: configuration.touchPrivacyLevel,
@@ -72,13 +70,11 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             srContextPublisher: SRContextPublisher(core: core),
             recorder: recorder,
             sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate),
-            telemetry: core.telemetry
+            telemetry: core.telemetry,
+            recordingTrigger:  try RecordingTrigger()
         )
         self.recordingCoordinator = recordingCoordinator
-        self.recordingTrigger = try RecordingTrigger(
-            recordingCoordinator: recordingCoordinator,
-            shouldStartWatchingTriggers: configuration.startRecordingImmediately
-        )
+
         self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry
@@ -93,14 +89,18 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
                 changeRate: 0.75 // vs 0.1 with `uploadFrequency: .frequent`
             )
         )
+
+        if configuration.startRecordingImmediately {
+            startRecording()
+        }
     }
 
     func startRecording() {
-        recordingTrigger.startWatchingTriggers()
+        recordingCoordinator.startRecording()
     }
 
     func stopRecording() {
-        recordingTrigger.stopWatchingTriggers()
+        recordingCoordinator.stopRecording()
     }
 }
 #endif

@@ -9,25 +9,28 @@ import DatadogInternal
 import UIKit
 
 /// Orchestrates the process of triggering next snapshot recording.
-/// It has 2 recording triggers: `layoutSubviews` and touch event, which are achieved by using swizzling.
-internal class RecordingTrigger: UIViewHandler, UIEventHandler {
+/// It has 2 recording triggers: `layoutSubviews` and touch event, which are done by using swizzling.
+internal protocol RecordingTriggering {
+    func startWatchingTriggers()
+    func stopWatchingTriggers()
+
+    var delegate: RecordingTriggerDelegate? { get set }
+}
+
+/// Delegate to notify about recording trigger.
+internal protocol RecordingTriggerDelegate: AnyObject {
+    func didTrigger()
+}
+
+internal final class RecordingTrigger: RecordingTriggering, UIViewHandler, UIEventHandler {
     private var uiViewSwizzler: UIViewSwizzler? = nil
     private var uiApplicationSwizzler: UIApplicationSwizzler? = nil
 
-    private weak var recordingCoordinator: RecordingCoordinating?
+    weak var delegate: RecordingTriggerDelegate?
 
-    init(
-        recordingCoordinator: RecordingCoordinating,
-        shouldStartWatchingTriggers: Bool
-    ) throws {
-        self.recordingCoordinator = recordingCoordinator
-
+    init() throws {
         uiViewSwizzler = try UIViewSwizzler(handler: self)
         uiApplicationSwizzler = try UIApplicationSwizzler(handler: self)
-
-        if shouldStartWatchingTriggers {
-            startWatchingTriggers()
-        }
     }
 
     deinit {
@@ -36,27 +39,24 @@ internal class RecordingTrigger: UIViewHandler, UIEventHandler {
     }
 
     func startWatchingTriggers() {
-        if recordingCoordinator?.startRecording() == true {
-            uiViewSwizzler?.swizzle()
-            uiApplicationSwizzler?.swizzle()
-        }
+        uiViewSwizzler?.swizzle()
+        uiApplicationSwizzler?.swizzle()
     }
 
     func stopWatchingTriggers() {
         uiViewSwizzler?.unswizzle()
         uiApplicationSwizzler?.unswizzle()
-        recordingCoordinator?.stopRecording()
     }
 
     func notify_layoutSubviews(view: UIView) {
-        recordingCoordinator?.captureNextRecord()
+        delegate?.didTrigger()
     }
 
     func notify_sendEvent(application: UIApplication, event: UIEvent) {
         guard event.type == .touches, event.allTouches?.isEmpty == false else {
             return
         }
-        recordingCoordinator?.captureNextRecord()
+        delegate?.didTrigger()
     }
 }
 #endif
