@@ -61,13 +61,13 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     /// - Parameters:
     ///   - initialState: The initial application state.
     ///   - notificationCenter: The notification center where this publisher observes `UIApplication` notifications.
-    ///   - queue: The queue for publishing the history.
     ///   - dateProvider: The date provider for the Application state snapshot timestamp.
+    ///   - queue: The queue for publishing the history.
     init(
         initialState: AppState,
         notificationCenter: NotificationCenter,
-        queue: DispatchQueue = ApplicationStatePublisher.defaultQueue,
-        dateProvider: DateProvider = SystemDateProvider()
+        dateProvider: DateProvider,
+        queue: DispatchQueue = ApplicationStatePublisher.defaultQueue
     ) {
         let initialValue = AppStateHistory(
             initialState: initialState,
@@ -88,20 +88,20 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     ///
     /// - Parameters:
     ///   - notificationCenter: The notification center where this publisher observes `UIApplication` notifications.
+    ///   - dateProvider: The date provider for the Application state snapshot timestamp.
     ///   - applicationState: The current shared `UIApplication` state.
     ///   - queue: The queue for publishing the history.
-    ///   - dateProvider: The date provider for the Application state snapshot timestamp.
     convenience init(
         notificationCenter: NotificationCenter,
+        dateProvider: DateProvider,
         applicationState: ApplicationState = ApplicationStatePublisher.currentApplicationState,
-        queue: DispatchQueue = ApplicationStatePublisher.defaultQueue,
-        dateProvider: DateProvider = SystemDateProvider()
+        queue: DispatchQueue = ApplicationStatePublisher.defaultQueue
     ) {
         self.init(
             initialState: AppState(applicationState),
             notificationCenter: notificationCenter,
-            queue: queue,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            queue: queue
         )
     }
 

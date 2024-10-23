@@ -132,7 +132,7 @@ class RUMSessionScopeTests: XCTestCase {
         // Given
         let dateProvider = RelativeDateProvider()
         let ttl: TimeInterval = .mockRandom(min: 2, max: 10)
-        let viewCache = ViewCache(ttl: ttl)
+        let viewCache = ViewCache(dateProvider: SystemDateProvider(), ttl: ttl)
 
         let scope: RUMSessionScope = .mockWith(
             parent: parent,

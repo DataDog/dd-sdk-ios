@@ -195,7 +195,7 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(now: .mockDecember15th2019At10AMUTC()),
             commandSubscriber: commandsSubscriberMock,
-            viewCache: ViewCache()
+            viewCache: ViewCache(dateProvider: SystemDateProvider())
         )
 
         // When
@@ -214,7 +214,7 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache()
+            viewCache: ViewCache(dateProvider: SystemDateProvider())
         )
 
         // When
@@ -290,7 +290,7 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache()
+            viewCache: ViewCache(dateProvider: SystemDateProvider())
         )
 
         // When
@@ -317,7 +317,7 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache()
+            viewCache: ViewCache(dateProvider: SystemDateProvider())
         )
 
         // When

@@ -100,7 +100,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
             },
             onSessionStart: configuration.onSessionStart,
-            viewCache: ViewCache(),
+            viewCache: ViewCache(dateProvider: configuration.dateProvider),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,
             watchdogTermination: watchdogTermination
