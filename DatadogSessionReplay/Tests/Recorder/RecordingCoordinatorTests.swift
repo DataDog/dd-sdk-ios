@@ -272,9 +272,9 @@ class RecordingCoordinatorTests: XCTestCase {
             recorder: recordingMock,
             sampler: sampler,
             telemetry: telemetry,
+            recordingTrigger: recordingTriggerMock,
             methodCallTelemetrySamplingRate: methodCallTelemetrySamplingRate,
             dateProvider: dateProviderMock,
-            recordingTrigger: recordingTriggerMock,
             queue: queue
         )
         recordingCoordinator?.startRecording()

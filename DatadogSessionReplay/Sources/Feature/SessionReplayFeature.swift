@@ -71,7 +71,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             recorder: recorder,
             sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate),
             telemetry: core.telemetry,
-            recordingTrigger:  try RecordingTrigger()
+            recordingTrigger: try RecordingTrigger()
         )
         self.recordingCoordinator = recordingCoordinator
 

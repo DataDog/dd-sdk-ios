@@ -51,9 +51,9 @@ internal class RecordingCoordinator: RecordingTriggerDelegate {
         recorder: Recording,
         sampler: Sampler,
         telemetry: Telemetry,
+        recordingTrigger: RecordingTriggering,
         methodCallTelemetrySamplingRate: Float = 0.1,
         dateProvider: DateProvider = SystemDateProvider(),
-        recordingTrigger: RecordingTriggering,
         queue: Queue = MainAsyncQueue()
     ) throws {
         self.recorder = recorder
@@ -63,9 +63,9 @@ internal class RecordingCoordinator: RecordingTriggerDelegate {
         self.touchPrivacy = touchPrivacy
         self.srContextPublisher = srContextPublisher
         self.telemetry = telemetry
+        self.recordingTrigger = recordingTrigger
         self.methodCallTelemetrySamplingRate = methodCallTelemetrySamplingRate
         self.dateProvider = dateProvider
-        self.recordingTrigger = recordingTrigger
         self.queue = queue
 
         self.recordingTrigger.delegate = self
@@ -125,9 +125,6 @@ internal class RecordingCoordinator: RecordingTriggerDelegate {
     }
 
     func didTrigger() {
-        guard shouldSkipFrame == false else {
-            return
-        }
         captureNextRecord()
     }
 
@@ -138,6 +135,9 @@ internal class RecordingCoordinator: RecordingTriggerDelegate {
                 return
             }
             guard isSampled == true && recordingEnabled == true else {
+                return
+            }
+            guard shouldSkipFrame == false else {
                 return
             }
             // We don't capture any snapshots if the RUM context has no view ID.
