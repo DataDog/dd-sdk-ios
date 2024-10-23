@@ -433,7 +433,8 @@ extension TouchSnapshot.Touch: AnyMockable, RandomMockable {
             id: .mockRandom(),
             phase: [.down, .move, .up].randomElement()!,
             date: .mockRandom(),
-            position: .mockRandom()
+            position: .mockRandom(),
+            touchOverride: nil
         )
     }
 
@@ -447,7 +448,8 @@ extension TouchSnapshot.Touch: AnyMockable, RandomMockable {
             id: id,
             phase: phase,
             date: date,
-            position: position
+            position: position,
+            touchOverride: nil
         )
     }
 }
