@@ -41,44 +41,40 @@
 - (void)testSettingAndGettingOverrides {
     // Given
     UIView *view = [[UIView alloc] init];
-    DDSessionReplayPrivacyOverrides *override = [[DDSessionReplayPrivacyOverrides alloc] init];
 
     // When
-    view.ddSessionReplayOverrides = override;
-    view.ddSessionReplayOverrides.textAndInputPrivacy = DDTextAndInputPrivacyLevelOverrideMaskAll;
-    view.ddSessionReplayOverrides.imagePrivacy = DDImagePrivacyLevelOverrideMaskAll;
-    view.ddSessionReplayOverrides.touchPrivacy = DDTouchPrivacyLevelOverrideHide;
-    view.ddSessionReplayOverrides.hide = @YES;
+    view.ddSessionReplayPrivacyOverrides.textAndInputPrivacy = DDTextAndInputPrivacyLevelOverrideMaskAll;
+    view.ddSessionReplayPrivacyOverrides.imagePrivacy = DDImagePrivacyLevelOverrideMaskAll;
+    view.ddSessionReplayPrivacyOverrides.touchPrivacy = DDTouchPrivacyLevelOverrideHide;
+    view.ddSessionReplayPrivacyOverrides.hide = @YES;
 
     // Then
-    XCTAssertEqual(view.ddSessionReplayOverrides.textAndInputPrivacy, DDTextAndInputPrivacyLevelOverrideMaskAll);
-    XCTAssertEqual(view.ddSessionReplayOverrides.imagePrivacy, DDImagePrivacyLevelOverrideMaskAll);
-    XCTAssertEqual(view.ddSessionReplayOverrides.touchPrivacy, DDTouchPrivacyLevelOverrideHide);
-    XCTAssertTrue(view.ddSessionReplayOverrides.hide.boolValue);
+    XCTAssertEqual(view.ddSessionReplayPrivacyOverrides.textAndInputPrivacy, DDTextAndInputPrivacyLevelOverrideMaskAll);
+    XCTAssertEqual(view.ddSessionReplayPrivacyOverrides.imagePrivacy, DDImagePrivacyLevelOverrideMaskAll);
+    XCTAssertEqual(view.ddSessionReplayPrivacyOverrides.touchPrivacy, DDTouchPrivacyLevelOverrideHide);
+    XCTAssertTrue(view.ddSessionReplayPrivacyOverrides.hide.boolValue);
 }
 
 - (void)testClearingOverride {
     // Given
     UIView *view = [[UIView alloc] init];
-    DDSessionReplayPrivacyOverrides *overrides = [[DDSessionReplayPrivacyOverrides alloc] init];
 
     // Set initial values
-    view.ddSessionReplayOverrides = overrides;
-    view.ddSessionReplayOverrides.textAndInputPrivacy = DDTextAndInputPrivacyLevelOverrideMaskAll;
-    view.ddSessionReplayOverrides.imagePrivacy = DDImagePrivacyLevelOverrideMaskAll;
-    view.ddSessionReplayOverrides.touchPrivacy = DDTouchPrivacyLevelOverrideHide;
-    view.ddSessionReplayOverrides.hide = @YES;
+    view.ddSessionReplayPrivacyOverrides.textAndInputPrivacy = DDTextAndInputPrivacyLevelOverrideMaskAll;
+    view.ddSessionReplayPrivacyOverrides.imagePrivacy = DDImagePrivacyLevelOverrideMaskAll;
+    view.ddSessionReplayPrivacyOverrides.touchPrivacy = DDTouchPrivacyLevelOverrideHide;
+    view.ddSessionReplayPrivacyOverrides.hide = @YES;
 
     // When
-    view.ddSessionReplayOverrides.textAndInputPrivacy = DDTextAndInputPrivacyLevelOverrideNone;
-    view.ddSessionReplayOverrides.imagePrivacy = DDImagePrivacyLevelOverrideNone;
-    view.ddSessionReplayOverrides.touchPrivacy = DDTouchPrivacyLevelOverrideNone;
-    view.ddSessionReplayOverrides.hide = nil;
+    view.ddSessionReplayPrivacyOverrides.textAndInputPrivacy = DDTextAndInputPrivacyLevelOverrideNone;
+    view.ddSessionReplayPrivacyOverrides.imagePrivacy = DDImagePrivacyLevelOverrideNone;
+    view.ddSessionReplayPrivacyOverrides.touchPrivacy = DDTouchPrivacyLevelOverrideNone;
+    view.ddSessionReplayPrivacyOverrides.hide = nil;
 
     // Then
-    XCTAssertEqual(view.ddSessionReplayOverrides.textAndInputPrivacy, DDTextAndInputPrivacyLevelOverrideNone);
-    XCTAssertEqual(view.ddSessionReplayOverrides.imagePrivacy, DDImagePrivacyLevelOverrideNone);
-    XCTAssertEqual(view.ddSessionReplayOverrides.touchPrivacy, DDTouchPrivacyLevelOverrideNone);
-    XCTAssertNil(view.ddSessionReplayOverrides.hide);
+    XCTAssertEqual(view.ddSessionReplayPrivacyOverrides.textAndInputPrivacy, DDTextAndInputPrivacyLevelOverrideNone);
+    XCTAssertEqual(view.ddSessionReplayPrivacyOverrides.imagePrivacy, DDImagePrivacyLevelOverrideNone);
+    XCTAssertEqual(view.ddSessionReplayPrivacyOverrides.touchPrivacy, DDTouchPrivacyLevelOverrideNone);
+    XCTAssertNil(view.ddSessionReplayPrivacyOverrides.hide);
 }
 @end

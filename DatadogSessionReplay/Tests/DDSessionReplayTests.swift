@@ -5,7 +5,6 @@
  */
 
 #if os(iOS)
-
 import XCTest
 import TestUtilities
 import DatadogInternal

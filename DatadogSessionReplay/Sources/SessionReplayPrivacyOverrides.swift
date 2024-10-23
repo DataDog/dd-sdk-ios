@@ -14,7 +14,7 @@ import DatadogInternal
 extension DatadogExtension where ExtendedType: UIView {
     /// Provides access to Session Replay override settings for the view.
     /// Usage: `myView.dd.sessionReplayOverrides.textAndInputPrivacy = .maskNone`.
-    public var sessionReplayOverrides: SessionReplayPrivacyOverrides {
+    public var sessionReplayPrivacyOverrides: SessionReplayPrivacyOverrides {
         return SessionReplayPrivacyOverrides(self.type)
     }
 }
@@ -30,7 +30,7 @@ private var associatedHiddenPrivacyKey: UInt8 = 6
 
 /// `UIView` extension  to manage the Session Replay privacy override settings.
 public final class SessionReplayPrivacyOverrides {
-    private let view: UIView
+    internal let view: UIView
 
     public init(_ view: UIView) {
         self.view = view
@@ -77,6 +77,7 @@ public final class SessionReplayPrivacyOverrides {
     }
 }
 
+// MARK: - Equatable
 extension PrivacyOverrides: Equatable {
     public static func == (lhs: SessionReplayPrivacyOverrides, rhs: SessionReplayPrivacyOverrides) -> Bool {
         return lhs.view === rhs.view
@@ -87,6 +88,7 @@ extension PrivacyOverrides: Equatable {
     }
 }
 
+// MARK: - Merge
 extension PrivacyOverrides {
     /// Merges child and parent overrides, giving precedence to the child’s overrides, if set.
     /// If the child has no overrides set, it inherits its parent’s overrides.

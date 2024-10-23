@@ -17,10 +17,10 @@ class SessionReplayOverridesTests: XCTestCase {
         let view = UIView()
 
         // Then
-        XCTAssertNil(view.dd.sessionReplayOverrides.textAndInputPrivacy)
-        XCTAssertNil(view.dd.sessionReplayOverrides.imagePrivacy)
-        XCTAssertNil(view.dd.sessionReplayOverrides.touchPrivacy)
-        XCTAssertNil(view.dd.sessionReplayOverrides.hide)
+        XCTAssertNil(view.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy)
+        XCTAssertNil(view.dd.sessionReplayPrivacyOverrides.imagePrivacy)
+        XCTAssertNil(view.dd.sessionReplayPrivacyOverrides.touchPrivacy)
+        XCTAssertNil(view.dd.sessionReplayPrivacyOverrides.hide)
     }
 
     func testWithOverrides() {
@@ -28,37 +28,37 @@ class SessionReplayOverridesTests: XCTestCase {
         let view = UIView()
 
         // When
-        view.dd.sessionReplayOverrides.textAndInputPrivacy = .maskAllInputs
-        view.dd.sessionReplayOverrides.imagePrivacy = .maskAll
-        view.dd.sessionReplayOverrides.touchPrivacy = .hide
-        view.dd.sessionReplayOverrides.hide = true
+        view.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy = .maskAllInputs
+        view.dd.sessionReplayPrivacyOverrides.imagePrivacy = .maskAll
+        view.dd.sessionReplayPrivacyOverrides.touchPrivacy = .hide
+        view.dd.sessionReplayPrivacyOverrides.hide = true
 
         // Then
-        XCTAssertEqual(view.dd.sessionReplayOverrides.textAndInputPrivacy, .maskAllInputs)
-        XCTAssertEqual(view.dd.sessionReplayOverrides.imagePrivacy, .maskAll)
-        XCTAssertEqual(view.dd.sessionReplayOverrides.touchPrivacy, .hide)
-        XCTAssertEqual(view.dd.sessionReplayOverrides.hide, true)
+        XCTAssertEqual(view.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy, .maskAllInputs)
+        XCTAssertEqual(view.dd.sessionReplayPrivacyOverrides.imagePrivacy, .maskAll)
+        XCTAssertEqual(view.dd.sessionReplayPrivacyOverrides.touchPrivacy, .hide)
+        XCTAssertEqual(view.dd.sessionReplayPrivacyOverrides.hide, true)
     }
 
     func testRemovingOverrides() {
         // Given
         let view = UIView()
-        view.dd.sessionReplayOverrides.textAndInputPrivacy = .maskAllInputs
-        view.dd.sessionReplayOverrides.imagePrivacy = .maskAll
-        view.dd.sessionReplayOverrides.touchPrivacy = .hide
-        view.dd.sessionReplayOverrides.hide = true
+        view.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy = .maskAllInputs
+        view.dd.sessionReplayPrivacyOverrides.imagePrivacy = .maskAll
+        view.dd.sessionReplayPrivacyOverrides.touchPrivacy = .hide
+        view.dd.sessionReplayPrivacyOverrides.hide = true
 
         // When
-        view.dd.sessionReplayOverrides.textAndInputPrivacy = nil
-        view.dd.sessionReplayOverrides.imagePrivacy = nil
-        view.dd.sessionReplayOverrides.touchPrivacy = nil
-        view.dd.sessionReplayOverrides.hide = nil
+        view.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy = nil
+        view.dd.sessionReplayPrivacyOverrides.imagePrivacy = nil
+        view.dd.sessionReplayPrivacyOverrides.touchPrivacy = nil
+        view.dd.sessionReplayPrivacyOverrides.hide = nil
 
         // Then
-        XCTAssertNil(view.dd.sessionReplayOverrides.textAndInputPrivacy)
-        XCTAssertNil(view.dd.sessionReplayOverrides.imagePrivacy)
-        XCTAssertNil(view.dd.sessionReplayOverrides.touchPrivacy)
-        XCTAssertNil(view.dd.sessionReplayOverrides.hide)
+        XCTAssertNil(view.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy)
+        XCTAssertNil(view.dd.sessionReplayPrivacyOverrides.imagePrivacy)
+        XCTAssertNil(view.dd.sessionReplayPrivacyOverrides.touchPrivacy)
+        XCTAssertNil(view.dd.sessionReplayPrivacyOverrides.hide)
     }
 
     // MARK: Privacy overrides taking precedence over global settings
@@ -160,6 +160,9 @@ class SessionReplayOverridesTests: XCTestCase {
         // Given
         let childOverrides: PrivacyOverrides = .mockAny()
         let parentOverrides: PrivacyOverrides = .mockRandom()
+        /// We explicitly set `hide` to `true` in the parent override because the child’s `hide` is `nil`.
+        /// In the merge logic, `true` takes precedence, and `false` behaves the same as `nil`, meaning no override.
+        parentOverrides.hide = true
 
         // When
         let merged = SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides)
