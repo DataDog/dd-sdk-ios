@@ -42,6 +42,8 @@ internal class RecordingCoordinator: RecordingCoordinating {
     /// The sampling rate for internal telemetry of method calls.
     private let methodCallTelemetrySamplingRate: Float
 
+    private let dateProvider: DateProvider
+
     private var uiViewSwizzler: UIViewSwizzler? = nil
 
     private var uiApplicationSwizzler: UIApplicationSwizzler? = nil
@@ -58,6 +60,7 @@ internal class RecordingCoordinator: RecordingCoordinating {
         sampler: Sampler,
         telemetry: Telemetry,
         methodCallTelemetrySamplingRate: Float = 0.1,
+        dateProvider: DateProvider = SystemDateProvider(),
         queue: Queue = MainAsyncQueue()
     ) {
         self.recorder = recorder
@@ -69,6 +72,7 @@ internal class RecordingCoordinator: RecordingCoordinating {
         self.srContextPublisher = srContextPublisher
         self.telemetry = telemetry
         self.methodCallTelemetrySamplingRate = methodCallTelemetrySamplingRate
+        self.dateProvider = dateProvider
         self.queue = queue
 
         srContextPublisher.setHasReplay(false)
@@ -115,25 +119,25 @@ internal class RecordingCoordinator: RecordingCoordinating {
 
     private var lastFrameTimestamp: Date?
     private var shouldSkipFrame: Bool {
-        return Date().timeIntervalSince(lastFrameTimestamp ?? .distantPast) < Constants.throttingRate
+        return dateProvider.now.timeIntervalSince(lastFrameTimestamp ?? .distantPast) < Constants.throttingRate
     }
 
     /// Captures the next recording if conditions are met.
     func captureNextRecord() {
+        guard isSampled == true && recordingEnabled == true else {
+            return
+        }
+        // We don't capture any snapshots if the RUM context has no view ID.
+        guard let rumContext = currentRUMContext,
+              let viewID = rumContext.viewID else {
+            return
+        }
+        // Skip frame if there's pressure on processing
+        guard shouldSkipFrame == false else {
+            return
+        }
         queue.run { [weak self] in
             guard let self = self else {
-                return
-            }
-            guard isSampled == true && recordingEnabled == true else {
-                return
-            }
-            // We don't capture any snapshots if the RUM context has no view ID.
-            guard let rumContext = currentRUMContext,
-                  let viewID = rumContext.viewID else {
-                return
-            }
-            // Skip frame if there's pressure on processing
-            guard shouldSkipFrame == false else {
                 return
             }
             lastFrameTimestamp = Date()

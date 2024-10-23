@@ -17,6 +17,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
     private var recordingMock = RecordingMock()
     private var rumContextObserver = RUMContextObserverMock()
+    private var dateProviderMock = RelativeDateProvider()
     private lazy var contextPublisher: SRContextPublisher = {
         SRContextPublisher(core: core)
     }()
@@ -59,6 +60,7 @@ class RecordingCoordinatorTests: XCTestCase {
         prepareRecordingCoordinator(textAndInputPrivacy: textAndInputPrivacy, imagePrivacy: imagePrivacy, touchPrivacy: touchPrivacy)
 
         // When
+        recordingCoordinator?.startRecording()
         let rumContext = RUMContext.mockRandom()
         rumContextObserver.notify(rumContext: rumContext)
         recordingCoordinator?.captureNextRecord()
@@ -249,8 +251,10 @@ class RecordingCoordinatorTests: XCTestCase {
             sampler: sampler,
             telemetry: telemetry,
             methodCallTelemetrySamplingRate: methodCallTelemetrySamplingRate,
+            dateProvider: dateProviderMock,
             queue: queue
         )
+        recordingCoordinator?.startRecording()
     }
 }
 
