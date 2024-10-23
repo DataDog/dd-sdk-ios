@@ -32,7 +32,7 @@ class RecordingTriggerTests: XCTestCase {
     func testStartAndStopRecordingTriggers() {
         recordingTrigger.startWatchingTriggers()
 
-        XCTAssertEqual(recordingTriggerDelegateSpy.didTriggerCalledCount, 1)
+        XCTAssertEqual(recordingTriggerDelegateSpy.didTriggerCalledCount, 0)
 
         randomTrigger()
 
