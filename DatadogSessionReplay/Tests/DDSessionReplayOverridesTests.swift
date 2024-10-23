@@ -80,7 +80,7 @@ class DDSessionReplayOverrideTests: XCTestCase {
         let textAndInputPrivacy: objc_TextAndInputPrivacyLevelOverride = .mockRandom()
         let imagePrivacy: objc_ImagePrivacyLevelOverride = .mockRandom()
         let touchPrivacy: objc_TouchPrivacyLevelOverride = .mockRandom()
-        let hidePrivacy = NSNumber.mockRandomHidePrivacy()
+        let hidePrivacy = NSNumber.mockRandomBoolean()
 
         // When
         let overrides = objc_SessionReplayPrivacyOverrides(view: UIView())
@@ -114,7 +114,7 @@ class DDSessionReplayOverrideTests: XCTestCase {
         let textAndInputPrivacy: objc_TextAndInputPrivacyLevelOverride = .mockRandom()
         let imagePrivacy: objc_ImagePrivacyLevelOverride = .mockRandom()
         let touchPrivacy: objc_TouchPrivacyLevelOverride = .mockRandom()
-        let hidePrivacy = NSNumber.mockRandomHidePrivacy()
+        let hidePrivacy = NSNumber.mockRandomBoolean()
 
         // When
         view.ddSessionReplayPrivacyOverrides.textAndInputPrivacy = textAndInputPrivacy
@@ -147,7 +147,7 @@ class DDSessionReplayOverrideTests: XCTestCase {
         let textAndInputPrivacy: objc_TextAndInputPrivacyLevelOverride = .mockRandom()
         let imagePrivacy: objc_ImagePrivacyLevelOverride = .mockRandom()
         let touchPrivacy: objc_TouchPrivacyLevelOverride = .mockRandom()
-        let hidePrivacy = NSNumber.mockRandomHidePrivacy()
+        let hidePrivacy = NSNumber.mockRandomBoolean()
 
         // When (set in Swift)
         view.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy = textAndInputPrivacy._swift
@@ -168,7 +168,7 @@ class DDSessionReplayOverrideTests: XCTestCase {
         let textAndInputPrivacy: objc_TextAndInputPrivacyLevelOverride = .mockRandom()
         let imagePrivacy: objc_ImagePrivacyLevelOverride = .mockRandom()
         let touchPrivacy: objc_TouchPrivacyLevelOverride = .mockRandom()
-        let hidePrivacy = NSNumber.mockRandomHidePrivacy()
+        let hidePrivacy = NSNumber.mockRandomBoolean()
 
         // When (set in ObjC)
         view.ddSessionReplayPrivacyOverrides.textAndInputPrivacy = textAndInputPrivacy
@@ -192,7 +192,7 @@ class DDSessionReplayOverrideTests: XCTestCase {
             tempView.ddSessionReplayPrivacyOverrides.textAndInputPrivacy = .mockRandom()
             tempView.ddSessionReplayPrivacyOverrides.imagePrivacy = .mockRandom()
             tempView.ddSessionReplayPrivacyOverrides.touchPrivacy = .mockRandom()
-            tempView.ddSessionReplayPrivacyOverrides.hide = NSNumber.mockRandomHidePrivacy()
+            tempView.ddSessionReplayPrivacyOverrides.hide = NSNumber.mockRandomBoolean()
         }
 
         XCTAssertNil(view?.ddSessionReplayPrivacyOverrides.textAndInputPrivacy)

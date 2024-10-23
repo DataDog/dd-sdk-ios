@@ -42,12 +42,8 @@ extension objc_TouchPrivacyLevelOverride: AnyMockable, RandomMockable {
 }
 
 extension NSNumber {
-    static func mockAnyHidePrivacy() -> NSNumber? {
-        return NSNumber(value: true)
-    }
-
-    static func mockRandomHidePrivacy() -> NSNumber? {
-        return [true, false].randomElement().map { NSNumber(value: $0) } ?? nil
+    static func mockRandomBoolean() -> NSNumber? {
+        NSNumber(value: [true, false].randomElement()!)
     }
 }
 #endif

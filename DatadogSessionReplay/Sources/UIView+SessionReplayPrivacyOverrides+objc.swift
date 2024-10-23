@@ -54,15 +54,8 @@ public final class objc_SessionReplayPrivacyOverrides: NSObject {
 
     /// Hidden privacy override (e.g., mark a view as hidden, rendering it as an opaque wireframe in replays).
     @objc public var hide: NSNumber? {
-        get {
-            guard let hide = _swift.hide else {
-                return nil
-            }
-            return NSNumber(value: hide)
-        }
-        set {
-            _swift.hide = newValue?.boolValue
-        }
+        get { _swift.hide.map { NSNumber(value: $0) } }
+        set { _swift.hide = newValue?.boolValue }
     }
 }
 
