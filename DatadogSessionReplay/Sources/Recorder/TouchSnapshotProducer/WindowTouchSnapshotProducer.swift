@@ -15,7 +15,9 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
     /// Generates persisted IDs for `UITouch` objects.
     private let idsGenerator = TouchIdentifierGenerator()
     /// Keeps track of the privacy override for each touch event
-    private var overrideForTouch: [TouchIdentifier: TouchPrivacyLevel?] = [:]
+    internal var overrideForTouch: [TouchIdentifier: (privacyLevel: TouchPrivacyLevel, timestamp: Date)] = [:]
+    /// Timeout duration for cleaning up stale touches
+    internal let touchTimeout: TimeInterval = 10.0 // in seconds
 
     /// Touches recorded since last call to `takeSnapshot()`
     private var buffer: [TouchSnapshot.Touch] = []
@@ -27,16 +29,20 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
     }
 
     func takeSnapshot(context: Recorder.Context) -> TouchSnapshot? {
-        if let offset = context.viewServerTimeOffset {
-            buffer = buffer.compactMap {
-                var touch = $0
-                touch.date.addTimeInterval(offset)
-                return touch
-            }
+        let currentTime = Date()
+        // Remove stale entries from the cache to handle cases where a touch
+        // never reaches an `.end` phase, preventing leftover entries.
+        overrideForTouch = overrideForTouch.filter { _, value in
+            currentTime.timeIntervalSince(value.timestamp) < touchTimeout
         }
 
-        // Filter the buffer to only include touches that should be recorded
-        buffer = buffer.filter { touch in
+        buffer = buffer.compactMap { touch in
+            var updatedTouch = touch
+            if let offset = context.viewServerTimeOffset {
+                updatedTouch.date.addTimeInterval(offset)
+            }
+
+            // Filter the buffer to only include touches that should be recorded
             let shouldRecord = shouldRecordTouch(touch.id, in: context)
 
             // Clean up cache when the touch ends
@@ -44,8 +50,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
                 overrideForTouch.removeValue(forKey: touch.id)
             }
 
-            // Return whether this touch should be recorded
-            return shouldRecord
+            return shouldRecord ? updatedTouch : nil
         }
 
         guard let firstTouch = buffer.first else {
@@ -81,7 +86,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
 
             // Capture the touch privacy override when the touch begins
             if phase == .down, let privacyOverride = resolveTouchOverride(for: touch) {
-                overrideForTouch[touchId] = privacyOverride
+                overrideForTouch[touchId] = (privacyLevel: privacyOverride, timestamp: Date())
             }
 
             buffer.append(
@@ -90,7 +95,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
                     phase: phase,
                     date: Date(),
                     position: touch.location(in: window),
-                    touchOverride: overrideForTouch[touchId].flatMap { $0 }
+                    touchOverride: overrideForTouch[touchId]?.privacyLevel
                 )
             )
         }
@@ -103,7 +108,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
     /// - Returns: `true` if the touch should be recorded, `false` otherwise.
     internal func shouldRecordTouch(_ touchId: TouchIdentifier, in context: Recorder.Context
     ) -> Bool {
-        let privacy: TouchPrivacyLevel = overrideForTouch[touchId].flatMap { $0 } ?? context.touchPrivacy
+        let privacy: TouchPrivacyLevel = overrideForTouch[touchId]?.privacyLevel ?? context.touchPrivacy
         return privacy == .show
     }
 
