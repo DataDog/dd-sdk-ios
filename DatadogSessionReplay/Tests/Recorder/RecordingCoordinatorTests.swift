@@ -248,7 +248,7 @@ class RecordingCoordinatorTests: XCTestCase {
         recordingCoordinator?.didTrigger()
         dateProviderMock.advance(bySeconds: 0.01)
         recordingCoordinator?.didTrigger()
-        dateProviderMock.advance(bySeconds: 0.1)
+        dateProviderMock.advance(bySeconds: 0.2)
         recordingCoordinator?.didTrigger()
 
         // Then
