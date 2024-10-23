@@ -10,7 +10,7 @@ import UIKit
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
-class SessionReplayOverridesTests: XCTestCase {
+class SessionReplayPrivacyOverridesTests: XCTestCase {
     // MARK: Setting overrides
     func testWhenNoOverrideIsSet_itDefaultsToNil() {
         // Given

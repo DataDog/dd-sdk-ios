@@ -10,10 +10,10 @@ import DatadogInternal
 
 // MARK: - DatadogExtension for UIView
 
-/// Extension to provide access to `SessionReplayOverrides` for any `UIView`.
+/// Extension to provide access to `SessionReplayPrivacyOverrides` for any `UIView`.
 extension DatadogExtension where ExtendedType: UIView {
     /// Provides access to Session Replay override settings for the view.
-    /// Usage: `myView.dd.sessionReplayOverrides.textAndInputPrivacy = .maskNone`.
+    /// Usage: `myView.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy = .maskNone`.
     public var sessionReplayPrivacyOverrides: SessionReplayPrivacyOverrides {
         return SessionReplayPrivacyOverrides(self.type)
     }
@@ -26,7 +26,7 @@ private var associatedImagePrivacyKey: UInt8 = 4
 private var associatedTouchPrivacyKey: UInt8 = 5
 private var associatedHiddenPrivacyKey: UInt8 = 6
 
-// MARK: - SessionReplayOverrides
+// MARK: - SessionReplayPrivacyOverrides
 
 /// `UIView` extension  to manage the Session Replay privacy override settings.
 public final class SessionReplayPrivacyOverrides {

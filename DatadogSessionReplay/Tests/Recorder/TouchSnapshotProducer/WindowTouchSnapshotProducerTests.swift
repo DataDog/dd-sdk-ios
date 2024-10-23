@@ -139,7 +139,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         // Given
         let parentView = UIView(frame: .mockRandom())
         let touchOverride: TouchPrivacyLevel = .mockRandom()
-        parentView.dd.sessionReplayOverrides.touchPrivacy = touchOverride
+        parentView.dd.sessionReplayPrivacyOverrides.touchPrivacy = touchOverride
 
         let childView = UIView(frame: .mockRandom())
         parentView.addSubview(childView)
@@ -160,7 +160,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
     func testWhenViewHasTouchOverrideSetToHide_touchesAreNotRecorded() {
         // Given
         let view = UIView(frame: .mockRandom())
-        view.dd.sessionReplayOverrides.touchPrivacy = .hide
+        view.dd.sessionReplayPrivacyOverrides.touchPrivacy = .hide
 
         let touch = UITouchMock(phase: .began, location: .mockRandom(), view: view)
         let touchEvent = UITouchEventMock(touches: [touch])
@@ -180,7 +180,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
     func testWhenParentViewHasTouchOverrideSetToHide_touchesInChildViewsAreNotRecorded() {
         // Given
         let parentView = UIView(frame: .mockRandom())
-        parentView.dd.sessionReplayOverrides.touchPrivacy = .hide
+        parentView.dd.sessionReplayPrivacyOverrides.touchPrivacy = .hide
 
         let childView = UIView(frame: .mockRandom())
         parentView.addSubview(childView)
@@ -203,7 +203,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
     func testWhenViewHasTouchOverrideSetToShow_touchesAreRecorded() {
         // Given
         let view = UIView(frame: .mockRandom())
-        view.dd.sessionReplayOverrides.touchPrivacy = .show
+        view.dd.sessionReplayPrivacyOverrides.touchPrivacy = .show
 
         let touch = UITouchMock(phase: .began, location: .mockRandom(), view: view)
         let touchEvent = UITouchEventMock(touches: [touch])
@@ -224,7 +224,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
     func testWhenParentViewHasTouchOverrideSetToShow_touchesInChildViewsAreRecorded() {
         // Given
         let parentView = UIView(frame: .mockRandom())
-        parentView.dd.sessionReplayOverrides.touchPrivacy = .show
+        parentView.dd.sessionReplayPrivacyOverrides.touchPrivacy = .show
 
         let childView = UIView(frame: .mockRandom())
         parentView.addSubview(childView)
@@ -249,7 +249,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
     func testEndedTouchEntriesAreCleaned() {
         // Given
         let view = UIView(frame: .mockRandom())
-        view.dd.sessionReplayOverrides.touchPrivacy = .mockRandom()
+        view.dd.sessionReplayPrivacyOverrides.touchPrivacy = .mockRandom()
         let touch = UITouchMock(view: view)
         let producer = WindowTouchSnapshotProducer(windowObserver: mockWindowObserver)
 
@@ -270,7 +270,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
     func testStaleTouchEntriesAreCleanedAfterTimeout() {
         // Given
         let view = UIView(frame: .mockRandom())
-        view.dd.sessionReplayOverrides.touchPrivacy = .mockRandom()
+        view.dd.sessionReplayPrivacyOverrides.touchPrivacy = .mockRandom()
         let touch = UITouchMock(phase: .began, location: .mockRandom(), view: view)
         let producer = WindowTouchSnapshotProducer(windowObserver: mockWindowObserver)
 
@@ -290,7 +290,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
     func testOngoingTouchEntriesAreNotCleanedPrematurely() {
         // Given
         let view = UIView(frame: .mockRandom())
-        view.dd.sessionReplayOverrides.touchPrivacy = .mockRandom()
+        view.dd.sessionReplayPrivacyOverrides.touchPrivacy = .mockRandom()
         let touch = UITouchMock(phase: .began, location: .mockRandom(), view: view)
         let producer = WindowTouchSnapshotProducer(windowObserver: mockWindowObserver)
 
