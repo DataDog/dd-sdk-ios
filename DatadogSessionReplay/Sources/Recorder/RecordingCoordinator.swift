@@ -16,7 +16,7 @@ import DatadogInternal
 /// snapshots on the main thread.
 ///
 /// Subsequent requests to capture snapshots are throttled to avoid performance issues.
-internal class RecordingCoordinator: RecordingTriggerDelegate {
+internal class RecordingCoordinator {
     let recorder: Recording
     let sampler: Sampler
     let textAndInputPrivacy: TextAndInputPrivacyLevel
@@ -68,8 +68,6 @@ internal class RecordingCoordinator: RecordingTriggerDelegate {
         self.dateProvider = dateProvider
         self.queue = queue
 
-        self.recordingTrigger.delegate = self
-
         srContextPublisher.setHasReplay(false)
 
         // Observe changes in the RUM context on the main thread.
@@ -80,19 +78,25 @@ internal class RecordingCoordinator: RecordingTriggerDelegate {
 
     /// Enables recording based on user request.
     func startRecording() {
-        recordingEnabled = true
-        evaluateRecordingConditions()
+        queue.run { [weak self] in
+            self?.recordingEnabled = true
+            self?.evaluateRecordingConditions()
+        }
     }
 
     /// Disables recording based on user request.
     func stopRecording() {
-        recordingEnabled = false
-        evaluateRecordingConditions()
+        queue.run { [weak self] in
+            self?.recordingEnabled = false
+            self?.evaluateRecordingConditions()
+        }
     }
 
     private func evaluateRecordingConditions() {
         if recordingEnabled && isSampled {
-            recordingTrigger.startWatchingTriggers()
+            recordingTrigger.startWatchingTriggers { [weak self] in
+                self?.didTrigger()
+            }
         } else {
             recordingTrigger.stopWatchingTriggers()
         }
@@ -102,7 +106,7 @@ internal class RecordingCoordinator: RecordingTriggerDelegate {
     // MARK: Private
 
     private func onRUMContextChanged(rumContext: RUMContext?) {
-        if currentRUMContext?.sessionID != rumContext?.sessionID {
+        if currentRUMContext?.sessionID != rumContext?.sessionID || currentRUMContext == nil {
             isSampled = sampler.sample()
         }
 
@@ -119,17 +123,17 @@ internal class RecordingCoordinator: RecordingTriggerDelegate {
         srContextPublisher.setHasReplay(hasReplay)
     }
 
-    private var lastTriggerTimestamp: Date?
+    private var lastTriggerDate: Date?
 
     private var shouldSkipTrigger: Bool {
-        return dateProvider.now.timeIntervalSince(lastTriggerTimestamp ?? .distantPast) < Constants.throttingRate
+        return dateProvider.now.timeIntervalSince(lastTriggerDate ?? .distantPast) < Constants.throttingRate
     }
 
-    func didTrigger() {
+    private func didTrigger() {
         guard shouldSkipTrigger == false else {
             return
         }
-        lastTriggerTimestamp = Date()
+        lastTriggerDate = dateProvider.now
         captureNextRecord()
     }
 

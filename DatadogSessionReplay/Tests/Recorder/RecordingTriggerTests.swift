@@ -11,47 +11,45 @@ import XCTest
 class RecordingTriggerTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
     var recordingTrigger: RecordingTrigger!
-    var recordingTriggerDelegateSpy: RecordingTriggerDelegateSpy!
     // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
         recordingTrigger = try RecordingTrigger()
-        recordingTriggerDelegateSpy = RecordingTriggerDelegateSpy()
-        recordingTrigger.delegate = recordingTriggerDelegateSpy
     }
 
     override func tearDownWithError() throws {
         recordingTrigger = nil
-        recordingTriggerDelegateSpy = nil
-    }
-
-    func testRecordingTriggersInitialization() {
-        XCTAssertEqual(recordingTriggerDelegateSpy.didTriggerCalledCount, 0)
     }
 
     func testStartAndStopRecordingTriggers() {
-        recordingTrigger.startWatchingTriggers()
+        var didTriggerCalledCount = 0
+        recordingTrigger.startWatchingTriggers {
+            didTriggerCalledCount += 1
+        }
 
-        XCTAssertEqual(recordingTriggerDelegateSpy.didTriggerCalledCount, 0)
+        XCTAssertEqual(didTriggerCalledCount, 0)
 
         randomTrigger()
 
-        XCTAssertEqual(recordingTriggerDelegateSpy.didTriggerCalledCount, 1)
+        XCTAssertEqual(didTriggerCalledCount, 1)
 
         recordingTrigger.stopWatchingTriggers()
 
-        XCTAssertEqual(recordingTriggerDelegateSpy.didTriggerCalledCount, 1)
+        XCTAssertEqual(didTriggerCalledCount, 1)
 
         randomTrigger()
 
-        XCTAssertEqual(recordingTriggerDelegateSpy.didTriggerCalledCount, 1)
+        XCTAssertEqual(didTriggerCalledCount, 1)
     }
 
     func testNotifySendEventDoesNotTriggerOnInvalidEvent() {
-        recordingTrigger.startWatchingTriggers()
+        var didTriggerCalledCount = 0
+        recordingTrigger.startWatchingTriggers {
+            didTriggerCalledCount += 1
+        }
         UIApplication.shared.sendEvent(UIEvent())
 
-        XCTAssertEqual(recordingTriggerDelegateSpy.didTriggerCalledCount, 0)
+        XCTAssertEqual(didTriggerCalledCount, 0)
     }
 
     private func randomTrigger() {
@@ -62,13 +60,6 @@ class RecordingTriggerTests: XCTestCase {
         } else {
             UIView().layoutSubviews()
         }
-    }
-}
-
-class RecordingTriggerDelegateSpy: RecordingTriggerDelegate {
-    var didTriggerCalledCount = 0
-    func didTrigger() {
-        didTriggerCalledCount += 1
     }
 }
 #endif

@@ -11,22 +11,15 @@ import UIKit
 /// Orchestrates the process of triggering next snapshot recording.
 /// It has 2 recording triggers: `layoutSubviews` and touch event, which are done by using swizzling.
 internal protocol RecordingTriggering {
-    func startWatchingTriggers()
+    func startWatchingTriggers(_ callback: @escaping () -> Void)
     func stopWatchingTriggers()
-
-    var delegate: RecordingTriggerDelegate? { get set }
-}
-
-/// Delegate to notify about recording trigger.
-internal protocol RecordingTriggerDelegate: AnyObject {
-    func didTrigger()
 }
 
 internal final class RecordingTrigger: RecordingTriggering, UIViewHandler, UIEventHandler {
     private var uiViewSwizzler: UIViewSwizzler? = nil
     private var uiApplicationSwizzler: UIApplicationSwizzler? = nil
 
-    weak var delegate: RecordingTriggerDelegate?
+    private var triggerCallback: (() -> Void)?
 
     init() throws {
         uiViewSwizzler = try UIViewSwizzler(handler: self)
@@ -38,25 +31,27 @@ internal final class RecordingTrigger: RecordingTriggering, UIViewHandler, UIEve
         uiApplicationSwizzler?.unswizzle()
     }
 
-    func startWatchingTriggers() {
+    func startWatchingTriggers(_ callback: @escaping () -> Void) {
+        triggerCallback = callback
         uiViewSwizzler?.swizzle()
         uiApplicationSwizzler?.swizzle()
     }
 
     func stopWatchingTriggers() {
+        triggerCallback = nil
         uiViewSwizzler?.unswizzle()
         uiApplicationSwizzler?.unswizzle()
     }
 
     func notify_layoutSubviews(view: UIView) {
-        delegate?.didTrigger()
+        triggerCallback?()
     }
 
     func notify_sendEvent(application: UIApplication, event: UIEvent) {
         guard event.type == .touches, event.allTouches?.isEmpty == false else {
             return
         }
-        delegate?.didTrigger()
+        triggerCallback?()
     }
 }
 #endif

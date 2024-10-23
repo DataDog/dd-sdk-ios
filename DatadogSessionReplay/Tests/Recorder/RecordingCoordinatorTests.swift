@@ -38,7 +38,6 @@ class RecordingCoordinatorTests: XCTestCase {
     func test_itDoesNotStart_afterInitializing() {
         prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
-        XCTAssertTrue(recordingTriggerMock.delegate === recordingCoordinator)
         XCTAssertEqual(recordingTriggerMock.startWatchingTriggersCallsCount, 0)
         XCTAssertEqual(recordingTriggerMock.stopWatchingTriggersCallsCount, 1)
     }
@@ -49,7 +48,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // When
         rumContextObserver.notify(rumContext: .mockRandom())
-        recordingCoordinator?.didTrigger()
+        recordingTriggerMock.triggerCallback?()
 
         // Then
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
@@ -69,7 +68,7 @@ class RecordingCoordinatorTests: XCTestCase {
         recordingCoordinator?.startRecording()
         let rumContext = RUMContext.mockRandom()
         rumContextObserver.notify(rumContext: rumContext)
-        recordingCoordinator?.didTrigger()
+        recordingTriggerMock.triggerCallback?()
 
         // Then
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), true)
@@ -91,7 +90,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // When
         rumContextObserver.notify(rumContext: nil)
-        recordingCoordinator?.didTrigger()
+        recordingTriggerMock.triggerCallback?()
 
         // Then
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
@@ -102,7 +101,7 @@ class RecordingCoordinatorTests: XCTestCase {
     func test_whenNoRUMContextAndTriggered_itShouldNotRecord() {
         // Given
         prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
-        recordingCoordinator?.didTrigger()
+        recordingTriggerMock.triggerCallback?()
 
         // Then
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
@@ -118,7 +117,7 @@ class RecordingCoordinatorTests: XCTestCase {
         // When
         let rumContext = RUMContext.mockWith(viewID: nil)
         rumContextObserver.notify(rumContext: rumContext)
-        recordingCoordinator?.didTrigger()
+        recordingTriggerMock.triggerCallback?()
 
         // Then
         XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), true)
@@ -141,7 +140,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // When
         rumContextObserver.notify(rumContext: .mockRandom())
-        recordingCoordinator?.didTrigger()
+        recordingTriggerMock.triggerCallback?()
 
         // Then
         let error = telemetry.messages.firstError()
@@ -162,7 +161,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // When
         rumContextObserver.notify(rumContext: .mockRandom())
-        recordingCoordinator?.didTrigger()
+        recordingTriggerMock.triggerCallback?()
 
         // Then
         let error = telemetry.messages.firstError()
@@ -181,7 +180,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // When
         rumContextObserver.notify(rumContext: .mockRandom())
-        recordingCoordinator?.didTrigger()
+        recordingTriggerMock.triggerCallback?()
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.last?.asMetric)
@@ -245,11 +244,11 @@ class RecordingCoordinatorTests: XCTestCase {
         recordingCoordinator?.startRecording()
 
         // When
-        recordingCoordinator?.didTrigger()
-        dateProviderMock.advance(bySeconds: 0.01)
-        recordingCoordinator?.didTrigger()
-        dateProviderMock.advance(bySeconds: 0.2)
-        recordingCoordinator?.didTrigger()
+        recordingTriggerMock.triggerCallback?()
+        dateProviderMock.advance(bySeconds: 0.01) // 10ms
+        recordingTriggerMock.triggerCallback?()
+        dateProviderMock.advance(bySeconds: 0.1) // 100ms
+        recordingTriggerMock.triggerCallback?()
 
         // Then
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 2)
@@ -282,8 +281,10 @@ class RecordingCoordinatorTests: XCTestCase {
 }
 
 final class RecordingTriggerMock: RecordingTriggering {
+    var triggerCallback: (() -> Void)?
     var startWatchingTriggersCallsCount = 0
-    func startWatchingTriggers() {
+    func startWatchingTriggers(_ callback: @escaping () -> Void) {
+        triggerCallback = callback
         startWatchingTriggersCallsCount += 1
     }
 
@@ -291,8 +292,6 @@ final class RecordingTriggerMock: RecordingTriggering {
     func stopWatchingTriggers() {
         stopWatchingTriggersCallsCount += 1
     }
-
-    var delegate: RecordingTriggerDelegate?
 }
 
 final class RecordingMock: Recording {
