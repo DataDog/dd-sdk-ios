@@ -237,6 +237,24 @@ class RecordingCoordinatorTests: XCTestCase {
         XCTAssertEqual(recordingTriggerMock.stopWatchingTriggersCallsCount, 3)
     }
 
+    func test_snapshotIsSkippedWhenHappensBeforeThrottling() {
+        // Given
+        prepareRecordingCoordinator()
+        let rumContext = RUMContext.mockRandom()
+        rumContextObserver.notify(rumContext: rumContext)
+        recordingCoordinator?.startRecording()
+
+        // When
+        recordingCoordinator?.didTrigger()
+        dateProviderMock.advance(bySeconds: 0.01)
+        recordingCoordinator?.didTrigger()
+        dateProviderMock.advance(bySeconds: 0.1)
+        recordingCoordinator?.didTrigger()
+
+        // Then
+        XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 2)
+    }
+
     private func prepareRecordingCoordinator(
         sampler: Sampler = .mockKeepAll(),
         textAndInputPrivacy: TextAndInputPrivacyLevel = .maskSensitiveInputs,

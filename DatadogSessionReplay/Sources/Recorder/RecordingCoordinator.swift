@@ -125,14 +125,14 @@ internal class RecordingCoordinator: RecordingTriggerDelegate {
     }
 
     func didTrigger() {
+        guard shouldSkipFrame == false else {
+            return
+        }
         captureNextRecord()
     }
 
     /// Captures the next recording if conditions are met.
     private func captureNextRecord() {
-        guard shouldSkipFrame == false else {
-            return
-        }
         queue.run { [weak self] in
             guard let self = self else {
                 return
