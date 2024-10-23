@@ -19,11 +19,13 @@ import DatadogInternal
 internal class RecordingCoordinator {
     let recorder: Recording
     let sampler: Sampler
+
     let textAndInputPrivacy: TextAndInputPrivacyLevel
     let imagePrivacy: ImagePrivacyLevel
     let touchPrivacy: TouchPrivacyLevel
     let srContextPublisher: SRContextPublisher
 
+    private var timeBank: TimeBank
     private var currentRUMContext: RUMContext? = nil
     private var isSampled: Bool = false
 
@@ -52,12 +54,14 @@ internal class RecordingCoordinator {
         sampler: Sampler,
         telemetry: Telemetry,
         recordingTrigger: RecordingTriggering,
+        timeBank: TimeBank = NOPTimeBank(),
         methodCallTelemetrySamplingRate: Float = 0.1,
         dateProvider: DateProvider = SystemDateProvider(),
         queue: Queue = MainAsyncQueue()
     ) throws {
         self.recorder = recorder
         self.sampler = sampler
+        self.timeBank = timeBank
         self.textAndInputPrivacy = textAndInputPrivacy
         self.imagePrivacy = imagePrivacy
         self.touchPrivacy = touchPrivacy
@@ -145,6 +149,13 @@ internal class RecordingCoordinator {
         // We don't capture any snapshots if the RUM context has no view ID.
         guard let rumContext = currentRUMContext,
               let viewID = rumContext.viewID else {
+            return
+        }
+
+        let now = Date()
+        timeBank.recharge(timestamp: now)
+
+        guard timeBank.isPositive else {
             return
         }
 

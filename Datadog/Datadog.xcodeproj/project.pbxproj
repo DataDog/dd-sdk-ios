@@ -1062,6 +1062,7 @@
 		D243BBF329A6209C000B9CEC /* RequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D243BBF129A6209C000B9CEC /* RequestBuilder.swift */; };
 		D243BBF529A620CC000B9CEC /* MessageReceivers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D243BBF429A620CC000B9CEC /* MessageReceivers.swift */; };
 		D243BBF629A620CC000B9CEC /* MessageReceivers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D243BBF429A620CC000B9CEC /* MessageReceivers.swift */; };
+		D2442E1D2CDA385A00AC2F8F /* TimeBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2442E1C2CDA385A00AC2F8F /* TimeBank.swift */; };
 		D244B3A3271EDACD003E1B29 /* SwiftUIExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D244B3A2271EDACD003E1B29 /* SwiftUIExtensionsTests.swift */; };
 		D24C9C3F29A79772002057CF /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C9C3E29A79772002057CF /* Logger.swift */; };
 		D24C9C4029A79772002057CF /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C9C3E29A79772002057CF /* Logger.swift */; };
@@ -1690,6 +1691,7 @@
 		D2EBEE4629BA168400B15732 /* TraceIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BCE2450A6EC00F2C652 /* TraceIDTests.swift */; };
 		D2EBEE4829BA17C400B15732 /* NetworkInstrumentationMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EBEE4729BA17C400B15732 /* NetworkInstrumentationMocks.swift */; };
 		D2EBEE4929BA17C400B15732 /* NetworkInstrumentationMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EBEE4729BA17C400B15732 /* NetworkInstrumentationMocks.swift */; };
+		D2EE03CA2CC7F14900DA7C03 /* TimeBankTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EE03C92CC7F14900DA7C03 /* TimeBankTests.swift */; };
 		D2EFA868286DA85700F1FAA6 /* DatadogContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA867286DA85700F1FAA6 /* DatadogContextProvider.swift */; };
 		D2EFA869286DA85700F1FAA6 /* DatadogContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA867286DA85700F1FAA6 /* DatadogContextProvider.swift */; };
 		D2EFA875286E011900F1FAA6 /* DatadogContextProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */; };
@@ -2923,6 +2925,7 @@
 		D243BBEB29A614CE000B9CEC /* LoggerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerProtocol.swift; sourceTree = "<group>"; };
 		D243BBF129A6209C000B9CEC /* RequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestBuilder.swift; sourceTree = "<group>"; };
 		D243BBF429A620CC000B9CEC /* MessageReceivers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageReceivers.swift; sourceTree = "<group>"; };
+		D2442E1C2CDA385A00AC2F8F /* TimeBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeBank.swift; sourceTree = "<group>"; };
 		D244B3A2271EDACD003E1B29 /* SwiftUIExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIExtensionsTests.swift; sourceTree = "<group>"; };
 		D248ED4728081B9B00B315B4 /* TelemetryReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryReceiverTests.swift; sourceTree = "<group>"; };
 		D249859F2728042200B4F72D /* SwiftUIViewModifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftUIViewModifier.swift; sourceTree = "<group>"; };
@@ -3071,6 +3074,7 @@
 		D2EBEDD229B8A58E00B15732 /* TracePropagationHeadersReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracePropagationHeadersReader.swift; sourceTree = "<group>"; };
 		D2EBEDD629B8F08E00B15732 /* DDFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDFormat.swift; sourceTree = "<group>"; };
 		D2EBEE4729BA17C400B15732 /* NetworkInstrumentationMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInstrumentationMocks.swift; sourceTree = "<group>"; };
+		D2EE03C92CC7F14900DA7C03 /* TimeBankTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeBankTests.swift; sourceTree = "<group>"; };
 		D2EFA867286DA85700F1FAA6 /* DatadogContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogContextProvider.swift; sourceTree = "<group>"; };
 		D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogContextProviderTests.swift; sourceTree = "<group>"; };
 		D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandler.swift; sourceTree = "<group>"; };
@@ -3825,6 +3829,7 @@
 				61054E582A6EE10A00AAA894 /* Queue.swift */,
 				61054E592A6EE10A00AAA894 /* Errors.swift */,
 				61054E5A2A6EE10A00AAA894 /* Colors.swift */,
+				D2442E1C2CDA385A00AC2F8F /* TimeBank.swift */,
 			);
 			name = Utilities;
 			path = ../Utilities;
@@ -3920,6 +3925,7 @@
 			children = (
 				61054F5D2A6EE1BA00AAA894 /* UIView+SessionReplayTests.swift */,
 				61054F5F2A6EE1BA00AAA894 /* CGRect+SessionReplayTests.swift */,
+				D2EE03C92CC7F14900DA7C03 /* TimeBankTests.swift */,
 			);
 			path = Utilties;
 			sourceTree = "<group>";
@@ -8358,6 +8364,7 @@
 				61054E812A6EE10A00AAA894 /* UIStepperRecorder.swift in Sources */,
 				61054E632A6EE10A00AAA894 /* SessionReplayConfiguration.swift in Sources */,
 				61054E702A6EE10A00AAA894 /* TouchSnapshotProducer.swift in Sources */,
+				D2442E1D2CDA385A00AC2F8F /* TimeBank.swift in Sources */,
 				D2C5D52B2B84F6AB00B63F36 /* WebViewRecordReceiver.swift in Sources */,
 				61054E652A6EE10A00AAA894 /* AppWindowObserver.swift in Sources */,
 				A74A72812B0CEE4900771FEB /* ResourceRequestBuilder.swift in Sources */,
@@ -8463,7 +8470,6 @@
 				D2BCB2A32B7B9683005C2AAB /* WKWebViewRecorderTests.swift in Sources */,
 				61054FC62A6EE1BA00AAA894 /* CoreGraphicsMocks.swift in Sources */,
 				96F25A852CC7EB3700459567 /* PrivacyOverridesMock+objc.swift in Sources */,
-				61054FCA2A6EE1BA00AAA894 /* TestScheduler.swift in Sources */,
 				962C41A92CB00FD60050B747 /* DDSessionReplayTests.swift in Sources */,
 				61054FBD2A6EE1BA00AAA894 /* UIViewRecorderTests.swift in Sources */,
 				61054F952A6EE1BA00AAA894 /* SessionReplayConfigurationTests.swift in Sources */,
@@ -8474,6 +8480,7 @@
 				A74A72872B10CE4100771FEB /* ResourceMocks.swift in Sources */,
 				61054FA42A6EE1BA00AAA894 /* DiffTests.swift in Sources */,
 				61054FA02A6EE1BA00AAA894 /* SRCompressionTests.swift in Sources */,
+				D2EE03CA2CC7F14900DA7C03 /* TimeBankTests.swift in Sources */,
 				A74A72852B10CC6700771FEB /* ResourceRequestBuilderTests.swift in Sources */,
 				61054FB62A6EE1BA00AAA894 /* UnsupportedViewRecorderTests.swift in Sources */,
 				61054F9F2A6EE1BA00AAA894 /* RecordsWriterTests.swift in Sources */,
