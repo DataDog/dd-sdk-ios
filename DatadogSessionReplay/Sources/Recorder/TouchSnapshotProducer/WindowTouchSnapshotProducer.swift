@@ -113,7 +113,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
     }
 
     /// Resolves the touch privacy override for the given touch by traversing the view hierarchy.
-    /// It checks the `dd.sessionReplayOverrides.touchPrivacy` property for the view where the touch occurred
+    /// It checks the `dd.sessionReplayPrivacyOverrides.touchPrivacy` property for the view where the touch occurred
     /// and its ancestors, if needed. The first non-nil override encountered is returned.
     /// - Parameter touch: The touch event to check.
     /// - Returns: The `TouchPrivacyLevel` for the view, or `nil` if no override is found.
@@ -124,7 +124,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
 
         var view: UIView? = initialView
         while view != nil {
-            if let touchPrivacy = view?.dd.sessionReplayOverrides.touchPrivacy {
+            if let touchPrivacy = view?.dd.sessionReplayPrivacyOverrides.touchPrivacy {
                 return touchPrivacy
             }
             view = view?.superview
