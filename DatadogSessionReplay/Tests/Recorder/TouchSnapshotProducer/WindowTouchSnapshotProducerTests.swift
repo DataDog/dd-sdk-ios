@@ -118,7 +118,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         XCTAssertGreaterThan(snapshot1!.date, Date())
     }
 
-    // MARK: - Touch Override Tests
+    // MARK: - Touch Override View Tests
     func testResolveTouchOverride_whenViewHasNoOverride_returnsNil() {
         // Given
         let view = UIView(frame: .mockRandom())
@@ -243,6 +243,66 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         // Then
         XCTAssertNotNil(snapshot, "Touches in a view with touch privacy override `.show` should be recorded even when global setting is `.hide`")
         XCTAssertEqual(snapshot?.touches.count, 1, "It should record one touch event")
+    }
+
+    // MARK: Touch Override Cache Tests
+    func testEndedTouchEntriesAreCleaned() {
+        // Given
+        let view = UIView(frame: .mockRandom())
+        view.dd.sessionReplayOverrides.touchPrivacy = .mockRandom()
+        let touch = UITouchMock(view: view)
+        let producer = WindowTouchSnapshotProducer(windowObserver: mockWindowObserver)
+
+        // Simulate a normal touch flow,
+        // with `.began` and `.ended` phases
+        touch.phase = .began
+        producer.notify_sendEvent(application: mockApplication, event: UITouchEventMock(touches: [touch]))
+        touch.phase = .ended
+        producer.notify_sendEvent(application: mockApplication, event: UITouchEventMock(touches: [touch]))
+
+        // When
+        _ = producer.takeSnapshot(context: .mockAny())
+
+        // Then
+        XCTAssertEqual(producer.overrideForTouch.count, 0, "The touch entry should not be present anymore after it ended")
+    }
+
+    func testStaleTouchEntriesAreCleanedAfterTimeout() {
+        // Given
+        let view = UIView(frame: .mockRandom())
+        view.dd.sessionReplayOverrides.touchPrivacy = .mockRandom()
+        let touch = UITouchMock(phase: .began, location: .mockRandom(), view: view)
+        let producer = WindowTouchSnapshotProducer(windowObserver: mockWindowObserver)
+
+        // Simulate a touch event with a `.began` phase
+        // but which doesn't end within the timeout
+        producer.notify_sendEvent(application: mockApplication, event: UITouchEventMock(touches: [touch]))
+        let touchId = producer.overrideForTouch.keys.first!
+        producer.overrideForTouch[touchId] = (privacyLevel: .show, timestamp: Date().addingTimeInterval(-(producer.touchTimeout + 1)))
+
+        // When
+        _ = producer.takeSnapshot(context: .mockAny())
+
+        // Then
+        XCTAssertEqual(producer.overrideForTouch.count, 0, "There should be no remaining stale touch entries in overrideForTouch")
+    }
+
+    func testOngoingTouchEntriesAreNotCleanedPrematurely() {
+        // Given
+        let view = UIView(frame: .mockRandom())
+        view.dd.sessionReplayOverrides.touchPrivacy = .mockRandom()
+        let touch = UITouchMock(phase: .began, location: .mockRandom(), view: view)
+        let producer = WindowTouchSnapshotProducer(windowObserver: mockWindowObserver)
+
+        // Simulate a touch event that is still ongoing,
+        // with a `.began` phase
+        producer.notify_sendEvent(application: mockApplication, event: UITouchEventMock(touches: [touch]))
+
+        // When
+        _ = producer.takeSnapshot(context: .mockAny())
+
+        // Then
+        XCTAssertEqual(producer.overrideForTouch.count, 1, "The ongoing touch entry should still be present in overrideForTouch")
     }
 }
 #endif
