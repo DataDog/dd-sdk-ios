@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.19.0 / 28-10-2024
+
 - [FEATURE] Add Privacy Overrides in Session Replay. See [#2088][]
 - [IMPROVEMENT] Add ObjC API for the internal logging/telemetry. See [#2073][]
 
