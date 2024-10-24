@@ -230,7 +230,7 @@ public enum objc_ImagePrivacyLevel: Int {
     }
 }
 
-/// Available privacy levels for content masking.
+/// Available privacy levels for touch masking.
 @objc(DDTouchPrivacyLevel)
 @_spi(objc)
 public enum objc_TouchPrivacyLevel: Int {
@@ -254,5 +254,4 @@ public enum objc_TouchPrivacyLevel: Int {
         }
     }
 }
-
 #endif

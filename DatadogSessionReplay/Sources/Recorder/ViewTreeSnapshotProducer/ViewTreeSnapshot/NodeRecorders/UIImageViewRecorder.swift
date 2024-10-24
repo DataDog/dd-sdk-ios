@@ -44,6 +44,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
         if let semantics = semanticsOverride(imageView, attributes) {
             return semantics
         }
+
         guard attributes.hasAnyAppearance || imageView.image != nil else {
             return InvisibleElement.constant
         }
@@ -59,7 +60,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
         let shouldRecordImage = if let shouldRecordImagePredicateOverride {
             shouldRecordImagePredicateOverride(imageView)
         } else {
-            context.recorder.imagePrivacy.shouldRecordImagePredicate(imageView)
+            attributes.resolveImagePrivacyLevel(in: context).shouldRecordImagePredicate(imageView)
         }
         let imageResource = shouldRecordImage ? imageView.image.map { image in
             UIImageResource(image: image, tintColor: tintColorProvider(imageView))

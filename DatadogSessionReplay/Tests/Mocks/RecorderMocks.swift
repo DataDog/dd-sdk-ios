@@ -64,7 +64,8 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             layerCornerRadius: .mockRandom(min: 0, max: 5),
             alpha: .mockRandom(min: 0, max: 1),
             isHidden: .mockRandom(),
-            intrinsicContentSize: .mockRandom()
+            intrinsicContentSize: .mockRandom(),
+            overrides: .mockAny()
         )
     }
 
@@ -77,7 +78,8 @@ extension ViewAttributes: AnyMockable, RandomMockable {
         layerCornerRadius: CGFloat = .mockAny(),
         alpha: CGFloat = .mockAny(),
         isHidden: Bool = .mockAny(),
-        intrinsicContentSize: CGSize = .mockAny()
+        intrinsicContentSize: CGSize = .mockAny(),
+        overrides: PrivacyOverrides = .mockAny()
     ) -> ViewAttributes {
         return .init(
             frame: frame,
@@ -87,7 +89,8 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             layerCornerRadius: layerCornerRadius,
             alpha: alpha,
             isHidden: isHidden,
-            intrinsicContentSize: intrinsicContentSize
+            intrinsicContentSize: intrinsicContentSize,
+            overrides: overrides
         )
     }
 
@@ -171,7 +174,8 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             layerCornerRadius: .mockRandom(min: 0, max: 4),
             alpha: alpha ?? .mockRandom(min: 0.01, max: 1),
             isHidden: isHidden ?? .mockRandom(),
-            intrinsicContentSize: (frame ?? .mockRandom(minWidth: 10, minHeight: 10)).size
+            intrinsicContentSize: (frame ?? .mockRandom(minWidth: 10, minHeight: 10)).size,
+            overrides: .mockAny()
         )
 
         // consistency check:
@@ -429,7 +433,8 @@ extension TouchSnapshot.Touch: AnyMockable, RandomMockable {
             id: .mockRandom(),
             phase: [.down, .move, .up].randomElement()!,
             date: .mockRandom(),
-            position: .mockRandom()
+            position: .mockRandom(),
+            touchOverride: nil
         )
     }
 
@@ -443,7 +448,8 @@ extension TouchSnapshot.Touch: AnyMockable, RandomMockable {
             id: id,
             phase: phase,
             date: date,
-            position: position
+            position: position,
+            touchOverride: nil
         )
     }
 }
@@ -527,7 +533,7 @@ internal func mockUIView<View: UIView>(with attributes: ViewAttributes) -> View 
     // Consistency check - to make sure computed properties in `ViewAttributes` captured
     // for mocked view are equal the these from requested `attributes`.
     let expectedAttributes = attributes
-    let actualAttributes = ViewAttributes(frameInRootView: view.frame, view: view)
+    let actualAttributes = ViewAttributes(frameInRootView: view.frame, view: view, overrides: .mockAny())
 
     assert(
         actualAttributes.isVisible == expectedAttributes.isVisible,
@@ -575,6 +581,35 @@ internal extension Optional where Wrapped == NodeSemantics {
         let builders: [T] = try expectWireframeBuilders(file: file, line: line)
         XCTAssertEqual(builders.count, 1, "Expected single \(T.self), found none", file: file, line: line)
         return try XCTUnwrap(builders.first, file: file, line: line)
+    }
+}
+
+extension PrivacyOverrides: AnyMockable, RandomMockable {
+    public static func mockAny() -> PrivacyOverrides {
+        return mockWith()
+    }
+
+    public static func mockRandom() -> PrivacyOverrides {
+        return mockWith(
+            textAndInputPrivacy: .mockRandom(),
+            imagePrivacy: .mockRandom(),
+            touchPrivacy: .mockRandom(),
+            hide: .mockRandom()
+        )
+    }
+
+    public static func mockWith(
+        textAndInputPrivacy: TextAndInputPrivacyLevel? = nil,
+        imagePrivacy: ImagePrivacyLevel? = nil,
+        touchPrivacy: TouchPrivacyLevel? = nil,
+        hide: Bool? = nil
+    ) -> PrivacyOverrides {
+        let override = PrivacyOverrides(UIView.mockRandom())
+        override.textAndInputPrivacy = textAndInputPrivacy
+        override.imagePrivacy = imagePrivacy
+        override.touchPrivacy = touchPrivacy
+        override.hide = hide
+        return override
     }
 }
 #endif
