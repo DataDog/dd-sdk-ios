@@ -1278,6 +1278,91 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.frustration?.count, 5)
     }
 
+    func testWhenTwoTapActionsTrackedSequentially_thenHigherPriorityInstrumentationWins() throws {
+        func actionName(for instrumentationType: InstrumentationType) -> String {
+            switch instrumentationType {
+            case .manual: return "Manual action"
+            case .uikit: return "UIKit action"
+            case .swiftui: return "SwiftUI action"
+            }
+        }
+
+        /// Simulates two consecutive tap actions, triggered by different instrumentation types,
+        /// and asserts that the higher priority action is tracked.
+        /// - Parameters:
+        ///   - firstTap: The type of instrumentation that tracks the first tap.
+        ///   - secondTap: The type of instrumentation that tracks the second tap.
+        ///   - expectedActionName: The expected action name after the second tap is processed.
+        func testTapActions(
+            firstTap: InstrumentationType, secondTap: InstrumentationType, expectedActionName: String
+        ) throws {
+            let firstActionName = actionName(for: firstTap)
+            let secondActionName = actionName(for: secondTap)
+
+            var currentTime = Date()
+            let scope = RUMViewScope(
+                isInitialView: false,
+                parent: parent,
+                dependencies: .mockAny(),
+                identity: .mockViewIdentifier(),
+                path: .mockAny(),
+                name: .mockAny(),
+                attributes: [:],
+                customTimings: [:],
+                startTime: currentTime,
+                serverTimeOffset: .zero
+            )
+            _ = scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+
+            // Given: The first tap action is tracked
+            _ = scope.process(
+                command: RUMAddUserActionCommand.mockWith(
+                    time: currentTime, instrumentation: firstTap, actionType: .tap, name: firstActionName
+                ),
+                context: context,
+                writer: writer
+            )
+
+            // When: The second tap action is tracked shortly after
+            currentTime.addTimeInterval(.mockRandom(min: 0, max: RUMUserActionScope.Constants.discreteActionTimeoutDuration))
+            _ = scope.process(
+                command: RUMAddUserActionCommand.mockWith(
+                    time: currentTime, instrumentation: secondTap, actionType: .tap, name: secondActionName
+                ),
+                context: context,
+                writer: writer
+            )
+
+            // Then: Assert that the higher-priority action is the one being tracked
+            currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
+            _ = scope.process(
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+
+            let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+            let actionName = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last?.action.target?.name)
+            XCTAssertEqual(viewEvent.view.action.count, 1)
+            XCTAssertEqual(
+                actionName,
+                expectedActionName,
+                "When \(firstActionName) is followed by \(secondActionName) it should sent \(expectedActionName) not \(actionName)"
+            )
+        }
+
+        try testTapActions(firstTap: .uikit, secondTap: .swiftui, expectedActionName: actionName(for: .swiftui))
+        try testTapActions(firstTap: .uikit, secondTap: .manual, expectedActionName: actionName(for: .manual))
+        try testTapActions(firstTap: .swiftui, secondTap: .manual, expectedActionName: actionName(for: .manual))
+        try testTapActions(firstTap: .manual, secondTap: .uikit, expectedActionName: actionName(for: .manual))
+        try testTapActions(firstTap: .manual, secondTap: .swiftui, expectedActionName: actionName(for: .manual))
+        try testTapActions(firstTap: .swiftui, secondTap: .uikit, expectedActionName: actionName(for: .swiftui))
+    }
+
     // MARK: - Error Tracking
 
     func testWhenViewErrorIsAdded_itSendsErrorEventAndViewUpdateEvent() throws {

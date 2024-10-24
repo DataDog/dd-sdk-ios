@@ -16,13 +16,15 @@ internal struct UITextFieldRecorder: NodeRecorder {
     private let iconsRecorder: UIImageViewRecorder
     private let subtreeRecorder: ViewTreeRecorder
 
-    var textObfuscator: (ViewTreeRecordingContext, _ isSensitive: Bool, _ isPlaceholder: Bool) -> TextObfuscating = { context, isSensitive, isPlaceholder in
+    var textObfuscator: (ViewTreeRecordingContext, _ viewAttributes: ViewAttributes, _ isSensitive: Bool, _ isPlaceholder: Bool) -> TextObfuscating = { context, viewAttributes, isSensitive, isPlaceholder in
+        let resolvedPrivacyLevel = viewAttributes.resolveTextAndInputPrivacyLevel(in: context)
+
         if isPlaceholder {
-            return context.recorder.textAndInputPrivacy.hintTextObfuscator
+            return resolvedPrivacyLevel.hintTextObfuscator
         } else if isSensitive {
-            return context.recorder.textAndInputPrivacy.sensitiveTextObfuscator
+            return resolvedPrivacyLevel.sensitiveTextObfuscator
         } else {
-            return context.recorder.textAndInputPrivacy.inputAndOptionTextObfuscator
+            return resolvedPrivacyLevel.inputAndOptionTextObfuscator
         }
     }
 
@@ -95,7 +97,7 @@ internal struct UITextFieldRecorder: NodeRecorder {
             isPlaceholderText: isPlaceholder,
             font: textField.font,
             fontScalingEnabled: textField.adjustsFontSizeToFitWidth,
-            textObfuscator: textObfuscator(context, textField.dd.isSensitiveText, isPlaceholder)
+            textObfuscator: textObfuscator(context, attributes, textField.dd.isSensitiveText, isPlaceholder)
         )
         return Node(viewAttributes: attributes, wireframesBuilder: builder)
     }

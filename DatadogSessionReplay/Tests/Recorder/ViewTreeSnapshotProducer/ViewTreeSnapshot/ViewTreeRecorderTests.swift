@@ -294,5 +294,125 @@ class ViewTreeRecorderTests: XCTestCase {
         XCTAssertEqual(context?.viewControllerContext.isRootView, false)
         XCTAssertEqual(context?.viewControllerContext.parentType, .activity)
     }
+
+    // MARK: Privacy Overrides
+
+    func testChildViewInheritsParentHideOverride() {
+        // Given
+        let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
+        let childView = UIView.mock(withFixture: .visible(.someAppearance))
+        let parentView = UIView.mock(withFixture: .visible(.someAppearance))
+        parentView.addSubview(childView)
+        parentView.dd.sessionReplayPrivacyOverrides.hide = true
+
+        // When
+        let nodes = recorder.record(parentView, in: .mockRandom())
+
+        // Then
+        XCTAssertEqual(nodes.count, 1)
+    }
+
+    func testChildViewHideOverrideIsTrueAndParentHideOverrideIsFalse() {
+        // Given
+        let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
+        let childView = UIView.mock(withFixture: .visible(.someAppearance))
+        childView.dd.sessionReplayPrivacyOverrides.hide = true
+        let parentView = UIView.mock(withFixture: .visible(.someAppearance))
+        parentView.addSubview(childView)
+        parentView.dd.sessionReplayPrivacyOverrides.hide = false
+
+        // When
+        let nodes = recorder.record(parentView, in: .mockRandom())
+
+        // Then
+        XCTAssertEqual(nodes.count, 2)
+    }
+
+    func testChildViewHideOverrideIsTrueAndParentHideOverrideIsNil() {
+        // Given
+        let childView = UIView.mock(withFixture: .visible(.someAppearance))
+        childView.dd.sessionReplayPrivacyOverrides.hide = true
+        let parentView = UIView.mock(withFixture: .visible(.someAppearance))
+        parentView.addSubview(childView)
+
+        // When
+        let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
+        let nodes = recorder.record(parentView, in: .mockRandom())
+
+        // Then
+        XCTAssertEqual(nodes.count, 2)
+    }
+
+    func testImageViewOverrideTakesPrecedenceOverGlobalSetting() {
+        // Given
+        let globalImagePrivacy: ImagePrivacyLevel = .mockRandom()
+        let context = ViewTreeRecordingContext.mockWith(recorder: .mockWith(imagePrivacy: globalImagePrivacy))
+
+        let viewImagePrivacy: ImagePrivacyLevel = .maskNone
+        let imageView = UIImageView.mock(withFixture: .visible(.someAppearance))
+        imageView.image = .mockRandom()
+        imageView.dd.sessionReplayPrivacyOverrides.imagePrivacy = viewImagePrivacy
+
+        // When
+        let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
+        let nodes = recorder.record(imageView, in: context)
+
+        // Then
+        XCTAssertEqual(nodes.count, 1)
+        let node = nodes.first
+        XCTAssertNotNil(node)
+        XCTAssertEqual(node!.viewAttributes.overrides.imagePrivacy, viewImagePrivacy)
+        let builder = node!.wireframesBuilder as? UIImageViewWireframesBuilder
+        XCTAssertNotNil(builder)
+        XCTAssertNotNil(builder!.imageResource)
+    }
+
+    func testChildViewMaskNoneImageOverrideWithParentImageOverride() {
+        // Given
+        let childImagePrivacy: ImagePrivacyLevel = .maskNone
+        let childView = UIImageView.mock(withFixture: .visible(.someAppearance))
+        childView.image = .mockRandom()
+        childView.dd.sessionReplayPrivacyOverrides.imagePrivacy = childImagePrivacy
+        let parentImagePrivacy: ImagePrivacyLevel = .mockRandom()
+        let parentView = UIView.mock(withFixture: .visible(.someAppearance))
+        parentView.dd.sessionReplayPrivacyOverrides.imagePrivacy = parentImagePrivacy
+        parentView.addSubview(childView)
+
+        // When
+        let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
+        let nodes = recorder.record(parentView, in: .mockRandom())
+
+        // Then
+        XCTAssertEqual(nodes.count, 2)
+        XCTAssertEqual(nodes[0].viewAttributes.overrides.imagePrivacy, parentImagePrivacy)
+        XCTAssertEqual(nodes[1].viewAttributes.overrides.imagePrivacy, childImagePrivacy)
+        let builder = nodes[1].wireframesBuilder as? UIImageViewWireframesBuilder
+        XCTAssertNotNil(builder)
+        XCTAssertNotNil(builder!.imageResource)
+    }
+
+    func testChildViewMaskAllImageOverrideWithParentImageOverride() {
+        // Given
+        let childImagePrivacy: ImagePrivacyLevel = .maskAll
+        let childView = UIImageView.mock(withFixture: .visible(.someAppearance))
+        childView.image = .mockRandom()
+        childView.dd.sessionReplayPrivacyOverrides.imagePrivacy = childImagePrivacy
+        let parentImagePrivacy: ImagePrivacyLevel = .mockRandom()
+        let parentView = UIView.mock(withFixture: .visible(.someAppearance))
+        parentView.dd.sessionReplayPrivacyOverrides.imagePrivacy = parentImagePrivacy
+        parentView.addSubview(childView)
+
+        // When
+        let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
+        let nodes = recorder.record(parentView, in: .mockRandom())
+
+        // Then
+        XCTAssertEqual(nodes.count, 2)
+        XCTAssertEqual(nodes[0].viewAttributes.overrides.imagePrivacy, parentImagePrivacy)
+        XCTAssertEqual(nodes[1].viewAttributes.overrides.imagePrivacy, childImagePrivacy)
+        let builder = nodes[1].wireframesBuilder as? UIImageViewWireframesBuilder
+        XCTAssertNotNil(builder)
+        XCTAssertNil(builder!.imageResource)
+    }
 }
 #endif

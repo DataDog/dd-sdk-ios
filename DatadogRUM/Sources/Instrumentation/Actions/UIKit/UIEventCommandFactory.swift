@@ -7,56 +7,8 @@
 import UIKit
 import DatadogInternal
 
-internal protocol UIEventHandler: RUMCommandPublisher {
-    func notify_sendEvent(application: UIApplication, event: UIEvent)
-}
-
 internal protocol UIEventCommandFactory {
     func command(from event: UIEvent) -> RUMAddUserActionCommand?
-}
-
-internal class UIKitRUMUserActionsHandler: UIEventHandler {
-    let factory: UIEventCommandFactory
-
-    convenience init(dateProvider: DateProvider, predicate: UITouchRUMActionsPredicate) {
-        let factory = UITouchCommandFactory(dateProvider: dateProvider, predicate: predicate)
-        self.init(factory: factory)
-    }
-
-    convenience init(dateProvider: DateProvider, predicate: UIPressRUMActionsPredicate) {
-        let factory = UIPressCommandFactory(dateProvider: dateProvider, predicate: predicate)
-        self.init(factory: factory)
-    }
-
-    init(factory: UIEventCommandFactory) {
-        self.factory = factory
-    }
-
-    // MARK: - UIKitRUMUserActionsHandlerType
-
-    weak var subscriber: RUMCommandSubscriber?
-
-    func publish(to subscriber: RUMCommandSubscriber) {
-        self.subscriber = subscriber
-    }
-
-    func notify_sendEvent(application: UIApplication, event: UIEvent) {
-        guard let command = factory.command(from: event) else {
-            return // Not a "tap" event or doesn't have the view.
-        }
-
-        guard let subscriber = subscriber else {
-            DD.logger.warn(
-                """
-                RUM Action was detected, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
-                Make sure `Global.rum = RUMMonitor.initialize()` is called before any action happens.
-                """
-            )
-            return
-        }
-
-        subscriber.process(command: command)
-    }
 }
 
 private extension UIView {
@@ -113,6 +65,7 @@ internal struct UITouchCommandFactory: UIEventCommandFactory {
         return RUMAddUserActionCommand(
             time: dateProvider.now,
             attributes: action.attributes,
+            instrumentation: .uikit,
             actionType: .tap,
             name: action.name
         )
@@ -167,6 +120,7 @@ internal struct UIPressCommandFactory: UIEventCommandFactory {
         return RUMAddUserActionCommand(
             time: dateProvider.now,
             attributes: action.attributes,
+            instrumentation: .uikit,
             actionType: .click,
             name: action.name
         )

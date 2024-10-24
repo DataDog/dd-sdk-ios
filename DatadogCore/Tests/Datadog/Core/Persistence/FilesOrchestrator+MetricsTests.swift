@@ -38,7 +38,8 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             metricsData: FilesOrchestrator.MetricsData(
                 trackName: "track name",
                 consentLabel: "consent value",
-                uploaderPerformance: upload
+                uploaderPerformance: upload,
+                backgroundTasksEnabled: .mockAny()
             )
         )
     }
@@ -68,6 +69,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             ],
             "uploader_window": storage.uploaderWindow.toMilliseconds,
             "in_background": false,
+            "background_tasks_enabled": false,
             "batch_age": expectedBatchAge.toMilliseconds,
             "batch_removal_reason": "intake-code-202",
         ])
@@ -98,6 +100,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             ],
             "uploader_window": storage.uploaderWindow.toMilliseconds,
             "in_background": false,
+            "background_tasks_enabled": false,
             "batch_age": (storage.maxFileAgeForRead + 1).toMilliseconds,
             "batch_removal_reason": "obsolete",
         ])
@@ -131,6 +134,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             ],
             "uploader_window": storage.uploaderWindow.toMilliseconds,
             "in_background": false,
+            "background_tasks_enabled": false,
             "batch_age": expectedBatchAge.toMilliseconds,
             "batch_removal_reason": "purged",
         ])

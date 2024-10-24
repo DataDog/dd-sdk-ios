@@ -1124,7 +1124,8 @@ extension SRSegment.Source: AnyMockable, RandomMockable {
             .android,
             .ios,
             .flutter,
-            .reactNative
+            .reactNative,
+            .kotlinMultiplatform
         ].randomElement()!
     }
 }

@@ -17,7 +17,7 @@ internal struct ViewTreeRecorder {
     /// Creates `Nodes` for given view and its subtree hierarchy.
     func record(_ anyView: UIView, in context: ViewTreeRecordingContext) -> [Node] {
         var nodes: [Node] = []
-        recordRecursively(nodes: &nodes, view: anyView, context: context)
+        recordRecursively(nodes: &nodes, view: anyView, context: context, overrides: anyView.dd.sessionReplayPrivacyOverrides)
         return nodes
     }
 
@@ -26,7 +26,8 @@ internal struct ViewTreeRecorder {
     private func recordRecursively(
         nodes: inout [Node],
         view: UIView,
-        context: ViewTreeRecordingContext
+        context: ViewTreeRecordingContext,
+        overrides: PrivacyOverrides
     ) {
         var context = context
         if let viewController = view.next as? UIViewController {
@@ -36,7 +37,7 @@ internal struct ViewTreeRecorder {
             context.viewControllerContext.isRootView = false
         }
 
-        let semantics = nodeSemantics(for: view, in: context)
+        let semantics = nodeSemantics(for: view, in: context, overrides: overrides)
 
         if !semantics.nodes.isEmpty {
             nodes.append(contentsOf: semantics.nodes)
@@ -45,17 +46,19 @@ internal struct ViewTreeRecorder {
         switch semantics.subtreeStrategy {
         case .record:
             for subview in view.subviews {
-                recordRecursively(nodes: &nodes, view: subview, context: context)
+                let subviewOverrides = SessionReplayPrivacyOverrides.merge(subview.dd.sessionReplayPrivacyOverrides, with: overrides)
+                recordRecursively(nodes: &nodes, view: subview, context: context, overrides: subviewOverrides)
             }
         case .ignore:
             break
         }
     }
 
-    private func nodeSemantics(for view: UIView, in context: ViewTreeRecordingContext) -> NodeSemantics {
+    private func nodeSemantics(for view: UIView, in context: ViewTreeRecordingContext, overrides: PrivacyOverrides) -> NodeSemantics {
         let attributes = ViewAttributes(
             frameInRootView: view.convert(view.bounds, to: context.coordinateSpace),
-            view: view
+            view: view,
+            overrides: overrides
         )
 
         var semantics: NodeSemantics = UnknownElement.constant

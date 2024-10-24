@@ -41,6 +41,15 @@ internal class UIViewRecorder: NodeRecorder {
             return semantics
         }
 
+        if attributes.overrides.hide == true {
+            let builder = UIViewWireframesBuilder(
+                wireframeID: context.ids.nodeID(view: view, nodeRecorder: self),
+                attributes: attributes
+            )
+            let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+            return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
+        }
+
         guard attributes.hasAnyAppearance else {
             // The view has no appearance, but it may contain subviews that bring visual elements, so
             // we use `InvisibleElement` semantics (to drop it) with `.record` strategy for its subview.
@@ -66,6 +75,11 @@ internal struct UIViewWireframesBuilder: NodeWireframesBuilder {
     }
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+        if attributes.overrides.hide == true {
+            return [
+                builder.createPlaceholderWireframe(id: wireframeID, frame: wireframeRect, label: "Hidden")
+            ]
+        }
         return [
             builder.createShapeWireframe(id: wireframeID, frame: wireframeRect, attributes: attributes)
         ]

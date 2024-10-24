@@ -142,12 +142,13 @@ internal final class RUMViewsHandler {
 
     private func start(view: View) {
         guard let subscriber = subscriber else {
-            return DD.logger.warn(
+            DD.logger.warn(
                 """
-                RUM View was started, but no `RUMMonitor` is registered on `Global.rum`. RUM instrumentation will not work.
-                Make sure `Global.rum = RUMMonitor.initialize()` is called before any view appears.
+                A RUM view was started with \(view.instrumentationType) instrumentation, but RUM tracking appears to be disabled.
+                Ensure `RUM.enable()` is called before starting any views.
                 """
             )
+            return
         }
 
         guard !view.isUntrackedModal else {

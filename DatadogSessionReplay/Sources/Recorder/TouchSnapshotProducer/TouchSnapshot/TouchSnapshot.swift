@@ -21,6 +21,8 @@ internal struct TouchSnapshot {
         var date: Date
         /// The position of this touch in application window.
         let position: CGPoint
+        /// The touch override associated with the touch's view
+        let touchOverride: TouchPrivacyLevel?
     }
 
     enum TouchPhase {

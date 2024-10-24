@@ -150,7 +150,12 @@ class FileWriterTests: XCTestCase {
                 ),
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry(),
-                metricsData: .init(trackName: "rum", consentLabel: .mockAny(), uploaderPerformance: UploadPerformanceMock.noOp)
+                metricsData: .init(
+                    trackName: "rum",
+                    consentLabel: .mockAny(),
+                    uploaderPerformance: UploadPerformanceMock.noOp,
+                    backgroundTasksEnabled: .mockAny()
+                )
             ),
             encryption: nil,
             telemetry: NOPTelemetry()
@@ -183,7 +188,12 @@ class FileWriterTests: XCTestCase {
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry(),
-                metricsData: .init(trackName: "rum", consentLabel: .mockAny(), uploaderPerformance: UploadPerformanceMock.noOp)
+                metricsData: .init(
+                    trackName: "rum",
+                    consentLabel: .mockAny(),
+                    uploaderPerformance: UploadPerformanceMock.noOp,
+                    backgroundTasksEnabled: .mockAny()
+                )
             ),
             encryption: nil,
             telemetry: NOPTelemetry()
@@ -205,7 +215,12 @@ class FileWriterTests: XCTestCase {
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry(),
-                metricsData: .init(trackName: "rum", consentLabel: .mockAny(), uploaderPerformance: UploadPerformanceMock.noOp)
+                metricsData: .init(
+                    trackName: "rum",
+                    consentLabel: .mockAny(),
+                    uploaderPerformance: UploadPerformanceMock.noOp,
+                    backgroundTasksEnabled: .mockAny()
+                )
             ),
             encryption: nil,
             telemetry: NOPTelemetry()

@@ -98,6 +98,21 @@ class UITextViewRecorderTests: XCTestCase {
         // Then - it keeps obfuscating
         XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLengthMaskObfuscator)
     }
+
+    func testWhenTextViewHasTextPrivacyOverride() throws {
+        // Given
+        textView.text = .mockRandom()
+        textView.isEditable = false
+        viewAttributes = .mock(fixture: .visible())
+        viewAttributes.overrides = .mockWith(textAndInputPrivacy: .maskAll)
+
+        // When
+        let semantics = try XCTUnwrap(recorder.semantics(of: textView, with: viewAttributes, in: .mockAny()) as? SpecificElement)
+
+        // Then
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UITextViewWireframesBuilder)
+        XCTAssertTrue(builder.textObfuscator is SpacePreservingMaskObfuscator)
+    }
 }
 // swiftlint:enable opening_brace
 #endif

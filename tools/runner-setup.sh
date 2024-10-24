@@ -2,32 +2,30 @@
 
 # Usage:
 # $ ./tools/runner-setup.sh -h
-# This script is for TEMPORARY. It supplements missing components on the runner. It will be removed once all configurations are integrated into the AMI.
+# This script supplements missing components on the runner before they are included through the AMI.
 
 # Options:
-#   --xcode: Sets the Xcode version on the runner.
-#   --iOS: Flag that prepares the runner instance for iOS testing. Disabled by default.
-#   --tvOS: Flag that prepares the runner instance for tvOS testing. Disabled by default.
-#   --visionOS: Flag that prepares the runner instance for visionOS testing. Disabled by default.
-#   --watchOS: Flag that prepares the runner instance for watchOS testing. Disabled by default.
-#   --os: Sets the expected OS version for installed simulators when --iOS, --tvOS, --visionOS or --watchOS flag is set. Default: '17.4'.
-#   --ssh: Flag that adds ssh configuration for interacting with GitHub repositories. Disabled by default.
-#   --datadog-ci: Flag that installs 'datadog-ci' on the runner. Disabled by default.
+#   --xcode: Specify the Xcode version to activate.
+#   --iOS: Install the iOS platform with the latest simulator if not already installed. Default: disabled.
+#   --tvOS: Install the tvOS platform with the latest simulator if not already installed. Default: disabled.
+#   --visionOS: Install the visionOS platform with the latest simulator if not already installed. Default: disabled.
+#   --watchOS: Install the watchOS platform with the latest simulator if not already installed. Default: disabled.
+#   --ssh: Configure SSH for GitHub repository access. Default: disabled.
+#   --datadog-ci: Install 'datadog-ci' on the runner. Default: disabled.
 
 set -eo pipefail
 source ./tools/utils/echo-color.sh
 source ./tools/utils/argparse.sh
 source ./tools/secrets/get-secret.sh
 
-set_description "This script is for TEMPORARY. It supplements missing components on the runner. It will be removed once all configurations are integrated into the AMI."
-define_arg "xcode" "" "Sets the Xcode version on the runner." "string" "false"
-define_arg "iOS" "false" "Flag that prepares the runner instance for iOS testing. Disabled by default." "store_true"
-define_arg "tvOS" "false" "Flag that prepares the runner instance for tvOS testing. Disabled by default." "store_true"
-define_arg "visionOS" "false" "Flag that prepares the runner instance for visionOS testing. Disabled by default." "store_true"
-define_arg "watchOS" "false" "Flag that prepares the runner instance for watchOS testing. Disabled by default." "store_true"
-define_arg "os" "17.4" "Sets the expected OS version for installed simulators when --iOS, --tvOS, --visionOS or --watchOS flag is set. Default: '17.4'." "string" "false"
-define_arg "ssh" "false" "Flag that adds ssh configuration for interacting with GitHub repositories. Disabled by default." "store_true"
-define_arg "datadog-ci" "false" "Flag that installs 'datadog-ci' on the runner. Disabled by default." "store_true"
+set_description "This script supplements missing components on the runner before they are included through the AMI."
+define_arg "xcode" "" "Specify the Xcode version to activate." "string" "false"
+define_arg "iOS" "false" "Install the iOS platform with the latest simulator if not already installed. Default: disabled." "store_true"
+define_arg "tvOS" "false" "Install the tvOS platform with the latest simulator if not already installed. Default: disabled." "store_true"
+define_arg "visionOS" "false" "Install the visionOS platform with the latest simulator if not already installed. Default: disabled." "store_true"
+define_arg "watchOS" "false" "Install the watchOS platform with the latest simulator if not already installed. Default: disabled." "store_true"
+define_arg "ssh" "false" "Configure SSH for GitHub repository access. Default: disabled." "store_true"
+define_arg "datadog-ci" "false" "Install 'datadog-ci' on the runner. Default: disabled." "store_true"
 
 check_for_help "$@"
 parse_args "$@"
@@ -79,47 +77,27 @@ echo_succ "Using 'xcodebuild -version':"
 xcodebuild -version
 
 if [ "$iOS" = "true" ]; then
-    echo_subtitle "Supply iPhone Simulator runtime ($os)"
-    echo "Check current runner for any iPhone Simulator runtime supporting OS '$os':"
-    if ! xctrace list devices | grep "iPhone.*Simulator ($os)"; then
-        echo_warn "Found no iOS Simulator runtime supporting OS '$os'. Installing..."
-        xcodebuild -downloadPlatform iOS -quiet | xcbeautify
-    else
-        echo_succ "Found some iOS Simulator runtime supporting OS '$os'. Skipping..."
-    fi
+    echo_subtitle "Install iOS platform"
+    echo "▸ xcodebuild -downloadPlatform iOS -quiet"
+    xcodebuild -downloadPlatform iOS -quiet
 fi
 
 if [ "$tvOS" = "true" ]; then
-    echo_subtitle "Supply tvOS Simulator runtime ($os)"
-    echo "Check current runner for any tvOS Simulator runtime supporting OS '$os':"
-    if ! xctrace list devices | grep "Apple TV.*Simulator ($os)"; then
-        echo_warn "Found no tvOS Simulator runtime supporting OS '$os'. Installing..."
-        xcodebuild -downloadPlatform tvOS -quiet | xcbeautify
-    else
-        echo_succ "Found some tvOS Simulator runtime supporting OS '$os'. Skipping..."
-    fi
+    echo_subtitle "Install tvOS platform"
+    echo "▸ xcodebuild -downloadPlatform tvOS -quiet"
+    xcodebuild -downloadPlatform tvOS -quiet
 fi
 
 if [ "$visionOS" = "true" ]; then
-    echo_subtitle "Supply visionOS Simulator runtime ($os)"
-    echo "Check current runner for any visionOS Simulator runtime supporting OS '$os':"
-    if ! xctrace list devices | grep "Apple Vision.*($os)"; then
-        echo_warn "Found no visionOS Simulator runtime supporting OS '$os'. Installing..."
-        xcodebuild -downloadPlatform visionOS -quiet | xcbeautify
-    else
-        echo_succ "Found some visionOS Simulator runtime supporting OS '$os'. Skipping..."
-    fi
+    echo_subtitle "Install visionOS platform"
+    echo "▸ xcodebuild -downloadPlatform visionOS -quiet"
+    xcodebuild -downloadPlatform visionOS -quiet
 fi
 
 if [ "$watchOS" = "true" ]; then
-    echo_subtitle "Supply watchOS Simulator runtime ($os)"
-    echo "Check current runner for any watchOS Simulator runtime supporting OS '$os':"
-    if ! xctrace list devices | grep "Apple Watch.*Simulator ($os)"; then
-        echo_warn "Found no watchOS Simulator runtime supporting OS '$os'. Installing..."
-        xcodebuild -downloadPlatform watchOS -quiet | xcbeautify
-    else
-        echo_succ "Found some watchOS Simulator runtime supporting OS '$os'. Skipping..."
-    fi
+    echo_subtitle "Install watchOS platform"
+    echo "▸ xcodebuild -downloadPlatform watchOS -quiet"
+    xcodebuild -downloadPlatform watchOS -quiet
 fi
 
 if [ "$ssh" = "true" ]; then

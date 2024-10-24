@@ -502,7 +502,8 @@ class SnapshotProcessorTests: XCTestCase {
                         id: .mockRandom(min: 0, max: TouchIdentifier(numberOfTouches)),
                         phase: [.down, .move, .up].randomElement()!,
                         date: startTime.addingTimeInterval(Double(index) * (dt / Double(numberOfTouches))),
-                        position: .mockRandom()
+                        position: .mockRandom(),
+                        touchOverride: nil
                     )
             }
         )

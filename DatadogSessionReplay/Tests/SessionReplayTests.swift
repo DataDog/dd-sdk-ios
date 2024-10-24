@@ -17,12 +17,14 @@ class SessionReplayTests: XCTestCase {
 
     override func setUpWithError() throws {
         core = FeatureRegistrationCoreMock()
+        CoreRegistry.register(default: core)
         config = SessionReplay.Configuration(replaySampleRate: 100)
     }
 
     override func tearDown() {
         core = nil
         config = nil
+        CoreRegistry.unregisterDefault()
         XCTAssertEqual(FeatureRegistrationCoreMock.referenceCount, 0)
     }
 
@@ -49,6 +51,22 @@ class SessionReplayTests: XCTestCase {
         XCTAssertEqual(
             printFunction.printedMessage,
             "🔥 Datadog SDK usage error: Datadog SDK must be initialized before calling `SessionReplay.enable(with:)`."
+        )
+    }
+
+    func testWhenEnabledMultipleTimes_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+        SessionReplay.enable(with: config, in: core)
+
+        // Then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: Session Replay is already enabled and does not support multiple instances. The existing instance will continue to be used."
         )
     }
 

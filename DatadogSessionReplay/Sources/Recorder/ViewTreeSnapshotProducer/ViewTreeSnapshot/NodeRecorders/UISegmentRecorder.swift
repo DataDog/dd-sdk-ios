@@ -13,8 +13,8 @@ internal struct UISegmentRecorder: NodeRecorder {
     init(identifier: UUID) {
         self.identifier = identifier
     }
-    var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating = { context in
-        return context.recorder.textAndInputPrivacy.inputAndOptionTextObfuscator
+    var textObfuscator: (ViewTreeRecordingContext, ViewAttributes) -> TextObfuscating = { context, viewAttributes in
+        return viewAttributes.resolveTextAndInputPrivacyLevel(in: context).inputAndOptionTextObfuscator
     }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
@@ -31,7 +31,7 @@ internal struct UISegmentRecorder: NodeRecorder {
         let builder = UISegmentWireframesBuilder(
             wireframeRect: attributes.frame,
             attributes: attributes,
-            textObfuscator: textObfuscator(context),
+            textObfuscator: textObfuscator(context, attributes),
             backgroundWireframeID: ids[0],
             segmentWireframeIDs: Array(ids[1..<ids.count]),
             segmentTitles: (0..<segment.numberOfSegments).map { segment.titleForSegment(at: $0) },

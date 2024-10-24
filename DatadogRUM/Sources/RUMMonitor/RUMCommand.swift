@@ -431,6 +431,8 @@ internal struct RUMStartUserActionCommand: RUMUserActionCommand {
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track actions in "Background" view (e.g. it makes sense for custom actions)
     let isUserInteraction = true // a user action definitely is a User Interacgion
+    /// The type of instrumentation used to create this command.
+    let instrumentation: InstrumentationType
 
     let actionType: RUMActionType
     let name: String
@@ -455,6 +457,8 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track actions in "Background" view (e.g. it makes sense for custom actions)
     let isUserInteraction = true // a user action definitely is a User Interacgion
+    /// The type of instrumentation used to create this command.
+    let instrumentation: InstrumentationType
 
     let actionType: RUMActionType
     let name: String
