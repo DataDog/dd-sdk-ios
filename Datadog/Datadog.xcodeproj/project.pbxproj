@@ -307,6 +307,10 @@
 		61133C702423993200786299 /* DatadogCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* DatadogCore.framework */; };
 		6115299725E3BEF9004F740E /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6115299625E3BEF9004F740E /* UIKitExtensionsTests.swift */; };
 		611720D52524D9FB00634D9E /* DDURLSessionDelegate+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611720D42524D9FB00634D9E /* DDURLSessionDelegate+objc.swift */; };
+		6117A4E12CCB95DF00EBBB6F /* AppStateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6117A4E02CCB95DF00EBBB6F /* AppStateProvider.swift */; };
+		6117A4E22CCB95DF00EBBB6F /* AppStateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6117A4E02CCB95DF00EBBB6F /* AppStateProvider.swift */; };
+		6117A4E42CCBB54500EBBB6F /* AppStateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6117A4E32CCBB54500EBBB6F /* AppStateProvider.swift */; };
+		6117A4E52CCBB54500EBBB6F /* AppStateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6117A4E32CCBB54500EBBB6F /* AppStateProvider.swift */; };
 		61181CDC2BF35BC000632A7A /* FatalErrorContextNotifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61181CDB2BF35BC000632A7A /* FatalErrorContextNotifierTests.swift */; };
 		61181CDD2BF35BC000632A7A /* FatalErrorContextNotifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61181CDB2BF35BC000632A7A /* FatalErrorContextNotifierTests.swift */; };
 		61193AAE2CB54C7300C3CDF5 /* RUMActionsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61193AAD2CB54C7300C3CDF5 /* RUMActionsHandler.swift */; };
@@ -2374,6 +2378,8 @@
 		611529A425E3DD51004F740E /* ValuePublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValuePublisher.swift; sourceTree = "<group>"; };
 		611529AD25E3E429004F740E /* ValuePublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValuePublisherTests.swift; sourceTree = "<group>"; };
 		611720D42524D9FB00634D9E /* DDURLSessionDelegate+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDURLSessionDelegate+objc.swift"; sourceTree = "<group>"; };
+		6117A4E02CCB95DF00EBBB6F /* AppStateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateProvider.swift; sourceTree = "<group>"; };
+		6117A4E32CCBB54500EBBB6F /* AppStateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateProvider.swift; sourceTree = "<group>"; };
 		61181CDB2BF35BC000632A7A /* FatalErrorContextNotifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FatalErrorContextNotifierTests.swift; sourceTree = "<group>"; };
 		61193AAD2CB54C7300C3CDF5 /* RUMActionsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMActionsHandler.swift; sourceTree = "<group>"; };
 		611F82022563C66100CB9BDB /* UIKitRUMViewsPredicateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMViewsPredicateTests.swift; sourceTree = "<group>"; };
@@ -5919,6 +5925,7 @@
 			children = (
 				E2AA55E62C32C6D9002FEF28 /* ApplicationNotifications.swift */,
 				D23039B3298D5235001A1FA3 /* AppState.swift */,
+				6117A4E02CCB95DF00EBBB6F /* AppStateProvider.swift */,
 				D23039B4298D5235001A1FA3 /* UserInfo.swift */,
 				D23039B5298D5235001A1FA3 /* BatteryStatus.swift */,
 				D23039B6298D5235001A1FA3 /* CarrierInfo.swift */,
@@ -6115,6 +6122,7 @@
 				D2A7840229A536AD003B03BB /* PrintFunctionMock.swift */,
 				D24C9C5129A7BD12002057CF /* SamplerMock.swift */,
 				D24C9C5429A7C5F3002057CF /* DateProvider.swift */,
+				6117A4E32CCBB54500EBBB6F /* AppStateProvider.swift */,
 				D24C9C6629A7CBF0002057CF /* DDErrorMocks.swift */,
 				D2EBEE4729BA17C400B15732 /* NetworkInstrumentationMocks.swift */,
 				61C3646F243B5C8300C4D4E6 /* ServerMock.swift */,
@@ -8744,6 +8752,7 @@
 				D23039E6298D5236001A1FA3 /* Sysctl.swift in Sources */,
 				614A708E2BF754D800D9AF42 /* ImmutableRequest.swift in Sources */,
 				D2160CF429C0EDFC00FAA9A5 /* UploadPerformancePreset.swift in Sources */,
+				6117A4E12CCB95DF00EBBB6F /* AppStateProvider.swift in Sources */,
 				D23039E1298D5236001A1FA3 /* AppState.swift in Sources */,
 				D2DE63532A30A7CA00441A54 /* CoreRegistry.swift in Sources */,
 				E2AA55EA2C32C76A002FEF28 /* WatchKitExtensions.swift in Sources */,
@@ -8976,6 +8985,7 @@
 				D2579556298ABB04008A1BE5 /* FoundationMocks.swift in Sources */,
 				D2579553298ABB04008A1BE5 /* DatadogContextMock.swift in Sources */,
 				615B0F8E2BB33E0400E9ED6C /* DataStoreMock.swift in Sources */,
+				6117A4E42CCBB54500EBBB6F /* AppStateProvider.swift in Sources */,
 				D24C9C6929A7CE06002057CF /* DDErrorMocks.swift in Sources */,
 				6167E7142B837F0B00C3CA2D /* BacktraceReportingMocks.swift in Sources */,
 				D2579558298ABB04008A1BE5 /* Encoding.swift in Sources */,
@@ -9024,6 +9034,7 @@
 				D2579579298ABB83008A1BE5 /* FoundationMocks.swift in Sources */,
 				D257957A298ABB83008A1BE5 /* DatadogContextMock.swift in Sources */,
 				615B0F8F2BB33E0400E9ED6C /* DataStoreMock.swift in Sources */,
+				6117A4E52CCBB54500EBBB6F /* AppStateProvider.swift in Sources */,
 				D24C9C6A29A7CE06002057CF /* DDErrorMocks.swift in Sources */,
 				6167E7152B837F0B00C3CA2D /* BacktraceReportingMocks.swift in Sources */,
 				D257957B298ABB83008A1BE5 /* Encoding.swift in Sources */,
@@ -9732,6 +9743,7 @@
 				D2DA236B298D57AA00C6C7E6 /* Sysctl.swift in Sources */,
 				614A708F2BF754D800D9AF42 /* ImmutableRequest.swift in Sources */,
 				D2160CF529C0EDFC00FAA9A5 /* UploadPerformancePreset.swift in Sources */,
+				6117A4E22CCB95DF00EBBB6F /* AppStateProvider.swift in Sources */,
 				D2DA236C298D57AA00C6C7E6 /* AppState.swift in Sources */,
 				D2DE63542A30A7CA00441A54 /* CoreRegistry.swift in Sources */,
 				E2AA55EC2C32C78B002FEF28 /* WatchKitExtensions.swift in Sources */,

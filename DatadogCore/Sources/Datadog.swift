@@ -229,6 +229,9 @@ public enum Datadog {
 
         /// The default notification center used for subscribing to app lifecycle events and system notifications.
         internal var notificationCenter: NotificationCenter = .default
+
+        /// The default application state provider for accessing [application state](https://developer.apple.com/documentation/uikit/uiapplication/state).
+        internal var appStateProvider: AppStateProvider = DefaultAppStateProvider()
     }
 
     /// Verbosity level of Datadog SDK. Can be used for debugging purposes.

@@ -139,7 +139,8 @@ internal final class DatadogCore {
                 device: DeviceInfo(),
                 dateProvider: configuration.dateProvider,
                 serverDateProvider: configuration.serverDateProvider,
-                notificationCenter: configuration.notificationCenter
+                notificationCenter: configuration.notificationCenter,
+                appStateProvider: configuration.appStateProvider
             ),
             applicationVersion: applicationVersion,
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
@@ -488,7 +489,8 @@ extension DatadogContextProvider {
         device: DeviceInfo,
         dateProvider: DateProvider,
         serverDateProvider: ServerDateProvider,
-        notificationCenter: NotificationCenter
+        notificationCenter: NotificationCenter,
+        appStateProvider: AppStateProvider
     ) {
         let context = DatadogContext(
             site: site,
@@ -537,6 +539,7 @@ extension DatadogContextProvider {
         DispatchQueue.main.async {
             // must be call on the main thread to read `UIApplication.State`
             let applicationStatePublisher = ApplicationStatePublisher(
+                appStateProvider: appStateProvider,
                 notificationCenter: notificationCenter,
                 dateProvider: dateProvider
             )
