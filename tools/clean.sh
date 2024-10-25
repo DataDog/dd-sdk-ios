@@ -6,6 +6,9 @@
 set -e
 source ./tools/utils/echo-color.sh
 
+# https://gist.github.com/jaytaylor/6527607
+function timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
+
 clean_dir() {
     local dir="$1"
     if [ -d "$dir" ] && [ "$(ls -A "$dir")" ]; then
@@ -25,3 +28,13 @@ clean_dir ./IntegrationTests/Pods
 echo_warn "Cleaning local xcconfigs"
 rm -vf ./xcconfigs/Base.ci.local.xcconfig
 rm -vf ./xcconfigs/Base.dev.local.xcconfig
+
+ENV_DEV="dev"
+ENV_CI="ci"
+
+if [[ "$ENV" == "ci" ]]; then
+    echo_warn "Cleaning local simulators"
+    xcrun simctl shutdown all
+    # Prevent hangs
+    timeout 30 xcrun simctl erase all
+fi
