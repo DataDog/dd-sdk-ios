@@ -29,10 +29,8 @@ echo_warn "Cleaning local xcconfigs"
 rm -vf ./xcconfigs/Base.ci.local.xcconfig
 rm -vf ./xcconfigs/Base.dev.local.xcconfig
 
-ENV_DEV="dev"
-ENV_CI="ci"
 
-if [[ "$ENV" == "ci" ]]; then
+if [ "$CI" = "true" ]; then
     echo_warn "Cleaning local simulators"
     xcrun simctl shutdown all
     # Prevent hangs
