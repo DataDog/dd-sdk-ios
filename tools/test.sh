@@ -99,5 +99,4 @@ mkdir -p artifacts
 rm -rf ~/Library/org.swift.swiftpm
 
 xcodebuild -version
-xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test | xcbeautify
 xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test > artifacts/xcodebuild.log 2>&1
