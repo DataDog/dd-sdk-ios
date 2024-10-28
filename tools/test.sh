@@ -97,4 +97,5 @@ set -x
 mkdir -p artifacts
 
 xcodebuild -version
+xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test | xcbeautify
 xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test > artifacts/xcodebuild.log 2>&1
