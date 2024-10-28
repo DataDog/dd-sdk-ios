@@ -77,6 +77,10 @@ class UITouchEventMock: UIEvent {
 
     override var type: UIEvent.EventType { .touches }
 
+    override var allTouches: Set<UITouch>? {
+        return _touches
+    }
+
     override func touches(for window: UIWindow) -> Set<UITouch>? {
         return _touches
     }
