@@ -2200,6 +2200,38 @@ public enum SessionReplay
         public var touchPrivacyLevel: TouchPrivacyLevel
         public var startRecordingImmediately: Bool
         public var customEndpoint: URL?
-        public init(replaySampleRate: Float,textAndInputPrivacyLevel: TextAndInputPrivacyLevel,imagePrivacyLevel: ImagePrivacyLevel,touchPrivacyLevel: TouchPrivacyLevel,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
-        public init(replaySampleRate: Float,defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
+        public init(    // swiftlint:disable:this function_default_parameter_at_endreplaySampleRate: Float = 100,textAndInputPrivacyLevel: TextAndInputPrivacyLevel,imagePrivacyLevel: ImagePrivacyLevel,touchPrivacyLevel: TouchPrivacyLevel,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
+        public init(replaySampleRate: Float = 100,defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
         public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder])
+public enum objc_TextAndInputPrivacyLevelOverride: Int
+    case none
+    case maskSensitiveInputs
+    case maskAllInputs
+    case maskAll
+public enum objc_ImagePrivacyLevelOverride: Int
+    case none
+    case maskNone
+    case maskNonBundledOnly
+    case maskAll
+public enum objc_TouchPrivacyLevelOverride: Int
+    case none
+    case show
+    case hide
+[?] extension DatadogExtension where ExtendedType: UIView
+    public var sessionReplayPrivacyOverrides: SessionReplayPrivacyOverrides
+public final class SessionReplayPrivacyOverrides
+    public init(_ view: UIView)
+    public var textAndInputPrivacy: TextAndInputPrivacyLevel?
+    public var imagePrivacy: ImagePrivacyLevel?
+    public var touchPrivacy: TouchPrivacyLevel?
+    public var hide: Bool?
+[?] extension PrivacyOverrides: Equatable
+    public static func == (lhs: SessionReplayPrivacyOverrides, rhs: SessionReplayPrivacyOverrides) -> Bool
+public extension UIView
+    @objc var ddSessionReplayPrivacyOverrides: objc_SessionReplayPrivacyOverrides
+public final class objc_SessionReplayPrivacyOverrides: NSObject
+    public init(view: UIView)
+    @objc public var textAndInputPrivacy: objc_TextAndInputPrivacyLevelOverride
+    @objc public var imagePrivacy: objc_ImagePrivacyLevelOverride
+    @objc public var touchPrivacy: objc_TouchPrivacyLevelOverride
+    @objc public var hide: NSNumber?
