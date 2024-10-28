@@ -86,6 +86,7 @@ public struct SRSegment: SRDataModel {
         case ios = "ios"
         case flutter = "flutter"
         case reactNative = "react-native"
+        case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
     /// View properties
@@ -1330,4 +1331,4 @@ public enum SRRecord: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/500d32fb7d050f634cf417c28f1e0b7181b2c704
+// Generated from https://github.com/DataDog/rum-events-format/tree/6442ab65ccecbf5061e70edb5da9f94fecd574ea

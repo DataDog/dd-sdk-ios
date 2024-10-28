@@ -18,6 +18,7 @@ class UIImageViewRecorderTests: XCTestCase {
     /// `ViewAttributes` simulating common attributes of image view's `UIView`.
     private var viewAttributes: ViewAttributes = .mockAny()
 
+    // MARK: Appearance
     func testWhenImageViewHasNoImageAndNoAppearance() throws {
         // When
         imageView.image = nil
@@ -53,6 +54,15 @@ class UIImageViewRecorderTests: XCTestCase {
         XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UIImageViewWireframesBuilder)
     }
 
+    func testWhenViewIsNotOfExpectedType() {
+        // When
+        let view = UITextField()
+
+        // Then
+        XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
+    }
+
+    // MARK: Predicate Override
     func testWhenShouldRecordImagePredicateOverrideReturnsFalse() throws {
         // When
         let recorder = UIImageViewRecorder(identifier: UUID(), shouldRecordImagePredicateOverride: { _ in return false })
@@ -81,6 +91,7 @@ class UIImageViewRecorderTests: XCTestCase {
         XCTAssertNotNil(builder.imageResource)
     }
 
+    // MARK: Image Privacy
     func testWhenMaskAllImagePrivacy_itDoesNotRecordImage() throws {
         // Given
         let imagePrivacy = ImagePrivacyLevel.maskAll
@@ -137,12 +148,23 @@ class UIImageViewRecorderTests: XCTestCase {
         XCTAssertNotNil(builder.imageResource)
     }
 
-    func testWhenViewIsNotOfExpectedType() {
+    // MARK: Privacy Overrides
+    func testWhenImageViewHasImagePrivacyOverride() throws {
+        // Given
+        let globalImagePrivacy = ImagePrivacyLevel.maskNone
+        let context = ViewTreeRecordingContext.mockWith(recorder: .mockWith(imagePrivacy: globalImagePrivacy))
+
+        imageView.image = UIImage()
+        let overrideImagePrivacy: ImagePrivacyLevel = .maskAll
+        let overrides: PrivacyOverrides = .mockWith(imagePrivacy: overrideImagePrivacy)
+        viewAttributes = .mockWith(overrides: overrides)
+
         // When
-        let view = UITextField()
+        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: context))
 
         // Then
-        XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
+        XCTAssertNil(builder.imageResource)
     }
 }
 // swiftlint:enable opening_brace

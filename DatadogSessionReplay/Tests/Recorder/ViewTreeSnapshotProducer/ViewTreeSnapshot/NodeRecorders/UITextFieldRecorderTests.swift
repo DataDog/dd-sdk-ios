@@ -107,6 +107,20 @@ class UITextFieldRecorderTests: XCTestCase {
         // Then - it keeps obfuscating
         XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLengthMaskObfuscator)
     }
+
+    func testWhenTextFieldHasTextPrivacyOverride() throws {
+        // Given
+        textField.text = .mockRandom()
+        viewAttributes = .mock(fixture: .visible())
+        viewAttributes.overrides = .mockWith(textAndInputPrivacy: .maskAll)
+
+        // When
+        let semantics = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockAny()) as? SpecificElement)
+
+        // Then
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UITextFieldWireframesBuilder)
+        XCTAssertTrue(builder.textObfuscator is FixLengthMaskObfuscator)
+    }
 }
 // swiftlint:enable opening_brace
 #endif

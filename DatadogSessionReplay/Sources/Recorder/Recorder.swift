@@ -78,9 +78,7 @@ public class Recorder: Recording {
             windowObserver: windowObserver,
             snapshotBuilder: ViewTreeSnapshotBuilder(additionalNodeRecorders: additionalNodeRecorders)
         )
-        let touchSnapshotProducer = WindowTouchSnapshotProducer(
-            windowObserver: windowObserver
-        )
+        let touchSnapshotProducer = WindowTouchSnapshotProducer(windowObserver: windowObserver)
 
         self.init(
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
@@ -117,7 +115,7 @@ public class Recorder: Recording {
             return
         }
 
-        let touchSnapshot = recorderContext.touchPrivacy == .show ? touchSnapshotProducer.takeSnapshot(context: recorderContext) : nil
+        let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
         snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
     }
 }

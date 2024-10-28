@@ -12,13 +12,13 @@ internal class UILabelRecorder: NodeRecorder {
 
     /// An option for customizing wireframes builder created by this recorder.
     var builderOverride: (UILabelWireframesBuilder) -> UILabelWireframesBuilder
-    var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating
+    var textObfuscator: (ViewTreeRecordingContext, ViewAttributes) -> TextObfuscating
 
     init(
         identifier: UUID,
         builderOverride: @escaping (UILabelWireframesBuilder) -> UILabelWireframesBuilder = { $0 },
-        textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = { context in
-            return context.recorder.textAndInputPrivacy.staticTextObfuscator
+        textObfuscator: @escaping (ViewTreeRecordingContext, ViewAttributes) -> TextObfuscating = { context, viewAttributes in
+            return viewAttributes.resolveTextAndInputPrivacyLevel(in: context).staticTextObfuscator
         }
     ) {
         self.identifier = identifier
@@ -45,7 +45,7 @@ internal class UILabelRecorder: NodeRecorder {
             textAlignment: label.textAlignment,
             font: label.font,
             fontScalingEnabled: label.adjustsFontSizeToFitWidth,
-            textObfuscator: textObfuscator(context)
+            textObfuscator: textObfuscator(context, attributes)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builderOverride(builder))
         return SpecificElement(subtreeStrategy: .ignore, nodes: [node])

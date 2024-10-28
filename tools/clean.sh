@@ -18,6 +18,7 @@ clean_dir() {
 
 clean_dir ~/Library/Developer/Xcode/DerivedData
 clean_dir ~/Library/Caches/org.carthage.CarthageKit/dependencies/
+clean_dir ~/Library/org.swift.swiftpm
 clean_dir ./Carthage/Build
 clean_dir ./Carthage/Checkouts
 clean_dir ./IntegrationTests/Pods

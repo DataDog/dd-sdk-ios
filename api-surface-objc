@@ -2,6 +2,15 @@
 # API surface for DatadogObjc:
 # ----------------------------------
 
+public class DDInternalLogger: NSObject
+    public static func consolePrint(_ message: String, _ level: DDCoreLoggerLevel)
+    public static func telemetryDebug(id: String, message: String)
+    public static func telemetryError(id: String, message: String, kind: String?, stack: String?)
+public enum DDCoreLoggerLevel: Int
+    case debug
+    case warn
+    case error
+    case critical
 open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate
     override public init()
     public init(additionalFirstPartyHostsWithHeaderTypes: [String: Set<DDTracingHeaderType>])
@@ -980,9 +989,39 @@ public class DDRUMLongTaskEventDisplayViewport: NSObject
     @objc public var height: NSNumber
     @objc public var width: NSNumber
 public class DDRUMLongTaskEventLongTask: NSObject
+    @objc public var blockingDuration: NSNumber?
     @objc public var duration: NSNumber
+    @objc public var entryType: DDRUMLongTaskEventLongTaskEntryType
+    @objc public var firstUiEventTimestamp: NSNumber?
     @objc public var id: String?
     @objc public var isFrozenFrame: NSNumber?
+    @objc public var renderStart: NSNumber?
+    @objc public var scripts: [DDRUMLongTaskEventLongTaskScripts]?
+    @objc public var styleAndLayoutStart: NSNumber?
+public enum DDRUMLongTaskEventLongTaskEntryType: Int
+    case none
+    case longTask
+    case longAnimationFrame
+public class DDRUMLongTaskEventLongTaskScripts: NSObject
+    @objc public var duration: NSNumber?
+    @objc public var executionStart: NSNumber?
+    @objc public var forcedStyleAndLayoutDuration: NSNumber?
+    @objc public var invoker: String?
+    @objc public var invokerType: DDRUMLongTaskEventLongTaskScriptsInvokerType
+    @objc public var pauseDuration: NSNumber?
+    @objc public var sourceCharPosition: NSNumber?
+    @objc public var sourceFunctionName: String?
+    @objc public var sourceUrl: String?
+    @objc public var startTime: NSNumber?
+    @objc public var windowAttribution: String?
+public enum DDRUMLongTaskEventLongTaskScriptsInvokerType: Int
+    case none
+    case userCallback
+    case eventListener
+    case resolvePromise
+    case rejectPromise
+    case classicScript
+    case moduleScript
 public class DDRUMLongTaskEventRUMOperatingSystem: NSObject
     @objc public var build: String?
     @objc public var name: String
@@ -1852,6 +1891,7 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var forwardConsoleLogs: DDTelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs?
     @objc public var forwardErrorsToLogs: NSNumber?
     @objc public var forwardReports: DDTelemetryConfigurationEventTelemetryConfigurationForwardReports?
+    @objc public var imagePrivacyLevel: String?
     @objc public var initializationType: String?
     @objc public var mobileVitalsUpdatePeriod: NSNumber?
     @objc public var plugins: [DDTelemetryConfigurationEventTelemetryConfigurationPlugins]?
@@ -1870,6 +1910,8 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var telemetryConfigurationSampleRate: NSNumber?
     @objc public var telemetrySampleRate: NSNumber?
     @objc public var telemetryUsageSampleRate: NSNumber?
+    @objc public var textAndInputPrivacyLevel: String?
+    @objc public var touchPrivacyLevel: String?
     @objc public var traceContextInjection: DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjection
     @objc public var traceSampleRate: NSNumber?
     @objc public var tracerApi: String?

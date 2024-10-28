@@ -21,7 +21,7 @@ class UINavigationBarRecorderTests: XCTestCase {
         ]
 
         let navigationBar = UINavigationBar.mock(withFixture: fixtures.randomElement()!)
-        let viewAttributes = ViewAttributes(frameInRootView: navigationBar.frame, view: navigationBar)
+        let viewAttributes = ViewAttributes(frameInRootView: navigationBar.frame, view: navigationBar, overrides: .mockAny())
 
         // When
         let semantics = try XCTUnwrap(recorder.semantics(of: navigationBar, with: viewAttributes, in: .mockAny()) as? SpecificElement)

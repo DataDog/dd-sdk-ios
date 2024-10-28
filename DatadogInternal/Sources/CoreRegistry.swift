@@ -76,4 +76,17 @@ public final class CoreRegistry {
     public static func instance(named name: String) -> DatadogCoreProtocol {
         instances[name] ?? NOPDatadogCore()
     }
+
+    /// Checks if the specified `DatadogFeature` is enabled for any registered core instance.
+    ///
+    /// - Parameter feature: The feature type to check for.
+    /// - Returns: `true` if the feature is enabled in at least one instance, otherwise `false`.
+    public static func isFeatureEnabled<T>(feature: T.Type) -> Bool where T: DatadogFeature {
+        for instance in instances.values {
+            if instance.get(feature: T.self) != nil {
+                return true
+            }
+        }
+        return false
+    }
 }

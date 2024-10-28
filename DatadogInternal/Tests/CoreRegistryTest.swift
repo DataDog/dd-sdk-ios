@@ -5,7 +5,7 @@
  */
 
 import XCTest
-import TestUtilities
+@testable import TestUtilities
 
 @testable import DatadogInternal
 
@@ -45,5 +45,45 @@ class CoreRegistryTest: XCTestCase {
 
         CoreRegistry.unregisterDefault()
         CoreRegistry.unregisterInstance(named: "test")
+    }
+
+    func testIsFeatureEnabled_whenFeatureIsRegistered_itReturnsTrue() {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        let feature = MockFeature()
+
+        // Register the mock feature in the core
+        try? core.register(feature: feature)
+
+        // Register the core in the CoreRegistry
+        CoreRegistry.register(default: core)
+
+        // When
+        let isEnabled = CoreRegistry.isFeatureEnabled(feature: MockFeature.self)
+
+        // Then
+        XCTAssertTrue(isEnabled)
+
+        // Cleanup
+        CoreRegistry.unregisterDefault()
+    }
+
+    func testIsFeatureEnabled_whenFeatureIsNotRegistered_itReturnsFalse() {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+
+        // No feature registered
+
+        // Register the core in the CoreRegistry
+        CoreRegistry.register(default: core)
+
+        // When
+        let isEnabled = CoreRegistry.isFeatureEnabled(feature: MockFeature.self)
+
+        // Then
+        XCTAssertFalse(isEnabled)
+
+        // Cleanup
+        CoreRegistry.unregisterDefault()
     }
 }

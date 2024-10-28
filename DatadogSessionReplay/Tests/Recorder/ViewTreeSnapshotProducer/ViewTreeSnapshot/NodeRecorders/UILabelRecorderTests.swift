@@ -85,6 +85,20 @@ class UILabelRecorderTests: XCTestCase {
         XCTAssertTrue(try textObfuscator(in: .maskAllInputs) is NOPTextObfuscator)
         XCTAssertTrue(try textObfuscator(in: .maskAll) is SpacePreservingMaskObfuscator)
     }
+
+    func testWhenLabelHasTextPrivacyOverride() throws {
+        // Given
+        label.text = .mockRandom()
+        viewAttributes = .mock(fixture: .visible())
+        viewAttributes.overrides = .mockWith(textAndInputPrivacy: .maskAll)
+
+        // When
+        let semantics = try XCTUnwrap(recorder.semantics(of: label, with: viewAttributes, in: .mockAny()) as? SpecificElement)
+
+        // Then
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UILabelWireframesBuilder)
+        XCTAssertTrue(builder.textObfuscator is SpacePreservingMaskObfuscator)
+    }
 }
 // swiftlint:enable opening_brace
 #endif
