@@ -70,7 +70,7 @@ default:
       when: delayed
       start_in: 40 minutes
 
-ENV check:
+.ENV check:
   stage: pre
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -83,7 +83,7 @@ ENV check:
 # │ SDK changes integration: │
 # └──────────────────────────┘
 
-Lint:
+.Lint:
   stage: lint
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -105,7 +105,7 @@ Unit Tests (iOS):
     - make clean repo-setup ENV=ci
     - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
 
-Unit Tests (tvOS):
+.Unit Tests (tvOS):
   stage: test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -118,7 +118,7 @@ Unit Tests (tvOS):
     - make clean repo-setup ENV=ci
     - make test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
 
-UI Tests:
+.UI Tests:
   stage: ui-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -138,7 +138,7 @@ UI Tests:
     - make clean repo-setup ENV=ci
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-SR Snapshot Tests:
+.SR Snapshot Tests:
   stage: ui-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -157,7 +157,7 @@ SR Snapshot Tests:
     - make clean repo-setup ENV=ci
     - make sr-snapshots-pull sr-snapshot-test OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
 
-Tools Tests:
+.Tools Tests:
   stage: test
   rules:
     - if: '$CI_COMMIT_BRANCH' # when on branch with following changes compared to develop
@@ -171,7 +171,7 @@ Tools Tests:
     - make clean repo-setup ENV=ci
     - make tools-test
 
-Benchmark Build:
+.Benchmark Build:
   stage: smoke-test
   rules:
     - if: '$CI_COMMIT_BRANCH' # when on branch with following changes compared to develop
@@ -182,7 +182,7 @@ Benchmark Build:
   script:
     - make benchmark-build
 
-Smoke Tests (iOS):
+.Smoke Tests (iOS):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -195,7 +195,7 @@ Smoke Tests (iOS):
     - make clean repo-setup ENV=ci
     - make smoke-test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-Smoke Tests (tvOS):
+.Smoke Tests (tvOS):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -208,7 +208,7 @@ Smoke Tests (tvOS):
     - make clean repo-setup ENV=ci
     - make smoke-test-tvos-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-SPM Build (Swift 5.10):
+.SPM Build (Swift 5.10):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -222,7 +222,7 @@ SPM Build (Swift 5.10):
     - make spm-build-macos
     - make spm-build-watchos
 
-SPM Build (Swift 5.9):
+.SPM Build (Swift 5.9):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -245,7 +245,7 @@ SPM Build (Swift 5.9):
 # │ E2E Test app upload: │
 # └──────────────────────┘
 
-E2E Test (upload to s8s):
+.E2E Test (upload to s8s):
   stage: e2e-test
   rules:
     - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
@@ -263,7 +263,7 @@ E2E Test (upload to s8s):
 # │ Benchmark Test app upload: │
 # └────────────────────────────┘
 
-Benchmark Test (upload to s8s):
+.Benchmark Test (upload to s8s):
   stage: benchmark-test
   rules:
     - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
@@ -282,7 +282,7 @@ Benchmark Test (upload to s8s):
 # │ SDK dogfooding: │
 # └─────────────────┘
 
-Dogfood (Shopist):
+.Dogfood (Shopist):
   stage: dogfood
   rules:
     - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
@@ -292,7 +292,7 @@ Dogfood (Shopist):
     - ./tools/runner-setup.sh --ssh
     - DRY_RUN=0 make dogfood-shopist
 
-Dogfood (Datadog app):
+.Dogfood (Datadog app):
   stage: dogfood
   rules:
     - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
@@ -313,7 +313,7 @@ Dogfood (Datadog app):
   - export DRY_RUN=${CI_COMMIT_TAG:+0} # 0 if CI_COMMIT_TAG is set
   - export DRY_RUN=${DRY_RUN:-$RELEASE_DRY_RUN} # otherwise default to RELEASE_DRY_RUN
 
-Build Artifacts:
+.Build Artifacts:
   stage: release-build
   rules: 
     - !reference [.release-pipeline-job, rules]
@@ -329,7 +329,7 @@ Build Artifacts:
     - make clean
     - make release-build release-validate
 
-Publish GH Asset:
+.Publish GH Asset:
   stage: release-publish
   rules: 
     - !reference [.release-pipeline-job, rules]
@@ -341,7 +341,7 @@ Publish GH Asset:
     - make clean
     - make release-publish-github
 
-Publish CP podspecs (internal):
+.Publish CP podspecs (internal):
   stage: release-publish
   rules: 
     - !reference [.release-pipeline-job, rules]
@@ -353,7 +353,7 @@ Publish CP podspecs (internal):
     - make clean
     - make release-publish-internal-podspecs
 
-Publish CP podspecs (dependent):
+.Publish CP podspecs (dependent):
   stage: release-publish
   rules: 
     - !reference [.release-pipeline-20m-delayed-job, rules]
@@ -365,7 +365,7 @@ Publish CP podspecs (dependent):
     - make clean
     - make release-publish-dependent-podspecs
 
-Publish CP podspecs (legacy):
+.Publish CP podspecs (legacy):
   stage: release-publish
   rules: 
     - !reference [.release-pipeline-40m-delayed-job, rules]

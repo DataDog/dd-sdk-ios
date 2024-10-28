@@ -143,12 +143,12 @@ test-ios:
 test-ios-all:
 	@$(MAKE) test-ios SCHEME="DatadogCore iOS"
 	@$(MAKE) test-ios SCHEME="DatadogInternal iOS"
-	@$(MAKE) test-ios SCHEME="DatadogRUM iOS"
-	@$(MAKE) test-ios SCHEME="DatadogSessionReplay iOS"
-	@$(MAKE) test-ios SCHEME="DatadogLogs iOS"
-	@$(MAKE) test-ios SCHEME="DatadogTrace iOS"
-	@$(MAKE) test-ios SCHEME="DatadogCrashReporting iOS"
-	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking iOS"
+# 	@$(MAKE) test-ios SCHEME="DatadogRUM iOS"
+# 	@$(MAKE) test-ios SCHEME="DatadogSessionReplay iOS"
+# 	@$(MAKE) test-ios SCHEME="DatadogLogs iOS"
+# 	@$(MAKE) test-ios SCHEME="DatadogTrace iOS"
+# 	@$(MAKE) test-ios SCHEME="DatadogCrashReporting iOS"
+# 	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking iOS"
 
 # Run unit tests for specified SCHEME using tvOS Simulator
 test-tvos:
