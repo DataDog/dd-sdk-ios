@@ -137,55 +137,49 @@ internal class RecordingCoordinator {
         captureNextRecord()
     }
 
-    /// Captures the next recording if conditions are met.
     private func captureNextRecord() {
-        queue.run { [weak self] in
-            guard let self = self else {
-                return
-            }
-            guard isSampled == true && recordingEnabled == true else {
-                return
-            }
-
-            // We don't capture any snapshots if the RUM context has no view ID.
-            guard let rumContext = currentRUMContext,
-                  let viewID = rumContext.viewID else {
-                return
-            }
-
-            let recorderContext = Recorder.Context(
-                textAndInputPrivacy: textAndInputPrivacy,
-                imagePrivacy: imagePrivacy,
-                touchPrivacy: touchPrivacy,
-                applicationID: rumContext.applicationID,
-                sessionID: rumContext.sessionID,
-                viewID: viewID,
-                viewServerTimeOffset: rumContext.viewServerTimeOffset
-            )
-
-            let methodCalledTrace = telemetry.startMethodCalled(
-                operationName: MethodCallConstants.captureRecordOperationName,
-                callerClass: MethodCallConstants.className,
-                headSampleRate: methodCallTelemetrySamplingRate // Effectively 3% * 0.1% = 0.003% of calls
-            )
-
-            var isSuccessful = false
-            do {
-                try objc_rethrow { try self.recorder.captureNextRecord(recorderContext) }
-                isSuccessful = true
-            } catch let objc as ObjcException {
-                telemetry.error("[SR] Failed to take snapshot due to Objective-C runtime exception", error: objc.error)
-                // An Objective-C runtime exception is a severe issue that will leak if
-                // the framework is not built with `-fobjc-arc-exceptions` option.
-                // We recover from the exception and stop the scheduler as a measure of
-                // caution. The scheduler could start again at a next RUM context change.
-                stopRecording()
-            } catch {
-                telemetry.error("[SR] Failed to take snapshot", error: error)
-            }
-
-            telemetry.stopMethodCalled(methodCalledTrace, isSuccessful: isSuccessful)
+        guard isSampled == true && recordingEnabled == true else {
+            return
         }
+
+        // We don't capture any snapshots if the RUM context has no view ID.
+        guard let rumContext = currentRUMContext,
+              let viewID = rumContext.viewID else {
+            return
+        }
+
+        let recorderContext = Recorder.Context(
+            textAndInputPrivacy: textAndInputPrivacy,
+            imagePrivacy: imagePrivacy,
+            touchPrivacy: touchPrivacy,
+            applicationID: rumContext.applicationID,
+            sessionID: rumContext.sessionID,
+            viewID: viewID,
+            viewServerTimeOffset: rumContext.viewServerTimeOffset
+        )
+
+        let methodCalledTrace = telemetry.startMethodCalled(
+            operationName: MethodCallConstants.captureRecordOperationName,
+            callerClass: MethodCallConstants.className,
+            headSampleRate: methodCallTelemetrySamplingRate // Effectively 3% * 0.1% = 0.003% of calls
+        )
+
+        var isSuccessful = false
+        do {
+            try objc_rethrow { try self.recorder.captureNextRecord(recorderContext) }
+            isSuccessful = true
+        } catch let objc as ObjcException {
+            telemetry.error("[SR] Failed to take snapshot due to Objective-C runtime exception", error: objc.error)
+            // An Objective-C runtime exception is a severe issue that will leak if
+            // the framework is not built with `-fobjc-arc-exceptions` option.
+            // We recover from the exception and stop the scheduler as a measure of
+            // caution. The scheduler could start again at a next RUM context change.
+            stopRecording()
+        } catch {
+            telemetry.error("[SR] Failed to take snapshot", error: error)
+        }
+
+        telemetry.stopMethodCalled(methodCalledTrace, isSuccessful: isSuccessful)
     }
 
     private enum Constants {
