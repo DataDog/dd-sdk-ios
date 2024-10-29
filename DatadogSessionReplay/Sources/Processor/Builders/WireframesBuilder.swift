@@ -312,27 +312,22 @@ extension SRContentClip {
         )
     }
 
-    /// Creates Content Clip by intersecting the frame with the clipping rectangle.
+    /// Creates a Content Clip by intersecting the view frame with the clipping rectangle.
     ///
-    /// If the clip rectangle does not intersect with the frame, Content Clip will be initialised with:
+    /// The clipping rectangle usually represents the bounds of the parent view when `clipsToBounds` is enabled.
+    /// It determines which portion of the view should remain visible after clipping.
     ///
-    ///     SRContentClip(
-    ///         bottom: nil,
-    ///         left: frame.width,
-    ///         right: nil,
-    ///         top: frame.height
-    ///     )
-    ///
-    /// This will result in a wireframe with no drawing area. Recorders should, in practice, prevent
+    /// If the intersection is empty, the view is completely clipped, and the resulting clip dimensions reflect the view’s size,
+    /// indicating no visible content. This will result in a wireframe with no drawing area, recorders should, in practice, prevent
     /// this use case.
     ///
     /// - Parameters:
     ///   - frame: The view frame.
-    ///   - clip: The clipping rectangle.
+    ///   - clip: The clipping rectangle representing the visible area.
     init?(_ frame: CGRect, intersecting clip: CGRect) {
         let intersection = frame.intersection(clip)
 
-        if intersection.isEmpty {
+        guard !intersection.isEmpty else {
             self.init(
                 bottom: nil,
                 left: Int64(withNoOverflow: frame.width),
