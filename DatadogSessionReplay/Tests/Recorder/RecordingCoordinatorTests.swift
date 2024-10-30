@@ -57,7 +57,7 @@ class RecordingCoordinatorTests: XCTestCase {
         XCTAssertEqual(recordingTriggerMock.stopWatchingTriggersCallsCount, 2)
     }
 
-    func test_whenSampledAndTriggered_andShouldRecord() {
+    func test_whenSampledAndTriggered_itShouldRecord() {
         // Given
         let textAndInputPrivacy = TextAndInputPrivacyLevel.mockRandom()
         let imagePrivacy = ImagePrivacyLevel.mockRandom()
