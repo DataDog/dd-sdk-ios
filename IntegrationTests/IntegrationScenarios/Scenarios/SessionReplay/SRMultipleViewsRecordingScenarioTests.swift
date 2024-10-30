@@ -13,6 +13,11 @@ private extension ExampleApplication {
         buttons["NEXT"].safeTap(within: 5)
     }
 
+    /// Triggers SR recording
+    func deadClick() {
+        windows.firstMatch.tap()
+    }
+
     func wait(seconds: TimeInterval) {
         Thread.sleep(forTimeInterval: seconds)
     }
@@ -63,10 +68,13 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
                 srEndpoint: srEndpoint.recordingURL
             )
         )
+        app.deadClick()
         for _ in (0..<7) {
+            app.deadClick()
             app.wait(seconds: 1)
             app.tapNextButton()
         }
+        app.deadClick()
         try app.endRUMSession() // show "end view"
         
         // Get RUM and SR raw requests from mock server:
