@@ -69,8 +69,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
 
             // Capture the touch privacy override when the touch begins
             if phase == .down, let privacyOverride = resolveTouchOverride(for: touch) {
-                var ddTouch = touch.dd
-                ddTouch.touchPrivacyOverride = privacyOverride
+                touch.touchPrivacyOverride = privacyOverride
             }
 
             buffer.append(
@@ -79,7 +78,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
                     phase: phase,
                     date: Date(),
                     position: touch.location(in: window),
-                    touchOverride: touch.dd.touchPrivacyOverride
+                    touchOverride: touch.touchPrivacyOverride
                 )
             )
         }
