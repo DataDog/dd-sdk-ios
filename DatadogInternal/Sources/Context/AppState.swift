@@ -151,29 +151,9 @@ extension AppStateHistory {
     }
 }
 
-#if canImport(UIKit)
-
-import UIKit
-
-public typealias ApplicationState = UIApplication.State
-
-public struct DefaultAppStateProvider: AppStateProvider {
-    public init() {}
-
-    /// Gets the current application state.
-    ///
-    /// **Note**: Must be called on the main thread.
-    public var current: AppState {
-        let uiKitState = UIApplication.dd.managedShared?.applicationState ?? .active // fallback to most expected state
-        return AppState(uiKitState)
-    }
-}
-
-#elseif canImport(WatchKit)
+#if canImport(WatchKit)
 
 import WatchKit
-
-public typealias ApplicationState = WKApplicationState
 
 public struct DefaultAppStateProvider: AppStateProvider {
     public init() {}
@@ -187,23 +167,50 @@ public struct DefaultAppStateProvider: AppStateProvider {
     }
 }
 
-#endif
-
-#if canImport(UIKit) || canImport(WatchKit)
-
 extension AppState {
-    public init(_ state: ApplicationState) {
+    public init(_ state: WKApplicationState) {
         switch state {
-        case .active:
-            self = .active
-        case .inactive:
-            self = .inactive
-        case .background:
-            self = .background
+        case .active: self = .active
+        case .inactive: self = .inactive
+        case .background: self = .background
         @unknown default:
-            self = .active // in case a new state is introduced, we rather want to fallback to most expected state
+            self = .active // in case a new state is introduced, default to most expected state
         }
     }
+}
+
+#elseif canImport(UIKit)
+
+import UIKit
+
+public struct DefaultAppStateProvider: AppStateProvider {
+    public init() {}
+
+    /// Gets the current application state.
+    ///
+    /// **Note**: Must be called on the main thread.
+    public var current: AppState {
+        let uiKitState = UIApplication.dd.managedShared?.applicationState ?? .active // fallback to most expected state
+        return AppState(uiKitState)
+    }
+}
+
+extension AppState {
+    public init(_ state: UIApplication.State) {
+        switch state {
+        case .active: self = .active
+        case .inactive: self = .inactive
+        case .background: self = .background
+        @unknown default: self = .active // in case a new state is introduced, default to most expected state
+        }
+    }
+}
+
+#else // macOS (no UIKit and no WatchKit)
+
+public struct DefaultAppStateProvider: AppStateProvider {
+    public init() {}
+    public let current: AppState = .active
 }
 
 #endif
