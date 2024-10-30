@@ -42,7 +42,7 @@ class RecordingCoordinatorTests: XCTestCase {
         XCTAssertEqual(recordingTriggerMock.stopWatchingTriggersCallsCount, 1)
     }
 
-    func test_whenNotSampledAndTriggered_andShouldNotRecord() {
+    func test_whenNotSampledAndTriggered_itShouldNotRecord() {
         // Given
         prepareRecordingCoordinator(sampler: .mockRejectAll())
 
