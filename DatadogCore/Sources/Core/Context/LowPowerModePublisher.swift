@@ -23,7 +23,7 @@ internal final class LowPowerModePublisher: ContextValuePublisher {
     ///   - processInfo: The process for reading the initial `isLowPowerModeEnabled`.
     init(
         notificationCenter: NotificationCenter,
-        processInfo: ProcessInfo = .processInfo
+        processInfo: ProcessInfo
     ) {
         self.initialValue = processInfo.isLowPowerModeEnabled
         self.notificationCenter = notificationCenter

@@ -25,10 +25,10 @@ internal final class BatteryStatusPublisher: ContextValuePublisher {
     /// 
     /// - Parameters:
     ///   - notificationCenter: The notification center for observing the `UIDevice` battery changes,
-    ///   - device: The `UIDevice` instance. `.current` by default.
+    ///   - device: The `UIDevice` instance.
     init(
         notificationCenter: NotificationCenter,
-        device: UIDevice = .current
+        device: UIDevice
     ) {
         self.device = device
         self.notificationCenter = notificationCenter

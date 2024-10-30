@@ -6,6 +6,15 @@
 
 import Foundation
 
+/// A protocol that provides access to the current application state.
+/// See: https://developer.apple.com/documentation/uikit/uiapplication/state
+public protocol AppStateProvider: Sendable {
+    /// The current application state.
+    ///
+    /// **Note**: Must be called on the main thread.
+    var current: AppState { get }
+}
+
 /// Application state.
 public enum AppState: Codable, PassthroughAnyCodable {
     /// The app is running in the foreground and currently receiving events.
@@ -146,13 +155,41 @@ extension AppStateHistory {
 
 import UIKit
 
-#if canImport(WatchKit)
+public typealias ApplicationState = UIApplication.State
+
+public struct DefaultAppStateProvider: AppStateProvider {
+    public init() {}
+
+    /// Gets the current application state.
+    ///
+    /// **Note**: Must be called on the main thread.
+    public var current: AppState {
+        let uiKitState = UIApplication.dd.managedShared?.applicationState ?? .active // fallback to most expected state
+        return AppState(uiKitState)
+    }
+}
+
+#elseif canImport(WatchKit)
+
 import WatchKit
 
 public typealias ApplicationState = WKApplicationState
-#else
-public typealias ApplicationState = UIApplication.State
+
+public struct DefaultAppStateProvider: AppStateProvider {
+    public init() {}
+
+    /// Gets the current application state.
+    ///
+    /// **Note**: Must be called on the main thread.
+    public var current: AppState {
+        let wkState = WKExtension.dd.shared.applicationState
+        return AppState(wkState)
+    }
+}
+
 #endif
+
+#if canImport(UIKit) || canImport(WatchKit)
 
 extension AppState {
     public init(_ state: ApplicationState) {

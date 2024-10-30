@@ -71,93 +71,6 @@ internal final class DatadogCore {
     /// Maximum number of batches per upload.
     internal let maxBatchesPerUpload: Int
 
-    convenience init(
-        configuration: Datadog.Configuration,
-        trackingConsent: TrackingConsent,
-        instanceName: String
-    ) throws {
-        let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
-        if debug {
-            consolePrint("⚠️ Overriding verbosity, and upload frequency due to \(LaunchArguments.Debug) launch argument", .warn)
-            Datadog.verbosityLevel = .debug
-        }
-
-        let applicationVersion = configuration.additionalConfiguration[CrossPlatformAttributes.version] as? String
-            ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
-            ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
-            ?? "0.0.0"
-
-        let applicationBuildNumber = configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
-            ?? "0"
-
-        let bundleName = configuration.bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
-        let bundleType = BundleType(bundle: configuration.bundle)
-        let bundleIdentifier = configuration.bundle.bundleIdentifier ?? "unknown"
-        let service = configuration.service ?? configuration.bundle.bundleIdentifier ?? "ios"
-        let source = configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String ?? "ios"
-        let variant = configuration.additionalConfiguration[CrossPlatformAttributes.variant] as? String
-        let sdkVersion = configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String ?? __sdkVersion
-        let buildId = configuration.additionalConfiguration[CrossPlatformAttributes.buildId] as? String
-        let nativeSourceType = configuration.additionalConfiguration[CrossPlatformAttributes.nativeSourceType] as? String
-
-        let performance = PerformancePreset(
-            batchSize: debug ? .small : configuration.batchSize,
-            uploadFrequency: debug ? .frequent : configuration.uploadFrequency,
-            bundleType: bundleType
-        )
-        let isRunFromExtension = bundleType == .iOSAppExtension
-
-        self.init(
-            directory: try CoreDirectory(
-                in: configuration.systemDirectory(),
-                instanceName: instanceName,
-                site: configuration.site
-            ),
-            dateProvider: configuration.dateProvider,
-            initialConsent: trackingConsent,
-            performance: performance,
-            httpClient: configuration.httpClientFactory(configuration.proxyConfiguration),
-            encryption: configuration.encryption,
-            contextProvider: DatadogContextProvider(
-                site: configuration.site,
-                clientToken: configuration.clientToken,
-                service: service,
-                env: configuration.env,
-                version: applicationVersion,
-                buildNumber: applicationBuildNumber,
-                buildId: buildId,
-                variant: variant,
-                source: source,
-                nativeSourceOverride: nativeSourceType,
-                sdkVersion: sdkVersion,
-                ciAppOrigin: CITestIntegration.active?.origin,
-                applicationName: bundleName ?? bundleType.rawValue,
-                applicationBundleIdentifier: bundleIdentifier,
-                applicationBundleType: bundleType,
-                applicationVersion: applicationVersion,
-                sdkInitDate: configuration.dateProvider.now,
-                device: DeviceInfo(),
-                dateProvider: configuration.dateProvider,
-                serverDateProvider: configuration.serverDateProvider,
-                notificationCenter: configuration.notificationCenter,
-                appStateProvider: configuration.appStateProvider
-            ),
-            applicationVersion: applicationVersion,
-            maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
-            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
-            isRunFromExtension: isRunFromExtension
-        )
-
-        telemetry.configuration(
-            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
-            batchProcessingLevel: Int64(exactly: configuration.batchProcessingLevel.maxBatchesPerUpload),
-            batchSize: performance.uploaderWindow.toInt64Milliseconds,
-            batchUploadFrequency: performance.minUploadDelay.toInt64Milliseconds,
-            useLocalEncryption: configuration.encryption != nil,
-            useProxy: configuration.proxyConfiguration != nil
-        )
-    }
-
     /// Creates a core instance.
     ///
     /// - Parameters:
@@ -487,6 +400,7 @@ extension DatadogContextProvider {
         applicationVersion: String,
         sdkInitDate: Date,
         device: DeviceInfo,
+        processInfo: ProcessInfo,
         dateProvider: DateProvider,
         serverDateProvider: ServerDateProvider,
         notificationCenter: NotificationCenter,
@@ -531,8 +445,8 @@ extension DatadogContextProvider {
         #endif
 
         #if os(iOS) && !targetEnvironment(simulator)
-        subscribe(\.batteryStatus, to: BatteryStatusPublisher(notificationCenter: notificationCenter))
-        subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher(notificationCenter: notificationCenter))
+        subscribe(\.batteryStatus, to: BatteryStatusPublisher(notificationCenter: notificationCenter, device: .current))
+        subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher(notificationCenter: notificationCenter, processInfo: processInfo))
         #endif
 
         #if os(iOS) || os(tvOS)
