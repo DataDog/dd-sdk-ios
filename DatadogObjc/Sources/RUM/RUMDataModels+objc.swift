@@ -713,7 +713,8 @@ public class DDRUMActionEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.dd.objCAttributes
+        set { root.swiftModel.context!.contextInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.context!.contextInfo.dd.objCAttributes }
     }
 }
 
@@ -963,7 +964,8 @@ public class DDRUMActionEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.dd.objCAttributes
+        set { root.swiftModel.usr!.usrInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.usr!.usrInfo.dd.objCAttributes }
     }
 }
 
@@ -1502,7 +1504,8 @@ public class DDRUMErrorEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.dd.objCAttributes
+        set { root.swiftModel.context!.contextInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.context!.contextInfo.dd.objCAttributes }
     }
 }
 
@@ -2181,7 +2184,8 @@ public class DDRUMErrorEventFeatureFlags: NSObject {
     }
 
     @objc public var featureFlagsInfo: [String: Any] {
-        root.swiftModel.featureFlags!.featureFlagsInfo.dd.objCAttributes
+        set { root.swiftModel.featureFlags!.featureFlagsInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.featureFlags!.featureFlagsInfo.dd.objCAttributes }
     }
 }
 
@@ -2350,7 +2354,8 @@ public class DDRUMErrorEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.dd.objCAttributes
+        set { root.swiftModel.usr!.usrInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.usr!.usrInfo.dd.objCAttributes }
     }
 }
 
@@ -2885,7 +2890,8 @@ public class DDRUMLongTaskEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.dd.objCAttributes
+        set { root.swiftModel.context!.contextInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.context!.contextInfo.dd.objCAttributes }
     }
 }
 
@@ -3296,7 +3302,8 @@ public class DDRUMLongTaskEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.dd.objCAttributes
+        set { root.swiftModel.usr!.usrInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.usr!.usrInfo.dd.objCAttributes }
     }
 }
 
@@ -3839,7 +3846,8 @@ public class DDRUMResourceEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.dd.objCAttributes
+        set { root.swiftModel.context!.contextInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.context!.contextInfo.dd.objCAttributes }
     }
 }
 
@@ -4525,7 +4533,8 @@ public class DDRUMResourceEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.dd.objCAttributes
+        set { root.swiftModel.usr!.usrInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.usr!.usrInfo.dd.objCAttributes }
     }
 }
 
@@ -5100,7 +5109,8 @@ public class DDRUMViewEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.dd.objCAttributes
+        set { root.swiftModel.context!.contextInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.context!.contextInfo.dd.objCAttributes }
     }
 }
 
@@ -5236,7 +5246,8 @@ public class DDRUMViewEventFeatureFlags: NSObject {
     }
 
     @objc public var featureFlagsInfo: [String: Any] {
-        root.swiftModel.featureFlags!.featureFlagsInfo.dd.objCAttributes
+        set { root.swiftModel.featureFlags!.featureFlagsInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.featureFlags!.featureFlagsInfo.dd.objCAttributes }
     }
 }
 
@@ -5436,7 +5447,8 @@ public class DDRUMViewEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.dd.objCAttributes
+        set { root.swiftModel.usr!.usrInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.usr!.usrInfo.dd.objCAttributes }
     }
 }
 
@@ -6325,7 +6337,8 @@ public class DDRUMVitalEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.dd.objCAttributes
+        set { root.swiftModel.context!.contextInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.context!.contextInfo.dd.objCAttributes }
     }
 }
 
@@ -6575,7 +6588,8 @@ public class DDRUMVitalEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.dd.objCAttributes
+        set { root.swiftModel.usr!.usrInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.usr!.usrInfo.dd.objCAttributes }
     }
 }
 
@@ -6835,7 +6849,8 @@ public class DDTelemetryErrorEventTelemetry: NSObject {
     }
 
     @objc public var telemetryInfo: [String: Any] {
-        root.swiftModel.telemetry.telemetryInfo.dd.objCAttributes
+        set { root.swiftModel.telemetry.telemetryInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.telemetry.telemetryInfo.dd.objCAttributes }
     }
 }
 
@@ -7085,7 +7100,8 @@ public class DDTelemetryDebugEventTelemetry: NSObject {
     }
 
     @objc public var telemetryInfo: [String: Any] {
-        root.swiftModel.telemetry.telemetryInfo.dd.objCAttributes
+        set { root.swiftModel.telemetry.telemetryInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.telemetry.telemetryInfo.dd.objCAttributes }
     }
 }
 
@@ -7314,7 +7330,8 @@ public class DDTelemetryConfigurationEventTelemetry: NSObject {
     }
 
     @objc public var telemetryInfo: [String: Any] {
-        root.swiftModel.telemetry.telemetryInfo.dd.objCAttributes
+        set { root.swiftModel.telemetry.telemetryInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.telemetry.telemetryInfo.dd.objCAttributes }
     }
 }
 
@@ -7405,7 +7422,8 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
     }
 
     @objc public var plugins: [DDTelemetryConfigurationEventTelemetryConfigurationPlugins]? {
-        root.swiftModel.telemetry.configuration.plugins?.map { DDTelemetryConfigurationEventTelemetryConfigurationPlugins(swiftModel: $0) }
+        set { root.swiftModel.telemetry.configuration.plugins = newValue?.map { $0.swiftModel } }
+        get { root.swiftModel.telemetry.configuration.plugins?.map { DDTelemetryConfigurationEventTelemetryConfigurationPlugins(swiftModel: $0) } }
     }
 
     @objc public var premiumSampleRate: NSNumber? {
@@ -7706,7 +7724,8 @@ public class DDTelemetryConfigurationEventTelemetryConfigurationPlugins: NSObjec
     }
 
     @objc public var pluginsInfo: [String: Any] {
-        root.swiftModel.pluginsInfo.dd.objCAttributes
+        set { root.swiftModel.pluginsInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.pluginsInfo.dd.objCAttributes }
     }
 }
 

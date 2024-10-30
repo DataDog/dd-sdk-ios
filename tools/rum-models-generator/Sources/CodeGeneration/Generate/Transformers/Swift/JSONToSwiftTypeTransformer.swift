@@ -126,7 +126,10 @@ internal class JSONToSwiftTypeTransformer {
                 let additionalPropertyName = jsonObject.name + "Info"
                 // RUMM-1420: we noticed that `additionalProperties` is used for custom user attributes which need to be
                 // sanitized by the SDK, hence it's very practical for us to generate `.mutableInternally` modifier for those.
-                let mutability: SwiftStruct.Property.Mutability = additionalProperties.isReadOnly ? .mutableInternally : .mutable
+
+                // RUM-5992: we noticed that `additionalProperties` is used for custom user attributes which needs to be
+                // sanitized by the SDK or by user-defined mappers, hence we apply `.mutable` modifier for those.
+                let mutability: SwiftStruct.Property.Mutability = .mutable
                 var `struct` = try transformJSONObjectToStruct(jsonObject)
                 `struct`.properties.append(
                     SwiftStruct.Property(

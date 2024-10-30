@@ -37,7 +37,7 @@ public struct RUMActionEvent: RUMDataModel {
     public let container: Container?
 
     /// User provided context
-    public internal(set) var context: RUMEventAttributes?
+    public var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -67,7 +67,7 @@ public struct RUMActionEvent: RUMDataModel {
     public let type: String = "action"
 
     /// User properties
-    public internal(set) var usr: RUMUser?
+    public var usr: RUMUser?
 
     /// The version for this application
     public let version: String?
@@ -480,7 +480,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let container: Container?
 
     /// User provided context
-    public internal(set) var context: RUMEventAttributes?
+    public var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -495,7 +495,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public var error: Error
 
     /// Feature flags properties
-    public internal(set) var featureFlags: FeatureFlags?
+    public var featureFlags: FeatureFlags?
 
     /// Properties of App Hang and ANR errors
     public let freeze: Freeze?
@@ -519,7 +519,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let type: String = "error"
 
     /// User properties
-    public internal(set) var usr: RUMUser?
+    public var usr: RUMUser?
 
     /// The version for this application
     public let version: String?
@@ -1008,7 +1008,7 @@ public struct RUMErrorEvent: RUMDataModel {
 
     /// Feature flags properties
     public struct FeatureFlags: Codable {
-        public internal(set) var featureFlagsInfo: [String: Encodable]
+        public var featureFlagsInfo: [String: Encodable]
     }
 
     /// Properties of App Hang and ANR errors
@@ -1129,7 +1129,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let container: Container?
 
     /// User provided context
-    public internal(set) var context: RUMEventAttributes?
+    public var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -1162,7 +1162,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let type: String = "long_task"
 
     /// User properties
-    public internal(set) var usr: RUMUser?
+    public var usr: RUMUser?
 
     /// The version for this application
     public let version: String?
@@ -1376,6 +1376,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case isFrozenFrame = "is_frozen_frame"
             case renderStart = "render_start"
             case scripts = "scripts"
+            case startTime = "start_time"
             case styleAndLayoutStart = "style_and_layout_start"
         }
 
@@ -1525,7 +1526,7 @@ public struct RUMResourceEvent: RUMDataModel {
     public let container: Container?
 
     /// User provided context
-    public internal(set) var context: RUMEventAttributes?
+    public var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -1558,7 +1559,7 @@ public struct RUMResourceEvent: RUMDataModel {
     public let type: String = "resource"
 
     /// User properties
-    public internal(set) var usr: RUMUser?
+    public var usr: RUMUser?
 
     /// The version for this application
     public let version: String?
@@ -1816,6 +1817,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case graphql = "graphql"
             case id = "id"
             case method = "method"
+            case `protocol` = "protocol"
             case provider = "provider"
             case redirect = "redirect"
             case renderBlockingStatus = "render_blocking_status"
@@ -2075,7 +2077,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let container: Container?
 
     /// User provided context
-    public internal(set) var context: RUMEventAttributes?
+    public var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -2087,7 +2089,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let display: Display?
 
     /// Feature flags properties
-    public internal(set) var featureFlags: FeatureFlags?
+    public var featureFlags: FeatureFlags?
 
     /// Operating system properties
     public let os: RUMOperatingSystem?
@@ -2111,7 +2113,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let type: String = "view"
 
     /// User properties
-    public internal(set) var usr: RUMUser?
+    public var usr: RUMUser?
 
     /// The version for this application
     public let version: String?
@@ -2355,7 +2357,7 @@ public struct RUMViewEvent: RUMDataModel {
 
     /// Feature flags properties
     public struct FeatureFlags: Codable {
-        public internal(set) var featureFlagsInfo: [String: Encodable]
+        public var featureFlagsInfo: [String: Encodable]
     }
 
     /// Privacy properties
@@ -2806,7 +2808,7 @@ public struct RUMVitalEvent: RUMDataModel {
     public let container: Container?
 
     /// User provided context
-    public internal(set) var context: RUMEventAttributes?
+    public var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -2836,7 +2838,7 @@ public struct RUMVitalEvent: RUMDataModel {
     public let type: String = "vital"
 
     /// User properties
-    public internal(set) var usr: RUMUser?
+    public var usr: RUMUser?
 
     /// The version for this application
     public let version: String?
@@ -3126,7 +3128,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
     public let source: Source
 
     /// The telemetry log information
-    public internal(set) var telemetry: Telemetry
+    public var telemetry: Telemetry
 
     /// Telemetry event type. Should specify telemetry only.
     public let type: String = "telemetry"
@@ -3223,7 +3225,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
         /// Telemetry type
         public let type: String? = "log"
 
-        public internal(set) var telemetryInfo: [String: Encodable]
+        public var telemetryInfo: [String: Encodable]
 
         enum StaticCodingKeys: String, CodingKey {
             case device = "device"
@@ -3328,7 +3330,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
     public let source: Source
 
     /// The telemetry log information
-    public internal(set) var telemetry: Telemetry
+    public var telemetry: Telemetry
 
     /// Telemetry event type. Should specify telemetry only.
     public let type: String = "telemetry"
@@ -3422,7 +3424,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
         /// Telemetry type
         public let type: String? = "log"
 
-        public internal(set) var telemetryInfo: [String: Encodable]
+        public var telemetryInfo: [String: Encodable]
 
         enum StaticCodingKeys: String, CodingKey {
             case device = "device"
@@ -3601,7 +3603,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
         /// Telemetry type
         public let type: String = "configuration"
 
-        public internal(set) var telemetryInfo: [String: Encodable]
+        public var telemetryInfo: [String: Encodable]
 
         enum StaticCodingKeys: String, CodingKey {
             case configuration = "configuration"
@@ -3667,7 +3669,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             public var mobileVitalsUpdatePeriod: Int64?
 
             /// The list of plugins enabled
-            public internal(set) var plugins: [Plugins]?
+            public var plugins: [Plugins]?
 
             /// The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
             public let premiumSampleRate: Int64?
@@ -3987,7 +3989,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 /// The name of the plugin
                 public let name: String
 
-                public internal(set) var pluginsInfo: [String: Encodable]
+                public var pluginsInfo: [String: Encodable]
 
                 enum StaticCodingKeys: String, CodingKey {
                     case name = "name"
@@ -4133,7 +4135,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
     public let source: Source
 
     /// The telemetry usage information
-    public internal(set) var telemetry: Telemetry
+    public var telemetry: Telemetry
 
     /// Telemetry event type. Should specify telemetry only.
     public let type: String = "telemetry"
@@ -4223,7 +4225,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
 
         public let usage: Usage
 
-        public internal(set) var telemetryInfo: [String: Encodable]
+        public var telemetryInfo: [String: Encodable]
 
         enum StaticCodingKeys: String, CodingKey {
             case device = "device"
@@ -4632,7 +4634,7 @@ public struct RUMConnectivity: Codable {
 
 /// User provided context
 public struct RUMEventAttributes: Codable {
-    public internal(set) var contextInfo: [String: Encodable]
+    public var contextInfo: [String: Encodable]
 }
 
 extension RUMEventAttributes {
@@ -4754,7 +4756,7 @@ public struct RUMUser: Codable {
     /// Name of the user
     public let name: String?
 
-    public internal(set) var usrInfo: [String: Encodable]
+    public var usrInfo: [String: Encodable]
 
     enum StaticCodingKeys: String, CodingKey {
         case email = "email"

@@ -361,7 +361,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                     value: SwiftEncodable()
                                 ),
                                 isOptional: false,
-                                mutability: .mutableInternally,
+                                mutability: .mutable,
                                 defaultValue: nil,
                                 codingKey: .dynamic
                             )
@@ -369,7 +369,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: true,
-                    mutability: .mutableInternally,
+                    mutability: .mutable,
                     defaultValue: nil,
                     codingKey: .static(value: "propertyWithAdditionalAnyProperties")
                 )
@@ -444,7 +444,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                     value: SwiftEncodable()
                                 ),
                                 isOptional: false,
-                                mutability: .mutableInternally,
+                                mutability: .mutable,
                                 defaultValue: nil,
                                 codingKey: .dynamic
                             ),
@@ -452,7 +452,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: true,
-                    mutability: .mutableInternally,
+                    mutability: .mutable,
                     defaultValue: nil,
                     codingKey: .static(value: "bar")
                 )

@@ -378,16 +378,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
 
     private func printPrimitivePropertyWrapper(_ propertyWrapper: ObjcInteropPropertyWrapperManagingSwiftStructProperty) throws {
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
-
-        if let swiftDictionary = swiftProperty.type as? SwiftDictionary, swiftDictionary.value is SwiftPrimitiveNoObjcInteropType {
-            if swiftProperty.mutability == .mutable {
-                throw Exception.unimplemented(
-                    "Generating ObjcInterop for mutable property `\(swiftProperty.name)` is not supported."
-                )
-            }
-        }
-
-        let objcPropertyName = swiftProperty.name
+        let objcPropertyName = swiftProperty.backtickName
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcTypeName = try objcInteropTypeName(for: propertyWrapper.objcInteropType)
         let asObjcCast = try swiftToObjcCast(for: propertyWrapper.objcInteropType, isOptional: swiftProperty.isOptional) ?? ""
@@ -521,7 +512,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         case let swiftDictionary as SwiftDictionary where swiftDictionary.value is SwiftPrimitive<String>:
             return nil // `[Key: String]` <> `[Key: NSString]` interoperability doesn't require casting
         case let swiftDictionary as SwiftDictionary where swiftDictionary.value is SwiftPrimitiveNoObjcInteropType:
-            return nil
+            return ".dd.swiftAttributes"
         case let swiftArray as SwiftArray:
             let elementCast = try objcToSwiftCast(for: swiftArray.element)
                 .unwrapOrThrow(.illegal("Cannot print `objcToSwiftCast()` for `SwiftArray` with elements of type: \(type(of: swiftArray.element))"))
