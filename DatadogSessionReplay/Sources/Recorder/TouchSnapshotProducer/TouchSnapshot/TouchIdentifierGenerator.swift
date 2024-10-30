@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import UIKit
+import DatadogInternal
 
 /// Unique identifier of a touch.
 /// It is used to mark `UITouch` objects in order to track their identity without capturing reference.
@@ -41,17 +42,18 @@ internal final class TouchIdentifierGenerator {
         case .down:
             return persistNextID(in: touch)
         case .move:
-            guard let persistedID = touch.identifier else {
+            guard let persistedID = touch.dd.identifier else {
                 // It means the touch began before SR was enabled → persit next ID in this touch:
                 return persistNextID(in: touch)
             }
             return persistedID
         case .up:
-            guard let persistedID = touch.identifier else {
+            guard let persistedID = touch.dd.identifier else {
                 // It means the touch began before SR was enabled → only return next ID as we know the touch is ending:
                 return getNextID()
             }
-            touch.identifier = nil
+            var ddTouch = touch.dd
+            ddTouch.identifier = nil
             return persistedID
         default:
             return persistNextID(in: touch)
@@ -60,7 +62,8 @@ internal final class TouchIdentifierGenerator {
 
     private func persistNextID(in touch: UITouch) -> TouchIdentifier {
         let newID = getNextID()
-        touch.identifier = newID
+        var ddTouch = touch.dd
+        ddTouch.identifier = newID
         return newID
     }
 
@@ -76,15 +79,17 @@ internal final class TouchIdentifierGenerator {
 fileprivate var associatedTouchIdentifierKey: UInt8 = 1
 fileprivate var associatedTouchPrivacyOverrideKey: UInt8 = 2
 
-internal extension UITouch {
+extension UITouch: DatadogExtended { }
+
+extension DatadogExtension where ExtendedType: UITouch {
     var identifier: TouchIdentifier? {
-        set { objc_setAssociatedObject(self, &associatedTouchIdentifierKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
-        get { objc_getAssociatedObject(self, &associatedTouchIdentifierKey) as? TouchIdentifier }
+        set { objc_setAssociatedObject(type, &associatedTouchIdentifierKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+        get { objc_getAssociatedObject(type, &associatedTouchIdentifierKey) as? TouchIdentifier }
     }
 
     var touchPrivacyOverride: TouchPrivacyLevel? {
-        set { objc_setAssociatedObject(self, &associatedTouchPrivacyOverrideKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
-        get { objc_getAssociatedObject(self, &associatedTouchPrivacyOverrideKey) as? TouchPrivacyLevel }
+        set { objc_setAssociatedObject(type, &associatedTouchPrivacyOverrideKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+        get { objc_getAssociatedObject(type, &associatedTouchPrivacyOverrideKey) as? TouchPrivacyLevel }
     }
 }
 #endif
