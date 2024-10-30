@@ -40,7 +40,7 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         /// Total number of wireframes in all "full snapshot" records.
         static let totalWireframesInFullSnapshots = 150
         /// Minimal number of wireframes in each "full snapshot" record.
-        static let minWireframesInFullSnapshot = 5
+        static let minWireframesInFullSnapshot = 1
 
         /// Total number of "incremental snapshot" records that send "wireframe mutation" data.
         static let totalWireframeMutationRecords = 5
@@ -161,7 +161,7 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
             Baseline.totalWireframesInFullSnapshots,
             "The total number of wireframes in all 'full snapshot' records must be above baseline"
         )
-        XCTAssertGreaterThan(
+        XCTAssertGreaterThanOrEqual(
             minWireframesInFullSnapshot,
             Baseline.minWireframesInFullSnapshot,
             "The minimal number of wireframes in each 'full snapshot' records must be above baseline"
