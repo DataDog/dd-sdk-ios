@@ -3,6 +3,7 @@
 - [FIX] Fix race condition during consent change, preventing loss of events recorded on the current thread. See [#2063][]
 - [IMPROVEMENT] Support mutation of events' attributes. See [#2099][]
 - [FIX] Fix bug in SR that was enforcing full snapshot more often than needed. See [#2092][]
+- [IMPROVEMENT] Session Replay recording is event-triggered instead of scheduled. See [#2074]****
 
 # 2.19.0 / 28-10-2024
 
