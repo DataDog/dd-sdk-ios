@@ -22,13 +22,20 @@ internal class SnapshotTestCase: XCTestCase {
 
     /// Shows view controller for given fixture in full screen.
     @discardableResult
-    func show(fixture: Fixture) -> UIViewController? {
+    func show(fixture: Fixture, with privacyTags: [PrivacyTag] = []) -> UIViewController? {
         let expectation = self.expectation(description: "Wait for view controller being shown")
 
         var viewController: UIViewController?
 
         app.show(fixture: fixture) {
             viewController = $0
+            for privacyTag in privacyTags {
+                if let view = viewController?.view.viewWithTag(privacyTag.tag) {
+                    privacyTag.createPrivacyApplier().apply(to: view)
+                } else {
+                    print("Warning: No view found with tag \(privacyTag.tag)")
+                }
+            }
             expectation.fulfill()
         }
 
@@ -42,13 +49,14 @@ internal class SnapshotTestCase: XCTestCase {
         _ fixture: Fixture,
         with textAndInputPrivacyLevels: [TextAndInputPrivacyLevel] = [defaultTextAndInputPrivacyLevel],
         imagePrivacyLevel: ImagePrivacyLevel = defaultImagePrivacyLevel,
+        privacyTags: [PrivacyTag] = [],
         shouldRecord: Bool,
         folderPath: String,
         fileNamePrefix: String? = nil,
         file: StaticString = #filePath,
         function: StaticString = #function
     ) throws {
-        show(fixture: fixture)
+        show(fixture: fixture, with: privacyTags)
         // Give time for the view to appear and lay out properly
         wait(seconds: 0.2)
 
