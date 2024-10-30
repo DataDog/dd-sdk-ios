@@ -157,7 +157,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
                     writeLine("case nil: self = .none")
                 }
                 swiftEnum.cases.forEach { enumCase in
-                    writeLine("case .\(enumCase.label)\(objcEnumOptionality): self = .\(enumCase.label)")
+                    writeLine("case .\(enumCase.backtickLabel)\(objcEnumOptionality): self = .\(enumCase.backtickLabel)")
                 }
                 writeLine("}")
             indentLeft()
@@ -170,7 +170,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
                     writeLine("case .none: return nil")
                 }
                 swiftEnum.cases.forEach { enumCase in
-                    writeLine("case .\(enumCase.label): return .\(enumCase.label)")
+                    writeLine("case .\(enumCase.backtickLabel): return .\(enumCase.backtickLabel)")
                 }
                 writeLine("}")
             indentLeft()
@@ -215,11 +215,12 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             ).forEach { swiftEnumCase, objcInteropAssociatedType in
                 let objcTypeName = try objcInteropTypeName(for: objcInteropAssociatedType)
                 let asObjcCast = try swiftToObjcCast(for: objcInteropAssociatedType, isOptional: swiftProperty.isOptional) ?? ""
+                let caseName = swiftEnumCase.backtickLabel
 
                 writeEmptyLine()
-                writeLine("@objc public var \(swiftEnumCase.label): \(objcTypeName)? {")
+                writeLine("@objc public var \(caseName): \(objcTypeName)? {")
                 indentRight()
-                    writeLine("guard case .\(swiftEnumCase.label)(let value) = root.swiftModel.\(propertyWrapper.keyPath) else {")
+                    writeLine("guard case .\(caseName)(let value) = root.swiftModel.\(propertyWrapper.keyPath) else {")
                     indentRight()
                         writeLine("return nil")
                     indentLeft()
@@ -265,7 +266,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         // }
         // ```
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
-        let objcPropertyName = swiftProperty.name
+        let objcPropertyName = swiftProperty.backtickName
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcClassName = objcTypeNamesPrefix + nestedObjcClass.objcTypeName
         writeLine("@objc public var \(objcPropertyName): \(objcClassName)\(objcPropertyOptionality) {")
@@ -298,7 +299,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         // }
         // ```
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
-        let objcPropertyName = swiftProperty.name
+        let objcPropertyName = swiftProperty.backtickName
         let objcEnumName = objcTypeNamesPrefix + nestedObjcEnum.objcTypeName
 
         switch swiftProperty.mutability {
@@ -330,7 +331,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         // }
         // ```
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
-        let objcPropertyName = swiftProperty.name
+        let objcPropertyName = swiftProperty.backtickName
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcEnumName = objcTypeNamesPrefix + nestedObjcEnumArray.objcTypeName
 
@@ -355,7 +356,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         // }
         // ```
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
-        let objcPropertyName = swiftProperty.name
+        let objcPropertyName = swiftProperty.backtickName
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcClassName = objcTypeNamesPrefix + nestedObjcClass.objcTypeName
 
@@ -433,7 +434,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         // }
         // ```
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
-        let objcPropertyName = swiftProperty.name
+        let objcPropertyName = swiftProperty.backtickName
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcClassName = objcTypeNamesPrefix + nestedObjcAssociatedTypeEnum.objcTypeName
         writeLine("@objc public var \(objcPropertyName): \(objcClassName)\(objcPropertyOptionality) {")

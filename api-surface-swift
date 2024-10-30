@@ -716,6 +716,7 @@ public struct RUMLongTaskEvent: RUMDataModel
         public let isFrozenFrame: Bool?
         public let renderStart: Double?
         public let scripts: [Scripts]?
+        public let startTime: Double?
         public let styleAndLayoutStart: Double?
         public enum EntryType: String, Codable
             case longTask = "long-task"
@@ -832,6 +833,7 @@ public struct RUMResourceEvent: RUMDataModel
         public var graphql: Graphql?
         public let id: String?
         public let method: RUMMethod?
+        public let `protocol`: String?
         public let provider: Provider?
         public let redirect: Redirect?
         public let renderBlockingStatus: RenderBlockingStatus?

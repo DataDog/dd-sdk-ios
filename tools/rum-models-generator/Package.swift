@@ -11,7 +11,7 @@ let package = Package(
     ],
     targets: [
         // CLI wrapper
-        .target(
+        .executableTarget(
             name: "rum-models-generator",
             dependencies: [
                 "CodeGeneration",

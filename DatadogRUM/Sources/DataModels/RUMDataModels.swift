@@ -1361,6 +1361,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// A list of long scripts that were executed over the course of the long frame
         public let scripts: [Scripts]?
 
+        /// Start time of the long animation frame
+        public let startTime: Double?
+
         /// Start time of the time period spent in style and layout calculations
         public let styleAndLayoutStart: Double?
 
@@ -1771,6 +1774,9 @@ public struct RUMResourceEvent: RUMDataModel {
 
         /// HTTP method of the resource
         public let method: RUMMethod?
+
+        /// Network protocol used to fetch the resource (e.g., 'http/1.1', 'h2')
+        public let `protocol`: String?
 
         /// The provider for this resource
         public let provider: Provider?
@@ -4885,4 +4891,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ec07c062cbbb2f19b49d08f72bc95703b502906d
+// Generated from https://github.com/DataDog/rum-events-format/tree/e1c6dde3793714453b5b49f17790a24e9ff9b77b

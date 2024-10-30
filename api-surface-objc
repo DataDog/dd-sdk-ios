@@ -997,6 +997,7 @@ public class DDRUMLongTaskEventLongTask: NSObject
     @objc public var isFrozenFrame: NSNumber?
     @objc public var renderStart: NSNumber?
     @objc public var scripts: [DDRUMLongTaskEventLongTaskScripts]?
+    @objc public var startTime: NSNumber?
     @objc public var styleAndLayoutStart: NSNumber?
 public enum DDRUMLongTaskEventLongTaskEntryType: Int
     case none
@@ -1199,6 +1200,7 @@ public class DDRUMResourceEventResource: NSObject
     @objc public var graphql: DDRUMResourceEventResourceGraphql?
     @objc public var id: String?
     @objc public var method: DDRUMResourceEventResourceRUMMethod
+    @objc public var `protocol`: String?
     @objc public var provider: DDRUMResourceEventResourceProvider?
     @objc public var redirect: DDRUMResourceEventResourceRedirect?
     @objc public var renderBlockingStatus: DDRUMResourceEventResourceRenderBlockingStatus

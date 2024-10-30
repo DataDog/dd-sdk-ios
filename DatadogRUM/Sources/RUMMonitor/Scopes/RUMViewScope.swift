@@ -727,6 +727,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 isFrozenFrame: isFrozenFrame,
                 renderStart: nil,
                 scripts: nil,
+                startTime: nil,
                 styleAndLayoutStart: nil
             ),
             os: .init(context: context),

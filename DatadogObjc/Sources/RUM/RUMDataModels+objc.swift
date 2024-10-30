@@ -3023,6 +3023,10 @@ public class DDRUMLongTaskEventLongTask: NSObject {
         root.swiftModel.longTask.scripts?.map { DDRUMLongTaskEventLongTaskScripts(swiftModel: $0) }
     }
 
+    @objc public var startTime: NSNumber? {
+        root.swiftModel.longTask.startTime as NSNumber?
+    }
+
     @objc public var styleAndLayoutStart: NSNumber? {
         root.swiftModel.longTask.styleAndLayoutStart as NSNumber?
     }
@@ -4004,6 +4008,10 @@ public class DDRUMResourceEventResource: NSObject {
 
     @objc public var method: DDRUMResourceEventResourceRUMMethod {
         .init(swift: root.swiftModel.resource.method)
+    }
+
+    @objc public var `protocol`: String? {
+        root.swiftModel.resource.protocol
     }
 
     @objc public var provider: DDRUMResourceEventResourceProvider? {
@@ -7866,4 +7874,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ec07c062cbbb2f19b49d08f72bc95703b502906d
+// Generated from https://github.com/DataDog/rum-events-format/tree/e1c6dde3793714453b5b49f17790a24e9ff9b77b
