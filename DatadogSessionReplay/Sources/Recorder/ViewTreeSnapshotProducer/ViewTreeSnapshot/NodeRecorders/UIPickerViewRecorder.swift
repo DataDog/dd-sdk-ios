@@ -109,7 +109,7 @@ internal struct UIPickerViewWireframesBuilder: NodeWireframesBuilder {
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         return [
-            builder.createShapeWireframe(id: backgroundWireframeID, frame: wireframeRect, attributes: attributes)
+            builder.createShapeWireframe(id: backgroundWireframeID, attributes: attributes)
         ]
     }
 }

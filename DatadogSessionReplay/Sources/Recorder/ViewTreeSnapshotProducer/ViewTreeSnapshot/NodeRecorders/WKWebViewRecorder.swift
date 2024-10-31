@@ -48,6 +48,7 @@ internal struct WKWebViewWireframesBuilder: NodeWireframesBuilder {
             builder.visibleWebViewWireframe(
                 id: slotID,
                 frame: attributes.frame,
+                clip: attributes.clip,
                 borderColor: attributes.layerBorderColor,
                 borderWidth: attributes.layerBorderWidth,
                 backgroundColor: attributes.backgroundColor,

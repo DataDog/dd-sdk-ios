@@ -72,19 +72,6 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
         attributes.frame
     }
 
-    private var clip: SRContentClip {
-        let top = abs(contentRect.origin.y)
-        let left = abs(contentRect.origin.x)
-        let bottom = max(contentRect.height - attributes.frame.height - top, 0)
-        let right = max(contentRect.width - attributes.frame.width - left, 0)
-        return SRContentClip(
-            bottom: Int64(withNoOverflow: bottom),
-            left: Int64(withNoOverflow: left),
-            right: Int64(withNoOverflow: right),
-            top: Int64(withNoOverflow: top)
-        )
-    }
-
     private var relativeIntersectedRect: CGRect {
         // UITextView adds additional padding for presented content.
         let padding: CGFloat = 8
@@ -101,9 +88,9 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
             builder.createTextWireframe(
                 id: wireframeID,
                 frame: relativeIntersectedRect,
+                clip: attributes.clip,
                 text: textObfuscator.mask(text: text),
                 textAlignment: .init(systemTextAlignment: textAlignment, vertical: .top),
-                clip: clip,
                 textColor: textColor,
                 font: font,
                 borderColor: attributes.layerBorderColor,

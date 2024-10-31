@@ -179,7 +179,7 @@ internal struct UIDatePickerWireframesBuilder: NodeWireframesBuilder {
             builder.createShapeWireframe(
                 id: backgroundWireframeID,
                 frame: wireframeRect,
-                clip: nil,
+                clip: attributes.clip,
                 borderColor: isDisplayedInPopover ? SystemColors.secondarySystemFill : nil,
                 borderWidth: isDisplayedInPopover ? 1 : 0,
                 backgroundColor: isDisplayedInPopover ? SystemColors.secondarySystemGroupedBackground : SystemColors.systemBackground,
