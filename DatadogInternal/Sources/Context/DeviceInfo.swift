@@ -81,7 +81,7 @@ extension DeviceInfo {
     ///   - processInfo: The current process information.
     ///   - device: The device description.
     public init(
-        processInfo: ProcessInfo = .processInfo,
+        processInfo: ProcessInfo,
         device: _UIDevice = .dd.current,
         sysctl: SysctlProviding = Sysctl()
     ) {

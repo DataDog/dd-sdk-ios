@@ -19,9 +19,9 @@ internal struct VitalsReaders {
         telemetry: Telemetry = NOPTelemetry()
     ) {
         self.frequency = frequency
-        self.cpu = VitalCPUReader(telemetry: telemetry)
+        self.cpu = VitalCPUReader(notificationCenter: .default, telemetry: telemetry)
         self.memory = VitalMemoryReader()
-        self.refreshRate = VitalRefreshRateReader()
+        self.refreshRate = VitalRefreshRateReader(notificationCenter: .default)
     }
 }
 

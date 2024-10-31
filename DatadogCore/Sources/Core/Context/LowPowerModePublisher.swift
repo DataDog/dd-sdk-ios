@@ -19,11 +19,11 @@ internal final class LowPowerModePublisher: ContextValuePublisher {
     /// Creates a low power mode publisher.
     ///
     /// - Parameters:
-    ///   - processInfo: The process for reading the initial `isLowPowerModeEnabled`.
     ///   - notificationCenter: The notification center for observing the `NSProcessInfoPowerStateDidChange`,
+    ///   - processInfo: The process for reading the initial `isLowPowerModeEnabled`.
     init(
-        processInfo: ProcessInfo = .processInfo,
-        notificationCenter: NotificationCenter = .default
+        notificationCenter: NotificationCenter,
+        processInfo: ProcessInfo
     ) {
         self.initialValue = processInfo.isLowPowerModeEnabled
         self.notificationCenter = notificationCenter

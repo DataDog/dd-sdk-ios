@@ -65,7 +65,7 @@ internal final class RUMViewsHandler {
     init(
         dateProvider: DateProvider,
         predicate: UIKitRUMViewsPredicate?,
-        notificationCenter: NotificationCenter = .default
+        notificationCenter: NotificationCenter
     ) {
         self.dateProvider = dateProvider
         self.predicate = predicate

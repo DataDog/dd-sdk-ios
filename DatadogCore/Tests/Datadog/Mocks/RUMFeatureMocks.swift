@@ -41,7 +41,7 @@ extension WebViewEventReceiver: AnyMockable {
         featureScope: FeatureScope = NOPFeatureScope(),
         dateProvider: DateProvider = SystemDateProvider(),
         commandSubscriber: RUMCommandSubscriber = RUMCommandSubscriberMock(),
-        viewCache: ViewCache = ViewCache()
+        viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider())
     ) -> Self {
         .init(
             featureScope: featureScope,
@@ -729,7 +729,7 @@ extension RUMScopeDependencies {
         syntheticsTest: RUMSyntheticsTest? = nil,
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
-        viewCache: ViewCache = ViewCache(),
+        viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
         sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0),
         watchdogTermination: WatchdogTerminationMonitor? = nil

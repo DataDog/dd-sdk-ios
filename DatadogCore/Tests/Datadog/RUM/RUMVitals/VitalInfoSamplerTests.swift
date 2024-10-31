@@ -99,9 +99,9 @@ class VitalInfoSamplerTests: XCTestCase {
         DispatchQueue.global().sync {
             // in real-world scenarios, sampling will be started from background threads
             sampler = VitalInfoSampler(
-                cpuReader: VitalCPUReader(),
+                cpuReader: VitalCPUReader(notificationCenter: .default),
                 memoryReader: VitalMemoryReader(),
-                refreshRateReader: VitalRefreshRateReader(),
+                refreshRateReader: VitalRefreshRateReader(notificationCenter: .default),
                 frequency: 0.1
             )
         }
