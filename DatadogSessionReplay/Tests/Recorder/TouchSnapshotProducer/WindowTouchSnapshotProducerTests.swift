@@ -244,5 +244,26 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         XCTAssertNotNil(snapshot, "Touches in a view with touch privacy override `.show` should be recorded even when global setting is `.hide`")
         XCTAssertEqual(snapshot?.touches.count, 1, "It should record one touch event")
     }
+
+    // MARK: Touch Override Cache Tests
+    func testTouchPrivacyOverrideIsNilByDefault() {
+        // Given
+        let touch = UITouchMock()
+
+        // Then
+        XCTAssertNil(touch.touchPrivacyOverride, "The associated touchPrivacyOverride should be nil by default")
+    }
+
+    func testSettingAndGettingTouchPrivacyOverride() {
+        // Given
+        let touch = UITouchMock()
+        let expectedOverride: TouchPrivacyLevel = .show
+
+        // When
+        touch.touchPrivacyOverride = expectedOverride
+
+        // Then
+        XCTAssertEqual(touch.touchPrivacyOverride, expectedOverride, "The associated touchPrivacyOverride should be correctly set and retrieved")
+    }
 }
 #endif
