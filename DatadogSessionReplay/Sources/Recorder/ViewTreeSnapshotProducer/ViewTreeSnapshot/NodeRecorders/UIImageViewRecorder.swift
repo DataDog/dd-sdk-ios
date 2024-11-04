@@ -51,7 +51,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
 
         let ids = context.ids.nodeIDs(2, view: imageView, nodeRecorder: self)
         let contentFrame = imageView.image.map {
-            attributes.frame.contentFrame(
+            attributes.frame.dd.contentFrame(
                 for: $0.size,
                 using: imageView.contentMode
             )
@@ -71,7 +71,6 @@ internal struct UIImageViewRecorder: NodeRecorder {
             imageWireframeID: ids[1],
             attributes: attributes,
             contentFrame: contentFrame,
-            clipsToBounds: imageView.clipsToBounds,
             imageResource: imageResource,
             imagePrivacyLevel: context.recorder.imagePrivacy
         )
@@ -96,40 +95,16 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
 
     let contentFrame: CGRect?
 
-    let clipsToBounds: Bool
-
     let imageResource: UIImageResource?
 
     let imagePrivacyLevel: ImagePrivacyLevel
-
-    private var clip: SRContentClip? {
-        guard let contentFrame = contentFrame else {
-            return nil
-        }
-        let top = max(relativeIntersectedRect.origin.y - contentFrame.origin.y, 0)
-        let left = max(relativeIntersectedRect.origin.x - contentFrame.origin.x, 0)
-        let bottom = max(contentFrame.height - (relativeIntersectedRect.height + top), 0)
-        let right = max(contentFrame.width - (relativeIntersectedRect.width + left), 0)
-        return SRContentClip(
-            bottom: Int64(withNoOverflow: bottom),
-            left: Int64(withNoOverflow: left),
-            right: Int64(withNoOverflow: right),
-            top: Int64(withNoOverflow: top)
-        )
-    }
-
-    private var relativeIntersectedRect: CGRect {
-        guard let contentFrame = contentFrame else {
-            return .zero
-        }
-        return attributes.frame.intersection(contentFrame)
-    }
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         var wireframes = [
             builder.createShapeWireframe(
                 id: wireframeID,
                 frame: attributes.frame,
+                clip: attributes.clip,
                 borderColor: attributes.layerBorderColor,
                 borderWidth: attributes.layerBorderWidth,
                 backgroundColor: attributes.backgroundColor,
@@ -148,14 +123,15 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                     id: imageWireframeID,
                     resource: imageResource,
                     frame: contentFrame,
-                    clip: clipsToBounds ? clip : nil
+                    clip: attributes.clip
                 )
             )
         } else {
             wireframes.append(
                 builder.createPlaceholderWireframe(
                     id: imageWireframeID,
-                    frame: clipsToBounds ? relativeIntersectedRect : contentFrame,
+                    frame: attributes.clip.intersection(contentFrame), // = visible frame of the image
+                    clip: attributes.clip,
                     label: imagePrivacyLevel == .maskNonBundledOnly ? "Content Image" : "Image"
                 )
             )

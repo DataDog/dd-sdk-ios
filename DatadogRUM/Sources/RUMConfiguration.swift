@@ -279,6 +279,8 @@ extension RUM {
         internal var mainQueue: DispatchQueue = .main
         /// Identifier of the current process, used to check if fatal App Hang originated in a previous process instance.
         internal var processID: UUID = currentProcessID
+        /// The default notification center used for subscribing to app lifecycle events and system notifications.
+        internal var notificationCenter: NotificationCenter = .default
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
         internal var debugViews: Bool = ProcessInfo.processInfo.arguments.contains("DD_DEBUG_RUM")

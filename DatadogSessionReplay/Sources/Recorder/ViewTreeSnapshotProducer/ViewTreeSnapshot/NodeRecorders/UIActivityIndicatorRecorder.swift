@@ -64,6 +64,7 @@ internal struct UIActivityIndicatorWireframesBuilder: NodeWireframesBuilder {
             builder.createShapeWireframe(
                 id: wireframeID,
                 frame: wireframeRect,
+                clip: attributes.clip,
                 backgroundColor: backgroundColor,
                 cornerRadius: attributes.layerCornerRadius,
                 opacity: attributes.alpha

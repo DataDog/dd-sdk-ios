@@ -226,6 +226,12 @@ public enum Datadog {
         internal var httpClientFactory: ([AnyHashable: Any]?) -> HTTPClient = { proxyConfiguration in
             URLSessionClient(proxyConfiguration: proxyConfiguration)
         }
+
+        /// The default notification center used for subscribing to app lifecycle events and system notifications.
+        internal var notificationCenter: NotificationCenter = .default
+
+        /// The default application state provider for accessing [application state](https://developer.apple.com/documentation/uikit/uiapplication/state).
+        internal var appStateProvider: AppStateProvider = DefaultAppStateProvider()
     }
 
     /// Verbosity level of Datadog SDK. Can be used for debugging purposes.
@@ -403,84 +409,13 @@ public enum Datadog {
 
         registerObjcExceptionHandlerOnce()
 
-        let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
-        if debug {
-            consolePrint("⚠️ Overriding verbosity, and upload frequency due to \(LaunchArguments.Debug) launch argument", .warn)
-            Datadog.verbosityLevel = .debug
-        }
+        try isValid(clientToken: configuration.clientToken)
+        try isValid(env: configuration.env)
 
-        let applicationVersion = configuration.additionalConfiguration[CrossPlatformAttributes.version] as? String
-            ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
-            ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
-            ?? "0.0.0"
-
-        let applicationBuildNumber = configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
-            ?? "0"
-
-        let bundleName = configuration.bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
-        let bundleType = BundleType(bundle: configuration.bundle)
-        let bundleIdentifier = configuration.bundle.bundleIdentifier ?? "unknown"
-        let service = configuration.service ?? configuration.bundle.bundleIdentifier ?? "ios"
-        let source = configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String ?? "ios"
-        let variant = configuration.additionalConfiguration[CrossPlatformAttributes.variant] as? String
-        let sdkVersion = configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String ?? __sdkVersion
-        let buildId = configuration.additionalConfiguration[CrossPlatformAttributes.buildId] as? String
-        let nativeSourceType = configuration.additionalConfiguration[CrossPlatformAttributes.nativeSourceType] as? String
-
-        let performance = PerformancePreset(
-            batchSize: debug ? .small : configuration.batchSize,
-            uploadFrequency: debug ? .frequent : configuration.uploadFrequency,
-            bundleType: bundleType
-        )
-        let isRunFromExtension = bundleType == .iOSAppExtension
-
-        // Set default `DatadogCore`:
-        let core = DatadogCore(
-            directory: try CoreDirectory(
-                in: configuration.systemDirectory(),
-                instanceName: instanceName,
-                site: configuration.site
-            ),
-            dateProvider: configuration.dateProvider,
-            initialConsent: trackingConsent,
-            performance: performance,
-            httpClient: configuration.httpClientFactory(configuration.proxyConfiguration),
-            encryption: configuration.encryption,
-            contextProvider: DatadogContextProvider(
-                site: configuration.site,
-                clientToken: try ifValid(clientToken: configuration.clientToken),
-                service: service,
-                env: try ifValid(env: configuration.env),
-                version: applicationVersion,
-                buildNumber: applicationBuildNumber,
-                buildId: buildId,
-                variant: variant,
-                source: source,
-                nativeSourceOverride: nativeSourceType,
-                sdkVersion: sdkVersion,
-                ciAppOrigin: CITestIntegration.active?.origin,
-                applicationName: bundleName ?? bundleType.rawValue,
-                applicationBundleIdentifier: bundleIdentifier,
-                applicationBundleType: bundleType,
-                applicationVersion: applicationVersion,
-                sdkInitDate: configuration.dateProvider.now,
-                device: DeviceInfo(),
-                dateProvider: configuration.dateProvider,
-                serverDateProvider: configuration.serverDateProvider
-            ),
-            applicationVersion: applicationVersion,
-            maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
-            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
-            isRunFromExtension: isRunFromExtension
-        )
-
-        core.telemetry.configuration(
-            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
-            batchProcessingLevel: Int64(exactly: configuration.batchProcessingLevel.maxBatchesPerUpload),
-            batchSize: performance.uploaderWindow.toInt64Milliseconds,
-            batchUploadFrequency: performance.minUploadDelay.toInt64Milliseconds,
-            useLocalEncryption: configuration.encryption != nil,
-            useProxy: configuration.proxyConfiguration != nil
+        let core = try DatadogCore(
+            configuration: configuration,
+            trackingConsent: trackingConsent,
+            instanceName: instanceName
         )
 
         CITestIntegration.active?.startIntegration()
@@ -528,7 +463,7 @@ public enum Datadog {
     }
 }
 
-private func ifValid(env: String) throws -> String {
+private func isValid(env: String) throws {
     /// 1. cannot be more than 200 chars (including `env:` prefix)
     /// 2. cannot end with `:`
     /// 3. can contain letters, numbers and _:./-_ (other chars are converted to _ at backend)
@@ -536,12 +471,107 @@ private func ifValid(env: String) throws -> String {
     if env.range(of: regex, options: .regularExpression, range: nil, locale: nil) == nil {
         throw ProgrammerError(description: "`env`: \(env) contains illegal characters (only alphanumerics and `_` are allowed)")
     }
-    return env
 }
 
-private func ifValid(clientToken: String) throws -> String {
+private func isValid(clientToken: String) throws {
     if clientToken.isEmpty {
         throw ProgrammerError(description: "`clientToken` cannot be empty.")
     }
-    return clientToken
+}
+
+extension DatadogCore {
+    /// The primary entry point for creating a `DatadogCore` instance.
+    ///
+    /// - Parameters:
+    ///   - configuration: A configuration object that encapsulates both user-defined options and internal dependencies
+    ///     passed to SDK's downstream components.
+    ///   - trackingConsent: The user's consent regarding data tracking for the SDK.
+    ///   - instanceName: A unique name for this SDK instance.
+    convenience init(
+        configuration: Datadog.Configuration,
+        trackingConsent: TrackingConsent,
+        instanceName: String
+    ) throws {
+        let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
+        if debug {
+            consolePrint("⚠️ Overriding verbosity, and upload frequency due to \(LaunchArguments.Debug) launch argument", .warn)
+            Datadog.verbosityLevel = .debug
+        }
+
+        let applicationVersion = configuration.additionalConfiguration[CrossPlatformAttributes.version] as? String
+            ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+            ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+            ?? "0.0.0"
+
+        let applicationBuildNumber = configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+            ?? "0"
+
+        let bundleName = configuration.bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
+        let bundleType = BundleType(bundle: configuration.bundle)
+        let bundleIdentifier = configuration.bundle.bundleIdentifier ?? "unknown"
+        let service = configuration.service ?? configuration.bundle.bundleIdentifier ?? "ios"
+        let source = configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String ?? "ios"
+        let variant = configuration.additionalConfiguration[CrossPlatformAttributes.variant] as? String
+        let sdkVersion = configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String ?? __sdkVersion
+        let buildId = configuration.additionalConfiguration[CrossPlatformAttributes.buildId] as? String
+        let nativeSourceType = configuration.additionalConfiguration[CrossPlatformAttributes.nativeSourceType] as? String
+
+        let performance = PerformancePreset(
+            batchSize: debug ? .small : configuration.batchSize,
+            uploadFrequency: debug ? .frequent : configuration.uploadFrequency,
+            bundleType: bundleType
+        )
+        let isRunFromExtension = bundleType == .iOSAppExtension
+
+        self.init(
+            directory: try CoreDirectory(
+                in: configuration.systemDirectory(),
+                instanceName: instanceName,
+                site: configuration.site
+            ),
+            dateProvider: configuration.dateProvider,
+            initialConsent: trackingConsent,
+            performance: performance,
+            httpClient: configuration.httpClientFactory(configuration.proxyConfiguration),
+            encryption: configuration.encryption,
+            contextProvider: DatadogContextProvider(
+                site: configuration.site,
+                clientToken: configuration.clientToken,
+                service: service,
+                env: configuration.env,
+                version: applicationVersion,
+                buildNumber: applicationBuildNumber,
+                buildId: buildId,
+                variant: variant,
+                source: source,
+                nativeSourceOverride: nativeSourceType,
+                sdkVersion: sdkVersion,
+                ciAppOrigin: CITestIntegration.active?.origin,
+                applicationName: bundleName ?? bundleType.rawValue,
+                applicationBundleIdentifier: bundleIdentifier,
+                applicationBundleType: bundleType,
+                applicationVersion: applicationVersion,
+                sdkInitDate: configuration.dateProvider.now,
+                device: DeviceInfo(processInfo: configuration.processInfo),
+                processInfo: configuration.processInfo,
+                dateProvider: configuration.dateProvider,
+                serverDateProvider: configuration.serverDateProvider,
+                notificationCenter: configuration.notificationCenter,
+                appStateProvider: configuration.appStateProvider
+            ),
+            applicationVersion: applicationVersion,
+            maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
+            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
+            isRunFromExtension: isRunFromExtension
+        )
+
+        telemetry.configuration(
+            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
+            batchProcessingLevel: Int64(exactly: configuration.batchProcessingLevel.maxBatchesPerUpload),
+            batchSize: performance.uploaderWindow.toInt64Milliseconds,
+            batchUploadFrequency: performance.minUploadDelay.toInt64Milliseconds,
+            useLocalEncryption: configuration.encryption != nil,
+            useProxy: configuration.proxyConfiguration != nil
+        )
+    }
 }

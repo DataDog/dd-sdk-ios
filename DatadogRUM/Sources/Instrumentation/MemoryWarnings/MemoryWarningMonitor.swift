@@ -17,7 +17,7 @@ internal final class MemoryWarningMonitor {
     init(
         backtraceReporter: BacktraceReporting?,
         memoryWarningReporter: MemoryWarningReporting,
-        notificationCenter: NotificationCenter = .default
+        notificationCenter: NotificationCenter
     ) {
         self.notificationCenter = notificationCenter
         self.backtraceReporter = backtraceReporter

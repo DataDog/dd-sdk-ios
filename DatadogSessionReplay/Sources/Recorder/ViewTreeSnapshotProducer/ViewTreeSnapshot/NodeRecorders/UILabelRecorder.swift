@@ -78,6 +78,7 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
             builder.createTextWireframe(
                 id: wireframeID,
                 frame: wireframeRect,
+                clip: attributes.clip,
                 text: textObfuscator.mask(text: text),
                 textAlignment: .init(systemTextAlignment: textAlignment),
                 textColor: textColor,
