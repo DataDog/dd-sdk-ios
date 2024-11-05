@@ -21,22 +21,22 @@ final class SwiftPrinterTests: XCTestCase {
                         comment: "Description of Bar.",
                         properties: [
                             SwiftStruct.Property(
-                                name: "property1",
-                                comment: "Description of Bar's `property1`.",
+                                name: "public",
+                                comment: "Description of Bar's `public`.",
                                 type: SwiftPrimitive<String>(),
                                 isOptional: true,
                                 mutability: .immutable,
                                 defaultValue: nil,
-                                codingKey: .static(value: "property1")
+                                codingKey: .static(value: "public")
                             ),
                             SwiftStruct.Property(
-                                name: "property2",
-                                comment: "Description of Bar's `property2`.",
+                                name: "internal",
+                                comment: "Description of Bar's `internal`.",
                                 type: SwiftPrimitive<String>(),
                                 isOptional: false,
                                 mutability: .mutable,
                                 defaultValue: nil,
-                                codingKey: .static(value: "property2")
+                                codingKey: .static(value: "internal")
                             )
                         ],
                         conformance: [codableProtocol]
@@ -127,15 +127,15 @@ final class SwiftPrinterTests: XCTestCase {
 
             /// Description of Bar.
             public struct BAR: Codable {
-                /// Description of Bar's `property1`.
-                public let property1: String?
+                /// Description of Bar's `public`.
+                public let `public`: String?
 
-                /// Description of Bar's `property2`.
-                public var property2: String
+                /// Description of Bar's `internal`.
+                public var `internal`: String
 
                 enum CodingKeys: String, CodingKey {
-                    case property1 = "property1"
-                    case property2 = "property2"
+                    case `public` = "public"
+                    case `internal` = "internal"
                 }
             }
 

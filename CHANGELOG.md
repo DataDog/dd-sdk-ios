@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Support mutation of events' attributes. See [#2099][]
+
 # 2.19.0 / 28-10-2024
 
 - [FEATURE] Add Privacy Overrides in Session Replay. See [#2088][]
@@ -783,6 +785,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2073]: https://github.com/DataDog/dd-sdk-ios/pull/2073
 [#2088]: https://github.com/DataDog/dd-sdk-ios/pull/2088
 [#2083]: https://github.com/DataDog/dd-sdk-ios/pull/2083
+[#2099]: https://github.com/DataDog/dd-sdk-ios/pull/2099
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

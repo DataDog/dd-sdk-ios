@@ -89,7 +89,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
             case .mutableInternally: kind = "internal(set) var"
             case .immutable: kind = "let"
             }
-            let name = property.name
+            let name = property.backtickName
             let type = try typeDeclaration(property.type)
             let optionality = property.isOptional ? "?" : ""
             let defaultValue: String? = try property.defaultValue.ifNotNil { value in
@@ -133,7 +133,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
                         throw Exception.illegal("Expected `codingKey` to be `.static` for property `\(property.name)`")
                     }
 
-                    writeLine("case \(property.name) = \"\(codingKeyValue)\"")
+                    writeLine("case \(property.backtickName) = \"\(codingKeyValue)\"")
                 }
             indentLeft()
             writeLine("}")
@@ -183,7 +183,8 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
                 writeLine("var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)")
 
                 staticallyEncodedProperties.forEach { staticProperty in
-                    writeLine("try staticContainer.encodeIfPresent(\(staticProperty.name), forKey: .\(staticProperty.name))")
+                    let name = staticProperty.backtickName
+                    writeLine("try staticContainer.encodeIfPresent(\(name), forKey: .\(name))")
                 }
             }
 
@@ -199,7 +200,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
                     throw Exception.unimplemented("Printing dynamic property of type `\(dynamicProperty.type)` is not supported ")
                 }
 
-                writeLine("try \(dynamicProperty.name).forEach {") // dynamic properties are dictionaries
+                writeLine("try \(dynamicProperty.backtickName).forEach {") // dynamic properties are dictionaries
                 indentRight()
                     writeLine("let key = DynamicCodingKey($0)") // dictionary key is used as coding key
                     writeLine("try dynamicContainer.encode(AnyEncodable($1), forKey: key)") // encode value
@@ -221,10 +222,11 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
 
                 try staticallyDecodedProperties.forEach { staticProperty in
                     let type = try typeDeclaration(staticProperty.type)
+                    let name = staticProperty.backtickName
                     if staticProperty.isOptional {
-                        writeLine("self.\(staticProperty.name) = try staticContainer.decodeIfPresent(\(type).self, forKey: .\(staticProperty.name))")
+                        writeLine("self.\(name) = try staticContainer.decodeIfPresent(\(type).self, forKey: .\(name))")
                     } else {
-                        writeLine("self.\(staticProperty.name) = try staticContainer.decode(\(type).self, forKey: .\(staticProperty.name))")
+                        writeLine("self.\(name) = try staticContainer.decode(\(type).self, forKey: .\(name))")
                     }
                 }
             }
@@ -317,9 +319,9 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
         enumeration.cases.forEach { `case` in
             switch `case`.rawValue {
             case .string(let value):
-                writeLine("case \(`case`.label) = \"\(value)\"")
+                writeLine("case \(`case`.backtickLabel) = \"\(value)\"")
             case .integer(let value):
-                writeLine("case \(`case`.label) = \(value)")
+                writeLine("case \(`case`.backtickLabel) = \(value)")
             }
         }
         indentLeft()
@@ -336,7 +338,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
                 writeLine("switch self {")
 
                 enumeration.cases.forEach { `case` in
-                    writeLine("case .\(`case`.label)(let value):")
+                    writeLine("case .\(`case`.backtickLabel)(let value):")
                     indentRight()
                         writeLine("try container.encode(value)")
                     indentLeft()
@@ -357,7 +359,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
                 try enumeration.cases.forEach { `case` in
                     writeLine("if let value = try? container.decode(\(try typeDeclaration(`case`.associatedType)).self) {")
                     indentRight()
-                        writeLine("self = .\(`case`.label)(value: value)")
+                        writeLine("self = .\(`case`.backtickLabel)(value: value)")
                         writeLine("return")
                     indentLeft()
                     writeLine("}")
@@ -389,7 +391,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
         indentRight()
         try enumeration.cases.forEach { `case` in
             let associatedTypeDeclaration = try typeDeclaration(`case`.associatedType)
-            writeLine("case \(`case`.label)(value: \(associatedTypeDeclaration))")
+            writeLine("case \(`case`.backtickLabel)(value: \(associatedTypeDeclaration))")
         }
 
         if enumeration.conforms(to: codableProtocol) {
@@ -504,3 +506,55 @@ extension SwiftPrinter.Configuration.AccessLevel: CustomStringConvertible {
         }
     }
 }
+
+extension SwiftStruct.Property {
+    var backtickName: String { backtickEscape(name) }
+}
+
+extension SwiftEnum.Case {
+    var backtickLabel: String { backtickEscape(label) }
+}
+
+extension SwiftAssociatedTypeEnum.Case {
+    var backtickLabel: String { backtickEscape(label) }
+}
+
+private func backtickEscape(_ name: String) -> String {
+    if swiftReservedKeywords.contains(name) {
+        return "`\(name)`"
+    }
+
+    return name
+}
+
+/// Non-exhaustive Swift reserved keywords as defined in:
+/// https://docs.swift.org/swift-book/documentation/the-swift-programming-language/lexicalstructure/#Keywords-and-Punctuation
+private let swiftReservedKeywords = [
+    "associatedtype",
+    "borrowing",
+    "class",
+    "consuming",
+    "deinit",
+    "enum",
+    "extension",
+    "fileprivate",
+    "func",
+    "import",
+    "init",
+    "inout",
+    "internal",
+    "let",
+    "nonisolated",
+    "open",
+    "operator",
+    "private",
+    "precedencegroup",
+    "protocol",
+    "public",
+    "rethrows",
+    "static",
+    "struct",
+    "subscript",
+    "typealias",
+    "var"
+]

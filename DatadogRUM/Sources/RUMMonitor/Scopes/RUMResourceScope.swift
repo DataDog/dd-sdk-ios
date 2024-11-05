@@ -220,6 +220,7 @@ internal class RUMResourceScope: RUMScope {
                 graphql: graphql,
                 id: resourceUUID.toRUMDataFormat,
                 method: resourceHTTPMethod,
+                protocol: nil,
                 provider: resourceEventProvider,
                 redirect: resourceMetrics?.redirection.map { metric in
                     .init(

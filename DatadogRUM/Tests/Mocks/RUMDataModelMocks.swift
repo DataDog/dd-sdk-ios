@@ -274,6 +274,7 @@ extension RUMResourceEvent: RandomMockable {
                 firstByte: .init(duration: .mockRandom(), start: .mockRandom()),
                 id: .mockRandom(),
                 method: .mockRandom(),
+                protocol: nil,
                 provider: .init(
                     domain: .mockRandom(),
                     name: .mockRandom(),
@@ -496,6 +497,7 @@ extension RUMLongTaskEvent: RandomMockable {
                 isFrozenFrame: .mockRandom(),
                 renderStart: .mockRandom(),
                 scripts: nil,
+                startTime: nil,
                 styleAndLayoutStart: nil
             ),
             os: .mockRandom(),
