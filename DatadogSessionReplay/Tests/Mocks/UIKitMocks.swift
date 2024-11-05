@@ -28,7 +28,7 @@ extension UIColor: AnyMockable, RandomMockable {
 
 extension UIView: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
-        return UIView(frame: .init(x: 0, y: 0, width: 200, height: 400)) as! Self
+        return .init(frame: .init(x: 0, y: 0, width: 200, height: 400))
     }
 
     public static func mockRandom() -> Self {
