@@ -104,8 +104,8 @@ class ViewAttributesTests: XCTestCase {
             {
                 view.layer.borderWidth = 0
                 view.layer.borderColor = UIColor.mockRandomWith(alpha: 0).cgColor
-            },
-            { view.backgroundColor = .mockRandomWith(alpha: 0) }
+                view.backgroundColor = .mockRandomWith(alpha: 0)
+            }
         ])
 
         // Then
