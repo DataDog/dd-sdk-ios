@@ -103,7 +103,7 @@ extension WatchdogTerminationMonitor: RandomMockable {
         return .init(
             appStateManager: .mockRandom(),
             checker: .mockRandom(),
-            stroage: NOPDatadogCore().storage,
+            storage: NOPDatadogCore().storage,
             feature: FeatureScopeMock(),
             reporter: WatchdogTerminationReporter.mockRandom()
         )
