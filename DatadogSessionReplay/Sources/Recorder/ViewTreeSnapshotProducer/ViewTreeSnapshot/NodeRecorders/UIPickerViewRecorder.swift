@@ -33,7 +33,7 @@ internal struct UIPickerViewRecorder: NodeRecorder {
         }
     ) {
         self.identifier = identifier
-        self.selectionRecorder = ViewTreeRecorder(nodeRecorders: [UIViewRecorder(identifier: identifier)])
+        self.selectionRecorder = ViewTreeRecorder(nodeRecorders: [UIViewRecorder(identifier: UUID())])
         self.labelsRecorder = ViewTreeRecorder(
             nodeRecorders: [
                 UIViewRecorder(
