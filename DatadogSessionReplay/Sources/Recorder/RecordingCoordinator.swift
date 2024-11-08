@@ -93,7 +93,7 @@ internal class RecordingCoordinator {
     }
 
     private func evaluateRecordingConditions() {
-        if recordingEnabled && isSampled {
+        if recordingEnabled && isSampled && currentRUMContext != nil {
             recordingTrigger.startWatchingTriggers { [weak self] in
                 self?.didTrigger()
             }
@@ -106,7 +106,7 @@ internal class RecordingCoordinator {
     // MARK: Private
 
     private func onRUMContextChanged(rumContext: RUMContext?) {
-        if currentRUMContext?.sessionID != rumContext?.sessionID || currentRUMContext == nil {
+        if currentRUMContext?.sessionID != rumContext?.sessionID || currentRUMContext == nil && rumContext != nil {
             isSampled = sampler.sample()
         }
 
@@ -138,10 +138,6 @@ internal class RecordingCoordinator {
     }
 
     private func captureNextRecord() {
-        guard isSampled == true && recordingEnabled == true else {
-            return
-        }
-
         // We don't capture any snapshots if the RUM context has no view ID.
         guard let rumContext = currentRUMContext,
               let viewID = rumContext.viewID else {
