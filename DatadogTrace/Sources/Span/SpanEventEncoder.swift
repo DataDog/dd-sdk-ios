@@ -72,6 +72,45 @@ public struct SpanEvent: Encodable {
     /// The mobile carrier information from the moment the span was completed.
     public let mobileCarrierInfo: CarrierInfo?
 
+    /// Device information.
+    public struct DeviceInfo: Codable {
+        public enum DeviceType: String, Codable {
+            case mobile = "mobile"
+            case tablet = "tablet"
+            case tv = "tv"
+            case other = "other"
+        }
+
+        /// Device manufacturer name. Always 'Apple'
+        public let brand: String
+        /// Device marketing name, e.g. "iPhone", "iPad", "iPod touch".
+        public let name: String
+        /// Device model name, e.g. "iPhone10,1", "iPhone13,2".
+        public let model: String
+        /// The architecture of the device
+        public let architecture: String
+        /// The type of device.
+        public let type: DeviceType
+    }
+
+    /// Device information.
+    public let deviceInfo: DeviceInfo
+
+    /// Operating System information.
+    public struct OperatingSystemInfo: Codable {
+        /// Operating system name, e.g. Android, iOS
+        public let name: String
+        /// Full operating system version, e.g. 8.1.1
+        public let version: String
+        /// Operating system build number, e.g. 15D21
+        public let build: String?
+        /// Major operating system version, e.g. 8
+        public let versionMajor: String
+    }
+
+    /// Operating System information.
+    public let osInfo: OperatingSystemInfo
+
     public struct UserInfo {
         /// User ID, if any.
         public let id: String?
@@ -127,6 +166,17 @@ internal struct SpanEventEncoder {
         case origin = "meta._dd.origin"
 
         case ptid = "meta._dd.p.tid"
+
+        case deviceBrand = "meta.device.brand"
+        case deviceName = "meta.device.name"
+        case deviceModel = "meta.device.model"
+        case deviceArchitecture = "meta.device.architecture"
+        case deviceType = "meta.device.type"
+
+        case osName = "meta.os.name"
+        case osVersion = "meta.os.version"
+        case osBuild = "meta.os.build"
+        case osVersionMajor = "meta.os.version_major"
 
         case userId = "meta.usr.id"
         case userName = "meta.usr.name"
@@ -198,6 +248,17 @@ internal struct SpanEventEncoder {
         try container.encode(span.applicationVersion, forKey: .applicationVersion)
 
         try span.origin.ifNotNil { try container.encode($0, forKey: .origin) }
+
+        try container.encode(span.deviceInfo.brand, forKey: .deviceBrand)
+        try container.encode(span.deviceInfo.name, forKey: .deviceName)
+        try container.encode(span.deviceInfo.model, forKey: .deviceModel)
+        try container.encode(span.deviceInfo.architecture, forKey: .deviceArchitecture)
+        try container.encode(span.deviceInfo.type, forKey: .deviceType)
+
+        try container.encode(span.osInfo.name, forKey: .osName)
+        try container.encode(span.osInfo.version, forKey: .osVersion)
+        try container.encode(span.osInfo.build, forKey: .osBuild)
+        try container.encode(span.osInfo.versionMajor, forKey: .osVersionMajor)
 
         try span.userInfo.id.ifNotNil { try container.encode($0, forKey: .userId) }
         try span.userInfo.name.ifNotNil { try container.encode($0, forKey: .userName) }
