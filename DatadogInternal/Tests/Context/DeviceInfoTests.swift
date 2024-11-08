@@ -54,4 +54,24 @@ class DeviceInfoTests: XCTestCase {
         XCTAssertEqual(when(device: appleTV2).type, .appleTV)
         XCTAssertEqual(when(device: other).type, .other(modelName: "RealityDevice14,1 Simulator", osName: "visionOS"))
     }
+
+    func testOSVersionMajor() {
+        // When
+        func when(systemVersion: String) -> DeviceInfo {
+            return DeviceInfo(
+                processInfo: ProcessInfoMock(),
+                device: UIDeviceMock(systemVersion: systemVersion)
+            )
+        }
+
+        // Then
+        XCTAssertEqual(when(systemVersion: "15.4.1").osVersion, "15.4.1")
+        XCTAssertEqual(when(systemVersion: "15.4.1").osVersionMajor, "15")
+
+        XCTAssertEqual(when(systemVersion: "17.0").osVersion, "17.0")
+        XCTAssertEqual(when(systemVersion: "17.0").osVersionMajor, "17")
+
+        XCTAssertEqual(when(systemVersion: "18").osVersion, "18")
+        XCTAssertEqual(when(systemVersion: "18").osVersionMajor, "18")
+    }
 }

@@ -37,6 +37,9 @@ public struct DeviceInfo: Codable, Equatable, PassthroughAnyCodable {
     /// The version of the operating system, e.g. "15.4.1".
     public let osVersion: String
 
+    /// The major version of the operating system, e.g. "15".
+    public let osVersionMajor: String
+
     /// The build numer of the operating system, e.g.  "15D21" or "13D20".
     public let osBuildNumber: String?
 
@@ -73,6 +76,7 @@ public struct DeviceInfo: Codable, Equatable, PassthroughAnyCodable {
         self.type = DeviceType(modelName: model, osName: osName)
         self.osName = osName
         self.osVersion = osVersion
+        self.osVersionMajor = osVersion.split(separator: ".").first.map { String($0) } ?? osVersion
         self.osBuildNumber = osBuildNumber
         self.architecture = architecture
         self.isSimulator = isSimulator
