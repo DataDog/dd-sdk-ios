@@ -8,6 +8,15 @@ import Foundation
 
 /// Describes current device information.
 public struct DeviceInfo: Codable, Equatable, PassthroughAnyCodable {
+    /// Represents the type of device.
+    public enum DeviceType: Codable, Equatable, PassthroughAnyCodable {
+        case iPhone
+        case iPod
+        case iPad
+        case appleTV
+        case other(modelName: String, osName: String)
+    }
+
     // MARK: - Info
 
     /// Device manufacturer name. Always'Apple'
@@ -18,6 +27,9 @@ public struct DeviceInfo: Codable, Equatable, PassthroughAnyCodable {
 
     /// Device model name, e.g. "iPhone10,1", "iPhone13,2".
     public let model: String
+
+    /// The type of device.
+    public let type: DeviceType
 
     /// The name of operating system, e.g. "iOS", "iPadOS", "tvOS".
     public let osName: String
@@ -58,6 +70,7 @@ public struct DeviceInfo: Codable, Equatable, PassthroughAnyCodable {
         self.brand = "Apple"
         self.name = name
         self.model = model
+        self.type = DeviceType(modelName: model, osName: osName)
         self.osName = osName
         self.osVersion = osVersion
         self.osBuildNumber = osBuildNumber
@@ -66,6 +79,29 @@ public struct DeviceInfo: Codable, Equatable, PassthroughAnyCodable {
         self.vendorId = vendorId
         self.isDebugging = isDebugging
         self.systemBootTime = systemBootTime
+    }
+}
+
+private extension DeviceInfo.DeviceType {
+    /// Infers `DeviceType` from provided model name and operating system name.
+    /// - Parameters:
+    ///   - modelName: The name of the device model, e.g. "iPhone10,1".
+    ///   - osName: The name of the operating system, e.g. "iOS", "tvOS".
+    init(modelName: String, osName: String) {
+        let lowercasedModelName = modelName.lowercased()
+        let lowercasedOSName = osName.lowercased()
+
+        if lowercasedModelName.hasPrefix("iphone") {
+            self = .iPhone
+        } else if lowercasedModelName.hasPrefix("ipod") {
+            self = .iPod
+        } else if lowercasedModelName.hasPrefix("ipad") {
+            self = .iPad
+        } else if lowercasedModelName.hasPrefix("appletv") || lowercasedOSName == "tvos" {
+            self = .appleTV
+        } else {
+            self = .other(modelName: modelName, osName: osName)
+        }
     }
 }
 
