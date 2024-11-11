@@ -3,14 +3,13 @@
 - [FIX] Fix race condition during consent change, preventing loss of events recorded on the current thread. See [#2063][]
 - [IMPROVEMENT] Support mutation of events' attributes. See [#2099][]
 - [FIX] Fix bug in SR that was enforcing full snapshot more often than needed. See [#2092][]
-- [IMPROVEMENT] Session Replay recording is event-triggered instead of scheduled. See [#2074]****
+- [IMPROVEMENT] Session Replay recording is event-triggered instead of scheduled. See [#2074][]
 
 # 2.19.0 / 28-10-2024
 
 - [FEATURE] Add Privacy Overrides in Session Replay. See [#2088][]
 - [IMPROVEMENT] Add ObjC API for the internal logging/telemetry. See [#2073][]
 - [IMPROVEMENT] Support `clipsToBounds` in Session Replay. See [#2083][]
-- [IMPROVEMENT] Session Replay recording is event-triggered instead of scheduled. See [#2074]
 
 # 2.18.0 / 25-09-2024
 - [IMPROVEMENT] Add overwrite required (breaking) param to addViewLoadingTime & usage telemetry. See [#2040][]

@@ -106,7 +106,7 @@ internal class RecordingCoordinator {
     // MARK: Private
 
     private func onRUMContextChanged(rumContext: RUMContext?) {
-        if currentRUMContext?.sessionID != rumContext?.sessionID || currentRUMContext == nil && rumContext != nil {
+        if currentRUMContext?.sessionID != rumContext?.sessionID || currentRUMContext == nil {
             isSampled = sampler.sample()
         }
 
