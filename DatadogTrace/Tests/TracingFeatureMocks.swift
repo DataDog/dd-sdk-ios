@@ -111,6 +111,8 @@ extension SpanEvent: AnyMockable, RandomMockable {
         applicationVersion: String = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
         mobileCarrierInfo: CarrierInfo? = .mockAny(),
+        deviceInfo: SpanEvent.DeviceInfo = .mockAny(),
+        osInfo: SpanEvent.OperatingSystemInfo = .mockAny(),
         userInfo: SpanEvent.UserInfo = .mockAny(),
         tags: [String: String] = [:]
     ) -> SpanEvent {
@@ -132,6 +134,8 @@ extension SpanEvent: AnyMockable, RandomMockable {
             applicationVersion: applicationVersion,
             networkConnectionInfo: networkConnectionInfo,
             mobileCarrierInfo: mobileCarrierInfo,
+            deviceInfo: deviceInfo,
+            osInfo: osInfo,
             userInfo: userInfo,
             tags: tags
         )
@@ -158,14 +162,77 @@ extension SpanEvent: AnyMockable, RandomMockable {
             applicationVersion: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
             mobileCarrierInfo: .mockRandom(),
+            deviceInfo: .mockRandom(),
+            osInfo: .mockRandom(),
             userInfo: .mockRandom(),
             tags: .mockRandom()
         )
     }
 }
 
+extension SpanEvent.DeviceInfo: AnyMockable, RandomMockable {
+    public static func mockWith(
+        brand: String = .mockAny(),
+        name: String = .mockAny(),
+        model: String = .mockAny(),
+        architecture: String = .mockAny(),
+        type: DeviceType = .mockAny()
+    ) -> SpanEvent.DeviceInfo {
+        return .init(
+            brand: brand,
+            name: name,
+            model: model,
+            architecture: architecture,
+            type: type
+        )
+    }
+
+    public static func mockAny() -> SpanEvent.DeviceInfo { mockWith() }
+    public static func mockRandom() -> SpanEvent.DeviceInfo {
+        return .init(
+            brand: .mockRandom(),
+            name: .mockRandom(),
+            model: .mockRandom(),
+            architecture: .mockRandom(),
+            type: .mockRandom()
+        )
+    }
+}
+
+extension SpanEvent.DeviceInfo.DeviceType: AnyMockable, RandomMockable {
+    public static func mockAny() -> SpanEvent.DeviceInfo.DeviceType { .mobile }
+    public static func mockRandom() -> SpanEvent.DeviceInfo.DeviceType { [.mobile, .tablet, .tv, .other].randomElement()! }
+}
+
+extension SpanEvent.OperatingSystemInfo: AnyMockable, RandomMockable {
+    public static func mockWith(
+        name: String = .mockAny(),
+        version: String = .mockAny(),
+        build: String? = .mockAny(),
+        versionMajor: String = .mockAny()
+    ) -> SpanEvent.OperatingSystemInfo {
+        return .init(
+            name: name,
+            version: version,
+            build: build,
+            versionMajor: versionMajor
+        )
+    }
+
+    public static func mockAny() -> SpanEvent.OperatingSystemInfo { .mockWith() }
+
+    public static func mockRandom() -> SpanEvent.OperatingSystemInfo {
+        return .init(
+            name: .mockRandom(),
+            version: .mockRandom(),
+            build: .mockRandom(),
+            versionMajor: .mockRandom()
+        )
+    }
+}
+
 extension SpanEvent.UserInfo: AnyMockable, RandomMockable {
-    static func mockWith(
+    public static func mockWith(
         id: String? = .mockAny(),
         name: String? = .mockAny(),
         email: String? = .mockAny(),
