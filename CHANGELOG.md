@@ -2,6 +2,7 @@
 
 - [FIX] Fix race condition during consent change, preventing loss of events recorded on the current thread. See [#2063][]
 - [IMPROVEMENT] Support mutation of events' attributes. See [#2099][]
+- [IMPROVEMENT] Add 'os' and 'device' info to Span events. See [#2104][]
 - [FIX] Fix bug in SR that was enforcing full snapshot more often than needed. See [#2092][]
 - [IMPROVEMENT] Session Replay recording is event-triggered instead of scheduled. See [#2074][]
 
@@ -788,6 +789,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2073]: https://github.com/DataDog/dd-sdk-ios/pull/2073
 [#2088]: https://github.com/DataDog/dd-sdk-ios/pull/2088
 [#2083]: https://github.com/DataDog/dd-sdk-ios/pull/2083
+[#2104]: https://github.com/DataDog/dd-sdk-ios/pull/2104
 [#2099]: https://github.com/DataDog/dd-sdk-ios/pull/2099
 [#2063]: https://github.com/DataDog/dd-sdk-ios/pull/2063
 [#2092]: https://github.com/DataDog/dd-sdk-ios/pull/2092

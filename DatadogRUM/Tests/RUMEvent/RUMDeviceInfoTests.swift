@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import DatadogInternal
 import TestUtilities
 @testable import DatadogRUM
 
@@ -26,19 +27,19 @@ class RUMDeviceInfoTests: XCTestCase {
 
     func testItInfersDeviceTypeFromDeviceModel() {
         let iPhone = RUMDevice(
-            device: .mockWith(model: "iPhone" + String.mockRandom(among: .alphanumerics, length: 2))
+            context: .mockWith(device: .mockWith(model: "iPhone" + String.mockRandom(among: .alphanumerics, length: 2)))
         )
         let iPod = RUMDevice(
-            device: .mockWith(model: "iPod" + String.mockRandom(among: .alphanumerics, length: 2))
+            context: .mockWith(device: .mockWith(model: "iPod" + String.mockRandom(among: .alphanumerics, length: 2)))
         )
         let iPad = RUMDevice(
-            device: .mockWith(model: "iPad" + String.mockRandom(among: .alphanumerics, length: 2))
+            context: .mockWith(device: .mockWith(model: "iPad" + String.mockRandom(among: .alphanumerics, length: 2)))
         )
         let appleTV = RUMDevice(
-            device: .mockWith(model: "AppleTV" + String.mockRandom(among: .alphanumerics, length: 2))
+            context: .mockWith(device: .mockWith(model: "AppleTV" + String.mockRandom(among: .alphanumerics, length: 2)))
         )
         let unknownDevice = RUMDevice(
-            device: .mockWith(model: .mockRandom())
+            context: .mockWith(device: .mockWith(model: .mockRandom()))
         )
 
         XCTAssertEqual(iPhone.type, .mobile)

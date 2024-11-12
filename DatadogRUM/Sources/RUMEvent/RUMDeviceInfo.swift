@@ -28,29 +28,15 @@ extension RUMDevice {
             model: device.model,
             name: device.name,
             type: {
-                if let type = RUMDeviceType(from: device.model) {
-                    return type
-                } else {
-                    telemetry.debug("Couldn't read `RUMDeviceType` from `device.model`: \(device.model)")
+                switch device.type {
+                case .iPhone, .iPod: return .mobile
+                case .iPad: return .tablet
+                case .appleTV: return .tv
+                case .other(modelName: let modelName, osName: let osName):
+                    telemetry.debug("Failed to map `device.model`: \(modelName) and `os.name`: \(osName) to any `RUMDeviceType`")
                     return .other
                 }
             }()
         )
-    }
-}
-
-private extension RUMDevice.RUMDeviceType {
-    init?(from deviceModel: String) {
-        let lowercasedModel = deviceModel.lowercased()
-
-        if lowercasedModel.hasPrefix("iphone") || lowercasedModel.hasPrefix("ipod") {
-            self = .mobile
-        } else if lowercasedModel.hasPrefix("ipad") {
-            self = .tablet
-        } else if lowercasedModel.hasPrefix("appletv") {
-            self = .tv
-        } else {
-            return nil
-        }
     }
 }
