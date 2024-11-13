@@ -70,7 +70,7 @@ default:
       when: delayed
       start_in: 40 minutes
 
-ENV check:
+.ENV check:
   stage: pre
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -83,7 +83,7 @@ ENV check:
 # │ SDK changes integration: │
 # └──────────────────────────┘
 
-Lint:
+.Lint:
   stage: lint
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -105,7 +105,7 @@ Unit Tests (iOS):
     - make clean repo-setup ENV=ci
     - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
 
-Unit Tests (tvOS):
+.Unit Tests (tvOS):
   stage: test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -118,7 +118,7 @@ Unit Tests (tvOS):
     - make clean repo-setup ENV=ci
     - make test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
 
-UI Tests:
+.UI Tests:
   stage: ui-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -138,7 +138,7 @@ UI Tests:
     - make clean repo-setup ENV=ci
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-SR Snapshot Tests:
+.SR Snapshot Tests:
   stage: ui-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -157,7 +157,7 @@ SR Snapshot Tests:
     - make clean repo-setup ENV=ci
     - make sr-snapshots-pull sr-snapshot-test OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
 
-Tools Tests:
+.Tools Tests:
   stage: test
   rules:
     - if: '$CI_COMMIT_BRANCH' # when on branch with following changes compared to develop
@@ -171,7 +171,7 @@ Tools Tests:
     - make clean repo-setup ENV=ci
     - make tools-test
 
-Benchmark Build:
+.Benchmark Build:
   stage: smoke-test
   rules:
     - if: '$CI_COMMIT_BRANCH' # when on branch with following changes compared to develop
@@ -182,7 +182,7 @@ Benchmark Build:
   script:
     - make benchmark-build
 
-Smoke Tests (iOS):
+.Smoke Tests (iOS):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -195,7 +195,7 @@ Smoke Tests (iOS):
     - make clean repo-setup ENV=ci
     - make smoke-test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-Smoke Tests (tvOS):
+.Smoke Tests (tvOS):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -208,7 +208,7 @@ Smoke Tests (tvOS):
     - make clean repo-setup ENV=ci
     - make smoke-test-tvos-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-SPM Build (Swift 5.10):
+.SPM Build (Swift 5.10):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
@@ -222,7 +222,7 @@ SPM Build (Swift 5.10):
     - make spm-build-macos
     - make spm-build-watchos
 
-SPM Build (Swift 5.9):
+.SPM Build (Swift 5.9):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
