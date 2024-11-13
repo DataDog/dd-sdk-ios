@@ -263,6 +263,7 @@ if [ "$datadog_app" = "true" ]; then
     CHANGELOG=$(print_changelog "$LAST_DOGFOODED_COMMIT")
     
     # Update dd-sdk-ios version:
+    update_dependant_package_resolved "$CLONE_PATH/Tuist/Package.resolved"
     update_dependant_package_resolved "$CLONE_PATH/.package.resolved"
     update_dependant_sdk_version "$CLONE_PATH/Targets/DogLogger/Datadog/DogfoodingConfig.swift"
 
