@@ -22,10 +22,13 @@ final class SRMultipleViewsRecordingScenario: TestScenario {
         rumConfig.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
         RUM.enable(with: rumConfig)
 
-        var srConfig = SessionReplay.Configuration(replaySampleRate: 100)
-        srConfig.defaultPrivacyLevel = .mask
-        srConfig.touchPrivacyLevel = .show
-        srConfig.customEndpoint = Environment.serverMockConfiguration()?.srEndpoint
+        var srConfig = SessionReplay.Configuration(
+            replaySampleRate: 100,
+            textAndInputPrivacyLevel: .maskSensitiveInputs,
+            imagePrivacyLevel: .maskNone,
+            touchPrivacyLevel: .show,
+            customEndpoint: Environment.serverMockConfiguration()?.srEndpoint
+        )
         SessionReplay.enable(with: srConfig)
     }
 }

@@ -31,6 +31,8 @@ internal class RecordingCoordinator {
     /// has enabled or disabled the recording for Session Replay.
     private var recordingEnabled = false
 
+    private var isRecording = false
+
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
     /// The sampling rate for internal telemetry of method calls.
@@ -93,14 +95,17 @@ internal class RecordingCoordinator {
     }
 
     private func evaluateRecordingConditions() {
-        if recordingEnabled && isSampled && currentRUMContext != nil {
+        if !isRecording && recordingEnabled && isSampled && currentRUMContext != nil {
+            isRecording = true
             recordingTrigger.startWatchingTriggers { [weak self] in
                 self?.didTrigger()
             }
-        } else {
+            updateHasReplay()
+        } else if isRecording && (!recordingEnabled || !isSampled) {
+            isRecording = false
             recordingTrigger.stopWatchingTriggers()
+            updateHasReplay()
         }
-        updateHasReplay()
     }
 
     // MARK: Private

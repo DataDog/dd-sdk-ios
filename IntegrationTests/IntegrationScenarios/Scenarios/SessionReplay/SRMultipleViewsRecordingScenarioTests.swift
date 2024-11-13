@@ -76,7 +76,8 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         }
         app.deadClick()
         try app.endRUMSession() // show "end view"
-        
+        app.deadClick()
+
         // Get RUM and SR raw requests from mock server:
         // - pull RUM data until the "end view" event is fetched
         // - pull SR data until receiving expected count of segments

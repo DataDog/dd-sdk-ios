@@ -53,7 +53,7 @@ class RecordingTriggerTests: XCTestCase {
     }
 
     private func randomTrigger() {
-        if Int.random(in: 1...100) > 50 {
+        if Bool.random() {
             let touch = UITouchMock()
             let event = UITouchEventMock(touches: [touch])
             UIApplication.shared.sendEvent(event)
