@@ -30,9 +30,9 @@ public func CreateTemporaryDirectory(attributes: [FileAttributeKey: Any]? = nil,
         try FileManager.default.createDirectory(at: temporaryDirectory, withIntermediateDirectories: true, attributes: attributes)
         let files = try FileManager.default
             .contentsOfDirectory(at: temporaryDirectory, includingPropertiesForKeys: [.isRegularFileKey, .canonicalPathKey])
-        XCTAssert(files.count == 0, "🔥 `TestsDirectory` is not empty: \(temporaryDirectory)", file: file, line: line)
+        XCTAssert(files.count == 0, "🔥 `temporaryDirectory` is not empty: \(temporaryDirectory)", file: file, line: line)
     } catch {
-        XCTFail("🔥 Failed to create `TestsDirectory`: \(error)", file: file, line: line)
+        XCTFail("🔥 `CreateTemporaryDirectory()` failed: \(error.localizedDescription)", file: file, line: line)
     }
 }
 
@@ -43,7 +43,7 @@ public func DeleteTemporaryDirectory(file: StaticString = #file, line: UInt = #l
         do {
             try FileManager.default.removeItem(at: temporaryDirectory)
         } catch {
-            XCTFail("🔥 Failed to delete `TestsDirectory`: \(error)", file: file, line: line)
+            XCTFail("🔥 `DeleteTemporaryDirectory()` failed: \(error.localizedDescription)", file: file, line: line)
         }
     }
 }
