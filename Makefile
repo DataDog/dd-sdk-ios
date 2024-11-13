@@ -142,6 +142,10 @@ test-ios:
 # Run unit tests for all iOS schemes
 test-ios-all:
 	@$(MAKE) test-ios SCHEME="DatadogCore iOS"
+	@$(MAKE) test-ios SCHEME="DatadogCore iOS"
+	@$(MAKE) test-ios SCHEME="DatadogCore iOS"
+	@$(MAKE) test-ios SCHEME="DatadogCore iOS"
+	@$(MAKE) test-ios SCHEME="DatadogCore iOS"
 # 	@$(MAKE) test-ios SCHEME="DatadogInternal iOS"
 # 	@$(MAKE) test-ios SCHEME="DatadogRUM iOS"
 # 	@$(MAKE) test-ios SCHEME="DatadogSessionReplay iOS"
