@@ -17,7 +17,7 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
     private var nextFrameDuration: CFTimeInterval?
     private let notificationCenter: NotificationCenter
 
-    init(notificationCenter: NotificationCenter = .default) {
+    init(notificationCenter: NotificationCenter) {
         self.notificationCenter = notificationCenter
 
         notificationCenter.addObserver(

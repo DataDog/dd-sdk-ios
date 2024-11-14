@@ -434,7 +434,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
-            os: .init(context: context),
+            os: .init(device: context.device),
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
@@ -511,7 +511,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             featureFlags: .init(featureFlagsInfo: featureFlags),
-            os: .init(context: context),
+            os: .init(device: context.device),
             privacy: nil,
             service: context.service,
             session: .init(
@@ -663,7 +663,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             freeze: (command as? RUMAddCurrentViewAppHangCommand).map { appHangCommand in
                 .init(duration: appHangCommand.hangDuration.toInt64Nanoseconds)
             },
-            os: .init(context: context),
+            os: .init(device: context.device),
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
@@ -727,9 +727,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 isFrozenFrame: isFrozenFrame,
                 renderStart: nil,
                 scripts: nil,
+                startTime: nil,
                 styleAndLayoutStart: nil
             ),
-            os: .init(context: context),
+            os: .init(device: context.device),
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,

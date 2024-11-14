@@ -41,7 +41,14 @@ class TracerTests: XCTestCase {
             source: "abc",
             sdkVersion: "1.2.3",
             ciAppOrigin: nil,
-            applicationBundleIdentifier: "com.datadoghq.ios-sdk"
+            applicationBundleIdentifier: "com.datadoghq.ios-sdk",
+            device: .mockWith(
+                name: "iPhone",
+                model: "iPhone10,1",
+                osVersion: "15.4.1",
+                osBuildNumber: "13D20",
+                architecture: "arm64"
+            )
         )
         config.dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         config.traceIDGenerator = RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100))
@@ -71,6 +78,15 @@ class TracerTests: XCTestCase {
               "type": "custom",
               "meta.tracer.version": "1.2.3",
               "meta.version": "1.0.0",
+              "meta.device.architecture": "arm64",
+              "meta.device.brand": "Apple",
+              "meta.device.model": "iPhone10,1",
+              "meta.device.name": "iPhone",
+              "meta.device.type": "mobile",
+              "meta.os.build": "13D20",
+              "meta.os.name": "iOS",
+              "meta.os.version": "15.4.1",
+              "meta.os.version_major": "15",
               "meta._dd.source": "abc",
               "metrics._top_level": 1,
               "metrics._sampling_priority_v1": 1,

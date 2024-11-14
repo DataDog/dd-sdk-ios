@@ -33,7 +33,7 @@ internal struct UIPickerViewRecorder: NodeRecorder {
         }
     ) {
         self.identifier = identifier
-        self.selectionRecorder = ViewTreeRecorder(nodeRecorders: [UIViewRecorder(identifier: identifier)])
+        self.selectionRecorder = ViewTreeRecorder(nodeRecorders: [UIViewRecorder(identifier: UUID())])
         self.labelsRecorder = ViewTreeRecorder(
             nodeRecorders: [
                 UIViewRecorder(
@@ -109,7 +109,7 @@ internal struct UIPickerViewWireframesBuilder: NodeWireframesBuilder {
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         return [
-            builder.createShapeWireframe(id: backgroundWireframeID, frame: wireframeRect, attributes: attributes)
+            builder.createShapeWireframe(id: backgroundWireframeID, attributes: attributes)
         ]
     }
 }

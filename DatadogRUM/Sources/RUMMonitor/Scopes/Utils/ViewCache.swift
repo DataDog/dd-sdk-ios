@@ -32,7 +32,7 @@ internal final class ViewCache {
     ///   - ttl: The TTL of view ids in cache.
     ///   - capacity: The maximum number of ids to store.
     init(
-        dateProvider: DateProvider = SystemDateProvider(),
+        dateProvider: DateProvider,
         ttl: TimeInterval = 3.minutes,
         capacity: Int = 30
     ) {

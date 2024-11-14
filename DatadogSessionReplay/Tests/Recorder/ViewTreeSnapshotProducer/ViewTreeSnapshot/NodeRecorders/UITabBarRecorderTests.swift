@@ -17,7 +17,7 @@ class UITabBarRecorderTests: XCTestCase {
     func testWhenViewIsOfExpectedType() throws {
         // When
         let tabBar = UITabBar.mock(withFixture: .allCases.randomElement()!)
-        let viewAttributes = ViewAttributes(frameInRootView: tabBar.frame, view: tabBar, overrides: .mockAny())
+        let viewAttributes = ViewAttributes(view: tabBar, frame: tabBar.frame, clip: tabBar.frame, overrides: .mockAny())
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: tabBar, with: viewAttributes, in: .mockAny()))
@@ -38,7 +38,7 @@ class UITabBarRecorderTests: XCTestCase {
         // Given
         let tabBar = UITabBar.mock(withFixture: .visible(.someAppearance))
         tabBar.items = [UITabBarItem(title: "first", image: UIImage(), tag: 0)]
-        let viewAttributes = ViewAttributes(frameInRootView: tabBar.frame, view: tabBar, overrides: .mockAny())
+        let viewAttributes = ViewAttributes(view: tabBar, frame: tabBar.frame, clip: tabBar.frame, overrides: .mockAny())
 
         // When
         let semantics1 = recorder.semantics(of: tabBar, with: viewAttributes, in: .mockAny())

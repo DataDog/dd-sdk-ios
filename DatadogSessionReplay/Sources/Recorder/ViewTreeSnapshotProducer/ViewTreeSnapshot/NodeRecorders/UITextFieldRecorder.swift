@@ -30,8 +30,8 @@ internal struct UITextFieldRecorder: NodeRecorder {
 
     init(identifier: UUID) {
         self.identifier = identifier
-        self.backgroundViewRecorder = UIViewRecorder(identifier: identifier)
-        self.iconsRecorder = UIImageViewRecorder(identifier: identifier)
+        self.backgroundViewRecorder = UIViewRecorder(identifier: UUID())
+        self.iconsRecorder = UIImageViewRecorder(identifier: UUID())
         self.subtreeRecorder = ViewTreeRecorder(nodeRecorders: [backgroundViewRecorder, iconsRecorder])
     }
 
@@ -122,6 +122,7 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
             builder.createTextWireframe(
                 id: wireframeID,
                 frame: wireframeRect,
+                clip: attributes.clip,
                 text: textObfuscator.mask(text: text),
                 textFrame: wireframeRect,
                 textAlignment: .init(systemTextAlignment: textAlignment),

@@ -1,9 +1,17 @@
 # Unreleased
 
+# 2.20.0 / 14-11-2024
+
+- [FIX] Fix race condition during consent change, preventing loss of events recorded on the current thread. See [#2063][]
+- [IMPROVEMENT] Support mutation of events' attributes. See [#2099][]
+- [IMPROVEMENT] Add 'os' and 'device' info to Span events. See [#2104][]
+- [FIX] Fix bug in SR that was enforcing full snapshot more often than needed. See [#2092][]
+
 # 2.19.0 / 28-10-2024
 
 - [FEATURE] Add Privacy Overrides in Session Replay. See [#2088][]
 - [IMPROVEMENT] Add ObjC API for the internal logging/telemetry. See [#2073][]
+- [IMPROVEMENT] Support `clipsToBounds` in Session Replay. See [#2083][]
 
 # 2.18.0 / 25-09-2024
 - [IMPROVEMENT] Add overwrite required (breaking) param to addViewLoadingTime & usage telemetry. See [#2040][]
@@ -781,6 +789,11 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2050]: https://github.com/DataDog/dd-sdk-ios/pull/2050
 [#2073]: https://github.com/DataDog/dd-sdk-ios/pull/2073
 [#2088]: https://github.com/DataDog/dd-sdk-ios/pull/2088
+[#2083]: https://github.com/DataDog/dd-sdk-ios/pull/2083
+[#2104]: https://github.com/DataDog/dd-sdk-ios/pull/2104
+[#2099]: https://github.com/DataDog/dd-sdk-ios/pull/2099
+[#2063]: https://github.com/DataDog/dd-sdk-ios/pull/2063
+[#2092]: https://github.com/DataDog/dd-sdk-ios/pull/2092
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

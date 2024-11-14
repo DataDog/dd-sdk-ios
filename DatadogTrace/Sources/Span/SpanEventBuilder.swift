@@ -89,6 +89,28 @@ internal struct SpanEventBuilder {
             applicationVersion: context.version,
             networkConnectionInfo: networkInfoEnabled ? context.networkConnectionInfo : nil,
             mobileCarrierInfo: networkInfoEnabled ? context.carrierInfo : nil,
+            deviceInfo: .init(
+                brand: context.device.brand,
+                name: context.device.name,
+                model: context.device.model,
+                architecture: context.device.architecture,
+                type: {
+                    switch context.device.type {
+                    case .iPhone, .iPod: return .mobile
+                    case .iPad: return .tablet
+                    case .appleTV: return .tv
+                    case .other(let modelName, let osName):
+                        telemetry.debug("Failed to map `device.model`: \(modelName) and `os.name`: \(osName) to any `SpanEvent.DeviceType`")
+                        return .other
+                    }
+                }()
+            ),
+            osInfo: .init(
+                name: context.device.osName,
+                version: context.device.osVersion,
+                build: context.device.osBuildNumber,
+                versionMajor: context.device.osVersionMajor
+            ),
             userInfo: spanUserInfo,
             tags: tags
         )

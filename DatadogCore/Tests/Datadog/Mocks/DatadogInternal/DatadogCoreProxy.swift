@@ -36,20 +36,28 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
     @ReadWriteLock
     private var featureScopeInterceptors: [String: FeatureScopeInterceptor] = [:]
 
-    init(context: DatadogContext = .mockAny()) {
-        self.context = context
-        self.core = DatadogCore(
-            directory: temporaryCoreDirectory,
-            dateProvider: SystemDateProvider(),
-            initialConsent: context.trackingConsent,
-            performance: .mockAny(),
-            httpClient: HTTPClientMock(),
-            encryption: nil,
-            contextProvider: DatadogContextProvider(context: context),
-            applicationVersion: context.version,
-            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
-            backgroundTasksEnabled: .mockAny()
+    convenience init(context: DatadogContext = .mockAny()) {
+        self.init(
+            core: DatadogCore(
+                directory: temporaryCoreDirectory,
+                dateProvider: SystemDateProvider(),
+                initialConsent: context.trackingConsent,
+                performance: .mockAny(),
+                httpClient: HTTPClientMock(),
+                encryption: nil,
+                contextProvider: DatadogContextProvider(
+                    context: context
+                ),
+                applicationVersion: context.version,
+                maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+                backgroundTasksEnabled: .mockAny()
+            )
         )
+    }
+
+    init(core: DatadogCore) {
+        self.context = core.contextProvider.read()
+        self.core = core
 
         // override the message-bus's core instance
         core.bus.connect(core: self)

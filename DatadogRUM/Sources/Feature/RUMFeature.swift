@@ -54,7 +54,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     appStateManager: appStateManager,
                     featureScope: featureScope
                 ),
-                stroage: core.storage,
+                storage: core.storage,
                 feature: featureScope,
                 reporter: WatchdogTerminationReporter(
                     featureScope: featureScope,
@@ -100,7 +100,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
             },
             onSessionStart: configuration.onSessionStart,
-            viewCache: ViewCache(),
+            viewCache: ViewCache(dateProvider: configuration.dateProvider),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,
             watchdogTermination: watchdogTermination
@@ -114,7 +114,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
         let memoryWarningReporter = MemoryWarningReporter()
         let memoryWarningMonitor = MemoryWarningMonitor(
             backtraceReporter: core.backtraceReporter,
-            memoryWarningReporter: memoryWarningReporter
+            memoryWarningReporter: memoryWarningReporter,
+            notificationCenter: configuration.notificationCenter
         )
 
         self.instrumentation = RUMInstrumentation(
@@ -128,6 +129,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             backtraceReporter: core.backtraceReporter,
             fatalErrorContext: dependencies.fatalErrorContext,
             processID: configuration.processID,
+            notificationCenter: configuration.notificationCenter,
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: memoryWarningMonitor
         )

@@ -14,8 +14,6 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
     private let windowObserver: AppWindowObserver
     /// Generates persisted IDs for `UITouch` objects.
     private let idsGenerator = TouchIdentifierGenerator()
-    /// Keeps track of the privacy override for each touch event
-    private var overrideForTouch: [TouchIdentifier: TouchPrivacyLevel] = [:]
 
     /// Touches recorded since last call to `takeSnapshot()`
     private var buffer: [TouchSnapshot.Touch] = []
@@ -34,13 +32,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
             }
 
             // Filter the buffer to only include touches that should be recorded
-            let shouldRecord = shouldRecordTouch(touch.id, in: context)
-
-            // Clean up cache when the touch ends
-            if touch.phase == .up {
-                overrideForTouch.removeValue(forKey: touch.id)
-            }
-
+            let shouldRecord = shouldRecordTouch(updatedTouch, in: context)
             return shouldRecord ? updatedTouch : nil
         }
 
@@ -77,7 +69,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
 
             // Capture the touch privacy override when the touch begins
             if phase == .down, let privacyOverride = resolveTouchOverride(for: touch) {
-                overrideForTouch[touchId] = privacyOverride
+                touch.touchPrivacyOverride = privacyOverride
             }
 
             buffer.append(
@@ -86,7 +78,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
                     phase: phase,
                     date: Date(),
                     position: touch.location(in: window),
-                    touchOverride: overrideForTouch[touchId]
+                    touchOverride: touch.touchPrivacyOverride
                 )
             )
         }
@@ -97,9 +89,9 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
     /// Otherwise, the global touch privacy setting is applied.
     /// - Parameter touchId: The unique identifier for the touch event.
     /// - Returns: `true` if the touch should be recorded, `false` otherwise.
-    internal func shouldRecordTouch(_ touchId: TouchIdentifier, in context: Recorder.Context
+    internal func shouldRecordTouch(_ touch: TouchSnapshot.Touch, in context: Recorder.Context
     ) -> Bool {
-        let privacy: TouchPrivacyLevel = overrideForTouch[touchId] ?? context.touchPrivacy
+        let privacy: TouchPrivacyLevel = touch.touchOverride ?? context.touchPrivacy
         return privacy == .show
     }
 

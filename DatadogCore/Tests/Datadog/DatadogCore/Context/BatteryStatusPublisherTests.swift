@@ -19,7 +19,7 @@ final class BatteryStatusPublisherTests: XCTestCase {
         // Given
         let device = UIDeviceMock(batteryState: .unknown)
 
-        let publisher = BatteryStatusPublisher(device: device, notificationCenter: notificationCenter)
+        let publisher = BatteryStatusPublisher(notificationCenter: notificationCenter, device: device)
         publisher.publish { status in
             // Then
             XCTAssertEqual(status?.state, .charging)
@@ -38,7 +38,7 @@ final class BatteryStatusPublisherTests: XCTestCase {
         // Given
         let device = UIDeviceMock(batteryLevel: 0.5)
 
-        let publisher = BatteryStatusPublisher(device: device, notificationCenter: notificationCenter)
+        let publisher = BatteryStatusPublisher(notificationCenter: notificationCenter, device: device)
         publisher.publish { status in
             // Then
             XCTAssertEqual(status?.level, 0.75)

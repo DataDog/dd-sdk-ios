@@ -188,7 +188,7 @@ internal class RUMResourceScope: RUMScope {
             date: resourceStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
-            os: .init(context: context),
+            os: .init(device: context.device),
             resource: .init(
                 connect: resourceMetrics?.connect.map { metric in
                     .init(
@@ -220,6 +220,7 @@ internal class RUMResourceScope: RUMScope {
                 graphql: graphql,
                 id: resourceUUID.toRUMDataFormat,
                 method: resourceHTTPMethod,
+                protocol: nil,
                 provider: resourceEventProvider,
                 redirect: resourceMetrics?.redirection.map { metric in
                     .init(
@@ -320,7 +321,7 @@ internal class RUMResourceScope: RUMScope {
                 wasTruncated: nil
             ),
             freeze: nil,
-            os: .init(context: context),
+            os: .init(device: context.device),
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,

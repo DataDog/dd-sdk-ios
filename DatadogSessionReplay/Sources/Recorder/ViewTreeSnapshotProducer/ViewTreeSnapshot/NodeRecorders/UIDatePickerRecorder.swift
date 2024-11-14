@@ -16,9 +16,9 @@ internal struct UIDatePickerRecorder: NodeRecorder {
 
     init(identifier: UUID) {
         self.identifier = identifier
-        self.wheelsStyleRecorder = WheelsStyleDatePickerRecorder(identifier: identifier)
-        self.compactStyleRecorder = CompactStyleDatePickerRecorder(identifier: identifier)
-        self.inlineStyleRecorder = InlineStyleDatePickerRecorder(identifier: identifier)
+        self.wheelsStyleRecorder = WheelsStyleDatePickerRecorder(identifier: UUID())
+        self.compactStyleRecorder = CompactStyleDatePickerRecorder(identifier: UUID())
+        self.inlineStyleRecorder = InlineStyleDatePickerRecorder(identifier: UUID())
     }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
@@ -104,9 +104,9 @@ private struct InlineStyleDatePickerRecorder {
     let subtreeRecorder: ViewTreeRecorder
 
     init(identifier: UUID) {
-        self.viewRecorder = UIViewRecorder(identifier: identifier)
+        self.viewRecorder = UIViewRecorder(identifier: UUID())
         self.labelRecorder = UILabelRecorder(
-            identifier: identifier,
+            identifier: UUID(),
             textObfuscator: { context, viewAttributes in
                 return viewAttributes.resolveTextAndInputPrivacyLevel(in: context).staticTextObfuscator
             }
@@ -115,8 +115,8 @@ private struct InlineStyleDatePickerRecorder {
             nodeRecorders: [
                 viewRecorder,
                 labelRecorder,
-                UIImageViewRecorder(identifier: identifier),
-                UISegmentRecorder(identifier: identifier), // iOS 14.x uses `UISegmentedControl` for "AM | PM"
+                UIImageViewRecorder(identifier: UUID()),
+                UISegmentRecorder(identifier: UUID()), // iOS 14.x uses `UISegmentedControl` for "AM | PM"
             ]
         )
     }
@@ -151,9 +151,9 @@ private struct CompactStyleDatePickerRecorder {
     init(identifier: UUID) {
         self.subtreeRecorder = ViewTreeRecorder(
             nodeRecorders: [
-                UIViewRecorder(identifier: identifier),
+                UIViewRecorder(identifier: UUID()),
                 UILabelRecorder(
-                    identifier: identifier,
+                    identifier: UUID(),
                     textObfuscator: { context, viewAttributes in
                         return viewAttributes.resolveTextAndInputPrivacyLevel(in: context).staticTextObfuscator
                     }
@@ -179,7 +179,7 @@ internal struct UIDatePickerWireframesBuilder: NodeWireframesBuilder {
             builder.createShapeWireframe(
                 id: backgroundWireframeID,
                 frame: wireframeRect,
-                clip: nil,
+                clip: attributes.clip,
                 borderColor: isDisplayedInPopover ? SystemColors.secondarySystemFill : nil,
                 borderWidth: isDisplayedInPopover ? 1 : 0,
                 backgroundColor: isDisplayedInPopover ? SystemColors.secondarySystemGroupedBackground : SystemColors.systemBackground,

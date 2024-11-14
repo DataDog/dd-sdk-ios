@@ -182,19 +182,19 @@ class ViewTreeRecorderTests: XCTestCase {
         let `switch` = UISwitch.mock(withFixture: .visible(.noAppearance))
 
         // When
-        var nodes = recorder.record(view, in: .mockRandom())
+        var nodes = recorder.record(view, in: .mockWith(clip: view.frame))
         XCTAssertTrue(nodes.isEmpty, "No nodes should be recorded for `UIView` when it has no appearance")
 
-        nodes = recorder.record(label, in: .mockRandom())
+        nodes = recorder.record(label, in: .mockWith(clip: label.frame))
         XCTAssertTrue(nodes.isEmpty, "No nodes should be recorded for `UILabel` when it has no appearance")
 
-        nodes = recorder.record(imageView, in: .mockRandom())
+        nodes = recorder.record(imageView, in: .mockWith(clip: imageView.frame))
         XCTAssertTrue(nodes.isEmpty, "No nodes should be recorded for `UIImageView` when it has no appearance")
 
-        nodes = recorder.record(textField, in: .mockRandom())
+        nodes = recorder.record(textField, in: .mockWith(clip: textField.frame))
         XCTAssertTrue(nodes.isEmpty, "No nodes should be recorded for `UITextField` when it has no appearance")
 
-        nodes = recorder.record(`switch`, in: .mockRandom())
+        nodes = recorder.record(`switch`, in: .mockWith(clip: `switch`.frame))
         XCTAssertFalse(
             nodes.isEmpty,
             "`UISwitch` with no appearance should record some nodes as it has style coming from its internal subtree."
@@ -216,7 +216,7 @@ class ViewTreeRecorderTests: XCTestCase {
 
         views.forEach { view in
             // When
-            let nodes = recorder.record(view, in: .mockRandom())
+            let nodes = recorder.record(view, in: .mockWith(clip: view.frame))
             // Then
             XCTAssertFalse(nodes.isEmpty, "Some nodes should be recorded for \(type(of: view)) when it has some appearance")
         }
@@ -306,7 +306,7 @@ class ViewTreeRecorderTests: XCTestCase {
         parentView.dd.sessionReplayPrivacyOverrides.hide = true
 
         // When
-        let nodes = recorder.record(parentView, in: .mockRandom())
+        let nodes = recorder.record(parentView, in: .mockWith(coordinateSpace: parentView))
 
         // Then
         XCTAssertEqual(nodes.count, 1)
@@ -322,7 +322,7 @@ class ViewTreeRecorderTests: XCTestCase {
         parentView.dd.sessionReplayPrivacyOverrides.hide = false
 
         // When
-        let nodes = recorder.record(parentView, in: .mockRandom())
+        let nodes = recorder.record(parentView, in: .mockWith(coordinateSpace: parentView))
 
         // Then
         XCTAssertEqual(nodes.count, 2)
@@ -337,7 +337,7 @@ class ViewTreeRecorderTests: XCTestCase {
 
         // When
         let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
-        let nodes = recorder.record(parentView, in: .mockRandom())
+        let nodes = recorder.record(parentView, in: .mockWith(coordinateSpace: parentView))
 
         // Then
         XCTAssertEqual(nodes.count, 2)
@@ -361,8 +361,8 @@ class ViewTreeRecorderTests: XCTestCase {
         XCTAssertEqual(nodes.count, 1)
         let node = nodes.first
         XCTAssertNotNil(node)
-        XCTAssertEqual(node!.viewAttributes.overrides.imagePrivacy, viewImagePrivacy)
-        let builder = node!.wireframesBuilder as? UIImageViewWireframesBuilder
+        XCTAssertEqual(node?.viewAttributes.overrides.imagePrivacy, viewImagePrivacy)
+        let builder = node?.wireframesBuilder as? UIImageViewWireframesBuilder
         XCTAssertNotNil(builder)
         XCTAssertNotNil(builder!.imageResource)
     }
@@ -380,7 +380,7 @@ class ViewTreeRecorderTests: XCTestCase {
 
         // When
         let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
-        let nodes = recorder.record(parentView, in: .mockRandom())
+        let nodes = recorder.record(parentView, in: .mockWith(coordinateSpace: parentView))
 
         // Then
         XCTAssertEqual(nodes.count, 2)
@@ -404,7 +404,7 @@ class ViewTreeRecorderTests: XCTestCase {
 
         // When
         let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
-        let nodes = recorder.record(parentView, in: .mockRandom())
+        let nodes = recorder.record(parentView, in: .mockWith(coordinateSpace: parentView))
 
         // Then
         XCTAssertEqual(nodes.count, 2)
@@ -414,5 +414,61 @@ class ViewTreeRecorderTests: XCTestCase {
         XCTAssertNotNil(builder)
         XCTAssertNil(builder!.imageResource)
     }
+
+    func testItPropagateClippingIntersection() {
+        let nodeRecorder = NodeRecorderMock(resultForView: { _ in
+            MockSemantics(subtreeStrategy: .record, nodeNames: [], resourcesIdentifiers: [])
+        })
+        let recorder = ViewTreeRecorder(nodeRecorders: [nodeRecorder])
+
+        // ┌──────────────┐
+        // │Root          │
+        // │  ┌────────┐  │
+        // │  │ View1  │  │
+        // │  │ ┌────────┐│
+        // │  │ │ View2│ ││
+        // │  │ │      │ ││
+        // │  │ │      │ ││
+        // │  │ │      │ ││
+        // │  └─│──────┘ ││
+        // │    └────────┘│
+        // └──────────────┘
+
+        // Given
+        var frame = CGRect(origin: .zero, size: .mockRandom(minWidth: 21, minHeight: 21))
+        let rootView = UIView(frame: frame)
+
+        frame = frame.insetBy(dx: 10, dy: 10)
+        let view1 = UIView(frame: frame)
+        view1.clipsToBounds = true // clip to the first view
+        rootView.addSubview(view1)
+
+        frame = frame.offsetBy(dx: 10, dy: 10)
+        let view2 = UIView(frame: frame)
+        view1.addSubview(view2)
+
+        // When
+        _ = recorder.record(rootView, in: .mockWith(coordinateSpace: rootView))
+
+        // Then
+        var context = nodeRecorder.queryContextsByView[rootView]
+        var attributes = nodeRecorder.queryAttributesByView[rootView]
+        // clip to the root view
+        XCTAssertEqual(context?.clip, rootView.bounds)
+        XCTAssertEqual(attributes?.clip, rootView.bounds)
+
+        context = nodeRecorder.queryContextsByView[view1]
+        attributes = nodeRecorder.queryAttributesByView[view1]
+        // clip to view 1
+        XCTAssertEqual(context?.clip, view1.frame)
+        XCTAssertEqual(attributes?.clip, view1.frame)
+
+        context = nodeRecorder.queryContextsByView[view2]
+        attributes = nodeRecorder.queryAttributesByView[view2]
+        // still clip to view 1
+        XCTAssertEqual(context?.clip, view1.frame)
+        XCTAssertEqual(attributes?.clip, view1.frame)
+    }
 }
+
 #endif

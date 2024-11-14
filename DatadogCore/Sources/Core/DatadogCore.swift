@@ -160,7 +160,12 @@ internal final class DatadogCore {
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
         if trackingConsent != consentPublisher.consent {
-            allStorages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
+            contextProvider.queue.async { [allStorages] in
+                // RUM-3175: To prevent race conditions with ongoing "event write" operations,
+                // data migration must be synchronized on the context queue. This guarantees that
+                // all latest events have been written before migration occurs.
+                allStorages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
+            }
             consentPublisher.consent = trackingConsent
         }
     }
@@ -400,8 +405,11 @@ extension DatadogContextProvider {
         applicationVersion: String,
         sdkInitDate: Date,
         device: DeviceInfo,
+        processInfo: ProcessInfo,
         dateProvider: DateProvider,
-        serverDateProvider: ServerDateProvider
+        serverDateProvider: ServerDateProvider,
+        notificationCenter: NotificationCenter,
+        appStateProvider: AppStateProvider
     ) {
         let context = DatadogContext(
             site: site,
@@ -442,14 +450,18 @@ extension DatadogContextProvider {
         #endif
 
         #if os(iOS) && !targetEnvironment(simulator)
-        subscribe(\.batteryStatus, to: BatteryStatusPublisher())
-        subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher())
+        subscribe(\.batteryStatus, to: BatteryStatusPublisher(notificationCenter: notificationCenter, device: .current))
+        subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher(notificationCenter: notificationCenter, processInfo: processInfo))
         #endif
 
         #if os(iOS) || os(tvOS)
         DispatchQueue.main.async {
             // must be call on the main thread to read `UIApplication.State`
-            let applicationStatePublisher = ApplicationStatePublisher(dateProvider: dateProvider)
+            let applicationStatePublisher = ApplicationStatePublisher(
+                appStateProvider: appStateProvider,
+                notificationCenter: notificationCenter,
+                dateProvider: dateProvider
+            )
             self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
         }
         #endif

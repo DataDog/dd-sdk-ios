@@ -221,7 +221,7 @@ class RUMViewsHandlerTests: XCTestCase {
             }
         }
         let predicate = Predicate()
-        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate)
+        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
 
         // Given
         let someView = createMockViewInWindow()
@@ -257,7 +257,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let untrackedModal = createMockViewInWindow()
 
         let predicate = Predicate(untrackedModal: untrackedModal)
-        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate)
+        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
         handler.publish(to: commandSubscriber)
 
         // When
@@ -292,7 +292,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let untrackedModal = createMockViewInWindow()
 
         let predicate = Predicate(untrackedModal: untrackedModal)
-        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate)
+        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
         handler.publish(to: commandSubscriber)
 
         // When
@@ -332,7 +332,7 @@ class RUMViewsHandlerTests: XCTestCase {
             untrackedModal.isModalInPresentation = true
 
             let predicate = Predicate(untrackedModal: untrackedModal)
-            let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate)
+            let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
             handler.publish(to: commandSubscriber)
 
             // When
@@ -372,7 +372,7 @@ class RUMViewsHandlerTests: XCTestCase {
             untrackedModal.isModalInPresentation = true
 
             let predicate = Predicate(untrackedModal: untrackedModal)
-            let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate)
+            let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
             handler.publish(to: commandSubscriber)
 
             // When

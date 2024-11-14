@@ -247,4 +247,103 @@ final class SRSnapshotTests: SnapshotTestCase {
         // - Embedded Tab Bar, with unselected item tint color
         try takeSnapshotFor(.embeddedTabbarUnselectedTintColor, with: [.maskSensitiveInputs, .maskAll], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.embeddedTabbarUnselectedTintColor.slug)
     }
+
+    // MARK: Privacy Overrides
+    func testMaskingPrivacyOverrides() throws {
+        try takeSnapshotFor(
+            .basicShapes,
+            privacyTags: [
+                .hideView(tag: 2)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "hideOverride_masking"
+        )
+
+        try takeSnapshotFor(
+            .basicTexts,
+            with: [.maskSensitiveInputs],
+            privacyTags: [
+                .maskAllText(tag: 2),
+                .hideView(tag: 3)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "textOverrides_masking"
+        )
+
+        try takeSnapshotFor(
+            .images,
+            imagePrivacyLevel: .maskNone,
+            privacyTags: [
+                .maskAllImages(tag: 2),
+                .maskNonBundledImages(tag: 3),
+                .hideView(tag: 4)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "imageOverrides_masking"
+        )
+    }
+
+    func testMaskingPrivacyOverridesOnParentView() throws {
+        try takeSnapshotFor(
+            .basicShapes,
+            privacyTags: [
+                .hideView(tag: 1)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "hideOverride_masking_parentView"
+        )
+
+        try takeSnapshotFor(
+            .basicTexts,
+            with: [.maskSensitiveInputs],
+            privacyTags: [
+                .maskAllText(tag: 1)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "textOverride_masking_parentView"
+        )
+
+        try takeSnapshotFor(
+            .images,
+            imagePrivacyLevel: .maskNone,
+            privacyTags: [
+                .maskAllImages(tag: 1)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "imageOverride_masking_parentView"
+        )
+    }
+
+    func testUnmaskingPrivacyOverrides() throws {
+        try takeSnapshotFor(
+            .basicTexts,
+            with: [.maskAll],
+            privacyTags: [
+                .unmaskText(tag: 2),
+                .unmaskText(tag: 3)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "textOverrides_unmasking"
+        )
+
+        try takeSnapshotFor(
+            .images,
+            imagePrivacyLevel: .maskAll,
+            privacyTags: [
+                .unmaskImages(tag: 2),
+                .unmaskImages(tag: 3),
+                .unmaskImages(tag: 4)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "imageOverrides_unmasking"
+        )
+    }
 }

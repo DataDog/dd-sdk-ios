@@ -46,6 +46,11 @@ internal class RUMSessionMatcher {
                     sessionEventMatchers: eventMatchers
                 )
             }
+            .sorted { session1, session2 in
+                let startTime1 = session1.views.first?.viewEvents.first?.date ?? 0
+                let startTime2 = session2.views.first?.viewEvents.first?.date ?? 0
+                return startTime1 < startTime2
+            }
     }
 
     // MARK: - View Visits
@@ -105,6 +110,21 @@ internal class RUMSessionMatcher {
     let resourceEventMatchers: [RUMEventMatcher]
     let errorEventMatchers: [RUMEventMatcher]
     let longTaskEventMatchers: [RUMEventMatcher]
+
+    /// `RUMView` events tracked in this session.
+    let viewEvents: [RUMViewEvent]
+
+    /// `RUMAction` events tracked in this session.
+    let actionEvents: [RUMActionEvent]
+
+    /// `RUMResource` events tracked in this session.
+    let resourceEvents: [RUMResourceEvent]
+
+    /// `RUMError` events tracked in this session.
+    let errorEvents: [RUMErrorEvent]
+
+    /// `RUMLongTask` events tracked in this session.
+    let longTaskEvents: [RUMLongTaskEvent]
 
     private init(applicationID: String, sessionID: String, sessionEventMatchers: [RUMEventMatcher]) throws {
         // Sort events so they follow increasing time order
@@ -257,6 +277,11 @@ internal class RUMSessionMatcher {
         }
 
         self.views = visitsEventOrderedByTime
+        self.viewEvents = viewEvents
+        self.actionEvents = actionEvents
+        self.resourceEvents = resourceEvents
+        self.errorEvents = errorEvents
+        self.longTaskEvents = longTaskEvents
     }
 
     /// Checks if this session contains a view with a specific ID.
@@ -424,6 +449,15 @@ extension Array where Element == RUMSessionMatcher {
         }
         return self[0]
     }
+
+    /// Returns the only two sessions in this array.
+    /// Throws if there are more or less than 2 sessions in this array.
+    func takeTwo() throws -> (RUMSessionMatcher, RUMSessionMatcher) {
+        guard count == 2 else {
+            throw RUMSessionConsistencyException(description: "Expected 2 sessions, but found \(count)")
+        }
+        return (self[0], self[1])
+    }
 }
 
 extension Array where Element == RUMSessionMatcher.View {
@@ -498,79 +532,216 @@ extension RUMSessionMatcher {
 
 // MARK: - Debugging
 
+extension RUMSessionMatcher.View {
+    /// The start of this view (as timestamp; milliseconds) defined as the start timestamp of the earliest view event in this view.
+    var startTimestampMs: Int64 { viewEvents.map({ $0.date }).min() ?? 0 }
+}
+
 extension RUMSessionMatcher: CustomStringConvertible {
-    var description: String {
-        var description = "[🎞 RUM session (application.id: \(applicationID), session.id: \(sessionID), number of views: \(views.count))]"
+    var description: String { renderSession() }
+
+    /// The start of this session (as timestamp; milliseconds) defined as the start timestamp of the earliest view in this session.
+    private var sessionStartTimestampMs: Int64 { viewEvents.map({ $0.date }).min() ?? 0 }
+
+    /// The start of this session (as timestamp; nanoseconds) defined as the start timestamp of the earliest view in this session.
+    private var sessionStartTimestampNs: Int64 { sessionStartTimestampMs * 1_000_000 }
+
+    /// The end of this session (as timestamp; nanoseconds) defined as the end timestamp of the latest view in this session.
+    private var sessionEndTimestampNs: Int64 { viewEvents.map({ $0.date * 1_000_000 + $0.view.timeSpent }).max() ?? 0 }
+
+    private func renderSession() -> String {
+        var output = renderBox(string: "🎞 RUM session")
+        output += renderAttributesBox(
+            attributes: [
+                ("application.id", applicationID),
+                ("id", sessionID),
+                ("views.count", "\(views.count)"),
+                ("start", prettyDate(timestampMs: sessionStartTimestampMs)),
+                ("duration", pretty(nanoseconds: sessionEndTimestampNs - sessionStartTimestampNs)),
+            ]
+        )
         views.forEach { view in
-            description += "\n\(describe(viewVisit: view))"
+            output += render(view: view)
         }
-        return description
+        output += renderClosingLine()
+        return output
     }
 
-    private func describe(viewVisit: View) -> String {
-        guard let lastViewEvent = viewVisit.viewEvents.last else {
-            return "    → [⛔️ Invalid View - it has no view events]"
+    private func render(view: View) -> String {
+        guard let lastViewEvent = view.viewEvents.last else {
+            return renderBox(string: "⛔️ Invalid View - it has no view events")
         }
 
-        var description = "    → [📸 View (name: '\(viewVisit.name ?? "nil")', id: \(viewVisit.viewID), duration: \(seconds(from: lastViewEvent.view.timeSpent)) actions.count: \(lastViewEvent.view.action.count), resources.count: \(lastViewEvent.view.resource.count), errors.count: \(lastViewEvent.view.error.count), longTask.count: \(lastViewEvent.view.longTask?.count ?? 0), frozenFrames.count: \(lastViewEvent.view.frozenFrame?.count ?? 0)]"
+        var output = renderBox(string: "📸 RUM View (\(view.name ?? "nil"))")
+        output += renderAttributesBox(
+            attributes: [
+                ("name", view.name ?? "nil"),
+                ("id", view.viewID),
+                ("date", prettyDate(timestampMs: lastViewEvent.date)),
+                ("date (relative in session)", pretty(milliseconds: lastViewEvent.date - sessionStartTimestampMs)),
+                ("duration", pretty(nanoseconds: lastViewEvent.view.timeSpent)),
+                ("event counts", "view (\(view.viewEvents.count)), action (\(view.actionEvents.count)), resource (\(view.resourceEvents.count)), error (\(view.errorEvents.count)), long task (\(view.longTaskEvents.count))"),
+            ]
+        )
 
-        if !viewVisit.actionEvents.isEmpty {
-            description += "\n        → action events:"
-            description += "\n\(describe(actionEvents: viewVisit.actionEvents))"
+        for action in view.actionEvents {
+            output += renderEmptyLine()
+            output += render(event: action, in: view)
         }
 
-        if !viewVisit.resourceEvents.isEmpty {
-            description += "\n        → resource events:"
-            description += "\n\(describe(resourceEvents: viewVisit.resourceEvents))"
+        for resource in view.resourceEvents {
+            output += renderEmptyLine()
+            output += render(event: resource, in: view)
         }
 
-        if !viewVisit.errorEvents.isEmpty {
-            description += "\n        → error events:"
-            description += "\n\(describe(errorEvents: viewVisit.errorEvents))"
+        for error in view.errorEvents {
+            output += renderEmptyLine()
+            output += render(event: error, in: view)
         }
 
-        if !viewVisit.longTaskEvents.isEmpty {
-            description += "\n        → long task events:"
-            description += "\n\(describe(longTaskEvents: viewVisit.longTaskEvents))"
+        for longTask in view.longTaskEvents {
+            output += renderEmptyLine()
+            output += render(event: longTask, in: view)
         }
 
-        return description
+        output += renderEmptyLine()
+        return output
     }
 
-    private func describe(actionEvents: [RUMActionEvent]) -> String {
-        return actionEvents
-            .map { event in
-                "           → [▶️ Action (name: \(event.action.target?.name ?? "(null)"), type: \(event.action.type)]"
-            }
-            .joined(separator: "\n")
+    private func render(event: RUMActionEvent, in view: View) -> String {
+        var output = renderAttributesBox(attributes: [("▶️ RUM Action", "")], indentationLevel: 2)
+        output += renderAttributesBox(
+            attributes: [
+                ("date (relative in view)", pretty(milliseconds: event.date - view.startTimestampMs)),
+                ("name", event.action.target?.name ?? "nil"),
+                ("type", "\(event.action.type)"),
+                ("loading.time", "\(event.action.loadingTime.flatMap({ pretty(nanoseconds: $0) }) ?? "nil")"),
+            ],
+            prefix: "→",
+            indentationLevel: 3
+        )
+        return output
     }
 
-    private func describe(resourceEvents: [RUMResourceEvent]) -> String {
-        return resourceEvents
-            .map { event in
-                "           → [🌎 Resource (url: \(event.resource.url), method: \(event.resource.method.flatMap({ "\($0.rawValue)" }) ?? "(null)"), statusCode: \(event.resource.statusCode.flatMap({ "\($0)" }) ?? "(null)")]"
-            }
-            .joined(separator: "\n")
+    private func render(event: RUMResourceEvent, in view: View) -> String {
+        var output = renderAttributesBox(attributes: [("🌎 RUM Resource", "")], indentationLevel: 2)
+        output += renderAttributesBox(
+            attributes: [
+                ("date (relative in view)", pretty(milliseconds: event.date - view.startTimestampMs)),
+                ("url", event.resource.url),
+                ("method", "\(event.resource.method.flatMap({ "\($0.rawValue)" }) ?? "nil")"),
+                ("status.code", "\(event.resource.statusCode.flatMap({ "\($0)" }) ?? "nil")"),
+            ],
+            prefix: "→",
+            indentationLevel: 3
+        )
+        return output
     }
 
-    private func describe(errorEvents: [RUMErrorEvent]) -> String {
-        return errorEvents
-            .map { event in
-                "           → [🧯 Error (message: \(event.error.message), type: \(event.error.type ?? "(null)"), resource: \(event.error.resource.flatMap({ "\($0.url)" }) ?? "(null)")]"
-            }
-            .joined(separator: "\n")
+    private func render(event: RUMErrorEvent, in view: View) -> String {
+        var output = renderAttributesBox(attributes: [("🧯 RUM Error", "")], indentationLevel: 2)
+        output += renderAttributesBox(
+            attributes: [
+                ("date (relative in view)", pretty(milliseconds: event.date - view.startTimestampMs)),
+                ("message", event.error.message),
+                ("type", event.error.type ?? "nil"),
+            ],
+            prefix: "→",
+            indentationLevel: 3
+        )
+        return output
     }
 
-    private func describe(longTaskEvents: [RUMLongTaskEvent]) -> String {
-        return longTaskEvents
-            .map { event in
-                "           → [🐌 LongTask (duration: \(seconds(from: event.longTask.duration)), isFrozenFrame: \(event.longTask.isFrozenFrame.flatMap({ "\($0)" }) ?? "(null)")]"
-            }
-            .joined(separator: "\n")
+    private func render(event: RUMLongTaskEvent, in view: View) -> String {
+        var output = renderAttributesBox(attributes: [("🐌 RUM Long Task", "")], indentationLevel: 2)
+        output += renderAttributesBox(
+            attributes: [
+                ("date (relative in view)", pretty(milliseconds: event.date - view.startTimestampMs)),
+                ("duration", pretty(nanoseconds: event.longTask.duration)),
+            ],
+            prefix: "→",
+            indentationLevel: 3
+        )
+        return output
     }
 
-    private func seconds(from nanoseconds: Int64) -> String {
-        let prettySeconds = (round((Double(nanoseconds) / 1_000_000_000) * 100)) / 100
-        return "\(prettySeconds)s"
+    // MARK: - Rendering helpers
+
+    private static let rendererWidth = 90
+
+    private func renderBox(string: String) -> String {
+        let width = RUMSessionMatcher.rendererWidth
+        let horizontalBorder1 = "+" + String(repeating: "-", count: width - 2) + "+"
+        let horizontalBorder2 = "|" + String(repeating: "-", count: width - 2) + "|"
+        let visualWidth = (string as NSString).length
+        let padding = (width - 2 - visualWidth) / 2
+        let leftPadding = String(repeating: " ", count: max(0, padding))
+        let rightPadding = String(repeating: " ", count: max(0, width - 2 - visualWidth - padding))
+
+        let contentLine = "|\(leftPadding)\(string)\(rightPadding)|"
+
+        return """
+        \(horizontalBorder1)
+        \(contentLine)
+        \(horizontalBorder2)\n
+        """
+    }
+
+    private func renderAttributesBox(attributes: [(String, String)], prefix: String = "", indentationLevel: Int = 0) -> String {
+        let width = RUMSessionMatcher.rendererWidth
+        let indentation = String(repeating: " ", count: indentationLevel)
+
+        let contentLines = attributes.map { key, value in
+            let lineContent = "\(indentation)\(prefix) \(key): \(value)"
+            let visualWidth = (lineContent as NSString).length
+            let padding = max(0, width - 2 - visualWidth)
+            let rightPadding = String(repeating: " ", count: padding)
+            return "|\(lineContent)\(rightPadding)|"
+        }
+
+        return """
+        \(contentLines.joined(separator: "\n"))\n
+        """
+    }
+
+    private func renderEmptyLine() -> String {
+        let width = RUMSessionMatcher.rendererWidth
+        let horizontalBorder = "|" + String(repeating: " ", count: width - 2) + "|"
+        return horizontalBorder + "\n"
+    }
+
+    private func renderClosingLine() -> String {
+        let width = RUMSessionMatcher.rendererWidth
+        let horizontalBorder = "+" + String(repeating: "-", count: width - 2) + "+"
+        return horizontalBorder + "\n"
+    }
+
+    private func pretty(milliseconds: Int64) -> String {
+        pretty(nanoseconds: milliseconds * 1_000_000)
+    }
+
+    private func pretty(nanoseconds: Int64) -> String {
+        if nanoseconds >= 1_000_000_000 {
+            let seconds = round((Double(nanoseconds) / 1_000_000_000) * 100) / 100
+            return "\(seconds)s"
+        } else if nanoseconds >= 1_000_000 {
+            let milliseconds = round((Double(nanoseconds) / 1_000_000) * 100) / 100
+            return "\(milliseconds)ms"
+        } else {
+            return "\(nanoseconds)ns"
+        }
+    }
+
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .medium
+        return formatter
+    }()
+
+    private func prettyDate(timestampMs: Int64) -> String {
+        let timestampSec = TimeInterval(timestampMs) / 1_000
+        let date = Date(timeIntervalSince1970: timestampSec)
+        return RUMSessionMatcher.dateFormatter.string(from: date)
     }
 }

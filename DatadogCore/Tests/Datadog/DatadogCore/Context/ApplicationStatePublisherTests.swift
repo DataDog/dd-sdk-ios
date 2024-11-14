@@ -26,9 +26,9 @@ class ApplicationStatePublisherTests: XCTestCase {
 
         // Given
         let publisher = ApplicationStatePublisher(
-            initialState: .mockRandom(),
-            dateProvider: SystemDateProvider(),
-            notificationCenter: notificationCenter
+            appStateProvider: AppStateProviderMock(state: .mockRandom()),
+            notificationCenter: notificationCenter,
+            dateProvider: SystemDateProvider()
         )
 
         // When
@@ -57,9 +57,9 @@ class ApplicationStatePublisherTests: XCTestCase {
 
         // Given
         let publisher = ApplicationStatePublisher(
-            initialState: .mockRandom(),
-            dateProvider: RelativeDateProvider(startingFrom: .mockRandomInThePast(), advancingBySeconds: 1.0),
-            notificationCenter: notificationCenter
+            appStateProvider: AppStateProviderMock(state: .mockRandom()),
+            notificationCenter: notificationCenter,
+            dateProvider: RelativeDateProvider(startingFrom: .mockRandomInThePast(), advancingBySeconds: 1.0)
         )
 
         var receivedHistoryStates: [AppState?] = []
