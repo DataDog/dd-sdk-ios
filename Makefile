@@ -321,6 +321,16 @@ sr-snapshot-tests-open:
 	@$(ECHO_TITLE) "make sr-snapshot-tests-open"
 	./tools/sr-snapshot-test.sh --open-project
 
+# Define default paths for API output files
+SWIFT_OUTPUT_PATH ?= api-surface-swift
+OBJC_OUTPUT_PATH ?= api-surface-objc
+
+# Use different paths when running in CI
+ifeq ($(ENV),ci)
+  SWIFT_OUTPUT_PATH := api-surface-swift-generated
+  OBJC_OUTPUT_PATH := api-surface-objc-generated
+endif
+
 # Generate api-surface files for Datadog.
 api-surface:
 		@echo "Generating api-surface-swift"
@@ -335,7 +345,7 @@ api-surface:
 			--library-name DatadogCrashReporting \
 			--library-name DatadogWebViewTracking \
 			--library-name DatadogSessionReplay \
-			> ../../api-surface-swift && \
+			> ../../$(SWIFT_OUTPUT_PATH) && \
 			cd -
 
 		@echo "Generating api-surface-objc"
@@ -350,7 +360,7 @@ api-surface:
 			--library-name DatadogCrashReporting \
 			--library-name DatadogWebViewTracking \
 			--library-name DatadogSessionReplay \
-			> ../../api-surface-objc && \
+			> ../../$(OBJC_OUTPUT_PATH) && \
 			cd -
 
 # Builds API documentation using the same process as Swift Package Index.
