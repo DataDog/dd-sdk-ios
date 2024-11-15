@@ -124,6 +124,17 @@ Lint:
     - make clean repo-setup ENV=ci
     - make lint license-check
     - make rum-models-verify sr-models-verify
+    - make api-surface ENV=ci
+    - if ! diff api-surface-swift api-surface-swift-generated; then
+        echo "❌ Swift API surface mismatch";
+        echo "👉 Run \`make api-surface\` locally to update \`api-surface-swift\` and commit the changes.";
+        exit 1;
+      fi
+    - if ! diff api-surface-objc api-surface-objc-generated; then
+        echo "❌ Objective-C API surface mismatch";
+        echo "👉 Run \`make api-surface\` locally to update \`api-surface-objc\` and commit the changes.";
+        exit 1;
+      fi
 
 Unit Tests (iOS):
   stage: test
