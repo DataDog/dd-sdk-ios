@@ -169,6 +169,31 @@ class FilesOrchestratorTests: XCTestCase {
         XCTAssertNil(try? orchestrator.directory.file(named: file2.name))
     }
 
+    func testWhenFileAlreadyExists_itWaitsAndCreatesFileWithNextName() throws {
+        let date: Date = .mockDecember15th2019At10AMUTC()
+        let dateProvider = RelativeDateProvider(
+            startingFrom: date,
+            advancingBySeconds: FilesOrchestrator.Constants.fileNamePrecision
+        )
+
+        // Given: A file with the current time already exists
+        let orchestrator = configureOrchestrator(using: dateProvider)
+        let existingFile = try orchestrator.directory.createFile(named: fileNameFrom(fileCreationDate: date))
+
+        // When: The orchestrator attempts to create a new file with the next available name
+        let nextFile = try orchestrator.getWritableFile(writeSize: 1)
+
+        // Then
+        let existingFileDate = fileCreationDateFrom(fileName: existingFile.name)
+        let nextFileDate = fileCreationDateFrom(fileName: nextFile.name)
+        XCTAssertNotEqual(existingFile.name, nextFile.name, "The new file should have a different name than the existing file")
+        XCTAssertGreaterThanOrEqual(
+            nextFileDate.timeIntervalSince(existingFileDate),
+            FilesOrchestrator.Constants.fileNamePrecision,
+            "The timestamp of the new file should be at least `fileNamePrecision` later than the existing file"
+        )
+    }
+
     // MARK: - Readable file tests
 
     func testGivenNoReadableFiles_whenObtainingFiles_itReturnsEmpty() {
