@@ -30,18 +30,19 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     }
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
-//        print("######## NEW BUILD ########")
-        guard let items = renderer.lastList.lazy?.items else {
+        do {
+            let list = try renderer.lastList.reflect()
+            let context = Context(
+                frame: attributes.frame,
+                clip: attributes.clip,
+                builder: builder
+            )
+
+            return buildWireframes(items: list.items, context: context)
+        } catch {
+            print(error)
             return []
         }
-
-        let context = Context(
-            frame: attributes.frame,
-            clip: attributes.clip,
-            builder: builder
-        )
-
-        return buildWireframes(items: items, context: context)
     }
 
     private func buildWireframes(items: [DisplayList.Item], context: Context) -> [SRWireframe] {
