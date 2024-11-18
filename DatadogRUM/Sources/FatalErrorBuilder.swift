@@ -195,6 +195,7 @@ internal struct FatalErrorBuilder {
                 interactionToNextPaint: original.view.interactionToNextPaint,
                 interactionToNextPaintTargetSelector: original.view.interactionToNextPaintTargetSelector,
                 interactionToNextPaintTime: original.view.interactionToNextPaintTime,
+                interactionToNextViewTime: nil,
                 isActive: false, // after fatal error, this is no longer active view
                 isSlowRendered: original.view.isSlowRendered,
                 jsRefreshRate: original.view.jsRefreshRate,
@@ -207,6 +208,7 @@ internal struct FatalErrorBuilder {
                 memoryAverage: original.view.memoryAverage,
                 memoryMax: original.view.memoryMax,
                 name: original.view.name,
+                networkSettledTime: nil,
                 referrer: original.view.referrer,
                 refreshRateAverage: original.view.refreshRateAverage,
                 refreshRateMin: original.view.refreshRateMin,

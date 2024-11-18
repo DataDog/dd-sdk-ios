@@ -190,6 +190,7 @@ extension RUMViewEvent: RandomMockable {
                 interactionToNextPaint: nil,
                 interactionToNextPaintTargetSelector: nil,
                 interactionToNextPaintTime: .mockRandom(),
+                interactionToNextViewTime: .mockRandom(),
                 isActive: viewIsActive,
                 isSlowRendered: .mockRandom(),
                 jsRefreshRate: nil,
@@ -202,6 +203,7 @@ extension RUMViewEvent: RandomMockable {
                 memoryAverage: .mockRandom(),
                 memoryMax: .mockRandom(),
                 name: .mockRandom(),
+                networkSettledTime: .mockRandom(),
                 referrer: .mockRandom(),
                 refreshRateAverage: .mockRandom(),
                 refreshRateMin: .mockRandom(),
@@ -269,7 +271,8 @@ extension RUMResourceEvent: RandomMockable {
                 statusCode: .mockRandom(),
                 transferSize: nil,
                 type: [.native, .image].randomElement()!,
-                url: .mockRandom()
+                url: .mockRandom(),
+                worker: nil
             ),
             service: .mockRandom(),
             session: .init(

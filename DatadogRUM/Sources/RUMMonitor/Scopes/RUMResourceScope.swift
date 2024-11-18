@@ -239,7 +239,8 @@ internal class RUMResourceScope: RUMScope {
                 statusCode: command.httpStatusCode?.toInt64 ?? 0,
                 transferSize: nil,
                 type: resourceType,
-                url: resourceURL
+                url: resourceURL,
+                worker: nil
             ),
             service: context.service,
             session: .init(

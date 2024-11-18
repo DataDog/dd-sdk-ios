@@ -4058,6 +4058,10 @@ public class DDRUMResourceEventResource: NSObject {
         set { root.swiftModel.resource.url = newValue }
         get { root.swiftModel.resource.url }
     }
+
+    @objc public var worker: DDRUMResourceEventResourceWorker? {
+        root.swiftModel.resource.worker != nil ? DDRUMResourceEventResourceWorker(root: root) : nil
+    }
 }
 
 @objc
@@ -4404,6 +4408,23 @@ public enum DDRUMResourceEventResourceResourceType: Int {
     case media
     case other
     case native
+}
+
+@objc
+public class DDRUMResourceEventResourceWorker: NSObject {
+    internal let root: DDRUMResourceEvent
+
+    internal init(root: DDRUMResourceEvent) {
+        self.root = root
+    }
+
+    @objc public var duration: NSNumber {
+        root.swiftModel.resource.worker!.duration as NSNumber
+    }
+
+    @objc public var start: NSNumber {
+        root.swiftModel.resource.worker!.start as NSNumber
+    }
 }
 
 @objc
@@ -5564,6 +5585,10 @@ public class DDRUMViewEventView: NSObject {
         root.swiftModel.view.interactionToNextPaintTime as NSNumber?
     }
 
+    @objc public var interactionToNextViewTime: NSNumber? {
+        root.swiftModel.view.interactionToNextViewTime as NSNumber?
+    }
+
     @objc public var isActive: NSNumber? {
         root.swiftModel.view.isActive as NSNumber?
     }
@@ -5611,6 +5636,10 @@ public class DDRUMViewEventView: NSObject {
     @objc public var name: String? {
         set { root.swiftModel.view.name = newValue }
         get { root.swiftModel.view.name }
+    }
+
+    @objc public var networkSettledTime: NSNumber? {
+        root.swiftModel.view.networkSettledTime as NSNumber?
     }
 
     @objc public var referrer: String? {
@@ -7893,4 +7922,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/e1c6dde3793714453b5b49f17790a24e9ff9b77b
+// Generated from https://github.com/DataDog/rum-events-format/tree/d9b0451c01cab9c3c991bd2f5f3571da6ec1df83

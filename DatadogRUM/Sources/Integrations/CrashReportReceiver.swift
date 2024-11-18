@@ -437,6 +437,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 interactionToNextPaint: nil,
                 interactionToNextPaintTargetSelector: nil,
                 interactionToNextPaintTime: nil,
+                interactionToNextViewTime: nil,
                 isActive: false, // we know it won't receive updates
                 isSlowRendered: false,
                 jsRefreshRate: nil,
@@ -449,6 +450,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 memoryAverage: nil,
                 memoryMax: nil,
                 name: viewName,
+                networkSettledTime: nil,
                 referrer: nil,
                 refreshRateAverage: nil,
                 refreshRateMin: nil,
