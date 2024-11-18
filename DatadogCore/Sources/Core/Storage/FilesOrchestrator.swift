@@ -123,22 +123,23 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         return newFile
     }
 
-    /// Generates a unique file name based on the current time.
-    /// The function ensures the generated file name does not already exist in the directory by checking for existing file names
-    /// and retrying with a new timestamp if a conflict is found.
+    /// Generates a unique file name based on the current time, ensuring that the generated file name does not already exist in the directory.
+    /// When a conflict is detected, it adjusts the timestamp by advancing the current time by the precision interval to ensure uniqueness.
     ///
     /// In practice, name conflicts are extremely unlikely due to the monotonic nature of `dateProvider.now`.
-    /// Conflicts could only occur in very specific scenarios, such as during a tracking consent change when files are moved
+    /// Conflicts can only occur in very specific scenarios, such as during a tracking consent change when files are moved
     /// from an unauthorized (.pending) folder to an authorized (.granted) folder, with events being written immediately before
     /// and after the consent change. These conflicts were observed in tests, causing flakiness. In real-device scenarios,
-    /// conflicts can occur if tracking consent is changed and two events are written within the precision window defined
-    /// by `Constants.fileNamePrecission` (1 millisecond).
+    /// conflicts may occur if tracking consent is changed and two events are written within the precision window defined
+    /// by `Constants.fileNamePrecision` (1 millisecond).
     private func nextFileName() -> String {
         var newFileName = fileNameFrom(fileCreationDate: dateProvider.now)
         while directory.hasFile(named: newFileName) {
-            // Wait for the precision duration to avoid generating the same file name
-            Thread.sleep(forTimeInterval: Constants.fileNamePrecision)
-            newFileName = fileNameFrom(fileCreationDate: dateProvider.now)
+            // Advance the timestamp by the precision interval to avoid generating the same file name.
+            // This may result in generating file names "in the future", but we aren't concerned
+            // about this given how rare this scenario is.
+            let newDate = dateProvider.now.addingTimeInterval(Constants.fileNamePrecision)
+            newFileName = fileNameFrom(fileCreationDate: newDate)
         }
         return newFileName
     }
