@@ -59,24 +59,25 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     }
 
     private func contentWireframe(item: DisplayList.Item, content: DisplayList.Content, context: Context) -> SRWireframe? {
-//        print("######## Seed:", content.seed.value)
-        let info = renderer.viewCache.map[.init(id: .init(identity: item.identity))]
+        let viewInfo = renderer.viewCache.map[.init(id: .init(identity: item.identity))]
 
         switch content.value {
         case let .shape(_, paint, _):
-            return context.builder.createShapeWireframe(
-                id: Int64(content.seed.value),
-                frame: context.convert(frame: item.frame),
-                clip: context.convert(frame: item.frame),
-                backgroundColor: CGColor(
-                    red: CGFloat(paint.paint.linearRed),
-                    green: CGFloat(paint.paint.linearGreen),
-                    blue: CGFloat(paint.paint.linearBlue),
-                    alpha: CGFloat(paint.paint.opacity)
-                ),
-                cornerRadius: info?.cornerRadius,
-                opacity: CGFloat(paint.paint.opacity)
-            )
+            return paint.paint.map { paint in
+                context.builder.createShapeWireframe(
+                    id: Int64(content.seed.value),
+                    frame: context.convert(frame: item.frame),
+                    clip: context.clip,
+                    backgroundColor: CGColor(
+                        red: CGFloat(paint.linearRed),
+                        green: CGFloat(paint.linearGreen),
+                        blue: CGFloat(paint.linearBlue),
+                        alpha: CGFloat(paint.opacity)
+                    ),
+                    cornerRadius: viewInfo?.cornerRadius,
+                    opacity: CGFloat(paint.opacity)
+                )
+            }
         case let .text(view, _):
             let storage = view.text.storage
             let style = storage.attribute(.paragraphStyle, at: 0, effectiveRange: nil) as? NSParagraphStyle
@@ -85,7 +86,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
             return context.builder.createTextWireframe(
                 id: Int64(content.seed.value),
                 frame: context.convert(frame: item.frame),
-                clip: context.convert(frame: item.frame),
+                clip: context.clip,
                 text: textObfuscator.mask(text: storage.string),
                 textAlignment: style.map { .init(systemTextAlignment: $0.alignment) },
                 textColor: foregroundColor?.cgColor,
@@ -96,12 +97,12 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
             return context.builder.createShapeWireframe(
                 id: Int64(content.seed.value),
                 frame: context.convert(frame: item.frame),
-                clip: context.convert(frame: item.frame),
-                borderColor: info?.borderColor,
-                borderWidth: info?.borderWidth,
-                backgroundColor: info?.backgroundColor,
-                cornerRadius: info?.cornerRadius,
-                opacity: info?.alpha
+                clip: context.clip,
+                borderColor: viewInfo?.borderColor,
+                borderWidth: viewInfo?.borderWidth,
+                backgroundColor: viewInfo?.backgroundColor,
+                cornerRadius: viewInfo?.cornerRadius,
+                opacity: viewInfo?.alpha
             )
         case .platformView:
             return nil // Should be recorder by UIKit recorder

@@ -22,7 +22,7 @@ extension SwiftUI.Color._Resolved: Reflection {
 @available(iOS 13.0, tvOS 13.0, *)
 extension ResolvedPaint: Reflection {
     init(_ mirror: ReflectionMirror) throws {
-        paint = try mirror.descendant("paint")
+        paint = try? mirror.descendant("paint")
     }
 }
 
@@ -43,7 +43,7 @@ extension SwiftUI.Color._Resolved: StandardReflection {
 @available(iOS 13.0, tvOS 13.0, *)
 extension ResolvedPaint: StandardReflection {
     init(_ mirror: Mirror) throws {
-        paint = try mirror.descendant(path: "paint")
+        paint = try? mirror.descendant(path: "paint")
     }
 }
 
