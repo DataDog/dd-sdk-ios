@@ -68,7 +68,6 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
         case let .clip(path, _):
             let clip = context.convert(frame: path.boundingRect)
             context.clip = context.clip.intersection(clip)
-            return buildWireframes(items: list.items, context: context)
 
         case .platformGroup:
             if let viewInfo = renderer.viewCache.map[.init(id: .init(identity: item.identity))] {
