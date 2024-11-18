@@ -11,7 +11,7 @@ internal protocol Reflection {
 }
 
 internal extension Reflection {
-    init(reflecting subject: Any?) throws {
+    init(reflecting subject: Any) throws {
         let mirror = ReflectionMirror(reflecting: subject)
         try self.init(mirror)
     }
@@ -355,7 +355,7 @@ extension Array: Reflection where Element: Reflection {
             )
         }
 
-        // TODO: error handling
+        // TODO: RUM-7309 error handling
         self = subject.compactMap { try? Element(reflecting: $0) }
     }
 }
@@ -370,7 +370,7 @@ extension Dictionary: Reflection where Key: Reflection, Value: Reflection {
             )
         }
 
-        // TODO: error handling
+        // TODO: RUM-7309 error handling
         self = subject.reduce(into: [:]) { result, element in
             try? result[Key(reflecting: element.key.base)] = Value(reflecting: element.value)
         }
