@@ -55,7 +55,7 @@ internal struct ReflectionMirror {
     typealias Child = (label: String?, value: Any)
 
     /// The type used to represent substructure.
-    typealias Children = [Child]
+    typealias Children = AnyCollection<Child>
 
     /// A suggestion of how a mirror's subject is to be interpreted.
     enum DisplayStyle: Equatable {
@@ -81,11 +81,19 @@ internal struct ReflectionMirror {
         case typeMismatch(Context, expect: Any.Type, got: Any.Type)
     }
 
-    final class Lazy<T> {
-        lazy var `lazy`: T? = load()
-        private let load: () -> T?
+    struct Lazy<T> {
+        let reflect: () throws -> T
 
-        init(_ load: @escaping () -> T?) {
+        init(_ reflect: @escaping () throws -> T) {
+            self.reflect = reflect
+        }
+    }
+
+    private final class LazyBox<T> {
+        lazy var `lazy`: T = load()
+        private let load: () -> T
+
+        init(_ load: @escaping () -> T) {
             self.load = load
         }
     }
@@ -110,23 +118,23 @@ internal struct ReflectionMirror {
 
     var keyPaths: [String: Int]? { _keyPaths.lazy }
 
-    private let _superclassMirror: Lazy<ReflectionMirror>
-    private let _keyPaths: Lazy<[String: Int]>
+    private let _superclassMirror: LazyBox<ReflectionMirror?>
+    private let _keyPaths: LazyBox<[String: Int]?>
 
-    init(
+    init<C>(
         subject: Any,
         subjectType: Any.Type,
         displayStyle: DisplayStyle,
-        children: Children = [],
+        children: C = [],
         keyPaths: @autoclosure @escaping () -> [String: Int]? = nil,
         superclassMirror: @autoclosure @escaping () -> ReflectionMirror? = nil
-    ) {
+    ) where C: Collection, C.Element == Child {
         self.subject = subject
         self.subjectType = subjectType
         self.displayStyle = displayStyle
-        self.children = children
-        self._keyPaths = Lazy(keyPaths)
-        self._superclassMirror = Lazy(superclassMirror)
+        self.children = Children(children)
+        self._keyPaths = LazyBox(keyPaths)
+        self._superclassMirror = LazyBox(superclassMirror)
     }
 }
 
@@ -315,14 +323,25 @@ extension ReflectionMirror {
 
     private func descendant(path: Path) -> Any? {
         if case let .index(index) = path, index < children.count {
-            return children[index].value
+            return children[AnyIndex(index)].value
         }
 
         if case let .key(key) = path, let index = keyPaths?[key] {
-            return children[index].value
+            return children[AnyIndex(index)].value
         }
 
         return superclassMirror?.descendant(path: path)
+    }
+}
+
+extension Optional: Reflection where Wrapped: Reflection {
+    init(_ mirror: ReflectionMirror) throws {
+        switch mirror.displayStyle {
+        case .nil:
+            self = .none
+        default:
+            self = try Wrapped(mirror)
+        }
     }
 }
 
@@ -336,7 +355,8 @@ extension Array: Reflection where Element: Reflection {
             )
         }
 
-        self = try subject.map { try Element(reflecting: $0) }
+        // TODO: error handling
+        self = subject.compactMap { try? Element(reflecting: $0) }
     }
 }
 
@@ -350,8 +370,9 @@ extension Dictionary: Reflection where Key: Reflection, Value: Reflection {
             )
         }
 
-        self = try subject.reduce(into: [:]) { result, element in
-            try result[Key(reflecting: element.key.base)] = Value(reflecting: element.value)
+        // TODO: error handling
+        self = subject.reduce(into: [:]) { result, element in
+            try? result[Key(reflecting: element.key.base)] = Value(reflecting: element.value)
         }
     }
 }
@@ -372,16 +393,62 @@ extension ReflectionMirror.Path: ExpressibleByStringLiteral {
     }
 }
 
-extension ReflectionMirror.Lazy: ExpressibleByNilLiteral {
-    convenience init(nilLiteral: ()) {
-        self.init({ nil })
+extension ReflectionMirror.Lazy: Reflection where T: Reflection {
+    init(_ mirror: ReflectionMirror) throws {
+        self.init({ try T(mirror) })
     }
 }
 
-extension ReflectionMirror.Lazy: Reflection where T: Reflection {
-    convenience init(_ mirror: ReflectionMirror) throws {
-        self.init({ try? T(mirror) })
+private func _getChild<T>(of value: T, type: Any.Type, index: Int) -> ReflectionMirror.Child {
+    var nameC: UnsafePointer<CChar>? = nil
+    var freeFunc: NameFreeFunc? = nil
+    let value = _getChild(of: value, type: type, index: index, outName: &nameC, outFreeFunc: &freeFunc)
+    let name = nameC.flatMap { String(cString: $0) }
+    freeFunc?(nameC)
+    return (name, value)
+}
+
+private func _getChildren<T>(of value: T, type: Any.Type, count: Int) -> any Collection<ReflectionMirror.Child> {
+    (0 ..< count).lazy.map {
+        _getChild(of: value, type: type, index: $0)
     }
+}
+
+/// Gets indexes of non-recursive named fields of a reference type.
+///
+/// This functions uses the `swift_reflectionMirror_recursiveChildMetadata` API as there
+/// is no non-recursive counterpart. To read fields' metadata of the given type in a non-recursive way, it needs to skip
+/// indexes of its parent's fields by substracting the non-recursive child count to the recursive child count.
+///
+/// For inherating types, the recursive children include the parent types' children.
+///
+/// - Parameters:
+///   - type: The type to inspect.
+///   - count: The child count from `swift_reflectionMirror_count`.
+///   - recursiveCount: The child count from `swift_reflectionMirror_recursiveCount`.
+/// - Returns: The key paths as a dictionary of indexes associted to a key.
+private func _getKeyPaths(_ type: Any.Type, count: Int, recursiveCount: Int) -> [String: Int] {
+    let skip = recursiveCount - count
+    return (skip..<recursiveCount).reduce(into: [:]) { result, index in
+        var field = _FieldReflectionMetadata()
+        _ = _getChildMetadata(type, index: index, fieldMetadata: &field)
+
+        field.name
+            .flatMap { String(cString: $0) }
+            .map { result[$0] = index - skip }
+
+        field.freeFunc?(field.name)
+    }
+}
+
+/// Gets indexes of named fields of value type.
+///
+/// - Parameters:
+///   - type: The type to inspect.
+///   - count: The child count from `swift_reflectionMirror_count`.
+/// - Returns: The key paths as a dictionary of indexes associted to a key.
+private func _getKeyPaths(_ type: Any.Type, count: Int) -> [String: Int] {
+    _getKeyPaths(type, count: count, recursiveCount: count)
 }
 
 //===----------------------------------------------------------------------===//
@@ -471,56 +538,4 @@ private enum _MetadataKind: UInt {
         let rawValue = _metadataKind(type)
         self = _MetadataKind(rawValue: rawValue) ?? .unknown
     }
-}
-
-private func _getChild<T>(of value: T, type: Any.Type, index: Int) -> ReflectionMirror.Child {
-    var nameC: UnsafePointer<CChar>? = nil
-    var freeFunc: NameFreeFunc? = nil
-    let value = _getChild(of: value, type: type, index: index, outName: &nameC, outFreeFunc: &freeFunc)
-    let name = nameC.flatMap { String(cString: $0) }
-    freeFunc?(nameC)
-    return (name, value)
-}
-
-private func _getChildren<T>(of value: T, type: Any.Type, count: Int) -> ReflectionMirror.Children {
-    (0 ..< count).lazy.map {
-        _getChild(of: value, type: type, index: $0)
-    }
-}
-
-/// Gets indexes of non-recursive named fields of a reference type.
-///
-/// This functions uses the `swift_reflectionMirror_recursiveChildMetadata` API as there
-/// is no non-recursive counterpart. To read fields' metadata of the given type in a non-recursive way, it needs to skip
-/// indexes of its parent's fields by substracting the non-recursive child count to the recursive child count.
-///
-/// For inherating types, the recursive children include the parent types' children.
-///
-/// - Parameters:
-///   - type: The type to inspect.
-///   - count: The child count from `swift_reflectionMirror_count`.
-///   - recursiveCount: The child count from `swift_reflectionMirror_recursiveCount`.
-/// - Returns: The key paths as a dictionary of indexes associted to a key.
-private func _getKeyPaths(_ type: Any.Type, count: Int, recursiveCount: Int) -> [String: Int] {
-    let skip = recursiveCount - count
-    return (skip..<recursiveCount).reduce(into: [:]) { result, index in
-        var field = _FieldReflectionMetadata()
-        _ = _getChildMetadata(type, index: index, fieldMetadata: &field)
-
-        field.name
-            .flatMap { String(cString: $0) }
-            .map { result[$0] = index - skip }
-
-        field.freeFunc?(field.name)
-    }
-}
-
-/// Gets indexes of named fields of value type.
-///
-/// - Parameters:
-///   - type: The type to inspect.
-///   - count: The child count from `swift_reflectionMirror_count`.
-/// - Returns: The key paths as a dictionary of indexes associted to a key.
-private func _getKeyPaths(_ type: Any.Type, count: Int) -> [String: Int] {
-    _getKeyPaths(type, count: count, recursiveCount: count)
 }
