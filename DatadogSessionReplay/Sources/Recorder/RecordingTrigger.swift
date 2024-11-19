@@ -15,42 +15,56 @@ internal protocol RecordingTriggering {
     func stopWatchingTriggers()
 }
 
-internal final class RecordingTrigger: RecordingTriggering, UIViewHandler, UIEventHandler {
+internal final class RecordingTrigger: RecordingTriggering, UIViewHandler, UIEventHandler, CALayerHandler {
     private var uiViewSwizzler: UIViewSwizzler? = nil
     private var uiApplicationSwizzler: UIApplicationSwizzler? = nil
+    private var caLayerSwizzler: CALayerSwizzler? = nil
 
     private var triggerCallback: (() -> Void)?
 
     init() throws {
         uiViewSwizzler = try UIViewSwizzler(handler: self)
         uiApplicationSwizzler = try UIApplicationSwizzler(handler: self)
+        caLayerSwizzler = try CALayerSwizzler(handler: self)
     }
 
     deinit {
         uiViewSwizzler?.unswizzle()
         uiApplicationSwizzler?.unswizzle()
+        caLayerSwizzler?.unswizzle()
     }
 
     func startWatchingTriggers(_ callback: @escaping () -> Void) {
         triggerCallback = callback
         uiViewSwizzler?.swizzle()
         uiApplicationSwizzler?.swizzle()
+        caLayerSwizzler?.swizzle()
     }
 
     func stopWatchingTriggers() {
         triggerCallback = nil
         uiViewSwizzler?.unswizzle()
         uiApplicationSwizzler?.unswizzle()
+        caLayerSwizzler?.unswizzle()
+    }
+
+    func notify_setNeedsDisplay(layer: CALayer) {
+        triggerCallback?()
+    }
+
+    func notify_draw(layer: CALayer, context: CGContext) {
+        triggerCallback?()
     }
 
     func notify_layoutSubviews(view: UIView) {
         triggerCallback?()
     }
 
+    func notify_viewDidAppear(viewController: UIViewController) {
+        triggerCallback?()
+    }
+
     func notify_sendEvent(application: UIApplication, event: UIEvent) {
-        guard event.type == .touches, event.allTouches?.isEmpty == false else {
-            return
-        }
         triggerCallback?()
     }
 }
