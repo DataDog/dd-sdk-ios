@@ -34,7 +34,7 @@ public struct URLSessionInterceptor {
     /// This is to bridge the gap between what is encoded into HTTP headers and what is later needed for processing 
     /// the interception (unlike request headers, the `TraceContext` holds the original information on trace sampling).
     @ReadWriteLock
-    private var contextsByTraceID: [TraceID: [TraceContext]] = [:]
+    static var contextsByTraceID: [TraceID: [TraceContext]] = [:]
 
     /// Tells the interceptor to modify a URL request.
     ///
@@ -45,7 +45,7 @@ public struct URLSessionInterceptor {
     public func intercept(request: URLRequest, additionalFirstPartyHosts: FirstPartyHosts? = nil) -> URLRequest {
         let (request, traceContexts) = feature.intercept(request: request, additionalFirstPartyHosts: additionalFirstPartyHosts)
         if let traceID = extractTraceID(from: request) {
-            contextsByTraceID[traceID] = traceContexts
+            URLSessionInterceptor.contextsByTraceID[traceID] = traceContexts
         }
         return request
     }
@@ -58,7 +58,7 @@ public struct URLSessionInterceptor {
     public func intercept(task: URLSessionTask, additionalFirstPartyHosts: FirstPartyHosts? = nil) {
         var injectedTraceContexts: [TraceContext] = []
         if let request = task.currentRequest, let traceID = extractTraceID(from: request) {
-            injectedTraceContexts = contextsByTraceID[traceID] ?? []
+            injectedTraceContexts = URLSessionInterceptor.contextsByTraceID[traceID] ?? []
         }
 
         feature.intercept(task: task, with: injectedTraceContexts, additionalFirstPartyHosts: additionalFirstPartyHosts)
@@ -91,7 +91,7 @@ public struct URLSessionInterceptor {
         feature.task(task, didCompleteWithError: error)
 
         if let request = task.currentRequest, let traceID = extractTraceID(from: request) {
-            contextsByTraceID[traceID] = nil
+            URLSessionInterceptor.contextsByTraceID[traceID] = nil
         }
     }
 
