@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.20.0 / 14-11-2024
+
 - [FIX] Fix race condition during consent change, preventing loss of events recorded on the current thread. See [#2063][]
 - [IMPROVEMENT] Support mutation of events' attributes. See [#2099][]
 - [IMPROVEMENT] Add 'os' and 'device' info to Span events. See [#2104][]
