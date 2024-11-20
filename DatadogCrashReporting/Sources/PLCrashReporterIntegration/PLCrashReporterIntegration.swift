@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(CrashReporter)
+
 import Foundation
 import DatadogInternal
 @preconcurrency import CrashReporter
@@ -82,3 +84,5 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
         )
     }
 }
+
+#endif

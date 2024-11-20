@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(CrashReporter)
+
 import DatadogInternal
 import CrashReporter
 
@@ -23,3 +25,5 @@ internal struct DDCrashReportBuilder {
         return exporter.export(crashReport)
     }
 }
+
+#endif

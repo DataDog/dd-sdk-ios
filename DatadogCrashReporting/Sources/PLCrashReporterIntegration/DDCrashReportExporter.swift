@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(CrashReporter)
+
 import DatadogInternal
 
 /// Exports intermediate `CrashReport` to `DDCrashReport`.
@@ -223,3 +225,5 @@ internal struct DDCrashReportExporter {
         return lines.joined(separator: "\n")
     }
 }
+
+#endif
