@@ -27,10 +27,3 @@ public protocol CrashReportingPlugin: AnyObject {
     /// It is called on a background thread and succeeding calls are synchronized.
     func inject(context: Data)
 }
-
-public class NoopCrashReportingPlugin: CrashReportingPlugin {
-    public func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {
-        _ = completion(nil)
-    }
-    public func inject(context: Data) {}
-}
