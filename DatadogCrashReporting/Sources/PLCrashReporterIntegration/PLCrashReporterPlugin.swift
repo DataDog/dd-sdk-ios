@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(CrashReporter)
+
 import Foundation
 import DatadogInternal
 
@@ -59,3 +61,5 @@ internal class PLCrashReporterPlugin: NSObject, CrashReportingPlugin {
         PLCrashReporterPlugin.thirdPartyCrashReporter?.inject(context: context)
     }
 }
+
+#endif

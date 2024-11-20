@@ -7,10 +7,10 @@
 import Foundation
 import DatadogInternal
 
-internal final class CrashReportingFeature: DatadogFeature {
-    static let name = "crash-reporter"
+public final class CrashReportingFeature: DatadogFeature {
+    public static let name = "crash-reporter"
 
-    let messageReceiver: FeatureMessageReceiver
+    public let messageReceiver: FeatureMessageReceiver
 
     /// Queue for synchronizing internal operations.
     private let queue: DispatchQueue
@@ -53,6 +53,16 @@ internal final class CrashReportingFeature: DatadogFeature {
     }
 
     // MARK: - Interaction with `DatadogCrashReporting` plugin
+
+    func send(_ report: DDCrashReport, attributes: [AttributeKey: AttributeValue]? = nil) {
+        queue.async {
+            guard let crashContext = report.context.flatMap({ self.decode(crashContextData: $0) }) else {
+                DD.logger.debug("Could not decode crash context")
+                return
+            }
+            self.sender.send(report: report, with: crashContext.merging(rumAttributes: GlobalRUMAttributes(attributes: attributes ?? [:])))
+        }
+    }
 
     func sendCrashReportIfFound() {
         queue.async {
@@ -144,7 +154,7 @@ internal final class CrashReportingFeature: DatadogFeature {
 }
 
 extension CrashReportingFeature: Flushable {
-    func flush() {
+    public func flush() {
         // Await asynchronous operations completion to safely sink all pending tasks.
         queue.sync {}
     }

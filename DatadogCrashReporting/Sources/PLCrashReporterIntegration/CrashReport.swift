@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(CrashReporter)
+
 import Foundation
 import CrashReporter
 
@@ -318,3 +320,5 @@ extension StackFrame {
         }
     }
 }
+
+#endif // canImport(CrashReporter)

@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(CrashReporter)
+
 import Foundation
 
 /// Reduces information in intermediate `CrashReport`:
@@ -92,3 +94,5 @@ internal struct CrashReportMinifier {
         }
     }
 }
+
+#endif
