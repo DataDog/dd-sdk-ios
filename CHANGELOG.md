@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FIX] Fix sporadic file overwrite during consent change, ensuring event data integrity. See [#2113][]
+- [FIX] Fix trace inconsistency when using `URLSessionInterceptor` or Alamofire extension. See [#2114][]
 
 # 2.20.0 / 14-11-2024
 
@@ -795,8 +796,9 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2104]: https://github.com/DataDog/dd-sdk-ios/pull/2104
 [#2099]: https://github.com/DataDog/dd-sdk-ios/pull/2099
 [#2063]: https://github.com/DataDog/dd-sdk-ios/pull/2063
-[#2113]: https://github.com/DataDog/dd-sdk-ios/pull/2113
 [#2092]: https://github.com/DataDog/dd-sdk-ios/pull/2092
+[#2113]: https://github.com/DataDog/dd-sdk-ios/pull/2113
+[#2114]: https://github.com/DataDog/dd-sdk-ios/pull/2114
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

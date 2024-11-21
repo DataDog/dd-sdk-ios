@@ -1171,6 +1171,8 @@
 		D284C7412C2059F3005142CC /* ObjcExceptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D284C73F2C2059F3005142CC /* ObjcExceptionTests.swift */; };
 		D286626E2A43487500852CE3 /* Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D286626D2A43487500852CE3 /* Datadog.swift */; };
 		D286626F2A43487500852CE3 /* Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D286626D2A43487500852CE3 /* Datadog.swift */; };
+		D28ABFD62CECDE6B00623F27 /* URLSessionInterceptorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D28ABFD52CECDE6B00623F27 /* URLSessionInterceptorTests.swift */; };
+		D28ABFD72CECDE6B00623F27 /* URLSessionInterceptorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D28ABFD52CECDE6B00623F27 /* URLSessionInterceptorTests.swift */; };
 		D28F836529C9E69E00EF8EA2 /* DatadogTraceFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E3924534075006E34EA /* DatadogTraceFeatureTests.swift */; };
 		D28F836629C9E6A200EF8EA2 /* DatadogTraceFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E3924534075006E34EA /* DatadogTraceFeatureTests.swift */; };
 		D28F836829C9E71D00EF8EA2 /* DDSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D28F836729C9E71C00EF8EA2 /* DDSpanTests.swift */; };
@@ -2982,6 +2984,7 @@
 		D27CBD992BB5DBBB00C766AA /* Mocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mocks.swift; sourceTree = "<group>"; };
 		D284C73F2C2059F3005142CC /* ObjcExceptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjcExceptionTests.swift; sourceTree = "<group>"; };
 		D286626D2A43487500852CE3 /* Datadog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Datadog.swift; sourceTree = "<group>"; };
+		D28ABFD52CECDE6B00623F27 /* URLSessionInterceptorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionInterceptorTests.swift; sourceTree = "<group>"; };
 		D28F836729C9E71C00EF8EA2 /* DDSpanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSpanTests.swift; sourceTree = "<group>"; };
 		D28F836A29C9E7A300EF8EA2 /* TracingURLSessionHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingURLSessionHandlerTests.swift; sourceTree = "<group>"; };
 		D28FCC342B5EBAAF00CCC077 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -6515,6 +6518,7 @@
 				D2160CD129C0DF6700FAA9A5 /* HostsSanitizerTests.swift */,
 				D2160CD329C0DF6700FAA9A5 /* URLSessionDelegateAsSuperclassTests.swift */,
 				D2160CD229C0DF6700FAA9A5 /* URLSessionTaskInterceptionTests.swift */,
+				D28ABFD52CECDE6B00623F27 /* URLSessionInterceptorTests.swift */,
 				61E45BCE2450A6EC00F2C652 /* TraceIDTests.swift */,
 				3CCECDB12BC68A0A0013C125 /* SpanIDTests.swift */,
 				61B558D32469CDD8001460D3 /* TraceIDGeneratorTests.swift */,
@@ -9808,6 +9812,7 @@
 				6174D6162BFDF29B00EC7469 /* BundleTypeTests.swift in Sources */,
 				3C0D5DF52A5443B100446CF9 /* DataFormatTests.swift in Sources */,
 				D2EBEE4429BA168200B15732 /* TraceIDTests.swift in Sources */,
+				D28ABFD72CECDE6B00623F27 /* URLSessionInterceptorTests.swift in Sources */,
 				D2EBEE4329BA168200B15732 /* TraceIDGeneratorTests.swift in Sources */,
 				D2DA23A7298D58F400C6C7E6 /* AppStateHistoryTests.swift in Sources */,
 				D2DA23A5298D58F400C6C7E6 /* AnyDecodableTests.swift in Sources */,
@@ -9860,6 +9865,7 @@
 				6174D6172BFDF29B00EC7469 /* BundleTypeTests.swift in Sources */,
 				3C0D5DF62A5443B100446CF9 /* DataFormatTests.swift in Sources */,
 				D2EBEE4629BA168400B15732 /* TraceIDTests.swift in Sources */,
+				D28ABFD62CECDE6B00623F27 /* URLSessionInterceptorTests.swift in Sources */,
 				D2EBEE4529BA168400B15732 /* TraceIDGeneratorTests.swift in Sources */,
 				D2DA23B2298D59DC00C6C7E6 /* AppStateHistoryTests.swift in Sources */,
 				D2DA23B3298D59DC00C6C7E6 /* AnyDecodableTests.swift in Sources */,
