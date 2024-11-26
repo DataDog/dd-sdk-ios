@@ -37,6 +37,20 @@
     [DDSessionReplay stopRecording];
 }
 
+- (void)testStartRecordingImmediately {
+    DDSessionReplayConfiguration *configuration = [
+        [DDSessionReplayConfiguration alloc]
+        initWithReplaySampleRate:100
+        textAndInputPrivacyLevel:DDTextAndInputPrivacyLevelMaskAll
+        imagePrivacyLevel:DDImagePrivacyLevelMaskAll
+        touchPrivacyLevel:DDTouchPrivacyLevelHide
+    ];
+
+    configuration.startRecordingImmediately = false;
+
+    XCTAssertFalse(configuration.startRecordingImmediately);
+}
+
 // MARK: Privacy Overrides
 - (void)testSettingAndGettingOverrides {
     // Given
