@@ -32,14 +32,15 @@ internal class UIHostingViewRecorder: NodeRecorder {
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         do {
-            return try semantics(refelecting: view, with: attributes, in: context)
+            let nodeID = context.ids.nodeID(view: view, nodeRecorder: self)
+            return try semantics(refelecting: view, nodeID: nodeID, with: attributes, in: context)
         } catch {
             print(error)
             return nil
         }
     }
 
-    func semantics(refelecting subject: AnyObject, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics? {
+    func semantics(refelecting subject: AnyObject, nodeID: NodeID, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics? {
         guard
             let ivar = class_getInstanceVariable(type(of: subject), "renderer"),
             let renderer = object_getIvar(subject, ivar) as? AnyObject
@@ -47,10 +48,10 @@ internal class UIHostingViewRecorder: NodeRecorder {
             return nil
         }
 
-        return try semantics(renderer: renderer, with: attributes, in: context)
+        return try semantics(renderer: renderer, nodeID: nodeID, with: attributes, in: context)
     }
 
-    private func semantics(renderer subject: Any, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics {
+    private func semantics(renderer subject: Any, nodeID: NodeID, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics {
         guard attributes.isVisible else {
             return InvisibleElement.constant
         }
@@ -58,6 +59,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
         let renderer = try DisplayList.ViewRenderer(reflecting: subject)
 
         let builder = SwiftUIWireframesBuilder(
+            wireframeID: nodeID,
             renderer: renderer.renderer,
             textObfuscator: textObfuscator(context),
             fontScalingEnabled: false,
@@ -71,7 +73,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
 
 @available(iOS 18, tvOS 18, *)
 internal class iOS18HostingViewRecorder: UIHostingViewRecorder {
-    override func semantics(refelecting subject: AnyObject, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics? {
+    override func semantics(refelecting subject: AnyObject, nodeID: NodeID, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics? {
         guard
             let ivar = class_getInstanceVariable(type(of: subject), "_base"),
             let _base = object_getIvar(subject, ivar) as? AnyObject
@@ -79,7 +81,7 @@ internal class iOS18HostingViewRecorder: UIHostingViewRecorder {
             return nil
         }
 
-        return try super.semantics(refelecting: _base, with: attributes, in: context)
+        return try super.semantics(refelecting: _base, nodeID: nodeID, with: attributes, in: context)
     }
 }
 

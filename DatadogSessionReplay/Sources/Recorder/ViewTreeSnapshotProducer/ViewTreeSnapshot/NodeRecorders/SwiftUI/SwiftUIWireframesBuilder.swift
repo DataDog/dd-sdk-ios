@@ -17,6 +17,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
         let builder: WireframesBuilder
     }
 
+    let wireframeID: WireframeID
     let renderer: DisplayList.ViewUpdater
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
@@ -30,6 +31,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     }
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+        let root = builder.createShapeWireframe(id: wireframeID, attributes: attributes)
         do {
             let list = try renderer.lastList.reflect()
             let context = Context(
@@ -38,10 +40,10 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                 builder: builder
             )
 
-            return buildWireframes(items: list.items, context: context)
+            return [root] + buildWireframes(items: list.items, context: context)
         } catch {
             print(error)
-            return []
+            return [root]
         }
     }
 
