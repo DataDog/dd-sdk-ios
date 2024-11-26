@@ -284,6 +284,24 @@ public struct SpanEvent: Encodable
     public let applicationVersion: String
     public let networkConnectionInfo: NetworkConnectionInfo?
     public let mobileCarrierInfo: CarrierInfo?
+    public struct DeviceInfo: Codable
+        public enum DeviceType: String, Codable
+            case mobile = "mobile"
+            case tablet = "tablet"
+            case tv = "tv"
+            case other = "other"
+        public let brand: String
+        public let name: String
+        public let model: String
+        public let architecture: String
+        public let type: DeviceType
+    public let deviceInfo: DeviceInfo
+    public struct OperatingSystemInfo: Codable
+        public let name: String
+        public let version: String
+        public let build: String?
+        public let versionMajor: String
+    public let osInfo: OperatingSystemInfo
     public struct UserInfo
         public let id: String?
         public let name: String?
@@ -2094,11 +2112,11 @@ public typealias WireframeID = NodeID
 public class SessionReplayWireframesBuilder
     public struct FontOverride
         public init(size: CGFloat?)
-    public func createShapeWireframe(id: WireframeID,frame: CGRect,clip: SRContentClip? = nil,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
-    public func createImageWireframe(id: WireframeID,resource: SessionReplayResource,frame: CGRect,mimeType: String = "png",clip: SRContentClip? = nil,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
-    public func createTextWireframe(id: WireframeID,frame: CGRect,text: String,textFrame: CGRect? = nil,textAlignment: SRTextPosition.Alignment? = nil,clip: SRContentClip? = nil,textColor: CGColor? = nil,font: UIFont? = nil,fontOverride: FontOverride? = nil,fontScalingEnabled: Bool = false,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
-    public func createPlaceholderWireframe(id: Int64,frame: CGRect,label: String,clip: SRContentClip? = nil) -> SRWireframe
-    public func visibleWebViewWireframe(id: Int,frame: CGRect,clip: SRContentClip? = nil,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
+    public func createShapeWireframe(id: WireframeID,frame: CGRect,clip: CGRect,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
+    public func createImageWireframe(id: WireframeID,resource: SessionReplayResource,frame: CGRect,clip: CGRect,mimeType: String = "png",borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
+    public func createTextWireframe(id: WireframeID,frame: CGRect,clip: CGRect,text: String,textFrame: CGRect? = nil,textAlignment: SRTextPosition.Alignment? = nil,textColor: CGColor? = nil,font: UIFont? = nil,fontOverride: FontOverride? = nil,fontScalingEnabled: Bool = false,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
+    public func createPlaceholderWireframe(id: Int64,frame: CGRect,clip: CGRect,label: String) -> SRWireframe
+    public func visibleWebViewWireframe(id: Int,frame: CGRect,clip: CGRect,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
     public func hiddenWebViewWireframes() -> [SRWireframe]
 [?] extension SRContentClip
     public static func create(bottom: Int64?,left: Int64?,right: Int64?,top: Int64?) -> SRContentClip
@@ -2138,12 +2156,13 @@ public protocol SessionReplayResource
     func calculateIdentifier() -> String
     func calculateData() -> Data
 public struct SessionReplayViewAttributes: Equatable
-    public let frame: CGRect
-    public let backgroundColor: CGColor?
-    public let layerBorderColor: CGColor?
-    public let layerBorderWidth: CGFloat
-    public let layerCornerRadius: CGFloat
-    public let alpha: CGFloat
+    public internal(set) var frame: CGRect
+    public internal(set) var clip: CGRect
+    public internal(set) var backgroundColor: CGColor?
+    public internal(set) var layerBorderColor: CGColor?
+    public internal(set) var layerBorderWidth: CGFloat
+    public internal(set) var layerCornerRadius: CGFloat
+    public internal(set) var alpha: CGFloat
 public protocol SessionReplayNodeSemantics
     static var importance: Int
     var subtreeStrategy: SessionReplayNodeSubtreeStrategy
@@ -2171,6 +2190,7 @@ public final class objc_SessionReplayConfiguration: NSObject
     @objc public var textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel
     @objc public var imagePrivacyLevel: objc_ImagePrivacyLevel
     @objc public var touchPrivacyLevel: objc_TouchPrivacyLevel
+    @objc public var startRecordingImmediately: Bool
     @objc public var customEndpoint: URL?
     public required init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel)
     public required init(replaySampleRate: Float)
