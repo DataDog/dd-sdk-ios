@@ -745,6 +745,8 @@
 		A7F651302B7655DE004B0EDB /* UIImageResourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F6512F2B7655DE004B0EDB /* UIImageResourceTests.swift */; };
 		A7FA98CE2BA1A6930018D6B5 /* MethodCalledMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7FA98CD2BA1A6930018D6B5 /* MethodCalledMetric.swift */; };
 		A7FA98CF2BA1A6930018D6B5 /* MethodCalledMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7FA98CD2BA1A6930018D6B5 /* MethodCalledMetric.swift */; };
+		B3C27A082CE6342C006580F9 /* DeterministicSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C27A072CE6342C006580F9 /* DeterministicSamplerTests.swift */; };
+		B3C27A092CE6342C006580F9 /* DeterministicSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C27A072CE6342C006580F9 /* DeterministicSamplerTests.swift */; };
 		D2056C212BBFE05A0085BC76 /* WireframesBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2056C202BBFE05A0085BC76 /* WireframesBuilderTests.swift */; };
 		D20605A3287464F40047275C /* ContextValuePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605A2287464F40047275C /* ContextValuePublisher.swift */; };
 		D20605A4287464F40047275C /* ContextValuePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605A2287464F40047275C /* ContextValuePublisher.swift */; };
@@ -1170,6 +1172,8 @@
 		D284C7412C2059F3005142CC /* ObjcExceptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D284C73F2C2059F3005142CC /* ObjcExceptionTests.swift */; };
 		D286626E2A43487500852CE3 /* Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D286626D2A43487500852CE3 /* Datadog.swift */; };
 		D286626F2A43487500852CE3 /* Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D286626D2A43487500852CE3 /* Datadog.swift */; };
+		D28ABFD62CECDE6B00623F27 /* URLSessionInterceptorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D28ABFD52CECDE6B00623F27 /* URLSessionInterceptorTests.swift */; };
+		D28ABFD72CECDE6B00623F27 /* URLSessionInterceptorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D28ABFD52CECDE6B00623F27 /* URLSessionInterceptorTests.swift */; };
 		D28F836529C9E69E00EF8EA2 /* DatadogTraceFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E3924534075006E34EA /* DatadogTraceFeatureTests.swift */; };
 		D28F836629C9E6A200EF8EA2 /* DatadogTraceFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD4E3924534075006E34EA /* DatadogTraceFeatureTests.swift */; };
 		D28F836829C9E71D00EF8EA2 /* DDSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D28F836729C9E71C00EF8EA2 /* DDSpanTests.swift */; };
@@ -2823,6 +2827,7 @@
 		A7FA98CD2BA1A6930018D6B5 /* MethodCalledMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodCalledMetric.swift; sourceTree = "<group>"; };
 		B3BBBCB0265E71C600943419 /* VitalMemoryReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalMemoryReader.swift; sourceTree = "<group>"; };
 		B3BBBCBB265E71D100943419 /* VitalMemoryReaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalMemoryReaderTests.swift; sourceTree = "<group>"; };
+		B3C27A072CE6342C006580F9 /* DeterministicSamplerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicSamplerTests.swift; sourceTree = "<group>"; };
 		B3FC3C0626526EFF00DEED9E /* VitalInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalInfo.swift; sourceTree = "<group>"; };
 		B3FC3C3B2653A97700DEED9E /* VitalInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalInfoTests.swift; sourceTree = "<group>"; };
 		D2056C202BBFE05A0085BC76 /* WireframesBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WireframesBuilderTests.swift; sourceTree = "<group>"; };
@@ -3001,6 +3006,7 @@
 		D27CBD992BB5DBBB00C766AA /* Mocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mocks.swift; sourceTree = "<group>"; };
 		D284C73F2C2059F3005142CC /* ObjcExceptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjcExceptionTests.swift; sourceTree = "<group>"; };
 		D286626D2A43487500852CE3 /* Datadog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Datadog.swift; sourceTree = "<group>"; };
+		D28ABFD52CECDE6B00623F27 /* URLSessionInterceptorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionInterceptorTests.swift; sourceTree = "<group>"; };
 		D28F836729C9E71C00EF8EA2 /* DDSpanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSpanTests.swift; sourceTree = "<group>"; };
 		D28F836A29C9E7A300EF8EA2 /* TracingURLSessionHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingURLSessionHandlerTests.swift; sourceTree = "<group>"; };
 		D28FCC342B5EBAAF00CCC077 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -6416,6 +6422,7 @@
 			isa = PBXGroup;
 			children = (
 				613C6B912768FF3100870CBF /* SamplerTests.swift */,
+				B3C27A072CE6342C006580F9 /* DeterministicSamplerTests.swift */,
 				9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */,
 				D284C73F2C2059F3005142CC /* ObjcExceptionTests.swift */,
 			);
@@ -6582,6 +6589,7 @@
 				D2160CD129C0DF6700FAA9A5 /* HostsSanitizerTests.swift */,
 				D2160CD329C0DF6700FAA9A5 /* URLSessionDelegateAsSuperclassTests.swift */,
 				D2160CD229C0DF6700FAA9A5 /* URLSessionTaskInterceptionTests.swift */,
+				D28ABFD52CECDE6B00623F27 /* URLSessionInterceptorTests.swift */,
 				61E45BCE2450A6EC00F2C652 /* TraceIDTests.swift */,
 				3CCECDB12BC68A0A0013C125 /* SpanIDTests.swift */,
 				61B558D32469CDD8001460D3 /* TraceIDGeneratorTests.swift */,
@@ -9888,6 +9896,7 @@
 				6174D6162BFDF29B00EC7469 /* BundleTypeTests.swift in Sources */,
 				3C0D5DF52A5443B100446CF9 /* DataFormatTests.swift in Sources */,
 				D2EBEE4429BA168200B15732 /* TraceIDTests.swift in Sources */,
+				D28ABFD72CECDE6B00623F27 /* URLSessionInterceptorTests.swift in Sources */,
 				D2EBEE4329BA168200B15732 /* TraceIDGeneratorTests.swift in Sources */,
 				D2DA23A7298D58F400C6C7E6 /* AppStateHistoryTests.swift in Sources */,
 				D2DA23A5298D58F400C6C7E6 /* AnyDecodableTests.swift in Sources */,
@@ -9895,6 +9904,7 @@
 				D2DA23A4298D58F400C6C7E6 /* AnyCodableTests.swift in Sources */,
 				D2160CDE29C0DF6700FAA9A5 /* URLSessionTaskInterceptionTests.swift in Sources */,
 				D270CDE02B46E5A50002EACD /* URLSessionDataDelegateSwizzlerTests.swift in Sources */,
+				B3C27A082CE6342C006580F9 /* DeterministicSamplerTests.swift in Sources */,
 				D2DA23A1298D58F400C6C7E6 /* ReadWriteLockTests.swift in Sources */,
 				D2160CD829C0DF6700FAA9A5 /* FirstPartyHostsTests.swift in Sources */,
 				D284C7402C2059F3005142CC /* ObjcExceptionTests.swift in Sources */,
@@ -9939,6 +9949,7 @@
 				6174D6172BFDF29B00EC7469 /* BundleTypeTests.swift in Sources */,
 				3C0D5DF62A5443B100446CF9 /* DataFormatTests.swift in Sources */,
 				D2EBEE4629BA168400B15732 /* TraceIDTests.swift in Sources */,
+				D28ABFD62CECDE6B00623F27 /* URLSessionInterceptorTests.swift in Sources */,
 				D2EBEE4529BA168400B15732 /* TraceIDGeneratorTests.swift in Sources */,
 				D2DA23B2298D59DC00C6C7E6 /* AppStateHistoryTests.swift in Sources */,
 				D2DA23B3298D59DC00C6C7E6 /* AnyDecodableTests.swift in Sources */,
@@ -9946,6 +9957,7 @@
 				D2DA23B4298D59DC00C6C7E6 /* AnyCodableTests.swift in Sources */,
 				D2160CDF29C0DF6700FAA9A5 /* URLSessionTaskInterceptionTests.swift in Sources */,
 				D270CDE12B46E5A50002EACD /* URLSessionDataDelegateSwizzlerTests.swift in Sources */,
+				B3C27A092CE6342C006580F9 /* DeterministicSamplerTests.swift in Sources */,
 				D2DA23B5298D59DC00C6C7E6 /* ReadWriteLockTests.swift in Sources */,
 				D2160CD929C0DF6700FAA9A5 /* FirstPartyHostsTests.swift in Sources */,
 				D284C7412C2059F3005142CC /* ObjcExceptionTests.swift in Sources */,

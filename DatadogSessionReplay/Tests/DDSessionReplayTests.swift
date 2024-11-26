@@ -25,6 +25,7 @@ class DDSessionReplayTests: XCTestCase {
         XCTAssertEqual(config._swift.textAndInputPrivacyLevel, .maskAll)
         XCTAssertEqual(config._swift.imagePrivacyLevel, .maskAll)
         XCTAssertEqual(config._swift.touchPrivacyLevel, .hide)
+        XCTAssertTrue(config._swift.startRecordingImmediately)
         XCTAssertNil(config._swift.customEndpoint)
     }
 
@@ -48,6 +49,7 @@ class DDSessionReplayTests: XCTestCase {
         XCTAssertEqual(config._swift.textAndInputPrivacyLevel, textAndInputPrivacy._swift)
         XCTAssertEqual(config._swift.imagePrivacyLevel, imagePrivacy._swift)
         XCTAssertEqual(config._swift.touchPrivacyLevel, touchPrivacy._swift)
+        XCTAssertTrue(config._swift.startRecordingImmediately)
         XCTAssertNil(config._swift.customEndpoint)
     }
 
@@ -59,6 +61,7 @@ class DDSessionReplayTests: XCTestCase {
         let imagePrivacy: objc_ImagePrivacyLevel = [.maskAll, .maskNonBundledOnly, .maskNone].randomElement()!
         let touchPrivacy: objc_TouchPrivacyLevel = [.show, .hide].randomElement()!
         let url: URL = .mockRandom()
+        let startRecordingImmediately: Bool = .random()
 
         // When
         let config = objc_SessionReplayConfiguration(replaySampleRate: 100)
@@ -68,6 +71,7 @@ class DDSessionReplayTests: XCTestCase {
         config.imagePrivacyLevel = imagePrivacy
         config.touchPrivacyLevel = touchPrivacy
         config.customEndpoint = url
+        config.startRecordingImmediately = startRecordingImmediately
 
         // Then
         XCTAssertEqual(config._swift.replaySampleRate, sampleRate)
@@ -76,6 +80,7 @@ class DDSessionReplayTests: XCTestCase {
         XCTAssertEqual(config._swift.imagePrivacyLevel, imagePrivacy._swift)
         XCTAssertEqual(config._swift.touchPrivacyLevel, touchPrivacy._swift)
         XCTAssertEqual(config._swift.customEndpoint, url)
+        XCTAssertEqual(config._swift.startRecordingImmediately, startRecordingImmediately)
     }
 
     func testConfigurationOverridesWithNewApi() {
@@ -85,6 +90,7 @@ class DDSessionReplayTests: XCTestCase {
         let imagePrivacy: objc_ImagePrivacyLevel = [.maskAll, .maskNonBundledOnly, .maskNone].randomElement()!
         let touchPrivacy: objc_TouchPrivacyLevel = [.show, .hide].randomElement()!
         let url: URL = .mockRandom()
+        let startRecordingImmediately: Bool = .random()
 
         // When
         let config = objc_SessionReplayConfiguration(
@@ -98,6 +104,7 @@ class DDSessionReplayTests: XCTestCase {
         config.imagePrivacyLevel = imagePrivacy
         config.touchPrivacyLevel = touchPrivacy
         config.customEndpoint = url
+        config.startRecordingImmediately = startRecordingImmediately
 
         // Then
         XCTAssertEqual(config._swift.replaySampleRate, sampleRate)
@@ -105,6 +112,7 @@ class DDSessionReplayTests: XCTestCase {
         XCTAssertEqual(config._swift.imagePrivacyLevel, imagePrivacy._swift)
         XCTAssertEqual(config._swift.touchPrivacyLevel, touchPrivacy._swift)
         XCTAssertEqual(config._swift.customEndpoint, url)
+        XCTAssertEqual(config._swift.startRecordingImmediately, startRecordingImmediately)
     }
 
     func testPrivacyLevelsInterop() {
