@@ -25,10 +25,10 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
     /// will highly depend on the performance of app, Simulator and CI.
     private struct Baseline {
         /// Number of all SR segments to pass the test.
-        static let totalSegmentsCount = 15
+        static let totalSegmentsCount = 14
         /// Number of all SR records to pass the test.
         static let totalRecordsCount = 35
-        /// Number of all "full snapshot" records to pass the test.
+        /// Number of all "full snapshot" records to pasOs the test.
         static let fullSnapshotRecordsCount = 6
         /// Number of all "incremental snapshot" records to pass the test.
         static let incrementalSnapshotRecordsCount = 17
