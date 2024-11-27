@@ -28,7 +28,7 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         static let totalSegmentsCount = 14
         /// Number of all SR records to pass the test.
         static let totalRecordsCount = 35
-        /// Number of all "full snapshot" records to pasOs the test.
+        /// Number of all "full snapshot" records to pass the test.
         static let fullSnapshotRecordsCount = 6
         /// Number of all "incremental snapshot" records to pass the test.
         static let incrementalSnapshotRecordsCount = 17

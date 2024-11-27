@@ -117,7 +117,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
         contentWireframe(item: item, content: content, context: context).map { [$0] } ?? []
     }
 
-    func effectWireframe(item: DisplayList.Item, effect: DisplayList.Effect, list: DisplayList, context: Context) -> [SRWireframe] {
+    private func effectWireframe(item: DisplayList.Item, effect: DisplayList.Effect, list: DisplayList, context: Context) -> [SRWireframe] {
         var context = context
         context.frame = context.convert(frame: item.frame)
 
@@ -137,7 +137,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
 }
 
 @available(iOS 13.0, *)
-extension SwiftUIWireframesBuilder.Context {
+internal extension SwiftUIWireframesBuilder.Context {
     func convert(frame: CGRect) -> CGRect {
         frame.offsetBy(
             dx: self.frame.origin.x,
