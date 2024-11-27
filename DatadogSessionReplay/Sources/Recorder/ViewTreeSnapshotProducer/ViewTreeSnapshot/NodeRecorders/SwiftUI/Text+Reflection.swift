@@ -20,20 +20,4 @@ extension ResolvedStyledText.StringDrawing: Reflection {
     }
 }
 
-///
-/// Standard Reflection is based on standard ``Mirror`` apis.
-///
-
-extension StyledTextContentView: StandardReflection {
-    init(_ mirror: Mirror) throws {
-        text = try mirror.descendant(path: "text")
-    }
-}
-
-extension ResolvedStyledText.StringDrawing: StandardReflection {
-    init(_ mirror: Mirror) throws {
-        storage = try mirror.descendant(path: "storage")
-    }
-}
-
 #endif

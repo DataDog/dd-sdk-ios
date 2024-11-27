@@ -860,7 +860,6 @@
 		D224430E29E95D6700274EC7 /* CrashReportReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D224430C29E95D6600274EC7 /* CrashReportReceiverTests.swift */; };
 		D224430F29E9779F00274EC7 /* TelemetryReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D248ED4728081B9B00B315B4 /* TelemetryReceiverTests.swift */; };
 		D224431029E977A100274EC7 /* TelemetryReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D248ED4728081B9B00B315B4 /* TelemetryReceiverTests.swift */; };
-		D226D0B12BF7AA35006A7CB4 /* StandardReflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D226D0B02BF7AA35006A7CB4 /* StandardReflection.swift */; };
 		D22743D829DEB8B4001A7EF9 /* VitalInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FC3C3B2653A97700DEED9E /* VitalInfoTests.swift */; };
 		D22743D929DEB8B4001A7EF9 /* VitalInfoSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2EF44E2694FA14008A7DAE /* VitalInfoSamplerTests.swift */; };
 		D22743DA29DEB8B4001A7EF9 /* VitalMemoryReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BBBCBB265E71D100943419 /* VitalMemoryReaderTests.swift */; };
@@ -2877,7 +2876,6 @@
 		D2216EC22A96632F00ADAEC8 /* FeatureBaggageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureBaggageTests.swift; sourceTree = "<group>"; };
 		D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+SessionReplay.swift"; sourceTree = "<group>"; };
 		D224430C29E95D6600274EC7 /* CrashReportReceiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CrashReportReceiverTests.swift; sourceTree = "<group>"; };
-		D226D0B02BF7AA35006A7CB4 /* StandardReflection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StandardReflection.swift; sourceTree = "<group>"; };
 		D22743E829DEC9A9001A7EF9 /* RUMDataModelMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDataModelMocks.swift; sourceTree = "<group>"; };
 		D227A0A32C7622EA00C83324 /* BenchmarkProfiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkProfiler.swift; sourceTree = "<group>"; };
 		D22C1F5B271484B400922024 /* LogEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventMapper.swift; sourceTree = "<group>"; };
@@ -3850,7 +3848,6 @@
 			children = (
 				61054E552A6EE10A00AAA894 /* CGRectExtensions.swift */,
 				61054E582A6EE10A00AAA894 /* Queue.swift */,
-				D226D0B02BF7AA35006A7CB4 /* StandardReflection.swift */,
 				D2EA0F422C0D941900CB20F8 /* ReflectionMirror.swift */,
 				61054E592A6EE10A00AAA894 /* Errors.swift */,
 				61054E5A2A6EE10A00AAA894 /* Colors.swift */,
@@ -8456,7 +8453,6 @@
 				962C41A72CA431370050B747 /* SessionReplayPrivacyOverrides.swift in Sources */,
 				61054E772A6EE10A00AAA894 /* ViewTreeRecorder.swift in Sources */,
 				61054E9E2A6EE10B00AAA894 /* Queue.swift in Sources */,
-				D226D0B12BF7AA35006A7CB4 /* StandardReflection.swift in Sources */,
 				61054E6A2A6EE10A00AAA894 /* UIView+SessionReplay.swift in Sources */,
 				96F25A832CC7EA4400459567 /* UIView+SessionReplayPrivacyOverrides+objc.swift in Sources */,
 				61054E7D2A6EE10A00AAA894 /* UITextFieldRecorder.swift in Sources */,

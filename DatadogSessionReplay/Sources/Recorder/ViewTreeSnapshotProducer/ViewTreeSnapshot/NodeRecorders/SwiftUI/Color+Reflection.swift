@@ -26,25 +26,4 @@ extension ResolvedPaint: Reflection {
     }
 }
 
-///
-/// Standard Reflection is based on standard ``Mirror`` apis.
-///
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension SwiftUI.Color._Resolved: StandardReflection {
-    init(_ mirror: Mirror) throws {
-        linearRed = try mirror.descendant(path: "linearRed")
-        linearGreen = try mirror.descendant(path: "linearGreen")
-        linearBlue = try mirror.descendant(path: "linearBlue")
-        opacity = try mirror.descendant(path: "opacity")
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension ResolvedPaint: StandardReflection {
-    init(_ mirror: Mirror) throws {
-        paint = try? mirror.descendant(path: "paint")
-    }
-}
-
 #endif
