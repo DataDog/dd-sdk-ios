@@ -28,6 +28,8 @@
  * SOFTWARE.
  */
 
+#if DEBUG
+
 import Foundation
 
 /// Dumps the given value's contents using its mirror to standard output.
@@ -547,3 +549,5 @@ internal struct FileHandlerOutputStream: TextOutputStream {
         }
     }
 }
+
+#endif

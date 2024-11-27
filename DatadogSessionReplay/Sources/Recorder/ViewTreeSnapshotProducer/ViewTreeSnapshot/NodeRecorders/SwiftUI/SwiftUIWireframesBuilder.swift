@@ -146,9 +146,8 @@ extension SwiftUIWireframesBuilder.Context {
     }
 }
 
+#if DEBUG
 internal func dump<T>(_ value: T, filename: String) throws {
-#if canImport(CustomDump)
-//    let url = URL.documentsDirectory.appending(path: "hostview.dump")
     let manager = FileManager.default
     let url = manager.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(filename) //swiftlint:disable:this force_unwrapping
     manager.createFile(atPath: url.path, contents: nil, attributes: nil)
@@ -157,7 +156,7 @@ internal func dump<T>(_ value: T, filename: String) throws {
     customDump(value, to: &stream)
     print("Dump:", url)
     handle.closeFile()
-#endif
 }
+#endif
 
 #endif
