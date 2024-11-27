@@ -47,49 +47,4 @@ class ReflectionMirrorTests: XCTestCase {
         let mirror = ReflectionMirror(reflecting: Optional.some(Mock()) as Any)
         XCTAssertEqual(mirror.displayStyle, .struct)
     }
-
-//    func testExistentialStructDisplay() {
-//        guard #available(iOS 16.0, *) else {
-//            return
-//        }
-//
-//        protocol Box {
-//            var value: Int { get }
-//        }
-//
-//        struct Container: Box {
-//            var value: Int
-//        }
-//
-//        func genericErase<T>(_ value: T) -> Any {
-//            value
-//        }
-//
-//        let container = Container(value: 42)
-//        let subject = genericErase(container)
-//        let mirror = ReflectionMirror(reflecting: subject)
-//        XCTAssertEqual(mirror.displayStyle, .struct)
-//    }
-//
-//    func testExtendedExistentialClassDisplay() {
-//        guard #available(iOS 16.0, *) else {
-//            return
-//        }
-//
-//        protocol Box<Value> {
-//            associatedtype Value
-//            var value: Value { get }
-//        }
-//
-//        struct Container<Value>: Box {
-//            var value: Value
-//        }
-//        func genericErase<T>(_ value: T) -> Any {
-//            value
-//        }
-//        let container: any Box<Int> = Container(value: 42)
-//        let subject = genericErase(container)
-//        let mirror = Mirror(reflecting: subject)
-//        XCTAssertEqual(mirror.displayStyle, .struct)
-//    }
 }
