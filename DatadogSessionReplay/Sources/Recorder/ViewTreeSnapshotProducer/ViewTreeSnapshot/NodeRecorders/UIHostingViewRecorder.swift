@@ -14,6 +14,8 @@ import SwiftUI
 internal class UIHostingViewRecorder: NodeRecorder {
     let identifier: UUID
 
+    let _UIGraphicsViewClass: AnyClass? = NSClassFromString("SwiftUI._UIGraphicsView")
+
     /// An option for overriding default semantics from parent recorder.
     var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics?
     var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating
@@ -31,6 +33,11 @@ internal class UIHostingViewRecorder: NodeRecorder {
     }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
+        // Ignore views of type `SwiftUI._UIGraphicsView`
+        if let cls = _UIGraphicsViewClass, type(of: view).isSubclass(of: cls) {
+            return IgnoredElement(subtreeStrategy: .ignore)
+        }
+
         do {
             let nodeID = context.ids.nodeID(view: view, nodeRecorder: self)
             return try semantics(refelecting: view, nodeID: nodeID, with: attributes, in: context)

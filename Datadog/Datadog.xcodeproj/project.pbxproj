@@ -1349,7 +1349,6 @@
 		D2AD1CC82CE4AE6600106C74 /* Text.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CBF2CE4AE6600106C74 /* Text.swift */; };
 		D2AD1CC92CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CBE2CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift */; };
 		D2AD1CCC2CE4AE9800106C74 /* UIHostingViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CCB2CE4AE9800106C74 /* UIHostingViewRecorder.swift */; };
-		D2AD1CCD2CE4AE9800106C74 /* UIGraphicsViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CCA2CE4AE9800106C74 /* UIGraphicsViewRecorder.swift */; };
 		D2AD1CCF2CE4AEF600106C74 /* ReflectionMirrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CCE2CE4AEF600106C74 /* ReflectionMirrorTests.swift */; };
 		D2B249942A4598FE00DD4F9F /* LoggerProtocol+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */; };
 		D2B249952A4598FE00DD4F9F /* LoggerProtocol+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */; };
@@ -3041,7 +3040,6 @@
 		D2AD1CBE2CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIWireframesBuilder.swift; sourceTree = "<group>"; };
 		D2AD1CBF2CE4AE6600106C74 /* Text.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Text.swift; sourceTree = "<group>"; };
 		D2AD1CC02CE4AE6600106C74 /* Text+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Text+Reflection.swift"; sourceTree = "<group>"; };
-		D2AD1CCA2CE4AE9800106C74 /* UIGraphicsViewRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIGraphicsViewRecorder.swift; sourceTree = "<group>"; };
 		D2AD1CCB2CE4AE9800106C74 /* UIHostingViewRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIHostingViewRecorder.swift; sourceTree = "<group>"; };
 		D2AD1CCE2CE4AEF600106C74 /* ReflectionMirrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionMirrorTests.swift; sourceTree = "<group>"; };
 		D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoggerProtocol+Internal.swift"; sourceTree = "<group>"; };
@@ -3754,7 +3752,6 @@
 				61054E352A6EE10A00AAA894 /* UISegmentRecorder.swift */,
 				61054E362A6EE10A00AAA894 /* UnsupportedViewRecorder.swift */,
 				D2BCB2A02B7B8107005C2AAB /* WKWebViewRecorder.swift */,
-				D2AD1CCA2CE4AE9800106C74 /* UIGraphicsViewRecorder.swift */,
 				D2AD1CCB2CE4AE9800106C74 /* UIHostingViewRecorder.swift */,
 			);
 			path = NodeRecorders;
@@ -8483,7 +8480,6 @@
 				61054E862A6EE10A00AAA894 /* UnsupportedViewRecorder.swift in Sources */,
 				61054E882A6EE10A00AAA894 /* ViewTreeRecordingContext.swift in Sources */,
 				D2AD1CCC2CE4AE9800106C74 /* UIHostingViewRecorder.swift in Sources */,
-				D2AD1CCD2CE4AE9800106C74 /* UIGraphicsViewRecorder.swift in Sources */,
 				61054E932A6EE10A00AAA894 /* MultipartFormData.swift in Sources */,
 				D2BCB2A12B7B8107005C2AAB /* WKWebViewRecorder.swift in Sources */,
 				61054E712A6EE10A00AAA894 /* TouchSnapshot.swift in Sources */,

@@ -80,10 +80,8 @@ internal func createDefaultNodeRecorders() -> [NodeRecorder] {
 
     if #available(iOS 18, tvOS 18, *) {
         recorders.append(iOS18HostingViewRecorder(identifier: UUID()))
-        recorders.append(UIGraphicsViewRecorder(identifier: UUID()))
     } else if #available(iOS 13, tvOS 13, *) {
         recorders.append(UIHostingViewRecorder(identifier: UUID()))
-        recorders.append(UIGraphicsViewRecorder(identifier: UUID()))
     }
 
     return recorders
