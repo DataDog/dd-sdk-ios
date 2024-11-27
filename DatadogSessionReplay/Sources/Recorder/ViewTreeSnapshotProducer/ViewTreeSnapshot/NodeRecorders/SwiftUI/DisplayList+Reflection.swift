@@ -137,8 +137,9 @@ extension DisplayList.Content.Value: Reflection {
         case (.enum("platformView"), _):
             self = .platformView
 
-        case (.enum("image"), _):
-            self = .unknown
+        case (.enum("image"), let graphicsImage):
+            let resolvedImage = try GraphicsImage(reflecting: graphicsImage)
+            self = .image(resolvedImage)
 
         case (.enum("drawing"), _):
             self = .unknown

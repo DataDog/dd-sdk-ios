@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
- #if os(iOS)
+#if os(iOS)
 
 import Foundation
 import SwiftUI
@@ -83,6 +83,7 @@ internal struct DisplayList {
             case text(StyledTextContentView, CGSize)
             case platformView
             case color(Color._Resolved)
+            case image(GraphicsImage)
             case unknown
         }
 
