@@ -64,7 +64,10 @@ extension ViewTreeSnapshotBuilder {
 /// An arrays of default node recorders executed for the root view-tree hierarchy.
 internal func createDefaultNodeRecorders(featureFlags: SessionReplay.Configuration.FeatureFlags) -> [NodeRecorder] {
     var recorders: [NodeRecorder] = [
-        UnsupportedViewRecorder(identifier: UUID(), featureFlags: featureFlags),
+        UnsupportedViewRecorder(
+            identifier: UUID(),
+            featureFlags: featureFlags
+        ),
         UIViewRecorder(identifier: UUID()),
         UILabelRecorder(identifier: UUID()),
         UIImageViewRecorder(identifier: UUID()),
