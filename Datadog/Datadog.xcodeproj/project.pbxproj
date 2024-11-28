@@ -1339,6 +1339,16 @@
 		D2A7A9002BA1C24A00F46845 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D2A7A8FE2BA1C24A00F46845 /* PrivacyInfo.xcprivacy */; };
 		D2A7A9022BA1C4B100F46845 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D2A7A9012BA1C4B100F46845 /* PrivacyInfo.xcprivacy */; };
 		D2A7A9032BA1C4B100F46845 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D2A7A9012BA1C4B100F46845 /* PrivacyInfo.xcprivacy */; };
+		D2AD1CC22CE4AE6600106C74 /* CustomDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CBB2CE4AE6600106C74 /* CustomDump.swift */; };
+		D2AD1CC32CE4AE6600106C74 /* Color+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CBA2CE4AE6600106C74 /* Color+Reflection.swift */; };
+		D2AD1CC42CE4AE6600106C74 /* DisplayList+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CBD2CE4AE6600106C74 /* DisplayList+Reflection.swift */; };
+		D2AD1CC52CE4AE6600106C74 /* DisplayList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CBC2CE4AE6600106C74 /* DisplayList.swift */; };
+		D2AD1CC62CE4AE6600106C74 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CB92CE4AE6600106C74 /* Color.swift */; };
+		D2AD1CC72CE4AE6600106C74 /* Text+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CC02CE4AE6600106C74 /* Text+Reflection.swift */; };
+		D2AD1CC82CE4AE6600106C74 /* Text.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CBF2CE4AE6600106C74 /* Text.swift */; };
+		D2AD1CC92CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CBE2CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift */; };
+		D2AD1CCC2CE4AE9800106C74 /* UIHostingViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CCB2CE4AE9800106C74 /* UIHostingViewRecorder.swift */; };
+		D2AD1CCF2CE4AEF600106C74 /* ReflectionMirrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CCE2CE4AEF600106C74 /* ReflectionMirrorTests.swift */; };
 		D2B249942A4598FE00DD4F9F /* LoggerProtocol+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */; };
 		D2B249952A4598FE00DD4F9F /* LoggerProtocol+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */; };
 		D2B249972A45E10500DD4F9F /* LoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B249962A45E10500DD4F9F /* LoggerTests.swift */; };
@@ -1653,6 +1663,7 @@
 		D2DC4BF727F484AA00E4FB96 /* DataEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */; };
 		D2DE63532A30A7CA00441A54 /* CoreRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DE63522A30A7CA00441A54 /* CoreRegistry.swift */; };
 		D2DE63542A30A7CA00441A54 /* CoreRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DE63522A30A7CA00441A54 /* CoreRegistry.swift */; };
+		D2EA0F432C0D941900CB20F8 /* ReflectionMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EA0F422C0D941900CB20F8 /* ReflectionMirror.swift */; };
 		D2EA0F462C0E1AE300CB20F8 /* SessionReplayConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EA0F452C0E1AE200CB20F8 /* SessionReplayConfiguration.swift */; };
 		D2EBEE1F29BA160F00B15732 /* HTTPHeadersReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618E13A92524B8700098C6B0 /* HTTPHeadersReader.swift */; };
 		D2EBEE2029BA160F00B15732 /* TracePropagationHeadersWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EBEDCF29B8A02100B15732 /* TracePropagationHeadersWriter.swift */; };
@@ -3019,6 +3030,16 @@
 		D2A7840229A536AD003B03BB /* PrintFunctionMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintFunctionMock.swift; sourceTree = "<group>"; };
 		D2A7A8FE2BA1C24A00F46845 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D2A7A9012BA1C4B100F46845 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		D2AD1CB92CE4AE6600106C74 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
+		D2AD1CBA2CE4AE6600106C74 /* Color+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Reflection.swift"; sourceTree = "<group>"; };
+		D2AD1CBB2CE4AE6600106C74 /* CustomDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomDump.swift; sourceTree = "<group>"; };
+		D2AD1CBC2CE4AE6600106C74 /* DisplayList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayList.swift; sourceTree = "<group>"; };
+		D2AD1CBD2CE4AE6600106C74 /* DisplayList+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DisplayList+Reflection.swift"; sourceTree = "<group>"; };
+		D2AD1CBE2CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIWireframesBuilder.swift; sourceTree = "<group>"; };
+		D2AD1CBF2CE4AE6600106C74 /* Text.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Text.swift; sourceTree = "<group>"; };
+		D2AD1CC02CE4AE6600106C74 /* Text+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Text+Reflection.swift"; sourceTree = "<group>"; };
+		D2AD1CCB2CE4AE9800106C74 /* UIHostingViewRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIHostingViewRecorder.swift; sourceTree = "<group>"; };
+		D2AD1CCE2CE4AEF600106C74 /* ReflectionMirrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionMirrorTests.swift; sourceTree = "<group>"; };
 		D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoggerProtocol+Internal.swift"; sourceTree = "<group>"; };
 		D2B249962A45E10500DD4F9F /* LoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerTests.swift; sourceTree = "<group>"; };
 		D2B3F0432823EE8300C2B5EE /* TLVBlockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TLVBlockTests.swift; sourceTree = "<group>"; };
@@ -3068,6 +3089,7 @@
 		D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataEncryption.swift; sourceTree = "<group>"; };
 		D2DE63522A30A7CA00441A54 /* CoreRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreRegistry.swift; sourceTree = "<group>"; };
 		D2E8D59728C7AB90007E5DE1 /* ContextMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextMessageReceiverTests.swift; sourceTree = "<group>"; };
+		D2EA0F422C0D941900CB20F8 /* ReflectionMirror.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReflectionMirror.swift; sourceTree = "<group>"; };
 		D2EA0F452C0E1AE200CB20F8 /* SessionReplayConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayConfiguration.swift; sourceTree = "<group>"; };
 		D2EBEDCC29B893D800B15732 /* TraceID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceID.swift; sourceTree = "<group>"; };
 		D2EBEDCF29B8A02100B15732 /* TracePropagationHeadersWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracePropagationHeadersWriter.swift; sourceTree = "<group>"; };
@@ -3708,6 +3730,7 @@
 		61054E272A6EE10A00AAA894 /* NodeRecorders */ = {
 			isa = PBXGroup;
 			children = (
+				D2AD1CC12CE4AE6600106C74 /* SwiftUI */,
 				969B3B202C33F80500D62400 /* UIActivityIndicatorRecorder.swift */,
 				61054E282A6EE10A00AAA894 /* UIDatePickerRecorder.swift */,
 				61054E292A6EE10A00AAA894 /* UITextViewRecorder.swift */,
@@ -3727,6 +3750,7 @@
 				61054E352A6EE10A00AAA894 /* UISegmentRecorder.swift */,
 				61054E362A6EE10A00AAA894 /* UnsupportedViewRecorder.swift */,
 				D2BCB2A02B7B8107005C2AAB /* WKWebViewRecorder.swift */,
+				D2AD1CCB2CE4AE9800106C74 /* UIHostingViewRecorder.swift */,
 			);
 			path = NodeRecorders;
 			sourceTree = "<group>";
@@ -3824,6 +3848,7 @@
 			children = (
 				61054E552A6EE10A00AAA894 /* CGRectExtensions.swift */,
 				61054E582A6EE10A00AAA894 /* Queue.swift */,
+				D2EA0F422C0D941900CB20F8 /* ReflectionMirror.swift */,
 				61054E592A6EE10A00AAA894 /* Errors.swift */,
 				61054E5A2A6EE10A00AAA894 /* Colors.swift */,
 				61054E5B2A6EE10A00AAA894 /* Schedulers */,
@@ -3938,6 +3963,7 @@
 			children = (
 				61054F5D2A6EE1BA00AAA894 /* UIView+SessionReplayTests.swift */,
 				61054F5F2A6EE1BA00AAA894 /* CGRect+SessionReplayTests.swift */,
+				D2AD1CCE2CE4AEF600106C74 /* ReflectionMirrorTests.swift */,
 			);
 			path = Utilties;
 			sourceTree = "<group>";
@@ -6422,6 +6448,21 @@
 			path = Files;
 			sourceTree = "<group>";
 		};
+		D2AD1CC12CE4AE6600106C74 /* SwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				D2AD1CB92CE4AE6600106C74 /* Color.swift */,
+				D2AD1CBA2CE4AE6600106C74 /* Color+Reflection.swift */,
+				D2AD1CBB2CE4AE6600106C74 /* CustomDump.swift */,
+				D2AD1CBC2CE4AE6600106C74 /* DisplayList.swift */,
+				D2AD1CBD2CE4AE6600106C74 /* DisplayList+Reflection.swift */,
+				D2AD1CBE2CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift */,
+				D2AD1CBF2CE4AE6600106C74 /* Text.swift */,
+				D2AD1CC02CE4AE6600106C74 /* Text+Reflection.swift */,
+			);
+			path = SwiftUI;
+			sourceTree = "<group>";
+		};
 		D2C5D5272B83FD3700B63F36 /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -8364,6 +8405,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2AD1CC22CE4AE6600106C74 /* CustomDump.swift in Sources */,
+				D2AD1CC32CE4AE6600106C74 /* Color+Reflection.swift in Sources */,
+				D2AD1CC42CE4AE6600106C74 /* DisplayList+Reflection.swift in Sources */,
+				D2AD1CC52CE4AE6600106C74 /* DisplayList.swift in Sources */,
+				D2AD1CC62CE4AE6600106C74 /* Color.swift in Sources */,
+				D2AD1CC72CE4AE6600106C74 /* Text+Reflection.swift in Sources */,
+				D2AD1CC82CE4AE6600106C74 /* Text.swift in Sources */,
+				D2AD1CC92CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift in Sources */,
 				969B3B212C33F80500D62400 /* UIActivityIndicatorRecorder.swift in Sources */,
 				61054EA22A6EE10B00AAA894 /* Scheduler.swift in Sources */,
 				A7EA88562B17639A00FE2580 /* ResourcesWriter.swift in Sources */,
@@ -8372,6 +8421,7 @@
 				A7B932FD2B1F6A0A00AE6477 /* EnrichedResource.swift in Sources */,
 				61054E622A6EE10A00AAA894 /* RecordWriter.swift in Sources */,
 				61054E692A6EE10A00AAA894 /* UIImage+SessionReplay.swift in Sources */,
+				D2EA0F432C0D941900CB20F8 /* ReflectionMirror.swift in Sources */,
 				61054E782A6EE10A00AAA894 /* UIDatePickerRecorder.swift in Sources */,
 				61054E822A6EE10A00AAA894 /* UILabelRecorder.swift in Sources */,
 				A73A54982B16406900E1F7E3 /* ResourcesFeature.swift in Sources */,
@@ -8425,6 +8475,7 @@
 				A7B932FE2B1F6A0A00AE6477 /* SRDataModels+UIKit.swift in Sources */,
 				61054E862A6EE10A00AAA894 /* UnsupportedViewRecorder.swift in Sources */,
 				61054E882A6EE10A00AAA894 /* ViewTreeRecordingContext.swift in Sources */,
+				D2AD1CCC2CE4AE9800106C74 /* UIHostingViewRecorder.swift in Sources */,
 				61054E932A6EE10A00AAA894 /* MultipartFormData.swift in Sources */,
 				D2BCB2A12B7B8107005C2AAB /* WKWebViewRecorder.swift in Sources */,
 				61054E712A6EE10A00AAA894 /* TouchSnapshot.swift in Sources */,
@@ -8471,6 +8522,7 @@
 				61054FC12A6EE1BA00AAA894 /* ViewTreeRecorderTests.swift in Sources */,
 				61054F982A6EE1BA00AAA894 /* CGRectExtensionsTests.swift in Sources */,
 				D25C834C2B8657CF008E73B1 /* SegmentJSONTests.swift in Sources */,
+				D2AD1CCF2CE4AEF600106C74 /* ReflectionMirrorTests.swift in Sources */,
 				61054FB42A6EE1BA00AAA894 /* UITabBarRecorderTests.swift in Sources */,
 				61054FA22A6EE1BA00AAA894 /* TextObfuscatorTests.swift in Sources */,
 				A71013D62B178FAD00101E60 /* ResourcesWriterTests.swift in Sources */,

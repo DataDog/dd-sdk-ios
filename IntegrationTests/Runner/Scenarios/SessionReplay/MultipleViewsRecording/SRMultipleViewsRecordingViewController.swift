@@ -15,7 +15,6 @@ class SRMultipleViewsRecordingViewController: UINavigationController, UINavigati
         .basicShapes,
         .basicTexts,
         .segments,
-        .unsupportedViews,
         .swiftUI,
         .images,
     ]
