@@ -54,7 +54,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let view = UIView(frame: .mockRandom())
         let randomRecorderContext: Recorder.Context = .mockRandom()
         let additionalNodeRecorder = SessionReplayNodeRecorderMock(resultForView: { _ in nil })
-        let builder = ViewTreeSnapshotBuilder(additionalNodeRecorders: [additionalNodeRecorder])
+        let builder = ViewTreeSnapshotBuilder(additionalNodeRecorders: [additionalNodeRecorder], featureFlags: .allEnabled)
 
         // When
         let snapshot = builder.createSnapshot(of: view, with: randomRecorderContext)

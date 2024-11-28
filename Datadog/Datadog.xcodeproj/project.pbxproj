@@ -1349,6 +1349,7 @@
 		D2AD1CC92CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CBE2CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift */; };
 		D2AD1CCC2CE4AE9800106C74 /* UIHostingViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CCB2CE4AE9800106C74 /* UIHostingViewRecorder.swift */; };
 		D2AD1CCF2CE4AEF600106C74 /* ReflectionMirrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CCE2CE4AEF600106C74 /* ReflectionMirrorTests.swift */; };
+		D2AE9A5D2CF8837C00695264 /* FeatureFlagsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AE9A5C2CF8836D00695264 /* FeatureFlagsMock.swift */; };
 		D2B249942A4598FE00DD4F9F /* LoggerProtocol+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */; };
 		D2B249952A4598FE00DD4F9F /* LoggerProtocol+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */; };
 		D2B249972A45E10500DD4F9F /* LoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B249962A45E10500DD4F9F /* LoggerTests.swift */; };
@@ -3040,6 +3041,7 @@
 		D2AD1CC02CE4AE6600106C74 /* Text+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Text+Reflection.swift"; sourceTree = "<group>"; };
 		D2AD1CCB2CE4AE9800106C74 /* UIHostingViewRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIHostingViewRecorder.swift; sourceTree = "<group>"; };
 		D2AD1CCE2CE4AEF600106C74 /* ReflectionMirrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionMirrorTests.swift; sourceTree = "<group>"; };
+		D2AE9A5C2CF8836D00695264 /* FeatureFlagsMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagsMock.swift; sourceTree = "<group>"; };
 		D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoggerProtocol+Internal.swift"; sourceTree = "<group>"; };
 		D2B249962A45E10500DD4F9F /* LoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerTests.swift; sourceTree = "<group>"; };
 		D2B3F0432823EE8300C2B5EE /* TLVBlockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TLVBlockTests.swift; sourceTree = "<group>"; };
@@ -4035,6 +4037,7 @@
 		61054F7D2A6EE1BA00AAA894 /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
+				D2AE9A5C2CF8836D00695264 /* FeatureFlagsMock.swift */,
 				96F25A842CC7EB3700459567 /* PrivacyOverridesMock+objc.swift */,
 				3C33E4062BEE35A7003B2988 /* RUMContextMocks.swift */,
 				61054F7E2A6EE1BA00AAA894 /* UIKitMocks.swift */,
@@ -8574,6 +8577,7 @@
 				61054FD02A6EE1BA00AAA894 /* SRContextPublisherTests.swift in Sources */,
 				962C41A82CA431AA0050B747 /* DDSessionReplayOverridesTests.swift in Sources */,
 				61054F9B2A6EE1BA00AAA894 /* QueueTests.swift in Sources */,
+				D2AE9A5D2CF8837C00695264 /* FeatureFlagsMock.swift in Sources */,
 				D2056C212BBFE05A0085BC76 /* WireframesBuilderTests.swift in Sources */,
 				61054F992A6EE1BA00AAA894 /* ColorsTests.swift in Sources */,
 				61054FBF2A6EE1BA00AAA894 /* UIPickerViewRecorderTests.swift in Sources */,

@@ -48,18 +48,23 @@ internal struct ViewTreeSnapshotBuilder {
 }
 
 extension ViewTreeSnapshotBuilder {
-    init(additionalNodeRecorders: [NodeRecorder]) {
+    init(
+        additionalNodeRecorders: [NodeRecorder],
+        featureFlags: SessionReplay.Configuration.FeatureFlags
+    ) {
         self.init(
-            viewTreeRecorder: ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders() + additionalNodeRecorders),
+            viewTreeRecorder: ViewTreeRecorder(
+                nodeRecorders: createDefaultNodeRecorders(featureFlags: featureFlags) + additionalNodeRecorders
+            ),
             idsGenerator: NodeIDGenerator()
         )
     }
 }
 
 /// An arrays of default node recorders executed for the root view-tree hierarchy.
-internal func createDefaultNodeRecorders() -> [NodeRecorder] {
+internal func createDefaultNodeRecorders(featureFlags: SessionReplay.Configuration.FeatureFlags) -> [NodeRecorder] {
     var recorders: [NodeRecorder] = [
-        UnsupportedViewRecorder(identifier: UUID()),
+        UnsupportedViewRecorder(identifier: UUID(), featureFlags: featureFlags),
         UIViewRecorder(identifier: UUID()),
         UILabelRecorder(identifier: UUID()),
         UIImageViewRecorder(identifier: UUID()),
