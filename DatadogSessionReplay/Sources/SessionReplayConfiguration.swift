@@ -180,6 +180,13 @@ extension SessionReplay.Configuration.FeatureFlags {
             .swiftui: false
         ]
     }
+
+    /// Accesses a feature flag value.
+    ///
+    /// Returns false by default.
+    public subscript(flag: Key) -> Bool {
+        self[flag, default: false]
+    }
 }
 
 #endif

@@ -26,7 +26,7 @@ internal struct UnsupportedViewRecorder: NodeRecorder {
         ]
 
         // disable swiftui based on ff
-        if !featureFlags[.swiftui, default: false] {
+        if !featureFlags[.swiftui] {
             predicates.append(
                 { _, context in context.viewControllerContext.isRootView(of: .swiftUI) }
             )
