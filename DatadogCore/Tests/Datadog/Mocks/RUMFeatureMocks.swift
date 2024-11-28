@@ -732,7 +732,8 @@ extension RUMScopeDependencies {
         viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
         sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0),
-        watchdogTermination: WatchdogTerminationMonitor? = nil
+        watchdogTermination: WatchdogTerminationMonitor? = nil,
+        networkSettledMetricFactory: @escaping (Date) -> TTNSMetricTracking = { TTNSMetric(viewStartDate: $0) }
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -751,7 +752,8 @@ extension RUMScopeDependencies {
             viewCache: viewCache,
             fatalErrorContext: fatalErrorContext,
             sessionEndedMetric: sessionEndedMetric,
-            watchdogTermination: watchdogTermination
+            watchdogTermination: watchdogTermination,
+            networkSettledMetricFactory: networkSettledMetricFactory
         )
     }
 
@@ -772,7 +774,8 @@ extension RUMScopeDependencies {
         viewCache: ViewCache? = nil,
         fatalErrorContext: FatalErrorContextNotifying? = nil,
         sessionEndedMetric: SessionEndedMetricController? = nil,
-        watchdogTermination: WatchdogTerminationMonitor? = nil
+        watchdogTermination: WatchdogTerminationMonitor? = nil,
+        networkSettledMetricFactory: ((Date) -> TTNSMetricTracking)? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -791,7 +794,8 @@ extension RUMScopeDependencies {
             viewCache: viewCache ?? self.viewCache,
             fatalErrorContext: fatalErrorContext ?? self.fatalErrorContext,
             sessionEndedMetric: sessionEndedMetric ?? self.sessionEndedMetric,
-            watchdogTermination: watchdogTermination
+            watchdogTermination: watchdogTermination ?? self.watchdogTermination,
+            networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory
         )
     }
 }
@@ -907,6 +911,7 @@ extension RUMResourceScope {
         isFirstPartyResource: Bool? = nil,
         resourceKindBasedOnRequest: RUMResourceType? = nil,
         spanContext: RUMSpanContext? = .mockAny(),
+        networkSettledMetric: TTNSMetricTracking = TTNSMetric(viewStartDate: .mockAny()),
         onResourceEventSent: @escaping () -> Void = {},
         onErrorEventSent: @escaping () -> Void = {}
     ) -> RUMResourceScope {
@@ -921,6 +926,7 @@ extension RUMResourceScope {
             httpMethod: httpMethod,
             resourceKindBasedOnRequest: resourceKindBasedOnRequest,
             spanContext: spanContext,
+            networkSettledMetric: networkSettledMetric,
             onResourceEventSent: onResourceEventSent,
             onErrorEventSent: onErrorEventSent
         )

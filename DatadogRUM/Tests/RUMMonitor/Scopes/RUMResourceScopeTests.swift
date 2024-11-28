@@ -1347,4 +1347,90 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertFalse(onResourceEventSentCalled)
         XCTAssertFalse(onErrorEventSentCalled)
     }
+
+    // MARK: - Updating Time To Network Settled Metric
+
+    func testWhenResourceLoadingEnds_itTrackStartAndStopInTTNSMetric() throws {
+        let resourceKey = "resource"
+        let resourceDuration: TimeInterval = 2
+        let viewStartDate = Date()
+        let resourceUUID = RUMUUID(rawValue: UUID())
+
+        // Given
+        let metric = TTNSMetricMock()
+        let scope = RUMResourceScope(
+            context: .mockAny(),
+            dependencies: .mockWith(
+                rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: resourceUUID)
+            ),
+            resourceKey: resourceKey,
+            attributes: [:],
+            startTime: viewStartDate,
+            serverTimeOffset: .mockRandom(),
+            url: .mockAny(),
+            httpMethod: .mockAny(),
+            resourceKindBasedOnRequest: nil,
+            spanContext: nil,
+            networkSettledMetric: metric,
+            onResourceEventSent: {},
+            onErrorEventSent: {}
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(
+                resourceKey: resourceKey,
+                time: viewStartDate + resourceDuration
+            ),
+            context: .mockAny(),
+            writer: writer
+        )
+
+        // Then
+        XCTAssertEqual(metric.resourceStartDates[resourceUUID], viewStartDate)
+        XCTAssertEqual(metric.resourceEndDates[resourceUUID]?.0, viewStartDate + resourceDuration)
+        XCTAssertEqual(metric.resourceEndDates[resourceUUID]?.1, resourceDuration)
+    }
+
+    func testWhenResourceLoadingEndsWithError_thenItsDurationTrackedInTTNSMetric() throws {
+        let resourceKey = "resource"
+        let resourceDuration: TimeInterval = 2
+        let viewStartDate = Date()
+        let resourceUUID = RUMUUID(rawValue: UUID())
+
+        // Given
+        let metric = TTNSMetricMock()
+        let scope = RUMResourceScope(
+            context: .mockAny(),
+            dependencies: .mockWith(
+                rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: resourceUUID)
+            ),
+            resourceKey: resourceKey,
+            attributes: [:],
+            startTime: viewStartDate,
+            serverTimeOffset: .mockRandom(),
+            url: .mockAny(),
+            httpMethod: .mockAny(),
+            resourceKindBasedOnRequest: nil,
+            spanContext: nil,
+            networkSettledMetric: metric,
+            onResourceEventSent: {},
+            onErrorEventSent: {}
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(
+                resourceKey: resourceKey,
+                time: viewStartDate + resourceDuration
+            ),
+            context: .mockAny(),
+            writer: writer
+        )
+
+        // Then
+        XCTAssertEqual(metric.resourceStartDates[resourceUUID], viewStartDate)
+        XCTAssertEqual(metric.resourceEndDates[resourceUUID]?.0, viewStartDate + resourceDuration)
+        XCTAssertNil(metric.resourceEndDates[resourceUUID]?.1)
+    }
 }

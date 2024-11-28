@@ -68,7 +68,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Tells if this View is the active one.
     /// `true` for every new started View.
     /// `false` if the View was stopped or any other View was started.
-    private(set) var isActiveView = true
+    private(set) var isActiveView = true {
+        didSet {
+            if oldValue && !isActiveView {
+                networkSettledMetric.trackViewWasStopped()
+            }
+        }
+    }
     /// Tells if this scope has received the "start" command.
     /// If `didReceiveStartCommand == true` and another "start" command is received for this View this scope is marked as inactive.
     private var didReceiveStartCommand = false
@@ -96,6 +102,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private let vitalInfoSampler: VitalInfoSampler?
 
     private var viewPerformanceMetrics: [PerformanceMetric: VitalInfo] = [:]
+
+    /// Time-to-Network-Settled metric for this view.
+    private let networkSettledMetric: TTNSMetricTracking
 
     init(
         isInitialView: Bool,
@@ -129,6 +138,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 frequency: $0.frequency
             )
         }
+        self.networkSettledMetric = dependencies.networkSettledMetricFactory(viewStartTime)
 
         // Notify Synthetics if needed
         if dependencies.syntheticsTest != nil && self.context.sessionID != .nullUUID {
@@ -299,6 +309,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             httpMethod: command.httpMethod,
             resourceKindBasedOnRequest: command.kind,
             spanContext: command.spanContext,
+            networkSettledMetric: networkSettledMetric,
             onResourceEventSent: { [weak self] in
                 self?.resourcesCount += 1
                 self?.needsViewUpdate = true
@@ -479,6 +490,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let memoryInfo = vitalInfoSampler?.memory
         let refreshRateInfo = vitalInfoSampler?.refreshRate
         let isSlowRendered = refreshRateInfo?.meanValue.map { $0 < Constants.slowRenderingThresholdFPS }
+        let networkSettledTime = networkSettledMetric.value(at: command.time, appStateHistory: context.applicationStateHistory)
 
         let viewEvent = RUMViewEvent(
             dd: .init(
@@ -567,7 +579,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 memoryAverage: memoryInfo?.meanValue,
                 memoryMax: memoryInfo?.maxValue,
                 name: viewName,
-                networkSettledTime: nil,
+                networkSettledTime: networkSettledTime?.toInt64Nanoseconds,
                 referrer: nil,
                 refreshRateAverage: refreshRateInfo?.meanValue,
                 refreshRateMin: refreshRateInfo?.minValue,

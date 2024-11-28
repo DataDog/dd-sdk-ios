@@ -7,10 +7,38 @@
 import Foundation
 import DatadogInternal
 
+internal protocol TTNSMetricTracking {
+    /// Tracks the start time of a resource identified by its `resourceID`.
+    ///
+    /// - Parameters:
+    ///   - startDate: The start time of the resource (device time, no NTP offset).
+    ///   - resourceID: The unique identifier for the resource.
+    func trackResourceStart(at startDate: Date, resourceID: RUMUUID)
+
+    /// Tracks the completion of a resource identified by its `resourceID`.
+    ///
+    /// - Parameters:
+    ///   - endDate: The end time of the resource (device time, no NTP offset).
+    ///   - resourceID: The unique identifier for the resource.
+    ///   - resourceDuration: The resource duration, if available.
+    func trackResourceEnd(at endDate: Date, resourceID: RUMUUID, resourceDuration: TimeInterval?)
+
+    /// Marks the view as stopped, preventing further resource tracking.
+    func trackViewWasStopped()
+
+    /// Returns the value for the TTNS metric.
+    ///
+    /// - Parameters:
+    ///   - time: The current time (device time, no NTP offset).
+    ///   - appStateHistory: The history of app state transitions.
+    /// - Returns: The value for TTNS metric.
+    func value(at time: Date, appStateHistory: AppStateHistory) -> TimeInterval?
+}
+
 /// A metric (**Time-to-Network-Settled**) that measures the time from when the current view becomes visible until all initial resources are loaded.
 ///
 /// "Initial resources" are defined as resources starting within 100ms of the view becoming visible.
-internal final class TTNSMetric {
+internal final class TTNSMetric: TTNSMetricTracking {
     enum Constants {
         /// Only resources starting within this interval of the view becoming visible are considered "initial resources."
         static let initialResourceThreshold: TimeInterval = 0.1
