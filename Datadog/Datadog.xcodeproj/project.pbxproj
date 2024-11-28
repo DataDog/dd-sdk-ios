@@ -3875,7 +3875,6 @@
 				61054F432A6EE1B900AAA894 /* CFType+SafetyTests.swift */,
 				61054F442A6EE1B900AAA894 /* QueueTests.swift */,
 				61054F452A6EE1B900AAA894 /* SwiftExtensionsTests.swift */,
-				D2AD1CCE2CE4AEF600106C74 /* ReflectionMirrorTests.swift */,
 				61054F462A6EE1B900AAA894 /* Schedulers */,
 			);
 			path = Utilities;
@@ -3964,6 +3963,7 @@
 			children = (
 				61054F5D2A6EE1BA00AAA894 /* UIView+SessionReplayTests.swift */,
 				61054F5F2A6EE1BA00AAA894 /* CGRect+SessionReplayTests.swift */,
+				D2AD1CCE2CE4AEF600106C74 /* ReflectionMirrorTests.swift */,
 			);
 			path = Utilties;
 			sourceTree = "<group>";
