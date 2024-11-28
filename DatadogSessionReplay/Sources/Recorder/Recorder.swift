@@ -71,12 +71,16 @@ public class Recorder: Recording {
 
     convenience init(
         snapshotProcessor: SnapshotProcessing,
-        additionalNodeRecorders: [NodeRecorder]
+        additionalNodeRecorders: [NodeRecorder],
+        featureFlags: SessionReplay.Configuration.FeatureFlags
     ) throws {
         let windowObserver = KeyWindowObserver()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
             windowObserver: windowObserver,
-            snapshotBuilder: ViewTreeSnapshotBuilder(additionalNodeRecorders: additionalNodeRecorders)
+            snapshotBuilder: ViewTreeSnapshotBuilder(
+                additionalNodeRecorders: additionalNodeRecorders,
+                featureFlags: featureFlags
+            )
         )
         let touchSnapshotProducer = WindowTouchSnapshotProducer(windowObserver: windowObserver)
 

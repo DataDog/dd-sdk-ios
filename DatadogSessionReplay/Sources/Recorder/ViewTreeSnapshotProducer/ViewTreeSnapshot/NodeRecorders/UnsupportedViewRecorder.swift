@@ -12,16 +12,29 @@ import SwiftUI
 internal struct UnsupportedViewRecorder: NodeRecorder {
     internal let identifier: UUID
 
-    init(identifier: UUID) {
-        self.identifier = identifier
-    }
+    private let unsupportedViewsPredicates: [(UIView, ViewTreeRecordingContext) -> Bool]
 
-    // swiftlint:disable opening_brace
-    private let unsupportedViewsPredicates: [(UIView, ViewTreeRecordingContext) -> Bool] = [
-        { _, context in context.viewControllerContext.isRootView(of: .safari) },
-        { _, context in context.viewControllerContext.isRootView(of: .activity) }
-    ]
-    // swiftlint:enable opening_brace
+    init(
+        identifier: UUID,
+        featureFlags: SessionReplay.Configuration.FeatureFlags
+    ) {
+        self.identifier = identifier
+        // swiftlint:disable opening_brace
+        var predicates: [(UIView, ViewTreeRecordingContext) -> Bool] = [
+            { _, context in context.viewControllerContext.isRootView(of: .safari) },
+            { _, context in context.viewControllerContext.isRootView(of: .activity) }
+        ]
+
+        // disable swiftui based on ff
+        if !featureFlags[.swiftui] {
+            predicates.append(
+                { _, context in context.viewControllerContext.isRootView(of: .swiftUI) }
+            )
+        }
+        // swiftlint:enable opening_brace
+
+        self.unsupportedViewsPredicates = predicates
+    }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard unsupportedViewsPredicates.contains(where: { $0(view, context) }) else {

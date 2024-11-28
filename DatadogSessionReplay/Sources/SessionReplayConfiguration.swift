@@ -67,6 +67,9 @@ extension SessionReplay {
         /// Default: `nil`.
         public var customEndpoint: URL?
 
+        /// Feature flags to preview features in Session Replay.
+        public var featureFlags: FeatureFlags
+
         // MARK: - Internal
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
@@ -81,13 +84,15 @@ extension SessionReplay {
         ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked. Default: `.hide`.
         ///   - startRecordingImmediately: If the recording should start automatically. When `true`, the recording starts automatically; when `false` it doesn't, and the recording will need to be started manually. Default: `true`.
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
+        ///   - featureFlags: Experimental feature flags.
         public init(    // swiftlint:disable:this function_default_parameter_at_end
             replaySampleRate: Float = 100,
             textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
             imagePrivacyLevel: ImagePrivacyLevel,
             touchPrivacyLevel: TouchPrivacyLevel,
             startRecordingImmediately: Bool = true,
-            customEndpoint: URL? = nil
+            customEndpoint: URL? = nil,
+            featureFlags: FeatureFlags = .defaults
         ) {
             self.replaySampleRate = replaySampleRate
             self.textAndInputPrivacyLevel = textAndInputPrivacyLevel
@@ -95,6 +100,7 @@ extension SessionReplay {
             self.touchPrivacyLevel = touchPrivacyLevel
             self.startRecordingImmediately = startRecordingImmediately
             self.customEndpoint = customEndpoint
+            self.featureFlags = featureFlags
         }
 
         /// Creates Session Replay configuration.
@@ -118,6 +124,7 @@ extension SessionReplay {
             self.touchPrivacyLevel = newPrivacyLevels.touchPrivacy
             self.startRecordingImmediately = startRecordingImmediately
             self.customEndpoint = customEndpoint
+            self.featureFlags = .defaults
         }
 
         @_spi(Internal)
@@ -155,4 +162,31 @@ extension SessionReplay {
         }
     }
 }
+
+extension SessionReplay.Configuration {
+    public typealias FeatureFlags = [FeatureFlag: Bool]
+
+    /// Feature Flag available in Session Replay
+    public enum FeatureFlag {
+        /// SwiftUI Recording
+        case swiftui
+    }
+}
+
+extension SessionReplay.Configuration.FeatureFlags {
+    /// The defaults Feature Flags applied to Session Replay Configuration
+    public static var defaults: Self {
+        [
+            .swiftui: false
+        ]
+    }
+
+    /// Accesses a feature flag value.
+    ///
+    /// Returns false by default.
+    public subscript(flag: Key) -> Bool {
+        self[flag, default: false]
+    }
+}
+
 #endif
