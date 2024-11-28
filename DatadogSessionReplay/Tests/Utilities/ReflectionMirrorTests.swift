@@ -23,7 +23,6 @@ class ReflectionMirrorTests: XCTestCase {
     }
 
     func testTupleDisplay() {
-        struct Mock {}
         let mirror = ReflectionMirror(reflecting: (1, 2))
         XCTAssertEqual(mirror.displayStyle, .tuple)
     }
