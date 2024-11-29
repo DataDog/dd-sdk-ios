@@ -21,11 +21,8 @@ import DatadogInternal
 public final class CrashReporting {
     /// Initializes the Datadog Crash Reporter.
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
-#if canImport(CrashReporter)
         enable(with: PLCrashReporterPlugin(), in: core)
-#else
-        assertionFailure()
-#endif
+
     }
 
     public static func enable(with plugin: CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default) {
@@ -42,11 +39,9 @@ public final class CrashReporting {
 
             try core.register(feature: reporter)
 
-#if canImport(CrashReporter)
             if let plcr = PLCrashReporterPlugin.thirdPartyCrashReporter {
                 try core.register(backtraceReporter: BacktraceReporter(reporter: plcr))
             }
-#endif
 
             reporter.sendCrashReportIfFound()
 
