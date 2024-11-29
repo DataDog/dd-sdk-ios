@@ -26,4 +26,7 @@ public protocol CrashReportingPlugin: AnyObject {
     /// The SDK calls this method for each significant application state change.
     /// It is called on a background thread and succeeding calls are synchronized.
     func inject(context: Data)
+
+    /// An instance conforming to `BacktraceReporting` capable of generating backtrace reports.
+    var backtraceReporter: BacktraceReporting? { get }
 }

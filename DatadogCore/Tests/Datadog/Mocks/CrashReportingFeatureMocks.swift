@@ -49,6 +49,8 @@ internal class CrashReportingPluginMock: CrashReportingPlugin {
     var hasPurgedCrashReport: Bool?
     /// Custom app state data injected to the plugin.
     var injectedContextData: Data?
+    /// Custom backtrace reporter injected to the plugin.
+    var injectedBacktraceReporter: BacktraceReporting?
 
     func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {
         hasPurgedCrashReport = completion(pendingCrashReport)
@@ -65,11 +67,14 @@ internal class CrashReportingPluginMock: CrashReportingPlugin {
 
     /// Notifies the `inject(context:)` return.
     var didInjectContext: (() -> Void)?
+
+    var backtraceReporter: BacktraceReporting? { injectedBacktraceReporter }
 }
 
 internal class NOPCrashReportingPlugin: CrashReportingPlugin {
     func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {}
     func inject(context: Data) {}
+    var backtraceReporter: BacktraceReporting? { nil }
 }
 
 internal class CrashContextProviderMock: CrashContextProvider {

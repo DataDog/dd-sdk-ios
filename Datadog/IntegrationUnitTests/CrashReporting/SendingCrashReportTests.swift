@@ -19,6 +19,8 @@ private class CrashReporterMock: CrashReportingPlugin {
     internal var pendingCrashReport: DDCrashReport?
     @ReadWriteLock
     internal var injectedContext: Data? = nil
+    /// Custom backtrace reporter injected to the plugin.
+    var injectedBacktraceReporter: BacktraceReporting?
 
     init(pendingCrashReport: DDCrashReport? = nil) {
         self.pendingCrashReport = pendingCrashReport
@@ -26,6 +28,7 @@ private class CrashReporterMock: CrashReportingPlugin {
 
     func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) { _ = completion(pendingCrashReport) }
     func inject(context: Data) { injectedContext = context }
+    var backtraceReporter: BacktraceReporting? { injectedBacktraceReporter }
 }
 
 /// Covers broad scenarios of sending Crash Reports.
