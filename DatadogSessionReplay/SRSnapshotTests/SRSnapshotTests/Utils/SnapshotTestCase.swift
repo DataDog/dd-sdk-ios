@@ -148,7 +148,8 @@ internal class SnapshotTestCase: XCTestCase {
 
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,
-            additionalNodeRecorders: []
+            additionalNodeRecorders: [],
+            featureFlags: [.swiftui: true]
         )
 
         // Set up wireframes interception:

@@ -20,6 +20,11 @@ internal protocol FilesOrchestratorType: AnyObject {
 
 /// Orchestrates files in a single directory.
 internal class FilesOrchestrator: FilesOrchestratorType {
+    enum Constants {
+        /// Precision in which the timestamp is stored as part of the file name.
+        static let fileNamePrecision: TimeInterval = 0.001 // millisecond precision
+    }
+
     /// Directory where files are stored.
     let directory: Directory
     /// Date provider.
@@ -109,13 +114,34 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         // happens too often).
         try purgeFilesDirectoryIfNeeded()
 
-        let newFileName = fileNameFrom(fileCreationDate: dateProvider.now)
+        let newFileName = nextFileName()
         let newFile = try directory.createFile(named: newFileName)
         lastWritableFileName = newFile.name
         lastWritableFileObjectsCount = 1
         lastWritableFileApproximatedSize = writeSize
         lastWritableFileLastWriteDate = dateProvider.now
         return newFile
+    }
+
+    /// Generates a unique file name based on the current time, ensuring that the generated file name does not already exist in the directory.
+    /// When a conflict is detected, it adjusts the timestamp by advancing the current time by the precision interval to ensure uniqueness.
+    ///
+    /// In practice, name conflicts are extremely unlikely due to the monotonic nature of `dateProvider.now`.
+    /// Conflicts can only occur in very specific scenarios, such as during a tracking consent change when files are moved
+    /// from an unauthorized (.pending) folder to an authorized (.granted) folder, with events being written immediately before
+    /// and after the consent change. These conflicts were observed in tests, causing flakiness. In real-device scenarios,
+    /// conflicts may occur if tracking consent is changed and two events are written within the precision window defined
+    /// by `Constants.fileNamePrecision` (1 millisecond).
+    private func nextFileName() -> String {
+        var newFileName = fileNameFrom(fileCreationDate: dateProvider.now)
+        while directory.hasFile(named: newFileName) {
+            // Advance the timestamp by the precision interval to avoid generating the same file name.
+            // This may result in generating file names "in the future", but we aren't concerned
+            // about this given how rare this scenario is.
+            let newDate = dateProvider.now.addingTimeInterval(Constants.fileNamePrecision)
+            newFileName = fileNameFrom(fileCreationDate: newDate)
+        }
+        return newFileName
     }
 
     private func reuseLastWritableFileIfPossible(writeSize: UInt64) -> WritableFile? {
@@ -289,7 +315,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 /// File creation date is used as file name - timestamp in milliseconds is used for date representation.
 /// This function converts file creation date into file name.
 internal func fileNameFrom(fileCreationDate: Date) -> String {
-    let milliseconds = fileCreationDate.timeIntervalSinceReferenceDate * 1_000
+    let milliseconds = fileCreationDate.timeIntervalSinceReferenceDate / FilesOrchestrator.Constants.fileNamePrecision
     let converted = (try? UInt64(withReportingOverflow: milliseconds)) ?? 0
     return String(converted)
 }
@@ -297,6 +323,6 @@ internal func fileNameFrom(fileCreationDate: Date) -> String {
 /// File creation date is used as file name - timestamp in milliseconds is used for date representation.
 /// This function converts file name into file creation date.
 internal func fileCreationDateFrom(fileName: String) -> Date {
-    let millisecondsSinceReferenceDate = TimeInterval(UInt64(fileName) ?? 0) / 1_000
+    let millisecondsSinceReferenceDate = TimeInterval(UInt64(fileName) ?? 0) * FilesOrchestrator.Constants.fileNamePrecision
     return Date(timeIntervalSinceReferenceDate: TimeInterval(millisecondsSinceReferenceDate))
 }

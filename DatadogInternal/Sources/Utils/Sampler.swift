@@ -33,6 +33,12 @@ public struct Sampler: Sampling {
 
 /// A sampler that determines sampling decisions deterministically (the same each time).
 internal struct DeterministicSampler: Sampling {
+    enum Constants {
+        /// Good number for Knuth hashing (large, prime, fit in 64 bit long)
+        internal static let samplerHasher: UInt64 = 1_111_111_111_111_111_111
+        internal static let maxID: UInt64 = 0xFFFFFFFFFFFFFFFF
+    }
+
     /// Value between `0.0` and `100.0`, where `0.0` means NO event will be sent and `100.0` means ALL events will be sent.
     let samplingRate: Float
     /// Persisted sampling decision.
@@ -41,6 +47,14 @@ internal struct DeterministicSampler: Sampling {
     init(shouldSample: Bool, samplingRate: Float) {
         self.samplingRate = samplingRate
         self.shouldSample = shouldSample
+    }
+
+    init(baseId: UInt64, samplingRate: Float) {
+        // We use overflow multiplication to create a "randomized" hash based on the input id
+        let hash = baseId &* Constants.samplerHasher
+        let threshold = Float(Constants.maxID) * samplingRate / 100.0
+        self.samplingRate = samplingRate
+        self.shouldSample = Float(hash) < threshold
     }
 
     func sample() -> Bool { shouldSample }

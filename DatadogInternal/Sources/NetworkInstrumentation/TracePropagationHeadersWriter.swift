@@ -25,7 +25,7 @@ public enum TraceSamplingStrategy {
         case .headBased:
             return DeterministicSampler(shouldSample: traceContext.isKept, samplingRate: traceContext.sampleRate)
         case .custom(let sampleRate):
-            return Sampler(samplingRate: sampleRate)
+            return DeterministicSampler(baseId: traceContext.traceID.idLo, samplingRate: sampleRate)
         }
     }
 }

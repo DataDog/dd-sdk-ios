@@ -14,9 +14,9 @@ import SafariServices
 
 @available(iOS 13.0, *)
 class UnsupportedViewRecorderTests: XCTestCase {
-    private let recorder = UnsupportedViewRecorder(identifier: UUID())
-
     func testWhenViewIsUnsupportedViewControllersRootView() throws {
+        let recorder = UnsupportedViewRecorder(identifier: UUID(), featureFlags: .defaults)
+
         var context = ViewTreeRecordingContext.mockRandom()
         context.viewControllerContext.isRootView = true
         context.viewControllerContext.parentType = [.safari, .activity, .swiftUI].randomElement()
@@ -26,6 +26,17 @@ class UnsupportedViewRecorderTests: XCTestCase {
         XCTAssertEqual(semantics.subtreeStrategy, .ignore)
         let wireframeBuilder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UnsupportedViewWireframesBuilder)
         XCTAssertNotNil(wireframeBuilder.unsupportedClassName)
+    }
+
+    func testWhenSwiftUIFeatureFlagIsEnabled() throws {
+        let recorder = UnsupportedViewRecorder(identifier: UUID(), featureFlags: [.swiftui: true])
+
+        var context = ViewTreeRecordingContext.mockRandom()
+        context.viewControllerContext.isRootView = true
+        context.viewControllerContext.parentType = .swiftUI
+
+        let semantics = recorder.semantics(of: UIView(), with: .mock(fixture: .visible(.someAppearance)), in: context)
+        XCTAssertNil(semantics)
     }
 }
 
