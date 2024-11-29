@@ -131,7 +131,7 @@ internal class RecordingCoordinator {
     private var lastTriggerDate: Date?
 
     private var shouldSkipTrigger: Bool {
-        return dateProvider.now.timeIntervalSince(lastTriggerDate ?? .distantPast) < Constants.throttingRate
+        return dateProvider.now.timeIntervalSince(lastTriggerDate ?? .distantPast) < Constants.throttlingRate
     }
 
     private func didTrigger() {
@@ -167,7 +167,9 @@ internal class RecordingCoordinator {
 
         var isSuccessful = false
         do {
-            try objc_rethrow { try self.recorder.captureNextRecord(recorderContext) }
+            try objc_rethrow { [weak self] in
+                try self?.recorder.captureNextRecord(recorderContext)
+            }
             isSuccessful = true
         } catch let objc as ObjcException {
             telemetry.error("[SR] Failed to take snapshot due to Objective-C runtime exception", error: objc.error)
@@ -184,7 +186,7 @@ internal class RecordingCoordinator {
     }
 
     private enum Constants {
-        static let throttingRate: TimeInterval = 0.1 // 100ms
+        static let throttlingRate: TimeInterval = 0.1 // 100ms
     }
 
     private enum MethodCallConstants {

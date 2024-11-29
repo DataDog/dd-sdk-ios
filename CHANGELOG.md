@@ -3,6 +3,8 @@
 - [FIX] Fix sporadic file overwrite during consent change, ensuring event data integrity. See [#2113][]
 - [FIX] Fix trace inconsistency when using `URLSessionInterceptor` or Alamofire extension. See [#2114][]
 - [IMPROVEMENT] Add Session Replay `startRecordingImmediately` ObjC API. See [#2120][]
+- [IMPROVEMENT] Session Replay recording is event-triggered instead of scheduled. See [#2074][]
+
 
 # 2.20.0 / 14-11-2024
 
@@ -10,7 +12,6 @@
 - [IMPROVEMENT] Support mutation of events' attributes. See [#2099][]
 - [IMPROVEMENT] Add 'os' and 'device' info to Span events. See [#2104][]
 - [FIX] Fix bug in SR that was enforcing full snapshot more often than needed. See [#2092][]
-- [IMPROVEMENT] Session Replay recording is event-triggered instead of scheduled. See [#2074][]
 
 # 2.19.0 / 28-10-2024
 
