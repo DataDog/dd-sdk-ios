@@ -343,6 +343,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             errorBinaryImages: crash.binaryImages.toRUMDataFormat,
             errorWasTruncated: crash.wasTruncated,
             errorMeta: crash.meta.toRUMDataFormat,
+            additionalAttributes: crash.additionalAttributes.dd.decode(),
             timeSinceAppStart: timeSinceAppStart
         )
     }

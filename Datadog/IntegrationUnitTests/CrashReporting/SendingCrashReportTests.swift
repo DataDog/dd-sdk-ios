@@ -85,7 +85,9 @@ class SendingCrashReportTests: XCTestCase {
         XCTAssertNotNil(rumEvent.error.binaryImages)
         XCTAssertNotNil(rumEvent.error.meta)
         XCTAssertNotNil(rumEvent.error.wasTruncated)
-        DDAssertJSONEqual(rumEvent.context!.contextInfo, crashContext.lastRUMAttributes!)
+        let contextAttributes = try XCTUnwrap(rumEvent.context?.contextInfo)
+        let lastRUMAttributes = try XCTUnwrap(crashContext.lastRUMAttributes?.attributes)
+        DDAssertJSONEqual(contextAttributes, lastRUMAttributes.merging(crashReportAttributes) { $1 })
     }
 
     func testWhenSendingCrashReportAsLog_itIsLinkedToTheRUMSessionThatHasCrashed() throws {
