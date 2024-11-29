@@ -264,44 +264,6 @@ class CrashReporterTests: XCTestCase {
         XCTAssertEqual(core.events.count, 0, "Crash must not be send as it doesn't have `.granted` consent")
     }
 
-    // MARK: - Thread safety
-
-    func testInjectingContextToPluginAreSynchronized() {
-        let expectation = self.expectation(description: "`plugin` received at least 100 calls")
-        expectation.expectedFulfillmentCount = 100
-        expectation.assertForOverFulfill = false // to mitigate the call for initial context injection
-
-        // State mutated by the mock plugin implementation - `DatadogCrashReporter` ensures its thread safety
-        var mutableState: Bool = .random()
-
-        let plugin = CrashReportingPluginMock()
-        plugin.didInjectContext = {
-            mutableState.toggle()
-            expectation.fulfill()
-        }
-
-        let crashContextProvider = CrashContextProviderMock(initialCrashContext: .mockRandom())
-        _ = CrashReportingFeature(
-            crashReportingPlugin: plugin,
-            crashContextProvider: crashContextProvider,
-            sender: CrashReportSenderMock(),
-            messageReceiver: NOPFeatureMessageReceiver(),
-            telemetry: NOPTelemetry()
-        )
-
-        // swiftlint:disable opening_brace
-        callConcurrently(
-            closures: [
-                { crashContextProvider.onCrashContextChange(.mockRandom()) },
-                { crashContextProvider.onCrashContextChange(.mockRandom()) }
-            ],
-            iterations: 50 // each closure is called 50 times
-        )
-        // swiftlint:enable opening_brace
-
-        waitForExpectations(timeout: 2, handler: nil)
-    }
-
     // MARK: - Usage
 
     func testGivenNoRegisteredCrashReportReceiver_whenPendingCrashReportIsFound_itPrintsWarning() {

@@ -12,9 +12,6 @@ internal final class CrashReportingFeature: DatadogFeature {
 
     let messageReceiver: FeatureMessageReceiver
 
-    /// Queue for synchronizing internal operations.
-    private let queue: DispatchQueue
-
     let crashContextProvider: CrashContextProvider
 
     /// An interface for accessing the `DDCrashReportingPlugin` from `DatadogCrashReporting`.
@@ -31,10 +28,6 @@ internal final class CrashReportingFeature: DatadogFeature {
         messageReceiver: FeatureMessageReceiver,
         telemetry: Telemetry
     ) {
-        self.queue = DispatchQueue(
-            label: "com.datadoghq.crash-reporter",
-            target: .global(qos: .utility)
-        )
         self.plugin = crashReportingPlugin
         self.sender = sender
         self.crashContextProvider = crashContextProvider
@@ -42,13 +35,13 @@ internal final class CrashReportingFeature: DatadogFeature {
         self.telemetry = telemetry
 
         // Inject current `CrashContext`
-        if let context = crashContextProvider.currentCrashContext {
-            inject(currentCrashContext: context)
+        crashContextProvider.currentCrashContext { [weak self] in
+            self?.inject(context: $0)
         }
 
         // Register for future `CrashContext` changes
         self.crashContextProvider.onCrashContextChange = { [weak self] in
-            self?.inject(currentCrashContext: $0)
+            self?.inject(context: $0)
         }
     }
 
@@ -83,11 +76,9 @@ internal final class CrashReportingFeature: DatadogFeature {
         }
     }
 
-    private func inject(currentCrashContext: CrashContext) {
-        queue.async {
-            if let crashContextData = self.encode(crashContext: currentCrashContext) {
-                self.plugin.inject(context: crashContextData)
-            }
+    private func inject(context: CrashContext?) {
+        if let context = context, let data = self.encode(crashContext: context) {
+            self.plugin.inject(context: data)
         }
     }
 
@@ -144,12 +135,5 @@ internal final class CrashReportingFeature: DatadogFeature {
             telemetry.error("Failed to decode crash report context", error: error)
             return nil
         }
-    }
-}
-
-extension CrashReportingFeature: Flushable {
-    func flush() {
-        // Await asynchronous operations completion to safely sink all pending tasks.
-        queue.sync {}
     }
 }
