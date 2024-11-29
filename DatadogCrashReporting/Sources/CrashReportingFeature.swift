@@ -54,38 +54,32 @@ internal final class CrashReportingFeature: DatadogFeature {
 
     // MARK: - Interaction with `DatadogCrashReporting` plugin
 
-    func send(_ report: DDCrashReport, attributes: [AttributeKey: AttributeValue]? = nil) {
-        queue.async {
-            guard let crashContext = report.context.flatMap({ self.decode(crashContextData: $0) }) else {
-                DD.logger.debug("Could not decode crash context")
-                return
-            }
-            self.sender.send(report: report, with: crashContext.merging(rumAttributes: GlobalRUMAttributes(attributes: attributes ?? [:])))
-        }
-    }
-
     func sendCrashReportIfFound() {
-        queue.async {
-            self.plugin.readPendingCrashReport { [weak self] crashReport in
-                guard let self = self, let availableCrashReport = crashReport else {
-                    DD.logger.debug("No pending Crash found")
-                     self?.sender.send(launch: .init(didCrash: false))
-                    return false
-                }
+        // The plugin.readPendingCrashReport method is escaping, so
+        // every call in the closure must be thread-safe
+        plugin.readPendingCrashReport { [weak self] crashReport in
+            guard let self = self else {
+                return false
+            }
 
-                DD.logger.debug("Loaded pending crash report")
+            guard let availableCrashReport = crashReport else {
+                DD.logger.debug("No pending Crash found")
+                self.sender.send(launch: .init(didCrash: false))
+                return false
+            }
 
-                guard let crashContext = availableCrashReport.context.flatMap({ self.decode(crashContextData: $0) }) else {
-                    // `CrashContext` is malformed and and cannot be read. Return `true` to let the crash reporter
-                    // purge this crash report as we are not able to process it respectively.
-                    self.sender.send(launch: .init(didCrash: true))
-                    return true
-                }
+            DD.logger.debug("Loaded pending crash report")
 
-                self.sender.send(report: availableCrashReport, with: crashContext)
+            guard let crashContext = availableCrashReport.context.flatMap({ self.decode(crashContextData: $0) }) else {
+                // `CrashContext` is malformed and and cannot be read. Return `true` to let the crash reporter
+                // purge this crash report as we are not able to process it respectively.
                 self.sender.send(launch: .init(didCrash: true))
                 return true
             }
+
+            self.sender.send(report: availableCrashReport, with: crashContext)
+            self.sender.send(launch: .init(didCrash: true))
+            return true
         }
     }
 

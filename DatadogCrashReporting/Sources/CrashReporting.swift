@@ -22,7 +22,6 @@ public final class CrashReporting {
     /// Initializes the Datadog Crash Reporter.
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
         enable(with: PLCrashReporterPlugin(), in: core)
-
     }
 
     public static func enable(with plugin: CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default) {
@@ -50,10 +49,6 @@ public final class CrashReporting {
         } catch {
             consolePrint("\(error)", .error)
         }
-    }
-
-    public static func send(_ report: DDCrashReport, attributes: [AttributeKey: AttributeValue]? = nil, in core: DatadogCoreProtocol = CoreRegistry.default) {
-        core.get(feature: CrashReportingFeature.self)?.send(report, attributes: attributes)
     }
 }
 

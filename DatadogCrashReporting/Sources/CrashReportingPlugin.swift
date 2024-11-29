@@ -18,7 +18,7 @@ public protocol CrashReportingPlugin: AnyObject {
     ///
     /// The SDK calls this method on a background thread. The implementation is free to choice any thread
     /// for executing the  `completion`.
-    func readPendingCrashReport(completion: (DDCrashReport?) -> Bool)
+    func readPendingCrashReport(completion: @escaping (DDCrashReport?) -> Bool)
 
     /// Injects custom data for describing the application state in the crash report.
     /// This data will be attached to produced crash report and will be available in `DDCrashReport`.
