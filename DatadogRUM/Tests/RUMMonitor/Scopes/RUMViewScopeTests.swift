@@ -193,7 +193,9 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
-            dependencies: .mockAny(),
+            dependencies: .mockWith(
+                networkSettledMetricFactory: { _ in TTNSMetricMock(value: 0.42) }
+            ),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
@@ -231,6 +233,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.action.count, 0)
         XCTAssertEqual(event.view.error.count, 0)
         XCTAssertEqual(event.view.resource.count, 0)
+        XCTAssertEqual(event.view.networkSettledTime, 420_000_000)
         XCTAssertEqual(event.dd.documentVersion, 1)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
@@ -2669,5 +2672,41 @@ class RUMViewScopeTests: XCTestCase {
         let rumViewWritten = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last, "It should send view event")
         let rumViewInFatalErrorContext = try XCTUnwrap(fatalErrorContext.view)
         DDAssertReflectionEqual(rumViewWritten, rumViewInFatalErrorContext, "It must update fatal error context with the view event written")
+    }
+
+    // MARK: - Tracking Time To Network Settled Metric
+
+    func testWhenViewIsStopped_itStopsTrackingTTNSMetric() throws {
+        let viewStartDate = Date()
+
+        // Given
+        let metric = TTNSMetricMock()
+        let scope = RUMViewScope(
+            isInitialView: .mockAny(),
+            parent: parent,
+            dependencies: .mockWith(
+                networkSettledMetricFactory: { date in
+                    XCTAssertEqual(date, viewStartDate)
+                    return metric
+                }
+            ),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewController",
+            attributes: [:],
+            customTimings: [:],
+            startTime: viewStartDate,
+            serverTimeOffset: .mockRandom()
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertTrue(metric.viewWasStopped)
     }
 }

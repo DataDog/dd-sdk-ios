@@ -51,6 +51,9 @@ internal class RUMResourceScope: RUMScope {
     /// Span context passed to the RUM backend in order to generate the APM span for underlying resource.
     private let spanContext: RUMSpanContext?
 
+    /// The Time-to-Network-Settled metric for the view that tracks this resource.
+    private let networkSettledMetric: TTNSMetricTracking
+
     /// Callback called when a `RUMResourceEvent` is submitted for storage.
     private let onResourceEventSent: () -> Void
     /// Callback called when a `RUMErrorEvent` is submitted for storage.
@@ -67,6 +70,7 @@ internal class RUMResourceScope: RUMScope {
         httpMethod: RUMMethod,
         resourceKindBasedOnRequest: RUMResourceType?,
         spanContext: RUMSpanContext?,
+        networkSettledMetric: TTNSMetricTracking,
         onResourceEventSent: @escaping () -> Void,
         onErrorEventSent: @escaping () -> Void
     ) {
@@ -82,8 +86,12 @@ internal class RUMResourceScope: RUMScope {
         self.isFirstPartyResource = dependencies.firstPartyHosts?.isFirstParty(string: url) ?? false
         self.resourceKindBasedOnRequest = resourceKindBasedOnRequest
         self.spanContext = spanContext
+        self.networkSettledMetric = networkSettledMetric
         self.onResourceEventSent = onResourceEventSent
         self.onErrorEventSent = onErrorEventSent
+
+        // Track this resource in view's TTNS metric:
+        networkSettledMetric.trackResourceStart(at: startTime, resourceID: resourceUUID)
     }
 
     // MARK: - RUMScope
@@ -147,7 +155,7 @@ internal class RUMResourceScope: RUMScope {
             )
         }
 
-        /// Metrics values take precedence over other values.
+        // Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
             resourceStartTime = metrics.fetch.start
             resourceDuration = metrics.fetch.end.timeIntervalSince(metrics.fetch.start)
@@ -157,8 +165,11 @@ internal class RUMResourceScope: RUMScope {
             resourceDuration = command.time.timeIntervalSince(resourceLoadingStartTime)
             size = command.size
         }
-        let resourceType: RUMResourceType = resourceKindBasedOnRequest ?? command.kind
 
+        // Track this resource in view's TTNS metric
+        networkSettledMetric.trackResourceEnd(at: command.time, resourceID: resourceUUID, resourceDuration: resourceDuration)
+
+        // Write resource event
         let resourceEvent = RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -238,8 +249,9 @@ internal class RUMResourceScope: RUMScope {
                 },
                 statusCode: command.httpStatusCode?.toInt64 ?? 0,
                 transferSize: nil,
-                type: resourceType,
-                url: resourceURL
+                type: resourceKindBasedOnRequest ?? command.kind,
+                url: resourceURL,
+                worker: nil
             ),
             service: context.service,
             session: .init(
@@ -273,6 +285,10 @@ internal class RUMResourceScope: RUMScope {
             command.time.timeIntervalSince($0.launchDate).toInt64Milliseconds
         }
 
+        // Track this resource error in view's TTNS metric
+        networkSettledMetric.trackResourceEnd(at: command.time, resourceID: resourceUUID, resourceDuration: nil)
+
+        // Write error event
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
