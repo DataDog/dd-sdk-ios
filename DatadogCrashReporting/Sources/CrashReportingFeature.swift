@@ -7,10 +7,10 @@
 import Foundation
 import DatadogInternal
 
-public final class CrashReportingFeature: DatadogFeature {
-    public static let name = "crash-reporter"
+internal final class CrashReportingFeature: DatadogFeature {
+    static let name = "crash-reporter"
 
-    public let messageReceiver: FeatureMessageReceiver
+    let messageReceiver: FeatureMessageReceiver
 
     /// Queue for synchronizing internal operations.
     private let queue: DispatchQueue
@@ -154,7 +154,7 @@ public final class CrashReportingFeature: DatadogFeature {
 }
 
 extension CrashReportingFeature: Flushable {
-    public func flush() {
+    func flush() {
         // Await asynchronous operations completion to safely sink all pending tasks.
         queue.sync {}
     }
