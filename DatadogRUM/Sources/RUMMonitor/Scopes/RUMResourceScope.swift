@@ -90,6 +90,7 @@ internal class RUMResourceScope: RUMScope {
         self.onResourceEventSent = onResourceEventSent
         self.onErrorEventSent = onErrorEventSent
 
+        // Track this resource in view's TTNS metric:
         networkSettledMetric.trackResourceStart(at: startTime, resourceID: resourceUUID)
     }
 
