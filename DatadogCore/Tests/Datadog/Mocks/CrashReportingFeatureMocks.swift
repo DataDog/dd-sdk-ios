@@ -217,7 +217,8 @@ internal extension DDCrashReport {
         binaryImages: [BinaryImage] = [],
         meta: Meta = .mockAny(),
         wasTruncated: Bool = .mockAny(),
-        context: Data? = .mockAny()
+        context: Data? = .mockAny(),
+        additionalAttributes: [String: Encodable]? = nil
     ) -> DDCrashReport {
         return DDCrashReport(
             date: date,
@@ -228,7 +229,8 @@ internal extension DDCrashReport {
             binaryImages: binaryImages,
             meta: meta,
             wasTruncated: wasTruncated,
-            context: context
+            context: context,
+            additionalAttributes: additionalAttributes
         )
     }
 
@@ -242,7 +244,8 @@ internal extension DDCrashReport {
             type: .mockRandom(),
             message: .mockRandom(),
             stack: .mockRandom(),
-            context: contextData
+            context: contextData,
+            additionalAttributes: mockRandomAttributes()
         )
     }
 }

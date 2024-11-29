@@ -165,32 +165,4 @@ internal struct CrashContext: Codable, Equatable {
             lhs.userInfo?.email == rhs.userInfo?.email &&
             lhs.appLaunchDate == rhs.appLaunchDate
     }
-
-    func merging(rumAttributes: GlobalRUMAttributes) -> Self {
-        let sourceAttribtues = lastRUMAttributes?.attributes ?? [:]
-        let mergedAttributes = sourceAttribtues.merging(rumAttributes.attributes) { new, _ in new }
-
-        return CrashContext(
-            serverTimeOffset: serverTimeOffset,
-            service: service,
-            env: env,
-            version: version,
-            buildNumber: buildNumber,
-            device: device,
-            sdkVersion: sdkVersion,
-            source: source,
-            trackingConsent: trackingConsent,
-            userInfo: userInfo,
-            networkConnectionInfo: networkConnectionInfo,
-            carrierInfo: carrierInfo,
-            lastIsAppInForeground: lastIsAppInForeground,
-            appLaunchDate: appLaunchDate,
-            lastRUMViewEvent: lastRUMViewEvent,
-            lastRUMSessionState: lastRUMSessionState,
-            lastRUMAttributes: GlobalRUMAttributes(
-                attributes: mergedAttributes
-            ),
-            lastLogAttributes: lastLogAttributes
-        )
-    }
 }
