@@ -42,21 +42,9 @@ class RecordingTriggerTests: XCTestCase {
         XCTAssertEqual(didTriggerCalledCount, 1)
     }
 
-    func testNotifySendEventDoesNotTriggerOnInvalidEvent() {
-        var didTriggerCalledCount = 0
-        recordingTrigger.startWatchingTriggers {
-            didTriggerCalledCount += 1
-        }
-        UIApplication.shared.sendEvent(UIEvent())
-
-        XCTAssertEqual(didTriggerCalledCount, 0)
-    }
-
     private func randomTrigger() {
         if Bool.random() {
-            let touch = UITouchMock()
-            let event = UITouchEventMock(touches: [touch])
-            UIApplication.shared.sendEvent(event)
+            UIApplication.shared.sendEvent(UIEvent())
         } else {
             UIView().layoutSubviews()
         }
