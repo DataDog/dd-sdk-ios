@@ -55,6 +55,7 @@ class SendingCrashReportTests: XCTestCase {
             lastLogAttributes: .init(mockRandomAttributes())
         )
         let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
+        let crashReportAttributes: [String: Encodable] = try XCTUnwrap(crashReport.additionalAttributes.dd.decode())
 
         // When
         Logs.enable(with: .init(), in: core)
@@ -68,8 +69,8 @@ class SendingCrashReportTests: XCTestCase {
         XCTAssertEqual(log.error?.message, crashReport.message)
         XCTAssertEqual(log.error?.kind, crashReport.type)
         XCTAssertEqual(log.error?.stack, crashReport.stack)
-        XCTAssertFalse(log.attributes.userAttributes.isEmpty)
-        DDAssertJSONEqual(log.attributes.userAttributes, crashContext.lastLogAttributes!)
+        let lastLogAttributes: [String: Encodable] = try XCTUnwrap(crashContext.lastLogAttributes.dd.decode())
+        DDAssertJSONEqual(log.attributes.userAttributes, lastLogAttributes.merging(crashReportAttributes) { $1 })
         XCTAssertNotNil(log.attributes.internalAttributes?[DDError.threads])
         XCTAssertNotNil(log.attributes.internalAttributes?[DDError.binaryImages])
         XCTAssertNotNil(log.attributes.internalAttributes?[DDError.meta])
