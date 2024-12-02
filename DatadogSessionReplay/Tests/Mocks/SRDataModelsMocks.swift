@@ -6,6 +6,8 @@
 
 #if os(iOS)
 import Foundation
+import XCTest
+
 @_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
@@ -1253,6 +1255,17 @@ extension SRIncrementalSnapshotRecord {
         switch data {
         case .viewportResizeData(let value): return value
         default: return nil
+        }
+    }
+}
+
+extension SRWireframe {
+    var textWireframe: SRTextWireframe? {
+        switch self {
+        case .textWireframe(let value): return value
+        default:
+            XCTFail("not a SRWireframe.textWireframe")
+            return nil
         }
     }
 }

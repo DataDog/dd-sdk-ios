@@ -35,6 +35,9 @@ internal struct DisplayList {
         }
 
         internal struct ViewInfo {
+            /// The container view frame in this view coordinate space
+            let frame: CGRect
+
             /// Original view's `.backgorundColor`.
             let backgroundColor: CGColor?
 
