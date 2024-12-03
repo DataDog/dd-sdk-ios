@@ -19,11 +19,18 @@ import DatadogInternal
 ///
 /// Your crash reports appear in [Error Tracking](https://app.datadoghq.com/rum/error-tracking).
 public final class CrashReporting {
-    /// Initializes the Datadog Crash Reporter.
+    /// Initializes the Datadog Crash Reporter using the default
+    /// `PLCrashReporter` plugin.
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
         enable(with: PLCrashReporterPlugin(), in: core)
     }
-
+    
+    /// Initializes the Datadog Crash Reporter with a custom Crash Reporting Plugin.
+    ///
+    /// The custom plugin will be responsible for:
+    /// - Provide crash report
+    /// - Store context data associated with crashes
+    /// - Provide backtraces
     public static func enable(with plugin: CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default) {
         do {
             let contextProvider = CrashContextCoreProvider()
