@@ -212,7 +212,7 @@ extension DistributedTracing {
             .init(
                 traceID: $0.traceID,
                 spanID: $0.spanID,
-                samplingRate: Double(sampler.samplingRate) / 100.0
+                samplingRate: Double(sampler.samplingRate.percentageProportion)
             )
         }
     }

@@ -173,10 +173,10 @@ public struct RUMActionEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double?
+            public let sessionReplaySampleRate: SampleRate?
 
             /// The percentage of sessions tracked
-            public let sessionSampleRate: Double
+            public let sessionSampleRate: SampleRate
 
             enum CodingKeys: String, CodingKey {
                 case sessionReplaySampleRate = "session_replay_sample_rate"
@@ -578,10 +578,10 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double?
+            public let sessionReplaySampleRate: SampleRate?
 
             /// The percentage of sessions tracked
-            public let sessionSampleRate: Double
+            public let sessionSampleRate: SampleRate
 
             enum CodingKeys: String, CodingKey {
                 case sessionReplaySampleRate = "session_replay_sample_rate"
@@ -1223,10 +1223,10 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double?
+            public let sessionReplaySampleRate: SampleRate?
 
             /// The percentage of sessions tracked
-            public let sessionSampleRate: Double
+            public let sessionSampleRate: SampleRate
 
             enum CodingKeys: String, CodingKey {
                 case sessionReplaySampleRate = "session_replay_sample_rate"
@@ -1632,10 +1632,10 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double?
+            public let sessionReplaySampleRate: SampleRate?
 
             /// The percentage of sessions tracked
-            public let sessionSampleRate: Double
+            public let sessionSampleRate: SampleRate
 
             enum CodingKeys: String, CodingKey {
                 case sessionReplaySampleRate = "session_replay_sample_rate"
@@ -2182,10 +2182,10 @@ public struct RUMViewEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double?
+            public let sessionReplaySampleRate: SampleRate?
 
             /// The percentage of sessions tracked
-            public let sessionSampleRate: Double
+            public let sessionSampleRate: SampleRate
 
             /// Whether session replay recording configured to start manually
             public let startSessionReplayRecordingManually: Bool?
@@ -2901,10 +2901,10 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double?
+            public let sessionReplaySampleRate: SampleRate?
 
             /// The percentage of sessions tracked
-            public let sessionSampleRate: Double
+            public let sessionSampleRate: SampleRate
 
             enum CodingKeys: String, CodingKey {
                 case sessionReplaySampleRate = "session_replay_sample_rate"
@@ -3115,6 +3115,9 @@ public struct TelemetryErrorEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Actual sample rate of the event
+    public let effectiveSampleRate: SampleRate
+
     /// Enabled experimental features
     public let experimentalFeatures: [String]?
 
@@ -3144,6 +3147,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case date = "date"
+        case effectiveSampleRate = "effective_sample_rate"
         case experimentalFeatures = "experimental_features"
         case service = "service"
         case session = "session"
@@ -3317,6 +3321,9 @@ public struct TelemetryDebugEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Actual sample rate of the event
+    public let effectiveSampleRate: SampleRate
+
     /// Enabled experimental features
     public let experimentalFeatures: [String]?
 
@@ -3346,6 +3353,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case date = "date"
+        case effectiveSampleRate = "effective_sample_rate"
         case experimentalFeatures = "experimental_features"
         case service = "service"
         case session = "session"
@@ -3499,6 +3507,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Actual sample rate of the event
+    public let effectiveSampleRate: SampleRate
+
     /// Enabled experimental features
     public let experimentalFeatures: [String]?
 
@@ -3528,6 +3539,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case date = "date"
+        case effectiveSampleRate = "effective_sample_rate"
         case experimentalFeatures = "experimental_features"
         case service = "service"
         case session = "session"
@@ -4122,6 +4134,9 @@ public struct TelemetryUsageEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Actual sample rate of the event
+    public let effectiveSampleRate: SampleRate
+
     /// Enabled experimental features
     public let experimentalFeatures: [String]?
 
@@ -4151,6 +4166,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case date = "date"
+        case effectiveSampleRate = "effective_sample_rate"
         case experimentalFeatures = "experimental_features"
         case service = "service"
         case session = "session"

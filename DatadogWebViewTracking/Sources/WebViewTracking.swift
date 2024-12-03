@@ -39,7 +39,7 @@ public enum WebViewTracking {
     public static func enable(
         webView: WKWebView,
         hosts: Set<String> = [],
-        logsSampleRate: Float = 100,
+        logsSampleRate: SampleRate = .maxSampleRate,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         enable(
@@ -205,7 +205,7 @@ extension InternalExtension where ExtendedType == WebViewTracking {
     /// - Returns: A `MessageEmitter` instance
     public static func messageEmitter(
         in core: DatadogCoreProtocol,
-        logsSampleRate: Float = 100
+        logsSampleRate: SampleRate = .maxSampleRate
     ) -> AbstractMessageEmitter {
         return MessageEmitter(
             logsSampler: Sampler(samplingRate: logsSampleRate),

@@ -25,7 +25,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
     func testGivenRUMEnabled_telemetryEventsAreSent() throws {
         // Given
         var config = RUM.Configuration(applicationID: .mockAny())
-        config.telemetrySampleRate = 100
+        config.telemetrySampleRate = .maxSampleRate
         RUM.enable(with: config, in: core)
 
         // When
@@ -68,7 +68,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
     func testGivenRUMEnabled_whenNoViewIsActive_telemetryEventsAreLinkedToSession() throws {
         // Given
         var config = RUM.Configuration(applicationID: "rum-app-id")
-        config.telemetrySampleRate = 100
+        config.telemetrySampleRate = .maxSampleRate
         RUM.enable(with: config, in: core)
 
         // When
@@ -115,7 +115,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
     func testGivenRUMEnabled_whenViewIsActive_telemetryEventsAreLinkedToView() throws {
         // Given
         var config = RUM.Configuration(applicationID: "rum-app-id")
-        config.telemetrySampleRate = 100
+        config.telemetrySampleRate = .maxSampleRate
         RUM.enable(with: config, in: core)
 
         // When
@@ -161,7 +161,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
     func testGivenRUMEnabled_whenActionIsActive_telemetryEventsAreLinkedToAction() throws {
         // Given
         var config = RUM.Configuration(applicationID: "rum-app-id")
-        config.telemetrySampleRate = 100
+        config.telemetrySampleRate = .maxSampleRate
         RUM.enable(with: config, in: core)
 
         // When
@@ -203,5 +203,50 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         XCTAssertNotNil(methodCalledMetric.session?.id)
         XCTAssertNotNil(methodCalledMetric.view?.id)
         XCTAssertNotNil(methodCalledMetric.action?.id)
+    }
+    
+    func testGivenRUMEnabled_effectiveSampleRateIsComposed() throws {
+        // Given
+        var config = RUM.Configuration(applicationID: .mockAny())
+        config.telemetrySampleRate = 90
+        RUM.enable(with: config, in: core)
+        let metricsSampleRate: SampleRate = 99
+        let headSampleRate: SampleRate = 80.0
+
+        // When
+        (0..<100).forEach { _ in
+            core.telemetry.debug("Debug Telemetry")
+            core.telemetry.error("Error Telemetry")
+            core.telemetry.metric(name: "Metric Name", attributes: [:], sampleRate: metricsSampleRate)
+            core.telemetry.send(telemetry: .usage(.init(event: .setUser, sampleRate: metricsSampleRate)))
+            core.telemetry.stopMethodCalled(
+                core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: headSampleRate),
+                tailSampleRate: metricsSampleRate
+            )
+        }
+
+        // Then
+        let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
+        let errorEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryErrorEvent.self)
+        let usageEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryUsageEvent.self)
+
+        XCTAssertGreaterThan(debugEvents.count, 0)
+        XCTAssertGreaterThan(errorEvents.count, 0)
+        XCTAssertGreaterThan(usageEvents.count, 0)
+
+        let debug = try XCTUnwrap(debugEvents.first(where: { $0.telemetry.message == "Debug Telemetry" }))
+        XCTAssertEqual(debug.effectiveSampleRate, config.telemetrySampleRate)
+
+        let error = try XCTUnwrap(errorEvents.first(where: { $0.telemetry.message == "Error Telemetry" }))
+        XCTAssertEqual(error.effectiveSampleRate, config.telemetrySampleRate)
+
+        let mobileMetric = try XCTUnwrap(debugEvents.first(where: { $0.telemetry.message == "[Mobile Metric] Metric Name" }))
+        XCTAssertEqual(mobileMetric.effectiveSampleRate, config.telemetrySampleRate.composed(with: metricsSampleRate))
+
+        let methodCalledMetric = try XCTUnwrap(debugEvents.first(where: { $0.telemetry.message == "[Mobile Metric] Method Called" }))
+        XCTAssertEqual(methodCalledMetric.effectiveSampleRate, config.telemetrySampleRate.composed(with: metricsSampleRate).composed(with: headSampleRate))
+
+        let usage = try XCTUnwrap(usageEvents.first)
+        XCTAssertEqual(usage.effectiveSampleRate, config.telemetrySampleRate.composed(with: metricsSampleRate))
     }
 }

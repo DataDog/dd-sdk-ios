@@ -505,6 +505,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
             date: .mockRandom(),
+            effectiveSampleRate: .mockRandom(),
             experimentalFeatures: nil,
             service: .mockRandom(),
             session: .init(id: .mockRandom()),

@@ -7,6 +7,7 @@
 import XCTest
 import TestUtilities
 @testable import DatadogRUM
+@testable import DatadogInternal
 
 class RUMSessionEndedMetricIntegrationTests: XCTestCase {
     private let dateProvider = DateProviderMock()
@@ -20,8 +21,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
             applicationStateHistory: .mockAppInForeground(since: dateProvider.now)
         )
         rumConfig = RUM.Configuration(applicationID: .mockAny())
-        rumConfig.telemetrySampleRate = 100
-        rumConfig.sessionEndedMetricSampleRate = 100
+        rumConfig.telemetrySampleRate = .maxSampleRate
         rumConfig.dateProvider = dateProvider
     }
 
@@ -37,7 +37,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         RUM.enable(with: rumConfig, in: core)
 
         // Given
-        let monitor = RUMMonitor.shared(in: core)
+        let monitor = self.rumMonitor()
         monitor.startView(key: "key", name: "View")
 
         // When
@@ -52,7 +52,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         RUM.enable(with: rumConfig, in: core)
 
         // Given
-        let monitor = RUMMonitor.shared(in: core)
+        let monitor = self.rumMonitor()
         monitor.startView(key: "key1", name: "View1")
 
         // When
@@ -68,7 +68,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         RUM.enable(with: rumConfig, in: core)
 
         // Given
-        let monitor = RUMMonitor.shared(in: core)
+        let monitor = self.rumMonitor()
         monitor.startView(key: "key", name: "View")
 
         // When
@@ -88,7 +88,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         RUM.enable(with: rumConfig, in: core)
 
         // Given
-        let monitor = RUMMonitor.shared(in: core)
+        let monitor = self.rumMonitor()
         monitor.startView(key: "key", name: "View")
 
         // When
@@ -106,7 +106,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         RUM.enable(with: rumConfig, in: core)
 
         // Given
-        let monitor = RUMMonitor.shared(in: core)
+        let monitor = self.rumMonitor()
         monitor.startView(key: "key", name: "View")
         monitor.currentSessionID { currentSessionID = $0 }
         monitor.stopView(key: "key")
@@ -126,7 +126,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         RUM.enable(with: rumConfig, in: core)
 
         // Given
-        let monitor = RUMMonitor.shared(in: core)
+        let monitor = self.rumMonitor()
         dateProvider.now += 5.seconds
         monitor.startView(key: "key1", name: "View1")
         dateProvider.now += 5.seconds
@@ -150,7 +150,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         RUM.enable(with: rumConfig, in: core)
 
         // Given
-        let monitor = RUMMonitor.shared(in: core)
+        let monitor = self.rumMonitor()
         (0..<3).forEach { _ in
             // Simulate app in foreground:
             core.context = .mockWith(applicationStateHistory: .mockAppInForeground(since: dateProvider.now))
@@ -189,7 +189,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         RUM.enable(with: rumConfig, in: core)
 
         // Given
-        let monitor = RUMMonitor.shared(in: core)
+        let monitor = self.rumMonitor()
         monitor.startView(key: "key", name: "View")
 
         core.flush()
@@ -222,7 +222,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         RUM.enable(with: rumConfig, in: core)
 
         // Given
-        let monitor = RUMMonitor.shared(in: core)
+        let monitor = self.rumMonitor()
         monitor.startView(key: "key", name: "View")
 
         // When
@@ -240,7 +240,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         RUM.enable(with: rumConfig, in: core)
 
         // Given
-        let monitor = RUMMonitor.shared(in: core)
+        let monitor = self.rumMonitor()
         monitor.startView(key: "key", name: "View")
         monitor.stopView(key: "key") // no active view
 
@@ -259,6 +259,17 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         XCTAssertEqual(metric.attributes?.noViewEventsCount.resources, expectedCount)
         XCTAssertEqual(metric.attributes?.noViewEventsCount.errors, expectedCount)
         XCTAssertEqual(metric.attributes?.noViewEventsCount.longTasks, expectedCount)
+    }
+}
+
+private extension RUMSessionEndedMetricIntegrationTests {
+    
+    func rumMonitor(with sessionEndedSampleRate: SampleRate = .maxSampleRate) -> RUMMonitorProtocol {
+        
+        let monitor = RUMMonitor.shared(in: core)
+        monitor.dd.scopes.dependencies.sessionEndedMetric.sampleRate = sessionEndedSampleRate
+        
+        return monitor
     }
 }
 
