@@ -13,7 +13,6 @@ internal extension CGImage {
     func isLikelyBundled(scale: CGFloat) -> Bool {
         let pointSize = self.pointSize(scale: scale)
         let maxDimension: CGFloat = 100
-        print("Point size:", pointSize)
         return pointSize.width <= maxDimension && pointSize.height <= maxDimension
     }
 
