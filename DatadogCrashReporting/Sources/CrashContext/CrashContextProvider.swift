@@ -10,7 +10,7 @@ import DatadogInternal
 /// An interface for writing and reading  the `CrashContext`
 internal protocol CrashContextProvider: AnyObject {
     /// Returns current `CrashContext` value.
-    func currentCrashContext(_ closure: @escaping (CrashContext?) -> Void)
+    var currentCrashContext: CrashContext? { get }
     /// Notifies on `CrashContext` change.
     var onCrashContextChange: (CrashContext) -> Void { set get }
 }
@@ -49,8 +49,8 @@ internal class CrashContextCoreProvider: CrashContextProvider {
 
     // MARK: - CrashContextProviderType
 
-    func currentCrashContext(_ closure: @escaping (CrashContext?) -> Void) {
-        queue.async { closure(self._context) }
+    var currentCrashContext: CrashContext? {
+        queue.sync { _context }
     }
 
     var onCrashContextChange: (CrashContext) -> Void {

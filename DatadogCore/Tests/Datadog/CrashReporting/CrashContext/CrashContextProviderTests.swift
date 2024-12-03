@@ -25,23 +25,23 @@ class CrashContextProviderTests: XCTestCase {
     // MARK: - Receiving SDK Context
 
     func testWhenInitialSDKContextIsReceived_itNotifiesCrashContext() throws {
-        var initialCrashContext: CrashContext? = nil
+        var latestCrashContext: CrashContext? = nil
+        provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
         let sdkContext: DatadogContext = .mockRandom()
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore()))
-        provider.currentCrashContext({ initialCrashContext = $0 })
 
         // Then
         provider.flush()
-        let crashContext = try XCTUnwrap(initialCrashContext)
+        let crashContext = try XCTUnwrap(latestCrashContext)
+        XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: sdkContext)
     }
 
     func testWhenNextSDKContextIsReceived_itNotifiesNewCrashContext() throws {
-        var currentCrashContext: CrashContext? = nil
         var latestCrashContext: CrashContext? = nil
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
@@ -51,12 +51,11 @@ class CrashContextProviderTests: XCTestCase {
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore())) // receive next
-        provider.currentCrashContext({ currentCrashContext = $0 })
 
         // Then
         provider.flush()
         let crashContext = try XCTUnwrap(latestCrashContext)
-        XCTAssertEqual(crashContext, currentCrashContext)
+        XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: nextSDKContext)
     }
 
@@ -77,6 +76,7 @@ class CrashContextProviderTests: XCTestCase {
         // Then
         provider.flush()
         let crashContext = try XCTUnwrap(latestCrashContext)
+        XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: sdkContext)
         DDAssertJSONEqual(crashContext.lastRUMViewEvent, rumView, "Last RUM view must be available")
     }
@@ -97,6 +97,7 @@ class CrashContextProviderTests: XCTestCase {
         // Then
         provider.flush()
         let crashContext = try XCTUnwrap(latestCrashContext)
+        XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: nextSDKContext)
         DDAssertJSONEqual(crashContext.lastRUMViewEvent, rumView, "Last RUM view must be available even after next SDK context update")
     }
@@ -119,6 +120,7 @@ class CrashContextProviderTests: XCTestCase {
         // Then
         provider.flush()
         let crashContext = try XCTUnwrap(latestCrashContext)
+        XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: sdkContext)
         XCTAssertNil(crashContext.lastRUMViewEvent, "Last RUM view must reset")
     }
@@ -140,6 +142,7 @@ class CrashContextProviderTests: XCTestCase {
         // Then
         provider.flush()
         let crashContext = try XCTUnwrap(latestCrashContext)
+        XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: nextSDKContext)
         XCTAssertNil(crashContext.lastRUMViewEvent, "Last RUM view must reset even after next SDK context update")
     }
@@ -161,6 +164,7 @@ class CrashContextProviderTests: XCTestCase {
         // Then
         provider.flush()
         let crashContext = try XCTUnwrap(latestCrashContext)
+        XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: sdkContext)
         DDAssertJSONEqual(crashContext.lastRUMSessionState, rumSessionState, "Last RUM session state must be available")
     }
@@ -181,6 +185,7 @@ class CrashContextProviderTests: XCTestCase {
         // Then
         provider.flush()
         let crashContext = try XCTUnwrap(latestCrashContext)
+        XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: nextSDKContext)
         DDAssertJSONEqual(crashContext.lastRUMSessionState, rumSessionState, "Last RUM session state must be available even after next SDK context update")
     }
@@ -202,6 +207,7 @@ class CrashContextProviderTests: XCTestCase {
         // Then
         provider.flush()
         let crashContext = try XCTUnwrap(latestCrashContext)
+        XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: sdkContext)
         DDAssertJSONEqual(crashContext.lastRUMAttributes, rumAttributes, "Last RUM attributes must be available")
     }
@@ -222,6 +228,7 @@ class CrashContextProviderTests: XCTestCase {
         // Then
         provider.flush()
         let crashContext = try XCTUnwrap(latestCrashContext)
+        XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: nextSDKContext)
         DDAssertJSONEqual(crashContext.lastRUMAttributes, rumAttributes, "Last RUM attributes must be available even after next SDK context update")
     }
@@ -243,6 +250,7 @@ class CrashContextProviderTests: XCTestCase {
         // Then
         provider.flush()
         let crashContext = try XCTUnwrap(latestCrashContext)
+        XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: sdkContext)
         DDAssertJSONEqual(crashContext.lastLogAttributes, logAttributes, "Last Log attributes must be available")
     }
@@ -263,6 +271,7 @@ class CrashContextProviderTests: XCTestCase {
         // Then
         provider.flush()
         let crashContext = try XCTUnwrap(latestCrashContext)
+        XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: nextSDKContext)
         DDAssertJSONEqual(crashContext.lastLogAttributes, logAttributes, "Last Log attributes must be available even after next SDK context update")
     }
@@ -270,31 +279,14 @@ class CrashContextProviderTests: XCTestCase {
     // MARK: - Thread safety
 
     func testWhenContextIsWrittenAndReadFromDifferentThreads_itRunsAllOperationsSafely() {
-        let expectation = self.expectation(description: "`provider` received at least 100 calls")
-        expectation.expectedFulfillmentCount = 100
-        expectation.assertForOverFulfill = false // to mitigate the call for initial context injection
-
         let provider = CrashContextCoreProvider()
         let viewEvent: RUMViewEvent = .mockRandom()
         let sessionState: RUMSessionState = .mockRandom()
 
-        // State mutated by the mock plugin implementation - `DatadogCrashReporter` ensures its thread safety
-        var mutableState: Bool = .random()
-
-        provider.onCrashContextChange = { _ in
-            mutableState.toggle()
-            expectation.fulfill()
-        }
-
         // swiftlint:disable opening_brace
         callConcurrently(
             closures: [
-                {
-                    provider.currentCrashContext({ _ in
-                        mutableState.toggle()
-                        expectation.fulfill()
-                    })
-                },
+                { _ = provider.currentCrashContext },
                 { _ = provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore()) },
                 { _ = provider.receive(message: .baggage(key: RUMBaggageKeys.viewReset, value: true), from: NOPDatadogCore()) },
                 { _ = provider.receive(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent), from: NOPDatadogCore()) },
@@ -305,7 +297,6 @@ class CrashContextProviderTests: XCTestCase {
         // swiftlint:enable opening_brace
 
         provider.flush()
-        waitForExpectations(timeout: 2, handler: nil)
     }
 
     // MARK: - Helpers

@@ -85,10 +85,6 @@ internal class CrashContextProviderMock: CrashContextProvider {
         self.currentCrashContext = initialCrashContext
         self.onCrashContextChange = { _ in }
     }
-
-    func currentCrashContext(_ closure: @escaping (CrashContext?) -> Void) {
-        closure(currentCrashContext)
-    }
 }
 
 class CrashReportSenderMock: CrashReportSender {

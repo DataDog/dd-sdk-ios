@@ -12,6 +12,9 @@ internal final class CrashReportingFeature: DatadogFeature {
 
     let messageReceiver: FeatureMessageReceiver
 
+    /// Queue for synchronizing internal operations.
+    private let queue: DispatchQueue
+
     let crashContextProvider: CrashContextProvider
 
     /// An interface for accessing the `DDCrashReportingPlugin` from `DatadogCrashReporting`.
@@ -28,6 +31,10 @@ internal final class CrashReportingFeature: DatadogFeature {
         messageReceiver: FeatureMessageReceiver,
         telemetry: Telemetry
     ) {
+        self.queue = DispatchQueue(
+            label: "com.datadoghq.crash-reporter",
+            target: .global(qos: .utility)
+        )
         self.plugin = crashReportingPlugin
         self.sender = sender
         self.crashContextProvider = crashContextProvider
@@ -35,50 +42,52 @@ internal final class CrashReportingFeature: DatadogFeature {
         self.telemetry = telemetry
 
         // Inject current `CrashContext`
-        crashContextProvider.currentCrashContext { [weak self] in
-            self?.inject(context: $0)
+        if let context = crashContextProvider.currentCrashContext {
+            inject(currentCrashContext: context)
         }
 
         // Register for future `CrashContext` changes
         self.crashContextProvider.onCrashContextChange = { [weak self] in
-            self?.inject(context: $0)
+            self?.inject(currentCrashContext: $0)
         }
     }
 
     // MARK: - Interaction with `DatadogCrashReporting` plugin
 
     func sendCrashReportIfFound() {
-        // The plugin.readPendingCrashReport method is escaping, so
-        // every call in the closure must be thread-safe
-        plugin.readPendingCrashReport { [weak self] crashReport in
-            guard let self = self else {
-                return false
-            }
+        queue.async {
+            self.plugin.readPendingCrashReport { [weak self] crashReport in
+                guard let self = self else {
+                    return false
+                }
 
-            guard let availableCrashReport = crashReport else {
-                DD.logger.debug("No pending Crash found")
-                self.sender.send(launch: .init(didCrash: false))
-                return false
-            }
+                guard let availableCrashReport = crashReport else {
+                    DD.logger.debug("No pending Crash found")
+                    self.sender.send(launch: .init(didCrash: false))
+                    return false
+                }
 
-            DD.logger.debug("Loaded pending crash report")
+                DD.logger.debug("Loaded pending crash report")
 
-            guard let crashContext = availableCrashReport.context.flatMap({ self.decode(crashContextData: $0) }) else {
-                // `CrashContext` is malformed and and cannot be read. Return `true` to let the crash reporter
-                // purge this crash report as we are not able to process it respectively.
+                guard let crashContext = availableCrashReport.context.flatMap({ self.decode(crashContextData: $0) }) else {
+                    // `CrashContext` is malformed and and cannot be read. Return `true` to let the crash reporter
+                    // purge this crash report as we are not able to process it respectively.
+                    self.sender.send(launch: .init(didCrash: true))
+                    return true
+                }
+
+                self.sender.send(report: availableCrashReport, with: crashContext)
                 self.sender.send(launch: .init(didCrash: true))
                 return true
             }
-
-            self.sender.send(report: availableCrashReport, with: crashContext)
-            self.sender.send(launch: .init(didCrash: true))
-            return true
         }
     }
 
-    private func inject(context: CrashContext?) {
-        if let context = context, let data = self.encode(crashContext: context) {
-            self.plugin.inject(context: data)
+    private func inject(currentCrashContext: CrashContext) {
+        queue.async {
+            if let crashContextData = self.encode(crashContext: currentCrashContext) {
+                self.plugin.inject(context: crashContextData)
+            }
         }
     }
 
@@ -135,5 +144,12 @@ internal final class CrashReportingFeature: DatadogFeature {
             telemetry.error("Failed to decode crash report context", error: error)
             return nil
         }
+    }
+}
+
+extension CrashReportingFeature: Flushable {
+    func flush() {
+        // Await asynchronous operations completion to safely sink all pending tasks.
+        queue.sync {}
     }
 }

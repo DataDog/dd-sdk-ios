@@ -1192,13 +1192,8 @@ class RUMMonitorTests: XCTestCase {
 
         let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[0].model()
 
-        let crashContextProvider = try XCTUnwrap(crashReporter.crashContextProvider as? CrashContextCoreProvider)
-
-        crashReporter.crashContextProvider.currentCrashContext { context in
-            DDAssertJSONEqual(lastRUMViewEventSent, AnyEncodable(context?.lastRUMViewEvent))
-        }
-
-        crashContextProvider.flush()
+        let currentLastRUMViewEventSent = try XCTUnwrap(crashReporter.crashContextProvider.currentCrashContext?.lastRUMViewEvent)
+        DDAssertJSONEqual(currentLastRUMViewEventSent, lastRUMViewEventSent)
     }
 
     // MARK: - Thread safety
