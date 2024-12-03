@@ -92,7 +92,7 @@ public struct Logger {
             networkInfoEnabled: Bool = false,
             bundleWithRumEnabled: Bool = true,
             bundleWithTraceEnabled: Bool = true,
-            remoteSampleRate: Float = 100,
+            remoteSampleRate: Float = .maxSampleRate,
             remoteLogThreshold: LogLevel = .debug,
             consoleLogFormat: ConsoleLogFormat? = nil
         ) {

@@ -174,6 +174,7 @@ class TelemetryTests: XCTestCase {
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: MethodCalledMetric.name))
         XCTAssertEqual(metric.attributes[SDKMetricFields.typeKey] as? String, MethodCalledMetric.typeValue)
+        XCTAssertEqual(metric.attributes[SDKMetricFields.headSampleRate] as? SampleRate, 100)
         XCTAssertEqual(metric.attributes[MethodCalledMetric.operationName] as? String, operationName)
         XCTAssertEqual(metric.attributes[MethodCalledMetric.callerClass] as? String, callerClass)
         XCTAssertEqual(metric.attributes[MethodCalledMetric.isSuccessful] as? Bool, isSuccessful)

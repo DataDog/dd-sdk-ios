@@ -407,7 +407,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dd: .init(
                 action: nil,
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: dependencies.sessionSampler.samplingRate),
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: self.context.sessionPrecondition
@@ -485,7 +485,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 browserSdkVersion: nil,
                 configuration: .init(
                     sessionReplaySampleRate: nil,
-                    sessionSampleRate: Double(dependencies.sessionSampler.samplingRate),
+                    sessionSampleRate: dependencies.sessionSampler.samplingRate,
                     startSessionReplayRecordingManually: nil
                 ),
                 documentVersion: version.toInt64,
@@ -619,7 +619,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: dependencies.sessionSampler.samplingRate),
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: self.context.sessionPrecondition
@@ -698,7 +698,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let longTaskEvent = RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: dependencies.sessionSampler.samplingRate),
                 discarded: nil,
                 session: .init(
                     plan: .plan1,

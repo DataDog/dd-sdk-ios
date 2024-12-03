@@ -215,7 +215,7 @@ extension RUM {
         ///
         /// It must be a number between 0.0 and 100.0, where 0 means no telemetry will be sent,
         /// and 100 means all telemetry will be uploaded. The default value is 20.0.
-        public var telemetrySampleRate: Float
+        public var telemetrySampleRate: SampleRate
 
         // MARK: - Nested Types
 
@@ -265,9 +265,7 @@ extension RUM {
         // MARK: - Internal
 
         /// An extra sampling rate for configuration telemetry events. It is applied on top of the value configured in public `telemetrySampleRate`.
-        internal var configurationTelemetrySampleRate: Float = 20.0
-        /// The sample rate for "RUM Session Ended" telemetry. It is applied on top of the value configured in public `telemetrySampleRate`.
-        internal var sessionEndedMetricSampleRate: Float = MetricTelemetry.defaultSampleRate
+        internal var configurationTelemetrySampleRate: SampleRate = 20.0
 
         internal var uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
 
@@ -357,7 +355,7 @@ extension RUM.Configuration {
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     public init(
         applicationID: String,
-        sessionSampleRate: Float = 100,
+        sessionSampleRate: SampleRate = .maxSampleRate,
         uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
@@ -374,7 +372,7 @@ extension RUM.Configuration {
         longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
         onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = nil,
-        telemetrySampleRate: Float = 20
+        telemetrySampleRate: SampleRate = 20
     ) {
         self.applicationID = applicationID
         self.sessionSampleRate = sessionSampleRate
@@ -399,14 +397,3 @@ extension RUM.Configuration {
 }
 
 extension RUM.Configuration: InternalExtended {}
-extension InternalExtension where ExtendedType == RUM.Configuration {
-    /// The sampling rate for configuration telemetry events. When set, it overwrites the value
-    /// of `configurationTelemetrySampleRate` in `RUM.Configuration`.
-    ///
-    /// It is mostly used to enable or disable telemetry events when running test scenarios.
-    /// Expects value between `0.0` and `100.0`.
-    public var configurationTelemetrySampleRate: Float {
-        get { type.configurationTelemetrySampleRate }
-        set { type.configurationTelemetrySampleRate = newValue }
-    }
-}

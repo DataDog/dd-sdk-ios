@@ -164,7 +164,7 @@ internal class RUMResourceScope: RUMScope {
                 browserSdkVersion: nil,
                 configuration: .init(
                     sessionReplaySampleRate: nil,
-                    sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)
+                    sessionSampleRate: dependencies.sessionSampler.samplingRate
                 ),
                 discarded: nil,
                 rulePsr: traceSamplingRate,
@@ -276,7 +276,7 @@ internal class RUMResourceScope: RUMScope {
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: dependencies.sessionSampler.samplingRate),
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: self.context.sessionPrecondition

@@ -32,7 +32,7 @@ public final class objc_WebViewTracking: NSObject {
     public static func enable(
         webView: WKWebView,
         hosts: Set<String> = [],
-        logsSampleRate: Float = 100
+        logsSampleRate: SampleRate = .maxSampleRate
     ) {
         WebViewTracking.enable(
             webView: webView,
