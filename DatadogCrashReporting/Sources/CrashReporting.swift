@@ -24,7 +24,7 @@ public final class CrashReporting {
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
         enable(with: PLCrashReporterPlugin(), in: core)
     }
-    
+
     /// Initializes the Datadog Crash Reporter with a custom Crash Reporting Plugin.
     ///
     /// The custom plugin will be responsible for:
