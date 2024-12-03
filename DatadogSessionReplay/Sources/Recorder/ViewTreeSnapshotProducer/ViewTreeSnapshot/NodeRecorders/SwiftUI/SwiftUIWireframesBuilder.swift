@@ -131,6 +131,43 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                 cornerRadius: viewInfo?.cornerRadius,
                 opacity: viewInfo?.alpha
             )
+        case let .image(resolvedImage):
+            switch resolvedImage.contents {
+            case .cgImage(let cgImage):
+                // TODO: RUM-7462 - Apply global privacy setting
+                // TODO: RUM-7370 - Apply FGM overrides
+                if cgImage.isLikelyBundled(scale: resolvedImage.scale) {
+                    let imageResource = UIImageResource(
+                        image: UIImage(
+                            cgImage: cgImage,
+                            scale: resolvedImage.scale,
+                            orientation: .init(resolvedImage.orientation)
+                        ),
+                        tintColor: nil
+                    )
+                    return context.builder.createImageWireframe(
+                        id: Int64(content.seed.value),
+                        resource: imageResource,
+                        frame: context.convert(frame: item.frame),
+                        clip: context.clip
+                    )
+                } else {
+                    return context.builder.createPlaceholderWireframe(
+                        id: Int64(content.seed.value),
+                        frame: item.frame,
+                        clip: context.clip,
+                        label: "Content Image"
+                    )
+                }
+            case .unknown:
+                return context.builder.createPlaceholderWireframe(
+                    id: Int64(content.seed.value),
+                    frame: item.frame,
+                    clip: context.clip,
+                    label: "Unsupported image type"
+                )
+            }
+
         case .platformView:
             return nil // Should be recorder by UIKit recorder
         case .unknown:
