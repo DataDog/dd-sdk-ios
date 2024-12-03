@@ -21,16 +21,19 @@ internal struct GraphicsImage {
     }
 }
 
+/// Mapping SwiftUI orientation to UIImage orientation
 @available(iOS 13.0, tvOS 13.0, *)
-extension GraphicsImage.Contents: Equatable {
-    static func == (lhs: GraphicsImage.Contents, rhs: GraphicsImage.Contents) -> Bool {
-        switch (lhs, rhs) {
-        case let (.cgImage(lImage), .cgImage(rImage)):
-            return lImage === rImage
-        case (.unknown, .unknown):
-            return true
-        default:
-            return false
+internal extension UIImage.Orientation {
+    init(_ orientation: SwiftUI.Image.Orientation) {
+        switch orientation {
+        case .up: self = UIImage.Orientation.up
+        case .down: self = .down
+        case .left: self = .left
+        case .right: self = .right
+        case .upMirrored: self = .upMirrored
+        case .downMirrored: self = .downMirrored
+        case .leftMirrored: self = .leftMirrored
+        case .rightMirrored: self = .rightMirrored
         }
     }
 }

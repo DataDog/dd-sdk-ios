@@ -73,11 +73,30 @@ class ImageReflectionTests: XCTestCase {
     }
 
     func testCGImageBundlingHeuristic() {
-        let smallImage: CGImage = MockCGImage.mockWith(width: 100)
-        XCTAssertTrue(smallImage.isLikelyBundled(scale: 1.0))
+        // Given
+        let smallImageWidth: Int = 100
+        let largeImageWidth: Int = 150
 
-        let largeImage: CGImage = MockCGImage.mockWith(width: 150)
-        XCTAssertFalse(largeImage.isLikelyBundled(scale: 1.0))
+        // Then
+        let scalex1: CGFloat = 1
+        let smallImage1x: CGImage = MockCGImage.mockWith(width: smallImageWidth, scale: scalex1)
+        XCTAssertTrue(smallImage1x.isLikelyBundled(scale: scalex1))
+        let largeImage1x: CGImage = MockCGImage.mockWith(width: largeImageWidth, scale: scalex1)
+        XCTAssertFalse(largeImage1x.isLikelyBundled(scale: scalex1))
+
+        // Then
+        let scale2x: CGFloat = 2
+        let smallImage2x: CGImage = MockCGImage.mockWith(width: smallImageWidth, scale: scale2x)
+        XCTAssertTrue(smallImage2x.isLikelyBundled(scale: scale2x))
+        let largeImage2x: CGImage = MockCGImage.mockWith(width: largeImageWidth, scale: scale2x)
+        XCTAssertFalse(largeImage2x.isLikelyBundled(scale: scale2x))
+
+        // Then
+        let scale3x: CGFloat = 3
+        let smallImage3x: CGImage = MockCGImage.mockWith(width: smallImageWidth, scale: scale3x)
+        XCTAssertTrue(smallImage3x.isLikelyBundled(scale: scale3x))
+        let largeImage3x: CGImage = MockCGImage.mockWith(width: largeImageWidth, scale: scale3x)
+        XCTAssertFalse(largeImage3x.isLikelyBundled(scale: scale3x))
     }
 }
 #endif

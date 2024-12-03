@@ -11,12 +11,13 @@ import CoreGraphics
 /// Icons and small assets usually have dimensions <= 100 points.
 internal extension CGImage {
     func isLikelyBundled(scale: CGFloat) -> Bool {
-        let renderedSize = self.renderedSize(scale: scale)
+        let pointSize = self.pointSize(scale: scale)
         let maxDimension: CGFloat = 100
-        return renderedSize.width <= maxDimension && renderedSize.height <= maxDimension
+        print("Point size:", pointSize)
+        return pointSize.width <= maxDimension && pointSize.height <= maxDimension
     }
 
-    fileprivate func renderedSize(scale: CGFloat) -> CGSize {
+    private func pointSize(scale: CGFloat) -> CGSize {
         return CGSize(width: CGFloat(width) / scale, height: CGFloat(height) / scale)
     }
 }

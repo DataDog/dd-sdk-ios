@@ -687,7 +687,6 @@
 		962D72BC2CF6436700F86EF0 /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72BA2CF6436600F86EF0 /* Image.swift */; };
 		962D72BD2CF6436700F86EF0 /* Image+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72BB2CF6436600F86EF0 /* Image+Reflection.swift */; };
 		962D72BF2CF7538800F86EF0 /* CGImage+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72BE2CF7538800F86EF0 /* CGImage+SessionReplay.swift */; };
-		962D72C12CF7541A00F86EF0 /* SwfitUIImage+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72C02CF7541A00F86EF0 /* SwfitUIImage+SessionReplay.swift */; };
 		962D72C52CF7806300F86EF0 /* ImageReflectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72C42CF7806300F86EF0 /* ImageReflectionTests.swift */; };
 		962D72C72CF7815300F86EF0 /* ReflectionMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72C62CF7815300F86EF0 /* ReflectionMocks.swift */; };
 		969B3B212C33F80500D62400 /* UIActivityIndicatorRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969B3B202C33F80500D62400 /* UIActivityIndicatorRecorder.swift */; };
@@ -2764,7 +2763,6 @@
 		962D72BA2CF6436600F86EF0 /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
 		962D72BB2CF6436600F86EF0 /* Image+Reflection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Image+Reflection.swift"; sourceTree = "<group>"; };
 		962D72BE2CF7538800F86EF0 /* CGImage+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGImage+SessionReplay.swift"; sourceTree = "<group>"; };
-		962D72C02CF7541A00F86EF0 /* SwfitUIImage+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwfitUIImage+SessionReplay.swift"; sourceTree = "<group>"; };
 		962D72C42CF7806300F86EF0 /* ImageReflectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageReflectionTests.swift; sourceTree = "<group>"; };
 		962D72C62CF7815300F86EF0 /* ReflectionMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionMocks.swift; sourceTree = "<group>"; };
 		966253B52C98807400B90B63 /* SessionReplayPrivacyOverrides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayPrivacyOverrides.swift; sourceTree = "<group>"; };
@@ -3691,7 +3689,6 @@
 			children = (
 				61054E142A6EE10A00AAA894 /* UIImage+SessionReplay.swift */,
 				962D72BE2CF7538800F86EF0 /* CGImage+SessionReplay.swift */,
-				962D72C02CF7541A00F86EF0 /* SwfitUIImage+SessionReplay.swift */,
 				D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */,
 				61054E152A6EE10A00AAA894 /* UIView+SessionReplay.swift */,
 				61054E162A6EE10A00AAA894 /* CFType+Safety.swift */,
@@ -8471,7 +8468,6 @@
 				61054E6B2A6EE10A00AAA894 /* CFType+Safety.swift in Sources */,
 				61054E852A6EE10A00AAA894 /* UISegmentRecorder.swift in Sources */,
 				61054E982A6EE10A00AAA894 /* RecordsBuilder.swift in Sources */,
-				962D72C12CF7541A00F86EF0 /* SwfitUIImage+SessionReplay.swift in Sources */,
 				61054EA12A6EE10B00AAA894 /* MainThreadScheduler.swift in Sources */,
 				61054E7C2A6EE10A00AAA894 /* UINavigationBarRecorder.swift in Sources */,
 				96E414142C2AF56F005A6119 /* UIProgressViewRecorder.swift in Sources */,

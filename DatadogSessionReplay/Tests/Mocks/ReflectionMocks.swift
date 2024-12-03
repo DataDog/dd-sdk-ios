@@ -10,6 +10,20 @@ import TestUtilities
 import SwiftUI
 import CoreGraphics
 
+@available(iOS 13.0, tvOS 13.0, *)
+extension GraphicsImage.Contents: Equatable {
+    public static func == (lhs: GraphicsImage.Contents, rhs: GraphicsImage.Contents) -> Bool {
+        switch (lhs, rhs) {
+        case let (.cgImage(lImage), .cgImage(rImage)):
+            return lImage === rImage
+        case (.unknown, .unknown):
+            return true
+        default:
+            return false
+        }
+    }
+}
+
 private let bytesPerPixel = 4
 
 private extension Int {
@@ -36,38 +50,36 @@ struct MockCGImage: RandomMockable {
     }
 
     static func mockWith(
-        width: Int = .mockImageDimension()
+        width: Int = .mockImageDimension(),
+        scale: CGFloat = 1.0
     ) -> CGImage {
         precondition(width > 0, "Width must be greater than 0")
 
-        let totalBytes = width * width * bytesPerPixel
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = scale
 
-        // Allocate memory for pixel data
-        guard let data = malloc(totalBytes) else {
-            fatalError("Failed to allocate memory for pixel data")
+        let renderer = UIGraphicsImageRenderer(
+            size: CGSize(width: width, height: width),
+            format: format
+        )
+
+        let image = renderer.image { context in
+            // Fill with a random color
+            let randomColor = UIColor(
+                red: CGFloat.random(in: 0...1),
+                green: CGFloat.random(in: 0...1),
+                blue: CGFloat.random(in: 0...1),
+                alpha: 1.0
+            )
+            randomColor.setFill()
+            context.fill(CGRect(origin: .zero, size: CGSize(width: width, height: width)))
         }
 
-        // Free the allocated memory when the function exits
-        defer { free(data) }
-
-        // Fill the allocated memory with dummy data
-        memset(data, 255, totalBytes)
-
-        let colorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
-        let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue
-        guard let context = CGContext(
-            data: data,
-            width: width,
-            height: width,
-            bitsPerComponent: 8,
-            bytesPerRow: width * bytesPerPixel,
-            space: colorSpace,
-            bitmapInfo: bitmapInfo
-        ) else {
-            fatalError("Failed to create CGContext for mock CGImage")
+        guard let cgImage = image.cgImage else {
+            fatalError("Failed to create CGImage from UIGraphicsImageRenderer")
         }
 
-        return context.makeImage()!
+        return cgImage
     }
 }
 
