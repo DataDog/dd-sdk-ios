@@ -57,9 +57,13 @@ internal final class CrashReportingFeature: DatadogFeature {
     func sendCrashReportIfFound() {
         queue.async {
             self.plugin.readPendingCrashReport { [weak self] crashReport in
-                guard let self = self, let availableCrashReport = crashReport else {
+                guard let self = self else {
+                    return false
+                }
+
+                guard let availableCrashReport = crashReport else {
                     DD.logger.debug("No pending Crash found")
-                     self?.sender.send(launch: .init(didCrash: false))
+                    self.sender.send(launch: .init(didCrash: false))
                     return false
                 }
 

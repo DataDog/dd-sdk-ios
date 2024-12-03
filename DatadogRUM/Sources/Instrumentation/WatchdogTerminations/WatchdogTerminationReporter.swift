@@ -60,7 +60,8 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
                 errorThreads: nil,
                 errorBinaryImages: nil,
                 errorWasTruncated: nil,
-                errorMeta: nil
+                errorMeta: nil,
+                additionalAttributes: nil
             )
             let error = builder.createRUMError(with: viewEvent)
             let view = builder.updateRUMViewWithError(viewEvent)
