@@ -5,7 +5,6 @@
  */
 
 import XCTest
-import DatadogInternal
 
 @testable import DatadogSessionReplay
 
@@ -45,5 +44,19 @@ class ReflectionMirrorTests: XCTestCase {
         struct Mock {}
         let mirror = ReflectionMirror(reflecting: Optional.some(Mock()) as Any)
         XCTAssertEqual(mirror.displayStyle, .struct)
+    }
+
+    func testAccessingDescendant() {
+        struct Foo {
+            let bar: Bar = .init()
+        }
+
+        struct Bar {
+            let baz: String = "baz"
+        }
+
+        let mirror = ReflectionMirror(reflecting: (Foo(), Bar()))
+        XCTAssertEqual(mirror.descendant(0, "bar", "baz") as? String, "baz")
+        XCTAssertEqual(mirror.descendant(1, "baz") as? String, "baz")
     }
 }
