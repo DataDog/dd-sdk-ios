@@ -10,6 +10,8 @@ import Foundation
 import UIKit
 import SwiftUI
 
+import DatadogInternal
+
 @available(iOS 13, tvOS 13, *)
 internal class UIHostingViewRecorder: NodeRecorder {
     let identifier: UUID
@@ -63,7 +65,8 @@ internal class UIHostingViewRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        let renderer = try DisplayList.ViewRenderer(reflecting: subject)
+        let reflector = Reflector(subject: subject, telemetry: NOPTelemetry())
+        let renderer = try DisplayList.ViewRenderer(from: reflector)
 
         let builder = SwiftUIWireframesBuilder(
             wireframeID: nodeID,
