@@ -13,15 +13,28 @@ class VitalCPUReaderTest: XCTestCase {
     lazy var cpuReader = VitalCPUReader(notificationCenter: testNotificationCenter)
 
     func testWhenCPUUnderHeavyLoadItMeasuresHigherCPUTicks() throws {
-        let highLoadAverage = try averageCPUTicks {
-            heavyLoad()
+        let repetitions = 3
+
+        // The CPU ticks consumed during heavy processing are not always greater than those during light processing.
+        // System variables can influence these results, leading to potential inaccuracies.
+        // To minimize false positives, an average is calculated over n repetitions.
+        let utilizationArray: [(highUtilization: Double, sleepUtilization: Double)] = try (0..<repetitions).map { _ in
+            // calculates the utilization under heavy processing
+            let highLoadResult = try utilizationAndDuration(heavyLoad)
+
+            let sleepResult = try utilizationAndDuration {
+                // The sleep duration should be the same as the heavy load duration
+                Thread.sleep(forTimeInterval: highLoadResult.duration)
+            }
+
+            return (highLoadResult.utilization, sleepResult.utilization)
         }
 
-        let lowLoadAverage = try averageCPUTicks {
-            Thread.sleep(forTimeInterval: 1.0)
+        let totalUtilization = utilizationArray.reduce((highUtilization: 0.0, sleepUtilization: 0.0)) {
+            ($0.highUtilization + $1.highUtilization,  $0.sleepUtilization + $1.sleepUtilization)
         }
 
-        XCTAssertGreaterThan(highLoadAverage, lowLoadAverage)
+        XCTAssertGreaterThan(totalUtilization.highUtilization / Double(repetitions), totalUtilization.sleepUtilization / Double(repetitions))
     }
 
     func testWhenInactiveAppStateItIgnoresCPUTicks() throws {
@@ -39,19 +52,18 @@ class VitalCPUReaderTest: XCTestCase {
         XCTAssertGreaterThan(diffWhenActive, diffWhenInactive)
     }
 
-    private func averageCPUTicks(with block: () -> Void) throws -> Double {
-        let startDate = Date()
+    private func utilizationAndDuration(_ block: () -> Void) throws -> (utilization: Double, duration: Double) {
+        let startTime = CFAbsoluteTimeGetCurrent()
         let startUtilization = try XCTUnwrap(cpuReader.readVitalData())
 
         block()
 
         let endUtilization = try XCTUnwrap(cpuReader.readVitalData())
-        let duration = Date().timeIntervalSince(startDate)
+        let duration = CFAbsoluteTimeGetCurrent() - startTime
 
         let utilizedTicks = endUtilization - startUtilization
-        let utilization = utilizedTicks / duration
 
-        return utilization
+        return (utilizedTicks / duration, duration)
     }
 }
 
