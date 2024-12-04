@@ -9,6 +9,8 @@
 import Foundation
 import UIKit
 
+import DatadogInternal
+
 @available(iOS 13.0, *)
 internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     internal struct Context {
@@ -35,7 +37,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         let root = builder.createShapeWireframe(id: wireframeID, attributes: attributes)
         do {
-            let list = try renderer.lastList.reflect()
+            let list = try renderer.lastList.reflect(NOPTelemetry())
             let context = Context(
                 frame: attributes.frame,
                 clip: attributes.clip,
