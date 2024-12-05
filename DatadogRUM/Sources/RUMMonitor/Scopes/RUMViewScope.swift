@@ -407,7 +407,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dd: .init(
                 action: nil,
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: dependencies.sessionSampler.samplingRate),
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: self.context.sessionPrecondition
@@ -485,7 +485,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 browserSdkVersion: nil,
                 configuration: .init(
                     sessionReplaySampleRate: nil,
-                    sessionSampleRate: dependencies.sessionSampler.samplingRate,
+                    sessionSampleRate: Double(dependencies.sessionSampler.samplingRate),
                     startSessionReplayRecordingManually: nil
                 ),
                 documentVersion: version.toInt64,
@@ -554,6 +554,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 interactionToNextPaint: nil,
                 interactionToNextPaintTargetSelector: nil,
                 interactionToNextPaintTime: nil,
+                interactionToNextViewTime: nil,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered ?? false,
                 jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),
@@ -566,6 +567,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 memoryAverage: memoryInfo?.meanValue,
                 memoryMax: memoryInfo?.maxValue,
                 name: viewName,
+                networkSettledTime: nil,
                 referrer: nil,
                 refreshRateAverage: refreshRateInfo?.meanValue,
                 refreshRateMin: refreshRateInfo?.minValue,
@@ -619,7 +621,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: dependencies.sessionSampler.samplingRate),
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: self.context.sessionPrecondition
@@ -698,7 +700,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let longTaskEvent = RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: dependencies.sessionSampler.samplingRate),
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 discarded: nil,
                 session: .init(
                     plan: .plan1,
