@@ -31,7 +31,7 @@ public struct APISurface {
         let module = Module(
             xcodeBuildArguments: [
                 "-scheme", libraryName,
-                "-destination", "platform='iOS Simulator'",
+                "-destination", "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.3.1",
                 "-sdk", "iphonesimulator",
             ],
             inPath: newPath
