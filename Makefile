@@ -58,18 +58,18 @@ export DD_SDK_DATADOG_XCCONFIG_CI
 # Installs tools and dependencies with homebrew.
 # Do not call 'brew update' and instead let Bitrise use its own brew bottle mirror.
 dependencies:
-		@echo "⚙️  Installing dependencies..."
-		@bundle install
-		@brew list swiftlint &>/dev/null || brew install swiftlint
-		@brew upgrade carthage
-		@carthage bootstrap --platform iOS,tvOS --use-xcframeworks
-		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
-		@brew list gh &>/dev/null || brew install gh
+	@echo "⚙️  Installing dependencies..."
+	@bundle install
+	@brew list swiftlint &>/dev/null || brew install swiftlint
+	@brew upgrade carthage
+	@carthage bootstrap --platform iOS,tvOS --use-xcframeworks
+	@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
+	@brew list gh &>/dev/null || brew install gh
 ifeq (${ci}, true)
-		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
-		@echo $$DD_SDK_DATADOG_XCCONFIG_CI > xcconfigs/Datadog.local.xcconfig;
+	@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
+	@echo $$DD_SDK_DATADOG_XCCONFIG_CI > xcconfigs/Datadog.local.xcconfig;
 ifndef DD_DISABLE_TEST_INSTRUMENTING
-		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
+	@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
 endif
 
 endif
@@ -356,40 +356,64 @@ sr-snapshot-tests-open:
 	@$(ECHO_TITLE) "make sr-snapshot-tests-open"
 	./tools/sr-snapshot-test.sh --open-project
 
-# Generate api-surface files for Datadog and DatadogObjc.
+# Generate api-surface files for Datadog and DatadogObjc
 api-surface:
-		@echo "Generating api-surface-swift"
-		@cd tools/api-surface && \
-			swift run api-surface spm \
-			--path ../../ \
-			--library-name DatadogCore \
-			--library-name DatadogLogs \
-			--library-name DatadogTrace \
-			--library-name DatadogRUM \
-			--library-name DatadogCrashReporting \
-			--library-name DatadogWebViewTracking \
-			--library-name DatadogSessionReplay \
-			> ../../api-surface-swift && \
-			cd -
+	@$(ECHO_TITLE) "make api-surface"
+	@echo "Generating api-surface-swift"
+	@cd tools/api-surface && \
+		swift run api-surface generate \
+		--path ../../ \
+		--library-name DatadogCore \
+		--library-name DatadogLogs \
+		--library-name DatadogTrace \
+		--library-name DatadogRUM \
+		--library-name DatadogCrashReporting \
+		--library-name DatadogWebViewTracking \
+		--library-name DatadogSessionReplay \
+		--output-file ../../api-surface-swift
 
-		@echo "Generating api-surface-objc"
-		@cd tools/api-surface && \
-			swift run api-surface spm \
-			--path ../../ \
-			--library-name DatadogObjc \
-			> ../../api-surface-objc && \
-			cd -
+	@echo "Generating api-surface-objc"
+	@cd tools/api-surface && \
+		swift run api-surface generate \
+		--path ../../ \
+		--library-name DatadogObjc \
+		--output-file ../../api-surface-objc
+
+# Verify API surface files for Datadog and DatadogObjc
+api-surface-verify:
+	@$(ECHO_TITLE) "make api-surface-verify"
+	@echo "Verifying api-surface-swift"
+	@cd tools/api-surface && \
+		swift run api-surface verify \
+		--path ../../ \
+		--library-name DatadogCore \
+		--library-name DatadogLogs \
+		--library-name DatadogTrace \
+		--library-name DatadogRUM \
+		--library-name DatadogCrashReporting \
+		--library-name DatadogWebViewTracking \
+		--library-name DatadogSessionReplay \
+		--output-file /tmp/api-surface-swift-generated \
+		../../api-surface-swift
+
+	@echo "Verifying api-surface-objc"
+	@cd tools/api-surface && \
+		swift run api-surface verify \
+		--path ../../ \
+		--library-name DatadogObjc \
+		--output-file /tmp/api-surface-objc-generated \
+		../../api-surface-objc
 
 # Generate Datadog monitors terraform definition for E2E tests:
 e2e-monitors-generate:
-		@echo "Deleting previous 'main.tf as it will be soon generated."
-		@rm -f tools/nightly-e2e-tests/monitors-gen/main.tf
-		@echo "Deleting previous Terraform state and backup as we don't need to track it."
-		@rm -f tools/nightly-e2e-tests/monitors-gen/terraform.tfstate
-		@rm -f tools/nightly-e2e-tests/monitors-gen/terraform.tfstate.backup
-		@echo "⚙️  Generating 'main.tf':"
-		@./tools/nightly-e2e-tests/nightly_e2e.py generate-tf --tests-dir ../../Datadog/E2ETests
-		@echo "⚠️  Remember to delete all iOS monitors manually from Mobile-Integration org before running 'terraform apply'."
+	@echo "Deleting previous 'main.tf as it will be soon generated."
+	@rm -f tools/nightly-e2e-tests/monitors-gen/main.tf
+	@echo "Deleting previous Terraform state and backup as we don't need to track it."
+	@rm -f tools/nightly-e2e-tests/monitors-gen/terraform.tfstate
+	@rm -f tools/nightly-e2e-tests/monitors-gen/terraform.tfstate.backup
+	@echo "⚙️  Generating 'main.tf':"
+	@./tools/nightly-e2e-tests/nightly_e2e.py generate-tf --tests-dir ../../Datadog/E2ETests
+	@echo "⚠️  Remember to delete all iOS monitors manually from Mobile-Integration org before running 'terraform apply'."
 
 # Creates dogfooding PR in shopist-ios
 dogfood-shopist:
