@@ -58,7 +58,6 @@ public enum Datadog
         public var backgroundTasksEnabled: Bool
         public init(clientToken: String,env: String,site: DatadogSite = .us1,service: String? = nil,bundle: Bundle = .main,batchSize: BatchSize = .medium,uploadFrequency: UploadFrequency = .average,proxyConfiguration: [AnyHashable: Any]? = nil,encryption: DataEncryption? = nil,serverDateProvider: ServerDateProvider? = nil,batchProcessingLevel: BatchProcessingLevel = .medium,backgroundTasksEnabled: Bool = false)
 
-
 # ----------------------------------
 # API surface for DatadogLogs:
 # ----------------------------------
@@ -177,7 +176,6 @@ public enum Logs
     public mutating func setLogEventMapper(_ mapper: LogEventMapper)
 public protocol LogEventMapper
     func map(event: LogEvent, callback: @escaping (LogEvent) -> Void)
-
 
 # ----------------------------------
 # API surface for DatadogTrace:
@@ -314,7 +312,6 @@ public enum SpanTags
     public static let service = "service.name"
 public class Tracer
     public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> OTTracer
-
 
 # ----------------------------------
 # API surface for DatadogRUM:
@@ -528,7 +525,6 @@ public enum PerformanceMetric
     case flutterRasterTime
     case jsFrameTimeSeconds
 
-
 # ----------------------------------
 # API surface for DatadogCrashReporting:
 # ----------------------------------
@@ -542,7 +538,6 @@ public protocol CrashReportingPlugin: AnyObject
     func inject(context: Data)
     var backtraceReporter: BacktraceReporting?
 
-
 # ----------------------------------
 # API surface for DatadogWebViewTracking:
 # ----------------------------------
@@ -554,7 +549,6 @@ public enum WebViewTracking
     public class AbstractMessageEmitter
         public func send(body: Any, slotId: String? = nil)
     public static func messageEmitter(in core: DatadogCoreProtocol,logsSampleRate: SampleRate = .maxSampleRate) -> AbstractMessageEmitter
-
 
 # ----------------------------------
 # API surface for DatadogSessionReplay:

@@ -6,71 +6,160 @@
 
 import XCTest
 import APISurfaceCore
+import ArgumentParser
 
 class IntegrationTests: XCTestCase {
     func testCreatingSurfaceForFixtureLibraries() throws {
-        var outputs: [String] = []
-        APISurfaceCore.printFunction = { outputs.append($0) }
-
         // Given
-        let command = try SPMLibrarySurfaceCommand.parse([
+        let temporaryFile = "/tmp/api-surface-test-output"
+        let command = try GenerateCommand.parse([
             "--library-name", "Fixture1",
             "--library-name", "Fixture2",
-            "--path", fixturesPackageFolder().path
+            "--path", fixturesPackageFolder().path,
+            "--language", "swift",
+            "--output-file", temporaryFile
         ])
 
         // When
         try command.run()
 
         // Then
+        let output = try String(contentsOfFile: temporaryFile)
         XCTAssertEqual(
-            outputs.joined(separator: "\n"),
+            output,
             """
             # ----------------------------------
             # API surface for Fixture1:
             # ----------------------------------
 
             public class Car
-               public enum Manufacturer: String
-                  case manufacturer1
-                  case manufacturer2
-                  case manufacturer3
-               public init(manufacturer: Manufacturer)
-               public func startEngine() -> Bool
-               public func stopEngine() -> Bool
+                public enum Manufacturer: String
+                    case manufacturer1
+                    case manufacturer2
+                    case manufacturer3
+                public init(manufacturer: Manufacturer)
+                public func startEngine() -> Bool
+                public func stopEngine() -> Bool
             public extension Car
-               var price: Int
-
+                var price: Int
 
             # ----------------------------------
             # API surface for Fixture2:
             # ----------------------------------
 
             public class Car
-               public enum Manufacturer: String
-                  case manufacturer1
-                  case manufacturer2
-                  case manufacturer3
-               public init(manufacturer: Manufacturer)
-               public func startEngine() -> Bool
-               public func stopEngine() -> Bool
+                public enum Manufacturer: String
+                    case manufacturer1
+                    case manufacturer2
+                    case manufacturer3
+                public init(manufacturer: Manufacturer)
+                public func startEngine() -> Bool
+                public func stopEngine() -> Bool
             public extension Car
-               var price: Int
-            → extension String
-               public func foo()
+                var price: Int
+            [?] extension String
+                public func foo()
             public extension Int
-               func bar()
+                func bar()
+
             """
         )
+    }
+
+    func testVerifySurfaceForFixtureLibraries() throws {
+        // Write expected output to a temporary file
+        let referenceFile = "/tmp/api-surface-test-reference"
+        let expectedOutput = """
+        # ----------------------------------
+        # API surface for Fixture1:
+        # ----------------------------------
+
+        public class Car
+            public enum Manufacturer: String
+                case manufacturer1
+                case manufacturer2
+                case manufacturer3
+            public init(manufacturer: Manufacturer)
+            public func startEngine() -> Bool
+            public func stopEngine() -> Bool
+        public extension Car
+            var price: Int
+
+        """
+        try expectedOutput.write(toFile: referenceFile, atomically: true, encoding: .utf8)
+
+        // Generate API surface to temporary file
+        let generatedFile = "/tmp/api-surface-test-generated"
+        let generateCommand = try GenerateCommand.parse([
+            "--library-name", "Fixture1",
+            "--path", fixturesPackageFolder().path,
+            "--language", "swift",
+            "--output-file", generatedFile
+        ])
+        try generateCommand.run()
+
+        // Verify the generated file matches the reference
+        let verifyCommand = try VerifyCommand.parse([
+            "--library-name", "Fixture1",
+            "--path", fixturesPackageFolder().path,
+            "--language", "swift",
+            "--output-file", generatedFile,
+            referenceFile
+        ])
+        try verifyCommand.run()
+    }
+
+    func testVerifySurfaceMismatch() throws {
+        // Write incorrect reference output to a temporary file
+        let referenceFile = "/tmp/api-surface-test-reference"
+        let incorrectOutput = """
+        # ----------------------------------
+        # API surface for Fixture1:
+        # ----------------------------------
+
+        public class Bike
+        public init()
+        """
+        try incorrectOutput.write(toFile: referenceFile, atomically: true, encoding: .utf8)
+
+        // Generate API surface to temporary file
+        let generatedFile = "/tmp/api-surface-test-generated"
+        let generateCommand = try GenerateCommand.parse([
+            "--library-name", "Fixture1",
+            "--path", fixturesPackageFolder().path,
+            "--language", "swift",
+            "--output-file", generatedFile
+        ])
+        try generateCommand.run()
+
+        // Verify that it detects a mismatch
+        let verifyCommand = try VerifyCommand.parse([
+            "--library-name", "Fixture1",
+            "--path", fixturesPackageFolder().path,
+            "--language", "swift",
+            "--output-file", generatedFile,
+            referenceFile
+        ])
+
+        XCTAssertThrowsError(try verifyCommand.run()) { error in
+            if let validationError = error as? ValidationError {
+                XCTAssertEqual(
+                    validationError.description,
+                    "❌ API surface mismatch detected!\nRun `make api-surface` locally to update reference files and commit the changes."
+                )
+            } else {
+                XCTFail("Unexpected error type: \(error)")
+            }
+        }
     }
 }
 
 /// Resolves the url to `Fixtures` folder.
 private func fixturesPackageFolder() -> URL {
     var currentFolder = URL(fileURLWithPath: #file).deletingLastPathComponent()
-
     while currentFolder.pathComponents.count > 0 {
-        if FileManager.default.fileExists(atPath: currentFolder.appendingPathComponent("Package.swift").path) {
+        let packageFileName = currentFolder.appendingPathComponent("Package.swift")
+        if FileManager.default.fileExists(atPath: packageFileName.path) {
             return currentFolder.appendingPathComponent("Fixtures")
         } else {
             currentFolder.deleteLastPathComponent()
