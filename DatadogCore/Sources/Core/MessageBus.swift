@@ -94,7 +94,8 @@ internal final class MessageBus {
             return save(configuration: configuration)
         }
 
-        queue.async {
+        queue.async { [weak self] in
+            guard let self else { return }
             guard let core = self.core else {
                 return
             }
