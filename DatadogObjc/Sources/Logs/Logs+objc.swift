@@ -203,7 +203,7 @@ public class DDLoggerConfiguration: NSObject {
         networkInfoEnabled: Bool = false,
         bundleWithRumEnabled: Bool = true,
         bundleWithTraceEnabled: Bool = true,
-        remoteSampleRate: Float = 100,
+        remoteSampleRate: SampleRate = .maxSampleRate,
         remoteLogThreshold: DDLogLevel = .debug,
         printLogsToConsole: Bool = false
     ) {

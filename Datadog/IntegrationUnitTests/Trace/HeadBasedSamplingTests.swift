@@ -38,7 +38,7 @@ class HeadBasedSamplingTests: XCTestCase {
          client-ios-app:        [----- child --------]       | all 3: keep or drop
          client-ios-app:           [-- grandchild --]        |
          */
-        let localTraceSampling: Float = 50 // keep or drop
+        let localTraceSampling: SampleRate = 50 // keep or drop
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -67,7 +67,7 @@ class HeadBasedSamplingTests: XCTestCase {
          client-ios-app:     [-------- active.span -----]   |
          client-ios-app:       [- child1 -][- child2 -]     | all 3: keep or drop
          */
-        let localTraceSampling: Float = 50 // keep or drop
+        let localTraceSampling: SampleRate = 50 // keep or drop
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -100,8 +100,8 @@ class HeadBasedSamplingTests: XCTestCase {
          client backend:        [--- backend span ---]      keep
          */
 
-        let localTraceSampling: Float = 0 // drop all
-        let distributedTraceSampling: Float = 100 // keep all
+        let localTraceSampling: SampleRate = 0 // drop all
+        let distributedTraceSampling: SampleRate = .maxSampleRate // keep all
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -139,8 +139,8 @@ class HeadBasedSamplingTests: XCTestCase {
          client backend:        [--- backend span ---]      drop
          */
 
-        let localTraceSampling: Float = 100 // keep all
-        let distributedTraceSampling: Float = 0 // drop all
+        let localTraceSampling: SampleRate = .maxSampleRate // keep all
+        let distributedTraceSampling: SampleRate = 0 // drop all
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -179,8 +179,8 @@ class HeadBasedSamplingTests: XCTestCase {
          client backend:           [--- backend span ---]         keep
          */
 
-        let localTraceSampling: Float = 100 // keep all
-        let distributedTraceSampling: Float = 0 // drop all
+        let localTraceSampling: SampleRate = .maxSampleRate // keep all
+        let distributedTraceSampling: SampleRate = 0 // drop all
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -227,8 +227,8 @@ class HeadBasedSamplingTests: XCTestCase {
          client backend:           [--- backend span ---]         drop
          */
 
-        let localTraceSampling: Float = 0 // drop all
-        let distributedTraceSampling: Float = 100 // keep all
+        let localTraceSampling: SampleRate = 0 // drop all
+        let distributedTraceSampling: SampleRate = .maxSampleRate // keep all
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -275,7 +275,7 @@ class HeadBasedSamplingTests: XCTestCase {
          client backend:        [--- backend span ---]      keep
          */
 
-        let localTraceSampling: Float = 100 // keep all
+        let localTraceSampling: SampleRate = .maxSampleRate // keep all
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -314,7 +314,7 @@ class HeadBasedSamplingTests: XCTestCase {
          client backend:        [--- backend span ---]      drop
          */
 
-        let localTraceSampling: Float = 0 // drop all
+        let localTraceSampling: SampleRate = 0 // drop all
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -354,7 +354,7 @@ class HeadBasedSamplingTests: XCTestCase {
          client backend:            [--- backend span ---]        keep
          */
 
-        let localTraceSampling: Float = 100 // keep all
+        let localTraceSampling: SampleRate = .maxSampleRate // keep all
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -402,7 +402,7 @@ class HeadBasedSamplingTests: XCTestCase {
          client backend:            [--- backend span ---]        drop
          */
 
-        let localTraceSampling: Float = 0 // drop all
+        let localTraceSampling: SampleRate = 0 // drop all
 
         // Given
         traceConfig.sampleRate = localTraceSampling

@@ -54,6 +54,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.source, .flutter)
         XCTAssertEqual(event?.telemetry.message, "Hello world!")
         XCTAssertEqual(event?.telemetry.telemetryInfo as? [String: Int], ["foo": 42])
+        XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
     func testSendTelemetryError() {
@@ -83,6 +84,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.telemetry.message, "Oops")
         XCTAssertEqual(event?.telemetry.error?.kind, "OutOfMemory")
         XCTAssertEqual(event?.telemetry.error?.stack, "a\nhay\nneedle\nstack")
+        XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
     func testSendTelemetryDebug_withRUMContext() {
@@ -102,6 +104,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
         XCTAssertEqual(event?.action?.id, rumContext.userActionID)
         XCTAssertEqual(event?.telemetry.telemetryInfo as? [String: Int], ["foo": 42])
+        XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
     func testSendTelemetryError_withRUMContext() throws {
@@ -120,6 +123,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.session?.id, rumContext.sessionID)
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
         XCTAssertEqual(event?.action?.id, rumContext.userActionID)
+        XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
     func testSendTelemetry_discardDuplicates() throws {
@@ -374,6 +378,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.telemetry.configuration.useLocalEncryption, useLocalEncryption)
         XCTAssertEqual(event?.telemetry.configuration.useProxy, useProxy)
         XCTAssertEqual(event?.telemetry.configuration.useTracing, useTracing)
+        XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
     // MARK: - Metrics Telemetry Events
@@ -405,6 +410,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.service, "dd-sdk-ios")
         XCTAssertEqual(event?.source, .reactNative)
         XCTAssertEqual(event?.telemetry.message, "[Mobile Metric] \(randomName)")
+        XCTAssertEqual(event?.effectiveSampleRate, 100)
         randomAttributes.forEach { key, value in
             DDAssertReflectionEqual(event?.telemetry.telemetryInfo[key], value)
         }
@@ -435,6 +441,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.session?.id, rumContext.sessionID)
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
         XCTAssertEqual(event?.action?.id, rumContext.userActionID)
+        XCTAssertEqual(event?.effectiveSampleRate, 100)
         let device = try XCTUnwrap(event?.telemetry.device)
         XCTAssertEqual(device.model, deviceMock.model)
         XCTAssertEqual(device.brand, deviceMock.brand)
@@ -466,7 +473,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertNil(event?.telemetry.telemetryInfo[SDKMetricFields.sessionIDOverrideKey], "It should delete `sessionIDOverrideKey` from metric attributes")
     }
 
-    func testMethodCallTelemetryPropagetsAllData() throws {
+    func testMethodCallTelemetryPropagatesAllData() throws {
         // Given
         let deviceMock: DeviceInfo = .mockRandom()
         featureScope.contextMock = .mockWith(device: deviceMock)

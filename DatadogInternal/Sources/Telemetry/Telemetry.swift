@@ -64,12 +64,12 @@ public struct ConfigurationTelemetry: Equatable {
 /// A telemetry event that can be sampled in addition to the global telemetry sample rate.
 public protocol SampledTelemetry {
     /// The sample rate for this metric, applied in addition to the telemetry sample rate.
-    var sampleRate: Float { get }
+    var sampleRate: SampleRate { get }
 }
 
 public struct MetricTelemetry: SampledTelemetry {
     /// The default sample rate for metric events (15%), applied in addition to the telemetry sample rate (20% by default).
-    public static let defaultSampleRate: Float = 15
+    public static let defaultSampleRate: SampleRate = 15
 
     /// The name of the metric.
     public let name: String
@@ -85,7 +85,7 @@ public struct MetricTelemetry: SampledTelemetry {
     /// and this metric's sample rate is 15%, the effective sample rate for this metric will be 3%.
     ///
     /// This sample rate is applied in the telemetry receiver, after the metric has been processed by the SDK core (tail-based sampling).
-    public let sampleRate: Float
+    public let sampleRate: SampleRate
 }
 
 /// Describes the type of the usage telemetry events supported by the SDK.
@@ -129,7 +129,7 @@ public struct UsageTelemetry: SampledTelemetry {
     }
 
     /// The default sample rate for usage telemetry events (15%), applied in addition to the telemetry sample rate (20% by default).
-    public static let defaultSampleRate: Float = 15
+    public static let defaultSampleRate: SampleRate = 15
 
     /// The usage telemetry event.
     public let event: Event
@@ -142,9 +142,9 @@ public struct UsageTelemetry: SampledTelemetry {
     /// and this event's sample rate is 15%, the effective sample rate for this event will be 3%.
     ///
     /// This sample rate is applied in the telemetry receiver, after the event has been processed by the SDK core (tail-based sampling).
-    public let sampleRate: Float
+    public let sampleRate: SampleRate
 
-    public init(event: Event, sampleRate: Float = Self.defaultSampleRate) {
+    public init(event: Event, sampleRate: SampleRate = Self.defaultSampleRate) {
         self.event = event
         self.sampleRate = sampleRate
     }
@@ -191,12 +191,13 @@ public extension Telemetry {
     func startMethodCalled(
         operationName: String,
         callerClass: String,
-        headSampleRate: Float
+        headSampleRate: SampleRate
     ) -> MethodCalledTrace? {
         if Sampler(samplingRate: headSampleRate).sample() {
             return MethodCalledTrace(
                 operationName: operationName,
-                callerClass: callerClass
+                callerClass: callerClass,
+                headSampleRate: headSampleRate
             )
         } else {
             return nil
@@ -216,7 +217,7 @@ public extension Telemetry {
     func stopMethodCalled(
         _ metric: MethodCalledTrace?,
         isSuccessful: Bool = true,
-        tailSampleRate: Float = MetricTelemetry.defaultSampleRate
+        tailSampleRate: SampleRate = MetricTelemetry.defaultSampleRate
     ) {
         if let metric = metric {
             let executionTime = -metric.startTime.timeIntervalSinceNow.toInt64Nanoseconds
@@ -229,6 +230,7 @@ public extension Telemetry {
                             MethodCalledMetric.operationName: metric.operationName,
                             MethodCalledMetric.callerClass: metric.callerClass,
                             MethodCalledMetric.isSuccessful: isSuccessful,
+                            SDKMetricFields.headSampleRate: metric.headSampleRate,
                             SDKMetricFields.typeKey: MethodCalledMetric.typeValue
                         ],
                         sampleRate: tailSampleRate
@@ -243,6 +245,7 @@ public extension Telemetry {
 public struct MethodCalledTrace {
     let operationName: String
     let callerClass: String
+    let headSampleRate: SampleRate
     let startTime = Date()
 }
 
@@ -475,7 +478,7 @@ extension Telemetry {
     ///     and this metric's sample rate is 15%, the effective sample rate for this metric will be 3%.
     ///
     ///     This sample rate is applied in the telemetry receiver, after the metric has been processed by the SDK core (tail-based sampling).
-    public func metric(name: String, attributes: [String: Encodable], sampleRate: Float = MetricTelemetry.defaultSampleRate) {
+    public func metric(name: String, attributes: [String: Encodable], sampleRate: SampleRate = MetricTelemetry.defaultSampleRate) {
         send(telemetry: .metric(MetricTelemetry(name: name, attributes: attributes, sampleRate: sampleRate)))
     }
 }
