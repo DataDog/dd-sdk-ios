@@ -6,33 +6,27 @@
 
 import SwiftUI
 
-@available(iOS 13.0, *)
+@available(iOS 15.0, *)
 struct SwiftUIView: View {
     var body: some View {
         VStack(spacing: 10) {
             Text("Hello, SwiftUI!")
                 .font(.headline)
 
-            if #available(iOS 14.0, *) {
-                if #available(iOS 15.0, *) {
-                    Label("Label with Icon", systemImage: "star.fill")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
+            Label("Label with Icon", systemImage: "star.fill")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
 
             TextField("Enter text", text: .constant("Placeholder text"))
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(8)
 
             Button(action: {}) {
-                if #available(iOS 15.0, *) {
-                    Text("SwiftUI Button")
-                        .padding()
-                        .foregroundStyle(.background)
-                        .background(Color.blue)
-                        .cornerRadius(8)
-                }
+                Text("SwiftUI Button")
+                    .padding()
+                    .foregroundStyle(.background)
+                    .background(Color.blue)
+                    .cornerRadius(8)
             }
 
             Divider()
