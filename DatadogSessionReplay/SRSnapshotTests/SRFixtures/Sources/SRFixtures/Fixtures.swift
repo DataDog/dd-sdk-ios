@@ -86,10 +86,10 @@ public enum Fixture: CaseIterable {
         case .popups:
             return UIStoryboard.basic.instantiateViewController(withIdentifier: "Popups")
         case .swiftUI:
-            if #available(iOS 13.0, *) {
+            if #available(iOS 15.0, *) {
                 return UIHostingController(rootView: SwiftUIView())
             } else {
-                return ErrorViewController(message: "`.swiftUI` fixture is only available on iOS 13+")
+                return ErrorViewController(message: "`.swiftUI` fixture is only available on iOS 15+")
             }
         //- Navigation Bars
         case .navigationBars:
