@@ -235,18 +235,21 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         XCTAssertGreaterThan(usageEvents.count, 0)
 
         let debug = try XCTUnwrap(debugEvents.first(where: { $0.telemetry.message == "Debug Telemetry" }))
-        XCTAssertEqual(debug.effectiveSampleRate, config.telemetrySampleRate)
+        XCTAssertEqual(debug.effectiveSampleRate, Int64(withNoOverflow: config.telemetrySampleRate))
 
         let error = try XCTUnwrap(errorEvents.first(where: { $0.telemetry.message == "Error Telemetry" }))
-        XCTAssertEqual(error.effectiveSampleRate, config.telemetrySampleRate)
+        XCTAssertEqual(error.effectiveSampleRate, Int64(withNoOverflow: config.telemetrySampleRate))
 
         let mobileMetric = try XCTUnwrap(debugEvents.first(where: { $0.telemetry.message == "[Mobile Metric] Metric Name" }))
-        XCTAssertEqual(mobileMetric.effectiveSampleRate, config.telemetrySampleRate.composed(with: metricsSampleRate))
+        XCTAssertEqual(mobileMetric.effectiveSampleRate,
+                       Int64(withNoOverflow: config.telemetrySampleRate.composed(with: metricsSampleRate)))
 
         let methodCalledMetric = try XCTUnwrap(debugEvents.first(where: { $0.telemetry.message == "[Mobile Metric] Method Called" }))
-        XCTAssertEqual(methodCalledMetric.effectiveSampleRate, config.telemetrySampleRate.composed(with: metricsSampleRate).composed(with: headSampleRate))
+        XCTAssertEqual(methodCalledMetric.effectiveSampleRate,
+                       Int64(withNoOverflow: config.telemetrySampleRate.composed(with: metricsSampleRate).composed(with: headSampleRate)))
 
         let usage = try XCTUnwrap(usageEvents.first)
-        XCTAssertEqual(usage.effectiveSampleRate, config.telemetrySampleRate.composed(with: metricsSampleRate))
+        XCTAssertEqual(usage.effectiveSampleRate,
+                       Int64(withNoOverflow: config.telemetrySampleRate.composed(with: metricsSampleRate)))
     }
 }

@@ -164,7 +164,7 @@ internal class RUMResourceScope: RUMScope {
                 browserSdkVersion: nil,
                 configuration: .init(
                     sessionReplaySampleRate: nil,
-                    sessionSampleRate: dependencies.sessionSampler.samplingRate
+                    sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)
                 ),
                 discarded: nil,
                 rulePsr: traceSamplingRate,
@@ -197,6 +197,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 decodedBodySize: nil,
+                deliveryType: nil,
                 dns: resourceMetrics?.dns.map { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
@@ -239,7 +240,8 @@ internal class RUMResourceScope: RUMScope {
                 statusCode: command.httpStatusCode?.toInt64 ?? 0,
                 transferSize: nil,
                 type: resourceType,
-                url: resourceURL
+                url: resourceURL,
+                worker: nil
             ),
             service: context.service,
             session: .init(
@@ -276,7 +278,7 @@ internal class RUMResourceScope: RUMScope {
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: dependencies.sessionSampler.samplingRate),
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: self.context.sessionPrecondition
