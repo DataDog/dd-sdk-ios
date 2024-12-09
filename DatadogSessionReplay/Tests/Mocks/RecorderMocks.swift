@@ -10,6 +10,7 @@ import XCTest
 import UIKit
 import WebKit
 
+import DatadogInternal
 @_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
@@ -505,7 +506,8 @@ extension Recorder.Context: AnyMockable, RandomMockable {
         imagePrivacy: ImagePrivacyLevel,
         touchPrivacy: TouchPrivacyLevel,
         rumContext: RUMContext,
-        date: Date = Date()
+        date: Date = Date(),
+        telemetry: Telemetry = NOPTelemetry()
     ) {
         self.init(
             textAndInputPrivacy: textAndInputPrivacy,
@@ -515,7 +517,8 @@ extension Recorder.Context: AnyMockable, RandomMockable {
             sessionID: rumContext.sessionID,
             viewID: rumContext.viewID ?? "",
             viewServerTimeOffset: rumContext.viewServerTimeOffset,
-            date: date
+            date: date,
+            telemetry: telemetry
         )
     }
 }

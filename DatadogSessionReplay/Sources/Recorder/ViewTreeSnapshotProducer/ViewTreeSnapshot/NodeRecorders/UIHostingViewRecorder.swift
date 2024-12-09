@@ -44,7 +44,6 @@ internal class UIHostingViewRecorder: NodeRecorder {
             let nodeID = context.ids.nodeID(view: view, nodeRecorder: self)
             return try semantics(refelecting: view, nodeID: nodeID, with: attributes, in: context)
         } catch {
-            print(error)
             return nil
         }
     }
@@ -65,7 +64,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        let reflector = Reflector(subject: subject, telemetry: NOPTelemetry())
+        let reflector = Reflector(subject: subject, telemetry: context.recorder.telemetry)
         let renderer = try DisplayList.ViewRenderer(from: reflector)
 
         let builder = SwiftUIWireframesBuilder(

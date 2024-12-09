@@ -847,6 +847,8 @@
 		D2181A8F2B051B7900A518C0 /* URLSessionSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2181A8D2B051B7900A518C0 /* URLSessionSwizzlerTests.swift */; };
 		D21831552B6A57530012B3A0 /* NetworkInstrumentationIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21831542B6A57530012B3A0 /* NetworkInstrumentationIntegrationTests.swift */; };
 		D21831562B6A57530012B3A0 /* NetworkInstrumentationIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21831542B6A57530012B3A0 /* NetworkInstrumentationIntegrationTests.swift */; };
+		D218B0462D072C8400E3F82C /* SessionReplayTelemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D218B0452D072C8400E3F82C /* SessionReplayTelemetry.swift */; };
+		D218B0482D072CF300E3F82C /* SessionReplayTelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D218B0472D072CF300E3F82C /* SessionReplayTelemetryTests.swift */; };
 		D21A94F22B8397CA00AC4256 /* WebViewMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21A94F12B8397CA00AC4256 /* WebViewMessage.swift */; };
 		D21A94F32B8397CA00AC4256 /* WebViewMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21A94F12B8397CA00AC4256 /* WebViewMessage.swift */; };
 		D21AE6BC29E5EDAF0064BF29 /* TelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21AE6BB29E5EDAF0064BF29 /* TelemetryTests.swift */; };
@@ -2884,6 +2886,8 @@
 		D2181A8A2B0500BB00A518C0 /* NetworkInstrumentationSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInstrumentationSwizzler.swift; sourceTree = "<group>"; };
 		D2181A8D2B051B7900A518C0 /* URLSessionSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzlerTests.swift; sourceTree = "<group>"; };
 		D21831542B6A57530012B3A0 /* NetworkInstrumentationIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInstrumentationIntegrationTests.swift; sourceTree = "<group>"; };
+		D218B0452D072C8400E3F82C /* SessionReplayTelemetry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayTelemetry.swift; sourceTree = "<group>"; };
+		D218B0472D072CF300E3F82C /* SessionReplayTelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayTelemetryTests.swift; sourceTree = "<group>"; };
 		D21A94F12B8397CA00AC4256 /* WebViewMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewMessage.swift; sourceTree = "<group>"; };
 		D21AE6BB29E5EDAF0064BF29 /* TelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryTests.swift; sourceTree = "<group>"; };
 		D21C26C428A3B49C005DD405 /* FeatureStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureStorage.swift; sourceTree = "<group>"; };
@@ -3789,6 +3793,7 @@
 				D2C5D52A2B84F6AB00B63F36 /* WebViewRecordReceiver.swift */,
 				61054E3F2A6EE10A00AAA894 /* SRContextPublisher.swift */,
 				D22C5BCD2A98A65D0024CC1F /* Baggages.swift */,
+				D218B0452D072C8400E3F82C /* SessionReplayTelemetry.swift */,
 				61054E402A6EE10A00AAA894 /* RequestBuilders */,
 			);
 			path = Feature;
@@ -4090,6 +4095,7 @@
 				61054F892A6EE1BA00AAA894 /* RUMContextReceiverTests.swift */,
 				61054F8A2A6EE1BA00AAA894 /* SRContextPublisherTests.swift */,
 				D2C5D52C2B84F6D800B63F36 /* WebViewRecordReceiverTests.swift */,
+				D218B0472D072CF300E3F82C /* SessionReplayTelemetryTests.swift */,
 				61054F8B2A6EE1BA00AAA894 /* RequestBuilder */,
 			);
 			path = Feature;
@@ -8456,6 +8462,7 @@
 				A7B932FD2B1F6A0A00AE6477 /* EnrichedResource.swift in Sources */,
 				61054E622A6EE10A00AAA894 /* RecordWriter.swift in Sources */,
 				61054E692A6EE10A00AAA894 /* UIImage+SessionReplay.swift in Sources */,
+				D218B0462D072C8400E3F82C /* SessionReplayTelemetry.swift in Sources */,
 				D2EA0F432C0D941900CB20F8 /* ReflectionMirror.swift in Sources */,
 				61054E782A6EE10A00AAA894 /* UIDatePickerRecorder.swift in Sources */,
 				61054E822A6EE10A00AAA894 /* UILabelRecorder.swift in Sources */,
@@ -8580,6 +8587,7 @@
 				61054F952A6EE1BA00AAA894 /* SessionReplayConfigurationTests.swift in Sources */,
 				61054FAC2A6EE1BA00AAA894 /* CGRect+SessionReplayTests.swift in Sources */,
 				61054FC72A6EE1BA00AAA894 /* SRDataModelsMocks.swift in Sources */,
+				D218B0482D072CF300E3F82C /* SessionReplayTelemetryTests.swift in Sources */,
 				61054FC82A6EE1BA00AAA894 /* SnapshotProcessorSpy.swift in Sources */,
 				A74A72872B10CE4100771FEB /* ResourceMocks.swift in Sources */,
 				61054FA42A6EE1BA00AAA894 /* DiffTests.swift in Sources */,

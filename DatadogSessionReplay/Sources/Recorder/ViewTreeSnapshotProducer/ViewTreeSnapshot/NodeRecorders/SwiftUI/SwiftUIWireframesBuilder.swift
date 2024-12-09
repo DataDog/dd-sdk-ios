@@ -24,10 +24,10 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
     /// Flag that determines if font should be scaled.
-    var fontScalingEnabled: Bool
+    let fontScalingEnabled: Bool
     /// Privacy level for masking images.
     let imagePrivacyLevel: ImagePrivacyLevel
-
+    /// The Hosting view attributes.
     let attributes: ViewAttributes
 
     var wireframeRect: CGRect {
@@ -37,7 +37,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         let root = builder.createShapeWireframe(id: wireframeID, attributes: attributes)
         do {
-            let list = try renderer.lastList.reflect(NOPTelemetry())
+            let list = try renderer.lastList.reflect()
             let context = Context(
                 frame: attributes.frame,
                 clip: attributes.clip,
@@ -46,7 +46,6 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
 
             return [root] + buildWireframes(items: list.items, context: context)
         } catch {
-            print(error)
             return [root]
         }
     }
