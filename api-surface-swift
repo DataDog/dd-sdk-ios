@@ -2131,7 +2131,7 @@ public extension TextAndInputPrivacyLevel
     var staticTextObfuscator: SessionReplayTextObfuscating
     var hintTextObfuscator: SessionReplayTextObfuscating
 public class Recorder: Recording
-    public struct Context: Equatable
+    public struct Context
         public let textAndInputPrivacy: TextAndInputPrivacyLevel
         public let imagePrivacy: ImagePrivacyLevel
         public let touchPrivacy: TouchPrivacyLevel
@@ -2222,9 +2222,17 @@ public enum SessionReplay
         public var touchPrivacyLevel: TouchPrivacyLevel
         public var startRecordingImmediately: Bool
         public var customEndpoint: URL?
-        public init(    // swiftlint:disable:this function_default_parameter_at_endreplaySampleRate: Float = 100,textAndInputPrivacyLevel: TextAndInputPrivacyLevel,imagePrivacyLevel: ImagePrivacyLevel,touchPrivacyLevel: TouchPrivacyLevel,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
+        public var featureFlags: FeatureFlags
+        public init(replaySampleRate: Float = 100,textAndInputPrivacyLevel: TextAndInputPrivacyLevel,imagePrivacyLevel: ImagePrivacyLevel,touchPrivacyLevel: TouchPrivacyLevel,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil,featureFlags: FeatureFlags = .defaults)
         public init(replaySampleRate: Float = 100,defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
         public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder])
+[?] extension SessionReplay.Configuration
+    public typealias FeatureFlags = [FeatureFlag: Bool]
+    public enum FeatureFlag
+        case swiftui
+[?] extension SessionReplay.Configuration.FeatureFlags
+    public static var defaults: Self
+    public subscript(flag: Key) -> Bool
 public enum objc_TextAndInputPrivacyLevelOverride: Int
     case none
     case maskSensitiveInputs

@@ -82,6 +82,8 @@ public class TelemetryMock: Telemetry, CustomStringConvertible {
         case .usage(let usage):
             description.append("\n- [usage] \(usage)")
         }
+
+        expectation?.fulfill()
     }
 }
 
@@ -109,6 +111,11 @@ public extension Array where Element == TelemetryMessage {
     /// Returns the first configuration telemetry in this array.
     func firstConfiguration() -> ConfigurationTelemetry? {
         return compactMap { $0.asConfiguration }.first
+    }
+
+    /// Returns the first usage telemetry in this array.
+    func firstUsage() -> UsageTelemetry? {
+        return compactMap { $0.asUsage }.first
     }
 }
 
@@ -143,6 +150,13 @@ public extension TelemetryMessage {
             return nil
         }
         return metric
+    }
+
+    var asUsage: UsageTelemetry? {
+        guard case let .usage(usage) = self else {
+            return nil
+        }
+        return usage
     }
 }
 

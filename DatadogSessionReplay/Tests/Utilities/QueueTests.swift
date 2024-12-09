@@ -36,7 +36,7 @@ class QueueTests: XCTestCase {
         let randomValue: Int = .mockRandom()
 
         // Given
-        let queue = BackgroundAsyncQueue(named: .mockAny())
+        let queue = BackgroundAsyncQueue(label: .mockAny())
 
         // When
         var value = randomValue

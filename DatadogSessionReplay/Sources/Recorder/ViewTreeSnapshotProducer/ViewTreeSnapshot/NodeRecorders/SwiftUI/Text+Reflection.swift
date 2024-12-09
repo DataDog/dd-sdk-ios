@@ -9,14 +9,14 @@
 import Foundation
 
 extension StyledTextContentView: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        text = try mirror.descendant("text")
+    init(from reflector: Reflector) throws {
+        text = try reflector.descendant("text")
     }
 }
 
 extension ResolvedStyledText.StringDrawing: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        storage = try mirror.descendant("storage")
+    init(from reflector: Reflector) throws {
+        storage = try reflector.descendant("storage")
     }
 }
 

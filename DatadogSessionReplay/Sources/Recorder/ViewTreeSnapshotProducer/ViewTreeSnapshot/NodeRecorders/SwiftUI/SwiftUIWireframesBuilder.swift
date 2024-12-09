@@ -9,6 +9,8 @@
 import Foundation
 import UIKit
 
+import DatadogInternal
+
 @available(iOS 13.0, *)
 internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     internal struct Context {
@@ -21,10 +23,12 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     let renderer: DisplayList.ViewUpdater
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
-    /// Flag that determines if font should be scaled
-    var fontScalingEnabled: Bool
-
+    /// Flag that determines if font should be scaled.
+    let fontScalingEnabled: Bool
+    /// The Hosting view attributes.
     let attributes: ViewAttributes
+    /// Telemetry instance to report reflection errors.
+    let telemetry: Telemetry
 
     var wireframeRect: CGRect {
         attributes.frame
@@ -33,7 +37,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         let root = builder.createShapeWireframe(id: wireframeID, attributes: attributes)
         do {
-            let list = try renderer.lastList.reflect()
+            let list = try renderer.lastList.reflect(telemetry: telemetry)
             let context = Context(
                 frame: attributes.frame,
                 clip: attributes.clip,
@@ -42,7 +46,6 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
 
             return [root] + buildWireframes(items: list.items, context: context)
         } catch {
-            print(error)
             return [root]
         }
     }
