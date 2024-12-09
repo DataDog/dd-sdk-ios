@@ -21,7 +21,7 @@ internal protocol Recording {
 @_spi(Internal)
 public class Recorder: Recording {
     /// The context of recording next snapshot.
-    public struct Context: Equatable {
+    public struct Context {
         /// The content recording policy for texts and inputs at the moment of requesting snapshot.
         public let textAndInputPrivacy: TextAndInputPrivacyLevel
         /// The image recording policy from the moment of requesting snapshot.
@@ -38,6 +38,8 @@ public class Recorder: Recording {
         let viewServerTimeOffset: TimeInterval?
         /// The time of requesting this snapshot.
         let date: Date
+        /// The telemetry instance to report to.
+        let telemetry: Telemetry
 
         internal init(
             textAndInputPrivacy: TextAndInputPrivacyLevel,
@@ -47,7 +49,8 @@ public class Recorder: Recording {
             sessionID: String,
             viewID: String,
             viewServerTimeOffset: TimeInterval?,
-            date: Date = Date()
+            date: Date,
+            telemetry: Telemetry
         ) {
             self.textAndInputPrivacy = textAndInputPrivacy
             self.imagePrivacy = imagePrivacy
@@ -57,6 +60,7 @@ public class Recorder: Recording {
             self.viewID = viewID
             self.viewServerTimeOffset = viewServerTimeOffset
             self.date = date
+            self.telemetry = telemetry
         }
     }
 
