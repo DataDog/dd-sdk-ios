@@ -53,7 +53,6 @@ public enum Datadog
     public static func stopInstance(named instanceName: String = CoreRegistry.defaultInstanceName)
     public static func initialize(with configuration: Configuration,trackingConsent: TrackingConsent,instanceName: String = CoreRegistry.defaultInstanceName) -> DatadogCoreProtocol
 
-
 # ----------------------------------
 # API surface for DatadogLogs:
 # ----------------------------------
@@ -181,7 +180,6 @@ public enum Logs
     public mutating func setLogEventMapper(_ mapper: LogEventMapper)
 public protocol LogEventMapper
     func map(event: LogEvent, callback: @escaping (LogEvent) -> Void)
-
 
 # ----------------------------------
 # API surface for DatadogTrace:
@@ -336,7 +334,6 @@ public enum SpanTags
     public static let service = "service.name"
 public class Tracer
     public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> OTTracer
-
 
 # ----------------------------------
 # API surface for DatadogRUM:
@@ -1790,7 +1787,6 @@ public enum PerformanceMetric
     case flutterRasterTime
     case jsFrameTimeSeconds
 
-
 # ----------------------------------
 # API surface for DatadogCrashReporting:
 # ----------------------------------
@@ -1798,7 +1794,6 @@ public enum PerformanceMetric
 public final class CrashReporting
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default)
 public static func enable()
-
 
 # ----------------------------------
 # API surface for DatadogWebViewTracking:
@@ -1814,7 +1809,6 @@ public enum WebViewTracking
     public class AbstractMessageEmitter
         public func send(body: Any, slotId: String? = nil)
     public static func messageEmitter(in core: DatadogCoreProtocol,logsSampleRate: Float = 100) -> AbstractMessageEmitter
-
 
 # ----------------------------------
 # API surface for DatadogSessionReplay:
@@ -2222,9 +2216,17 @@ public enum SessionReplay
         public var touchPrivacyLevel: TouchPrivacyLevel
         public var startRecordingImmediately: Bool
         public var customEndpoint: URL?
-        public init(    // swiftlint:disable:this function_default_parameter_at_endreplaySampleRate: Float = 100,textAndInputPrivacyLevel: TextAndInputPrivacyLevel,imagePrivacyLevel: ImagePrivacyLevel,touchPrivacyLevel: TouchPrivacyLevel,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
+        public var featureFlags: FeatureFlags
+        public init(replaySampleRate: Float = 100,textAndInputPrivacyLevel: TextAndInputPrivacyLevel,imagePrivacyLevel: ImagePrivacyLevel,touchPrivacyLevel: TouchPrivacyLevel,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil,featureFlags: FeatureFlags = .defaults)
         public init(replaySampleRate: Float = 100,defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
         public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder])
+[?] extension SessionReplay.Configuration
+    public typealias FeatureFlags = [FeatureFlag: Bool]
+    public enum FeatureFlag
+        case swiftui
+[?] extension SessionReplay.Configuration.FeatureFlags
+    public static var defaults: Self
+    public subscript(flag: Key) -> Bool
 public enum objc_TextAndInputPrivacyLevelOverride: Int
     case none
     case maskSensitiveInputs

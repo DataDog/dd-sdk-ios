@@ -7,12 +7,10 @@
 import Foundation
 import ArgumentParser
 
-public var printFunction: (String) -> Void = { print($0) }
-
-public struct SPMLibrarySurfaceCommand: ParsableCommand {
+public struct GenerateCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
-        commandName: "spm",
-        abstract: "Prints API surface for given SPM library or list of libraries."
+        commandName: "generate",
+        abstract: "Generate API surface files for given SPM library or list of libraries."
     )
 
     @Option(help: "Specify a library name (use this option multiple times to provide list of libraries).")
@@ -21,23 +19,106 @@ public struct SPMLibrarySurfaceCommand: ParsableCommand {
     @Option(help: "The path to the folder containing `Package.swift`.")
     var path: String
 
+    @Option(help: "The file to which the generated API surface should be written.")
+    var outputFile: String
+
     public init() {}
 
     public func run() throws {
-        var printSeparator = false
-        for libraryName in libraryName {
-            let surface = try APISurface(spmLibraryName: libraryName, inPath: path)
+        try generateAPISurface(
+            libraryName: libraryName,
+            path: path,
+            outputFile: outputFile
+        )
+    }
+}
+
+public struct VerifyCommand: ParsableCommand {
+    public static let configuration = CommandConfiguration(
+        commandName: "verify",
+        abstract: "Verify that a generated API surface matches the reference file."
+    )
+
+    @Option(help: "Specify a library name (use this option multiple times to provide a list of libraries).")
+    var libraryName: [String]
+
+    @Option(help: "The path to the folder containing `Package.swift`.")
+    var path: String
+
+    @Option(help: "The temporary file to which the generated API surface should be written.")
+    var outputFile: String
+
+    @Argument(help: "Path to the reference API surface file to compare against.")
+    var referencePath: String
+
+    public init() {}
+
+    public func run() throws {
+        try generateAPISurface(
+            libraryName: libraryName,
+            path: path,
+            outputFile: outputFile
+        )
+
+        // Compare the generated files with the reference files
+        let diff = try compareFiles(reference: referencePath, generated: outputFile)
+
+        if !diff.isEmpty {
+            throw ValidationError("""
+                ❌ API surface mismatch detected!
+                Run `make api-surface` locally to update reference files and commit the changes.
+                """)
+        }
+
+        print("✅ API surface files are up-to-date.")
+    }
+
+    private func compareFiles(reference: String, generated: String) throws -> String {
+        let referenceContent = try String(contentsOfFile: reference)
+        let generatedContent = try String(contentsOfFile: generated)
+
+        return referenceContent == generatedContent ? "" : "Difference in \(reference)"
+    }
+}
+
+private func generateAPISurface(
+    libraryName: [String],
+    path: String,
+    outputFile: String
+) throws {
+    var output = ""
+    var printSeparator = false
+
+    for library in libraryName {
+        do {
+            let surface = try APISurface(spmLibraryName: library, inPath: path)
             if printSeparator {
-                printFunction("\n")
+                output.append("\n")
             }
-            printFunction("""
+
+            output.append("""
             # ----------------------------------
-            # API surface for \(libraryName):
+            # API surface for \(library):
             # ----------------------------------
 
             """)
-            printFunction(try surface.print())
+
+            output.append("\n")
+            output.append(try surface.print() + "\n")
+
             printSeparator = true
+        } catch {
+            print("❌ Error generating API surface for library \(library): \(error)")
+            throw error
         }
+    }
+
+    // Write the output to the specified file
+    do {
+        try output.write(toFile: outputFile, atomically: true, encoding: .utf8)
+        print("✅ API surface written to \(outputFile)")
+    } catch {
+        print("❌ Error writing API surface to \(outputFile): \(error)")
+        throw error
     }
 }

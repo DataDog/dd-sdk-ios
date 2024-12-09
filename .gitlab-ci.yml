@@ -91,6 +91,7 @@ Lint:
     - make clean repo-setup ENV=ci
     - make lint license-check
     - make rum-models-verify sr-models-verify
+    - make api-surface-verify
 
 Unit Tests (iOS):
   stage: test
