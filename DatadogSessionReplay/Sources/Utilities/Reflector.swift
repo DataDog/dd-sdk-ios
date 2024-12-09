@@ -295,7 +295,7 @@ extension Reflector.Lazy: Reflection {
     init(from reflector: Reflector) throws {
         self.mirror = reflector.mirror
     }
-    
+
     /// Relect to the type `T` and report error to telemetry.
     ///
     /// - Parameter telemetry: The telemetry instance.
