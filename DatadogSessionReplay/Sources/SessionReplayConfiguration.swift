@@ -86,7 +86,7 @@ extension SessionReplay {
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
         ///   - featureFlags: Experimental feature flags.
         public init(    // swiftlint:disable:this function_default_parameter_at_end
-            replaySampleRate: Float = 100,
+            replaySampleRate: SampleRate = .maxSampleRate,
             textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
             imagePrivacyLevel: ImagePrivacyLevel,
             touchPrivacyLevel: TouchPrivacyLevel,
@@ -111,7 +111,7 @@ extension SessionReplay {
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
         @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(replaySampleRate:textAndInputPrivacyLevel:imagePrivacyLevel:touchPrivacyLevel:)` instead.")
         public init(
-            replaySampleRate: Float = 100,
+            replaySampleRate: SampleRate = .maxSampleRate,
             defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,
             startRecordingImmediately: Bool = true,
             customEndpoint: URL? = nil

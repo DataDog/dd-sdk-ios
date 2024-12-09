@@ -631,7 +631,7 @@ class LoggerTests: XCTestCase {
         try core.register(feature: logging)
 
         RUM.enable(
-            with: .mockWith { $0.sessionSampleRate = 100 },
+            with: .mockWith { $0.sessionSampleRate = .maxSampleRate },
             in: core
         )
 

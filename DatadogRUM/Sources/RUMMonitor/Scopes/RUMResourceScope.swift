@@ -197,6 +197,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 decodedBodySize: nil,
+                deliveryType: nil,
                 dns: resourceMetrics?.dns.map { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
@@ -239,7 +240,8 @@ internal class RUMResourceScope: RUMScope {
                 statusCode: command.httpStatusCode?.toInt64 ?? 0,
                 transferSize: nil,
                 type: resourceType,
-                url: resourceURL
+                url: resourceURL,
+                worker: nil
             ),
             service: context.service,
             session: .init(
