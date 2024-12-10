@@ -6,6 +6,8 @@
 
 import XCTest
 import SRFixtures
+
+import DatadogInternal
 import TestUtilities
 @_spi(Internal)
 @testable import DatadogSessionReplay
@@ -143,7 +145,7 @@ internal class SnapshotTestCase: XCTestCase {
             recordWriter: RecordWriter(core: PassthroughCoreMock()),
             resourceProcessor: resourceProcessor,
             srContextPublisher: SRContextPublisher(core: PassthroughCoreMock()),
-            telemetry: TelemetryMock()
+            telemetry: NOPTelemetry()
         )
 
         let recorder = try Recorder(
@@ -175,7 +177,9 @@ internal class SnapshotTestCase: XCTestCase {
                 applicationID: "",
                 sessionID: "",
                 viewID: "",
-                viewServerTimeOffset: 0
+                viewServerTimeOffset: 0,
+                date: Date(),
+                telemetry: NOPTelemetry()
             )
         )
 

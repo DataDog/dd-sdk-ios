@@ -12,7 +12,6 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?
-    let privacyLevel: SessionReplayPrivacyLevel
     let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
     let touchPrivacyLevel: TouchPrivacyLevel
@@ -28,7 +27,14 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
     ) throws {
-        let processorsQueue = BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processors")
+        let processorsQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.processors", qos: .utility)
+        // The telemetry queue targets the processors queue with a lower qos.
+        let telemetryQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.telemetry", qos: .background, target: processorsQueue)
+
+        let telemetry = SessionReplayTelemetry(
+            telemetry: core.telemetry,
+            queue: telemetryQueue
+        )
 
         let resourceProcessor = ResourceProcessor(
             queue: processorsQueue,
@@ -40,7 +46,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             recordWriter: RecordWriter(core: core),
             resourceProcessor: resourceProcessor,
             srContextPublisher: SRContextPublisher(core: core),
-            telemetry: core.telemetry
+            telemetry: telemetry
         )
 
         let recorder = try Recorder(
@@ -59,7 +65,6 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             )
         ])
 
-        self.privacyLevel = configuration.defaultPrivacyLevel
         self.textAndInputPrivacyLevel = configuration.textAndInputPrivacyLevel
         self.imagePrivacyLevel = configuration.imagePrivacyLevel
         self.touchPrivacyLevel = configuration.touchPrivacyLevel
@@ -73,7 +78,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             srContextPublisher: SRContextPublisher(core: core),
             recorder: recorder,
             sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate),
-            telemetry: core.telemetry,
+            telemetry: telemetry,
             startRecordingImmediately: configuration.startRecordingImmediately
         )
         self.requestBuilder = SegmentRequestBuilder(

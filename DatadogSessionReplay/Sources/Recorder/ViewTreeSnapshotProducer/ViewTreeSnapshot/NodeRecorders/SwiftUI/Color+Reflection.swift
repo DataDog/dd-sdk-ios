@@ -11,18 +11,18 @@ import SwiftUI
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension SwiftUI.Color._Resolved: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        linearRed = try mirror.descendant("linearRed")
-        linearGreen = try mirror.descendant("linearGreen")
-        linearBlue = try mirror.descendant("linearBlue")
-        opacity = try mirror.descendant("opacity")
+    init(from reflector: Reflector) throws {
+        linearRed = try reflector.descendant("linearRed")
+        linearGreen = try reflector.descendant("linearGreen")
+        linearBlue = try reflector.descendant("linearBlue")
+        opacity = try reflector.descendant("opacity")
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension ResolvedPaint: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        paint = try? mirror.descendant("paint")
+    init(from reflector: Reflector) throws {
+        paint = reflector.descendantIfPresent("paint")
     }
 }
 
