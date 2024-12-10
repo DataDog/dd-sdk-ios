@@ -85,7 +85,8 @@ extension SessionReplay {
         ///   - startRecordingImmediately: If the recording should start automatically. When `true`, the recording starts automatically; when `false` it doesn't, and the recording will need to be started manually. Default: `true`.
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
         ///   - featureFlags: Experimental feature flags.
-        public init(    // swiftlint:disable:this function_default_parameter_at_end
+        // swiftlint:disable function_default_parameter_at_end
+        public init(
             replaySampleRate: Float = 100,
             textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
             imagePrivacyLevel: ImagePrivacyLevel,
@@ -102,6 +103,7 @@ extension SessionReplay {
             self.customEndpoint = customEndpoint
             self.featureFlags = featureFlags
         }
+        // swiftlint:enable function_default_parameter_at_end
 
         /// Creates Session Replay configuration.
         /// - Parameters:
