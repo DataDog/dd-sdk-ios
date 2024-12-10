@@ -117,6 +117,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 action: rum?.userActionID.map { .init(id: $0) },
                 application: rum.map { .init(id: $0.applicationID) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+                effectiveSampleRate: Int64(withNoOverflow: self.sampler.samplingRate),
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
                 session: rum.map { .init(id: $0.sessionID) },
@@ -157,6 +158,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 action: rum?.userActionID.map { .init(id: $0) },
                 application: rum.map { .init(id: $0.applicationID) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+                effectiveSampleRate: Int64(withNoOverflow: self.sampler.samplingRate),
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
                 session: rum.map { .init(id: $0.sessionID) },
@@ -187,6 +189,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 action: rum?.userActionID.map { .init(id: $0) },
                 application: rum.map { .init(id: $0.applicationID) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+                effectiveSampleRate: Int64(withNoOverflow: usage.sampleRate.composed(with: self.sampler.samplingRate)),
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
                 session: rum.map { .init(id: $0.sessionID) },
@@ -226,6 +229,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 action: rum?.userActionID.map { .init(id: $0) },
                 application: rum.map { .init(id: $0.applicationID) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+                effectiveSampleRate: Int64(withNoOverflow: self.configurationExtraSampler.samplingRate.composed(with: self.sampler.samplingRate)),
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
                 session: rum.map { .init(id: $0.sessionID) },
@@ -255,11 +259,18 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             let sessionIDOverride: String? = attributes.removeValue(forKey: SDKMetricFields.sessionIDOverrideKey)?.dd.decode()
             let sessionID = sessionIDOverride ?? rum?.sessionID
 
+            // Calculates the composition of sample rates. The metric can have up to 3 layers of sampling.
+            var effectiveSampleRate = metric.sampleRate.composed(with: self.sampler.samplingRate)
+            if let headSampleRate = attributes.removeValue(forKey: SDKMetricFields.headSampleRate) as? SampleRate {
+                effectiveSampleRate = effectiveSampleRate.composed(with: headSampleRate)
+            }
+
             let event = TelemetryDebugEvent(
                 dd: .init(),
                 action: rum?.userActionID.map { .init(id: $0) },
                 application: rum.map { .init(id: $0.applicationID) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+                effectiveSampleRate: Int64(withNoOverflow: effectiveSampleRate),
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
                 session: sessionID.map { .init(id: $0) },
@@ -373,6 +384,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             forwardReports: nil,
             imagePrivacyLevel: configuration.imagePrivacyLevel,
             initializationType: nil,
+            isMainProcess: nil,
             mobileVitalsUpdatePeriod: configuration.mobileVitalsUpdatePeriod,
             premiumSampleRate: nil,
             reactNativeVersion: nil,
