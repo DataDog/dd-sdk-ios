@@ -261,13 +261,5 @@ extension SRWireframe {
             y: update.y ?? wireframe.y
         )
     }
-
-    fileprivate var shapeWireframe: SRShapeWireframe? {
-        guard case let .shapeWireframe(wireframe) = self else {
-            return nil
-        }
-
-        return wireframe
-    }
 }
 #endif
