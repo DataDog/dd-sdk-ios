@@ -40,7 +40,7 @@ internal protocol TTNSMetricTracking {
 /// "Initial resources" are defined as resources starting within 100ms of the view becoming visible.
 internal final class TTNSMetric: TTNSMetricTracking {
     enum Constants {
-        /// Only resources starting within this interval of the view becoming visible are considered "initial resources."
+        /// Only resources starting within this interval of the view becoming visible are considered "initial resources".
         static let initialResourceThreshold: TimeInterval = 0.1
     }
 
@@ -91,10 +91,13 @@ internal final class TTNSMetric: TTNSMetricTracking {
         guard isViewActive, let startDate = pendingResourcesStartDates[resourceID] else {
             return // View was stopped or the resource was not tracked
         }
-
         let duration = resourceDuration ?? endDate.timeIntervalSince(startDate)
-        let resourceEndDate = startDate.addingTimeInterval(duration)
 
+        guard duration >= 0 else {
+            return // sanity check
+        }
+
+        let resourceEndDate = startDate.addingTimeInterval(duration)
         latestResourceEndDate = max(latestResourceEndDate ?? .distantPast, resourceEndDate)
         pendingResourcesStartDates[resourceID] = nil // Remove from the list of ongoing resources
     }

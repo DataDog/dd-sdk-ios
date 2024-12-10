@@ -310,6 +310,15 @@ class TTNSMetricTests: XCTestCase {
         )
     }
 
+    func testWhenResourceEndsEarlierThanItStarts() {
+        metric.trackResourceStart(at: viewStartDate + 1, resourceID: .resource1)
+        metric.trackResourceEnd(at: viewStartDate + 0.5, resourceID: .resource1, resourceDuration: nil)
+        XCTAssertNil(
+            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: .distantPast)),
+            "Metric value should be nil if resource ends earlier than it starts."
+        )
+    }
+
     func testWhenResourceEndsImmediately() throws {
         let t0 = viewStartDate + t100ms * 0.5 // initial resource
         metric.trackResourceStart(at: t0, resourceID: .resource1)
@@ -317,6 +326,16 @@ class TTNSMetricTests: XCTestCase {
 
         let ttns = try XCTUnwrap(metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: .distantPast)))
         XCTAssertEqual(ttns, t100ms * 0.5, accuracy: 0.01, "Metric value should be equal to resource start offset.")
+    }
+
+    func testWhenResourceEndsWithNegativeDuration() throws {
+        metric.trackResourceStart(at: viewStartDate, resourceID: .resource1)
+        metric.trackResourceEnd(at: viewStartDate + 1, resourceID: .resource1, resourceDuration: -10)
+
+        XCTAssertNil(
+            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: .distantPast)),
+            "Metric should ignore resources with negtative durations."
+        )
     }
 
     func testWhenResourceEndsImmediatelyWithDuration() throws {
