@@ -21,8 +21,10 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     let renderer: DisplayList.ViewUpdater
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
-    /// Flag that determines if font should be scaled
+    /// Flag that determines if font should be scaled.
     var fontScalingEnabled: Bool
+    /// Privacy level for masking images.
+    let imagePrivacyLevel: ImagePrivacyLevel
 
     let attributes: ViewAttributes
 
@@ -134,9 +136,9 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
         case let .image(resolvedImage):
             switch resolvedImage.contents {
             case .cgImage(let cgImage):
-                // TODO: RUM-7462 - Apply global privacy setting
                 // TODO: RUM-7370 - Apply FGM overrides
-                if cgImage.isLikelyBundled(scale: resolvedImage.scale) {
+                let shouldRecordImage = self.imagePrivacyLevel.shouldRecordGraphicsImagePredicate(resolvedImage)
+                if shouldRecordImage {
                     let imageResource = UIImageResource(
                         image: UIImage(
                             cgImage: cgImage,
@@ -154,15 +156,15 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                 } else {
                     return context.builder.createPlaceholderWireframe(
                         id: Int64(content.seed.value),
-                        frame: item.frame,
+                        frame: context.convert(frame: item.frame),
                         clip: context.clip,
-                        label: "Content Image"
+                        label: imagePrivacyLevel == .maskNonBundledOnly ? "Content Image" : "Image"
                     )
                 }
             case .unknown:
                 return context.builder.createPlaceholderWireframe(
                     id: Int64(content.seed.value),
-                    frame: item.frame,
+                    frame: context.convert(frame: item.frame),
                     clip: context.clip,
                     label: "Unsupported image type"
                 )
@@ -190,6 +192,26 @@ internal extension SwiftUIWireframesBuilder.Context {
             dx: frame.minX,
             dy: frame.minY
         )
+    }
+}
+
+@available(iOS 13.0, *)
+internal extension ImagePrivacyLevel {
+    var shouldRecordGraphicsImagePredicate: (_ graphicImage: GraphicsImage) -> Bool {
+        switch self {
+        case .maskNone: return { _ in true }
+        case .maskNonBundledOnly:
+            return { graphicImage in
+                switch graphicImage.contents {
+                case .cgImage(let cgImage):
+                    return cgImage.isLikelyBundled(scale: graphicImage.scale)
+                case .unknown:
+                    return false
+                }
+            }
+        case .maskAll:
+            return { _ in false }
+        }
     }
 }
 
