@@ -149,6 +149,42 @@ class TTNSMetricTests: XCTestCase {
         XCTAssertEqual(ttns, durations.max()!, accuracy: 0.01, "Metric value should reflect the completion of the last initial resource.")
     }
 
+    // MARK: - Metric Value vs Resource Dropped
+
+    func testWhenAllResourcesAreDropped_thenMetricValueIsNotAvailable() throws {
+        // Given
+        metric.trackResourceStart(at: viewStartDate, resourceID: .resource1)
+        metric.trackResourceStart(at: viewStartDate, resourceID: .resource2)
+        metric.trackResourceStart(at: viewStartDate, resourceID: .resource3)
+
+        // When
+        metric.trackResourceDropped(resourceID: .resource1)
+        metric.trackResourceDropped(resourceID: .resource2)
+        metric.trackResourceDropped(resourceID: .resource3)
+
+        // Then
+        XCTAssertNil(
+            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: viewStartDate)),
+            "Metric value should not be available if all resources are dropped."
+        )
+    }
+
+    func testWhenSomeResourcesAreDropped_thenMetricValueReflectsCompletedResources() throws {
+        // Given
+        metric.trackResourceStart(at: viewStartDate, resourceID: .resource1)
+        metric.trackResourceStart(at: viewStartDate, resourceID: .resource2)
+        metric.trackResourceStart(at: viewStartDate, resourceID: .resource3)
+
+        // When
+        metric.trackResourceEnd(at: viewStartDate + 1.42, resourceID: .resource1, resourceDuration: nil)
+        metric.trackResourceDropped(resourceID: .resource2)
+        metric.trackResourceDropped(resourceID: .resource3)
+
+        // Then
+        let ttns = try XCTUnwrap(metric.value(at: viewStartDate + 10, appStateHistory: .mockAppInForeground(since: viewStartDate)))
+        XCTAssertEqual(ttns, 1.42, accuracy: 0.01, "Metric value should reflect completed resources.")
+    }
+
     // MARK: - Metric Value vs Initial Resource Threshold
 
     func testWhenNewInitialResourceStartsAfterPreviousComplete_thenMetricValueIsOnlyAvailableAfterThreshold() throws {

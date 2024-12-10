@@ -48,7 +48,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         rumTime.now.addTimeInterval(1)
         monitor.stopResource(resourceKey: "resource2", response: .mockAny())
         rumTime.now.addTimeInterval(1)
-        monitor.stopResource(resourceKey: "resource3", response: .mockAny())
+        monitor.stopResourceWithError(resourceKey: "resource3", error: ErrorMock(), response: nil)
 
         // Then
         let lastResourceTime = rumTime.now
@@ -85,7 +85,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         rumTime.now.addTimeInterval(1)
         monitor.stopResource(resourceKey: "resource1", response: .mockAny())
         rumTime.now.addTimeInterval(1)
-        monitor.stopResource(resourceKey: "resource2", response: .mockAny())
+        monitor.stopResourceWithError(resourceKey: "resource2", error: ErrorMock(), response: nil)
         let lastInitialResourceTime = rumTime.now
         rumTime.now.addTimeInterval(1)
         monitor.stopResource(resourceKey: "resource3", response: .mockAny())
@@ -135,5 +135,49 @@ class ViewLoadingMetricsTests: XCTestCase {
         let firstView = try XCTUnwrap(session.views.first(where: { $0.name == "FirstView" }))
         let lastViewEvent = try XCTUnwrap(firstView.viewEvents.last)
         XCTAssertNil(lastViewEvent.view.networkSettledTime, "TTNS should not be reported if view was stopped during resource loading.")
+    }
+
+    func testWhenResourceIsDropped_thenItIsExcludedFromTTNSMetric() throws {
+        let droppedResourceURL: URL = .mockRandom()
+
+        let rumTime = DateProviderMock()
+        rumConfig.dateProvider = rumTime
+        rumConfig.resourceEventMapper = { event in // drop resource events
+            event.resource.url == droppedResourceURL.absoluteString ? nil : event
+        }
+        rumConfig.errorEventMapper = { event in // drop resource error events
+            event.error.resource?.url == droppedResourceURL.absoluteString ? nil : event
+        }
+
+        // Given
+        RUM.enable(with: rumConfig, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+        let viewStartTime = rumTime.now
+
+        // When (start view and initial resources)
+        monitor.startView(key: "view", name: "ViewName")
+        monitor.startResource(resourceKey: "resource1", url: .mockRandom())
+        monitor.startResource(resourceKey: "resource2", url: droppedResourceURL)
+        monitor.startResource(resourceKey: "resource3", url: droppedResourceURL)
+
+        // When (end resources during the same view)
+        rumTime.now.addTimeInterval(1)
+        monitor.stopResource(resourceKey: "resource1", response: .mockAny())
+        let resource1EndTime = rumTime.now
+        rumTime.now.addTimeInterval(1)
+        monitor.stopResource(resourceKey: "resource2", response: .mockAny())
+        rumTime.now.addTimeInterval(1)
+        monitor.stopResourceWithError(resourceKey: "resource3", error: ErrorMock(), response: nil)
+
+        // Then
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+
+        let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
+        let actualTTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TTNS should be reported after initial resources end.")
+        let expectedTTNS = resource1EndTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+        XCTAssertEqual(actualTTNS, expectedTTNS, "TTNS should only reflect ACCEPTED resources.")
     }
 }

@@ -983,8 +983,8 @@ extension RUMResourceScope {
         resourceKindBasedOnRequest: RUMResourceType? = nil,
         spanContext: RUMSpanContext? = .mockAny(),
         networkSettledMetric: TTNSMetricTracking = TTNSMetric(viewStartDate: .mockAny()),
-        onResourceEventSent: @escaping () -> Void = {},
-        onErrorEventSent: @escaping () -> Void = {}
+        onResourceEvent: @escaping (Bool) -> Void = { _ in },
+        onErrorEvent: @escaping (Bool) -> Void = { _ in }
     ) -> RUMResourceScope {
         return RUMResourceScope(
             context: context,
@@ -998,8 +998,8 @@ extension RUMResourceScope {
             resourceKindBasedOnRequest: resourceKindBasedOnRequest,
             spanContext: spanContext,
             networkSettledMetric: networkSettledMetric,
-            onResourceEventSent: onResourceEventSent,
-            onErrorEventSent: onErrorEventSent
+            onResourceEvent: onResourceEvent,
+            onErrorEvent: onErrorEvent
         )
     }
 }
@@ -1198,6 +1198,8 @@ internal class TTNSMetricMock: TTNSMetricTracking {
     var resourceStartDates: [RUMUUID: Date] = [:]
     /// Tracks calls to `trackResourceEnd(at:resourceID:resourceDuration:)`.
     var resourceEndDates: [RUMUUID: (Date, TimeInterval?)] = [:]
+    /// Tracks calls to `trackResourceDropped(resourceID:)`.
+    var resourcesDropped: Set<RUMUUID> = []
     /// Tracks if `trackViewWasStopped()` was called.
     var viewWasStopped = false
     /// Mocked value returned by this metric.
@@ -1213,6 +1215,10 @@ internal class TTNSMetricMock: TTNSMetricTracking {
 
     func trackResourceEnd(at endDate: Date, resourceID: RUMUUID, resourceDuration: TimeInterval?) {
         resourceEndDates[resourceID] = (endDate, resourceDuration)
+    }
+
+    func trackResourceDropped(resourceID: RUMUUID) {
+        resourcesDropped.insert(resourceID)
     }
 
     func trackViewWasStopped() {

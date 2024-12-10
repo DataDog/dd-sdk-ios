@@ -310,12 +310,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             resourceKindBasedOnRequest: command.kind,
             spanContext: command.spanContext,
             networkSettledMetric: networkSettledMetric,
-            onResourceEventSent: { [weak self] in
-                self?.resourcesCount += 1
+            onResourceEvent: { [weak self] wasSent in
+                if wasSent {
+                    self?.resourcesCount += 1
+                }
                 self?.needsViewUpdate = true
             },
-            onErrorEventSent: { [weak self] in
-                self?.errorsCount += 1
+            onErrorEvent: { [weak self] wasSent in
+                if wasSent {
+                    self?.errorsCount += 1
+                }
                 self?.needsViewUpdate = true
             }
         )

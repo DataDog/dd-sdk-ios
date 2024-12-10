@@ -23,6 +23,12 @@ internal protocol TTNSMetricTracking {
     ///   - resourceDuration: The resource duration, if available.
     func trackResourceEnd(at endDate: Date, resourceID: RUMUUID, resourceDuration: TimeInterval?)
 
+    /// Tracks the completion of a resource without considering its duration.
+    ///
+    /// - Parameters:
+    ///   - resourceID: The unique identifier for the resource.
+    func trackResourceDropped(resourceID: RUMUUID)
+
     /// Marks the view as stopped, preventing further resource tracking.
     func trackViewWasStopped()
 
@@ -99,6 +105,15 @@ internal final class TTNSMetric: TTNSMetricTracking {
 
         let resourceEndDate = startDate.addingTimeInterval(duration)
         latestResourceEndDate = max(latestResourceEndDate ?? .distantPast, resourceEndDate)
+        pendingResourcesStartDates[resourceID] = nil // Remove from the list of ongoing resources
+    }
+
+    /// Tracks the completion of a resource without considering its duration.
+    /// Used to end resources dropped through event mapper APIs.
+    ///
+    /// - Parameters:
+    ///   - resourceID: The unique identifier for the resource.
+    func trackResourceDropped(resourceID: RUMUUID) {
         pendingResourcesStartDates[resourceID] = nil // Remove from the list of ongoing resources
     }
 

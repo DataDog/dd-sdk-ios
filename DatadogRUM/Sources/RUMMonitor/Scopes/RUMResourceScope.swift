@@ -55,9 +55,9 @@ internal class RUMResourceScope: RUMScope {
     private let networkSettledMetric: TTNSMetricTracking
 
     /// Callback called when a `RUMResourceEvent` is submitted for storage.
-    private let onResourceEventSent: () -> Void
+    private let onResourceEvent: (_ sent: Bool) -> Void
     /// Callback called when a `RUMErrorEvent` is submitted for storage.
-    private let onErrorEventSent: () -> Void
+    private let onErrorEvent: (_ sent: Bool) -> Void
 
     init(
         context: RUMContext,
@@ -71,8 +71,8 @@ internal class RUMResourceScope: RUMScope {
         resourceKindBasedOnRequest: RUMResourceType?,
         spanContext: RUMSpanContext?,
         networkSettledMetric: TTNSMetricTracking,
-        onResourceEventSent: @escaping () -> Void,
-        onErrorEventSent: @escaping () -> Void
+        onResourceEvent: @escaping (Bool) -> Void,
+        onErrorEvent: @escaping (Bool) -> Void
     ) {
         self.context = context
         self.dependencies = dependencies
@@ -87,8 +87,8 @@ internal class RUMResourceScope: RUMScope {
         self.resourceKindBasedOnRequest = resourceKindBasedOnRequest
         self.spanContext = spanContext
         self.networkSettledMetric = networkSettledMetric
-        self.onResourceEventSent = onResourceEventSent
-        self.onErrorEventSent = onErrorEventSent
+        self.onResourceEvent = onResourceEvent
+        self.onErrorEvent = onErrorEvent
 
         // Track this resource in view's TTNS metric:
         networkSettledMetric.trackResourceStart(at: startTime, resourceID: resourceUUID)
@@ -165,9 +165,6 @@ internal class RUMResourceScope: RUMScope {
             resourceDuration = command.time.timeIntervalSince(resourceLoadingStartTime)
             size = command.size
         }
-
-        // Track this resource in view's TTNS metric
-        networkSettledMetric.trackResourceEnd(at: command.time, resourceID: resourceUUID, resourceDuration: resourceDuration)
 
         // Write resource event
         let resourceEvent = RUMResourceEvent(
@@ -273,7 +270,11 @@ internal class RUMResourceScope: RUMScope {
 
         if let event = dependencies.eventBuilder.build(from: resourceEvent) {
             writer.write(value: event)
-            onResourceEventSent()
+            onResourceEvent(true)
+            networkSettledMetric.trackResourceEnd(at: command.time, resourceID: resourceUUID, resourceDuration: resourceDuration)
+        } else {
+            onResourceEvent(false)
+            networkSettledMetric.trackResourceDropped(resourceID: resourceUUID)
         }
     }
 
@@ -284,9 +285,6 @@ internal class RUMResourceScope: RUMScope {
         let timeSinceAppStart = context.launchTime.map {
             command.time.timeIntervalSince($0.launchDate).toInt64Milliseconds
         }
-
-        // Track this resource error in view's TTNS metric
-        networkSettledMetric.trackResourceEnd(at: command.time, resourceID: resourceUUID, resourceDuration: nil)
 
         // Write error event
         let errorEvent = RUMErrorEvent(
@@ -359,7 +357,11 @@ internal class RUMResourceScope: RUMScope {
 
         if let event = dependencies.eventBuilder.build(from: errorEvent) {
             writer.write(value: event)
-            onErrorEventSent()
+            onErrorEvent(true)
+            networkSettledMetric.trackResourceEnd(at: command.time, resourceID: resourceUUID, resourceDuration: nil)
+        } else {
+            onErrorEvent(false)
+            networkSettledMetric.trackResourceDropped(resourceID: resourceUUID)
         }
     }
 

@@ -912,8 +912,8 @@ extension RUMResourceScope {
         resourceKindBasedOnRequest: RUMResourceType? = nil,
         spanContext: RUMSpanContext? = .mockAny(),
         networkSettledMetric: TTNSMetricTracking = TTNSMetric(viewStartDate: .mockAny()),
-        onResourceEventSent: @escaping () -> Void = {},
-        onErrorEventSent: @escaping () -> Void = {}
+        onResourceEvent: @escaping (Bool) -> Void = { _ in },
+        onErrorEvent: @escaping (Bool) -> Void = { _ in }
     ) -> RUMResourceScope {
         return RUMResourceScope(
             context: context,
@@ -927,8 +927,8 @@ extension RUMResourceScope {
             resourceKindBasedOnRequest: resourceKindBasedOnRequest,
             spanContext: spanContext,
             networkSettledMetric: networkSettledMetric,
-            onResourceEventSent: onResourceEventSent,
-            onErrorEventSent: onErrorEventSent
+            onResourceEvent: onResourceEvent,
+            onErrorEvent: onErrorEvent
         )
     }
 }
