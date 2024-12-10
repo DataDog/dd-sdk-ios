@@ -3,6 +3,8 @@
 - [FIX] Fix sporadic file overwrite during consent change, ensuring event data integrity. See [#2113][]
 - [FIX] Fix trace inconsistency when using `URLSessionInterceptor` or Alamofire extension. See [#2114][]
 - [IMPROVEMENT] Add Session Replay `startRecordingImmediately` ObjC API. See [#2120][]
+- [IMPROVEMENT] Session Replay recording is event-triggered instead of scheduled. See [#2074][]
+
 
 # 2.20.0 / 14-11-2024
 
@@ -798,6 +800,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2099]: https://github.com/DataDog/dd-sdk-ios/pull/2099
 [#2063]: https://github.com/DataDog/dd-sdk-ios/pull/2063
 [#2092]: https://github.com/DataDog/dd-sdk-ios/pull/2092
+[#2074]: https://github.com/DataDog/dd-sdk-ios/pull/2074
 [#2113]: https://github.com/DataDog/dd-sdk-ios/pull/2113
 [#2114]: https://github.com/DataDog/dd-sdk-ios/pull/2114
 [#2120]: https://github.com/DataDog/dd-sdk-ios/pull/2120
