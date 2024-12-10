@@ -1268,6 +1268,33 @@ extension SRWireframe {
             return nil
         }
     }
+
+    var shapeWireframe: SRShapeWireframe? {
+        switch self {
+        case .shapeWireframe(let value): return value
+        default:
+            XCTFail("not a SRWireframe.shapeWireframe")
+            return nil
+        }
+    }
+
+    var imageWireframe: SRImageWireframe? {
+        switch self {
+        case .imageWireframe(let value): return value
+        default:
+            XCTFail("not a SRWireframe.imageWireframe")
+            return nil
+        }
+    }
+
+    var placeholderWireframe: SRPlaceholderWireframe? {
+        switch self {
+        case .placeholderWireframe(let value): return value
+        default:
+            XCTFail("not a SRWireframe.placeholderWireframe")
+            return nil
+        }
+    }
 }
 
 private extension Double {
