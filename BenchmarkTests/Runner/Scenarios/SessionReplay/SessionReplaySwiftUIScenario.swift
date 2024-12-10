@@ -6,20 +6,20 @@
 
 import Foundation
 import UIKit
+import SwiftUI
 
 import DatadogCore
 import DatadogRUM
 import DatadogSessionReplay
 
-import UIKitCatalog
+import SwiftUICatalog
 
-struct SessionReplayScenario: Scenario {
+struct SessionReplaySwiftUIScenario: Scenario {
     var initialViewController: UIViewController {
-        let storyboard = UIStoryboard(name: "Main", bundle: UIKitCatalog.bundle)
-        return storyboard.instantiateInitialViewController()!
+        UIHostingController(rootView: SwiftUICatalog.ContentView(monitor: DatadogMonitor()))
     }
 
-    func instrument(with info: AppInfo) {
+    func instrument(with info: AppInfo) {        
         Datadog.initialize(
             with: .benchmark(info: info),
             trackingConsent: .granted
@@ -27,9 +27,7 @@ struct SessionReplayScenario: Scenario {
 
         RUM.enable(
             with: RUM.Configuration(
-                applicationID: info.applicationID,
-                uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
-                uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate()
+                applicationID: info.applicationID
             )
         )
 
@@ -42,6 +40,20 @@ struct SessionReplayScenario: Scenario {
             )
         )
 
-        RUMMonitor.shared().addAttribute(forKey: "scenario", value: "SessionReplay")
+        RUMMonitor.shared().addAttribute(forKey: "scenario", value: "SessionReplaySwiftUI")
+    }
+}
+
+private struct DatadogMonitor: SwiftUICatalog.DatadogMonitor {
+    func viewModifier(name: String) -> AnyViewModifier {
+        AnyViewModifier { content in
+            content.trackRUMView(name: name)
+        }
+    }
+
+    func actionModifier(name: String) -> AnyViewModifier {
+        AnyViewModifier { content in
+            content.trackRUMTapAction(name: name)
+        }
     }
 }
