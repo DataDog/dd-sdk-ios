@@ -88,18 +88,29 @@ extension DisplayList.Index.ID: Reflection {
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.ViewUpdater.ViewInfo: Reflection {
     init(_ mirror: ReflectionMirror) throws {
-        let view = try mirror.descendant(type: UIView.self, "view")
-        let layer = try mirror.descendant(type: CALayer.self, "layer")
-
-        // do not retain the view or layer, only get values required
+        // do not retain the views or layer, only get values required
         // for building wireframe
+
+        let layer = try mirror.descendant(type: CALayer.self, "layer")
+        // The view is the rendering context of an item
+        let view = try mirror.descendant(type: UIView.self, "view")
+        // The container view is where the item is actually rendered.
+        // The container is usually the same as the view, except when applying
+        // a `.platformGroup` effect. e.g: A `SwiftUI.ScrollView` will create a
+        // `.platformGroup` effect where the `Content` is rendered in a `UIScrollView`,
+        // in this case the container is the content of the `UIScrollView`.
+        let container = try mirror.descendant(type: UIView.self, "container")
+
+        // The frame is the container's frame in the view's coordinate space.
+        // This is useful for applying the offset in a scroll-view.
+        frame = container.convert(container.bounds, to: view)
         backgroundColor = layer.backgroundColor?.safeCast
         borderColor = layer.borderColor?.safeCast
         borderWidth = layer.borderWidth
         cornerRadius = layer.cornerRadius
         alpha = view.alpha
         isHidden = layer.isHidden
-        intrinsicContentSize = view.intrinsicContentSize
+        intrinsicContentSize = container.intrinsicContentSize
     }
 }
 
@@ -126,8 +137,9 @@ extension DisplayList.Content.Value: Reflection {
         case (.enum("platformView"), _):
             self = .platformView
 
-        case (.enum("image"), _):
-            self = .unknown
+        case (.enum("image"), let graphicsImage):
+            let resolvedImage = try GraphicsImage(reflecting: graphicsImage)
+            self = .image(resolvedImage)
 
         case (.enum("drawing"), _):
             self = .unknown
@@ -169,5 +181,4 @@ extension DisplayList.Item.Value: Reflection {
         }
     }
 }
-
 #endif

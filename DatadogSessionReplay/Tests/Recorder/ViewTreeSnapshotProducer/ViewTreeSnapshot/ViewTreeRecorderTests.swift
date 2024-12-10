@@ -226,73 +226,79 @@ class ViewTreeRecorderTests: XCTestCase {
         let nodeRecorder = NodeRecorderMock(resultForView: { _ in nil })
         let recorder = ViewTreeRecorder(nodeRecorders: [nodeRecorder])
 
-        // swiftlint:disable opening_brace
-        let nodes: [(UIWindow) -> UIView] = [
-            { window in
-                let vc = UIViewController()
-                window.rootViewController = vc
-                return vc.view
-            },
-            { _ in UIView() },
-            { _ in UIAlertController(title: "", message: "", preferredStyle: .alert).view },
-            { _ in UIView() },
-            { window in
-                let safari = SFSafariViewController(url: .mockRandom())
-                window.rootViewController = safari
-                return safari.view
-            },
-            { _ in UIView() },
-            { _ in UIActivityViewController(activityItems: [], applicationActivities: nil).view },
-            { _ in UIView() }
-        ]
-        // swiftlint:enable opening_brace
-
-        // Build the tree in the window
         let window = UIWindow()
-        var parent: UIView? = nil
+        window.makeKeyAndVisible()
+        defer { window.resignKey() }
 
-        let views = nodes.map { node in
-            let view = node(window)
-            parent?.addSubview(view)
-            parent = view
-            return view
-        }
+        // Given
+        let subview = UIView()
+        let vc = UIViewController()
+        window.rootViewController = vc
+        vc.view.addSubview(subview)
 
         // When
-        _ = recorder.record(views.first!, in: .mockRandom())
+        _ = recorder.record(vc.view, in: .mockRandom())
 
         // Then
-        var context = nodeRecorder.queryContextsByView[views[0]]
+        var context = nodeRecorder.queryContextsByView[vc.view]
         XCTAssertEqual(context?.viewControllerContext.isRootView, true)
         XCTAssertEqual(context?.viewControllerContext.parentType, .other)
 
-        context = nodeRecorder.queryContextsByView[views[1]]
+        context = nodeRecorder.queryContextsByView[subview]
         XCTAssertEqual(context?.viewControllerContext.isRootView, false)
         XCTAssertEqual(context?.viewControllerContext.parentType, .other)
 
-        context = nodeRecorder.queryContextsByView[views[2]]
+        // Given
+        let alert = UIAlertController(title: "", message: "", preferredStyle: .alert)
+        window.rootViewController?.present(alert, animated: false)
+        alert.view.addSubview(subview)
+
+        // When
+        _ = recorder.record(alert.view, in: .mockRandom())
+
+        context = nodeRecorder.queryContextsByView[alert.view]
         XCTAssertEqual(context?.viewControllerContext.isRootView, true)
         XCTAssertEqual(context?.viewControllerContext.parentType, .alert)
 
-        context = nodeRecorder.queryContextsByView[views[3]]
+        context = nodeRecorder.queryContextsByView[subview]
         XCTAssertEqual(context?.viewControllerContext.isRootView, false)
         XCTAssertEqual(context?.viewControllerContext.parentType, .alert)
 
-        context = nodeRecorder.queryContextsByView[views[4]]
+        window.rootViewController?.dismiss(animated: false)
+
+        // Given
+        let safari = SFSafariViewController(url: .mockRandom())
+        window.rootViewController = safari
+        safari.view.addSubview(subview)
+
+        // When
+        _ = recorder.record(safari.view, in: .mockRandom())
+
+        context = nodeRecorder.queryContextsByView[safari.view]
         XCTAssertEqual(context?.viewControllerContext.isRootView, true)
         XCTAssertEqual(context?.viewControllerContext.parentType, .safari)
 
-        context = nodeRecorder.queryContextsByView[views[5]]
+        context = nodeRecorder.queryContextsByView[subview]
         XCTAssertEqual(context?.viewControllerContext.isRootView, false)
         XCTAssertEqual(context?.viewControllerContext.parentType, .safari)
 
-        context = nodeRecorder.queryContextsByView[views[6]]
+        // Given
+        let activity = UIActivityViewController(activityItems: [], applicationActivities: nil)
+        activity.view.addSubview(subview)
+        window.rootViewController?.present(activity, animated: false)
+
+        // When
+        _ = recorder.record(activity.view, in: .mockRandom())
+
+        context = nodeRecorder.queryContextsByView[activity.view]
         XCTAssertEqual(context?.viewControllerContext.isRootView, true)
         XCTAssertEqual(context?.viewControllerContext.parentType, .activity)
 
-        context = nodeRecorder.queryContextsByView[views[7]]
+        context = nodeRecorder.queryContextsByView[subview]
         XCTAssertEqual(context?.viewControllerContext.isRootView, false)
         XCTAssertEqual(context?.viewControllerContext.parentType, .activity)
+
+        window.rootViewController?.dismiss(animated: false)
     }
 
     // MARK: Privacy Overrides
