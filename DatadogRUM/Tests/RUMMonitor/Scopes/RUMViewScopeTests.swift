@@ -193,7 +193,9 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
-            dependencies: .mockAny(),
+            dependencies: .mockWith(
+                networkSettledMetricFactory: { _ in TTNSMetricMock(value: 0.42) }
+            ),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
@@ -231,6 +233,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.action.count, 0)
         XCTAssertEqual(event.view.error.count, 0)
         XCTAssertEqual(event.view.resource.count, 0)
+        XCTAssertEqual(event.view.networkSettledTime, 420_000_000)
         XCTAssertEqual(event.dd.documentVersion, 1)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
@@ -2592,7 +2595,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.resource.count, 1, "After dropping 1 Resource event (out of 2), View should record 1 Resource")
         XCTAssertEqual(event.view.action.count, 0, "After dropping a User Action event, View should record no actions")
         XCTAssertEqual(event.view.error.count, 0, "After dropping an Error event, View should record 0 Errors")
-        XCTAssertEqual(event.dd.documentVersion, 3, "After starting the application, stopping the view, starting/stopping one resource out of 2, discarding a user action and an error, the View scope should have sent 3 View events.")
+        XCTAssertEqual(event.dd.documentVersion, 4, "It should create 4 view update.")
     }
 
     func testGivenViewScopeWithDroppingEventsMapper_whenProcessingApplicationStartAction_thenCountIsAdjusted() throws {
@@ -2669,5 +2672,41 @@ class RUMViewScopeTests: XCTestCase {
         let rumViewWritten = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last, "It should send view event")
         let rumViewInFatalErrorContext = try XCTUnwrap(fatalErrorContext.view)
         DDAssertReflectionEqual(rumViewWritten, rumViewInFatalErrorContext, "It must update fatal error context with the view event written")
+    }
+
+    // MARK: - Tracking Time To Network Settled Metric
+
+    func testWhenViewIsStopped_itStopsTrackingTTNSMetric() throws {
+        let viewStartDate = Date()
+
+        // Given
+        let metric = TTNSMetricMock()
+        let scope = RUMViewScope(
+            isInitialView: .mockAny(),
+            parent: parent,
+            dependencies: .mockWith(
+                networkSettledMetricFactory: { date in
+                    XCTAssertEqual(date, viewStartDate)
+                    return metric
+                }
+            ),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewController",
+            attributes: [:],
+            customTimings: [:],
+            startTime: viewStartDate,
+            serverTimeOffset: .mockRandom()
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertTrue(metric.viewWasStopped)
     }
 }

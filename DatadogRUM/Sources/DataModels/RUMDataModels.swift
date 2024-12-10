@@ -1806,6 +1806,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// URL of the resource
         public var url: String
 
+        /// Worker phase properties
+        public let worker: Worker?
+
         enum CodingKeys: String, CodingKey {
             case connect = "connect"
             case decodedBodySize = "decoded_body_size"
@@ -1827,6 +1830,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case transferSize = "transfer_size"
             case type = "type"
             case url = "url"
+            case worker = "worker"
         }
 
         /// Connect phase properties
@@ -1997,6 +2001,20 @@ public struct RUMResourceEvent: RUMDataModel {
             case media = "media"
             case other = "other"
             case native = "native"
+        }
+
+        /// Worker phase properties
+        public struct Worker: Codable {
+            /// Duration in nanoseconds of the resource worker phase
+            public let duration: Int64
+
+            /// Duration in nanoseconds between start of the request and start of the worker phase
+            public let start: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case duration = "duration"
+                case start = "start"
+            }
         }
     }
 
@@ -2495,6 +2513,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Duration in ns between start of the view and start of the INP
         public let interactionToNextPaintTime: Int64?
 
+        /// Duration in ns to from the last interaction on previous view to the moment the current view was displayed
+        public let interactionToNextViewTime: Int64?
+
         /// Whether the View corresponding to this event is considered active
         public let isActive: Bool?
 
@@ -2530,6 +2551,9 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// User defined name of the view
         public var name: String?
+
+        /// Duration in ns from the moment the view was started until all the initial network requests settled
+        public let networkSettledTime: Int64?
 
         /// URL that linked to the initial view of the page
         public var referrer: String?
@@ -2576,6 +2600,7 @@ public struct RUMViewEvent: RUMDataModel {
             case interactionToNextPaint = "interaction_to_next_paint"
             case interactionToNextPaintTargetSelector = "interaction_to_next_paint_target_selector"
             case interactionToNextPaintTime = "interaction_to_next_paint_time"
+            case interactionToNextViewTime = "interaction_to_next_view_time"
             case isActive = "is_active"
             case isSlowRendered = "is_slow_rendered"
             case jsRefreshRate = "js_refresh_rate"
@@ -2588,6 +2613,7 @@ public struct RUMViewEvent: RUMDataModel {
             case memoryAverage = "memory_average"
             case memoryMax = "memory_max"
             case name = "name"
+            case networkSettledTime = "network_settled_time"
             case referrer = "referrer"
             case refreshRateAverage = "refresh_rate_average"
             case refreshRateMin = "refresh_rate_min"
@@ -4893,4 +4919,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/e1c6dde3793714453b5b49f17790a24e9ff9b77b
+// Generated from https://github.com/DataDog/rum-events-format/tree/d9b0451c01cab9c3c991bd2f5f3571da6ec1df83
