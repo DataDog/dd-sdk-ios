@@ -76,6 +76,8 @@ public struct DDCrashReport: Codable, PassthroughAnyCodable {
     public let wasTruncated: Bool
     /// The last context injected through `inject(context:)`
     public let context: Data?
+    /// Addtional attributes of the crash
+    public let additionalAttributes: AnyCodable
 
     public init(
         date: Date?,
@@ -86,7 +88,8 @@ public struct DDCrashReport: Codable, PassthroughAnyCodable {
         binaryImages: [BinaryImage],
         meta: Meta,
         wasTruncated: Bool,
-        context: Data?
+        context: Data?,
+        additionalAttributes: [String: Encodable]?
     ) {
         self.date = date
         self.type = type
@@ -97,5 +100,6 @@ public struct DDCrashReport: Codable, PassthroughAnyCodable {
         self.meta = meta
         self.wasTruncated = wasTruncated
         self.context = context
+        self.additionalAttributes = AnyCodable(additionalAttributes)
     }
 }

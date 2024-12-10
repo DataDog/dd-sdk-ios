@@ -22,7 +22,8 @@ extension DDCrashReport: AnyMockable, RandomMockable {
             binaryImages: .mockRandom(),
             meta: .mockRandom(),
             wasTruncated: .mockRandom(),
-            context: .mockRandom()
+            context: .mockRandom(),
+            additionalAttributes: mockRandomAttributes()
         )
     }
 
@@ -35,7 +36,8 @@ extension DDCrashReport: AnyMockable, RandomMockable {
         binaryImages: [BinaryImage] = .mockAny(),
         meta: Meta = .mockAny(),
         wasTruncated: Bool = .mockAny(),
-        context: Data? = .mockAny()
+        context: Data? = .mockAny(),
+        additionalAttributes: [String: Encodable]? = nil
     ) -> DDCrashReport {
         return DDCrashReport(
             date: date,
@@ -46,7 +48,8 @@ extension DDCrashReport: AnyMockable, RandomMockable {
             binaryImages: binaryImages,
             meta: meta,
             wasTruncated: wasTruncated,
-            context: context
+            context: context,
+            additionalAttributes: additionalAttributes
         )
     }
 }
