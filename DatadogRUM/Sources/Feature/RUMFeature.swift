@@ -103,7 +103,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,
-            watchdogTermination: watchdogTermination
+            watchdogTermination: watchdogTermination,
+            networkSettledMetricFactory: { viewStartDate in TTNSMetric(viewStartDate: viewStartDate) }
         )
 
         self.monitor = Monitor(
