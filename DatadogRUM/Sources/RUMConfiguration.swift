@@ -397,3 +397,14 @@ extension RUM.Configuration {
 }
 
 extension RUM.Configuration: InternalExtended {}
+extension InternalExtension where ExtendedType == RUM.Configuration {
+    /// The sampling rate for configuration telemetry events. When set, it overwrites the value
+    /// of `configurationTelemetrySampleRate` in `RUM.Configuration`.
+    ///
+    /// It is used to enable or disable telemetry events on internal plugins (e.g. flutter's `DatadogRumPlugin`) and when running test scenarios.
+    /// Expects value between `0.0` and `100.0`.
+    public var configurationTelemetrySampleRate: Float {
+        get { type.configurationTelemetrySampleRate }
+        set { type.configurationTelemetrySampleRate = newValue }
+    }
+}
