@@ -190,6 +190,7 @@ extension RUMViewEvent: RandomMockable {
                 interactionToNextPaint: nil,
                 interactionToNextPaintTargetSelector: nil,
                 interactionToNextPaintTime: .mockRandom(),
+                interactionToNextViewTime: nil,
                 isActive: viewIsActive,
                 isSlowRendered: .mockRandom(),
                 jsRefreshRate: nil,
@@ -202,6 +203,7 @@ extension RUMViewEvent: RandomMockable {
                 memoryAverage: .mockRandom(),
                 memoryMax: .mockRandom(),
                 name: .mockRandom(),
+                networkSettledTime: nil,
                 referrer: .mockRandom(),
                 refreshRateAverage: .mockRandom(),
                 refreshRateMin: .mockRandom(),
@@ -249,6 +251,7 @@ extension RUMResourceEvent: RandomMockable {
             resource: .init(
                 connect: .init(duration: .mockRandom(), start: .mockRandom()),
                 decodedBodySize: nil,
+                deliveryType: nil,
                 dns: .init(duration: .mockRandom(), start: .mockRandom()),
                 download: .init(duration: .mockRandom(), start: .mockRandom()),
                 duration: .mockRandom(),
@@ -269,7 +272,8 @@ extension RUMResourceEvent: RandomMockable {
                 statusCode: .mockRandom(),
                 transferSize: nil,
                 type: [.native, .image].randomElement()!,
-                url: .mockRandom()
+                url: .mockRandom(),
+                worker: nil
             ),
             service: .mockRandom(),
             session: .init(
@@ -505,6 +509,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
             date: .mockRandom(),
+            effectiveSampleRate: .mockRandom(),
             experimentalFeatures: nil,
             service: .mockRandom(),
             session: .init(id: .mockRandom()),
@@ -525,6 +530,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     forwardErrorsToLogs: nil,
                     forwardReports: nil,
                     initializationType: nil,
+                    isMainProcess: nil,
                     mobileVitalsUpdatePeriod: .mockRandom(),
                     premiumSampleRate: nil,
                     reactNativeVersion: nil,

@@ -105,7 +105,7 @@ extension SpanEvent: AnyMockable, RandomMockable {
         isError: Bool = .mockAny(),
         source: String = .mockAny(),
         origin: String? = nil,
-        samplingRate: Float = 100,
+        samplingRate: SampleRate = .maxSampleRate,
         isKept: Bool = true,
         tracerVersion: String = .mockAny(),
         applicationVersion: String = .mockAny(),

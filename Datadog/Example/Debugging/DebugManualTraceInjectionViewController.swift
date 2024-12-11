@@ -6,6 +6,7 @@
 
 import SwiftUI
 import DatadogTrace
+import DatadogInternal
 
 @available(iOS 14, *)
 internal class DebugManualTraceInjectionViewController: UIHostingController<DebugManualTraceInjectionView> {
@@ -42,7 +43,7 @@ internal struct DebugManualTraceInjectionView: View {
     @State private var requestURL = "https://httpbin.org/get"
     @State private var selectedTraceHeaderTypes: Set<TraceHeaderType> = [.datadog, .w3c]
     @State private var selectedTraceContextInjection: TraceContextInjection = .all
-    @State private var sampleRate: Float = 100.0
+    @State private var sampleRate: SampleRate = .maxSampleRate
     @State private var isRequestPending = false
 
     private let session: URLSession = URLSession(
