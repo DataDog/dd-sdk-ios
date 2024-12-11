@@ -106,6 +106,7 @@ internal final class FatalAppHangsHandler {
                 errorBinaryImages: fatalHang.hang.backtraceResult.binaryImages?.toRUMDataFormat,
                 errorWasTruncated: fatalHang.hang.backtraceResult.wasTruncated,
                 errorMeta: nil,
+                additionalAttributes: nil,
                 timeSinceAppStart: timeSinceAppStart
             )
             let error = builder.createRUMError(with: fatalHang.lastRUMView)

@@ -1,10 +1,11 @@
 # Unreleased
 
+- [IMPROVEMENT] Session Replay recording is event-triggered instead of scheduled. See [#2074][]
+
 - [FIX] Fix sporadic file overwrite during consent change, ensuring event data integrity. See [#2113][]
 - [FIX] Fix trace inconsistency when using `URLSessionInterceptor` or Alamofire extension. See [#2114][]
 - [IMPROVEMENT] Add Session Replay `startRecordingImmediately` ObjC API. See [#2120][]
-- [IMPROVEMENT] Session Replay recording is event-triggered instead of scheduled. See [#2074][]
-
+- [IMPROVEMENT] Expose Crash Reporter Plugin Publicly. See [#2116][] (Thanks [@naftaly][]) [#2126][]
 
 # 2.20.0 / 14-11-2024
 
@@ -803,7 +804,9 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2074]: https://github.com/DataDog/dd-sdk-ios/pull/2074
 [#2113]: https://github.com/DataDog/dd-sdk-ios/pull/2113
 [#2114]: https://github.com/DataDog/dd-sdk-ios/pull/2114
+[#2116]: https://github.com/DataDog/dd-sdk-ios/pull/2116
 [#2120]: https://github.com/DataDog/dd-sdk-ios/pull/2120
+[#2126]: https://github.com/DataDog/dd-sdk-ios/pull/2126
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
@@ -836,3 +839,4 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@changm4n]: https://github.com/changm4n
 [@jfiser-paylocity]: https://github.com/jfiser-paylocity
 [@Hengyu]: https://github.com/Hengyu
+[@naftaly]: https://github.com/naftaly
