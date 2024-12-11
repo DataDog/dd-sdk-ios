@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogSessionReplay"
-  s.version      = "2.20.0"
+  s.version      = "2.21.0"
   s.summary      = "Official Datadog Session Replay SDK for iOS."
 
   s.homepage     = "https://www.datadoghq.com"
