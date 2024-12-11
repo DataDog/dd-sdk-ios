@@ -43,10 +43,21 @@ class RecordingTriggerTests: XCTestCase {
     }
 
     private func randomTrigger() {
-        if Bool.random() {
+        switch Int.random(in: 0...3) {
+        case 0:
             UIApplication.shared.sendEvent(UIEvent())
-        } else {
+        case 1:
             UIView().layoutSubviews()
+        case 2:
+            UIGraphicsBeginImageContextWithOptions(CGSize(width: 1, height: 1), false, 0.0)
+            if let context = UIGraphicsGetCurrentContext() {
+                CALayer().draw(in: context)
+            }
+            UIGraphicsEndImageContext()
+        case 3:
+            CALayer().setNeedsDisplay()
+        default:
+            break
         }
     }
 }

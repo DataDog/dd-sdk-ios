@@ -9,7 +9,7 @@ import DatadogInternal
 import UIKit
 
 /// Orchestrates the process of triggering next snapshot recording.
-/// It has 2 recording triggers: `layoutSubviews` and touch event, which are done by using swizzling.
+/// It has a couple recording triggers which are done by using swizzling.
 internal protocol RecordingTriggering {
     func startWatchingTriggers(_ callback: @escaping () -> Void)
     func stopWatchingTriggers()
