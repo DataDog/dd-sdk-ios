@@ -9,7 +9,6 @@
 import Foundation
 import UIKit
 import SwiftUI
-
 import DatadogInternal
 
 @available(iOS 13, tvOS 13, *)

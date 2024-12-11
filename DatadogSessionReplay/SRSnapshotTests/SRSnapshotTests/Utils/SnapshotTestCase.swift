@@ -6,7 +6,6 @@
 
 import XCTest
 import SRFixtures
-
 import DatadogInternal
 import TestUtilities
 @_spi(Internal)

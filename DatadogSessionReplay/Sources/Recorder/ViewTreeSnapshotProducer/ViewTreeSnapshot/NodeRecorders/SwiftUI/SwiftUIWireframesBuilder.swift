@@ -8,7 +8,6 @@
 
 import Foundation
 import UIKit
-
 import DatadogInternal
 
 @available(iOS 13.0, *)

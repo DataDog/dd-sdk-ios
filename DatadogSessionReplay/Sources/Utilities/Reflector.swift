@@ -12,7 +12,7 @@ import DatadogInternal
 /// implementation and ceate ``Reflection`` objects.
 ///
 /// The `Reflector` is capabale of reporting telemetry error while
-/// reflecting descendants and procide partial results on Sequence.
+/// reflecting descendants and provide partial results on Sequence.
 internal struct Reflector {
     /// Escalated error during reflection.
     enum Error: Swift.Error {
