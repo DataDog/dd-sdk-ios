@@ -66,7 +66,8 @@ internal struct DDCrashReportExporter {
             binaryImages: formattedBinaryImages(from: crashReport),
             meta: formattedMeta(for: crashReport),
             wasTruncated: crashReport.wasTruncated,
-            context: crashReport.contextData
+            context: crashReport.contextData,
+            additionalAttributes: nil
         )
     }
 
