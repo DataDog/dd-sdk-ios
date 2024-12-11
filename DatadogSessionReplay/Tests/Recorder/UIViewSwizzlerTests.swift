@@ -8,41 +8,58 @@
 import XCTest
 @testable import DatadogSessionReplay
 
-class UIViewSwizzlerTests: XCTestCase {
-    private let handler = UIViewHandlerMock()
-    private lazy var swizzler = try! UIViewSwizzler(handler: handler)
+final class UIViewSwizzlerTests: XCTestCase {
+    // swiftlint:disable implicitly_unwrapped_optional
+    private var swizzler: UIViewSwizzler!
+    private var mockHandler: MockUIViewHandler!
+    private var testView: UIView!
+    // swiftlint:enable implicitly_unwrapped_optional
 
-    override func setUp() {
-        super.setUp()
-        swizzler.swizzle()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        mockHandler = MockUIViewHandler()
+        swizzler = try UIViewSwizzler(handler: mockHandler)
+        testView = UIView()
     }
 
-    override func tearDown() {
+    override func tearDownWithError() throws {
         swizzler.unswizzle()
-        super.tearDown()
+        swizzler = nil
+        mockHandler = nil
+        testView = nil
+        try super.tearDownWithError()
     }
 
-    func testWhenLayoutSubviewsIsCalled_itNotifiesTheHandler() {
-        let expectation = self.expectation(description: "Notify handler")
+    func testLayoutSubviewsSwizzling() throws {
+        swizzler.swizzle()
 
-        let anyView = UIView()
+        testView.layoutSubviews()
 
-        handler.onSendEvent = { view in
-            XCTAssertTrue(view === anyView)
-            expectation.fulfill()
-        }
+        XCTAssertTrue(mockHandler.layoutSubviewsCalled, "Expected layoutSubviews to notify handler")
+        XCTAssertEqual(mockHandler.notifiedView, testView, "Expected layoutSubviews to pass the correct view")
+    }
 
-        anyView.layoutSubviews()
+    func testUnswizzling() throws {
+        swizzler.swizzle()
+        swizzler.unswizzle()
 
-        waitForExpectations(timeout: 1.5, handler: nil)
+        mockHandler.layoutSubviewsCalled = false
+        mockHandler.notifiedView = nil
+
+        testView.layoutSubviews()
+
+        XCTAssertFalse(mockHandler.layoutSubviewsCalled, "Handler should not be called after unswizzling layoutSubviews")
+        XCTAssertNil(mockHandler.notifiedView, "Handler should not receive a view after unswizzling")
     }
 }
 
-class UIViewHandlerMock: UIViewHandler {
-    var onSendEvent: ((UIView) -> Void)?
+class MockUIViewHandler: UIViewHandler {
+    var layoutSubviewsCalled = false
+    var notifiedView: UIView?
 
     func notify_layoutSubviews(view: UIView) {
-        onSendEvent?(view)
+        layoutSubviewsCalled = true
+        notifiedView = view
     }
 }
 #endif
