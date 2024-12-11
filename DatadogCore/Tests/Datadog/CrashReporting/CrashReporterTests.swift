@@ -281,7 +281,7 @@ class CrashReporterTests: XCTestCase {
         }
 
         let crashContextProvider = CrashContextProviderMock(initialCrashContext: .mockRandom())
-        _ = CrashReportingFeature(
+        let feature = CrashReportingFeature(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
             sender: CrashReportSenderMock(),
@@ -299,7 +299,8 @@ class CrashReporterTests: XCTestCase {
         )
         // swiftlint:enable opening_brace
 
-        waitForExpectations(timeout: 2, handler: nil)
+        feature.flush()
+        waitForExpectations(timeout: 0)
     }
 
     // MARK: - Usage
