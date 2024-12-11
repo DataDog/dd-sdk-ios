@@ -81,7 +81,7 @@ extension DatadogExtension where ExtendedType: UIImage {
 
     /// Compress the image to PNG.
     ///
-    /// Scale down the image an apply  tint color if necessary.
+    /// Scale down the image and apply tint color if necessary.
     ///
     /// - Parameters:
     ///   - maxSize: The maximum size of the image.
@@ -97,7 +97,7 @@ extension DatadogExtension where ExtendedType: UIImage {
 
     /// Compress an image to PNG.
     /// 
-    /// Scale down the image an apply  tint color if necessary.
+    /// Scale down the image and apply tint color if necessary.
     ///
     /// - Parameters:
     ///   - image: The image to compress.

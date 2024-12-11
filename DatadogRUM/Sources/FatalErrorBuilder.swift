@@ -43,11 +43,19 @@ internal struct FatalErrorBuilder {
     let errorBinaryImages: [RUMErrorEvent.Error.BinaryImages]?
     let errorWasTruncated: Bool?
     let errorMeta: RUMErrorEvent.Error.Meta?
+
+    let additionalAttributes: [String: Encodable]?
+
     var timeSinceAppStart: TimeInterval?
 
     /// Creates RUM error linked to given view.
     func createRUMError(with lastRUMView: RUMViewEvent) -> RUMErrorEvent {
         let msSinceAppStart = timeSinceAppStart.map { max(0, $0.toInt64Milliseconds) }
+
+        // Merge last view attributes with crash report attributes
+        let lastViewContextAttributes = lastRUMView.context?.contextInfo ?? [:]
+        let additionalAttributes = self.additionalAttributes ?? [:]
+        let contextInfo = lastViewContextAttributes.merging(additionalAttributes) { _, new in new }
 
         let event = RUMErrorEvent(
             dd: .init(
@@ -70,7 +78,9 @@ internal struct FatalErrorBuilder {
             ciTest: lastRUMView.ciTest,
             connectivity: lastRUMView.connectivity,
             container: nil,
-            context: lastRUMView.context,
+            context: RUMEventAttributes(
+                contextInfo: contextInfo
+            ),
             date: errorDate.timeIntervalSince1970.toInt64Milliseconds,
             device: lastRUMView.device,
             display: nil,
@@ -195,6 +205,7 @@ internal struct FatalErrorBuilder {
                 interactionToNextPaint: original.view.interactionToNextPaint,
                 interactionToNextPaintTargetSelector: original.view.interactionToNextPaintTargetSelector,
                 interactionToNextPaintTime: original.view.interactionToNextPaintTime,
+                interactionToNextViewTime: original.view.interactionToNextViewTime,
                 isActive: false, // after fatal error, this is no longer active view
                 isSlowRendered: original.view.isSlowRendered,
                 jsRefreshRate: original.view.jsRefreshRate,
@@ -207,6 +218,7 @@ internal struct FatalErrorBuilder {
                 memoryAverage: original.view.memoryAverage,
                 memoryMax: original.view.memoryMax,
                 name: original.view.name,
+                networkSettledTime: original.view.networkSettledTime,
                 referrer: original.view.referrer,
                 refreshRateAverage: original.view.refreshRateAverage,
                 refreshRateMin: original.view.refreshRateMin,

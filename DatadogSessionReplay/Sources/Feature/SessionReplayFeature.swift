@@ -45,7 +45,8 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
 
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,
-            additionalNodeRecorders: configuration._additionalNodeRecorders
+            additionalNodeRecorders: configuration._additionalNodeRecorders,
+            featureFlags: configuration.featureFlags
         )
 
         let scheduler = MainThreadScheduler(interval: 0.1)

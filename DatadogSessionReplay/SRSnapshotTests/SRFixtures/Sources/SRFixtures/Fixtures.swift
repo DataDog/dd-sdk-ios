@@ -31,7 +31,6 @@ public enum Fixture: CaseIterable {
     /// Instantiated view controller is ``TimePickersCompactViewController``
     case timePickersCompact
     case images
-    case unsupportedViews
     /// Instantiated view controller is ``PopupsViewController``
     case popups
     case swiftUI
@@ -84,8 +83,6 @@ public enum Fixture: CaseIterable {
             return UIStoryboard.datePickers.instantiateViewController(withIdentifier: "DatePickersCompact") // sharing the same VC with `datePickersCompact`
         case .images:
             return UIStoryboard.images.instantiateViewController(withIdentifier: "Images")
-        case .unsupportedViews:
-            return UIStoryboard.unsupportedViews.instantiateViewController(withIdentifier: "UnsupportedViews")
         case .popups:
             return UIStoryboard.basic.instantiateViewController(withIdentifier: "Popups")
         case .swiftUI:
@@ -132,7 +129,6 @@ internal extension UIStoryboard {
     static var inputElements: UIStoryboard { UIStoryboard(name: "InputElements", bundle: .module) }
     static var datePickers: UIStoryboard { UIStoryboard(name: "InputElements-DatePickers", bundle: .module) }
     static var images: UIStoryboard { UIStoryboard(name: "Images", bundle: .module) }
-    static var unsupportedViews: UIStoryboard { UIStoryboard(name: "UnsupportedViews", bundle: .module) }
     static var navigationBars: UIStoryboard { UIStoryboard(name: "NavigationBars", bundle: .module) }
     static var tabbars: UIStoryboard { UIStoryboard(name: "Tabbars", bundle: .module) }
 }

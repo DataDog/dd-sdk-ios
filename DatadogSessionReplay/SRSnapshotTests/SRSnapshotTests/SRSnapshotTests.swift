@@ -141,10 +141,6 @@ final class SRSnapshotTests: SnapshotTestCase {
         )
     }
 
-    func testUnsupportedView() throws {
-        try takeSnapshotFor(.unsupportedViews, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
-    }
-
     func testAlert() throws {
         try takeSnapshotForPopup(
             fixture: .popups,

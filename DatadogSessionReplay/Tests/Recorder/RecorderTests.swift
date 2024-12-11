@@ -58,7 +58,7 @@ class RecorderTests: XCTestCase {
         let windowObserver = AppWindowObserverMock()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
             windowObserver: windowObserver,
-            snapshotBuilder: ViewTreeSnapshotBuilder(additionalNodeRecorders: [additionalNodeRecorder])
+            snapshotBuilder: ViewTreeSnapshotBuilder(additionalNodeRecorders: [additionalNodeRecorder], featureFlags: .allEnabled)
         )
         let touchSnapshotProducer = TouchSnapshotProducerMock()
 

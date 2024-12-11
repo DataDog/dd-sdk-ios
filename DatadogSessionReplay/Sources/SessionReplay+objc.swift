@@ -47,7 +47,7 @@ public final class objc_SessionReplay: NSObject {
 @objcMembers
 @_spi(objc)
 public final class objc_SessionReplayConfiguration: NSObject {
-    internal var _swift: SessionReplay.Configuration = .init(replaySampleRate: 0)
+    internal var _swift: SessionReplay.Configuration
 
     /// The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
     ///
@@ -89,10 +89,18 @@ public final class objc_SessionReplayConfiguration: NSObject {
 
     /// Defines the way user touches (e.g. tap) should be masked.
     ///
-    /// Default: `.mask`.
+    /// Default: `.hide`.
     @objc public var touchPrivacyLevel: objc_TouchPrivacyLevel {
         set { _swift.touchPrivacyLevel = newValue._swift }
         get { .init(_swift.touchPrivacyLevel) }
+    }
+
+    /// Defines it the recording should start automatically. When `true`, the recording starts automatically; when `false` it doesn't, and the recording will need to be started manually.
+    ///
+    /// Default: `true`.
+    @objc public var startRecordingImmediately: Bool {
+        set { _swift.startRecordingImmediately = newValue }
+        get { _swift.startRecordingImmediately }
     }
 
     /// Custom server url for sending replay data.

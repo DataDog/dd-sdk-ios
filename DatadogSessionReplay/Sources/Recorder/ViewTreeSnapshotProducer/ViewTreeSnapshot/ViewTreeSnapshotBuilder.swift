@@ -48,18 +48,26 @@ internal struct ViewTreeSnapshotBuilder {
 }
 
 extension ViewTreeSnapshotBuilder {
-    init(additionalNodeRecorders: [NodeRecorder]) {
+    init(
+        additionalNodeRecorders: [NodeRecorder],
+        featureFlags: SessionReplay.Configuration.FeatureFlags
+    ) {
         self.init(
-            viewTreeRecorder: ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders() + additionalNodeRecorders),
+            viewTreeRecorder: ViewTreeRecorder(
+                nodeRecorders: createDefaultNodeRecorders(featureFlags: featureFlags) + additionalNodeRecorders
+            ),
             idsGenerator: NodeIDGenerator()
         )
     }
 }
 
 /// An arrays of default node recorders executed for the root view-tree hierarchy.
-internal func createDefaultNodeRecorders() -> [NodeRecorder] {
-    return [
-        UnsupportedViewRecorder(identifier: UUID()),
+internal func createDefaultNodeRecorders(featureFlags: SessionReplay.Configuration.FeatureFlags) -> [NodeRecorder] {
+    var recorders: [NodeRecorder] = [
+        UnsupportedViewRecorder(
+            identifier: UUID(),
+            featureFlags: featureFlags
+        ),
         UIViewRecorder(identifier: UUID()),
         UILabelRecorder(identifier: UUID()),
         UIImageViewRecorder(identifier: UUID()),
@@ -75,7 +83,15 @@ internal func createDefaultNodeRecorders() -> [NodeRecorder] {
         UIDatePickerRecorder(identifier: UUID()),
         WKWebViewRecorder(identifier: UUID()),
         UIProgressViewRecorder(identifier: UUID()),
-        UIActivityIndicatorRecorder(identifier: UUID())
+        UIActivityIndicatorRecorder(identifier: UUID()),
     ]
+
+    if #available(iOS 18, tvOS 18, *) {
+        recorders.append(iOS18HostingViewRecorder(identifier: UUID()))
+    } else if #available(iOS 13, tvOS 13, *) {
+        recorders.append(UIHostingViewRecorder(identifier: UUID()))
+    }
+
+    return recorders
 }
 #endif

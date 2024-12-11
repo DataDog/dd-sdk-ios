@@ -103,7 +103,7 @@ Unit Tests (iOS):
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
+    - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
 
 Unit Tests (tvOS):
   stage: test
@@ -116,7 +116,7 @@ Unit Tests (tvOS):
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
+    - make test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
 
 UI Tests:
   stage: ui-test
@@ -359,6 +359,7 @@ Publish CP podspecs (dependent):
     - !reference [.release-pipeline-20m-delayed-job, rules]
   before_script:
     - *export_MAKE_release_params
+  needs: ["Publish CP podspecs (internal)"]
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make env-check
@@ -371,6 +372,7 @@ Publish CP podspecs (legacy):
     - !reference [.release-pipeline-40m-delayed-job, rules]
   before_script:
     - *export_MAKE_release_params
+  needs: ["Publish CP podspecs (dependent)"]
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make env-check
