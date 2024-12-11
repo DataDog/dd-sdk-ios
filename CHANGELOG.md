@@ -2,6 +2,8 @@
 
 - [IMPROVEMENT] Session Replay recording is event-triggered instead of scheduled. See [#2074][]
 
+# 2.21.0 / 11-12-2024
+
 - [FIX] Fix sporadic file overwrite during consent change, ensuring event data integrity. See [#2113][]
 - [FIX] Fix trace inconsistency when using `URLSessionInterceptor` or Alamofire extension. See [#2114][]
 - [IMPROVEMENT] Add Session Replay `startRecordingImmediately` ObjC API. See [#2120][]
