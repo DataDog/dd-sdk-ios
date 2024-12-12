@@ -95,6 +95,22 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
         return self
     }
 
+    func withActiveSpan<T>(_ operation: (any OpenTelemetryApi.SpanBase) throws -> T) rethrows -> T {
+        let span = self.startSpan()
+        defer {
+            span.end()
+        }
+        return try operation(span)
+    }
+
+    func withActiveSpan<T>(_ operation: (any OpenTelemetryApi.SpanBase) async throws -> T) async rethrows -> T {
+        let span = self.startSpan()
+        defer {
+            span.end()
+        }
+        return try await operation(span)
+    }
+
     func startSpan() -> OpenTelemetryApi.Span {
         let parentContext = parent.context()
         let traceId: TraceId

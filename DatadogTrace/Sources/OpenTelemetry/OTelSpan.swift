@@ -154,6 +154,22 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         DD.logger.warn("\(#function) is not yet supported in `DatadogTrace`")
     }
 
+    func recordException(_ exception: any OpenTelemetryApi.SpanException, attributes: [String : OpenTelemetryApi.AttributeValue], timestamp: Date) {
+        DD.logger.warn("\(#function) is not yet supported in `DatadogTrace`")
+    }
+
+    func recordException(_ exception: any OpenTelemetryApi.SpanException, attributes: [String : OpenTelemetryApi.AttributeValue]) {
+        DD.logger.warn("\(#function) is not yet supported in `DatadogTrace`")
+    }
+
+    func recordException(_ exception: any OpenTelemetryApi.SpanException, timestamp: Date) {
+        DD.logger.warn("\(#function) is not yet supported in `DatadogTrace`")
+    }
+
+    func recordException(_ exception: any OpenTelemetryApi.SpanException) {
+        DD.logger.warn("\(#function) is not yet supported in `DatadogTrace`")
+    }
+
     func end() {
         end(time: Date())
     }

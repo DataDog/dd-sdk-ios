@@ -3,9 +3,7 @@
 import PackageDescription
 import Foundation
 
-let opentelemetry = ProcessInfo.processInfo.environment["OTEL_SWIFT"] != nil ? 
-    (name: "opentelemetry-swift", url: "https://github.com/open-telemetry/opentelemetry-swift.git") :
-    (name: "opentelemetry-swift-packages", url: "https://github.com/DataDog/opentelemetry-swift-packages.git")
+let opentelemetry = (name: "opentelemetry-swift", url: "https://github.com/open-telemetry/opentelemetry-swift.git")
 
 let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment["DD_BENCHMARK"] != nil ?
     [.define("DD_BENCHMARK")] : []
@@ -13,9 +11,9 @@ let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment[
 let package = Package(
     name: "Datadog",
     platforms: [
-        .iOS(.v12),
-        .tvOS(.v12),
-        .macOS(.v12),
+        .iOS(.v13),
+        .tvOS(.v13),
+        .macOS(.v13),
         .watchOS(.v7)
     ],
     products: [
@@ -54,7 +52,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.2"),
-        .package(url: opentelemetry.url, exact: "1.6.0"),
+        .package(url: opentelemetry.url, .upToNextMinor(from: "1.12.0")),
     ],
     targets: [
         .target(
