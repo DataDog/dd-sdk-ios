@@ -55,4 +55,15 @@ internal class NOPOTelSpanBuilder: SpanBuilder {
     func setActive(_ active: Bool) -> Self {
         return self
     }
+
+    @discardableResult
+    func withActiveSpan<T>(_ operation: (any OpenTelemetryApi.SpanBase) throws -> T) rethrows -> T {
+        return try operation(NOPOTelSpan())
+    }
+
+    @discardableResult
+    func withActiveSpan<T>(_ operation: (any OpenTelemetryApi.SpanBase) async throws -> T) async rethrows -> T {
+        return try await operation(NOPOTelSpan())
+    }
+
 }
