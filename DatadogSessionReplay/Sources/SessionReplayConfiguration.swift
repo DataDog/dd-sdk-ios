@@ -167,7 +167,7 @@ extension SessionReplay.Configuration {
     public typealias FeatureFlags = [FeatureFlag: Bool]
 
     /// Feature Flag available in Session Replay
-    public enum FeatureFlag {
+    public enum FeatureFlag: String {
         /// SwiftUI Recording
         case swiftui
     }
