@@ -47,7 +47,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: .mockAny(),
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
@@ -74,7 +75,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: .mockAny(),
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         _ = scope.process(
@@ -107,7 +109,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         // When
@@ -202,7 +205,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock(mockedValue: 0.84)
         )
 
         let hasReplay: Bool = .mockRandom()
@@ -234,6 +238,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.error.count, 0)
         XCTAssertEqual(event.view.resource.count, 0)
         XCTAssertEqual(event.view.networkSettledTime, 420_000_000)
+        XCTAssertEqual(event.view.interactionToNextViewTime, 840_000_000)
         XCTAssertEqual(event.dd.documentVersion, 1)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
@@ -265,7 +270,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         _ = scope.process(
@@ -291,7 +297,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: ["foo": "bar", "fizz": "buzz"],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -346,7 +353,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: ["foo": "bar"],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -417,7 +425,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: ["foo": "bar"],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -490,7 +499,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: ["foo": "bar"],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -563,7 +573,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -608,7 +619,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         currentTime.addTimeInterval(1)
@@ -653,7 +665,8 @@ class RUMViewScopeTests: XCTestCase {
                 attributes: [:],
                 customTimings: [:],
                 startTime: .mockAny(),
-                serverTimeOffset: .zero
+                serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
             )
         }
 
@@ -701,7 +714,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         // When
@@ -757,7 +771,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: Date(),
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
         XCTAssertTrue(
             scope.process(
@@ -826,7 +841,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         // given
@@ -912,7 +928,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         // given
@@ -966,7 +983,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: Date(),
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         let dd = DD.mockWith(logger: CoreLoggerMock())
@@ -1049,7 +1067,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         let dd = DD.mockWith(logger: CoreLoggerMock())
@@ -1127,7 +1146,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
         _ = scope.process(
                 command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
@@ -1184,7 +1204,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
         _ = scope.process(
                 command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
@@ -1236,7 +1257,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -1313,7 +1335,8 @@ class RUMViewScopeTests: XCTestCase {
                 attributes: [:],
                 customTimings: [:],
                 startTime: currentTime,
-                serverTimeOffset: .zero
+                serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
             )
             _ = scope.process(
                 command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
@@ -1384,7 +1407,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -1457,7 +1481,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -1556,7 +1581,8 @@ class RUMViewScopeTests: XCTestCase {
             ],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -1609,7 +1635,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -1665,7 +1692,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -1724,7 +1752,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: Date(),
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -1777,7 +1806,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -1815,7 +1845,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -1878,7 +1909,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: startViewDate,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -1949,7 +1981,8 @@ class RUMViewScopeTests: XCTestCase {
             ],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -1996,7 +2029,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: startViewDate,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         XCTAssertTrue(
@@ -2036,7 +2070,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
         XCTAssertTrue(
             scope.process(
@@ -2098,7 +2133,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
         XCTAssertTrue(
             scope.process(
@@ -2144,7 +2180,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
         XCTAssertTrue(
             scope.process(
@@ -2206,7 +2243,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
         XCTAssertTrue(
             scope.process(
@@ -2250,7 +2288,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
         XCTAssertTrue(
             scope.process(
@@ -2305,7 +2344,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
         XCTAssertTrue(
             scope.process(
@@ -2361,7 +2401,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: initialDeviceTime,
-            serverTimeOffset: initialServerTimeOffset
+            serverTimeOffset: initialServerTimeOffset,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
         parent.context.isSessionActive = false
 
@@ -2400,7 +2441,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: initialDeviceTime,
-            serverTimeOffset: initialServerTimeOffset
+            serverTimeOffset: initialServerTimeOffset,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         // When
@@ -2516,7 +2558,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: Date(),
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
         XCTAssertTrue(
             scope.process(
@@ -2621,7 +2664,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: Date(),
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         // When
@@ -2656,7 +2700,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: Date(),
-            serverTimeOffset: .zero
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         // When
@@ -2696,7 +2741,8 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: viewStartDate,
-            serverTimeOffset: .mockRandom()
+            serverTimeOffset: .mockRandom(),
+            interactionToNextViewMetric: ITNVMetricMock()
         )
 
         // When
@@ -2708,5 +2754,46 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         XCTAssertTrue(metric.viewWasStopped)
+    }
+
+    // MARK: - Interaction To Next View Metric
+
+    func testWhenViewIsStartedThenStopped_itUpdatesITNVMetric() throws {
+        let viewStartDate = Date()
+        let viewID: RUMUUID = .mockRandom()
+
+        // Given
+        let metric = ITNVMetricMock()
+        let scope = RUMViewScope(
+            isInitialView: .mockAny(),
+            parent: parent,
+            dependencies: .mockWith(
+                rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: viewID)
+            ),
+            identity: .mockViewIdentifier(),
+            path: .mockAny(),
+            name: .mockAny(),
+            attributes: [:],
+            customTimings: [:],
+            startTime: viewStartDate,
+            serverTimeOffset: .mockRandom(),
+            interactionToNextViewMetric: metric
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        let trackedViewStart = try XCTUnwrap(metric.trackedViewStarts.first)
+        let trackedViewComplete = try XCTUnwrap(metric.trackedViewCompletes.first)
+        XCTAssertEqual(trackedViewStart.viewStart, viewStartDate)
+        XCTAssertEqual(trackedViewStart.viewID, viewID)
+        XCTAssertEqual(trackedViewComplete, viewID)
+        XCTAssertEqual(metric.trackedViewStarts.count, 1)
+        XCTAssertEqual(metric.trackedViewCompletes.count, 1)
     }
 }
