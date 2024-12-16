@@ -81,6 +81,7 @@ public class DDConfiguration: NSObject
     public func setServerDateProvider(_ serverDateProvider: DDServerDateProvider)
     @objc public var bundle: Bundle
     @objc public var additionalConfiguration: [String: Any]
+    @objc public var backgroundTasksEnabled: Bool
     public init(clientToken: String, env: String)
 public enum DDSDKVerbosityLevel: Int
     case none
