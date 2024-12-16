@@ -1321,8 +1321,6 @@
 		D2A1EE3F2885D7EC00D28DFB /* LaunchTimePublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE3D2885D7EC00D28DFB /* LaunchTimePublisherTests.swift */; };
 		D2A1EE442886B8B400D28DFB /* UserInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE432886B8B400D28DFB /* UserInfoPublisherTests.swift */; };
 		D2A1EE452886B8B400D28DFB /* UserInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE432886B8B400D28DFB /* UserInfoPublisherTests.swift */; };
-		D2A434A22A8E3F900028E329 /* DatadogSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */; };
-		D2A434AA2A8E40A20028E329 /* SessionReplay+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A434A82A8E402B0028E329 /* SessionReplay+objc.swift */; };
 		D2A783D429A5309F003B03BB /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BBA2423979B00786299 /* SwiftExtensions.swift */; };
 		D2A783D529A530A0003B03BB /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BBA2423979B00786299 /* SwiftExtensions.swift */; };
 		D2A783D929A530EF003B03BB /* SwiftExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */; };
@@ -3050,7 +3048,6 @@
 		D2A1EE3D2885D7EC00D28DFB /* LaunchTimePublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchTimePublisherTests.swift; sourceTree = "<group>"; };
 		D2A1EE432886B8B400D28DFB /* UserInfoPublisherTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserInfoPublisherTests.swift; sourceTree = "<group>"; };
 		D2A38DDA29C37E1B007C6900 /* TracingURLSessionHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingURLSessionHandlerTests.swift; sourceTree = "<group>"; };
-		D2A434A82A8E402B0028E329 /* SessionReplay+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SessionReplay+objc.swift"; sourceTree = "<group>"; };
 		D2A434AD2A8E426C0028E329 /* DDSessionReplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSessionReplayTests.swift; sourceTree = "<group>"; };
 		D2A7840129A534F9003B03BB /* DatadogLogsTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogLogsTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2A7840229A536AD003B03BB /* PrintFunctionMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintFunctionMock.swift; sourceTree = "<group>"; };
@@ -3192,7 +3189,6 @@
 				6147989E2A45A42C0095CB02 /* DatadogTrace.framework in Frameworks */,
 				61A2CC262A4449210000FF25 /* DatadogRUM.framework in Frameworks */,
 				D206BB852A41CA6800F43BA2 /* DatadogLogs.framework in Frameworks */,
-				D2A434A22A8E3F900028E329 /* DatadogSessionReplay.framework in Frameworks */,
 				61133C702423993200786299 /* DatadogCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4380,7 +4376,6 @@
 				6132BF4524A498B400D7BD17 /* Tracing */,
 				6111C58025C0080C00F5C4A2 /* RUM */,
 				6132BF4024A38D0600D7BD17 /* OpenTracing */,
-				D2A434A72A8E3FFB0028E329 /* SessionReplay */,
 				F603F1252CAE9F760088E6B7 /* DDInternalLogger+objc.swift */,
 			);
 			name = DatadogObjc;
@@ -6419,14 +6414,6 @@
 			path = Logs;
 			sourceTree = "<group>";
 		};
-		D2A434A72A8E3FFB0028E329 /* SessionReplay */ = {
-			isa = PBXGroup;
-			children = (
-				D2A434A82A8E402B0028E329 /* SessionReplay+objc.swift */,
-			);
-			path = SessionReplay;
-			sourceTree = "<group>";
-		};
 		D2A783D329A53049003B03BB /* Utils */ = {
 			isa = PBXGroup;
 			children = (
@@ -8434,7 +8421,6 @@
 				616AAA6D2BDA674C00AB9DAD /* TraceSamplingStrategy+objc.swift in Sources */,
 				611720D52524D9FB00634D9E /* DDURLSessionDelegate+objc.swift in Sources */,
 				9E55407C25812D1C00F6E3AD /* RUM+objc.swift in Sources */,
-				D2A434AA2A8E40A20028E329 /* SessionReplay+objc.swift in Sources */,
 				615A4A8D24A356A000233986 /* OTSpanContext+objc.swift in Sources */,
 				F6E106542C75E0D000716DC6 /* LogsDataModels+objc.swift in Sources */,
 				61133C112423983800786299 /* DatadogConfiguration+objc.swift in Sources */,

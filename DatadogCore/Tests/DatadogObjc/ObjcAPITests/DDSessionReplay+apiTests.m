@@ -15,8 +15,14 @@
 
 // MARK: Configuration
 - (void)testConfiguration {
-    DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100];
-    configuration.defaultPrivacyLevel = DDSessionReplayConfigurationPrivacyLevelAllow;
+    DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100
+                                                                                        textAndInputPrivacyLevel:DDTextAndInputPrivacyLevelMaskAll
+                                                                                               imagePrivacyLevel:DDImagePrivacyLevelMaskNone
+                                                                                               touchPrivacyLevel:DDTouchPrivacyLevelShow
+                                                                                                    featureFlags:nil];
+    configuration.textAndInputPrivacyLevel = DDTextAndInputPrivacyLevelMaskSensitiveInputs;
+    configuration.imagePrivacyLevel = DDImagePrivacyLevelMaskAll;
+    configuration.touchPrivacyLevel = DDTouchPrivacyLevelHide;
     configuration.customEndpoint = [NSURL new];
 
     [DDSessionReplay enableWith:configuration];
