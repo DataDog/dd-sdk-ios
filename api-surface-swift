@@ -133,7 +133,7 @@ public struct Logger
         public var remoteSampleRate: Float
         public var remoteLogThreshold: LogLevel
         public var consoleLogFormat: ConsoleLogFormat?
-        public init(service: String? = nil,name: String? = nil,networkInfoEnabled: Bool = false,bundleWithRumEnabled: Bool = true,bundleWithTraceEnabled: Bool = true,remoteSampleRate: Float = 100,remoteLogThreshold: LogLevel = .debug,consoleLogFormat: ConsoleLogFormat? = nil)
+        public init(service: String? = nil,name: String? = nil,networkInfoEnabled: Bool = false,bundleWithRumEnabled: Bool = true,bundleWithTraceEnabled: Bool = true,remoteSampleRate: Float = .maxSampleRate,remoteLogThreshold: LogLevel = .debug,consoleLogFormat: ConsoleLogFormat? = nil)
     public static func create(with configuration: Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default) -> LoggerProtocol
 public protocol InternalLoggerProtocol
     func log(level: LogLevel,message: String,errorKind: String?,errorMessage: String?,stackTrace: String?,attributes: [String: Encodable]?)
@@ -313,9 +313,9 @@ public struct SpanEvent: Encodable
 public enum Trace
     public static func enable(with configuration: Trace.Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default)
 [?] extension Trace
-    public struct Configuration
+    public struct Configuration: SampledTelemetry
         public typealias EventMapper = (SpanEvent) -> SpanEvent
-        public var sampleRate: Float
+        public var sampleRate: SampleRate
         public var service: String?
         public var tags: [String: Encodable]?
         public var urlSessionTracking: URLSessionTracking?
@@ -329,7 +329,7 @@ public enum Trace
                 case trace(hosts: Set<String>,sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
                 case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
             public init(firstPartyHostsTracing: FirstPartyHostsTracing)
-        public init(sampleRate: Float = 100,service: String? = nil,tags: [String: Encodable]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
+        public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: Encodable]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
 public enum SpanTags
     public static let resource = "resource.name"
     public static let operation = "operation.name"
@@ -343,7 +343,7 @@ public class Tracer
 # ----------------------------------
 
 public struct RUMActionEvent: RUMDataModel
-    public let dd: DD
+    public var dd: DD
     public var action: Action
     public let application: Application
     public let buildId: String?
@@ -365,14 +365,22 @@ public struct RUMActionEvent: RUMDataModel
     public let version: String?
     public var view: View
     public struct DD: Codable
-        public let action: Action?
+        public var action: Action?
         public let browserSdkVersion: String?
         public let configuration: Configuration?
         public let formatVersion: Int64 = 2
         public let session: Session?
         public struct Action: Codable
+            public var nameSource: NameSource?
             public let position: Position?
             public let target: Target?
+            public enum NameSource: String, Codable
+                case customAttribute = "custom_attribute"
+                case maskPlaceholder = "mask_placeholder"
+                case standardAttribute = "standard_attribute"
+                case textContent = "text_content"
+                case maskDisallowed = "mask_disallowed"
+                case blank = "blank"
             public struct Position: Codable
                 public let x: Int64
                 public let y: Int64
@@ -843,6 +851,7 @@ public struct RUMResourceEvent: RUMDataModel
     public struct Resource: Codable
         public let connect: Connect?
         public let decodedBodySize: Int64?
+        public let deliveryType: DeliveryType?
         public let dns: DNS?
         public let download: Download?
         public let duration: Int64?
@@ -861,9 +870,14 @@ public struct RUMResourceEvent: RUMDataModel
         public let transferSize: Int64?
         public let type: ResourceType
         public var url: String
+        public let worker: Worker?
         public struct Connect: Codable
             public let duration: Int64
             public let start: Int64
+        public enum DeliveryType: String, Codable
+            case cache = "cache"
+            case navigationalPrefetch = "navigational-prefetch"
+            case other = "other"
         public struct DNS: Codable
             public let duration: Int64
             public let start: Int64
@@ -922,6 +936,9 @@ public struct RUMResourceEvent: RUMDataModel
             case media = "media"
             case other = "other"
             case native = "native"
+        public struct Worker: Codable
+            public let duration: Int64
+            public let start: Int64
     public struct Session: Codable
         public let hasReplay: Bool?
         public let id: String
@@ -1071,6 +1088,7 @@ public struct RUMViewEvent: RUMDataModel
         public let interactionToNextPaint: Int64?
         public let interactionToNextPaintTargetSelector: String?
         public let interactionToNextPaintTime: Int64?
+        public let interactionToNextViewTime: Int64?
         public let isActive: Bool?
         public let isSlowRendered: Bool?
         public let jsRefreshRate: JsRefreshRate?
@@ -1083,6 +1101,7 @@ public struct RUMViewEvent: RUMDataModel
         public let memoryAverage: Double?
         public let memoryMax: Double?
         public var name: String?
+        public let networkSettledTime: Int64?
         public var referrer: String?
         public let refreshRateAverage: Double?
         public let refreshRateMin: Double?
@@ -1225,6 +1244,7 @@ public struct TelemetryErrorEvent: RUMDataModel
     public let action: Action?
     public let application: Application?
     public let date: Int64
+    public let effectiveSampleRate: Int64?
     public let experimentalFeatures: [String]?
     public let service: String
     public let session: Session?
@@ -1270,6 +1290,7 @@ public struct TelemetryDebugEvent: RUMDataModel
     public let action: Action?
     public let application: Application?
     public let date: Int64
+    public let effectiveSampleRate: Int64?
     public let experimentalFeatures: [String]?
     public let service: String
     public let session: Session?
@@ -1311,6 +1332,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel
     public let action: Action?
     public let application: Application?
     public let date: Int64
+    public let effectiveSampleRate: Int64?
     public let experimentalFeatures: [String]?
     public let service: String
     public let session: Session?
@@ -1359,6 +1381,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel
             public let forwardReports: ForwardReports?
             public var imagePrivacyLevel: String?
             public var initializationType: String?
+            public let isMainProcess: Bool?
             public var mobileVitalsUpdatePeriod: Int64?
             public var plugins: [Plugins]?
             public let premiumSampleRate: Int64?
@@ -1456,6 +1479,7 @@ public struct TelemetryUsageEvent: RUMDataModel
     public let action: Action?
     public let application: Application?
     public let date: Int64
+    public let effectiveSampleRate: Int64?
     public let experimentalFeatures: [String]?
     public let service: String
     public let session: Session?
@@ -1703,7 +1727,7 @@ public enum RUM
         public var longTaskEventMapper: RUM.LongTaskEventMapper?
         public var onSessionStart: RUM.SessionListener?
         public var customEndpoint: URL?
-        public var telemetrySampleRate: Float
+        public var telemetrySampleRate: SampleRate
         public struct URLSessionTracking
             public var firstPartyHostsTracing: FirstPartyHostsTracing?
             public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
@@ -1717,7 +1741,7 @@ public enum RUM
         case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil)
 [?] extension RUM.Configuration
-    public init(applicationID: String,sessionSampleRate: Float = 100,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,telemetrySampleRate: Float = 20)
+    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,telemetrySampleRate: SampleRate = 20)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
     public var configurationTelemetrySampleRate: Float
 public class RUMMonitor
@@ -1797,7 +1821,12 @@ public enum PerformanceMetric
 
 public final class CrashReporting
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func enable(with plugin: CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default)
 public static func enable()
+public protocol CrashReportingPlugin: AnyObject
+    func readPendingCrashReport(completion: @escaping (DDCrashReport?) -> Bool)
+    func inject(context: Data)
+    var backtraceReporter: BacktraceReporting?
 
 
 # ----------------------------------
@@ -1805,15 +1834,15 @@ public static func enable()
 # ----------------------------------
 
 public final class objc_WebViewTracking: NSObject
-    public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: Float = 100)
+    public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: SampleRate = .maxSampleRate)
     public static func disable(webView: WKWebView)
 public enum WebViewTracking
-    public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: Float = 100,in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: SampleRate = .maxSampleRate,in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func disable(webView: WKWebView)
 [?] extension InternalExtension where ExtendedType == WebViewTracking
     public class AbstractMessageEmitter
         public func send(body: Any, slotId: String? = nil)
-    public static func messageEmitter(in core: DatadogCoreProtocol,logsSampleRate: Float = 100) -> AbstractMessageEmitter
+    public static func messageEmitter(in core: DatadogCoreProtocol,logsSampleRate: SampleRate = .maxSampleRate) -> AbstractMessageEmitter
 
 
 # ----------------------------------
@@ -2192,7 +2221,8 @@ public final class objc_SessionReplayConfiguration: NSObject
     @objc public var touchPrivacyLevel: objc_TouchPrivacyLevel
     @objc public var startRecordingImmediately: Bool
     @objc public var customEndpoint: URL?
-    public required init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel)
+    @objc public var featureFlags: [String: Bool]
+    public required init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel,featureFlags: [String: Bool]? = nil)
     public required init(replaySampleRate: Float)
 public enum objc_SessionReplayConfigurationPrivacyLevel: Int
     case allow
@@ -2222,9 +2252,17 @@ public enum SessionReplay
         public var touchPrivacyLevel: TouchPrivacyLevel
         public var startRecordingImmediately: Bool
         public var customEndpoint: URL?
-        public init(    // swiftlint:disable:this function_default_parameter_at_endreplaySampleRate: Float = 100,textAndInputPrivacyLevel: TextAndInputPrivacyLevel,imagePrivacyLevel: ImagePrivacyLevel,touchPrivacyLevel: TouchPrivacyLevel,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
-        public init(replaySampleRate: Float = 100,defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
+        public var featureFlags: FeatureFlags
+        public init(    // swiftlint:disable:this function_default_parameter_at_endreplaySampleRate: SampleRate = .maxSampleRate,textAndInputPrivacyLevel: TextAndInputPrivacyLevel,imagePrivacyLevel: ImagePrivacyLevel,touchPrivacyLevel: TouchPrivacyLevel,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil,featureFlags: FeatureFlags = .defaults)
+        public init(replaySampleRate: SampleRate = .maxSampleRate,defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
         public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder])
+[?] extension SessionReplay.Configuration
+    public typealias FeatureFlags = [FeatureFlag: Bool]
+    public enum FeatureFlag: String
+        case swiftui
+[?] extension SessionReplay.Configuration.FeatureFlags
+    public static var defaults: Self
+    public subscript(flag: Key) -> Bool
 public enum objc_TextAndInputPrivacyLevelOverride: Int
     case none
     case maskSensitiveInputs
