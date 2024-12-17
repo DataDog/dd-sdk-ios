@@ -263,12 +263,9 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
 }
 
 private extension RUMSessionEndedMetricIntegrationTests {
-    
     func rumMonitor(with sessionEndedSampleRate: SampleRate = .maxSampleRate) -> RUMMonitorProtocol {
-        
         let monitor = RUMMonitor.shared(in: core)
         monitor.dd.scopes.dependencies.sessionEndedMetric.sampleRate = sessionEndedSampleRate
-        
         return monitor
     }
 }
@@ -287,4 +284,3 @@ private extension TelemetryDebugEvent {
         return telemetry.telemetryInfo[SessionEndedMetric.Constants.rseKey] as? SessionEndedMetric.Attributes
     }
 }
-

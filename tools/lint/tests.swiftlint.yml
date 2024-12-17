@@ -93,6 +93,7 @@ included:
   - ../../DatadogSessionReplay/SRSnapshotTests
   - ../../DatadogCrashReporting/Tests
   - ../../DatadogWebViewTracking/Tests
+  - ../../Datadog/IntegrationUnitTests
   - ../../Datadog/E2ETests
   - ../../Datadog/E2EInstrumentationTests
   - ../../tools/http-server-mock/Tests

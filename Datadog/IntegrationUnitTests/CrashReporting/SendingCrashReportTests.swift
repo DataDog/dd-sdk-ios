@@ -16,9 +16,9 @@ import DatadogInternal
 /// - recording crash context data injected from SDK core and features like RUM.
 private class CrashReporterMock: CrashReportingPlugin {
     @ReadWriteLock
-    internal var pendingCrashReport: DDCrashReport?
+    var pendingCrashReport: DDCrashReport?
     @ReadWriteLock
-    internal var injectedContext: Data? = nil
+    var injectedContext: Data? = nil
     /// Custom backtrace reporter injected to the plugin.
     var injectedBacktraceReporter: BacktraceReporting?
 

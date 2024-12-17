@@ -57,7 +57,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
 
         let metric = debugEvents[1]
         XCTAssertEqual(metric.telemetry.message, "[Mobile Metric] Metric Name")
-        
+
         let metricAttribute = try XCTUnwrap(metric.telemetry.telemetryInfo["metric.attribute"] as? Int)
         XCTAssertEqual(metricAttribute, 42)
 
@@ -204,7 +204,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         XCTAssertNotNil(methodCalledMetric.view?.id)
         XCTAssertNotNil(methodCalledMetric.action?.id)
     }
-    
+
     func testGivenRUMEnabled_effectiveSampleRateIsComposed() throws {
         // Given
         var config = RUM.Configuration(applicationID: .mockAny())
@@ -241,15 +241,21 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         XCTAssertEqual(error.effectiveSampleRate, Int64(withNoOverflow: config.telemetrySampleRate))
 
         let mobileMetric = try XCTUnwrap(debugEvents.first(where: { $0.telemetry.message == "[Mobile Metric] Metric Name" }))
-        XCTAssertEqual(mobileMetric.effectiveSampleRate,
-                       Int64(withNoOverflow: config.telemetrySampleRate.composed(with: metricsSampleRate)))
+        XCTAssertEqual(
+            mobileMetric.effectiveSampleRate,
+            Int64(withNoOverflow: config.telemetrySampleRate.composed(with: metricsSampleRate))
+        )
 
         let methodCalledMetric = try XCTUnwrap(debugEvents.first(where: { $0.telemetry.message == "[Mobile Metric] Method Called" }))
-        XCTAssertEqual(methodCalledMetric.effectiveSampleRate,
-                       Int64(withNoOverflow: config.telemetrySampleRate.composed(with: metricsSampleRate).composed(with: headSampleRate)))
+        XCTAssertEqual(
+            methodCalledMetric.effectiveSampleRate,
+            Int64(withNoOverflow: config.telemetrySampleRate.composed(with: metricsSampleRate).composed(with: headSampleRate))
+        )
 
         let usage = try XCTUnwrap(usageEvents.first)
-        XCTAssertEqual(usage.effectiveSampleRate,
-                       Int64(withNoOverflow: config.telemetrySampleRate.composed(with: metricsSampleRate)))
+        XCTAssertEqual(
+            usage.effectiveSampleRate,
+            Int64(withNoOverflow: config.telemetrySampleRate.composed(with: metricsSampleRate))
+        )
     }
 }
