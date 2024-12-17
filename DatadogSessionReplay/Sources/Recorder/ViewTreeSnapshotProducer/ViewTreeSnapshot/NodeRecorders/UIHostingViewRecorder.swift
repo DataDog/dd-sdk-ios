@@ -80,7 +80,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
     }
 }
 
-@available(iOS 18, tvOS 18, *)
+@available(iOS 18.1, tvOS 18.1, *)
 internal class iOS18HostingViewRecorder: UIHostingViewRecorder {
     override func semantics(refelecting subject: AnyObject, nodeID: NodeID, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics? {
         guard
