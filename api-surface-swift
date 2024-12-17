@@ -1244,7 +1244,7 @@ public struct TelemetryErrorEvent: RUMDataModel
     public let action: Action?
     public let application: Application?
     public let date: Int64
-    public let effectiveSampleRate: Int64?
+    public let effectiveSampleRate: Double?
     public let experimentalFeatures: [String]?
     public let service: String
     public let session: Session?
@@ -1290,7 +1290,7 @@ public struct TelemetryDebugEvent: RUMDataModel
     public let action: Action?
     public let application: Application?
     public let date: Int64
-    public let effectiveSampleRate: Int64?
+    public let effectiveSampleRate: Double?
     public let experimentalFeatures: [String]?
     public let service: String
     public let session: Session?
@@ -1332,7 +1332,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel
     public let action: Action?
     public let application: Application?
     public let date: Int64
-    public let effectiveSampleRate: Int64?
+    public let effectiveSampleRate: Double?
     public let experimentalFeatures: [String]?
     public let service: String
     public let session: Session?
@@ -1372,6 +1372,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel
             public let batchProcessingLevel: Int64?
             public let batchSize: Int64?
             public let batchUploadFrequency: Int64?
+            public let collectFeatureFlagsOn: [CollectFeatureFlagsOn]?
             public let compressIntakeRequests: Bool?
             public var dartVersion: String?
             public var defaultPrivacyLevel: String?
@@ -1436,6 +1437,10 @@ public struct TelemetryConfigurationEvent: RUMDataModel
             public let useTracing: Bool?
             public let useWorkerUrl: Bool?
             public let viewTrackingStrategy: ViewTrackingStrategy?
+            public enum CollectFeatureFlagsOn: String, Codable
+                case view = "view"
+                case error = "error"
+                case vital = "vital"
             public enum ForwardConsoleLogs: Codable
                 case stringsArray(value: [String])
                 case string(value: String)
@@ -1479,7 +1484,7 @@ public struct TelemetryUsageEvent: RUMDataModel
     public let action: Action?
     public let application: Application?
     public let date: Int64
-    public let effectiveSampleRate: Int64?
+    public let effectiveSampleRate: Double?
     public let experimentalFeatures: [String]?
     public let service: String
     public let session: Session?
@@ -1631,6 +1636,7 @@ public struct RUMSyntheticsTest: Codable
     public let resultId: String
     public let testId: String
 public struct RUMUser: Codable
+    public let anonymousId: String?
     public let email: String?
     public let id: String?
     public let name: String?
