@@ -130,7 +130,9 @@ internal class RecordingCoordinator {
             applicationID: rumContext.applicationID,
             sessionID: rumContext.sessionID,
             viewID: viewID,
-            viewServerTimeOffset: rumContext.viewServerTimeOffset
+            viewServerTimeOffset: rumContext.viewServerTimeOffset,
+            date: Date(),
+            telemetry: telemetry
         )
 
         let methodCalledTrace = telemetry.startMethodCalled(

@@ -78,7 +78,7 @@ private func render<V>(
     in context: ViewTreeRecordingContext = .mockAny()
 ) throws -> [SRWireframe] where V: SwiftUI.View {
     let recorder: UIHostingViewRecorder
-    if #available(iOS 18.0, tvOS 18.0, *) {
+    if #available(iOS 18.1, tvOS 18.1, *) {
         recorder = iOS18HostingViewRecorder(identifier: UUID())
     } else {
         recorder = UIHostingViewRecorder(identifier: UUID())

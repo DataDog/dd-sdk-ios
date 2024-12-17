@@ -76,6 +76,8 @@ extension SessionReplay {
 
         internal var _additionalNodeRecorders: [NodeRecorder] = []
 
+        // swiftlint:disable function_default_parameter_at_end
+
         /// Creates Session Replay configuration
         /// - Parameters:
         ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
@@ -85,7 +87,7 @@ extension SessionReplay {
         ///   - startRecordingImmediately: If the recording should start automatically. When `true`, the recording starts automatically; when `false` it doesn't, and the recording will need to be started manually. Default: `true`.
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
         ///   - featureFlags: Experimental feature flags.
-        public init(    // swiftlint:disable:this function_default_parameter_at_end
+        public init(
             replaySampleRate: SampleRate = .maxSampleRate,
             textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
             imagePrivacyLevel: ImagePrivacyLevel,
@@ -126,6 +128,8 @@ extension SessionReplay {
             self.customEndpoint = customEndpoint
             self.featureFlags = .defaults
         }
+
+        // swiftlint:enable function_default_parameter_at_end
 
         @_spi(Internal)
         public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder]) {
