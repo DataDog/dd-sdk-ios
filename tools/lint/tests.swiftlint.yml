@@ -83,8 +83,7 @@ custom_rules:
     severity: error
 
 included:
-  - ../../Tests
-  - ../../TestUtilities/Sources
+  - ../../TestUtilities
   - ../../DatadogInternal/Tests
   - ../../DatadogCore/Tests
   - ../../DatadogLogs/Tests

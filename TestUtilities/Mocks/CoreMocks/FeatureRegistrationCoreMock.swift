@@ -37,7 +37,7 @@ public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
 
     // MARK: - Supported
 
-    public func register<T>(feature: T) throws where T : DatadogFeature {
+    public func register<T>(feature: T) throws where T: DatadogFeature {
         registeredFeatures.append(feature)
     }
 
@@ -47,7 +47,7 @@ public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
 
     // MARK: - Unsupported
 
-    public func scope<T>(for featureType: T.Type) -> FeatureScope where T : DatadogFeature {
+    public func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature {
         return NOPFeatureScope()
     }
 
