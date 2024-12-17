@@ -90,6 +90,7 @@ included:
   - ../../DatadogTrace/Tests
   - ../../DatadogRUM/Tests
   - ../../DatadogSessionReplay/Tests
+  - ../../DatadogSessionReplay/SRSnapshotTests
   - ../../DatadogCrashReporting/Tests
   - ../../DatadogWebViewTracking/Tests
   - ../../Datadog/E2ETests
