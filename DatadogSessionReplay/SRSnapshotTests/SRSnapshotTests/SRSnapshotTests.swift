@@ -173,7 +173,35 @@ final class SRSnapshotTests: SnapshotTestCase {
     }
 
     func testSwiftUI() throws {
-        try takeSnapshotFor(.swiftUI, with: [.maskSensitiveInputs, .maskAll], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        // Mask all
+        try takeSnapshotFor(
+            .swiftUI,
+            with: [.maskAll],
+            imagePrivacyLevel: .maskAll,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "maskAll_images"
+        )
+
+        // Intermediate levels
+        try takeSnapshotFor(
+            .swiftUI,
+            with: [.maskAllInputs],
+            imagePrivacyLevel: .maskNonBundledOnly,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "maskNonBundledOnly_images"
+        )
+
+        // Mask none
+        try takeSnapshotFor(
+            .swiftUI,
+            with: [.maskSensitiveInputs],
+            imagePrivacyLevel: .maskNone,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "maskNone_images"
+        )
     }
 
     func testNavigationBars() throws {
