@@ -24,9 +24,10 @@
 
 - (void)testConfigurationWithNewApi {
     DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100
-                                                   textAndInputPrivacyLevel:DDTextAndInputPrivacyLevelMaskAll
-                                                   imagePrivacyLevel:DDImagePrivacyLevelMaskNone
-                                                   touchPrivacyLevel:DDTouchPrivacyLevelShow];
+                                                                                        textAndInputPrivacyLevel:DDTextAndInputPrivacyLevelMaskAll
+                                                                                               imagePrivacyLevel:DDImagePrivacyLevelMaskNone
+                                                                                               touchPrivacyLevel:DDTouchPrivacyLevelShow
+                                                                                                    featureFlags:nil];
     configuration.customEndpoint = [NSURL new];
 
     [DDSessionReplay enableWith:configuration];
@@ -38,13 +39,11 @@
 }
 
 - (void)testStartRecordingImmediately {
-    DDSessionReplayConfiguration *configuration = [
-        [DDSessionReplayConfiguration alloc]
-        initWithReplaySampleRate:100
-        textAndInputPrivacyLevel:DDTextAndInputPrivacyLevelMaskAll
-        imagePrivacyLevel:DDImagePrivacyLevelMaskAll
-        touchPrivacyLevel:DDTouchPrivacyLevelHide
-    ];
+    DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100
+                                                                                        textAndInputPrivacyLevel:DDTextAndInputPrivacyLevelMaskAll
+                                                                                               imagePrivacyLevel:DDImagePrivacyLevelMaskAll
+                                                                                               touchPrivacyLevel:DDTouchPrivacyLevelHide
+                                                                                                    featureFlags:nil];
 
     configuration.startRecordingImmediately = false;
 
