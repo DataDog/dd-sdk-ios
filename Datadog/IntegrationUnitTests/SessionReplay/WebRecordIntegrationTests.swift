@@ -11,7 +11,8 @@ import WebKit
 import TestUtilities
 @testable import DatadogRUM
 @testable import DatadogWebViewTracking
-@_spi(Internal) @testable import DatadogSessionReplay
+@_spi(Internal)
+@testable import DatadogSessionReplay
 
 class WebRecordIntegrationTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
@@ -60,7 +61,7 @@ class WebRecordIntegrationTests: XCTestCase {
         {
             "eventType": "record",
             "event": {
-                "timestamp" : \(1635932927012),
+                "timestamp" : \(1_635_932_927_012),
                 "type": 2
             },
             "view": { "id": "\(randomBrowserViewID.uuidString.lowercased())" }
@@ -112,7 +113,7 @@ class WebRecordIntegrationTests: XCTestCase {
         {
             "eventType": "record",
             "event": {
-                "timestamp" : \(1635932927012),
+                "timestamp" : \(1_635_932_927_012),
                 "type": 2
             },
             "view": { "id": "\(randomBrowserViewID.uuidString.lowercased())" }

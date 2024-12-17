@@ -60,7 +60,7 @@ final class SRSnapshotTests: SnapshotTestCase {
 
     func testDatePickers() throws {
         try takeSnapshotForPicker(
-            fixture: .datePickersInline, 
+            fixture: .datePickersInline,
             waitTime: 1.0,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath,
@@ -70,14 +70,14 @@ final class SRSnapshotTests: SnapshotTestCase {
         try takeSnapshotForPicker(
             fixture: .datePickersCompact,
             additionalSetup: { ($0 as! DatePickersCompactViewController).openCalendarPopover() },
-            waitTime: 1.0, 
+            waitTime: 1.0,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath,
             fileNamePrefix: "compact"
         )
 
         try takeSnapshotForPicker(
-            fixture: .datePickersWheels, 
+            fixture: .datePickersWheels,
             waitTime: 1.0,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath,
@@ -87,7 +87,7 @@ final class SRSnapshotTests: SnapshotTestCase {
 
     func testTimePickers() throws {
         try takeSnapshotFor(
-            .timePickersCountDown, 
+            .timePickersCountDown,
             with: allTextAndInputPrivacyLevels,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath,
@@ -95,7 +95,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         )
 
         try takeSnapshotForPicker(
-            fixture: .timePickersWheels, 
+            fixture: .timePickersWheels,
             waitTime: 1.0,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath,
@@ -155,7 +155,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testSafari() throws {
         try takeSnapshotForPopup(
             fixture: .popups,
-            showPopup: { $0.showSafari() }, 
+            showPopup: { $0.showSafari() },
             waitTime: 1.0,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath
@@ -164,7 +164,7 @@ final class SRSnapshotTests: SnapshotTestCase {
 
     func testActivity() throws {
         try takeSnapshotForPopup(
-            fixture: .popups, 
+            fixture: .popups,
             showPopup: { $0.showActivity() },
             waitTime: 1.0,
             shouldRecord: shouldRecord,

@@ -33,11 +33,15 @@ fileprivate extension UIImage {
         UIGraphicsBeginImageContextWithOptions(rect.size, false, 1.0)
         defer { UIGraphicsEndImageContext() }
 
-        guard let context = UIGraphicsGetCurrentContext() else { return nil }
+        guard let context = UIGraphicsGetCurrentContext() else {
+            return nil
+        }
         context.setFillColor(color.cgColor)
         context.fill(rect)
 
-        guard let cgImage = context.makeImage() else { return nil }
+        guard let cgImage = context.makeImage() else {
+            return nil
+        }
         self.init(cgImage: cgImage)
     }
 }

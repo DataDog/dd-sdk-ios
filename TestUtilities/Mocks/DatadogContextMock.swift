@@ -145,8 +145,8 @@ extension DeviceInfo {
             osName: osName,
             osVersion: osVersion,
             osBuildNumber: osBuildNumber,
-            architecture: architecture, 
-            isSimulator: isSimulator, 
+            architecture: architecture,
+            isSimulator: isSimulator,
             vendorId: vendorId,
             isDebugging: isDebugging,
             systemBootTime: systemBootTime
