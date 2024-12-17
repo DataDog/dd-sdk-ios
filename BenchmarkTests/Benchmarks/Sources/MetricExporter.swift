@@ -77,7 +77,7 @@ final class MetricExporter: OpenTelemetrySdk.MetricExporter {
             return .failureNotRetryable
         }
     }
-    
+
     /// Transforms otel `Metric` to Datadog `serie`.
     ///
     /// - Parameter metric: The otel metric
@@ -121,7 +121,7 @@ final class MetricExporter: OpenTelemetrySdk.MetricExporter {
             tags: Array(tags)
         )
     }
-    
+
     /// Submit timeseries to the Metrics intake.
     ///
     /// - Parameter series: The timeseries.
