@@ -13904,8 +13904,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/DataDog/dd-sdk-swift-testing.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.5.0;
+				kind = exactVersion;
+				version = "2.5.3-beta1";
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
