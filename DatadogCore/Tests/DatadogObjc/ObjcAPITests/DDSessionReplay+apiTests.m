@@ -14,10 +14,9 @@
 @implementation DDSessionReplay_apiTests
 
 // MARK: Configuration
-- (void)testConfiguration {
+- (void)testConfigurationDeprecatedApi __attribute__ ((deprecated)) {
     DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100];
     configuration.defaultPrivacyLevel = DDSessionReplayConfigurationPrivacyLevelAllow;
-    configuration.customEndpoint = [NSURL new];
 
     [DDSessionReplay enableWith:configuration];
 }
@@ -29,6 +28,10 @@
                                                                                                touchPrivacyLevel:DDTouchPrivacyLevelShow
                                                                                                     featureFlags:nil];
     configuration.customEndpoint = [NSURL new];
+
+    configuration.textAndInputPrivacyLevel = DDTextAndInputPrivacyLevelMaskSensitiveInputs;
+    configuration.imagePrivacyLevel = DDImagePrivacyLevelMaskAll;
+    configuration.touchPrivacyLevel = DDTouchPrivacyLevelHide;
 
     [DDSessionReplay enableWith:configuration];
 }
