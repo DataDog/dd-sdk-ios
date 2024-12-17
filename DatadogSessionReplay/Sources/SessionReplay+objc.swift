@@ -124,9 +124,9 @@ public final class objc_SessionReplayConfiguration: NSObject {
     ///
     /// - Parameters:
     ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
-    ///   - textAndInputPrivacyLevel: The way texts and inputs (e.g. label, textfield, checkbox) should be masked. Default: `.maskAll`.
-    ///   - imagePrivacyLevel: Image recording privacy level. Default: `.maskAll`.
-    ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked. Default: `.hide`.
+    ///   - textAndInputPrivacyLevel: The way texts and inputs (e.g. label, textfield, checkbox) should be masked.
+    ///   - imagePrivacyLevel: Image recording privacy level.
+    ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked.
     ///   - featureFlags: Experimental feature flags.
     @objc
     public required init(
@@ -150,9 +150,9 @@ public final class objc_SessionReplayConfiguration: NSObject {
     ///
     /// - Parameters:
     ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
-    ///   - textAndInputPrivacyLevel: The way texts and inputs (e.g. label, textfield, checkbox) should be masked. Default: `.maskAll`.
-    ///   - imagePrivacyLevel: Image recording privacy level. Default: `.maskAll`.
-    ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked. Default: `.hide`.
+    ///   - textAndInputPrivacyLevel: The way texts and inputs (e.g. label, textfield, checkbox) should be masked.
+    ///   - imagePrivacyLevel: Image recording privacy level
+    ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked.
     @objc
     public convenience init(
         replaySampleRate: Float,
