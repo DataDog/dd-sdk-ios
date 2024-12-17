@@ -30,6 +30,8 @@
 
 #if DEBUG
 
+// swiftlint:disable function_default_parameter_at_end
+
 import Foundation
 
 /// Dumps the given value's contents using its mirror to standard output.
@@ -97,7 +99,7 @@ internal func customDump<T, TargetStream>(
     )
 }
 
-@discardableResult //swiftlint:disable:next function_default_parameter_at_end
+@discardableResult
 private func _customDump<T, TargetStream>(
     _ value: T,
     to target: inout TargetStream,
@@ -411,7 +413,6 @@ private func _customDump<T, TargetStream>(
     return value
 }
 
-//swiftlint:disable:next function_default_parameter_at_end
 private func _customDump(
     _ value: Any,
     name: String?,
@@ -549,5 +550,7 @@ internal struct FileHandlerOutputStream: TextOutputStream {
         }
     }
 }
+
+// swiftlint:enable function_default_parameter_at_end
 
 #endif

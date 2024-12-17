@@ -851,7 +851,7 @@ extension RUMSessionScope {
         return mockWith()
     }
 
-    // swiftlint:disable:next function_default_parameter_at_end
+    // swiftlint:disable function_default_parameter_at_end
     static func mockWith(
         isInitialSession: Bool = .mockAny(),
         parent: RUMContextProvider = RUMContextProviderMock(),
@@ -869,6 +869,7 @@ extension RUMSessionScope {
             dependencies: dependencies
         )
     }
+    // swiftlint:enable function_default_parameter_at_end
 }
 
 extension RUMSessionState: AnyMockable, RandomMockable {
