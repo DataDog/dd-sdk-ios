@@ -19,7 +19,7 @@ struct SessionReplaySwiftUIScenario: Scenario {
         UIHostingController(rootView: SwiftUICatalog.ContentView(monitor: DatadogMonitor()))
     }
 
-    func instrument(with info: AppInfo) {        
+    func instrument(with info: AppInfo) {
         Datadog.initialize(
             with: .benchmark(info: info),
             trackingConsent: .granted
