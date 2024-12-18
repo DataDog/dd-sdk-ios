@@ -200,7 +200,10 @@ let package = Package(
                 .target(name: "DatadogSessionReplay"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogSessionReplay/Tests"
+            path: "DatadogSessionReplay/Tests",
+            resources: [
+                .process("Resources/Assets.xcassets")
+            ]
         ),
 
         .target(
