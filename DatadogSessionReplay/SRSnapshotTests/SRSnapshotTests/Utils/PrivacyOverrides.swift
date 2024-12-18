@@ -56,7 +56,6 @@ extension PrivacyTag {
     }
 }
 
-
 // MARK: Privacy Override Protocol
 protocol PrivacyTagApplier {
     func apply(to view: UIView)

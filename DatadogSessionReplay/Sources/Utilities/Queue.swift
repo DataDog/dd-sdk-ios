@@ -11,23 +11,29 @@ internal protocol Queue: AnyObject {
     func run(_ block: @escaping () -> Void)
 }
 
-internal class MainAsyncQueue: Queue {
-    private let queue: DispatchQueue = .main
+internal class AsyncQueue: Queue {
+    fileprivate let queue: DispatchQueue
+
+    init(queue: DispatchQueue) {
+        self.queue = queue
+    }
 
     func run(_ block: @escaping () -> Void) {
-        queue.async { block() }
+        queue.async(execute: block)
     }
 }
 
-internal class BackgroundAsyncQueue: Queue {
-    private let queue: DispatchQueue
-
-    init(named queueName: String) {
-        self.queue = DispatchQueue(label: queueName, qos: .utility, autoreleaseFrequency: .workItem)
+internal final class MainAsyncQueue: AsyncQueue {
+    init() {
+        super.init(queue: .main)
     }
+}
 
-    func run(_ block: @escaping () -> Void) {
-        queue.async { block() }
+internal final class BackgroundAsyncQueue: AsyncQueue {
+    init(label: String, qos: DispatchQoS = .utility, attributes: DispatchQueue.Attributes = [], autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency = .workItem, target: AsyncQueue? = nil) {
+        super.init(
+            queue: DispatchQueue(label: label, qos: qos, attributes: attributes, autoreleaseFrequency: autoreleaseFrequency, target: target?.queue)
+        )
     }
 }
 #endif

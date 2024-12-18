@@ -81,6 +81,7 @@ public class DDConfiguration: NSObject
     public func setServerDateProvider(_ serverDateProvider: DDServerDateProvider)
     @objc public var bundle: Bundle
     @objc public var additionalConfiguration: [String: Any]
+    @objc public var backgroundTasksEnabled: Bool
     public init(clientToken: String, env: String)
 public enum DDSDKVerbosityLevel: Int
     case none
@@ -576,6 +577,7 @@ public class DDRUMActionEventRUMSyntheticsTest: NSObject
     @objc public var resultId: String
     @objc public var testId: String
 public class DDRUMActionEventRUMUser: NSObject
+    @objc public var anonymousId: String?
     @objc public var email: String?
     @objc public var id: String?
     @objc public var name: String?
@@ -866,6 +868,7 @@ public class DDRUMErrorEventRUMSyntheticsTest: NSObject
     @objc public var resultId: String
     @objc public var testId: String
 public class DDRUMErrorEventRUMUser: NSObject
+    @objc public var anonymousId: String?
     @objc public var email: String?
     @objc public var id: String?
     @objc public var name: String?
@@ -1060,6 +1063,7 @@ public class DDRUMLongTaskEventRUMSyntheticsTest: NSObject
     @objc public var resultId: String
     @objc public var testId: String
 public class DDRUMLongTaskEventRUMUser: NSObject
+    @objc public var anonymousId: String?
     @objc public var email: String?
     @objc public var id: String?
     @objc public var name: String?
@@ -1326,6 +1330,7 @@ public class DDRUMResourceEventRUMSyntheticsTest: NSObject
     @objc public var resultId: String
     @objc public var testId: String
 public class DDRUMResourceEventRUMUser: NSObject
+    @objc public var anonymousId: String?
     @objc public var email: String?
     @objc public var id: String?
     @objc public var name: String?
@@ -1511,6 +1516,7 @@ public class DDRUMViewEventRUMSyntheticsTest: NSObject
     @objc public var resultId: String
     @objc public var testId: String
 public class DDRUMViewEventRUMUser: NSObject
+    @objc public var anonymousId: String?
     @objc public var email: String?
     @objc public var id: String?
     @objc public var name: String?
@@ -1749,6 +1755,7 @@ public class DDRUMVitalEventRUMSyntheticsTest: NSObject
     @objc public var resultId: String
     @objc public var testId: String
 public class DDRUMVitalEventRUMUser: NSObject
+    @objc public var anonymousId: String?
     @objc public var email: String?
     @objc public var id: String?
     @objc public var name: String?
@@ -1910,6 +1917,7 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var batchProcessingLevel: NSNumber?
     @objc public var batchSize: NSNumber?
     @objc public var batchUploadFrequency: NSNumber?
+    @objc public var collectFeatureFlagsOn: [Int]?
     @objc public var compressIntakeRequests: NSNumber?
     @objc public var dartVersion: String?
     @objc public var defaultPrivacyLevel: String?
@@ -1974,6 +1982,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var useTracing: NSNumber?
     @objc public var useWorkerUrl: NSNumber?
     @objc public var viewTrackingStrategy: DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy
+public enum DDTelemetryConfigurationEventTelemetryConfigurationCollectFeatureFlagsOn: Int
+    case none
+    case view
+    case error
+    case vital
 public class DDTelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs: NSObject
     @objc public var stringsArray: [String]?
     @objc public var string: String?

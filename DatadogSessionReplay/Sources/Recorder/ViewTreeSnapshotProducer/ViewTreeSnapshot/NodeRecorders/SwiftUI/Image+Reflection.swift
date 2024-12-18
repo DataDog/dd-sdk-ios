@@ -11,17 +11,17 @@ import SwiftUI
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension GraphicsImage: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        scale = try mirror.descendant("scale")
-        orientation = try mirror.descendant("orientation")
-        contents = try mirror.descendant("contents")
+    init(from reflector: Reflector) throws {
+        scale = try reflector.descendant("scale")
+        orientation = try reflector.descendant("orientation")
+        contents = try reflector.descendant("contents")
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension GraphicsImage.Contents: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        switch (mirror.displayStyle, mirror.descendant(0)) {
+    init(from reflector: Reflector) throws {
+        switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
         case let (.enum("cgImage"), cgImage as CGImage):
             self = .cgImage(cgImage)
         default:
