@@ -14,25 +14,33 @@ import SwiftUI
 @available(iOS 13.0, tvOS 13.0, *)
 class TextReflectionTests: XCTestCase {
     func testStyledTextContentViewReflection() throws {
-        let text: String = .mockRandom()
-        let textContentView = StyledTextContentView(
-            text: ResolvedStyledText.StringDrawing(
-                storage: NSAttributedString(string: text)
-            )
-        )
+        let styledTextContent: StyledTextContentView = .mockRandom()
 
-        XCTAssertEqual(textContentView.text.storage.string, text)
+        let reflector = Reflector(subject: styledTextContent, telemetry: NOPTelemetry())
+        let reflectedContent = try StyledTextContentView(from: reflector)
+
+        XCTAssertEqual(reflectedContent.text.storage.string, styledTextContent.text.storage.string)
+    }
+
+    func testResolvedStyledTextStringDrawingReflection() throws {
+        let stringDrawing: ResolvedStyledText.StringDrawing = .mockRandom()
+
+        let reflector = Reflector(subject: stringDrawing, telemetry: NOPTelemetry())
+        let reflectedStringDrawing = try ResolvedStyledText.StringDrawing(from: reflector)
+
+        XCTAssertEqual(reflectedStringDrawing.storage.string, stringDrawing.storage.string)
     }
 
     func testStyledTextContentViewReflection_withEmptyText() throws {
-        let text = ""
-        let textContentView = StyledTextContentView(
-            text: ResolvedStyledText.StringDrawing(
-                storage: NSAttributedString(string: text)
-            )
+        let emptyText = ""
+        let styledTextContent = StyledTextContentView(
+            text: ResolvedStyledText.StringDrawing(storage: NSAttributedString(string: emptyText))
         )
 
-        XCTAssertEqual(textContentView.text.storage.string, text)
+        let reflector = Reflector(subject: styledTextContent, telemetry: NOPTelemetry())
+        let reflectedContent = try StyledTextContentView(from: reflector)
+
+        XCTAssertEqual(reflectedContent.text.storage.string, emptyText)
     }
 }
 #endif

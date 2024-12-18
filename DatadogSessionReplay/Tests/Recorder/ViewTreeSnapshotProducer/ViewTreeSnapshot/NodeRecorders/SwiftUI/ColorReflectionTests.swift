@@ -14,48 +14,37 @@ import SwiftUI
 @available(iOS 13.0, tvOS 13.0, *)
 class ColorReflectionTests: XCTestCase {
     func testColorResolvedReflection() throws {
-        let red: Float = .mockRandom(min: 0, max: 1)
-        let green: Float = .mockRandom(min: 0, max: 1)
-        let blue: Float = .mockRandom(min: 0, max: 1)
-        let opacity: Float = .mockRandom(min: 0, max: 1)
+        let color: SwiftUI.Color._Resolved = .mockRandom()
+        let reflector = Reflector(subject: color, telemetry: NOPTelemetry())
+        let reflectedColor = try SwiftUI.Color._Resolved(from: reflector)
 
-        let mockColor = SwiftUI.Color._Resolved(
-            linearRed: red,
-            linearGreen: green,
-            linearBlue: blue,
-            opacity: opacity
-        )
-        let mirror = ReflectionMirror(reflecting: mockColor)
-
-        let reflectedColor = try SwiftUI.Color._Resolved(mirror)
-
-        XCTAssertEqual(reflectedColor.linearRed, red)
-        XCTAssertEqual(reflectedColor.linearGreen, green)
-        XCTAssertEqual(reflectedColor.linearBlue, blue)
-        XCTAssertEqual(reflectedColor.opacity, opacity)
+        XCTAssertEqual(reflectedColor.linearRed, color.linearRed)
+        XCTAssertEqual(reflectedColor.linearGreen, color.linearGreen)
+        XCTAssertEqual(reflectedColor.linearBlue, color.linearBlue)
+        XCTAssertEqual(reflectedColor.opacity, color.opacity)
     }
 
-    func testResolvedPaintReflection_withValidPaint() throws {
-        let red: Float = .mockRandom(min: 0, max: 1)
-        let green: Float = .mockRandom(min: 0, max: 1)
-        let blue: Float = .mockRandom(min: 0, max: 1)
-        let opacity: Float = .mockRandom(min: 0, max: 1)
+    func testResolvedPaintReflection() throws {
+        let color: SwiftUI.Color._Resolved = .mockRandom()
+        let paint = ResolvedPaint(paint: color)
 
-        let mockColor = SwiftUI.Color._Resolved(
-            linearRed: red,
-            linearGreen: green,
-            linearBlue: blue,
-            opacity: opacity
-        )
-        let mockPaint = ResolvedPaint(paint: mockColor)
-        let mirror = ReflectionMirror(reflecting: mockPaint)
+        let reflector = Reflector(subject: paint, telemetry: NOPTelemetry())
+        let reflectedPaint = try ResolvedPaint(from: reflector)
 
-        let resolvedPaint = try ResolvedPaint(mirror)
-        XCTAssertNotNil(resolvedPaint.paint)
-        XCTAssertEqual(resolvedPaint.paint?.linearRed, mockColor.linearRed)
-        XCTAssertEqual(resolvedPaint.paint?.linearGreen, mockColor.linearGreen)
-        XCTAssertEqual(resolvedPaint.paint?.linearBlue, mockColor.linearBlue)
-        XCTAssertEqual(resolvedPaint.paint?.opacity, mockColor.opacity)
+        XCTAssertNotNil(reflectedPaint.paint)
+        XCTAssertEqual(reflectedPaint.paint?.linearRed, color.linearRed)
+        XCTAssertEqual(reflectedPaint.paint?.linearGreen, color.linearGreen)
+        XCTAssertEqual(reflectedPaint.paint?.linearBlue, color.linearBlue)
+        XCTAssertEqual(reflectedPaint.paint?.opacity, color.opacity)
+    }
+
+    func testResolvedPaintReflection_withNilPaint() throws {
+        let resolvedPaint = ResolvedPaint(paint: nil)
+
+        let reflector = Reflector(subject: resolvedPaint, telemetry: NOPTelemetry())
+        let reflectedPaint = try ResolvedPaint(from: reflector)
+
+        XCTAssertNil(reflectedPaint.paint)
     }
 }
 #endif

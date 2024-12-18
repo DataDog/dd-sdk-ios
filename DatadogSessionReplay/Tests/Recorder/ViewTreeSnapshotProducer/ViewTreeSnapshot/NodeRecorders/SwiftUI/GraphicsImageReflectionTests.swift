@@ -12,52 +12,8 @@ import SwiftUI
 @testable import DatadogSessionReplay
 
 @available(iOS 13.0, tvOS 13.0, *)
-class ImageReflectionTests: XCTestCase {
-    func testGraphicsImageReflection() {
-        let contents: GraphicsImage.Contents = .mockAny()
-        let scale: CGFloat = [1, 2, 3].randomElement()!
-        let orientation: SwiftUI.Image.Orientation = .mockAny()
-        let graphicsImage = GraphicsImage(
-            contents: contents,
-            scale: scale,
-            orientation: orientation
-        )
-        XCTAssertNotNil(graphicsImage)
-        XCTAssertEqual(graphicsImage.contents, contents)
-        XCTAssertEqual(graphicsImage.scale, scale)
-        XCTAssertEqual(graphicsImage.orientation, orientation)
-    }
-
-    func testGraphicsImageContentsReflectionWithCGImage() {
-        let cgImage: CGImage = MockCGImage.mockWith(width: 20)
-        let contents: GraphicsImage.Contents = .cgImage(cgImage)
-        XCTAssertEqual(contents, .cgImage(cgImage))
-    }
-
-    func testGraphicsImageContentsReflectionWithUnknown() {
-        let contents: GraphicsImage.Contents = .unknown
-        XCTAssertEqual(contents, .unknown)
-    }
-
-    func testEnumCaseForCGImageGraphicsImageContents() {
-        let cgImage: CGImage = MockCGImage.mockWith(width: 20)
-        let contents: GraphicsImage.Contents = .cgImage(cgImage)
-
-        switch contents {
-        case .cgImage:
-            XCTAssertTrue(true)
-        default:
-            XCTFail("Expected .cgImage, got \(String(describing: contents))")
-        }
-    }
-
-    func testReflectionParsingForGraphicsImage() {
-        let graphicsImage = GraphicsImage.mockAny()
-        let mirror = ReflectionMirror(reflecting: graphicsImage)
-        XCTAssertNotNil(mirror)
-        XCTAssertEqual(mirror.displayStyle, .struct)
-    }
-
+class GraphicsImageReflectionTests: XCTestCase {
+    // MARK: Object Behavior tests
     func testGraphicsImageContentsEquality() {
         let cgImage1: CGImage = MockCGImage.mockWith(width: 20)
         let cgImage2: CGImage = MockCGImage.mockWith(width: 20)
@@ -97,6 +53,42 @@ class ImageReflectionTests: XCTestCase {
         XCTAssertTrue(smallImage3x.isLikelyBundled(scale: scale3x))
         let largeImage3x: CGImage = MockCGImage.mockWith(width: largeImageWidth, scale: scale3x)
         XCTAssertFalse(largeImage3x.isLikelyBundled(scale: scale3x))
+    }
+
+    // MARK: Reflection tests
+    func testGraphicsImageReflection() throws {
+        let cgImage: CGImage = MockCGImage.mockWith(width: 20)
+        let graphicsImage = GraphicsImage(
+            contents: .cgImage(cgImage),
+            scale: 2.0,
+            orientation: .up
+        )
+
+        let reflector = Reflector(subject: graphicsImage, telemetry: NOPTelemetry())
+        let reflectedImage = try GraphicsImage(from: reflector)
+
+        XCTAssertEqual(reflectedImage.scale, graphicsImage.scale)
+        XCTAssertEqual(reflectedImage.orientation, graphicsImage.orientation)
+        XCTAssertEqual(reflectedImage.contents, graphicsImage.contents)
+    }
+
+    func testGraphicsImageContentsReflection_withCGImage() throws {
+        let cgImage: CGImage = MockCGImage.mockWith(width: 20)
+        let contents = GraphicsImage.Contents.cgImage(cgImage)
+
+        let reflector = Reflector(subject: contents, telemetry: NOPTelemetry())
+        let reflectedContents = try GraphicsImage.Contents(from: reflector)
+
+        XCTAssertEqual(reflectedContents, contents)
+    }
+
+    func testGraphicsImageContentsReflection_withUnknown() throws {
+        let contents = GraphicsImage.Contents.unknown
+
+        let reflector = Reflector(subject: contents, telemetry: NOPTelemetry())
+        let reflectedContents = try GraphicsImage.Contents(from: reflector)
+
+        XCTAssertEqual(reflectedContents, contents)
     }
 }
 #endif
