@@ -47,8 +47,8 @@ internal class UIViewSwizzler {
             typealias Signature = @convention(block) (UIView) -> Void
             swizzle(method) { previousImplementation -> Signature in
                 return { [weak handler = self.handler] view  in
-                    handler?.notify_layoutSubviews(view: view)
                     previousImplementation(view, Self.selector)
+                    handler?.notify_layoutSubviews(view: view)
                 }
             }
         }

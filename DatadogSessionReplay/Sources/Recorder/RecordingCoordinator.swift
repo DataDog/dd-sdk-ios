@@ -44,6 +44,8 @@ internal class RecordingCoordinator {
 
     private let queue: Queue
 
+    private let throttlingRate: TimeInterval
+
     init(
         textAndInputPrivacy: TextAndInputPrivacyLevel,
         imagePrivacy: ImagePrivacyLevel,
@@ -56,7 +58,8 @@ internal class RecordingCoordinator {
         recordingTrigger: RecordingTriggering,
         methodCallTelemetrySamplingRate: Float = 0.1,
         dateProvider: DateProvider = SystemDateProvider(),
-        queue: Queue = MainAsyncQueue()
+        queue: Queue,
+        throttlingRate: TimeInterval
     ) throws {
         self.recorder = recorder
         self.sampler = sampler
@@ -69,6 +72,7 @@ internal class RecordingCoordinator {
         self.methodCallTelemetrySamplingRate = methodCallTelemetrySamplingRate
         self.dateProvider = dateProvider
         self.queue = queue
+        self.throttlingRate = throttlingRate
 
         srContextPublisher.setHasReplay(false)
 
@@ -131,11 +135,11 @@ internal class RecordingCoordinator {
     private var lastTriggerDate: Date?
 
     private var shouldSkipTrigger: Bool {
-        return dateProvider.now.timeIntervalSince(lastTriggerDate ?? .distantPast) < Constants.throttlingRate
+        return dateProvider.now.timeIntervalSince(lastTriggerDate ?? .distantPast) < throttlingRate
     }
 
     private func didTrigger() {
-        guard shouldSkipTrigger == false else {
+        guard !shouldSkipTrigger else {
             return
         }
         lastTriggerDate = dateProvider.now
@@ -169,8 +173,8 @@ internal class RecordingCoordinator {
 
         var isSuccessful = false
         do {
-            try objc_rethrow { [weak self] in
-                try self?.recorder.captureNextRecord(recorderContext)
+            try objc_rethrow {
+                try self.recorder.captureNextRecord(recorderContext)
             }
             isSuccessful = true
         } catch let objc as ObjcException {
@@ -185,10 +189,6 @@ internal class RecordingCoordinator {
         }
 
         telemetry.stopMethodCalled(methodCalledTrace, isSuccessful: isSuccessful)
-    }
-
-    private enum Constants {
-        static let throttlingRate: TimeInterval = 0.1 // 100ms
     }
 
     private enum MethodCallConstants {

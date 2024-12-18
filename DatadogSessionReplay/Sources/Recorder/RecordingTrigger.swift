@@ -10,6 +10,7 @@ import UIKit
 
 /// Orchestrates the process of triggering next snapshot recording.
 /// It has a couple recording triggers which are done by using swizzling.
+/// CALayer drawing/display; UIView layout and all UIApplication events - touches, screen rotation, etc.
 internal protocol RecordingTriggering {
     func startWatchingTriggers(_ callback: @escaping () -> Void)
     func stopWatchingTriggers()
@@ -48,6 +49,8 @@ internal final class RecordingTrigger: RecordingTriggering, UIViewHandler, UIEve
         caLayerSwizzler?.unswizzle()
     }
 
+    // MARK: - CALayer Swizzling Handlers
+
     func notify_setNeedsDisplay(layer: CALayer) {
         triggerCallback?()
     }
@@ -56,13 +59,13 @@ internal final class RecordingTrigger: RecordingTriggering, UIViewHandler, UIEve
         triggerCallback?()
     }
 
+    // MARK: - UIView Swizzling Handlers
+
     func notify_layoutSubviews(view: UIView) {
         triggerCallback?()
     }
 
-    func notify_viewDidAppear(viewController: UIViewController) {
-        triggerCallback?()
-    }
+    // MARK: - UIApplication Swizzling Handlers
 
     func notify_sendEvent(application: UIApplication, event: UIEvent) {
         triggerCallback?()

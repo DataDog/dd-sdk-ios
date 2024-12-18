@@ -296,7 +296,8 @@ class RecordingCoordinatorTests: XCTestCase {
             recordingTrigger: recordingTriggerMock,
             methodCallTelemetrySamplingRate: methodCallTelemetrySamplingRate,
             dateProvider: dateProviderMock,
-            queue: queue
+            queue: queue,
+            throttlingRate: 0.1
         )
     }
 }

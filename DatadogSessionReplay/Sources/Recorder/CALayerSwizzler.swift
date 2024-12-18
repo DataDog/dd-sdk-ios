@@ -52,8 +52,8 @@ internal class CALayerSwizzler {
             typealias Signature = @convention(block) (CALayer) -> Void
             swizzle(method) { previousImplementation -> Signature in
                 return { [weak handler = self.handler] layer in
-                    handler?.notify_setNeedsDisplay(layer: layer)
                     previousImplementation(layer, Self.selector)
+                    handler?.notify_setNeedsDisplay(layer: layer)
                 }
             }
         }
@@ -77,8 +77,8 @@ internal class CALayerSwizzler {
             typealias Signature = @convention(block) (CALayer, CGContext) -> Void
             swizzle(method) { previousImplementation -> Signature in
                 return { [weak handler = self.handler] layer, context in
-                    handler?.notify_draw(layer: layer, context: context)
                     previousImplementation(layer, Self.selector, context)
+                    handler?.notify_draw(layer: layer, context: context)
                 }
             }
         }
