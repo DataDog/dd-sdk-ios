@@ -36,10 +36,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
 
         let featureScope = core.scope(for: RUMFeature.self)
-        let sessionEndedMetric = SessionEndedMetricController(
-            telemetry: core.telemetry,
-            sampleRate: configuration.sessionEndedMetricSampleRate
-        )
+        let sessionEndedMetric = SessionEndedMetricController(telemetry: core.telemetry)
 
         var watchdogTermination: WatchdogTerminationMonitor?
         if configuration.trackWatchdogTerminations {
@@ -214,7 +211,7 @@ extension RUMFeature: Flushable {
 }
 
 private extension RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing {
-    var sampleRate: Float {
+    var sampleRate: SampleRate {
         switch self {
         case .trace(_, let sampleRate, _): return sampleRate
         case .traceWithHeaders(_, let sampleRate, _): return sampleRate

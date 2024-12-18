@@ -88,7 +88,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
     public func feature<T>(named name: String, type: T.Type) -> T? { nil }
 
     /// Always returns a feature-scope.
-    public func scope<T>(for featureType: T.Type) -> FeatureScope where T : DatadogFeature {
+    public func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature {
         self
     }
 

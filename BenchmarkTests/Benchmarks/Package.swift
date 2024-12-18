@@ -37,7 +37,6 @@ func addOpenTelemetryDependency(_ version: Version) {
                 swiftSettings: [.define("OTEL_SWIFT")]
             )
         ]
-
     } else {
         package.dependencies = [
             .package(url: "https://github.com/DataDog/opentelemetry-swift-packages", exact: version)

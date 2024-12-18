@@ -11,44 +11,44 @@ import SwiftUI
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        items = try mirror.descendant("items")
+    init(from reflector: Reflector) throws {
+        items = try reflector.descendant("items")
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Identity: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        value = try mirror.descendant("value")
+    init(from reflector: Reflector) throws {
+        value = try reflector.descendant("value")
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Seed: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        value = try mirror.descendant("value")
+    init(from reflector: Reflector) throws {
+        value = try reflector.descendant("value")
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.ViewRenderer: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        renderer = try mirror.descendant("renderer")
+    init(from reflector: Reflector) throws {
+        renderer = try reflector.descendant("renderer")
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.ViewUpdater: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        viewCache = try mirror.descendant("viewCache")
-        lastList = try mirror.descendant("lastList")
+    init(from reflector: Reflector) throws {
+        viewCache = try reflector.descendant("viewCache")
+        lastList = try reflector.descendant("lastList")
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Effect: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        switch (mirror.displayStyle, mirror.descendant(0)) {
+    init(from reflector: Reflector) throws {
+        switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
         case (.enum("identity"), _):
             self = .identify
 
@@ -66,75 +66,83 @@ extension DisplayList.Effect: Reflection {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.ViewUpdater.ViewCache: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        map = try mirror.descendant("map")
+    init(from reflector: Reflector) throws {
+        map = try reflector.descendant("map")
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.ViewUpdater.ViewCache.Key: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        id = try mirror.descendant("id")
+    init(from reflector: Reflector) throws {
+        id = try reflector.descendant("id")
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Index.ID: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        identity = try mirror.descendant("identity")
+    init(from reflector: Reflector) throws {
+        identity = try reflector.descendant("identity")
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.ViewUpdater.ViewInfo: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        let view = try mirror.descendant(type: UIView.self, "view")
-        let layer = try mirror.descendant(type: CALayer.self, "layer")
-
-        // do not retain the view or layer, only get values required
+    init(from reflector: Reflector) throws {
+        // do not retain the views or layer, only get values required
         // for building wireframe
+
+        let layer = try reflector.descendant(type: CALayer.self, "layer")
+        // The view is the rendering context of an item
+        let view = try reflector.descendant(type: UIView.self, "view")
+        // The container view is where the item is actually rendered.
+        // The container is usually the same as the view, except when applying
+        // a `.platformGroup` effect. e.g: A `SwiftUI.ScrollView` will create a
+        // `.platformGroup` effect where the `Content` is rendered in a `UIScrollView`,
+        // in this case the container is the content of the `UIScrollView`.
+        let container = try reflector.descendant(type: UIView.self, "container")
+
+        // The frame is the container's frame in the view's coordinate space.
+        // This is useful for applying the offset in a scroll-view.
+        frame = container.convert(container.bounds, to: view)
         backgroundColor = layer.backgroundColor?.safeCast
         borderColor = layer.borderColor?.safeCast
         borderWidth = layer.borderWidth
         cornerRadius = layer.cornerRadius
         alpha = view.alpha
         isHidden = layer.isHidden
-        intrinsicContentSize = view.intrinsicContentSize
+        intrinsicContentSize = container.intrinsicContentSize
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Content: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        seed = try mirror.descendant("seed")
-        value = try mirror.descendant("value")
+    init(from reflector: Reflector) throws {
+        seed = try reflector.descendant("seed")
+        value = try reflector.descendant("value")
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Content.Value: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        switch (mirror.displayStyle, mirror.descendant(0)) {
+    init(from reflector: Reflector) throws {
+        switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
         case let (.enum("shape"), tuple as (SwiftUI.Path, Any, SwiftUI.FillStyle)):
-            let paint = try ResolvedPaint(reflecting: tuple.1)
-            self = .shape(tuple.0, paint, tuple.2)
+            self = try .shape(tuple.0, reflector.reflect(tuple.1), tuple.2)
 
         case let (.enum("text"), tuple as (Any, CGSize)):
-            let view = try StyledTextContentView(reflecting: tuple.0)
-            self = .text(view, tuple.1)
+            self = try .text(reflector.reflect(tuple.0), tuple.1)
 
         case (.enum("platformView"), _):
             self = .platformView
 
-        case (.enum("image"), _):
-            self = .unknown
+        case let (.enum("image"), image):
+            self = try .image(reflector.reflect(image))
 
         case (.enum("drawing"), _):
             self = .unknown
 
         case let (.enum("color"), color):
-            let color = try Color._Resolved(reflecting: color)
-            self = .color(color)
+            self = try .color(reflector.reflect(color))
 
         default:
             self = .unknown
@@ -144,30 +152,29 @@ extension DisplayList.Content.Value: Reflection {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Item: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        identity = try mirror.descendant("identity")
-        frame = try mirror.descendant("frame")
-        value = try mirror.descendant("value")
+    init(from reflector: Reflector) throws {
+        identity = try reflector.descendant("identity")
+        frame = try reflector.descendant("frame")
+        value = try reflector.descendant("value")
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Item.Value: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        switch (mirror.displayStyle, mirror.descendant(0)) {
+    init(from reflector: Reflector) throws {
+        switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
         case let (.enum("effect"), tuple as (Any, Any)):
-            let effect = try DisplayList.Effect(reflecting: tuple.0)
-            let list = try DisplayList(reflecting: tuple.1)
-            self = .effect(effect, list)
+            self = try .effect(
+                reflector.reflect(tuple.0),
+                reflector.reflect(tuple.1)
+            )
 
         case let (.enum("content"), value):
-            let content = try DisplayList.Content(reflecting: value)
-            self = .content(content)
+            self = try .content(reflector.reflect(value))
 
         default:
             self = .unknown
         }
     }
 }
-
 #endif

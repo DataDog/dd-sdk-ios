@@ -142,6 +142,11 @@ public class DDRUMActionEventDDAction: NSObject {
         self.root = root
     }
 
+    @objc public var nameSource: DDRUMActionEventDDActionNameSource {
+        set { root.swiftModel.dd.action!.nameSource = newValue.toSwift }
+        get { .init(swift: root.swiftModel.dd.action!.nameSource) }
+    }
+
     @objc public var position: DDRUMActionEventDDActionPosition? {
         root.swiftModel.dd.action!.position != nil ? DDRUMActionEventDDActionPosition(root: root) : nil
     }
@@ -149,6 +154,41 @@ public class DDRUMActionEventDDAction: NSObject {
     @objc public var target: DDRUMActionEventDDActionTarget? {
         root.swiftModel.dd.action!.target != nil ? DDRUMActionEventDDActionTarget(root: root) : nil
     }
+}
+
+@objc
+public enum DDRUMActionEventDDActionNameSource: Int {
+    internal init(swift: RUMActionEvent.DD.Action.NameSource?) {
+        switch swift {
+        case nil: self = .none
+        case .customAttribute?: self = .customAttribute
+        case .maskPlaceholder?: self = .maskPlaceholder
+        case .standardAttribute?: self = .standardAttribute
+        case .textContent?: self = .textContent
+        case .maskDisallowed?: self = .maskDisallowed
+        case .blank?: self = .blank
+        }
+    }
+
+    internal var toSwift: RUMActionEvent.DD.Action.NameSource? {
+        switch self {
+        case .none: return nil
+        case .customAttribute: return .customAttribute
+        case .maskPlaceholder: return .maskPlaceholder
+        case .standardAttribute: return .standardAttribute
+        case .textContent: return .textContent
+        case .maskDisallowed: return .maskDisallowed
+        case .blank: return .blank
+        }
+    }
+
+    case none
+    case customAttribute
+    case maskPlaceholder
+    case standardAttribute
+    case textContent
+    case maskDisallowed
+    case blank
 }
 
 @objc
@@ -949,6 +989,10 @@ public class DDRUMActionEventRUMUser: NSObject {
 
     internal init(root: DDRUMActionEvent) {
         self.root = root
+    }
+
+    @objc public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
     }
 
     @objc public var email: String? {
@@ -2341,6 +2385,10 @@ public class DDRUMErrorEventRUMUser: NSObject {
         self.root = root
     }
 
+    @objc public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
+    }
+
     @objc public var email: String? {
         root.swiftModel.usr!.email
     }
@@ -3289,6 +3337,10 @@ public class DDRUMLongTaskEventRUMUser: NSObject {
         self.root = root
     }
 
+    @objc public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
+    }
+
     @objc public var email: String? {
         root.swiftModel.usr!.email
     }
@@ -3986,6 +4038,10 @@ public class DDRUMResourceEventResource: NSObject {
         root.swiftModel.resource.decodedBodySize as NSNumber?
     }
 
+    @objc public var deliveryType: DDRUMResourceEventResourceDeliveryType {
+        .init(swift: root.swiftModel.resource.deliveryType)
+    }
+
     @objc public var dns: DDRUMResourceEventResourceDNS? {
         root.swiftModel.resource.dns != nil ? DDRUMResourceEventResourceDNS(root: root) : nil
     }
@@ -4079,6 +4135,32 @@ public class DDRUMResourceEventResourceConnect: NSObject {
     @objc public var start: NSNumber {
         root.swiftModel.resource.connect!.start as NSNumber
     }
+}
+
+@objc
+public enum DDRUMResourceEventResourceDeliveryType: Int {
+    internal init(swift: RUMResourceEvent.Resource.DeliveryType?) {
+        switch swift {
+        case nil: self = .none
+        case .cache?: self = .cache
+        case .navigationalPrefetch?: self = .navigationalPrefetch
+        case .other?: self = .other
+        }
+    }
+
+    internal var toSwift: RUMResourceEvent.Resource.DeliveryType? {
+        switch self {
+        case .none: return nil
+        case .cache: return .cache
+        case .navigationalPrefetch: return .navigationalPrefetch
+        case .other: return .other
+        }
+    }
+
+    case none
+    case cache
+    case navigationalPrefetch
+    case other
 }
 
 @objc
@@ -4539,6 +4621,10 @@ public class DDRUMResourceEventRUMUser: NSObject {
 
     internal init(root: DDRUMResourceEvent) {
         self.root = root
+    }
+
+    @objc public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
     }
 
     @objc public var email: String? {
@@ -5453,6 +5539,10 @@ public class DDRUMViewEventRUMUser: NSObject {
 
     internal init(root: DDRUMViewEvent) {
         self.root = root
+    }
+
+    @objc public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
     }
 
     @objc public var email: String? {
@@ -6604,6 +6694,10 @@ public class DDRUMVitalEventRUMUser: NSObject {
         self.root = root
     }
 
+    @objc public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
+    }
+
     @objc public var email: String? {
         root.swiftModel.usr!.email
     }
@@ -6723,6 +6817,10 @@ public class DDTelemetryErrorEvent: NSObject {
 
     @objc public var date: NSNumber {
         root.swiftModel.date as NSNumber
+    }
+
+    @objc public var effectiveSampleRate: NSNumber? {
+        root.swiftModel.effectiveSampleRate as NSNumber?
     }
 
     @objc public var experimentalFeatures: [String]? {
@@ -6980,6 +7078,10 @@ public class DDTelemetryDebugEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
+    @objc public var effectiveSampleRate: NSNumber? {
+        root.swiftModel.effectiveSampleRate as NSNumber?
+    }
+
     @objc public var experimentalFeatures: [String]? {
         root.swiftModel.experimentalFeatures
     }
@@ -7214,6 +7316,10 @@ public class DDTelemetryConfigurationEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
+    @objc public var effectiveSampleRate: NSNumber? {
+        root.swiftModel.effectiveSampleRate as NSNumber?
+    }
+
     @objc public var experimentalFeatures: [String]? {
         root.swiftModel.experimentalFeatures
     }
@@ -7404,6 +7510,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.batchUploadFrequency as NSNumber?
     }
 
+    @objc public var collectFeatureFlagsOn: [Int]? {
+        root.swiftModel.telemetry.configuration.collectFeatureFlagsOn?.map { DDTelemetryConfigurationEventTelemetryConfigurationCollectFeatureFlagsOn(swift: $0).rawValue }
+    }
+
     @objc public var compressIntakeRequests: NSNumber? {
         root.swiftModel.telemetry.configuration.compressIntakeRequests as NSNumber?
     }
@@ -7443,6 +7553,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
     @objc public var initializationType: String? {
         set { root.swiftModel.telemetry.configuration.initializationType = newValue }
         get { root.swiftModel.telemetry.configuration.initializationType }
+    }
+
+    @objc public var isMainProcess: NSNumber? {
+        root.swiftModel.telemetry.configuration.isMainProcess as NSNumber?
     }
 
     @objc public var mobileVitalsUpdatePeriod: NSNumber? {
@@ -7694,6 +7808,32 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
 }
 
 @objc
+public enum DDTelemetryConfigurationEventTelemetryConfigurationCollectFeatureFlagsOn: Int {
+    internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.CollectFeatureFlagsOn?) {
+        switch swift {
+        case nil: self = .none
+        case .view?: self = .view
+        case .error?: self = .error
+        case .vital?: self = .vital
+        }
+    }
+
+    internal var toSwift: TelemetryConfigurationEvent.Telemetry.Configuration.CollectFeatureFlagsOn? {
+        switch self {
+        case .none: return nil
+        case .view: return .view
+        case .error: return .error
+        case .vital: return .vital
+        }
+    }
+
+    case none
+    case view
+    case error
+    case vital
+}
+
+@objc
 public class DDTelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs: NSObject {
     internal let root: DDTelemetryConfigurationEvent
 
@@ -7922,4 +8062,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/d9b0451c01cab9c3c991bd2f5f3571da6ec1df83
+// Generated from https://github.com/DataDog/rum-events-format/tree/81c3d7401cba2a2faf48b5f4c0e8aca05c759662

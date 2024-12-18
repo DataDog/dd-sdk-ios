@@ -81,6 +81,7 @@ public class DDConfiguration: NSObject
     public func setServerDateProvider(_ serverDateProvider: DDServerDateProvider)
     @objc public var bundle: Bundle
     @objc public var additionalConfiguration: [String: Any]
+    @objc public var backgroundTasksEnabled: Bool
     public init(clientToken: String, env: String)
 public enum DDSDKVerbosityLevel: Int
     case none
@@ -112,7 +113,7 @@ public class DDLoggerConfiguration: NSObject
     @objc public var remoteSampleRate: Float
     @objc public var printLogsToConsole: Bool
     @objc public var remoteLogThreshold: DDLogLevel
-    public init(service: String? = nil,name: String? = nil,networkInfoEnabled: Bool = false,bundleWithRumEnabled: Bool = true,bundleWithTraceEnabled: Bool = true,remoteSampleRate: Float = 100,remoteLogThreshold: DDLogLevel = .debug,printLogsToConsole: Bool = false)
+    public init(service: String? = nil,name: String? = nil,networkInfoEnabled: Bool = false,bundleWithRumEnabled: Bool = true,bundleWithTraceEnabled: Bool = true,remoteSampleRate: SampleRate = .maxSampleRate,remoteLogThreshold: DDLogLevel = .debug,printLogsToConsole: Bool = false)
 public class DDLogger: NSObject
     public func debug(_ message: String)
     public func debug(_ message: String, attributes: [String: Any])
@@ -407,8 +408,17 @@ public class DDRUMActionEventDD: NSObject
     @objc public var formatVersion: NSNumber
     @objc public var session: DDRUMActionEventDDSession?
 public class DDRUMActionEventDDAction: NSObject
+    @objc public var nameSource: DDRUMActionEventDDActionNameSource
     @objc public var position: DDRUMActionEventDDActionPosition?
     @objc public var target: DDRUMActionEventDDActionTarget?
+public enum DDRUMActionEventDDActionNameSource: Int
+    case none
+    case customAttribute
+    case maskPlaceholder
+    case standardAttribute
+    case textContent
+    case maskDisallowed
+    case blank
 public class DDRUMActionEventDDActionPosition: NSObject
     @objc public var x: NSNumber
     @objc public var y: NSNumber
@@ -567,6 +577,7 @@ public class DDRUMActionEventRUMSyntheticsTest: NSObject
     @objc public var resultId: String
     @objc public var testId: String
 public class DDRUMActionEventRUMUser: NSObject
+    @objc public var anonymousId: String?
     @objc public var email: String?
     @objc public var id: String?
     @objc public var name: String?
@@ -857,6 +868,7 @@ public class DDRUMErrorEventRUMSyntheticsTest: NSObject
     @objc public var resultId: String
     @objc public var testId: String
 public class DDRUMErrorEventRUMUser: NSObject
+    @objc public var anonymousId: String?
     @objc public var email: String?
     @objc public var id: String?
     @objc public var name: String?
@@ -1051,6 +1063,7 @@ public class DDRUMLongTaskEventRUMSyntheticsTest: NSObject
     @objc public var resultId: String
     @objc public var testId: String
 public class DDRUMLongTaskEventRUMUser: NSObject
+    @objc public var anonymousId: String?
     @objc public var email: String?
     @objc public var id: String?
     @objc public var name: String?
@@ -1192,6 +1205,7 @@ public class DDRUMResourceEventRUMOperatingSystem: NSObject
 public class DDRUMResourceEventResource: NSObject
     @objc public var connect: DDRUMResourceEventResourceConnect?
     @objc public var decodedBodySize: NSNumber?
+    @objc public var deliveryType: DDRUMResourceEventResourceDeliveryType
     @objc public var dns: DDRUMResourceEventResourceDNS?
     @objc public var download: DDRUMResourceEventResourceDownload?
     @objc public var duration: NSNumber?
@@ -1210,9 +1224,15 @@ public class DDRUMResourceEventResource: NSObject
     @objc public var transferSize: NSNumber?
     @objc public var type: DDRUMResourceEventResourceResourceType
     @objc public var url: String
+    @objc public var worker: DDRUMResourceEventResourceWorker?
 public class DDRUMResourceEventResourceConnect: NSObject
     @objc public var duration: NSNumber
     @objc public var start: NSNumber
+public enum DDRUMResourceEventResourceDeliveryType: Int
+    case none
+    case cache
+    case navigationalPrefetch
+    case other
 public class DDRUMResourceEventResourceDNS: NSObject
     @objc public var duration: NSNumber
     @objc public var start: NSNumber
@@ -1284,6 +1304,9 @@ public enum DDRUMResourceEventResourceResourceType: Int
     case media
     case other
     case native
+public class DDRUMResourceEventResourceWorker: NSObject
+    @objc public var duration: NSNumber
+    @objc public var start: NSNumber
 public class DDRUMResourceEventSession: NSObject
     @objc public var hasReplay: NSNumber?
     @objc public var id: String
@@ -1307,6 +1330,7 @@ public class DDRUMResourceEventRUMSyntheticsTest: NSObject
     @objc public var resultId: String
     @objc public var testId: String
 public class DDRUMResourceEventRUMUser: NSObject
+    @objc public var anonymousId: String?
     @objc public var email: String?
     @objc public var id: String?
     @objc public var name: String?
@@ -1492,6 +1516,7 @@ public class DDRUMViewEventRUMSyntheticsTest: NSObject
     @objc public var resultId: String
     @objc public var testId: String
 public class DDRUMViewEventRUMUser: NSObject
+    @objc public var anonymousId: String?
     @objc public var email: String?
     @objc public var id: String?
     @objc public var name: String?
@@ -1523,6 +1548,7 @@ public class DDRUMViewEventView: NSObject
     @objc public var interactionToNextPaint: NSNumber?
     @objc public var interactionToNextPaintTargetSelector: String?
     @objc public var interactionToNextPaintTime: NSNumber?
+    @objc public var interactionToNextViewTime: NSNumber?
     @objc public var isActive: NSNumber?
     @objc public var isSlowRendered: NSNumber?
     @objc public var jsRefreshRate: DDRUMViewEventViewJsRefreshRate?
@@ -1535,6 +1561,7 @@ public class DDRUMViewEventView: NSObject
     @objc public var memoryAverage: NSNumber?
     @objc public var memoryMax: NSNumber?
     @objc public var name: String?
+    @objc public var networkSettledTime: NSNumber?
     @objc public var referrer: String?
     @objc public var refreshRateAverage: NSNumber?
     @objc public var refreshRateMin: NSNumber?
@@ -1728,6 +1755,7 @@ public class DDRUMVitalEventRUMSyntheticsTest: NSObject
     @objc public var resultId: String
     @objc public var testId: String
 public class DDRUMVitalEventRUMUser: NSObject
+    @objc public var anonymousId: String?
     @objc public var email: String?
     @objc public var id: String?
     @objc public var name: String?
@@ -1751,6 +1779,7 @@ public class DDTelemetryErrorEvent: NSObject
     @objc public var action: DDTelemetryErrorEventAction?
     @objc public var application: DDTelemetryErrorEventApplication?
     @objc public var date: NSNumber
+    @objc public var effectiveSampleRate: NSNumber?
     @objc public var experimentalFeatures: [String]?
     @objc public var service: String
     @objc public var session: DDTelemetryErrorEventSession?
@@ -1801,6 +1830,7 @@ public class DDTelemetryDebugEvent: NSObject
     @objc public var action: DDTelemetryDebugEventAction?
     @objc public var application: DDTelemetryDebugEventApplication?
     @objc public var date: NSNumber
+    @objc public var effectiveSampleRate: NSNumber?
     @objc public var experimentalFeatures: [String]?
     @objc public var service: String
     @objc public var session: DDTelemetryDebugEventSession?
@@ -1847,6 +1877,7 @@ public class DDTelemetryConfigurationEvent: NSObject
     @objc public var action: DDTelemetryConfigurationEventAction?
     @objc public var application: DDTelemetryConfigurationEventApplication?
     @objc public var date: NSNumber
+    @objc public var effectiveSampleRate: NSNumber?
     @objc public var experimentalFeatures: [String]?
     @objc public var service: String
     @objc public var session: DDTelemetryConfigurationEventSession?
@@ -1886,6 +1917,7 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var batchProcessingLevel: NSNumber?
     @objc public var batchSize: NSNumber?
     @objc public var batchUploadFrequency: NSNumber?
+    @objc public var collectFeatureFlagsOn: [Int]?
     @objc public var compressIntakeRequests: NSNumber?
     @objc public var dartVersion: String?
     @objc public var defaultPrivacyLevel: String?
@@ -1895,6 +1927,7 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var forwardReports: DDTelemetryConfigurationEventTelemetryConfigurationForwardReports?
     @objc public var imagePrivacyLevel: String?
     @objc public var initializationType: String?
+    @objc public var isMainProcess: NSNumber?
     @objc public var mobileVitalsUpdatePeriod: NSNumber?
     @objc public var plugins: [DDTelemetryConfigurationEventTelemetryConfigurationPlugins]?
     @objc public var premiumSampleRate: NSNumber?
@@ -1949,6 +1982,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var useTracing: NSNumber?
     @objc public var useWorkerUrl: NSNumber?
     @objc public var viewTrackingStrategy: DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy
+public enum DDTelemetryConfigurationEventTelemetryConfigurationCollectFeatureFlagsOn: Int
+    case none
+    case view
+    case error
+    case vital
 public class DDTelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs: NSObject
     @objc public var stringsArray: [String]?
     @objc public var string: String?

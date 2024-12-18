@@ -43,11 +43,19 @@ internal struct FatalErrorBuilder {
     let errorBinaryImages: [RUMErrorEvent.Error.BinaryImages]?
     let errorWasTruncated: Bool?
     let errorMeta: RUMErrorEvent.Error.Meta?
+
+    let additionalAttributes: [String: Encodable]?
+
     var timeSinceAppStart: TimeInterval?
 
     /// Creates RUM error linked to given view.
     func createRUMError(with lastRUMView: RUMViewEvent) -> RUMErrorEvent {
         let msSinceAppStart = timeSinceAppStart.map { max(0, $0.toInt64Milliseconds) }
+
+        // Merge last view attributes with crash report attributes
+        let lastViewContextAttributes = lastRUMView.context?.contextInfo ?? [:]
+        let additionalAttributes = self.additionalAttributes ?? [:]
+        let contextInfo = lastViewContextAttributes.merging(additionalAttributes) { _, new in new }
 
         let event = RUMErrorEvent(
             dd: .init(
@@ -70,7 +78,9 @@ internal struct FatalErrorBuilder {
             ciTest: lastRUMView.ciTest,
             connectivity: lastRUMView.connectivity,
             container: nil,
-            context: lastRUMView.context,
+            context: RUMEventAttributes(
+                contextInfo: contextInfo
+            ),
             date: errorDate.timeIntervalSince1970.toInt64Milliseconds,
             device: lastRUMView.device,
             display: nil,

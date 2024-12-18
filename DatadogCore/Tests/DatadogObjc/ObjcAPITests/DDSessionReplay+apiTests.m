@@ -14,20 +14,24 @@
 @implementation DDSessionReplay_apiTests
 
 // MARK: Configuration
-- (void)testConfiguration {
+- (void)testConfigurationDeprecatedApi __attribute__ ((deprecated)) {
     DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100];
     configuration.defaultPrivacyLevel = DDSessionReplayConfigurationPrivacyLevelAllow;
-    configuration.customEndpoint = [NSURL new];
 
     [DDSessionReplay enableWith:configuration];
 }
 
 - (void)testConfigurationWithNewApi {
     DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100
-                                                   textAndInputPrivacyLevel:DDTextAndInputPrivacyLevelMaskAll
-                                                   imagePrivacyLevel:DDImagePrivacyLevelMaskNone
-                                                   touchPrivacyLevel:DDTouchPrivacyLevelShow];
+                                                                                        textAndInputPrivacyLevel:DDTextAndInputPrivacyLevelMaskAll
+                                                                                               imagePrivacyLevel:DDImagePrivacyLevelMaskNone
+                                                                                               touchPrivacyLevel:DDTouchPrivacyLevelShow
+                                                                                                    featureFlags:nil];
     configuration.customEndpoint = [NSURL new];
+
+    configuration.textAndInputPrivacyLevel = DDTextAndInputPrivacyLevelMaskSensitiveInputs;
+    configuration.imagePrivacyLevel = DDImagePrivacyLevelMaskAll;
+    configuration.touchPrivacyLevel = DDTouchPrivacyLevelHide;
 
     [DDSessionReplay enableWith:configuration];
 }
@@ -38,13 +42,11 @@
 }
 
 - (void)testStartRecordingImmediately {
-    DDSessionReplayConfiguration *configuration = [
-        [DDSessionReplayConfiguration alloc]
-        initWithReplaySampleRate:100
-        textAndInputPrivacyLevel:DDTextAndInputPrivacyLevelMaskAll
-        imagePrivacyLevel:DDImagePrivacyLevelMaskAll
-        touchPrivacyLevel:DDTouchPrivacyLevelHide
-    ];
+    DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100
+                                                                                        textAndInputPrivacyLevel:DDTextAndInputPrivacyLevelMaskAll
+                                                                                               imagePrivacyLevel:DDImagePrivacyLevelMaskAll
+                                                                                               touchPrivacyLevel:DDTouchPrivacyLevelHide
+                                                                                                    featureFlags:nil];
 
     configuration.startRecordingImmediately = false;
 

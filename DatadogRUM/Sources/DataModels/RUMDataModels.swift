@@ -13,7 +13,7 @@ internal protocol RUMDataModel: Codable {}
 /// Schema of all properties of an Action event
 public struct RUMActionEvent: RUMDataModel {
     /// Internal properties
-    public let dd: DD
+    public var dd: DD
 
     /// Action properties
     public var action: Action
@@ -102,7 +102,7 @@ public struct RUMActionEvent: RUMDataModel {
     /// Internal properties
     public struct DD: Codable {
         /// Action properties
-        public let action: Action?
+        public var action: Action?
 
         /// Browser SDK version
         public let browserSdkVersion: String?
@@ -126,6 +126,9 @@ public struct RUMActionEvent: RUMDataModel {
 
         /// Action properties
         public struct Action: Codable {
+            /// The strategy of how the auto click action name is computed
+            public var nameSource: NameSource?
+
             /// Action position properties
             public let position: Position?
 
@@ -133,8 +136,19 @@ public struct RUMActionEvent: RUMDataModel {
             public let target: Target?
 
             enum CodingKeys: String, CodingKey {
+                case nameSource = "name_source"
                 case position = "position"
                 case target = "target"
+            }
+
+            /// The strategy of how the auto click action name is computed
+            public enum NameSource: String, Codable {
+                case customAttribute = "custom_attribute"
+                case maskPlaceholder = "mask_placeholder"
+                case standardAttribute = "standard_attribute"
+                case textContent = "text_content"
+                case maskDisallowed = "mask_disallowed"
+                case blank = "blank"
             }
 
             /// Action position properties
@@ -1752,6 +1766,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Size in octet of the resource after removing any applied encoding
         public let decodedBodySize: Int64?
 
+        /// Delivery type of the resource
+        public let deliveryType: DeliveryType?
+
         /// DNS phase properties
         public let dns: DNS?
 
@@ -1812,6 +1829,7 @@ public struct RUMResourceEvent: RUMDataModel {
         enum CodingKeys: String, CodingKey {
             case connect = "connect"
             case decodedBodySize = "decoded_body_size"
+            case deliveryType = "delivery_type"
             case dns = "dns"
             case download = "download"
             case duration = "duration"
@@ -1845,6 +1863,13 @@ public struct RUMResourceEvent: RUMDataModel {
                 case duration = "duration"
                 case start = "start"
             }
+        }
+
+        /// Delivery type of the resource
+        public enum DeliveryType: String, Codable {
+            case cache = "cache"
+            case navigationalPrefetch = "navigational-prefetch"
+            case other = "other"
         }
 
         /// DNS phase properties
@@ -3141,6 +3166,9 @@ public struct TelemetryErrorEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// The actual percentage of telemetry usage per event
+    public let effectiveSampleRate: Double?
+
     /// Enabled experimental features
     public let experimentalFeatures: [String]?
 
@@ -3170,6 +3198,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case date = "date"
+        case effectiveSampleRate = "effective_sample_rate"
         case experimentalFeatures = "experimental_features"
         case service = "service"
         case session = "session"
@@ -3343,6 +3372,9 @@ public struct TelemetryDebugEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// The actual percentage of telemetry usage per event
+    public let effectiveSampleRate: Double?
+
     /// Enabled experimental features
     public let experimentalFeatures: [String]?
 
@@ -3372,6 +3404,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case date = "date"
+        case effectiveSampleRate = "effective_sample_rate"
         case experimentalFeatures = "experimental_features"
         case service = "service"
         case session = "session"
@@ -3525,6 +3558,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// The actual percentage of telemetry usage per event
+    public let effectiveSampleRate: Double?
+
     /// Enabled experimental features
     public let experimentalFeatures: [String]?
 
@@ -3554,6 +3590,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case date = "date"
+        case effectiveSampleRate = "effective_sample_rate"
         case experimentalFeatures = "experimental_features"
         case service = "service"
         case session = "session"
@@ -3664,6 +3701,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The upload frequency of batches (in milliseconds)
             public let batchUploadFrequency: Int64?
 
+            /// The list of events that include feature flags collection
+            public let collectFeatureFlagsOn: [CollectFeatureFlagsOn]?
+
             /// Whether intake requests are compressed
             public let compressIntakeRequests: Bool?
 
@@ -3690,6 +3730,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// The type of initialization the SDK used, in case multiple are supported
             public var initializationType: String?
+
+            /// Whether the SDK is initialised on the application's main or a secondary process
+            public let isMainProcess: Bool?
 
             /// The period between each Mobile Vital sample (in milliseconds)
             public var mobileVitalsUpdatePeriod: Int64?
@@ -3862,6 +3905,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case batchProcessingLevel = "batch_processing_level"
                 case batchSize = "batch_size"
                 case batchUploadFrequency = "batch_upload_frequency"
+                case collectFeatureFlagsOn = "collect_feature_flags_on"
                 case compressIntakeRequests = "compress_intake_requests"
                 case dartVersion = "dart_version"
                 case defaultPrivacyLevel = "default_privacy_level"
@@ -3871,6 +3915,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case forwardReports = "forward_reports"
                 case imagePrivacyLevel = "image_privacy_level"
                 case initializationType = "initialization_type"
+                case isMainProcess = "is_main_process"
                 case mobileVitalsUpdatePeriod = "mobile_vitals_update_period"
                 case plugins = "plugins"
                 case premiumSampleRate = "premium_sample_rate"
@@ -3925,6 +3970,12 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case useTracing = "use_tracing"
                 case useWorkerUrl = "use_worker_url"
                 case viewTrackingStrategy = "view_tracking_strategy"
+            }
+
+            public enum CollectFeatureFlagsOn: String, Codable {
+                case view = "view"
+                case error = "error"
+                case vital = "vital"
             }
 
             /// The console.* tracked
@@ -4148,6 +4199,9 @@ public struct TelemetryUsageEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// The actual percentage of telemetry usage per event
+    public let effectiveSampleRate: Double?
+
     /// Enabled experimental features
     public let experimentalFeatures: [String]?
 
@@ -4177,6 +4231,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case date = "date"
+        case effectiveSampleRate = "effective_sample_rate"
         case experimentalFeatures = "experimental_features"
         case service = "service"
         case session = "session"
@@ -4773,6 +4828,9 @@ public struct RUMSyntheticsTest: Codable {
 
 /// User properties
 public struct RUMUser: Codable {
+    /// Identifier of the user across sessions
+    public let anonymousId: String?
+
     /// Email of the user
     public let email: String?
 
@@ -4785,6 +4843,7 @@ public struct RUMUser: Codable {
     public var usrInfo: [String: Encodable]
 
     enum StaticCodingKeys: String, CodingKey {
+        case anonymousId = "anonymous_id"
         case email = "email"
         case id = "id"
         case name = "name"
@@ -4795,6 +4854,7 @@ extension RUMUser {
     public func encode(to encoder: Encoder) throws {
         // Encode static properties:
         var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(anonymousId, forKey: .anonymousId)
         try staticContainer.encodeIfPresent(email, forKey: .email)
         try staticContainer.encodeIfPresent(id, forKey: .id)
         try staticContainer.encodeIfPresent(name, forKey: .name)
@@ -4810,6 +4870,7 @@ extension RUMUser {
     public init(from decoder: Decoder) throws {
         // Decode static properties:
         let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.anonymousId = try staticContainer.decodeIfPresent(String.self, forKey: .anonymousId)
         self.email = try staticContainer.decodeIfPresent(String.self, forKey: .email)
         self.id = try staticContainer.decodeIfPresent(String.self, forKey: .id)
         self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
@@ -4919,4 +4980,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/d9b0451c01cab9c3c991bd2f5f3571da6ec1df83
+// Generated from https://github.com/DataDog/rum-events-format/tree/81c3d7401cba2a2faf48b5f4c0e8aca05c759662

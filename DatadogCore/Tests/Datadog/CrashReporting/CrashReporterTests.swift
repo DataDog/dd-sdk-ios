@@ -266,7 +266,7 @@ class CrashReporterTests: XCTestCase {
 
     // MARK: - Thread safety
 
-    func testAllCallsToPluginAreSynchronized() {
+    func testInjectingContextToPluginAreSynchronized() {
         let expectation = self.expectation(description: "`plugin` received at least 100 calls")
         expectation.expectedFulfillmentCount = 100
         expectation.assertForOverFulfill = false // to mitigate the call for initial context injection
@@ -276,10 +276,6 @@ class CrashReporterTests: XCTestCase {
 
         let plugin = CrashReportingPluginMock()
         plugin.didInjectContext = {
-            mutableState.toggle()
-            expectation.fulfill()
-        }
-        plugin.didReadPendingCrashReport = {
             mutableState.toggle()
             expectation.fulfill()
         }
@@ -297,13 +293,14 @@ class CrashReporterTests: XCTestCase {
         callConcurrently(
             closures: [
                 { crashContextProvider.onCrashContextChange(.mockRandom()) },
-                { feature.sendCrashReportIfFound() }
+                { crashContextProvider.onCrashContextChange(.mockRandom()) }
             ],
             iterations: 50 // each closure is called 50 times
         )
         // swiftlint:enable opening_brace
 
-        waitForExpectations(timeout: 2, handler: nil)
+        feature.flush()
+        waitForExpectations(timeout: 0)
     }
 
     // MARK: - Usage

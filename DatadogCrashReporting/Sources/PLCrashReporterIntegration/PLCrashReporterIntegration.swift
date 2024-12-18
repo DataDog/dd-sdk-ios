@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogInternal
+
 @preconcurrency import CrashReporter
 
 internal extension PLCrashReporterConfig {

@@ -110,7 +110,8 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
                         providerDataCount = data?.count ?? 0
                         providerExpectation.fulfill()
                         return [:]
-                })
+                    }
+                )
             ),
             in: core
         )
@@ -157,7 +158,8 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
                         providerInfo = (resp, data, err)
                         providerExpectation.fulfill()
                         return [:]
-                })
+                    }
+                )
             ),
             in: core
         )

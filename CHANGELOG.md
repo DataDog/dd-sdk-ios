@@ -1,9 +1,14 @@
 # Unreleased
 
 - [FEATURE] Add Time To Network Setled metric in RUM. See [#2125][]
+- [IMPROVEMENT] Add Datadog Configuration `backgroundTasksEnabled` ObjC API. See [#2148][]
+
+# 2.21.0 / 11-12-2024
+
 - [FIX] Fix sporadic file overwrite during consent change, ensuring event data integrity. See [#2113][]
 - [FIX] Fix trace inconsistency when using `URLSessionInterceptor` or Alamofire extension. See [#2114][]
 - [IMPROVEMENT] Add Session Replay `startRecordingImmediately` ObjC API. See [#2120][]
+- [IMPROVEMENT] Expose Crash Reporter Plugin Publicly. See [#2116][] (Thanks [@naftaly][]) [#2126][]
 
 # 2.20.0 / 14-11-2024
 
@@ -802,7 +807,10 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2113]: https://github.com/DataDog/dd-sdk-ios/pull/2113
 [#2125]: https://github.com/DataDog/dd-sdk-ios/pull/2125
 [#2114]: https://github.com/DataDog/dd-sdk-ios/pull/2114
+[#2116]: https://github.com/DataDog/dd-sdk-ios/pull/2116
 [#2120]: https://github.com/DataDog/dd-sdk-ios/pull/2120
+[#2126]: https://github.com/DataDog/dd-sdk-ios/pull/2126
+[#2148]: https://github.com/DataDog/dd-sdk-ios/pull/2148
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
@@ -835,3 +843,4 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@changm4n]: https://github.com/changm4n
 [@jfiser-paylocity]: https://github.com/jfiser-paylocity
 [@Hengyu]: https://github.com/Hengyu
+[@naftaly]: https://github.com/naftaly

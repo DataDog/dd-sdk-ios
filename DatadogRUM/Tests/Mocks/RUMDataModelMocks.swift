@@ -24,6 +24,7 @@ internal func randomRUMEvent() -> RUMDataModel {
 extension RUMUser: RandomMockable {
     public static func mockRandom() -> RUMUser {
         return RUMUser(
+            anonymousId: .mockRandom(),
             email: .mockRandom(),
             id: .mockRandom(),
             name: .mockRandom(),
@@ -269,6 +270,7 @@ extension RUMResourceEvent: RandomMockable {
             resource: .init(
                 connect: .init(duration: .mockRandom(), start: .mockRandom()),
                 decodedBodySize: nil,
+                deliveryType: nil,
                 dns: .init(duration: .mockRandom(), start: .mockRandom()),
                 download: .init(duration: .mockRandom(), start: .mockRandom()),
                 duration: .mockRandom(),
@@ -526,6 +528,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
             date: .mockRandom(),
+            effectiveSampleRate: .mockRandom(),
             experimentalFeatures: nil,
             service: .mockRandom(),
             session: .init(id: .mockRandom()),
@@ -540,12 +543,14 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     batchProcessingLevel: .mockRandom(),
                     batchSize: .mockAny(),
                     batchUploadFrequency: .mockRandom(),
+                    collectFeatureFlagsOn: nil,
                     compressIntakeRequests: nil,
                     defaultPrivacyLevel: .mockRandom(),
                     forwardConsoleLogs: nil,
                     forwardErrorsToLogs: nil,
                     forwardReports: nil,
                     initializationType: nil,
+                    isMainProcess: nil,
                     mobileVitalsUpdatePeriod: .mockRandom(),
                     premiumSampleRate: nil,
                     reactNativeVersion: nil,

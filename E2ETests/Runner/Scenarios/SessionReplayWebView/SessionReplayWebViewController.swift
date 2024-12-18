@@ -9,7 +9,7 @@ import WebKit
 import DatadogWebViewTracking
 
 class SessionReplayWebViewController: UIViewController, WKUIDelegate {
-    var webView: WKWebView!
+    var webView: WKWebView! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func loadView() {
         let configuration = WKWebViewConfiguration()

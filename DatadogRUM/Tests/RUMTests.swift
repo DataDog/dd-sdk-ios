@@ -412,7 +412,7 @@ class RUMTests: XCTestCase {
         // When
         config = RUM.Configuration(applicationID: applicationID)
         config.uuidGenerator = RUMUUIDGeneratorMock(uuid: sessionID)
-        config.sessionSampleRate = 100
+        config.sessionSampleRate = .maxSampleRate
         RUM.enable(with: config, in: core)
 
         // Then

@@ -13,7 +13,7 @@ import OpenTelemetryApi
 struct TraceScenario: Scenario {
     func start(info: TestInfo) -> UIViewController {
         Datadog.verbosityLevel = .debug
-        
+
         Datadog.initialize(
             with: .e2e(info: info),
             trackingConsent: .granted

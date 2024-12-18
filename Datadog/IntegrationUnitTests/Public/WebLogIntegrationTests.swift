@@ -15,10 +15,8 @@ import DatadogInternal
 @testable import DatadogWebViewTracking
 
 class WebLogIntegrationTests: XCTestCase {
-    // swiftlint:disable implicitly_unwrapped_optional
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
-    private var controller: WKUserContentControllerMock!
-    // swiftlint:enable implicitly_unwrapped_optional
+    private var controller: WKUserContentControllerMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         core = DatadogCoreProxy(
@@ -54,7 +52,7 @@ class WebLogIntegrationTests: XCTestCase {
         {
             "eventType": "log",
             "event": {
-                "date" : \(1635932927012),
+                "date" : \(1_635_932_927_012),
                 "status": "debug",
                 "message": "message",
                 "session_id": "0110cab4-7471-480e-aa4e-7ce039ced355",
@@ -72,7 +70,8 @@ class WebLogIntegrationTests: XCTestCase {
 
         // Then
         let logMatcher = try XCTUnwrap(core.waitAndReturnLogMatchers().first)
-        try logMatcher.assertItFullyMatches(jsonString: """
+        try logMatcher.assertItFullyMatches(
+            jsonString: """
         {
             "date": \(1_635_932_927_012 + 123.toInt64Milliseconds),
             "ddtags": "version:1.1.1,env:test",
@@ -92,7 +91,7 @@ class WebLogIntegrationTests: XCTestCase {
         // Given
         let randomApplicationID: String = .mockRandom()
         let randomUUID: UUID = .mockRandom()
-        
+
         Logs.enable(in: core)
         RUM.enable(with: .mockWith(applicationID: randomApplicationID) {
             $0.uuidGenerator = RUMUUIDGeneratorMock(uuid: randomUUID)
@@ -102,7 +101,7 @@ class WebLogIntegrationTests: XCTestCase {
         {
             "eventType": "log",
             "event": {
-                "date" : \(1635932927012),
+                "date" : \(1_635_932_927_012),
                 "status": "debug",
                 "message": "message",
                 "session_id": "0110cab4-7471-480e-aa4e-7ce039ced355",
@@ -122,7 +121,8 @@ class WebLogIntegrationTests: XCTestCase {
         // Then
         let expectedUUID = randomUUID.uuidString.lowercased()
         let logMatcher = try XCTUnwrap(core.waitAndReturnLogMatchers().first)
-        try logMatcher.assertItFullyMatches(jsonString: """
+        try logMatcher.assertItFullyMatches(
+            jsonString: """
         {
             "date": \(1_635_932_927_012 + 123.toInt64Milliseconds),
             "ddtags": "version:1.1.1,env:test",

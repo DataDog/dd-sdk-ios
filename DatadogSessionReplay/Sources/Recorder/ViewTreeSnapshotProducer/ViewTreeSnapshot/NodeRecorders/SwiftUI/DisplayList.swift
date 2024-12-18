@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
- #if os(iOS)
+#if os(iOS)
 
 import Foundation
 import SwiftUI
@@ -35,6 +35,9 @@ internal struct DisplayList {
         }
 
         internal struct ViewInfo {
+            /// The container view frame in this view coordinate space
+            let frame: CGRect
+
             /// Original view's `.backgorundColor`.
             let backgroundColor: CGColor?
 
@@ -80,6 +83,7 @@ internal struct DisplayList {
             case text(StyledTextContentView, CGSize)
             case platformView
             case color(Color._Resolved)
+            case image(GraphicsImage)
             case unknown
         }
 

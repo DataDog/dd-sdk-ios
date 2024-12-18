@@ -58,4 +58,8 @@ internal class PLCrashReporterPlugin: NSObject, CrashReportingPlugin {
     func inject(context: Data) {
         PLCrashReporterPlugin.thirdPartyCrashReporter?.inject(context: context)
     }
+
+    var backtraceReporter: BacktraceReporting? {
+        PLCrashReporterPlugin.thirdPartyCrashReporter.map { BacktraceReporter(reporter: $0) }
+    }
 }

@@ -35,7 +35,7 @@ class RUMMonitorTests: XCTestCase {
         // Given
         var capturedSession: String?
         config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-        config.sessionSampleRate = 100.0
+        config.sessionSampleRate = .maxSampleRate
         config.onSessionStart = { session, sampled in
             capturedSession = session
         }
@@ -75,7 +75,7 @@ class RUMMonitorTests: XCTestCase {
     func testWhenSessionIsStopped_itReturnsNil() throws {
         // Given
         config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-        config.sessionSampleRate = 100.0
+        config.sessionSampleRate = .maxSampleRate
         RUM.enable(with: config, in: core)
         let monitor = RUMMonitor.shared(in: core)
 
@@ -642,7 +642,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-        let expectedUserInfo = RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: [
+        let expectedUserInfo = RUMUser(anonymousId: nil, email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: [
             "str": AnyEncodable("value"),
             "int": AnyEncodable(11_235),
             "bool": AnyEncodable(true)

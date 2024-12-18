@@ -169,7 +169,8 @@ public extension Array {
     func firstElement<T>(of type: T.Type, unique: Bool = true, file: StaticString = #filePath, line: UInt = #line) -> T? {
         let all = compactMap { $0 as? T }
         if unique && all.count > 1 {
-            XCTFail("""
+            XCTFail(
+                """
                 The array has more than one element of type \(T.self).
                 Use `unique: false` if this is expected.
                 """,
