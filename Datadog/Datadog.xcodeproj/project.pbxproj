@@ -799,6 +799,7 @@
 		D20FD9D12ACC02F9004D3569 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
 		D20FD9D32ACC08D1004D3569 /* WebKitMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20FD9D22ACC08D1004D3569 /* WebKitMocks.swift */; };
 		D20FD9D62ACC0934004D3569 /* WebLogIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20FD9D52ACC0934004D3569 /* WebLogIntegrationTests.swift */; };
+		D21331C12D132F0600E4A6A1 /* SwiftUIWireframesBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21331C02D132F0600E4A6A1 /* SwiftUIWireframesBuilderTests.swift */; };
 		D214DA8129DF2D5E004D0AE8 /* CrashReportingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DE333525C8278A008E3EC2 /* CrashReportingPlugin.swift */; };
 		D214DA8229DF2D5E004D0AE8 /* CrashReportingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DE333525C8278A008E3EC2 /* CrashReportingPlugin.swift */; };
 		D214DA8329DF2D5E004D0AE8 /* CrashReporting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6161247825CA9CA6009901BE /* CrashReporting.swift */; };
@@ -2869,6 +2870,7 @@
 		D20FD9CE2AC6FF42004D3569 /* WebViewLogReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewLogReceiverTests.swift; sourceTree = "<group>"; };
 		D20FD9D22ACC08D1004D3569 /* WebKitMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebKitMocks.swift; sourceTree = "<group>"; };
 		D20FD9D52ACC0934004D3569 /* WebLogIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebLogIntegrationTests.swift; sourceTree = "<group>"; };
+		D21331C02D132F0600E4A6A1 /* SwiftUIWireframesBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIWireframesBuilderTests.swift; sourceTree = "<group>"; };
 		D213532F270CA722000315AD /* DataCompressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompressionTests.swift; sourceTree = "<group>"; };
 		D214DAA429E072D7004D0AE8 /* MessageBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBus.swift; sourceTree = "<group>"; };
 		D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryReceiver.swift; sourceTree = "<group>"; };
@@ -5733,6 +5735,7 @@
 		960B26BA2D03541900D7196F /* SwiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				D21331C02D132F0600E4A6A1 /* SwiftUIWireframesBuilderTests.swift */,
 				962D72C42CF7806300F86EF0 /* GraphicsImageReflectionTests.swift */,
 				96867B982D08826B004AE0BC /* TextReflectionTests.swift */,
 				96867B9A2D0883DD004AE0BC /* ColorReflectionTests.swift */,
@@ -8606,6 +8609,7 @@
 				61054FC72A6EE1BA00AAA894 /* SRDataModelsMocks.swift in Sources */,
 				D218B0482D072CF300E3F82C /* SessionReplayTelemetryTests.swift in Sources */,
 				61054FC82A6EE1BA00AAA894 /* SnapshotProcessorSpy.swift in Sources */,
+				D21331C12D132F0600E4A6A1 /* SwiftUIWireframesBuilderTests.swift in Sources */,
 				A74A72872B10CE4100771FEB /* ResourceMocks.swift in Sources */,
 				61054FA42A6EE1BA00AAA894 /* DiffTests.swift in Sources */,
 				61054FA02A6EE1BA00AAA894 /* SRCompressionTests.swift in Sources */,
