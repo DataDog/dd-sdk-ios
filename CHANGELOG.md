@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Add Time To Network Setled metric in RUM. See [#2125][]
 - [IMPROVEMENT] Add Datadog Configuration `backgroundTasksEnabled` ObjC API. See [#2148][]
 
 # 2.21.0 / 11-12-2024
@@ -804,6 +805,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2063]: https://github.com/DataDog/dd-sdk-ios/pull/2063
 [#2092]: https://github.com/DataDog/dd-sdk-ios/pull/2092
 [#2113]: https://github.com/DataDog/dd-sdk-ios/pull/2113
+[#2125]: https://github.com/DataDog/dd-sdk-ios/pull/2125
 [#2114]: https://github.com/DataDog/dd-sdk-ios/pull/2114
 [#2116]: https://github.com/DataDog/dd-sdk-ios/pull/2116
 [#2120]: https://github.com/DataDog/dd-sdk-ios/pull/2120

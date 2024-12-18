@@ -1215,8 +1215,8 @@ class RUMResourceScopeTests: XCTestCase {
 
     func testGivenResourceScopeWithDefaultEventsMapper_whenSendingEvents_thenEventSentCallbacksAreCalled() throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
-        var onResourceEventSentCalled = false
-        var onErrorEventSentCalled = false
+        var onResourceEventCalled = false
+        var onErrorEventCalled = false
         // Given
         let scope1 = RUMResourceScope.mockWith(
             context: rumContext,
@@ -1225,9 +1225,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            onResourceEventSent: {
-                onResourceEventSentCalled = true
-            }
+            onResourceEvent: { onResourceEventCalled = $0 }
         )
 
         let scope2 = RUMResourceScope.mockWith(
@@ -1237,9 +1235,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://foo.com/resource/2",
             httpMethod: .post,
-            onErrorEventSent: {
-                onErrorEventSentCalled = true
-            }
+            onErrorEvent: { onErrorEventCalled = $0 }
         )
 
         // When
@@ -1268,14 +1264,14 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         XCTAssertFalse(writer.events(ofType: RUMResourceEvent.self).isEmpty)
-        XCTAssertTrue(onResourceEventSentCalled)
-        XCTAssertTrue(onErrorEventSentCalled)
+        XCTAssertTrue(onResourceEventCalled)
+        XCTAssertTrue(onErrorEventCalled)
     }
 
     func testGivenResourceScopeWithDroppingEventsMapper_whenBypassingSendingEvents_thenEventSentCallbacksAreNotCalled() {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
-        var onResourceEventSentCalled = false
-        var onErrorEventSentCalled = false
+        var onResourceEventCalled = false
+        var onErrorEventCalled = false
 
         // Given
         let eventBuilder = RUMEventBuilder(
@@ -1300,9 +1296,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            onResourceEventSent: {
-                onResourceEventSentCalled = true
-            }
+            onResourceEvent: { onResourceEventCalled = $0 }
         )
 
         let scope2 = RUMResourceScope.mockWith(
@@ -1312,9 +1306,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://foo.com/resource/2",
             httpMethod: .post,
-            onErrorEventSent: {
-                onErrorEventSentCalled = true
-            }
+            onErrorEvent: { onErrorEventCalled = $0 }
         )
         // swiftlint:enable trailing_closure
 
@@ -1344,7 +1336,146 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         XCTAssertTrue(writer.events(ofType: RUMResourceEvent.self).isEmpty)
-        XCTAssertFalse(onResourceEventSentCalled)
-        XCTAssertFalse(onErrorEventSentCalled)
+        XCTAssertFalse(onResourceEventCalled)
+        XCTAssertFalse(onErrorEventCalled)
+    }
+
+    // MARK: - Updating Time To Network Settled Metric
+
+    func testWhenResourceLoadingEnds_itTrackStartAndStopInTTNSMetric() throws {
+        let resourceKey = "resource"
+        let resourceDuration: TimeInterval = 2
+        let viewStartDate = Date()
+        let resourceUUID = RUMUUID(rawValue: UUID())
+
+        // Given
+        let metric = TTNSMetricMock()
+        let scope = RUMResourceScope(
+            context: .mockAny(),
+            dependencies: .mockWith(
+                rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: resourceUUID)
+            ),
+            resourceKey: resourceKey,
+            attributes: [:],
+            startTime: viewStartDate,
+            serverTimeOffset: .mockRandom(),
+            url: .mockAny(),
+            httpMethod: .mockAny(),
+            resourceKindBasedOnRequest: nil,
+            spanContext: nil,
+            networkSettledMetric: metric,
+            onResourceEvent: { _ in },
+            onErrorEvent: { _ in }
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(
+                resourceKey: resourceKey,
+                time: viewStartDate + resourceDuration
+            ),
+            context: .mockAny(),
+            writer: writer
+        )
+
+        // Then
+        XCTAssertEqual(metric.resourceStartDates[resourceUUID], viewStartDate)
+        XCTAssertEqual(metric.resourceEndDates[resourceUUID]?.0, viewStartDate + resourceDuration)
+        XCTAssertEqual(metric.resourceEndDates[resourceUUID]?.1, resourceDuration)
+    }
+
+    func testWhenResourceLoadingEndsWithError_thenItsDurationTrackedInTTNSMetric() throws {
+        let resourceKey = "resource"
+        let resourceDuration: TimeInterval = 2
+        let viewStartDate = Date()
+        let resourceUUID = RUMUUID(rawValue: UUID())
+
+        // Given
+        let metric = TTNSMetricMock()
+        let scope = RUMResourceScope(
+            context: .mockAny(),
+            dependencies: .mockWith(
+                rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: resourceUUID)
+            ),
+            resourceKey: resourceKey,
+            attributes: [:],
+            startTime: viewStartDate,
+            serverTimeOffset: .mockRandom(),
+            url: .mockAny(),
+            httpMethod: .mockAny(),
+            resourceKindBasedOnRequest: nil,
+            spanContext: nil,
+            networkSettledMetric: metric,
+            onResourceEvent: { _ in },
+            onErrorEvent: { _ in }
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(
+                resourceKey: resourceKey,
+                time: viewStartDate + resourceDuration
+            ),
+            context: .mockAny(),
+            writer: writer
+        )
+
+        // Then
+        XCTAssertEqual(metric.resourceStartDates[resourceUUID], viewStartDate)
+        XCTAssertEqual(metric.resourceEndDates[resourceUUID]?.0, viewStartDate + resourceDuration)
+        XCTAssertNil(metric.resourceEndDates[resourceUUID]?.1)
+    }
+
+    func testWhenResourceLoadingEndsAndResourceIsDropped_itTrackStoppedInTTNSMetric() throws {
+        let resourceKey = "resource"
+        let viewStartDate = Date()
+        let resourceUUID = RUMUUID(rawValue: UUID())
+
+        // Given
+        let metric = TTNSMetricMock()
+        let scope = RUMResourceScope(
+            context: .mockAny(),
+            dependencies: .mockWith(
+                eventBuilder: RUMEventBuilder(
+                    eventsMapper: .mockWith(
+                        errorEventMapper: { _ in return nil }, // drop ALL errors
+                        resourceEventMapper: { _ in return nil } // drop ALL resources
+                    )
+                ),
+                rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: resourceUUID)
+            ),
+            resourceKey: resourceKey,
+            attributes: [:],
+            startTime: viewStartDate,
+            serverTimeOffset: .mockRandom(),
+            url: .mockAny(),
+            httpMethod: .mockAny(),
+            resourceKindBasedOnRequest: nil,
+            spanContext: nil,
+            networkSettledMetric: metric,
+            onResourceEvent: { _ in },
+            onErrorEvent: { _ in }
+        )
+
+        // When (end with completion or error)
+        oneOf([
+            {
+                _ = scope.process(
+                    command: RUMStopResourceCommand.mockWith(resourceKey: resourceKey, time: viewStartDate + 1),
+                    context: .mockAny(),
+                    writer: self.writer
+                )
+            },
+            {
+                _ = scope.process(
+                    command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: resourceKey, time: viewStartDate + 1),
+                    context: .mockAny(),
+                    writer: self.writer
+                )
+            }
+        ])
+
+        // Then
+        XCTAssertEqual(metric.resourcesDropped, [resourceUUID])
     }
 }
