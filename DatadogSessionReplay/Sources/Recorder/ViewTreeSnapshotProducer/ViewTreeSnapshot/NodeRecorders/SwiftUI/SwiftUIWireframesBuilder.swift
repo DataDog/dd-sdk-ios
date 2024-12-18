@@ -173,7 +173,12 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
         case .platformView:
             return nil // Should be recorder by UIKit recorder
         case .unknown:
-            return nil // Need a placeholder
+            return context.builder.createPlaceholderWireframe(
+                id: Int64(content.seed.value),
+                frame: context.convert(frame: item.frame),
+                clip: context.clip,
+                label: "Unsupported SwiftUI component"
+            )
         }
     }
 }
