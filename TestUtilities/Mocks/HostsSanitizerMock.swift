@@ -8,11 +8,9 @@ import DatadogInternal
 
 public class HostsSanitizerMock: HostsSanitizing {
     public private(set) var sanitizations = [(hosts: Set<String>, warningMessage: String)]()
-    
-    public init() {
-        
-    }
-    
+
+    public init() {}
+
     public func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String> {
         sanitizations.append((hosts: hosts, warningMessage: warningMessage))
         return hosts

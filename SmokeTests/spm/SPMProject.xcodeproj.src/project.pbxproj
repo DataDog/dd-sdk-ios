@@ -31,6 +31,7 @@
 		D266C68B2B76609F008866F9 /* DatadogObjc in Frameworks */ = {isa = PBXBuildFile; productRef = D266C68A2B76609F008866F9 /* DatadogObjc */; };
 		D26A32D72A4C892A00903514 /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = D26A32D62A4C892A00903514 /* DatadogCore */; };
 		D26A32D92A4C893300903514 /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = D26A32D82A4C893300903514 /* DatadogCore */; };
+		D276FB592D109E0800771673 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = D276FB582D109E0800771673 /* DatadogSessionReplay */; };
 		D2966C2E29CA1F2D00FC6B3C /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = D2966C2D29CA1F2D00FC6B3C /* DatadogTrace */; };
 		D2966C3029CA1F3300FC6B3C /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = D2966C2F29CA1F3300FC6B3C /* DatadogTrace */; };
 		D2CE76BA29F6B9E300D79713 /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = D2CE76B929F6B9E300D79713 /* DatadogRUM */; };
@@ -149,6 +150,7 @@
 				D2966C3029CA1F3300FC6B3C /* DatadogTrace in Frameworks */,
 				D266C68B2B76609F008866F9 /* DatadogObjc in Frameworks */,
 				D2344E2129ACDE68007F5BD2 /* DatadogLogs in Frameworks */,
+				D276FB592D109E0800771673 /* DatadogSessionReplay in Frameworks */,
 				D2CE76BA29F6B9E300D79713 /* DatadogRUM in Frameworks */,
 				D26A32D92A4C893300903514 /* DatadogCore in Frameworks */,
 				D23BF5F727CCCC3300BB4CCD /* DatadogCrashReporting in Frameworks */,
@@ -343,6 +345,7 @@
 				D2CE76B929F6B9E300D79713 /* DatadogRUM */,
 				D26A32D82A4C893300903514 /* DatadogCore */,
 				D266C68A2B76609F008866F9 /* DatadogObjc */,
+				D276FB582D109E0800771673 /* DatadogSessionReplay */,
 			);
 			productName = SPMProject;
 			productReference = D23BF5FE27CCCC3300BB4CCD /* App.app */;
@@ -1143,6 +1146,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
 			productName = DatadogCore;
+		};
+		D276FB582D109E0800771673 /* DatadogSessionReplay */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
+			productName = DatadogSessionReplay;
 		};
 		D2966C2D29CA1F2D00FC6B3C /* DatadogTrace */ = {
 			isa = XCSwiftPackageProductDependency;

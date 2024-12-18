@@ -60,9 +60,9 @@ private extension SRWireframe {
             return text.toFrame()
         case .imageWireframe(value: let image):
             return image.toFrame(
-                imageData: resources.first {
-                    $0.calculateIdentifier() == image.resourceId
-                }?.calculateData()
+                imageData: resources
+                    .first { $0.calculateIdentifier() == image.resourceId }?
+                    .calculateData()
             )
         case .placeholderWireframe(value: let placeholder):
             return placeholder.toFrame()
@@ -172,7 +172,7 @@ private extension BlueprintFrame {
         width: Int64,
         height: Int64,
         border: SRShapeBorder?,
-        style: SRShapeStyle?, 
+        style: SRShapeStyle?,
         clip: SRContentClip?,
         content: BlueprintFrame.Content?
     ) {
@@ -222,7 +222,6 @@ private extension BlueprintFrame {
         frame.style = fs
         self = frame
     }
-
 }
 
 extension BlueprintFrame.Content {
@@ -284,7 +283,7 @@ private extension UIColor {
             red: CGFloat((hex8 >> 24) & mask) / CGFloat(255),
             green: CGFloat((hex8 >> 16) & mask) / CGFloat(255),
             blue: CGFloat((hex8 >> 8) & mask) / CGFloat(255),
-            alpha: CGFloat(hex8  & mask) / CGFloat(255)
+            alpha: CGFloat(hex8 & mask) / CGFloat(255)
         )
     }
 }

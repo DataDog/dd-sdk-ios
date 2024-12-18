@@ -263,6 +263,17 @@ public class DDConfiguration: NSObject {
         set { sdkConfiguration._internal_mutation { $0.additionalConfiguration = newValue } }
     }
 
+    /// Flag that determines if UIApplication methods [`beginBackgroundTask(expirationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplication/1623031-beginbackgroundtaskwithexpiratio) and [`endBackgroundTask:`](https://developer.apple.com/documentation/uikit/uiapplication/1622970-endbackgroundtask)
+    /// are utilized to perform background uploads. It may extend the amount of time the app is operating in background by 30 seconds.
+    ///
+    /// Tasks are normally stopped when there's nothing to upload or when encountering any upload blocker such us no internet connection or low battery.
+    ///
+    /// `false` by default.
+    @objc public var backgroundTasksEnabled: Bool {
+        get { sdkConfiguration.backgroundTasksEnabled }
+        set { sdkConfiguration.backgroundTasksEnabled = newValue }
+    }
+
     /// Creates a Datadog SDK Configuration object.
     ///
     /// - Parameters:

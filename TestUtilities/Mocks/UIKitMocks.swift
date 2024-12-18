@@ -8,9 +8,9 @@
 import UIKit
 
 public class UIDeviceMock: UIDevice {
-    public override var model: String { _model }
-    public override var systemName: String { _systemName }
-    public override var systemVersion: String { _systemVersion }
+    override public var model: String { _model }
+    override public var systemName: String { _systemName }
+    override public var systemVersion: String { _systemVersion }
 
     private var _model: String
     private var _systemName: String
@@ -27,17 +27,17 @@ public class UIDeviceMock: UIDevice {
         self._systemVersion = systemVersion
     }
     #else
-    public override var isBatteryMonitoringEnabled: Bool {
+    override public var isBatteryMonitoringEnabled: Bool {
         get { _isBatteryMonitoringEnabled }
         set { _isBatteryMonitoringEnabled = newValue }
     }
 
-    public override var batteryState: UIDevice.BatteryState {
+    override public var batteryState: UIDevice.BatteryState {
         get { _batteryState }
         set { _batteryState = newValue }
     }
 
-    public override var batteryLevel: Float {
+    override public var batteryLevel: Float {
         get { _batteryLevel }
         set { _batteryLevel = newValue }
     }
@@ -63,7 +63,6 @@ public class UIDeviceMock: UIDevice {
     }
     #endif
 }
-
 
 #if !os(tvOS)
 extension UIDevice.BatteryState: AnyMockable {

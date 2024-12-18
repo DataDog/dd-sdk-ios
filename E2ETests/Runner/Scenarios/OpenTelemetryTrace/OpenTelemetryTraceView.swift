@@ -16,84 +16,84 @@ class OpenTelemetryTraceViewController: UIHostingController<OpenTelemetryTraceVi
         super.init(rootView: OpenTelemetryTraceView(tracer: tracer, urlSession: urlSession))
     }
 
-    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
+    @available(*, unavailable)
+    @MainActor
+    dynamic required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }
 
 struct OpenTelemetryTraceView: View {
-
     let tracer: OpenTelemetryApi.Tracer
     let urlSession: URLSession
 
     var body: some View {
         NavigationView {
             VStack {
-                 Form {
-                     Section(header: Text("Local span, starts and ends in the same thread")) {
-                         Button(action: {
-                             tracer.spanBuilder(spanName: "Local Span").startSpan().end()
-                         }) {
-                             Text("Generate")
-                         }
-                     }
+                Form {
+                    Section(header: Text("Local span, starts and ends in the same thread")) {
+                        Button(action: {
+                            tracer.spanBuilder(spanName: "Local Span").startSpan().end()
+                        }) {
+                            Text("Generate")
+                        }
+                    }
 
-                     Section(header: Text("Distributed span, calling httpbin.org")) {
-                         Button(action: {
-                             Task {
-                                 let (_, response) = try await self.urlSession.data(from: .init(string: "https://httpbin.org/get")!)
-                                 guard let httpResponse = response as? HTTPURLResponse else {
-                                     print("Invalid response")
-                                     return
-                                 }
-
-                                 print("Response status code: \(httpResponse.statusCode)")
-                             }
-                         }) {
-                             Text("Call httpbin.org/get")
-                         }
-
-                            Button(action: {
-                                Task {
-                                    let (_, response) = try await self.urlSession.data(from: .init(string: "https://httpbin.org/status/500")!)
-                                    guard let httpResponse = response as? HTTPURLResponse else {
-                                        print("Invalid response")
-                                        return
-                                    }
-
-                                    print("Response status code: \(httpResponse.statusCode)")
+                    Section(header: Text("Distributed span, calling httpbin.org")) {
+                        Button(action: {
+                            Task {
+                                let (_, response) = try await self.urlSession.data(from: .init(string: "https://httpbin.org/get")!)
+                                guard let httpResponse = response as? HTTPURLResponse else {
+                                    print("Invalid response")
+                                    return
                                 }
-                            }) {
-                                Text("Call httpbin.org/status/500")
+
+                                print("Response status code: \(httpResponse.statusCode)")
                             }
-                     }
+                        }) {
+                            Text("Call httpbin.org/get")
+                        }
 
-                     Section(header: Text("Async Await span, starts and ends in different threads")) {
-                         Button(action: {
-                             let span = tracer.spanBuilder(spanName: "Async Await Span").startSpan()
-                             Task {
-                                 try await Task.sleep(nanoseconds: 1_000_000_000)
-                                 span.end()
-                             }
-                         }) {
-                             Text("Generate")
-                         }
-                     }
+                        Button(action: {
+                            Task {
+                                let (_, response) = try await self.urlSession.data(from: .init(string: "https://httpbin.org/status/500")!)
+                                guard let httpResponse = response as? HTTPURLResponse else {
+                                    print("Invalid response")
+                                    return
+                                }
 
-                     Section(header: Text("Closure span, starts and ends in different threads")) {
-                         Button(action: {
-                             let span = tracer.spanBuilder(spanName: "Closure Span").startSpan()
-                             DispatchQueue.main.async {
-                                 span.end()
-                             }
-                         }) {
-                             Text("Generate")
-                         }
-                     }
-                 }
-             }
+                                print("Response status code: \(httpResponse.statusCode)")
+                            }
+                        }) {
+                            Text("Call httpbin.org/status/500")
+                        }
+                    }
+
+                    Section(header: Text("Async Await span, starts and ends in different threads")) {
+                        Button(action: {
+                            let span = tracer.spanBuilder(spanName: "Async Await Span").startSpan()
+                            Task {
+                                try await Task.sleep(nanoseconds: 1_000_000_000)
+                                span.end()
+                            }
+                        }) {
+                            Text("Generate")
+                        }
+                    }
+
+                    Section(header: Text("Closure span, starts and ends in different threads")) {
+                        Button(action: {
+                            let span = tracer.spanBuilder(spanName: "Closure Span").startSpan()
+                            DispatchQueue.main.async {
+                                span.end()
+                            }
+                        }) {
+                            Text("Generate")
+                        }
+                    }
+                }
+            }
             .navigationTitle("OpenTelemetry Trace")
         }
-
     }
 }

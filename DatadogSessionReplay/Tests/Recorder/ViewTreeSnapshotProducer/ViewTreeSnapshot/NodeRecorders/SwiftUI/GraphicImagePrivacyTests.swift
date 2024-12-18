@@ -31,5 +31,4 @@ class ImagePrivacyTests: XCTestCase {
         XCTAssertFalse(ImagePrivacyLevel.maskNonBundledOnly.shouldRecordGraphicsImagePredicate(largeGraphicsImage))
     }
 }
-
 #endif

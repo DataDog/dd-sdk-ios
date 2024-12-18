@@ -52,7 +52,7 @@ extension ExecutionContext: AnyMockable, RandomMockable {
     public static func mockRandom() -> Self {
         return .init(previousResponseCode: .mockRandom(), attempt: .mockRandom())
     }
-    
+
     public static func mockWith(previousResponseCode: Int?, attempt: UInt) -> Self {
         return .init(previousResponseCode: previousResponseCode, attempt: attempt)
     }

@@ -12,7 +12,7 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
         weak var scope: FeatureScopeMock?
         let bypassConsent: Bool
 
-        func write<T, M>(value: T, metadata: M?) where T : Encodable, M : Encodable {
+        func write<T, M>(value: T, metadata: M?) where T: Encodable, M: Encodable {
             scope?.events.append((value, metadata, bypassConsent))
         }
     }
@@ -59,7 +59,10 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     }
 
     /// Retrieve typed events written through Even Write Context API with given `bypassConsent` flag.
-    public func eventsWritten<T>(ofType type: T.Type = T.self, withBypassConsent bypassConsent: Bool) -> [T] where T: Encodable {
+    public func eventsWritten<T>( // swiftlint:disable:this function_default_parameter_at_end
+        ofType type: T.Type = T.self,
+        withBypassConsent bypassConsent: Bool
+    ) -> [T] where T: Encodable {
         return events.filter { $0.bypassConsent == bypassConsent }.compactMap { $0.event as? T }
     }
 

@@ -36,7 +36,6 @@ public func CreateTemporaryDirectory(attributes: [FileAttributeKey: Any]? = nil,
     }
 }
 
-
 /// Deletes entire directory with its content.
 public func DeleteTemporaryDirectory(file: StaticString = #file, line: UInt = #line) {
     if FileManager.default.fileExists(atPath: temporaryDirectory.path) {

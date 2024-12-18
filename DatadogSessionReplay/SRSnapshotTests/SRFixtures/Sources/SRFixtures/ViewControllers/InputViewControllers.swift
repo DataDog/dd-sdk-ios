@@ -25,7 +25,6 @@ internal class PickersViewController: UIViewController {
         func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
             labels[component][row]
         }
-
     }
 
     private let firstPickerData = PickerData(
@@ -59,11 +58,11 @@ internal class PickersViewController: UIViewController {
 }
 
 public class DatePickersInlineViewController: UIViewController, DateSetting {
-    @IBOutlet weak public var datePicker: UIDatePicker!
+    @IBOutlet public weak var datePicker: UIDatePicker!
 }
 
 public class DatePickersCompactViewController: UIViewController, DateSetting {
-    @IBOutlet weak public var datePicker: UIDatePicker!
+    @IBOutlet public weak var datePicker: UIDatePicker!
 
     /// Forces the "compact" date picker to open full calendar view in a popover.
     public func openCalendarPopover() {
@@ -95,20 +94,20 @@ public class DatePickersCompactViewController: UIViewController, DateSetting {
 }
 
 public class DatePickersWheelsViewController: UIViewController, DateSetting {
-    @IBOutlet weak public var datePicker: UIDatePicker!
+    @IBOutlet public weak var datePicker: UIDatePicker!
 }
 
 public class TimePickersCountDownViewController: UIViewController {}
 
 public class TimePickersWheelViewController: UIViewController, DateSetting {
-    @IBOutlet weak public var datePicker: UIDatePicker!
+    @IBOutlet public weak var datePicker: UIDatePicker!
 }
 
 /// Sharing the same VC for compact time and date picker.
 public typealias TimePickersCompactViewController = DatePickersCompactViewController
 
 public protocol DateSetting: AnyObject {
-    var datePicker: UIDatePicker! { get }
+    var datePicker: UIDatePicker! { get } // swiftlint:disable:this implicitly_unwrapped_optional
     func set(date: Date, timeZone: TimeZone)
 }
 

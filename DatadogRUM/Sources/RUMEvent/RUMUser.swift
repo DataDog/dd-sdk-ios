@@ -22,6 +22,7 @@ extension RUMUser {
 
     init(userInfo: UserInfo) {
         self.init(
+            anonymousId: nil,
             email: userInfo.email,
             id: userInfo.id,
             name: userInfo.name,

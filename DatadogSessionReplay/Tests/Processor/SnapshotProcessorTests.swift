@@ -146,8 +146,8 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecords[0].records[1].isFocusRecord)
         XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord)
 
-        XCTAssertEqual(enrichedRecords[1].records.count, 2, "It should follow with 'full snapshot' → 'incremental snapshot' records")
-        XCTAssertTrue(enrichedRecords[1].records[0].isFullSnapshotRecord)
+        XCTAssertEqual(enrichedRecords[1].records.count, 2, "It should follow with 'incremental snapshot' records")
+        XCTAssertTrue(enrichedRecords[1].records[0].isIncrementalSnapshotRecord)
         XCTAssertTrue(enrichedRecords[1].records[1].isIncrementalSnapshotRecord)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.height, 100)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.width, 200)

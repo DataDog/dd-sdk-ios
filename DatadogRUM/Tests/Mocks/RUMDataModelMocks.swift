@@ -24,6 +24,7 @@ internal func randomRUMEvent() -> RUMDataModel {
 extension RUMUser: RandomMockable {
     public static func mockRandom() -> RUMUser {
         return RUMUser(
+            anonymousId: .mockRandom(),
             email: .mockRandom(),
             id: .mockRandom(),
             name: .mockRandom(),
@@ -542,6 +543,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     batchProcessingLevel: .mockRandom(),
                     batchSize: .mockAny(),
                     batchUploadFrequency: .mockRandom(),
+                    collectFeatureFlagsOn: nil,
                     compressIntakeRequests: nil,
                     defaultPrivacyLevel: .mockRandom(),
                     forwardConsoleLogs: nil,

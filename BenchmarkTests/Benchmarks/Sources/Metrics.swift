@@ -97,7 +97,7 @@ extension MetricAggregator where T: BinaryFloatingPoint {
 internal final class Memory: MetricAggregator<Double> {
     /// Dispatch source object for monitoring timer events.
     private let timer: DispatchSourceTimer
-    
+
     /// Create a `Memory` aggregator to periodically record the memory footprint on the
     /// provided queue.
     ///
@@ -247,7 +247,8 @@ internal final class FPS: MetricAggregator<Int> {
 
         init() { }
 
-        @objc func tick(link: CADisplayLink) {
+        @objc
+        func tick(link: CADisplayLink) {
             guard let fps else {
                 return
             }

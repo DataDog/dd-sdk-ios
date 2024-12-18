@@ -3167,7 +3167,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
     public let date: Int64
 
     /// The actual percentage of telemetry usage per event
-    public let effectiveSampleRate: Int64?
+    public let effectiveSampleRate: Double?
 
     /// Enabled experimental features
     public let experimentalFeatures: [String]?
@@ -3373,7 +3373,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
     public let date: Int64
 
     /// The actual percentage of telemetry usage per event
-    public let effectiveSampleRate: Int64?
+    public let effectiveSampleRate: Double?
 
     /// Enabled experimental features
     public let experimentalFeatures: [String]?
@@ -3559,7 +3559,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
     public let date: Int64
 
     /// The actual percentage of telemetry usage per event
-    public let effectiveSampleRate: Int64?
+    public let effectiveSampleRate: Double?
 
     /// Enabled experimental features
     public let experimentalFeatures: [String]?
@@ -3700,6 +3700,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// The upload frequency of batches (in milliseconds)
             public let batchUploadFrequency: Int64?
+
+            /// The list of events that include feature flags collection
+            public let collectFeatureFlagsOn: [CollectFeatureFlagsOn]?
 
             /// Whether intake requests are compressed
             public let compressIntakeRequests: Bool?
@@ -3902,6 +3905,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case batchProcessingLevel = "batch_processing_level"
                 case batchSize = "batch_size"
                 case batchUploadFrequency = "batch_upload_frequency"
+                case collectFeatureFlagsOn = "collect_feature_flags_on"
                 case compressIntakeRequests = "compress_intake_requests"
                 case dartVersion = "dart_version"
                 case defaultPrivacyLevel = "default_privacy_level"
@@ -3966,6 +3970,12 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case useTracing = "use_tracing"
                 case useWorkerUrl = "use_worker_url"
                 case viewTrackingStrategy = "view_tracking_strategy"
+            }
+
+            public enum CollectFeatureFlagsOn: String, Codable {
+                case view = "view"
+                case error = "error"
+                case vital = "vital"
             }
 
             /// The console.* tracked
@@ -4190,7 +4200,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
     public let date: Int64
 
     /// The actual percentage of telemetry usage per event
-    public let effectiveSampleRate: Int64?
+    public let effectiveSampleRate: Double?
 
     /// Enabled experimental features
     public let experimentalFeatures: [String]?
@@ -4818,6 +4828,9 @@ public struct RUMSyntheticsTest: Codable {
 
 /// User properties
 public struct RUMUser: Codable {
+    /// Identifier of the user across sessions
+    public let anonymousId: String?
+
     /// Email of the user
     public let email: String?
 
@@ -4830,6 +4843,7 @@ public struct RUMUser: Codable {
     public var usrInfo: [String: Encodable]
 
     enum StaticCodingKeys: String, CodingKey {
+        case anonymousId = "anonymous_id"
         case email = "email"
         case id = "id"
         case name = "name"
@@ -4840,6 +4854,7 @@ extension RUMUser {
     public func encode(to encoder: Encoder) throws {
         // Encode static properties:
         var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(anonymousId, forKey: .anonymousId)
         try staticContainer.encodeIfPresent(email, forKey: .email)
         try staticContainer.encodeIfPresent(id, forKey: .id)
         try staticContainer.encodeIfPresent(name, forKey: .name)
@@ -4855,6 +4870,7 @@ extension RUMUser {
     public init(from decoder: Decoder) throws {
         // Decode static properties:
         let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.anonymousId = try staticContainer.decodeIfPresent(String.self, forKey: .anonymousId)
         self.email = try staticContainer.decodeIfPresent(String.self, forKey: .email)
         self.id = try staticContainer.decodeIfPresent(String.self, forKey: .id)
         self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
@@ -4964,4 +4980,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f0fb6383cc401f2f3db120d1f3e2d95d8e03b981
+// Generated from https://github.com/DataDog/rum-events-format/tree/81c3d7401cba2a2faf48b5f4c0e8aca05c759662

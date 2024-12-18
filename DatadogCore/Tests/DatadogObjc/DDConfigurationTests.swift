@@ -24,6 +24,7 @@ class DDConfigurationTests: XCTestCase {
         XCTAssertEqual(objcConfig.sdkConfiguration.additionalConfiguration.count, 0)
         XCTAssertNil(objcConfig.sdkConfiguration.encryption)
         XCTAssertNotNil(objcConfig.sdkConfiguration.serverDateProvider)
+        XCTAssertFalse(objcConfig.sdkConfiguration.backgroundTasksEnabled)
     }
 
     func testCustomizedBuilderForwardsInitializationToSwift() throws {
@@ -92,6 +93,10 @@ class DDConfigurationTests: XCTestCase {
         let serverDateProvider = ObjcServerDateProvider()
         objcConfig.setServerDateProvider(serverDateProvider)
         XCTAssertTrue((objcConfig.sdkConfiguration.serverDateProvider as? DDServerDateProviderBridge)?.objcProvider === serverDateProvider)
+
+        let fakeBackgroundTasksEnabled: Bool = .mockRandom()
+        objcConfig.backgroundTasksEnabled = fakeBackgroundTasksEnabled
+        XCTAssertEqual(objcConfig.sdkConfiguration.backgroundTasksEnabled, fakeBackgroundTasksEnabled)
     }
 
     func testDataEncryption() throws {

@@ -9,6 +9,7 @@
 import Foundation
 import UIKit
 import SwiftUI
+import DatadogInternal
 
 @available(iOS 13, tvOS 13, *)
 internal class UIHostingViewRecorder: NodeRecorder {
@@ -42,7 +43,6 @@ internal class UIHostingViewRecorder: NodeRecorder {
             let nodeID = context.ids.nodeID(view: view, nodeRecorder: self)
             return try semantics(refelecting: view, nodeID: nodeID, with: attributes, in: context)
         } catch {
-            print(error)
             return nil
         }
     }
@@ -63,7 +63,8 @@ internal class UIHostingViewRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        let renderer = try DisplayList.ViewRenderer(reflecting: subject)
+        let reflector = Reflector(subject: subject, telemetry: context.recorder.telemetry)
+        let renderer = try DisplayList.ViewRenderer(from: reflector)
 
         let builder = SwiftUIWireframesBuilder(
             wireframeID: nodeID,
@@ -79,7 +80,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
     }
 }
 
-@available(iOS 18, tvOS 18, *)
+@available(iOS 18.1, tvOS 18.1, *)
 internal class iOS18HostingViewRecorder: UIHostingViewRecorder {
     override func semantics(refelecting subject: AnyObject, nodeID: NodeID, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics? {
         guard

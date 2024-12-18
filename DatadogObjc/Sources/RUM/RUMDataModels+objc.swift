@@ -991,6 +991,10 @@ public class DDRUMActionEventRUMUser: NSObject {
         self.root = root
     }
 
+    @objc public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
+    }
+
     @objc public var email: String? {
         root.swiftModel.usr!.email
     }
@@ -2381,6 +2385,10 @@ public class DDRUMErrorEventRUMUser: NSObject {
         self.root = root
     }
 
+    @objc public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
+    }
+
     @objc public var email: String? {
         root.swiftModel.usr!.email
     }
@@ -3327,6 +3335,10 @@ public class DDRUMLongTaskEventRUMUser: NSObject {
 
     internal init(root: DDRUMLongTaskEvent) {
         self.root = root
+    }
+
+    @objc public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
     }
 
     @objc public var email: String? {
@@ -4611,6 +4623,10 @@ public class DDRUMResourceEventRUMUser: NSObject {
         self.root = root
     }
 
+    @objc public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
+    }
+
     @objc public var email: String? {
         root.swiftModel.usr!.email
     }
@@ -5523,6 +5539,10 @@ public class DDRUMViewEventRUMUser: NSObject {
 
     internal init(root: DDRUMViewEvent) {
         self.root = root
+    }
+
+    @objc public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
     }
 
     @objc public var email: String? {
@@ -6674,6 +6694,10 @@ public class DDRUMVitalEventRUMUser: NSObject {
         self.root = root
     }
 
+    @objc public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
+    }
+
     @objc public var email: String? {
         root.swiftModel.usr!.email
     }
@@ -7486,6 +7510,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.batchUploadFrequency as NSNumber?
     }
 
+    @objc public var collectFeatureFlagsOn: [Int]? {
+        root.swiftModel.telemetry.configuration.collectFeatureFlagsOn?.map { DDTelemetryConfigurationEventTelemetryConfigurationCollectFeatureFlagsOn(swift: $0).rawValue }
+    }
+
     @objc public var compressIntakeRequests: NSNumber? {
         root.swiftModel.telemetry.configuration.compressIntakeRequests as NSNumber?
     }
@@ -7780,6 +7808,32 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
 }
 
 @objc
+public enum DDTelemetryConfigurationEventTelemetryConfigurationCollectFeatureFlagsOn: Int {
+    internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.CollectFeatureFlagsOn?) {
+        switch swift {
+        case nil: self = .none
+        case .view?: self = .view
+        case .error?: self = .error
+        case .vital?: self = .vital
+        }
+    }
+
+    internal var toSwift: TelemetryConfigurationEvent.Telemetry.Configuration.CollectFeatureFlagsOn? {
+        switch self {
+        case .none: return nil
+        case .view: return .view
+        case .error: return .error
+        case .vital: return .vital
+        }
+    }
+
+    case none
+    case view
+    case error
+    case vital
+}
+
+@objc
 public class DDTelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs: NSObject {
     internal let root: DDTelemetryConfigurationEvent
 
@@ -8008,4 +8062,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f0fb6383cc401f2f3db120d1f3e2d95d8e03b981
+// Generated from https://github.com/DataDog/rum-events-format/tree/81c3d7401cba2a2faf48b5f4c0e8aca05c759662

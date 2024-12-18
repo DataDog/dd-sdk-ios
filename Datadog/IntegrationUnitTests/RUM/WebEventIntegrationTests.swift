@@ -14,10 +14,8 @@ import TestUtilities
 @testable import DatadogWebViewTracking
 
 class WebEventIntegrationTests: XCTestCase {
-    // swiftlint:disable implicitly_unwrapped_optional
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
-    private var controller: WKUserContentControllerMock!
-    // swiftlint:enable implicitly_unwrapped_optional
+    private var controller: WKUserContentControllerMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         core = DatadogCoreProxy(
@@ -29,7 +27,7 @@ class WebEventIntegrationTests: XCTestCase {
         )
 
         controller = WKUserContentControllerMock()
-        
+
         WebViewTracking.enable(
             tracking: controller,
             hosts: [],
@@ -61,7 +59,7 @@ class WebEventIntegrationTests: XCTestCase {
             "application": {
               "id": "xxx"
             },
-            "date": \(1635932927012),
+            "date": \(1_635_932_927_012),
             "service": "super",
             "session": {
               "id": "0110cab4-7471-480e-aa4e-7ce039ced355",
@@ -123,7 +121,8 @@ class WebEventIntegrationTests: XCTestCase {
         // Then
         let expectedUUID = randomUUID.uuidString.lowercased()
         let rumMatcher = try XCTUnwrap(core.waitAndReturnRUMEventMatchers().last)
-        try rumMatcher.assertItFullyMatches(jsonString: """
+        try rumMatcher.assertItFullyMatches(
+            jsonString: """
         {
             "application": {
               "id": "\(randomApplicationID)"
@@ -235,7 +234,8 @@ class WebEventIntegrationTests: XCTestCase {
         // Then
         let expectedUUID = randomUUID.uuidString.lowercased()
         let rumMatcher = try XCTUnwrap(core.waitAndReturnRUMEventMatchers().last)
-        try rumMatcher.assertItFullyMatches(jsonString: """
+        try rumMatcher.assertItFullyMatches(
+            jsonString: """
         {
           "type": "telemetry",
           "date": \(1_712_069_357_432 + 123.toInt64Milliseconds),

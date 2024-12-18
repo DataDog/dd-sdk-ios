@@ -495,9 +495,9 @@ public class BundleMock: Bundle {
     fileprivate var _CFBundleExecutable: String? = nil
     // swiftlint:enable identifier_name
 
-    public override var bundlePath: String { _bundlePath }
-    public override var bundleIdentifier: String? { _bundleIdentifier }
-    public override func object(forInfoDictionaryKey key: String) -> Any? {
+    override public var bundlePath: String { _bundlePath }
+    override public var bundleIdentifier: String? { _bundleIdentifier }
+    override public func object(forInfoDictionaryKey key: String) -> Any? {
         switch key {
         case "CFBundleVersion": return _CFBundleVersion
         case "CFBundleShortVersionString": return _CFBundleShortVersionString
@@ -607,12 +607,11 @@ public class ProcessInfoMock: ProcessInfo {
         _arguments = arguments
     }
 
-    public override var isLowPowerModeEnabled: Bool { _isLowPowerModeEnabled }
+    override public var isLowPowerModeEnabled: Bool { _isLowPowerModeEnabled }
 
-    public override var environment: [String : String] { _environment }
+    override public var environment: [String: String] { _environment }
 
-    public override var arguments: [String] { _arguments }
-
+    override public var arguments: [String] { _arguments }
 }
 
 // MARK: - URLSession

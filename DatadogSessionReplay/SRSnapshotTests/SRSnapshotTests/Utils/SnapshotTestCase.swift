@@ -6,6 +6,7 @@
 
 import XCTest
 import SRFixtures
+import DatadogInternal
 import TestUtilities
 @_spi(Internal)
 @testable import DatadogSessionReplay
@@ -45,7 +46,7 @@ internal class SnapshotTestCase: XCTestCase {
     }
 
     /// Helper method for most snapshot tests
-    func takeSnapshotFor(
+    func takeSnapshotFor( // swiftlint:disable:this function_default_parameter_at_end
         _ fixture: Fixture,
         with textAndInputPrivacyLevels: [TextAndInputPrivacyLevel] = [defaultTextAndInputPrivacyLevel],
         imagePrivacyLevel: ImagePrivacyLevel = defaultImagePrivacyLevel,
@@ -100,7 +101,7 @@ internal class SnapshotTestCase: XCTestCase {
     }
 
     /// Helper method for snapshot tests showing PopupsViewController
-    func takeSnapshotForPopup(
+    func takeSnapshotForPopup( // swiftlint:disable:this function_default_parameter_at_end
         fixture: Fixture,
         showPopup: (PopupsViewController) -> Void,
         waitTime: TimeInterval,
@@ -143,7 +144,7 @@ internal class SnapshotTestCase: XCTestCase {
             recordWriter: RecordWriter(core: PassthroughCoreMock()),
             resourceProcessor: resourceProcessor,
             srContextPublisher: SRContextPublisher(core: PassthroughCoreMock()),
-            telemetry: TelemetryMock()
+            telemetry: NOPTelemetry()
         )
 
         let recorder = try Recorder(
@@ -175,7 +176,9 @@ internal class SnapshotTestCase: XCTestCase {
                 applicationID: "",
                 sessionID: "",
                 viewID: "",
-                viewServerTimeOffset: 0
+                viewServerTimeOffset: 0,
+                date: Date(),
+                telemetry: NOPTelemetry()
             )
         )
 

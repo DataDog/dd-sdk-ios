@@ -27,7 +27,6 @@ internal class TextsViewController: UIViewController {
 }
 
 public class PopupsViewController: UIViewController {
-
     @IBAction public func showSafari() {
         present(SFSafariViewController(url: URL(string: "http://127.0.0.1")!), animated: false)
     }
@@ -39,7 +38,7 @@ public class PopupsViewController: UIViewController {
             preferredStyle: .alert
         )
 
-        alertController.addTextField { (textField) in
+        alertController.addTextField { textField in
             textField.placeholder = "Enter your name"
         }
 
@@ -50,12 +49,12 @@ public class PopupsViewController: UIViewController {
         }
         alertController.addAction(confirmAction)
 
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (_) in
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
             print("Action cancelled")
         }
         alertController.addAction(cancelAction)
 
-        let customAction = UIAlertAction(title: "Custom", style: .destructive) { (_) in
+        let customAction = UIAlertAction(title: "Custom", style: .destructive) { _ in
             print("Custom action selected")
         }
         alertController.addAction(customAction)

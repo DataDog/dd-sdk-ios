@@ -111,27 +111,62 @@ public final class objc_SessionReplayConfiguration: NSObject {
         get { _swift.customEndpoint }
     }
 
+    /// Feature flags to preview features in Session Replay.
+    /// 
+    /// Available flags:
+    /// - `swiftui`: `false` by default.
+    @objc public var featureFlags: [String: Bool] {
+        set { _swift.featureFlags = newValue.dd.featureFlags }
+        get { _swift.featureFlags.dd.featureFlags }
+    }
+
     /// Creates Session Replay configuration.
     ///
     /// - Parameters:
     ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
-    ///   - textAndInputPrivacyLevel: The way texts and inputs (e.g. label, textfield, checkbox) should be masked. Default: `.maskAll`.
-    ///   - imagePrivacyLevel: Image recording privacy level. Default: `.maskAll`.
-    ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked. Default: `.hide`.
+    ///   - textAndInputPrivacyLevel: The way texts and inputs (e.g. label, textfield, checkbox) should be masked.
+    ///   - imagePrivacyLevel: Image recording privacy level.
+    ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked.
+    ///   - featureFlags: Experimental feature flags.
     @objc
     public required init(
         replaySampleRate: Float,
         textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,
         imagePrivacyLevel: objc_ImagePrivacyLevel,
-        touchPrivacyLevel: objc_TouchPrivacyLevel
+        touchPrivacyLevel: objc_TouchPrivacyLevel,
+        featureFlags: [String: Bool]?
     ) {
         _swift = SessionReplay.Configuration(
             replaySampleRate: replaySampleRate,
             textAndInputPrivacyLevel: textAndInputPrivacyLevel._swift,
             imagePrivacyLevel: imagePrivacyLevel._swift,
-            touchPrivacyLevel: touchPrivacyLevel._swift
+            touchPrivacyLevel: touchPrivacyLevel._swift,
+            featureFlags: featureFlags?.dd.featureFlags ?? .defaults
         )
         super.init()
+    }
+
+    /// Creates Session Replay configuration.
+    ///
+    /// - Parameters:
+    ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
+    ///   - textAndInputPrivacyLevel: The way texts and inputs (e.g. label, textfield, checkbox) should be masked.
+    ///   - imagePrivacyLevel: Image recording privacy level
+    ///   - touchPrivacyLevel: The way user touches (e.g. tap) should be masked.
+    @objc
+    public convenience init(
+        replaySampleRate: Float,
+        textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,
+        imagePrivacyLevel: objc_ImagePrivacyLevel,
+        touchPrivacyLevel: objc_TouchPrivacyLevel
+    ) {
+        self.init(
+            replaySampleRate: replaySampleRate,
+            textAndInputPrivacyLevel: textAndInputPrivacyLevel,
+            imagePrivacyLevel: imagePrivacyLevel,
+            touchPrivacyLevel: touchPrivacyLevel,
+            featureFlags: nil
+        )
     }
 
     /// Creates Session Replay configuration.
@@ -262,4 +297,23 @@ public enum objc_TouchPrivacyLevel: Int {
         }
     }
 }
+
+private extension DatadogExtension where ExtendedType == [String: Bool] {
+    var featureFlags: SessionReplay.Configuration.FeatureFlags {
+        type.reduce(into: [:]) { result, element in
+            SessionReplay.Configuration.FeatureFlag(rawValue: element.key).map {
+                result[$0] = element.value
+            }
+        }
+    }
+}
+
+private extension DatadogExtension where ExtendedType == SessionReplay.Configuration.FeatureFlags {
+    var featureFlags: [String: Bool] {
+        type.reduce(into: [:]) { result, element in
+            result[element.key.rawValue] = element.value
+        }
+    }
+}
+
 #endif

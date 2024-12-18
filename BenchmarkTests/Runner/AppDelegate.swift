@@ -39,7 +39,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     run: run
                 )
             )
-            
+
             DatadogInternal.profiler = Profiler()
         case .none:
             break

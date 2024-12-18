@@ -85,15 +85,15 @@ public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock where Fea
         )
     }
 
-    public override func register<T>(feature: T) throws where T: DatadogFeature {
+    override public func register<T>(feature: T) throws where T: DatadogFeature {
         self.feature = feature as? Feature
     }
 
-    public override func feature<T>(named name: String, type: T.Type) -> T? {
+    override public func feature<T>(named name: String, type: T.Type) -> T? {
         feature as? T
     }
 
-    public override func scope<T>(for featureType: T.Type) -> FeatureScope where T : DatadogFeature {
+    override public func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature {
         guard T.name == Feature.name else {
             return NOPFeatureScope()
         }

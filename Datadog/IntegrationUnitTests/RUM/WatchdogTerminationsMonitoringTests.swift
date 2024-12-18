@@ -11,9 +11,7 @@ import DatadogCrashReporting
 @testable import DatadogRUM
 
 class WatchdogTerminationsMonitoringTests: XCTestCase {
-    // swiftlint:disable:this implicitly_unwrapped_optional
-    var core: DatadogCoreProxy!
-    // swiftlint:disable:this implicitly_unwrapped_optional
+    var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     var rumConfig = RUM.Configuration(applicationID: .mockAny())
     let device: DeviceInfo = .init(
         name: .mockAny(),
@@ -106,7 +104,6 @@ class WatchdogTerminationsMonitoringTests: XCTestCase {
         XCTAssertEqual(watchdogCrash.error.source, .source)
         XCTAssertEqual(watchdogCrash.error.category, .watchdogTermination)
     }
-
 
     /// Watchdog Termination check is done in the background, we need to wait for it to finish before we can proceed with the test
     /// - Parameter core: `DatadogCoreProxy` instance

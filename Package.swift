@@ -77,7 +77,6 @@ let package = Package(
                 .target(name: "DatadogLogs"),
                 .target(name: "DatadogTrace"),
                 .target(name: "DatadogRUM"),
-                .target(name: "DatadogSessionReplay"),
             ],
             path: "DatadogObjc/Sources"
         ),
@@ -201,7 +200,10 @@ let package = Package(
                 .target(name: "DatadogSessionReplay"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogSessionReplay/Tests"
+            path: "DatadogSessionReplay/Tests",
+            resources: [
+                .process("Resources/Assets.xcassets")
+            ]
         ),
 
         .target(

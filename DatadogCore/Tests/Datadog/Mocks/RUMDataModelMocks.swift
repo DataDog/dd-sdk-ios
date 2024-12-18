@@ -11,6 +11,7 @@ import TestUtilities
 extension RUMUser {
     static func mockRandom() -> RUMUser {
         return RUMUser(
+            anonymousId: .mockRandom(),
             email: .mockRandom(),
             id: .mockRandom(),
             name: .mockRandom(),
@@ -524,6 +525,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     batchProcessingLevel: .mockRandom(),
                     batchSize: .mockAny(),
                     batchUploadFrequency: .mockAny(),
+                    collectFeatureFlagsOn: nil,
                     compressIntakeRequests: nil,
                     defaultPrivacyLevel: .mockAny(),
                     forwardConsoleLogs: nil,
