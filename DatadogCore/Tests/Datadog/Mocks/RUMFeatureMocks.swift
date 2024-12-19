@@ -882,7 +882,8 @@ extension RUMViewScope {
         attributes: [AttributeKey: AttributeValue] = [:],
         customTimings: [String: Int64] = randomTimings(),
         startTime: Date = .mockAny(),
-        serverTimeOffset: TimeInterval = .zero
+        serverTimeOffset: TimeInterval = .zero,
+        interactionToNextViewMetric: ITNVMetricTracking = ITNVMetric()
     ) -> RUMViewScope {
         return RUMViewScope(
             isInitialView: isInitialView,
@@ -894,7 +895,8 @@ extension RUMViewScope {
             attributes: attributes,
             customTimings: customTimings,
             startTime: startTime,
-            serverTimeOffset: serverTimeOffset
+            serverTimeOffset: serverTimeOffset,
+            interactionToNextViewMetric: interactionToNextViewMetric
         )
     }
 }
@@ -946,6 +948,7 @@ extension RUMUserActionScope {
         serverTimeOffset: TimeInterval = .zero,
         isContinuous: Bool = .mockAny(),
         instrumentation: InstrumentationType = .manual,
+        interactionToNextViewMetric: ITNVMetricTracking = ITNVMetric(),
         onActionEventSent: @escaping (RUMActionEvent) -> Void = { _ in }
     ) -> RUMUserActionScope {
         return RUMUserActionScope(
@@ -958,6 +961,7 @@ extension RUMUserActionScope {
                 serverTimeOffset: serverTimeOffset,
                 isContinuous: isContinuous,
                 instrumentation: instrumentation,
+                interactionToNextViewMetric: interactionToNextViewMetric,
                 onActionEventSent: onActionEventSent
         )
     }

@@ -105,6 +105,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     /// Time-to-Network-Settled metric for this view.
     private let networkSettledMetric: TTNSMetricTracking
+    /// Interaction-to-Next-View metric for this view.
+    private let interactionToNextViewMetric: ITNVMetricTracking
 
     init(
         isInitialView: Bool,
@@ -116,7 +118,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         attributes: [AttributeKey: AttributeValue],
         customTimings: [String: Int64],
         startTime: Date,
-        serverTimeOffset: TimeInterval
+        serverTimeOffset: TimeInterval,
+        interactionToNextViewMetric: ITNVMetricTracking
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -129,6 +132,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewName = name
         self.viewStartTime = startTime
         self.serverTimeOffset = serverTimeOffset
+        self.interactionToNextViewMetric = interactionToNextViewMetric
 
         self.vitalInfoSampler = dependencies.vitalsReaders.map {
             .init(
@@ -139,6 +143,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         }
         self.networkSettledMetric = dependencies.networkSettledMetricFactory(viewStartTime)
+        interactionToNextViewMetric.trackViewStart(at: startTime, viewID: viewUUID)
 
         // Notify Synthetics if needed
         if dependencies.syntheticsTest != nil && self.context.sessionID != .nullUUID {
@@ -276,6 +281,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let hasNoPendingResources = resourceScopes.isEmpty
         let shouldComplete = !isActiveView && hasNoPendingResources
 
+        if shouldComplete {
+            interactionToNextViewMetric.trackViewComplete(viewID: viewUUID)
+        }
+
         return !shouldComplete
     }
 
@@ -336,6 +345,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             serverTimeOffset: serverTimeOffset,
             isContinuous: true,
             instrumentation: command.instrumentation,
+            interactionToNextViewMetric: interactionToNextViewMetric,
             onActionEventSent: { [weak self] event in
                 self?.onActionEventSent(event)
             }
@@ -353,6 +363,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             serverTimeOffset: serverTimeOffset,
             isContinuous: false,
             instrumentation: command.instrumentation,
+            interactionToNextViewMetric: interactionToNextViewMetric,
             onActionEventSent: { [weak self] event in
                 self?.onActionEventSent(event)
             }
@@ -495,6 +506,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let refreshRateInfo = vitalInfoSampler?.refreshRate
         let isSlowRendered = refreshRateInfo?.meanValue.map { $0 < Constants.slowRenderingThresholdFPS }
         let networkSettledTime = networkSettledMetric.value(at: command.time, appStateHistory: context.applicationStateHistory)
+        let interactionToNextViewTime = interactionToNextViewMetric.value(for: viewUUID)
 
         let viewEvent = RUMViewEvent(
             dd: .init(
@@ -570,7 +582,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 interactionToNextPaint: nil,
                 interactionToNextPaintTargetSelector: nil,
                 interactionToNextPaintTime: nil,
-                interactionToNextViewTime: nil,
+                interactionToNextViewTime: interactionToNextViewTime?.toInt64Nanoseconds,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered ?? false,
                 jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),

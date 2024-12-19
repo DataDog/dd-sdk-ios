@@ -953,7 +953,8 @@ extension RUMViewScope {
         attributes: [AttributeKey: AttributeValue] = [:],
         customTimings: [String: Int64] = randomTimings(),
         startTime: Date = .mockAny(),
-        serverTimeOffset: TimeInterval = .zero
+        serverTimeOffset: TimeInterval = .zero,
+        interactionToNextViewMetric: ITNVMetricTracking = ITNVMetricMock()
     ) -> RUMViewScope {
         return RUMViewScope(
             isInitialView: isInitialView,
@@ -965,7 +966,8 @@ extension RUMViewScope {
             attributes: attributes,
             customTimings: customTimings,
             startTime: startTime,
-            serverTimeOffset: serverTimeOffset
+            serverTimeOffset: serverTimeOffset,
+            interactionToNextViewMetric: interactionToNextViewMetric
         )
     }
 }
@@ -1017,6 +1019,7 @@ extension RUMUserActionScope {
         serverTimeOffset: TimeInterval = .zero,
         isContinuous: Bool = .mockAny(),
         instrumentation: InstrumentationType = .manual,
+        interactionToNextViewMetric: ITNVMetricTracking = ITNVMetricMock(),
         onActionEventSent: @escaping (RUMActionEvent) -> Void = { _ in }
     ) -> RUMUserActionScope {
         return RUMUserActionScope(
@@ -1029,6 +1032,7 @@ extension RUMUserActionScope {
                 serverTimeOffset: serverTimeOffset,
                 isContinuous: isContinuous,
                 instrumentation: instrumentation,
+                interactionToNextViewMetric: interactionToNextViewMetric,
                 onActionEventSent: onActionEventSent
         )
     }
@@ -1228,5 +1232,36 @@ internal class TTNSMetricMock: TTNSMetricTracking {
 
     func value(at time: Date, appStateHistory: AppStateHistory) -> TimeInterval? {
         return value
+    }
+}
+
+internal class ITNVMetricMock: ITNVMetricTracking {
+    /// Tracks calls to `trackAction(startTime:endTime:actionType:in:)`.
+    var trackedActions: [(startTime: Date, endTime: Date, actionType: RUMActionType, viewID: RUMUUID)] = []
+    /// Tracks calls to `trackViewStart(at:viewID:)`.
+    var trackedViewStarts: [(viewStart: Date, viewID: RUMUUID)] = []
+    /// Tracks calls to `trackViewComplete(viewID:)`.
+    var trackedViewCompletes: Set<RUMUUID> = []
+    /// Mocked value returned by this metric.
+    var mockedValue: TimeInterval?
+
+    init(mockedValue: TimeInterval? = nil) {
+        self.mockedValue = mockedValue
+    }
+
+    func trackAction(startTime: Date, endTime: Date, actionType: RUMActionType, in viewID: RUMUUID) {
+        trackedActions.append((startTime: startTime, endTime: endTime, actionType: actionType, viewID: viewID))
+    }
+
+    func trackViewStart(at viewStart: Date, viewID: RUMUUID) {
+        trackedViewStarts.append((viewStart: viewStart, viewID: viewID))
+    }
+
+    func trackViewComplete(viewID: RUMUUID) {
+        trackedViewCompletes.insert(viewID)
+    }
+
+    func value(for viewID: RUMUUID) -> TimeInterval? {
+        return mockedValue
     }
 }
