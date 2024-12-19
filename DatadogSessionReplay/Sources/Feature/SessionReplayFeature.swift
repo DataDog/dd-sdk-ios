@@ -55,7 +55,6 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             featureFlags: configuration.featureFlags
         )
 
-        let scheduler = MainThreadScheduler(interval: 0.1)
         let contextReceiver = RUMContextReceiver()
 
         self.messageReceiver = CombinedFeatureMessageReceiver([
@@ -69,8 +68,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         self.imagePrivacyLevel = configuration.imagePrivacyLevel
         self.touchPrivacyLevel = configuration.touchPrivacyLevel
 
-        self.recordingCoordinator = RecordingCoordinator(
-            scheduler: scheduler,
+        let recordingCoordinator = try RecordingCoordinator(
             textAndInputPrivacy: configuration.textAndInputPrivacyLevel,
             imagePrivacy: configuration.imagePrivacyLevel,
             touchPrivacy: configuration.touchPrivacyLevel,
@@ -78,9 +76,13 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             srContextPublisher: SRContextPublisher(core: core),
             recorder: recorder,
             sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate),
-            telemetry: telemetry,
-            startRecordingImmediately: configuration.startRecordingImmediately
+            telemetry: core.telemetry,
+            recordingTrigger: try RecordingTrigger(),
+            queue: MainAsyncQueue(),
+            throttlingRate: 0.1 // 100ms
         )
+        self.recordingCoordinator = recordingCoordinator
+
         self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry
@@ -95,14 +97,18 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
                 changeRate: 0.75 // vs 0.1 with `uploadFrequency: .frequent`
             )
         )
+
+        if configuration.startRecordingImmediately {
+            startRecording()
+        }
     }
 
     func startRecording() {
-        self.recordingCoordinator.startRecording()
+        recordingCoordinator.startRecording()
     }
 
     func stopRecording() {
-        self.recordingCoordinator.stopRecording()
+        recordingCoordinator.stopRecording()
     }
 }
 #endif

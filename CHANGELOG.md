@@ -1,5 +1,6 @@
 # Unreleased
 
+- [IMPROVEMENT] Session Replay recording is event-triggered instead of scheduled. See [#2074][]
 - [IMPROVEMENT] Add Datadog Configuration `backgroundTasksEnabled` ObjC API. See [#2148][]
 - [FIX] Prevent Session Replay to create two full snapshots in a row. See [#2154][]
 
@@ -804,6 +805,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2099]: https://github.com/DataDog/dd-sdk-ios/pull/2099
 [#2063]: https://github.com/DataDog/dd-sdk-ios/pull/2063
 [#2092]: https://github.com/DataDog/dd-sdk-ios/pull/2092
+[#2074]: https://github.com/DataDog/dd-sdk-ios/pull/2074
 [#2113]: https://github.com/DataDog/dd-sdk-ios/pull/2113
 [#2114]: https://github.com/DataDog/dd-sdk-ios/pull/2114
 [#2116]: https://github.com/DataDog/dd-sdk-ios/pull/2116
