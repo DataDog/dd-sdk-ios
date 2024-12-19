@@ -43,11 +43,6 @@ internal final class ITNVMetric: ITNVMetricTracking {
         static let maxDuration: TimeInterval = 3
     }
 
-    private struct ValuePair {
-        let previousViewID: RUMUUID
-        let timeToNextView: TimeInterval
-    }
-
     /// The time of the last recorded action in the previous view.
     private var lastActionDateByViewID: [RUMUUID: Date] = [:]
 
