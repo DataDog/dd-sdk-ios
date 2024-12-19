@@ -13,8 +13,8 @@ class ViewIdentifierTests: XCTestCase {
 
     func testGivenTwoUIViewControllers_whenComparingTheirRUMViewIdentity_itEqualsOnlyForTheSameInstance() {
         // Given
-        let vc1 = createMockView(viewControllerClassName: .mockRandom(among: .alphanumerics))
-        let vc2 = createMockView(viewControllerClassName: .mockRandom(among: .alphanumerics))
+        let vc1 = ViewControllerMock()
+        let vc2 = ViewControllerMock()
 
         // When
         let identity1 = ViewIdentifier(vc1)
@@ -43,7 +43,7 @@ class ViewIdentifierTests: XCTestCase {
 
     func testGivenTwoRUMViewIdentitiesOfDifferentKind_whenComparing_theyDoNotEqual() {
         // Given
-        let vc = createMockView(viewControllerClassName: .mockRandom(among: .alphanumerics))
+        let vc = ViewControllerMock()
         let key: String = .mockRandom()
 
         // When

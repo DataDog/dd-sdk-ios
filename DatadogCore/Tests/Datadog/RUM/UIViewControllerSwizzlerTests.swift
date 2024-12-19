@@ -7,21 +7,6 @@
 import XCTest
 @testable import DatadogRUM
 
-private class ViewControllerMock: UIViewController {
-    var viewDidAppearExpectation: XCTestExpectation?
-    var viewDidDisappearExpectation: XCTestExpectation?
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        viewDidAppearExpectation?.fulfill()
-    }
-
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        viewDidDisappearExpectation?.fulfill()
-    }
-}
-
 class UIViewControllerSwizzlerTests: XCTestCase {
     private let handler = UIKitRUMViewsHandlerMock()
     private lazy var swizzler = try! UIViewControllerSwizzler(handler: handler)

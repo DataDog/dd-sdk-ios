@@ -400,6 +400,60 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.build, "os-build")
     }
 
+    func testWhenViewIsStopped_itMakesAttributesImmutable() throws {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let isInitialView: Bool = .mockRandom()
+        let initialAttributes = ["key1": "value1", "key2": "value2"]
+        let scope = RUMViewScope(
+            isInitialView: isInitialView,
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: initialAttributes,
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+        currentTime.addTimeInterval(1)
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            ),
+            "The scope should end."
+        )
+
+        // Send a new command after view is stopped with additional attributes
+        XCTAssertFalse(
+            scope.process(
+                command: RUMAddViewTimingCommand.mockWith(attributes: ["additionalFoo": "additionalBar"]),
+                context: context,
+                writer: writer
+            ),
+            "The command should be ignored."
+        )
+
+        // Then
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+        XCTAssertEqual(viewEvents.count, 2)
+        viewEvents.forEach { viewEvent in
+            XCTAssertEqual(viewEvent.context?.contextInfo as? [String: String], initialAttributes)
+        }
+    }
+
     func testWhenViewIsStoppedInCITest_itSendsViewUpdateEvent_andEndsTheScope() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let isInitialView: Bool = .mockRandom()
@@ -547,8 +601,8 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     func testWhenAnotherViewIsStarted_itEndsTheScope() throws {
-        let view1 = createMockView(viewControllerClassName: "FirstViewController")
-        let view2 = createMockView(viewControllerClassName: "SecondViewController")
+        let view1 = ViewControllerMock()
+        let view2 = ViewControllerMock()
         var currentTime = Date()
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),

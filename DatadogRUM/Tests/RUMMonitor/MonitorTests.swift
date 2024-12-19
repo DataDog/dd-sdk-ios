@@ -49,7 +49,7 @@ class MonitorTests: XCTestCase {
 
     func testStartView_withViewController_itUsesClassNameAsViewName() throws {
         // Given
-        let vc = createMockView(viewControllerClassName: "SomeViewController")
+        let vc = ViewControllerMock()
 
         // When
         let monitor = Monitor(
@@ -59,13 +59,13 @@ class MonitorTests: XCTestCase {
         monitor.startView(viewController: vc)
 
         // Then
-        XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewName, "SomeViewController")
-        XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewPath, "SomeViewController")
+        XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewName, vc.canonicalClassName)
+        XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewPath, vc.canonicalClassName)
     }
 
     func testStartView_withViewController_itUsesClassNameAsViewPath() throws {
         // Given
-        let vc = createMockView(viewControllerClassName: "SomeViewController")
+        let vc = ViewControllerMock()
 
         // When
         let monitor = Monitor(
@@ -76,7 +76,7 @@ class MonitorTests: XCTestCase {
 
         // Then
         XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewName, "Some View")
-        XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewPath, "SomeViewController")
+        XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewPath, vc.canonicalClassName)
     }
 }
 

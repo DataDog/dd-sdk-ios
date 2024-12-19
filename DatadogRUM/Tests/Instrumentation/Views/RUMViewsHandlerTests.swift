@@ -28,8 +28,7 @@ class RUMViewsHandlerTests: XCTestCase {
 
     func testGivenAcceptingPredicate_whenViewDidAppear_itStartsRUMView() throws {
         let viewName: String = .mockRandom()
-        let viewControllerClassName: String = .mockRandom()
-        let view = createMockView(viewControllerClassName: viewControllerClassName)
+        let view = ViewControllerMock()
 
         // Given
         predicate.result = .init(name: viewName, attributes: ["foo": "bar"])
@@ -42,7 +41,7 @@ class RUMViewsHandlerTests: XCTestCase {
 
         let command = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
         XCTAssertTrue(command.identity == ViewIdentifier(view))
-        XCTAssertEqual(command.path, viewControllerClassName)
+        XCTAssertEqual(command.path, view.canonicalClassName)
         XCTAssertEqual(command.name, viewName)
         XCTAssertEqual(command.attributes as? [String: String], ["foo": "bar"])
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
@@ -164,8 +163,7 @@ class RUMViewsHandlerTests: XCTestCase {
 
     func testGivenViewControllerStarted_whenAppStateChanges_itStopsAndRestartsRUMView() throws {
         let viewName: String = .mockRandom()
-        let viewControllerClassName: String = .mockRandom()
-        let view = createMockView(viewControllerClassName: viewControllerClassName)
+        let view = ViewControllerMock()
 
         // Given
         predicate.result = .init(name: viewName, attributes: ["foo": "bar"])
@@ -186,7 +184,7 @@ class RUMViewsHandlerTests: XCTestCase {
 
         let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
         XCTAssertTrue(startCommand.identity == ViewIdentifier(view))
-        XCTAssertEqual(startCommand.path, viewControllerClassName)
+        XCTAssertEqual(startCommand.path, view.canonicalClassName)
         XCTAssertEqual(startCommand.name, viewName)
         XCTAssertEqual(startCommand.attributes as? [String: String], ["foo": "bar"])
         XCTAssertEqual(startCommand.time, .mockDecember15th2019At10AMUTC() + 1)
