@@ -612,6 +612,40 @@ class RUMMonitorTests: XCTestCase {
             }
     }
 
+    func testStartingView_thenSendingActionEvents() throws {
+        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+
+        monitor.startView(viewController: mockView)
+
+        monitor.addAction(type: .tap, name: "tap action", attributes: ["event-attribute1": "foo1"])
+
+        monitor.startAction(type: .swipe, name: "swipe action", attributes: ["event-attribute1": "foo1"])
+        monitor.stopAction(type: .swipe, name: "swipe action", attributes: ["event-attribute2": "foo2"])
+
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+
+        let actionEvents = rumEventMatchers.filterRUMEvents(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actionEvents.count, 3)
+
+        let event1Matcher = actionEvents[0]
+        let event1: RUMActionEvent = try event1Matcher.model()
+        XCTAssertEqual(event1.action.type, .applicationStart)
+
+        let event2Matcher = actionEvents[1]
+        let event2: RUMActionEvent = try event2Matcher.model()
+        XCTAssertEqual(event2.action.type, .tap)
+        XCTAssertEqual(try event2Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+
+        let event3Matcher = actionEvents[2]
+        let event3: RUMActionEvent = try event3Matcher.model()
+        XCTAssertEqual(event3.action.type, .swipe)
+        XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+        XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
+    }
+
     // MARK: - Sending user info
 
     func testWhenUserInfoIsProvided_itIsSendWithAllEvents() throws {

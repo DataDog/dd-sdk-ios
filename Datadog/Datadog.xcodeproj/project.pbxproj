@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1117AA062D09A39400F86B29 /* RUMAttributesIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */; };
+		1117AA072D09A39400F86B29 /* RUMAttributesIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */; };
 		116F84062CFDD06700705755 /* SampleRateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116F84052CFDD06700705755 /* SampleRateTests.swift */; };
 		116F84072CFDD06700705755 /* SampleRateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116F84052CFDD06700705755 /* SampleRateTests.swift */; };
 		1434A4612B7F73110072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
@@ -2160,6 +2162,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAttributesIntegrationTests.swift; sourceTree = "<group>"; };
 		116F84052CFDD06700705755 /* SampleRateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleRateTests.swift; sourceTree = "<group>"; };
 		1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugOTelTracingViewController.swift; sourceTree = "<group>"; };
 		3C08F9CF2C2D652D002B0FF2 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
@@ -5382,14 +5385,14 @@
 		61C3E63C24BF1B7F008053F2 /* Scopes */ = {
 			isa = PBXGroup;
 			children = (
-				61494B7827F3522C0082BBCC /* Utils */,
 				6194B92C2BB43F9C00179430 /* FatalErrorContextNotifier.swift */,
-				6122514727FDFF82004F5AE4 /* RUMScopeDependencies.swift */,
 				61C3E63D24BF1B91008053F2 /* RUMApplicationScope.swift */,
-				61C2C20624C098FC00C0321C /* RUMSessionScope.swift */,
-				61C2C21124C5951400C0321C /* RUMViewScope.swift */,
 				61494CB024C839460082C633 /* RUMResourceScope.swift */,
+				6122514727FDFF82004F5AE4 /* RUMScopeDependencies.swift */,
+				61C2C20624C098FC00C0321C /* RUMSessionScope.swift */,
 				61494CB924CB126F0082C633 /* RUMUserActionScope.swift */,
+				61C2C21124C5951400C0321C /* RUMViewScope.swift */,
+				61494B7827F3522C0082BBCC /* Utils */,
 			);
 			path = Scopes;
 			sourceTree = "<group>";
@@ -5563,8 +5566,9 @@
 		61E8C5062B28896100E709B4 /* RUM */ = {
 			isa = PBXGroup;
 			children = (
-				61E8C5072B28898800E709B4 /* StartingRUMSessionTests.swift */,
 				6167E6DC2B811A8300C3CA2D /* AppHangsMonitoringTests.swift */,
+				1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */,
+				61E8C5072B28898800E709B4 /* StartingRUMSessionTests.swift */,
 				3CA00B062C2AE52400E6FE01 /* WatchdogTerminationsMonitoringTests.swift */,
 				D2552AF42BBC47D900A45725 /* WebEventIntegrationTests.swift */,
 				61DCC84C2C05D4E500CB59E5 /* SDKMetrics */,
@@ -8416,6 +8420,7 @@
 				A7DA18042AB0C91200F76337 /* DDUIKitRUMViewsPredicateTests.swift in Sources */,
 				6121627C247D220500AC5D67 /* TracingWithLoggingIntegrationTests.swift in Sources */,
 				D2A1EE3E2885D7EC00D28DFB /* LaunchTimePublisherTests.swift in Sources */,
+				1117AA072D09A39400F86B29 /* RUMAttributesIntegrationTests.swift in Sources */,
 				61B5E42926DFB60A000B0A5F /* DDConfiguration+apiTests.m in Sources */,
 				D22743E429DEB933001A7EF9 /* UIViewControllerSwizzlerTests.swift in Sources */,
 				3CCCA5C72ABAF5230029D7BD /* DDURLSessionInstrumentationConfigurationTests.swift in Sources */,
@@ -9688,6 +9693,7 @@
 				D29294E4291D652D00F8EFF9 /* ApplicationVersionPublisherTests.swift in Sources */,
 				A7DA18052AB0C91300F76337 /* DDUIKitRUMViewsPredicateTests.swift in Sources */,
 				A79B0F65292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m in Sources */,
+				1117AA062D09A39400F86B29 /* RUMAttributesIntegrationTests.swift in Sources */,
 				D2CB6F4327C520D400A62B57 /* DDLogsTests.swift in Sources */,
 				D2CB6F4527C520D400A62B57 /* TracerTests.swift in Sources */,
 				D2CB6F4627C520D400A62B57 /* CoreMocks.swift in Sources */,
