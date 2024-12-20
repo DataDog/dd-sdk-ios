@@ -101,7 +101,13 @@ internal final class RUMFeature: DatadogRemoteFeature {
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,
             watchdogTermination: watchdogTermination,
-            networkSettledMetricFactory: { viewStartDate in TTNSMetric(viewStartDate: viewStartDate) }
+            networkSettledMetricFactory: { viewStartDate, viewName in
+                TTNSMetric(
+                    viewName: viewName,
+                    viewStartDate: viewStartDate,
+                    resourcePredicate: TimeBasedTTNSResourcePredicate() // TODO: RUM-7103 read predicatefrom configuration
+                )
+            }
         )
 
         self.monitor = Monitor(

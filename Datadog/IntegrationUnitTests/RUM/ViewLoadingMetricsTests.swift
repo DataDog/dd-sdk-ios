@@ -39,7 +39,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         monitor.startView(key: "view", name: "ViewName")
         monitor.startResource(resourceKey: "resource1", url: .mockRandom())
         monitor.startResource(resourceKey: "resource2", url: .mockRandom())
-        rumTime.now.addTimeInterval(TTNSMetric.Constants.initialResourceThreshold * 0.99) // Wait no more than threshold, so next resource is still counted
+        rumTime.now.addTimeInterval(TimeBasedTTNSResourcePredicate.defaultThreshold * 0.99) // Wait no more than threshold, so next resource is still counted
         monitor.startResource(resourceKey: "resource3", url: .mockRandom())
 
         // When (end resources during the same view)
@@ -78,7 +78,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         monitor.startResource(resourceKey: "resource2", url: .mockRandom())
 
         // When (start non-initial resource after threshold)
-        rumTime.now.addTimeInterval(TTNSMetric.Constants.initialResourceThreshold * 1.01) // Wait more than threshold, so next resource is not counted
+        rumTime.now.addTimeInterval(TimeBasedTTNSResourcePredicate.defaultThreshold * 1.01) // Wait more than threshold, so next resource is not counted
         monitor.startResource(resourceKey: "resource3", url: .mockRandom())
 
         // When (end resources during the same view)
