@@ -102,10 +102,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
             sessionEndedMetric: sessionEndedMetric,
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: { viewStartDate, viewName in
-                TTNSMetric(
+                return TTNSMetric(
                     viewName: viewName,
                     viewStartDate: viewStartDate,
-                    resourcePredicate: TimeBasedTTNSResourcePredicate() // TODO: RUM-7103 read predicatefrom configuration
+                    resourcePredicate: configuration.networkSettledResourcePredicate
                 )
             }
         )
