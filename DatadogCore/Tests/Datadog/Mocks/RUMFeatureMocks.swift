@@ -733,7 +733,9 @@ extension RUMScopeDependencies {
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
         sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0),
         watchdogTermination: WatchdogTerminationMonitor? = nil,
-        networkSettledMetricFactory: @escaping (Date) -> TTNSMetricTracking = { TTNSMetric(viewStartDate: $0) }
+        networkSettledMetricFactory: @escaping (Date, String) -> TTNSMetricTracking = {
+            TTNSMetric(viewName: $1, viewStartDate: $0, resourcePredicate: TimeBasedTTNSResourcePredicate())
+        }
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -775,7 +777,7 @@ extension RUMScopeDependencies {
         fatalErrorContext: FatalErrorContextNotifying? = nil,
         sessionEndedMetric: SessionEndedMetricController? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
-        networkSettledMetricFactory: ((Date) -> TTNSMetricTracking)? = nil
+        networkSettledMetricFactory: ((Date, String) -> TTNSMetricTracking)? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -914,7 +916,7 @@ extension RUMResourceScope {
         isFirstPartyResource: Bool? = nil,
         resourceKindBasedOnRequest: RUMResourceType? = nil,
         spanContext: RUMSpanContext? = .mockAny(),
-        networkSettledMetric: TTNSMetricTracking = TTNSMetric(viewStartDate: .mockAny()),
+        networkSettledMetric: TTNSMetricTracking = TTNSMetric(viewName: .mockAny(), viewStartDate: .mockAny(), resourcePredicate: TimeBasedTTNSResourcePredicate()),
         onResourceEvent: @escaping (Bool) -> Void = { _ in },
         onErrorEvent: @escaping (Bool) -> Void = { _ in }
     ) -> RUMResourceScope {

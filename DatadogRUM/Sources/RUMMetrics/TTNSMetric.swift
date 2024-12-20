@@ -13,7 +13,8 @@ internal protocol TTNSMetricTracking {
     /// - Parameters:
     ///   - startDate: The start time of the resource (device time, no NTP offset).
     ///   - resourceID: The unique identifier for the resource.
-    func trackResourceStart(at startDate: Date, resourceID: RUMUUID)
+    ///   - resourceURL: The URL of this resource.
+    func trackResourceStart(at startDate: Date, resourceID: RUMUUID, resourceURL: String)
 
     /// Tracks the completion of a resource identified by its `resourceID`.
     ///
@@ -37,51 +38,73 @@ internal protocol TTNSMetricTracking {
     /// - Parameters:
     ///   - time: The current time (device time, no NTP offset).
     ///   - appStateHistory: The history of app state transitions.
-    /// - Returns: The value for TTNS metric.
+    /// - Returns: The value for the TTNS metric, or `nil` if the metric cannot be calculated.
     func value(at time: Date, appStateHistory: AppStateHistory) -> TimeInterval?
 }
 
-/// A metric (**Time-to-Network-Settled**) that measures the time from when the current view becomes visible until all initial resources are loaded.
-///
-/// "Initial resources" are defined as resources starting within 100ms of the view becoming visible.
+/// A metric (**Time-to-Network-Settled**, or TTNS) that measures the time from when the view becomes visible until all initial resources are loaded.
+/// "Initial resources" are now classified using a customizable predicate.
 internal final class TTNSMetric: TTNSMetricTracking {
-    enum Constants {
-        /// Only resources starting within this interval of the view becoming visible are considered "initial resources".
-        static let initialResourceThreshold: TimeInterval = 0.1
-    }
+    /// The name of the view this metric is tracked for.
+    private let viewName: String
 
     /// The time when the view tracking this metric becomes visible (device time, no NTP offset).
     private let viewStartDate: Date
 
+    /// The predicate used to classify resources as "initial" for TTNS.
+    private let resourcePredicate: NetworkSettledResourcePredicate
+
     /// Indicates whether the view is active (`true`) or stopped (`false`).
     private var isViewActive = true
 
-    /// A dictionary mapping resource IDs to their start times. Only tracks initial resources.
+    /// A dictionary mapping resource IDs to their start times. Tracks resources classified as "initial."
     private var pendingResourcesStartDates: [RUMUUID: Date] = [:]
 
     /// The time when the last of the initial resources completes.
     private var latestResourceEndDate: Date?
 
-    /// Initializes a new TTNSMetric instance for a view.
+    /// Stores the last computed value for the TTNS metric.
+    /// This is used to return the same value for subsequent calls to `value(at:appStateHistory:)`
+    /// while some resources are still pending.
+    private var lastReturnedValue: TimeInterval?
+
+    /// Initializes a new TTNSMetric instance for a view with a customizable predicate.
     ///
-    /// - Parameter viewStartDate: The time when the view becomes visible (device time, no NTP offset).
-    init(viewStartDate: Date) {
+    /// - Parameters:
+    ///   - viewName: The name of the view this metric is tracked for.
+    ///   - viewStartDate: The time when the view becomes visible (device time, no NTP offset).
+    ///   - resourcePredicate: A predicate used to classify resources as "initial" for TTNS.
+    init(
+        viewName: String,
+        viewStartDate: Date,
+        resourcePredicate: NetworkSettledResourcePredicate
+    ) {
+        self.viewName = viewName
         self.viewStartDate = viewStartDate
+        self.resourcePredicate = resourcePredicate
     }
 
     /// Tracks the start time of a resource identified by its `resourceID`.
-    /// Only resources starting within the initial threshold are tracked.
+    /// Only resources classified as "initial" by the predicate are tracked.
     ///
     /// - Parameters:
     ///   - startDate: The start time of the resource (device time, no NTP offset).
     ///   - resourceID: The unique identifier for the resource.
-    func trackResourceStart(at startDate: Date, resourceID: RUMUUID) {
+    ///   - resourceURL: The URL of this resource.
+    func trackResourceStart(at startDate: Date, resourceID: RUMUUID, resourceURL: String) {
         guard isViewActive else {
             return // View was stopped, do not track the resource
         }
+        guard startDate >= viewStartDate else {
+            return // Sanity check to ensure resource is being tracked after view start
+        }
 
-        let isInitialResource = startDate.timeIntervalSince(viewStartDate) <= Constants.initialResourceThreshold && startDate >= viewStartDate
-        if isInitialResource {
+        let resourceParams = TTNSResourceParams(
+            url: resourceURL,
+            timeSinceViewStart: startDate.timeIntervalSince(viewStartDate),
+            viewName: viewName
+        )
+        if resourcePredicate.isInitialResource(resource: resourceParams) {
             pendingResourcesStartDates[resourceID] = startDate
         }
     }
@@ -100,7 +123,7 @@ internal final class TTNSMetric: TTNSMetricTracking {
         let duration = resourceDuration ?? endDate.timeIntervalSince(startDate)
 
         guard duration >= 0 else {
-            return // sanity check
+            return // Sanity check to avoid negative durations
         }
 
         let resourceEndDate = startDate.addingTimeInterval(duration)
@@ -123,8 +146,8 @@ internal final class TTNSMetric: TTNSMetricTracking {
     }
 
     /// Returns the value for the TTNS metric.
-    /// - The value is only available after all initial resources have completed loading and no earlier than 100ms after view start.
-    /// - The value is not tracked if the view was stopped before all initial resources completed loading.
+    /// - The value is only available after all initial resources have completed loading.
+    /// - The value is not updated after view is stopped.
     /// - The value is only tracked if the app was in "active" state during view loading.
     ///
     /// - Parameters:
@@ -132,20 +155,18 @@ internal final class TTNSMetric: TTNSMetricTracking {
     ///   - appStateHistory: The history of app state transitions.
     /// - Returns: The value for TTNS metric.
     func value(at time: Date, appStateHistory: AppStateHistory) -> TimeInterval? {
-        guard time > viewStartDate.addingTimeInterval(Constants.initialResourceThreshold) else {
-            return nil // No value before 100ms after view start
-        }
         guard pendingResourcesStartDates.isEmpty else {
-            return nil // No value until all initial resources are completed
+            return lastReturnedValue // No new value until all pending resources are completed
         }
         guard let latestResourceEndDate = latestResourceEndDate else {
-            return nil // Tracked no resource
+            return nil // No resources were tracked
         }
 
         let ttnsValue = latestResourceEndDate.timeIntervalSince(viewStartDate)
         let viewLoadedDate = viewStartDate.addingTimeInterval(ttnsValue)
 
-        guard viewLoadedDate >= viewStartDate else { // sanity check
+        guard viewLoadedDate >= viewStartDate else { // Sanity check to ensure valid time
+            lastReturnedValue = nil
             return nil
         }
 
@@ -154,9 +175,11 @@ internal final class TTNSMetric: TTNSMetricTracking {
         let trackedInForeground = !(viewLoadingAppStates.snapshots.contains { $0.state != .active })
 
         guard trackedInForeground else {
+            lastReturnedValue = nil
             return nil // The app was not always "active" during view loading
         }
 
+        lastReturnedValue = ttnsValue
         return ttnsValue
     }
 }

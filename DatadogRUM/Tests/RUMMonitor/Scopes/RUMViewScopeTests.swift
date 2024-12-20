@@ -197,7 +197,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: true,
             parent: parent,
             dependencies: .mockWith(
-                networkSettledMetricFactory: { _ in TTNSMetricMock(value: 0.42) }
+                networkSettledMetricFactory: { _, _ in TTNSMetricMock(value: 0.42) }
             ),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
@@ -2723,6 +2723,7 @@ class RUMViewScopeTests: XCTestCase {
 
     func testWhenViewIsStopped_itStopsTrackingTTNSMetric() throws {
         let viewStartDate = Date()
+        let viewName: String = .mockRandom()
 
         // Given
         let metric = TTNSMetricMock()
@@ -2730,14 +2731,15 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockAny(),
             parent: parent,
             dependencies: .mockWith(
-                networkSettledMetricFactory: { date in
+                networkSettledMetricFactory: { date, name in
                     XCTAssertEqual(date, viewStartDate)
+                    XCTAssertEqual(name, viewName)
                     return metric
                 }
             ),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
-            name: "ViewController",
+            name: viewName,
             attributes: [:],
             customTimings: [:],
             startTime: viewStartDate,
