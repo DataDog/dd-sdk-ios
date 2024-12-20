@@ -20,7 +20,7 @@ class RUMApplicationScopeTests: XCTestCase {
     ) -> RUMApplicationScope {
         let scope = RUMApplicationScope(dependencies: dependencies)
         // Always receive `RUMSDKInitCommand` as the very first command (see: `Monitor.notifySDKInit()`)
-        let initCommand = RUMSDKInitCommand(time: sdkContext.sdkInitDate)
+        let initCommand = RUMSDKInitCommand(time: sdkContext.sdkInitDate, globalAttributes: [:])
         _ = scope.process(command: initCommand, context: sdkContext, writer: writer)
         return scope
     }
