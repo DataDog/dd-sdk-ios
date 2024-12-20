@@ -985,7 +985,7 @@ extension RUMResourceScope {
         isFirstPartyResource: Bool? = nil,
         resourceKindBasedOnRequest: RUMResourceType? = nil,
         spanContext: RUMSpanContext? = .mockAny(),
-        networkSettledMetric: TTNSMetricTracking = TTNSMetric(viewName: .mockAny(), viewStartDate: .mockAny()),
+        networkSettledMetric: TTNSMetricTracking = TTNSMetric(viewName: .mockAny(), viewStartDate: .mockAny(), resourcePredicate: TimeBasedTTNSResourcePredicate()),
         onResourceEvent: @escaping (Bool) -> Void = { _ in },
         onErrorEvent: @escaping (Bool) -> Void = { _ in }
     ) -> RUMResourceScope {

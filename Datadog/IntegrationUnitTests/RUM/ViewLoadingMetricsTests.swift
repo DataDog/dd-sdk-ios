@@ -29,7 +29,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         let rumTime = DateProviderMock()
         rumConfig.dateProvider = rumTime
 
-        // Given
+        // Given (default TTNS resource predicate)
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -66,7 +66,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         let rumTime = DateProviderMock()
         rumConfig.dateProvider = rumTime
 
-        // Given
+        // Given (default TTNS resource predicate)
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -105,7 +105,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         let rumTime = DateProviderMock()
         rumConfig.dateProvider = rumTime
 
-        // Given
+        // Given (default TTNS resource predicate)
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -149,7 +149,7 @@ class ViewLoadingMetricsTests: XCTestCase {
             event.error.resource?.url == droppedResourceURL.absoluteString ? nil : event
         }
 
-        // Given
+        // Given (default TTNS resource predicate)
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -179,6 +179,80 @@ class ViewLoadingMetricsTests: XCTestCase {
         let actualTTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TTNS should be reported after initial resources end.")
         let expectedTTNS = resource1EndTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
         XCTAssertEqual(actualTTNS, expectedTTNS, "TTNS should only reflect ACCEPTED resources.")
+    }
+
+    func testGivenCustomTTNSResourcePredicate_whenViewCompletes_thenTTNSMetricIsCalculatedFromClassifiedResources() throws {
+        let rumTime = DateProviderMock()
+        rumConfig.dateProvider = rumTime
+
+        // Given
+        let viewLoadingURL1: URL = .mockRandom()
+        let viewLoadingURL2: URL = .mockRandom()
+        let viewLoadingURL3: URL = .mockRandom()
+        let otherURL: URL = .mockRandom()
+
+        // We expect TTNS to be calculated for URLs 1-3, ignoring other URLs.
+        // In this test, resources are started and completed as follows:
+        //
+        // |-------------- TTNS --------------|
+        // |   [··· URL 1 ···]
+        // |        [·········· OTHER URL ··········]
+        // |                  [···· URL 2 ····]
+        // |                  [·· URL 3 ··]
+        //
+        // ^ Start of the view                ^ End of the last classified resource
+
+        struct CustomPredicate: NetworkSettledResourcePredicate {
+            let viewLoadingURLs: Set<URL>
+
+            func isInitialResource(resource: TTNSResourceParams) -> Bool {
+                resource.viewName == "FooView" && viewLoadingURLs.contains(URL(string: resource.url)!)
+            }
+        }
+
+        rumConfig.networkSettledResourcePredicate = CustomPredicate(
+            viewLoadingURLs: [viewLoadingURL1, viewLoadingURL2, viewLoadingURL3]
+        )
+        RUM.enable(with: rumConfig, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+        let viewStartTime = rumTime.now
+
+        // When (start view)
+        monitor.startView(key: "view", name: "FooView")
+        rumTime.now += 0.15.seconds
+
+        // When (start view-initial resource)
+        monitor.startResource(resourceKey: "resource1", url: viewLoadingURL1)
+        rumTime.now += 0.5.seconds
+
+        // When (start resource unrelated to view loading)
+        monitor.startResource(resourceKey: "resourceX", url: otherURL)
+        rumTime.now += 0.5.seconds
+
+        // When (complete view-initial resource and start two more)
+        monitor.stopResource(resourceKey: "resource1", response: .mockAny())
+        monitor.startResource(resourceKey: "resource2", url: viewLoadingURL2)
+        monitor.startResource(resourceKey: "resource3", url: viewLoadingURL3)
+        rumTime.now += 1.5.seconds
+
+        // When (complete all pending resources)
+        monitor.stopResource(resourceKey: "resource3", response: .mockAny())
+        rumTime.now += 0.25.seconds
+        monitor.stopResource(resourceKey: "resource2", response: .mockAny())
+        let lastInitialResourceCompletionTime = rumTime.now
+        rumTime.now += 0.5.seconds
+        monitor.stopResource(resourceKey: "resourceX", response: .mockAny())
+
+        // Then
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+
+        let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
+        let actualTTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TTNS should be reported after initial resources complete loading.")
+        let expectedTTNS = lastInitialResourceCompletionTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+        XCTAssertEqual(actualTTNS, expectedTTNS, "TTNS should span from the view start to the completion of last classified resource.")
     }
 
     // MARK: - Interaction To Next View
