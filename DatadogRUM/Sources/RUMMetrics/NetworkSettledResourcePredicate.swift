@@ -35,6 +35,8 @@ public protocol NetworkSettledResourcePredicate {
 
 /// A predicate implementation for classifying Time-to-Network-Settled (TTNS) resources based on a time threshold.
 /// It will calculate TTNS using all resources that start within the specified threshold after the view starts.
+///
+/// The default value of the threshold is 0.1s.
 public struct TimeBasedTTNSResourcePredicate: NetworkSettledResourcePredicate {
     /// The default value of the threshold.
     public static let defaultThreshold: TimeInterval = 0.1
