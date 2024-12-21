@@ -44,7 +44,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockRandom(),
             name: .mockRandom(),
-            attributes: [:],
             customTimings: [:],
             startTime: .mockAny(),
             serverTimeOffset: .zero
@@ -71,7 +70,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockRandom(),
             name: .mockRandom(),
-            attributes: [:],
             customTimings: [:],
             startTime: .mockAny(),
             serverTimeOffset: .zero
@@ -104,7 +102,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "com/datadog/application-launch/view",
             name: "ApplicationLaunch",
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -197,7 +194,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -259,7 +255,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -285,7 +280,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: ["foo": "bar", "fizz": "buzz"],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -295,7 +289,7 @@ class RUMViewScopeTests: XCTestCase {
             scope.process(
                 command: RUMStartViewCommand.mockWith(
                     time: currentTime,
-                    attributes: ["foo": "bar 2"],
+                    attributes: ["foo": "bar 2", "fizz": "buzz"],
                     identity: .mockViewIdentifier()
                 ),
                 context: context,
@@ -340,7 +334,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: ["foo": "bar"],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -348,7 +341,11 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                command: RUMStartViewCommand.mockWith(
+                    time: currentTime,
+                    attributes: ["foo": "bar"],
+                    identity: .mockViewIdentifier()
+                ),
                 context: context,
                 writer: writer
             )
@@ -400,6 +397,63 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.build, "os-build")
     }
 
+    func testWhenViewIsStopped_itMakesAttributesImmutable() throws {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let isInitialView: Bool = .mockRandom()
+        let initialAttributes = ["key1": "value1", "key2": "value2"]
+        let scope = RUMViewScope(
+            isInitialView: isInitialView,
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(
+                    time: currentTime,
+                    attributes: initialAttributes,
+                    identity: .mockViewIdentifier()
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        currentTime.addTimeInterval(1)
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            ),
+            "The scope should end."
+        )
+
+        // Send a new command after view is stopped with additional attributes
+        XCTAssertFalse(
+            scope.process(
+                command: RUMAddViewTimingCommand.mockWith(attributes: ["additionalFoo": "additionalBar"]),
+                context: context,
+                writer: writer
+            ),
+            "The command should be ignored."
+        )
+
+        // Then
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+        XCTAssertEqual(viewEvents.count, 2)
+        viewEvents.forEach { viewEvent in
+            XCTAssertEqual(viewEvent.context?.contextInfo as? [String: String], initialAttributes)
+        }
+    }
+
     func testWhenViewIsStoppedInCITest_itSendsViewUpdateEvent_andEndsTheScope() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let isInitialView: Bool = .mockRandom()
@@ -411,7 +465,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: ["foo": "bar"],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -419,7 +472,11 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                command: RUMStartViewCommand.mockWith(
+                    time: currentTime,
+                    attributes: ["foo": "bar"],
+                    identity: .mockViewIdentifier()
+                ),
                 context: context,
                 writer: writer
             )
@@ -484,7 +541,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: ["foo": "bar"],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -492,7 +548,11 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                command: RUMStartViewCommand.mockWith(
+                    time: currentTime,
+                    attributes: ["foo": "bar"],
+                    identity: .mockViewIdentifier()
+                ),
                 context: context,
                 writer: writer
             )
@@ -557,7 +617,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: ViewIdentifier(view1),
             path: "FirstViewController",
             name: "FirstViewName",
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -602,7 +661,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "FirstViewController",
             name: "FirstViewName",
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -647,7 +705,6 @@ class RUMViewScopeTests: XCTestCase {
                 identity: .mockViewIdentifier(),
                 path: uri,
                 name: name,
-                attributes: [:],
                 customTimings: [:],
                 startTime: .mockAny(),
                 serverTimeOffset: .zero
@@ -695,7 +752,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -751,7 +807,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: Date(),
             serverTimeOffset: .zero
@@ -820,7 +875,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -906,7 +960,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: view1,
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -960,7 +1013,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: Date(),
             serverTimeOffset: .zero
@@ -1043,7 +1095,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -1121,7 +1172,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -1178,7 +1228,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -1230,7 +1279,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -1307,7 +1355,6 @@ class RUMViewScopeTests: XCTestCase {
                 identity: .mockViewIdentifier(),
                 path: .mockAny(),
                 name: .mockAny(),
-                attributes: [:],
                 customTimings: [:],
                 startTime: currentTime,
                 serverTimeOffset: .zero
@@ -1378,7 +1425,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -1451,7 +1497,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -1547,10 +1592,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: [
-                "test_attribute": "abc",
-                "other_attribute": "my attribute"
-            ],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -1558,7 +1599,14 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: [:], identity: .mockViewIdentifier()),
+                command: RUMStartViewCommand.mockWith(
+                    time: currentTime,
+                    attributes: [
+                        "test_attribute": "abc",
+                        "other_attribute": "my attribute"
+                    ],
+                    identity: .mockViewIdentifier()
+                ),
                 context: context,
                 writer: writer
             )
@@ -1603,7 +1651,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -1659,7 +1706,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -1718,7 +1764,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: Date(),
             serverTimeOffset: .zero
@@ -1771,7 +1816,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -1809,7 +1853,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -1872,7 +1915,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: [:],
             customTimings: [:],
             startTime: startViewDate,
             serverTimeOffset: .zero
@@ -1940,10 +1982,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: [
-                "test_attribute": "abc",
-                "other_attribute": "my attribute"
-            ],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -1951,7 +1989,14 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: [:], identity: .mockViewIdentifier()),
+                command: RUMStartViewCommand.mockWith(
+                    time: currentTime,
+                    attributes: [
+                        "test_attribute": "abc",
+                        "other_attribute": "my attribute"
+                    ],
+                    identity: .mockViewIdentifier()
+                ),
                 context: context,
                 writer: writer
             )
@@ -1990,7 +2035,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
-            attributes: [:],
             customTimings: [:],
             startTime: startViewDate,
             serverTimeOffset: .zero
@@ -2030,7 +2074,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -2092,7 +2135,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -2138,7 +2180,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -2200,7 +2241,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -2244,7 +2284,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -2299,7 +2338,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero
@@ -2355,7 +2393,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: initialDeviceTime,
             serverTimeOffset: initialServerTimeOffset
@@ -2394,7 +2431,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
-            attributes: [:],
             customTimings: [:],
             startTime: initialDeviceTime,
             serverTimeOffset: initialServerTimeOffset
@@ -2510,7 +2546,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewController",
-            attributes: [:],
             customTimings: [:],
             startTime: Date(),
             serverTimeOffset: .zero
@@ -2615,7 +2650,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewController",
-            attributes: [:],
             customTimings: [:],
             startTime: Date(),
             serverTimeOffset: .zero
@@ -2650,7 +2684,6 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewController",
-            attributes: [:],
             customTimings: [:],
             startTime: Date(),
             serverTimeOffset: .zero

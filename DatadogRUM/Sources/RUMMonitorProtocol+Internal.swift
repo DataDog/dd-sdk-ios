@@ -35,6 +35,7 @@ public struct DatadogInternalInterface {
         type: String?,
         stack: String?,
         source: RUMInternalErrorSource,
+        globalAttributes: [AttributeKey: AttributeValue],
         attributes: [AttributeKey: AttributeValue],
         binaryImages: [BinaryImage]?
     ) {
@@ -63,7 +64,11 @@ public struct DatadogInternalInterface {
         duration: TimeInterval,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        let longTaskCommand = RUMAddLongTaskCommand(time: time, attributes: attributes, duration: duration)
+        let longTaskCommand = RUMAddLongTaskCommand(
+            time: time,
+            attributes: attributes,
+            duration: duration
+        )
         monitor.process(command: longTaskCommand)
     }
 

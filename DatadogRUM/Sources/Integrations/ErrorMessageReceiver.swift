@@ -47,6 +47,7 @@ internal struct ErrorMessageReceiver: FeatureMessageReceiver {
                 type: error.type,
                 stack: error.stack,
                 source: error.source,
+                globalAttributes: [:],
                 attributes: error.attributes ?? [:],
                 binaryImages: error.binaryImages
             )

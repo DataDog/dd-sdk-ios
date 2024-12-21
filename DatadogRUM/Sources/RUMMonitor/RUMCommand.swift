@@ -11,12 +11,14 @@ import DatadogInternal
 internal protocol RUMCommand {
     /// The time of command issue.
     var time: Date { set get }
+    /// Global attributes when the command was issued.
+    var globalAttributes: [AttributeKey: AttributeValue] { set get }
     /// Attributes associated with the command.
     var attributes: [AttributeKey: AttributeValue] { set get }
     /// Whether or not receiving this command should start the "Background" view if no view is active
     /// and ``RUM.Configuration.trackBackgroundEvents`` is enabled.
     var canStartBackgroundView: Bool { get }
-    /// Whether or not this command is considered a user intaraction
+    /// Whether or not this command is considered a user interaction
     var isUserInteraction: Bool { get }
     /// A type of event missed upon receiving this command in case of absence of an active view; `nil` if none or N/A.
     var missedEventType: SessionEndedMetric.MissedEventType? { get }
@@ -24,6 +26,7 @@ internal protocol RUMCommand {
 
 internal struct RUMSDKInitCommand: RUMCommand {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue] = [:]
     var canStartBackgroundView = false
     var isUserInteraction = false
@@ -32,6 +35,7 @@ internal struct RUMSDKInitCommand: RUMCommand {
 
 internal struct RUMApplicationStartCommand: RUMCommand {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     var canStartBackgroundView = false
     var isUserInteraction = false
@@ -40,6 +44,7 @@ internal struct RUMApplicationStartCommand: RUMCommand {
 
 internal struct RUMStopSessionCommand: RUMCommand {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue] = [:]
     let canStartBackgroundView = false // no, stopping a session should not start a backgorund session
     let isUserInteraction = false
@@ -54,6 +59,7 @@ internal struct RUMStopSessionCommand: RUMCommand {
 
 internal struct RUMStartViewCommand: RUMCommand, RUMViewScopePropagatableAttributes {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, it should start its own view, not the "Background"
     let isUserInteraction = true // a new View means there was a navigation, it's considered a User interaction
@@ -90,6 +96,7 @@ internal struct RUMStartViewCommand: RUMCommand, RUMViewScopePropagatableAttribu
 
 internal struct RUMStopViewCommand: RUMCommand, RUMViewScopePropagatableAttributes {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view
     let isUserInteraction = false // a view can be stopped and in most cases should not be considered an interaction (if it's stopped because the user navigate inside the same app, the startView will happen shortly after this)
@@ -128,6 +135,7 @@ internal protocol RUMErrorCommand: RUMCommand {
 /// Using this command results with classifying the error as "Exception" in Datadog app (`@error.category: Exception`).
 internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track errors in "Background" view
     let isUserInteraction = false // an error is not an interactive event
@@ -225,6 +233,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
 /// Using this command results with classifying the error as "App Hang" in Datadog app (`@error.category: App Hang`).
 internal struct RUMAddCurrentViewAppHangCommand: RUMErrorCommand {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't want to track App Hangs in "Background" view
     let isUserInteraction = false // an error is not an interactive event
@@ -247,6 +256,7 @@ internal struct RUMAddCurrentViewAppHangCommand: RUMErrorCommand {
 
 internal struct RUMAddCurrentViewMemoryWarningCommand: RUMErrorCommand {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false
     let isUserInteraction = false
@@ -267,6 +277,7 @@ internal struct RUMAddCurrentViewMemoryWarningCommand: RUMErrorCommand {
 
 internal struct RUMAddViewLoadingTime: RUMCommand, RUMViewScopePropagatableAttributes {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, it doesn't make sense to start "Background" view on receiving custom timing, as it will be `0ns` timing
     let isUserInteraction = false // a custom view timing is not an interactive event
@@ -277,6 +288,7 @@ internal struct RUMAddViewLoadingTime: RUMCommand, RUMViewScopePropagatableAttri
 
 internal struct RUMAddViewTimingCommand: RUMCommand, RUMViewScopePropagatableAttributes {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, it doesn't make sense to start "Background" view on receiving custom timing, as it will be `0ns` timing
     let isUserInteraction = false // a custom view timing is not an interactive event
@@ -308,6 +320,7 @@ internal struct RUMSpanContext {
 internal struct RUMStartResourceCommand: RUMResourceCommand {
     let resourceKey: String
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track resources in "Background" view
     let isUserInteraction = false // a resource is not an interactive event
@@ -326,6 +339,7 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
 internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
     let resourceKey: String
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
     let isUserInteraction = false // an error is not an interactive event
@@ -338,6 +352,7 @@ internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
 internal struct RUMStopResourceCommand: RUMResourceCommand {
     let resourceKey: String
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
     let isUserInteraction = false // a resource is not an interactive event
@@ -354,6 +369,7 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
 internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     let resourceKey: String
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
     let isUserInteraction = false // a resource is not an interactive event
@@ -428,6 +444,7 @@ internal protocol RUMUserActionCommand: RUMCommand {
 /// Starts continuous User Action.
 internal struct RUMStartUserActionCommand: RUMUserActionCommand {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track actions in "Background" view (e.g. it makes sense for custom actions)
     let isUserInteraction = true // a user action definitely is a User Interacgion
@@ -442,6 +459,7 @@ internal struct RUMStartUserActionCommand: RUMUserActionCommand {
 /// Stops continuous User Action.
 internal struct RUMStopUserActionCommand: RUMUserActionCommand {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartUserActionCommand`)
     let isUserInteraction = true // a user action definitely is a User Interacgion
@@ -454,6 +472,7 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
 /// Adds discrete (discontinuous) User Action.
 internal struct RUMAddUserActionCommand: RUMUserActionCommand {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track actions in "Background" view (e.g. it makes sense for custom actions)
     let isUserInteraction = true // a user action definitely is a User Interacgion
@@ -468,6 +487,7 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
 /// Adds that a feature flag has been evaluated to the view
 internal struct RUMAddFeatureFlagEvaluationCommand: RUMCommand {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we don't want to miss evaluation of flags that may affect background tasks
     let isUserInteraction = false
@@ -477,6 +497,7 @@ internal struct RUMAddFeatureFlagEvaluationCommand: RUMCommand {
 
     init(time: Date, name: String, value: Encodable) {
         self.time = time
+        self.globalAttributes = [:]
         self.attributes = [:]
         self.name = name
         self.value = value
@@ -487,6 +508,7 @@ internal struct RUMAddFeatureFlagEvaluationCommand: RUMCommand {
 
 internal struct RUMAddLongTaskCommand: RUMCommand {
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving long tasks in "Background" view
     let isUserInteraction = false // a long task is not an interactive event
@@ -502,6 +524,7 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
     let canStartBackgroundView = false
     let isUserInteraction = false
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
@@ -514,6 +537,7 @@ internal struct RUMUpdatePerformanceMetric: RUMCommand {
     let metric: PerformanceMetric
     let value: Double
     var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
