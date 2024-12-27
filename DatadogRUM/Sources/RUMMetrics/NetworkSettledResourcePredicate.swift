@@ -22,7 +22,7 @@ public struct TTNSResourceParams {
 /// Implement this protocol to customize the logic for determining which resources are included in the TTNS calculation.
 ///
 /// **Note:**
-/// - The `isInitialResource` method will be called on a secondary thread.
+/// - The `isInitialResource(resource:)` method will be called on a secondary thread.
 /// - The implementation must not assume any threading behavior and should avoid blocking the thread.
 /// - The method should always return the same result for the same input parameters to ensure consistency in TTNS calculation.
 public protocol NetworkSettledResourcePredicate {

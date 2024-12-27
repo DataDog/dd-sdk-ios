@@ -261,7 +261,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         let rumTime = DateProviderMock()
         rumConfig.dateProvider = rumTime
 
-        // Given
+        // Given (default ITNV action predicate)
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -272,7 +272,9 @@ class ViewLoadingMetricsTests: XCTestCase {
         monitor.addAction(type: .tap, name: "Tap in Previous View")
 
         // When (the next view is started within the ITNV threshold after the action)
-        let expectedITNV: TimeInterval = .mockRandom(min: 0, max: ITNVMetric.Constants.maxDuration * 0.99)
+        let expectedITNV: TimeInterval = .mockRandom(
+            min: 0, max: TimeBasedITNVActionPredicate.defaultMaxTimeToNextView * 0.99
+        )
         rumTime.now += expectedITNV
         monitor.startView(key: "next", name: "NextView")
 
@@ -290,7 +292,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         let rumTime = DateProviderMock()
         rumConfig.dateProvider = rumTime
 
-        // Given
+        // Given (default ITNV action predicate)
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -301,7 +303,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         monitor.addAction(type: .tap, name: "Tap in Previous View")
 
         // When (the next view starts after exceeding the ITNV threshold)
-        rumTime.now += ITNVMetric.Constants.maxDuration + 0.01 // exceeds the max threshold
+        rumTime.now += TimeBasedITNVActionPredicate.defaultMaxTimeToNextView + 0.01 // exceeds the max threshold
         monitor.startView(key: "next", name: "NextView")
 
         // Then (ITNV is not tracked for the next view)
@@ -318,7 +320,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         let rumTime = DateProviderMock()
         rumConfig.dateProvider = rumTime
 
-        // Given
+        // Given (default ITNV action predicate)
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -335,7 +337,9 @@ class ViewLoadingMetricsTests: XCTestCase {
         monitor.stopAction(type: .swipe, name: "Swipe")
 
         // When (the next view is started within the ITNV threshold after last action)
-        let expectedITNV: TimeInterval = .mockRandom(min: 0, max: ITNVMetric.Constants.maxDuration * 0.99)
+        let expectedITNV: TimeInterval = .mockRandom(
+            min: 0, max: TimeBasedITNVActionPredicate.defaultMaxTimeToNextView * 0.99
+        )
         rumTime.now += expectedITNV
         monitor.startView(key: "next", name: "NextView")
 
@@ -356,7 +360,7 @@ class ViewLoadingMetricsTests: XCTestCase {
             event.action.target?.name == "Tap in Previous View" ? nil : event // drop "Tap in Previous View"
         }
 
-        // Given
+        // Given (default ITNV action predicate)
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -367,7 +371,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         monitor.addAction(type: .tap, name: "Tap in Previous View")
 
         // When (the next view is started within the ITNV threshold after the action)
-        rumTime.now += ITNVMetric.Constants.maxDuration * 0.5
+        rumTime.now += TimeBasedITNVActionPredicate.defaultMaxTimeToNextView * 0.5
         monitor.startView(key: "next", name: "NextView")
 
         // Then (ITNV is tracked for the next view)
@@ -383,7 +387,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         let rumTime = DateProviderMock()
         rumConfig.dateProvider = rumTime
 
-        // Given
+        // Given (default ITNV action predicate)
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -394,11 +398,11 @@ class ViewLoadingMetricsTests: XCTestCase {
         monitor.addAction(type: .tap, name: "Tap in Previous View")
 
         // When (the next view starts due to the action)
-        rumTime.now += ITNVMetric.Constants.maxDuration * 0.5
+        rumTime.now += TimeBasedITNVActionPredicate.defaultMaxTimeToNextView * 0.5
         monitor.startView(key: "next", name: "NextView")
 
         // When (a new view starts without an action)
-        rumTime.now += ITNVMetric.Constants.maxDuration * 0.5
+        rumTime.now += TimeBasedITNVActionPredicate.defaultMaxTimeToNextView * 0.5
         monitor.startView(key: "nextWithoutAction", name: "NextViewWithoutAction")
 
         // Then
@@ -410,5 +414,9 @@ class ViewLoadingMetricsTests: XCTestCase {
         let nextViewWithoutAction = try XCTUnwrap(session.views.first(where: { $0.name == "NextViewWithoutAction" })?.viewEvents.last)
         XCTAssertNotNil(nextViewEvent.view.interactionToNextViewTime, "ITNV should be tracked for view that started due to an action.")
         XCTAssertNil(nextViewWithoutAction.view.interactionToNextViewTime, "ITNV should not be tracked for view that started without an action.")
+    }
+
+    func testGivenCustomITNVActionPredicate_whenNextViewStarts_thenITNVMetricIsCalculatedFromClassifiedActions() throws {
+        // TODO: RUM-7823
     }
 }

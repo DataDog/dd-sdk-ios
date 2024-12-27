@@ -1236,10 +1236,10 @@ internal class TTNSMetricMock: TTNSMetricTracking {
 }
 
 internal class ITNVMetricMock: ITNVMetricTracking {
-    /// Tracks calls to `trackAction(startTime:endTime:actionType:in:)`.
-    var trackedActions: [(startTime: Date, endTime: Date, actionType: RUMActionType, viewID: RUMUUID)] = []
-    /// Tracks calls to `trackViewStart(at:viewID:)`.
-    var trackedViewStarts: [(viewStart: Date, viewID: RUMUUID)] = []
+    /// Tracks calls to `trackAction(startTime:endTime:name:type:in:)`.
+    var trackedActions: [(startTime: Date, endTime: Date, actionName: String, actionType: RUMActionType, viewID: RUMUUID)] = []
+    /// Tracks calls to `trackViewStart(at:name:viewID:)`.
+    var trackedViewStarts: [(viewStart: Date, viewName: String, viewID: RUMUUID)] = []
     /// Tracks calls to `trackViewComplete(viewID:)`.
     var trackedViewCompletes: Set<RUMUUID> = []
     /// Mocked value returned by this metric.
@@ -1249,12 +1249,12 @@ internal class ITNVMetricMock: ITNVMetricTracking {
         self.mockedValue = mockedValue
     }
 
-    func trackAction(startTime: Date, endTime: Date, actionType: RUMActionType, in viewID: RUMUUID) {
-        trackedActions.append((startTime: startTime, endTime: endTime, actionType: actionType, viewID: viewID))
+    func trackAction(startTime: Date, endTime: Date, name: String, type: RUMActionType, in viewID: RUMUUID) {
+        trackedActions.append((startTime: startTime, endTime: endTime, actionName: name, actionType: type, viewID: viewID))
     }
 
-    func trackViewStart(at viewStart: Date, viewID: RUMUUID) {
-        trackedViewStarts.append((viewStart: viewStart, viewID: viewID))
+    func trackViewStart(at viewStart: Date, name: String, viewID: RUMUUID) {
+        trackedViewStarts.append((viewStart: viewStart, viewName: name, viewID: viewID))
     }
 
     func trackViewComplete(viewID: RUMUUID) {
