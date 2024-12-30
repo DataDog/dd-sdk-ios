@@ -60,6 +60,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     /// Number of Resources that started but not yet ended during this User Action's lifespan.
     private var activeResourcesCount: Int = 0
 
+    /// Interaction-to-Next-View metric for this view.
+    private let interactionToNextViewMetric: ITNVMetricTracking
+
     /// Callback called when a `RUMActionEvent` is submitted for storage.
     private let onActionEventSent: (RUMActionEvent) -> Void
 
@@ -73,6 +76,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         serverTimeOffset: TimeInterval,
         isContinuous: Bool,
         instrumentation: InstrumentationType,
+        interactionToNextViewMetric: ITNVMetricTracking,
         onActionEventSent: @escaping (RUMActionEvent) -> Void
     ) {
         self.parent = parent
@@ -86,6 +90,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         self.isContinuous = isContinuous
         self.lastActivityTime = startTime
         self.instrumentation = instrumentation
+        self.interactionToNextViewMetric = interactionToNextViewMetric
         self.onActionEventSent = onActionEventSent
     }
 
@@ -197,6 +202,15 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         if let event = dependencies.eventBuilder.build(from: actionEvent) {
             writer.write(value: event)
             onActionEventSent(event)
+
+            if let activeViewID = self.context.activeViewID {
+                interactionToNextViewMetric.trackAction(
+                    startTime: actionStartTime,
+                    endTime: completionTime,
+                    actionType: actionType,
+                    in: activeViewID
+                )
+            }
         }
     }
 
