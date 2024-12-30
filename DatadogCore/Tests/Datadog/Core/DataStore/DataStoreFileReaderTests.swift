@@ -88,15 +88,17 @@ class DataStoreFileReaderTests: XCTestCase {
     }
 
     func testReadingOverflowingDataBytes() throws {
-        // When)
-        let overflowingLength = DataStoreFileReader.Constants.maxBlockLength + 1
+        // Given
+        let maxBlockLength = MAX_DATA_LENGTH
+        // When
+        let overflowingLength = maxBlockLength + 1
         let overflowingDataBytes = [UInt8](try DataStoreBlock(type: .data, data: .mockRepeating(byte: 0xff, times: Int(overflowingLength)))
             .serialize(maxLength: overflowingLength))
         try reader.file.write(data: Data(okVersionBytes + overflowingDataBytes))
 
         // Then
         DDAssertThrowsError(try reader.read()) { (error: TLVBlockError) in
-            DDAssertReflectionEqual(error, .bytesLengthExceedsLimit(limit: DataStoreFileReader.Constants.maxBlockLength.asUInt64()))
+            DDAssertReflectionEqual(error, .bytesLengthExceedsLimit(length: overflowingLength, limit: maxBlockLength))
         }
     }
 

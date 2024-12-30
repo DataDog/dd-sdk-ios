@@ -45,7 +45,7 @@ class DataStoreFileWriterTests: XCTestCase {
 
     func testWritingData() throws {
         // When
-        let maxLength = DataStoreFileWriter.Constants.maxDataLength
+        let maxLength = MAX_DATA_LENGTH
         let min = Data()
         let max: Data = .mockRandom(ofSize: maxLength)
         let overflow: Data = .mockRandom(ofSize: maxLength + 1)
@@ -54,7 +54,7 @@ class DataStoreFileWriterTests: XCTestCase {
         XCTAssertNoThrow(try writer.write(data: min, version: .mockAny()))
         XCTAssertNoThrow(try writer.write(data: max, version: .mockAny()))
         DDAssertThrowsError(try writer.write(data: overflow, version: .mockAny())) { (error: DataStoreFileWritingError) in
-            DDAssertReflectionEqual(error, .failedToEncodeData(TLVBlockError.bytesLengthExceedsLimit(limit: maxLength)))
+            DDAssertReflectionEqual(error, .failedToEncodeData(TLVBlockError.bytesLengthExceedsLimit(length: maxLength + 1, limit: maxLength)))
         }
     }
 }

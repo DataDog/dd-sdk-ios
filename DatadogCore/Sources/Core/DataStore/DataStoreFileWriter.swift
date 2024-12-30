@@ -13,11 +13,6 @@ internal enum DataStoreFileWritingError: Error {
 }
 
 internal struct DataStoreFileWriter {
-    internal enum Constants {
-        /// The maximum length of data (Value) in TLV block defining key data.
-        static let maxDataLength = 10.MB.asUInt64() // 10MB
-    }
-
     let file: File
 
     func write(data: Data, version: DataStoreKeyVersion) throws {
@@ -26,12 +21,12 @@ internal struct DataStoreFileWriter {
 
         var encoded = Data()
         do {
-            try encoded.append(versionBlock.serialize(maxLength: UInt64(MemoryLayout<DataStoreKeyVersion>.size)))
+            try encoded.append(versionBlock.serialize(maxLength: TLVBlockSize(MemoryLayout<DataStoreKeyVersion>.size)))
         } catch let error {
             throw DataStoreFileWritingError.failedToEncodeVersion(error)
         }
         do {
-            try encoded.append(dataBlock.serialize(maxLength: Constants.maxDataLength))
+            try encoded.append(dataBlock.serialize(maxLength: MAX_DATA_LENGTH))
         } catch let error {
             throw DataStoreFileWritingError.failedToEncodeData(error)
         }

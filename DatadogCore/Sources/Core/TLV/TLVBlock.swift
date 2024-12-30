@@ -15,7 +15,7 @@ internal enum TLVBlockError: Error {
     case readOperationFailed(streamStatus: Stream.Status, streamError: Error?)
     case invalidDataType(got: Any)
     case invalidByteSequence(expected: Int, got: Int)
-    case bytesLengthExceedsLimit(limit: UInt64)
+    case bytesLengthExceedsLimit(length: TLVBlockSize?, limit: TLVBlockSize)
     case dataAllocationFailure
     case endOfStream
 }
@@ -38,13 +38,13 @@ internal struct TLVBlock<BlockType> where BlockType: RawRepresentable, BlockType
     ///     +------------+---------------+-----------+
     /// - Parameter maxLength: Maximum data length of a block.
     /// - Returns: a data block in TLV.
-    func serialize(maxLength: UInt64 = MAX_DATA_LENGTH) throws -> Data {
+    func serialize(maxLength: TLVBlockSize = MAX_DATA_LENGTH) throws -> Data {
         var buffer = Data()
         // T
         withUnsafeBytes(of: type.rawValue) { buffer.append(contentsOf: $0) }
         // L
         guard let length = TLVBlockSize(exactly: data.count), length <= maxLength else {
-            throw TLVBlockError.bytesLengthExceedsLimit(limit: maxLength)
+            throw TLVBlockError.bytesLengthExceedsLimit(length: TLVBlockSize(exactly: data.count), limit: maxLength)
         }
         withUnsafeBytes(of: length) { buffer.append(contentsOf: $0) }
         // V

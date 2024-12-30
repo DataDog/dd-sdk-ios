@@ -202,7 +202,7 @@ class FeatureDataStoreTests: XCTestCase {
 
     // MARK: - Error Handling
 
-    func testWhenSettingTooLargeValue_itdSendsTelemetry() throws {
+    func testWhenSettingTooLargeValue_itSendsTelemetry() throws {
         let telemetry = TelemetryMock()
 
         // Given
@@ -214,14 +214,14 @@ class FeatureDataStoreTests: XCTestCase {
         )
 
         // When
-        let limit = DataStoreFileWriter.Constants.maxDataLength
+        let limit = MAX_DATA_LENGTH
         store.setValue(.mock(ofSize: limit + 1), forKey: "key")
         store.flush()
 
         // Then
         let error = try XCTUnwrap(telemetry.messages.firstError())
         XCTAssertTrue(error.message.hasPrefix("[Data Store] Error on setting `key` value for `feature`"))
-        XCTAssertTrue(error.message.contains("failedToEncodeData(DataBlock length exceeds limit of \(limit) bytes)"))
+        XCTAssertTrue(error.message.contains("failedToEncodeData(DataBlock with \(limit + 1) bytes exceeds limit of \(limit) bytes)"))
     }
 
     func testWhenGettingMalformedValue_itSendsTelemetry() throws {
