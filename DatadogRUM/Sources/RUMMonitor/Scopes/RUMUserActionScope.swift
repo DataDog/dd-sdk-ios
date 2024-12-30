@@ -202,12 +202,15 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         if let event = dependencies.eventBuilder.build(from: actionEvent) {
             writer.write(value: event)
             onActionEventSent(event)
-            interactionToNextViewMetric.trackAction(
-                startTime: actionStartTime,
-                endTime: completionTime,
-                actionType: actionType,
-                in: self.context.activeViewID.orNull
-            )
+
+            if let activeViewID = self.context.activeViewID {
+                interactionToNextViewMetric.trackAction(
+                    startTime: actionStartTime,
+                    endTime: completionTime,
+                    actionType: actionType,
+                    in: activeViewID
+                )
+            }
         }
     }
 

@@ -20,9 +20,9 @@ internal protocol ITNVMetricTracking {
     /// Tracks the start of a view.
     /// From this moment, calls to `value(for:)` for this `viewID` will return the value of ITNV.
     /// - Parameters:
-    ///   - viewStart: The timestamp when the view starts.
+    ///   - startTime: The timestamp when the view starts.
     ///   - viewID: The ID of the view that has just started.
-    func trackViewStart(at viewStart: Date, viewID: RUMUUID)
+    func trackViewStart(at startTime: Date, viewID: RUMUUID)
 
     /// Marks the completion of a view.
     /// Indicates that the view event will no longer be updated and no more calls to `value(for:)` for this `viewID` will be made.
@@ -68,8 +68,8 @@ internal final class ITNVMetric: ITNVMetricTracking {
         }
     }
 
-    func trackViewStart(at viewStart: Date, viewID: RUMUUID) {
-        startDateByViewID[viewID] = viewStart
+    func trackViewStart(at startTime: Date, viewID: RUMUUID) {
+        startDateByViewID[viewID] = startTime
         previousViewByViewID[viewID] = currentViewID
         currentViewID = viewID
     }
