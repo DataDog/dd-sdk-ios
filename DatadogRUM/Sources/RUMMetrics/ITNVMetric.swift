@@ -77,7 +77,7 @@ internal final class ITNVMetric: ITNVMetricTracking {
     /// Initializes the ITNV metric system with an optional custom predicate.
     ///
     /// - Parameter predicate: A predicate defining which action is considered the "last interaction" in the previous view.
-    init(predicate: NextViewActionPredicate = TimeBasedITNVActionPredicate()) {
+    init(predicate: NextViewActionPredicate) {
         self.predicate = predicate
     }
 

@@ -777,7 +777,8 @@ extension RUMScopeDependencies {
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
         sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0),
         watchdogTermination: WatchdogTerminationMonitor = .mockRandom(),
-        networkSettledMetricFactory: @escaping (Date, String) -> TTNSMetricTracking = { _, _ in TTNSMetricMock() }
+        networkSettledMetricFactory: @escaping (Date, String) -> TTNSMetricTracking = { _, _ in TTNSMetricMock() },
+        interactionToNextViewMetricFactory: @escaping () -> ITNVMetricTracking = { ITNVMetricMock() }
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -797,7 +798,8 @@ extension RUMScopeDependencies {
             fatalErrorContext: fatalErrorContext,
             sessionEndedMetric: sessionEndedMetric,
             watchdogTermination: watchdogTermination,
-            networkSettledMetricFactory: networkSettledMetricFactory
+            networkSettledMetricFactory: networkSettledMetricFactory,
+            interactionToNextViewMetricFactory: interactionToNextViewMetricFactory
         )
     }
 
@@ -819,7 +821,8 @@ extension RUMScopeDependencies {
         fatalErrorContext: FatalErrorContextNotifying? = nil,
         sessionEndedMetric: SessionEndedMetricController? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
-        networkSettledMetricFactory: ((Date, String) -> TTNSMetricTracking)? = nil
+        networkSettledMetricFactory: ((Date, String) -> TTNSMetricTracking)? = nil,
+        interactionToNextViewMetricFactory: (() -> ITNVMetricTracking)? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -839,7 +842,8 @@ extension RUMScopeDependencies {
             fatalErrorContext: fatalErrorContext ?? self.fatalErrorContext,
             sessionEndedMetric: sessionEndedMetric ?? self.sessionEndedMetric,
             watchdogTermination: watchdogTermination,
-            networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory
+            networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
+            interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory
         )
     }
 }
