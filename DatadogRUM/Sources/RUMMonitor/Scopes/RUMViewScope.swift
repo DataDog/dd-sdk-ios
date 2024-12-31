@@ -142,7 +142,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 frequency: $0.frequency
             )
         }
-        self.networkSettledMetric = dependencies.networkSettledMetricFactory(viewStartTime)
+        self.networkSettledMetric = dependencies.networkSettledMetricFactory(viewStartTime, viewName)
         interactionToNextViewMetric.trackViewStart(at: startTime, viewID: viewUUID)
 
         // Notify Synthetics if needed

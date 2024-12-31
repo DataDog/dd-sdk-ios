@@ -91,7 +91,7 @@ internal class RUMResourceScope: RUMScope {
         self.onErrorEvent = onErrorEvent
 
         // Track this resource in view's TTNS metric:
-        networkSettledMetric.trackResourceStart(at: startTime, resourceID: resourceUUID)
+        networkSettledMetric.trackResourceStart(at: startTime, resourceID: resourceUUID, resourceURL: url)
     }
 
     // MARK: - RUMScope

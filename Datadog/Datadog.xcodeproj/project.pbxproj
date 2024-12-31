@@ -528,6 +528,8 @@
 		618C0FC02B482F6800266B38 /* SpanWriteContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618C0FBF2B482F6800266B38 /* SpanWriteContextTests.swift */; };
 		618C0FC12B482F6800266B38 /* SpanWriteContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618C0FBF2B482F6800266B38 /* SpanWriteContextTests.swift */; };
 		618C365F248E85B400520CDE /* DateFormattingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618C365E248E85B400520CDE /* DateFormattingTests.swift */; };
+		618F2B032D146BB300A647C4 /* NetworkSettledResourcePredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618F2B022D146BB300A647C4 /* NetworkSettledResourcePredicate.swift */; };
+		618F2B042D146BB300A647C4 /* NetworkSettledResourcePredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618F2B022D146BB300A647C4 /* NetworkSettledResourcePredicate.swift */; };
 		618F9843265BC486009959F8 /* E2EInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618F9842265BC486009959F8 /* E2EInstrumentationTests.swift */; };
 		618F984E265BC905009959F8 /* E2EConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618F984D265BC905009959F8 /* E2EConfig.swift */; };
 		618F984F265BC905009959F8 /* E2EConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618F984D265BC905009959F8 /* E2EConfig.swift */; };
@@ -2604,6 +2606,7 @@
 		618DCFDE24C75FD300589570 /* RUMScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScopeTests.swift; sourceTree = "<group>"; };
 		618E13A92524B8700098C6B0 /* HTTPHeadersReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPHeadersReader.swift; sourceTree = "<group>"; };
 		618E13B02524B8F80098C6B0 /* TracingHTTPHeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingHTTPHeaders.swift; sourceTree = "<group>"; };
+		618F2B022D146BB300A647C4 /* NetworkSettledResourcePredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkSettledResourcePredicate.swift; sourceTree = "<group>"; };
 		618F9840265BC486009959F8 /* E2EInstrumentationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = E2EInstrumentationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		618F9842265BC486009959F8 /* E2EInstrumentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = E2EInstrumentationTests.swift; sourceTree = "<group>"; };
 		618F9844265BC486009959F8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -4151,6 +4154,7 @@
 			isa = PBXGroup;
 			children = (
 				6105C4F52CEBA7A100C4C5EE /* TTNSMetric.swift */,
+				618F2B022D146BB300A647C4 /* NetworkSettledResourcePredicate.swift */,
 				6105C5082CFA222400C4C5EE /* ITNVMetric.swift */,
 			);
 			path = RUMMetrics;
@@ -9016,6 +9020,7 @@
 				D23F8E8529DDCD28001CFAE8 /* SwiftUIExtensions.swift in Sources */,
 				3CFF4F952C09E63C006F191D /* WatchdogTerminationChecker.swift in Sources */,
 				D23F8E8629DDCD28001CFAE8 /* RUMDataModelsMapping.swift in Sources */,
+				618F2B042D146BB300A647C4 /* NetworkSettledResourcePredicate.swift in Sources */,
 				D23F8E8729DDCD28001CFAE8 /* RUMInstrumentation.swift in Sources */,
 				D23F8E8829DDCD28001CFAE8 /* VitalCPUReader.swift in Sources */,
 				D23F8E8929DDCD28001CFAE8 /* RUMOperatingSystemInfo.swift in Sources */,
@@ -9358,6 +9363,7 @@
 				D29A9F8E29DD8665005C54A4 /* SwiftUIExtensions.swift in Sources */,
 				3CFF4F942C09E63C006F191D /* WatchdogTerminationChecker.swift in Sources */,
 				D29A9F7829DD85BB005C54A4 /* RUMDataModelsMapping.swift in Sources */,
+				618F2B032D146BB300A647C4 /* NetworkSettledResourcePredicate.swift in Sources */,
 				D29A9F6F29DD85BB005C54A4 /* RUMInstrumentation.swift in Sources */,
 				D29A9F7A29DD85BB005C54A4 /* VitalCPUReader.swift in Sources */,
 				D29A9F6729DD85BB005C54A4 /* RUMOperatingSystemInfo.swift in Sources */,
