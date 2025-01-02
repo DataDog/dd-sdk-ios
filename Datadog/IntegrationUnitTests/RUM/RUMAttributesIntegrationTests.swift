@@ -100,7 +100,7 @@ final class RUMAttributesIntegrationTests: XCTestCase {
         }
     }
 
-    func testWhenSessionEnds_theViewAttributesAreNotUpdated_withAStopView() throws {
+    func testWhenSessionEnds_theViewAttributesAreNotUpdated_withNewCommands() throws {
         // Given
         let initialAttributes: [AttributeKey: AttributeValue] = ["key1": "value1", "key2": "value2"]
         let viewName = "MyView"
@@ -111,22 +111,27 @@ final class RUMAttributesIntegrationTests: XCTestCase {
         // When
         monitor.startView(key: "key", name: viewName, attributes: initialAttributes)
         monitor.stopSession()
-        monitor.stopView(key: "key", attributes: ["additionalKey": "additionalValue"])
+        monitor.addAttribute(forKey: "additionalKey", value: "additionalValue")
+        monitor.startView(key: "key", name: viewName, attributes: initialAttributes)
+        monitor.stopView(key: "key", attributes: ["anotherAdditionalKey": "anotherAdditionalValue"])
 
         // Then
-        let session = try RUMSessionMatcher
+        let sessions = try RUMSessionMatcher
             .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
-            .takeSingle()
+            .takeTwo()
 
         // It should have the `ApplicationLaunchView` and `MyView` views
-        XCTAssertEqual(session.views.count, 2)
+        XCTAssertEqual(sessions.0.views.count, 2)
+        // It should have only `MyView`
+        XCTAssertEqual(sessions.1.views.count, 1)
 
-        let applicationView = try XCTUnwrap(session.views.first(where: { $0.isApplicationLaunchView() }))
+        let applicationView = try XCTUnwrap(sessions.0.views.first(where: { $0.isApplicationLaunchView() }))
         applicationView.viewEvents.forEach { viewEvent in
             XCTAssertEqual(viewEvent.numberOfAttributes, 0)
         }
 
-        let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
+        // Session 0
+        var customView = try XCTUnwrap(sessions.0.views.first(where: { $0.name == viewName }))
 
         customView.viewEvents.forEach { viewEvent in
             XCTAssertEqual(viewEvent.numberOfAttributes, initialAttributes.count)
@@ -135,6 +140,25 @@ final class RUMAttributesIntegrationTests: XCTestCase {
                 XCTAssertEqual(viewEvent.attribute(forKey: $0.key), $0.value as? String)
             }
         }
+
+        // Session 1
+        customView = try XCTUnwrap(sessions.1.views.first(where: { $0.name == viewName }))
+
+        let startViewEvent = try XCTUnwrap(customView.viewEvents.first)
+        XCTAssertEqual(startViewEvent.numberOfAttributes, 3)
+
+        initialAttributes.forEach {
+            XCTAssertEqual(startViewEvent.attribute(forKey: $0.key), $0.value as? String)
+        }
+        XCTAssertEqual(startViewEvent.attribute(forKey: "additionalKey"), "additionalValue")
+
+        let stopViewEvent = try XCTUnwrap(customView.viewEvents.last)
+        XCTAssertEqual(stopViewEvent.numberOfAttributes, 4)
+        initialAttributes.forEach {
+            XCTAssertEqual(startViewEvent.attribute(forKey: $0.key), $0.value as? String)
+        }
+        XCTAssertEqual(stopViewEvent.attribute(forKey: "additionalKey"), "additionalValue")
+        XCTAssertEqual(stopViewEvent.attribute(forKey: "anotherAdditionalKey"), "anotherAdditionalValue")
     }
 
     func testViewAttributes_havePrecedenceOverGlobalAttributes() throws {
