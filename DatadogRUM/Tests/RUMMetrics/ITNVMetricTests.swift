@@ -11,8 +11,8 @@ import TestUtilities
 private struct NextViewActionPredicateMock: NextViewActionPredicate {
     let shouldConsiderLastAction: (ITNVActionParams) -> Bool
 
-    func isLastAction(action: ITNVActionParams) -> Bool {
-        shouldConsiderLastAction(action)
+    func isLastAction(from actionParams: ITNVActionParams) -> Bool {
+        shouldConsiderLastAction(actionParams)
     }
 }
 

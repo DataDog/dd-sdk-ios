@@ -19,8 +19,8 @@ private extension RUMUUID {
 private struct ResourcePredicateMock: NetworkSettledResourcePredicate {
     let shouldConsiderInitialResource: (TTNSResourceParams) -> Bool
 
-    func isInitialResource(resource: TTNSResourceParams) -> Bool {
-        shouldConsiderInitialResource(resource)
+    func isInitialResource(from resourceParams: TTNSResourceParams) -> Bool {
+        shouldConsiderInitialResource(resourceParams)
     }
 }
 

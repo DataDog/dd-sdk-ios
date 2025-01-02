@@ -30,7 +30,7 @@ public struct ITNVActionParams {
 /// in the subsequent view will be measured from this action’s time to the new view’s start.
 ///
 /// **Note:**
-/// - The `isLastAction(action:)` method will be called on a secondary thread.
+/// - The `isLastAction(from:)` method will be called on a secondary thread.
 /// - The implementation must not assume any specific threading behavior and should avoid blocking.
 /// - The method should always return the same result for identical input parameters to ensure consistent ITNV calculation.
 public protocol NextViewActionPredicate {
@@ -39,9 +39,9 @@ public protocol NextViewActionPredicate {
     /// This method is invoked in reverse chronological order for all actions in the previous view. Once `true` is returned,
     /// the iteration stops, and the accepted action defines the starting point for the ITNV metric.
     ///
-    /// - Parameter action: The parameters of the action (type, name, time to next view, and next view name).
+    /// - Parameter actionParams: The parameters of the action (type, name, time to next view, and next view name).
     /// - Returns: `true` if this action is the "last interaction" for ITNV, `false` otherwise.
-    func isLastAction(action: ITNVActionParams) -> Bool
+    func isLastAction(from actionParams: ITNVActionParams) -> Bool
 }
 
 /// A predicate implementation for classifying the "last interaction" for the Interaction-To-Next-View (ITNV) metric
@@ -66,17 +66,17 @@ public struct TimeBasedITNVActionPredicate: NextViewActionPredicate {
 
     /// Determines if the provided action should be considered the "last interaction" for ITNV, based on its action type and timing.
     ///
-    /// - Parameter action: The parameters of the action (type, name, time to next view, and next view name).
+    /// - Parameter actionParams: The parameters of the action (type, name, time to next view, and next view name).
     /// - Returns: `true` if the action’s `timeToNextView` is within `maxTimeToNextView` and its type is `tap`, `click`, or `swipe`;
     ///            otherwise, `false`.
-    public func isLastAction(action: ITNVActionParams) -> Bool {
+    public func isLastAction(from actionParams: ITNVActionParams) -> Bool {
         // Action must occur within the allowed time range
-        guard action.timeToNextView >= 0, action.timeToNextView <= maxTimeToNextView else {
+        guard actionParams.timeToNextView >= 0, actionParams.timeToNextView <= maxTimeToNextView else {
             return false
         }
 
         // Only specific action types qualify as the "last interaction"
-        switch action.type {
+        switch actionParams.type {
         case .tap, .click, .swipe:
             return true
         case .scroll, .custom:

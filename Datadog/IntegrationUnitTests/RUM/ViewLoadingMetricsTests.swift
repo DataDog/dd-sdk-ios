@@ -205,8 +205,8 @@ class ViewLoadingMetricsTests: XCTestCase {
         struct CustomPredicate: NetworkSettledResourcePredicate {
             let viewLoadingURLs: Set<URL>
 
-            func isInitialResource(resource: TTNSResourceParams) -> Bool {
-                resource.viewName == "FooView" && viewLoadingURLs.contains(URL(string: resource.url)!)
+            func isInitialResource(from resourceParams: TTNSResourceParams) -> Bool {
+                resourceParams.viewName == "FooView" && viewLoadingURLs.contains(URL(string: resourceParams.url)!)
             }
         }
 
@@ -432,8 +432,8 @@ class ViewLoadingMetricsTests: XCTestCase {
         // - A0, A2 - other actions; ignored by predicate
 
         struct CustomITNVPredicate: NextViewActionPredicate {
-            func isLastAction(action: ITNVActionParams) -> Bool {
-                return action.name == "Sign Up" && action.nextViewName == "WelcomeView"
+            func isLastAction(from actionParams: ITNVActionParams) -> Bool {
+                return actionParams.name == "Sign Up" && actionParams.nextViewName == "WelcomeView"
             }
         }
 

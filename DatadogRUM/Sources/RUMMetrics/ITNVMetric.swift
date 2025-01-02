@@ -129,12 +129,14 @@ internal final class ITNVMetric: ITNVMetricTracking {
         }
         defer { viewsByID[previousViewID] = previousView } // Update the stored view after modifications.
 
-        // Find the most recent action in the previous view that the predicate accepts as "last interaction."
+        // We iterate actions in reverse chronological order, stopping on the first match.
+        // This reflects the ITNV contract that the "last interaction" is determined by
+        // checking the most recent actions first.
         let lastAction = previousView.actions
             .reversed()
             .first { action in
                 let params = actionParams(for: action, nextViewStart: view.startTime, nextViewName: view.name)
-                return predicate.isLastAction(action: params)
+                return predicate.isLastAction(from: params)
             }
 
         guard let lastAction = lastAction else {

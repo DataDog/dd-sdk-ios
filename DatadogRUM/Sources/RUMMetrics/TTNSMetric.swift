@@ -104,7 +104,7 @@ internal final class TTNSMetric: TTNSMetricTracking {
             timeSinceViewStart: startDate.timeIntervalSince(viewStartDate),
             viewName: viewName
         )
-        if resourcePredicate.isInitialResource(resource: resourceParams) {
+        if resourcePredicate.isInitialResource(from: resourceParams) {
             pendingResourcesStartDates[resourceID] = startDate
         }
     }
