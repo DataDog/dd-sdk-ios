@@ -21,7 +21,6 @@ extension SpanID: AnyMockable, RandomMockable {
     }
 }
 
-
 extension TraceID: AnyMockable, RandomMockable {
     public static func mockAny() -> TraceID {
         return TraceID(rawValue: (.mockAny(), .mockAny()))

@@ -19,14 +19,14 @@ internal struct SyntheticScenario: Scenario {
 
     /// The underlying scenario.
     private let _scenario: Scenario
-    
+
     /// Creates the scenario by reading the `BENCHMARK_SCENARIO` value from the
     /// environment variables.
     ///
     /// - Parameter processInfo: The `ProcessInfo` with environment variables
     /// configured
     init?(processInfo: ProcessInfo = .processInfo) {
-        guard 
+        guard
             let rawValue = processInfo.environment["BENCHMARK_SCENARIO"],
             let name = Name(rawValue: rawValue)
         else {

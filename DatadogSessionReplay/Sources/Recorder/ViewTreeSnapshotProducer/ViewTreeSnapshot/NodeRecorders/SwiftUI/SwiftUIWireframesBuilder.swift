@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import DatadogInternal
 
 @available(iOS 13.0, *)
 internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
@@ -22,10 +23,10 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
     /// Flag that determines if font should be scaled.
-    var fontScalingEnabled: Bool
+    let fontScalingEnabled: Bool
     /// Privacy level for masking images.
     let imagePrivacyLevel: ImagePrivacyLevel
-
+    /// The Hosting view attributes.
     let attributes: ViewAttributes
 
     var wireframeRect: CGRect {
@@ -44,7 +45,6 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
 
             return [root] + buildWireframes(items: list.items, context: context)
         } catch {
-            print(error)
             return [root]
         }
     }
@@ -173,7 +173,12 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
         case .platformView:
             return nil // Should be recorder by UIKit recorder
         case .unknown:
-            return nil // Need a placeholder
+            return context.builder.createPlaceholderWireframe(
+                id: Int64(content.seed.value),
+                frame: context.convert(frame: item.frame),
+                clip: context.clip,
+                label: "Unsupported SwiftUI component"
+            )
         }
     }
 }

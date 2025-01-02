@@ -4,18 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import DatadogInternal
-
-internal protocol Reflection {
-    init(_ mirror: ReflectionMirror) throws
-}
-
-internal extension Reflection {
-    init(reflecting subject: Any) throws {
-        let mirror = ReflectionMirror(reflecting: subject)
-        try self.init(mirror)
-    }
-}
+import Foundation
 
 /// A representation of the substructure and display style of an instance of
 /// any type.
@@ -70,23 +59,6 @@ internal struct ReflectionMirror {
     enum Path {
         case index(Int)
         case key(String)
-    }
-
-    enum Error: Swift.Error {
-        struct Context {
-            let subjectType: Any.Type
-            let paths: [Path]
-        }
-        case notFound(Context)
-        case typeMismatch(Context, expect: Any.Type, got: Any.Type)
-    }
-
-    struct Lazy<T> {
-        let reflect: () throws -> T
-
-        init(_ reflect: @escaping () throws -> T) {
-            self.reflect = reflect
-        }
     }
 
     private final class LazyBox<T> {
@@ -275,35 +247,9 @@ extension ReflectionMirror {
         return descendant(paths: &paths)
     }
 
-    // swiftlint:disable:next function_default_parameter_at_end
-    func descendant<T>(type: T.Type = T.self, _ first: Path, _ rest: Path...) throws -> T {
-        var paths = [first] + rest
-
-        guard let value = descendant(paths: &paths) else {
-            throw ReflectionMirror.Error.notFound(.init(subjectType: subjectType, paths: paths))
-        }
-
-        guard let value = value as? T else {
-            throw ReflectionMirror.Error.typeMismatch(
-                .init(subjectType: subjectType, paths: paths),
-                expect: type,
-                got: Swift.type(of: value)
-            )
-        }
-
-        return value
-    }
-
-    // swiftlint:disable:next function_default_parameter_at_end
-    func descendant<T>(type: T.Type = T.self, _ first: Path, _ rest: Path...) throws -> T where T: Reflection {
-        var paths = [first] + rest
-
-        guard let value = descendant(paths: &paths) else {
-            throw ReflectionMirror.Error.notFound(.init(subjectType: subjectType, paths: paths))
-        }
-
-        let mirror = ReflectionMirror(reflecting: value)
-        return try T(mirror)
+    func descendant(_ paths: [Path]) -> Any? {
+        var paths = paths
+        return descendant(paths: &paths)
     }
 
     private func descendant(paths: inout [Path]) -> Any? {
@@ -334,53 +280,6 @@ extension ReflectionMirror {
     }
 }
 
-extension Optional: Reflection where Wrapped: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        switch mirror.displayStyle {
-        case .nil:
-            self = .none
-        default:
-            self = try Wrapped(mirror)
-        }
-    }
-}
-
-extension Array: Reflection where Element: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        guard let subject = mirror.subject as? [Any] else {
-            throw ReflectionMirror.Error.typeMismatch(
-                .init(subjectType: mirror.subjectType, paths: []),
-                expect: [Any].self,
-                got: mirror.subjectType
-            )
-        }
-
-        // TODO: RUM-7309 error handling
-        self = subject.compactMap { try? Element(reflecting: $0) }
-    }
-}
-
-extension Dictionary: Reflection where Key: Reflection, Value: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        guard let subject = mirror.subject as? [AnyHashable: Any] else {
-            throw ReflectionMirror.Error.typeMismatch(
-                .init(subjectType: mirror.subjectType, paths: []),
-                expect: [AnyHashable: Any].self,
-                got: mirror.subjectType
-            )
-        }
-
-        // TODO: RUM-7309 error handling
-        self = subject.reduce(into: [:]) { result, element in
-            try? result[Key(reflecting: element.key.base)] = Value(reflecting: element.value)
-        }
-    }
-}
-
-extension Reflection {
-    typealias Lazy = ReflectionMirror.Lazy<Self>
-}
-
 extension ReflectionMirror.Path: ExpressibleByIntegerLiteral {
     init(integerLiteral value: Int) {
         self = .index(value)
@@ -390,12 +289,6 @@ extension ReflectionMirror.Path: ExpressibleByIntegerLiteral {
 extension ReflectionMirror.Path: ExpressibleByStringLiteral {
     init(stringLiteral value: String) {
         self = .key(value)
-    }
-}
-
-extension ReflectionMirror.Lazy: Reflection where T: Reflection {
-    init(_ mirror: ReflectionMirror) throws {
-        self.init({ try T(mirror) })
     }
 }
 

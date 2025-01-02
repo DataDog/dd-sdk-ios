@@ -337,7 +337,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 dependencies.sessionEndedMetric.track(missedEventType: missedEventType, in: sessionUUID)
             }
 
-            if !(command is RUMKeepSessionAliveCommand) { // it is expected to receive 'keep alive' while no active view (when tracking WebView events)
+            if !(isSilentOffViewCommand(command: command)) {
                 // As no view scope will handle this command, warn the user on dropping it.
                 DD.logger.warn(
                 """
@@ -348,6 +348,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 )
             }
         }
+    }
+
+    private func isSilentOffViewCommand(command: RUMCommand) -> Bool {
+        // It is expected to receive 'keep alive' while no active view (when tracking WebView events), and performance metric
+        // updates are sent automatically by cross platform frameworks whether a view is active or not, resulting in log
+        // spam.
+        return command is RUMKeepSessionAliveCommand || command is RUMUpdatePerformanceMetric
     }
 
     private func startBackgroundView(on command: RUMCommand, context: DatadogContext) {

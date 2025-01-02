@@ -74,7 +74,7 @@ public enum Benchmarks {
             self.context = context
         }
     }
-    
+
     /// Configure OpenTelemetry metrics meter and start measuring Memory.
     ///
     /// - Parameter configuration: The Benchmark configuration.
@@ -158,7 +158,7 @@ public enum Benchmarks {
             endpoint: .us1,
             uploadCondition: { true }
         )
-        
+
         let exporter = try! DatadogExporter(config: exporterConfiguration)
         let processor = SimpleSpanProcessor(spanExporter: exporter)
 

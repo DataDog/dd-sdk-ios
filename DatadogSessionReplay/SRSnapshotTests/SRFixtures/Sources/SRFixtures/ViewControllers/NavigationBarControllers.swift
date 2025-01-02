@@ -7,7 +7,6 @@
 import UIKit
 
 public final class NavigationBarControllers: UIViewController {
-
     @IBOutlet var navigationBars: [UINavigationBar]!
 
     public func setTintColor() {
@@ -27,7 +26,6 @@ public final class NavigationBarControllers: UIViewController {
             }
         }
     }
-
 }
 
 /// This class allows us to push a view controller onto the navigation stack during snapshot tests.
