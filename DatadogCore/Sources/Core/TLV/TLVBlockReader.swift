@@ -25,7 +25,7 @@ internal final class TLVBlockReader<BlockType> where BlockType: RawRepresentable
     /// - Parameter stream: The input stream
     init(
         input stream: InputStream,
-        maxBlockLength: TLVBlockSize = MAX_DATA_LENGTH
+        maxBlockLength: TLVBlockSize = maxTLVDataLength
     ) {
         self.maxBlockLength = maxBlockLength
         self.stream = stream

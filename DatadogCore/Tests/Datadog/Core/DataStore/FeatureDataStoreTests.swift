@@ -214,7 +214,7 @@ class FeatureDataStoreTests: XCTestCase {
         )
 
         // When
-        let limit = MAX_DATA_LENGTH
+        let limit = maxTLVDataLength
         store.setValue(.mock(ofSize: limit + 1), forKey: "key")
         store.flush()
 

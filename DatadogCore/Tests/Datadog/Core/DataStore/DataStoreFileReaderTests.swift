@@ -89,7 +89,7 @@ class DataStoreFileReaderTests: XCTestCase {
 
     func testReadingOverflowingDataBytes() throws {
         // Given
-        let maxBlockLength = MAX_DATA_LENGTH
+        let maxBlockLength = maxTLVDataLength
         // When
         let overflowingLength = maxBlockLength + 1
         let overflowingDataBytes = [UInt8](try DataStoreBlock(type: .data, data: .mockRepeating(byte: 0xff, times: Int(overflowingLength)))

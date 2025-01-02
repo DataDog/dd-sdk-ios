@@ -38,7 +38,7 @@ internal struct TLVBlock<BlockType> where BlockType: RawRepresentable, BlockType
     ///     +------------+---------------+-----------+
     /// - Parameter maxLength: Maximum data length of a block.
     /// - Returns: a data block in TLV.
-    func serialize(maxLength: TLVBlockSize = MAX_DATA_LENGTH) throws -> Data {
+    func serialize(maxLength: TLVBlockSize = maxTLVDataLength) throws -> Data {
         var buffer = Data()
         // T
         withUnsafeBytes(of: type.rawValue) { buffer.append(contentsOf: $0) }
