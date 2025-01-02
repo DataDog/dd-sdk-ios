@@ -482,7 +482,6 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(viewAfterFirstTiming.attribute(forKey: "attribute1"), "value1")
         XCTAssertEqual(viewAfterFirstTiming.attribute(forKey: "attribute2"), "value2")
         XCTAssertEqual(viewAfterSecondTiming.attribute(forKey: "attribute2"), "value2")
-        XCTAssertEqual(viewAfterSecondTiming.attribute(forKey: "attribute2"), "value2")
     }
 
     // MARK: - View Loading Time
