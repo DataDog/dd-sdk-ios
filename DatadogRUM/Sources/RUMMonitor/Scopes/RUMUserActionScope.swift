@@ -136,6 +136,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     // MARK: - Sending RUM Events
 
     private func sendActionEvent(completionTime: Date, on command: RUMCommand?, context: DatadogContext, writer: Writer) {
+        attributes.merge(rumCommandAttributes: command?.globalAttributes)
         attributes.merge(rumCommandAttributes: command?.attributes)
 
         var frustrations: [RUMActionEvent.Action.Frustration.FrustrationType]? = nil

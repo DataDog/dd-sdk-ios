@@ -20,7 +20,7 @@ internal class RUMResourceScope: RUMScope {
     /// The name used to identify this Resource.
     private let resourceKey: String
     /// Resource attributes.
-    private var attributes: [AttributeKey: AttributeValue]
+    private var attributes: [AttributeKey: AttributeValue] = [:]
 
     /// The Resource url.
     private var resourceURL: String
@@ -60,7 +60,6 @@ internal class RUMResourceScope: RUMScope {
         context: RUMContext,
         dependencies: RUMScopeDependencies,
         resourceKey: String,
-        attributes: [AttributeKey: AttributeValue],
         startTime: Date,
         serverTimeOffset: TimeInterval,
         url: String,
@@ -74,7 +73,6 @@ internal class RUMResourceScope: RUMScope {
         self.dependencies = dependencies
         self.resourceUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.resourceKey = resourceKey
-        self.attributes = attributes
         self.resourceURL = url
         self.resourceLoadingStartTime = startTime
         self.serverTimeOffset = serverTimeOffset
@@ -89,6 +87,10 @@ internal class RUMResourceScope: RUMScope {
     // MARK: - RUMScope
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
+        self.attributes = self.attributes
+            .merging(command.globalAttributes, uniquingKeysWith: { $1 })
+            .merging(command.attributes, uniquingKeysWith: { $1 })
+
         switch command {
         case let command as RUMStopResourceCommand where command.resourceKey == resourceKey:
             sendResourceEvent(on: command, context: context, writer: writer)
@@ -97,23 +99,16 @@ internal class RUMResourceScope: RUMScope {
             sendErrorEvent(on: command, context: context, writer: writer)
             return false
         case let command as RUMAddResourceMetricsCommand where command.resourceKey == resourceKey:
-            addMetrics(from: command)
+            resourceMetrics = command.metrics
         default:
             break
         }
         return true
     }
 
-    private func addMetrics(from command: RUMAddResourceMetricsCommand) {
-        attributes.merge(rumCommandAttributes: command.attributes)
-        resourceMetrics = command.metrics
-    }
-
     // MARK: - Sending RUM Events
 
     private func sendResourceEvent(on command: RUMStopResourceCommand, context: DatadogContext, writer: Writer) {
-        attributes.merge(rumCommandAttributes: command.attributes)
-
         let resourceStartTime: Date
         let resourceDuration: TimeInterval
         let size: Int64?
@@ -268,8 +263,6 @@ internal class RUMResourceScope: RUMScope {
     }
 
     private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand, context: DatadogContext, writer: Writer) {
-        attributes.merge(rumCommandAttributes: command.attributes)
-
         let errorFingerprint: String? = attributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
         let timeSinceAppStart = context.launchTime.map {
             command.time.timeIntervalSince($0.launchDate).toInt64Milliseconds
