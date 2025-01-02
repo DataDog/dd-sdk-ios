@@ -147,6 +147,17 @@ extension RUM {
         /// Default: `.average`.
         public var vitalsUpdateFrequency: VitalsFrequency?
 
+        /// The predicate used to classify resources for the Time-to-Network-Settled (TTNS) view metric calculation.
+        ///
+        /// **Time-to-Network-Settled (TTNS)** is a metric that measures the time from when a view becomes visible until all resources considered part of the view loading process
+        /// are fully loaded. This metric helps to understand how long it takes for a view to be fully ready with all required resources loaded.
+        ///
+        /// The `NetworkSettledResourcePredicate` defines which resources are included in the TTNS calculation based on their properties (e.g., start time, resource URL, etc.).
+        ///
+        /// Default: The default predicate, `TimeBasedTTNSResourcePredicate`, calculates TTNS using all resources that start within **100ms** of the view start.
+        /// This time threshold can be customized by providing a custom predicate or adjusting the threshold in the default predicate.
+        public var networkSettledResourcePredicate: NetworkSettledResourcePredicate
+
         /// Custom mapper for RUM view events.
         ///
         /// It can be used to modify view events before they are sent. The implementation of the mapper should
@@ -345,6 +356,7 @@ extension RUM.Configuration {
     ///   - appHangThreshold: The threshold for App Hangs monitoring (in seconds). Default: `nil`.
     ///   - trackWatchdogTerminations: Determines whether the SDK should track application termination by the watchdog. Default: `false`.
     ///   - vitalsUpdateFrequency: The preferred frequency for collecting RUM vitals. Default: `.average`.
+    ///   - networkSettledResourcePredicate: Predicate used to classify resources for the Time-to-Network-Settled (TTNS) metric calculation. Default: `TimeBasedTTNSResourcePredicate()`.
     ///   - viewEventMapper: Custom mapper for RUM view events. Default: `nil`.
     ///   - resourceEventMapper: Custom mapper for RUM resource events. Default: `nil`.
     ///   - actionEventMapper: Custom mapper for RUM action events. Default: `nil`.
@@ -365,6 +377,7 @@ extension RUM.Configuration {
         appHangThreshold: TimeInterval? = nil,
         trackWatchdogTerminations: Bool = false,
         vitalsUpdateFrequency: VitalsFrequency? = .average,
+        networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTTNSResourcePredicate(),
         viewEventMapper: RUM.ViewEventMapper? = nil,
         resourceEventMapper: RUM.ResourceEventMapper? = nil,
         actionEventMapper: RUM.ActionEventMapper? = nil,
@@ -384,6 +397,7 @@ extension RUM.Configuration {
         self.longTaskThreshold = longTaskThreshold
         self.appHangThreshold = appHangThreshold
         self.vitalsUpdateFrequency = vitalsUpdateFrequency
+        self.networkSettledResourcePredicate = networkSettledResourcePredicate
         self.viewEventMapper = viewEventMapper
         self.resourceEventMapper = resourceEventMapper
         self.actionEventMapper = actionEventMapper
