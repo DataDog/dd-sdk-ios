@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.22.0 / 02-01-2025
+
 - [IMPROVEMENT] Add Datadog Configuration `backgroundTasksEnabled` ObjC API. See [#2148][]
 - [FIX] Prevent Session Replay to create two full snapshots in a row. See [#2154][]
 
