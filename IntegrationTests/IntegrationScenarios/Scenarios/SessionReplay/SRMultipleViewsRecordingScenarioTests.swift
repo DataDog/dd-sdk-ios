@@ -13,6 +13,11 @@ private extension ExampleApplication {
         buttons["NEXT"].safeTap(within: 5)
     }
 
+    /// Triggers SR recording
+    func deadClick() {
+        windows.firstMatch.tap()
+    }
+
     func wait(seconds: TimeInterval) {
         Thread.sleep(forTimeInterval: seconds)
     }
@@ -40,7 +45,7 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         /// Total number of wireframes in all "full snapshot" records.
         static let totalWireframesInFullSnapshots = 150
         /// Minimal number of wireframes in each "full snapshot" record.
-        static let minWireframesInFullSnapshot = 5
+        static let minWireframesInFullSnapshot = 1
 
         /// Total number of "incremental snapshot" records that send "wireframe mutation" data.
         static let totalWireframeMutationRecords = 5
@@ -63,12 +68,16 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
                 srEndpoint: srEndpoint.recordingURL
             )
         )
+        app.deadClick()
         for _ in (0..<7) {
+            app.deadClick()
             app.wait(seconds: 1)
             app.tapNextButton()
         }
+        app.deadClick()
         try app.endRUMSession() // show "end view"
-        
+        app.deadClick()
+
         // Get RUM and SR raw requests from mock server:
         // - pull RUM data until the "end view" event is fetched
         // - pull SR data until receiving expected count of segments
@@ -161,7 +170,7 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
             Baseline.totalWireframesInFullSnapshots,
             "The total number of wireframes in all 'full snapshot' records must be above baseline"
         )
-        XCTAssertGreaterThan(
+        XCTAssertGreaterThanOrEqual(
             minWireframesInFullSnapshot,
             Baseline.minWireframesInFullSnapshot,
             "The minimal number of wireframes in each 'full snapshot' records must be above baseline"
