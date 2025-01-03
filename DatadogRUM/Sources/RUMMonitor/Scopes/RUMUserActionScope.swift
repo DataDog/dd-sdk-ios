@@ -207,7 +207,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 interactionToNextViewMetric.trackAction(
                     startTime: actionStartTime,
                     endTime: completionTime,
-                    actionType: actionType,
+                    name: name,
+                    type: actionType,
                     in: activeViewID
                 )
             }

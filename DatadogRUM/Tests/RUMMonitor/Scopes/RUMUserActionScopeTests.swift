@@ -872,12 +872,15 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testWhenActionEventIsSent_itTrackActionInITNVMetric() throws {
         let actionStartTime: Date = .mockDecember15th2019At10AMUTC()
+        let actionName: String = .mockRandom()
+        let actionType: RUMActionType = .tap
 
         // Given
         let metric = ITNVMetricMock()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            actionType: .tap,
+            name: actionName,
+            actionType: actionType,
             startTime: actionStartTime,
             interactionToNextViewMetric: metric
         )
@@ -894,6 +897,8 @@ class RUMUserActionScopeTests: XCTestCase {
         let trackedAction = try XCTUnwrap(metric.trackedActions.first)
         XCTAssertEqual(trackedAction.startTime, actionStartTime)
         XCTAssertEqual(trackedAction.endTime, actionStartTime + RUMUserActionScope.Constants.discreteActionTimeoutDuration)
+        XCTAssertEqual(trackedAction.actionName, actionName)
+        XCTAssertEqual(trackedAction.actionType, actionType)
         XCTAssertEqual(trackedAction.viewID, parent.context.activeViewID)
         XCTAssertEqual(metric.trackedActions.count, 1)
     }

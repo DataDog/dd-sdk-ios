@@ -107,6 +107,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     viewStartDate: viewStartDate,
                     resourcePredicate: configuration.networkSettledResourcePredicate
                 )
+            },
+            interactionToNextViewMetricFactory: {
+                return ITNVMetric(
+                    predicate: configuration.nextViewActionPredicate
+                )
             }
         )
 

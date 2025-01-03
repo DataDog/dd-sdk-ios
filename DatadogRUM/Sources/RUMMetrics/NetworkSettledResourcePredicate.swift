@@ -22,15 +22,15 @@ public struct TTNSResourceParams {
 /// Implement this protocol to customize the logic for determining which resources are included in the TTNS calculation.
 ///
 /// **Note:**
-/// - The `isInitialResource` method will be called on a secondary thread.
+/// - The `isInitialResource(from:)` method will be called on a secondary thread.
 /// - The implementation must not assume any threading behavior and should avoid blocking the thread.
 /// - The method should always return the same result for the same input parameters to ensure consistency in TTNS calculation.
 public protocol NetworkSettledResourcePredicate {
     /// Determines if the provided resource should be included in the TTNS metric calculation.
     ///
-    /// - Parameter resource: The parameters of the resource.
+    /// - Parameter resourceParams: The parameters of the resource.
     /// - Returns: `true` if the resource qualifies for TTNS metric calculation, `false` otherwise.
-    func isInitialResource(resource: TTNSResourceParams) -> Bool
+    func isInitialResource(from resourceParams: TTNSResourceParams) -> Bool
 }
 
 /// A predicate implementation for classifying Time-to-Network-Settled (TTNS) resources based on a time threshold.
@@ -54,9 +54,9 @@ public struct TimeBasedTTNSResourcePredicate: NetworkSettledResourcePredicate {
     /// Determines if the provided resource should be included in the TTNS metric calculation.
     /// A resource is included if it starts within the specified threshold from the view start time.
     ///
-    /// - Parameter resource: The parameters of the resource.
+    /// - Parameter resourceParams: The parameters of the resource.
     /// - Returns: `true` if the resource qualifies for TTNS metric calculation, `false` otherwise.
-    public func isInitialResource(resource: TTNSResourceParams) -> Bool {
-        return resource.timeSinceViewStart <= threshold
+    public func isInitialResource(from resourceParams: TTNSResourceParams) -> Bool {
+        return resourceParams.timeSinceViewStart <= threshold
     }
 }

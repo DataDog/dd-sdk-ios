@@ -105,7 +105,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             hasTrackedAnyView: false,
             didStartWithReplay: context.hasReplay
         )
-        self.interactionToNextViewMetric = ITNVMetric()
+        self.interactionToNextViewMetric = dependencies.interactionToNextViewMetricFactory()
 
         // Start tracking "RUM Session Ended" metric for this session
         dependencies.sessionEndedMetric.startMetric(

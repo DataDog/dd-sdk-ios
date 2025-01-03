@@ -19,8 +19,8 @@ private extension RUMUUID {
 private struct ResourcePredicateMock: NetworkSettledResourcePredicate {
     let shouldConsiderInitialResource: (TTNSResourceParams) -> Bool
 
-    func isInitialResource(resource: TTNSResourceParams) -> Bool {
-        shouldConsiderInitialResource(resource)
+    func isInitialResource(from resourceParams: TTNSResourceParams) -> Bool {
+        shouldConsiderInitialResource(resourceParams)
     }
 }
 
@@ -45,9 +45,11 @@ class TTNSMetricTests: XCTestCase {
     // MARK: - "Initial Resource" Classification
 
     func testGivenTimeBasedResourcePredicate_whenResourceStartsWithinThreshold_thenItIsTracked() throws {
+        let threshold = TimeBasedTTNSResourcePredicate.defaultThreshold
+
         func when(resourceStartOffset offset: TimeInterval) -> TimeInterval? {
             // Given
-            let predicate = TimeBasedTTNSResourcePredicate(threshold: t100ms)
+            let predicate = TimeBasedTTNSResourcePredicate(threshold: threshold)
             let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: predicate)
 
             // When
@@ -62,13 +64,13 @@ class TTNSMetricTests: XCTestCase {
 
         // When resource starts within threshold (initial resource), it should be tracked:
         XCTAssertNotNil(when(resourceStartOffset: 0), "Resource starting at `view start` should be tracked as an initial resource.")
-        XCTAssertNotNil(when(resourceStartOffset: t100ms * 0.5), "Resource starting at `view start + \(t100ms * 0.5)s` should be tracked as an initial resource.")
-        XCTAssertNotNil(when(resourceStartOffset: t100ms * 0.999), "Resource starting at `view start + \(t100ms * 0.999)s` should be tracked as an initial resource.")
+        XCTAssertNotNil(when(resourceStartOffset: threshold * 0.5), "Resource starting at `view start + \(threshold * 0.5)s` should be tracked as an initial resource.")
+        XCTAssertNotNil(when(resourceStartOffset: threshold * 0.999), "Resource starting at `view start + \(threshold * 0.999)s` should be tracked as an initial resource.")
 
         // When resource starts outside threshold (other resource), it should not be tracked:
-        XCTAssertNil(when(resourceStartOffset: t100ms), "Resource starting at `view start + \(t100ms)s` should not be tracked as an initial resource.")
-        XCTAssertNil(when(resourceStartOffset: -t100ms), "Resource starting at `view start + \(-t100ms)s` should not be tracked as an initial resource.")
-        XCTAssertNil(when(resourceStartOffset: t100ms * 10), "Resource starting at `view start + \(t100ms * 10)s` should not be tracked as an initial resource.")
+        XCTAssertNil(when(resourceStartOffset: threshold), "Resource starting at `view start + \(threshold)s` should not be tracked as an initial resource.")
+        XCTAssertNil(when(resourceStartOffset: -threshold), "Resource starting at `view start + \(-threshold)s` should not be tracked as an initial resource.")
+        XCTAssertNil(when(resourceStartOffset: threshold * 10), "Resource starting at `view start + \(threshold * 10)s` should not be tracked as an initial resource.")
     }
 
     // MARK: - Metric Value vs Resource Completion
