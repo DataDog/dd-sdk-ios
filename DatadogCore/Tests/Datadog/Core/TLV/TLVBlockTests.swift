@@ -49,4 +49,19 @@ class TLVBlockTests: XCTestCase {
         XCTAssertEqual(blockData.prefix(6), Data([0x01, 0x00, 0x80, 0x96, 0x98, 0x00]))
         XCTAssertEqual(blockData.suffix(10_000_000), largeData)
     }
+
+    func testSerialize_withLengthExceedingLimit() throws {
+        let maxDataLength = TLVBlockSize(100)
+        let exceedingData: Data = .mockRandom(ofSize: maxDataLength + 1)
+
+        do {
+            _ = try Block(type: .one, data: exceedingData).serialize(maxLength: maxDataLength)
+            XCTFail()
+        } catch let error {
+            XCTAssertEqual(
+                (error as CustomStringConvertible).description,
+                TLVBlockError.bytesLengthExceedsLimit(length: maxDataLength + 1, limit: maxDataLength).description
+            )
+        }
+    }
 }

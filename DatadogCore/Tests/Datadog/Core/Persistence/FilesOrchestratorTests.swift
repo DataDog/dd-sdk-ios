@@ -78,11 +78,11 @@ class FilesOrchestratorTests: XCTestCase {
     func testWhenWritableFileHasNoEnoughSpaceLeft_itCreatesNewFile() throws {
         let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 0.001))
         let chunkedData: [Data] = .mockChunksOf(
-            totalSize: performance.maxFileSize,
-            maxChunkSize: performance.maxObjectSize
+            totalSize: performance.maxFileSize.asUInt64(),
+            maxChunkSize: performance.maxObjectSize.asUInt64()
         )
 
-        let file1 = try orchestrator.getWritableFile(writeSize: performance.maxObjectSize)
+        let file1 = try orchestrator.getWritableFile(writeSize: performance.maxObjectSize.asUInt64())
         try chunkedData.forEach { chunk in try file1.append(data: chunk) }
 
         let file2 = try orchestrator.getWritableFile(writeSize: 1)
@@ -131,8 +131,8 @@ class FilesOrchestratorTests: XCTestCase {
         let orchestrator = FilesOrchestrator(
             directory: .init(url: temporaryDirectory),
             performance: StoragePerformanceMock(
-                maxFileSize: oneMB, // 1MB
-                maxDirectorySize: 3 * oneMB, // 3MB,
+                maxFileSize: oneMB.asUInt32(), // 1MB
+                maxDirectorySize: (3 * oneMB).asUInt32(), // 3MB,
                 maxFileAgeForWrite: .distantFuture,
                 minFileAgeForRead: .mockAny(),
                 maxFileAgeForRead: .mockAny(),

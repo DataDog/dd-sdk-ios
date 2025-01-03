@@ -98,13 +98,13 @@ class ServerDateProviderMock: ServerDateProvider {
 // MARK: - PerformancePreset Mocks
 
 struct StoragePerformanceMock: StoragePerformancePreset {
-    var maxFileSize: UInt64
-    var maxDirectorySize: UInt64
+    var maxFileSize: UInt32
+    var maxDirectorySize: UInt32
     var maxFileAgeForWrite: TimeInterval
     var minFileAgeForRead: TimeInterval
     var maxFileAgeForRead: TimeInterval
     var maxObjectsInFile: Int
-    var maxObjectSize: UInt64
+    var maxObjectSize: UInt32
 
     static let noOp = StoragePerformanceMock(
         maxFileSize: 0,

@@ -17,17 +17,12 @@ internal enum DataStoreFileReadingError: Error {
 }
 
 internal struct DataStoreFileReader {
-    internal enum Constants {
-        /// The maximum length of value block.
-        static let maxBlockLength = DataStoreFileWriter.Constants.maxDataLength
-    }
-
     let file: File
 
     func read() throws -> (Data, DataStoreKeyVersion) {
         let reader = DataStoreBlockReader(
             input: try file.stream(),
-            maxBlockLength: Constants.maxBlockLength
+            maxBlockLength: maxTLVDataLength
         )
         let blocks = try reader.all()
 

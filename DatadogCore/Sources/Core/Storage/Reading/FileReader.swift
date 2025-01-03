@@ -39,7 +39,8 @@ internal final class FileReader: Reader {
             let dataBlocks = try decode(stream: file.stream())
             return Batch(dataBlocks: dataBlocks, file: file)
         } catch {
-            telemetry.error("Failed to read data from file", error: error)
+            DD.logger.error("(\(orchestrator.trackName)) Failed to read data from file", error: error)
+            telemetry.error("(\(orchestrator.trackName)) Failed to read data from file", error: error)
             return nil
         }
     }

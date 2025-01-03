@@ -12,11 +12,11 @@ import Foundation
 public struct PerformancePresetOverride {
     /// Overrides the the maximum allowed file size in bytes.
     /// If not provided, the default value from the `PerformancePreset` object is used.
-    public let maxFileSize: UInt64?
+    public let maxFileSize: UInt32?
 
     /// Overrides the maximum allowed object size in bytes.
     /// If not provided, the default value from the `PerformancePreset` object is used.
-    public let maxObjectSize: UInt64?
+    public let maxObjectSize: UInt32?
 
     /// Overrides the maximum age qualifying given file for reuse (in seconds).
     /// If recently used file is younger than this, it is reused - otherwise: new file is created.
@@ -50,8 +50,8 @@ public struct PerformancePresetOverride {
     ///   - meanFileAge: The mean age qualifying a file for reuse, or `nil` to use the default value from `PerformancePreset`.
     ///   - uploadDelay: The configuration of time interval for data uploads (initial, minimum, maximum and change rate). Set `nil` to use the default value from `PerformancePreset`.
     public init(
-        maxFileSize: UInt64?,
-        maxObjectSize: UInt64?,
+        maxFileSize: UInt32?,
+        maxObjectSize: UInt32?,
         meanFileAge: TimeInterval? = nil,
         uploadDelay: (initial: TimeInterval, range: Range<TimeInterval>, changeRate: Double)? = nil
     ) {

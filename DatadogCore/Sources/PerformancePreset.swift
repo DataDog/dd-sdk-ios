@@ -11,11 +11,11 @@ internal protocol StoragePerformancePreset {
     /// Maximum size of a single file (in bytes).
     /// Each feature (logging, tracing, ...) serializes its objects data to that file for later upload.
     /// If last written file is too big to append next data, new file is created.
-    var maxFileSize: UInt64 { get }
+    var maxFileSize: UInt32 { get }
     /// Maximum size of data directory (in bytes).
     /// Each feature uses separate directory.
     /// If this size is exceeded, the oldest files are deleted until this limit is met again.
-    var maxDirectorySize: UInt64 { get }
+    var maxDirectorySize: UInt32 { get }
     /// Maximum age qualifying given file for reuse (in seconds).
     /// If recently used file is younger than this, it is reused - otherwise: new file is created.
     var maxFileAgeForWrite: TimeInterval { get }
@@ -31,7 +31,7 @@ internal protocol StoragePerformancePreset {
     var maxObjectsInFile: Int { get }
     /// Maximum size of serialized object data (in bytes).
     /// If serialized object data exceeds this limit, it is skipped (not written to file and not uploaded).
-    var maxObjectSize: UInt64 { get }
+    var maxObjectSize: UInt32 { get }
 }
 
 internal extension StoragePerformancePreset {
@@ -51,13 +51,13 @@ internal extension StoragePerformancePreset {
 internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPerformancePreset {
     // MARK: - StoragePerformancePreset
 
-    let maxFileSize: UInt64
-    let maxDirectorySize: UInt64
+    let maxFileSize: UInt32
+    let maxDirectorySize: UInt32
     let maxFileAgeForWrite: TimeInterval
     let minFileAgeForRead: TimeInterval
     let maxFileAgeForRead: TimeInterval
     let maxObjectsInFile: Int
-    let maxObjectSize: UInt64
+    let maxObjectSize: UInt32
 
     // MARK: - UploadPerformancePreset
 
@@ -122,13 +122,13 @@ internal extension PerformancePreset {
         minUploadDelay: TimeInterval,
         uploadDelayFactors: (initial: Double, min: Double, max: Double, changeRate: Double)
     ) {
-        self.maxFileSize = 4.MB.asUInt64()
-        self.maxDirectorySize = 512.MB.asUInt64()
+        self.maxFileSize = 4.MB.asUInt32()
+        self.maxDirectorySize = 512.MB.asUInt32()
         self.maxFileAgeForWrite = meanFileAge * 0.95 // 5% below the mean age
         self.minFileAgeForRead = meanFileAge * 1.05 //  5% above the mean age
         self.maxFileAgeForRead = 18.hours
         self.maxObjectsInFile = 500
-        self.maxObjectSize = 512.KB.asUInt64()
+        self.maxObjectSize = 512.KB.asUInt32()
         self.initialUploadDelay = minUploadDelay * uploadDelayFactors.initial
         self.minUploadDelay = minUploadDelay * uploadDelayFactors.min
         self.maxUploadDelay = minUploadDelay * uploadDelayFactors.max

@@ -225,7 +225,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         let accumulatedFilesSize = filesWithSizeSortedByCreationDate.map { $0.size }.reduce(0, +)
 
         if accumulatedFilesSize > performance.maxDirectorySize {
-            let sizeToFree = accumulatedFilesSize - performance.maxDirectorySize
+            let sizeToFree = accumulatedFilesSize - performance.maxDirectorySize.asUInt64()
             var sizeFreed: UInt64 = 0
 
             while sizeFreed < sizeToFree && !filesWithSizeSortedByCreationDate.isEmpty {
