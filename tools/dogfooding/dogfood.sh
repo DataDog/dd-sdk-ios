@@ -259,13 +259,12 @@ if [ "$datadog_app" = "true" ]; then
     clone_repo "git@github.com:DataDog/datadog-ios.git" $DEFAULT_BRANCH $CLONE_PATH
 
     # Generate CHANGELOG:
-    LAST_DOGFOODED_COMMIT=$(read_dogfooded_commit "$CLONE_PATH/Targets/DogLogger/Datadog/DogfoodingConfig.swift")
+    LAST_DOGFOODED_COMMIT=$(read_dogfooded_commit "$CLONE_PATH/Targets/Platform/DatadogObservability/DogfoodingConfig.swift")
     CHANGELOG=$(print_changelog "$LAST_DOGFOODED_COMMIT")
     
     # Update dd-sdk-ios version:
     update_dependant_package_resolved "$CLONE_PATH/Tuist/Package.resolved"
-    update_dependant_package_resolved "$CLONE_PATH/.package.resolved"
-    update_dependant_sdk_version "$CLONE_PATH/Targets/DogLogger/Datadog/DogfoodingConfig.swift"
+    update_dependant_sdk_version "$CLONE_PATH/Targets/Platform/DatadogObservability/DogfoodingConfig.swift"
 
     # Push & create PR:
     commit_repo $CLONE_PATH
