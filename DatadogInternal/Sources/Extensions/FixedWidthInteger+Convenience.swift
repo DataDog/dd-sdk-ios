@@ -26,7 +26,7 @@ public extension FixedWidthInteger {
     /// A helper property that returns the current value as a direct representation in bytes.
     var bytes: Self { return self }
 
-    func asUInt64() -> UInt64 {
-        return UInt64(self)
-    }
+    func asUInt64() -> UInt64 { UInt64(self) }
+
+    func asUInt32() -> UInt32 { UInt32(self) }
 }
