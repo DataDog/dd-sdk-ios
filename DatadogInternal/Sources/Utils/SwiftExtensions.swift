@@ -115,3 +115,17 @@ extension Array {
         0 <= index && index < count ? self[index] : nil
     }
 }
+
+// MARK: - Bundle
+
+extension Bundle {
+    /// Returns `true` when `self` represents the `SwiftUI` framework bundle.
+    public var isSwiftUI: Bool {
+        return bundleURL.lastPathComponent == "SwiftUI.framework"
+    }
+
+    /// Returns `true` when `self` represents the `UIKit` framework bundle.
+    public var isUIKit: Bool {
+        return bundleURL.lastPathComponent == "UIKitCore.framework"
+    }
+}

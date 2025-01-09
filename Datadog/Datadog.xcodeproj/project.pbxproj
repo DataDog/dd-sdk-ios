@@ -703,6 +703,8 @@
 		96E414142C2AF56F005A6119 /* UIProgressViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E414132C2AF56F005A6119 /* UIProgressViewRecorder.swift */; };
 		96E414162C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E414152C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift */; };
 		96E863722C9C547B0023BF78 /* SessionReplayOverrideTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863712C9C547B0023BF78 /* SessionReplayOverrideTests.swift */; };
+		96EFEE262D3029FA00FC43C9 /* FrameworkUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96EFEE252D3029EF00FC43C9 /* FrameworkUtils.swift */; };
+		96EFEE282D30307200FC43C9 /* FrameworkUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96EFEE272D30307000FC43C9 /* FrameworkUtilsTests.swift */; };
 		96F25A822CC7EA4400459567 /* SessionReplayPrivacyOverrides+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F25A802CC7EA4300459567 /* SessionReplayPrivacyOverrides+objc.swift */; };
 		96F25A832CC7EA4400459567 /* UIView+SessionReplayPrivacyOverrides+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F25A812CC7EA4300459567 /* UIView+SessionReplayPrivacyOverrides+objc.swift */; };
 		96F25A852CC7EB3700459567 /* PrivacyOverridesMock+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F25A842CC7EB3700459567 /* PrivacyOverridesMock+objc.swift */; };
@@ -2794,6 +2796,8 @@
 		96E414152C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIProgressViewRecorderTests.swift; sourceTree = "<group>"; };
 		96E863712C9C547B0023BF78 /* SessionReplayOverrideTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayOverrideTests.swift; sourceTree = "<group>"; };
 		96E863752C9C7E800023BF78 /* DDSessionReplayOverridesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSessionReplayOverridesTests.swift; sourceTree = "<group>"; };
+		96EFEE252D3029EF00FC43C9 /* FrameworkUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameworkUtils.swift; sourceTree = "<group>"; };
+		96EFEE272D30307000FC43C9 /* FrameworkUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameworkUtilsTests.swift; sourceTree = "<group>"; };
 		96F25A802CC7EA4300459567 /* SessionReplayPrivacyOverrides+objc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SessionReplayPrivacyOverrides+objc.swift"; sourceTree = "<group>"; };
 		96F25A812CC7EA4300459567 /* UIView+SessionReplayPrivacyOverrides+objc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIView+SessionReplayPrivacyOverrides+objc.swift"; sourceTree = "<group>"; };
 		96F25A842CC7EB3700459567 /* PrivacyOverridesMock+objc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "PrivacyOverridesMock+objc.swift"; sourceTree = "<group>"; };
@@ -3716,6 +3720,7 @@
 			isa = PBXGroup;
 			children = (
 				61054E142A6EE10A00AAA894 /* UIImage+SessionReplay.swift */,
+				96EFEE252D3029EF00FC43C9 /* FrameworkUtils.swift */,
 				962D72BE2CF7538800F86EF0 /* CGImage+SessionReplay.swift */,
 				D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */,
 				61054E152A6EE10A00AAA894 /* UIView+SessionReplay.swift */,
@@ -3917,6 +3922,7 @@
 		61054F3E2A6EE1B900AAA894 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				96EFEE272D30307000FC43C9 /* FrameworkUtilsTests.swift */,
 				61054F402A6EE1B900AAA894 /* UIImage+SessionReplayTests.swift */,
 				61054F412A6EE1B900AAA894 /* CGRectExtensionsTests.swift */,
 				61054F422A6EE1B900AAA894 /* ColorsTests.swift */,
@@ -8556,6 +8562,7 @@
 				D2AD1CCC2CE4AE9800106C74 /* UIHostingViewRecorder.swift in Sources */,
 				61054E932A6EE10A00AAA894 /* MultipartFormData.swift in Sources */,
 				D2BCB2A12B7B8107005C2AAB /* WKWebViewRecorder.swift in Sources */,
+				96EFEE262D3029FA00FC43C9 /* FrameworkUtils.swift in Sources */,
 				61054E712A6EE10A00AAA894 /* TouchSnapshot.swift in Sources */,
 				61054E8A2A6EE10A00AAA894 /* WindowViewTreeSnapshotProducer.swift in Sources */,
 				61054E7A2A6EE10A00AAA894 /* UIImageViewRecorder.swift in Sources */,
@@ -8645,6 +8652,7 @@
 				D29C9F6B2D01D5F600CD568E /* ReflectorTests.swift in Sources */,
 				96E863722C9C547B0023BF78 /* SessionReplayOverrideTests.swift in Sources */,
 				A7D9528A2B28BD94004C79B1 /* ResourceProcessorSpy.swift in Sources */,
+				96EFEE282D30307200FC43C9 /* FrameworkUtilsTests.swift in Sources */,
 				A7D9528C2B28C18D004C79B1 /* ResourceProcessorTests.swift in Sources */,
 				A74A72892B10D95D00771FEB /* MultipartBuilderSpy.swift in Sources */,
 				61054FCF2A6EE1BA00AAA894 /* RUMContextReceiverTests.swift in Sources */,

@@ -53,5 +53,4 @@ class SwiftUIWireframesBuilderTests: XCTestCase {
         XCTAssertEqual(wireframe.label, "Unsupported SwiftUI component")
     }
 }
-
 #endif
