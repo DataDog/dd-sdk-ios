@@ -345,13 +345,19 @@ class DatadogCoreTests: XCTestCase {
             backgroundTasksEnabled: .mockAny()
         )
         core.set(anonymousId: "anonymous-id")
+        let userBefore = core.userInfoPublisher.current
+        XCTAssertEqual(userBefore.anonymousId, "anonymous-id")
+        XCTAssertNil(userBefore.id)
+        XCTAssertNil(userBefore.name)
+        XCTAssertNil(userBefore.email)
+
         core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
 
-        let user = core.userInfoPublisher.current
-        XCTAssertEqual(user.anonymousId, "anonymous-id")
-        XCTAssertEqual(user.id, "user-id")
-        XCTAssertEqual(user.name, "user-name")
-        XCTAssertEqual(user.email, "user-email")
+        let userAfter = core.userInfoPublisher.current
+        XCTAssertEqual(userAfter.anonymousId, "anonymous-id")
+        XCTAssertEqual(userAfter.id, "user-id")
+        XCTAssertEqual(userAfter.name, "user-name")
+        XCTAssertEqual(userAfter.email, "user-email")
     }
 
     func testItAppendsUserDataIfAnonymousIdExists() {
@@ -368,13 +374,20 @@ class DatadogCoreTests: XCTestCase {
             backgroundTasksEnabled: .mockAny()
         )
         core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
+
+        let userBefore = core.userInfoPublisher.current
+        XCTAssertNil(userBefore.anonymousId)
+        XCTAssertEqual(userBefore.id, "user-id")
+        XCTAssertEqual(userBefore.name, "user-name")
+        XCTAssertEqual(userBefore.email, "user-email")
+
         core.set(anonymousId: "anonymous-id")
 
-        let user = core.userInfoPublisher.current
-        XCTAssertEqual(user.anonymousId, "anonymous-id")
-        XCTAssertEqual(user.id, "user-id")
-        XCTAssertEqual(user.name, "user-name")
-        XCTAssertEqual(user.email, "user-email")
+        let userAfter = core.userInfoPublisher.current
+        XCTAssertEqual(userAfter.anonymousId, "anonymous-id")
+        XCTAssertEqual(userAfter.id, "user-id")
+        XCTAssertEqual(userAfter.name, "user-name")
+        XCTAssertEqual(userAfter.email, "user-email")
     }
 
     func testItClearsAnonymousId() {
@@ -394,10 +407,10 @@ class DatadogCoreTests: XCTestCase {
         core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
         core.set(anonymousId: nil)
 
-        let user = core.userInfoPublisher.current
-        XCTAssertNil(user.anonymousId)
-        XCTAssertEqual(user.id, "user-id")
-        XCTAssertEqual(user.name, "user-name")
-        XCTAssertEqual(user.email, "user-email")
+        let userAfter = core.userInfoPublisher.current
+        XCTAssertNil(userAfter.anonymousId)
+        XCTAssertEqual(userAfter.id, "user-id")
+        XCTAssertEqual(userAfter.name, "user-name")
+        XCTAssertEqual(userAfter.email, "user-email")
     }
 }
