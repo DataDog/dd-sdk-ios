@@ -221,7 +221,10 @@ extension BaggageSharing {
     }
 }
 
+/// Provides ability to set or clear the anonymous identifier needed for session linking.
 public protocol AnonymousIdentifiable {
+    /// Sets the anonymous identifier.
+    /// - Parameter anonymousId: The anonymous id to be set. When `nil` it will clear the current anonymous id.
     func set(anonymousId: String?)
 }
 

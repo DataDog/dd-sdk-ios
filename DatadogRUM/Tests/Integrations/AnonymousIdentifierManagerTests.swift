@@ -10,9 +10,11 @@ import DatadogInternal
 @testable import DatadogRUM
 
 class AnonymousIdentifierManagerTests: XCTestCase {
-    private var anonymousIdentifierManager: AnonymousIdentifierManager! // swiftlint:disable:this implicitly_unwrapped_optional
+    // swiftlint:disable implicitly_unwrapped_optional
+    private var anonymousIdentifierManager: AnonymousIdentifierManager!
     private var featureScopeMock: FeatureScopeMock!
     private var uuidGeneratorMock: RUMUUIDGeneratorMock!
+    // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUp() {
         uuidGeneratorMock = RUMUUIDGeneratorMock(uuid: .mockRandom())

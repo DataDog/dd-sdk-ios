@@ -183,7 +183,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         // Forward instrumentation calls to monitor:
         instrumentation.publish(to: monitor)
 
-        // Initialize anonymous identifier
+        // Initialize anonymous identifier manager
         self.anonymousIdentifierManager = AnonymousIdentifierManager(
             featureScope: dependencies.featureScope,
             uuidGenerator: dependencies.rumUUIDGenerator
@@ -206,7 +206,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             useFirstPartyHosts: configuration.urlSessionTracking?.firstPartyHostsTracing != nil
         )
 
-        // Manage anonymous ID
+        // Manage anonymous identifier depending on the configuration.
         anonymousIdentifierManager.manageAnonymousId(shouldTrack: configuration.trackAnonymousUser)
     }
 }

@@ -152,6 +152,10 @@ private struct FeatureScopeProxy: FeatureScope {
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         proxy.set(baggage: baggage, forKey: key)
     }
+
+    func set(anonymousId: String?) {
+        proxy.set(anonymousId: anonymousId)
+    }
 }
 
 private final class FeatureScopeInterceptor: @unchecked Sendable {

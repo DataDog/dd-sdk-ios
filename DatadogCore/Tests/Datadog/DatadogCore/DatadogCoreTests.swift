@@ -330,4 +330,74 @@ class DatadogCoreTests: XCTestCase {
         core.flush()
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 0, "It should not send any request")
     }
+
+    func testItAppendsAnonymousIdIfUserExists() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        core.set(anonymousId: "anonymous-id")
+        core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
+
+        let user = core.userInfoPublisher.current
+        XCTAssertEqual(user.anonymousId, "anonymous-id")
+        XCTAssertEqual(user.id, "user-id")
+        XCTAssertEqual(user.name, "user-name")
+        XCTAssertEqual(user.email, "user-email")
+    }
+
+    func testItAppendsUserDataIfAnonymousIdExists() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
+        core.set(anonymousId: "anonymous-id")
+
+        let user = core.userInfoPublisher.current
+        XCTAssertEqual(user.anonymousId, "anonymous-id")
+        XCTAssertEqual(user.id, "user-id")
+        XCTAssertEqual(user.name, "user-name")
+        XCTAssertEqual(user.email, "user-email")
+    }
+
+    func testItClearsAnonymousId() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        core.set(anonymousId: "anonymous-id")
+        core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
+        core.set(anonymousId: nil)
+
+        let user = core.userInfoPublisher.current
+        XCTAssertNil(user.anonymousId)
+        XCTAssertEqual(user.id, "user-id")
+        XCTAssertEqual(user.name, "user-name")
+        XCTAssertEqual(user.email, "user-email")
+    }
 }
