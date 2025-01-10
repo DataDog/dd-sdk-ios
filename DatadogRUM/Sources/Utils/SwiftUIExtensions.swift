@@ -10,13 +10,6 @@ import Foundation
 import SwiftUI
 #endif
 
-internal extension Bundle {
-    /// Returns `true` when `self` represents the `SwiftUI` framework bundle.
-    var isSwiftUI: Bool {
-        return bundleURL.lastPathComponent == "SwiftUI.framework"
-    }
-}
-
 #if canImport(SwiftUI)
 @available(iOS 13, tvOS 13, *)
 internal extension SwiftUI.View {

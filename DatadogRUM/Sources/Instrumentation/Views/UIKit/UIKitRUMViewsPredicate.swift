@@ -67,14 +67,14 @@ public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
     public init () {}
 
     public func rumView(for viewController: UIViewController) -> RUMView? {
-        guard !isUIKit(class: type(of: viewController)) else {
+        guard !Bundle(for: type(of: viewController)).isUIKit else {
             // Part of our heuristic for (auto) tracking view controllers is to ignore
             // container view controllers coming from `UIKit` if they are not subclassed.
             // This condition is wider and it ignores all view controllers defined in `UIKit` bundle.
             return nil
         }
 
-        guard !isSwiftUI(class: type(of: viewController)) else {
+        guard !Bundle(for: type(of: viewController)).isSwiftUI else {
             // `SwiftUI` requires manual instrumentation in views. Therefore, all SwiftUI
             // `UIKit` containers (e.g. `UIHostingController`) will be ignored from
             // auto-intrumentation.
@@ -86,15 +86,5 @@ public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
         var view = RUMView(name: canonicalClassName)
         view.path = canonicalClassName
         return view
-    }
-
-    /// If given `class` comes from UIKit framework.
-    private func isUIKit(`class`: AnyClass) -> Bool {
-        return Bundle(for: `class`).isUIKit
-    }
-
-    /// If given `class` comes from SwiftUI framework.
-    private func isSwiftUI(`class`: AnyClass) -> Bool {
-        return Bundle(for: `class`).isSwiftUI
     }
 }
