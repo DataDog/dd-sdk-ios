@@ -210,6 +210,14 @@ extension RUM {
         /// Default: `nil`.
         public var customEndpoint: URL?
 
+        /// Determines whether automatic tracking of anonymous user id is enabled.
+        ///
+        /// If enabled, the SDK will automatically track the anonymous user id for each RUM Session, which
+        /// is used to link RUM Sessions belonging to the same anonyomus user.
+        ///
+        /// Default: `true`.
+        public var trackAnonymousUser: Bool
+
         /// The sampling rate for SDK internal telemetry utilized by Datadog.
         /// This telemetry is used to monitor the internal workings of the entire Datadog iOS SDK.
         ///
@@ -372,6 +380,7 @@ extension RUM.Configuration {
         longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
         onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = nil,
+        trackAnonymousUser: Bool = true,
         telemetrySampleRate: SampleRate = 20
     ) {
         self.applicationID = applicationID
@@ -391,6 +400,7 @@ extension RUM.Configuration {
         self.longTaskEventMapper = longTaskEventMapper
         self.onSessionStart = onSessionStart
         self.customEndpoint = customEndpoint
+        self.trackAnonymousUser = trackAnonymousUser
         self.telemetrySampleRate = telemetrySampleRate
         self.trackWatchdogTerminations = trackWatchdogTerminations
     }
