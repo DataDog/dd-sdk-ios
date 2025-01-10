@@ -1,6 +1,8 @@
 # Unreleased
 - [FEATURE] Adds anonymous identifier configuration for RUM Sessions linking. See [#2172][]
 
+- [FIX] Fix SwiftUI placeholder in Session Replay when Feature Flag is disabled. See [#2170][]
+
 # 2.22.0 / 02-01-2025
 
 - [IMPROVEMENT] Add Datadog Configuration `backgroundTasksEnabled` ObjC API. See [#2148][]

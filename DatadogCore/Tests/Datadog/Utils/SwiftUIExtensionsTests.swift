@@ -11,9 +11,9 @@ import SwiftUI
 
 @testable import DatadogRUM
 @testable import DatadogCore
+@testable import DatadogInternal
 
-@available(iOS 13, tvOS 13, *)
-class CustomHostingController: UIHostingController<AnyView> {}
+class CustomViewController: UIViewController {}
 
 @available(iOS 13, tvOS 13, *)
 final class TestView: View {
@@ -44,6 +44,7 @@ class SwiftUIExtensionsTests: XCTestCase {
             TestView.self,
             UIViewController.self,
             OperationQueue.self,
+            CustomViewController.self
         ]
 
         // Then
