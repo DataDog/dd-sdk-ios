@@ -9,7 +9,6 @@ import Foundation
 import SafariServices
 import SwiftUI
 import WebKit
-@_spi(Internal)
 import DatadogInternal
 
 /// The context of recording subtree hierarchy.
@@ -54,18 +53,15 @@ internal extension ViewTreeRecordingContext {
                     return
                 }
 
-                switch viewController {
-                case is UIAlertController:
+                if viewController is UIAlertController {
                     self = .alert
-                case is UIActivityViewController:
+                } else if viewController is UIActivityViewController {
                     self = .activity
-                case is SFSafariViewController:
+                } else if viewController is SFSafariViewController {
                     self = .safari
-                default:
-                    if FrameworkUtils.isSwiftUI(class: type(of: viewController)) {
-                        self = .swiftUI
-                        return
-                    }
+                } else if FrameworkUtils.isSwiftUI(class: type(of: viewController)) {
+                    self = .swiftUI
+                } else {
                     self = .other
                 }
             }
