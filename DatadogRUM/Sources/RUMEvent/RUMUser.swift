@@ -13,7 +13,7 @@ extension RUMUser {
             return nil
         }
 
-        if userInfo.id == nil, userInfo.name == nil, userInfo.email == nil, userInfo.extraInfo.isEmpty {
+        if userInfo.anonymousId == nil, userInfo.id == nil, userInfo.name == nil, userInfo.email == nil, userInfo.extraInfo.isEmpty {
             return nil
         }
 
@@ -22,7 +22,7 @@ extension RUMUser {
 
     init(userInfo: UserInfo) {
         self.init(
-            anonymousId: nil,
+            anonymousId: userInfo.anonymousId,
             email: userInfo.email,
             id: userInfo.id,
             name: userInfo.name,

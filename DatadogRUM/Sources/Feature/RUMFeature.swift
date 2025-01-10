@@ -181,6 +181,24 @@ internal final class RUMFeature: DatadogRemoteFeature {
         // Forward instrumentation calls to monitor:
         instrumentation.publish(to: monitor)
 
+        let anonymousIdKey = "rum-anonymous-id"
+        if configuration.trackAnonymousUser {
+            dependencies.featureScope.dataStore.value(forKey: anonymousIdKey) { result in
+                switch result {
+                case let .value(data, _):
+                    if let anonymousId = String(data: data, encoding: .utf8) {
+                        core.set(anonymousId: anonymousId)
+                    }
+                case .noValue, .error:
+                    let anonymousId = UUID().uuidString
+                    if let anonymousIdData = anonymousId.data(using: .utf8) {
+                        dependencies.featureScope.dataStore.setValue(anonymousIdData, forKey: anonymousIdKey)
+                    }
+                    core.set(anonymousId: anonymousId)
+                }
+            }
+        }
+
         // Send configuration telemetry:
         core.telemetry.configuration(
             appHangThreshold: configuration.appHangThreshold?.toInt64Milliseconds,
