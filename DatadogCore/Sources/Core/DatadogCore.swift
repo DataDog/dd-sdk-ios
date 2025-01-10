@@ -318,7 +318,7 @@ extension DatadogCore: DatadogCoreProtocol {
         bus.send(message: message, else: fallback)
     }
 
-    func set(anonymousId: String) {
+    func set(anonymousId: String?) {
         let userInfo = UserInfo(
             anonymousId: anonymousId,
             id: userInfoPublisher.current.id,
@@ -388,6 +388,10 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
 
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         core?.set(baggage: baggage, forKey: key)
+    }
+
+    func set(anonymousId: String?) {
+        core?.set(anonymousId: anonymousId)
     }
 
     var telemetry: Telemetry {

@@ -11,7 +11,7 @@ import Foundation
 ///
 /// Any reference to `DatadogCoreProtocol` must be captured as `weak` within a Feature. This is to avoid
 /// retain cycle of core holding the Feature and vice-versa.
-public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing, Storage, AnonymousIdentityProviding {
+public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing, Storage {
     // Remove `DatadogCoreProtocol` conformance to `MessageSending` and `BaggageSharing` once
     // all features are migrated to depend on `FeatureScope` interface.
 
@@ -97,10 +97,6 @@ public protocol BaggageSharing {
     ///   - baggage: The Feature's baggage to set.
     ///   - key: The baggage's key.
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String)
-}
-
-public protocol AnonymousIdentityProviding {
-    func set(anonymousId: String)
 }
 
 extension DatadogCoreProtocol {
@@ -225,8 +221,12 @@ extension BaggageSharing {
     }
 }
 
+public protocol AnonymousIdentifiable {
+    func set(anonymousId: String?)
+}
+
 /// Feature scope provides a context and a writer to build a record event.
-public protocol FeatureScope: MessageSending, BaggageSharing, Sendable {
+public protocol FeatureScope: MessageSending, BaggageSharing, AnonymousIdentifiable, Sendable {
     /// Retrieve the core context and event writer.
     ///
     /// The Feature scope provides the current Datadog context and event writer for building and recording events.
@@ -313,8 +313,6 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
     /// no-op
     public func mostRecentModifiedFileAt(before: Date) throws -> Date? { return nil }
-    /// no-op
-    public func set(anonymousId: String) { }
 }
 
 public struct NOPFeatureScope: FeatureScope {
@@ -331,4 +329,6 @@ public struct NOPFeatureScope: FeatureScope {
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
     /// no-op
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) { }
+    /// no-op
+    public func set(anonymousId: String?) { }
 }

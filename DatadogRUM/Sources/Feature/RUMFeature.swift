@@ -21,6 +21,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
     let configuration: RUM.Configuration
 
+    let anonymousIdentifierManager: AnonymousIdentifierManaging
+
     init(
         in core: DatadogCoreProtocol,
         configuration: RUM.Configuration
@@ -181,23 +183,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
         // Forward instrumentation calls to monitor:
         instrumentation.publish(to: monitor)
 
-        let anonymousIdKey = "rum-anonymous-id"
-        if configuration.trackAnonymousUser {
-            dependencies.featureScope.dataStore.value(forKey: anonymousIdKey) { result in
-                switch result {
-                case let .value(data, _):
-                    if let anonymousId = String(data: data, encoding: .utf8) {
-                        core.set(anonymousId: anonymousId)
-                    }
-                case .noValue, .error:
-                    let anonymousId = UUID().uuidString
-                    if let anonymousIdData = anonymousId.data(using: .utf8) {
-                        dependencies.featureScope.dataStore.setValue(anonymousIdData, forKey: anonymousIdKey)
-                    }
-                    core.set(anonymousId: anonymousId)
-                }
-            }
-        }
+        // Initialize anonymous identifier
+        self.anonymousIdentifierManager = AnonymousIdentifierManager(
+            featureScope: dependencies.featureScope,
+            uuidGenerator: dependencies.rumUUIDGenerator
+        )
 
         // Send configuration telemetry:
         core.telemetry.configuration(
@@ -215,6 +205,9 @@ internal final class RUMFeature: DatadogRemoteFeature {
             trackUserInteractions: configuration.uiKitActionsPredicate != nil,
             useFirstPartyHosts: configuration.urlSessionTracking?.firstPartyHostsTracing != nil
         )
+
+        // Manage anonymous ID
+        anonymousIdentifierManager.manageAnonymousId(shouldTrack: configuration.trackAnonymousUser)
     }
 }
 

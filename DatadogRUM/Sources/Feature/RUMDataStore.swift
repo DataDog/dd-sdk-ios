@@ -32,6 +32,7 @@ internal struct RUMDataStore {
         case fatalAppHangKey = "fatal-app-hang"
         case watchdogAppStateKey = "watchdog-app-state"
         case watchdogRUMViewEvent = "watchdog-rum-view-event"
+        case anonymousId = "rum-anonymous-id"
     }
 
     /// Encodes values in RUM data store.

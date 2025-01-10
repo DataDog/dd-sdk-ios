@@ -754,6 +754,10 @@
 		A7DA18042AB0C91200F76337 /* DDUIKitRUMViewsPredicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7DA18022AB0C8A700F76337 /* DDUIKitRUMViewsPredicateTests.swift */; };
 		A7DA18052AB0C91300F76337 /* DDUIKitRUMViewsPredicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7DA18022AB0C8A700F76337 /* DDUIKitRUMViewsPredicateTests.swift */; };
 		A7DA18072AB0CA5E00F76337 /* DDUIKitRUMActionsPredicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7DA18062AB0CA4700F76337 /* DDUIKitRUMActionsPredicateTests.swift */; };
+		A7E6EA812D3146AD00997201 /* AnonymousIdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E6EA802D3146AD00997201 /* AnonymousIdManager.swift */; };
+		A7E6EA822D3146AD00997201 /* AnonymousIdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E6EA802D3146AD00997201 /* AnonymousIdManager.swift */; };
+		A7E6EA842D314A9B00997201 /* AnonymousIdentifierManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E6EA832D314A9900997201 /* AnonymousIdentifierManagerTests.swift */; };
+		A7E6EA852D314A9B00997201 /* AnonymousIdentifierManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E6EA832D314A9900997201 /* AnonymousIdentifierManagerTests.swift */; };
 		A7EA11622AB0CE6C00C73970 /* DDUIKitRUMActionsPredicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7DA18062AB0CA4700F76337 /* DDUIKitRUMActionsPredicateTests.swift */; };
 		A7EA88562B17639A00FE2580 /* ResourcesWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7EA88552B17639A00FE2580 /* ResourcesWriter.swift */; };
 		A7F651302B7655DE004B0EDB /* UIImageResourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F6512F2B7655DE004B0EDB /* UIImageResourceTests.swift */; };
@@ -2851,6 +2855,8 @@
 		A7D9528B2B28C18D004C79B1 /* ResourceProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceProcessorTests.swift; sourceTree = "<group>"; };
 		A7DA18022AB0C8A700F76337 /* DDUIKitRUMViewsPredicateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDUIKitRUMViewsPredicateTests.swift; sourceTree = "<group>"; };
 		A7DA18062AB0CA4700F76337 /* DDUIKitRUMActionsPredicateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDUIKitRUMActionsPredicateTests.swift; sourceTree = "<group>"; };
+		A7E6EA802D3146AD00997201 /* AnonymousIdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnonymousIdManager.swift; sourceTree = "<group>"; };
+		A7E6EA832D314A9900997201 /* AnonymousIdentifierManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnonymousIdentifierManagerTests.swift; sourceTree = "<group>"; };
 		A7EA88552B17639A00FE2580 /* ResourcesWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesWriter.swift; sourceTree = "<group>"; };
 		A7F6512F2B7655DE004B0EDB /* UIImageResourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageResourceTests.swift; sourceTree = "<group>"; };
 		A7F773D32924EA2D00AC1A62 /* B3HTTPHeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = B3HTTPHeaders.swift; sourceTree = "<group>"; };
@@ -4876,6 +4882,7 @@
 		615950EC291C057D00470E0C /* Integrations */ = {
 			isa = PBXGroup;
 			children = (
+				A7E6EA802D3146AD00997201 /* AnonymousIdManager.swift */,
 				D2CBC26D294395A300134409 /* RUMContextAttributes.swift */,
 				615950ED291C058F00470E0C /* SessionReplayDependency.swift */,
 				D2CBC26A294383F200134409 /* WebViewEventReceiver.swift */,
@@ -6123,6 +6130,7 @@
 		D236BE2A29521A7700676E67 /* Integrations */ = {
 			isa = PBXGroup;
 			children = (
+				A7E6EA832D314A9900997201 /* AnonymousIdentifierManagerTests.swift */,
 				615950EA291C029700470E0C /* SessionReplayDependencyTests.swift */,
 				D21C26ED28AFB65B005DD405 /* ErrorMessageReceiverTests.swift */,
 				9E53889B2773C4B300A7DC42 /* WebViewEventReceiverTests.swift */,
@@ -9025,6 +9033,7 @@
 				D23F8E8029DDCD28001CFAE8 /* VitalInfoSampler.swift in Sources */,
 				D23F8E8129DDCD28001CFAE8 /* RUMViewScope.swift in Sources */,
 				D23F8E8229DDCD28001CFAE8 /* RUMSessionScope.swift in Sources */,
+				A7E6EA812D3146AD00997201 /* AnonymousIdManager.swift in Sources */,
 				D23F8E8329DDCD28001CFAE8 /* RUMUser.swift in Sources */,
 				D23F8E8429DDCD28001CFAE8 /* UIKitRUMUserActionsPredicate.swift in Sources */,
 				3C5CD8CE2C3ECB9400B12303 /* MemoryWarningReporter.swift in Sources */,
@@ -9070,6 +9079,7 @@
 				3CEC57782C16FDD80042B5F2 /* WatchdogTerminationAppStateManagerTests.swift in Sources */,
 				D23F8EAE29DDCD38001CFAE8 /* DDTAssertValidRUMUUID.swift in Sources */,
 				D23F8EAF29DDCD38001CFAE8 /* RUMScopeTests.swift in Sources */,
+				A7E6EA842D314A9B00997201 /* AnonymousIdentifierManagerTests.swift in Sources */,
 				D23F8EB029DDCD38001CFAE8 /* SessionReplayDependencyTests.swift in Sources */,
 				61C713B72A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift in Sources */,
 				D23F8EB129DDCD38001CFAE8 /* RUMViewScopeTests.swift in Sources */,
@@ -9363,6 +9373,7 @@
 				D29A9F6B29DD85BB005C54A4 /* VitalInfoSampler.swift in Sources */,
 				D29A9F7529DD85BB005C54A4 /* RUMViewScope.swift in Sources */,
 				D29A9F5C29DD85BB005C54A4 /* RUMSessionScope.swift in Sources */,
+				A7E6EA822D3146AD00997201 /* AnonymousIdManager.swift in Sources */,
 				D29A9F6629DD85BB005C54A4 /* RUMUser.swift in Sources */,
 				D29A9F8229DD85BB005C54A4 /* UIKitRUMUserActionsPredicate.swift in Sources */,
 				3C5CD8CD2C3ECB9400B12303 /* MemoryWarningReporter.swift in Sources */,
@@ -9408,6 +9419,7 @@
 				3CEC57772C16FDD70042B5F2 /* WatchdogTerminationAppStateManagerTests.swift in Sources */,
 				D29A9FCC29DDBCC5005C54A4 /* DDTAssertValidRUMUUID.swift in Sources */,
 				D29A9FB329DDB483005C54A4 /* RUMScopeTests.swift in Sources */,
+				A7E6EA852D314A9B00997201 /* AnonymousIdentifierManagerTests.swift in Sources */,
 				D29A9FAE29DDB483005C54A4 /* SessionReplayDependencyTests.swift in Sources */,
 				61C713B62A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift in Sources */,
 				D29A9FB829DDB483005C54A4 /* RUMViewScopeTests.swift in Sources */,

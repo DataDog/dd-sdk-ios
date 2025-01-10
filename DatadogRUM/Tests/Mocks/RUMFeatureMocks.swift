@@ -724,9 +724,13 @@ extension RUMUUID: RandomMockable {
     }
 }
 
-struct RUMUUIDGeneratorMock: RUMUUIDGenerator {
-    let uuid: RUMUUID
+class RUMUUIDGeneratorMock: RUMUUIDGenerator {
+    var uuid: RUMUUID
     func generateUnique() -> RUMUUID { uuid }
+
+    init(uuid: RUMUUID) {
+        self.uuid = uuid
+    }
 }
 
 extension RUMContext {

@@ -48,6 +48,10 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
         contextMock.baggages[key] = baggage()
     }
 
+    public func set(anonymousId: String?) {
+        self.anonymousId = anonymousId
+    }
+
     // MARK: - Side Effects Observation
 
     /// Retrieve anonymous events written through Even Write Context API.
@@ -80,4 +84,7 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     public func messagesSent() -> [FeatureMessage] {
         return messages
     }
+
+    /// Retrieve last set anonymous ID.
+    public private(set) var anonymousId: String?
 }

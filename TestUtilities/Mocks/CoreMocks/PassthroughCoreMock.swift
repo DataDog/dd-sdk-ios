@@ -102,6 +102,9 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
         }
     }
 
+    /// no-op
+    public func set(anonymousId: String?) { }
+
     /// Execute `block` with the current context and a `writer` to record events.
     ///
     /// - Parameter block: The block to execute.
