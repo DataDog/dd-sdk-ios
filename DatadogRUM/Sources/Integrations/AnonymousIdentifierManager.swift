@@ -25,13 +25,13 @@ internal class AnonymousIdentifierManager: AnonymousIdentifierManaging {
 
     func manageAnonymousId(shouldTrack: Bool) {
         if shouldTrack {
-            featureScope.rumDataStore.value(forKey: .anonymousId) { [featureScope, uuidGenerator] (anonymousId: String?) in
+            featureScope.rumDataStore.value(forKey: .anonymousId) { [weak self] (anonymousId: String?) in
                 if let anonymousId {
-                    featureScope.set(anonymousId: anonymousId)
+                    self?.featureScope.set(anonymousId: anonymousId)
                 } else {
-                    let anonymousId = uuidGenerator.generateUnique().toRUMDataFormat
-                    featureScope.rumDataStore.setValue(anonymousId, forKey: .anonymousId)
-                    featureScope.set(anonymousId: anonymousId)
+                    let anonymousId = self?.uuidGenerator.generateUnique().toRUMDataFormat
+                    self?.featureScope.rumDataStore.setValue(anonymousId, forKey: .anonymousId)
+                    self?.featureScope.set(anonymousId: anonymousId)
                 }
             }
         } else {
