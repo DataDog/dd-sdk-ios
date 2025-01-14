@@ -2027,17 +2027,6 @@ public class DDTelemetryConfigurationEventTelemetryRUMTelemetryOperatingSystem: 
     @objc public var version: String?
 public class DDTelemetryConfigurationEventView: NSObject
     @objc public var id: String
-public final class DDSessionReplay: NSObject
-    public static func enable(with configuration: DDSessionReplayConfiguration)
-public final class DDSessionReplayConfiguration: NSObject
-    @objc public var replaySampleRate: Float
-    @objc public var defaultPrivacyLevel: DDSessionReplayConfigurationPrivacyLevel
-    @objc public var customEndpoint: URL?
-    public required init(replaySampleRate: Float)
-public enum DDSessionReplayConfigurationPrivacyLevel: Int
-    case allow
-    case mask
-    case maskUserInput
 public enum DDInjectEncoding: Int
     case multiple = 0
     case single = 1

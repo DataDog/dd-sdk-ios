@@ -78,6 +78,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// The reason why this session has ended or `nil` if it is still active.
     private(set) var endReason: EndReason?
 
+    private let interactionToNextViewMetric: ITNVMetricTracking
+
     init(
         isInitialSession: Bool,
         parent: RUMContextProvider,
@@ -103,6 +105,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             hasTrackedAnyView: false,
             didStartWithReplay: context.hasReplay
         )
+        self.interactionToNextViewMetric = dependencies.interactionToNextViewMetricFactory()
 
         // Start tracking "RUM Session Ended" metric for this session
         dependencies.sessionEndedMetric.startMetric(
@@ -157,7 +160,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 name: expiredView.viewName,
                 customTimings: expiredView.customTimings,
                 startTime: startTime,
-                serverTimeOffset: context.serverTimeOffset
+                serverTimeOffset: context.serverTimeOffset,
+                interactionToNextViewMetric: interactionToNextViewMetric
             )
         }
     }
@@ -281,7 +285,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             name: name,
             customTimings: customTimings,
             startTime: startTime,
-            serverTimeOffset: serverTimeOffset
+            serverTimeOffset: serverTimeOffset,
+            interactionToNextViewMetric: interactionToNextViewMetric
         )
 
         viewScopes.append(scope)

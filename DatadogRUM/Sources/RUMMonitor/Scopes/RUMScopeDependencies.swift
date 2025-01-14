@@ -51,6 +51,15 @@ internal struct RUMScopeDependencies {
     let sessionEndedMetric: SessionEndedMetricController
     let watchdogTermination: WatchdogTerminationMonitor?
 
+    /// A factory function that creates a `TTNSMetric` for the given view start date.
+    /// - Parameters:
+    ///   - Date: The time when the view becomes visible (device time, no NTP offset).
+    ///   - String: The name of the view.
+    let networkSettledMetricFactory: (Date, String) -> TTNSMetricTracking
+
+    /// A factory function that creates a `ITNVMetric` when session starts.
+    let interactionToNextViewMetricFactory: () -> ITNVMetricTracking
+
     init(
         featureScope: FeatureScope,
         rumApplicationID: String,
@@ -68,7 +77,9 @@ internal struct RUMScopeDependencies {
         viewCache: ViewCache,
         fatalErrorContext: FatalErrorContextNotifying,
         sessionEndedMetric: SessionEndedMetricController,
-        watchdogTermination: WatchdogTerminationMonitor?
+        watchdogTermination: WatchdogTerminationMonitor?,
+        networkSettledMetricFactory: @escaping (Date, String) -> TTNSMetricTracking,
+        interactionToNextViewMetricFactory: @escaping () -> ITNVMetricTracking
     ) {
         self.featureScope = featureScope
         self.rumApplicationID = rumApplicationID
@@ -88,6 +99,8 @@ internal struct RUMScopeDependencies {
         self.telemetry = featureScope.telemetry
         self.sessionEndedMetric = sessionEndedMetric
         self.watchdogTermination = watchdogTermination
+        self.networkSettledMetricFactory = networkSettledMetricFactory
+        self.interactionToNextViewMetricFactory = interactionToNextViewMetricFactory
 
         if ciTest != nil {
             self.sessionType = .ciTest

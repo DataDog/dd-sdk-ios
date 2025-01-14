@@ -867,4 +867,39 @@ class RUMUserActionScopeTests: XCTestCase {
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertNil(event.action.frustration)
     }
+
+    // MARK: - Updating Interaction To Next View Metric
+
+    func testWhenActionEventIsSent_itTrackActionInITNVMetric() throws {
+        let actionStartTime: Date = .mockDecember15th2019At10AMUTC()
+        let actionName: String = .mockRandom()
+        let actionType: RUMActionType = .tap
+
+        // Given
+        let metric = ITNVMetricMock()
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            name: actionName,
+            actionType: actionType,
+            startTime: actionStartTime,
+            interactionToNextViewMetric: metric
+        )
+
+        // When (action is sent)
+        _ = scope.process(
+            command: RUMCommandMock(time: actionStartTime + 1),
+            context: context,
+            writer: writer
+        )
+        XCTAssertFalse(writer.events(ofType: RUMActionEvent.self).isEmpty)
+
+        // Then
+        let trackedAction = try XCTUnwrap(metric.trackedActions.first)
+        XCTAssertEqual(trackedAction.startTime, actionStartTime)
+        XCTAssertEqual(trackedAction.endTime, actionStartTime + RUMUserActionScope.Constants.discreteActionTimeoutDuration)
+        XCTAssertEqual(trackedAction.actionName, actionName)
+        XCTAssertEqual(trackedAction.actionType, actionType)
+        XCTAssertEqual(trackedAction.viewID, parent.context.activeViewID)
+        XCTAssertEqual(metric.trackedActions.count, 1)
+    }
 }
