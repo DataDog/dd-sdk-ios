@@ -26,7 +26,7 @@ internal class AnonymousIdentifierManager: AnonymousIdentifierManaging {
     func manageAnonymousId(shouldTrack: Bool) {
         if shouldTrack {
             featureScope.rumDataStore.value(forKey: .anonymousId) { [featureScope, uuidGenerator] (anonymousId: String?) in
-                if let anonymousId = anonymousId {
+                if let anonymousId {
                     featureScope.set(anonymousId: anonymousId)
                 } else {
                     let anonymousId = uuidGenerator.generateUnique().toRUMDataFormat
