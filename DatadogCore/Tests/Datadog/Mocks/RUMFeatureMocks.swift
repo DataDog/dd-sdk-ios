@@ -149,6 +149,7 @@ extension ViewIdentifier {
 
 struct RUMCommandMock: RUMCommand {
     var time = Date()
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue] = [:]
     var canStartBackgroundView = false
     var isUserInteraction = false
@@ -228,11 +229,15 @@ extension RUMStopViewCommand: AnyMockable, RandomMockable {
 
     static func mockWith(
         time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         identity: ViewIdentifier = .mockViewIdentifier()
     ) -> RUMStopViewCommand {
         return RUMStopViewCommand(
-            time: time, attributes: attributes, identity: identity
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            identity: identity
         )
     }
 }
@@ -264,6 +269,7 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         time: Date = Date(),
         error: Error = ErrorMock(),
         source: RUMInternalErrorSource = .source,
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
@@ -306,11 +312,15 @@ extension RUMAddViewTimingCommand: AnyMockable, RandomMockable {
 
     static func mockWith(
         time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         timingName: String = .mockAny()
     ) -> RUMAddViewTimingCommand {
         return RUMAddViewTimingCommand(
-            time: time, attributes: attributes, timingName: timingName
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            timingName: timingName
         )
     }
 }
@@ -364,6 +374,7 @@ extension RUMStartResourceCommand: AnyMockable, RandomMockable {
     static func mockWith(
         resourceKey: String = .mockAny(),
         time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         url: String = .mockAny(),
         httpMethod: RUMMethod = .mockAny(),
@@ -398,12 +409,14 @@ extension RUMAddResourceMetricsCommand: AnyMockable, RandomMockable {
     static func mockWith(
         resourceKey: String = .mockAny(),
         time: Date = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         metrics: ResourceMetrics = .mockAny()
     ) -> RUMAddResourceMetricsCommand {
         return RUMAddResourceMetricsCommand(
             resourceKey: resourceKey,
             time: time,
+            globalAttributes: globalAttributes,
             attributes: attributes,
             metrics: metrics
         )
@@ -427,13 +440,20 @@ extension RUMStopResourceCommand: AnyMockable, RandomMockable {
     static func mockWith(
         resourceKey: String = .mockAny(),
         time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         kind: RUMResourceType = .mockAny(),
         httpStatusCode: Int? = .mockAny(),
         size: Int64? = .mockAny()
     ) -> RUMStopResourceCommand {
         return RUMStopResourceCommand(
-            resourceKey: resourceKey, time: time, attributes: attributes, kind: kind, httpStatusCode: httpStatusCode, size: size
+            resourceKey: resourceKey,
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            kind: kind,
+            httpStatusCode: httpStatusCode,
+            size: size
         )
     }
 }
@@ -473,7 +493,12 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMStopResourceWithErrorCommand {
         return RUMStopResourceWithErrorCommand(
-            resourceKey: resourceKey, time: time, error: error, source: source, httpStatusCode: httpStatusCode, attributes: attributes
+            resourceKey: resourceKey,
+            time: time,
+            error: error,
+            source: source,
+            httpStatusCode: httpStatusCode,
+            attributes: attributes
         )
     }
 
@@ -487,7 +512,13 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMStopResourceWithErrorCommand {
         return RUMStopResourceWithErrorCommand(
-            resourceKey: resourceKey, time: time, message: message, type: type, source: source, httpStatusCode: httpStatusCode, attributes: attributes
+            resourceKey: resourceKey,
+            time: time,
+            message: message,
+            type: type,
+            source: source,
+            httpStatusCode: httpStatusCode,
+            attributes: attributes
         )
     }
 }
@@ -499,20 +530,30 @@ extension RUMStartUserActionCommand: AnyMockable, RandomMockable {
         return mockWith(
             time: .mockRandomInThePast(),
             attributes: mockRandomAttributes(),
-            actionType: [.swipe, .scroll, .custom].randomElement()!,
+            actionType: [
+                .swipe,
+                .scroll,
+                .custom
+            ].randomElement()!,
             name: .mockRandom()
         )
     }
 
     static func mockWith(
         time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         instrumentation: InstrumentationType = .manual,
         actionType: RUMActionType = .swipe,
         name: String = .mockAny()
     ) -> RUMStartUserActionCommand {
         return RUMStartUserActionCommand(
-            time: time, attributes: attributes, instrumentation: instrumentation, actionType: actionType, name: name
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            instrumentation: instrumentation,
+            actionType: actionType,
+            name: name
         )
     }
 }
@@ -531,12 +572,17 @@ extension RUMStopUserActionCommand: AnyMockable, RandomMockable {
 
     static func mockWith(
         time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         actionType: RUMActionType = .swipe,
         name: String? = nil
     ) -> RUMStopUserActionCommand {
         return RUMStopUserActionCommand(
-            time: time, attributes: attributes, actionType: actionType, name: name
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            actionType: actionType,
+            name: name
         )
     }
 }
@@ -555,13 +601,19 @@ extension RUMAddUserActionCommand: AnyMockable, RandomMockable {
 
     static func mockWith(
         time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         instrumentation: InstrumentationType = .manual,
         actionType: RUMActionType = .tap,
         name: String = .mockAny()
     ) -> RUMAddUserActionCommand {
         return RUMAddUserActionCommand(
-            time: time, attributes: attributes, instrumentation: instrumentation, actionType: actionType, name: name
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            instrumentation: instrumentation,
+            actionType: actionType,
+            name: name
         )
     }
 }
@@ -579,11 +631,13 @@ extension RUMAddLongTaskCommand: AnyMockable, RandomMockable {
 
     static func mockWith(
         time: Date = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         duration: TimeInterval = 0.01
     ) -> RUMAddLongTaskCommand {
         return RUMAddLongTaskCommand(
             time: time,
+            globalAttributes: globalAttributes,
             attributes: attributes,
             duration: duration
         )
@@ -900,7 +954,6 @@ extension RUMViewScope {
             identity: identity,
             path: path,
             name: name,
-            attributes: attributes,
             customTimings: customTimings,
             startTime: startTime,
             serverTimeOffset: serverTimeOffset,
@@ -914,6 +967,7 @@ extension RUMResourceScope {
         context: RUMContext,
         dependencies: RUMScopeDependencies,
         resourceKey: String = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
@@ -930,7 +984,6 @@ extension RUMResourceScope {
             context: context,
             dependencies: dependencies,
             resourceKey: resourceKey,
-            attributes: attributes,
             startTime: startTime,
             serverTimeOffset: serverTimeOffset,
             url: url,

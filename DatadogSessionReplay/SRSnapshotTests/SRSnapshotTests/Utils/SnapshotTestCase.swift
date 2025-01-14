@@ -45,8 +45,10 @@ internal class SnapshotTestCase: XCTestCase {
         return viewController
     }
 
+    // swiftlint:disable function_default_parameter_at_end
+
     /// Helper method for most snapshot tests
-    func takeSnapshotFor( // swiftlint:disable:this function_default_parameter_at_end
+    func takeSnapshotFor(
         _ fixture: Fixture,
         with textAndInputPrivacyLevels: [TextAndInputPrivacyLevel] = [defaultTextAndInputPrivacyLevel],
         imagePrivacyLevel: ImagePrivacyLevel = defaultImagePrivacyLevel,
@@ -101,7 +103,7 @@ internal class SnapshotTestCase: XCTestCase {
     }
 
     /// Helper method for snapshot tests showing PopupsViewController
-    func takeSnapshotForPopup( // swiftlint:disable:this function_default_parameter_at_end
+    func takeSnapshotForPopup(
         fixture: Fixture,
         showPopup: (PopupsViewController) -> Void,
         waitTime: TimeInterval,
@@ -124,6 +126,8 @@ internal class SnapshotTestCase: XCTestCase {
             )
         }
     }
+
+    // swiftlint:enable function_default_parameter_at_end
 
     /// Captures side-by-side snapshot of the app UI and recorded wireframes.
     func takeSnapshot(

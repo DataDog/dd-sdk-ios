@@ -41,7 +41,6 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: .mockAny(),
             resourceKey: .mockAny(),
-            attributes: [:],
             startTime: .mockAny()
         )
 
@@ -399,7 +398,6 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post
@@ -466,11 +464,6 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [
-                CrossPlatformAttributes.traceID: "100",
-                CrossPlatformAttributes.spanID: "200",
-                CrossPlatformAttributes.rulePSR: 0.12,
-            ],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post
@@ -519,9 +512,6 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.download)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.dd.traceId, "100")
-        XCTAssertEqual(event.dd.spanId, "200")
-        XCTAssertEqual(event.dd.rulePsr, 0.12)
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
@@ -1356,7 +1346,6 @@ class RUMResourceScopeTests: XCTestCase {
                 rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: resourceUUID)
             ),
             resourceKey: resourceKey,
-            attributes: [:],
             startTime: viewStartDate,
             serverTimeOffset: .mockRandom(),
             url: .mockAny(),
@@ -1398,7 +1387,6 @@ class RUMResourceScopeTests: XCTestCase {
                 rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: resourceUUID)
             ),
             resourceKey: resourceKey,
-            attributes: [:],
             startTime: viewStartDate,
             serverTimeOffset: .mockRandom(),
             url: .mockAny(),
@@ -1445,7 +1433,6 @@ class RUMResourceScopeTests: XCTestCase {
                 rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: resourceUUID)
             ),
             resourceKey: resourceKey,
-            attributes: [:],
             startTime: viewStartDate,
             serverTimeOffset: .mockRandom(),
             url: .mockAny(),

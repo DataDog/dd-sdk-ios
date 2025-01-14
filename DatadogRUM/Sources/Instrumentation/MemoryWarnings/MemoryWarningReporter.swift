@@ -33,6 +33,7 @@ internal class MemoryWarningReporter: MemoryWarningReporting {
     func report(warning: MemoryWarning) {
         let command = RUMAddCurrentViewMemoryWarningCommand(
             time: warning.date,
+            globalAttributes: [:],
             attributes: [:],
             message: Constants.memoryWarningErrorMessage,
             type: Constants.memoryWarningErrorType,

@@ -35,7 +35,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// The value holding stable identity of this RUM View.
     let identity: ViewIdentifier
     /// View attributes.
-    private(set) var attributes: [AttributeKey: AttributeValue]
+    private(set) var attributes: [AttributeKey: AttributeValue] = [:]
     /// View custom timings, keyed by name. The value of timing is given in nanoseconds.
     private(set) var customTimings: [String: Int64] = [:]
 
@@ -115,7 +115,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         identity: ViewIdentifier,
         path: String,
         name: String,
-        attributes: [AttributeKey: AttributeValue],
         customTimings: [String: Int64],
         startTime: Date,
         serverTimeOffset: TimeInterval,
@@ -125,7 +124,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.dependencies = dependencies
         self.isInitialView = isInitialView
         self.identity = identity
-        self.attributes = attributes
         self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.viewPath = path
@@ -311,7 +309,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             context: context,
             dependencies: dependencies,
             resourceKey: command.resourceKey,
-            attributes: command.attributes,
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             url: command.url,
@@ -340,7 +337,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies: dependencies,
             name: command.name,
             actionType: command.actionType,
-            attributes: command.attributes,
+            attributes: command.globalAttributes.merging(command.attributes, uniquingKeysWith: { $1 }),
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             isContinuous: true,
@@ -358,7 +355,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies: dependencies,
             name: command.name,
             actionType: command.actionType,
-            attributes: command.attributes,
+            attributes: command.globalAttributes.merging(command.attributes, uniquingKeysWith: { $1 }),
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             isContinuous: false,
@@ -385,7 +382,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         _ = customActionScope.process(
             command: RUMStopUserActionCommand(
                 time: command.time,
-                attributes: [:],
+                globalAttributes: command.globalAttributes,
+                attributes: command.attributes,
                 actionType: .custom,
                 name: nil
             ),
@@ -493,7 +491,20 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // RUMM-3133 Don't override View attributes with commands that are not view related.
         if command is RUMViewScopePropagatableAttributes {
-            attributes.merge(rumCommandAttributes: command.attributes)
+            attributes.merge(rumCommandAttributes: command.globalAttributes)
+
+            // The local attributes should only be updated by commands related to this 'RUMViewScope'
+            switch command {
+            case let command as RUMStartViewCommand where identity == command.identity:
+                attributes.merge(rumCommandAttributes: command.attributes)
+            case let command as RUMStopViewCommand where identity == command.identity:
+                attributes.merge(rumCommandAttributes: command.attributes)
+            case let command as RUMAddViewLoadingTime:
+                attributes.merge(rumCommandAttributes: command.attributes)
+            case let command as RUMAddViewTimingCommand:
+                attributes.merge(rumCommandAttributes: command.attributes)
+            default: break
+            }
         }
 
         let isCrash = (command as? RUMErrorCommand).map { $0.isCrash ?? false } ?? false
@@ -630,7 +641,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private func sendErrorEvent(on command: RUMErrorCommand, context: DatadogContext, writer: Writer) {
         errorsCount += 1
 
-        var commandAttributes = command.attributes
+        var commandAttributes = command.globalAttributes.merging(command.attributes) { $1 }
         let errorFingerprint: String? = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
         var timeSinceAppStart: Int64? = nil
         if let startTime = context.launchTime?.launchDate {
@@ -744,7 +755,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: command.attributes),
+            context: .init(contextInfo: command.globalAttributes.merging(command.attributes) { $1 }),
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,

@@ -13,6 +13,7 @@ internal struct SyntheticScenario: Scenario {
     /// The Synthetics benchmark scenario value.
     internal enum Name: String {
         case sessionReplay
+        case sessionReplaySwiftUI
     }
     /// The scenario's name.
     let name: Name
@@ -36,6 +37,8 @@ internal struct SyntheticScenario: Scenario {
         switch name {
         case .sessionReplay:
             _scenario = SessionReplayScenario()
+        case .sessionReplaySwiftUI:
+            _scenario = SessionReplaySwiftUIScenario()
         }
 
         self.name = name

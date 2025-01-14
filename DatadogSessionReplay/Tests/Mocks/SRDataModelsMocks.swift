@@ -1261,12 +1261,35 @@ extension SRIncrementalSnapshotRecord {
 
 extension SRWireframe {
     var textWireframe: SRTextWireframe? {
-        switch self {
-        case .textWireframe(let value): return value
-        default:
-            XCTFail("not a SRWireframe.textWireframe")
+        guard case let .textWireframe(wireframe) = self else {
             return nil
         }
+
+        return wireframe
+    }
+
+    var shapeWireframe: SRShapeWireframe? {
+        guard case let .shapeWireframe(wireframe) = self else {
+            return nil
+        }
+
+        return wireframe
+    }
+
+    var imageWireframe: SRImageWireframe? {
+        guard case let .imageWireframe(wireframe) = self else {
+            return nil
+        }
+
+        return wireframe
+    }
+
+    var placeholderWireframe: SRPlaceholderWireframe? {
+        guard case let .placeholderWireframe(wireframe) = self else {
+            return nil
+        }
+
+        return wireframe
     }
 }
 

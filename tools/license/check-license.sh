@@ -28,6 +28,7 @@ function files {
 		-not -name "OTSpanContext.swift" \
 		-not -name "Versioning.swift" \
 		-not -path "*/BenchmarkTests/UIKitCatalog/*" \
+		-not -path "*/BenchmarkTests/SwiftUICatalog/*" \
 		-not -name "__init__.py"
 }
 

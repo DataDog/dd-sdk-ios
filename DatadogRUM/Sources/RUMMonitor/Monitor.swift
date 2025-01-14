@@ -124,6 +124,8 @@ internal class Monitor: RUMCommandSubscriber {
     }
 
     func process(command: RUMCommand) {
+        var command = command
+        command.globalAttributes = attributes
         // process command in event context
         featureScope.eventWriteContext { [weak self] context, writer in
             guard let self = self else {
@@ -177,15 +179,10 @@ internal class Monitor: RUMCommandSubscriber {
     func transform(command: RUMCommand) -> RUMCommand {
         var mutableCommand = command
 
-        var combinedUserAttributes = attributes
-        combinedUserAttributes.merge(rumCommandAttributes: command.attributes)
-
-        if let customTimestampInMiliseconds: Int64 = combinedUserAttributes.removeValue(forKey: CrossPlatformAttributes.timestampInMilliseconds)?.dd.decode() {
-            let customTimeInterval = TimeInterval(fromMilliseconds: customTimestampInMiliseconds)
+        if let customTimestampInMilliseconds: Int64 = mutableCommand.attributes.removeValue(forKey: CrossPlatformAttributes.timestampInMilliseconds)?.dd.decode() {
+            let customTimeInterval = TimeInterval(fromMilliseconds: customTimestampInMilliseconds)
             mutableCommand.time = Date(timeIntervalSince1970: customTimeInterval)
         }
-
-        mutableCommand.attributes = combinedUserAttributes
 
         return mutableCommand
     }

@@ -2,7 +2,12 @@
 
 - [FEATURE] Add Time To Network Setled metric in RUM. See [#2125][]
 - [FEATURE] Add Interaction To Next View metric in RUM. See [#2153][]
+- [FIX] Fix SwiftUI placeholder in Session Replay when Feature Flag is disabled. See [#2170][]
+
+# 2.22.0 / 02-01-2025
+
 - [IMPROVEMENT] Add Datadog Configuration `backgroundTasksEnabled` ObjC API. See [#2148][]
+- [FIX] Prevent Session Replay to create two full snapshots in a row. See [#2154][]
 
 # 2.21.0 / 11-12-2024
 
@@ -813,6 +818,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2126]: https://github.com/DataDog/dd-sdk-ios/pull/2126
 [#2153]: https://github.com/DataDog/dd-sdk-ios/pull/2153
 [#2148]: https://github.com/DataDog/dd-sdk-ios/pull/2148
+[#2154]: https://github.com/DataDog/dd-sdk-ios/pull/2154
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

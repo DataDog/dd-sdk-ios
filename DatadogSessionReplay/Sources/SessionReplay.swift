@@ -58,7 +58,7 @@ public enum SessionReplay {
 
     // MARK: Internal
 
-    internal static let maxObjectSize = 10.MB.asUInt64()
+    internal static let maxObjectSize = 10.MB.asUInt32()
 
     internal static func enableOrThrow(
         with configuration: SessionReplay.Configuration,

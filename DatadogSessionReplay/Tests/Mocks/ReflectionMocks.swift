@@ -10,6 +10,61 @@ import TestUtilities
 import SwiftUI
 import CoreGraphics
 
+// MARK: Text
+extension ResolvedStyledText.StringDrawing: AnyMockable, RandomMockable {
+    public static func mockAny() -> ResolvedStyledText.StringDrawing {
+        return ResolvedStyledText.StringDrawing(storage: NSAttributedString(string: .mockAny()))
+    }
+
+    public static func mockRandom() -> ResolvedStyledText.StringDrawing {
+        return ResolvedStyledText.StringDrawing(storage: NSAttributedString(string: .mockRandom()))
+    }
+}
+
+extension StyledTextContentView: AnyMockable, RandomMockable {
+    public static func mockAny() -> StyledTextContentView {
+        return StyledTextContentView(text: .mockAny())
+    }
+
+    public static func mockRandom() -> StyledTextContentView {
+        return StyledTextContentView(text: .mockRandom())
+    }
+}
+
+// MARK: Color
+@available(iOS 13.0, tvOS 13.0, *)
+extension SwiftUI.Color._Resolved: AnyMockable, RandomMockable {
+    public static func mockAny() -> Color._Resolved {
+        return SwiftUI.Color._Resolved(
+            linearRed: .mockAny(),
+            linearGreen: .mockAny(),
+            linearBlue: .mockAny(),
+            opacity: .mockAny()
+        )
+    }
+
+    public static func mockRandom() -> SwiftUI.Color._Resolved {
+        return SwiftUI.Color._Resolved(
+            linearRed: .mockRandom(min: 0, max: 1),
+            linearGreen: .mockRandom(min: 0, max: 1),
+            linearBlue: .mockRandom(min: 0, max: 1),
+            opacity: .mockRandom(min: 0, max: 1)
+        )
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension ResolvedPaint: AnyMockable, RandomMockable {
+    public static func mockAny() -> ResolvedPaint {
+        return ResolvedPaint(paint: .mockAny())
+    }
+
+    public static func mockRandom() -> ResolvedPaint {
+        return ResolvedPaint(paint: .mockRandom())
+    }
+}
+
+// MARK: GraphicsImage
 @available(iOS 13.0, tvOS 13.0, *)
 extension GraphicsImage.Contents: Equatable {
     public static func == (lhs: GraphicsImage.Contents, rhs: GraphicsImage.Contents) -> Bool {
@@ -23,8 +78,6 @@ extension GraphicsImage.Contents: Equatable {
         }
     }
 }
-
-private let bytesPerPixel = 4
 
 private extension Int {
     static func mockImageDimension() -> Int {
