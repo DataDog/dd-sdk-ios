@@ -4,7 +4,7 @@
 
 The following measures were collected by a [Benchmark Application](https://github.com/DataDog/dd-sdk-ios/tree/develop/BenchmarkTests) with Datadog iOS SDK ([d41d5dd](https://github.com/DataDog/dd-sdk-ios/commit/d41d5dd2a14c1533f1384b4a9d22801c68abad71)) running in [Datadog Synthetic Testing for Mobile Application](https://docs.datadoghq.com/synthetics/mobile_app_testing/) environment.
 
-Each scenario execute **Baseline** and **Instrumented** runs: Baseline runs without the Datadog SDK initialised while **Instrumented** runs with RUM and Sessions Replay enabled.
+Each scenario execute **Baseline** and **Instrumented** runs: Baseline runs without the Datadog SDK initialized while **Instrumented** runs with RUM and Sessions Replay enabled.
 The **Overhead** metrics are computed by comparing the Baseline with Instrumented values.
 
 # UIKit Catalog Scenario
