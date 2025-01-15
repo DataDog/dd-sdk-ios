@@ -20,7 +20,7 @@ class RUMMonitorTests: XCTestCase {
     override func setUp() {
         super.setUp()
         core = DatadogCoreProxy()
-        config = RUM.Configuration(applicationID: .mockAny())
+        config = RUM.Configuration(applicationID: .mockAny(), trackAnonymousUser: false)
     }
 
     override func tearDown() {

@@ -8,7 +8,7 @@ import Foundation
 
 public struct UserInfo: Codable, PassthroughAnyCodable {
     /// User anonymous ID, if configured.
-    public let anonymousId: String?
+    public var anonymousId: String?
     /// User ID, if any.
     public let id: String?
     /// Name representing the user, if any.

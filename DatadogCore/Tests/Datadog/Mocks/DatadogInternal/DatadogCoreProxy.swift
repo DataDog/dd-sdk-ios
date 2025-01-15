@@ -71,6 +71,8 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
     var context: DatadogContext {
         didSet {
             core.contextProvider.replace(context: context)
+            core.userInfoPublisher.current = context.userInfo ?? .empty
+            core.applicationVersionPublisher.version = context.version
         }
     }
 

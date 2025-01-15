@@ -319,15 +319,7 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 
     func set(anonymousId: String?) {
-        let currentUser = userInfoPublisher.current
-        let userInfo = UserInfo(
-            anonymousId: anonymousId,
-            id: currentUser.id,
-            name: currentUser.name,
-            email: currentUser.email,
-            extraInfo: currentUser.extraInfo
-        )
-        userInfoPublisher.current = userInfo
+        userInfoPublisher.current.anonymousId = anonymousId
     }
 }
 

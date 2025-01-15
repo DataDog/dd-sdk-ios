@@ -13,7 +13,11 @@ extension RUMUser {
             return nil
         }
 
-        if userInfo.anonymousId == nil, userInfo.id == nil, userInfo.name == nil, userInfo.email == nil, userInfo.extraInfo.isEmpty {
+        if userInfo.id == nil
+            && userInfo.anonymousId == nil
+            && userInfo.name == nil
+            && userInfo.email == nil
+            && userInfo.extraInfo.isEmpty {
             return nil
         }
 
