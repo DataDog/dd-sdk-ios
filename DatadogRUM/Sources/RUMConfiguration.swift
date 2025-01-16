@@ -233,7 +233,7 @@ extension RUM {
         /// Default: `nil`.
         public var customEndpoint: URL?
 
-        /// Determines whether automatic tracking of an anonymous user ID is enabled.
+        /// Enables collection of anonymous user id across sessions.
         ///
         /// When enabled, the SDK generates a unique, non-personal anonymous user ID that is persisted across
         /// app launches. This ID will be attached to each RUM Session, allowing you to link sessions
