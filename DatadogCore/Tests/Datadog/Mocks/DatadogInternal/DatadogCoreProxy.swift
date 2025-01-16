@@ -71,8 +71,6 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
     var context: DatadogContext {
         didSet {
             core.contextProvider.replace(context: context)
-            core.userInfoPublisher.current = context.userInfo ?? .empty
-            core.applicationVersionPublisher.version = context.version
         }
     }
 
@@ -92,6 +90,15 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
             proxy: core.scope(for: featureType),
             interceptor: featureScopeInterceptors[T.name]!
         )
+    }
+
+    func setUserInfo(
+        id: String? = nil,
+        name: String? = nil,
+        email: String? = nil,
+        extraInfo: [AttributeKey: AttributeValue] = [:]
+    ) {
+        core.setUserInfo(id: id, name: name, email: email, extraInfo: extraInfo)
     }
 
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {

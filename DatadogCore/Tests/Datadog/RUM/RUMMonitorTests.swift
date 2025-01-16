@@ -649,17 +649,15 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Sending user info
 
     func testWhenUserInfoIsProvided_itIsSendWithAllEvents() throws {
-        core.context = .mockWith(
-            userInfo: UserInfo(
-                id: "abc-123",
-                name: "Foo",
-                email: "foo@bar.com",
-                extraInfo: [
-                    "str": "value",
-                    "int": 11_235,
-                    "bool": true
-                ]
-            )
+        core.setUserInfo(
+            id: "abc-123",
+            name: "Foo",
+            email: "foo@bar.com",
+            extraInfo: [
+                "str": "value",
+                "int": 11_235,
+                "bool": true
+            ]
         )
         RUM.enable(with: config, in: core)
 

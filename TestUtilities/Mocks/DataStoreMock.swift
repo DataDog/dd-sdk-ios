@@ -31,6 +31,10 @@ public class DataStoreMock: DataStore {
         storage.removeAll()
     }
 
+    public func flush() {
+        // no-op
+    }
+
     // MARK: - Side Effects Observation
 
     public func value(forKey key: String) -> DataStoreValueResult? {

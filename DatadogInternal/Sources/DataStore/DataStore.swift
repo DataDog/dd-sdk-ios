@@ -67,6 +67,11 @@ public protocol DataStore {
     /// Note: This may impact the SDK's ability to detect App Hangs and Watchdog Terminations
     /// or other features that rely on data persisted in the data store.
     func clearAllData()
+
+    /// Awaits completion of all asynchronous data writes and reads.
+    ///
+    /// **blocks the caller thread**
+    func flush()
 }
 
 public extension DataStore {
@@ -91,4 +96,6 @@ public struct NOPDataStore: DataStore {
     public func removeValue(forKey key: String) {}
     /// no-op
     public func clearAllData() {}
+    /// no-op
+    public func flush() {}
 }
