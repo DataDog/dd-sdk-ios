@@ -106,7 +106,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Time-to-Network-Settled metric for this view.
     private let networkSettledMetric: TTNSMetricTracking
     /// Interaction-to-Next-View metric for this view.
-    private let interactionToNextViewMetric: ITNVMetricTracking
+    private let interactionToNextViewMetric: INVMetricTracking
 
     init(
         isInitialView: Bool,
@@ -118,7 +118,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         customTimings: [String: Int64],
         startTime: Date,
         serverTimeOffset: TimeInterval,
-        interactionToNextViewMetric: ITNVMetricTracking
+        interactionToNextViewMetric: INVMetricTracking
     ) {
         self.parent = parent
         self.dependencies = dependencies

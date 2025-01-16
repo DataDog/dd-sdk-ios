@@ -790,8 +790,8 @@ extension RUMScopeDependencies {
         networkSettledMetricFactory: @escaping (Date, String) -> TTNSMetricTracking = {
             TTNSMetric(viewName: $1, viewStartDate: $0, resourcePredicate: TimeBasedTTNSResourcePredicate())
         },
-        interactionToNextViewMetricFactory: @escaping () -> ITNVMetricTracking = {
-            ITNVMetric(predicate: TimeBasedITNVActionPredicate())
+        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking = {
+            INVMetric(predicate: TimeBasedINVActionPredicate())
         }
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -836,7 +836,7 @@ extension RUMScopeDependencies {
         sessionEndedMetric: SessionEndedMetricController? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
         networkSettledMetricFactory: ((Date, String) -> TTNSMetricTracking)? = nil,
-        interactionToNextViewMetricFactory: (() -> ITNVMetricTracking)? = nil
+        interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -945,7 +945,7 @@ extension RUMViewScope {
         customTimings: [String: Int64] = randomTimings(),
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
-        interactionToNextViewMetric: ITNVMetricTracking = ITNVMetric(predicate: TimeBasedITNVActionPredicate())
+        interactionToNextViewMetric: INVMetricTracking = INVMetric(predicate: TimeBasedINVActionPredicate())
     ) -> RUMViewScope {
         return RUMViewScope(
             isInitialView: isInitialView,
@@ -1009,7 +1009,7 @@ extension RUMUserActionScope {
         serverTimeOffset: TimeInterval = .zero,
         isContinuous: Bool = .mockAny(),
         instrumentation: InstrumentationType = .manual,
-        interactionToNextViewMetric: ITNVMetricTracking = ITNVMetric(predicate: TimeBasedITNVActionPredicate()),
+        interactionToNextViewMetric: INVMetricTracking = INVMetric(predicate: TimeBasedINVActionPredicate()),
         onActionEventSent: @escaping (RUMActionEvent) -> Void = { _ in }
     ) -> RUMUserActionScope {
         return RUMUserActionScope(

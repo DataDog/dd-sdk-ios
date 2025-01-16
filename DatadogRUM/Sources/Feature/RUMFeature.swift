@@ -109,7 +109,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
             },
             interactionToNextViewMetricFactory: {
-                return ITNVMetric(
+                return INVMetric(
                     predicate: configuration.nextViewActionPredicate
                 )
             }

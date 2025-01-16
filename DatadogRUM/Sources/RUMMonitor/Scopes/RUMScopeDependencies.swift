@@ -57,8 +57,8 @@ internal struct RUMScopeDependencies {
     ///   - String: The name of the view.
     let networkSettledMetricFactory: (Date, String) -> TTNSMetricTracking
 
-    /// A factory function that creates a `ITNVMetric` when session starts.
-    let interactionToNextViewMetricFactory: () -> ITNVMetricTracking
+    /// A factory function that creates a `INVMetric` when session starts.
+    let interactionToNextViewMetricFactory: () -> INVMetricTracking
 
     init(
         featureScope: FeatureScope,
@@ -79,7 +79,7 @@ internal struct RUMScopeDependencies {
         sessionEndedMetric: SessionEndedMetricController,
         watchdogTermination: WatchdogTerminationMonitor?,
         networkSettledMetricFactory: @escaping (Date, String) -> TTNSMetricTracking,
-        interactionToNextViewMetricFactory: @escaping () -> ITNVMetricTracking
+        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking
     ) {
         self.featureScope = featureScope
         self.rumApplicationID = rumApplicationID

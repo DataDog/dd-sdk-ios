@@ -804,7 +804,7 @@ extension RUMScopeDependencies {
         sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0),
         watchdogTermination: WatchdogTerminationMonitor = .mockRandom(),
         networkSettledMetricFactory: @escaping (Date, String) -> TTNSMetricTracking = { _, _ in TTNSMetricMock() },
-        interactionToNextViewMetricFactory: @escaping () -> ITNVMetricTracking = { ITNVMetricMock() }
+        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking = { INVMetricMock() }
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -848,7 +848,7 @@ extension RUMScopeDependencies {
         sessionEndedMetric: SessionEndedMetricController? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
         networkSettledMetricFactory: ((Date, String) -> TTNSMetricTracking)? = nil,
-        interactionToNextViewMetricFactory: (() -> ITNVMetricTracking)? = nil
+        interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -984,7 +984,7 @@ extension RUMViewScope {
         customTimings: [String: Int64] = randomTimings(),
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
-        interactionToNextViewMetric: ITNVMetricTracking = ITNVMetricMock()
+        interactionToNextViewMetric: INVMetricTracking = INVMetricMock()
     ) -> RUMViewScope {
         return RUMViewScope(
             isInitialView: isInitialView,
@@ -1046,7 +1046,7 @@ extension RUMUserActionScope {
         serverTimeOffset: TimeInterval = .zero,
         isContinuous: Bool = .mockAny(),
         instrumentation: InstrumentationType = .manual,
-        interactionToNextViewMetric: ITNVMetricTracking = ITNVMetricMock(),
+        interactionToNextViewMetric: INVMetricTracking = INVMetricMock(),
         onActionEventSent: @escaping (RUMActionEvent) -> Void = { _ in }
     ) -> RUMUserActionScope {
         return RUMUserActionScope(
@@ -1262,7 +1262,7 @@ internal class TTNSMetricMock: TTNSMetricTracking {
     }
 }
 
-internal class ITNVMetricMock: ITNVMetricTracking {
+internal class INVMetricMock: INVMetricTracking {
     /// Tracks calls to `trackAction(startTime:endTime:name:type:in:)`.
     var trackedActions: [(startTime: Date, endTime: Date, actionName: String, actionType: RUMActionType, viewID: RUMUUID)] = []
     /// Tracks calls to `trackViewStart(at:name:viewID:)`.

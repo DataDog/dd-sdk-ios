@@ -158,15 +158,15 @@ extension RUM {
         /// This time threshold can be customized by providing a custom predicate or adjusting the threshold in the default predicate.
         public var networkSettledResourcePredicate: NetworkSettledResourcePredicate
 
-        /// The predicate used to classify the "last interaction" for the Interaction-To-Next-View (ITNV) metric.
+        /// The predicate used to classify the "last interaction" for the Interaction-To-Next-View (INV) metric.
         ///
-        /// **Interaction-To-Next-View (ITNV)** is a metric that measures how long it takes from the last user interaction in a previous view
+        /// **Interaction-To-Next-View (INV)** is a metric that measures how long it takes from the last user interaction in a previous view
         /// until the next view starts. It provides insight into how quickly a new view is displayed after a user’s action.
         ///
-        /// The `NextViewActionPredicate` determines which action in the previous view should be considered the "last interaction" for ITNV,
+        /// The `NextViewActionPredicate` determines which action in the previous view should be considered the "last interaction" for INV,
         /// based on properties such as action type, name, or timing relative to the next view’s start.
         ///
-        /// Default: The default predicate, `TimeBasedITNVActionPredicate`, classifies actions as the last interaction if they occur within a
+        /// Default: The default predicate, `TimeBasedINVActionPredicate`, classifies actions as the last interaction if they occur within a
         /// 3-second threshold before the next view starts. You can customize this time threshold or provide your own predicate.
         public var nextViewActionPredicate: NextViewActionPredicate
 
@@ -371,7 +371,7 @@ extension RUM.Configuration {
     ///   - networkSettledResourcePredicate: Predicate used to classify resources for the Time-To-Network-Settled (TTNS) metric calculation.
     ///     Default: `TimeBasedTTNSResourcePredicate()`.
     ///   - nextViewActionPredicate: The predicate used to classify which action in the previous view is considered the "last interaction"
-    ///     for the Interaction-To-Next-View (ITNV) metric. Default: `TimeBasedITNVActionPredicate()`.
+    ///     for the Interaction-To-Next-View (INV) metric. Default: `TimeBasedINVActionPredicate()`.
     ///   - viewEventMapper: Custom mapper for RUM view events. Default: `nil`.
     ///   - resourceEventMapper: Custom mapper for RUM resource events. Default: `nil`.
     ///   - actionEventMapper: Custom mapper for RUM action events. Default: `nil`.
@@ -393,7 +393,7 @@ extension RUM.Configuration {
         trackWatchdogTerminations: Bool = false,
         vitalsUpdateFrequency: VitalsFrequency? = .average,
         networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTTNSResourcePredicate(),
-        nextViewActionPredicate: NextViewActionPredicate = TimeBasedITNVActionPredicate(),
+        nextViewActionPredicate: NextViewActionPredicate = TimeBasedINVActionPredicate(),
         viewEventMapper: RUM.ViewEventMapper? = nil,
         resourceEventMapper: RUM.ResourceEventMapper? = nil,
         actionEventMapper: RUM.ActionEventMapper? = nil,
