@@ -52,7 +52,7 @@ internal class RUMResourceScope: RUMScope {
     private let spanContext: RUMSpanContext?
 
     /// The Time-to-Network-Settled metric for the view that tracks this resource.
-    private let networkSettledMetric: TTNSMetricTracking
+    private let networkSettledMetric: TNSMetricTracking
 
     /// Callback called when a `RUMResourceEvent` is submitted for storage.
     private let onResourceEvent: (_ sent: Bool) -> Void
@@ -69,7 +69,7 @@ internal class RUMResourceScope: RUMScope {
         httpMethod: RUMMethod,
         resourceKindBasedOnRequest: RUMResourceType?,
         spanContext: RUMSpanContext?,
-        networkSettledMetric: TTNSMetricTracking,
+        networkSettledMetric: TNSMetricTracking,
         onResourceEvent: @escaping (Bool) -> Void,
         onErrorEvent: @escaping (Bool) -> Void
     ) {
@@ -88,7 +88,7 @@ internal class RUMResourceScope: RUMScope {
         self.onResourceEvent = onResourceEvent
         self.onErrorEvent = onErrorEvent
 
-        // Track this resource in view's TTNS metric:
+        // Track this resource in view's TNS metric:
         networkSettledMetric.trackResourceStart(at: startTime, resourceID: resourceUUID, resourceURL: url)
     }
 

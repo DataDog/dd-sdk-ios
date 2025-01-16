@@ -17,14 +17,14 @@ private extension RUMUUID {
 }
 
 private struct ResourcePredicateMock: NetworkSettledResourcePredicate {
-    let shouldConsiderInitialResource: (TTNSResourceParams) -> Bool
+    let shouldConsiderInitialResource: (TNSResourceParams) -> Bool
 
-    func isInitialResource(from resourceParams: TTNSResourceParams) -> Bool {
+    func isInitialResource(from resourceParams: TNSResourceParams) -> Bool {
         shouldConsiderInitialResource(resourceParams)
     }
 }
 
-class TTNSMetricTests: XCTestCase {
+class TNSMetricTests: XCTestCase {
     /// Represents 100ms.
     private let t100ms: TimeInterval = 0.1
     /// The start of the view tracked by tested metric.
@@ -36,20 +36,20 @@ class TTNSMetricTests: XCTestCase {
         ResourcePredicateMock(shouldConsiderInitialResource: { $0.url == initialResourcesURL })
     }
     // swiftlint:disable function_default_parameter_at_end
-    /// Creates `TTNSMetric` instance for testing.
-    private func createMetric(viewName: String = .mockAny(), viewStartDate: Date, resourcePredicate: NetworkSettledResourcePredicate) -> TTNSMetric {
-        return TTNSMetric(viewName: viewName, viewStartDate: viewStartDate, resourcePredicate: resourcePredicate)
+    /// Creates `TNSMetric` instance for testing.
+    private func createMetric(viewName: String = .mockAny(), viewStartDate: Date, resourcePredicate: NetworkSettledResourcePredicate) -> TNSMetric {
+        return TNSMetric(viewName: viewName, viewStartDate: viewStartDate, resourcePredicate: resourcePredicate)
     }
     // swiftlint:enable function_default_parameter_at_end
 
     // MARK: - "Initial Resource" Classification
 
     func testGivenTimeBasedResourcePredicate_whenResourceStartsWithinThreshold_thenItIsTracked() throws {
-        let threshold = TimeBasedTTNSResourcePredicate.defaultThreshold
+        let threshold = TimeBasedTNSResourcePredicate.defaultThreshold
 
         func when(resourceStartOffset offset: TimeInterval) -> TimeInterval? {
             // Given
-            let predicate = TimeBasedTTNSResourcePredicate(threshold: threshold)
+            let predicate = TimeBasedTNSResourcePredicate(threshold: threshold)
             let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: predicate)
 
             // When

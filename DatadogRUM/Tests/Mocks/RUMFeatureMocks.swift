@@ -803,7 +803,7 @@ extension RUMScopeDependencies {
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
         sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0),
         watchdogTermination: WatchdogTerminationMonitor = .mockRandom(),
-        networkSettledMetricFactory: @escaping (Date, String) -> TTNSMetricTracking = { _, _ in TTNSMetricMock() },
+        networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking = { _, _ in TNSMetricMock() },
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking = { INVMetricMock() }
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -847,7 +847,7 @@ extension RUMScopeDependencies {
         fatalErrorContext: FatalErrorContextNotifying? = nil,
         sessionEndedMetric: SessionEndedMetricController? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
-        networkSettledMetricFactory: ((Date, String) -> TTNSMetricTracking)? = nil,
+        networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
         interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -1013,7 +1013,7 @@ extension RUMResourceScope {
         isFirstPartyResource: Bool? = nil,
         resourceKindBasedOnRequest: RUMResourceType? = nil,
         spanContext: RUMSpanContext? = .mockAny(),
-        networkSettledMetric: TTNSMetricTracking = TTNSMetric(viewName: .mockAny(), viewStartDate: .mockAny(), resourcePredicate: TimeBasedTTNSResourcePredicate()),
+        networkSettledMetric: TNSMetricTracking = TNSMetric(viewName: .mockAny(), viewStartDate: .mockAny(), resourcePredicate: TimeBasedTNSResourcePredicate()),
         onResourceEvent: @escaping (Bool) -> Void = { _ in },
         onErrorEvent: @escaping (Bool) -> Void = { _ in }
     ) -> RUMResourceScope {
@@ -1225,7 +1225,7 @@ extension AppHang.BacktraceGenerationResult: AnyMockable, RandomMockable {
 
 // MARK: - View Loading Metrics
 
-internal class TTNSMetricMock: TTNSMetricTracking {
+internal class TNSMetricMock: TNSMetricTracking {
     /// Tracks calls to `trackResourceStart(at:resourceID:)`.
     var resourceStartDates: [RUMUUID: Date] = [:]
     /// Tracks calls to `trackResourceEnd(at:resourceID:resourceDuration:)`.

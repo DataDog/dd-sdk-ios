@@ -104,7 +104,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private var viewPerformanceMetrics: [PerformanceMetric: VitalInfo] = [:]
 
     /// Time-to-Network-Settled metric for this view.
-    private let networkSettledMetric: TTNSMetricTracking
+    private let networkSettledMetric: TNSMetricTracking
     /// Interaction-to-Next-View metric for this view.
     private let interactionToNextViewMetric: INVMetricTracking
 

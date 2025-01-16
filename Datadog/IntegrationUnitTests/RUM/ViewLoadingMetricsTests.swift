@@ -25,11 +25,11 @@ class ViewLoadingMetricsTests: XCTestCase {
 
     // MARK: - Time To Network Settled
 
-    func testWhenResourcesStartBeforeThreshold_thenTheyAreIncludedInTTNSMetric() throws {
+    func testWhenResourcesStartBeforeThreshold_thenTheyAreIncludedInTNSMetric() throws {
         let rumTime = DateProviderMock()
         rumConfig.dateProvider = rumTime
 
-        // Given (default TTNS resource predicate)
+        // Given (default TNS resource predicate)
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -39,7 +39,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         monitor.startView(key: "view", name: "ViewName")
         monitor.startResource(resourceKey: "resource1", url: .mockRandom())
         monitor.startResource(resourceKey: "resource2", url: .mockRandom())
-        rumTime.now.addTimeInterval(TimeBasedTTNSResourcePredicate.defaultThreshold * 0.99) // Wait no more than threshold, so next resource is still counted
+        rumTime.now.addTimeInterval(TimeBasedTNSResourcePredicate.defaultThreshold * 0.99) // Wait no more than threshold, so next resource is still counted
         monitor.startResource(resourceKey: "resource3", url: .mockRandom())
 
         // When (end resources during the same view)
@@ -57,16 +57,16 @@ class ViewLoadingMetricsTests: XCTestCase {
             .takeSingle()
 
         let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
-        let actualTTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TTNS should be reported after initial resources complete loading.")
-        let expectedTTNS = lastResourceTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
-        XCTAssertEqual(actualTTNS, expectedTTNS, "TTNS should span from the view start to the last completed initial resource.")
+        let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
+        let expectedTNS = lastResourceTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+        XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the last completed initial resource.")
     }
 
-    func testWhenAnotherResourceStartsAfterThreshold_thenItIsNotIncludedInTTNSMetric() throws {
+    func testWhenAnotherResourceStartsAfterThreshold_thenItIsNotIncludedInTNSMetric() throws {
         let rumTime = DateProviderMock()
         rumConfig.dateProvider = rumTime
 
-        // Given (default TTNS resource predicate)
+        // Given (default TNS resource predicate)
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -78,7 +78,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         monitor.startResource(resourceKey: "resource2", url: .mockRandom())
 
         // When (start non-initial resource after threshold)
-        rumTime.now.addTimeInterval(TimeBasedTTNSResourcePredicate.defaultThreshold * 1.01) // Wait more than threshold, so next resource is not counted
+        rumTime.now.addTimeInterval(TimeBasedTNSResourcePredicate.defaultThreshold * 1.01) // Wait more than threshold, so next resource is not counted
         monitor.startResource(resourceKey: "resource3", url: .mockRandom())
 
         // When (end resources during the same view)
@@ -96,16 +96,16 @@ class ViewLoadingMetricsTests: XCTestCase {
             .takeSingle()
 
         let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
-        let actualTTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TTNS should be reported after initial resources complete loading.")
-        let expectedTTNS = lastInitialResourceTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
-        XCTAssertEqual(actualTTNS, expectedTTNS, "TTNS should span from the view start to the last completed initial resource.")
+        let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
+        let expectedTNS = lastInitialResourceTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+        XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the last completed initial resource.")
     }
 
-    func testWhenViewIsStopped_thenTTNSIsNotReported() throws {
+    func testWhenViewIsStopped_thenTNSIsNotReported() throws {
         let rumTime = DateProviderMock()
         rumConfig.dateProvider = rumTime
 
-        // Given (default TTNS resource predicate)
+        // Given (default TNS resource predicate)
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -134,10 +134,10 @@ class ViewLoadingMetricsTests: XCTestCase {
 
         let firstView = try XCTUnwrap(session.views.first(where: { $0.name == "FirstView" }))
         let lastViewEvent = try XCTUnwrap(firstView.viewEvents.last)
-        XCTAssertNil(lastViewEvent.view.networkSettledTime, "TTNS should not be reported if view was stopped during resource loading.")
+        XCTAssertNil(lastViewEvent.view.networkSettledTime, "TNS should not be reported if view was stopped during resource loading.")
     }
 
-    func testWhenResourceIsDropped_thenItIsExcludedFromTTNSMetric() throws {
+    func testWhenResourceIsDropped_thenItIsExcludedFromTNSMetric() throws {
         let droppedResourceURL: URL = .mockRandom()
 
         let rumTime = DateProviderMock()
@@ -149,7 +149,7 @@ class ViewLoadingMetricsTests: XCTestCase {
             event.error.resource?.url == droppedResourceURL.absoluteString ? nil : event
         }
 
-        // Given (default TTNS resource predicate)
+        // Given (default TNS resource predicate)
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -176,12 +176,12 @@ class ViewLoadingMetricsTests: XCTestCase {
             .takeSingle()
 
         let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
-        let actualTTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TTNS should be reported after initial resources end.")
-        let expectedTTNS = resource1EndTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
-        XCTAssertEqual(actualTTNS, expectedTTNS, "TTNS should only reflect ACCEPTED resources.")
+        let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources end.")
+        let expectedTNS = resource1EndTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+        XCTAssertEqual(actualTNS, expectedTNS, "TNS should only reflect ACCEPTED resources.")
     }
 
-    func testGivenCustomTTNSResourcePredicate_whenViewCompletes_thenTTNSMetricIsCalculatedFromClassifiedResources() throws {
+    func testGivenCustomTNSResourcePredicate_whenViewCompletes_thenTNSMetricIsCalculatedFromClassifiedResources() throws {
         let rumTime = DateProviderMock()
         rumConfig.dateProvider = rumTime
 
@@ -191,10 +191,10 @@ class ViewLoadingMetricsTests: XCTestCase {
         let viewLoadingURL3: URL = .mockRandom()
         let otherURL: URL = .mockRandom()
 
-        // We expect TTNS to be calculated for URLs 1-3, ignoring other URLs.
+        // We expect TNS to be calculated for URLs 1-3, ignoring other URLs.
         // In this test, resources are started and completed as follows:
         //
-        // |-------------- TTNS --------------|
+        // |-------------- TNS --------------|
         // |   [··· URL 1 ···]
         // |        [·········· OTHER URL ··········]
         // |                  [···· URL 2 ····]
@@ -205,7 +205,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         struct CustomPredicate: NetworkSettledResourcePredicate {
             let viewLoadingURLs: Set<URL>
 
-            func isInitialResource(from resourceParams: TTNSResourceParams) -> Bool {
+            func isInitialResource(from resourceParams: TNSResourceParams) -> Bool {
                 resourceParams.viewName == "FooView" && viewLoadingURLs.contains(URL(string: resourceParams.url)!)
             }
         }
@@ -250,9 +250,9 @@ class ViewLoadingMetricsTests: XCTestCase {
             .takeSingle()
 
         let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
-        let actualTTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TTNS should be reported after initial resources complete loading.")
-        let expectedTTNS = lastInitialResourceCompletionTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
-        XCTAssertEqual(actualTTNS, expectedTTNS, "TTNS should span from the view start to the completion of last classified resource.")
+        let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
+        let expectedTNS = lastInitialResourceCompletionTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+        XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the completion of last classified resource.")
     }
 
     // MARK: - Interaction To Next View

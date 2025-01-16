@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-internal protocol TTNSMetricTracking {
+internal protocol TNSMetricTracking {
     /// Tracks the start time of a resource identified by its `resourceID`.
     ///
     /// - Parameters:
@@ -33,25 +33,25 @@ internal protocol TTNSMetricTracking {
     /// Marks the view as stopped, preventing further resource tracking.
     func trackViewWasStopped()
 
-    /// Returns the value for the TTNS metric.
+    /// Returns the value for the TNS metric.
     ///
     /// - Parameters:
     ///   - time: The current time (device time, no NTP offset).
     ///   - appStateHistory: The history of app state transitions.
-    /// - Returns: The value for the TTNS metric, or `nil` if the metric cannot be calculated.
+    /// - Returns: The value for the TNS metric, or `nil` if the metric cannot be calculated.
     func value(at time: Date, appStateHistory: AppStateHistory) -> TimeInterval?
 }
 
-/// A metric (**Time-to-Network-Settled**, or TTNS) that measures the time from when the view becomes visible until all initial resources are loaded.
+/// A metric (**Time-to-Network-Settled**, or TNS) that measures the time from when the view becomes visible until all initial resources are loaded.
 /// "Initial resources" are now classified using a customizable predicate.
-internal final class TTNSMetric: TTNSMetricTracking {
+internal final class TNSMetric: TNSMetricTracking {
     /// The name of the view this metric is tracked for.
     private let viewName: String
 
     /// The time when the view tracking this metric becomes visible (device time, no NTP offset).
     private let viewStartDate: Date
 
-    /// The predicate used to classify resources as "initial" for TTNS.
+    /// The predicate used to classify resources as "initial" for TNS.
     private let resourcePredicate: NetworkSettledResourcePredicate
 
     /// Indicates whether the view is active (`true`) or stopped (`false`).
@@ -63,17 +63,17 @@ internal final class TTNSMetric: TTNSMetricTracking {
     /// The time when the last of the initial resources completes.
     private var latestResourceEndDate: Date?
 
-    /// Stores the last computed value for the TTNS metric.
+    /// Stores the last computed value for the TNS metric.
     /// This is used to return the same value for subsequent calls to `value(at:appStateHistory:)`
     /// while some resources are still pending.
     private var lastReturnedValue: TimeInterval?
 
-    /// Initializes a new TTNSMetric instance for a view with a customizable predicate.
+    /// Initializes a new TNSMetric instance for a view with a customizable predicate.
     ///
     /// - Parameters:
     ///   - viewName: The name of the view this metric is tracked for.
     ///   - viewStartDate: The time when the view becomes visible (device time, no NTP offset).
-    ///   - resourcePredicate: A predicate used to classify resources as "initial" for TTNS.
+    ///   - resourcePredicate: A predicate used to classify resources as "initial" for TNS.
     init(
         viewName: String,
         viewStartDate: Date,
@@ -99,7 +99,7 @@ internal final class TTNSMetric: TTNSMetricTracking {
             return // Sanity check to ensure resource is being tracked after view start
         }
 
-        let resourceParams = TTNSResourceParams(
+        let resourceParams = TNSResourceParams(
             url: resourceURL,
             timeSinceViewStart: startDate.timeIntervalSince(viewStartDate),
             viewName: viewName
@@ -145,7 +145,7 @@ internal final class TTNSMetric: TTNSMetricTracking {
         isViewActive = false
     }
 
-    /// Returns the value for the TTNS metric.
+    /// Returns the value for the TNS metric.
     /// - The value is only available after all initial resources have completed loading.
     /// - The value is not updated after view is stopped.
     /// - The value is only tracked if the app was in "active" state during view loading.
@@ -153,7 +153,7 @@ internal final class TTNSMetric: TTNSMetricTracking {
     /// - Parameters:
     ///   - time: The current time (device time, no NTP offset).
     ///   - appStateHistory: The history of app state transitions.
-    /// - Returns: The value for TTNS metric.
+    /// - Returns: The value for TNS metric.
     func value(at time: Date, appStateHistory: AppStateHistory) -> TimeInterval? {
         guard pendingResourcesStartDates.isEmpty else {
             return lastReturnedValue // No new value until all pending resources are completed
