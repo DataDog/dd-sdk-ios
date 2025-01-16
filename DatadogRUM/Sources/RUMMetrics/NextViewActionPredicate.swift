@@ -7,7 +7,7 @@
 import Foundation
 
 /// A struct representing the parameters of a RUM action that may be considered the "last interaction" in the previous view
-/// for the Interaction-To-Next-View (INV) metric.
+/// for the Interaction-to-Next-View (INV) metric.
 public struct INVActionParams {
     /// The type of the action (e.g., tap, swipe, click).
     public let type: RUMActionType
@@ -23,7 +23,7 @@ public struct INVActionParams {
 }
 
 /// A protocol for classifying which action in the previous view should be considered the "last interaction" for the
-/// Interaction-To-Next-View (INV) metric.
+/// Interaction-to-Next-View (INV) metric.
 ///
 /// This predicate is called in reverse chronological order for each action in the previous view until an implementation
 /// returns `true`. The action for which `true` is returned will be classified as the "last interaction," and the INV metric
@@ -44,7 +44,7 @@ public protocol NextViewActionPredicate {
     func isLastAction(from actionParams: INVActionParams) -> Bool
 }
 
-/// A predicate implementation for classifying the "last interaction" for the Interaction-To-Next-View (INV) metric
+/// A predicate implementation for classifying the "last interaction" for the Interaction-to-Next-View (INV) metric
 /// based on a time threshold and action type. This predicate considers tap, click, or swipe actions in the previous view
 /// as valid if the interval between the action and the next view’s start (`timeToNextView`) is within `maxTimeToNextView`.
 ///
