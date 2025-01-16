@@ -7,8 +7,8 @@
 import Foundation
 
 /// A struct representing the parameters of a RUM action that may be considered the "last interaction" in the previous view
-/// for the Interaction-To-Next-View (ITNV) metric.
-public struct ITNVActionParams {
+/// for the Interaction-to-Next-View (INV) metric.
+public struct INVActionParams {
     /// The type of the action (e.g., tap, swipe, click).
     public let type: RUMActionType
 
@@ -23,33 +23,33 @@ public struct ITNVActionParams {
 }
 
 /// A protocol for classifying which action in the previous view should be considered the "last interaction" for the
-/// Interaction-To-Next-View (ITNV) metric.
+/// Interaction-to-Next-View (INV) metric.
 ///
 /// This predicate is called in reverse chronological order for each action in the previous view until an implementation
-/// returns `true`. The action for which `true` is returned will be classified as the "last interaction," and the ITNV metric
+/// returns `true`. The action for which `true` is returned will be classified as the "last interaction," and the INV metric
 /// in the subsequent view will be measured from this action’s time to the new view’s start.
 ///
 /// **Note:**
 /// - The `isLastAction(from:)` method will be called on a secondary thread.
 /// - The implementation must not assume any specific threading behavior and should avoid blocking.
-/// - The method should always return the same result for identical input parameters to ensure consistent ITNV calculation.
+/// - The method should always return the same result for identical input parameters to ensure consistent INV calculation.
 public protocol NextViewActionPredicate {
-    /// Determines whether the provided action should be classified as the "last interaction" in the previous view for ITNV calculation.
+    /// Determines whether the provided action should be classified as the "last interaction" in the previous view for INV calculation.
     ///
     /// This method is invoked in reverse chronological order for all actions in the previous view. Once `true` is returned,
-    /// the iteration stops, and the accepted action defines the starting point for the ITNV metric.
+    /// the iteration stops, and the accepted action defines the starting point for the INV metric.
     ///
     /// - Parameter actionParams: The parameters of the action (type, name, time to next view, and next view name).
-    /// - Returns: `true` if this action is the "last interaction" for ITNV, `false` otherwise.
-    func isLastAction(from actionParams: ITNVActionParams) -> Bool
+    /// - Returns: `true` if this action is the "last interaction" for INV, `false` otherwise.
+    func isLastAction(from actionParams: INVActionParams) -> Bool
 }
 
-/// A predicate implementation for classifying the "last interaction" for the Interaction-To-Next-View (ITNV) metric
+/// A predicate implementation for classifying the "last interaction" for the Interaction-to-Next-View (INV) metric
 /// based on a time threshold and action type. This predicate considers tap, click, or swipe actions in the previous view
 /// as valid if the interval between the action and the next view’s start (`timeToNextView`) is within `maxTimeToNextView`.
 ///
 /// The default value of `maxTimeToNextView` is `3` seconds.
-public struct TimeBasedITNVActionPredicate: NextViewActionPredicate {
+public struct TimeBasedINVActionPredicate: NextViewActionPredicate {
     /// The default maximum time interval for considering an action as the "last interaction."
     public static let defaultMaxTimeToNextView: TimeInterval = 3
 
@@ -60,16 +60,16 @@ public struct TimeBasedITNVActionPredicate: NextViewActionPredicate {
     ///
     /// - Parameter maxTimeToNextView: The maximum time interval (in seconds) from the action to the next view’s start.
     ///                                The default value is `3` seconds.
-    public init(maxTimeToNextView: TimeInterval = TimeBasedITNVActionPredicate.defaultMaxTimeToNextView) {
+    public init(maxTimeToNextView: TimeInterval = TimeBasedINVActionPredicate.defaultMaxTimeToNextView) {
         self.maxTimeToNextView = maxTimeToNextView
     }
 
-    /// Determines if the provided action should be considered the "last interaction" for ITNV, based on its action type and timing.
+    /// Determines if the provided action should be considered the "last interaction" for INV, based on its action type and timing.
     ///
     /// - Parameter actionParams: The parameters of the action (type, name, time to next view, and next view name).
     /// - Returns: `true` if the action’s `timeToNextView` is within `maxTimeToNextView` and its type is `tap`, `click`, or `swipe`;
     ///            otherwise, `false`.
-    public func isLastAction(from actionParams: ITNVActionParams) -> Bool {
+    public func isLastAction(from actionParams: INVActionParams) -> Bool {
         // Action must occur within the allowed time range
         guard actionParams.timeToNextView >= 0, actionParams.timeToNextView <= maxTimeToNextView else {
             return false

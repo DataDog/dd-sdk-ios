@@ -61,7 +61,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     private var activeResourcesCount: Int = 0
 
     /// Interaction-to-Next-View metric for this view.
-    private let interactionToNextViewMetric: ITNVMetricTracking
+    private let interactionToNextViewMetric: INVMetricTracking
 
     /// Callback called when a `RUMActionEvent` is submitted for storage.
     private let onActionEventSent: (RUMActionEvent) -> Void
@@ -76,7 +76,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         serverTimeOffset: TimeInterval,
         isContinuous: Bool,
         instrumentation: InstrumentationType,
-        interactionToNextViewMetric: ITNVMetricTracking,
+        interactionToNextViewMetric: INVMetricTracking,
         onActionEventSent: @escaping (RUMActionEvent) -> Void
     ) {
         self.parent = parent

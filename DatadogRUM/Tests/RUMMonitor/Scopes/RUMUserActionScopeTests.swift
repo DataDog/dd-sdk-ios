@@ -870,13 +870,13 @@ class RUMUserActionScopeTests: XCTestCase {
 
     // MARK: - Updating Interaction To Next View Metric
 
-    func testWhenActionEventIsSent_itTrackActionInITNVMetric() throws {
+    func testWhenActionEventIsSent_itTrackActionInINVMetric() throws {
         let actionStartTime: Date = .mockDecember15th2019At10AMUTC()
         let actionName: String = .mockRandom()
         let actionType: RUMActionType = .tap
 
         // Given
-        let metric = ITNVMetricMock()
+        let metric = INVMetricMock()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
             name: actionName,

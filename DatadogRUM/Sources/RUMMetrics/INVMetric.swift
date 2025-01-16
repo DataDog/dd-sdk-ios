@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal protocol ITNVMetricTracking {
+internal protocol INVMetricTracking {
     /// Tracks an action in a given view.
     ///
     /// An action can start in one view but still be tracked through this method even after the next view begins.
@@ -22,7 +22,7 @@ internal protocol ITNVMetricTracking {
 
     /// Tracks the start of a view.
     ///
-    /// From this point forward, calling `value(for:)` with this `viewID` can return an ITNV value, until the view is completed.
+    /// From this point forward, calling `value(for:)` with this `viewID` can return an INV value, until the view is completed.
     ///
     /// - Parameters:
     ///   - startTime: The time when the view becomes active (device time, no NTP offset).
@@ -37,16 +37,16 @@ internal protocol ITNVMetricTracking {
     /// - Parameter viewID: The unique identifier of the view that has been completed.
     func trackViewComplete(viewID: RUMUUID)
 
-    /// Retrieves the ITNV value for a specified view.
+    /// Retrieves the INV value for a specified view.
     ///
-    /// The ITNV value is available only after the view has started and before it’s marked completed.
+    /// The INV value is available only after the view has started and before it’s marked completed.
     ///
     /// - Parameter viewID: The unique identifier of the view for which the metric is requested.
-    /// - Returns: The ITNV value (time interval) for the specified view, or `nil` if unavailable.
+    /// - Returns: The INV value (time interval) for the specified view, or `nil` if unavailable.
     func value(for viewID: RUMUUID) -> TimeInterval?
 }
 
-internal final class ITNVMetric: ITNVMetricTracking {
+internal final class INVMetric: INVMetricTracking {
     /// Represents a user action.
     private struct Action {
         let type: RUMActionType
@@ -55,11 +55,11 @@ internal final class ITNVMetric: ITNVMetricTracking {
         let duration: TimeInterval
     }
 
-    /// Represents a view in the ITNV workflow.
+    /// Represents a view in the INV workflow.
     private struct View {
         let name: String
         let startTime: Date
-        /// Holds the identifier of the previous view, so we can compute ITNV from the previous view's action to this view's start.
+        /// Holds the identifier of the previous view, so we can compute INV from the previous view's action to this view's start.
         let previousViewID: RUMUUID?
         /// Stores actions tracked during this view.
         var actions: [Action] = []
@@ -71,10 +71,10 @@ internal final class ITNVMetric: ITNVMetricTracking {
     /// The identifier of the currently active view.
     private var currentViewID: RUMUUID?
 
-    /// Predicate for determining which action qualifies as the "last interaction" for the ITNV metric.
+    /// Predicate for determining which action qualifies as the "last interaction" for the INV metric.
     private let predicate: NextViewActionPredicate
 
-    /// Initializes the ITNV metric system with an optional custom predicate.
+    /// Initializes the INV metric system with an optional custom predicate.
     ///
     /// - Parameter predicate: A predicate defining which action is considered the "last interaction" in the previous view.
     init(predicate: NextViewActionPredicate) {
@@ -108,7 +108,7 @@ internal final class ITNVMetric: ITNVMetricTracking {
 
     func trackViewComplete(viewID: RUMUUID) {
         // When this view completes, remove its previous view entry because it’s no longer needed.
-        // We still keep the current view entry, as it may be needed to compute ITNV for the next view.
+        // We still keep the current view entry, as it may be needed to compute INV for the next view.
         guard let view = viewsByID[viewID], let previousViewID = view.previousViewID else {
             return
         }
@@ -121,7 +121,7 @@ internal final class ITNVMetric: ITNVMetricTracking {
         }
 
         guard let previousViewID = view.previousViewID else {
-            return nil // There is no preceding view to compute ITNV from.
+            return nil // There is no preceding view to compute INV from.
         }
 
         guard var previousView = viewsByID[previousViewID] else {
@@ -130,7 +130,7 @@ internal final class ITNVMetric: ITNVMetricTracking {
         defer { viewsByID[previousViewID] = previousView } // Update the stored view after modifications.
 
         // We iterate actions in reverse chronological order, stopping on the first match.
-        // This reflects the ITNV contract that the "last interaction" is determined by
+        // This reflects the INV contract that the "last interaction" is determined by
         // checking the most recent actions first.
         let lastAction = previousView.actions
             .reversed()
@@ -151,8 +151,8 @@ internal final class ITNVMetric: ITNVMetricTracking {
     }
 
     /// Creates the params object for the given action, to be inspected by the `NextViewActionPredicate`.
-    private func actionParams(for action: Action, nextViewStart: Date, nextViewName: String) -> ITNVActionParams {
-        return ITNVActionParams(
+    private func actionParams(for action: Action, nextViewStart: Date, nextViewName: String) -> INVActionParams {
+        return INVActionParams(
             type: action.type,
             name: action.name,
             timeToNextView: timeToNextView(for: action, nextViewStart: nextViewStart),
