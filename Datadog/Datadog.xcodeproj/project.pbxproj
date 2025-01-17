@@ -268,16 +268,16 @@
 		61054FD32A6EE1BA00AAA894 /* MultipartFormDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F902A6EE1BA00AAA894 /* MultipartFormDataTests.swift */; };
 		61054FD42A6EE1BA00AAA894 /* SegmentRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F912A6EE1BA00AAA894 /* SegmentRequestBuilderTests.swift */; };
 		61054FD52A6EE1BA00AAA894 /* XCTAssertRectsEqual.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F932A6EE1BA00AAA894 /* XCTAssertRectsEqual.swift */; };
-		6105C4F62CEBA7A100C4C5EE /* TTNSMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C4F52CEBA7A100C4C5EE /* TTNSMetric.swift */; };
-		6105C4F72CEBA7A100C4C5EE /* TTNSMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C4F52CEBA7A100C4C5EE /* TTNSMetric.swift */; };
-		6105C4FA2CEBD72600C4C5EE /* TTNSMetricTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C4F92CEBD72600C4C5EE /* TTNSMetricTests.swift */; };
-		6105C4FB2CEBD72600C4C5EE /* TTNSMetricTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C4F92CEBD72600C4C5EE /* TTNSMetricTests.swift */; };
+		6105C4F62CEBA7A100C4C5EE /* TNSMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C4F52CEBA7A100C4C5EE /* TNSMetric.swift */; };
+		6105C4F72CEBA7A100C4C5EE /* TNSMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C4F52CEBA7A100C4C5EE /* TNSMetric.swift */; };
+		6105C4FA2CEBD72600C4C5EE /* TNSMetricTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C4F92CEBD72600C4C5EE /* TNSMetricTests.swift */; };
+		6105C4FB2CEBD72600C4C5EE /* TNSMetricTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C4F92CEBD72600C4C5EE /* TNSMetricTests.swift */; };
 		6105C5032CF8D5AB00C4C5EE /* ViewLoadingMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C5022CF8D5AB00C4C5EE /* ViewLoadingMetricsTests.swift */; };
 		6105C5042CF8D5AB00C4C5EE /* ViewLoadingMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C5022CF8D5AB00C4C5EE /* ViewLoadingMetricsTests.swift */; };
-		6105C5092CFA222400C4C5EE /* ITNVMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C5082CFA222400C4C5EE /* ITNVMetric.swift */; };
-		6105C50A2CFA222400C4C5EE /* ITNVMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C5082CFA222400C4C5EE /* ITNVMetric.swift */; };
-		6105C5142D0C584F00C4C5EE /* ITNVMetricTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C5132D0C584F00C4C5EE /* ITNVMetricTests.swift */; };
-		6105C5152D0C584F00C4C5EE /* ITNVMetricTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C5132D0C584F00C4C5EE /* ITNVMetricTests.swift */; };
+		6105C5092CFA222400C4C5EE /* INVMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C5082CFA222400C4C5EE /* INVMetric.swift */; };
+		6105C50A2CFA222400C4C5EE /* INVMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C5082CFA222400C4C5EE /* INVMetric.swift */; };
+		6105C5142D0C584F00C4C5EE /* INVMetricTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C5132D0C584F00C4C5EE /* INVMetricTests.swift */; };
+		6105C5152D0C584F00C4C5EE /* INVMetricTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105C5132D0C584F00C4C5EE /* INVMetricTests.swift */; };
 		610ABD4C2A6930CA00AFEA34 /* CoreTelemetryIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610ABD4B2A6930CA00AFEA34 /* CoreTelemetryIntegrationTests.swift */; };
 		610ABD4D2A6930CA00AFEA34 /* CoreTelemetryIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610ABD4B2A6930CA00AFEA34 /* CoreTelemetryIntegrationTests.swift */; };
 		61112F8E2A4417D6006FFCA6 /* DDRUM+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 61112F8D2A4417D6006FFCA6 /* DDRUM+apiTests.m */; };
@@ -2372,11 +2372,11 @@
 		61054F902A6EE1BA00AAA894 /* MultipartFormDataTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MultipartFormDataTests.swift; sourceTree = "<group>"; };
 		61054F912A6EE1BA00AAA894 /* SegmentRequestBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SegmentRequestBuilderTests.swift; sourceTree = "<group>"; };
 		61054F932A6EE1BA00AAA894 /* XCTAssertRectsEqual.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XCTAssertRectsEqual.swift; sourceTree = "<group>"; };
-		6105C4F52CEBA7A100C4C5EE /* TTNSMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTNSMetric.swift; sourceTree = "<group>"; };
-		6105C4F92CEBD72600C4C5EE /* TTNSMetricTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTNSMetricTests.swift; sourceTree = "<group>"; };
+		6105C4F52CEBA7A100C4C5EE /* TNSMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TNSMetric.swift; sourceTree = "<group>"; };
+		6105C4F92CEBD72600C4C5EE /* TNSMetricTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TNSMetricTests.swift; sourceTree = "<group>"; };
 		6105C5022CF8D5AB00C4C5EE /* ViewLoadingMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewLoadingMetricsTests.swift; sourceTree = "<group>"; };
-		6105C5082CFA222400C4C5EE /* ITNVMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ITNVMetric.swift; sourceTree = "<group>"; };
-		6105C5132D0C584F00C4C5EE /* ITNVMetricTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ITNVMetricTests.swift; sourceTree = "<group>"; };
+		6105C5082CFA222400C4C5EE /* INVMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = INVMetric.swift; sourceTree = "<group>"; };
+		6105C5132D0C584F00C4C5EE /* INVMetricTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = INVMetricTests.swift; sourceTree = "<group>"; };
 		610ABD4B2A6930CA00AFEA34 /* CoreTelemetryIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTelemetryIntegrationTests.swift; sourceTree = "<group>"; };
 		61112F8D2A4417D6006FFCA6 /* DDRUM+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDRUM+apiTests.m"; sourceTree = "<group>"; };
 		6111C58125C0081F00F5C4A2 /* RUMDataModels+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objc.swift"; sourceTree = "<group>"; };
@@ -4187,9 +4187,9 @@
 		6105C4F42CEBA76000C4C5EE /* RUMMetrics */ = {
 			isa = PBXGroup;
 			children = (
-				6105C4F52CEBA7A100C4C5EE /* TTNSMetric.swift */,
+				6105C4F52CEBA7A100C4C5EE /* TNSMetric.swift */,
 				618F2B022D146BB300A647C4 /* NetworkSettledResourcePredicate.swift */,
-				6105C5082CFA222400C4C5EE /* ITNVMetric.swift */,
+				6105C5082CFA222400C4C5EE /* INVMetric.swift */,
 				618F2B052D15922400A647C4 /* NextViewActionPredicate.swift */,
 			);
 			path = RUMMetrics;
@@ -4198,8 +4198,8 @@
 		6105C4F82CEBD70300C4C5EE /* RUMMetrics */ = {
 			isa = PBXGroup;
 			children = (
-				6105C4F92CEBD72600C4C5EE /* TTNSMetricTests.swift */,
-				6105C5132D0C584F00C4C5EE /* ITNVMetricTests.swift */,
+				6105C4F92CEBD72600C4C5EE /* TNSMetricTests.swift */,
+				6105C5132D0C584F00C4C5EE /* INVMetricTests.swift */,
 			);
 			path = RUMMetrics;
 			sourceTree = "<group>";
@@ -9062,7 +9062,7 @@
 				D23F8E7329DDCD28001CFAE8 /* SwiftUIActionModifier.swift in Sources */,
 				D23F8E7429DDCD28001CFAE8 /* RUMCommandSubscriber.swift in Sources */,
 				6194B92B2BB4116A00179430 /* RUMDataStore.swift in Sources */,
-				6105C4F72CEBA7A100C4C5EE /* TTNSMetric.swift in Sources */,
+				6105C4F72CEBA7A100C4C5EE /* TNSMetric.swift in Sources */,
 				6194B9312BB451C100179430 /* NonFatalAppHangsHandler.swift in Sources */,
 				D23F8E7529DDCD28001CFAE8 /* RUMUserActionScope.swift in Sources */,
 				6194B92E2BB43F9C00179430 /* FatalErrorContextNotifier.swift in Sources */,
@@ -9101,7 +9101,7 @@
 				6174D6212C009C6300EC7469 /* SessionEndedMetricController.swift in Sources */,
 				618F2B072D15922400A647C4 /* NextViewActionPredicate.swift in Sources */,
 				D23F8E8D29DDCD28001CFAE8 /* VitalRefreshRateReader.swift in Sources */,
-				6105C50A2CFA222400C4C5EE /* ITNVMetric.swift in Sources */,
+				6105C50A2CFA222400C4C5EE /* INVMetric.swift in Sources */,
 				3CFF4F8C2C09E61A006F191D /* WatchdogTerminationAppState.swift in Sources */,
 				D23F8E8E29DDCD28001CFAE8 /* UIEventCommandFactory.swift in Sources */,
 				D23F8E8F29DDCD28001CFAE8 /* RUMUUIDGenerator.swift in Sources */,
@@ -9147,13 +9147,13 @@
 				D23F8EB329DDCD38001CFAE8 /* ErrorMessageReceiverTests.swift in Sources */,
 				61C713C12A3C9DAD00FA735A /* RequestBuilderTests.swift in Sources */,
 				D23F8EB429DDCD38001CFAE8 /* RUMApplicationScopeTests.swift in Sources */,
-				6105C5152D0C584F00C4C5EE /* ITNVMetricTests.swift in Sources */,
+				6105C5152D0C584F00C4C5EE /* INVMetricTests.swift in Sources */,
 				D23F8EB629DDCD38001CFAE8 /* RUMViewsHandlerTests.swift in Sources */,
 				61C713CB2A3DC22700FA735A /* RUMTests.swift in Sources */,
 				D23F8EB829DDCD38001CFAE8 /* RUMActionsHandlerTests.swift in Sources */,
 				D23F8EB929DDCD38001CFAE8 /* RUMFeatureMocks.swift in Sources */,
 				61C713AE2A3B793E00FA735A /* RUMMonitorProtocolTests.swift in Sources */,
-				6105C4FB2CEBD72600C4C5EE /* TTNSMetricTests.swift in Sources */,
+				6105C4FB2CEBD72600C4C5EE /* TNSMetricTests.swift in Sources */,
 				D23F8EBA29DDCD38001CFAE8 /* ViewIdentifierTests.swift in Sources */,
 				D23F8EBE29DDCD38001CFAE8 /* WebViewEventReceiverTests.swift in Sources */,
 				D23F8EBF29DDCD38001CFAE8 /* URLSessionRUMResourcesHandlerTests.swift in Sources */,
@@ -9408,7 +9408,7 @@
 				D29A9F8729DD85BB005C54A4 /* SwiftUIActionModifier.swift in Sources */,
 				D29A9F5D29DD85BB005C54A4 /* RUMCommandSubscriber.swift in Sources */,
 				6194B92A2BB4116A00179430 /* RUMDataStore.swift in Sources */,
-				6105C4F62CEBA7A100C4C5EE /* TTNSMetric.swift in Sources */,
+				6105C4F62CEBA7A100C4C5EE /* TNSMetric.swift in Sources */,
 				6194B9302BB451C100179430 /* NonFatalAppHangsHandler.swift in Sources */,
 				D29A9F6529DD85BB005C54A4 /* RUMUserActionScope.swift in Sources */,
 				6194B92D2BB43F9C00179430 /* FatalErrorContextNotifier.swift in Sources */,
@@ -9447,7 +9447,7 @@
 				6174D6202C009C6300EC7469 /* SessionEndedMetricController.swift in Sources */,
 				618F2B062D15922400A647C4 /* NextViewActionPredicate.swift in Sources */,
 				D29A9F8929DD85BB005C54A4 /* VitalRefreshRateReader.swift in Sources */,
-				6105C5092CFA222400C4C5EE /* ITNVMetric.swift in Sources */,
+				6105C5092CFA222400C4C5EE /* INVMetric.swift in Sources */,
 				3CFF4F8B2C09E61A006F191D /* WatchdogTerminationAppState.swift in Sources */,
 				D29A9F6929DD85BB005C54A4 /* UIEventCommandFactory.swift in Sources */,
 				D29A9F5229DD85BB005C54A4 /* RUMUUIDGenerator.swift in Sources */,
@@ -9493,13 +9493,13 @@
 				D29A9FBB29DDB483005C54A4 /* ErrorMessageReceiverTests.swift in Sources */,
 				61C713C02A3C9DAD00FA735A /* RequestBuilderTests.swift in Sources */,
 				D29A9F9F29DDB483005C54A4 /* RUMApplicationScopeTests.swift in Sources */,
-				6105C5142D0C584F00C4C5EE /* ITNVMetricTests.swift in Sources */,
+				6105C5142D0C584F00C4C5EE /* INVMetricTests.swift in Sources */,
 				D29A9FAA29DDB483005C54A4 /* RUMViewsHandlerTests.swift in Sources */,
 				61C713CA2A3DC22700FA735A /* RUMTests.swift in Sources */,
 				D29A9FAC29DDB483005C54A4 /* RUMActionsHandlerTests.swift in Sources */,
 				D29A9FC029DDB540005C54A4 /* RUMFeatureMocks.swift in Sources */,
 				61C713AD2A3B793E00FA735A /* RUMMonitorProtocolTests.swift in Sources */,
-				6105C4FA2CEBD72600C4C5EE /* TTNSMetricTests.swift in Sources */,
+				6105C4FA2CEBD72600C4C5EE /* TNSMetricTests.swift in Sources */,
 				D29A9FB729DDB483005C54A4 /* ViewIdentifierTests.swift in Sources */,
 				D29A9FA429DDB483005C54A4 /* WebViewEventReceiverTests.swift in Sources */,
 				D29A9F9A29DDB483005C54A4 /* URLSessionRUMResourcesHandlerTests.swift in Sources */,

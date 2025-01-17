@@ -1332,14 +1332,14 @@ class RUMResourceScopeTests: XCTestCase {
 
     // MARK: - Updating Time To Network Settled Metric
 
-    func testWhenResourceLoadingEnds_itTrackStartAndStopInTTNSMetric() throws {
+    func testWhenResourceLoadingEnds_itTrackStartAndStopInTNSMetric() throws {
         let resourceKey = "resource"
         let resourceDuration: TimeInterval = 2
         let viewStartDate = Date()
         let resourceUUID = RUMUUID(rawValue: UUID())
 
         // Given
-        let metric = TTNSMetricMock()
+        let metric = TNSMetricMock()
         let scope = RUMResourceScope(
             context: .mockAny(),
             dependencies: .mockWith(
@@ -1373,14 +1373,14 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(metric.resourceEndDates[resourceUUID]?.1, resourceDuration)
     }
 
-    func testWhenResourceLoadingEndsWithError_thenItsDurationTrackedInTTNSMetric() throws {
+    func testWhenResourceLoadingEndsWithError_thenItsDurationTrackedInTNSMetric() throws {
         let resourceKey = "resource"
         let resourceDuration: TimeInterval = 2
         let viewStartDate = Date()
         let resourceUUID = RUMUUID(rawValue: UUID())
 
         // Given
-        let metric = TTNSMetricMock()
+        let metric = TNSMetricMock()
         let scope = RUMResourceScope(
             context: .mockAny(),
             dependencies: .mockWith(
@@ -1414,13 +1414,13 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(metric.resourceEndDates[resourceUUID]?.1)
     }
 
-    func testWhenResourceLoadingEndsAndResourceIsDropped_itTrackStoppedInTTNSMetric() throws {
+    func testWhenResourceLoadingEndsAndResourceIsDropped_itTrackStoppedInTNSMetric() throws {
         let resourceKey = "resource"
         let viewStartDate = Date()
         let resourceUUID = RUMUUID(rawValue: UUID())
 
         // Given
-        let metric = TTNSMetricMock()
+        let metric = TNSMetricMock()
         let scope = RUMResourceScope(
             context: .mockAny(),
             dependencies: .mockWith(

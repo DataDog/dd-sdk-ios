@@ -787,11 +787,11 @@ extension RUMScopeDependencies {
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
         sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0),
         watchdogTermination: WatchdogTerminationMonitor? = nil,
-        networkSettledMetricFactory: @escaping (Date, String) -> TTNSMetricTracking = {
-            TTNSMetric(viewName: $1, viewStartDate: $0, resourcePredicate: TimeBasedTTNSResourcePredicate())
+        networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking = {
+            TNSMetric(viewName: $1, viewStartDate: $0, resourcePredicate: TimeBasedTNSResourcePredicate())
         },
-        interactionToNextViewMetricFactory: @escaping () -> ITNVMetricTracking = {
-            ITNVMetric(predicate: TimeBasedITNVActionPredicate())
+        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking = {
+            INVMetric(predicate: TimeBasedINVActionPredicate())
         }
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -835,8 +835,8 @@ extension RUMScopeDependencies {
         fatalErrorContext: FatalErrorContextNotifying? = nil,
         sessionEndedMetric: SessionEndedMetricController? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
-        networkSettledMetricFactory: ((Date, String) -> TTNSMetricTracking)? = nil,
-        interactionToNextViewMetricFactory: (() -> ITNVMetricTracking)? = nil
+        networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
+        interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -945,7 +945,7 @@ extension RUMViewScope {
         customTimings: [String: Int64] = randomTimings(),
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
-        interactionToNextViewMetric: ITNVMetricTracking = ITNVMetric(predicate: TimeBasedITNVActionPredicate())
+        interactionToNextViewMetric: INVMetricTracking = INVMetric(predicate: TimeBasedINVActionPredicate())
     ) -> RUMViewScope {
         return RUMViewScope(
             isInitialView: isInitialView,
@@ -976,7 +976,7 @@ extension RUMResourceScope {
         isFirstPartyResource: Bool? = nil,
         resourceKindBasedOnRequest: RUMResourceType? = nil,
         spanContext: RUMSpanContext? = .mockAny(),
-        networkSettledMetric: TTNSMetricTracking = TTNSMetric(viewName: .mockAny(), viewStartDate: .mockAny(), resourcePredicate: TimeBasedTTNSResourcePredicate()),
+        networkSettledMetric: TNSMetricTracking = TNSMetric(viewName: .mockAny(), viewStartDate: .mockAny(), resourcePredicate: TimeBasedTNSResourcePredicate()),
         onResourceEvent: @escaping (Bool) -> Void = { _ in },
         onErrorEvent: @escaping (Bool) -> Void = { _ in }
     ) -> RUMResourceScope {
@@ -1009,7 +1009,7 @@ extension RUMUserActionScope {
         serverTimeOffset: TimeInterval = .zero,
         isContinuous: Bool = .mockAny(),
         instrumentation: InstrumentationType = .manual,
-        interactionToNextViewMetric: ITNVMetricTracking = ITNVMetric(predicate: TimeBasedITNVActionPredicate()),
+        interactionToNextViewMetric: INVMetricTracking = INVMetric(predicate: TimeBasedINVActionPredicate()),
         onActionEventSent: @escaping (RUMActionEvent) -> Void = { _ in }
     ) -> RUMUserActionScope {
         return RUMUserActionScope(
