@@ -1235,9 +1235,9 @@ internal class TNSMetricMock: TNSMetricTracking {
     /// Tracks if `trackViewWasStopped()` was called.
     var viewWasStopped = false
     /// Mocked value returned by this metric.
-    var value: TimeInterval?
+    var value: Result<TimeInterval, TNSNoValueReason>
 
-    init(value: TimeInterval? = nil) {
+    init(value: Result<TimeInterval, TNSNoValueReason> = .failure(.unknown)) {
         self.value = value
     }
 
@@ -1257,7 +1257,7 @@ internal class TNSMetricMock: TNSMetricTracking {
         viewWasStopped = true
     }
 
-    func value(at time: Date, appStateHistory: AppStateHistory) -> TimeInterval? {
+    func value(with appStateHistory: AppStateHistory) -> Result<TimeInterval, TNSNoValueReason> {
         return value
     }
 }

@@ -516,7 +516,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let memoryInfo = vitalInfoSampler?.memory
         let refreshRateInfo = vitalInfoSampler?.refreshRate
         let isSlowRendered = refreshRateInfo?.meanValue.map { $0 < Constants.slowRenderingThresholdFPS }
-        let networkSettledTime = networkSettledMetric.value(at: command.time, appStateHistory: context.applicationStateHistory)
+        let networkSettledTime = networkSettledMetric.value(with: context.applicationStateHistory)
         let interactionToNextViewTime = interactionToNextViewMetric.value(for: viewUUID)
 
         let viewEvent = RUMViewEvent(
@@ -606,7 +606,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 memoryAverage: memoryInfo?.meanValue,
                 memoryMax: memoryInfo?.maxValue,
                 name: viewName,
-                networkSettledTime: networkSettledTime?.toInt64Nanoseconds,
+                networkSettledTime: networkSettledTime.value?.toInt64Nanoseconds,
                 referrer: nil,
                 refreshRateAverage: refreshRateInfo?.meanValue,
                 refreshRateMin: refreshRateInfo?.minValue,
@@ -858,4 +858,13 @@ private extension VitalInfo {
 
 /// A protocol for `RUMCommand`s that can propagate their attributes to the `RUMViewScope``.
 internal protocol RUMViewScopePropagatableAttributes where Self: RUMCommand {
+}
+
+private extension Result {
+    var value: Success? {
+        switch self {
+        case .success(let success): return success
+        case .failure: return nil
+        }
+    }
 }

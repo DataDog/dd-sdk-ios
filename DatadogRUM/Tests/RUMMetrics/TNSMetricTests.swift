@@ -14,6 +14,7 @@ private extension RUMUUID {
     static let resource2 = RUMUUID(rawValue: UUID())
     static let resource3 = RUMUUID(rawValue: UUID())
     static let resource4 = RUMUUID(rawValue: UUID())
+    static let resource5 = RUMUUID(rawValue: UUID())
 }
 
 private struct ResourcePredicateMock: NetworkSettledResourcePredicate {
@@ -47,7 +48,7 @@ class TNSMetricTests: XCTestCase {
     func testGivenTimeBasedResourcePredicate_whenResourceStartsWithinThreshold_thenItIsTracked() throws {
         let threshold = TimeBasedTNSResourcePredicate.defaultThreshold
 
-        func when(resourceStartOffset offset: TimeInterval) -> TimeInterval? {
+        func when(resourceStartOffset offset: TimeInterval) -> Result<TimeInterval, TNSNoValueReason> {
             // Given
             let predicate = TimeBasedTNSResourcePredicate(threshold: threshold)
             let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: predicate)
@@ -59,18 +60,18 @@ class TNSMetricTests: XCTestCase {
             metric.trackResourceEnd(at: now, resourceID: .resource1, resourceDuration: nil)
 
             // Then
-            return metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: viewStartDate))
+            return metric.value(with: .mockAppInForeground(since: viewStartDate))
         }
 
         // When resource starts within threshold (initial resource), it should be tracked:
-        XCTAssertNotNil(when(resourceStartOffset: 0), "Resource starting at `view start` should be tracked as an initial resource.")
-        XCTAssertNotNil(when(resourceStartOffset: threshold * 0.5), "Resource starting at `view start + \(threshold * 0.5)s` should be tracked as an initial resource.")
-        XCTAssertNotNil(when(resourceStartOffset: threshold * 0.999), "Resource starting at `view start + \(threshold * 0.999)s` should be tracked as an initial resource.")
+        XCTAssertTrue(when(resourceStartOffset: 0).isSuccess, "Resource starting at `view start` should be tracked as an initial resource.")
+        XCTAssertTrue(when(resourceStartOffset: threshold * 0.5).isSuccess, "Resource starting at `view start + \(threshold * 0.5)s` should be tracked as an initial resource.")
+        XCTAssertTrue(when(resourceStartOffset: threshold * 0.999).isSuccess, "Resource starting at `view start + \(threshold * 0.999)s` should be tracked as an initial resource.")
 
         // When resource starts outside threshold (other resource), it should not be tracked:
-        XCTAssertNil(when(resourceStartOffset: threshold), "Resource starting at `view start + \(threshold)s` should not be tracked as an initial resource.")
-        XCTAssertNil(when(resourceStartOffset: -threshold), "Resource starting at `view start + \(-threshold)s` should not be tracked as an initial resource.")
-        XCTAssertNil(when(resourceStartOffset: threshold * 10), "Resource starting at `view start + \(threshold * 10)s` should not be tracked as an initial resource.")
+        XCTAssertEqual(when(resourceStartOffset: threshold), .failure(.noInitialResources))
+        XCTAssertEqual(when(resourceStartOffset: -threshold), .failure(.noInitialResources))
+        XCTAssertEqual(when(resourceStartOffset: threshold * 10), .failure(.noInitialResources))
     }
 
     // MARK: - Metric Value vs Resource Completion
@@ -85,7 +86,7 @@ class TNSMetricTests: XCTestCase {
         metric.trackResourceEnd(at: resourceEndDate, resourceID: .resource1, resourceDuration: nil)
 
         // Then
-        let ttns = try XCTUnwrap(metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: viewStartDate)))
+        let ttns = try metric.value(with: .mockAppInForeground(since: viewStartDate)).get()
         XCTAssertEqual(ttns, resourceEndDate.timeIntervalSince(viewStartDate), accuracy: 0.01, "Metric value should be calculated from resource end time.")
     }
 
@@ -100,7 +101,7 @@ class TNSMetricTests: XCTestCase {
         metric.trackResourceEnd(at: resourceEndDate, resourceID: .resource1, resourceDuration: resourceDuration)
 
         // Then
-        let ttns = try XCTUnwrap(metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: viewStartDate)))
+        let ttns = try metric.value(with: .mockAppInForeground(since: viewStartDate)).get()
         XCTAssertEqual(ttns, resourceDuration, accuracy: 0.01, "Metric value should be calculated from resource duration.")
     }
 
@@ -117,37 +118,37 @@ class TNSMetricTests: XCTestCase {
         metric.trackResourceStart(at: t0, resourceID: .resource2, resourceURL: initialResourceURL)
         metric.trackResourceStart(at: t0, resourceID: .resource3, resourceURL: initialResourceURL)
         metric.trackResourceStart(at: t1, resourceID: .resource4, resourceURL: .mockRandom())
-        XCTAssertNil(
-            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: t0)),
-            "Metric value should be nil while initial resources are pending."
-        )
+        XCTAssertEqual(metric.value(with: .mockAppInForeground(since: t0)), .failure(.initialResourcesIncomplete))
 
         // When (complete first initial resource) / Then (metric has no value)
         metric.trackResourceEnd(at: t0 + 1, resourceID: .resource1, resourceDuration: nil)
-        XCTAssertNil(
-            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: t0)),
-            "Metric value should be nil while initial resources are pending."
-        )
+        XCTAssertEqual(metric.value(with: .mockAppInForeground(since: t0)), .failure(.initialResourcesIncomplete))
 
         // When (complete next initial resource) / Then (metric has no value)
         metric.trackResourceEnd(at: t0 + 1, resourceID: .resource2, resourceDuration: nil)
-        XCTAssertNil(
-            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: t0)),
-            "Metric value should be nil while initial resources are pending."
-        )
+        XCTAssertEqual(metric.value(with: .mockAppInForeground(since: t0)), .failure(.initialResourcesIncomplete))
 
         // When (complete last initial resource) / Then (metric has value)
         metric.trackResourceEnd(at: t0 + 1, resourceID: .resource3, resourceDuration: nil)
-        XCTAssertNotNil(
-            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: t0)),
-            "Metric value should be set after all initial resources are completed."
+        XCTAssertTrue(
+            metric.value(with: .mockAppInForeground(since: t0)).isSuccess,
+            "Metric value should be available after all initial resources are completed."
         )
 
         // When (complete other resource) / Then (metric not changed)
         metric.trackResourceEnd(at: t1 + 1, resourceID: .resource4, resourceDuration: nil)
         XCTAssertEqual(
-            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: t0)),
-            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: t0)),
+            metric.value(with: .mockAppInForeground(since: t0)),
+            metric.value(with: .mockAppInForeground(since: t0)),
+            "Metric value should not change after other resources complete."
+        )
+
+        // When (start and complete another resource) / Then (metric not changed)
+        metric.trackResourceStart(at: t1 + 2, resourceID: .resource5, resourceURL: .mockRandom())
+        metric.trackResourceEnd(at: t1 + 2.5, resourceID: .resource5, resourceDuration: nil)
+        XCTAssertEqual(
+            metric.value(with: .mockAppInForeground(since: t0)),
+            metric.value(with: .mockAppInForeground(since: t0)),
             "Metric value should not change after other resources complete."
         )
     }
@@ -169,7 +170,7 @@ class TNSMetricTests: XCTestCase {
         metric.trackResourceEnd(at: t0 + durations[2], resourceID: .resource3, resourceDuration: nil)
 
         // Then
-        let ttns = try XCTUnwrap(metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: t0)))
+        let ttns = try metric.value(with: .mockAppInForeground(since: t0)).get()
         XCTAssertEqual(ttns, durations.max()!, accuracy: 0.01, "Metric value should reflect the completion of the last initial resource.")
     }
 
@@ -184,27 +185,31 @@ class TNSMetricTests: XCTestCase {
         // When (complete first initial resource)
         metric.trackResourceStart(at: t0, resourceID: .resource1, resourceURL: .mockAny())
         metric.trackResourceEnd(at: t0 + duration, resourceID: .resource1, resourceDuration: duration)
-        let ttns1 = try XCTUnwrap(metric.value(at: t0 + duration, appStateHistory: .mockAppInForeground(since: t0)))
+        let ttns1A = try metric.value(with: .mockAppInForeground(since: t0)).get()
 
         // When (complete next initial resource)
         metric.trackResourceStart(at: t1, resourceID: .resource2, resourceURL: .mockAny())
+        let ttns1B = try metric.value(with: .mockAppInForeground(since: t0)).get() // caught error: "initialResourcesIncomplete"
         metric.trackResourceEnd(at: t1 + duration, resourceID: .resource2, resourceDuration: duration)
-        let ttns2 = try XCTUnwrap(metric.value(at: t1 + duration, appStateHistory: .mockAppInForeground(since: t0)))
+        let ttns2A = try metric.value(with: .mockAppInForeground(since: t0)).get()
 
         // When (complete next initial resource)
         metric.trackResourceStart(at: t2, resourceID: .resource3, resourceURL: .mockAny())
+        let ttns2B = try metric.value(with: .mockAppInForeground(since: t0)).get()
         metric.trackResourceEnd(at: t2 + duration, resourceID: .resource3, resourceDuration: duration)
-        let ttns3 = try XCTUnwrap(metric.value(at: t2 + duration, appStateHistory: .mockAppInForeground(since: t0)))
+        let ttns3 = try metric.value(with: .mockAppInForeground(since: t0)).get()
 
         // Then
-        XCTAssertEqual(ttns1, t100ms * 0.25, accuracy: 0.01)
-        XCTAssertEqual(ttns2, t100ms * 0.58, accuracy: 0.01)
+        XCTAssertEqual(ttns1A, t100ms * 0.25, accuracy: 0.01)
+        XCTAssertEqual(ttns1B, ttns1A, accuracy: 0.01)
+        XCTAssertEqual(ttns2A, t100ms * 0.58, accuracy: 0.01)
+        XCTAssertEqual(ttns2B, ttns2A, accuracy: 0.01)
         XCTAssertEqual(ttns3, t100ms * 0.91, accuracy: 0.01)
     }
 
     // MARK: - Metric Value vs Resource Dropped
 
-    func testWhenAllResourcesAreDropped_thenMetricValueIsNotAvailable() throws {
+    func testWhenAllResourcesAreDropped_thenMetricValueIsNotAvailable() {
         // Given
         let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: mockAllInitialResourcesPredicate)
         metric.trackResourceStart(at: viewStartDate, resourceID: .resource1, resourceURL: .mockAny())
@@ -217,10 +222,7 @@ class TNSMetricTests: XCTestCase {
         metric.trackResourceDropped(resourceID: .resource3)
 
         // Then
-        XCTAssertNil(
-            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: viewStartDate)),
-            "Metric value should not be available if all resources are dropped."
-        )
+        XCTAssertEqual(metric.value(with: .mockAppInForeground(since: viewStartDate)), .failure(.initialResourcesDropped))
     }
 
     func testWhenSomeResourcesAreDropped_thenMetricValueReflectsCompletedResources() throws {
@@ -236,7 +238,7 @@ class TNSMetricTests: XCTestCase {
         metric.trackResourceDropped(resourceID: .resource3)
 
         // Then
-        let ttns = try XCTUnwrap(metric.value(at: viewStartDate + 10, appStateHistory: .mockAppInForeground(since: viewStartDate)))
+        let ttns = try metric.value(with: .mockAppInForeground(since: viewStartDate)).get()
         XCTAssertEqual(ttns, 1.42, accuracy: 0.01, "Metric value should reflect completed resources.")
     }
 
@@ -248,14 +250,16 @@ class TNSMetricTests: XCTestCase {
 
         // When
         metric.trackViewWasStopped()
+
+        // Then
+        XCTAssertEqual(metric.value(with: .mockAppInForeground(since: viewStartDate)), .failure(.noTrackedResources))
+
+        // When
         metric.trackResourceStart(at: viewStartDate, resourceID: .resource1, resourceURL: .mockAny())
         metric.trackResourceEnd(at: viewStartDate + 1, resourceID: .resource1, resourceDuration: nil)
 
         // Then
-        XCTAssertNil(
-            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: viewStartDate)),
-            "Metric value should not be available when view is stopped."
-        )
+        XCTAssertEqual(metric.value(with: .mockAppInForeground(since: viewStartDate)), .failure(.noTrackedResources))
     }
 
     func testWhenViewIsStoppedBeforeResourceCompletes_thenMetricValueIsNotAvailable() {
@@ -268,13 +272,10 @@ class TNSMetricTests: XCTestCase {
         metric.trackResourceEnd(at: viewStartDate + 1, resourceID: .resource1, resourceDuration: nil)
 
         // Then
-        XCTAssertNil(
-            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: viewStartDate)),
-            "Metric value should not be available if view is stopped before resource completes."
-        )
+        XCTAssertEqual(metric.value(with: .mockAppInForeground(since: viewStartDate)), .failure(.viewStoppedBeforeSettled))
     }
 
-    func testWhenViewIsStoppedAfterResourceCompletes_thenMetricValueIsAvailable() {
+    func testWhenViewIsStoppedAfterResourceCompletes_thenMetricValueIsAvailable() throws {
         // Given
         let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: mockAllInitialResourcesPredicate)
         metric.trackResourceStart(at: viewStartDate, resourceID: .resource1, resourceURL: .mockAny())
@@ -284,15 +285,13 @@ class TNSMetricTests: XCTestCase {
         metric.trackViewWasStopped()
 
         // Then
-        XCTAssertNotNil(
-            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: viewStartDate)),
-            "Metric value should be available if view is stopped after resource completes."
-        )
+        let ttns = try metric.value(with: .mockAppInForeground(since: viewStartDate)).get()
+        XCTAssertEqual(ttns, 1, accuracy: 0.01, "Metric value should be available if view is stopped after resource completes.")
     }
 
     // MARK: - "App State" Condition
 
-    func testWhenAppStaysActiveDuringViewLoading_thenMetricValueIsAvailable() {
+    func testWhenAppStaysActiveDuringViewLoading_thenMetricValueIsAvailable() throws {
         // Given
         let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: mockAllInitialResourcesPredicate)
         let resourceStart = viewStartDate
@@ -308,10 +307,8 @@ class TNSMetricTests: XCTestCase {
         )
 
         // Then
-        XCTAssertNotNil(
-            metric.value(at: resourceEnd + 1, appStateHistory: appStateHistory),
-            "Metric value should be available if app remains active during view loading."
-        )
+        let ttns = try metric.value(with: appStateHistory).get()
+        XCTAssertEqual(ttns, 5, accuracy: 0.01, "Metric value should be available if app remains active during view loading.")
     }
 
     func testWhenAppDoesNotStayActiveDuringViewLoading_thenMetricValueIsNotAvailable() {
@@ -334,50 +331,35 @@ class TNSMetricTests: XCTestCase {
         )
 
         // Then
-        XCTAssertNil(
-            metric.value(at: resourceEnd + 1, appStateHistory: appStateHistory),
-            "Metric value should not be available if app is not active during view loading."
-        )
+        XCTAssertEqual(metric.value(with: appStateHistory), .failure(.appNotInForeground))
     }
 
     // MARK: - Edge Cases
 
     func testWhenNoResourcesAreTracked() {
         let metric = createMetric(viewStartDate: Date(), resourcePredicate: mockAllInitialResourcesPredicate)
-        XCTAssertNil(
-            metric.value(at: .mockAny(), appStateHistory: .mockRandom()),
-            "Metric value should be nil if no resources are tracked."
-        )
+        XCTAssertEqual(metric.value(with: .mockRandom()), .failure(.noTrackedResources))
     }
 
     func testWhenResourceEndsBeforeViewStarts() {
         let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: mockAllInitialResourcesPredicate)
         metric.trackResourceStart(at: viewStartDate - 2, resourceID: .resource1, resourceURL: .mockAny())
         metric.trackResourceEnd(at: viewStartDate - 1, resourceID: .resource1, resourceDuration: nil)
-        XCTAssertNil(
-            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: .distantPast)),
-            "Metric value should be nil if resource ends before view starts."
-        )
+        XCTAssertEqual(metric.value(with: .mockAppInForeground(since: .distantPast)), .failure(.noInitialResources))
     }
 
     func testWhenResourceEndsThenStarts() {
         let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: mockAllInitialResourcesPredicate)
         metric.trackResourceEnd(at: viewStartDate + 1, resourceID: .resource1, resourceDuration: nil)
         metric.trackResourceStart(at: viewStartDate, resourceID: .resource1, resourceURL: .mockAny())
-        XCTAssertNil(
-            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: .distantPast)),
-            "Metric value should be nil if resource ends before it starts."
-        )
+        XCTAssertEqual(metric.value(with: .mockAppInForeground(since: .distantPast)), .failure(.initialResourcesIncomplete))
     }
 
     func testWhenResourceEndsEarlierThanItStarts() {
         let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: mockAllInitialResourcesPredicate)
         metric.trackResourceStart(at: viewStartDate + 1, resourceID: .resource1, resourceURL: .mockAny())
         metric.trackResourceEnd(at: viewStartDate + 0.5, resourceID: .resource1, resourceDuration: nil)
-        XCTAssertNil(
-            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: .distantPast)),
-            "Metric value should be nil if resource ends earlier than it starts."
-        )
+        XCTAssertEqual(metric.value(with: .mockAppInForeground(since: .distantPast)), .failure(.initialResourcesInvalid))
     }
 
     func testWhenResourceEndsImmediately() throws {
@@ -386,7 +368,7 @@ class TNSMetricTests: XCTestCase {
         metric.trackResourceStart(at: t0, resourceID: .resource1, resourceURL: .mockAny())
         metric.trackResourceEnd(at: t0, resourceID: .resource1, resourceDuration: nil)
 
-        let ttns = try XCTUnwrap(metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: .distantPast)))
+        let ttns = try metric.value(with: .mockAppInForeground(since: .distantPast)).get()
         XCTAssertEqual(ttns, t100ms * 0.5, accuracy: 0.01, "Metric value should be equal to resource start offset.")
     }
 
@@ -394,11 +376,19 @@ class TNSMetricTests: XCTestCase {
         let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: mockAllInitialResourcesPredicate)
         metric.trackResourceStart(at: viewStartDate, resourceID: .resource1, resourceURL: .mockAny())
         metric.trackResourceEnd(at: viewStartDate + 1, resourceID: .resource1, resourceDuration: -10)
+        XCTAssertEqual(metric.value(with: .mockAppInForeground(since: .distantPast)), .failure(.initialResourcesInvalid))
+    }
 
-        XCTAssertNil(
-            metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: .distantPast)),
-            "Metric should ignore resources with negtative durations."
-        )
+    func testWhenSomeResourceEndsWithNegativeDuration() throws {
+        let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: mockAllInitialResourcesPredicate)
+        metric.trackResourceStart(at: viewStartDate, resourceID: .resource1, resourceURL: .mockAny())
+        metric.trackResourceEnd(at: viewStartDate + 1, resourceID: .resource1, resourceDuration: nil)
+
+        metric.trackResourceStart(at: viewStartDate + 1, resourceID: .resource2, resourceURL: .mockAny())
+        metric.trackResourceEnd(at: viewStartDate + 2, resourceID: .resource2, resourceDuration: -10)
+
+        let ttns = try metric.value(with: .mockAppInForeground(since: .distantPast)).get()
+        XCTAssertEqual(ttns, 1, accuracy: 0.01)
     }
 
     func testWhenResourceEndsImmediatelyWithDuration() throws {
@@ -408,7 +398,27 @@ class TNSMetricTests: XCTestCase {
         metric.trackResourceStart(at: t0, resourceID: .resource1, resourceURL: .mockAny())
         metric.trackResourceEnd(at: t0, resourceID: .resource1, resourceDuration: duration)
 
-        let ttns = try XCTUnwrap(metric.value(at: .distantFuture, appStateHistory: .mockAppInForeground(since: .distantPast)))
+        let ttns = try metric.value(with: .mockAppInForeground(since: .distantPast)).get()
         XCTAssertEqual(ttns, duration + t100ms * 0.5, accuracy: 0.01, "Metric value should be equal to resource duration plus resource start offset.")
+    }
+
+    func testWhenResourceIsDropped() throws {
+        let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: mockAllInitialResourcesPredicate)
+        metric.trackResourceStart(at: viewStartDate, resourceID: .resource1, resourceURL: .mockAny())
+        metric.trackResourceDropped(resourceID: .resource1)
+
+        XCTAssertEqual(metric.value(with: .mockAppInForeground(since: .distantPast)), .failure(.initialResourcesDropped))
+    }
+
+    func testWhenSomeResourcesAreDropped() throws {
+        let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: mockAllInitialResourcesPredicate)
+        metric.trackResourceStart(at: viewStartDate, resourceID: .resource1, resourceURL: .mockAny())
+        metric.trackResourceEnd(at: viewStartDate + 1, resourceID: .resource1, resourceDuration: nil)
+
+        metric.trackResourceStart(at: viewStartDate, resourceID: .resource2, resourceURL: .mockAny())
+        metric.trackResourceDropped(resourceID: .resource2)
+
+        let ttns = try metric.value(with: .mockAppInForeground(since: .distantPast)).get()
+        XCTAssertEqual(ttns, 1, accuracy: 0.01)
     }
 }

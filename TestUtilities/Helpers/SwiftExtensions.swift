@@ -193,3 +193,21 @@ extension Dictionary where Key == Int, Value == String {
         lhs.merging(rhs) { _, new in new }
     }
 }
+
+public extension Result {
+    /// Indicates whether the result is a success.
+    var isSuccess: Bool {
+        if case .success = self {
+            return true
+        }
+        return false
+    }
+
+    /// Indicates whether the result is a failure.
+    var isFailure: Bool {
+        if case .failure = self {
+            return true
+        }
+        return false
+    }
+}
