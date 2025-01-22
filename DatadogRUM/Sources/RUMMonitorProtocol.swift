@@ -38,7 +38,7 @@ public enum RUMErrorSource {
 public protocol RUMMonitorProtocol: AnyObject {
     // MARK: - attributes
 
-    /// Adds a custom attribute to next RUM events.
+    /// Adds a custom attribute to the next RUM events.
     /// - Parameters:
     ///   - key: key for this attribute. See `AttributeKey` documentation for information about
     ///   nesting attribute values using dot `.` syntax.
@@ -46,10 +46,19 @@ public protocol RUMMonitorProtocol: AnyObject {
     ///   for information about nested encoding containers limitation.
     func addAttribute(forKey key: AttributeKey, value: AttributeValue)
 
-    /// Removes an attribute from next RUM events.
+    /// Adds multiple attributes to the next RUM events.
+    /// - Parameter attributes: dictionary with attributes. Each attribute is defined by a key `AttributeKey` and a value that conforms to `Encodable`.
+    func addAttributes(_ attributes: [AttributeKey: AttributeValue])
+
+    /// Removes an attribute from the next RUM events.
     /// Events created prior to this call will not lose this attribute.
     /// - Parameter key: key for the attribute that will be removed.
     func removeAttribute(forKey key: AttributeKey)
+
+    /// Removes multiple attributes from the next RUM events.
+    /// Events created prior to this call will not lose these attributes.
+    /// - Parameter keys: array of attribute keys that will be removed.
+    func removeAttributes(forKeys keys: [AttributeKey])
 
     // MARK: - session
 
@@ -347,7 +356,9 @@ internal class NOPMonitor: RUMMonitorProtocol {
 
     func currentSessionID(completion: (String?) -> Void) { completion(nil) }
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) { warn() }
+    func addAttributes(_ attributes: [AttributeKey: AttributeValue]) { warn() }
     func removeAttribute(forKey key: AttributeKey) { warn() }
+    func removeAttributes(forKeys keys: [AttributeKey]) {warn() }
     func stopSession() { warn() }
     func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) { warn() }

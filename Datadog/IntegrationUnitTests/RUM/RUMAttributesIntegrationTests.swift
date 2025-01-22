@@ -25,6 +25,37 @@ final class RUMAttributesIntegrationTests: XCTestCase {
         super.tearDown()
     }
 
+    func testWhenViewStops_theViewEvents_haveTheCorrectGlobalAttributes() throws {
+        // Given
+        let initialAttributes: [AttributeKey: AttributeValue] = ["key1": "value1", "key2": "value2", "key3": "value3"]
+        let firstViewName = "FirstView"
+        let secondViewName = "SecondView"
+        RUM.enable(with: rumConfig, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+
+        // When
+        monitor.addAttributes(initialAttributes)
+        monitor.startView(key: "key", name: firstViewName)
+        monitor.removeAttributes(forKeys: Array(initialAttributes.keys))
+        monitor.startView(key: "key", name: secondViewName)
+
+        // Then
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+
+        let firstView = try XCTUnwrap(session.views.first(where: { $0.name == firstViewName }))
+        firstView.viewEvents.forEach { viewEvent in
+            XCTAssertEqual(viewEvent.numberOfAttributes, 3)
+        }
+
+        let secondView = try XCTUnwrap(session.views.first(where: { $0.name == secondViewName }))
+        secondView.viewEvents.forEach { viewEvent in
+            XCTAssertEqual(viewEvent.numberOfAttributes, 0)
+        }
+    }
+
     func testWhenViewStops_theViewAttributesAreNotUpdated_withGlobalAttributes() throws {
         // Given
         let initialAttributes: [AttributeKey: AttributeValue] = ["key1": "value1", "key2": "value2"]

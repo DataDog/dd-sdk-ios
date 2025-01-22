@@ -1814,7 +1814,9 @@ public enum RUMErrorSource
     case custom
 public protocol RUMMonitorProtocol: AnyObject
     func addAttribute(forKey key: AttributeKey, value: AttributeValue)
+    func addAttributes(_ attributes: [AttributeKey: AttributeValue])
     func removeAttribute(forKey key: AttributeKey)
+    func removeAttributes(forKeys keys: [AttributeKey])
     func currentSessionID(completion: @escaping (String?) -> Void)
     func stopSession()
     func startView(viewController: UIViewController,name: String?,attributes: [AttributeKey: AttributeValue])

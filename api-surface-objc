@@ -376,7 +376,9 @@ public class DDRUMMonitor: NSObject
     public func stopAction(type: DDRUMActionType,name: String?,attributes: [String: Any])
     public func addAction(type: DDRUMActionType,name: String,attributes: [String: Any])
     public func addAttribute(forKey key: String,value: Any)
+    public func addAttributes(_ attributes: [String: Any])
     public func removeAttribute(forKey key: String)
+    public func removeAttributes(forKeys keys: [String])
     public func addFeatureFlagEvaluation(name: String, value: Any)
     @objc public var debug: Bool
 public class DDRUMActionEvent: NSObject
