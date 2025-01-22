@@ -42,8 +42,25 @@ internal protocol INVMetricTracking {
     /// The INV value is available only after the view has started and before it’s marked completed.
     ///
     /// - Parameter viewID: The unique identifier of the view for which the metric is requested.
-    /// - Returns: The INV value (time interval) for the specified view, or `nil` if unavailable.
-    func value(for viewID: RUMUUID) -> TimeInterval?
+    /// - Returns: The INV metric value (`TimeInterval`) if successfully calculated, or a `INVNoValueReason` indicating why the value is unavailable.
+    func value(for viewID: RUMUUID) -> Result<TimeInterval, INVNoValueReason>
+}
+
+/// Possible reasons for a missing INV value.
+/// This list is standardized according to the "RUM View Ended" metric specification.
+internal enum INVNoValueReason: String, Error {
+    /// No actions were tracked in the previous view.
+    case noTrackedActions = "no_action"
+    /// No valid "last interaction" was found in the previous view according to the configured strategy.
+    case noLastInteraction = "no_eligible_action"
+    /// There is no preceding view to compute the INV metric from.
+    case noPrecedingView = "no_previous_view"
+    /// The view is unknown (it was never started or no longer exists).
+    case viewUnknown = "unknown_view"
+    /// The previous view data was removed because the current view has already completed.
+    case previousViewRemoved = "previous_view_removed"
+    /// Actions were tracked in the previous view, but all were invalid (e.g., started before the view started).
+    case invalidTrackedActions = "invalid_actions"
 }
 
 internal final class INVMetric: INVMetricTracking {
@@ -61,8 +78,13 @@ internal final class INVMetric: INVMetricTracking {
         let startTime: Date
         /// Holds the identifier of the previous view, so we can compute INV from the previous view's action to this view's start.
         let previousViewID: RUMUUID?
-        /// Stores actions tracked during this view.
+        /// Stores actions tracked in this view that have not yet been queried by `NextViewActionPredicate`.
+        /// Actions are removed from this array after they are queried.
         var actions: [Action] = []
+        /// Counts all valid actions tracked in this view. This counter only increases and is not affected by changes to the `actions` array.
+        var validActionsCount: Int = 0
+        /// Counts all invalid actions (e.g., actions that occurred before the view started).
+        var invalidActionsCount: Int = 0
     }
 
     /// Holds all tracked views by their unique identifiers.
@@ -88,6 +110,7 @@ internal final class INVMetric: INVMetricTracking {
         defer { viewsByID[viewID] = view } // Update the stored view after modifications.
 
         guard startTime >= view.startTime else {
+            view.invalidActionsCount += 1
             return // Ignore actions that occurred before the view started.
         }
 
@@ -98,6 +121,7 @@ internal final class INVMetric: INVMetricTracking {
             duration: endTime.timeIntervalSince(startTime)
         )
         view.actions.append(action)
+        view.validActionsCount += 1
     }
 
     func trackViewStart(at startTime: Date, name: String, viewID: RUMUUID) {
@@ -115,19 +139,23 @@ internal final class INVMetric: INVMetricTracking {
         viewsByID[previousViewID] = nil
     }
 
-    func value(for viewID: RUMUUID) -> TimeInterval? {
+    func value(for viewID: RUMUUID) -> Result<TimeInterval, INVNoValueReason> {
         guard let view = viewsByID[viewID] else {
-            return nil // The view was never started or no longer exists.
+            return .failure(.viewUnknown)
         }
 
         guard let previousViewID = view.previousViewID else {
-            return nil // There is no preceding view to compute INV from.
+            return .failure(.noPrecedingView)
         }
 
         guard var previousView = viewsByID[previousViewID] else {
-            return nil // The previous view has been removed.
+            return .failure(.previousViewRemoved)
         }
         defer { viewsByID[previousViewID] = previousView } // Update the stored view after modifications.
+
+        guard previousView.validActionsCount > 0 else {
+            return .failure(previousView.invalidActionsCount == 0 ? .noTrackedActions : .invalidTrackedActions)
+        }
 
         // We iterate actions in reverse chronological order, stopping on the first match.
         // This reflects the INV contract that the "last interaction" is determined by
@@ -141,13 +169,14 @@ internal final class INVMetric: INVMetricTracking {
 
         guard let lastAction = lastAction else {
             previousView.actions = [] // No "last interaction"; remove all actions so we don't ask again
-            return nil
+            return .failure(.noLastInteraction)
         }
 
         // Keep only the action classified as "last interaction." Future actions can still be appended after this one.
         previousView.actions = [lastAction]
 
-        return timeToNextView(for: lastAction, nextViewStart: view.startTime)
+        let invValue = timeToNextView(for: lastAction, nextViewStart: view.startTime)
+        return .success(invValue)
     }
 
     /// Creates the params object for the given action, to be inspected by the `NextViewActionPredicate`.

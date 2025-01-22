@@ -36,7 +36,7 @@ class INVMetricTests: XCTestCase {
     func testGivenTimeBasedActionPredicate_whenViewStartsSoonerThanThreshold_thenMetricValueIsAvailable() throws {
         let threshold = TimeBasedINVActionPredicate.defaultMaxTimeToNextView
 
-        func when(timeToNextView: TimeInterval) -> TimeInterval? {
+        func when(timeToNextView: TimeInterval) -> Result<TimeInterval, INVNoValueReason> {
             // Given
             let predicate = TimeBasedINVActionPredicate(maxTimeToNextView: threshold)
             let metric = createMetric(nextViewActionPredicate: predicate)
@@ -52,18 +52,18 @@ class INVMetricTests: XCTestCase {
             return metric.value(for: currentViewID)
         }
 
-        XCTAssertNotNil(when(timeToNextView: threshold))
-        XCTAssertNotNil(when(timeToNextView: threshold * 0.5))
-        XCTAssertNotNil(when(timeToNextView: threshold * 0.99))
+        XCTAssertTrue(when(timeToNextView: threshold).isSuccess)
+        XCTAssertTrue(when(timeToNextView: threshold * 0.5).isSuccess)
+        XCTAssertTrue(when(timeToNextView: threshold * 0.99).isSuccess)
 
-        XCTAssertNil(when(timeToNextView: threshold * 1.01))
-        XCTAssertNil(when(timeToNextView: -threshold))
-        XCTAssertNil(when(timeToNextView: threshold * 10))
+        XCTAssertEqual(when(timeToNextView: threshold * 1.01), .failure(.noLastInteraction))
+        XCTAssertEqual(when(timeToNextView: -threshold), .failure(.noLastInteraction))
+        XCTAssertEqual(when(timeToNextView: threshold * 10), .failure(.noLastInteraction))
     }
 
     // MARK: - "Last Action" Classification With Custom Predicate
 
-    func testWhenActionIsAcceptedByPredicate_thenMetricValueIsAvailable() {
+    func testWhenActionIsAcceptedByPredicate_thenMetricValueIsAvailable() throws {
         let (t0, t1, t2) = (currentViewStart - 10, currentViewStart - 5, currentViewStart)
         let predicate = mockAcceptAllActionsPredicate
 
@@ -76,7 +76,8 @@ class INVMetricTests: XCTestCase {
         metric.trackViewStart(at: t2, name: .mockAny(), viewID: currentViewID)
 
         // Then
-        XCTAssertNotNil(metric.value(for: currentViewID), "The INV value should be available if any action was accepted.")
+        let ins = try metric.value(for: currentViewID).get()
+        XCTAssertEqual(ins, t2.timeIntervalSince(t0), "The INV value should be available if any action was accepted.")
     }
 
     func testWhenActionIsRejectedByPredicate_thenMetricValueIsNotAvailable() {
@@ -92,7 +93,7 @@ class INVMetricTests: XCTestCase {
         metric.trackViewStart(at: t2, name: .mockAny(), viewID: currentViewID)
 
         // Then
-        XCTAssertNil(metric.value(for: currentViewID), "The INV value should not be available if no action was accepted.")
+        XCTAssertEqual(metric.value(for: currentViewID), .failure(.noLastInteraction))
     }
 
     func testMetricValueIsComputedFromAcceptedAction() throws {
@@ -116,18 +117,18 @@ class INVMetricTests: XCTestCase {
         metric.trackViewStart(at: currentViewStart, name: .mockAny(), viewID: currentViewID)
 
         // Then
-        let itnv = try XCTUnwrap(metric.value(for: currentViewID))
-        XCTAssertEqual(itnv, 3, accuracy: 0.01, "The INV value should be computed from accepted action (Action 3).")
+        let inv = try metric.value(for: currentViewID).get()
+        XCTAssertEqual(inv, 3, accuracy: 0.01, "The INV value should be computed from accepted action (Action 3).")
     }
 
     // MARK: - Metric Value
 
-    func testMetricValueIsCalculatedDifferentlyForEachActionType() {
+    func testMetricValueIsCalculatedDifferentlyForEachActionType() throws {
         let actionStart = Date()
         let actionEnd = actionStart + 1.seconds
         let viewStart = actionEnd + 1.05.seconds
 
-        func when(actionType: RUMActionType) -> TimeInterval? {
+        func when(actionType: RUMActionType) -> Result<TimeInterval, INVNoValueReason> {
             // Given
             let metric = createMetric(nextViewActionPredicate: mockAcceptAllActionsPredicate)
 
@@ -143,11 +144,11 @@ class INVMetricTests: XCTestCase {
         // Then
         let timeSinceActionStart = viewStart.timeIntervalSince(actionStart)
         let timeSinceActionEnd = viewStart.timeIntervalSince(actionEnd)
-        XCTAssertEqual(when(actionType: .tap)!, timeSinceActionStart, accuracy: 0.01, "For TAP, the INV value should be calculated from the start of the action.")
-        XCTAssertEqual(when(actionType: .click)!, timeSinceActionStart, accuracy: 0.01, "For CLICK, the INV value should be calculated from the start of the action.")
-        XCTAssertEqual(when(actionType: .swipe)!, timeSinceActionEnd, accuracy: 0.01, "For SWIPE, the INV value should be calculated from the end of the action.")
-        XCTAssertEqual(when(actionType: .scroll)!, timeSinceActionEnd, accuracy: 0.01, "For SCROLL, the INV value should be calculated from the end of the action.")
-        XCTAssertEqual(when(actionType: .custom)!, timeSinceActionStart, accuracy: 0.01, "For CUSTOM actions, the INV value should be calculated from the start of the action.")
+        XCTAssertEqual(try when(actionType: .tap).get(), timeSinceActionStart, accuracy: 0.01, "For TAP, the INV value should be calculated from the start of the action.")
+        XCTAssertEqual(try when(actionType: .click).get(), timeSinceActionStart, accuracy: 0.01, "For CLICK, the INV value should be calculated from the start of the action.")
+        XCTAssertEqual(try when(actionType: .swipe).get(), timeSinceActionEnd, accuracy: 0.01, "For SWIPE, the INV value should be calculated from the end of the action.")
+        XCTAssertEqual(try when(actionType: .scroll).get(), timeSinceActionEnd, accuracy: 0.01, "For SCROLL, the INV value should be calculated from the end of the action.")
+        XCTAssertEqual(try when(actionType: .custom).get(), timeSinceActionStart, accuracy: 0.01, "For CUSTOM actions, the INV value should be calculated from the start of the action.")
     }
 
     // MARK: - Value Availability vs View Completion
@@ -161,12 +162,12 @@ class INVMetricTests: XCTestCase {
         metric.trackAction(startTime: t0, endTime: t1, name: .mockAny(), type: .tap, in: previousViewID)
 
         // When
-        XCTAssertNil(metric.value(for: currentViewID), "The INV value should be nil before the current view starts.")
+        XCTAssertEqual(metric.value(for: currentViewID), .failure(.viewUnknown))
         metric.trackViewStart(at: t2, name: .mockAny(), viewID: currentViewID)
 
         // Then
-        let itnv = try XCTUnwrap(metric.value(for: currentViewID), "The INV value should be available after the current view starts.")
-        XCTAssertEqual(itnv, 2.5, accuracy: 0.01, "The INV value should match the time interval from action start to view start.")
+        let inv = try metric.value(for: currentViewID).get()
+        XCTAssertEqual(inv, 2.5, accuracy: 0.01, "The INV value should match the time interval from action start to view start.")
     }
 
     func testWhenViewStartsAfterPreviousViewCompletes_thenMetricValueIsAvailable() throws {
@@ -179,12 +180,12 @@ class INVMetricTests: XCTestCase {
 
         // When
         metric.trackViewComplete(viewID: previousViewID)
-        XCTAssertNil(metric.value(for: currentViewID), "The INV value should be nil before the current view starts.")
+        XCTAssertEqual(metric.value(for: currentViewID), .failure(.viewUnknown))
         metric.trackViewStart(at: t2, name: .mockAny(), viewID: currentViewID)
 
         // Then
-        let itnv = try XCTUnwrap(metric.value(for: currentViewID), "The INV value should be available after the current view starts.")
-        XCTAssertEqual(itnv, 2.5, accuracy: 0.01, "The INV value should match the time interval from action start to view start.")
+        let inv = try metric.value(for: currentViewID).get()
+        XCTAssertEqual(inv, 2.5, accuracy: 0.01, "The INV value should match the time interval from action start to view start.")
     }
 
     func testWhenViewCompletes_thenMetricValueIsNoLongerAvailable() {
@@ -195,13 +196,13 @@ class INVMetricTests: XCTestCase {
         metric.trackViewStart(at: .distantPast, name: .mockAny(), viewID: previousViewID)
         metric.trackAction(startTime: t0, endTime: t1, name: .mockAny(), type: .tap, in: previousViewID)
         metric.trackViewStart(at: t2, name: .mockAny(), viewID: currentViewID)
-        XCTAssertNotNil(metric.value(for: currentViewID), "The INV value should be available before the view completes.")
+        XCTAssertTrue(metric.value(for: currentViewID).isSuccess, "The INV value should be available before the view completes.")
 
         // When
         metric.trackViewComplete(viewID: currentViewID)
 
         // Then
-        XCTAssertNil(metric.value(for: currentViewID), "The INV value should be removed once the view completes.")
+        XCTAssertEqual(metric.value(for: currentViewID), .failure(.previousViewRemoved))
     }
 
     func testWhenAnotherViewStarts_thenMetricValueIsAvailableUntilViewCompletes() throws {
@@ -214,15 +215,15 @@ class INVMetricTests: XCTestCase {
         metric.trackViewStart(at: t2, name: .mockAny(), viewID: currentViewID)
 
         // When
-        let itnv1 = try XCTUnwrap(metric.value(for: currentViewID), "The INV value should be available before the current view completes.")
+        let inv1 = try metric.value(for: currentViewID).get()
         metric.trackViewStart(at: t3, name: .mockAny(), viewID: .mockRandom()) // another view starts
-        let itnv2 = try XCTUnwrap(metric.value(for: currentViewID), "The INV value should remain available before the current view completes.")
+        let inv2 = try metric.value(for: currentViewID).get()
         metric.trackViewComplete(viewID: currentViewID) // view completes
 
         // Then
-        XCTAssertNil(metric.value(for: currentViewID), "The INV value should be removed after the view completes.")
-        XCTAssertEqual(itnv1, 2.5, accuracy: 0.01, "The first INV value should match the time interval from action start to view start.")
-        XCTAssertEqual(itnv2, itnv2, accuracy: 0.01, "The second INV value should be the same as the first one, unaffected by the new view.")
+        XCTAssertEqual(metric.value(for: currentViewID), .failure(.previousViewRemoved))
+        XCTAssertEqual(inv1, 2.5, accuracy: 0.01, "The first INV value should match the time interval from action start to view start.")
+        XCTAssertEqual(inv2, inv2, accuracy: 0.01, "The second INV value should be the same as the first one, unaffected by the new view.")
     }
 
     func testWhenActionIsTrackedInPreviousViewAfterCurrentViewIsStarted_thenMetricValueIsUpdated() throws {
@@ -234,14 +235,14 @@ class INVMetricTests: XCTestCase {
 
         // When
         metric.trackViewStart(at: t1, name: .mockAny(), viewID: currentViewID)
-        let itnv1 = metric.value(for: currentViewID)
+        let inv1 = metric.value(for: currentViewID)
 
         metric.trackAction(startTime: t0, endTime: t0 + 0.1, name: .mockAny(), type: .tap, in: previousViewID)
-        let itnv2 = try XCTUnwrap(metric.value(for: currentViewID))
+        let inv2 = try metric.value(for: currentViewID).get()
 
         // Then
-        XCTAssertNil(itnv1)
-        XCTAssertEqual(itnv2, 1.5, accuracy: 0.01)
+        XCTAssertEqual(inv1, .failure(.noTrackedActions))
+        XCTAssertEqual(inv2, 1.5, accuracy: 0.01)
     }
 
     func testWhenPreviousViewCompletes_thenMetricValueIsStillAvailable() throws {
@@ -257,7 +258,7 @@ class INVMetricTests: XCTestCase {
         metric.trackViewComplete(viewID: previousViewID)
 
         // Then
-        XCTAssertNotNil(metric.value(for: currentViewID))
+        XCTAssertTrue(metric.value(for: currentViewID).isSuccess)
     }
 
     // MARK: - Interaction With Predicate
@@ -383,7 +384,7 @@ class INVMetricTests: XCTestCase {
         metric.trackViewStart(at: t1, name: .mockAny(), viewID: currentViewID)
 
         // Then
-        XCTAssertNil(metric.value(for: currentViewID), "The INV value should be nil when no actions are tracked.")
+        XCTAssertEqual(metric.value(for: currentViewID), .failure(.noTrackedActions))
     }
 
     func testWhenNoPreviousViewIsTracked_thenMetricHasNoValue() {
@@ -392,7 +393,7 @@ class INVMetricTests: XCTestCase {
         metric.trackViewStart(at: currentViewStart, name: .mockAny(), viewID: currentViewID)
 
         // Then
-        XCTAssertNil(metric.value(for: currentViewID), "The INV value should be nil when no previous view is tracked.")
+        XCTAssertEqual(metric.value(for: currentViewID), .failure(.noPrecedingView))
     }
 
     func testWhenActionIsEarlierThanPreviousViewStart_thenItIsIgnored() throws {
@@ -408,7 +409,7 @@ class INVMetricTests: XCTestCase {
 
         // Then
         metric.trackViewStart(at: currentViewStart, name: .mockAny(), viewID: currentViewID)
-        XCTAssertNil(metric.value(for: currentViewID))
+        XCTAssertEqual(metric.value(for: currentViewID), .failure(.invalidTrackedActions))
     }
 
     func testTrackingActionsInNotStartedViewsHasNoEffect() throws {
@@ -425,7 +426,7 @@ class INVMetricTests: XCTestCase {
         metric.trackAction(startTime: .mockRandom(), endTime: .mockRandom(), name: .mockAny(), type: .tap, in: notStartedViewID)
 
         // Then
-        let actualINV = try XCTUnwrap(metric.value(for: currentViewID))
+        let actualINV = try metric.value(for: currentViewID).get()
         let expectedINV = currentViewStart.timeIntervalSince(actionDate)
         XCTAssertEqual(actualINV, expectedINV, accuracy: 0.01)
     }

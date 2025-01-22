@@ -1270,9 +1270,9 @@ internal class INVMetricMock: INVMetricTracking {
     /// Tracks calls to `trackViewComplete(viewID:)`.
     var trackedViewCompletes: Set<RUMUUID> = []
     /// Mocked value returned by this metric.
-    var mockedValue: TimeInterval?
+    var mockedValue: Result<TimeInterval, INVNoValueReason>
 
-    init(mockedValue: TimeInterval? = nil) {
+    init(mockedValue: Result<TimeInterval, INVNoValueReason> = .failure(.noTrackedActions)) {
         self.mockedValue = mockedValue
     }
 
@@ -1288,7 +1288,7 @@ internal class INVMetricMock: INVMetricTracking {
         trackedViewCompletes.insert(viewID)
     }
 
-    func value(for viewID: RUMUUID) -> TimeInterval? {
+    func value(for viewID: RUMUUID) -> Result<TimeInterval, INVNoValueReason> {
         return mockedValue
     }
 }

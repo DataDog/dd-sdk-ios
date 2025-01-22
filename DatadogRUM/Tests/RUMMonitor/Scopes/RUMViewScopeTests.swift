@@ -202,7 +202,7 @@ class RUMViewScopeTests: XCTestCase {
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero,
-            interactionToNextViewMetric: INVMetricMock(mockedValue: 0.84)
+            interactionToNextViewMetric: INVMetricMock(mockedValue: .success(0.84))
         )
 
         let hasReplay: Bool = .mockRandom()
