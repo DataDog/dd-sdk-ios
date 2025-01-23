@@ -36,7 +36,12 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
 
         let featureScope = core.scope(for: RUMFeature.self)
-        let sessionEndedMetric = SessionEndedMetricController(telemetry: core.telemetry)
+        let sessionEndedMetric = SessionEndedMetricController(
+            telemetry: core.telemetry,
+            sampleRate: SessionEndedMetricController.defaultSampleRate
+        )
+        let tnsPredicateType = configuration.networkSettledResourcePredicate.metricPredicateType
+        let invPredicateType = configuration.nextViewActionPredicate.metricPredicateType
 
         var watchdogTermination: WatchdogTerminationMonitor?
         if configuration.trackWatchdogTerminations {
@@ -84,7 +89,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             backtraceReporter: core.backtraceReporter,
             ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
             syntheticsTest: {
-                if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
+                if let testId = configuration.syntheticsTestId,
+                   let resultId = configuration.syntheticsResultId {
                     return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId)
                 } else {
                     return nil
@@ -100,6 +106,14 @@ internal final class RUMFeature: DatadogRemoteFeature {
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,
+            viewEndedMetricFactory: {
+                return ViewEndedMetricController(
+                    tnsPredicateType: tnsPredicateType,
+                    invPredicateType: invPredicateType,
+                    telemetry: featureScope.telemetry,
+                    sampleRate: ViewEndedMetricController.defaultSampleRate
+                )
+            },
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: { viewStartDate, viewName in
                 return TNSMetric(

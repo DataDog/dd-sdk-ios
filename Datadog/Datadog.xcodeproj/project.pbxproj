@@ -430,6 +430,10 @@
 		615D52BF2C88A98300F8B8FC /* SynchronizedTagsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615D52BD2C88A98300F8B8FC /* SynchronizedTagsTests.swift */; };
 		615D52C12C88AB1E00F8B8FC /* SynchronizedAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615D52C02C88AB1E00F8B8FC /* SynchronizedAttributesTests.swift */; };
 		615D52C22C88AB1E00F8B8FC /* SynchronizedAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615D52C02C88AB1E00F8B8FC /* SynchronizedAttributesTests.swift */; };
+		615E2B8E2D39444300D85243 /* ViewEndedMetricController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615E2B8D2D39444300D85243 /* ViewEndedMetricController.swift */; };
+		615E2B8F2D39444300D85243 /* ViewEndedMetricController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615E2B8D2D39444300D85243 /* ViewEndedMetricController.swift */; };
+		615E2B952D425F5600D85243 /* ViewEndedMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615E2B942D425F5600D85243 /* ViewEndedMetric.swift */; };
+		615E2B962D425F5600D85243 /* ViewEndedMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615E2B942D425F5600D85243 /* ViewEndedMetric.swift */; };
 		6167C79326665D6900D4CF07 /* E2EUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167C79226665D6900D4CF07 /* E2EUtils.swift */; };
 		6167C7952666622800D4CF07 /* LoggingE2EHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167C7942666622800D4CF07 /* LoggingE2EHelpers.swift */; };
 		6167E6D32B7F8B3300C3CA2D /* AppHangsMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E6D22B7F8B3300C3CA2D /* AppHangsMonitor.swift */; };
@@ -2535,6 +2539,8 @@
 		615D52BD2C88A98300F8B8FC /* SynchronizedTagsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedTagsTests.swift; sourceTree = "<group>"; };
 		615D52C02C88AB1E00F8B8FC /* SynchronizedAttributesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedAttributesTests.swift; sourceTree = "<group>"; };
 		615D9E2626048EAF006DC6D1 /* DatadogCrashReporting.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogCrashReporting.xcconfig; sourceTree = "<group>"; };
+		615E2B8D2D39444300D85243 /* ViewEndedMetricController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewEndedMetricController.swift; sourceTree = "<group>"; };
+		615E2B942D425F5600D85243 /* ViewEndedMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewEndedMetric.swift; sourceTree = "<group>"; };
 		615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensions.swift; sourceTree = "<group>"; };
 		6161247825CA9CA6009901BE /* CrashReporting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReporting.swift; sourceTree = "<group>"; };
 		6161249D25CAB340009901BE /* CrashContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashContext.swift; sourceTree = "<group>"; };
@@ -5127,6 +5133,8 @@
 			children = (
 				6174D60F2BFDEA4600EC7469 /* SessionEndedMetric.swift */,
 				6174D61F2C009C6300EC7469 /* SessionEndedMetricController.swift */,
+				615E2B942D425F5600D85243 /* ViewEndedMetric.swift */,
+				615E2B8D2D39444300D85243 /* ViewEndedMetricController.swift */,
 			);
 			path = SDKMetrics;
 			sourceTree = "<group>";
@@ -9002,6 +9010,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6167E6D42B7F8B3300C3CA2D /* AppHangsMonitor.swift in Sources */,
+				615E2B8F2D39444300D85243 /* ViewEndedMetricController.swift in Sources */,
 				D23F8E5229DDCD28001CFAE8 /* UIViewControllerHandler.swift in Sources */,
 				D23F8E5329DDCD28001CFAE8 /* RUMCommand.swift in Sources */,
 				D23F8E5429DDCD28001CFAE8 /* ValuePublisher.swift in Sources */,
@@ -9061,6 +9070,7 @@
 				D23F8E7729DDCD28001CFAE8 /* UIKitRUMViewsPredicate.swift in Sources */,
 				61C713A62A3B78F900FA735A /* RUMMonitorProtocol+Internal.swift in Sources */,
 				D23F8E7829DDCD28001CFAE8 /* LongTaskObserver.swift in Sources */,
+				615E2B962D425F5600D85243 /* ViewEndedMetric.swift in Sources */,
 				D23F8E7A29DDCD28001CFAE8 /* SessionReplayDependency.swift in Sources */,
 				616F8C282BB1CD990061EA53 /* ProcessIdentifier.swift in Sources */,
 				D23F8E7B29DDCD28001CFAE8 /* RUMDeviceInfo.swift in Sources */,
@@ -9346,6 +9356,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6167E6D32B7F8B3300C3CA2D /* AppHangsMonitor.swift in Sources */,
+				615E2B8E2D39444300D85243 /* ViewEndedMetricController.swift in Sources */,
 				D29A9F8029DD85BB005C54A4 /* UIViewControllerHandler.swift in Sources */,
 				D29A9F5929DD85BB005C54A4 /* RUMCommand.swift in Sources */,
 				D29A9F8C29DD861C005C54A4 /* ValuePublisher.swift in Sources */,
@@ -9405,6 +9416,7 @@
 				D29A9F5E29DD85BB005C54A4 /* UIKitRUMViewsPredicate.swift in Sources */,
 				61C713A52A3B78F900FA735A /* RUMMonitorProtocol+Internal.swift in Sources */,
 				D29A9F5129DD85BB005C54A4 /* LongTaskObserver.swift in Sources */,
+				615E2B952D425F5600D85243 /* ViewEndedMetric.swift in Sources */,
 				D29A9F8629DD85BB005C54A4 /* SessionReplayDependency.swift in Sources */,
 				616F8C272BB1CD990061EA53 /* ProcessIdentifier.swift in Sources */,
 				D29A9F7129DD85BB005C54A4 /* RUMDeviceInfo.swift in Sources */,

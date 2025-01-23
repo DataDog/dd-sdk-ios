@@ -8,8 +8,8 @@ import Foundation
 import DatadogInternal
 
 /// A controller responsible for managing "RUM Session Ended" metrics.
-internal final class SessionEndedMetricController: SampledTelemetry {
-    /// The default sample rate for session ended metric (15%), applied in addition to the telemetry sample rate (20% by default).
+internal final class SessionEndedMetricController {
+    /// The default sample rate for "session ended" metric (15%), applied in addition to the telemetry sample rate (20% by default).
     static let defaultSampleRate: SampleRate = 15
 
     /// Dictionary to keep track of pending metrics, keyed by session ID.
@@ -29,7 +29,7 @@ internal final class SessionEndedMetricController: SampledTelemetry {
     ///    - telemetry: The telemetry endpoint used for sending metrics.
     ///    - sampleRate: The sample rate for "RUM Session Ended" metric.
 
-    init(telemetry: Telemetry, sampleRate: SampleRate = SessionEndedMetricController.defaultSampleRate) {
+    init(telemetry: Telemetry, sampleRate: SampleRate) {
         self.telemetry = telemetry
         self.sampleRate = sampleRate
     }

@@ -107,6 +107,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private let networkSettledMetric: TNSMetricTracking
     /// Interaction-to-Next-View metric for this view.
     private let interactionToNextViewMetric: INVMetricTracking
+    /// Tracks "RUM View Ended" metric for this view.
+    private let viewEndedMetric: ViewEndedMetricController
 
     init(
         isInitialView: Bool,
@@ -142,6 +144,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
         self.networkSettledMetric = dependencies.networkSettledMetricFactory(viewStartTime, viewName)
         interactionToNextViewMetric.trackViewStart(at: startTime, name: name, viewID: viewUUID)
+
+        self.viewEndedMetric = dependencies.viewEndedMetricFactory()
 
         // Notify Synthetics if needed
         if dependencies.syntheticsTest != nil && self.context.sessionID != .nullUUID {
@@ -281,6 +285,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         if shouldComplete {
             interactionToNextViewMetric.trackViewComplete(viewID: viewUUID)
+            viewEndedMetric.send()
         }
 
         return !shouldComplete
@@ -623,11 +628,17 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies.fatalErrorContext.view = event
 
             // Track this view in Session Ended metric:
+            let instrumentationType = (command as? RUMStartViewCommand)?.instrumentationType
             dependencies.sessionEndedMetric.track(
                 view: event,
-                instrumentationType: (command as? RUMStartViewCommand)?.instrumentationType,
+                instrumentationType: instrumentationType,
                 in: self.context.sessionID
             )
+
+            // Track this event in View Ended metric:
+            viewEndedMetric.track(viewEvent: event, instrumentationType: instrumentationType)
+            viewEndedMetric.track(networkSettledResult: networkSettledTime)
+            viewEndedMetric.track(interactionToNextViewResult: interactionToNextViewTime)
 
             // Update the state of the view in watchdog termination monitor
             // if a watchdog termination occurs in this session, in the next session
