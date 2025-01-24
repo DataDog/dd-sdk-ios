@@ -89,8 +89,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             backtraceReporter: core.backtraceReporter,
             ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
             syntheticsTest: {
-                if let testId = configuration.syntheticsTestId,
-                   let resultId = configuration.syntheticsResultId {
+                if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
                     return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId)
                 } else {
                     return nil
