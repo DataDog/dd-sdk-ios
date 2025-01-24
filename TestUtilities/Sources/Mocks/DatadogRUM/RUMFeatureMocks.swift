@@ -426,14 +426,16 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         error: Error = ErrorMock(),
         source: RUMInternalErrorSource = .source,
         globalAttributes: [AttributeKey: AttributeValue] = [:],
-        attributes: [AttributeKey: AttributeValue] = [:]
+        attributes: [AttributeKey: AttributeValue] = [:],
+        completionHandler: @escaping CompletionHandler = NOPCompletionHandler
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
             time: time,
             error: error,
             source: source,
             globalAttributes: globalAttributes,
-            attributes: attributes
+            attributes: attributes,
+            completionHandler: completionHandler
         )
     }
 
@@ -444,7 +446,8 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         source: RUMInternalErrorSource = .source,
         stack: String? = "Foo.swift:10",
         globalAttributes: [AttributeKey: AttributeValue] = [:],
-        attributes: [AttributeKey: AttributeValue] = [:]
+        attributes: [AttributeKey: AttributeValue] = [:],
+        completionHandler: @escaping CompletionHandler = NOPCompletionHandler
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
             time: time,
@@ -453,7 +456,8 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
             stack: stack,
             source: source,
             globalAttributes: globalAttributes,
-            attributes: attributes
+            attributes: attributes,
+            completionHandler: completionHandler
         )
     }
 }

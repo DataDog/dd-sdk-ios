@@ -269,7 +269,8 @@ extension Monitor: RUMMonitorProtocol {
                 stack: stack,
                 source: RUMInternalErrorSource(source),
                 globalAttributes: self.attributes,
-                attributes: attributes
+                attributes: attributes,
+                completionHandler: NOPCompletionHandler
             )
         )
     }
@@ -281,7 +282,8 @@ extension Monitor: RUMMonitorProtocol {
                 error: error,
                 source: RUMInternalErrorSource(source),
                 globalAttributes: self.attributes,
-                attributes: attributes
+                attributes: attributes,
+                completionHandler: NOPCompletionHandler
             )
         )
     }
@@ -611,7 +613,8 @@ extension Monitor {
                 stack: stack,
                 source: source,
                 globalAttributes: self.attributes,
-                attributes: attributes
+                attributes: attributes,
+                completionHandler: NOPCompletionHandler
             )
         )
     }

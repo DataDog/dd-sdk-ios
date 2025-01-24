@@ -30,7 +30,8 @@ class RUMCommandTests: XCTestCase {
             error: SwiftError(),
             source: .source,
             globalAttributes: [:],
-            attributes: [:]
+            attributes: [:],
+            completionHandler: NOPCompletionHandler
         )
 
         XCTAssertEqual(command.type, "SwiftError")
@@ -42,7 +43,8 @@ class RUMCommandTests: XCTestCase {
             error: SwiftEnumeratedError.errorLabel,
             source: .source,
             globalAttributes: [:],
-            attributes: [:]
+            attributes: [:],
+            completionHandler: NOPCompletionHandler
         )
 
         XCTAssertEqual(command.type, "SwiftEnumeratedError")
@@ -54,7 +56,8 @@ class RUMCommandTests: XCTestCase {
             error: nsError,
             source: .source,
             globalAttributes: [:],
-            attributes: [:]
+            attributes: [:],
+            completionHandler: NOPCompletionHandler
         )
 
         XCTAssertEqual(command.type, "custom-domain - 10")
