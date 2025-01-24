@@ -29,31 +29,31 @@ class AnonymousIdentifierManagerTests: XCTestCase {
         anonymousIdentifierManager = nil
     }
 
-    func testWhenShouldTrack_itGeneratesAnonymousID() {
-        anonymousIdentifierManager.manageAnonymousId(shouldTrack: true)
+    func testWhenShouldTrack_itGeneratesAnonymousIdentifier() {
+        anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: true)
 
         XCTAssertNotNil(featureScopeMock.anonymousId)
     }
 
-    func testWhenShouldNotTrack_itClearsAnonymousID() {
-        anonymousIdentifierManager.manageAnonymousId(shouldTrack: false)
+    func testWhenShouldNotTrack_itClearsAnonymousIdentifier() {
+        anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: false)
         XCTAssertNil(featureScopeMock.anonymousId)
 
         featureScopeMock.set(anonymousId: "test")
 
-        anonymousIdentifierManager.manageAnonymousId(shouldTrack: false)
+        anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: false)
         XCTAssertNil(featureScopeMock.anonymousId)
     }
 
-    func testWhenCalledMultipleTimes_itGeneratesTheSameAnonymousID() {
+    func testWhenCalledMultipleTimes_itGeneratesTheSameAnonymousIdentifier() {
         let uuid1 = RUMUUID.mockRandom()
         uuidGeneratorMock.uuid = uuid1
-        anonymousIdentifierManager.manageAnonymousId(shouldTrack: true)
+        anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: true)
         XCTAssertEqual(featureScopeMock.anonymousId, uuid1.toRUMDataFormat)
 
         let uuid2 = RUMUUID.mockRandom()
         uuidGeneratorMock.uuid = uuid2
-        anonymousIdentifierManager.manageAnonymousId(shouldTrack: true)
+        anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: true)
         XCTAssertEqual(featureScopeMock.anonymousId, uuid1.toRUMDataFormat)
     }
 }

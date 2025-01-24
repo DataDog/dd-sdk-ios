@@ -331,7 +331,7 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 0, "It should not send any request")
     }
 
-    func testItAppendsUserDataIfAnonymousIdExists() {
+    func testItAppendsUserDataIfAnonymousIdentifierExists() {
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
@@ -360,7 +360,7 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(userAfter.email, "user-email")
     }
 
-    func testItAppendsAnonymousIdIfUserExists() {
+    func testItAppendsAnonymousIdentifierIfUserExists() {
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
@@ -390,7 +390,7 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(userAfter.email, "user-email")
     }
 
-    func testItClearsAnonymousId() {
+    func testItClearsAnonymousIdentifier() {
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),

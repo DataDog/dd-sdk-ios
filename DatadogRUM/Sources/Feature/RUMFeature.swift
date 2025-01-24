@@ -219,7 +219,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
 
         // Manage anonymous identifier depending on the configuration.
-        anonymousIdentifierManager.manageAnonymousId(shouldTrack: configuration.trackAnonymousUser)
+        anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: configuration.trackAnonymousUser)
     }
 }
 

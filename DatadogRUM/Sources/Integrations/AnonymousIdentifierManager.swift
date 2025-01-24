@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 internal protocol AnonymousIdentifierManaging {
-    func manageAnonymousId(shouldTrack: Bool)
+    func manageAnonymousIdentifier(shouldTrack: Bool)
 }
 
 internal class AnonymousIdentifierManager: AnonymousIdentifierManaging {
@@ -23,7 +23,7 @@ internal class AnonymousIdentifierManager: AnonymousIdentifierManaging {
         self.uuidGenerator = uuidGenerator
     }
 
-    func manageAnonymousId(shouldTrack: Bool) {
+    func manageAnonymousIdentifier(shouldTrack: Bool) {
         if shouldTrack {
             featureScope.rumDataStore.value(forKey: .anonymousId) { [weak self] (anonymousId: String?) in
                 if let anonymousId {
