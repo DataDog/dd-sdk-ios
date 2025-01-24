@@ -485,6 +485,25 @@ extension Monitor: RUMMonitorProtocol {
             debugging != nil
         }
     }
+
+    // MARK: - Internal
+
+    func addError(
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler
+    ) {
+        process(
+            command: RUMAddCurrentViewErrorCommand(
+                time: dateProvider.now,
+                error: error,
+                source: RUMInternalErrorSource(source),
+                attributes: attributes,
+                completionHandler: completionHandler
+            )
+        )
+    }
 }
 
 // MARK: - View
