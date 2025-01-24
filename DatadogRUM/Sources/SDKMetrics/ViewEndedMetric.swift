@@ -60,7 +60,7 @@ internal final class ViewEndedMetric {
     // MARK: - Exporting Attributes
 
     /// A container for encoding "RUM View Ended" according to the spec.
-    private struct Attributes: Encodable {
+    internal struct Attributes: Encodable {
         struct MetricValue: Encodable {
             /// Metric value in nanoseconds.
             var value: Int64?

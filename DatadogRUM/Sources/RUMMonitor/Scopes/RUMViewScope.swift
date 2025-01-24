@@ -628,7 +628,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies.fatalErrorContext.view = event
 
             // Track this view in Session Ended metric:
-            let instrumentationType = (command as? RUMStartViewCommand)?.instrumentationType
+            var instrumentationType: SessionEndedMetric.ViewInstrumentationType?
+            if let command = command as? RUMStartViewCommand, command.identity == identity {
+                instrumentationType = command.instrumentationType
+            }
             dependencies.sessionEndedMetric.track(
                 view: event,
                 instrumentationType: instrumentationType,
