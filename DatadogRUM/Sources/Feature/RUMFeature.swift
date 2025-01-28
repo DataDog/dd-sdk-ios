@@ -38,7 +38,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         let featureScope = core.scope(for: RUMFeature.self)
         let sessionEndedMetric = SessionEndedMetricController(
             telemetry: core.telemetry,
-            sampleRate: configuration.sessionEndedMetricSampleRate
+            sampleRate: configuration.sessionEndedSampleRate
         )
         let tnsPredicateType = configuration.networkSettledResourcePredicate.metricPredicateType
         let invPredicateType = configuration.nextViewActionPredicate.metricPredicateType
@@ -110,7 +110,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     tnsPredicateType: tnsPredicateType,
                     invPredicateType: invPredicateType,
                     telemetry: featureScope.telemetry,
-                    sampleRate: configuration.viewEndedMetricSampleRate
+                    sampleRate: configuration.viewEndedSampleRate
                 )
             },
             watchdogTermination: watchdogTermination,

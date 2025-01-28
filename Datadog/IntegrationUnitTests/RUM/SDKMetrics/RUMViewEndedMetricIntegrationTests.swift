@@ -23,7 +23,7 @@ class RUMViewEndedMetricIntegrationTests: XCTestCase {
         )
         rumConfig = RUM.Configuration(applicationID: .mockAny())
         rumConfig.telemetrySampleRate = .maxSampleRate
-        rumConfig.viewEndedMetricSampleRate = .maxSampleRate
+        rumConfig.viewEndedSampleRate = .maxSampleRate
         rumConfig.dateProvider = dateProvider
     }
 

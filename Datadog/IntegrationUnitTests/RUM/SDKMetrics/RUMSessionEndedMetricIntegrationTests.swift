@@ -22,7 +22,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         )
         rumConfig = RUM.Configuration(applicationID: .mockAny())
         rumConfig.telemetrySampleRate = .maxSampleRate
-        rumConfig.sessionEndedMetricSampleRate = .maxSampleRate
+        rumConfig.sessionEndedSampleRate = .maxSampleRate
         rumConfig.dateProvider = dateProvider
     }
 
