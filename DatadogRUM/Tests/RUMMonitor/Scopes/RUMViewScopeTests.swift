@@ -194,7 +194,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: true,
             parent: parent,
             dependencies: .mockWith(
-                networkSettledMetricFactory: { _, _ in TNSMetricMock(value: 0.42) }
+                networkSettledMetricFactory: { _, _ in TNSMetricMock(value: .success(0.42)) }
             ),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
@@ -202,7 +202,7 @@ class RUMViewScopeTests: XCTestCase {
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero,
-            interactionToNextViewMetric: INVMetricMock(mockedValue: 0.84)
+            interactionToNextViewMetric: INVMetricMock(mockedValue: .success(0.84))
         )
 
         let hasReplay: Bool = .mockRandom()

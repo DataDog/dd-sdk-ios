@@ -36,150 +36,226 @@ internal protocol TNSMetricTracking {
     /// Returns the value for the TNS metric.
     ///
     /// - Parameters:
-    ///   - time: The current time (device time, no NTP offset).
     ///   - appStateHistory: The history of app state transitions.
     /// - Returns: The value for the TNS metric, or `nil` if the metric cannot be calculated.
-    func value(at time: Date, appStateHistory: AppStateHistory) -> TimeInterval?
+    /// - Returns: The TNS metric value (`TimeInterval`) if successfully calculated, or a `TNSNoValueReason` indicating why the value is unavailable.
+    func value(with appStateHistory: AppStateHistory) -> Result<TimeInterval, TNSNoValueReason>
+}
+
+/// Possible reasons for a missing TNS value.
+/// This list is standardized according to the "RUM View Ended" metric specification.
+internal enum TNSNoValueReason: String, Error {
+    /// No resources were tracked at all while the view was active.
+    case noTrackedResources = "no_resources"
+    /// At least one resource was tracked, but none qualified as "initial" according to the predicate.
+    case noInitialResources = "no_initial_resources"
+    /// Not all "initial" resources have completed loading at the time this metric was requested.
+    case initialResourcesIncomplete = "initial_resources_incomplete"
+    /// The view stopped before all "initial" resources finished loading.
+    case viewStoppedBeforeSettled = "not_settled_yet"
+    /// The app was not in the foreground for the full duration of the view’s loading process.
+    case appNotInForeground = "not_in_foreground"
+    /// All "initial" resources were dropped and never completed.
+    case initialResourcesDropped = "initial_resources_dropped"
+    /// All "initial" resources were invalid (e.g., they started before the view’s start time or had a negative duration).
+    case initialResourcesInvalid = "initial_resources_invalid"
+    /// The calculated TNS value was invalid (e.g., it turned out negative).
+    case invalidCalculatedValue = "invalid_value"
+    /// An unknown error occurred; the metric is missing for a reason not captured above.
+    case unknown = "unknown"
 }
 
 /// A metric (**Time-to-Network-Settled**, or TNS) that measures the time from when the view becomes visible until all initial resources are loaded.
 /// "Initial resources" are now classified using a customizable predicate.
 internal final class TNSMetric: TNSMetricTracking {
+    /// Flag indicating if the view was stopped (no more resources accepted).
+    private var isViewStopped: Bool = false
+    /// Total number of resources (initial or not) started in this view.
+    private var totalResourcesCount: Int = 0
+    /// Number of initial resources tracked so far.
+    private var initialResourcesCount: Int = 0
+    /// Number of invalid initial resources (e.g., negative duration or started before view start).
+    private var invalidInitialResourcesCount: Int = 0
+    /// Number of dropped initial resources.
+    private var droppedInitialResourcesCount: Int = 0
+    /// Maps each pending **initial** resource to its start date.
+    private var pendingInitialResources: [RUMUUID: Date] = [:]
+
+    /// Tracks the maximum end-time (relative to `viewStartDate`) of **the current wave** of initial resources.
+    /// Resets when all current pending resources finish or are dropped, finalizing a wave.
+    private var maxResourceEndTime: TimeInterval?
+    /// The finalized TNS value **from previously completed waves**. Each time a wave completes, we set that wave’s TNS to `latestCompletedTNSValue`.
+    private var latestCompletedTNSValue: TimeInterval?
+
     /// The name of the view this metric is tracked for.
     private let viewName: String
-
-    /// The time when the view tracking this metric becomes visible (device time, no NTP offset).
+    /// The time at which the view was started (device time, no NTP offset).
     private let viewStartDate: Date
 
-    /// The predicate used to classify resources as "initial" for TNS.
+    /// Classifies resources as "initial."
     private let resourcePredicate: NetworkSettledResourcePredicate
 
-    /// Indicates whether the view is active (`true`) or stopped (`false`).
-    private var isViewActive = true
+    // MARK: - Initialization
 
-    /// A dictionary mapping resource IDs to their start times. Tracks resources classified as "initial."
-    private var pendingResourcesStartDates: [RUMUUID: Date] = [:]
-
-    /// The time when the last of the initial resources completes.
-    private var latestResourceEndDate: Date?
-
-    /// Stores the last computed value for the TNS metric.
-    /// This is used to return the same value for subsequent calls to `value(at:appStateHistory:)`
-    /// while some resources are still pending.
-    private var lastReturnedValue: TimeInterval?
-
-    /// Initializes a new TNSMetric instance for a view with a customizable predicate.
-    ///
-    /// - Parameters:
-    ///   - viewName: The name of the view this metric is tracked for.
-    ///   - viewStartDate: The time when the view becomes visible (device time, no NTP offset).
-    ///   - resourcePredicate: A predicate used to classify resources as "initial" for TNS.
-    init(
-        viewName: String,
-        viewStartDate: Date,
-        resourcePredicate: NetworkSettledResourcePredicate
-    ) {
+    init(viewName: String, viewStartDate: Date, resourcePredicate: NetworkSettledResourcePredicate) {
         self.viewName = viewName
         self.viewStartDate = viewStartDate
         self.resourcePredicate = resourcePredicate
     }
 
-    /// Tracks the start time of a resource identified by its `resourceID`.
-    /// Only resources classified as "initial" by the predicate are tracked.
-    ///
-    /// - Parameters:
-    ///   - startDate: The start time of the resource (device time, no NTP offset).
-    ///   - resourceID: The unique identifier for the resource.
-    ///   - resourceURL: The URL of this resource.
+    // MARK: - TNSMetricTracking
+
     func trackResourceStart(at startDate: Date, resourceID: RUMUUID, resourceURL: String) {
-        guard isViewActive else {
-            return // View was stopped, do not track the resource
+        guard !isViewStopped else {
+            return
         }
-        guard startDate >= viewStartDate else {
-            return // Sanity check to ensure resource is being tracked after view start
-        }
+
+        totalResourcesCount += 1
 
         let resourceParams = TNSResourceParams(
             url: resourceURL,
             timeSinceViewStart: startDate.timeIntervalSince(viewStartDate),
             viewName: viewName
         )
-        if resourcePredicate.isInitialResource(from: resourceParams) {
-            pendingResourcesStartDates[resourceID] = startDate
+        guard resourcePredicate.isInitialResource(from: resourceParams) else {
+            return // Not an initial resource.
         }
+
+        if startDate < viewStartDate {
+            invalidInitialResourcesCount += 1
+            return
+        }
+
+        initialResourcesCount += 1
+
+        // If we previously completed a wave, but new initial resources are starting, we begin a new wave:
+        if pendingInitialResources.isEmpty, latestCompletedTNSValue != nil {
+            // Reset the `accumulatedEndTime` for the new wave.
+            maxResourceEndTime = nil
+        }
+
+        pendingInitialResources[resourceID] = startDate
     }
 
-    /// Tracks the completion of a resource identified by its `resourceID`.
-    /// The `resourceDuration` is used if available; otherwise, the duration is calculated from the start to the end time.
-    ///
-    /// - Parameters:
-    ///   - endDate: The end time of the resource (device time, no NTP offset).
-    ///   - resourceID: The unique identifier for the resource.
-    ///   - resourceDuration: The resource duration, if available.
     func trackResourceEnd(at endDate: Date, resourceID: RUMUUID, resourceDuration: TimeInterval?) {
-        guard isViewActive, let startDate = pendingResourcesStartDates[resourceID] else {
-            return // View was stopped or the resource was not tracked
+        guard !isViewStopped else {
+            return
         }
-        let duration = resourceDuration ?? endDate.timeIntervalSince(startDate)
 
+        // Only finalize if we had this resource as pending.
+        guard let resourceStartDate = pendingInitialResources.removeValue(forKey: resourceID) else {
+            return
+        }
+
+        let duration = resourceDuration ?? endDate.timeIntervalSince(resourceStartDate)
         guard duration >= 0 else {
-            return // Sanity check to avoid negative durations
+            invalidInitialResourcesCount += 1
+            return
         }
 
-        let resourceEndDate = startDate.addingTimeInterval(duration)
-        latestResourceEndDate = max(latestResourceEndDate ?? .distantPast, resourceEndDate)
-        pendingResourcesStartDates[resourceID] = nil // Remove from the list of ongoing resources
+        let resourceEndTime = resourceStartDate.timeIntervalSince(viewStartDate) + duration
+        if let current = maxResourceEndTime {
+            maxResourceEndTime = max(current, resourceEndTime)
+        } else {
+            maxResourceEndTime = resourceEndTime
+        }
+
+        // If no pending resources remain, finalize this wave:
+        if pendingInitialResources.isEmpty {
+            finalizeWave()
+        }
     }
 
-    /// Tracks the completion of a resource without considering its duration.
-    /// Used to end resources dropped through event mapper APIs.
-    ///
-    /// - Parameters:
-    ///   - resourceID: The unique identifier for the resource.
     func trackResourceDropped(resourceID: RUMUUID) {
-        pendingResourcesStartDates[resourceID] = nil // Remove from the list of ongoing resources
+        guard !isViewStopped else {
+            return
+        }
+
+        if pendingInitialResources.removeValue(forKey: resourceID) != nil {
+            droppedInitialResourcesCount += 1
+            // If that was the last resource in the wave, finalize.
+            if pendingInitialResources.isEmpty {
+                finalizeWave()
+            }
+        }
     }
 
-    /// Marks the view as stopped, preventing further resource tracking.
     func trackViewWasStopped() {
-        isViewActive = false
+        isViewStopped = true
     }
 
-    /// Returns the value for the TNS metric.
-    /// - The value is only available after all initial resources have completed loading.
-    /// - The value is not updated after view is stopped.
-    /// - The value is only tracked if the app was in "active" state during view loading.
-    ///
-    /// - Parameters:
-    ///   - time: The current time (device time, no NTP offset).
-    ///   - appStateHistory: The history of app state transitions.
-    /// - Returns: The value for TNS metric.
-    func value(at time: Date, appStateHistory: AppStateHistory) -> TimeInterval? {
-        guard pendingResourcesStartDates.isEmpty else {
-            return lastReturnedValue // No new value until all pending resources are completed
-        }
-        guard let latestResourceEndDate = latestResourceEndDate else {
-            return nil // No resources were tracked
+    func value(with appStateHistory: AppStateHistory) -> Result<TimeInterval, TNSNoValueReason> {
+        // If we are loading a new wave (i.e., there are pending resources),
+        // return the *last finalized* TNS if it exists.
+        if !pendingInitialResources.isEmpty {
+            // If there's a previously completed wave:
+            if let oldTNS = latestCompletedTNSValue {
+                return validate(tnsValue: oldTNS, with: appStateHistory)
+            } else {
+                // No wave has ever completed, so the metric is not available yet.
+                return .failure(isViewStopped ? .viewStoppedBeforeSettled : .initialResourcesIncomplete)
+            }
         }
 
-        let ttnsValue = latestResourceEndDate.timeIntervalSince(viewStartDate)
-        let viewLoadedDate = viewStartDate.addingTimeInterval(ttnsValue)
-
-        guard viewLoadedDate >= viewStartDate else { // Sanity check to ensure valid time
-            lastReturnedValue = nil
-            return nil
+        // If no resources are currently pending, we might have a new, finalized TNS from this wave:
+        if let finalizedTNS = latestCompletedTNSValue {
+            return validate(tnsValue: finalizedTNS, with: appStateHistory)
         }
 
-        // Check if app was in "active" state during the view loading period
-        let viewLoadingAppStates = appStateHistory.take(between: viewStartDate...viewLoadedDate)
-        let trackedInForeground = !(viewLoadingAppStates.snapshots.contains { $0.state != .active })
+        // Otherwise, we have no wave completed yet, so figure out why.
+        return noValueReason()
+    }
 
-        guard trackedInForeground else {
-            lastReturnedValue = nil
-            return nil // The app was not always "active" during view loading
+    // MARK: - Private
+
+    /// Called when the current wave of pending resources has become empty (all completed or dropped).
+    private func finalizeWave() {
+        // If we actually got an end time for the wave, merge it with the latest completed TNS value.
+        if let waveEndTime = maxResourceEndTime {
+            if let existing = latestCompletedTNSValue {
+                latestCompletedTNSValue = max(existing, waveEndTime)
+            } else {
+                latestCompletedTNSValue = waveEndTime
+            }
+        }
+        maxResourceEndTime = nil // reset for the next wave
+    }
+
+    private func validate(tnsValue: TimeInterval, with appStateHistory: AppStateHistory) -> Result<TimeInterval, TNSNoValueReason> {
+        guard tnsValue >= 0 else { // sanity check, this shouldn't happen
+            return .failure(.invalidCalculatedValue)
         }
 
-        lastReturnedValue = ttnsValue
-        return ttnsValue
+        // Check if the app stayed foregrounded through the resource load time.
+        let loadingEndDate = viewStartDate.addingTimeInterval(tnsValue)
+        let loadingStates = appStateHistory.take(between: viewStartDate...loadingEndDate)
+        let wasAlwaysForeground = !loadingStates.snapshots.contains { $0.state != .active }
+
+        guard wasAlwaysForeground else {
+            return .failure(.appNotInForeground)
+        }
+
+        return .success(tnsValue)
+    }
+
+    private func noValueReason() -> Result<TimeInterval, TNSNoValueReason> {
+        // No resources at all
+        if totalResourcesCount == 0 {
+            return .failure(.noTrackedResources)
+        }
+        // No initial resources
+        if initialResourcesCount == 0 {
+            return .failure(.noInitialResources)
+        }
+        // Possibly all initial resources were invalid or dropped
+        if invalidInitialResourcesCount == initialResourcesCount {
+            return .failure(.initialResourcesInvalid)
+        }
+        if droppedInitialResourcesCount == initialResourcesCount {
+            return .failure(.initialResourcesDropped)
+        }
+
+        // Otherwise, no final TNS is computed yet—unknown cause
+        return .failure(.unknown)
     }
 }

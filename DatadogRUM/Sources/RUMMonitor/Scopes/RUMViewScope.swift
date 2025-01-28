@@ -107,6 +107,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private let networkSettledMetric: TNSMetricTracking
     /// Interaction-to-Next-View metric for this view.
     private let interactionToNextViewMetric: INVMetricTracking
+    /// Tracks "RUM View Ended" metric for this view.
+    private let viewEndedMetric: ViewEndedMetricController
 
     init(
         isInitialView: Bool,
@@ -142,6 +144,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
         self.networkSettledMetric = dependencies.networkSettledMetricFactory(viewStartTime, viewName)
         interactionToNextViewMetric.trackViewStart(at: startTime, name: name, viewID: viewUUID)
+
+        self.viewEndedMetric = dependencies.viewEndedMetricFactory()
 
         // Notify Synthetics if needed
         if dependencies.syntheticsTest != nil && self.context.sessionID != .nullUUID {
@@ -281,6 +285,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         if shouldComplete {
             interactionToNextViewMetric.trackViewComplete(viewID: viewUUID)
+            viewEndedMetric.send()
         }
 
         return !shouldComplete
@@ -516,7 +521,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let memoryInfo = vitalInfoSampler?.memory
         let refreshRateInfo = vitalInfoSampler?.refreshRate
         let isSlowRendered = refreshRateInfo?.meanValue.map { $0 < Constants.slowRenderingThresholdFPS }
-        let networkSettledTime = networkSettledMetric.value(at: command.time, appStateHistory: context.applicationStateHistory)
+        let networkSettledTime = networkSettledMetric.value(with: context.applicationStateHistory)
         let interactionToNextViewTime = interactionToNextViewMetric.value(for: viewUUID)
 
         let viewEvent = RUMViewEvent(
@@ -593,7 +598,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 interactionToNextPaint: nil,
                 interactionToNextPaintTargetSelector: nil,
                 interactionToNextPaintTime: nil,
-                interactionToNextViewTime: interactionToNextViewTime?.toInt64Nanoseconds,
+                interactionToNextViewTime: interactionToNextViewTime.value?.toInt64Nanoseconds,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered ?? false,
                 jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),
@@ -606,7 +611,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 memoryAverage: memoryInfo?.meanValue,
                 memoryMax: memoryInfo?.maxValue,
                 name: viewName,
-                networkSettledTime: networkSettledTime?.toInt64Nanoseconds,
+                networkSettledTime: networkSettledTime.value?.toInt64Nanoseconds,
                 referrer: nil,
                 refreshRateAverage: refreshRateInfo?.meanValue,
                 refreshRateMin: refreshRateInfo?.minValue,
@@ -623,11 +628,20 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies.fatalErrorContext.view = event
 
             // Track this view in Session Ended metric:
+            var instrumentationType: SessionEndedMetric.ViewInstrumentationType?
+            if let command = command as? RUMStartViewCommand, command.identity == identity {
+                instrumentationType = command.instrumentationType
+            }
             dependencies.sessionEndedMetric.track(
                 view: event,
-                instrumentationType: (command as? RUMStartViewCommand)?.instrumentationType,
+                instrumentationType: instrumentationType,
                 in: self.context.sessionID
             )
+
+            // Track this event in View Ended metric:
+            viewEndedMetric.track(viewEvent: event, instrumentationType: instrumentationType)
+            viewEndedMetric.track(networkSettledResult: networkSettledTime)
+            viewEndedMetric.track(interactionToNextViewResult: interactionToNextViewTime)
 
             // Update the state of the view in watchdog termination monitor
             // if a watchdog termination occurs in this session, in the next session
@@ -858,4 +872,13 @@ private extension VitalInfo {
 
 /// A protocol for `RUMCommand`s that can propagate their attributes to the `RUMViewScope``.
 internal protocol RUMViewScopePropagatableAttributes where Self: RUMCommand {
+}
+
+private extension Result {
+    var value: Success? {
+        switch self {
+        case .success(let success): return success
+        case .failure: return nil
+        }
+    }
 }

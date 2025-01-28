@@ -36,7 +36,12 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
 
         let featureScope = core.scope(for: RUMFeature.self)
-        let sessionEndedMetric = SessionEndedMetricController(telemetry: core.telemetry)
+        let sessionEndedMetric = SessionEndedMetricController(
+            telemetry: core.telemetry,
+            sampleRate: configuration.sessionEndedSampleRate
+        )
+        let tnsPredicateType = configuration.networkSettledResourcePredicate.metricPredicateType
+        let invPredicateType = configuration.nextViewActionPredicate.metricPredicateType
 
         var watchdogTermination: WatchdogTerminationMonitor?
         if configuration.trackWatchdogTerminations {
@@ -100,6 +105,14 @@ internal final class RUMFeature: DatadogRemoteFeature {
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,
+            viewEndedMetricFactory: {
+                return ViewEndedMetricController(
+                    tnsPredicateType: tnsPredicateType,
+                    invPredicateType: invPredicateType,
+                    telemetry: featureScope.telemetry,
+                    sampleRate: configuration.viewEndedSampleRate
+                )
+            },
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: { viewStartDate, viewName in
                 return TNSMetric(

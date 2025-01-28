@@ -802,6 +802,9 @@ extension RUMScopeDependencies {
         viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
         sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0),
+        viewEndedMetricFactory: @escaping () -> ViewEndedMetricController = {
+            ViewEndedMetricController(tnsPredicateType: .custom, invPredicateType: .custom, telemetry: NOPTelemetry(), sampleRate: 0)
+        },
         watchdogTermination: WatchdogTerminationMonitor = .mockRandom(),
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking = { _, _ in TNSMetricMock() },
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking = { INVMetricMock() }
@@ -823,6 +826,7 @@ extension RUMScopeDependencies {
             viewCache: viewCache,
             fatalErrorContext: fatalErrorContext,
             sessionEndedMetric: sessionEndedMetric,
+            viewEndedMetricFactory: viewEndedMetricFactory,
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory
@@ -846,6 +850,7 @@ extension RUMScopeDependencies {
         viewCache: ViewCache? = nil,
         fatalErrorContext: FatalErrorContextNotifying? = nil,
         sessionEndedMetric: SessionEndedMetricController? = nil,
+        viewEndedMetricFactory: (() -> ViewEndedMetricController)? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
         interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil
@@ -867,6 +872,7 @@ extension RUMScopeDependencies {
             viewCache: viewCache ?? self.viewCache,
             fatalErrorContext: fatalErrorContext ?? self.fatalErrorContext,
             sessionEndedMetric: sessionEndedMetric ?? self.sessionEndedMetric,
+            viewEndedMetricFactory: viewEndedMetricFactory ?? self.viewEndedMetricFactory,
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory
@@ -1235,9 +1241,9 @@ internal class TNSMetricMock: TNSMetricTracking {
     /// Tracks if `trackViewWasStopped()` was called.
     var viewWasStopped = false
     /// Mocked value returned by this metric.
-    var value: TimeInterval?
+    var value: Result<TimeInterval, TNSNoValueReason>
 
-    init(value: TimeInterval? = nil) {
+    init(value: Result<TimeInterval, TNSNoValueReason> = .failure(.unknown)) {
         self.value = value
     }
 
@@ -1257,7 +1263,7 @@ internal class TNSMetricMock: TNSMetricTracking {
         viewWasStopped = true
     }
 
-    func value(at time: Date, appStateHistory: AppStateHistory) -> TimeInterval? {
+    func value(with appStateHistory: AppStateHistory) -> Result<TimeInterval, TNSNoValueReason> {
         return value
     }
 }
@@ -1270,9 +1276,9 @@ internal class INVMetricMock: INVMetricTracking {
     /// Tracks calls to `trackViewComplete(viewID:)`.
     var trackedViewCompletes: Set<RUMUUID> = []
     /// Mocked value returned by this metric.
-    var mockedValue: TimeInterval?
+    var mockedValue: Result<TimeInterval, INVNoValueReason>
 
-    init(mockedValue: TimeInterval? = nil) {
+    init(mockedValue: Result<TimeInterval, INVNoValueReason> = .failure(.noTrackedActions)) {
         self.mockedValue = mockedValue
     }
 
@@ -1288,7 +1294,7 @@ internal class INVMetricMock: INVMetricTracking {
         trackedViewCompletes.insert(viewID)
     }
 
-    func value(for viewID: RUMUUID) -> TimeInterval? {
+    func value(for viewID: RUMUUID) -> Result<TimeInterval, INVNoValueReason> {
         return mockedValue
     }
 }
