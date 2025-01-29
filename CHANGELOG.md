@@ -1,4 +1,8 @@
-# Unreleased
+# 2.22.1 / 30-01-2025
+
+- [FIX] Fix memory leak in Session Replay where privacy overrides retained UIViews. See [#2182][]
+
+# 2.22.0 / 02-01-2025
 
 - [IMPROVEMENT] Add Datadog Configuration `backgroundTasksEnabled` ObjC API. See [#2148][]
 - [FIX] Prevent Session Replay to create two full snapshots in a row. See [#2154][]
@@ -811,6 +815,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2126]: https://github.com/DataDog/dd-sdk-ios/pull/2126
 [#2148]: https://github.com/DataDog/dd-sdk-ios/pull/2148
 [#2154]: https://github.com/DataDog/dd-sdk-ios/pull/2154
+[#2182]: https://github.com/DataDog/dd-sdk-ios/pull/2182
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
