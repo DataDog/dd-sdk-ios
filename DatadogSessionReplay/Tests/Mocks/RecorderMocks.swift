@@ -83,7 +83,7 @@ extension ViewAttributes: AnyMockable, RandomMockable {
         alpha: CGFloat = .mockAny(),
         isHidden: Bool = .mockAny(),
         intrinsicContentSize: CGSize = .mockAny(),
-        overrides: PrivacyOverrides = .mockAny()
+        overrides: PrivacyOverrideValues = .mockAny()
     ) -> ViewAttributes {
         return .init(
             frame: frame,
@@ -597,6 +597,35 @@ internal extension Optional where Wrapped == NodeSemantics {
         let builders: [T] = try expectWireframeBuilders(file: file, line: line)
         XCTAssertEqual(builders.count, 1, "Expected single \(T.self), found none", file: file, line: line)
         return try XCTUnwrap(builders.first, file: file, line: line)
+    }
+}
+
+extension PrivacyOverrideValues: AnyMockable, RandomMockable {
+    public static func mockAny() -> PrivacyOverrideValues {
+        return mockWith()
+    }
+
+    public static func mockRandom() -> PrivacyOverrideValues {
+        return mockWith(
+            textAndInputPrivacy: .mockRandom(),
+            imagePrivacy: .mockRandom(),
+            touchPrivacy: .mockRandom(),
+            hide: .mockRandom()
+        )
+    }
+
+    public static func mockWith(
+        textAndInputPrivacy: TextAndInputPrivacyLevel? = nil,
+        imagePrivacy: ImagePrivacyLevel? = nil,
+        touchPrivacy: TouchPrivacyLevel? = nil,
+        hide: Bool? = nil
+    ) -> PrivacyOverrideValues {
+        return PrivacyOverrideValues(
+            textAndInputPrivacy: textAndInputPrivacy,
+            imagePrivacy: imagePrivacy,
+            touchPrivacy: touchPrivacy,
+            hide: hide
+        )
     }
 }
 

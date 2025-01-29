@@ -90,9 +90,31 @@ extension PrivacyOverrides: Equatable {
 
 // MARK: - Merge
 extension PrivacyOverrides {
+    var hasAnyOverrides: Bool {
+        return textAndInputPrivacy != nil ||
+               imagePrivacy != nil ||
+               touchPrivacy != nil ||
+               hide != nil
+    }
+
     /// Merges child and parent overrides, giving precedence to the child’s overrides, if set.
     /// If the child has no overrides set, it inherits its parent’s overrides.
     internal static func merge(_ child: PrivacyOverrides, with parent: PrivacyOverrides) -> PrivacyOverrides {
+        // If neither has overrides, no need to create a new instance
+        if !child.hasAnyOverrides && !parent.hasAnyOverrides {
+            return child // or parent, doesn't matter since neither has overrides
+        }
+
+        // If child has no overrides, return parent
+        if !child.hasAnyOverrides {
+            return parent
+        }
+
+        // If parent has no overrides, return child
+        if !parent.hasAnyOverrides {
+            return child
+        }
+
         let merged = child
 
         // Apply child overrides if present
@@ -112,4 +134,15 @@ extension PrivacyOverrides {
 
 // This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias PrivacyOverrides = SessionReplayPrivacyOverrides
+
+internal struct PrivacyOverrideValues: Equatable {
+    let textAndInputPrivacy: TextAndInputPrivacyLevel?
+    let imagePrivacy: ImagePrivacyLevel?
+    let touchPrivacy: TouchPrivacyLevel?
+    let hide: Bool?
+
+    static func == (lhs: PrivacyOverrideValues, rhs: PrivacyOverrideValues) -> Bool {
+        return lhs.textAndInputPrivacy == rhs.textAndInputPrivacy && lhs.imagePrivacy == rhs.imagePrivacy && lhs.touchPrivacy == rhs.touchPrivacy && lhs.hide == rhs.hide
+    }
+}
 #endif

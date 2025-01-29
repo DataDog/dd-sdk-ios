@@ -101,7 +101,7 @@ public struct SessionReplayViewAttributes: Equatable {
     var intrinsicContentSize: CGSize
 
     /// If the view has privacy overrides, which take precedence over global masking privacy levels.
-    var overrides: PrivacyOverrides
+    var overrides: PrivacyOverrideValues
 }
 
 // This alias enables us to have a more unique name exposed through public-internal access level
@@ -124,7 +124,12 @@ extension ViewAttributes {
         self.alpha = view.alpha
         self.isHidden = view.isHidden
         self.intrinsicContentSize = view.intrinsicContentSize
-        self.overrides = overrides
+        self.overrides = PrivacyOverrideValues(
+            textAndInputPrivacy: overrides.textAndInputPrivacy,
+            imagePrivacy: overrides.imagePrivacy,
+            touchPrivacy: overrides.touchPrivacy,
+            hide: overrides.hide
+        )
     }
 
     /// If the view is technically visible (different than `!isHidden` because it also considers `alpha` and `frame != .zero`).

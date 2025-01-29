@@ -437,6 +437,43 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertEqual(core.recordsCountByViewID, ["abc": 4])
     }
 
+    func testViewRetentionInBackgroundProcessing() {
+        weak var weakView: UIView?
+
+        autoreleasepool {
+            let view = UIView()
+            weakView = view
+            view.dd.sessionReplayPrivacyOverrides.imagePrivacy = .maskAll
+
+            let time = Date()
+            let rum: RUMContext = .mockWith(serverTimeOffset: 0)
+
+            // Given
+            let core = PassthroughCoreMock()
+            let srContextPublisher = SRContextPublisher(core: core)
+            let processor = SnapshotProcessor(
+                queue: NoQueue(),
+                recordWriter: recordWriter,
+                resourceProcessor: ResourceProcessorSpy(),
+                srContextPublisher: srContextPublisher,
+                telemetry: TelemetryMock()
+            )
+
+            // When
+            let snapshot = generateViewTreeSnapshot(for: view, date: time, rumContext: rum)
+            processor.process(viewTreeSnapshot: snapshot, touchSnapshot: nil)
+
+            // Then
+            XCTAssertEqual(recordWriter.records.count, 1)
+
+            // View should still exist here
+            XCTAssertNotNil(weakView)
+        }
+
+        // View should be deallocated even though snapshot was processed in background
+        XCTAssertNil(weakView)
+    }
+
     // MARK: - `ViewTreeSnapshot` generation
 
     private let snapshotBuilder = ViewTreeSnapshotBuilder(additionalNodeRecorders: [], featureFlags: .allEnabled)
