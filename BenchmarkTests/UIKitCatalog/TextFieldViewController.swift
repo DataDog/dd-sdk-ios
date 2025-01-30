@@ -120,7 +120,6 @@ class TextFieldViewController: BaseTableViewController {
         let purpleImage = UIImage(named: "text_field_purple_right_view", in: .module, compatibleWith: nil)!
         let purpleImageButton = UIButton(type: .custom)
         purpleImageButton.bounds = CGRect(x: 0, y: 0, width: purpleImage.size.width, height: purpleImage.size.height)
-        purpleImageButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 5)
         purpleImageButton.setImage(purpleImage, for: .normal)
         purpleImageButton.addTarget(self, action: #selector(TextFieldViewController.customTextFieldPurpleButtonClicked), for: .touchUpInside)
         textField.rightView = purpleImageButton

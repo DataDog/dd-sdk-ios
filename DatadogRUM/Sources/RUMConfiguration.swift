@@ -147,6 +147,29 @@ extension RUM {
         /// Default: `.average`.
         public var vitalsUpdateFrequency: VitalsFrequency?
 
+        /// The predicate used to classify resources for the Time-to-Network-Settled (TNS) view metric calculation.
+        ///
+        /// **Time-to-Network-Settled (TNS)** is a metric that measures the time from when a view becomes visible until all resources considered part of the view loading process
+        /// are fully loaded. This metric helps to understand how long it takes for a view to be fully ready with all required resources loaded.
+        ///
+        /// The `NetworkSettledResourcePredicate` defines which resources are included in the TNS calculation based on their properties (e.g., start time, resource URL, etc.).
+        ///
+        /// Default: The default predicate, `TimeBasedTNSResourcePredicate`, calculates TNS using all resources that start within **100ms** of the view start.
+        /// This time threshold can be customized by providing a custom predicate or adjusting the threshold in the default predicate.
+        public var networkSettledResourcePredicate: NetworkSettledResourcePredicate
+
+        /// The predicate used to classify the "last interaction" for the Interaction-to-Next-View (INV) metric.
+        ///
+        /// **Interaction-to-Next-View (INV)** is a metric that measures how long it takes from the last user interaction in a previous view
+        /// until the next view starts. It provides insight into how quickly a new view is displayed after a user’s action.
+        ///
+        /// The `NextViewActionPredicate` determines which action in the previous view should be considered the "last interaction" for INV,
+        /// based on properties such as action type, name, or timing relative to the next view’s start.
+        ///
+        /// Default: The default predicate, `TimeBasedINVActionPredicate`, classifies actions as the last interaction if they occur within a
+        /// 3-second threshold before the next view starts. You can customize this time threshold or provide your own predicate.
+        public var nextViewActionPredicate: NextViewActionPredicate
+
         /// Custom mapper for RUM view events.
         ///
         /// It can be used to modify view events before they are sent. The implementation of the mapper should
@@ -266,6 +289,10 @@ extension RUM {
 
         /// An extra sampling rate for configuration telemetry events. It is applied on top of the value configured in public `telemetrySampleRate`.
         internal var configurationTelemetrySampleRate: SampleRate = 20.0
+        /// Sample rate for "view ended" metric in telemetry.
+        internal var viewEndedSampleRate = ViewEndedMetricController.defaultSampleRate
+        /// Sample rate for "session ended" metric in telemetry.
+        internal var sessionEndedSampleRate = SessionEndedMetricController.defaultSampleRate
 
         internal var uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
 
@@ -345,6 +372,10 @@ extension RUM.Configuration {
     ///   - appHangThreshold: The threshold for App Hangs monitoring (in seconds). Default: `nil`.
     ///   - trackWatchdogTerminations: Determines whether the SDK should track application termination by the watchdog. Default: `false`.
     ///   - vitalsUpdateFrequency: The preferred frequency for collecting RUM vitals. Default: `.average`.
+    ///   - networkSettledResourcePredicate: Predicate used to classify resources for the Time-to-Network-Settled (TNS) metric calculation.
+    ///     Default: `TimeBasedTNSResourcePredicate()`.
+    ///   - nextViewActionPredicate: The predicate used to classify which action in the previous view is considered the "last interaction"
+    ///     for the Interaction-to-Next-View (INV) metric. Default: `TimeBasedINVActionPredicate()`.
     ///   - viewEventMapper: Custom mapper for RUM view events. Default: `nil`.
     ///   - resourceEventMapper: Custom mapper for RUM resource events. Default: `nil`.
     ///   - actionEventMapper: Custom mapper for RUM action events. Default: `nil`.
@@ -365,6 +396,8 @@ extension RUM.Configuration {
         appHangThreshold: TimeInterval? = nil,
         trackWatchdogTerminations: Bool = false,
         vitalsUpdateFrequency: VitalsFrequency? = .average,
+        networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
+        nextViewActionPredicate: NextViewActionPredicate = TimeBasedINVActionPredicate(),
         viewEventMapper: RUM.ViewEventMapper? = nil,
         resourceEventMapper: RUM.ResourceEventMapper? = nil,
         actionEventMapper: RUM.ActionEventMapper? = nil,
@@ -384,6 +417,8 @@ extension RUM.Configuration {
         self.longTaskThreshold = longTaskThreshold
         self.appHangThreshold = appHangThreshold
         self.vitalsUpdateFrequency = vitalsUpdateFrequency
+        self.networkSettledResourcePredicate = networkSettledResourcePredicate
+        self.nextViewActionPredicate = nextViewActionPredicate
         self.viewEventMapper = viewEventMapper
         self.resourceEventMapper = resourceEventMapper
         self.actionEventMapper = actionEventMapper

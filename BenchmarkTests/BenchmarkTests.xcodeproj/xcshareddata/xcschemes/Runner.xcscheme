@@ -58,7 +58,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "BENCHMARK_SCENARIO"
-            value = "sessionReplay"
+            value = "sessionReplaySwiftUI"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

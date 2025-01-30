@@ -247,6 +247,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         _ = process(
             command: RUMApplicationStartCommand(
                 time: command.time,
+                globalAttributes: command.globalAttributes,
                 attributes: command.attributes
             ),
             context: context,

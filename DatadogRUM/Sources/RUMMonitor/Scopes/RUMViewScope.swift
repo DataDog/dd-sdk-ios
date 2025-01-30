@@ -35,7 +35,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// The value holding stable identity of this RUM View.
     let identity: ViewIdentifier
     /// View attributes.
-    private(set) var attributes: [AttributeKey: AttributeValue]
+    private(set) var attributes: [AttributeKey: AttributeValue] = [:]
     /// View custom timings, keyed by name. The value of timing is given in nanoseconds.
     private(set) var customTimings: [String: Int64] = [:]
 
@@ -68,7 +68,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Tells if this View is the active one.
     /// `true` for every new started View.
     /// `false` if the View was stopped or any other View was started.
-    private(set) var isActiveView = true
+    private(set) var isActiveView = true {
+        didSet {
+            if oldValue && !isActiveView {
+                networkSettledMetric.trackViewWasStopped()
+            }
+        }
+    }
     /// Tells if this scope has received the "start" command.
     /// If `didReceiveStartCommand == true` and another "start" command is received for this View this scope is marked as inactive.
     private var didReceiveStartCommand = false
@@ -97,6 +103,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private var viewPerformanceMetrics: [PerformanceMetric: VitalInfo] = [:]
 
+    /// Time-to-Network-Settled metric for this view.
+    private let networkSettledMetric: TNSMetricTracking
+    /// Interaction-to-Next-View metric for this view.
+    private let interactionToNextViewMetric: INVMetricTracking
+    /// Tracks "RUM View Ended" metric for this view.
+    private let viewEndedMetric: ViewEndedMetricController
+
     init(
         isInitialView: Bool,
         parent: RUMContextProvider,
@@ -104,22 +117,22 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         identity: ViewIdentifier,
         path: String,
         name: String,
-        attributes: [AttributeKey: AttributeValue],
         customTimings: [String: Int64],
         startTime: Date,
-        serverTimeOffset: TimeInterval
+        serverTimeOffset: TimeInterval,
+        interactionToNextViewMetric: INVMetricTracking
     ) {
         self.parent = parent
         self.dependencies = dependencies
         self.isInitialView = isInitialView
         self.identity = identity
-        self.attributes = attributes
         self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.viewPath = path
         self.viewName = name
         self.viewStartTime = startTime
         self.serverTimeOffset = serverTimeOffset
+        self.interactionToNextViewMetric = interactionToNextViewMetric
 
         self.vitalInfoSampler = dependencies.vitalsReaders.map {
             .init(
@@ -129,6 +142,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 frequency: $0.frequency
             )
         }
+        self.networkSettledMetric = dependencies.networkSettledMetricFactory(viewStartTime, viewName)
+        interactionToNextViewMetric.trackViewStart(at: startTime, name: name, viewID: viewUUID)
+
+        self.viewEndedMetric = dependencies.viewEndedMetricFactory()
 
         // Notify Synthetics if needed
         if dependencies.syntheticsTest != nil && self.context.sessionID != .nullUUID {
@@ -266,6 +283,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let hasNoPendingResources = resourceScopes.isEmpty
         let shouldComplete = !isActiveView && hasNoPendingResources
 
+        if shouldComplete {
+            interactionToNextViewMetric.trackViewComplete(viewID: viewUUID)
+            viewEndedMetric.send()
+        }
+
         return !shouldComplete
     }
 
@@ -292,19 +314,23 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             context: context,
             dependencies: dependencies,
             resourceKey: command.resourceKey,
-            attributes: command.attributes,
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             url: command.url,
             httpMethod: command.httpMethod,
             resourceKindBasedOnRequest: command.kind,
             spanContext: command.spanContext,
-            onResourceEventSent: { [weak self] in
-                self?.resourcesCount += 1
+            networkSettledMetric: networkSettledMetric,
+            onResourceEvent: { [weak self] wasSent in
+                if wasSent {
+                    self?.resourcesCount += 1
+                }
                 self?.needsViewUpdate = true
             },
-            onErrorEventSent: { [weak self] in
-                self?.errorsCount += 1
+            onErrorEvent: { [weak self] wasSent in
+                if wasSent {
+                    self?.errorsCount += 1
+                }
                 self?.needsViewUpdate = true
             }
         )
@@ -316,11 +342,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies: dependencies,
             name: command.name,
             actionType: command.actionType,
-            attributes: command.attributes,
+            attributes: command.globalAttributes.merging(command.attributes, uniquingKeysWith: { $1 }),
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             isContinuous: true,
             instrumentation: command.instrumentation,
+            interactionToNextViewMetric: interactionToNextViewMetric,
             onActionEventSent: { [weak self] event in
                 self?.onActionEventSent(event)
             }
@@ -333,11 +360,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies: dependencies,
             name: command.name,
             actionType: command.actionType,
-            attributes: command.attributes,
+            attributes: command.globalAttributes.merging(command.attributes, uniquingKeysWith: { $1 }),
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             isContinuous: false,
             instrumentation: command.instrumentation,
+            interactionToNextViewMetric: interactionToNextViewMetric,
             onActionEventSent: { [weak self] event in
                 self?.onActionEventSent(event)
             }
@@ -359,7 +387,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         _ = customActionScope.process(
             command: RUMStopUserActionCommand(
                 time: command.time,
-                attributes: [:],
+                globalAttributes: command.globalAttributes,
+                attributes: command.attributes,
                 actionType: .custom,
                 name: nil
             ),
@@ -467,7 +496,20 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // RUMM-3133 Don't override View attributes with commands that are not view related.
         if command is RUMViewScopePropagatableAttributes {
-            attributes.merge(rumCommandAttributes: command.attributes)
+            attributes.merge(rumCommandAttributes: command.globalAttributes)
+
+            // The local attributes should only be updated by commands related to this 'RUMViewScope'
+            switch command {
+            case let command as RUMStartViewCommand where identity == command.identity:
+                attributes.merge(rumCommandAttributes: command.attributes)
+            case let command as RUMStopViewCommand where identity == command.identity:
+                attributes.merge(rumCommandAttributes: command.attributes)
+            case let command as RUMAddViewLoadingTime:
+                attributes.merge(rumCommandAttributes: command.attributes)
+            case let command as RUMAddViewTimingCommand:
+                attributes.merge(rumCommandAttributes: command.attributes)
+            default: break
+            }
         }
 
         let isCrash = (command as? RUMErrorCommand).map { $0.isCrash ?? false } ?? false
@@ -479,6 +521,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let memoryInfo = vitalInfoSampler?.memory
         let refreshRateInfo = vitalInfoSampler?.refreshRate
         let isSlowRendered = refreshRateInfo?.meanValue.map { $0 < Constants.slowRenderingThresholdFPS }
+        let networkSettledTime = networkSettledMetric.value(with: context.applicationStateHistory)
+        let interactionToNextViewTime = interactionToNextViewMetric.value(for: viewUUID)
 
         let viewEvent = RUMViewEvent(
             dd: .init(
@@ -554,7 +598,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 interactionToNextPaint: nil,
                 interactionToNextPaintTargetSelector: nil,
                 interactionToNextPaintTime: nil,
-                interactionToNextViewTime: nil,
+                interactionToNextViewTime: interactionToNextViewTime.value?.toInt64Nanoseconds,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered ?? false,
                 jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),
@@ -567,7 +611,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 memoryAverage: memoryInfo?.meanValue,
                 memoryMax: memoryInfo?.maxValue,
                 name: viewName,
-                networkSettledTime: nil,
+                networkSettledTime: networkSettledTime.value?.toInt64Nanoseconds,
                 referrer: nil,
                 refreshRateAverage: refreshRateInfo?.meanValue,
                 refreshRateMin: refreshRateInfo?.minValue,
@@ -584,11 +628,20 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies.fatalErrorContext.view = event
 
             // Track this view in Session Ended metric:
+            var instrumentationType: SessionEndedMetric.ViewInstrumentationType?
+            if let command = command as? RUMStartViewCommand, command.identity == identity {
+                instrumentationType = command.instrumentationType
+            }
             dependencies.sessionEndedMetric.track(
                 view: event,
-                instrumentationType: (command as? RUMStartViewCommand)?.instrumentationType,
+                instrumentationType: instrumentationType,
                 in: self.context.sessionID
             )
+
+            // Track this event in View Ended metric:
+            viewEndedMetric.track(viewEvent: event, instrumentationType: instrumentationType)
+            viewEndedMetric.track(networkSettledResult: networkSettledTime)
+            viewEndedMetric.track(interactionToNextViewResult: interactionToNextViewTime)
 
             // Update the state of the view in watchdog termination monitor
             // if a watchdog termination occurs in this session, in the next session
@@ -602,7 +655,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private func sendErrorEvent(on command: RUMErrorCommand, context: DatadogContext, writer: Writer) {
         errorsCount += 1
 
-        var commandAttributes = command.attributes
+        var commandAttributes = command.globalAttributes.merging(command.attributes) { $1 }
         let errorFingerprint: String? = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
         var timeSinceAppStart: Int64? = nil
         if let startTime = context.launchTime?.launchDate {
@@ -716,7 +769,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: command.attributes),
+            context: .init(contextInfo: command.globalAttributes.merging(command.attributes) { $1 }),
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
@@ -819,4 +872,13 @@ private extension VitalInfo {
 
 /// A protocol for `RUMCommand`s that can propagate their attributes to the `RUMViewScope``.
 internal protocol RUMViewScopePropagatableAttributes where Self: RUMCommand {
+}
+
+private extension Result {
+    var value: Success? {
+        switch self {
+        case .success(let success): return success
+        case .failure: return nil
+        }
+    }
 }
