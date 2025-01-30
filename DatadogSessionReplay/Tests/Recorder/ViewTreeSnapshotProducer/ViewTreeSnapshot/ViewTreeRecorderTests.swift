@@ -367,7 +367,7 @@ class ViewTreeRecorderTests: XCTestCase {
         XCTAssertEqual(nodes.count, 1)
         let node = nodes.first
         XCTAssertNotNil(node)
-        XCTAssertEqual(node?.viewAttributes.overrides.imagePrivacy, viewImagePrivacy)
+        XCTAssertEqual(node?.viewAttributes.imagePrivacy, viewImagePrivacy)
         let builder = node?.wireframesBuilder as? UIImageViewWireframesBuilder
         XCTAssertNotNil(builder)
         XCTAssertNotNil(builder!.imageResource)
@@ -390,8 +390,8 @@ class ViewTreeRecorderTests: XCTestCase {
 
         // Then
         XCTAssertEqual(nodes.count, 2)
-        XCTAssertEqual(nodes[0].viewAttributes.overrides.imagePrivacy, parentImagePrivacy)
-        XCTAssertEqual(nodes[1].viewAttributes.overrides.imagePrivacy, childImagePrivacy)
+        XCTAssertEqual(nodes[0].viewAttributes.imagePrivacy, parentImagePrivacy)
+        XCTAssertEqual(nodes[1].viewAttributes.imagePrivacy, childImagePrivacy)
         let builder = nodes[1].wireframesBuilder as? UIImageViewWireframesBuilder
         XCTAssertNotNil(builder)
         XCTAssertNotNil(builder!.imageResource)
@@ -414,8 +414,8 @@ class ViewTreeRecorderTests: XCTestCase {
 
         // Then
         XCTAssertEqual(nodes.count, 2)
-        XCTAssertEqual(nodes[0].viewAttributes.overrides.imagePrivacy, parentImagePrivacy)
-        XCTAssertEqual(nodes[1].viewAttributes.overrides.imagePrivacy, childImagePrivacy)
+        XCTAssertEqual(nodes[0].viewAttributes.imagePrivacy, parentImagePrivacy)
+        XCTAssertEqual(nodes[1].viewAttributes.imagePrivacy, childImagePrivacy)
         let builder = nodes[1].wireframesBuilder as? UIImageViewWireframesBuilder
         XCTAssertNotNil(builder)
         XCTAssertNil(builder!.imageResource)

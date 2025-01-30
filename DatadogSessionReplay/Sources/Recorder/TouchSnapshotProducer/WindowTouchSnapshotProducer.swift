@@ -107,7 +107,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
 
         var view: UIView? = initialView
         while view != nil {
-            if let touchPrivacy = view?.dd.sessionReplayPrivacyOverrides.touchPrivacy {
+            if let touchPrivacy = view?.dd._privacyOverrides?.touchPrivacy {
                 return touchPrivacy
             }
             view = view?.superview

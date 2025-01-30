@@ -104,7 +104,7 @@ class UITextViewRecorderTests: XCTestCase {
         textView.text = .mockRandom()
         textView.isEditable = false
         viewAttributes = .mock(fixture: .visible())
-        viewAttributes.overrides = .mockWith(textAndInputPrivacy: .maskAll)
+        viewAttributes.textAndInputPrivacy = .maskAll
 
         // When
         let semantics = try XCTUnwrap(recorder.semantics(of: textView, with: viewAttributes, in: .mockAny()) as? SpecificElement)

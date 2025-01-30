@@ -112,7 +112,7 @@ class UITextFieldRecorderTests: XCTestCase {
         // Given
         textField.text = .mockRandom()
         viewAttributes = .mock(fixture: .visible())
-        viewAttributes.overrides = .mockWith(textAndInputPrivacy: .maskAll)
+        viewAttributes.textAndInputPrivacy = .maskAll
 
         // When
         let semantics = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockAny()) as? SpecificElement)
