@@ -58,7 +58,7 @@ class UISegmentRecorderTests: XCTestCase {
     func testWhenSegmentHasTextPrivacyOverride() throws {
         // Given
         viewAttributes = .mock(fixture: .visible())
-        viewAttributes.overrides = .mockWith(textAndInputPrivacy: .maskAll)
+        viewAttributes.textAndInputPrivacy = .maskAll
 
         // When
         let semantics = try XCTUnwrap(recorder.semantics(of: segment, with: viewAttributes, in: .mockAny()) as? SpecificElement)

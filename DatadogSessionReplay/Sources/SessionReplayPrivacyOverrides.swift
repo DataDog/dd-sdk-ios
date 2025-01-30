@@ -8,6 +8,10 @@
 import UIKit
 import DatadogInternal
 
+// MARK: - Associated Keys
+
+internal var associatedOverridesKey: UInt8 = 3
+
 // MARK: - DatadogExtension for UIView
 
 /// Extension to provide access to `SessionReplayPrivacyOverrides` for any `UIView`.
@@ -15,73 +19,45 @@ extension DatadogExtension where ExtendedType: UIView {
     /// Provides access to Session Replay override settings for the view.
     /// Usage: `myView.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy = .maskNone`.
     public var sessionReplayPrivacyOverrides: SessionReplayPrivacyOverrides {
-        return SessionReplayPrivacyOverrides(self.type)
+        if let overrides = _privacyOverrides {
+            return overrides
+        }
+
+        let overrides = SessionReplayPrivacyOverrides()
+        objc_setAssociatedObject(type, &associatedOverridesKey, overrides, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        return overrides
+    }
+
+    /// Internal accessor
+    internal var _privacyOverrides: SessionReplayPrivacyOverrides? {
+        objc_getAssociatedObject(type, &associatedOverridesKey) as? SessionReplayPrivacyOverrides
     }
 }
-
-// MARK: - Associated Keys
-
-private var associatedTextAndInputPrivacyKey: UInt8 = 3
-private var associatedImagePrivacyKey: UInt8 = 4
-private var associatedTouchPrivacyKey: UInt8 = 5
-private var associatedHiddenPrivacyKey: UInt8 = 6
 
 // MARK: - SessionReplayPrivacyOverrides
 
 /// `UIView` extension  to manage the Session Replay privacy override settings.
 public final class SessionReplayPrivacyOverrides {
-    internal let view: UIView
-
-    public init(_ view: UIView) {
-        self.view = view
-    }
-
     /// Text and input privacy override (e.g., mask or unmask specific text fields, labels, etc.).
-    public var textAndInputPrivacy: TextAndInputPrivacyLevel? {
-        get {
-            return objc_getAssociatedObject(view, &associatedTextAndInputPrivacyKey) as? TextAndInputPrivacyLevel
-        }
-        set {
-            objc_setAssociatedObject(view, &associatedTextAndInputPrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
-        }
-    }
-
+    public var textAndInputPrivacy: TextAndInputPrivacyLevel?
     /// Image privacy override (e.g., mask or unmask specific images).
-    public var imagePrivacy: ImagePrivacyLevel? {
-        get {
-            return objc_getAssociatedObject(view, &associatedImagePrivacyKey) as? ImagePrivacyLevel
-        }
-        set {
-            objc_setAssociatedObject(view, &associatedImagePrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
-        }
-    }
-
+    public var imagePrivacy: ImagePrivacyLevel?
     /// Touch privacy override (e.g., hide or show touch interactions on specific views).
-    public var touchPrivacy: TouchPrivacyLevel? {
-        get {
-            return objc_getAssociatedObject(view, &associatedTouchPrivacyKey) as? TouchPrivacyLevel
-        }
-        set {
-            objc_setAssociatedObject(view, &associatedTouchPrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
-        }
-    }
-
+    public var touchPrivacy: TouchPrivacyLevel?
     /// Hidden privacy override (e.g., mark a view as hidden, rendering it as an opaque wireframe in replays).
-    public var hide: Bool? {
-        get {
-            return objc_getAssociatedObject(view, &associatedHiddenPrivacyKey) as? Bool
-        }
-        set {
-            objc_setAssociatedObject(view, &associatedHiddenPrivacyKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
-        }
+    public var hide: Bool?
+
+    /// Creates a new instance of privacy overrides.
+    internal init() {
+        // Initialize with all properties as nil
     }
 }
 
 // MARK: - Equatable
+
 extension PrivacyOverrides: Equatable {
     public static func == (lhs: SessionReplayPrivacyOverrides, rhs: SessionReplayPrivacyOverrides) -> Bool {
-        return lhs.view === rhs.view
-        && lhs.textAndInputPrivacy == rhs.textAndInputPrivacy
+        return lhs.textAndInputPrivacy == rhs.textAndInputPrivacy
         && lhs.imagePrivacy == rhs.imagePrivacy
         && lhs.touchPrivacy == rhs.touchPrivacy
         && lhs.hide == rhs.hide
@@ -89,60 +65,34 @@ extension PrivacyOverrides: Equatable {
 }
 
 // MARK: - Merge
-extension PrivacyOverrides {
-    var hasAnyOverrides: Bool {
-        return textAndInputPrivacy != nil ||
-               imagePrivacy != nil ||
-               touchPrivacy != nil ||
-               hide != nil
-    }
 
+extension PrivacyOverrides {
     /// Merges child and parent overrides, giving precedence to the child’s overrides, if set.
     /// If the child has no overrides set, it inherits its parent’s overrides.
-    internal static func merge(_ child: PrivacyOverrides, with parent: PrivacyOverrides) -> PrivacyOverrides {
-        // If neither has overrides, no need to create a new instance
-        if !child.hasAnyOverrides && !parent.hasAnyOverrides {
-            return child // or parent, doesn't matter since neither has overrides
-        }
-
-        // If child has no overrides, return parent
-        if !child.hasAnyOverrides {
+    internal static func merge(_ child: PrivacyOverrides?, with parent: PrivacyOverrides?) -> PrivacyOverrides? {
+        guard let child = child else {
             return parent
         }
-
-        // If parent has no overrides, return child
-        if !parent.hasAnyOverrides {
+        guard let parent = parent else {
             return child
         }
 
-        let merged = child
+        // Apply parent overrides where child has none set
+        child.textAndInputPrivacy = child.textAndInputPrivacy ?? parent.textAndInputPrivacy
+        child.imagePrivacy = child.imagePrivacy ?? parent.imagePrivacy
+        child.touchPrivacy = child.touchPrivacy ?? parent.touchPrivacy
 
-        // Apply child overrides if present
-        merged.textAndInputPrivacy = merged.textAndInputPrivacy ?? parent.textAndInputPrivacy
-        merged.imagePrivacy = merged.imagePrivacy ?? parent.imagePrivacy
-        merged.touchPrivacy = merged.touchPrivacy ?? parent.touchPrivacy
         /// `hide` is a boolean, so we explicitly check if either the parent or the child has it set to `true`.
-        ///  `false` and `nil` behave the same way, it deactivates the `hide` override.
+        /// `false` and `nil` behave the same way, it deactivates the `hide` override.
         /// In practice, this check should not hit, as parent views with `hide = true` should ignore their children.
-        if merged.hide == true || parent.hide == true {
-            merged.hide = true
+        if child.hide == true || parent.hide == true {
+            child.hide = true
         }
 
-        return merged
+        return child
     }
 }
 
 // This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias PrivacyOverrides = SessionReplayPrivacyOverrides
-
-internal struct PrivacyOverrideValues: Equatable {
-    let textAndInputPrivacy: TextAndInputPrivacyLevel?
-    let imagePrivacy: ImagePrivacyLevel?
-    let touchPrivacy: TouchPrivacyLevel?
-    let hide: Bool?
-
-    static func == (lhs: PrivacyOverrideValues, rhs: PrivacyOverrideValues) -> Bool {
-        return lhs.textAndInputPrivacy == rhs.textAndInputPrivacy && lhs.imagePrivacy == rhs.imagePrivacy && lhs.touchPrivacy == rhs.touchPrivacy && lhs.hide == rhs.hide
-    }
-}
 #endif

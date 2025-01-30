@@ -7,8 +7,6 @@
 #if os(iOS)
 import UIKit
 
-private var associatedSROverrideKey: UInt8 = 0
-
 // MARK: UIView extension
 /// Objective-C accessible extension for UIView
 @objc
@@ -30,7 +28,12 @@ public final class objc_SessionReplayPrivacyOverrides: NSObject {
 
     @objc
     public init(view: UIView) {
-        _swift = PrivacyOverrides(view)
+        if let existing = view.dd._privacyOverrides {
+            _swift = existing
+        } else {
+            _swift = SessionReplayPrivacyOverrides()
+            objc_setAssociatedObject(view, &associatedOverridesKey, _swift, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
         super.init()
     }
 
