@@ -100,8 +100,12 @@ public struct SessionReplayViewAttributes: Equatable {
     /// Original view's `.intrinsicContentSize`.
     var intrinsicContentSize: CGSize
 
-    /// If the view has privacy overrides, which take precedence over global masking privacy levels.
-    var overrides: PrivacyOverrides
+    /// Values copied from privacy overrides, if the view has privacy overrides,
+    /// which take precedence over global masking privacy levels.
+    var textAndInputPrivacy: TextAndInputPrivacyLevel?
+    var imagePrivacy: ImagePrivacyLevel?
+    var touchPrivacy: TouchPrivacyLevel?
+    var hide: Bool?
 }
 
 // This alias enables us to have a more unique name exposed through public-internal access level
@@ -114,7 +118,7 @@ extension ViewAttributes {
     ///   - view: The view instance.
     ///   - frame: The view frame in root view's coordinate space.
     ///   - clip: The clipping frame in root view's coordinate space.
-    init(view: UIView, frame: CGRect, clip: CGRect, overrides: SessionReplayPrivacyOverrides) {
+    init(view: UIView, frame: CGRect, clip: CGRect, overrides: SessionReplayPrivacyOverrides?) {
         self.frame = frame
         self.clip = clip
         self.backgroundColor = view.backgroundColor?.cgColor.safeCast
@@ -124,7 +128,10 @@ extension ViewAttributes {
         self.alpha = view.alpha
         self.isHidden = view.isHidden
         self.intrinsicContentSize = view.intrinsicContentSize
-        self.overrides = overrides
+        self.textAndInputPrivacy = overrides?.textAndInputPrivacy
+        self.imagePrivacy = overrides?.imagePrivacy
+        self.touchPrivacy = overrides?.touchPrivacy
+        self.hide = overrides?.hide
     }
 
     /// If the view is technically visible (different than `!isHidden` because it also considers `alpha` and `frame != .zero`).
@@ -165,13 +172,13 @@ extension ViewAttributes {
     /// Resolves the effective privacy level for text and input elements by considering the view's local override.
     /// Falls back to the global privacy setting in the absence of local overrides.
     func resolveTextAndInputPrivacyLevel(in context: ViewTreeRecordingContext) -> TextAndInputPrivacyLevel {
-        return self.overrides.textAndInputPrivacy ?? context.recorder.textAndInputPrivacy
+        return self.textAndInputPrivacy ?? context.recorder.textAndInputPrivacy
     }
 
     /// Resolves the effective privacy level for image elements by considering the view's local override.
     /// Falls back to the global privacy setting in the absence of local overrides.
     func resolveImagePrivacyLevel(in context: ViewTreeRecordingContext) -> ImagePrivacyLevel {
-        return self.overrides.imagePrivacy ?? context.recorder.imagePrivacy
+        return self.imagePrivacy ?? context.recorder.imagePrivacy
     }
 }
 

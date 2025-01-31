@@ -5,6 +5,10 @@
 - [FIX] Fix SwiftUI placeholder in Session Replay when Feature Flag is disabled. See [#2170][]
 - [IMPROVEMENT] Add `addAttributes` and `removeAttributes` APIs. See [#2177][]
 
+# 2.22.1 / 30-01-2025
+
+- [FIX] Fix memory leak in Session Replay where privacy overrides retained UIViews. See [#2182][]
+
 # 2.22.0 / 02-01-2025
 
 - [IMPROVEMENT] Add Datadog Configuration `backgroundTasksEnabled` ObjC API. See [#2148][]
@@ -822,6 +826,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2154]: https://github.com/DataDog/dd-sdk-ios/pull/2154
 [#2170]: https://github.com/DataDog/dd-sdk-ios/pull/2170
 [#2177]: https://github.com/DataDog/dd-sdk-ios/pull/2177
+[#2182]: https://github.com/DataDog/dd-sdk-ios/pull/2182
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

@@ -40,7 +40,7 @@ internal class UIViewRecorder: NodeRecorder {
             return semantics
         }
 
-        if attributes.overrides.hide == true {
+        if attributes.hide == true {
             let builder = UIViewWireframesBuilder(
                 wireframeID: context.ids.nodeID(view: view, nodeRecorder: self),
                 attributes: attributes
@@ -75,7 +75,7 @@ internal struct UIViewWireframesBuilder: NodeWireframesBuilder {
     }
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
-        if attributes.overrides.hide == true {
+        if attributes.hide == true {
             return [
                 builder.createPlaceholderWireframe(
                     id: wireframeID,
