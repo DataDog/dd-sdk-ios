@@ -298,6 +298,10 @@ extension RUM {
 
         /// An extra sampling rate for configuration telemetry events. It is applied on top of the value configured in public `telemetrySampleRate`.
         internal var configurationTelemetrySampleRate: SampleRate = 20.0
+        /// Sample rate for "view ended" metric in telemetry.
+        internal var viewEndedSampleRate = ViewEndedMetricController.defaultSampleRate
+        /// Sample rate for "session ended" metric in telemetry.
+        internal var sessionEndedSampleRate = SessionEndedMetricController.defaultSampleRate
 
         internal var uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
 

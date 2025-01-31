@@ -661,8 +661,18 @@ public class DDRUMMonitor: NSObject {
     }
 
     @objc
+    public func addAttributes(_ attributes: [String: Any]) {
+        swiftRUMMonitor.addAttributes(attributes.dd.swiftAttributes)
+    }
+
+    @objc
     public func removeAttribute(forKey key: String) {
         swiftRUMMonitor.removeAttribute(forKey: key)
+    }
+
+    @objc
+    public func removeAttributes(forKeys keys: [String]) {
+        swiftRUMMonitor.removeAttributes(forKeys: keys)
     }
 
     @objc

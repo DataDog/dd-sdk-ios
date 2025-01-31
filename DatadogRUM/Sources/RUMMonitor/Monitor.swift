@@ -105,11 +105,7 @@ internal class Monitor: RUMCommandSubscriber {
     private(set) var debugging: RUMDebugging? = nil
 
     @ReadWriteLock
-    private var attributes: [AttributeKey: AttributeValue] = [:] {
-        didSet {
-            fatalErrorContext.globalAttributes = attributes
-        }
-    }
+    private var attributes: [AttributeKey: AttributeValue] = [:]
 
     private let fatalErrorContext: FatalErrorContextNotifying
 
@@ -186,6 +182,10 @@ internal class Monitor: RUMCommandSubscriber {
 
         return mutableCommand
     }
+
+    private func didUpdateAttributes() {
+        fatalErrorContext.globalAttributes = attributes
+    }
 }
 
 /// Declares `Monitor` conformance to public `RUMMonitorProtocol`.
@@ -194,10 +194,24 @@ extension Monitor: RUMMonitorProtocol {
 
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
         attributes[key] = value
+        self.didUpdateAttributes()
+    }
+
+    func addAttributes(_ attributes: [AttributeKey: AttributeValue]) {
+        self.attributes.merge(attributes) { $1 }
+        self.didUpdateAttributes()
     }
 
     func removeAttribute(forKey key: AttributeKey) {
         attributes[key] = nil
+        self.didUpdateAttributes()
+    }
+
+    func removeAttributes(forKeys keys: [AttributeKey]) {
+        _attributes.mutate { attributes in
+            keys.forEach { key in attributes.removeValue(forKey: key) }
+        }
+        self.didUpdateAttributes()
     }
 
     // MARK: - session
