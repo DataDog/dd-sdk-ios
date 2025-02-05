@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -11,6 +11,11 @@
 		1117AA072D09A39400F86B29 /* RUMAttributesIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */; };
 		116F84062CFDD06700705755 /* SampleRateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116F84052CFDD06700705755 /* SampleRateTests.swift */; };
 		116F84072CFDD06700705755 /* SampleRateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116F84052CFDD06700705755 /* SampleRateTests.swift */; };
+		11EF3F652D537CD7005BBFAD /* CrashReporter in Frameworks */ = {isa = PBXBuildFile; productRef = 11EF3F642D537CD7005BBFAD /* CrashReporter */; };
+		11EF3F672D537CF2005BBFAD /* CrashReporter in Frameworks */ = {isa = PBXBuildFile; productRef = 11EF3F662D537CF2005BBFAD /* CrashReporter */; };
+		11EF3F692D537D66005BBFAD /* CrashReporter in Frameworks */ = {isa = PBXBuildFile; productRef = 11EF3F682D537D66005BBFAD /* CrashReporter */; };
+		11EF3F6B2D537D7B005BBFAD /* CrashReporter in Frameworks */ = {isa = PBXBuildFile; productRef = 11EF3F6A2D537D7B005BBFAD /* CrashReporter */; };
+		11EF3F802D55105C005BBFAD /* CrashReporter in Frameworks */ = {isa = PBXBuildFile; productRef = 11EF3F7F2D55105C005BBFAD /* CrashReporter */; };
 		1434A4612B7F73110072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
 		1434A4622B7F73110072E3BB /* OpenTelemetryApi.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1434A4632B7F73170072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
@@ -403,7 +408,6 @@
 		614B78F1296D7B63009C6B92 /* LowPowerModePublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B78EC296D7B63009C6B92 /* LowPowerModePublisherTests.swift */; };
 		614B78F2296D7B63009C6B92 /* LowPowerModePublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B78EC296D7B63009C6B92 /* LowPowerModePublisherTests.swift */; };
 		614CADD72510BAC000B93D2D /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614CADD62510BAC000B93D2D /* Environment.swift */; };
-		614ED36C260352DC00C8C519 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		615192CD2BD6948B0005A782 /* HTTPHeadersWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615192CC2BD6948B0005A782 /* HTTPHeadersWriterTests.swift */; };
 		615192CE2BD6948B0005A782 /* HTTPHeadersWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615192CC2BD6948B0005A782 /* HTTPHeadersWriterTests.swift */; };
 		615192D02BD6B7C90005A782 /* DatadogTracer+InjectAndExtract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615192CF2BD6B7C90005A782 /* DatadogTracer+InjectAndExtract.swift */; };
@@ -555,7 +559,6 @@
 		61993657265BB6A6009D7EA8 /* DatadogCore.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* DatadogCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6199365B265BB6A6009D7EA8 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61993668265BBEDC009D7EA8 /* E2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61993667265BBEDC009D7EA8 /* E2ETests.swift */; };
-		619A29F326E64910007D62A3 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		619CE75E2A458CE1005588CB /* TraceConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619CE75D2A458CE1005588CB /* TraceConfigurationTests.swift */; };
 		619CE75F2A458CE1005588CB /* TraceConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619CE75D2A458CE1005588CB /* TraceConfigurationTests.swift */; };
 		619CE7612A458D66005588CB /* TraceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619CE7602A458D66005588CB /* TraceTests.swift */; };
@@ -1079,7 +1082,6 @@
 		D240687127CF971C00C04F44 /* DatadogCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6ED127C50EAE00A62B57 /* DatadogCore.framework */; };
 		D240687227CF971C00C04F44 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */; };
 		D240687327CF971C00C04F44 /* DatadogObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FB027C5217A00A62B57 /* DatadogObjc.framework */; };
-		D240687827CF982B00C04F44 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		D240687B27CF982C00C04F44 /* DatadogCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* DatadogCore.framework */; };
 		D240687C27CF982C00C04F44 /* DatadogCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* DatadogCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D240687D27CF982D00C04F44 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; };
@@ -1615,7 +1617,6 @@
 		D2CB6FC527C5348200A62B57 /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615CC40B2694A56D0005F08C /* SwiftExtensions.swift */; };
 		D2CB6FC627C5348200A62B57 /* PLCrashReporterPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6170DC1B25C18729003AED5C /* PLCrashReporterPlugin.swift */; };
 		D2CB6FC727C5348200A62B57 /* ThirdPartyCrashReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2727325C9509D00D54BF8 /* ThirdPartyCrashReporter.swift */; };
-		D2CB6FCB27C5348200A62B57 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		D2CB6FD927C5352300A62B57 /* DDCrashReportBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1626974CA9001D9D43 /* DDCrashReportBuilderTests.swift */; };
 		D2CB6FDB27C5352300A62B57 /* SwiftExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615CC40F2694A64D0005F08C /* SwiftExtensionTests.swift */; };
 		D2CB6FDC27C5352300A62B57 /* PLCrashReporterIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D243BBBF276C9D640019C857 /* PLCrashReporterIntegrationTests.swift */; };
@@ -1624,7 +1625,6 @@
 		D2CB6FE027C5352300A62B57 /* CrashReportingPluginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B7886125C180CB002675B5 /* CrashReportingPluginTests.swift */; };
 		D2CB6FE127C5352300A62B57 /* CrashReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615CC4122695957C0005F08C /* CrashReportTests.swift */; };
 		D2CB6FE227C5352300A62B57 /* Mocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2729A25C95EB200D54BF8 /* Mocks.swift */; };
-		D2CB6FE527C5352300A62B57 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		D2CB6FF327C5369600A62B57 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */; };
 		D2CE604229911EDE00DB6656 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; };
 		D2D30E5B2A40BF540020C553 /* Logs.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D30E5A2A40BF540020C553 /* Logs.swift */; };
@@ -3268,11 +3268,11 @@
 				3CE11A1129F7BE0900202522 /* DatadogWebViewTracking.framework in Frameworks */,
 				D25CFA9C29C4FC6900E3A43D /* DatadogTrace.framework in Frameworks */,
 				9E5BD8042819742200CB568E /* SwiftUI.framework in Frameworks */,
-				D240687827CF982B00C04F44 /* CrashReporter.xcframework in Frameworks */,
 				D240687B27CF982C00C04F44 /* DatadogCore.framework in Frameworks */,
 				D240687D27CF982D00C04F44 /* DatadogCrashReporting.framework in Frameworks */,
 				1434A4612B7F73110072E3BB /* OpenTelemetryApi.xcframework in Frameworks */,
 				D24C9C4229A7A50D002057CF /* DatadogLogs.framework in Frameworks */,
+				11EF3F802D55105C005BBFAD /* CrashReporter in Frameworks */,
 				D240687F27CF982F00C04F44 /* DatadogObjc.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3323,7 +3323,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D214DA9929DF2F6A004D0AE8 /* DatadogInternal.framework in Frameworks */,
-				614ED36C260352DC00C8C519 /* CrashReporter.xcframework in Frameworks */,
+				11EF3F672D537CF2005BBFAD /* CrashReporter in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3331,9 +3331,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				11EF3F692D537D66005BBFAD /* CrashReporter in Frameworks */,
 				D2579599298AD95F008A1BE5 /* TestUtilities.framework in Frameworks */,
 				61B7885D25C180CB002675B5 /* DatadogCrashReporting.framework in Frameworks */,
-				619A29F326E64910007D62A3 /* CrashReporter.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3522,7 +3522,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D214DA9429DF2F5E004D0AE8 /* DatadogInternal.framework in Frameworks */,
-				D2CB6FCB27C5348200A62B57 /* CrashReporter.xcframework in Frameworks */,
+				11EF3F652D537CD7005BBFAD /* CrashReporter in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3530,9 +3530,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				11EF3F6B2D537D7B005BBFAD /* CrashReporter in Frameworks */,
 				D257959A298AD967008A1BE5 /* TestUtilities.framework in Frameworks */,
 				D2CB6FF327C5369600A62B57 /* DatadogCrashReporting.framework in Frameworks */,
-				D2CB6FE527C5352300A62B57 /* CrashReporter.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7050,6 +7050,7 @@
 			);
 			name = "Example iOS";
 			packageProductDependencies = (
+				11EF3F7F2D55105C005BBFAD /* CrashReporter */,
 			);
 			productName = Example;
 			productReference = 61441C0224616DE9003D8BB8 /* Example iOS.app */;
@@ -7718,6 +7719,7 @@
 			mainGroup = 61133B78242393DE00786299;
 			packageReferences = (
 				3CDA3F6C2BCD8429005D2C13 /* XCRemoteSwiftPackageReference "dd-sdk-swift-testing" */,
+				11EF3F612D5287DD005BBFAD /* XCLocalSwiftPackageReference "../../ThirdParties/plcrashreporter" */,
 			);
 			productRefGroup = 61133B83242393DE00786299 /* Products */;
 			projectDirPath = "";
@@ -10647,6 +10649,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "-fprofile-instr-generate";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -10702,6 +10705,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = "-fprofile-instr-generate";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -11439,7 +11443,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6170DC2B25C1883E003AED5C /* DatadogCrashReportingTests.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = TargetSupport/DatadogCrashReportingTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -11447,6 +11450,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				OTHER_LDFLAGS = "-fprofile-instr-generate";
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogCrashReportingTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -11460,7 +11464,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6170DC2B25C1883E003AED5C /* DatadogCrashReportingTests.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = TargetSupport/DatadogCrashReportingTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -11468,6 +11471,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				OTHER_LDFLAGS = "-fprofile-instr-generate";
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogCrashReportingTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -11481,7 +11485,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6170DC2B25C1883E003AED5C /* DatadogCrashReportingTests.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = TargetSupport/DatadogCrashReportingTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -11489,6 +11492,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				OTHER_LDFLAGS = "-fprofile-instr-generate";
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogCrashReportingTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -11546,6 +11550,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = "-fprofile-instr-generate";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -12250,6 +12255,7 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.TestUtilities;
 				PRODUCT_NAME = TestUtilities;
 				SKIP_INSTALL = YES;
@@ -12287,6 +12293,7 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.TestUtilities;
 				PRODUCT_NAME = TestUtilities;
 				SKIP_INSTALL = YES;
@@ -12324,6 +12331,7 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.TestUtilities;
 				PRODUCT_NAME = TestUtilities;
 				SKIP_INSTALL = YES;
@@ -13330,7 +13338,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6170DC2B25C1883E003AED5C /* DatadogCrashReportingTests.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = TargetSupport/DatadogCrashReportingTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -13348,7 +13355,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6170DC2B25C1883E003AED5C /* DatadogCrashReportingTests.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = TargetSupport/DatadogCrashReportingTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -13366,7 +13372,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6170DC2B25C1883E003AED5C /* DatadogCrashReportingTests.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = TargetSupport/DatadogCrashReportingTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -14031,6 +14036,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		11EF3F612D5287DD005BBFAD /* XCLocalSwiftPackageReference "../../ThirdParties/plcrashreporter" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../ThirdParties/plcrashreporter;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		3CDA3F6C2BCD8429005D2C13 /* XCRemoteSwiftPackageReference "dd-sdk-swift-testing" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -14043,6 +14055,31 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		11EF3F642D537CD7005BBFAD /* CrashReporter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 11EF3F612D5287DD005BBFAD /* XCLocalSwiftPackageReference "../../ThirdParties/plcrashreporter" */;
+			productName = CrashReporter;
+		};
+		11EF3F662D537CF2005BBFAD /* CrashReporter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 11EF3F612D5287DD005BBFAD /* XCLocalSwiftPackageReference "../../ThirdParties/plcrashreporter" */;
+			productName = CrashReporter;
+		};
+		11EF3F682D537D66005BBFAD /* CrashReporter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 11EF3F612D5287DD005BBFAD /* XCLocalSwiftPackageReference "../../ThirdParties/plcrashreporter" */;
+			productName = CrashReporter;
+		};
+		11EF3F6A2D537D7B005BBFAD /* CrashReporter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 11EF3F612D5287DD005BBFAD /* XCLocalSwiftPackageReference "../../ThirdParties/plcrashreporter" */;
+			productName = CrashReporter;
+		};
+		11EF3F7F2D55105C005BBFAD /* CrashReporter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 11EF3F612D5287DD005BBFAD /* XCLocalSwiftPackageReference "../../ThirdParties/plcrashreporter" */;
+			productName = CrashReporter;
+		};
 		3CDA3F7D2BCD866D005D2C13 /* DatadogSDKTesting */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 3CDA3F6C2BCD8429005D2C13 /* XCRemoteSwiftPackageReference "dd-sdk-swift-testing" */;
