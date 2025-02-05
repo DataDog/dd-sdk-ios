@@ -531,7 +531,7 @@ class RUMSessionScopeTests: XCTestCase {
         let view = try XCTUnwrap(scope.viewScopes.first)
 
         // When
-        let command = RUMStopSessionCommand(time: Date())
+        let command: RUMStopSessionCommand = .mockWith(time: Date())
         let keep = scope.process(command: command, context: context, writer: writer)
 
         // Then
@@ -588,7 +588,7 @@ class RUMSessionScopeTests: XCTestCase {
         _ = scope.process(command: RUMStopSessionCommand.mockWith(time: Date()), context: context, writer: writer)
 
         // When
-        let command = RUMApplicationStartCommand(time: Date(), attributes: [:])
+        let command = RUMApplicationStartCommand(time: Date(), globalAttributes: [:], attributes: [:])
         let result = scope.process(command: command, context: context, writer: writer)
 
         // Then

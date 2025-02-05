@@ -90,11 +90,14 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     private func contentWireframe(item: DisplayList.Item, content: DisplayList.Content, context: Context) -> SRWireframe? {
         let viewInfo = renderer.viewCache.map[.init(id: .init(identity: item.identity))]
 
+        var generator = XoshiroRandomNumberGenerator(seed: content.seed.value)
+        let id: Int64 = .positiveRandom(using: &generator)
+
         switch content.value {
         case let .shape(_, paint, _):
             return paint.paint.map { paint in
                 context.builder.createShapeWireframe(
-                    id: Int64(content.seed.value),
+                    id: id,
                     frame: context.convert(frame: item.frame),
                     clip: context.clip,
                     backgroundColor: CGColor(
@@ -113,7 +116,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
             let foregroundColor = storage.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? UIColor
             let font = storage.attribute(.font, at: 0, effectiveRange: nil) as? UIFont
             return context.builder.createTextWireframe(
-                id: Int64(content.seed.value),
+                id: id,
                 frame: context.convert(frame: item.frame),
                 clip: context.clip,
                 text: textObfuscator.mask(text: storage.string),
@@ -124,7 +127,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
             )
         case .color:
             return context.builder.createShapeWireframe(
-                id: Int64(content.seed.value),
+                id: id,
                 frame: context.convert(frame: item.frame),
                 clip: context.clip,
                 borderColor: viewInfo?.borderColor,
@@ -148,14 +151,14 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                         tintColor: nil
                     )
                     return context.builder.createImageWireframe(
-                        id: Int64(content.seed.value),
+                        id: id,
                         resource: imageResource,
                         frame: context.convert(frame: item.frame),
                         clip: context.clip
                     )
                 } else {
                     return context.builder.createPlaceholderWireframe(
-                        id: Int64(content.seed.value),
+                        id: id,
                         frame: context.convert(frame: item.frame),
                         clip: context.clip,
                         label: imagePrivacyLevel == .maskNonBundledOnly ? "Content Image" : "Image"
@@ -163,7 +166,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                 }
             case .unknown:
                 return context.builder.createPlaceholderWireframe(
-                    id: Int64(content.seed.value),
+                    id: id,
                     frame: context.convert(frame: item.frame),
                     clip: context.clip,
                     label: "Unsupported image type"
@@ -174,7 +177,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
             return nil // Should be recorder by UIKit recorder
         case .unknown:
             return context.builder.createPlaceholderWireframe(
-                id: Int64(content.seed.value),
+                id: id,
                 frame: context.convert(frame: item.frame),
                 clip: context.clip,
                 label: "Unsupported SwiftUI component"

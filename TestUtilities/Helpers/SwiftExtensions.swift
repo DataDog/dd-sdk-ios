@@ -32,6 +32,12 @@ extension Date {
     }
 }
 
+extension TimeInterval {
+    public init(fromNanoseconds nanoseconds: Int64) {
+        self = TimeInterval(nanoseconds) / 1_000_000_000
+    }
+}
+
 extension String {
     public var utf8Data: Data { data(using: .utf8)! }
 
@@ -185,5 +191,23 @@ public extension Array {
 extension Dictionary where Key == Int, Value == String {
     public static func + (lhs: Self, rhs: Self) -> Self {
         lhs.merging(rhs) { _, new in new }
+    }
+}
+
+public extension Result {
+    /// Indicates whether the result is a success.
+    var isSuccess: Bool {
+        if case .success = self {
+            return true
+        }
+        return false
+    }
+
+    /// Indicates whether the result is a failure.
+    var isFailure: Bool {
+        if case .failure = self {
+            return true
+        }
+        return false
     }
 }

@@ -142,6 +142,7 @@ extension ViewIdentifier {
 
 struct RUMCommandMock: RUMCommand {
     var time = Date()
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue] = [:]
     var canStartBackgroundView = false
     var isUserInteraction = false
@@ -188,10 +189,12 @@ extension RUMApplicationStartCommand: AnyMockable, RandomMockable {
 
     static func mockWith(
         time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMApplicationStartCommand {
         return RUMApplicationStartCommand(
             time: time,
+            globalAttributes: globalAttributes,
             attributes: attributes,
             canStartBackgroundView: false,
             isUserInteraction: false
@@ -248,7 +251,9 @@ extension RUMStopViewCommand: AnyMockable, RandomMockable {
         identity: ViewIdentifier = .mockViewIdentifier()
     ) -> RUMStopViewCommand {
         return RUMStopViewCommand(
-            time: time, attributes: attributes, identity: identity
+            time: time,
+            attributes: attributes,
+            identity: identity
         )
     }
 }
@@ -366,11 +371,15 @@ extension RUMAddViewTimingCommand: AnyMockable, RandomMockable {
 
     static func mockWith(
         time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         timingName: String = .mockAny()
     ) -> RUMAddViewTimingCommand {
         return RUMAddViewTimingCommand(
-            time: time, attributes: attributes, timingName: timingName
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            timingName: timingName
         )
     }
 }
@@ -547,7 +556,13 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMStopResourceWithErrorCommand {
         return RUMStopResourceWithErrorCommand(
-            resourceKey: resourceKey, time: time, message: message, type: type, source: source, httpStatusCode: httpStatusCode, attributes: attributes
+            resourceKey: resourceKey,
+            time: time,
+            message: message,
+            type: type,
+            source: source,
+            httpStatusCode: httpStatusCode,
+            attributes: attributes
         )
     }
 }
@@ -566,13 +581,19 @@ extension RUMStartUserActionCommand: AnyMockable, RandomMockable {
 
     static func mockWith(
         time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         instrumentation: InstrumentationType = .manual,
         actionType: RUMActionType = .swipe,
         name: String = .mockAny()
     ) -> RUMStartUserActionCommand {
         return RUMStartUserActionCommand(
-            time: time, attributes: attributes, instrumentation: instrumentation, actionType: actionType, name: name
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            instrumentation: instrumentation,
+            actionType: actionType,
+            name: name
         )
     }
 }
@@ -591,12 +612,17 @@ extension RUMStopUserActionCommand: AnyMockable, RandomMockable {
 
     static func mockWith(
         time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         actionType: RUMActionType = .swipe,
         name: String? = nil
     ) -> RUMStopUserActionCommand {
         return RUMStopUserActionCommand(
-            time: time, attributes: attributes, actionType: actionType, name: name
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            actionType: actionType,
+            name: name
         )
     }
 }
@@ -677,7 +703,7 @@ extension RUMAddFeatureFlagEvaluationCommand: AnyMockable, RandomMockable {
 extension RUMStopSessionCommand: AnyMockable {
     public static func mockAny() -> RUMStopSessionCommand { mockWith() }
 
-    static func mockWith(time: Date = .mockAny()) -> RUMStopSessionCommand {
+    static func mockWith(time: Date = .mockAny(), globalAttributes: [AttributeKey: AttributeValue] = [:]) -> RUMStopSessionCommand {
         return RUMStopSessionCommand(time: time)
     }
 }
@@ -751,7 +777,7 @@ func mockNoOpSessionListener() -> RUM.SessionListener {
 internal class FatalErrorContextNotifierMock: FatalErrorContextNotifying {
     var sessionState: RUMSessionState?
     var view: RUMViewEvent?
-    var globalAttributes: [String: Encodable] = [:]
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
 }
 
 extension RUMScopeDependencies {
@@ -776,7 +802,12 @@ extension RUMScopeDependencies {
         viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
         sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0),
-        watchdogTermination: WatchdogTerminationMonitor = .mockRandom()
+        viewEndedMetricFactory: @escaping () -> ViewEndedMetricController = {
+            ViewEndedMetricController(tnsPredicateType: .custom, invPredicateType: .custom, telemetry: NOPTelemetry(), sampleRate: 0)
+        },
+        watchdogTermination: WatchdogTerminationMonitor = .mockRandom(),
+        networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking = { _, _ in TNSMetricMock() },
+        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking = { INVMetricMock() }
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -795,7 +826,10 @@ extension RUMScopeDependencies {
             viewCache: viewCache,
             fatalErrorContext: fatalErrorContext,
             sessionEndedMetric: sessionEndedMetric,
-            watchdogTermination: watchdogTermination
+            viewEndedMetricFactory: viewEndedMetricFactory,
+            watchdogTermination: watchdogTermination,
+            networkSettledMetricFactory: networkSettledMetricFactory,
+            interactionToNextViewMetricFactory: interactionToNextViewMetricFactory
         )
     }
 
@@ -816,7 +850,10 @@ extension RUMScopeDependencies {
         viewCache: ViewCache? = nil,
         fatalErrorContext: FatalErrorContextNotifying? = nil,
         sessionEndedMetric: SessionEndedMetricController? = nil,
-        watchdogTermination: WatchdogTerminationMonitor? = nil
+        viewEndedMetricFactory: (() -> ViewEndedMetricController)? = nil,
+        watchdogTermination: WatchdogTerminationMonitor? = nil,
+        networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
+        interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -835,7 +872,10 @@ extension RUMScopeDependencies {
             viewCache: viewCache ?? self.viewCache,
             fatalErrorContext: fatalErrorContext ?? self.fatalErrorContext,
             sessionEndedMetric: sessionEndedMetric ?? self.sessionEndedMetric,
-            watchdogTermination: watchdogTermination
+            viewEndedMetricFactory: viewEndedMetricFactory ?? self.viewEndedMetricFactory,
+            watchdogTermination: watchdogTermination,
+            networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
+            interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory
         )
     }
 }
@@ -949,7 +989,8 @@ extension RUMViewScope {
         attributes: [AttributeKey: AttributeValue] = [:],
         customTimings: [String: Int64] = randomTimings(),
         startTime: Date = .mockAny(),
-        serverTimeOffset: TimeInterval = .zero
+        serverTimeOffset: TimeInterval = .zero,
+        interactionToNextViewMetric: INVMetricTracking = INVMetricMock()
     ) -> RUMViewScope {
         return RUMViewScope(
             isInitialView: isInitialView,
@@ -958,10 +999,10 @@ extension RUMViewScope {
             identity: identity,
             path: path,
             name: name,
-            attributes: attributes,
             customTimings: customTimings,
             startTime: startTime,
-            serverTimeOffset: serverTimeOffset
+            serverTimeOffset: serverTimeOffset,
+            interactionToNextViewMetric: interactionToNextViewMetric
         )
     }
 }
@@ -971,7 +1012,6 @@ extension RUMResourceScope {
         context: RUMContext,
         dependencies: RUMScopeDependencies,
         resourceKey: String = .mockAny(),
-        attributes: [AttributeKey: AttributeValue] = [:],
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
         url: String = .mockAny(),
@@ -979,22 +1019,23 @@ extension RUMResourceScope {
         isFirstPartyResource: Bool? = nil,
         resourceKindBasedOnRequest: RUMResourceType? = nil,
         spanContext: RUMSpanContext? = .mockAny(),
-        onResourceEventSent: @escaping () -> Void = {},
-        onErrorEventSent: @escaping () -> Void = {}
+        networkSettledMetric: TNSMetricTracking = TNSMetric(viewName: .mockAny(), viewStartDate: .mockAny(), resourcePredicate: TimeBasedTNSResourcePredicate()),
+        onResourceEvent: @escaping (Bool) -> Void = { _ in },
+        onErrorEvent: @escaping (Bool) -> Void = { _ in }
     ) -> RUMResourceScope {
         return RUMResourceScope(
             context: context,
             dependencies: dependencies,
             resourceKey: resourceKey,
-            attributes: attributes,
             startTime: startTime,
             serverTimeOffset: serverTimeOffset,
             url: url,
             httpMethod: httpMethod,
             resourceKindBasedOnRequest: resourceKindBasedOnRequest,
             spanContext: spanContext,
-            onResourceEventSent: onResourceEventSent,
-            onErrorEventSent: onErrorEventSent
+            networkSettledMetric: networkSettledMetric,
+            onResourceEvent: onResourceEvent,
+            onErrorEvent: onErrorEvent
         )
     }
 }
@@ -1011,6 +1052,7 @@ extension RUMUserActionScope {
         serverTimeOffset: TimeInterval = .zero,
         isContinuous: Bool = .mockAny(),
         instrumentation: InstrumentationType = .manual,
+        interactionToNextViewMetric: INVMetricTracking = INVMetricMock(),
         onActionEventSent: @escaping (RUMActionEvent) -> Void = { _ in }
     ) -> RUMUserActionScope {
         return RUMUserActionScope(
@@ -1023,6 +1065,7 @@ extension RUMUserActionScope {
                 serverTimeOffset: serverTimeOffset,
                 isContinuous: isContinuous,
                 instrumentation: instrumentation,
+                interactionToNextViewMetric: interactionToNextViewMetric,
                 onActionEventSent: onActionEventSent
         )
     }
@@ -1183,5 +1226,75 @@ extension AppHang.BacktraceGenerationResult: AnyMockable, RandomMockable {
             .failed,
             .notAvailable
         ].randomElement()!
+    }
+}
+
+// MARK: - View Loading Metrics
+
+internal class TNSMetricMock: TNSMetricTracking {
+    /// Tracks calls to `trackResourceStart(at:resourceID:)`.
+    var resourceStartDates: [RUMUUID: Date] = [:]
+    /// Tracks calls to `trackResourceEnd(at:resourceID:resourceDuration:)`.
+    var resourceEndDates: [RUMUUID: (Date, TimeInterval?)] = [:]
+    /// Tracks calls to `trackResourceDropped(resourceID:)`.
+    var resourcesDropped: Set<RUMUUID> = []
+    /// Tracks if `trackViewWasStopped()` was called.
+    var viewWasStopped = false
+    /// Mocked value returned by this metric.
+    var value: Result<TimeInterval, TNSNoValueReason>
+
+    init(value: Result<TimeInterval, TNSNoValueReason> = .failure(.unknown)) {
+        self.value = value
+    }
+
+    func trackResourceStart(at startDate: Date, resourceID: RUMUUID, resourceURL: String) {
+        resourceStartDates[resourceID] = startDate
+    }
+
+    func trackResourceEnd(at endDate: Date, resourceID: RUMUUID, resourceDuration: TimeInterval?) {
+        resourceEndDates[resourceID] = (endDate, resourceDuration)
+    }
+
+    func trackResourceDropped(resourceID: RUMUUID) {
+        resourcesDropped.insert(resourceID)
+    }
+
+    func trackViewWasStopped() {
+        viewWasStopped = true
+    }
+
+    func value(with appStateHistory: AppStateHistory) -> Result<TimeInterval, TNSNoValueReason> {
+        return value
+    }
+}
+
+internal class INVMetricMock: INVMetricTracking {
+    /// Tracks calls to `trackAction(startTime:endTime:name:type:in:)`.
+    var trackedActions: [(startTime: Date, endTime: Date, actionName: String, actionType: RUMActionType, viewID: RUMUUID)] = []
+    /// Tracks calls to `trackViewStart(at:name:viewID:)`.
+    var trackedViewStarts: [(viewStart: Date, viewName: String, viewID: RUMUUID)] = []
+    /// Tracks calls to `trackViewComplete(viewID:)`.
+    var trackedViewCompletes: Set<RUMUUID> = []
+    /// Mocked value returned by this metric.
+    var mockedValue: Result<TimeInterval, INVNoValueReason>
+
+    init(mockedValue: Result<TimeInterval, INVNoValueReason> = .failure(.noTrackedActions)) {
+        self.mockedValue = mockedValue
+    }
+
+    func trackAction(startTime: Date, endTime: Date, name: String, type: RUMActionType, in viewID: RUMUUID) {
+        trackedActions.append((startTime: startTime, endTime: endTime, actionName: name, actionType: type, viewID: viewID))
+    }
+
+    func trackViewStart(at viewStart: Date, name: String, viewID: RUMUUID) {
+        trackedViewStarts.append((viewStart: viewStart, viewName: name, viewID: viewID))
+    }
+
+    func trackViewComplete(viewID: RUMUUID) {
+        trackedViewCompletes.insert(viewID)
+    }
+
+    func value(for viewID: RUMUUID) -> Result<TimeInterval, INVNoValueReason> {
+        return mockedValue
     }
 }

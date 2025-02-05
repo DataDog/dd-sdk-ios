@@ -1726,6 +1726,8 @@ public enum RUM
         public var longTaskThreshold: TimeInterval?
         public var appHangThreshold: TimeInterval?
         public var vitalsUpdateFrequency: VitalsFrequency?
+        public var networkSettledResourcePredicate: NetworkSettledResourcePredicate
+        public var nextViewActionPredicate: NextViewActionPredicate
         public var viewEventMapper: RUM.ViewEventMapper?
         public var resourceEventMapper: RUM.ResourceEventMapper?
         public var actionEventMapper: RUM.ActionEventMapper?
@@ -1747,9 +1749,30 @@ public enum RUM
         case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil)
 [?] extension RUM.Configuration
-    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,telemetrySampleRate: SampleRate = 20)
+    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,telemetrySampleRate: SampleRate = 20)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
     public var configurationTelemetrySampleRate: Float
+public struct TNSResourceParams
+    public let url: String
+    public let timeSinceViewStart: TimeInterval
+    public let viewName: String
+public protocol NetworkSettledResourcePredicate
+    func isInitialResource(from resourceParams: TNSResourceParams) -> Bool
+public struct TimeBasedTNSResourcePredicate: NetworkSettledResourcePredicate
+    public static let defaultThreshold: TimeInterval = 0.1
+    public init(threshold: TimeInterval = TimeBasedTNSResourcePredicate.defaultThreshold)
+    public func isInitialResource(from resourceParams: TNSResourceParams) -> Bool
+public struct INVActionParams
+    public let type: RUMActionType
+    public let name: String
+    public let timeToNextView: TimeInterval
+    public let nextViewName: String
+public protocol NextViewActionPredicate
+    func isLastAction(from actionParams: INVActionParams) -> Bool
+public struct TimeBasedINVActionPredicate: NextViewActionPredicate
+    public static let defaultMaxTimeToNextView: TimeInterval = 3
+    public init(maxTimeToNextView: TimeInterval = TimeBasedINVActionPredicate.defaultMaxTimeToNextView)
+    public func isLastAction(from actionParams: INVActionParams) -> Bool
 public class RUMMonitor
     public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> RUMMonitorProtocol
 public extension RUMMonitorProtocol
@@ -1791,7 +1814,9 @@ public enum RUMErrorSource
     case custom
 public protocol RUMMonitorProtocol: AnyObject
     func addAttribute(forKey key: AttributeKey, value: AttributeValue)
+    func addAttributes(_ attributes: [AttributeKey: AttributeValue])
     func removeAttribute(forKey key: AttributeKey)
+    func removeAttributes(forKeys keys: [AttributeKey])
     func currentSessionID(completion: @escaping (String?) -> Void)
     func stopSession()
     func startView(viewController: UIViewController,name: String?,attributes: [AttributeKey: AttributeValue])
@@ -2166,11 +2191,13 @@ public extension TextAndInputPrivacyLevel
     var staticTextObfuscator: SessionReplayTextObfuscating
     var hintTextObfuscator: SessionReplayTextObfuscating
 public class Recorder: Recording
-    public struct Context: Equatable
+    public struct Context
         public let textAndInputPrivacy: TextAndInputPrivacyLevel
         public let imagePrivacy: ImagePrivacyLevel
         public let touchPrivacy: TouchPrivacyLevel
     deinit
+public extension Int64
+    static func positiveRandom<T>(using generator: inout T) -> Int64 where T: RandomNumberGenerator
 public typealias NodeID = Int64
 public final class NodeIDGenerator
     public func nodeID(view: UIView, nodeRecorder: SessionReplayNodeRecorder) -> NodeID
@@ -2228,7 +2255,8 @@ public final class objc_SessionReplayConfiguration: NSObject
     @objc public var startRecordingImmediately: Bool
     @objc public var customEndpoint: URL?
     @objc public var featureFlags: [String: Bool]
-    public required init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel,featureFlags: [String: Bool]? = nil)
+    public required init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel,featureFlags: [String: Bool]?)
+    public convenience init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel)
     public required init(replaySampleRate: Float)
 public enum objc_SessionReplayConfigurationPrivacyLevel: Int
     case allow
@@ -2259,7 +2287,7 @@ public enum SessionReplay
         public var startRecordingImmediately: Bool
         public var customEndpoint: URL?
         public var featureFlags: FeatureFlags
-        public init(    // swiftlint:disable:this function_default_parameter_at_endreplaySampleRate: SampleRate = .maxSampleRate,textAndInputPrivacyLevel: TextAndInputPrivacyLevel,imagePrivacyLevel: ImagePrivacyLevel,touchPrivacyLevel: TouchPrivacyLevel,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil,featureFlags: FeatureFlags = .defaults)
+        public init(replaySampleRate: SampleRate = .maxSampleRate,textAndInputPrivacyLevel: TextAndInputPrivacyLevel,imagePrivacyLevel: ImagePrivacyLevel,touchPrivacyLevel: TouchPrivacyLevel,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil,featureFlags: FeatureFlags = .defaults)
         public init(replaySampleRate: SampleRate = .maxSampleRate,defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
         public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder])
 [?] extension SessionReplay.Configuration

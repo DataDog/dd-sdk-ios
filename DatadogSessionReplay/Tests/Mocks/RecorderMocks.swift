@@ -71,7 +71,7 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             textAndInputPrivacy: .mockRandom(),
             imagePrivacy: .mockRandom(),
             touchPrivacy: .mockRandom(),
-            hide: .mockRandom()
+            hide: .mockAny()
         )
     }
 

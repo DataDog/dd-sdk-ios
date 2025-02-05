@@ -147,8 +147,8 @@ class PerformancePresetTests: XCTestCase {
 
     func testPresetsUpdate() {
         // Given
-        let maxFileSizeOverride: UInt64 = .mockRandom()
-        let maxObjectSizeOverride: UInt64 = .mockRandom()
+        let maxFileSizeOverride: UInt32 = .mockRandom()
+        let maxObjectSizeOverride: UInt32 = .mockRandom()
         let meanFileAgeOverride: TimeInterval = .mockRandom(min: 1, max: 100)
         let uploadDelayOverride: (initial: TimeInterval, range: Range<TimeInterval>, changeRate: Double) = (
             initial: .mockRandom(),
