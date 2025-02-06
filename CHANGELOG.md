@@ -1,7 +1,10 @@
 # Unreleased
 
-- [FEATURE] Add Time To Network Setled metric in RUM. See [#2125][]
+# 2.23.0 / 05-02-2025
+
+- [FEATURE] Add Time To Network Settled metric in RUM. See [#2125][]
 - [FEATURE] Add Interaction To Next View metric in RUM. See [#2153][]
+- [FIX] Fix SwiftUI staling views. See [#2169][]
 - [FIX] Fix SwiftUI placeholder in Session Replay when Feature Flag is disabled. See [#2170][]
 - [IMPROVEMENT] Add `addAttributes` and `removeAttributes` APIs. See [#2177][]
 
@@ -824,6 +827,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2148]: https://github.com/DataDog/dd-sdk-ios/pull/2148
 [#2153]: https://github.com/DataDog/dd-sdk-ios/pull/2153
 [#2154]: https://github.com/DataDog/dd-sdk-ios/pull/2154
+[#2169]: https://github.com/DataDog/dd-sdk-ios/pull/2169
 [#2170]: https://github.com/DataDog/dd-sdk-ios/pull/2170
 [#2177]: https://github.com/DataDog/dd-sdk-ios/pull/2177
 [#2182]: https://github.com/DataDog/dd-sdk-ios/pull/2182
