@@ -379,3 +379,48 @@ class MockHostsSanitizer: HostsSanitizing {
         return hostsWithTracingHeaderTypes
     }
 }
+
+internal class AppLaunchHandlerMock: AppLaunchHandling {
+    /// Indicates whether the application was prewarmed by the system.
+    let isActivePrewarm: Bool
+    /// The timestamp when the application process was launched.
+    let launchDate: Date
+    /// The time interval between the app process launch and the `UIApplication.didBecomeActiveNotification`.
+    /// Returns `nil` if the notification has not yet been received.
+    var timeToDidBecomeActive: TimeInterval?
+    /// Stores the callback to be invoked when the application becomes active.
+    private var didBecomeActiveCallback: UIApplicationDidBecomeActiveCallback?
+
+    init(
+        launchDate: Date,
+        timeToDidBecomeActive: TimeInterval?,
+        isActivePrewarm: Bool
+    ) {
+        self.launchDate = launchDate
+        self.timeToDidBecomeActive = timeToDidBecomeActive
+        self.isActivePrewarm = isActivePrewarm
+    }
+
+    func setApplicationDidBecomeActiveCallback(_ callback: @escaping UIApplicationDidBecomeActiveCallback) {
+        guard timeToDidBecomeActive == nil else {
+            // The app is already active; do nothing as per the interface contract.
+            return
+        }
+        didBecomeActiveCallback = callback
+    }
+
+    /// Simulates the application becoming active.
+    ///
+    /// This method can be called in tests to simulate the `UIApplication.didBecomeActiveNotification`.
+    /// If a callback has been set before activation, it will be invoked.
+    ///
+    /// - Parameter timeInterval: The time interval from launch to activation.
+    func simulateDidBecomeActive(timeInterval: TimeInterval) {
+        guard timeToDidBecomeActive == nil else {
+            return
+        }
+
+        timeToDidBecomeActive = timeInterval
+        didBecomeActiveCallback?(timeInterval)
+    }
+}

@@ -413,14 +413,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         var attributes = self.attributes
         var loadingTime: Int64?
 
-        if context.launchTime?.isActivePrewarm == true {
+        if context.launchTime.isActivePrewarm {
             // Set `active_pre_warm` attribute to true in case
             // of pre-warmed app.
             attributes[Constants.activePrewarm] = true
-        } else if let launchTime = context.launchTime?.launchTime {
+        } else if let launchTime = context.launchTime.launchTime {
             // Report Application Launch Time only if not pre-warmed
             loadingTime = launchTime.toInt64Nanoseconds
-        } else if let launchDate = context.launchTime?.launchDate {
+        } else {
             // The launchTime can be `nil` if the application is not yet
             // active (UIApplicationDidBecomeActiveNotification). That is
             // the case when instrumenting a SwiftUI application that start
@@ -429,6 +429,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             // In that case, we consider the time between the application
             // launch and the sdkInitialization as the application loading
             // time.
+            let launchDate = context.launchTime.launchDate
             loadingTime = command.time.timeIntervalSince(launchDate).toInt64Nanoseconds
         }
 
@@ -657,10 +658,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         var commandAttributes = command.globalAttributes.merging(command.attributes) { $1 }
         let errorFingerprint: String? = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
-        var timeSinceAppStart: Int64? = nil
-        if let startTime = context.launchTime?.launchDate {
-            timeSinceAppStart = command.time.timeIntervalSince(startTime).toInt64Milliseconds
-        }
+        let timeSinceAppStart = command.time.timeIntervalSince(context.launchTime.launchDate).toInt64Milliseconds
 
         var binaryImages = command.binaryImages?.compactMap { $0.toRUMDataFormat }
         if commandAttributes.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages)?.dd.decode() == true {

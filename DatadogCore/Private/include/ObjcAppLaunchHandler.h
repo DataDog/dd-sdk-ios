@@ -8,36 +8,41 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// `AppLaunchHandler` aims to track some times as part of the sequence
-/// described in Apple's "About the App Launch Sequence"
-///
-/// ref. https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
+/// `AppLaunchHandler` tracks key timestamps in the app launch sequence,
+/// as described in Apple's documentation:
+/// https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
 @interface __dd_private_AppLaunchHandler : NSObject
 
 typedef void (^UIApplicationDidBecomeActiveCallback) (NSTimeInterval);
 
-/// Sole instance of the Application Launch Handler.
+/// The singleton instance of `AppLaunchHandler`.
 @property (class, readonly) __dd_private_AppLaunchHandler *shared;
 
-/// Returns the Application process launch date.
+/// The timestamp when the application process was launched.
 @property (atomic, readonly) NSDate* launchDate;
 
-/// Returns the time interval in seconds between startup of the application process and the
-/// `UIApplicationDidBecomeActiveNotification`. Or `nil` If the
-/// `UIApplicationDidBecomeActiveNotification` has not been reached yet.
+/// The time interval (in seconds) between the app process launch and
+/// the `UIApplicationDidBecomeActiveNotification`. Returns `nil` if
+/// the notification has not yet been received.
 @property (atomic, readonly, nullable) NSNumber* launchTime;
 
-/// Returns `true` when the application is pre-warmed.
-///
-/// System sets environment variable `ActivePrewarm` to 1 when app is pre-warmed.
+/// Indicates whether the application was prewarmed by the system.
 @property (atomic, readonly) BOOL isActivePrewarm;
 
-/// Sets the callback to be invoked when the application becomes active.
+/// Creates and initializes an instance of `AppLaunchHandler`.
 ///
-/// The closure get the updated handler as argument. You will not get any
-/// notification if the application became active before setting the callback
-/// 
-/// - Parameter callback: The callback closure.
+/// - Parameters:
+///   - processInfo: The `NSProcessInfo` instance used to retrieve environment variables.
+///   - notificationCenter: The `NSNotificationCenter` used to observe application state changes.
++ (instancetype)createWithProcessInfo:(NSProcessInfo *)processInfo
+                   notificationCenter:(NSNotificationCenter *)notificationCenter;
+
+/// Sets a callback to be invoked when the application becomes active.
+///
+/// The callback receives the time interval from launch to activation.
+/// If the application became active before setting the callback, it will not be triggered.
+///
+/// - Parameter callback: A closure executed upon app activation.
 - (void)setApplicationDidBecomeActiveCallback:(UIApplicationDidBecomeActiveCallback)callback;
 
 - (instancetype)init NS_UNAVAILABLE;

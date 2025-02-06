@@ -146,7 +146,7 @@ internal struct CrashContext: Codable, Equatable {
         self.lastRUMAttributes = lastRUMAttributes
         self.lastLogAttributes = lastLogAttributes
 
-        self.appLaunchDate = context.launchTime?.launchDate
+        self.appLaunchDate = context.launchTime.launchDate
     }
 
     static func == (lhs: CrashContext, rhs: CrashContext) -> Bool {
