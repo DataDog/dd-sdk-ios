@@ -51,6 +51,7 @@ class AnonymousIdentifierTests: XCTestCase {
             .takeSingle()
 
         assertAnonymousIdentifier(isSet: true, in: session1)
+        let anonymousId1 = session1.views.last?.viewEvents.first?.usr?.anonymousId
 
         simulateNewSession()
 
@@ -61,6 +62,8 @@ class AnonymousIdentifierTests: XCTestCase {
             .takeSingle()
 
         assertAnonymousIdentifier(isSet: true, in: session2)
+        let anonymousId2 = session2.views.last?.viewEvents.first?.usr?.anonymousId
+        XCTAssertEqual(anonymousId1, anonymousId1)
     }
 
     func test_itClearsAnonymousIdentifierWhenDisabled() throws {
