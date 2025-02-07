@@ -18,7 +18,7 @@ private extension ExampleApplication {
     }
 }
 
-class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts, SRCommonAsserts {
+class SRMultipleViewsRecordingScenarioTests: UITests, RUMCommonAsserts, SRCommonAsserts {
     /// Number of events expected by this test.
     ///
     /// These are **"minimum"** values, computed from a baseline run. Exact values may cause flakiness as number of SR records

@@ -10,7 +10,7 @@
   ],
   "defaultOptions" : {
     "targetForVariableExpansion" : {
-      "containerPath" : "container:IntegrationTests.xcodeproj",
+      "containerPath" : "container:UITests.xcodeproj",
       "identifier" : "61441C2924616F1D003D8BB8",
       "name" : "IntegrationScenarios"
     }
@@ -31,7 +31,7 @@
         "RUMTapActionScenarioTests\/testRUMTapActionScenario()"
       ],
       "target" : {
-        "containerPath" : "container:IntegrationTests.xcodeproj",
+        "containerPath" : "container:UITests.xcodeproj",
         "identifier" : "61441C2924616F1D003D8BB8",
         "name" : "IntegrationScenarios"
       }

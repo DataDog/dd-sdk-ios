@@ -14,7 +14,7 @@ private extension ExampleApplication {
     }
 }
 
-class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
+class TracingURLSessionScenarioTests: UITests, TracingCommonAsserts {
     func testTracingURLSessionScenario_composition() throws {
         try runTest(
             for: "TracingURLSessionScenario",

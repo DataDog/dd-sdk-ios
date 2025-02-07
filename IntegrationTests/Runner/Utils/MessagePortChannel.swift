@@ -7,11 +7,11 @@
 import Foundation
 
 /// Establishes a communications channel from UITests runner to the app under tests (allows sending messages
-/// from `DatadogIntegrationTests` to `Example` app).
+/// from `DatadogUITests` to `Example` app).
 ///
 /// Ref.: https://developer.apple.com/documentation/corefoundation/cfmessageport-rs2
 ///
-/// Note: this class is used by two targets: `DatadogIntegrationTests` (sender) and `Example` (receiver).
+/// Note: this class is used by two targets: `DatadogUITests` (sender) and `Example` (receiver).
 internal class MessagePortChannel {
     private static let portName = "DDExampleAppPort" as CFString
 

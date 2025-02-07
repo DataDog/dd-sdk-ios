@@ -7,7 +7,7 @@
 import HTTPServerMock
 import XCTest
 
-class RUMScrubbingScenarioTests: IntegrationTests, RUMCommonAsserts {
+class RUMScrubbingScenarioTests: UITests, RUMCommonAsserts {
     func testRUMScrubbingScenario() throws {
         let rumServerSession = server.obtainUniqueRecordingSession()
 

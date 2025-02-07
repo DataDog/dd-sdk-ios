@@ -36,7 +36,7 @@ private extension ExampleApplication {
     }
 }
 
-class RUMSwiftUIScenarioTests: IntegrationTests, RUMCommonAsserts {
+class RUMSwiftUIScenarioTests: UITests, RUMCommonAsserts {
     func testSwiftUIScenario() throws {
         guard #available(iOS 13, *) else {
             return

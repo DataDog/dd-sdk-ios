@@ -12,7 +12,7 @@ struct ServerConnectionError: Error {
 }
 
 /// Base class providing mock server instrumentation.
-class IntegrationTests: XCTestCase {
+class UITests: XCTestCase {
     /// Python server instance.
     private(set) var server: ServerMock! // swiftlint:disable:this implicitly_unwrapped_optional
     /// Timeout for requesting data from Python server.
@@ -31,7 +31,7 @@ class IntegrationTests: XCTestCase {
     // MARK: - `HTTPServerMock` connection
 
     private func connectToServer() throws -> ServerMock {
-        let testsBundle = Bundle(for: IntegrationTests.self)
+        let testsBundle = Bundle(for: UITests.self)
         guard let serverAddress = testsBundle.object(forInfoDictionaryKey: "MockServerAddress") as? String else {
             throw ServerConnectionError(description: "Cannot obtain `MockServerAddress` from `Info.plist`")
         }

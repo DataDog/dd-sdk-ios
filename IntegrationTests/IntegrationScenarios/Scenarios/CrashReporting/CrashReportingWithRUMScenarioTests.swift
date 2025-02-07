@@ -13,7 +13,7 @@ private extension ExampleApplication {
     }
 }
 
-class CrashReportingWithRUMScenarioTests: IntegrationTests, RUMCommonAsserts {
+class CrashReportingWithRUMScenarioTests: UITests, RUMCommonAsserts {
     /// Launches the app, taps "Call fatalError()" button (leading to crash), then restarts the app
     /// to have the crash report uploaded to RUM endpoint.
     ///

@@ -26,7 +26,7 @@ private class RUMFixture2Screen: XCUIApplication {
     }
 }
 
-class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts {
+class RUMManualInstrumentationScenarioTests: UITests, RUMCommonAsserts {
     func testRUMManualInstrumentationScenario() throws {
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()

@@ -27,7 +27,7 @@ private extension ExampleApplication {
     }
 }
 
-class RUMNavigationControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
+class RUMNavigationControllerScenarioTests: UITests, RUMCommonAsserts {
     func testRUMNavigationControllerScenario() throws {
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()

@@ -77,7 +77,7 @@ private extension ExampleApplication {
     }
 }
 
-class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
+class RUMTapActionScenarioTests: UITests, RUMCommonAsserts {
     func testRUMTapActionScenario() throws {
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()

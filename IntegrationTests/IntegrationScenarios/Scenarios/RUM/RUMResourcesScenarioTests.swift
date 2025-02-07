@@ -14,7 +14,7 @@ private extension ExampleApplication {
     }
 }
 
-class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
+class RUMResourcesScenarioTests: UITests, RUMCommonAsserts {
     private struct Expectations {
         let expectedFirstPartyRequestsViewControllerName: String
         let expectedThirdPartyRequestsViewControllerName: String

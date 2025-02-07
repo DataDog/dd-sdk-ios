@@ -36,7 +36,7 @@ class RUMSendKioskEventsInterruptedScreen: XCUIApplication {
     }
 }
 
-class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
+class RUMStopSessionScenarioTests: UITests, RUMCommonAsserts {
     func testRUMStopSessionScenario() throws {
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()

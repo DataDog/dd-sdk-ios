@@ -21,7 +21,7 @@ private extension ExampleApplication {
     }
 }
 
-class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
+class RUMTabBarControllerScenarioTests: UITests, RUMCommonAsserts {
     func testRUMTabBarScenario() throws {
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()

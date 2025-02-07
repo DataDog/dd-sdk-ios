@@ -7,7 +7,7 @@
 import HTTPServerMock
 import XCTest
 
-class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
+class LoggingScenarioTests: UITests, LoggingCommonAsserts {
     func testLoggingScenario() throws {
         let loggingServerSession = server.obtainUniqueRecordingSession()
 

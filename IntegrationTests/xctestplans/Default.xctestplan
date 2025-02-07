@@ -10,7 +10,7 @@
   ],
   "defaultOptions" : {
     "targetForVariableExpansion" : {
-      "containerPath" : "container:IntegrationTests.xcodeproj",
+      "containerPath" : "container:UITests.xcodeproj",
       "identifier" : "61441C2924616F1D003D8BB8",
       "name" : "IntegrationScenarios"
     }
@@ -20,7 +20,7 @@
       "skippedTests" : [
         "CrashReportingWithLoggingScenarioTests",
         "CrashReportingWithRUMScenarioTests",
-        "IntegrationTests",
+        "UITests",
         "RUMManualInstrumentationScenarioTests",
         "RUMMobileVitalsScenarioTests",
         "RUMModalViewsScenarioTests",
@@ -34,7 +34,7 @@
         "TracingURLSessionScenarioTests"
       ],
       "target" : {
-        "containerPath" : "container:IntegrationTests.xcodeproj",
+        "containerPath" : "container:UITests.xcodeproj",
         "identifier" : "61441C2924616F1D003D8BB8",
         "name" : "IntegrationScenarios"
       }

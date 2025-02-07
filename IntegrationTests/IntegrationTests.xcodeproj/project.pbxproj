@@ -43,7 +43,7 @@
 		61410141251A454500E3C2D9 /* TracingCommonAsserts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61410140251A454500E3C2D9 /* TracingCommonAsserts.swift */; };
 		61441C0524616DE9003D8BB8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C0424616DE9003D8BB8 /* AppDelegate.swift */; };
 		61441C0E24616DEC003D8BB8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 61441C0D24616DEC003D8BB8 /* Assets.xcassets */; };
-		61441C4024617013003D8BB8 /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C3B24617013003D8BB8 /* IntegrationTests.swift */; };
+		61441C4024617013003D8BB8 /* UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C3B24617013003D8BB8 /* UITests.swift */; };
 		61441C4124617013003D8BB8 /* LoggingScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C3C24617013003D8BB8 /* LoggingScenarioTests.swift */; };
 		61441C44246174CE003D8BB8 /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 61441C43246174CE003D8BB8 /* HTTPServerMock */; };
 		61441C962461A649003D8BB8 /* UIButton+Disabling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C912461A648003D8BB8 /* UIButton+Disabling.swift */; };
@@ -182,7 +182,7 @@
 		61441C0424616DE9003D8BB8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		61441C0D24616DEC003D8BB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		61441C2A24616F1D003D8BB8 /* IntegrationScenarios.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IntegrationScenarios.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		61441C3B24617013003D8BB8 /* IntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
+		61441C3B24617013003D8BB8 /* UITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UITests.swift; sourceTree = "<group>"; };
 		61441C3C24617013003D8BB8 /* LoggingScenarioTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggingScenarioTests.swift; sourceTree = "<group>"; };
 		61441C912461A648003D8BB8 /* UIButton+Disabling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIButton+Disabling.swift"; sourceTree = "<group>"; };
 		61441C922461A648003D8BB8 /* UIViewController+KeyboardControlling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+KeyboardControlling.swift"; sourceTree = "<group>"; };
@@ -520,7 +520,7 @@
 		61441C3524617013003D8BB8 /* IntegrationScenarios */ = {
 			isa = PBXGroup;
 			children = (
-				61441C3B24617013003D8BB8 /* IntegrationTests.swift */,
+				61441C3B24617013003D8BB8 /* UITests.swift */,
 				61B9ED1E2461E57700C0DCFF /* UITestsHelpers.swift */,
 				D218664D29967CBC006F5B23 /* DataModels */,
 				D2774EDE299E2E90004EC36A /* Matchers */,
@@ -864,7 +864,7 @@
 			packageProductDependencies = (
 				61441C43246174CE003D8BB8 /* HTTPServerMock */,
 			);
-			productName = DatadogIntegrationTests;
+			productName = DatadogUITests;
 			productReference = 61441C2A24616F1D003D8BB8 /* IntegrationScenarios.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
@@ -888,7 +888,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 61133B7C242393DE00786299 /* Build configuration list for PBXProject "IntegrationTests" */;
+			buildConfigurationList = 61133B7C242393DE00786299 /* Build configuration list for PBXProject "UITests" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1124,7 +1124,7 @@
 			files = (
 				61DC6D922539E3E300FFAA22 /* LoggingCommonAsserts.swift in Sources */,
 				D2774EE6299E2E90004EC36A /* SpanMatcher.swift in Sources */,
-				61441C4024617013003D8BB8 /* IntegrationTests.swift in Sources */,
+				61441C4024617013003D8BB8 /* UITests.swift in Sources */,
 				D2791EF927170A760046E07A /* RUMSwiftUIScenarioTests.swift in Sources */,
 				61163C4A252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift in Sources */,
 				61B9ED212462089600C0DCFF /* TracingManualInstrumentationScenarioTests.swift in Sources */,
@@ -1375,7 +1375,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogIntegrationTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG DD_COMPILED_FOR_INTEGRATION_TESTS";
@@ -1395,7 +1395,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogIntegrationTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_COMPILED_FOR_INTEGRATION_TESTS;
@@ -1415,7 +1415,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogIntegrationTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_COMPILED_FOR_INTEGRATION_TESTS;
@@ -1484,7 +1484,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		61133B7C242393DE00786299 /* Build configuration list for PBXProject "IntegrationTests" */ = {
+		61133B7C242393DE00786299 /* Build configuration list for PBXProject "UITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				61133B94242393DE00786299 /* Debug */,

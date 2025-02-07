@@ -25,7 +25,7 @@ private extension ExampleApplication {
     }
 }
 
-class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts {
+class RUMModalViewsScenarioTests: UITests, RUMCommonAsserts {
     func testRUMModalViewsScenario() throws {
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()

@@ -53,7 +53,7 @@ private class TSConsentSettingsScreen: XCUIApplication {
     }
 }
 
-class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingCommonAsserts, RUMCommonAsserts {
+class TrackingConsentScenarioTests: UITests, LoggingCommonAsserts, TracingCommonAsserts, RUMCommonAsserts {
     func testStartWithPendingConsent_thenPlayScenario_thenChangeConsentToGranted() throws {
         let loggingServerSession = server.obtainUniqueRecordingSession()
         let tracingServerSession = server.obtainUniqueRecordingSession()

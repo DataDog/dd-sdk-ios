@@ -7,7 +7,7 @@
 import HTTPServerMock
 import XCTest
 
-class TracingManualInstrumentationScenarioTests: IntegrationTests, TracingCommonAsserts, LoggingCommonAsserts {
+class TracingManualInstrumentationScenarioTests: UITests, TracingCommonAsserts, LoggingCommonAsserts {
     func testTracingManualInstrumentationScenario() throws {
         let testBeginTimeInNanoseconds = UInt64(Date().timeIntervalSince1970 * 1_000_000_000)
 

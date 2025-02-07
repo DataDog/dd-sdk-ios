@@ -57,7 +57,7 @@ private class CSPictureScreen: XCUIApplication {
     }
 }
 
-class StopCoreScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingCommonAsserts, RUMCommonAsserts {
+class StopCoreScenarioTests: UITests, LoggingCommonAsserts, TracingCommonAsserts, RUMCommonAsserts {
     func testStartAndStopCoreInstance() throws {
         let loggingServerSession = server.obtainUniqueRecordingSession()
         let tracingServerSession = server.obtainUniqueRecordingSession()

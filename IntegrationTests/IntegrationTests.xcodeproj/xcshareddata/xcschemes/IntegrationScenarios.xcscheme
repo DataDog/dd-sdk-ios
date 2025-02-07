@@ -17,7 +17,7 @@
                      BlueprintIdentifier = "61441C2924616F1D003D8BB8"
                      BuildableName = "IntegrationScenarios.xctest"
                      BlueprintName = "IntegrationScenarios"
-                     ReferencedContainer = "container:IntegrationTests.xcodeproj">
+                     ReferencedContainer = "container:UITests.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>
             </ActionContent>
@@ -35,7 +35,7 @@
                BlueprintIdentifier = "61441C0124616DE9003D8BB8"
                BuildableName = "Integration Tests Runner.app"
                BlueprintName = "Runner iOS"
-               ReferencedContainer = "container:IntegrationTests.xcodeproj">
+               ReferencedContainer = "container:UITests.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -49,7 +49,7 @@
                BlueprintIdentifier = "61441C2924616F1D003D8BB8"
                BuildableName = "IntegrationScenarios.xctest"
                BlueprintName = "IntegrationScenarios"
-               ReferencedContainer = "container:IntegrationTests.xcodeproj">
+               ReferencedContainer = "container:UITests.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -73,7 +73,7 @@
                      BlueprintIdentifier = "61441C2924616F1D003D8BB8"
                      BuildableName = "IntegrationScenarios.xctest"
                      BlueprintName = "IntegrationScenarios"
-                     ReferencedContainer = "container:IntegrationTests.xcodeproj">
+                     ReferencedContainer = "container:UITests.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>
             </ActionContent>
@@ -89,8 +89,8 @@
                   <BuildableReference
                      BuildableIdentifier = "primary"
                      BlueprintIdentifier = "61441C2924616F1D003D8BB8"
-                     BuildableName = "DatadogIntegrationTests.xctest"
-                     BlueprintName = "DatadogIntegrationTests"
+                     BuildableName = "DatadogUITests.xctest"
+                     BlueprintName = "DatadogUITests"
                      ReferencedContainer = "container:Datadog.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>
@@ -208,7 +208,7 @@
             BlueprintIdentifier = "61441C0124616DE9003D8BB8"
             BuildableName = "Integration Tests Runner.app"
             BlueprintName = "Runner iOS"
-            ReferencedContainer = "container:IntegrationTests.xcodeproj">
+            ReferencedContainer = "container:UITests.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>

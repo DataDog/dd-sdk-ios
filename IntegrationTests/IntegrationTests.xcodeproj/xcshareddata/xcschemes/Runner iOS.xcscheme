@@ -17,7 +17,7 @@
                BlueprintIdentifier = "61441C0124616DE9003D8BB8"
                BuildableName = "Integration Tests Runner.app"
                BlueprintName = "Runner iOS"
-               ReferencedContainer = "container:IntegrationTests.xcodeproj">
+               ReferencedContainer = "container:UITests.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -39,7 +39,7 @@
                      BlueprintIdentifier = "61441C2924616F1D003D8BB8"
                      BuildableName = "IntegrationScenarios.xctest"
                      BlueprintName = "IntegrationScenarios"
-                     ReferencedContainer = "container:IntegrationTests.xcodeproj">
+                     ReferencedContainer = "container:UITests.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>
             </ActionContent>
@@ -77,7 +77,7 @@
                BlueprintIdentifier = "61441C2924616F1D003D8BB8"
                BuildableName = "IntegrationScenarios.xctest"
                BlueprintName = "IntegrationScenarios"
-               ReferencedContainer = "container:IntegrationTests.xcodeproj">
+               ReferencedContainer = "container:UITests.xcodeproj">
             </BuildableReference>
             <SkippedTests>
                <Test
@@ -107,7 +107,7 @@
             BlueprintIdentifier = "61441C0124616DE9003D8BB8"
             BuildableName = "Integration Tests Runner.app"
             BlueprintName = "Runner iOS"
-            ReferencedContainer = "container:IntegrationTests.xcodeproj">
+            ReferencedContainer = "container:UITests.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -235,7 +235,7 @@
             BlueprintIdentifier = "61441C0124616DE9003D8BB8"
             BuildableName = "Integration Tests Runner.app"
             BlueprintName = "Runner iOS"
-            ReferencedContainer = "container:IntegrationTests.xcodeproj">
+            ReferencedContainer = "container:UITests.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

@@ -13,7 +13,7 @@ private extension ExampleApplication {
     }
 }
 
-class CrashReportingWithLoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
+class CrashReportingWithLoggingScenarioTests: UITests, LoggingCommonAsserts {
     /// Launches the app, taps "Call fatalError()" button (leading to crash), then restarts the app
     /// to have the crash report uploaded to logging endpoint.
     ///

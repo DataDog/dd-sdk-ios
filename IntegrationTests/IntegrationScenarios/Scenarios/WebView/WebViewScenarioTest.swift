@@ -8,7 +8,7 @@ import Foundation
 import HTTPServerMock
 import XCTest
 
-class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
+class WebViewScenarioTest: UITests, RUMCommonAsserts {
     /// In this test, the app opens a WebView which loads Browser SDK instrumented content.
     /// The iOS SDK should capture all RUM events and Logs produced by Browser SDK.
     func testWebViewEventsScenario() throws {
