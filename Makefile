@@ -380,17 +380,6 @@ api-surface:
 			> ../../api-surface-objc && \
 			cd -
 
-# Generate Datadog monitors terraform definition for E2E tests:
-e2e-monitors-generate:
-		@echo "Deleting previous 'main.tf as it will be soon generated."
-		@rm -f tools/nightly-e2e-tests/monitors-gen/main.tf
-		@echo "Deleting previous Terraform state and backup as we don't need to track it."
-		@rm -f tools/nightly-e2e-tests/monitors-gen/terraform.tfstate
-		@rm -f tools/nightly-e2e-tests/monitors-gen/terraform.tfstate.backup
-		@echo "⚙️  Generating 'main.tf':"
-		@./tools/nightly-e2e-tests/nightly_e2e.py generate-tf --tests-dir ../../Datadog/E2ETests
-		@echo "⚠️  Remember to delete all iOS monitors manually from Mobile-Integration org before running 'terraform apply'."
-
 # Creates dogfooding PR in shopist-ios
 dogfood-shopist:
 	@:$(eval DRY_RUN ?= 1)
