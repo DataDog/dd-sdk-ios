@@ -63,7 +63,6 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     }
 
     // swiftlint:disable function_default_parameter_at_end
-
     /// Retrieve typed events written through Even Write Context API with given `bypassConsent` flag.
     public func eventsWritten<T>(
         ofType type: T.Type = T.self,
@@ -71,7 +70,6 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     ) -> [T] where T: Encodable {
         return events.filter { $0.bypassConsent == bypassConsent }.compactMap { $0.event as? T }
     }
-
     // swiftlint:enable function_default_parameter_at_end
 
     /// Retrieve data written in Data Store.

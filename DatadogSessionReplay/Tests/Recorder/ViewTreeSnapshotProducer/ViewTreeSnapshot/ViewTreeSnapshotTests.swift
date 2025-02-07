@@ -30,10 +30,10 @@ class ViewAttributesTests: XCTestCase {
         XCTAssertEqual(attributes.alpha, view.alpha)
         XCTAssertEqual(attributes.isHidden, view.isHidden)
         XCTAssertEqual(attributes.intrinsicContentSize, view.intrinsicContentSize)
-        XCTAssertNil(attributes.overrides.textAndInputPrivacy)
-        XCTAssertNil(attributes.overrides.imagePrivacy)
-        XCTAssertNil(attributes.overrides.touchPrivacy)
-        XCTAssertNil(attributes.overrides.hide)
+        XCTAssertNil(attributes.textAndInputPrivacy)
+        XCTAssertNil(attributes.imagePrivacy)
+        XCTAssertNil(attributes.touchPrivacy)
+        XCTAssertNil(attributes.hide)
     }
 
     func testWhenViewIsVisible() {
@@ -169,10 +169,10 @@ class ViewAttributesTests: XCTestCase {
         let attributes = createViewAttributes(with: view)
 
         // Then
-        XCTAssertNil(attributes.overrides.textAndInputPrivacy)
-        XCTAssertNil(attributes.overrides.imagePrivacy)
-        XCTAssertNil(attributes.overrides.touchPrivacy)
-        XCTAssertNil(attributes.overrides.hide)
+        XCTAssertNil(attributes.textAndInputPrivacy)
+        XCTAssertNil(attributes.imagePrivacy)
+        XCTAssertNil(attributes.touchPrivacy)
+        XCTAssertNil(attributes.hide)
     }
 
     func testChildViewInheritsParentHideOverride() {

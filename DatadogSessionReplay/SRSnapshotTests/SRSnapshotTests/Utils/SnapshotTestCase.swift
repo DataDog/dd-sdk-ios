@@ -46,7 +46,6 @@ internal class SnapshotTestCase: XCTestCase {
     }
 
     // swiftlint:disable function_default_parameter_at_end
-
     /// Helper method for most snapshot tests
     func takeSnapshotFor(
         _ fixture: Fixture,
@@ -75,6 +74,7 @@ internal class SnapshotTestCase: XCTestCase {
             )
         }
     }
+    // swiftlint:enable function_default_parameter_at_end
 
     /// Helper method for date and time picker snapshot tests
     func takeSnapshotForPicker(
@@ -102,6 +102,7 @@ internal class SnapshotTestCase: XCTestCase {
         }
     }
 
+    // swiftlint:disable function_default_parameter_at_end
     /// Helper method for snapshot tests showing PopupsViewController
     func takeSnapshotForPopup(
         fixture: Fixture,
@@ -126,7 +127,6 @@ internal class SnapshotTestCase: XCTestCase {
             )
         }
     }
-
     // swiftlint:enable function_default_parameter_at_end
 
     /// Captures side-by-side snapshot of the app UI and recorded wireframes.

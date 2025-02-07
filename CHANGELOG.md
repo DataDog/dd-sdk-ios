@@ -1,9 +1,17 @@
 # Unreleased
 - [FEATURE] Adds anonymous identifier configuration for RUM Sessions linking. See [#2172][]
-- [FEATURE] Add Time To Network Setled metric in RUM. See [#2125][]
+
+# 2.23.0 / 05-02-2025
+
+- [FEATURE] Add Time To Network Settled metric in RUM. See [#2125][]
 - [FEATURE] Add Interaction To Next View metric in RUM. See [#2153][]
+- [FIX] Fix SwiftUI staling views. See [#2169][]
 - [FIX] Fix SwiftUI placeholder in Session Replay when Feature Flag is disabled. See [#2170][]
 - [IMPROVEMENT] Add `addAttributes` and `removeAttributes` APIs. See [#2177][]
+
+# 2.22.1 / 30-01-2025
+
+- [FIX] Fix memory leak in Session Replay where privacy overrides retained UIViews. See [#2182][]
 
 # 2.22.0 / 02-01-2025
 
@@ -821,8 +829,10 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2153]: https://github.com/DataDog/dd-sdk-ios/pull/2153
 [#2154]: https://github.com/DataDog/dd-sdk-ios/pull/2154
 [#2172]: https://github.com/DataDog/dd-sdk-ios/pull/2172
+[#2169]: https://github.com/DataDog/dd-sdk-ios/pull/2169
 [#2170]: https://github.com/DataDog/dd-sdk-ios/pull/2170
 [#2177]: https://github.com/DataDog/dd-sdk-ios/pull/2177
+[#2182]: https://github.com/DataDog/dd-sdk-ios/pull/2182
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
