@@ -1,5 +1,6 @@
 # Unreleased
 
+- [IMPROVEMENT] Session Replay recording is event-triggered instead of scheduled. See [#2074][]
 # 2.23.0 / 05-02-2025
 
 - [FEATURE] Add Time To Network Settled metric in RUM. See [#2125][]
@@ -818,6 +819,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2099]: https://github.com/DataDog/dd-sdk-ios/pull/2099
 [#2063]: https://github.com/DataDog/dd-sdk-ios/pull/2063
 [#2092]: https://github.com/DataDog/dd-sdk-ios/pull/2092
+[#2074]: https://github.com/DataDog/dd-sdk-ios/pull/2074
 [#2113]: https://github.com/DataDog/dd-sdk-ios/pull/2113
 [#2125]: https://github.com/DataDog/dd-sdk-ios/pull/2125
 [#2114]: https://github.com/DataDog/dd-sdk-ios/pull/2114
