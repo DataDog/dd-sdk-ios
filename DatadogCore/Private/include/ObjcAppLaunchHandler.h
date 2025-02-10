@@ -29,13 +29,18 @@ typedef void (^UIApplicationDidBecomeActiveCallback) (NSTimeInterval);
 /// Indicates whether the application was prewarmed by the system.
 @property (atomic, readonly) BOOL isActivePrewarm;
 
-/// Creates and initializes an instance of `AppLaunchHandler`.
+/// Initializes an instance of `AppLaunchHandler` with the given process information.
 ///
-/// - Parameters:
-///   - processInfo: The `NSProcessInfo` instance used to retrieve environment variables.
-///   - notificationCenter: The `NSNotificationCenter` used to observe application state changes.
-+ (instancetype)createWithProcessInfo:(NSProcessInfo *)processInfo
-                   notificationCenter:(NSNotificationCenter *)notificationCenter;
+/// - Parameter processInfo: The `NSProcessInfo` instance used to retrieve environment variables,
+///   including information about whether the app was prewarmed.
+- (instancetype)initWithProcessInfo:(NSProcessInfo *)processInfo;
+
+/// Observes the given notification center for application lifecycle events.
+///
+/// This method listens for the application becoming active and updates launch-related timestamps accordingly.
+///
+/// - Parameter notificationCenter: The `NSNotificationCenter` instance used to observe application state changes.
+- (void)observeNotificationCenter:(NSNotificationCenter *)notificationCenter;
 
 /// Sets a callback to be invoked when the application becomes active.
 ///

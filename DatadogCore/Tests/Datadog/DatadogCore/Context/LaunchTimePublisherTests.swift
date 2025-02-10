@@ -86,14 +86,8 @@ class AppLaunchHandlerTests: XCTestCase {
 
     func testActivePrewarm() {
         // When
-        let handler1 = AppLaunchHandler.create(
-            with: ProcessInfoMock(environment: ["ActivePrewarm": "1"]),
-            notificationCenter: notificationCenter
-        )
-        let handler2 = AppLaunchHandler.create(
-            with: ProcessInfoMock(environment: [:]),
-            notificationCenter: notificationCenter
-        )
+        let handler1 = AppLaunchHandler(processInfo: ProcessInfoMock(environment: ["ActivePrewarm": "1"]))
+        let handler2 = AppLaunchHandler(processInfo: ProcessInfoMock(environment: [:]))
 
         // Then
         XCTAssertTrue(handler1.currentValue.isActivePrewarm)
@@ -102,10 +96,11 @@ class AppLaunchHandlerTests: XCTestCase {
 
     func testLaunchTime() {
         // Given
-        let handler = AppLaunchHandler.create(with: processInfo, notificationCenter: notificationCenter)
+        let handler = AppLaunchHandler(processInfo: processInfo)
         XCTAssertNil(handler.launchTime)
 
         // When
+        handler.observe(notificationCenter)
         notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
 
         // Then
@@ -114,11 +109,12 @@ class AppLaunchHandlerTests: XCTestCase {
 
     func testSetApplicationDidBecomeActiveCallback() {
         // Given
-        let handler = AppLaunchHandler.create(with: processInfo, notificationCenter: notificationCenter)
+        let handler = AppLaunchHandler(processInfo: processInfo)
         let callbackNotified = expectation(description: "Notify setApplicationDidBecomeActiveCallback()")
         handler.setApplicationDidBecomeActiveCallback { _ in callbackNotified.fulfill() }
 
         // When
+        handler.observe(notificationCenter)
         notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
 
         // Then
@@ -126,7 +122,7 @@ class AppLaunchHandlerTests: XCTestCase {
     }
 
     func testThreadSafety() {
-        let handler = AppLaunchHandler.create(with: processInfo, notificationCenter: notificationCenter)
+        let handler = AppLaunchHandler(processInfo: processInfo)
 
         // swiftlint:disable opening_brace
         callConcurrently(

@@ -40,40 +40,8 @@ static __dd_private_AppLaunchHandler *_shared;
 
 + (void)load {
     // This is called at the `DatadogPrivate` load time, keep the work minimal
-    _shared = [self createWithProcessInfo:NSProcessInfo.processInfo
-                      notificationCenter:NSNotificationCenter.defaultCenter];
-}
-
-+ (instancetype)createWithProcessInfo:(NSProcessInfo *)processInfo
-                   notificationCenter:(NSNotificationCenter *)notificationCenter
-{
-    __dd_private_AppLaunchHandler *handler = [[self alloc] initWithProcessInfo:processInfo];
-
-    NSString *notificationName;
-#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION
-    notificationName = UIApplicationDidBecomeActiveNotification;
-#elif TARGET_OS_OSX
-    notificationName = NSApplicationDidBecomeActiveNotification;
-#endif
-
-    if (notificationName && notificationCenter) {
-        __weak NSNotificationCenter *weakCenter = notificationCenter;
-        __block id __unused token = [notificationCenter addObserverForName:notificationName
-                                                                     object:nil
-                                                                      queue:NSOperationQueue.mainQueue
-                                                                 usingBlock:^(NSNotification *_){
-            @synchronized(handler) {
-                NSTimeInterval time = CFAbsoluteTimeGetCurrent() - handler->_processStartTime;
-                handler->_timeToApplicationDidBecomeActive = time;
-                handler->_applicationDidBecomeActiveCallback(time);
-            }
-
-            [weakCenter removeObserver:token];
-            token = nil;
-        }];
-    }
-
-    return handler;
+    _shared = [[self alloc] initWithProcessInfo:NSProcessInfo.processInfo];
+    [_shared observeNotificationCenter:NSNotificationCenter.defaultCenter];
 }
 
 + (__dd_private_AppLaunchHandler *)shared {
@@ -99,6 +67,34 @@ static __dd_private_AppLaunchHandler *_shared;
     _isActivePrewarm = isActivePrewarm;
     _applicationDidBecomeActiveCallback = ^(NSTimeInterval _) {};
     return self;
+}
+
+- (void)observeNotificationCenter:(NSNotificationCenter *)notificationCenter {
+    NSString *notificationName;
+#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION
+    notificationName = UIApplicationDidBecomeActiveNotification;
+#elif TARGET_OS_OSX
+    notificationName = NSApplicationDidBecomeActiveNotification;
+#endif
+
+    if (!notificationName || !notificationCenter) {
+        return;
+    }
+
+    __weak NSNotificationCenter *weakCenter = notificationCenter;
+    __block id __unused token = [notificationCenter addObserverForName:notificationName
+                                                                object:nil
+                                                                 queue:NSOperationQueue.mainQueue
+                                                            usingBlock:^(NSNotification *_){
+        @synchronized(self) {
+            NSTimeInterval time = CFAbsoluteTimeGetCurrent() - self->_processStartTime;
+            self->_timeToApplicationDidBecomeActive = time;
+            self->_applicationDidBecomeActiveCallback(time);
+        }
+
+        [weakCenter removeObserver:token];
+        token = nil;
+    }];
 }
 
 - (NSDate *)launchDate {
