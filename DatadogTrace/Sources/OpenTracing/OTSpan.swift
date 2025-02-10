@@ -52,10 +52,10 @@ public protocol OTSpan {
     ///     let span1 = tracer.startSpan(operationName: "root").setActive()
     ///
     ///     // As `span2` has no explicit parent, it becomes the child of the active `span1`:
-    ///     let span2 = tracer.startSpan(operationName: "child of `span1`")
+    ///     let span2 = tracer.startSpan(operationName: "child of `span1`").setActive()
     ///
-    ///     // As `span3` has the explicit parent (nil) it won't become the child of the active span:
-    ///     let span3 = tracer.startSpan(operationName: "another root", childOf: nil)
+    ///     // As `span3` is a root span, it won't become the child of the active span:
+    ///     let span3 = tracer.startRootSpan(operationName: "another root").setActive()
     ///
     @discardableResult
     func setActive() -> OTSpan
