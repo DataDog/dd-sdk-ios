@@ -1,4 +1,5 @@
 # Unreleased
+- [FEATURE] Adds anonymous identifier configuration for RUM Sessions linking. See [#2172][]
 
 # 2.23.0 / 05-02-2025
 
@@ -827,6 +828,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2148]: https://github.com/DataDog/dd-sdk-ios/pull/2148
 [#2153]: https://github.com/DataDog/dd-sdk-ios/pull/2153
 [#2154]: https://github.com/DataDog/dd-sdk-ios/pull/2154
+[#2172]: https://github.com/DataDog/dd-sdk-ios/pull/2172
 [#2169]: https://github.com/DataDog/dd-sdk-ios/pull/2169
 [#2170]: https://github.com/DataDog/dd-sdk-ios/pull/2170
 [#2177]: https://github.com/DataDog/dd-sdk-ios/pull/2177

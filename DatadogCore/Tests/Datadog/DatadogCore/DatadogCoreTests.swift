@@ -330,4 +330,87 @@ class DatadogCoreTests: XCTestCase {
         core.flush()
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 0, "It should not send any request")
     }
+
+    func testItAppendsUserDataIfAnonymousIdentifierExists() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        core.set(anonymousId: "anonymous-id")
+        let userBefore = core.userInfoPublisher.current
+        XCTAssertEqual(userBefore.anonymousId, "anonymous-id")
+        XCTAssertNil(userBefore.id)
+        XCTAssertNil(userBefore.name)
+        XCTAssertNil(userBefore.email)
+
+        core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
+
+        let userAfter = core.userInfoPublisher.current
+        XCTAssertEqual(userAfter.anonymousId, "anonymous-id")
+        XCTAssertEqual(userAfter.id, "user-id")
+        XCTAssertEqual(userAfter.name, "user-name")
+        XCTAssertEqual(userAfter.email, "user-email")
+    }
+
+    func testItAppendsAnonymousIdentifierIfUserExists() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
+
+        let userBefore = core.userInfoPublisher.current
+        XCTAssertNil(userBefore.anonymousId)
+        XCTAssertEqual(userBefore.id, "user-id")
+        XCTAssertEqual(userBefore.name, "user-name")
+        XCTAssertEqual(userBefore.email, "user-email")
+
+        core.set(anonymousId: "anonymous-id")
+
+        let userAfter = core.userInfoPublisher.current
+        XCTAssertEqual(userAfter.anonymousId, "anonymous-id")
+        XCTAssertEqual(userAfter.id, "user-id")
+        XCTAssertEqual(userAfter.name, "user-name")
+        XCTAssertEqual(userAfter.email, "user-email")
+    }
+
+    func testItClearsAnonymousIdentifier() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        core.set(anonymousId: "anonymous-id")
+        core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
+        core.set(anonymousId: nil)
+
+        let userAfter = core.userInfoPublisher.current
+        XCTAssertNil(userAfter.anonymousId)
+        XCTAssertEqual(userAfter.id, "user-id")
+        XCTAssertEqual(userAfter.name, "user-name")
+        XCTAssertEqual(userAfter.email, "user-email")
+    }
 }

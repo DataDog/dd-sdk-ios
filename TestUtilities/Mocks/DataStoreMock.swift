@@ -11,7 +11,7 @@ public class DataStoreMock: DataStore {
     @ReadWriteLock
     public var storage: [String: DataStoreValueResult]
 
-    init(storage: [String: DataStoreValueResult] = [:]) {
+    public init(storage: [String: DataStoreValueResult] = [:]) {
         self.storage = storage
     }
 
@@ -29,6 +29,10 @@ public class DataStoreMock: DataStore {
 
     public func clearAllData() {
         storage.removeAll()
+    }
+
+    public func flush() {
+        // no-op
     }
 
     // MARK: - Side Effects Observation

@@ -136,12 +136,12 @@ internal final class DatadogCore {
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
         let userInfo = UserInfo(
+            anonymousId: userInfoPublisher.current.anonymousId,
             id: id,
             name: name,
             email: email,
             extraInfo: extraInfo
         )
-
         userInfoPublisher.current = userInfo
     }
 
@@ -317,6 +317,10 @@ extension DatadogCore: DatadogCoreProtocol {
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         bus.send(message: message, else: fallback)
     }
+
+    func set(anonymousId: String?) {
+        userInfoPublisher.current.anonymousId = anonymousId
+    }
 }
 
 internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope where Feature: DatadogFeature {
@@ -377,6 +381,10 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
 
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         core?.set(baggage: baggage, forKey: key)
+    }
+
+    func set(anonymousId: String?) {
+        core?.set(anonymousId: anonymousId)
     }
 
     var telemetry: Telemetry {

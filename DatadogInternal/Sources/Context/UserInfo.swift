@@ -7,6 +7,8 @@
 import Foundation
 
 public struct UserInfo: Codable, PassthroughAnyCodable {
+    /// User anonymous ID, if configured.
+    public var anonymousId: String?
     /// User ID, if any.
     public let id: String?
     /// Name representing the user, if any.
@@ -17,17 +19,20 @@ public struct UserInfo: Codable, PassthroughAnyCodable {
     public var extraInfo: [AttributeKey: AttributeValue]
 
     enum CodingKeys: String, CodingKey {
+        case anonymousId
         case id
         case name
         case email
     }
 
     public init(
+        anonymousId: String? = nil,
         id: String? = nil,
         name: String? = nil,
         email: String? = nil,
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
+        self.anonymousId = anonymousId
         self.id = id
         self.name = name
         self.email = email
@@ -37,6 +42,7 @@ public struct UserInfo: Codable, PassthroughAnyCodable {
     public func encode(to encoder: Encoder) throws {
         // Encode static properties:
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(anonymousId, forKey: .anonymousId)
         try container.encodeIfPresent(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeIfPresent(email, forKey: .email)
@@ -52,6 +58,7 @@ public struct UserInfo: Codable, PassthroughAnyCodable {
     public init(from decoder: Decoder) throws {
         // Decode static properties:
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.anonymousId = try container.decodeIfPresent(String.self, forKey: .anonymousId)
         self.id = try container.decodeIfPresent(String.self, forKey: .id)
         self.name = try container.decodeIfPresent(String.self, forKey: .name)
         self.email = try container.decodeIfPresent(String.self, forKey: .email)

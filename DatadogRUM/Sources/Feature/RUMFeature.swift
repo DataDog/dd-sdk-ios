@@ -21,6 +21,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
     let configuration: RUM.Configuration
 
+    let anonymousIdentifierManager: AnonymousIdentifierManaging
+
     init(
         in core: DatadogCoreProtocol,
         configuration: RUM.Configuration
@@ -206,6 +208,12 @@ internal final class RUMFeature: DatadogRemoteFeature {
         // Forward instrumentation calls to monitor:
         instrumentation.publish(to: monitor)
 
+        // Initialize anonymous identifier manager
+        self.anonymousIdentifierManager = AnonymousIdentifierManager(
+            featureScope: dependencies.featureScope,
+            uuidGenerator: dependencies.rumUUIDGenerator
+        )
+
         // Send configuration telemetry:
         core.telemetry.configuration(
             appHangThreshold: configuration.appHangThreshold?.toInt64Milliseconds,
@@ -222,6 +230,9 @@ internal final class RUMFeature: DatadogRemoteFeature {
             trackUserInteractions: configuration.uiKitActionsPredicate != nil,
             useFirstPartyHosts: configuration.urlSessionTracking?.firstPartyHostsTracing != nil
         )
+
+        // Manage anonymous identifier depending on the configuration.
+        anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: configuration.trackAnonymousUser)
     }
 }
 

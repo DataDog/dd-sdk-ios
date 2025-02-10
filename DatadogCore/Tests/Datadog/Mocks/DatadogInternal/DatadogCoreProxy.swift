@@ -92,6 +92,15 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         )
     }
 
+    func setUserInfo(
+        id: String? = nil,
+        name: String? = nil,
+        email: String? = nil,
+        extraInfo: [AttributeKey: AttributeValue] = [:]
+    ) {
+        core.setUserInfo(id: id, name: name, email: email, extraInfo: extraInfo)
+    }
+
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         core.set(baggage: baggage, forKey: key)
     }
@@ -151,6 +160,10 @@ private struct FeatureScopeProxy: FeatureScope {
 
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         proxy.set(baggage: baggage, forKey: key)
+    }
+
+    func set(anonymousId: String?) {
+        proxy.set(anonymousId: anonymousId)
     }
 }
 

@@ -134,6 +134,10 @@
     XCTAssertNil(config.customEndpoint);
     config.customEndpoint = [NSURL new];
     XCTAssertNotNil(config.customEndpoint);
+
+    XCTAssertTrue(config.trackAnonymousUser);
+    config.trackAnonymousUser = NO;
+    XCTAssertFalse(config.trackAnonymousUser);
 }
 
 #pragma clang diagnostic pop
