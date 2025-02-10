@@ -63,7 +63,7 @@ class AnonymousIdentifierTests: XCTestCase {
 
         assertAnonymousIdentifier(isSet: true, in: session2)
         let anonymousId2 = session2.views.last?.viewEvents.first?.usr?.anonymousId
-        XCTAssertEqual(anonymousId1, anonymousId1)
+        XCTAssertEqual(anonymousId1, anonymousId2)
     }
 
     func test_itClearsAnonymousIdentifierWhenDisabled() throws {

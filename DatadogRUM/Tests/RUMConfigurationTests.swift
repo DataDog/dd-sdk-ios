@@ -31,6 +31,6 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertNil(config.longTaskEventMapper)
         XCTAssertNil(config.onSessionStart)
         XCTAssertNil(config.customEndpoint)
-        XCTAssertEqual(config.trackAnonymousUser, true)
+        XCTAssertTrue(config.trackAnonymousUser)
     }
 }
