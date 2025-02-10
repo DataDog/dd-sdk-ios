@@ -155,7 +155,7 @@ internal struct SpanEventEncoder {
 
         case isRootSpan = "metrics._top_level"
         case samplingPriority = "metrics._sampling_priority_v1"
-        case samplingRate = "_dd.agent_psr"
+        case samplingRate = "metrics._dd.agent_psr"
 
         // MARK: - Meta
 

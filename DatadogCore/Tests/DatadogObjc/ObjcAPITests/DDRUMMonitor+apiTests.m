@@ -75,7 +75,10 @@
     [monitor startActionWithType:DDRUMActionTypeSwipe name:@"" attributes:@{}];
     [monitor stopActionWithType:DDRUMActionTypeSwipe name:nil attributes:@{}];
     [monitor addActionWithType:DDRUMActionTypeTap name:@"" attributes:@{}];
-    [monitor addAttributeForKey:@"" value:@""];
+    [monitor addAttributeForKey:@"key" value:@"value"];
+    [monitor removeAttributeForKey:@"key"];
+    [monitor addAttributes:@{@"string": @"value", @"integer": @1, @"boolean": @true}];
+    [monitor removeAttributesForKeys:@[@"string",@"integer",@"boolean"]];
     [monitor addFeatureFlagEvaluationWithName: @"name" value: @"value"];
 
     [monitor setDebug:YES];

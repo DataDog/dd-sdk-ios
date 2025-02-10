@@ -65,6 +65,7 @@ class DatePickerController: UIViewController {
         updateDatePickerLabel()
     }
 
+    @available(iOS, introduced: 8.0, deprecated: 17.0, message: "Use the trait change registration APIs declared in the UITraitChangeObservable protocol")
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         // Adjust the date picker style due to the trait collection's vertical size.
         super.traitCollectionDidChange(previousTraitCollection)

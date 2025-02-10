@@ -146,8 +146,8 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecords[0].records[1].isFocusRecord)
         XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord)
 
-        XCTAssertEqual(enrichedRecords[1].records.count, 2, "It should follow with 'full snapshot' → 'incremental snapshot' records")
-        XCTAssertTrue(enrichedRecords[1].records[0].isFullSnapshotRecord)
+        XCTAssertEqual(enrichedRecords[1].records.count, 2, "It should follow with 'incremental snapshot' records")
+        XCTAssertTrue(enrichedRecords[1].records[0].isIncrementalSnapshotRecord)
         XCTAssertTrue(enrichedRecords[1].records[1].isIncrementalSnapshotRecord)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.height, 100)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.width, 200)
@@ -435,6 +435,43 @@ class SnapshotProcessorTests: XCTestCase {
         }
 
         XCTAssertEqual(core.recordsCountByViewID, ["abc": 4])
+    }
+
+    func testViewRetentionInBackgroundProcessing() {
+        weak var weakView: UIView?
+
+        autoreleasepool {
+            let view = UIView()
+            weakView = view
+            view.dd.sessionReplayPrivacyOverrides.imagePrivacy = .maskAll
+
+            let time = Date()
+            let rum: RUMContext = .mockWith(serverTimeOffset: 0)
+
+            // Given
+            let core = PassthroughCoreMock()
+            let srContextPublisher = SRContextPublisher(core: core)
+            let processor = SnapshotProcessor(
+                queue: NoQueue(),
+                recordWriter: recordWriter,
+                resourceProcessor: ResourceProcessorSpy(),
+                srContextPublisher: srContextPublisher,
+                telemetry: TelemetryMock()
+            )
+
+            // When
+            let snapshot = generateViewTreeSnapshot(for: view, date: time, rumContext: rum)
+            processor.process(viewTreeSnapshot: snapshot, touchSnapshot: nil)
+
+            // Then
+            XCTAssertEqual(recordWriter.records.count, 1)
+
+            // View should still exist here
+            XCTAssertNotNil(weakView)
+        }
+
+        // View should be deallocated even though snapshot was processed in background
+        XCTAssertNil(weakView)
     }
 
     // MARK: - `ViewTreeSnapshot` generation

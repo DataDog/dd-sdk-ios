@@ -439,6 +439,28 @@ class DDRUMMonitorTests: XCTestCase {
         XCTAssertEqual(try viewEvents[0].attribute(forKeyPath: "context.event-attribute1"), "foo1")
     }
 
+    func testSendingMultipleGlobalAttributes() throws {
+        RUM.enable(with: config)
+        let objcRUMMonitor = DDRUMMonitor.shared()
+
+        objcRUMMonitor.addAttributes(["global-attribute1": "foo1", "global-attribute2": "foo2", "global-attribute3": 2, "global-attribute4": true])
+        objcRUMMonitor.removeAttribute(forKey: "global-attribute2")
+
+        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
+
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+
+        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
+            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+        }
+        XCTAssertEqual(viewEvents.count, 1)
+
+        XCTAssertEqual(try viewEvents[0].attribute(forKeyPath: "context.global-attribute1"), "foo1")
+        XCTAssertNil(try? viewEvents[0].attribute(forKeyPath: "context.global-attribute2") as String)
+        XCTAssertEqual(try viewEvents[0].attribute(forKeyPath: "context.global-attribute3"), 2)
+        XCTAssertEqual(try viewEvents[0].attribute(forKeyPath: "context.global-attribute4"), true)
+    }
+
     func testEvaluatingFeatureFlags() throws {
         RUM.enable(with: config)
         let objcRUMMonitor = DDRUMMonitor.shared()

@@ -38,6 +38,74 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertNil(lastView.attribute(forKey: "attribute"))
     }
 
+    func testAddingMultipleGlobalAttributes() throws {
+        // Given
+        let mockAttributes: [AttributeKey: AttributeValue] = (0...99).reduce(into: [:]) { $0[String(describing: $1)] = $1 }
+
+        // When
+        monitor.notifySDKInit()
+        monitor.addAttributes(mockAttributes)
+        monitor.startView(key: "IgnoredView")
+
+        // Then
+        let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
+        let appLaunchViewEvent = try XCTUnwrap(viewEvents.last(where: { $0.view.name == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName }))
+        XCTAssertTrue(appLaunchViewEvent.numberOfAttributes == 100)
+    }
+
+    func testAddingAndRemovingMultipleGlobalAttributes() throws {
+        // Given
+        let mockAttributes: [AttributeKey: AttributeValue] = (0...99).reduce(into: [:]) { $0[String(describing: $1)] = $1 }
+
+        // When
+        monitor.notifySDKInit()
+        monitor.addAttributes(mockAttributes)
+        monitor.removeAttributes(forKeys: Array(mockAttributes.keys))
+        monitor.startView(key: "IgnoredView")
+
+        // Then
+        let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
+        let appLaunchViewEvent = try XCTUnwrap(viewEvents.last(where: { $0.view.name == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName }))
+        XCTAssertTrue(appLaunchViewEvent.numberOfAttributes == 0)
+    }
+
+    func testAddingIsolatedAttributesAndRemovingMultipleAttributes() throws {
+        // Given
+        let attributeKeys: [AttributeKey] = (0...99).map { "key\($0)" }
+
+        // When
+        monitor.notifySDKInit()
+        attributeKeys.forEach {
+            monitor.addAttribute(forKey: $0, value: "value")
+        }
+        monitor.removeAttributes(forKeys: attributeKeys)
+        monitor.startView(key: "IgnoredView")
+
+        // Then
+        let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
+        let appLaunchViewEvent = try XCTUnwrap(viewEvents.last(where: { $0.view.name == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName }))
+        XCTAssertTrue(appLaunchViewEvent.numberOfAttributes == 0)
+    }
+
+    func testAddingMultipleAttributesAndRemovingSomeAttributes() throws {
+        // Given
+        let mockAttributes: [AttributeKey: AttributeValue] = (0...99).reduce(into: [:]) { $0[String(describing: $1)] = $1 }
+        let keyToRemove = try XCTUnwrap(mockAttributes.first?.key)
+        var expectedAttributes = mockAttributes
+        expectedAttributes.removeValue(forKey: keyToRemove)
+
+        // When
+        monitor.notifySDKInit()
+        monitor.addAttributes(mockAttributes)
+        monitor.removeAttribute(forKey: keyToRemove)
+        monitor.startView(key: "IgnoredView")
+
+        // Then
+        let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
+        let appLaunchViewEvent = try XCTUnwrap(viewEvents.last(where: { $0.view.name == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName }))
+        XCTAssertTrue(appLaunchViewEvent.numberOfAttributes == mockAttributes.count - 1)
+    }
+
     func testAddingGlobalAttributeAfterSDKInit_thenStartingView() throws {
         // Given
         monitor.notifySDKInit()
@@ -236,9 +304,13 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "View1")
-        monitor.addAttribute(forKey: "attribute1", value: "value1")
-        monitor.addAttribute(forKey: "attribute2", value: "value2")
-        monitor.addAttribute(forKey: "attribute3", value: "value3")
+        monitor.addAttributes(
+            [
+                "attribute1": "value1",
+                "attribute2": "value2",
+                "attribute3": "value3"
+            ]
+        )
 
         // When
         monitor.startView(key: "View2")
@@ -269,9 +341,13 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "View1")
-        monitor.addAttribute(forKey: "attribute1", value: "value1")
-        monitor.addAttribute(forKey: "attribute2", value: "value2")
-        monitor.addAttribute(forKey: "attribute3", value: "value3")
+        monitor.addAttributes(
+            [
+                "attribute1": "value1",
+                "attribute2": "value2",
+                "attribute3": "value3"
+            ]
+        )
 
         // When
         monitor.startView(key: "View2")
@@ -482,7 +558,6 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(viewAfterFirstTiming.attribute(forKey: "attribute1"), "value1")
         XCTAssertEqual(viewAfterFirstTiming.attribute(forKey: "attribute2"), "value2")
         XCTAssertEqual(viewAfterSecondTiming.attribute(forKey: "attribute2"), "value2")
-        XCTAssertEqual(viewAfterSecondTiming.attribute(forKey: "attribute2"), "value2")
     }
 
     // MARK: - View Loading Time
@@ -579,6 +654,26 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(fatalErrorContext.globalAttributes.count, 1)
     }
 
+    func testGivenSDKInitialized_whenMultipleGlobalAttributesAreAdded_thenFatalErrorContextIsUpdatedWithNewAttributes() throws {
+        // Given
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+        let mockAttributes: [AttributeKey: AttributeValue] = (0...99).reduce(into: [:]) { $0[String(describing: $1)] = $1 }
+        monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
+            dateProvider: SystemDateProvider()
+        )
+        monitor.notifySDKInit()
+
+        // When
+        monitor.addAttributes(mockAttributes)
+
+        // Then
+        XCTAssertEqual(fatalErrorContext.globalAttributes.count, mockAttributes.count)
+        fatalErrorContext.globalAttributes.forEach {
+            XCTAssertEqual(mockAttributes[$0.key] as? String, $0.value as? String)
+        }
+    }
+
     func testGivenSDKInitialized_whenGlobalAttributesAreAddedAndRemoved_thenFatalErrorContextIsUpdatedWithNewAttributes() throws {
         let fatalErrorContext = FatalErrorContextNotifierMock()
 
@@ -597,6 +692,28 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         // Then
         XCTAssertEqual(fatalErrorContext.globalAttributes["attribute2"] as? String, "value2")
         XCTAssertEqual(fatalErrorContext.globalAttributes.count, 1)
+    }
+
+    func testGivenSDKInitialized_whenMultipleGlobalAttributesAreAddedAndRemoved_thenFatalErrorContextIsUpdatedWithNewAttributes() throws {
+        // Given
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+        let mockAttributes: [AttributeKey: AttributeValue] = (0...99).reduce(into: [:]) { $0[String(describing: $1)] = $1 }
+        let keysToRemove = [try XCTUnwrap(mockAttributes.first?.key)]
+        monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
+            dateProvider: SystemDateProvider()
+        )
+        monitor.notifySDKInit()
+
+        // When
+        monitor.addAttributes(mockAttributes)
+        monitor.removeAttributes(forKeys: keysToRemove)
+
+        // Then
+        XCTAssertEqual(fatalErrorContext.globalAttributes.count, (mockAttributes.count - keysToRemove.count))
+        keysToRemove.forEach {
+            XCTAssertNil(fatalErrorContext.globalAttributes[$0])
+        }
     }
 }
 

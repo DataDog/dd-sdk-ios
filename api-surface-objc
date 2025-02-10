@@ -376,7 +376,9 @@ public class DDRUMMonitor: NSObject
     public func stopAction(type: DDRUMActionType,name: String?,attributes: [String: Any])
     public func addAction(type: DDRUMActionType,name: String,attributes: [String: Any])
     public func addAttribute(forKey key: String,value: Any)
+    public func addAttributes(_ attributes: [String: Any])
     public func removeAttribute(forKey key: String)
+    public func removeAttributes(forKeys keys: [String])
     public func addFeatureFlagEvaluation(name: String, value: Any)
     @objc public var debug: Bool
 public class DDRUMActionEvent: NSObject
@@ -2027,17 +2029,6 @@ public class DDTelemetryConfigurationEventTelemetryRUMTelemetryOperatingSystem: 
     @objc public var version: String?
 public class DDTelemetryConfigurationEventView: NSObject
     @objc public var id: String
-public final class DDSessionReplay: NSObject
-    public static func enable(with configuration: DDSessionReplayConfiguration)
-public final class DDSessionReplayConfiguration: NSObject
-    @objc public var replaySampleRate: Float
-    @objc public var defaultPrivacyLevel: DDSessionReplayConfigurationPrivacyLevel
-    @objc public var customEndpoint: URL?
-    public required init(replaySampleRate: Float)
-public enum DDSessionReplayConfigurationPrivacyLevel: Int
-    case allow
-    case mask
-    case maskUserInput
 public enum DDInjectEncoding: Int
     case multiple = 0
     case single = 1

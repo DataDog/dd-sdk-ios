@@ -13,9 +13,3 @@ internal extension UIViewController {
         return NSStringFromClass(type(of: self))
     }
 }
-
-internal extension Bundle {
-    var isUIKit: Bool {
-        return bundleURL.lastPathComponent == "UIKitCore.framework"
-    }
-}

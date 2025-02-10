@@ -65,7 +65,6 @@ class TracerTests: XCTestCase {
         {
           "spans": [
             {
-              "_dd.agent_psr": 1,
               "trace_id": "64",
               "span_id": "64",
               "parent_id": "0",
@@ -90,6 +89,7 @@ class TracerTests: XCTestCase {
               "meta._dd.source": "abc",
               "metrics._top_level": 1,
               "metrics._sampling_priority_v1": 1,
+              "metrics._dd.agent_psr": 1,
               "meta._dd.p.tid": "a"
             }
           ],

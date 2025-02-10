@@ -11,7 +11,7 @@ import UIKit
 @testable import DatadogSessionReplay
 
 class SessionReplayPrivacyOverridesTests: XCTestCase {
-    // MARK: Setting overrides
+    // MARK: Setting Overrides
     func testWhenNoOverrideIsSet_itDefaultsToNil() {
         // Given
         let view = UIView()
@@ -21,6 +21,12 @@ class SessionReplayPrivacyOverridesTests: XCTestCase {
         XCTAssertNil(view.dd.sessionReplayPrivacyOverrides.imagePrivacy)
         XCTAssertNil(view.dd.sessionReplayPrivacyOverrides.touchPrivacy)
         XCTAssertNil(view.dd.sessionReplayPrivacyOverrides.hide)
+
+        XCTAssertNotNil(view.dd._privacyOverrides)
+        XCTAssertNil(view.dd._privacyOverrides?.textAndInputPrivacy)
+        XCTAssertNil(view.dd._privacyOverrides?.imagePrivacy)
+        XCTAssertNil(view.dd._privacyOverrides?.touchPrivacy)
+        XCTAssertNil(view.dd._privacyOverrides?.hide)
     }
 
     func testWithOverrides() {
@@ -38,6 +44,12 @@ class SessionReplayPrivacyOverridesTests: XCTestCase {
         XCTAssertEqual(view.dd.sessionReplayPrivacyOverrides.imagePrivacy, .maskAll)
         XCTAssertEqual(view.dd.sessionReplayPrivacyOverrides.touchPrivacy, .hide)
         XCTAssertEqual(view.dd.sessionReplayPrivacyOverrides.hide, true)
+
+        XCTAssertNotNil(view.dd._privacyOverrides)
+        XCTAssertEqual(view.dd._privacyOverrides?.textAndInputPrivacy, .maskAllInputs)
+        XCTAssertEqual(view.dd._privacyOverrides?.imagePrivacy, .maskAll)
+        XCTAssertEqual(view.dd._privacyOverrides?.touchPrivacy, .hide)
+        XCTAssertEqual(view.dd._privacyOverrides?.hide, true)
     }
 
     func testRemovingOverrides() {
@@ -59,9 +71,15 @@ class SessionReplayPrivacyOverridesTests: XCTestCase {
         XCTAssertNil(view.dd.sessionReplayPrivacyOverrides.imagePrivacy)
         XCTAssertNil(view.dd.sessionReplayPrivacyOverrides.touchPrivacy)
         XCTAssertNil(view.dd.sessionReplayPrivacyOverrides.hide)
+
+        XCTAssertNotNil(view.dd._privacyOverrides)
+        XCTAssertNil(view.dd._privacyOverrides?.textAndInputPrivacy)
+        XCTAssertNil(view.dd._privacyOverrides?.imagePrivacy)
+        XCTAssertNil(view.dd._privacyOverrides?.touchPrivacy)
+        XCTAssertNil(view.dd._privacyOverrides?.hide)
     }
 
-    // MARK: Privacy overrides taking precedence over global settings
+    // MARK: Privacy Overrides taking precedence over global settings
     func testTextOverrideTakesPrecedenceOverGlobalTextPrivacy() {
         // Given
         let textAndInputOverride: TextAndInputPrivacyLevel = .mockRandom()
@@ -116,7 +134,8 @@ class SessionReplayPrivacyOverridesTests: XCTestCase {
         XCTAssertEqual(resolvedImagePrivacy, globalImagePrivacy)
     }
 
-    func testMergeParentAndChildOverrides() {
+    // MARK: Privacy Overrides Merge
+    func testMergeParentAndChildOverrides() throws {
         // Given
         let overrides: PrivacyOverrides = .mockRandom()
 
@@ -132,7 +151,7 @@ class SessionReplayPrivacyOverridesTests: XCTestCase {
         parentOverrides.touchPrivacy = overrides.touchPrivacy
 
         // When
-        let merged = SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides)
+        let merged = try XCTUnwrap(SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides))
 
         // Then
         XCTAssertEqual(merged.textAndInputPrivacy, overrides.textAndInputPrivacy)
@@ -141,13 +160,13 @@ class SessionReplayPrivacyOverridesTests: XCTestCase {
         XCTAssertEqual(merged.touchPrivacy, overrides.touchPrivacy)
     }
 
-    func testMergeWithNilParentOverrides() {
+    func testMergeWithNilParentOverrides() throws {
         // Given
         let childOverrides: PrivacyOverrides = .mockRandom()
         let parentOverrides: PrivacyOverrides = .mockAny()
 
         // When
-        let merged = SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides)
+        let merged = try XCTUnwrap(SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides))
 
         // Then
         XCTAssertEqual(merged.textAndInputPrivacy, childOverrides.textAndInputPrivacy)
@@ -156,7 +175,7 @@ class SessionReplayPrivacyOverridesTests: XCTestCase {
         XCTAssertEqual(merged.hide, childOverrides.hide)
     }
 
-    func testMergeWithNilChildOverrides() {
+    func testMergeWithNilChildOverrides() throws {
         // Given
         let childOverrides: PrivacyOverrides = .mockAny()
         let parentOverrides: PrivacyOverrides = .mockRandom()
@@ -165,8 +184,7 @@ class SessionReplayPrivacyOverridesTests: XCTestCase {
         parentOverrides.hide = true
 
         // When
-        let merged = SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides)
-
+        let merged = try XCTUnwrap(SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides))
         // Then
         XCTAssertEqual(merged.textAndInputPrivacy, parentOverrides.textAndInputPrivacy)
         XCTAssertEqual(merged.imagePrivacy, parentOverrides.imagePrivacy)
@@ -174,7 +192,7 @@ class SessionReplayPrivacyOverridesTests: XCTestCase {
         XCTAssertEqual(merged.hide, parentOverrides.hide)
     }
 
-    func testMergeWhenChildHideOverrideIsNotNilAndParentHideOverrideIsTrue() {
+    func testMergeWhenChildHideOverrideIsNotNilAndParentHideOverrideIsTrue() throws {
         // Given
         let childOverrides: PrivacyOverrides = .mockRandom()
         childOverrides.hide = false
@@ -182,7 +200,7 @@ class SessionReplayPrivacyOverridesTests: XCTestCase {
         parentOverrides.hide = true
 
         // When
-        let merged = SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides)
+        let merged = try XCTUnwrap(SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides))
 
         // Then
         XCTAssertEqual(merged.textAndInputPrivacy, childOverrides.textAndInputPrivacy)
@@ -190,5 +208,57 @@ class SessionReplayPrivacyOverridesTests: XCTestCase {
         XCTAssertEqual(merged.touchPrivacy, childOverrides.touchPrivacy)
         XCTAssertEqual(merged.hide, true)
     }
+
+    func testMergeOptimizationWhenNeitherHasOverrides() throws {
+        // Given
+        let childOverrides: PrivacyOverrides = .mockAny()
+        let parentOverrides: PrivacyOverrides = .mockAny()
+
+        // When
+        let merged = try XCTUnwrap(SessionReplayPrivacyOverrides.merge(childOverrides, with: parentOverrides))
+
+        // Then
+        XCTAssertNil(merged.textAndInputPrivacy)
+        XCTAssertNil(merged.imagePrivacy)
+        XCTAssertNil(merged.touchPrivacy)
+        XCTAssertNil(merged.hide)
+    }
+
+    func testViewDeallocatesCorrectly() throws {
+        // Weak reference acting as an observer to the target object view
+        weak var weakView: UIView?
+        let randomValues: PrivacyOverrides = .mockRandom()
+
+        try autoreleasepool {
+            // Strong reference to the view
+            let view = UIView()
+            // Weak reference to the view
+            weakView = view
+            view.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy = randomValues.textAndInputPrivacy
+            view.dd.sessionReplayPrivacyOverrides.imagePrivacy = randomValues.imagePrivacy
+            view.dd.sessionReplayPrivacyOverrides.touchPrivacy = randomValues.touchPrivacy
+            view.dd.sessionReplayPrivacyOverrides.hide = randomValues.hide
+
+            // Captures overrides values without retaining the view
+            let attributes = ViewAttributes(
+                view: view,
+                frame: view.frame,
+                clip: view.frame,
+                overrides: view.dd.sessionReplayPrivacyOverrides
+            )
+
+            // Check attributes are captured and not optimized away
+            XCTAssertEqual(attributes.textAndInputPrivacy, randomValues.textAndInputPrivacy)
+            XCTAssertEqual(attributes.imagePrivacy, randomValues.imagePrivacy)
+            XCTAssertEqual(attributes.touchPrivacy, randomValues.touchPrivacy)
+            XCTAssertEqual(attributes.hide, randomValues.hide)
+            // View still exists
+            XCTAssertNotNil(weakView)
+        }
+
+        // View has been deallocxated
+        XCTAssertNil(weakView, "View should be deallocated")
+    }
 }
+
 #endif

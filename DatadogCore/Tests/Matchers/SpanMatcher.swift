@@ -9,8 +9,6 @@ import DatadogInternal
 
 /// Implemented by types allowed to represent span attribute `.*` value in JSON.
 protocol AllowedSpanAttributeValue {}
-/// Implemented by types allowed to represent span attribute `_dd.*` value in JSON.
-protocol AllowedSpanDdValue {}
 /// Implemented by types allowed to represent span `metrics.*` value in JSON.
 protocol AllowedSpanMetricValue {}
 /// Implemented by types allowed to represent span `meta.*` value in JSON.
@@ -21,11 +19,9 @@ extension String: AllowedSpanAttributeValue {}
 extension UInt64: AllowedSpanAttributeValue {}
 extension Int: AllowedSpanAttributeValue {}
 
-// Only numeric values are allowed for `span._dd.*`.
-extension Double: AllowedSpanDdValue {}
-
 // Only numeric values are allowed for `span.metrics.*`.
 extension Int: AllowedSpanMetricValue {}
+extension Double: AllowedSpanMetricValue {}
 
 // Only string values are allowed for `span.meta.*`.
 extension String: AllowedSpanMetaValue {}
@@ -111,16 +107,6 @@ internal class SpanMatcher {
     func isError()          throws -> Int { try attribute(forKeyPath: "error") }
     func environment()      throws -> String { try envelope.value(forKeyPath: "env") }
 
-    // MARK: - _dd matching
-
-    var dd: Dd { Dd(matcher: self) }
-
-    struct Dd {
-        fileprivate let matcher: SpanMatcher
-
-        func samplingRate() throws -> Double { try matcher.dd(forKeyPath: "_dd.agent_psr") }
-    }
-
     // MARK: - Metrics matching
 
     var metrics: Metrics { Metrics(matcher: self) }
@@ -130,6 +116,7 @@ internal class SpanMatcher {
 
         func isRootSpan()       throws -> Int { try matcher.metric(forKeyPath: "metrics._top_level") }
         func samplingPriority() throws -> Int { try matcher.metric(forKeyPath: "metrics._sampling_priority_v1") }
+        func samplingRate() throws -> Double { try matcher.metric(forKeyPath: "metrics._dd.agent_psr") }
     }
 
     // MARK: - Meta matching
@@ -173,11 +160,6 @@ internal class SpanMatcher {
     private func attribute<T: AllowedSpanAttributeValue & Equatable>(forKeyPath keyPath: String) throws -> T {
         precondition(!keyPath.hasPrefix("metrics."), "use specialized `metric(forKeyPath:)`")
         precondition(!keyPath.hasPrefix("meta."), "use specialized `meta(forKeyPath:)`")
-        return try span.value(forKeyPath: keyPath)
-    }
-
-    private func dd<T: AllowedSpanDdValue & Equatable>(forKeyPath keyPath: String) throws -> T {
-        precondition(keyPath.hasPrefix("_dd."))
         return try span.value(forKeyPath: keyPath)
     }
 

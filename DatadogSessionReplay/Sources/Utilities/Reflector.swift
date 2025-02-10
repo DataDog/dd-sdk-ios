@@ -26,7 +26,8 @@ internal struct Reflector {
 
     /// A `Lazy` reflection allows reflecting the subject at a later time.
     struct Lazy<T> where T: Reflection {
-        private let reflector: Reflector
+        /// Relect to the type `T`.
+        let reflect: () throws -> T
     }
 
     private let mirror: ReflectionMirror
@@ -293,11 +294,12 @@ extension Reflection {
 
 extension Reflector.Lazy: Reflection {
     init(from reflector: Reflector) throws {
-        self.reflector = reflector
+        reflect = { try T(from: reflector) }
     }
+}
 
-    /// Relect to the type `T`.
-    func reflect() throws -> T {
-        try T(from: reflector)
+extension Reflector.Lazy {
+    init(_ reflection: T) {
+        reflect = { reflection }
     }
 }

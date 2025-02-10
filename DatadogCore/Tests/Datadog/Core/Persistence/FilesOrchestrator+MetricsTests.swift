@@ -113,7 +113,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         // - write more data than allowed directory size limit
         storage.maxDirectorySize = 10 // 10 bytes
         let orchestrator = createOrchestrator()
-        let file = try orchestrator.getWritableFile(writeSize: storage.maxDirectorySize + 1)
+        let file = try orchestrator.getWritableFile(writeSize: storage.maxDirectorySize.asUInt64() + 1)
         try file.append(data: .mockRandom(ofSize: storage.maxDirectorySize + 1))
         let expectedBatchAge = storage.minFileAgeForRead + 1
 
