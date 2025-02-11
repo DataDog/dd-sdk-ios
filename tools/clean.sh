@@ -21,7 +21,7 @@ clean_dir ~/Library/Caches/org.carthage.CarthageKit/dependencies/
 clean_dir ~/Library/org.swift.swiftpm
 clean_dir ./Carthage/Build
 clean_dir ./Carthage/Checkouts
-clean_dir ./IntegrationTests/Pods
+clean_dir ./UITests/Pods
 
 echo_warn "Cleaning local xcconfigs"
 rm -vf ./xcconfigs/Base.ci.local.xcconfig

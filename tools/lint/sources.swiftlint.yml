@@ -164,7 +164,6 @@ included:
   - ../../DatadogCrashReporting/Sources
   - ../../DatadogWebViewTracking/Sources
   - ../../DatadogObjc/Sources
-  - ../../Datadog/E2E
   - ../../tools/http-server-mock/Sources
   - ../../tools/api-surface/Sources
   - ../../tools/api-surface/Fixtures/Sources

@@ -130,7 +130,7 @@ ui-test-all:
 # Update UI test project with latest SDK
 ui-test-podinstall:
 	@$(ECHO_TITLE) "make ui-test-podinstall"
-	cd IntegrationTests/ && bundle exec pod install
+	cd UITests/ && bundle exec pod install
 
 # Run tests for repo tools
 tools-test:

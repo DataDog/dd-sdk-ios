@@ -48,7 +48,7 @@ default:
       changes:
         paths:
           - "Datadog*/**/*"
-          - "IntegrationTests/**/*"
+          - "UITests/**/*"
           - "SmokeTests/**/*"
           - "TestUtilities/**/*"
           - "*" # match any file in the root directory

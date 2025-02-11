@@ -38,10 +38,10 @@ enable_apple_crash_reporter() {
 set -x
 
 DIR=$(pwd)
-cd IntegrationTests/ && bundle exec pod install
+cd UITests/ && bundle exec pod install
 cd "$DIR"
 
-WORKSPACE="IntegrationTests/IntegrationTests.xcworkspace"
+WORKSPACE="UITests/UITests.xcworkspace"
 DESTINATION="platform=$platform,name=$device,OS=$os"
 SCHEME="IntegrationScenarios"
 TEST_PLAN="$test_plan"
