@@ -302,10 +302,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     private func startApplicationLaunchView(on command: RUMApplicationStartCommand, context: DatadogContext, writer: Writer) {
-        var startTime = sessionStartTime
-        if context.launchTime?.isActivePrewarm == false, let processStartTime = context.launchTime?.launchDate {
-            startTime = processStartTime
-        }
+        let isActivePrewarm = context.launchTime.isActivePrewarm
+        let startTime = isActivePrewarm ? sessionStartTime : context.launchTime.launchDate
 
         startView(
             isInitialView: true,
