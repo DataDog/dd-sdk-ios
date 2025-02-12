@@ -10,8 +10,16 @@ import DatadogInternal
 
 #if !os(tvOS)
 
-/// `SwiftUI.ViewModifier` which notifes RUM instrumentation when modified view is tapped.
-/// It makes an entry point to RUM actions instrumentation in SwiftUI.
+/// `SwiftUI.ViewModifier` which notifies RUM instrumentation when the modified view is tapped.
+/// It serves as an entry point to RUM actions instrumentation in SwiftUI.
+///
+/// ⚠️ **Important:**
+/// - Do **not** use this modifier on views inside a `List`, as it can interfere with SwiftUI's built-in gesture handling,
+///   preventing default interactions (e.g., `Button` actions or `NavigationLink` navigation).
+/// - This issue stems from SwiftUI's gesture resolution, where adding an additional `TapGesture` can override system gestures.
+/// - If tracking taps inside a `List` is required, consider logging actions manually via `RUMMonitor.shared().addAction(...)`
+///   instead of using this modifier.
+/// - We consider this a bug in SwiftUI and have reported it to Apple: [FB16488816](https://openradar.appspot.com/FB16488816).
 @available(iOS 13, *)
 internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
     /// The SDK core instance.
@@ -44,12 +52,16 @@ internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
 
 @available(iOS 13, *)
 public extension SwiftUI.View {
-    /// Monitor this view tap actions with Datadog RUM. An Action event will be logged after a number
-    /// of required taps.
+    /// Monitor tap actions on this view with Datadog RUM. An Action event will be logged after the required number of taps.
+    ///
+    /// ⚠️ **Warning:**
+    /// - Do **not** apply this modifier inside a `List`, as it can interfere with SwiftUI’s built-in gesture resolution.
+    /// - Using this on a `Button` or `NavigationLink` inside a `List` will likely **disable** their default behavior.
+    /// - If tracking taps inside a `List` is required, use `RUMMonitor.shared().addAction(...)` in the button’s action instead.
     ///
     /// - Parameters:
     ///   - name: The action name.
-    ///   - attributes: custom attributes to attach to the View.
+    ///   - attributes: Custom attributes to attach to the View.
     ///   - count: The required number of taps to complete the tap action.
     ///   - core: The SDK core instance.
     /// - Returns: This view after applying a `ViewModifier` for monitoring the view.
