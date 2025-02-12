@@ -42,9 +42,11 @@ class DataUploadWorkerTests: XCTestCase {
 
     // MARK: - Data Uploads
 
-    func testItUploadsAllData() {
+    func testItUploadsAllData() throws {
         let uploadExpectation = self.expectation(description: "Make 3 uploads")
         uploadExpectation.expectedFulfillmentCount = 3
+
+        let telemetry = TelemetryMock()
 
         let dataUploader = DataUploaderMock(
             uploadStatus: DataUploadStatus(
@@ -64,6 +66,7 @@ class DataUploadWorkerTests: XCTestCase {
         writer.write(value: ["k3": "v3"])
 
         // When
+        let featureName: String = .mockAny()
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
@@ -72,7 +75,7 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
-            telemetry: NOPTelemetry(),
+            telemetry: telemetry,
             maxBatchesPerUpload: 1
         )
 
@@ -84,11 +87,17 @@ class DataUploadWorkerTests: XCTestCase {
 
         worker.cancelSynchronously()
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
+
+        XCTAssertEqual(telemetry.messages.count, 3)
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
+        XCTAssertEqual(metric.attributes["track"] as? String, featureName)
     }
 
-    func testItUploadsDataSequentiallyWithoutDelay_whenMaxBatchesPerUploadIsSet() {
+    func testItUploadsDataSequentiallyWithoutDelay_whenMaxBatchesPerUploadIsSet() throws {
         let uploadExpectation = self.expectation(description: "Make 2 uploads")
         uploadExpectation.expectedFulfillmentCount = 2
+
+        let telemetry = TelemetryMock()
 
         let dataUploader = DataUploaderMock(
             uploadStatus: DataUploadStatus(
@@ -108,6 +117,7 @@ class DataUploadWorkerTests: XCTestCase {
         writer.write(value: ["k3": "v3"])
 
         // When
+        let featureName: String = .mockAny()
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
@@ -115,8 +125,8 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: .mockAny(),
-            telemetry: NOPTelemetry(),
+            featureName: featureName,
+            telemetry: telemetry,
             maxBatchesPerUpload: 2
         )
 
@@ -128,6 +138,10 @@ class DataUploadWorkerTests: XCTestCase {
 
         worker.cancelSynchronously()
         XCTAssertEqual(try orchestrator.directory.files().count, 1)
+
+        XCTAssertEqual(telemetry.messages.count, 2)
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
+        XCTAssertEqual(metric.attributes["track"] as? String, featureName)
     }
 
     func testGivenDataToUpload_whenUploadFinishesAndDoesNotNeedToBeRetried_thenDataIsDeleted() {
@@ -301,7 +315,7 @@ class DataUploadWorkerTests: XCTestCase {
             fileReader: reader,
             dataUploader: DataUploaderMock(uploadStatus: .mockWith()),
             contextProvider: .mockAny(),
-            uploadConditions: DataUploadConditions.neverUpload(),
+            uploadConditions: .neverUpload(),
             delay: delay,
             featureName: .mockAny(),
             telemetry: NOPTelemetry(),
@@ -504,31 +518,73 @@ class DataUploadWorkerTests: XCTestCase {
         )
     }
 
+    func testWhenUploadIsBlocked_itDoesSendUploadQualityTelemetry() throws {
+        // Given
+        let telemetry = TelemetryMock()
+
+        // When
+        let uploadExpectation = self.expectation(description: "Upload has started")
+        uploadExpectation.isInverted = true
+
+        let mockDataUploader = DataUploaderMock(uploadStatus: .mockRandom()) { _ in
+            uploadExpectation.fulfill()
+        }
+
+        let featureName: String = .mockRandom()
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: mockDataUploader,
+            contextProvider: .mockWith(
+                context: .mockWith(
+                    batteryStatus: .mockWith(
+                        state: .unplugged,
+                        level: 0.05
+                    )
+                )
+            ),
+            uploadConditions: .neverUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
+            featureName: featureName,
+            telemetry: telemetry,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
+        )
+
+        wait(for: [uploadExpectation], timeout: 0.5)
+        worker.cancelSynchronously()
+
+        // Then
+        XCTAssertEqual(telemetry.messages.count, 1)
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
+        XCTAssertEqual(metric.attributes["failure"] as? String, "low_battery")
+        XCTAssertEqual(metric.attributes["track"] as? String, featureName)
+    }
+
     func testWhenDataIsUploadedWithServerError_itDoesNotSendErrorTelemetry() throws {
         // Given
         let telemetry = TelemetryMock()
 
         writer.write(value: ["key": "value"])
-        let randomUploadStatus: DataUploadStatus = .mockWith(
-            error: .httpError(
-                statusCode: [
-                    .internalServerError,
-                    .serviceUnavailable,
-                    .badGateway,
-                    .gatewayTimeout,
-                    .insufficientStorage
-                ].randomElement()!
-            )
-        )
+        let randomStatusCode: HTTPResponseStatusCode = [
+            .internalServerError,
+            .serviceUnavailable,
+            .badGateway,
+            .gatewayTimeout,
+            .insufficientStorage
+        ].randomElement()!
 
         // When
         let startUploadExpectation = self.expectation(description: "Upload has started")
-        let mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
+        let mockDataUploader = DataUploaderMock(
+            uploadStatus: .mockWith(error: .httpError(statusCode: randomStatusCode))
+        )
+
         mockDataUploader.onUpload = { previousUploadStatus in
             XCTAssertNil(previousUploadStatus)
             startUploadExpectation.fulfill()
         }
 
+        let featureName: String = .mockRandom()
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
@@ -536,7 +592,7 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: .mockRandom(),
+            featureName: featureName,
             telemetry: telemetry,
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
@@ -545,7 +601,10 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(telemetry.messages.count, 0)
+        XCTAssertEqual(telemetry.messages.count, 1)
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
+        XCTAssertEqual(metric.attributes["failure"] as? String, "\(randomStatusCode)")
+        XCTAssertEqual(metric.attributes["track"] as? String, featureName)
     }
 
     func testWhenDataIsUploadedWithAlertingStatusCode_itSendsErrorTelemetry() throws {
@@ -572,6 +631,7 @@ class DataUploadWorkerTests: XCTestCase {
             startUploadExpectation.fulfill()
         }
 
+        let featureName: String = .mockRandom()
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
@@ -579,7 +639,7 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: .mockRandom(),
+            featureName: featureName,
             telemetry: telemetry,
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
@@ -588,10 +648,14 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(telemetry.messages.count, 1)
+        XCTAssertEqual(telemetry.messages.count, 2)
 
-        let error = try XCTUnwrap(telemetry.messages.first?.asError, "An error should be send to `telemetry`.")
+        let error = try XCTUnwrap(telemetry.messages.firstError(), "An error should be send to `telemetry`.")
         XCTAssertEqual(error.message,"Data upload finished with status code: \(randomStatusCode.rawValue)")
+
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
+        XCTAssertEqual(metric.attributes["failure"] as? String, "\(randomStatusCode)")
+        XCTAssertEqual(metric.attributes["track"] as? String, featureName)
     }
 
     func testWhenDataCannotBeUploadedDueToNetworkError_itSendsErrorTelemetry() throws {
@@ -599,16 +663,20 @@ class DataUploadWorkerTests: XCTestCase {
         let telemetry = TelemetryMock()
 
         writer.write(value: ["key": "value"])
-        let randomUploadStatus: DataUploadStatus = .mockWith(error: .networkError(error: .mockAny()))
+
+        let nserror: NSError = .mockAny()
 
         // When
         let startUploadExpectation = self.expectation(description: "Upload has started")
-        let mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
+        let mockDataUploader = DataUploaderMock(
+            uploadStatus: .mockWith(error: .networkError(error: nserror))
+        )
         mockDataUploader.onUpload = { previousUploadStatus in
             XCTAssertNil(previousUploadStatus)
             startUploadExpectation.fulfill()
         }
 
+        let featureName: String = .mockRandom()
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
@@ -616,7 +684,7 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: .mockRandom(),
+            featureName: featureName,
             telemetry: telemetry,
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
@@ -625,10 +693,14 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(telemetry.messages.count, 1)
+        XCTAssertEqual(telemetry.messages.count, 2)
 
-        let error = try XCTUnwrap(telemetry.messages.first?.asError, "An error should be send to `telemetry`.")
+        let error = try XCTUnwrap(telemetry.messages.firstError(), "An error should be send to `telemetry`.")
         XCTAssertEqual(error.message, #"Data upload finished with error - Error Domain=abc Code=0 "(null)""#)
+
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
+        XCTAssertEqual(metric.attributes["failure"] as? String, "\(nserror.code)")
+        XCTAssertEqual(metric.attributes["track"] as? String, featureName)
     }
 
     func testWhenDataCannotBePreparedForUpload_itSendsErrorTelemetry() throws {
@@ -662,10 +734,14 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(telemetry.messages.count, 1)
+        XCTAssertEqual(telemetry.messages.count, 2)
 
-        let error = try XCTUnwrap(telemetry.messages.first?.asError, "An error should be send to `telemetry`.")
+        let error = try XCTUnwrap(telemetry.messages.firstError(), "An error should be send to `telemetry`.")
         XCTAssertEqual(error.message, #"Failed to initiate 'some-feature' data upload - Failed to prepare upload"#)
+
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
+        XCTAssertEqual(metric.attributes["failure"] as? String, "invalid")
+        XCTAssertEqual(metric.attributes["track"] as? String, "some-feature")
     }
 
     // MARK: - Tearing Down
@@ -684,7 +760,7 @@ class DataUploadWorkerTests: XCTestCase {
             fileReader: reader,
             dataUploader: dataUploader,
             contextProvider: .mockAny(),
-            uploadConditions: DataUploadConditions.neverUpload(),
+            uploadConditions: .neverUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
             telemetry: NOPTelemetry(),

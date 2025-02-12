@@ -150,6 +150,14 @@ public struct UsageTelemetry: SampledTelemetry {
     }
 }
 
+/// A metric to measure the time of a method call.
+public struct MethodCalledTrace {
+    let operationName: String
+    let callerClass: String
+    let headSampleRate: SampleRate
+    let startTime = Date()
+}
+
 /// Defines different types of telemetry messages supported by the SDK.
 public enum TelemetryMessage {
     /// A debug log message.
@@ -193,15 +201,15 @@ public extension Telemetry {
         callerClass: String,
         headSampleRate: SampleRate
     ) -> MethodCalledTrace? {
-        if Sampler(samplingRate: headSampleRate).sample() {
-            return MethodCalledTrace(
-                operationName: operationName,
-                callerClass: callerClass,
-                headSampleRate: headSampleRate
-            )
-        } else {
+        guard Sampler(samplingRate: headSampleRate).sample() else {
             return nil
         }
+
+        return MethodCalledTrace(
+            operationName: operationName,
+            callerClass: callerClass,
+            headSampleRate: headSampleRate
+        )
     }
 
     /// Stops timing a method call and posts a value for the "Method Called" metric.
@@ -219,34 +227,28 @@ public extension Telemetry {
         isSuccessful: Bool = true,
         tailSampleRate: SampleRate = MetricTelemetry.defaultSampleRate
     ) {
-        if let metric = metric {
-            let executionTime = -metric.startTime.timeIntervalSinceNow.toInt64Nanoseconds
-            send(
-                telemetry: .metric(
-                    MetricTelemetry(
-                        name: MethodCalledMetric.name,
-                        attributes: [
-                            MethodCalledMetric.executionTime: executionTime,
-                            MethodCalledMetric.operationName: metric.operationName,
-                            MethodCalledMetric.callerClass: metric.callerClass,
-                            MethodCalledMetric.isSuccessful: isSuccessful,
-                            SDKMetricFields.headSampleRate: metric.headSampleRate,
-                            SDKMetricFields.typeKey: MethodCalledMetric.typeValue
-                        ],
-                        sampleRate: tailSampleRate
-                    )
+        guard let metric = metric else {
+            return
+        }
+
+        let executionTime = -metric.startTime.timeIntervalSinceNow.toInt64Nanoseconds
+        send(
+            telemetry: .metric(
+                MetricTelemetry(
+                    name: MethodCalledMetric.name,
+                    attributes: [
+                        MethodCalledMetric.executionTime: executionTime,
+                        MethodCalledMetric.operationName: metric.operationName,
+                        MethodCalledMetric.callerClass: metric.callerClass,
+                        MethodCalledMetric.isSuccessful: isSuccessful,
+                        SDKMetricFields.headSampleRate: metric.headSampleRate,
+                        SDKMetricFields.typeKey: MethodCalledMetric.typeValue
+                    ],
+                    sampleRate: tailSampleRate
                 )
             )
-        }
+        )
     }
-}
-
-/// A metric to measure the time of a method call.
-public struct MethodCalledTrace {
-    let operationName: String
-    let callerClass: String
-    let headSampleRate: SampleRate
-    let startTime = Date()
 }
 
 extension Telemetry {

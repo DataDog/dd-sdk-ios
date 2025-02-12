@@ -20,6 +20,10 @@ internal struct TelemetryInterceptor: FeatureMessageReceiver {
         switch telemetry {
         case .error(let id, let message, let kind, let stack):
             interceptError(id: id, message: message, kind: kind, stack: stack)
+        case .metric(let metric) where metric.name == SDKMetricFields.UploadQuality.name:
+            interceptUploadQualityMetric(attributes: metric.attributes, sampleRate: metric.sampleRate)
+            return true
+
         default:
             break
         }
@@ -29,5 +33,8 @@ internal struct TelemetryInterceptor: FeatureMessageReceiver {
 
     private func interceptError(id: String, message: String, kind: String, stack: String) {
         sessionEndedMetric.track(sdkErrorKind: kind, in: nil) // `nil` - track in current session
+    }
+
+    private func interceptUploadQualityMetric(attributes: [String: Encodable], sampleRate: SampleRate) {
     }
 }

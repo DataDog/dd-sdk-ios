@@ -28,8 +28,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
     private let contextProvider: DatadogContextProvider
     /// Delay used to schedule consecutive uploads.
     private let delay: DataUploadDelay
-    /// Maximum number of batches to upload in one request.
-    private let maxBatchesPerUpload: Int
 
     /// Batch reading work scheduled by this worker.
     @ReadWriteLock
@@ -65,13 +63,13 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.contextProvider = contextProvider
         self.backgroundTaskCoordinator = backgroundTaskCoordinator
         self.delay = delay
-        self.maxBatchesPerUpload = maxBatchesPerUpload
         self.featureName = featureName
         self.telemetry = telemetry
         let readWorkItem = DispatchWorkItem { [weak self] in
             guard let self = self else {
                 return
             }
+
             let context = contextProvider.read()
             let blockersForUpload = uploadConditions.blockersForUpload(with: context)
             let isSystemReady = blockersForUpload.isEmpty
@@ -86,6 +84,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 self.delay.increase()
                 self.backgroundTaskCoordinator?.endBackgroundTask()
                 self.scheduleNextCycle()
+                sendUploadQualityMetric(blockers: blockersForUpload)
             }
         }
         self.readWork = readWorkItem
@@ -106,11 +105,13 @@ internal class DataUploadWorker: DataUploadWorkerType {
             guard let self = self else {
                 return
             }
+
             var files = files
             guard let file = files.popLast() else {
                 self.scheduleNextCycle()
                 return
             }
+
             if let batch = self.fileReader.readBatch(from: file) {
                 do {
                     let uploadStatus = try self.dataUploader.upload(
@@ -118,7 +119,9 @@ internal class DataUploadWorker: DataUploadWorkerType {
                         context: context,
                         previous: previousUploadStatus
                     )
+
                     previousUploadStatus = uploadStatus
+                    sendUploadQualityMetric(status: uploadStatus)
 
                     if uploadStatus.needsRetry {
                         DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
@@ -143,7 +146,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
                         // Throw to report the request error accordingly
                         throw error
                     }
-
                 } catch DataUploadError.httpError(statusCode: .unauthorized), DataUploadError.httpError(statusCode: .forbidden) {
                     DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
                 } catch DataUploadError.httpError(statusCode: let statusCode) where !telemetryIgnoredStatusCodes.contains(statusCode) {
@@ -160,14 +162,17 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     self.fileReader.markBatchAsRead(batch, reason: .invalid)
                     previousUploadStatus = nil
                     self.telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
+                    sendUploadQualityMetric(failure: "invalid")
                 }
             }
+
             if files.isEmpty {
                 self.scheduleNextCycle()
             } else {
                 self.uploadFile(from: files, context: context)
             }
         }
+
         self.uploadWork = uploadWork
         queue.async(execute: uploadWork)
     }
@@ -224,6 +229,39 @@ internal class DataUploadWorker: DataUploadWorkerType {
             self.readWork?.cancel()
             self.readWork = nil
         }
+    }
+
+    private func sendUploadQualityMetric(blockers: [DataUploadConditions.Blocker]) {
+        sendUploadQualityMetric(
+            failure: blockers.first.map {
+                switch $0 {
+                case .battery: return "low_battery"
+                case .lowPowerModeOn: return "lpm"
+                case .networkReachability: return "offline"
+                }
+            }
+        )
+    }
+
+    private func sendUploadQualityMetric(status: DataUploadStatus) {
+        sendUploadQualityMetric(
+            failure: status.error.map {
+                switch $0 {
+                case let .httpError(code): return "\(code)"
+                case let .networkError(error): return "\(error.code)"
+                }
+            }
+        )
+    }
+
+    private func sendUploadQualityMetric(failure: String?) {
+        telemetry.metric(
+            name: SDKMetricFields.UploadQuality.name,
+            attributes: [
+                SDKMetricFields.UploadQuality.track: featureName,
+                SDKMetricFields.UploadQuality.failure: failure
+            ]
+        )
     }
 }
 
