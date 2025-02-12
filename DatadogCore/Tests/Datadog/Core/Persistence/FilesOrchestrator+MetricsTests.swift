@@ -49,11 +49,16 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
     func testWhenReadableFileIsDeleted_itSendsBatchDeletedMetric() throws {
         // Given
         let orchestrator = createOrchestrator()
-        let file = try XCTUnwrap(orchestrator.getWritableFile(writeSize: 1) as? ReadableFile)
         let expectedBatchAge = storage.minFileAgeForRead + 1
 
-        // When:
-        // - wait and delete the file
+        // When: create 1 batch file
+        _ = try orchestrator.getWritableFile(writeSize: 1)
+
+        // When: wait and create 2nd batch file
+        dateProvider.advance(bySeconds: expectedBatchAge)
+        let file = try XCTUnwrap(orchestrator.getWritableFile(writeSize: 1) as? ReadableFile)
+
+        // When: wait and delete one
         dateProvider.advance(bySeconds: expectedBatchAge)
         orchestrator.delete(readableFile: file, deletionReason: .intakeCode(responseCode: 202))
 
@@ -72,6 +77,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "background_tasks_enabled": false,
             "batch_age": expectedBatchAge.toMilliseconds,
             "batch_removal_reason": "intake-code-202",
+            "pending_batches": 1
         ])
         XCTAssertEqual(metric.sampleRate, BatchDeletedMetric.sampleRate)
     }
@@ -103,6 +109,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "background_tasks_enabled": false,
             "batch_age": (storage.maxFileAgeForRead + 1).toMilliseconds,
             "batch_removal_reason": "obsolete",
+            "pending_batches": 0
         ])
         XCTAssertEqual(metric.sampleRate, BatchDeletedMetric.sampleRate)
     }
@@ -137,6 +144,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "background_tasks_enabled": false,
             "batch_age": expectedBatchAge.toMilliseconds,
             "batch_removal_reason": "purged",
+            "pending_batches": 0
         ])
         XCTAssertEqual(metric.sampleRate, BatchDeletedMetric.sampleRate)
     }
