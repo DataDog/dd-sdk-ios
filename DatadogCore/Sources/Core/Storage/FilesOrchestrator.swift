@@ -187,8 +187,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             pendingBatches = files.count
 
             let filesFromOldest = try files
-                .map { (file: $0, fileCreationDate: fileCreationDateFrom(fileName: $0.name)) }
-                .compactMap { try deleteFileIfItsObsolete(file: $0.file, fileCreationDate: $0.fileCreationDate) }
+                .compactMap { try deleteFileIfItsObsolete(file: $0, fileCreationDate: fileCreationDateFrom(fileName: $0.name)) }
                 .sorted(by: { $0.fileCreationDate < $1.fileCreationDate })
 
             if ignoreFilesAgeWhenReading {
