@@ -125,28 +125,36 @@ internal class DataUploadWorker: DataUploadWorkerType {
                         self.delay.increase()
                         self.scheduleNextCycle()
                         return
-                    } else {
-                        DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
-                        if files.isEmpty {
-                            self.delay.decrease()
-                        }
-                        self.fileReader.markBatchAsRead(
-                            batch,
-                            reason: .intakeCode(responseCode: uploadStatus.responseCode)
-                        )
-                        previousUploadStatus = nil
                     }
 
-                    if let error = uploadStatus.error {
-                        switch error {
-                        case .unauthorized:
-                            DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
-                        case let .httpError(statusCode: statusCode):
-                            self.telemetry.error("Data upload finished with status code: \(statusCode)")
-                        case let .networkError(error: error):
-                            self.telemetry.error("Data upload finished with error", error: error)
-                        }
+                    DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
+                    if files.isEmpty {
+                        self.delay.decrease()
                     }
+
+                    self.fileReader.markBatchAsRead(
+                        batch,
+                        reason: .intakeCode(responseCode: uploadStatus.responseCode)
+                    )
+
+                    previousUploadStatus = nil
+
+                    if let error = uploadStatus.error {
+                        // Throw to report the request error accordingly
+                        throw error
+                    }
+
+                } catch DataUploadError.httpError(statusCode: .unauthorized), DataUploadError.httpError(statusCode: .forbidden) {
+                    DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
+                } catch DataUploadError.httpError(statusCode: let statusCode) where !telemetryIgnoredStatusCodes.contains(statusCode) {
+                    self.telemetry.error("Data upload finished with status code: \(statusCode.rawValue)")
+                } catch DataUploadError.networkError(let error) where !telemetryIgnoredNSURLErrorCodes.contains(error.code) {
+                    self.telemetry.error("Data upload finished with error", error: error)
+                } catch is DataUploadError {
+                    // Do not report any other 'DataUploadError':
+                    // - If status indicate Datadog service issue, there is no fix required client side.
+                    // - If status code is unexpected, monitoring may become too verbose for old installations
+                    // if we introduce a new status code in the API.
                 } catch let error {
                     // If upload can't be initiated do not retry, so drop the batch:
                     self.fileReader.markBatchAsRead(batch, reason: .invalid)
@@ -243,3 +251,28 @@ fileprivate extension Array where Element == DataUploadConditions.Blocker {
         }
     }
 }
+
+/// A list of known NSURLError codes which should not produce error in Telemetry.
+/// Receiving these codes doesn't mean SDK issue, but the network transportation scenario where the connection interrupted due to external factors.
+/// These list should evolve and we may want to add more codes in there.
+///
+/// Ref.: https://developer.apple.com/documentation/foundation/1508628-url_loading_system_error_codes
+private let telemetryIgnoredNSURLErrorCodes: Set<Int> = [
+    NSURLErrorNetworkConnectionLost, // -1005
+    NSURLErrorTimedOut, // -1001
+    NSURLErrorCannotParseResponse, // - 1017
+    NSURLErrorNotConnectedToInternet, // -1009
+    NSURLErrorCannotFindHost, // -1003
+    NSURLErrorSecureConnectionFailed, // -1200
+    NSURLErrorDataNotAllowed, // -1020
+    NSURLErrorCannotConnectToHost, // -1004
+]
+
+/// These codes indicate Datadog service issue - so do not produce error as there is no fix reqiured for SDK.
+private let telemetryIgnoredStatusCodes: Set<HTTPResponseStatusCode> = [
+    .internalServerError,
+    .serviceUnavailable,
+    .badGateway,
+    .gatewayTimeout,
+    .insufficientStorage
+]

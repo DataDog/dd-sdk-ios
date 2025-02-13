@@ -343,7 +343,7 @@ class DataUploadWorkerTests: XCTestCase {
         let dataUploader = DataUploaderMock(
             uploadStatus: .mockWith(
                 needsRetry: true,
-                error: .httpError(statusCode: 500)
+                error: .httpError(statusCode: .internalServerError)
             )
         ) { previousUploadStatus in
             XCTAssertNil(previousUploadStatus)
@@ -467,7 +467,11 @@ class DataUploadWorkerTests: XCTestCase {
         // Given
         writer.write(value: ["key": "value"])
 
-        let randomUploadStatus: DataUploadStatus = .mockWith(error: .unauthorized)
+        let randomUploadStatus: DataUploadStatus = .mockWith(
+            error: .httpError(
+                statusCode: [.unauthorized, .forbidden].randomElement()!
+            )
+        )
 
         // When
         let startUploadExpectation = self.expectation(description: "Upload has started")
@@ -500,12 +504,22 @@ class DataUploadWorkerTests: XCTestCase {
         )
     }
 
-    func testWhenDataIsUploadedWith500StatusCode_itSendsErrorTelemetry() throws {
+    func testWhenDataIsUploadedWithServerError_itDoesNotSendErrorTelemetry() throws {
         // Given
         let telemetry = TelemetryMock()
 
         writer.write(value: ["key": "value"])
-        let randomUploadStatus: DataUploadStatus = .mockWith(error: .httpError(statusCode: 500))
+        let randomUploadStatus: DataUploadStatus = .mockWith(
+            error: .httpError(
+                statusCode: [
+                    .internalServerError,
+                    .serviceUnavailable,
+                    .badGateway,
+                    .gatewayTimeout,
+                    .insufficientStorage
+                ].randomElement()!
+            )
+        )
 
         // When
         let startUploadExpectation = self.expectation(description: "Upload has started")
@@ -531,10 +545,53 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
+        XCTAssertEqual(telemetry.messages.count, 0)
+    }
+
+    func testWhenDataIsUploadedWithAlertingStatusCode_itSendsErrorTelemetry() throws {
+        // Given
+        let telemetry = TelemetryMock()
+
+        writer.write(value: ["key": "value"])
+        let randomStatusCode: HTTPResponseStatusCode = [
+            .badRequest,
+            .requestTimeout,
+            .payloadTooLarge,
+            .tooManyRequests,
+            .unexpected,
+        ].randomElement()!
+
+        // When
+        let startUploadExpectation = self.expectation(description: "Upload has started")
+        let mockDataUploader = DataUploaderMock(
+            uploadStatus: .mockWith(error: .httpError(statusCode: randomStatusCode))
+        )
+
+        mockDataUploader.onUpload = { previousUploadStatus in
+            XCTAssertNil(previousUploadStatus)
+            startUploadExpectation.fulfill()
+        }
+
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: mockDataUploader,
+            contextProvider: .mockAny(),
+            uploadConditions: .alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
+            featureName: .mockRandom(),
+            telemetry: telemetry,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
+        )
+
+        wait(for: [startUploadExpectation], timeout: 0.5)
+        worker.cancelSynchronously()
+
+        // Then
         XCTAssertEqual(telemetry.messages.count, 1)
 
         let error = try XCTUnwrap(telemetry.messages.first?.asError, "An error should be send to `telemetry`.")
-        XCTAssertEqual(error.message,"Data upload finished with status code: 500")
+        XCTAssertEqual(error.message,"Data upload finished with status code: \(randomStatusCode.rawValue)")
     }
 
     func testWhenDataCannotBeUploadedDueToNetworkError_itSendsErrorTelemetry() throws {
