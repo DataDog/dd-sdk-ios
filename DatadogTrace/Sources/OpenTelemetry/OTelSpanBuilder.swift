@@ -144,4 +144,18 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
         attributes[key] = value
         return self
     }
+
+    func withActiveSpan<T>(_ operation: (any OpenTelemetryApi.SpanBase) throws -> T) rethrows -> T {
+        // TODO: RUM-8558 - implement
+        fatalError()
+    }
+
+#if canImport(_Concurrency)
+    /// Ref.: https://github.com/open-telemetry/opentelemetry-swift/issues/578
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    func withActiveSpan<T>(_ operation: (any OpenTelemetryApi.SpanBase) async throws -> T) async rethrows -> T {
+        // TODO: RUM-8558 - implement
+        fatalError()
+    }
+#endif
 }
