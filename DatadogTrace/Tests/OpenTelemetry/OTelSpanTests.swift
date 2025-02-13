@@ -207,7 +207,6 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(child.parentID, nil)
     }
 
-    /// TODO: RUM-4795 This test is currently disabled as it proves to be flaky.
     func testSetActive_givenParentSpan() throws {
         // Given
         let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
