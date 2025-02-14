@@ -102,6 +102,9 @@ internal class SessionEndedMetric {
     /// Indicates if the session was stopped through `stopSession()` API.
     private var wasStopped = false
 
+    /// Information about the upload quality during the session.
+    private var uploadQuality: Attributes.UploadQuality
+
     /// If `RUM.Configuration.trackBackgroundEvents` was enabled for this session.
     private let tracksBackgroundEvents: Bool
 
@@ -139,6 +142,7 @@ internal class SessionEndedMetric {
         self.precondition = precondition
         self.tracksBackgroundEvents = tracksBackgroundEvents
         self.ntpOffsetAtStart = context.serverTimeOffset
+        self.uploadQuality = Attributes.UploadQuality(uploadCycleCount: 0, uploadFailureCount: [:])
     }
 
     /// Tracks the view event that occurred during the session.
@@ -197,6 +201,21 @@ internal class SessionEndedMetric {
     /// Signals that the session was stopped with `stopSession()` API.
     func trackWasStopped() {
         wasStopped = true
+    }
+
+    /// Tracks the upload qualiy metric for aggregation.
+    ///
+    /// - Parameters:
+    ///   - attributes: The upload quality attributes
+    func track(uploadQuality attributes: [String: Encodable]) {
+        uploadQuality = Attributes.UploadQuality(
+            uploadCycleCount: uploadQuality.uploadCycleCount + 1,
+            uploadFailureCount: attributes[SDKMetricFields.UploadQuality.failure]
+                .flatMap { $0 as? String }
+                // Merge by incrementing values
+                .map { uploadQuality.uploadFailureCount.merging([$0: 1], uniquingKeysWith: +) }
+                ?? uploadQuality.uploadFailureCount
+        )
     }
 
     // MARK: - Exporting Attributes
@@ -296,6 +315,19 @@ internal class SessionEndedMetric {
         /// Information on number of events missed due to absence of an active view.
         let noViewEventsCount: NoViewEventsCount
 
+        struct UploadQuality: Encodable {
+            let uploadCycleCount: Int
+            let uploadFailureCount: [String: Int]
+
+            enum CodingKeys: String, CodingKey {
+                case uploadCycleCount = "upload_cycle_count"
+                case uploadFailureCount = "upload_failure_count"
+            }
+        }
+
+        /// Information about the upload quality during the session.
+        let uploadQuality: UploadQuality
+
         enum CodingKeys: String, CodingKey {
             case processType = "process_type"
             case precondition
@@ -306,6 +338,7 @@ internal class SessionEndedMetric {
             case sdkErrorsCount = "sdk_errors_count"
             case ntpOffset = "ntp_offset"
             case noViewEventsCount = "no_view_events_count"
+            case uploadQuality = "upload_quality"
         }
     }
 
@@ -372,7 +405,8 @@ internal class SessionEndedMetric {
                     resources: missedEvents[.resource] ?? 0,
                     errors: missedEvents[.error] ?? 0,
                     longTasks: missedEvents[.longTask] ?? 0
-                )
+                ),
+                uploadQuality: uploadQuality
             )
         ]
     }

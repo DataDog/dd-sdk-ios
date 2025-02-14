@@ -104,6 +104,14 @@ internal final class SessionEndedMetricController {
         }
     }
 
+    /// Tracks the upload qualiy metric for aggregation.
+    ///
+    /// - Parameters:
+    ///   - attributes: The upload quality attributes
+    func track(uploadQuality attributes: [String: Encodable], in sessionID: RUMUUID?) {
+        updateMetric(for: sessionID) { $0?.track(uploadQuality: attributes) }
+    }
+
     private func updateMetric(for sessionID: RUMUUID?, _ mutation: (inout SessionEndedMetric?) throws -> Void) {
         _metricsBySessionID.mutate { metrics in
             guard let sessionID = (sessionID ?? pendingSessionIDs.last) else {
