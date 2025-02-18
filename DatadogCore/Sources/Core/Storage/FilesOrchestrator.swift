@@ -58,11 +58,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     }
 
     /// An extra information to include in metrics or `nil` if metrics should not be reported for this orchestrator.
-    var metricsData: MetricsData?
-
-    /// Tracks number of pending batches in the track's directory
-    @ReadWriteLock
-    private var pendingBatches: Int = 0
+    let metricsData: MetricsData?
 
     var trackName: String {
         metricsData?.trackName ?? "Unknown"
@@ -125,8 +121,6 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         lastWritableFileApproximatedSize = writeSize
         lastWritableFileLastWriteDate = dateProvider.now
 
-        // Increment pending batches for telemetry
-        pendingBatches += 1
         return newFile
     }
 
@@ -181,12 +175,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
     func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String> = [], limit: Int = .max) -> [ReadableFile] {
         do {
-            let files = try directory.files()
-
-            // Reset pending batches for telemetry
-            pendingBatches = files.count
-
-            let filesFromOldest = try files
+            let filesFromOldest = try directory.files()
                 .compactMap { try deleteFileIfItsObsolete(file: $0, fileCreationDate: fileCreationDateFrom(fileName: $0.name)) }
                 .sorted(by: { $0.fileCreationDate < $1.fileCreationDate })
 
@@ -268,9 +257,6 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     ///
     /// Note: The `batchFile` doesn't exist at this point.
     private func sendBatchDeletedMetric(batchFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) {
-        // Decrement pending batches at each batch deletion
-        pendingBatches -= 1
-
         guard let metricsData = metricsData, deletionReason.includeInMetric else {
             return // do not track metrics for this orchestrator or deletion reason
         }
@@ -292,7 +278,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
                 BatchDeletedMetric.inBackgroundKey: false,
                 BatchDeletedMetric.backgroundTasksEnabled: metricsData.backgroundTasksEnabled,
-                BatchDeletedMetric.pendingBatches: pendingBatches
+                BatchDeletedMetric.pendingBatches: try? directory.filesCount()
             ],
             sampleRate: BatchDeletedMetric.sampleRate
         )

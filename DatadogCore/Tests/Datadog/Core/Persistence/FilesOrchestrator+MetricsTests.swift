@@ -64,7 +64,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
-        DDAssertReflectionEqual(metric.attributes, [
+        DDAssertJSONEqual(metric.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
             "consent": "consent value",
@@ -96,7 +96,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
-        DDAssertReflectionEqual(metric.attributes, [
+        DDAssertJSONEqual(metric.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
             "consent": "consent value",
@@ -131,7 +131,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
-        DDAssertReflectionEqual(metric.attributes, [
+        DDAssertJSONEqual(metric.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
             "consent": "consent value",
