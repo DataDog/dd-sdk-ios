@@ -10,6 +10,8 @@ To open the project with the correct environment, run the following command:
 make benchmark-tests-open
 ```
 
+> [!TIP]
+> If XCode is failing to install packages with a message such as **failed to clone**, **requires authentification** or **dependency failed**, it might be due to a Git configuration that forces HTTPS URLs to be rewritten as SSH. In that case, try commenting it out in your global Git config (~/.gitconfig) and fetching the packages again.
 
 ## CI
 
