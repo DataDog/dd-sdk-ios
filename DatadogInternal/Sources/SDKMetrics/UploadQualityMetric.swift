@@ -18,4 +18,6 @@ public enum UploadQualityMetric {
     public static let track = "track"
     /// The upload's failure description.
     public static let failure = "failure"
+    /// The upload's blockers list.
+    public static let blockers = "blockers"
 }

@@ -49,6 +49,6 @@ class TelemetryInterceptorTests: XCTestCase {
         metricController.endMetric(sessionID: sessionID, with: .mockRandom())
         let metric = try XCTUnwrap(telemetry.messages.lastMetric(named: SessionEndedMetric.Constants.name))
         let rse = try XCTUnwrap(metric.attributes[SessionEndedMetric.Constants.rseKey] as? SessionEndedMetric.Attributes)
-        XCTAssertEqual(rse.uploadQuality.uploadCycleCount, 1)
+        XCTAssertEqual(rse.uploadQuality.cycleCount, 1)
     }
 }

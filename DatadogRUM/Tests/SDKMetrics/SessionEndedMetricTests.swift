@@ -503,7 +503,8 @@ class SessionEndedMetricTests: XCTestCase {
 
         metric.track(uploadQuality: [
             UploadQualityMetric.track: String.mockRandom(),
-            UploadQualityMetric.failure: "error1"
+            UploadQualityMetric.failure: "error1",
+            UploadQualityMetric.blockers: ["blocker1", "blocker2"]
         ])
 
         metric.track(uploadQuality: [
@@ -512,15 +513,18 @@ class SessionEndedMetricTests: XCTestCase {
 
         metric.track(uploadQuality: [
             UploadQualityMetric.track: String.mockRandom(),
-            UploadQualityMetric.failure: "error2"
+            UploadQualityMetric.failure: "error2",
+            UploadQualityMetric.blockers: ["blocker1"]
         ])
 
         // When
         let matcher = try JSONObjectMatcher(AnyEncodable(metric.asMetricAttributes()))
 
-        XCTAssertEqual(try matcher.value("rse.upload_quality.upload_cycle_count") as Int, 4)
-        XCTAssertEqual(try matcher.value("rse.upload_quality.upload_failure_count.error1") as Int, 2)
-        XCTAssertEqual(try matcher.value("rse.upload_quality.upload_failure_count.error2") as Int, 1)
+        XCTAssertEqual(try matcher.value("rse.upload_quality.cycle_count") as Int, 4)
+        XCTAssertEqual(try matcher.value("rse.upload_quality.failure_count.error1") as Int, 2)
+        XCTAssertEqual(try matcher.value("rse.upload_quality.failure_count.error2") as Int, 1)
+        XCTAssertEqual(try matcher.value("rse.upload_quality.blocker_count.blocker1") as Int, 2)
+        XCTAssertEqual(try matcher.value("rse.upload_quality.blocker_count.blocker2") as Int, 1)
     }
 
     // MARK: - Metric Spec
@@ -557,7 +561,7 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertNotNil(try matcher.value("rse.no_view_events_count.resources") as Int)
         XCTAssertNotNil(try matcher.value("rse.no_view_events_count.errors") as Int)
         XCTAssertNotNil(try matcher.value("rse.no_view_events_count.long_tasks") as Int)
-        XCTAssertNotNil(try matcher.value("rse.upload_quality.upload_cycle_count") as Int)
+        XCTAssertNotNil(try matcher.value("rse.upload_quality.cycle_count") as Int)
     }
 }
 

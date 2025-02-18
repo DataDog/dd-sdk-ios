@@ -233,7 +233,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
     private func sendUploadQualityMetric(blockers: [DataUploadConditions.Blocker]) {
         sendUploadQualityMetric(
-            failure: blockers.first.map {
+            failure: "blocker",
+            blockers: blockers.map {
                 switch $0 {
                 case .battery: return "low_battery"
                 case .lowPowerModeOn: return "lpm"
@@ -254,12 +255,13 @@ internal class DataUploadWorker: DataUploadWorkerType {
         )
     }
 
-    private func sendUploadQualityMetric(failure: String?) {
+    private func sendUploadQualityMetric(failure: String?, blockers: [String] = []) {
         telemetry.metric(
             name: UploadQualityMetric.name,
             attributes: [
                 UploadQualityMetric.track: featureName,
-                UploadQualityMetric.failure: failure
+                UploadQualityMetric.failure: failure,
+                UploadQualityMetric.blockers: blockers
             ]
         )
     }

@@ -537,6 +537,9 @@ class DataUploadWorkerTests: XCTestCase {
             dataUploader: mockDataUploader,
             contextProvider: .mockWith(
                 context: .mockWith(
+                    networkConnectionInfo: .mockWith(
+                        reachability: .no
+                    ),
                     batteryStatus: .mockWith(
                         state: .unplugged,
                         level: 0.05
@@ -556,7 +559,8 @@ class DataUploadWorkerTests: XCTestCase {
         // Then
         XCTAssertEqual(telemetry.messages.count, 1)
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
-        XCTAssertEqual(metric.attributes["failure"] as? String, "low_battery")
+        XCTAssertEqual(metric.attributes["failure"] as? String, "blocker")
+        XCTAssertEqual(metric.attributes["blockers"] as? [String], ["offline", "low_battery"])
         XCTAssertEqual(metric.attributes["track"] as? String, featureName)
     }
 

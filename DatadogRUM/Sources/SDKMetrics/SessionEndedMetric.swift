@@ -142,7 +142,11 @@ internal class SessionEndedMetric {
         self.precondition = precondition
         self.tracksBackgroundEvents = tracksBackgroundEvents
         self.ntpOffsetAtStart = context.serverTimeOffset
-        self.uploadQuality = Attributes.UploadQuality(uploadCycleCount: 0, uploadFailureCount: [:])
+        self.uploadQuality = Attributes.UploadQuality(
+            cycleCount: 0,
+            failureCount: [:],
+            blockerCount: [:]
+        )
     }
 
     /// Tracks the view event that occurred during the session.
@@ -208,13 +212,25 @@ internal class SessionEndedMetric {
     /// - Parameters:
     ///   - attributes: The upload quality attributes
     func track(uploadQuality attributes: [String: Encodable]) {
+        var failureCount = uploadQuality.failureCount
+        var blockerCount = uploadQuality.blockerCount
+
+        if let failure = attributes[UploadQualityMetric.failure] as? String {
+            // Merge by incrementing values
+            failureCount.merge([failure: 1], uniquingKeysWith: +)
+        }
+
+        if let blockers = attributes[UploadQualityMetric.blockers] as? [String] {
+            // Merge by incrementing values
+            blockerCount = blockers.reduce(into: blockerCount) { count, blocker in
+                count[blocker, default: 0] += 1
+            }
+        }
+
         uploadQuality = Attributes.UploadQuality(
-            uploadCycleCount: uploadQuality.uploadCycleCount + 1,
-            uploadFailureCount: attributes[UploadQualityMetric.failure]
-                .flatMap { $0 as? String }
-                // Merge by incrementing values
-                .map { uploadQuality.uploadFailureCount.merging([$0: 1], uniquingKeysWith: +) }
-                ?? uploadQuality.uploadFailureCount
+            cycleCount: uploadQuality.cycleCount + 1,
+            failureCount: failureCount,
+            blockerCount: blockerCount
         )
     }
 
@@ -316,12 +332,14 @@ internal class SessionEndedMetric {
         let noViewEventsCount: NoViewEventsCount
 
         struct UploadQuality: Encodable {
-            let uploadCycleCount: Int
-            let uploadFailureCount: [String: Int]
+            let cycleCount: Int
+            let failureCount: [String: Int]
+            let blockerCount: [String: Int]
 
             enum CodingKeys: String, CodingKey {
-                case uploadCycleCount = "upload_cycle_count"
-                case uploadFailureCount = "upload_failure_count"
+                case cycleCount = "cycle_count"
+                case failureCount = "failure_count"
+                case blockerCount = "blocker_count"
             }
         }
 
