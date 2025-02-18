@@ -2,6 +2,14 @@
 
 [Synthetics for Mobile](https://docs.datadoghq.com/mobile_app_testing/) runs Benchmark test scenarios to collect metrics of the SDK performances.
 
+## Setup
+
+To open the project with the correct environment, run the following command:
+
+```bash
+make benchmark-tests-open
+```
+
 
 ## CI
 
