@@ -41,7 +41,7 @@ class TelemetryInterceptorTests: XCTestCase {
 
         // When
         metricController.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockAny(), tracksBackgroundEvents: .mockRandom())
-        let metricTelemetry: TelemetryMessage = .metric(MetricTelemetry(name: SDKMetricFields.UploadQuality.name, attributes: mockRandomAttributes(), sampleRate: .mockRandom()))
+        let metricTelemetry: TelemetryMessage = .metric(MetricTelemetry(name: UploadQualityMetric.name, attributes: mockRandomAttributes(), sampleRate: .mockRandom()))
         let result = interceptor.receive(message: .telemetry(metricTelemetry), from: NOPDatadogCore())
         XCTAssertTrue(result)
 

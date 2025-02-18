@@ -203,14 +203,14 @@ internal class SessionEndedMetric {
         wasStopped = true
     }
 
-    /// Tracks the upload qualiy metric for aggregation.
+    /// Tracks the upload quality metric for aggregation.
     ///
     /// - Parameters:
     ///   - attributes: The upload quality attributes
     func track(uploadQuality attributes: [String: Encodable]) {
         uploadQuality = Attributes.UploadQuality(
             uploadCycleCount: uploadQuality.uploadCycleCount + 1,
-            uploadFailureCount: attributes[SDKMetricFields.UploadQuality.failure]
+            uploadFailureCount: attributes[UploadQualityMetric.failure]
                 .flatMap { $0 as? String }
                 // Merge by incrementing values
                 .map { uploadQuality.uploadFailureCount.merging([$0: 1], uniquingKeysWith: +) }

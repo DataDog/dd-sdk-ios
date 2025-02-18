@@ -256,10 +256,10 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
     private func sendUploadQualityMetric(failure: String?) {
         telemetry.metric(
-            name: SDKMetricFields.UploadQuality.name,
+            name: UploadQualityMetric.name,
             attributes: [
-                SDKMetricFields.UploadQuality.track: featureName,
-                SDKMetricFields.UploadQuality.failure: failure
+                UploadQualityMetric.track: featureName,
+                UploadQualityMetric.failure: failure
             ]
         )
     }

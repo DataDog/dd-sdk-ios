@@ -104,7 +104,7 @@ internal final class SessionEndedMetricController {
         }
     }
 
-    /// Tracks the upload qualiy metric for aggregation.
+    /// Tracks the upload quality metric for aggregation.
     ///
     /// - Parameters:
     ///   - attributes: The upload quality attributes

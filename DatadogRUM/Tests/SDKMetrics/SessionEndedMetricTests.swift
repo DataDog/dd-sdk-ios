@@ -497,22 +497,22 @@ class SessionEndedMetricTests: XCTestCase {
     func testUploadQualityMetricAggregation() throws {
         let metric = SessionEndedMetric.with(sessionID: sessionID, context: .mockWith(applicationBundleType: .iOSApp))
         metric.track(uploadQuality: [
-            SDKMetricFields.UploadQuality.track: String.mockRandom(),
-            SDKMetricFields.UploadQuality.failure: "error1"
+            UploadQualityMetric.track: String.mockRandom(),
+            UploadQualityMetric.failure: "error1"
         ])
 
         metric.track(uploadQuality: [
-            SDKMetricFields.UploadQuality.track: String.mockRandom(),
-            SDKMetricFields.UploadQuality.failure: "error1"
+            UploadQualityMetric.track: String.mockRandom(),
+            UploadQualityMetric.failure: "error1"
         ])
 
         metric.track(uploadQuality: [
-            SDKMetricFields.UploadQuality.track: String.mockRandom(),
+            UploadQualityMetric.track: String.mockRandom(),
         ])
 
         metric.track(uploadQuality: [
-            SDKMetricFields.UploadQuality.track: String.mockRandom(),
-            SDKMetricFields.UploadQuality.failure: "error2"
+            UploadQualityMetric.track: String.mockRandom(),
+            UploadQualityMetric.failure: "error2"
         ])
 
         // When
@@ -531,7 +531,7 @@ class SessionEndedMetricTests: XCTestCase {
         try metric.track(view: .mockRandomWith(sessionID: sessionID, viewTimeSpent: 10), instrumentationType: .manual)
         try metric.track(view: .mockRandomWith(sessionID: sessionID, viewTimeSpent: 10), instrumentationType: .swiftui)
         try metric.track(view: .mockRandomWith(sessionID: sessionID, viewTimeSpent: 10), instrumentationType: .uikit)
-        metric.track(uploadQuality: [SDKMetricFields.UploadQuality.track: String.mockRandom()])
+        metric.track(uploadQuality: [UploadQualityMetric.track: String.mockRandom()])
 
         // When
         let matcher = try JSONObjectMatcher(AnyEncodable(metric.asMetricAttributes()))
