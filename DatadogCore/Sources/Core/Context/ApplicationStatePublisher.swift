@@ -12,8 +12,6 @@ import WatchKit
 #endif
 
 internal final class ApplicationStatePublisher: ContextValuePublisher {
-    typealias Snapshot = AppStateHistory.Snapshot
-
     /// The default publisher queue.
     private static let defaultQueue = DispatchQueue(
         label: "com.datadoghq.app-state-publisher",
@@ -104,9 +102,9 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     }
 
     private func append(state: AppState) {
-        let snapshot = Snapshot(state: state, date: dateProvider.now)
+        let now = dateProvider.now
         queue.async {
-            self.history.append(snapshot)
+            self.history.append(state: state, at: now)
             self.receiver?(self.history)
         }
     }

@@ -8,119 +8,234 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 
+private extension AppState {
+    static var randomForeground: AppState {
+        return [.active, .inactive].randomElement()!
+    }
+}
+
 class AppStateHistoryTests: XCTestCase {
+    private let date = Date()
+
     func testItBuildsAppStateFromUIApplicationState() {
         XCTAssertEqual(AppState(.active), .active)
         XCTAssertEqual(AppState(.inactive), .inactive)
         XCTAssertEqual(AppState(.background), .background)
     }
 
-    func testWhenAppTransitionsBetweenForegroundAndBackground_itComputesTotalForegroundDuration() {
-        let numberOfForegroundSnapshots: Int = .mockRandom(min: 0, max: 20)
-        let numberOfBackgroundSnapshots: Int = .mockRandom(min: numberOfForegroundSnapshots == 0 ? 1 : 0, max: 20) // must include at least one snapshot
-        let numberOfSnapshots = numberOfForegroundSnapshots + numberOfBackgroundSnapshots
-        let snapshotDuration: TimeInterval = .mockRandom(min: 0.1, max: 5)
+    // MARK: - `currentState`
 
+    func testCurrentState_whenOnlyInitialState() {
         // Given
-        let date: Date = .mockRandomInThePast()
-        let snapshotDates: [Date] = (0..<numberOfSnapshots).shuffled()
-            .map { idx in date.addingTimeInterval(TimeInterval(idx) * snapshotDuration) }
-        let foregroundSnapshots = snapshotDates.dropLast(numberOfBackgroundSnapshots)
-            .map { AppStateHistory.Snapshot(state: .mockRandom(runningInForeground: true), date: $0) }
-        let backgroundSnapshots = snapshotDates.dropFirst(numberOfForegroundSnapshots)
-            .map { AppStateHistory.Snapshot(state: .mockRandom(runningInForeground: false), date: $0) }
-
-        // When
-        let allSnapshots = (foregroundSnapshots + backgroundSnapshots).sorted { $0.date < $1.date }
-        let totalDuration = TimeInterval(numberOfSnapshots) * snapshotDuration
-
-        let history = AppStateHistory(
-            initialSnapshot: allSnapshots[0],
-            recentDate: date.addingTimeInterval(totalDuration),
-            snapshots: Array(allSnapshots.dropFirst())
-        )
+        let state: AppState = .mockRandom()
+        let history = AppStateHistory(initialState: state, date: date)
 
         // Then
-        let expectedForegroundDuration = TimeInterval(numberOfForegroundSnapshots) * snapshotDuration
-        XCTAssertEqual(history.foregroundDuration, expectedForegroundDuration, accuracy: 0.01)
+        XCTAssertEqual(history.currentState, state)
     }
 
-    func testExtrapolation() {
-        let randomAppState: AppState = .mockRandom()
-        let startDate = Date.mockDecember15th2019At10AMUTC()
-        let history = AppStateHistory(
-            initialSnapshot: .init(state: randomAppState, date: startDate),
-            recentDate: startDate + 5.0,
-            snapshots: []
-        )
-        let extrapolatedHistory = history.take(
-            between: (startDate - 5.0)...(startDate + 15.0)
-        )
+    func testCurrentState_afterStateChanges() {
+        // Given
+        var history = AppStateHistory(initialState: .active, date: date)
 
-        let expectedHistory = AppStateHistory(
-            initialSnapshot: .init(state: randomAppState, date: startDate - 5.0),
-            recentDate: startDate + 15.0,
-            snapshots: []
-        )
-        XCTAssertEqual(extrapolatedHistory, expectedHistory)
+        // When / Then
+        history.append(state: .inactive, at: date + 1)
+        XCTAssertEqual(history.currentState, .inactive)
+
+        history.append(state: .background, at: date + 2)
+        XCTAssertEqual(history.currentState, .background)
+
+        history.append(state: .active, at: date + 3)
+        XCTAssertEqual(history.currentState, .active)
     }
 
-    func testLimiting() {
-        let randomAppState: AppState = .mockRandom()
-        let startDate = Date.mockDecember15th2019At10AMUTC()
-        let history = AppStateHistory(
-            initialSnapshot: .init(state: randomAppState, date: startDate),
-            recentDate: startDate + 20.0,
-            snapshots: []
-        )
-        let limitedHistory = history.take(
-            between: (startDate + 5.0)...(startDate + 10.0)
-        )
+    func testCurrentState_whenTransitionsNotInChronologicalOrder() {
+        // Given
+        var history = AppStateHistory(initialState: .active, date: date)
 
-        let expectedHistory = AppStateHistory(
-            initialSnapshot: .init(state: randomAppState, date: startDate + 5.0),
-            recentDate: startDate + 10.0,
-            snapshots: []
-        )
-        XCTAssertEqual(limitedHistory, expectedHistory)
+        // When / Then
+        history.append(state: .background, at: date - 10)
+        XCTAssertEqual(history.currentState, .active, "It should always reflect chronologically latest state")
+
+        history.append(state: .inactive, at: date + 5)
+        history.append(state: .background, at: date + 2)
+        XCTAssertEqual(history.currentState, .inactive, "It should always reflect chronologically latest state")
     }
 
-    func testLimitingWithChanges() {
-        let randomFirstAppState: AppState = .mockRandom()
-        let randomLastAppState: AppState = .mockRandom()
+    // MARK: - `state(at:)`
 
-        let startDate = Date(timeIntervalSinceReferenceDate: 0.0)
-        let firstChanges = (0...100).map { _ in
-            AppStateHistory.Snapshot(
-                state: randomFirstAppState,
-                date: startDate + TimeInterval.random(in: 1...1_000)
-            )
-        }
-        let lastChanges = (0...100).map { _ in
-            AppStateHistory.Snapshot(
-                state: randomLastAppState,
-                date: startDate + TimeInterval.random(in: 2_000...3_000)
-            )
-        }
-        var allChanges = (firstChanges + lastChanges)
-        allChanges.append(.init(state: randomFirstAppState, date: startDate + 1_200))
-        allChanges.append(.init(state: randomLastAppState, date: startDate + 1_500))
-        allChanges.sort { $0.date < $1.date }
-        let history = AppStateHistory(
-            initialSnapshot: .init(state: randomFirstAppState, date: startDate),
-            recentDate: startDate + 4_000,
-            snapshots: allChanges
-        )
+    func testStateAt_whenOnlyInitialState() {
+        // Given
+        let state: AppState = .mockRandom()
+        let history = AppStateHistory(initialState: state, date: date)
 
-        let limitedHistory = history.take(
-            between: (startDate + 1_250)...(startDate + 1_750)
-        )
+        // Then
+        XCTAssertEqual(history.state(at: date), state)
+        XCTAssertNil(history.state(at: date - 1))
+        XCTAssertEqual(history.state(at: date + 1), state)
+    }
 
-        let expectedHistory = AppStateHistory(
-            initialSnapshot: .init(state: randomFirstAppState, date: startDate + 1_250),
-            recentDate: startDate + 1_750,
-            snapshots: [.init(state: randomLastAppState, date: startDate + 1_500)]
-        )
-        XCTAssertEqual(limitedHistory, expectedHistory)
+    func testStateAt_whenMultipleTransitions() {
+        // Given
+        var history = AppStateHistory(initialState: .inactive, date: date)
+
+        // When
+        history.append(state: .active, at: date + 10)
+        history.append(state: .background, at: date + 20)
+        history.append(state: .inactive, at: date + 30)
+
+        // Then
+        XCTAssertEqual(history.state(at: date), .inactive)
+        XCTAssertEqual(history.state(at: date + 5), .inactive)
+        XCTAssertEqual(history.state(at: date + 10), .active)
+        XCTAssertEqual(history.state(at: date + 15), .active)
+        XCTAssertEqual(history.state(at: date + 20), .background)
+        XCTAssertEqual(history.state(at: date + 25), .background)
+        XCTAssertEqual(history.state(at: date + 30), .inactive)
+        XCTAssertEqual(history.state(at: date + 35), .inactive)
+    }
+
+    func testStateAt_whenOutsideRange() {
+        // Given
+        var history = AppStateHistory(initialState: .inactive, date: date)
+
+        // When
+        history.append(state: .active, at: date + 10)
+        history.append(state: .background, at: date + 20)
+
+        // Then
+        XCTAssertNil(history.state(at: .distantPast))
+        XCTAssertNil(history.state(at: date - 5))
+        XCTAssertEqual(history.state(at: date + 25), .background)
+        XCTAssertEqual(history.state(at: .distantFuture), .background)
+    }
+
+    func testStateAt_whenTransitionsNotInChronologicalOrder() {
+        // Given
+        let date = Date()
+        var history = AppStateHistory(initialState: .inactive, date: date)
+
+        // When
+        let transitions: [() -> Void] = [
+            { history.append(state: .active, at: date + 10) },
+            { history.append(state: .background, at: date + 20) },
+            { history.append(state: .inactive, at: date + 30) },
+        ]
+        transitions.shuffled().forEach { $0() }
+
+        // Then
+        XCTAssertEqual(history.state(at: date), .inactive)
+        XCTAssertEqual(history.state(at: date + 10), .active)
+        XCTAssertEqual(history.state(at: date + 20), .background)
+        XCTAssertEqual(history.state(at: date + 30), .inactive)
+    }
+
+    // MARK: - `foregroundDuration(during:)`
+
+    func testForegroundDuration_whenStartedInForegrounded() {
+        // When
+        let history = AppStateHistory(initialState: .randomForeground, date: date)
+
+        // Then
+        XCTAssertEqual(history.foregroundDuration(during: date...(date + 10)), 10)
+    }
+
+    func testForegroundDuration_whenAlwaysForegrounded() {
+        // Given
+        var history = AppStateHistory(initialState: .randomForeground, date: date)
+
+        // When
+        history.append(state: .randomForeground, at: date + 10)
+
+        // Then
+        let duration = history.foregroundDuration(during: date...(date + 10))
+        XCTAssertEqual(duration, 10)
+    }
+
+    func testForegroundDuration_whenAlwaysBackgrounded() {
+        // Given
+        var history = AppStateHistory(initialState: .background, date: date)
+
+        // When
+        history.append(state: .background, at: date + 10)
+
+        // Then
+        let duration = history.foregroundDuration(during: date...(date + 10))
+        XCTAssertEqual(duration, 0)
+    }
+
+    func testForegroundDuration_whenMultipleTransitions() {
+        // Given
+        var history = AppStateHistory(initialState: .background, date: date)
+
+        // When
+        history.append(state: .randomForeground, at: date + 5)
+        history.append(state: .background, at: date + 10)
+        history.append(state: .randomForeground, at: date + 15)
+
+        // Then
+        XCTAssertEqual(history.foregroundDuration(during: date...(date + 15)), 5)
+        XCTAssertEqual(history.foregroundDuration(during: date...(date + 20)), 10)
+        XCTAssertEqual(history.foregroundDuration(during: (date + 10)...(date + 15)), 0)
+        XCTAssertEqual(history.foregroundDuration(during: (date + 5)...(date + 10)), 5)
+    }
+
+    func testForegroundDuration_whenOutsideRange() {
+        // Given
+        var history = AppStateHistory(initialState: .randomForeground, date: date)
+
+        // When
+        history.append(state: .background, at: date + 5)
+        history.append(state: .randomForeground, at: date + 10)
+
+        // Then
+        XCTAssertEqual(history.foregroundDuration(during: (date - 100)...(date)), 0)
+        XCTAssertEqual(history.foregroundDuration(during: (date - 100)...(date + 5)), 5)
+        XCTAssertEqual(history.foregroundDuration(during: (date - 100)...(date + 10)), 5)
+        XCTAssertEqual(history.foregroundDuration(during: (date)...(date + 100)), 95, "It should extrapolate last state to upper range")
+        XCTAssertEqual(history.foregroundDuration(during: (date + 10)...(date + 100)), 90)
+    }
+
+    // MARK: - `containsState(during:where:)`
+
+    func testContainsState_whenOnlyInitialState() {
+        // Given
+        let history = AppStateHistory(initialState: .active, date: date)
+
+        // When / Then
+        XCTAssertTrue(history.containsState(during: date...(date + 10), where: { $0 == .active }))
+        XCTAssertFalse(history.containsState(during: date...(date + 10), where: { $0 == .background }))
+    }
+
+    func testStates_whenMultipleTransitions() {
+        // Given
+        var history = AppStateHistory(initialState: .active, date: date)
+
+        // When
+        history.append(state: .inactive, at: date + 1)
+        history.append(state: .background, at: date + 2)
+        history.append(state: .active, at: date + 3)
+
+        // Then
+        XCTAssertTrue(history.containsState(during: date...(date + 10), where: { $0 == .active }))
+        XCTAssertTrue(history.containsState(during: date...(date + 10), where: { $0 == .inactive }))
+        XCTAssertTrue(history.containsState(during: date...(date + 10), where: { $0 == .background }))
+
+        XCTAssertFalse(history.containsState(during: (date + 3.1)...(date + 10), where: { $0 == .background }))
+        XCTAssertFalse(history.containsState(during: (date + 2.1)...(date + 3), where: { $0 == .inactive }))
+    }
+
+    func testContainsState_whenOutsideRange() {
+        // Given
+        var history = AppStateHistory(initialState: .active, date: date)
+
+        // When
+        history.append(state: .inactive, at: date + 5)
+        history.append(state: .background, at: date + 10)
+
+        // Then
+        XCTAssertFalse(history.containsState(during: (date - 100)...(date - 50), where: { _ in true }))
+        XCTAssertTrue(history.containsState(during: (date + 20)...(date + 50), where: { $0 == .background }))
+        XCTAssertTrue(history.containsState(during: (date - 50)...(date + 1), where: { $0 == .active }))
     }
 }

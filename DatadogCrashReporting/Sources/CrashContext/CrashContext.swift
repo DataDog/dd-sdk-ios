@@ -139,7 +139,7 @@ internal struct CrashContext: Codable, Equatable {
         self.userInfo = context.userInfo
         self.networkConnectionInfo = context.networkConnectionInfo
         self.carrierInfo = context.carrierInfo
-        self.lastIsAppInForeground = context.applicationStateHistory.currentSnapshot.state.isRunningInForeground
+        self.lastIsAppInForeground = context.applicationStateHistory.currentState.isRunningInForeground
 
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState
