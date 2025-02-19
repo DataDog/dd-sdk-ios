@@ -4,14 +4,25 @@
 
 ## Setup
 
-To open the project with the correct environment, run the following command:
+To open the project with the correct environment, make sure Xcode is closed and then run the following command:
 
 ```bash
 make benchmark-tests-open
 ```
 
 > [!TIP]
-> If XCode is failing to install packages with a message such as **failed to clone**, **requires authentification** or **dependency failed**, it might be due to a Git configuration that forces HTTPS URLs to be rewritten as SSH. In that case, try commenting it out in your global Git config (~/.gitconfig) and fetching the packages again.
+> If Xcode is failing to install packages with a message such as **failed to clone**, **requires authentication** or **dependency failed**, it might be due to a Git configuration that forces HTTPS URLs to be rewritten as SSH. In that case, try commenting the following lines in your global Git config (~/.gitconfig).
+
+```bash
+[url "ssh://git@github.com/"]
+    insteadOf = https://github.com/
+```
+
+> Or remove it with the following command:
+
+```bash
+git config --global --unset url."ssh://git@github.com/".insteadOf
+```
 
 ## CI
 
