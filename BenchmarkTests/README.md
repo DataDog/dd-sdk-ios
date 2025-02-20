@@ -2,6 +2,27 @@
 
 [Synthetics for Mobile](https://docs.datadoghq.com/mobile_app_testing/) runs Benchmark test scenarios to collect metrics of the SDK performances.
 
+## Setup
+
+To open the project with the correct environment, make sure Xcode is closed and then run the following command:
+
+```bash
+make benchmark-tests-open
+```
+
+> [!TIP]
+> If Xcode is failing to install packages with a message such as **failed to clone**, **requires authentication** or **dependency failed**, it might be due to a Git configuration that forces HTTPS URLs to be rewritten as SSH. In that case, try commenting the following lines in your global Git config (~/.gitconfig).
+
+```bash
+[url "ssh://git@github.com/"]
+    insteadOf = https://github.com/
+```
+
+> Or remove it with the following command:
+
+```bash
+git config --global --unset url."ssh://git@github.com/".insteadOf
+```
 
 ## CI
 
