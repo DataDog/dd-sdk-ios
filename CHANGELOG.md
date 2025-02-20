@@ -1,6 +1,7 @@
 # Unreleased
 - [FEATURE] Adds anonymous identifier configuration for RUM Sessions linking. See [#2172][]
 - [FIX] Session Replay: Fix captured displayed image frame computation when `UIImageView.contentMode` is `scaleAspectFill`. See [#2200][]
+- [IMPROVEMENT] Updates `setUserInfo` to require `id` parameter. See [#2195][]
 
 # 2.23.0 / 05-02-2025
 
@@ -834,6 +835,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2170]: https://github.com/DataDog/dd-sdk-ios/pull/2170
 [#2177]: https://github.com/DataDog/dd-sdk-ios/pull/2177
 [#2182]: https://github.com/DataDog/dd-sdk-ios/pull/2182
+[#2195]: https://github.com/DataDog/dd-sdk-ios/pull/2195
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
