@@ -129,6 +129,13 @@ internal struct Directory: DirectoryProtocol {
         return File(url: fileURL)
     }
 
+    /// Returns count of files in this directory.
+    func filesCount() throws -> Int {
+        return try FileManager.default
+            .contentsOfDirectory(at: url, includingPropertiesForKeys: [.isRegularFileKey])
+            .count
+    }
+
     /// Returns all files of this directory.
     func files() throws -> [File] {
         return try FileManager.default

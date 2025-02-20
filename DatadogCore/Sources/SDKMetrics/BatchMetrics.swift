@@ -59,6 +59,9 @@ internal enum BatchDeletedMetric {
     /// If the background tasks were enabled.
     static let backgroundTasksEnabled = "background_tasks_enabled"
 
+    /// Count of pending batches left on track.
+    static let pendingBatches = "pending_batches"
+
     /// Allowed values for `batchRemovalReasonKey`.
     enum RemovalReason {
         /// The batch was delivered to Intake and deleted upon receiving given `responseCode`.

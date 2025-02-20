@@ -120,6 +120,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         lastWritableFileObjectsCount = 1
         lastWritableFileApproximatedSize = writeSize
         lastWritableFileLastWriteDate = dateProvider.now
+
         return newFile
     }
 
@@ -175,8 +176,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String> = [], limit: Int = .max) -> [ReadableFile] {
         do {
             let filesFromOldest = try directory.files()
-                .map { (file: $0, fileCreationDate: fileCreationDateFrom(fileName: $0.name)) }
-                .compactMap { try deleteFileIfItsObsolete(file: $0.file, fileCreationDate: $0.fileCreationDate) }
+                .compactMap { try deleteFileIfItsObsolete(file: $0, fileCreationDate: fileCreationDateFrom(fileName: $0.name)) }
                 .sorted(by: { $0.fileCreationDate < $1.fileCreationDate })
 
             if ignoreFilesAgeWhenReading {
@@ -185,12 +185,11 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                     .map { $0.file }
             }
 
-            let filtered = filesFromOldest
+            return filesFromOldest
                 .filter {
-                    let fileAge = dateProvider.now.timeIntervalSince($0.fileCreationDate)
-                    return excludedFileNames.contains($0.file.name) == false && fileAge >= performance.minFileAgeForRead
+                    !excludedFileNames.contains($0.file.name) &&
+                    dateProvider.now.timeIntervalSince($0.fileCreationDate) >= performance.minFileAgeForRead
                 }
-            return filtered
                 .prefix(limit)
                 .map { $0.file }
         } catch {
@@ -278,7 +277,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
                 BatchDeletedMetric.inBackgroundKey: false,
-                BatchDeletedMetric.backgroundTasksEnabled: metricsData.backgroundTasksEnabled
+                BatchDeletedMetric.backgroundTasksEnabled: metricsData.backgroundTasksEnabled,
+                BatchDeletedMetric.pendingBatches: try? directory.filesCount()
             ],
             sampleRate: BatchDeletedMetric.sampleRate
         )
