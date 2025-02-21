@@ -74,6 +74,9 @@ public struct DatadogContext {
     /// Current user information.
     public var userInfo: UserInfo?
 
+    /// Current user information.
+    public var accountInfo: AccountInfo?
+
     /// The user's consent to data collection
     public var trackingConsent: TrackingConsent = .pending
 
@@ -131,6 +134,7 @@ public struct DatadogContext {
         device: DeviceInfo,
         nativeSourceOverride: String? = nil,
         userInfo: UserInfo? = nil,
+        accountInfo: AccountInfo? = nil,
         trackingConsent: TrackingConsent = .pending,
         launchTime: LaunchTime,
         applicationStateHistory: AppStateHistory,
@@ -159,6 +163,7 @@ public struct DatadogContext {
         self.device = device
         self.nativeSourceOverride = nativeSourceOverride
         self.userInfo = userInfo
+        self.accountInfo = accountInfo
         self.trackingConsent = trackingConsent
         self.launchTime = launchTime
         self.applicationStateHistory = applicationStateHistory

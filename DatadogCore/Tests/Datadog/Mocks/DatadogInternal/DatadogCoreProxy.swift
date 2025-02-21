@@ -101,6 +101,14 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         core.setUserInfo(id: id, name: name, email: email, extraInfo: extraInfo)
     }
 
+    func setAccountInfo(
+        id: String,
+        name: String? = nil,
+        extraInfo: [AttributeKey: AttributeValue] = [:]
+    ) {
+        core.setAccountInfo(id: id, name: name, extraInfo: extraInfo)
+    }
+
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         core.set(baggage: baggage, forKey: key)
     }
