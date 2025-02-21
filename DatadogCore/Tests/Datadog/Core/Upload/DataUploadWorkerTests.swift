@@ -91,6 +91,8 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(telemetry.messages.count, 3)
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
         XCTAssertEqual(metric.attributes["track"] as? String, featureName)
+        XCTAssertNil(metric.attributes["failure"])
+        XCTAssertNil(metric.attributes["blockers"])
     }
 
     func testItUploadsDataSequentiallyWithoutDelay_whenMaxBatchesPerUploadIsSet() throws {
@@ -142,6 +144,8 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(telemetry.messages.count, 2)
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
         XCTAssertEqual(metric.attributes["track"] as? String, featureName)
+        XCTAssertNil(metric.attributes["failure"])
+        XCTAssertNil(metric.attributes["blockers"])
     }
 
     func testGivenDataToUpload_whenUploadFinishesAndDoesNotNeedToBeRetried_thenDataIsDeleted() {

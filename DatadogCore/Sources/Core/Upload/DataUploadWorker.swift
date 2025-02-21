@@ -232,6 +232,10 @@ internal class DataUploadWorker: DataUploadWorkerType {
     }
 
     private func sendUploadQualityMetric(blockers: [DataUploadConditions.Blocker]) {
+        guard !blockers.isEmpty else {
+            return sendUploadQualityMetric()
+        }
+
         sendUploadQualityMetric(
             failure: "blocker",
             blockers: blockers.map {
@@ -245,17 +249,30 @@ internal class DataUploadWorker: DataUploadWorkerType {
     }
 
     private func sendUploadQualityMetric(status: DataUploadStatus) {
+        guard let error = status.error else {
+            return sendUploadQualityMetric()
+        }
+
         sendUploadQualityMetric(
-            failure: status.error.map {
-                switch $0 {
+            failure: {
+                switch error {
                 case let .httpError(code): return "\(code)"
                 case let .networkError(error): return "\(error.code)"
                 }
-            }
+            }()
         )
     }
 
-    private func sendUploadQualityMetric(failure: String?, blockers: [String] = []) {
+    private func sendUploadQualityMetric() {
+        telemetry.metric(
+            name: UploadQualityMetric.name,
+            attributes: [
+                UploadQualityMetric.track: featureName
+            ]
+        )
+    }
+
+    private func sendUploadQualityMetric(failure: String, blockers: [String] = []) {
         telemetry.metric(
             name: UploadQualityMetric.name,
             attributes: [
