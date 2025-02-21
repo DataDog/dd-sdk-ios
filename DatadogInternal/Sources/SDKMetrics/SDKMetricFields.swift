@@ -12,7 +12,6 @@ public enum SDKMetricFields {
     public static let typeKey = "metric_type"
     /// The first sample rate applied to the metric.
     public static let headSampleRate = "head_sample_rate"
-
     /// Key referencing the session ID (`String`) that the metric should be sent with. It expects `String` value.
     ///
     /// When attached to metric attributes, the value of this key (session ID) will be used to replace

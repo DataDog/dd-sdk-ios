@@ -85,52 +85,33 @@ class DataUploadStatusTests: XCTestCase {
 
     // MARK: - Test Upload Error
 
-    private let alertingStatusCodes: Set = [
+    private let errorStatusCodes: Set = [
         400, // BAD REQUEST
         401, // UNAUTHORIZED
         403, // FORBIDDEN
-        413, // PAYLOAD TOO LARGE
         408, // REQUEST TIMEOUT
+        413, // PAYLOAD TOO LARGE
         429, // TOO MANY REQUESTS
+        500, // INTERNAL SERVER ERROR
+        502, // BAD GATEWAY
+        503, // SERVICE UNAVAILABLE
+        504, // GATEWAY TIMEOUT
+        507, // INSUFFICIENT STORAGE
     ]
 
     func testWhenUploadFinishesWithResponse_andStatusCodeIs401_itCreatesError() {
         let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: 401), ddRequestID: nil, attempt: 0)
-        XCTAssertEqual(status.error, .unauthorized)
+        XCTAssertEqual(status.error, DataUploadError.httpError(statusCode: .unauthorized))
     }
 
-    func testWhenUploadFinishesWithResponse_andStatusCodeIsDifferentThan401_itDoesNotCreateAnyError() {
-        Set((100...599)).subtracting(alertingStatusCodes).forEach { statusCode in
+    func testWhenUploadFinishesWithErrorStatusCode_itCreatesAnError() {
+        errorStatusCodes.forEach { statusCode in
             let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: nil, attempt: 0)
-            XCTAssertNil(status.error)
-        }
-    }
-
-    func testWhenUploadFinishesWithResponse_andStatusCodeMeansSDKIssue_itCreatesHTTPError() {
-        alertingStatusCodes.subtracting([401, 403]).forEach { statusCode in
-            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: .mockRandom(), attempt: 01)
-
             guard case let .httpError(statusCode: receivedStatusCode) = status.error else {
                 return XCTFail("Upload status error should be created for status code: \(statusCode)")
             }
 
-            XCTAssertEqual(receivedStatusCode, statusCode)
-        }
-    }
-
-    func testWhenUploadFinishesWithResponse_andStatusCodeMeansClientIssue_itDoesNotCreateHTTPError() {
-        let clientIssueStatusCodes = Set(expectedStatusCodes.keys).subtracting(Set(alertingStatusCodes))
-        clientIssueStatusCodes.forEach { statusCode in
-            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: nil, attempt: 0)
-            XCTAssertNil(status.error, "Upload status error should not be created for status code \(statusCode)")
-        }
-    }
-
-    func testWhenUploadFinishesWithResponse_andUnexpectedStatusCodeMeansClientIssue_itDoesNotCreateHTTPError() {
-        let unexpectedStatusCodes = Set((100...599)).subtracting(Set(expectedStatusCodes.keys))
-        unexpectedStatusCodes.forEach { statusCode in
-            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: nil, attempt: 0)
-            XCTAssertNil(status.error)
+            XCTAssertEqual(receivedStatusCode.rawValue, statusCode)
         }
     }
 
@@ -143,12 +124,6 @@ class DataUploadStatusTests: XCTestCase {
         }
 
         XCTAssertEqual(nserror.code, alertingNSURLErrorCode)
-    }
-
-    func testWhenUploadFinishesWithError_andErrorCodeMeansExternalFactors_itDoesNotCreateNetworkError() {
-        let notAlertingNSURLErrorCode = NSURLErrorNetworkConnectionLost
-        let status = DataUploadStatus(networkError: NSError(domain: NSURLErrorDomain, code: notAlertingNSURLErrorCode, userInfo: nil), attempt: 0)
-        XCTAssertNil(status.error, "Upload status error should not be created for NSURLError code: \(notAlertingNSURLErrorCode)")
     }
 
     // MARK: - Test Response Code
