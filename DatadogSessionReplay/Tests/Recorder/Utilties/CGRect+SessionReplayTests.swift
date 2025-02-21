@@ -191,5 +191,26 @@ class CGRectSessionReplayTests: XCTestCase {
             accuracy: accuracy
         )
     }
+
+    func testBigContentFrameWithAtypicalContainerFrameForScaleAspectFill() {
+        let frame = CGRect(x: 0, y: 0, width: 300, height: 200)
+        let contentSize = CGSize(width: 400, height: 280)
+
+        XCTAssertRectsEqual(
+            frame.dd.contentFrame(for: contentSize, using: .scaleAspectFill),
+            CGRect(x: 0, y: -5, width: 300, height: 210),
+            accuracy: accuracy
+        )
+    }
+
+    func testSmallContentFrameWithAtypicalContainerFrameForScaleAspectFill() {
+        let frame = CGRect(x: 0, y: 0, width: 300, height: 200)
+        let contentSize = CGSize(width: 100, height: 50)
+        XCTAssertRectsEqual(
+            frame.dd.contentFrame(for: contentSize, using: .scaleAspectFill),
+            CGRect(x: -50, y: 0, width: 400, height: 200),
+            accuracy: accuracy
+        )
+    }
 }
 #endif

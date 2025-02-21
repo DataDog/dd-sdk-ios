@@ -16,14 +16,8 @@ internal extension DatadogExtension where ExtendedType == CGSize {
     }
 
     func scaleAspectFillRect(for contentSize: CGSize) -> CGRect {
-        let scale: CGFloat
-        if (contentSize.width - type.width) < (contentSize.height - type.height) {
-            scale = type.width / contentSize.width
-        } else {
-            scale = type.height / contentSize.height
-        }
+        let scale = max(type.width / contentSize.width, type.height / contentSize.height)
         let size = CGSize(width: contentSize.width * scale, height: contentSize.height * scale)
-
         return CGRect(
             x: (type.width - size.width) / 2,
             y: (type.height - size.height) / 2,
@@ -34,7 +28,6 @@ internal extension DatadogExtension where ExtendedType == CGSize {
 
     func scaleAspectFitRect(for contentSize: CGSize) -> CGRect {
         let imageAspectRatio = contentSize.height / contentSize.width
-
         var x, y, width, height: CGFloat
         if imageAspectRatio > aspectRatio {
             height = type.height
