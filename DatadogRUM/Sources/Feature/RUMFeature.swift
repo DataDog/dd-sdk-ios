@@ -215,11 +215,14 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
 
         // Send configuration telemetry:
+
         core.telemetry.configuration(
             appHangThreshold: configuration.appHangThreshold?.toInt64Milliseconds,
+            invTimeThresholdMs: (configuration.nextViewActionPredicate as? TimeBasedINVActionPredicate)?.maxTimeToNextView.toInt64Milliseconds,
             mobileVitalsUpdatePeriod: configuration.vitalsUpdateFrequency?.timeInterval.toInt64Milliseconds,
             sessionSampleRate: Int64(withNoOverflow: configuration.sessionSampleRate),
             telemetrySampleRate: Int64(withNoOverflow: configuration.telemetrySampleRate),
+            tnsTimeThresholdMs: (configuration.networkSettledResourcePredicate as? TimeBasedTNSResourcePredicate)?.threshold.toInt64Milliseconds,
             traceSampleRate: configuration.urlSessionTracking?.firstPartyHostsTracing.map { Int64(withNoOverflow: $0.sampleRate) },
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,

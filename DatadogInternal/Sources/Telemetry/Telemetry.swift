@@ -23,6 +23,7 @@ public struct ConfigurationTelemetry: Equatable {
     public let imagePrivacyLevel: String?
     public let touchPrivacyLevel: String?
     public let initializationType: String?
+    public let invTimeThresholdMs: Int64?
     public let mobileVitalsUpdatePeriod: Int64?
     public let reactNativeVersion: String?
     public let reactVersion: String?
@@ -32,6 +33,7 @@ public struct ConfigurationTelemetry: Equatable {
     public let startRecordingImmediately: Bool?
     public let telemetryConfigurationSampleRate: Int64?
     public let telemetrySampleRate: Int64?
+    public let tnsTimeThresholdMs: Int64?
     public let tracerAPI: String?
     public let tracerAPIVersion: String?
     public let traceSampleRate: Int64?
@@ -373,6 +375,7 @@ extension Telemetry {
         imagePrivacyLevel: String? = nil,
         touchPrivacyLevel: String? = nil,
         initializationType: String? = nil,
+        invTimeThresholdMs: Int64? = nil,
         mobileVitalsUpdatePeriod: Int64? = nil,
         reactNativeVersion: String? = nil,
         reactVersion: String? = nil,
@@ -382,6 +385,7 @@ extension Telemetry {
         startRecordingImmediately: Bool? = nil,
         telemetryConfigurationSampleRate: Int64? = nil,
         telemetrySampleRate: Int64? = nil,
+        tnsTimeThresholdMs: Int64? = nil,
         tracerAPI: String? = nil,
         tracerAPIVersion: String? = nil,
         traceSampleRate: Int64? = nil,
@@ -426,6 +430,7 @@ extension Telemetry {
             imagePrivacyLevel: imagePrivacyLevel,
             touchPrivacyLevel: touchPrivacyLevel,
             initializationType: initializationType,
+            invTimeThresholdMs: invTimeThresholdMs,
             mobileVitalsUpdatePeriod: mobileVitalsUpdatePeriod,
             reactNativeVersion: reactNativeVersion,
             reactVersion: reactVersion,
@@ -435,6 +440,7 @@ extension Telemetry {
             startRecordingImmediately: startRecordingImmediately,
             telemetryConfigurationSampleRate: telemetryConfigurationSampleRate,
             telemetrySampleRate: telemetrySampleRate,
+            tnsTimeThresholdMs: tnsTimeThresholdMs,
             tracerAPI: tracerAPI,
             tracerAPIVersion: tracerAPIVersion,
             traceSampleRate: traceSampleRate,
@@ -549,6 +555,7 @@ extension ConfigurationTelemetry {
             imagePrivacyLevel: other.imagePrivacyLevel ?? imagePrivacyLevel,
             touchPrivacyLevel: other.touchPrivacyLevel ?? touchPrivacyLevel,
             initializationType: other.initializationType ?? initializationType,
+            invTimeThresholdMs: other.invTimeThresholdMs ?? invTimeThresholdMs,
             mobileVitalsUpdatePeriod: other.mobileVitalsUpdatePeriod ?? mobileVitalsUpdatePeriod,
             reactNativeVersion: other.reactNativeVersion ?? reactNativeVersion,
             reactVersion: other.reactVersion ?? reactVersion,
@@ -558,6 +565,7 @@ extension ConfigurationTelemetry {
             startRecordingImmediately: other.startRecordingImmediately ?? startRecordingImmediately,
             telemetryConfigurationSampleRate: other.telemetryConfigurationSampleRate ?? telemetryConfigurationSampleRate,
             telemetrySampleRate: other.telemetrySampleRate ?? telemetrySampleRate,
+            tnsTimeThresholdMs: other.tnsTimeThresholdMs ?? tnsTimeThresholdMs,
             tracerAPI: other.tracerAPI ?? tracerAPI,
             tracerAPIVersion: other.tracerAPIVersion ?? tracerAPIVersion,
             traceSampleRate: other.traceSampleRate ?? traceSampleRate,
