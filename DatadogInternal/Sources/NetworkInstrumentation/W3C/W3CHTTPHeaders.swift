@@ -45,6 +45,9 @@ public enum W3CHTTPHeaders {
     /// also conveys information about the request’s position in multiple distributed tracing graphs.
     public static let tracestate = "tracestate"
 
+    /// The baggage header represents a set of user-defined properties associated with a distributed request.
+    public static let baggage = "baggage"
+
     public enum Constants {
         public static let version = "00"
         public static let sampledValue = "01"
@@ -59,5 +62,6 @@ public enum W3CHTTPHeaders {
         public static let parentId = "p"
         public static let tracestateKeyValueSeparator = ":"
         public static let tracestatePairSeparator = ";"
+        public static let rumSessionBaggageKey = "session.id"
     }
 }

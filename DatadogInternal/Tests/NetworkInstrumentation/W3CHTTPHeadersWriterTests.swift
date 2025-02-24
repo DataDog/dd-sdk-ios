@@ -22,13 +22,15 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: true
+                isKept: true,
+                rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
             )
         )
 
         let headers = writer.traceHeaderFields
         XCTAssertEqual(headers[W3CHTTPHeaders.traceparent], "00-00000000000004d200000000000004d2-0000000000000929-01")
         XCTAssertEqual(headers[W3CHTTPHeaders.tracestate], "dd=o:rum;p:0000000000000929;s:1")
+        XCTAssertEqual(headers[W3CHTTPHeaders.baggage], "session.id=abcdef01-2345-6789-abcd-ef0123456789")
     }
 
     func testWritingDroppedTraceContext_withHeadBasedSamplingStrategy() {
@@ -45,13 +47,15 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: false
+                isKept: false,
+                rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
             )
         )
 
         let headers = writer.traceHeaderFields
         XCTAssertEqual(headers[W3CHTTPHeaders.traceparent], "00-00000000000004d200000000000004d2-0000000000000929-00")
         XCTAssertEqual(headers[W3CHTTPHeaders.tracestate], "dd=o:rum;p:0000000000000929;s:0")
+        XCTAssertEqual(headers[W3CHTTPHeaders.baggage], "session.id=abcdef01-2345-6789-abcd-ef0123456789")
     }
 
     func testWritingSampledTraceContext_withCustomSamplingStrategy() {
@@ -67,13 +71,15 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: .random()
+                isKept: .random(),
+                rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
             )
         )
 
         let headers = writer.traceHeaderFields
         XCTAssertEqual(headers[W3CHTTPHeaders.traceparent], "00-00000000000004d200000000000004d2-0000000000000929-01")
         XCTAssertEqual(headers[W3CHTTPHeaders.tracestate], "dd=o:rum;p:0000000000000929;s:1")
+        XCTAssertEqual(headers[W3CHTTPHeaders.baggage], "session.id=abcdef01-2345-6789-abcd-ef0123456789")
     }
 
     func testWritingDroppedTraceContext_withCustomSamplingStrategy() {
@@ -90,12 +96,14 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: .random()
+                isKept: .random(),
+                rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
             )
         )
 
         let headers = writer.traceHeaderFields
         XCTAssertEqual(headers[W3CHTTPHeaders.traceparent], "00-00000000000004d200000000000004d2-0000000000000929-00")
         XCTAssertEqual(headers[W3CHTTPHeaders.tracestate], "dd=o:rum;p:0000000000000929;s:0")
+        XCTAssertEqual(headers[W3CHTTPHeaders.baggage], "session.id=abcdef01-2345-6789-abcd-ef0123456789")
     }
 }

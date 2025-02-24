@@ -16,9 +16,10 @@ public protocol DatadogURLSessionHandler {
     /// - Parameters:
     ///   - request: The request to be modified.
     ///   - headerTypes: The types of tracing headers to inject into the request.
+    ///   - networkContext: The context around the network request
     /// - Returns: A tuple containing the modified request and the injected TraceContext. If no trace is injected (e.g., due to sampling),
     ///            the returned request remains unmodified, and the trace context will be nil.
-    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>) -> (URLRequest, TraceContext?)
+    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?)
 
     /// Notifies the handler that the interception has started.
     ///
@@ -36,7 +37,8 @@ extension DatadogCoreProtocol {
     ///
     /// - Parameter urlSessionHandler: The `URLSession` handler to register.
     public func register(urlSessionHandler: DatadogURLSessionHandler) throws {
-        let feature = get(feature: NetworkInstrumentationFeature.self) ?? .init()
+        let contextProvider = NetworkContextCoreProvider()
+        let feature = get(feature: NetworkInstrumentationFeature.self) ?? .init(networkContextProvider: contextProvider, messageReceiver: contextProvider)
         feature.handlers.append(urlSessionHandler)
         try register(feature: feature)
     }

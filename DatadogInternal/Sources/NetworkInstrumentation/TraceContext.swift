@@ -21,6 +21,9 @@ public struct TraceContext: Equatable {
     /// Indicates whether this span was sampled or rejected by the sampler.
     public let isKept: Bool
 
+    /// The unique identifier for the current RUM Session, if any.
+    public let rumSessionId: String?
+
     /// Initializes a `TraceContext` instance with the provided parameters.
     ///
     /// - Parameters:
@@ -34,12 +37,14 @@ public struct TraceContext: Equatable {
         spanID: SpanID,
         parentSpanID: SpanID?,
         sampleRate: Float,
-        isKept: Bool
+        isKept: Bool,
+        rumSessionId: String?
     ) {
         self.traceID = traceID
         self.spanID = spanID
         self.parentSpanID = parentSpanID
         self.sampleRate = sampleRate
         self.isKept = isKept
+        self.rumSessionId = rumSessionId
     }
 }
