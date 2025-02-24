@@ -61,7 +61,8 @@ class DatadogTracer_InjectAndExtract: XCTestCase {
             spanID: spanContext.spanID,
             parentSpanID: spanContext.parentSpanID,
             sampleRate: spanContext.sampleRate,
-            isKept: spanContext.isKept
+            isKept: spanContext.isKept,
+            rumSessionId: nil
         )
         XCTAssertEqual(writer.injectedTraceContext, expectedTraceContext)
     }

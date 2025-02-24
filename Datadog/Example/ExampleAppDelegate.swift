@@ -75,6 +75,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             with: RUM.Configuration(
                 applicationID: Environment.readRUMApplicationID(),
                 urlSessionTracking: .init(
+                    firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: ["api.shopist.io": [.datadog]],sampleRate: 100),
                     resourceAttributesProvider: { req, resp, data, err in
                         print("⭐️ [Attributes Provider] data: \(String(describing: data))")
                         return [:]

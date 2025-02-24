@@ -26,7 +26,8 @@ extension TracePropagationHeadersWriter where Self: OTFormatWriter {
                 spanID: spanContext.spanID,
                 parentSpanID: spanContext.parentSpanID,
                 sampleRate: spanContext.sampleRate,
-                isKept: spanContext.isKept
+                isKept: spanContext.isKept,
+                rumSessionId: nil
             )
         )
     }
