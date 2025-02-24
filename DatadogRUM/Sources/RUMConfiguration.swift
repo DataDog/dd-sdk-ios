@@ -166,9 +166,11 @@ extension RUM {
         /// The `NextViewActionPredicate` determines which action in the previous view should be considered the "last interaction" for INV,
         /// based on properties such as action type, name, or timing relative to the next view’s start.
         ///
+        /// Setting this property to `nil` will disable measuring Interaction to Next View.
+        ///
         /// Default: The default predicate, `TimeBasedINVActionPredicate`, classifies actions as the last interaction if they occur within a
         /// 3-second threshold before the next view starts. You can customize this time threshold or provide your own predicate.
-        public var nextViewActionPredicate: NextViewActionPredicate
+        public var nextViewActionPredicate: NextViewActionPredicate?
 
         /// Custom mapper for RUM view events.
         ///
@@ -406,7 +408,7 @@ extension RUM.Configuration {
         trackWatchdogTerminations: Bool = false,
         vitalsUpdateFrequency: VitalsFrequency? = .average,
         networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
-        nextViewActionPredicate: NextViewActionPredicate = TimeBasedINVActionPredicate(),
+        nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
         viewEventMapper: RUM.ViewEventMapper? = nil,
         resourceEventMapper: RUM.ResourceEventMapper? = nil,
         actionEventMapper: RUM.ActionEventMapper? = nil,

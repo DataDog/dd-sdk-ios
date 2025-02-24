@@ -7,6 +7,18 @@
 import Foundation
 import DatadogInternal
 
+/// Internal attributes used specifically in RUM, passed from cross-platform bridge.
+/// Used to configure or override SDK internal features and attributes for the need of cross-platform SDKs (e.g. React Native SDK).
+public struct RUMInternalAttributes {
+    /// Custom Flutter vital - First Build Complete. The amount of time between a route change (the start of a view) and when the first
+    /// `build` method is complete. In nanoseconds since view start
+    public static let flutterFirstBuildComplete: String = "_dd.performance.first_build_complete"
+
+    /// Custom value for Interaction To Next view.
+    /// For Flutter this is the amount of time between an action occurring and the First Build Complete ocurring on the next view.
+    public static let customINVValue: String = "_dd.view.custom_inv_value"
+}
+
 /// Extends `RUMMonitorProtocol` with additional methods designed for Datadog cross-platform SDKs.
 public extension RUMMonitorProtocol {
     /// Grants access to an internal interface utilized only by Datadog cross-platform SDKs.
@@ -91,6 +103,25 @@ public struct DatadogInternalInterface {
             attributes: attributes
         )
         monitor.process(command: performanceMetric)
+    }
+
+    /// Add an internal view attribute. Internal view attributes are used by cross platform frameworks to determine the values
+    /// of certain internal metrics, including Flutter's First Build Complete metric. They are not propagated to other events
+    /// - Parameters:
+    ///   - time: the time of this command
+    ///   - key: the key for this attribute
+    ///   - value: the value of the attribute
+    public func setInternalViewAttribute(
+        at time: Date,
+        key: AttributeKey,
+        value: AttributeValue
+    ) {
+        let attributeCommand = RUMSetInternalViewAttributeCommand(
+            time: time,
+            key: key,
+            value: value
+        )
+        monitor.process(command: attributeCommand)
     }
 
     /// Adds temporal metrics to given RUM resource.

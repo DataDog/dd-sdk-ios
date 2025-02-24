@@ -36,6 +36,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     let identity: ViewIdentifier
     /// View attributes.
     private(set) var attributes: [AttributeKey: AttributeValue] = [:]
+    /// Internal view attributes - used by cross platform frameworks and should not be propoagated to events
+    private(set) var internalAttributes: [AttributeKey: AttributeValue] = [:]
     /// View custom timings, keyed by name. The value of timing is given in nanoseconds.
     private(set) var customTimings: [String: Int64] = [:]
 
@@ -214,6 +216,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             // deactivated. This is achieved by setting `isActiveView` to `false` and sending one more view update.
             isActiveView = false
             needsViewUpdate = true
+        case let command as RUMSetInternalViewAttributeCommand where isActiveView:
+            internalAttributes[command.key] = command.value
+            // Purposefully don't perform a view update. Most (all?) internal view attributes
+            // aren't important enough to expect them to be uploaded automatically. They can
+            // get send with the next view update.
+
         case let command as RUMStopViewCommand where identity == command.identity:
             isActiveView = false
             needsViewUpdate = true
@@ -523,7 +531,26 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let refreshRateInfo = vitalInfoSampler?.refreshRate
         let isSlowRendered = refreshRateInfo?.meanValue.map { $0 < Constants.slowRenderingThresholdFPS }
         let networkSettledTime = networkSettledMetric.value(with: context.applicationStateHistory)
-        let interactionToNextViewTime = interactionToNextViewMetric.value(for: viewUUID)
+        var interactionToNextViewTime = interactionToNextViewMetric.value(for: viewUUID)
+        // Only look for an internal override attribute if native INV calculations are disabled
+        if interactionToNextViewTime == .failure(.disabled),
+           let customInvValue = internalAttributes[RUMInternalAttributes.customINVValue] as? Int64 {
+            interactionToNextViewTime = .success(TimeInterval(fromNanoseconds: customInvValue))
+        }
+
+        // Only add the performance member if we have a value for it
+        let performance: RUMViewEvent.View.Performance?
+        if let fbcMetric = internalAttributes[RUMInternalAttributes.flutterFirstBuildComplete] as? Int64 {
+            performance = .init(
+                cls: nil,
+                fbc: .init(timestamp: fbcMetric),
+                fcp: nil,
+                fid: nil,
+                inp: nil
+            )
+        } else {
+            performance = nil
+        }
 
         let viewEvent = RUMViewEvent(
             dd: .init(
@@ -613,6 +640,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 memoryMax: memoryInfo?.maxValue,
                 name: viewName,
                 networkSettledTime: networkSettledTime.value?.toInt64Nanoseconds,
+                performance: performance,
                 referrer: nil,
                 refreshRateAverage: refreshRateInfo?.meanValue,
                 refreshRateMin: refreshRateInfo?.minValue,

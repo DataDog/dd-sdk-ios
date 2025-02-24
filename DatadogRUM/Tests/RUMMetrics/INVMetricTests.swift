@@ -430,4 +430,22 @@ class INVMetricTests: XCTestCase {
         let expectedINV = currentViewStart.timeIntervalSince(actionDate)
         XCTAssertEqual(actualINV, expectedINV, accuracy: 0.01)
     }
+
+    // MARK: - Disabled
+
+    func testWhenNoPredicate_thenMetricValueIsDisabled() throws {
+        // Duplicate one of the simpler tests and ensure that the value comes back as disabled
+        // Given
+        let (t0, t1, t2) = (currentViewStart - 10, currentViewStart - 5, currentViewStart)
+        let metric = INVMetric(predicate: nil)
+
+        // When
+        metric.trackViewStart(at: .distantPast, name: .mockAny(), viewID: previousViewID)
+        metric.trackAction(startTime: t0, endTime: t1, name: .mockAny(), type: .tap, in: previousViewID)
+        metric.trackViewStart(at: t2, name: .mockAny(), viewID: currentViewID)
+
+        // Then
+        let ins = metric.value(for: currentViewID)
+        XCTAssertEqual(ins, .failure(.disabled))
+    }
 }
