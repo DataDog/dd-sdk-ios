@@ -63,14 +63,16 @@ extension TraceContext: AnyMockable, RandomMockable {
         spanID: SpanID = .mockAny(),
         parentSpanID: SpanID? = nil,
         sampleRate: Float = .mockAny(),
-        isKept: Bool = .mockAny()
+        isKept: Bool = .mockAny(),
+        rumSessionId: String? = .mockAny()
     ) -> TraceContext {
         return TraceContext(
             traceID: traceID,
             spanID: spanID,
             parentSpanID: parentSpanID,
             sampleRate: sampleRate,
-            isKept: isKept
+            isKept: isKept,
+            rumSessionId: rumSessionId
         )
     }
 }

@@ -156,7 +156,8 @@ extension DistributedTracing {
             spanID: spanID,
             parentSpanID: nil,
             sampleRate: sampler.samplingRate,
-            isKept: sampler.sample()
+            isKept: sampler.sample(),
+            rumSessionId: nil
         )
 
         var request = request
