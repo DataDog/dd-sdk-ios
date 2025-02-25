@@ -49,6 +49,15 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
             `struct`.conformance = [rumDataModelProtocol] // Conform root structs to `RUMDataModel`
         }
 
+        // Vital has a member `description` that needs to be renamed for Obj-C
+        `struct`.properties = `struct`.properties.map {
+            var prop = $0
+            if prop.name == "description" {
+                prop.name = "\(`struct`.name.lowerCamelCased)Description"
+            }
+            return prop
+        }
+
         return `struct`
     }
 

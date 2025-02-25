@@ -3595,7 +3595,7 @@ public struct RUMVitalEvent: RUMDataModel {
         public let custom: [String: Double]?
 
         /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
-        public let description: String?
+        public let vitalDescription: String?
 
         /// Duration of the vital in nanoseconds
         public let duration: Double?
@@ -3611,7 +3611,7 @@ public struct RUMVitalEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case custom = "custom"
-            case description = "description"
+            case vitalDescription = "description"
             case duration = "duration"
             case id = "id"
             case name = "name"
@@ -5591,4 +5591,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f4f07ec83fc8eea25e6e2781d053d65d14eb89c1
+// Generated from https://github.com/DataDog/rum-events-format/tree/69147431d689b3e59bff87e15bb0088a9bb319a9

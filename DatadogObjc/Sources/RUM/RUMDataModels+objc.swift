@@ -7119,7 +7119,7 @@ public class DDRUMVitalEventVital: NSObject {
     }
 
     @objc public var vitalDescription: String? {
-        root.swiftModel.vital.description
+        root.swiftModel.vital.vitalDescription
     }
 
     @objc public var duration: NSNumber? {
@@ -8467,4 +8467,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f4f07ec83fc8eea25e6e2781d053d65d14eb89c1
+// Generated from https://github.com/DataDog/rum-events-format/tree/69147431d689b3e59bff87e15bb0088a9bb319a9
