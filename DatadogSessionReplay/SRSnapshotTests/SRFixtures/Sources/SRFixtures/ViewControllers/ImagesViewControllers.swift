@@ -10,6 +10,8 @@ internal class ImagesViewController: UIViewController {
     @IBOutlet weak var customButton: UIButton!
     @IBOutlet weak var customImageView: UIImageView!
     @IBOutlet weak var contentImageView: UIImageView!
+    @IBOutlet weak var contentHeightAspectFillImageView: UIImageView!
+    @IBOutlet weak var contentWidthAspectFillImageView: UIImageView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,6 +26,12 @@ internal class ImagesViewController: UIViewController {
         customImageView.image = image?.withRenderingMode(.alwaysTemplate)
 
         contentImageView.image = UIImage(color: color)
+
+        let scaleWidthAspectFillImage = UIImage(named: "tree_aspect_fill_width_smaller", in: .module, with: nil)
+        contentWidthAspectFillImageView.image = scaleWidthAspectFillImage
+
+        let scaleHeightAspectFillImage = UIImage(named: "moon_aspect_fill_height_bigger", in: .module, with: nil)
+        contentHeightAspectFillImageView.image = scaleHeightAspectFillImage
     }
 }
 

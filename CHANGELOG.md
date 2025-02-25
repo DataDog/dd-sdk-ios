@@ -1,5 +1,6 @@
 # Unreleased
 - [FEATURE] Adds anonymous identifier configuration for RUM Sessions linking. See [#2172][]
+- [FIX] Session Replay: Fix captured displayed image frame computation when `UIImageView.contentMode` is `scaleAspectFill`. See [#2200][]
 
 # 2.23.0 / 05-02-2025
 
