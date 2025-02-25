@@ -15,6 +15,9 @@ public struct RUMActionEvent: RUMDataModel {
     /// Internal properties
     public var dd: DD
 
+    /// Account properties
+    public var account: Account?
+
     /// Action properties
     public var action: Action
 
@@ -77,6 +80,7 @@ public struct RUMActionEvent: RUMDataModel {
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
+        case account = "account"
         case action = "action"
         case application = "application"
         case buildId = "build_id"
@@ -216,6 +220,22 @@ public struct RUMActionEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
+        }
+    }
+
+    /// Account properties
+    public struct Account: Codable {
+        /// Identifier of the account
+        public let id: String
+
+        /// Name of the account
+        public let name: String?
+
+        public var accountInfo: [String: Encodable]
+
+        enum StaticCodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
         }
     }
 
@@ -467,10 +487,48 @@ public struct RUMActionEvent: RUMDataModel {
     }
 }
 
+extension RUMActionEvent.Account {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(id, forKey: .id)
+        try staticContainer.encodeIfPresent(name, forKey: .name)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try accountInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.id = try staticContainer.decode(String.self, forKey: .id)
+        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
+
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        }
+
+        self.accountInfo = dictionary
+    }
+}
+
 /// Schema of all properties of an Error event
 public struct RUMErrorEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
+
+    /// Account properties
+    public var account: Account?
 
     /// Action properties
     public let action: Action?
@@ -543,6 +601,7 @@ public struct RUMErrorEvent: RUMDataModel {
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
+        case account = "account"
         case action = "action"
         case application = "application"
         case buildId = "build_id"
@@ -621,6 +680,22 @@ public struct RUMErrorEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
+        }
+    }
+
+    /// Account properties
+    public struct Account: Codable {
+        /// Identifier of the account
+        public let id: String
+
+        /// Name of the account
+        public let name: String?
+
+        public var accountInfo: [String: Encodable]
+
+        enum StaticCodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
         }
     }
 
@@ -1092,6 +1167,41 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 }
 
+extension RUMErrorEvent.Account {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(id, forKey: .id)
+        try staticContainer.encodeIfPresent(name, forKey: .name)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try accountInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.id = try staticContainer.decode(String.self, forKey: .id)
+        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
+
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        }
+
+        self.accountInfo = dictionary
+    }
+}
+
 extension RUMErrorEvent.FeatureFlags {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
@@ -1120,6 +1230,9 @@ extension RUMErrorEvent.FeatureFlags {
 public struct RUMLongTaskEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
+
+    /// Account properties
+    public var account: Account?
 
     /// Action properties
     public let action: Action?
@@ -1186,6 +1299,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
+        case account = "account"
         case action = "action"
         case application = "application"
         case buildId = "build_id"
@@ -1266,6 +1380,22 @@ public struct RUMLongTaskEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
+        }
+    }
+
+    /// Account properties
+    public struct Account: Codable {
+        /// Identifier of the account
+        public let id: String
+
+        /// Name of the account
+        public let name: String?
+
+        public var accountInfo: [String: Encodable]
+
+        enum StaticCodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
         }
     }
 
@@ -1513,10 +1643,48 @@ public struct RUMLongTaskEvent: RUMDataModel {
     }
 }
 
+extension RUMLongTaskEvent.Account {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(id, forKey: .id)
+        try staticContainer.encodeIfPresent(name, forKey: .name)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try accountInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.id = try staticContainer.decode(String.self, forKey: .id)
+        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
+
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        }
+
+        self.accountInfo = dictionary
+    }
+}
+
 /// Schema of all properties of a Resource event
 public struct RUMResourceEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
+
+    /// Account properties
+    public var account: Account?
 
     /// Action properties
     public let action: Action?
@@ -1583,6 +1751,7 @@ public struct RUMResourceEvent: RUMDataModel {
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
+        case account = "account"
         case action = "action"
         case application = "application"
         case buildId = "build_id"
@@ -1675,6 +1844,22 @@ public struct RUMResourceEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
+        }
+    }
+
+    /// Account properties
+    public struct Account: Codable {
+        /// Identifier of the account
+        public let id: String
+
+        /// Name of the account
+        public let name: String?
+
+        public var accountInfo: [String: Encodable]
+
+        enum StaticCodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
         }
     }
 
@@ -2096,10 +2281,48 @@ public struct RUMResourceEvent: RUMDataModel {
     }
 }
 
+extension RUMResourceEvent.Account {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(id, forKey: .id)
+        try staticContainer.encodeIfPresent(name, forKey: .name)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try accountInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.id = try staticContainer.decode(String.self, forKey: .id)
+        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
+
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        }
+
+        self.accountInfo = dictionary
+    }
+}
+
 /// Schema of all properties of a View event
 public struct RUMViewEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
+
+    /// Account properties
+    public var account: Account?
 
     /// Application properties
     public let application: Application
@@ -2166,6 +2389,7 @@ public struct RUMViewEvent: RUMDataModel {
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
+        case account = "account"
         case application = "application"
         case buildId = "build_id"
         case buildVersion = "build_version"
@@ -2299,6 +2523,22 @@ public struct RUMViewEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
+        }
+    }
+
+    /// Account properties
+    public struct Account: Codable {
+        /// Identifier of the account
+        public let id: String
+
+        /// Name of the account
+        public let name: String?
+
+        public var accountInfo: [String: Encodable]
+
+        enum StaticCodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
         }
     }
 
@@ -2472,13 +2712,13 @@ public struct RUMViewEvent: RUMDataModel {
         /// Properties of the crashes of the view
         public let crash: Crash?
 
-        /// Total layout shift score that occurred on the view
+        /// Total layout shift score that occurred on the view (deprecated in favor of `view.performance.cls.score`)
         public let cumulativeLayoutShift: Double?
 
-        /// CSS selector path of the first element (in document order) of the largest layout shift contributing to CLS
+        /// CSS selector path of the first element (in document order) of the largest layout shift contributing to CLS (deprecated in favor of `view.performance.cls.target_selector`)
         public let cumulativeLayoutShiftTargetSelector: String?
 
-        /// Duration in ns between start of the view and start of the largest layout shift contributing to CLS
+        /// Duration in ns between start of the view and start of the largest layout shift contributing to CLS (deprecated in favor of `view.performance.cls.timestamp`)
         public let cumulativeLayoutShiftTime: Int64?
 
         /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
@@ -2499,16 +2739,16 @@ public struct RUMViewEvent: RUMDataModel {
         /// Duration in ns to the response start of the document request
         public let firstByte: Int64?
 
-        /// Duration in ns to the first rendering
+        /// Duration in ns to the first rendering (deprecated in favor of `view.performance.fcp.timestamp`)
         public let firstContentfulPaint: Int64?
 
-        /// Duration in ns of the first input event delay
+        /// Duration in ns of the first input event delay (deprecated in favor of `view.performance.fid.duration`)
         public let firstInputDelay: Int64?
 
-        /// CSS selector path of the first input target element
+        /// CSS selector path of the first input target element (deprecated in favor of `view.performance.fid.target_selector`)
         public let firstInputTargetSelector: String?
 
-        /// Duration in ns to the first input
+        /// Duration in ns to the first input (deprecated in favor of `view.performance.fid.timestamp`)
         public let firstInputTime: Int64?
 
         /// Time taken for Flutter 'build' methods.
@@ -2529,13 +2769,13 @@ public struct RUMViewEvent: RUMDataModel {
         /// List of the periods of time the user had the view in foreground (focused in the browser)
         public let inForegroundPeriods: [InForegroundPeriods]?
 
-        /// Longest duration in ns between an interaction and the next paint
+        /// Longest duration in ns between an interaction and the next paint (deprecated in favor of `view.performance.inp.duration`)
         public let interactionToNextPaint: Int64?
 
-        /// CSS selector path of the interacted element corresponding to INP
+        /// CSS selector path of the interacted element corresponding to INP (deprecated in favor of `view.performance.inp.target_selector`)
         public let interactionToNextPaintTargetSelector: String?
 
-        /// Duration in ns between start of the view and start of the INP
+        /// Duration in ns between start of the view and start of the INP (deprecated in favor of `view.performance.inp.timestamp`)
         public let interactionToNextPaintTime: Int64?
 
         /// Duration in ns to from the last interaction on previous view to the moment the current view was displayed
@@ -2550,10 +2790,10 @@ public struct RUMViewEvent: RUMDataModel {
         /// The JavaScript refresh rate for React Native
         public let jsRefreshRate: JsRefreshRate?
 
-        /// Duration in ns to the largest contentful paint
+        /// Duration in ns to the largest contentful paint (deprecated in favor of `view.performance.lcp.timestamp`)
         public let largestContentfulPaint: Int64?
 
-        /// CSS selector path of the largest contentful paint element
+        /// CSS selector path of the largest contentful paint element (deprecated in favor of `view.performance.lcp.target_selector`)
         public let largestContentfulPaintTargetSelector: String?
 
         /// Duration in ns to the end of the load event handler execution
@@ -2579,6 +2819,9 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// Duration in ns from the moment the view was started until all the initial network requests settled
         public let networkSettledTime: Int64?
+
+        /// Performance data. (Web Vitals, etc.)
+        public var performance: Performance?
 
         /// URL that linked to the initial view of the page
         public var referrer: String?
@@ -2639,6 +2882,7 @@ public struct RUMViewEvent: RUMDataModel {
             case memoryMax = "memory_max"
             case name = "name"
             case networkSettledTime = "network_settled_time"
+            case performance = "performance"
             case referrer = "referrer"
             case refreshRateAverage = "refresh_rate_average"
             case refreshRateMin = "refresh_rate_min"
@@ -2799,6 +3043,180 @@ public struct RUMViewEvent: RUMDataModel {
             }
         }
 
+        /// Performance data. (Web Vitals, etc.)
+        public struct Performance: Codable {
+            /// Cumulative Layout Shift
+            public let cls: CLS?
+
+            /// First Build Complete (Flutter)
+            public let fbc: FBC?
+
+            /// First Contentful Paint
+            public let fcp: FCP?
+
+            /// First Input Delay
+            public let fid: FID?
+
+            /// Interaction to Next Paint
+            public let inp: INP?
+
+            /// Largest Contentful Paint
+            public var lcp: LCP?
+
+            enum CodingKeys: String, CodingKey {
+                case cls = "cls"
+                case fbc = "fbc"
+                case fcp = "fcp"
+                case fid = "fid"
+                case inp = "inp"
+                case lcp = "lcp"
+            }
+
+            /// Cumulative Layout Shift
+            public struct CLS: Codable {
+                /// Bounding client rect of the element after the layout shift
+                public let currentRect: CurrentRect?
+
+                /// Bounding client rect of the element before the layout shift
+                public let previousRect: PreviousRect?
+
+                /// Total layout shift score that occurred on the view
+                public let score: Double
+
+                /// CSS selector path of the first element (in document order) of the largest layout shift contributing to CLS
+                public let targetSelector: String?
+
+                /// The time of the largest layout shift contributing to CLS, in ns since view start.
+                public let timestamp: Int64?
+
+                enum CodingKeys: String, CodingKey {
+                    case currentRect = "current_rect"
+                    case previousRect = "previous_rect"
+                    case score = "score"
+                    case targetSelector = "target_selector"
+                    case timestamp = "timestamp"
+                }
+
+                /// Bounding client rect of the element after the layout shift
+                public struct CurrentRect: Codable {
+                    /// The element's height
+                    public let height: Double
+
+                    /// The element's width
+                    public let width: Double
+
+                    /// The x coordinate of the element's origin
+                    public let x: Double
+
+                    /// The y coordinate of the element's origin
+                    public let y: Double
+
+                    enum CodingKeys: String, CodingKey {
+                        case height = "height"
+                        case width = "width"
+                        case x = "x"
+                        case y = "y"
+                    }
+                }
+
+                /// Bounding client rect of the element before the layout shift
+                public struct PreviousRect: Codable {
+                    /// The element's height
+                    public let height: Double
+
+                    /// The element's width
+                    public let width: Double
+
+                    /// The x coordinate of the element's origin
+                    public let x: Double
+
+                    /// The y coordinate of the element's origin
+                    public let y: Double
+
+                    enum CodingKeys: String, CodingKey {
+                        case height = "height"
+                        case width = "width"
+                        case x = "x"
+                        case y = "y"
+                    }
+                }
+            }
+
+            /// First Build Complete (Flutter)
+            public struct FBC: Codable {
+                /// Time of all completed `build` methods after a route change, in ns since view start.
+                public let timestamp: Int64
+
+                enum CodingKeys: String, CodingKey {
+                    case timestamp = "timestamp"
+                }
+            }
+
+            /// First Contentful Paint
+            public struct FCP: Codable {
+                /// The time of the first rendering, in ns since view start.
+                public let timestamp: Int64
+
+                enum CodingKeys: String, CodingKey {
+                    case timestamp = "timestamp"
+                }
+            }
+
+            /// First Input Delay
+            public struct FID: Codable {
+                /// Duration in ns of the first input event delay
+                public let duration: Int64
+
+                /// CSS selector path of the first input target element
+                public let targetSelector: String?
+
+                /// Time of the first input event, in ns since view start.
+                public let timestamp: Int64
+
+                enum CodingKeys: String, CodingKey {
+                    case duration = "duration"
+                    case targetSelector = "target_selector"
+                    case timestamp = "timestamp"
+                }
+            }
+
+            /// Interaction to Next Paint
+            public struct INP: Codable {
+                /// Longest duration in ns between an interaction and the next paint
+                public let duration: Int64
+
+                /// CSS selector path of the interacted element for the INP interaction
+                public let targetSelector: String?
+
+                /// Time of the start of the INP interaction, in ns since view start.
+                public let timestamp: Int64?
+
+                enum CodingKeys: String, CodingKey {
+                    case duration = "duration"
+                    case targetSelector = "target_selector"
+                    case timestamp = "timestamp"
+                }
+            }
+
+            /// Largest Contentful Paint
+            public struct LCP: Codable {
+                /// URL of the largest contentful paint element
+                public var resourceUrl: String?
+
+                /// CSS selector path of the largest contentful paint element
+                public let targetSelector: String?
+
+                /// Time of the largest contentful paint, in ns since view start.
+                public let timestamp: Int64
+
+                enum CodingKeys: String, CodingKey {
+                    case resourceUrl = "resource_url"
+                    case targetSelector = "target_selector"
+                    case timestamp = "timestamp"
+                }
+            }
+        }
+
         /// Properties of the resources of the view
         public struct Resource: Codable {
             /// Number of resources that occurred on the view
@@ -2808,6 +3226,41 @@ public struct RUMViewEvent: RUMDataModel {
                 case count = "count"
             }
         }
+    }
+}
+
+extension RUMViewEvent.Account {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(id, forKey: .id)
+        try staticContainer.encodeIfPresent(name, forKey: .name)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try accountInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.id = try staticContainer.decode(String.self, forKey: .id)
+        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
+
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        }
+
+        self.accountInfo = dictionary
     }
 }
 
@@ -2839,6 +3292,9 @@ extension RUMViewEvent.FeatureFlags {
 public struct RUMVitalEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
+
+    /// Account properties
+    public var account: Account?
 
     /// Application properties
     public let application: Application
@@ -2902,6 +3358,7 @@ public struct RUMVitalEvent: RUMDataModel {
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
+        case account = "account"
         case application = "application"
         case buildId = "build_id"
         case buildVersion = "build_version"
@@ -2991,6 +3448,22 @@ public struct RUMVitalEvent: RUMDataModel {
             enum CodingKeys: String, CodingKey {
                 case computedValue = "computed_value"
             }
+        }
+    }
+
+    /// Account properties
+    public struct Account: Codable {
+        /// Identifier of the account
+        public let id: String
+
+        /// Name of the account
+        public let name: String?
+
+        public var accountInfo: [String: Encodable]
+
+        enum StaticCodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
         }
     }
 
@@ -3121,8 +3594,8 @@ public struct RUMVitalEvent: RUMDataModel {
         /// User custom vital.
         public let custom: [String: Double]?
 
-        /// Details of the vital. It can be used as a secondary identifier (URL, React component name...)
-        public let details: String?
+        /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
+        public let vitalDescription: String?
 
         /// Duration of the vital in nanoseconds
         public let duration: Double?
@@ -3138,7 +3611,7 @@ public struct RUMVitalEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case custom = "custom"
-            case details = "details"
+            case vitalDescription = "description"
             case duration = "duration"
             case id = "id"
             case name = "name"
@@ -3149,6 +3622,41 @@ public struct RUMVitalEvent: RUMDataModel {
         public enum VitalType: String, Codable {
             case duration = "duration"
         }
+    }
+}
+
+extension RUMVitalEvent.Account {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(id, forKey: .id)
+        try staticContainer.encodeIfPresent(name, forKey: .name)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try accountInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.id = try staticContainer.decode(String.self, forKey: .id)
+        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
+
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        }
+
+        self.accountInfo = dictionary
     }
 }
 
@@ -3680,7 +4188,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Attribute to be used to name actions
             public let actionNameAttribute: String?
 
-            /// Whether it is allowed to use LocalStorage when cookies are not available
+            /// Whether it is allowed to use LocalStorage when cookies are not available (deprecated in favor of session_persistence)
             public let allowFallbackToLocalStorage: Bool?
 
             /// Whether untrusted events are allowed
@@ -3700,9 +4208,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// The upload frequency of batches (in milliseconds)
             public let batchUploadFrequency: Int64?
-
-            /// The list of events that include feature flags collection
-            public let collectFeatureFlagsOn: [CollectFeatureFlagsOn]?
 
             /// Whether intake requests are compressed
             public let compressIntakeRequests: Bool?
@@ -3731,6 +4236,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The type of initialization the SDK used, in case multiple are supported
             public var initializationType: String?
 
+            /// Interval in milliseconds when the last action is considered as the action that created the next view. Only sent if a time based strategy has been used
+            public let invTimeThresholdMs: Int64?
+
             /// Whether the SDK is initialised on the application's main or a secondary process
             public let isMainProcess: Bool?
 
@@ -3757,6 +4265,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether logs are sent after the session expiration
             public var sendLogsAfterSessionExpiration: Bool?
+
+            /// Configure the storage strategy for persisting sessions
+            public let sessionPersistence: SessionPersistence?
 
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public var sessionReplaySampleRate: Int64?
@@ -3788,6 +4299,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Session replay text and input privacy level
             public var textAndInputPrivacyLevel: String?
 
+            /// The interval in milliseconds during which all network requests will be considered as initial, i.e. caused by the creation of this view. Only sent if a time based strategy has been used
+            public let tnsTimeThresholdMs: Int64?
+
             /// Session replay touch privacy level
             public var touchPrivacyLevel: String?
 
@@ -3803,6 +4317,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The version of the tracer API used by the SDK. Eg. '0.1.0'
             public var tracerApiVersion: String?
 
+            /// Whether the anonymous users are tracked
+            public var trackAnonymousUser: Bool?
+
             /// Whether RUM events are tracked when the application is in Background
             public var trackBackgroundEvents: Bool?
 
@@ -3811,6 +4328,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether error monitoring & crash reporting is enabled for the source platform
             public var trackErrors: Bool?
+
+            /// The list of events that include feature flags collection. The tracking is always enabled for views and errors.
+            public let trackFeatureFlagsForEvents: [TrackFeatureFlagsForEvents]?
 
             /// Whether Flutter build and raster time tracking is enabled
             public var trackFlutterPerformance: Bool?
@@ -3905,7 +4425,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case batchProcessingLevel = "batch_processing_level"
                 case batchSize = "batch_size"
                 case batchUploadFrequency = "batch_upload_frequency"
-                case collectFeatureFlagsOn = "collect_feature_flags_on"
                 case compressIntakeRequests = "compress_intake_requests"
                 case dartVersion = "dart_version"
                 case defaultPrivacyLevel = "default_privacy_level"
@@ -3915,6 +4434,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case forwardReports = "forward_reports"
                 case imagePrivacyLevel = "image_privacy_level"
                 case initializationType = "initialization_type"
+                case invTimeThresholdMs = "inv_time_threshold_ms"
                 case isMainProcess = "is_main_process"
                 case mobileVitalsUpdatePeriod = "mobile_vitals_update_period"
                 case plugins = "plugins"
@@ -3924,6 +4444,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case replaySampleRate = "replay_sample_rate"
                 case selectedTracingPropagators = "selected_tracing_propagators"
                 case sendLogsAfterSessionExpiration = "send_logs_after_session_expiration"
+                case sessionPersistence = "session_persistence"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case silentMultipleInit = "silent_multiple_init"
@@ -3934,14 +4455,17 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case telemetrySampleRate = "telemetry_sample_rate"
                 case telemetryUsageSampleRate = "telemetry_usage_sample_rate"
                 case textAndInputPrivacyLevel = "text_and_input_privacy_level"
+                case tnsTimeThresholdMs = "tns_time_threshold_ms"
                 case touchPrivacyLevel = "touch_privacy_level"
                 case traceContextInjection = "trace_context_injection"
                 case traceSampleRate = "trace_sample_rate"
                 case tracerApi = "tracer_api"
                 case tracerApiVersion = "tracer_api_version"
+                case trackAnonymousUser = "track_anonymous_user"
                 case trackBackgroundEvents = "track_background_events"
                 case trackCrossPlatformLongTasks = "track_cross_platform_long_tasks"
                 case trackErrors = "track_errors"
+                case trackFeatureFlagsForEvents = "track_feature_flags_for_events"
                 case trackFlutterPerformance = "track_flutter_performance"
                 case trackFrustrations = "track_frustrations"
                 case trackInteractions = "track_interactions"
@@ -3970,12 +4494,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case useTracing = "use_tracing"
                 case useWorkerUrl = "use_worker_url"
                 case viewTrackingStrategy = "view_tracking_strategy"
-            }
-
-            public enum CollectFeatureFlagsOn: String, Codable {
-                case view = "view"
-                case error = "error"
-                case vital = "vital"
             }
 
             /// The console.* tracked
@@ -4080,10 +4598,23 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case tracecontext = "tracecontext"
             }
 
+            /// Configure the storage strategy for persisting sessions
+            public enum SessionPersistence: String, Codable {
+                case localStorage = "local-storage"
+                case cookie = "cookie"
+            }
+
             /// The opt-in configuration to add trace context
             public enum TraceContextInjection: String, Codable {
                 case all = "all"
                 case sampled = "sampled"
+            }
+
+            public enum TrackFeatureFlagsForEvents: String, Codable {
+                case vital = "vital"
+                case resource = "resource"
+                case action = "action"
+                case longTask = "long_task"
             }
 
             /// The initial tracking consent value
@@ -4360,10 +4891,15 @@ public struct TelemetryUsageEvent: RUMDataModel {
                 case setTrackingConsent(value: SetTrackingConsent)
                 case stopSession(value: StopSession)
                 case startView(value: StartView)
+                case setViewContext(value: SetViewContext)
+                case setViewContextProperty(value: SetViewContextProperty)
+                case setViewName(value: SetViewName)
+                case getViewContext(value: GetViewContext)
                 case addAction(value: AddAction)
                 case addError(value: AddError)
                 case setGlobalContext(value: SetGlobalContext)
                 case setUser(value: SetUser)
+                case setAccount(value: SetAccount)
                 case addFeatureFlagEvaluation(value: AddFeatureFlagEvaluation)
 
                 // MARK: - Codable
@@ -4379,6 +4915,14 @@ public struct TelemetryUsageEvent: RUMDataModel {
                         try container.encode(value)
                     case .startView(let value):
                         try container.encode(value)
+                    case .setViewContext(let value):
+                        try container.encode(value)
+                    case .setViewContextProperty(let value):
+                        try container.encode(value)
+                    case .setViewName(let value):
+                        try container.encode(value)
+                    case .getViewContext(let value):
+                        try container.encode(value)
                     case .addAction(let value):
                         try container.encode(value)
                     case .addError(let value):
@@ -4386,6 +4930,8 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     case .setGlobalContext(let value):
                         try container.encode(value)
                     case .setUser(let value):
+                        try container.encode(value)
+                    case .setAccount(let value):
                         try container.encode(value)
                     case .addFeatureFlagEvaluation(let value):
                         try container.encode(value)
@@ -4408,6 +4954,22 @@ public struct TelemetryUsageEvent: RUMDataModel {
                         self = .startView(value: value)
                         return
                     }
+                    if let value = try? container.decode(SetViewContext.self) {
+                        self = .setViewContext(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(SetViewContextProperty.self) {
+                        self = .setViewContextProperty(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(SetViewName.self) {
+                        self = .setViewName(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(GetViewContext.self) {
+                        self = .getViewContext(value: value)
+                        return
+                    }
                     if let value = try? container.decode(AddAction.self) {
                         self = .addAction(value: value)
                         return
@@ -4422,6 +4984,10 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     }
                     if let value = try? container.decode(SetUser.self) {
                         self = .setUser(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(SetAccount.self) {
+                        self = .setAccount(value: value)
                         return
                     }
                     if let value = try? container.decode(AddFeatureFlagEvaluation.self) {
@@ -4476,6 +5042,42 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     }
                 }
 
+                public struct SetViewContext: Codable {
+                    /// setViewContext API
+                    public let feature: String = "set-view-context"
+
+                    enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+                }
+
+                public struct SetViewContextProperty: Codable {
+                    /// setViewContextProperty API
+                    public let feature: String = "set-view-context-property"
+
+                    enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+                }
+
+                public struct SetViewName: Codable {
+                    /// setViewName API
+                    public let feature: String = "set-view-name"
+
+                    enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+                }
+
+                public struct GetViewContext: Codable {
+                    /// getViewContext API
+                    public let feature: String = "get-view-context"
+
+                    enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+                }
+
                 public struct AddAction: Codable {
                     /// addAction API
                     public let feature: String = "add-action"
@@ -4506,6 +5108,15 @@ public struct TelemetryUsageEvent: RUMDataModel {
                 public struct SetUser: Codable {
                     /// setUser, setUserProperty, setUserInfo APIs
                     public let feature: String = "set-user"
+
+                    enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+                }
+
+                public struct SetAccount: Codable {
+                    /// setAccount, setAccountProperty APIs
+                    public let feature: String = "set-account"
 
                     enum CodingKeys: String, CodingKey {
                         case feature = "feature"
@@ -4687,7 +5298,7 @@ public struct RUMConnectivity: Codable {
 
     /// Cellular connection type reflecting the measured network performance
     public enum EffectiveType: String, Codable {
-        case slow2g = "slow_2g"
+        case slow2g = "slow-2g"
         case effectiveType2g = "2g"
         case effectiveType3g = "3g"
         case effectiveType4g = "4g"
@@ -4980,4 +5591,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/81c3d7401cba2a2faf48b5f4c0e8aca05c759662
+// Generated from https://github.com/DataDog/rum-events-format/tree/69147431d689b3e59bff87e15bb0088a9bb319a9
