@@ -523,16 +523,15 @@ class ViewLoadingMetricsTests: XCTestCase {
         rumTime.now += 2.seconds
         monitor.addAction(type: .tap, name: "Tap in Previous View")
 
-        // When (the next view is started within the INV threshold after the action)
-        let expectedINV: TimeInterval = .mockRandom(
-            min: 0, max: TimeBasedINVActionPredicate.defaultMaxTimeToNextView * 0.99
+        let nextTime: TimeInterval = .mockRandom(
+            min: 0, max: 2.5
         )
-        rumTime.now += expectedINV
+        rumTime.now += nextTime
         monitor.startView(key: "next", name: "NextView")
         monitor._internal?.setInternalViewAttribute(
             at: .mockAny(),
             key: RUMInternalAttributes.customINVValue,
-            value: Int64(180_000)
+            value: 180_000
         )
         // Force a view update
         monitor.stopView(key: "next")
