@@ -20,27 +20,36 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let run = SyntheticRun()
         let applicationInfo = try! AppInfo() // crash if info are missing or malformed
 
-        switch run {
-        case .baseline, .instrumented:
-            // measure metrics during baseline and metrics runs
-            Benchmarks.enableMetrics(
+        // Collect metrics during all run
+        let meter = Meter(
+            provider: Benchmarks.metricsProvider(
                 with: Benchmarks.Configuration(
                     info: applicationInfo,
                     scenario: scenario,
                     run: run
                 )
             )
+        )
+
+        switch run {
+        case .baseline, .instrumented:
+            meter.observeCPU()
+            meter.observeMemory()
+            meter.observeFPS()
+
         case .profiling:
             // Collect traces during profiling run
-            Benchmarks.enableTracer(
-                with: Benchmarks.Configuration(
-                    info: applicationInfo,
-                    scenario: scenario,
-                    run: run
+            let profiler = Profiler(
+                provider: Benchmarks.tracerProvider(
+                    with: Benchmarks.Configuration(
+                        info: applicationInfo,
+                        scenario: scenario,
+                        run: run
+                    )
                 )
             )
 
-            DatadogInternal.profiler = Profiler()
+            DatadogInternal.bench = (profiler, meter)
         case .none:
             break
         }

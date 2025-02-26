@@ -72,6 +72,8 @@ internal struct FileWriter: Writer {
 
         do {
             try file.append(data: encoded)
+            bench.meter.counter(metric: "ios.benchmark.bytes_written")
+                .add(value: encoded.count, attributes: ["track": orchestrator.trackName])
         } catch {
             DD.logger.error("(\(orchestrator.trackName)) Failed to write \(writeSize) bytes to file", error: error)
             telemetry.error("(\(orchestrator.trackName)) Failed to write \(writeSize) bytes to file", error: error)

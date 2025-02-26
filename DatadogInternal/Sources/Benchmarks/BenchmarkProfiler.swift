@@ -7,12 +7,12 @@
 import Foundation
 
 #if DD_BENCHMARK
-/// The profiler endpoint to collect data for benchmarking.
-public var profiler: BenchmarkProfiler = NOPBenchmarkProfiler()
+/// The benchmark endpoint to collect data for benchmarking.
+public var bench: (profiler: BenchmarkProfiler, meter: BenchmarkMeter) = (NOPBench(), NOPBench())
 #else
-/// The profiler endpoint to collect data for benchmarking. This static variable can only
+/// The benchmark endpoint to collect data for benchmarking. This static variable can only
 /// be mutated in the benchmark environment.
-public let profiler: BenchmarkProfiler = NOPBenchmarkProfiler()
+public let bench: (profiler: BenchmarkProfiler, meter: BenchmarkMeter) = (NOPBench(), NOPBench())
 #endif
 
 /// The Benchmark Profiler provides interfaces to collect data in a benchmark
@@ -31,6 +31,23 @@ public protocol BenchmarkProfiler {
     /// to not intialise the value if the profiler is no-op.
     /// - Returns: The tracer instance.
     func tracer(operation: @autoclosure () -> String) -> BenchmarkTracer
+}
+
+/// The Benchmark Meter provides interfaces to collect data in a benchmark
+/// environment.
+///
+/// During benchmarking, a concrete implementation of the meter will be
+/// injected to collect data during execution of the SDK.
+///
+/// In production, the profiler is no-op and immutable.
+public protocol BenchmarkMeter {
+    /// Returns a `BenchmarkCounter` instance for a given metric name.
+    ///
+    /// The counter metric will sum up added values.
+    ///
+    /// - Parameter metric: The metric name.
+    /// - Returns: The counter instance.
+    func counter(metric: @autoclosure () -> String) -> BenchmarkIntegerCounter
 }
 
 /// The Benchmark Tracer will create and start spans in a benchmark environment.
@@ -53,9 +70,27 @@ public protocol BenchmarkSpan {
     func stop()
 }
 
-private final class NOPBenchmarkProfiler: BenchmarkProfiler, BenchmarkTracer, BenchmarkSpan {
+/// The Benchmark Counter is a counter metric aggregator.
+///
+/// This meter can be used to count measures of the SDK.
+/// In production, the Benchmark Counter is no-op.
+public protocol BenchmarkIntegerCounter {
+    func add(value: Int, attributes: @autoclosure () -> [String: String])
+}
+
+extension BenchmarkIntegerCounter {
+    func add(value: Int) {
+        add(value: value, attributes: [:])
+    }
+}
+
+private final class NOPBench: BenchmarkProfiler, BenchmarkTracer, BenchmarkSpan, BenchmarkMeter, BenchmarkIntegerCounter {
     /// no-op
     func tracer(operation: @autoclosure () -> String) -> BenchmarkTracer { self }
+    /// no-op
+    func counter(metric: @autoclosure () -> String) -> BenchmarkIntegerCounter { self }
+    /// no-op
+    func add(value: Int, attributes: @autoclosure () -> [String: String]) { }
     /// no-op
     func startSpan(named: @autoclosure () -> String) -> BenchmarkSpan { self }
     /// no-op
