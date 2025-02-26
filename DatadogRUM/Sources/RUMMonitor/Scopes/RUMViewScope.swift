@@ -535,14 +535,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // Only look for an internal override attribute if native INV calculations are disabled
         if interactionToNextViewTime == .failure(.disabled),
            let customInvValue = internalAttributes[RUMInternalAttributes.customINVValue] as? (any BinaryInteger) {
-            let customInvValue = Int64(customInvValue)
+            let customInvValue = Int64(withNoOverflow: customInvValue)
             interactionToNextViewTime = .success(TimeInterval(fromNanoseconds: customInvValue))
         }
 
         // Only add the performance member if we have a value for it
         let performance: RUMViewEvent.View.Performance?
         if let fbcMetric = internalAttributes[RUMInternalAttributes.flutterFirstBuildComplete] as? (any BinaryInteger) {
-            let fbcMetric = Int64(fbcMetric)
+            let fbcMetric = Int64(withNoOverflow: fbcMetric)
             performance = .init(
                 cls: nil,
                 fbc: .init(timestamp: fbcMetric),
