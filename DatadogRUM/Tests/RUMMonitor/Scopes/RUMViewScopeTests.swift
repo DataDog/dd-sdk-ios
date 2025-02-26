@@ -2833,7 +2833,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - Has replay
 
-    func testGivenActiveViewWithoutReplay_viewUpdateWithReplay_itModifiedHasReplayFlag() throws {
+    func testViewUpdate_changesHasReplayFlag_onlyWhenReplayIsPresent() throws {
         // Given
         context.baggages = try .mockSessionReplayAttributes(hasReplay: false)
 
@@ -2872,56 +2872,21 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
+        context.baggages = try .mockSessionReplayAttributes(hasReplay: false)
+        currentTime.addTimeInterval(0.5)
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: "timing-after-500000000ns"),
+                context: context,
+                writer: writer
+            )
+        )
+
         // Then
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
-        XCTAssertEqual(events.count, 2, "There should be 2 View updates sent")
+        XCTAssertEqual(events.count, 3, "There should be 3 View updates sent")
         XCTAssertEqual(events[0].session.hasReplay, false)
         XCTAssertEqual(events[1].session.hasReplay, true)
-    }
-
-    func testGivenActiveViewWithReplay_viewUpdateWithoutReplay_doesntModifyHasReplayFlag() throws {
-        // Given
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: true)
-
-        var currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
-            parent: parent,
-            dependencies: .mockAny(),
-            identity: .mockViewIdentifier(),
-            path: .mockAny(),
-            name: .mockAny(),
-            customTimings: [:],
-            startTime: currentTime,
-            serverTimeOffset: .zero,
-            interactionToNextViewMetric: INVMetricMock()
-        )
-
-        XCTAssertTrue(
-            scope.process(
-                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
-                context: context,
-                writer: writer
-            )
-        )
-
-        XCTAssertTrue(scope.isActiveView)
-
-        // When
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: false)
-        currentTime.addTimeInterval(0.5)
-        XCTAssertTrue(
-            scope.process(
-                command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: "timing-after-500000000ns"),
-                context: context,
-                writer: writer
-            )
-        )
-
-        // Then
-        let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
-        XCTAssertEqual(events.count, 2, "There should be 2 View updates sent")
-        XCTAssertEqual(events[0].session.hasReplay, true)
-        XCTAssertEqual(events[1].session.hasReplay, true)
+        XCTAssertEqual(events[2].session.hasReplay, true)
     }
 }
