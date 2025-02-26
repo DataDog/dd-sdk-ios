@@ -36,7 +36,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     let identity: ViewIdentifier
     /// View attributes.
     private(set) var attributes: [AttributeKey: AttributeValue] = [:]
-    /// Internal view attributes - used by cross platform frameworks and should not be propoagated to events
+    /// Internal view attributes - used by cross platform frameworks and should not be propagated to events
     private(set) var internalAttributes: [AttributeKey: AttributeValue] = [:]
     /// View custom timings, keyed by name. The value of timing is given in nanoseconds.
     private(set) var customTimings: [String: Int64] = [:]
