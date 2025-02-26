@@ -2833,7 +2833,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - Has replay
 
-    func testViewUpdate_changesHasReplayFlag_onlyWhenReplayIsPresent() throws {
+    func testViewUpdate_onceHasReplayIsTrueItRemainsTrue() throws {
         // Given
         context.baggages = try .mockSessionReplayAttributes(hasReplay: false)
 
