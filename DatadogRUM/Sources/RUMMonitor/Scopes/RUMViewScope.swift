@@ -32,6 +32,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// If this is the very first view created in the current app process.
     private let isInitialView: Bool
 
+    /// If this view ever had session replay
+    private var hasReplay: Bool
+
     /// The value holding stable identity of this RUM View.
     let identity: ViewIdentifier
     /// View attributes.
@@ -125,6 +128,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.parent = parent
         self.dependencies = dependencies
         self.isInitialView = isInitialView
+        self.hasReplay = false
         self.identity = identity
         self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
@@ -495,6 +499,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         version += 1
 
+        if let hasContextReplay = context.hasReplay {
+            hasReplay = hasReplay || hasContextReplay
+        }
+
         // RUMM-3133 Don't override View attributes with commands that are not view related.
         if command is RUMViewScopePropagatableAttributes {
             attributes.merge(rumCommandAttributes: command.globalAttributes)
@@ -560,7 +568,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             privacy: nil,
             service: context.service,
             session: .init(
-                hasReplay: context.hasReplay,
+                hasReplay: hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
                 isActive: self.context.isSessionActive,
                 sampledForReplay: nil,
