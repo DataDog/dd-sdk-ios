@@ -147,15 +147,6 @@ public struct AppStateHistory: Codable, Equatable, PassthroughAnyCodable {
     }
 }
 
-extension AppStateHistory {
-    /// Return a history with an active initial state.
-    ///
-    /// - Parameter date: The date since the application is considred active.
-    public static func active(since date: Date) -> AppStateHistory {
-        .init(initialState: .active, date: date)
-    }
-}
-
 #if canImport(WatchKit)
 
 import WatchKit

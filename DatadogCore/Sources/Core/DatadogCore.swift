@@ -420,6 +420,15 @@ extension DatadogContextProvider {
         appLaunchHandler: AppLaunchHandling,
         appStateProvider: AppStateProvider
     ) {
+        // `ContextProvider` must be initialized on the main thread for two key reasons:
+        // - It interacts with UIKit APIs to read the initial app state, which is only safe on the main thread.
+        // - It subscribes to app state change notifications, and we need this subscription to occur
+        //   before any Feature subscriptions. This ensures that Core always processes state changes first.
+        dd_assert(Thread.isMainThread, "Must be called on main thread")
+
+        let initialAppState = appStateProvider.current
+        let appStateHistory = AppStateHistory(initialState: initialAppState, date: dateProvider.now)
+
         let context = DatadogContext(
             site: site,
             clientToken: clientToken,
@@ -439,10 +448,7 @@ extension DatadogContextProvider {
             device: device,
             nativeSourceOverride: nativeSourceOverride,
             launchTime: appLaunchHandler.currentValue,
-            // this is a placeholder waiting for the `ApplicationStatePublisher`
-            // to be initialized on the main thread, this value will be overrided
-            // as soon as the subscription is made.
-            applicationStateHistory: .active(since: dateProvider.now)
+            applicationStateHistory: appStateHistory
         )
 
         self.init(context: context)
@@ -465,15 +471,12 @@ extension DatadogContextProvider {
         #endif
 
         #if os(iOS) || os(tvOS)
-        DispatchQueue.main.async {
-            // must be call on the main thread to read `UIApplication.State`
-            let applicationStatePublisher = ApplicationStatePublisher(
-                appStateProvider: appStateProvider,
-                notificationCenter: notificationCenter,
-                dateProvider: dateProvider
-            )
-            self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
-        }
+        let applicationStatePublisher = ApplicationStatePublisher(
+            appStateHistory: appStateHistory,
+            notificationCenter: notificationCenter,
+            dateProvider: dateProvider
+        )
+        self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
         #endif
     }
 }
