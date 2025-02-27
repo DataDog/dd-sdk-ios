@@ -152,6 +152,18 @@
                                                     <constraint firstAttribute="width" constant="79.999999999999972" id="97u-JO-CUS"/>
                                                 </constraints>
                                             </imageView>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="IgI-MW-YYv" userLabel="Content aspect fill Width Image View">
+                                                <rect key="frame" x="192" y="0.0" width="80" height="60"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="79.999999999999972" id="5PA-6h-mCw"/>
+                                                </constraints>
+                                            </imageView>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="SKa-QT-ujY" userLabel="Content aspect fill Height Image View">
+                                                <rect key="frame" x="288" y="0.0" width="80" height="60"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="79.999999999999972" id="aW8-hV-vIK"/>
+                                                </constraints>
+                                            </imageView>
                                         </subviews>
                                     </stackView>
                                 </subviews>
@@ -187,7 +199,9 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="contentHeightAspectFillImageView" destination="SKa-QT-ujY" id="CsL-Vm-0tH"/>
                         <outlet property="contentImageView" destination="lus-kO-cFd" id="Uch-4j-NpS"/>
+                        <outlet property="contentWidthAspectFillImageView" destination="IgI-MW-YYv" id="sWc-Pk-HD1"/>
                         <outlet property="customButton" destination="KxN-zV-mGU" id="zX2-X5-J8J"/>
                         <outlet property="customImageView" destination="vKz-Ut-7bS" id="aJg-Sy-OrB"/>
                     </connections>
