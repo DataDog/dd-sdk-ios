@@ -2982,7 +2982,7 @@ class RUMViewScopeTests: XCTestCase {
         _ = scope.process(
             command: RUMSetInternalViewAttributeCommand(
                 time: .mockAny(),
-                key: RUMInternalAttributes.flutterFirstBuildComplete,
+                key: CrossPlatformAttributes.flutterFirstBuildComplete,
                 value: fbcValue
             ),
             context: context,
@@ -3027,7 +3027,7 @@ class RUMViewScopeTests: XCTestCase {
         _ = scope.process(
             command: RUMSetInternalViewAttributeCommand(
                 time: .mockAny(),
-                key: RUMInternalAttributes.customINVValue,
+                key: CrossPlatformAttributes.customINVValue,
                 value: invValue
             ),
             context: context,

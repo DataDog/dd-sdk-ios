@@ -7,18 +7,6 @@
 import Foundation
 import DatadogInternal
 
-/// Internal attributes used specifically in RUM, passed from cross-platform bridge.
-/// Used to configure or override SDK internal features and attributes for the need of cross-platform SDKs (e.g. React Native SDK).
-public struct RUMInternalAttributes {
-    /// Custom Flutter vital - First Build Complete. The amount of time between a route change (the start of a view) and when the first
-    /// `build` method is complete. In nanoseconds since view start
-    public static let flutterFirstBuildComplete: String = "_dd.performance.first_build_complete"
-
-    /// Custom value for Interaction To Next view.
-    /// For Flutter this is the amount of time between an action occurring and the First Build Complete ocurring on the next view.
-    public static let customINVValue: String = "_dd.view.custom_inv_value"
-}
-
 /// Extends `RUMMonitorProtocol` with additional methods designed for Datadog cross-platform SDKs.
 public extension RUMMonitorProtocol {
     /// Grants access to an internal interface utilized only by Datadog cross-platform SDKs.

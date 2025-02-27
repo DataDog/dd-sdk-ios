@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
 @testable import DatadogRUM
 
 class ViewLoadingMetricsTests: XCTestCase {
@@ -530,7 +531,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         monitor.startView(key: "next", name: "NextView")
         monitor._internal?.setInternalViewAttribute(
             at: .mockAny(),
-            key: RUMInternalAttributes.customINVValue,
+            key: CrossPlatformAttributes.customINVValue,
             value: 180_000
         )
         // Force a view update
