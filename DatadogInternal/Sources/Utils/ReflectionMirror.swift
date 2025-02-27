@@ -9,7 +9,7 @@ import Foundation
 /// A representation of the substructure and display style of an instance of
 /// any type.
 ///
-/// The `ReflectionMirror` defers from the standard ``Mirror`` in some key
+/// The `ReflectionMirror` differs from the standard ``Mirror`` in some key
 /// aspect of its implementation:
 ///
 /// ## Display style
@@ -25,7 +25,7 @@ import Foundation
 /// value instead of the subject itself.
 ///
 /// ## Lazy inspection
-/// All inspection endpoints are lazily loading child value, even when accessing property by key (this
+/// All inspection endpoints are lazily loading child values, even when accessing property by key (this
 /// is not the case with the standard `Mirror`). This is made possible by only loading the
 /// fields metadata but not their values.
 ///
@@ -36,7 +36,7 @@ import Foundation
 /// The `ReflectionMirror` ignores the ``CustomReflectable`` or ``CustomLeafReflectable``
 /// protocols and treat any conforming objects as `Any.Type`.
 ///
-internal struct ReflectionMirror {
+public struct ReflectionMirror {
     /// An element of the reflected instance's structure.
     ///
     /// When the `label` component in not `nil`, it may represent the name of a
@@ -47,7 +47,7 @@ internal struct ReflectionMirror {
     typealias Children = AnyCollection<Child>
 
     /// A suggestion of how a mirror's subject is to be interpreted.
-    enum DisplayStyle: Equatable {
+    public enum DisplayStyle: Equatable {
         case `struct`
         case `class`
         case `enum`(case: String)
@@ -56,7 +56,7 @@ internal struct ReflectionMirror {
         case opaque
     }
 
-    enum Path {
+    public enum Path {
         case index(Int)
         case key(String)
     }
@@ -70,25 +70,25 @@ internal struct ReflectionMirror {
         }
     }
 
-    let subject: Any
+    internal let subject: Any
 
     /// The static type of the subject being reflected.
     ///
     /// This type may differ from the subject's dynamic type when this mirror
     /// is the `superclassMirror` of another mirror.
-    let subjectType: Any.Type
+    internal let subjectType: Any.Type
 
     /// A suggested display style for the reflected subject.
     let displayStyle: DisplayStyle
 
     /// A collection of `Child` elements describing the structure of the
     /// reflected subject.
-    let children: Children
+    internal let children: Children
 
     /// A mirror of the subject's superclass, if one exists.
-    var superclassMirror: ReflectionMirror? { _superclassMirror.lazy }
+    internal var superclassMirror: ReflectionMirror? { _superclassMirror.lazy }
 
-    var keyPaths: [String: Int]? { _keyPaths.lazy }
+    internal var keyPaths: [String: Int]? { _keyPaths.lazy }
 
     private let _superclassMirror: LazyBox<ReflectionMirror?>
     private let _keyPaths: LazyBox<[String: Int]?>
@@ -114,7 +114,7 @@ extension ReflectionMirror {
     /// Creates a mirror that reflects on the given instance.
     ///
     /// - Parameter subject: The instance for which to create a mirror.
-    init(
+    public init(
         reflecting subject: Any,
         subjectType: Any.Type? = nil
     ) {
@@ -281,13 +281,13 @@ extension ReflectionMirror {
 }
 
 extension ReflectionMirror.Path: ExpressibleByIntegerLiteral {
-    init(integerLiteral value: Int) {
+    public init(integerLiteral value: Int) {
         self = .index(value)
     }
 }
 
 extension ReflectionMirror.Path: ExpressibleByStringLiteral {
-    init(stringLiteral value: String) {
+    public init(stringLiteral value: String) {
         self = .key(value)
     }
 }

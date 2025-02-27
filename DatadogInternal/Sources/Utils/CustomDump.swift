@@ -80,7 +80,7 @@ internal struct ObjectTracker {
 ///     components. The default is `Int.max`.
 /// - Returns: The instance passed as `value`.
 @discardableResult
-internal func customDump<T, TargetStream>(
+public func customDump<T, TargetStream>(
     _ value: T,
     to target: inout TargetStream,
     name: String? = nil,
@@ -534,16 +534,16 @@ extension NSDictionary: _UnorderedCollection {}
 extension NSSet: _UnorderedCollection {}
 extension Set: _UnorderedCollection {}
 
-internal struct FileHandlerOutputStream: TextOutputStream {
+public struct FileHandlerOutputStream: TextOutputStream {
     private let handle: FileHandle
     let encoding: String.Encoding
 
-    init(_ handle: FileHandle, encoding: String.Encoding = .utf8) {
+    public init(_ handle: FileHandle, encoding: String.Encoding = .utf8) {
         self.handle = handle
         self.encoding = encoding
     }
 
-    mutating func write(_ string: String) {
+    public mutating func write(_ string: String) {
         if let data = string.data(using: encoding) {
             handle.seekToEndOfFile()
             handle.write(data)

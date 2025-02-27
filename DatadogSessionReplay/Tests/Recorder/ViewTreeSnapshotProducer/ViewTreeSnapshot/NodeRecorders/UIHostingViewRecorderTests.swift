@@ -7,7 +7,6 @@
 #if os(iOS)
 import XCTest
 import SwiftUI
-import DatadogInternal
 import TestUtilities
 
 @_spi(Internal)
