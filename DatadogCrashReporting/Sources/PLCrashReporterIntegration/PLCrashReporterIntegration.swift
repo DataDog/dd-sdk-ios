@@ -10,8 +10,14 @@ import DatadogInternal
 @preconcurrency import CrashReporter
 
 internal extension PLCrashReporterConfig {
+    struct Constants {
+        /// The maximum number of bytes each stack trace can not exceed.
+        /// When stack trace exceeds this limit, it will throw an error.
+        static let maxReportBytes: UInt = 2 * 1_024 * 1_024 // 2MB
+    }
+
     /// `PLCR` configuration used for `DatadogCrashReporting`
-    static func ddConfiguration() throws -> PLCrashReporterConfig {
+    static func ddConfiguration(maxReportBytes: UInt = Constants.maxReportBytes) throws -> PLCrashReporterConfig {
         let version = "v1"
 
         guard let cache = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
@@ -26,8 +32,12 @@ internal extension PLCrashReporterConfig {
             signalHandlerType: .BSD,
             // We don't symbolicate on device. All symbolication will happen backend-side.
             symbolicationStrategy: [],
+            // Flag indicating if the uncaughtExceptionHandler should be initialized or not. It usually is, except in a Xamarin environment.
+            shouldRegisterUncaughtExceptionHandler: true,
             // Set a custom path to avoid conflicts with other PLC instances
-            basePath: directory.path
+            basePath: directory.path,
+            // Set the maximum number of bytes if the crash report exceeds MAX_REPORT_BYTES
+            maxReportBytes: maxReportBytes
         )
     }
 }
