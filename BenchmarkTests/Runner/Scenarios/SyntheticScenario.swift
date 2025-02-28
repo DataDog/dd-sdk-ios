@@ -15,6 +15,7 @@ internal struct SyntheticScenario: Scenario {
         case sessionReplay
         case sessionReplaySwiftUI
         case logsCustom
+        case logsHeavyTraffic
     }
     /// The scenario's name.
     let name: Name
@@ -42,6 +43,8 @@ internal struct SyntheticScenario: Scenario {
             _scenario = SessionReplaySwiftUIScenario()
         case .logsCustom:
             _scenario = LogsCustomScenario()
+        case .logsHeavyTraffic:
+            _scenario = LogsHeavyTrafficScenario()
         }
 
         self.name = name
