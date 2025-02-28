@@ -132,7 +132,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
                     DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
                     if files.isEmpty {
-                        self.delay.decrease()
+                        self.delay.reset()
                     }
 
                     self.fileReader.markBatchAsRead(
