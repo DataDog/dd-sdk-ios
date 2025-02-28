@@ -54,11 +54,11 @@
          <EnvironmentVariable
             key = "BENCHMARK_RUN"
             value = "instrumented"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "BENCHMARK_SCENARIO"
-            value = "sessionReplaySwiftUI"
+            value = "logsCustom"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
