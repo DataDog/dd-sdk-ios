@@ -41,10 +41,10 @@ public struct ReflectionMirror {
     ///
     /// When the `label` component in not `nil`, it may represent the name of a
     /// stored property or an active `enum` case.
-    typealias Child = (label: String?, value: Any)
+    public typealias Child = (label: String?, value: Any)
 
     /// The type used to represent substructure.
-    typealias Children = AnyCollection<Child>
+    public typealias Children = AnyCollection<Child>
 
     /// A suggestion of how a mirror's subject is to be interpreted.
     public enum DisplayStyle: Equatable {
@@ -70,25 +70,25 @@ public struct ReflectionMirror {
         }
     }
 
-    internal let subject: Any
+    public let subject: Any
 
     /// The static type of the subject being reflected.
     ///
     /// This type may differ from the subject's dynamic type when this mirror
     /// is the `superclassMirror` of another mirror.
-    internal let subjectType: Any.Type
+    public let subjectType: Any.Type
 
     /// A suggested display style for the reflected subject.
-    let displayStyle: DisplayStyle
+    public let displayStyle: DisplayStyle
 
     /// A collection of `Child` elements describing the structure of the
     /// reflected subject.
-    internal let children: Children
+    public let children: Children
 
     /// A mirror of the subject's superclass, if one exists.
-    internal var superclassMirror: ReflectionMirror? { _superclassMirror.lazy }
+    public var superclassMirror: ReflectionMirror? { _superclassMirror.lazy }
 
-    internal var keyPaths: [String: Int]? { _keyPaths.lazy }
+    public var keyPaths: [String: Int]? { _keyPaths.lazy }
 
     private let _superclassMirror: LazyBox<ReflectionMirror?>
     private let _keyPaths: LazyBox<[String: Int]?>
