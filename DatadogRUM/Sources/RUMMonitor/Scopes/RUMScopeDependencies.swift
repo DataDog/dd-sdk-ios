@@ -61,7 +61,7 @@ internal struct RUMScopeDependencies {
     let networkSettledMetricFactory: (Date, String) -> TNSMetricTracking
 
     /// A factory function that creates a `INVMetric` when session starts.
-    let interactionToNextViewMetricFactory: () -> INVMetricTracking
+    let interactionToNextViewMetricFactory: () -> INVMetricTracking?
 
     init(
         featureScope: FeatureScope,
@@ -83,7 +83,7 @@ internal struct RUMScopeDependencies {
         viewEndedMetricFactory: @escaping () -> ViewEndedMetricController,
         watchdogTermination: WatchdogTerminationMonitor?,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking,
-        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking
+        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?
     ) {
         self.featureScope = featureScope
         self.rumApplicationID = rumApplicationID

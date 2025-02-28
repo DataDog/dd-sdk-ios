@@ -111,7 +111,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Time-to-Network-Settled metric for this view.
     private let networkSettledMetric: TNSMetricTracking
     /// Interaction-to-Next-View metric for this view.
-    private let interactionToNextViewMetric: INVMetricTracking
+    private var interactionToNextViewMetric: INVMetricTracking?
     /// Tracks "RUM View Ended" metric for this view.
     private let viewEndedMetric: ViewEndedMetricController
 
@@ -125,7 +125,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         customTimings: [String: Int64],
         startTime: Date,
         serverTimeOffset: TimeInterval,
-        interactionToNextViewMetric: INVMetricTracking
+        interactionToNextViewMetric: INVMetricTracking?
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -149,7 +149,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         }
         self.networkSettledMetric = dependencies.networkSettledMetricFactory(viewStartTime, viewName)
-        interactionToNextViewMetric.trackViewStart(at: startTime, name: name, viewID: viewUUID)
+        interactionToNextViewMetric?.trackViewStart(at: startTime, name: name, viewID: viewUUID)
 
         self.viewEndedMetric = dependencies.viewEndedMetricFactory()
 
@@ -221,10 +221,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             isActiveView = false
             needsViewUpdate = true
         case let command as RUMSetInternalViewAttributeCommand where isActiveView:
-            internalAttributes[command.key] = command.value
+            setInternalViewAttribute(command)
             // Purposefully don't perform a view update. Most (all?) internal view attributes
             // aren't important enough to expect them to be uploaded automatically. They can
-            // get send with the next view update.
+            // get sent with the next view update.
 
         case let command as RUMStopViewCommand where identity == command.identity:
             isActiveView = false
@@ -296,7 +296,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let shouldComplete = !isActiveView && hasNoPendingResources
 
         if shouldComplete {
-            interactionToNextViewMetric.trackViewComplete(viewID: viewUUID)
+            interactionToNextViewMetric?.trackViewComplete(viewID: viewUUID)
             viewEndedMetric.send()
         }
 
@@ -415,6 +415,18 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             RUM Action '\(type)' on '\(name)' was dropped, because another action is still active for the same view.
             """
         )
+    }
+
+    private func setInternalViewAttribute(_ command: RUMSetInternalViewAttributeCommand) {
+        switch command.key {
+        case CrossPlatformAttributes.customINVValue:
+            if let customInvValue = command.value as? (any BinaryInteger),
+               let customInvValue = Int64(exactly: customInvValue) {
+                interactionToNextViewMetric = CustomValueINVMetric(viewID: viewUUID, invValue: TimeInterval(fromNanoseconds: customInvValue))
+            }
+        default:
+            internalAttributes[command.key] = command.value
+        }
     }
 
     // MARK: - Sending RUM Events
@@ -539,13 +551,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let refreshRateInfo = vitalInfoSampler?.refreshRate
         let isSlowRendered = refreshRateInfo?.meanValue.map { $0 < Constants.slowRenderingThresholdFPS }
         let networkSettledTime = networkSettledMetric.value(with: context.applicationStateHistory)
-        var interactionToNextViewTime = interactionToNextViewMetric.value(for: viewUUID)
-        // Only look for an internal override attribute if native INV calculations are disabled
-        if interactionToNextViewTime == .failure(.disabled),
-           let customInvValue = internalAttributes[CrossPlatformAttributes.customINVValue] as? (any BinaryInteger),
-           let customInvValue = Int64(exactly: customInvValue) {
-            interactionToNextViewTime = .success(TimeInterval(fromNanoseconds: customInvValue))
-        }
+        var interactionToNextViewTime = interactionToNextViewMetric?.value(for: viewUUID) ?? .failure(.disabled)
 
         // Only add the performance member if we have a value for it
         let performance: RUMViewEvent.View.Performance?

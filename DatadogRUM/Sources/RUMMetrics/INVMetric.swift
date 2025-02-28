@@ -96,20 +96,16 @@ internal final class INVMetric: INVMetricTracking {
     private var currentViewID: RUMUUID?
 
     /// Predicate for determining which action qualifies as the "last interaction" for the INV metric.
-    private let predicate: NextViewActionPredicate?
+    private let predicate: NextViewActionPredicate
 
     /// Initializes the INV metric system with an optional custom predicate.
     ///
     /// - Parameter predicate: A predicate defining which action is considered the "last interaction" in the previous view.
-    init(predicate: NextViewActionPredicate?) {
+    init(predicate: NextViewActionPredicate) {
         self.predicate = predicate
     }
 
     func trackAction(startTime: Date, endTime: Date, name: String, type: RUMActionType, in viewID: RUMUUID) {
-        guard predicate != nil else {
-            return // Don't bother if INV tracking is disabled
-        }
-
         guard var view = viewsByID[viewID] else {
             return // The view has not been started or is unknown.
         }
@@ -131,20 +127,12 @@ internal final class INVMetric: INVMetricTracking {
     }
 
     func trackViewStart(at startTime: Date, name: String, viewID: RUMUUID) {
-        guard predicate != nil else {
-            return // Don't bother if INV tracking is disabled
-        }
-
         // Create and store a new view, referencing the previously active view.
         viewsByID[viewID] = View(name: name, startTime: startTime, previousViewID: currentViewID)
         currentViewID = viewID
     }
 
     func trackViewComplete(viewID: RUMUUID) {
-        guard predicate != nil else {
-            return // Don't bother if INV tracking is disabled
-        }
-
         // When this view completes, remove its previous view entry because it’s no longer needed.
         // We still keep the current view entry, as it may be needed to compute INV for the next view.
         guard let view = viewsByID[viewID], let previousViewID = view.previousViewID else {
@@ -154,10 +142,6 @@ internal final class INVMetric: INVMetricTracking {
     }
 
     func value(for viewID: RUMUUID) -> Result<TimeInterval, INVNoValueReason> {
-        guard let predicate = predicate else {
-            return .failure(.disabled)
-        }
-
         guard let view = viewsByID[viewID] else {
             return .failure(.viewUnknown)
         }
@@ -217,5 +201,42 @@ internal final class INVMetric: INVMetricTracking {
         case .scroll, .swipe:
             return nextViewStart.timeIntervalSince(action.date + action.duration)
         }
+    }
+}
+
+// Supply a custom value for INV for a specific view
+internal final class CustomValueINVMetric: INVMetricTracking {
+    /// The identifier of the view to supplyt the INV metric for
+    private var viewID: RUMUUID
+
+    /// The value to supply for INV
+    private var invValue: TimeInterval
+
+    /// Initializes the metric for the supplied View with the given value
+    ///
+    /// - Parameter predicate: A predicate defining which action is considered the "last interaction" in the previous view.
+    init(viewID: RUMUUID, invValue: TimeInterval) {
+        self.viewID = viewID
+        self.invValue = invValue
+    }
+
+    func trackAction(startTime: Date, endTime: Date, name: String, type: RUMActionType, in viewID: RUMUUID) {
+        // NOOP
+    }
+
+    func trackViewStart(at startTime: Date, name: String, viewID: RUMUUID) {
+        // NOOP
+    }
+
+    func trackViewComplete(viewID: RUMUUID) {
+        // NOOP
+    }
+
+    func value(for viewID: RUMUUID) -> Result<TimeInterval, INVNoValueReason> {
+        guard viewID == self.viewID else {
+            return .failure(.viewUnknown)
+        }
+
+        return .success(invValue)
     }
 }

@@ -124,8 +124,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
             },
             interactionToNextViewMetricFactory: {
+                guard let nextViewActionPredicate = configuration.nextViewActionPredicate else {
+                    return nil
+                }
                 return INVMetric(
-                    predicate: configuration.nextViewActionPredicate
+                    predicate: nextViewActionPredicate
                 )
             }
         )

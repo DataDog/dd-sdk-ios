@@ -3021,7 +3021,7 @@ class RUMViewScopeTests: XCTestCase {
             customTimings: [:],
             startTime: viewStartDate,
             serverTimeOffset: .mockRandom(),
-            interactionToNextViewMetric: INVMetric(predicate: nil)
+            interactionToNextViewMetric: nil
         )
         let invValue = Int64.mockRandom(min: 0, max: 100_000_000)
         _ = scope.process(

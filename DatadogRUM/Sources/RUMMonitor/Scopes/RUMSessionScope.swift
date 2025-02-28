@@ -78,7 +78,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// The reason why this session has ended or `nil` if it is still active.
     private(set) var endReason: EndReason?
 
-    private let interactionToNextViewMetric: INVMetricTracking
+    private let interactionToNextViewMetric: INVMetricTracking?
 
     init(
         isInitialSession: Bool,
