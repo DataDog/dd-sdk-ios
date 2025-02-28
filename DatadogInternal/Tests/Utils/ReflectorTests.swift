@@ -5,10 +5,8 @@
  */
 
 import XCTest
-import DatadogInternal
 import TestUtilities
-
-@testable import DatadogSessionReplay
+@testable import DatadogInternal
 
 class ReflectorTests: XCTestCase {
     func testReflectObject() throws {
@@ -83,7 +81,7 @@ class ReflectorTests: XCTestCase {
         XCTAssertEqual(echo.bar.count, 10)
         XCTAssertEqual(
             telemetry.messages.firstError()?.message,
-            #"notFound(DatadogSessionReplay.Reflector.Error.Context(subjectType: Swift.String, paths: [DatadogSessionReplay.ReflectionMirror.Path.key("baz")]))"#
+            #"notFound(DatadogInternal.Reflector.Error.Context(subjectType: Swift.String, paths: [DatadogInternal.ReflectionMirror.Path.key("baz")]))"#
         )
     }
 
@@ -135,7 +133,7 @@ class ReflectorTests: XCTestCase {
         XCTAssertEqual(echo.bar.count, 10)
         XCTAssertEqual(
             telemetry.messages.firstError()?.message,
-            #"notFound(DatadogSessionReplay.Reflector.Error.Context(subjectType: Swift.String, paths: [DatadogSessionReplay.ReflectionMirror.Path.key("baz")]))"#
+            #"notFound(DatadogInternal.Reflector.Error.Context(subjectType: Swift.String, paths: [DatadogInternal.ReflectionMirror.Path.key("baz")]))"#
         )
     }
 
