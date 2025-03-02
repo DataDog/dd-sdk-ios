@@ -97,6 +97,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     return nil
                 }
             }(),
+            renderLoopObserver: DisplayLinker(notificationCenter: configuration.notificationCenter),
+            viewHitchesMetricFactory: { ViewHitchesReader(hangThreshold: configuration.appHangThreshold) },
             vitalsReaders: configuration.vitalsUpdateFrequency.map {
                 VitalsReaders(
                     frequency: $0.timeInterval,
@@ -137,6 +139,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
             dependencies: dependencies,
             dateProvider: configuration.dateProvider
         )
+
+        if let refreshRateVital = dependencies.vitalsReaders?.refreshRate as? RenderLoopReader {
+            dependencies.renderLoopObserver?.register(refreshRateVital)
+        }
 
         let memoryWarningReporter = MemoryWarningReporter()
         let memoryWarningMonitor = MemoryWarningMonitor(

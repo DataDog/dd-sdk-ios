@@ -60,6 +60,21 @@ extension XCTestCase {
         }
     }
 
+    /// Simple helper for asynchronous testing.
+    ///
+    /// - Parameters:
+    ///   - timeout: amount of time in seconds to wait before executing the closure.
+    ///   - closure: a closure to execute when `timeout` seconds has passed
+    public func wait(during timeout: TimeInterval, closure: @escaping () -> Void) {
+        let expectation = self.expectation(description: "")
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeout) {
+            expectation.fulfill()
+        }
+
+        self.waitForExpectations(timeout: timeout + 0.1)
+        closure()
+    }
+
     @available(iOS 13.0, tvOS 13.0, *)
     public func dd_fulfillment(
         for expectations: [XCTestExpectation],
