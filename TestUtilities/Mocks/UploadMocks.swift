@@ -12,19 +12,28 @@ public struct UploadPerformanceMock: UploadPerformancePreset {
     public let minUploadDelay: TimeInterval
     public let maxUploadDelay: TimeInterval
     public let uploadDelayChangeRate: Double
+    public let maxBatchesPerUpload: Int
 
-    public init(initialUploadDelay: TimeInterval, minUploadDelay: TimeInterval, maxUploadDelay: TimeInterval, uploadDelayChangeRate: Double) {
+    public init(
+        initialUploadDelay: TimeInterval,
+        minUploadDelay: TimeInterval,
+        maxUploadDelay: TimeInterval,
+        uploadDelayChangeRate: Double,
+        maxBatchesPerUpload: Int
+    ) {
         self.initialUploadDelay = initialUploadDelay
         self.minUploadDelay = minUploadDelay
         self.maxUploadDelay = maxUploadDelay
         self.uploadDelayChangeRate = uploadDelayChangeRate
+        self.maxBatchesPerUpload = maxBatchesPerUpload
     }
 
     public static let noOp = UploadPerformanceMock(
         initialUploadDelay: .distantFuture,
         minUploadDelay: .distantFuture,
         maxUploadDelay: .distantFuture,
-        uploadDelayChangeRate: 0
+        uploadDelayChangeRate: 0,
+        maxBatchesPerUpload: 0
     )
 
     /// Optimized for performing very fast uploads in unit tests.
@@ -32,7 +41,8 @@ public struct UploadPerformanceMock: UploadPerformancePreset {
         initialUploadDelay: 0.05,
         minUploadDelay: 0.05,
         maxUploadDelay: 0.05,
-        uploadDelayChangeRate: 0
+        uploadDelayChangeRate: 0,
+        maxBatchesPerUpload: 10
     )
 
     /// Optimized for performing very fast first upload and then changing to unrealistically long intervals.
@@ -40,7 +50,8 @@ public struct UploadPerformanceMock: UploadPerformancePreset {
         initialUploadDelay: 0.05,
         minUploadDelay: 60,
         maxUploadDelay: 60,
-        uploadDelayChangeRate: 60 / 0.05
+        uploadDelayChangeRate: 60 / 0.05,
+        maxBatchesPerUpload: 10
     )
 }
 
