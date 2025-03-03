@@ -478,6 +478,214 @@ final class RUMAttributesIntegrationTests: XCTestCase {
         XCTAssertEqual(lastResourceEvent.attribute(forKey: "key3"), "value3")
         XCTAssertEqual(lastResourceEvent.attribute(forKey: "sameKey"), "value4")
     }
+
+    // RFC - View Attributes
+    // https://datadoghq.atlassian.net/wiki/spaces/RUMP/pages/4753293634/RFC+-+View+Attributes
+
+    func testRemovingGlobalAttributes() throws {
+        // Given
+        RUM.enable(with: rumConfig, in: core)
+        let firstViewName = "FirstView"
+        let monitor = RUMMonitor.shared(in: core)
+
+        // When
+        monitor.startView(key: "key", name: firstViewName, attributes: ["view": 1])
+        monitor.addAttribute(forKey: "global", value: 4)
+        monitor.addTiming(name: "addViewTiming")
+        monitor.removeAttribute(forKey: "global")
+        monitor.stopView(key: "key")
+
+        // Then
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+
+        let firstView = try XCTUnwrap(session.views.first(where: { $0.name == firstViewName }))
+        XCTAssertEqual(firstView.viewEvents.count, 3)
+        XCTAssertEqual(firstView.viewEvents[0].numberOfAttributes, 1)
+        var value: Int? = firstView.viewEvents[0].attribute(forKey: "view")
+        XCTAssertEqual(value, 1)
+
+        XCTAssertEqual(firstView.viewEvents[1].numberOfAttributes, 2)
+        value = firstView.viewEvents[1].attribute(forKey: "view")
+        var gValue: Int? = firstView.viewEvents[1].attribute(forKey: "global")
+        XCTAssertEqual(value, 1)
+        XCTAssertEqual(gValue, 4)
+
+        XCTAssertEqual(firstView.viewEvents[2].numberOfAttributes, 2)
+        value = firstView.viewEvents[2].attribute(forKey: "view")
+        gValue = firstView.viewEvents[2].attribute(forKey: "global")
+        XCTAssertEqual(value, 1)
+        XCTAssertEqual(gValue, 4)
+    }
+
+    func testViewAttributePropagation() throws {
+        // Given
+        RUM.enable(with: rumConfig, in: core)
+        let firstViewName = "FirstView"
+        let monitor = RUMMonitor.shared(in: core)
+
+        // When
+        monitor.startView(key: "key", name: firstViewName, attributes: ["view": 1])
+        monitor.addAttribute(forKey: "global", value: 4)
+        monitor.addAction(type: .custom, name: "jeff", attributes: ["local": 8])
+
+        monitor.startResource(
+            resourceKey: "resourceKey",
+            httpMethod: .get,
+            urlString: .mockAny(),
+            attributes: ["local": 2]
+        )
+
+        monitor.stopResource(
+            resourceKey: "resourceKey",
+            statusCode: 200,
+            kind: .fetch,
+            size: nil,
+            attributes: ["local": 2]
+        )
+
+        // Then
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+
+        let firstView = try XCTUnwrap(session.views.first(where: { $0.name == firstViewName }))
+        firstView.viewEvents.forEach { viewEvent in
+            XCTAssertEqual(viewEvent.numberOfAttributes, 1)
+            let value: Int? = viewEvent.attribute(forKey: "view")
+            XCTAssertEqual(value, 1)
+        }
+
+        firstView.actionEvents.forEach { actionEvent in
+            XCTAssertEqual(actionEvent.numberOfAttributes, 2)
+            let gValue: Int? = actionEvent.attribute(forKey: "global")
+            let value: Int? = actionEvent.attribute(forKey: "local")
+            XCTAssertEqual(gValue, 4)
+            XCTAssertEqual(value, 8)
+        }
+
+        firstView.resourceEvents.forEach { resourceEvent in
+            XCTAssertEqual(resourceEvent.numberOfAttributes, 2)
+            let gValue: Int? = resourceEvent.attribute(forKey: "global")
+            let value: Int? = resourceEvent.attribute(forKey: "local")
+            XCTAssertEqual(gValue, 4)
+            XCTAssertEqual(value, 2)
+        }
+    }
+
+    func testAttributePrecedence1() throws {
+        // Given
+        RUM.enable(with: rumConfig, in: core)
+        let firstViewName = "FirstView"
+        let monitor = RUMMonitor.shared(in: core)
+
+        // When
+        monitor.addAttributes(["foo": 4])
+        monitor.startView(key: "key", name: firstViewName, attributes: ["foo": 1])
+        monitor.addAction(type: .custom, name: "jeff", attributes: ["foo": 8])
+        monitor.startResource(
+            resourceKey: "resourceKey",
+            httpMethod: .get,
+            urlString: .mockAny(),
+            attributes: ["foo": 2]
+        )
+
+        monitor.stopResource(
+            resourceKey: "resourceKey",
+            statusCode: 200,
+            kind: .fetch,
+            size: nil,
+            attributes: ["foo": 2]
+        )
+
+        // Then
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+
+        let firstView = try XCTUnwrap(session.views.first(where: { $0.name == firstViewName }))
+        firstView.viewEvents.forEach { viewEvent in
+            XCTAssertEqual(viewEvent.numberOfAttributes, 1)
+            let value: Int? = viewEvent.attribute(forKey: "foo")
+            XCTAssertEqual(value, 1)
+        }
+
+        firstView.actionEvents.forEach { actionEvent in
+            XCTAssertEqual(actionEvent.numberOfAttributes, 1)
+            let value: Int? = actionEvent.attribute(forKey: "foo")
+            XCTAssertEqual(value, 8)
+        }
+
+        firstView.resourceEvents.forEach { resourceEvent in
+            XCTAssertEqual(resourceEvent.numberOfAttributes, 1)
+            let value: Int? = resourceEvent.attribute(forKey: "foo")
+            XCTAssertEqual(value, 2)
+        }
+    }
+
+    func testAttributePrecedence2() throws {
+        // Given
+        RUM.enable(with: rumConfig, in: core)
+        let firstViewName = "FirstView"
+        let monitor = RUMMonitor.shared(in: core)
+
+        // When
+        monitor.startView(key: "key", name: firstViewName, attributes: ["foo": 1])
+        monitor.addAttributes(["foo": 4])
+        monitor.addTiming(name: "addViewTiming")
+        monitor.addAction(type: .custom, name: "jeff", attributes: ["foo": 8])
+        monitor.startResource(
+            resourceKey: "resourceKey",
+            httpMethod: .get,
+            urlString: .mockAny(),
+            attributes: ["foo": 2]
+        )
+
+        monitor.stopResource(
+            resourceKey: "resourceKey",
+            statusCode: 200,
+            kind: .fetch,
+            size: nil,
+            attributes: ["foo": 2]
+        )
+
+        // Then
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+
+        let firstView = try XCTUnwrap(session.views.first(where: { $0.name == firstViewName }))
+        XCTAssertEqual(firstView.viewEvents.count, 4)
+
+        XCTAssertEqual(firstView.viewEvents[0].numberOfAttributes, 1)
+        var value: Int? = firstView.viewEvents[0].attribute(forKey: "foo")
+        XCTAssertEqual(value, 1)
+
+        XCTAssertEqual(firstView.viewEvents[1].numberOfAttributes, 1)
+        value = firstView.viewEvents[1].attribute(forKey: "foo")
+        XCTAssertEqual(value, 4)
+
+        XCTAssertEqual(firstView.viewEvents[2].numberOfAttributes, 1)
+        value = firstView.viewEvents[2].attribute(forKey: "foo")
+        XCTAssertEqual(value, 4)
+
+        XCTAssertEqual(firstView.viewEvents[3].numberOfAttributes, 1)
+        value = firstView.viewEvents[3].attribute(forKey: "foo")
+        XCTAssertEqual(value, 4)
+
+        firstView.actionEvents.forEach { actionEvent in
+            XCTAssertEqual(actionEvent.numberOfAttributes, 1)
+            let value: Int? = actionEvent.attribute(forKey: "foo")
+            XCTAssertEqual(value, 8)
+        }
+
+        firstView.resourceEvents.forEach { resourceEvent in
+            XCTAssertEqual(resourceEvent.numberOfAttributes, 1)
+            let value: Int? = resourceEvent.attribute(forKey: "foo")
+            XCTAssertEqual(value, 2)
+        }
+    }
 }
 
 private extension RUMViewEvent {
