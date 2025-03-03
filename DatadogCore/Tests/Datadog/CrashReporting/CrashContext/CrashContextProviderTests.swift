@@ -315,6 +315,6 @@ class CrashContextProviderTests: XCTestCase {
         DDAssertReflectionEqual(crashContext.userInfo, sdkContext.userInfo, file: file, line: line)
         XCTAssertEqual(crashContext.networkConnectionInfo, sdkContext.networkConnectionInfo, file: file, line: line)
         XCTAssertEqual(crashContext.carrierInfo, sdkContext.carrierInfo, file: file, line: line)
-        XCTAssertEqual(crashContext.lastIsAppInForeground, sdkContext.applicationStateHistory.currentSnapshot.state.isRunningInForeground, file: file, line: line)
+        XCTAssertEqual(crashContext.lastIsAppInForeground, sdkContext.applicationStateHistory.currentState.isRunningInForeground, file: file, line: line)
     }
 }

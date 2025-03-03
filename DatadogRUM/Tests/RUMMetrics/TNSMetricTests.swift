@@ -300,11 +300,7 @@ class TNSMetricTests: XCTestCase {
         metric.trackResourceEnd(at: resourceEnd, resourceID: .resource1, resourceDuration: nil)
 
         // When
-        let appStateHistory = AppStateHistory(
-            initialSnapshot: .init(state: .active, date: .distantPast),
-            recentDate: .distantFuture,
-            snapshots: [.init(state: .active, date: .distantFuture)]
-        )
+        let appStateHistory = AppStateHistory(initialState: .active, date: .distantPast)
 
         // Then
         let ttns = try metric.value(with: appStateHistory).get()
@@ -321,14 +317,9 @@ class TNSMetricTests: XCTestCase {
         metric.trackResourceEnd(at: resourceEnd, resourceID: .resource1, resourceDuration: resourceDuration)
 
         // When
-        let appStateHistory = AppStateHistory(
-            initialSnapshot: .init(state: .active, date: .distantPast),
-            recentDate: .distantFuture,
-            snapshots: [
-                .init(state: [.inactive, .background].randomElement()!, date: resourceStart + resourceDuration * 0.25),
-                .init(state: .active, date: resourceStart + resourceDuration * 0.5),
-            ]
-        )
+        var appStateHistory = AppStateHistory(initialState: .active, date: .distantPast)
+        appStateHistory.append(state: [.inactive, .background].randomElement()!, at: resourceStart + resourceDuration * 0.25)
+        appStateHistory.append(state: .active, at: resourceStart + resourceDuration * 0.5)
 
         // Then
         XCTAssertEqual(metric.value(with: appStateHistory), .failure(.appNotInForeground))

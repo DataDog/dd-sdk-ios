@@ -321,7 +321,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private func handleOffViewCommand(command: RUMCommand, context: DatadogContext) {
         let handlingRule = RUMOffViewEventsHandlingRule(
             sessionState: state,
-            isAppInForeground: context.applicationStateHistory.currentSnapshot.state.isRunningInForeground,
+            isAppInForeground: context.applicationStateHistory.currentState.isRunningInForeground,
             isBETEnabled: trackBackgroundEvents
         )
 

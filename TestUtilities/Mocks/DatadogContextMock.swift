@@ -238,15 +238,21 @@ extension AppStateHistory: AnyMockable {
     }
 
     public static func mockAppInForeground(since date: Date = Date()) -> Self {
-        return .init(initialSnapshot: .init(state: .active, date: date), recentDate: date)
+        return .init(initialState: .active, date: date)
     }
 
     public static func mockAppInBackground(since date: Date = Date()) -> Self {
-        return .init(initialSnapshot: .init(state: .background, date: date), recentDate: date)
+        return .init(initialState: .background, date: date)
     }
 
     public static func mockRandom(since date: Date = Date()) -> Self {
         return Bool.random() ? mockAppInForeground(since: date) : mockAppInBackground(since: date)
+    }
+
+    public static func mockWith(initialState: AppState, date: Date, transitions: [(state: AppState, date: Date)] = []) -> Self {
+        var history = AppStateHistory(initialState: initialState, date: date)
+        transitions.forEach { history.append(state: $0.state, at: $0.date) }
+        return history
     }
 }
 

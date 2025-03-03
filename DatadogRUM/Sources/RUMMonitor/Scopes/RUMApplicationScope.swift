@@ -60,7 +60,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             createInitialSession(with: context, on: command)
 
             // If the app was started by a user (foreground & not prewarmed):
-            if context.applicationStateHistory.currentSnapshot.state == .active && !context.launchTime.isActivePrewarm {
+            if context.applicationStateHistory.currentState == .active && !context.launchTime.isActivePrewarm {
                 // Start "ApplicationLaunch" view immediatelly:
                 startApplicationLaunchView(on: command, context: context, writer: writer)
             }
@@ -150,7 +150,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         if context.launchTime.isActivePrewarm {
             startPrecondition = .prewarm
-        } else if context.applicationStateHistory.currentSnapshot.state == .background {
+        } else if context.applicationStateHistory.currentState == .background {
             startPrecondition = .backgroundLaunch
         } else {
             startPrecondition = .userAppLaunch
@@ -239,7 +239,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         applicationActive = true
 
-        guard context.applicationStateHistory.currentSnapshot.state != .background else {
+        guard context.applicationStateHistory.currentState != .background else {
             return
         }
 

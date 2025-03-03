@@ -214,12 +214,10 @@ class StartingRUMSessionTests: XCTestCase {
                 launchDate: processStartTime,
                 isActivePrewarm: true
             ),
-            applicationStateHistory: AppStateHistory(
-                initialSnapshot: .init(state: .background, date: processStartTime), // active prewarm implies background
-                recentDate: firstRUMTime,
-                snapshots: [
-                    .init(state: .active, date: firstRUMTime.addingTimeInterval(-0.5)) // become active shortly before view is started
-                ]
+            applicationStateHistory: .mockWith(
+                initialState: .background, // active prewarm implies background
+                date: processStartTime,
+                transitions: [(state: .active, date: firstRUMTime.addingTimeInterval(-0.5))] // become active shortly before view is started
             )
         )
         let rumTime = DateProviderMock()
