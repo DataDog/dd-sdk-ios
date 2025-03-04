@@ -272,7 +272,6 @@ extension DatadogCore: DatadogCoreProtocol {
                 httpClient: httpClient,
                 performance: performancePreset,
                 backgroundTasksEnabled: backgroundTasksEnabled,
-                maxBatchesPerUpload: maxBatchesPerUpload,
                 isRunFromExtension: isRunFromExtension,
                 telemetry: telemetry
             )

@@ -63,6 +63,14 @@ extension UploadFrequency: CaseIterable {
     }
 }
 
+extension Datadog.Configuration.BatchProcessingLevel {
+    public static var allCases: [Self] { [.low, .medium, .high] }
+
+    static func mockRandom() -> Self {
+        allCases.randomElement()!
+    }
+}
+
 extension BundleType: CaseIterable {
     public static var allCases: [Self] { [.iOSApp, iOSAppExtension] }
 }
@@ -154,12 +162,28 @@ struct UploadPerformanceMock: UploadPerformancePreset {
     var minUploadDelay: TimeInterval
     var maxUploadDelay: TimeInterval
     var uploadDelayChangeRate: Double
+    var maxBatchesPerUpload: Int
+
+    init(
+        initialUploadDelay: TimeInterval,
+        minUploadDelay: TimeInterval,
+        maxUploadDelay: TimeInterval,
+        uploadDelayChangeRate: Double,
+        maxBatchesPerUpload: Int = 1
+    ) {
+        self.initialUploadDelay = initialUploadDelay
+        self.minUploadDelay = minUploadDelay
+        self.maxUploadDelay = maxUploadDelay
+        self.uploadDelayChangeRate = uploadDelayChangeRate
+        self.maxBatchesPerUpload = maxBatchesPerUpload
+    }
 
     static let noOp = UploadPerformanceMock(
         initialUploadDelay: .distantFuture,
         minUploadDelay: .distantFuture,
         maxUploadDelay: .distantFuture,
-        uploadDelayChangeRate: 0
+        uploadDelayChangeRate: 0,
+        maxBatchesPerUpload: 0
     )
 
     /// Optimized for performing very fast uploads in unit tests.
@@ -167,7 +191,8 @@ struct UploadPerformanceMock: UploadPerformancePreset {
         initialUploadDelay: 0.05,
         minUploadDelay: 0.05,
         maxUploadDelay: 0.05,
-        uploadDelayChangeRate: 0
+        uploadDelayChangeRate: 0,
+        maxBatchesPerUpload: 10
     )
 
     /// Optimized for performing very fast first upload and then changing to unrealistically long intervals.
@@ -175,7 +200,8 @@ struct UploadPerformanceMock: UploadPerformancePreset {
         initialUploadDelay: 0.05,
         minUploadDelay: 60,
         maxUploadDelay: 60,
-        uploadDelayChangeRate: 60 / 0.05
+        uploadDelayChangeRate: 60 / 0.05,
+        maxBatchesPerUpload: 10
     )
 }
 
@@ -185,16 +211,17 @@ extension UploadPerformanceMock {
         minUploadDelay = other.minUploadDelay
         maxUploadDelay = other.maxUploadDelay
         uploadDelayChangeRate = other.uploadDelayChangeRate
+        maxBatchesPerUpload = other.maxBatchesPerUpload
     }
 }
 
 extension PerformancePreset: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
-        PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)
+        PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp, batchProcessingLevel: .medium)
     }
 
     public static func mockRandom() -> Self {
-        PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom(), bundleType: .mockRandom())
+        PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom(), bundleType: .mockRandom(), batchProcessingLevel: .mockRandom())
     }
 
     static func combining(storagePerformance storage: StoragePerformanceMock, uploadPerformance upload: UploadPerformanceMock) -> Self {
@@ -209,7 +236,8 @@ extension PerformancePreset: AnyMockable, RandomMockable {
             initialUploadDelay: upload.initialUploadDelay,
             minUploadDelay: upload.minUploadDelay,
             maxUploadDelay: upload.maxUploadDelay,
-            uploadDelayChangeRate: upload.uploadDelayChangeRate
+            uploadDelayChangeRate: upload.uploadDelayChangeRate,
+            maxBatchesPerUpload: upload.maxBatchesPerUpload
         )
     }
 }

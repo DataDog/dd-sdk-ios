@@ -64,9 +64,9 @@ public enum Datadog {
             var maxBatchesPerUpload: Int {
                 switch self {
                 case .low:
-                    return 1
+                    return 5
                 case .medium:
-                    return 10
+                    return 20
                 case .high:
                     return 100
                 }
@@ -538,7 +538,8 @@ extension DatadogCore {
         let performance = PerformancePreset(
             batchSize: debug ? .small : configuration.batchSize,
             uploadFrequency: debug ? .frequent : configuration.uploadFrequency,
-            bundleType: bundleType
+            bundleType: bundleType,
+            batchProcessingLevel: configuration.batchProcessingLevel
         )
         let isRunFromExtension = bundleType == .iOSAppExtension
 

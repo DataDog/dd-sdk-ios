@@ -12,7 +12,8 @@ class DataUploadDelayTests: XCTestCase {
         initialUploadDelay: 3,
         minUploadDelay: 1,
         maxUploadDelay: 20,
-        uploadDelayChangeRate: 0.1
+        uploadDelayChangeRate: 0.1,
+        maxBatchesPerUpload: .mockAny()
     )
 
     func testWhenNotModified_itReturnsInitialDelay() {
