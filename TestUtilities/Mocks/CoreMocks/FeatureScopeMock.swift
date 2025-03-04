@@ -12,8 +12,9 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
         weak var scope: FeatureScopeMock?
         let bypassConsent: Bool
 
-        func write<T, M>(value: T, metadata: M?) where T: Encodable, M: Encodable {
+        func write<T, M>(value: T, metadata: M?, completion: @escaping CompletionHandler) where T: Encodable, M: Encodable {
             scope?.events.append((value, metadata, bypassConsent))
+            completion()
         }
     }
 

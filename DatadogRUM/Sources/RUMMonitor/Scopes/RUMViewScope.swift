@@ -520,8 +520,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             default: break
             }
         }
+        let errorCommand = command as? RUMErrorCommand
+        let isCrash = errorCommand?.isCrash ?? false
+        let completionHandler = errorCommand?.completionHandler ?? NOPCompletionHandler
 
-        let isCrash = (command as? RUMErrorCommand).map { $0.isCrash ?? false } ?? false
         // RUMM-1779 Keep view active as long as we have ongoing resources
         let isActive = isActiveView || !resourceScopes.isEmpty
         // RUMM-2079 `time_spent` can't be lower than 1ns
@@ -631,7 +633,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            writer.write(value: event, metadata: event.metadata())
+            writer.write(value: event, metadata: event.metadata(), completion: completionHandler)
 
             // Update fatal error context with recent RUM view:
             dependencies.fatalErrorContext.view = event
@@ -658,6 +660,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies.watchdogTermination?.update(viewEvent: event)
         } else { // if event was dropped by mapper
             version -= 1
+            completionHandler()
         }
     }
 
@@ -749,6 +752,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             needsViewUpdate = true
         } else {
             errorsCount -= 1
+            // Call the completion when the event is discarded.
+            // When the error is kept, the completion is called when the
+            // view update is written.
+            command.completionHandler()
         }
     }
 

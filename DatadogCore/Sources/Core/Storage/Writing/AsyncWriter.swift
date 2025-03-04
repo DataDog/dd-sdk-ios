@@ -17,12 +17,13 @@ internal struct AsyncWriter: Writer {
         self.queue = queue
     }
 
-    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
-        queue.async { writer.write(value: value, metadata: metadata) }
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
+        queue.async { writer.write(value: value, metadata: metadata, completion: completion) }
     }
 }
 
 internal struct NOPWriter: Writer {
-    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
+        completion()
     }
 }

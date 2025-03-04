@@ -36,7 +36,9 @@ internal struct FileWriter: Writer {
     /// - Parameters:
     ///  - value: Encodable value to write.
     ///  - metadata: Encodable metadata to write.
-    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
+        defer { completion() }
+
         var encoded: Data = .init()
         if let metadata = metadata {
             do {
