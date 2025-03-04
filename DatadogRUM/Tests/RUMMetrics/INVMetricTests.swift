@@ -430,35 +430,4 @@ class INVMetricTests: XCTestCase {
         let expectedINV = currentViewStart.timeIntervalSince(actionDate)
         XCTAssertEqual(actualINV, expectedINV, accuracy: 0.01)
     }
-
-    // MARK: - CustomValueINVMetric
-
-    func testWhenCustomValueMetric_thenReturnsValueProvided() throws {
-        // Duplicate one of the simpler tests and ensure that the provided value comes back.
-        // Given
-        let (t0, t1, t2) = (currentViewStart - 10, currentViewStart - 5, currentViewStart)
-        let expectedValue: TimeInterval = .mockRandom()
-        let metric = CustomValueINVMetric(viewID: currentViewID, invValue: expectedValue)
-
-        // When
-        metric.trackViewStart(at: .distantPast, name: .mockAny(), viewID: previousViewID)
-        metric.trackAction(startTime: t0, endTime: t1, name: .mockAny(), type: .tap, in: previousViewID)
-        metric.trackViewStart(at: t2, name: .mockAny(), viewID: currentViewID)
-        let ins = metric.value(for: currentViewID)
-
-        // Then
-        XCTAssertEqual(ins, .success(expectedValue))
-    }
-
-    func testWhenCustomValueMetric_wrongViewId_thenReturnsUnkownView() throws {
-        // Given
-        let metric = CustomValueINVMetric(viewID: currentViewID, invValue: .mockAny())
-
-        // When
-        let unknownViewID: RUMUUID = .mockRandom()
-        let ins = metric.value(for: unknownViewID)
-
-        // Then
-        XCTAssertEqual(ins, .failure(.viewUnknown))
-    }
 }

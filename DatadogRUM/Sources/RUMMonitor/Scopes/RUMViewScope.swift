@@ -221,7 +221,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             isActiveView = false
             needsViewUpdate = true
         case let command as RUMSetInternalViewAttributeCommand where isActiveView:
-            setInternalViewAttribute(command)
+            internalAttributes[command.key] = command.value
             // Purposefully don't perform a view update. Most (all?) internal view attributes
             // aren't important enough to expect them to be uploaded automatically. They can
             // get sent with the next view update.
@@ -417,18 +417,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         )
     }
 
-    private func setInternalViewAttribute(_ command: RUMSetInternalViewAttributeCommand) {
-        switch command.key {
-        case CrossPlatformAttributes.customINVValue:
-            if let customInvValue = command.value as? (any BinaryInteger),
-               let customInvValue = Int64(exactly: customInvValue) {
-                interactionToNextViewMetric = CustomValueINVMetric(viewID: viewUUID, invValue: TimeInterval(fromNanoseconds: customInvValue))
-            }
-        default:
-            internalAttributes[command.key] = command.value
-        }
-    }
-
     // MARK: - Sending RUM Events
 
     private func sendApplicationStartAction(on command: RUMApplicationStartCommand, context: DatadogContext, writer: Writer) {
@@ -552,6 +540,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let isSlowRendered = refreshRateInfo?.meanValue.map { $0 < Constants.slowRenderingThresholdFPS }
         let networkSettledTime = networkSettledMetric.value(with: context.applicationStateHistory)
         var interactionToNextViewTime = interactionToNextViewMetric?.value(for: viewUUID) ?? .failure(.disabled)
+        // Only overwrite with a custom value if INV was disabled
+        if interactionToNextViewTime == .failure(.disabled),
+           let customInvValue = internalAttributes[CrossPlatformAttributes.customINVValue] as? (any BinaryInteger),
+           let customInvValue = Int64(exactly: customInvValue) {
+            interactionToNextViewTime = .success(TimeInterval(fromNanoseconds: customInvValue))
+        }
 
         // Only add the performance member if we have a value for it
         let performance: RUMViewEvent.View.Performance?
