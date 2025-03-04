@@ -103,7 +103,7 @@ internal class SessionEndedMetric {
     private var wasStopped = false
 
     /// Information about the upload quality during the session.
-    private var uploadQuality: Attributes.UploadQuality
+    private var uploadQuality: [String: Attributes.UploadQuality] = [:]
 
     /// If `RUM.Configuration.trackBackgroundEvents` was enabled for this session.
     private let tracksBackgroundEvents: Bool
@@ -142,11 +142,6 @@ internal class SessionEndedMetric {
         self.precondition = precondition
         self.tracksBackgroundEvents = tracksBackgroundEvents
         self.ntpOffsetAtStart = context.serverTimeOffset
-        self.uploadQuality = Attributes.UploadQuality(
-            cycleCount: 0,
-            failureCount: [:],
-            blockerCount: [:]
-        )
     }
 
     /// Tracks the view event that occurred during the session.
@@ -212,6 +207,16 @@ internal class SessionEndedMetric {
     /// - Parameters:
     ///   - attributes: The upload quality attributes
     func track(uploadQuality attributes: [String: Encodable]) {
+        guard let track = attributes[UploadQualityMetric.track] as? String else {
+            return
+        }
+
+        let uploadQuality = self.uploadQuality[track] ?? Attributes.UploadQuality(
+            cycleCount: 0,
+            failureCount: [:],
+            blockerCount: [:]
+        )
+
         var failureCount = uploadQuality.failureCount
         var blockerCount = uploadQuality.blockerCount
 
@@ -227,7 +232,7 @@ internal class SessionEndedMetric {
             }
         }
 
-        uploadQuality = Attributes.UploadQuality(
+        self.uploadQuality[track] = Attributes.UploadQuality(
             cycleCount: uploadQuality.cycleCount + 1,
             failureCount: failureCount,
             blockerCount: blockerCount
@@ -344,7 +349,10 @@ internal class SessionEndedMetric {
         }
 
         /// Information about the upload quality during the session.
-        let uploadQuality: UploadQuality
+        /// The upload quality is splitting between upload track name.
+/// Tracks upload quality during the session, aggregating them by track name.
+/// Each track reports its own upload quality metrics.
+        let uploadQuality: [String: UploadQuality]
 
         enum CodingKeys: String, CodingKey {
             case processType = "process_type"
