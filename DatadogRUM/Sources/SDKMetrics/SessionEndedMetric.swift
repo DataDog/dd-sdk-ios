@@ -350,6 +350,8 @@ internal class SessionEndedMetric {
 
         /// Information about the upload quality during the session.
         /// The upload quality is splitting between upload track name.
+/// Tracks upload quality during the session, aggregating them by track name.
+/// Each track reports its own upload quality metrics.
         let uploadQuality: [String: UploadQuality]
 
         enum CodingKeys: String, CodingKey {
