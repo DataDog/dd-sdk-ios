@@ -17,7 +17,7 @@ struct LogsCustomContentView: View {
     @State private var logs: [String]
     @State private var isLogging: Bool
 
-    private var logger: LoggerProtocol!
+    private let logger: LoggerProtocol
 
     init() {
         logMessage = "Hello from the iOS Benchmark app!"
@@ -105,7 +105,7 @@ struct LogsCustomContentView: View {
     ///   - attributes: The payload attributes corresponding to the selected payload size.
     func logBatch(selectedLogLevel: LogLevel, attributes: [String: Encodable]) {
         DispatchQueue.global(qos: .userInitiated).async {
-            var newLogEntries = [String]()
+            var newLogEntries: [String] = []
 
             for _ in 1...self.logsPerBatch {
                 let logEntry = "\(Date()) [\(self.logLevel)] \(self.logMessage) - \(self.payloadSize)"

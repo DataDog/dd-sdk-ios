@@ -13,7 +13,7 @@ struct LogsHeavyTrafficContentView: View {
     @State private var logsPerBatch: Int
     @State private var payloadSize: String
 
-    private var logger: LoggerProtocol!
+    private let logger: LoggerProtocol
 
     init() {
         logMessage = "Hello from the iOS Benchmark app!"
@@ -44,7 +44,7 @@ struct LogsHeavyTrafficContentView: View {
         }
         .tint(.purple)
     }
-    
+
     /// Sends a batch of log messages using the current configuration.
     func log() {
         guard let selectedLogLevel = logLevels[logLevel],
