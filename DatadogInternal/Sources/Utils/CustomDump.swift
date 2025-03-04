@@ -28,8 +28,6 @@
  * SOFTWARE.
  */
 
-#if DEBUG
-
 // swiftlint:disable function_default_parameter_at_end
 
 import Foundation
@@ -49,7 +47,7 @@ import Foundation
 ///     components. The default is `Int.max`.
 /// - Returns: The instance passed as `value`.
 @discardableResult
-internal func customDump<T>(
+public func customDump<T>(
     _ value: T,
     name: String? = nil,
     indent: Int = 0,
@@ -550,7 +548,18 @@ public struct FileHandlerOutputStream: TextOutputStream {
         }
     }
 }
-
 // swiftlint:enable function_default_parameter_at_end
 
+#if DEBUG
+/// Dumps the given value's contents in a file.
+public func dump<T>(_ value: T, filename: String) throws {
+    let manager = FileManager.default
+    let url = manager.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(filename) //swiftlint:disable:this force_unwrapping
+    manager.createFile(atPath: url.path, contents: nil, attributes: nil)
+    let handle = try FileHandle(forWritingTo: url)
+    var stream = FileHandlerOutputStream(handle)
+    customDump(value, to: &stream)
+    print("Dump:", url)
+    handle.closeFile()
+}
 #endif

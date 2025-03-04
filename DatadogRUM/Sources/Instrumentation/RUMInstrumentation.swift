@@ -63,7 +63,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         // and only swizzle `UIViewController` if UIKit instrumentation is configured:
         let viewsHandler = RUMViewsHandler(
             dateProvider: dateProvider,
-            predicate: uiKitRUMViewsPredicate,
+            uiKitPredicate: uiKitRUMViewsPredicate,
+            swiftUIPredicate: nil,
+            swiftUIViewNameExtractor: nil,
             notificationCenter: notificationCenter
         )
         let viewControllerSwizzler: UIViewControllerSwizzler? = {

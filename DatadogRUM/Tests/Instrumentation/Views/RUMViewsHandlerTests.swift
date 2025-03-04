@@ -17,7 +17,9 @@ class RUMViewsHandlerTests: XCTestCase {
     private lazy var handler: RUMViewsHandler = {
         let handler = RUMViewsHandler(
             dateProvider: dateProvider,
-            predicate: predicate,
+            uiKitPredicate: predicate,
+            swiftUIPredicate: nil,
+            swiftUIViewNameExtractor: nil,
             notificationCenter: notificationCenter
         )
         handler.publish(to: commandSubscriber)
@@ -221,7 +223,13 @@ class RUMViewsHandlerTests: XCTestCase {
             }
         }
         let predicate = Predicate()
-        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
+        let handler = RUMViewsHandler(
+            dateProvider: dateProvider,
+            uiKitPredicate: predicate,
+            swiftUIPredicate: nil,
+            swiftUIViewNameExtractor: nil,
+            notificationCenter: .default
+        )
 
         // Given
         let someView = createMockViewInWindow()
@@ -257,7 +265,13 @@ class RUMViewsHandlerTests: XCTestCase {
         let untrackedModal = createMockViewInWindow()
 
         let predicate = Predicate(untrackedModal: untrackedModal)
-        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
+        let handler = RUMViewsHandler(
+            dateProvider: dateProvider,
+            uiKitPredicate: predicate,
+            swiftUIPredicate: nil,
+            swiftUIViewNameExtractor: nil,
+            notificationCenter: .default
+        )
         handler.publish(to: commandSubscriber)
 
         // When
@@ -292,7 +306,13 @@ class RUMViewsHandlerTests: XCTestCase {
         let untrackedModal = createMockViewInWindow()
 
         let predicate = Predicate(untrackedModal: untrackedModal)
-        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
+        let handler = RUMViewsHandler(
+            dateProvider: dateProvider,
+            uiKitPredicate: predicate,
+            swiftUIPredicate: nil,
+            swiftUIViewNameExtractor: nil,
+            notificationCenter: .default
+        )
         handler.publish(to: commandSubscriber)
 
         // When
@@ -332,7 +352,13 @@ class RUMViewsHandlerTests: XCTestCase {
             untrackedModal.isModalInPresentation = true
 
             let predicate = Predicate(untrackedModal: untrackedModal)
-            let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
+            let handler = RUMViewsHandler(
+                dateProvider: dateProvider,
+                uiKitPredicate: predicate,
+                swiftUIPredicate: nil,
+                swiftUIViewNameExtractor: nil,
+                notificationCenter: .default
+            )
             handler.publish(to: commandSubscriber)
 
             // When
@@ -372,7 +398,13 @@ class RUMViewsHandlerTests: XCTestCase {
             untrackedModal.isModalInPresentation = true
 
             let predicate = Predicate(untrackedModal: untrackedModal)
-            let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
+            let handler = RUMViewsHandler(
+                dateProvider: dateProvider,
+                uiKitPredicate: predicate,
+                swiftUIPredicate: nil,
+                swiftUIViewNameExtractor: nil,
+                notificationCenter: .default
+            )
             handler.publish(to: commandSubscriber)
 
             // When
