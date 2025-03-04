@@ -45,9 +45,9 @@ internal class NOPOTelSpan: Span {
         end()
     }
 
-    func recordException(_ exception: any OpenTelemetryApi.SpanException, attributes: [String : OpenTelemetryApi.AttributeValue], timestamp: Date) {}
+    func recordException(_ exception: any OpenTelemetryApi.SpanException, attributes: [String: OpenTelemetryApi.AttributeValue], timestamp: Date) {}
 
-    func recordException(_ exception: any OpenTelemetryApi.SpanException, attributes: [String : OpenTelemetryApi.AttributeValue]) {}
+    func recordException(_ exception: any OpenTelemetryApi.SpanException, attributes: [String: OpenTelemetryApi.AttributeValue]) {}
 
     func recordException(_ exception: any OpenTelemetryApi.SpanException, timestamp: Date) {}
 
