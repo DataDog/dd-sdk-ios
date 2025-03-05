@@ -81,7 +81,7 @@ let package = Package(
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
             ],
-            swiftSettings: [.define("SPM_BUILD")]
+            swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
         ),
         .target(
             name: "DatadogObjc",
