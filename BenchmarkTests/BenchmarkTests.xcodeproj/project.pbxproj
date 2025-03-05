@@ -82,6 +82,7 @@
 		D231DCF52C73356E00F3F66C /* WebViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D231DCAA2C73356D00F3F66C /* WebViewController.storyboard */; };
 		D231DCF62C73356E00F3F66C /* WebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D231DCAB2C73356D00F3F66C /* WebViewController.swift */; };
 		D231DCF92C7342D500F3F66C /* ModuleBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D231DCF82C7342D500F3F66C /* ModuleBundle.swift */; };
+		D23734972D773DD8004CCAED /* BenchmarkMeter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23734962D773DD1004CCAED /* BenchmarkMeter.swift */; };
 		D23DD32D2C58D80C00B90C4C /* DatadogBenchmarks in Frameworks */ = {isa = PBXBuildFile; productRef = D23DD32C2C58D80C00B90C4C /* DatadogBenchmarks */; };
 		D24BFD472C6B916B00AB9604 /* SyntheticScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24BFD462C6B916B00AB9604 /* SyntheticScenario.swift */; };
 		D24E15F32C776956005AE4E8 /* BenchmarkProfiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24E15F22C776956005AE4E8 /* BenchmarkProfiler.swift */; };
@@ -312,6 +313,7 @@
 		D231DCAB2C73356D00F3F66C /* WebViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewController.swift; sourceTree = "<group>"; };
 		D231DCF82C7342D500F3F66C /* ModuleBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleBundle.swift; sourceTree = "<group>"; };
 		D231DCFA2C735FC200F3F66C /* LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
+		D23734962D773DD1004CCAED /* BenchmarkMeter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkMeter.swift; sourceTree = "<group>"; };
 		D24BFD462C6B916B00AB9604 /* SyntheticScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticScenario.swift; sourceTree = "<group>"; };
 		D24E15F22C776956005AE4E8 /* BenchmarkProfiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkProfiler.swift; sourceTree = "<group>"; };
 		D26DD6E62D0C774000D96148 /* DatadogMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogMonitor.swift; sourceTree = "<group>"; };
@@ -922,6 +924,7 @@
 				D29F754F2C4AA07E00288638 /* AppDelegate.swift */,
 				D276069D2C514F37002D2A14 /* AppConfiguration.swift */,
 				D24E15F22C776956005AE4E8 /* BenchmarkProfiler.swift */,
+				D23734962D773DD1004CCAED /* BenchmarkMeter.swift */,
 				D276069C2C514F37002D2A14 /* Scenarios */,
 				D29F755D2C4AA08000288638 /* Info.plist */,
 			);
@@ -1285,6 +1288,7 @@
 				D24E15F32C776956005AE4E8 /* BenchmarkProfiler.swift in Sources */,
 				D24BFD472C6B916B00AB9604 /* SyntheticScenario.swift in Sources */,
 				D27606A32C514F37002D2A14 /* Scenario.swift in Sources */,
+				D23734972D773DD8004CCAED /* BenchmarkMeter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
