@@ -87,6 +87,11 @@ public protocol BenchmarkCounter {
 }
 
 extension BenchmarkCounter {
+    /// Increment the counter by one.
+    public func increment(attributes: @autoclosure () -> [String: String] = [:]) {
+        add(value: 1, attributes: attributes())
+    }
+
     /// Increment the counter.
     ///
     /// - parameters:
@@ -99,7 +104,7 @@ extension BenchmarkCounter {
     ///
     /// - parameters:
     ///     - by: Amount to increment by.
-    public func increment<Integer>(by amount: Integer = 1, attributes: @autoclosure () -> [String: String] = [:]) where Integer: BinaryInteger {
+    public func increment<Integer>(by amount: Integer, attributes: @autoclosure () -> [String: String] = [:]) where Integer: BinaryInteger {
         add(value: Double(amount), attributes: attributes())
     }
 }
