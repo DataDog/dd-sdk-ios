@@ -44,6 +44,10 @@ extension TimeInterval {
         self = Double(milliseconds) / 1_000
     }
 
+    public init(fromNanoseconds nanoseconds: Int64) {
+        self = Double(nanoseconds) / 1_000_000_000
+    }
+
     /// `TimeInterval` represented in milliseconds (capped to `.min` or `.max` respectively to its sign).
     public var toMilliseconds: UInt64 {
         let milliseconds = self * 1_000

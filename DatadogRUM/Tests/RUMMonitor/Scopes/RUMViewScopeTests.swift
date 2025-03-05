@@ -2831,6 +2831,223 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(metric.trackedViewCompletes.count, 1)
     }
 
+    // MARK: - Cross Platform View Attributes
+
+    func testGivenAStartedView_whenItSetsAnInternalViewAttribute_itSetsTheAttribute() {
+        // Given
+        let viewStartDate = Date()
+        let viewID: RUMUUID = .mockRandom()
+        let scope = RUMViewScope(
+            isInitialView: .mockAny(),
+            parent: parent,
+            dependencies: .mockWith(
+                rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: viewID)
+            ),
+            identity: .mockViewIdentifier(),
+            path: .mockAny(),
+            name: .mockAny(),
+            customTimings: [:],
+            startTime: viewStartDate,
+            serverTimeOffset: .mockRandom(),
+            interactionToNextViewMetric: INVMetricMock()
+        )
+
+        // When
+        let mockKey: String = .mockRandom()
+        let mockValue: String = .mockRandom()
+        _ = scope.process(
+            command: RUMSetInternalViewAttributeCommand(
+                time: .mockAny(),
+                key: mockKey,
+                value: mockValue
+            ),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertEqual(scope.internalAttributes[mockKey] as? String, mockValue)
+    }
+
+    func testGivenAStartedView_whenItSetsAnExitingInternalViewAttribute_itSetsTheAttribute() {
+        // Given
+        let viewStartDate = Date()
+        let viewID: RUMUUID = .mockRandom()
+        let scope = RUMViewScope(
+            isInitialView: .mockAny(),
+            parent: parent,
+            dependencies: .mockWith(
+                rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: viewID)
+            ),
+            identity: .mockViewIdentifier(),
+            path: .mockAny(),
+            name: .mockAny(),
+            customTimings: [:],
+            startTime: viewStartDate,
+            serverTimeOffset: .mockRandom(),
+            interactionToNextViewMetric: INVMetricMock()
+        )
+        let mockKey: String = .mockRandom()
+        let mockValue: String = .mockRandom()
+        _ = scope.process(
+            command: RUMSetInternalViewAttributeCommand(
+                time: .mockAny(),
+                key: mockKey,
+                value: mockValue
+            ),
+            context: context,
+            writer: writer
+        )
+
+        // When
+        let updatedValue: String = .mockRandom()
+        _ = scope.process(
+            command: RUMSetInternalViewAttributeCommand(
+                time: .mockAny(),
+                key: mockKey,
+                value: updatedValue
+            ),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertEqual(scope.internalAttributes[mockKey] as? String, updatedValue)
+    }
+
+    func testGivenAStoppedView_whenItSetsAnInternalViewAttribute_itDoesNotSetTheAttribute() {
+        // Given
+        let viewStartDate = Date()
+        let viewID: RUMUUID = .mockRandom()
+        let scope = RUMViewScope(
+            isInitialView: .mockAny(),
+            parent: parent,
+            dependencies: .mockWith(
+                rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: viewID)
+            ),
+            identity: .mockViewIdentifier(),
+            path: .mockAny(),
+            name: .mockAny(),
+            customTimings: [:],
+            startTime: viewStartDate,
+            serverTimeOffset: .mockRandom(),
+            interactionToNextViewMetric: INVMetricMock()
+        )
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // When
+        let mockKey: String = .mockRandom()
+        let mockValue: String = .mockRandom()
+        _ = scope.process(
+            command: RUMSetInternalViewAttributeCommand(
+                time: .mockAny(),
+                key: mockKey,
+                value: mockValue
+            ),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertNil(scope.internalAttributes[mockKey])
+    }
+
+    // MARK: - Flutter First Build Complete
+
+    func testGivenFCBInternalAttribute_itSetsTheValueOnTheViewEvent() throws {
+        // Given
+        let viewStartDate = Date()
+        let viewID: RUMUUID = .mockRandom()
+        let scope = RUMViewScope(
+            isInitialView: .mockAny(),
+            parent: parent,
+            dependencies: .mockWith(
+                rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: viewID)
+            ),
+            identity: .mockViewIdentifier(),
+            path: .mockAny(),
+            name: .mockAny(),
+            customTimings: [:],
+            startTime: viewStartDate,
+            serverTimeOffset: .mockRandom(),
+            interactionToNextViewMetric: INVMetricMock()
+        )
+        let fbcValue = Int64.mockRandom(min: 0)
+        _ = scope.process(
+            command: RUMSetInternalViewAttributeCommand(
+                time: .mockAny(),
+                key: CrossPlatformAttributes.flutterFirstBuildComplete,
+                value: fbcValue
+            ),
+            context: context,
+            writer: writer
+        )
+
+        // When
+        // Though this property would be unlikely to be set during StartView, processing
+        // the StartViewCommand will give us a view update, which is what we want.
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
+        let lastEvent = events.last!
+        XCTAssertEqual(lastEvent.view.performance?.fbc?.timestamp, fbcValue)
+    }
+
+    // Custom INV Values
+    func testGivenCustomINVValuess_itSetsTheValueOnTheViewEvent() throws {
+        // Given
+        let viewStartDate = Date()
+        let viewID: RUMUUID = .mockRandom()
+        let scope = RUMViewScope(
+            isInitialView: .mockAny(),
+            parent: parent,
+            dependencies: .mockWith(
+                rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: viewID)
+            ),
+            identity: .mockViewIdentifier(),
+            path: .mockAny(),
+            name: .mockAny(),
+            customTimings: [:],
+            startTime: viewStartDate,
+            serverTimeOffset: .mockRandom(),
+            interactionToNextViewMetric: nil
+        )
+        let invValue = Int64.mockRandom(min: 0, max: 100_000_000)
+        _ = scope.process(
+            command: RUMSetInternalViewAttributeCommand(
+                time: .mockAny(),
+                key: CrossPlatformAttributes.customINVValue,
+                value: invValue
+            ),
+            context: context,
+            writer: writer
+        )
+
+        // When
+        // Though this property would be unlikely to be set during StartView, processing
+        // the StartViewCommand will give us a view update, which is what we want.
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
+        let lastEvent = events.last!
+        XCTAssertEqual(lastEvent.view.interactionToNextViewTime, invValue)
+    }
     // MARK: - Has replay
 
     func testViewUpdate_onceHasReplayIsTrueItRemainsTrue() throws {

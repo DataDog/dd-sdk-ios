@@ -529,7 +529,7 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
-// MARK: - Cross-platform perf metrics
+// MARK: - Cross-platform attributes
 
 internal struct RUMUpdatePerformanceMetric: RUMCommand {
     let canStartBackgroundView = false
@@ -540,4 +540,16 @@ internal struct RUMUpdatePerformanceMetric: RUMCommand {
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
+}
+
+internal struct RUMSetInternalViewAttributeCommand: RUMCommand {
+    let canStartBackgroundView = false
+    let isUserInteraction = false
+    var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+    var attributes: [AttributeKey: AttributeValue] = [:]
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
+
+    let key: AttributeKey
+    let value: AttributeValue
 }

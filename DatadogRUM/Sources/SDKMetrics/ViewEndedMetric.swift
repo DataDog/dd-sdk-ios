@@ -25,6 +25,7 @@ internal final class ViewEndedMetric {
     internal enum MetricPredicateType: String {
         case timeBasedDefault = "time_based_default"
         case timeBasedCustom = "time_based_custom"
+        case disabled = "disabled"
         case custom = "custom"
     }
 

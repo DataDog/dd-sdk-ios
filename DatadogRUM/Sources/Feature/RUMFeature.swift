@@ -43,7 +43,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             sampleRate: configuration.sessionEndedSampleRate
         )
         let tnsPredicateType = configuration.networkSettledResourcePredicate.metricPredicateType
-        let invPredicateType = configuration.nextViewActionPredicate.metricPredicateType
+        let invPredicateType = configuration.nextViewActionPredicate?.metricPredicateType ?? .disabled
 
         var watchdogTermination: WatchdogTerminationMonitor?
         if configuration.trackWatchdogTerminations {
@@ -124,8 +124,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
             },
             interactionToNextViewMetricFactory: {
+                guard let nextViewActionPredicate = configuration.nextViewActionPredicate else {
+                    return nil
+                }
                 return INVMetric(
-                    predicate: configuration.nextViewActionPredicate
+                    predicate: nextViewActionPredicate
                 )
             }
         )

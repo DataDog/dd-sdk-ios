@@ -93,6 +93,25 @@ public struct DatadogInternalInterface {
         monitor.process(command: performanceMetric)
     }
 
+    /// Add an internal view attribute. Internal view attributes are used by cross platform frameworks to determine the values
+    /// of certain internal metrics, including Flutter's First Build Complete metric. They are not propagated to other events
+    /// - Parameters:
+    ///   - time: the time of this command
+    ///   - key: the key for this attribute
+    ///   - value: the value of the attribute
+    public func setInternalViewAttribute(
+        at time: Date,
+        key: AttributeKey,
+        value: AttributeValue
+    ) {
+        let attributeCommand = RUMSetInternalViewAttributeCommand(
+            time: time,
+            key: key,
+            value: value
+        )
+        monitor.process(command: attributeCommand)
+    }
+
     /// Adds temporal metrics to given RUM resource.
     ///
     /// It must be called before the resource is stopped.

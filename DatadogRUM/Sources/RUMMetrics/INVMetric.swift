@@ -61,6 +61,8 @@ internal enum INVNoValueReason: String, Error {
     case previousViewRemoved = "previous_view_removed"
     /// Actions were tracked in the previous view, but all were invalid (e.g., started before the view started).
     case invalidTrackedActions = "invalid_actions"
+    /// INV Is Disabled
+    case disabled = "disabled"
 }
 
 internal final class INVMetric: INVMetricTracking {
