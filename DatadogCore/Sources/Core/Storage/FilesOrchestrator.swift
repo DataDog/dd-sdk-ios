@@ -80,6 +80,15 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         self.dateProvider = dateProvider
         self.telemetry = telemetry
         self.metricsData = metricsData
+
+#if DD_BENCHMARK
+        bench.meter.observe(metric: "ios.benchmark.batch_count") {[weak self] gauge in
+            if let self {
+                let files = try? directory.files()
+                files.map { gauge.record($0.count, attributes: ["track": self.trackName]) }
+            }
+        }
+#endif
     }
 
     // MARK: - `WritableFile` orchestration

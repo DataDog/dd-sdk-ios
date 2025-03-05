@@ -56,6 +56,8 @@ public protocol BenchmarkMeter {
     /// - Parameter metric: The metric name.
     /// - Returns: The gauge instance.
     func gauge(metric: @autoclosure () -> String) -> BenchmarkGauge
+
+    func observe(metric: @autoclosure () -> String, callback: @escaping (BenchmarkGauge) -> Void )
 }
 
 /// The Benchmark Tracer will create and start spans in a benchmark environment.
@@ -136,6 +138,8 @@ private final class NOPBench: BenchmarkProfiler, BenchmarkTracer, BenchmarkSpan,
     func counter(metric: @autoclosure () -> String) -> BenchmarkCounter { self }
     /// no-op
     func gauge(metric: @autoclosure () -> String) -> BenchmarkGauge { self }
+    /// no-op
+    func observe(metric: @autoclosure () -> String, callback: @escaping (any BenchmarkGauge) -> Void) { }
     /// no-op
     func add(value: Double, attributes: @autoclosure () -> [String: String]) { }
     /// no-op
