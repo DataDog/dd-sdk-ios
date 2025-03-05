@@ -47,7 +47,15 @@ public protocol BenchmarkMeter {
     ///
     /// - Parameter metric: The metric name.
     /// - Returns: The counter instance.
-    func counter(metric: @autoclosure () -> String) -> BenchmarkIntegerCounter
+    func counter(metric: @autoclosure () -> String) -> BenchmarkCounter
+
+    /// Returns a `BenchmarkGauge` instance for a given metric name.
+    ///
+    /// The gauge metric will keep the latest value.
+    ///
+    /// - Parameter metric: The metric name.
+    /// - Returns: The gauge instance.
+    func gauge(metric: @autoclosure () -> String) -> BenchmarkGauge
 }
 
 /// The Benchmark Tracer will create and start spans in a benchmark environment.
@@ -74,23 +82,59 @@ public protocol BenchmarkSpan {
 ///
 /// This meter can be used to count measures of the SDK.
 /// In production, the Benchmark Counter is no-op.
-public protocol BenchmarkIntegerCounter {
-    func add(value: Int, attributes: @autoclosure () -> [String: String])
+public protocol BenchmarkCounter {
+    func add(value: Double, attributes: @autoclosure () -> [String: String])
 }
 
-extension BenchmarkIntegerCounter {
-    func add(value: Int) {
-        add(value: value, attributes: [:])
+extension BenchmarkCounter {
+    /// Increment the counter.
+    ///
+    /// - parameters:
+    ///     - by: Amount to increment by.
+    public func increment<FloatingPoint>(by amount: FloatingPoint = 1, attributes: @autoclosure () -> [String: String] = [:]) where FloatingPoint: BinaryFloatingPoint {
+        add(value: Double(amount), attributes: attributes())
+    }
+
+    /// Increment the counter.
+    ///
+    /// - parameters:
+    ///     - by: Amount to increment by.
+    public func increment<Integer>(by amount: Integer = 1, attributes: @autoclosure () -> [String: String] = [:]) where Integer: BinaryInteger {
+        add(value: Double(amount), attributes: attributes())
     }
 }
 
-private final class NOPBench: BenchmarkProfiler, BenchmarkTracer, BenchmarkSpan, BenchmarkMeter, BenchmarkIntegerCounter {
+/// The Benchmark Gauge is a gauge metric aggregator.
+///
+/// This meter can be used to track measures of the SDK.
+/// In production, the Benchmark Gauge is no-op.
+public protocol BenchmarkGauge {
+    func record(value: Double, attributes: @autoclosure () -> [String: String])
+}
+
+extension BenchmarkGauge {
+    /// Record value.
+    public func record<FloatingPoint>(_ value: FloatingPoint, attributes: @autoclosure () -> [String: String] = [:]) where FloatingPoint: BinaryFloatingPoint {
+        record(value: Double(value), attributes: attributes())
+    }
+
+    /// Record value.
+    public func record<Integer>(_ value: Integer, attributes: @autoclosure () -> [String: String] = [:]) where Integer: BinaryInteger {
+        record(value: Double(value), attributes: attributes())
+    }
+}
+
+private final class NOPBench: BenchmarkProfiler, BenchmarkTracer, BenchmarkSpan, BenchmarkMeter, BenchmarkCounter, BenchmarkGauge {
     /// no-op
     func tracer(operation: @autoclosure () -> String) -> BenchmarkTracer { self }
     /// no-op
-    func counter(metric: @autoclosure () -> String) -> BenchmarkIntegerCounter { self }
+    func counter(metric: @autoclosure () -> String) -> BenchmarkCounter { self }
     /// no-op
-    func add(value: Int, attributes: @autoclosure () -> [String: String]) { }
+    func gauge(metric: @autoclosure () -> String) -> BenchmarkGauge { self }
+    /// no-op
+    func add(value: Double, attributes: @autoclosure () -> [String: String]) { }
+    /// no-op
+    func record(value: Double, attributes: @autoclosure () -> [String: String]) { }
     /// no-op
     func startSpan(named: @autoclosure () -> String) -> BenchmarkSpan { self }
     /// no-op

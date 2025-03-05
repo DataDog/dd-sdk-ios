@@ -61,22 +61,23 @@ internal final class Meter: DatadogInternal.BenchmarkMeter {
         }
     }
 
-    func counter(metric: @autoclosure () -> String) -> any DatadogInternal.BenchmarkIntegerCounter {
-        let counter = meter.createIntCounter(name: metric())
-        return CounterWrapper(counter: counter)
+    func counter(metric: @autoclosure () -> String) -> DatadogInternal.BenchmarkCounter {
+        meter.createDoubleCounter(name: metric())
+    }
+
+    func gauge(metric: @autoclosure () -> String) -> DatadogInternal.BenchmarkGauge {
+        meter.createDoubleMeasure(name: metric())
     }
 }
 
-private final class CounterWrapper<Value> {
-    let counter: OpenTelemetryApi.AnyCounterMetric<Value>
-
-    init(counter: AnyCounterMetric<Value>) {
-        self.counter = counter
+extension AnyCounterMetric<Double>: DatadogInternal.BenchmarkCounter {
+    public func add(value: Double, attributes: @autoclosure () -> [String: String]) {
+        add(value: value, labelset: LabelSet(labels: attributes()))
     }
 }
 
-extension CounterWrapper: DatadogInternal.BenchmarkIntegerCounter where Value: BinaryInteger {
-    func add(value: Int, attributes: @autoclosure () -> [String: String]) {
-        counter.add(value: Value(value), labelset: LabelSet(labels: attributes()))
+extension AnyMeasureMetric<Double>: DatadogInternal.BenchmarkGauge {
+    public func record(value: Double, attributes: @autoclosure () -> [String: String]) {
+        record(value: value, labelset: LabelSet(labels: attributes()))
     }
 }

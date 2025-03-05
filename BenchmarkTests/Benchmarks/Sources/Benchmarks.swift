@@ -75,7 +75,7 @@ public enum Benchmarks {
     /// Configure an OpenTelemetry meter provider.
     ///
     /// - Parameter configuration: The Benchmark configuration.
-    public static func metricsProvider(with configuration: Configuration) -> MeterProvider {
+    public static func meterProvider(with configuration: Configuration) -> MeterProvider {
         let metricExporter = MetricExporter(
             configuration: MetricExporter.Configuration(
                 apiKey: configuration.apiKey,

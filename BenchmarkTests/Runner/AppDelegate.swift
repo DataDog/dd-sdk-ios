@@ -22,7 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Collect metrics during all run
         let meter = Meter(
-            provider: Benchmarks.metricsProvider(
+            provider: Benchmarks.meterProvider(
                 with: Benchmarks.Configuration(
                     info: applicationInfo,
                     scenario: scenario,
