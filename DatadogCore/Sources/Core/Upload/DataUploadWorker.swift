@@ -139,6 +139,10 @@ internal class DataUploadWorker: DataUploadWorkerType {
                         batch,
                         reason: .intakeCode(responseCode: uploadStatus.responseCode)
                     )
+#if DD_BENCHMARK
+                    bench.meter.counter(metric: "ios.benchmark.upload_count")
+                        .increment(attributes: ["track": self.featureName])
+#endif
 
                     previousUploadStatus = nil
 

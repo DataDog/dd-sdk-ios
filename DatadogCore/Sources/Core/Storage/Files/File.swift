@@ -35,6 +35,9 @@ internal protocol ReadableFile {
     /// Name of this file.
     var name: String { get }
 
+    /// Current size of this file.
+    func size() throws -> UInt64
+
     /// Creates InputStream for reading the available data from this file.
     func stream() throws -> InputStream
 
