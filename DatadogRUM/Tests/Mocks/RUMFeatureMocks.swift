@@ -801,6 +801,8 @@ extension RUMScopeDependencies {
         backtraceReporter: BacktraceReporting = BacktraceReporterMock(backtrace: nil),
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
+        renderLoopObserver: RenderLoopObserver? = nil,
+        viewHitchesMetricFactory: @escaping () -> RenderLoopReader & ViewHitchesMetric = { ViewHitchesMock.mockAny() },
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
         viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
@@ -825,6 +827,8 @@ extension RUMScopeDependencies {
             backtraceReporter: backtraceReporter,
             ciTest: ciTest,
             syntheticsTest: syntheticsTest,
+            renderLoopObserver: renderLoopObserver,
+            viewHitchesMetricFactory: viewHitchesMetricFactory,
             vitalsReaders: vitalsReaders,
             onSessionStart: onSessionStart,
             viewCache: viewCache,
@@ -849,6 +853,8 @@ extension RUMScopeDependencies {
         backtraceReporter: BacktraceReporting? = nil,
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
+        renderLoopObserver: RenderLoopObserver? = nil,
+        viewHitchesMetricFactory: (() -> RenderLoopReader & ViewHitchesMetric)? = nil,
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: RUM.SessionListener? = nil,
         viewCache: ViewCache? = nil,
@@ -871,6 +877,8 @@ extension RUMScopeDependencies {
             backtraceReporter: backtraceReporter ?? self.backtraceReporter,
             ciTest: ciTest ?? self.ciTest,
             syntheticsTest: syntheticsTest ?? self.syntheticsTest,
+            renderLoopObserver: renderLoopObserver ?? self.renderLoopObserver,
+            viewHitchesMetricFactory: viewHitchesMetricFactory ?? self.viewHitchesMetricFactory,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
             onSessionStart: onSessionStart ?? self.onSessionStart,
             viewCache: viewCache ?? self.viewCache,
@@ -1302,5 +1310,31 @@ internal class INVMetricMock: INVMetricTracking {
 
     func value(for viewID: RUMUUID) -> Result<TimeInterval, INVNoValueReason> {
         return mockedValue
+    }
+}
+
+final class ViewHitchesMock: ViewHitchesMetric {
+    var hitchesDataModel: HitchesDataModel = ([], 0.0)
+
+    init(hitchesDataModel: HitchesDataModel) {
+        self.hitchesDataModel = hitchesDataModel
+    }
+}
+
+extension ViewHitchesMock: RenderLoopReader {
+    var isActive: Bool { false }
+
+    func stop() {}
+
+    func didUpdateFrame(link: FrameInfoProvider) {}
+}
+
+extension ViewHitchesMock: AnyMockable, RandomMockable {
+    static func mockAny() -> Self {
+        ViewHitchesMock(hitchesDataModel: ([(1, 10), (20, 10)], 100.0)) as! Self
+    }
+
+    static func mockRandom() -> Self {
+        ViewHitchesMock(hitchesDataModel: (Array(repeating: (.mockAny(), .mockAny()), count: .mockAny()), .mockAny())) as! Self
     }
 }
