@@ -91,7 +91,7 @@ extension DatadogContext: AnyMockable {
             device: .mockRandom(),
             userInfo: .mockRandom(),
             trackingConsent: .mockRandom(),
-            launchTime: nil,
+            launchTime: .mockRandom(),
             applicationStateHistory: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
@@ -188,7 +188,7 @@ extension UserInfo: AnyMockable, RandomMockable {
     }
 }
 
-extension LaunchTime: AnyMockable {
+extension LaunchTime: AnyMockable, RandomMockable {
     public static func mockAny() -> LaunchTime {
         .init(
             launchTime: .mockAny(),
@@ -206,6 +206,14 @@ extension LaunchTime: AnyMockable {
             launchTime: launchTime,
             launchDate: launchDate,
             isActivePrewarm: isActivePrewarm
+        )
+    }
+
+    public static func mockRandom() -> LaunchTime {
+        return .init(
+            launchTime: .mockRandom(),
+            launchDate: .mockRandom(),
+            isActivePrewarm: .mockRandom()
         )
     }
 }

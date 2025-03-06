@@ -8,6 +8,7 @@
 
 import Foundation
 import SwiftUI
+import DatadogInternal
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList: Reflection {

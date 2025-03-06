@@ -60,7 +60,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             createInitialSession(with: context, on: command)
 
             // If the app was started by a user (foreground & not prewarmed):
-            if context.applicationStateHistory.currentSnapshot.state == .active && context.launchTime?.isActivePrewarm == false {
+            if context.applicationStateHistory.currentSnapshot.state == .active && !context.launchTime.isActivePrewarm {
                 // Start "ApplicationLaunch" view immediatelly:
                 startApplicationLaunchView(on: command, context: context, writer: writer)
             }
@@ -148,7 +148,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         var startPrecondition: RUMSessionPrecondition? = nil
 
-        if context.launchTime?.isActivePrewarm == true {
+        if context.launchTime.isActivePrewarm {
             startPrecondition = .prewarm
         } else if context.applicationStateHistory.currentSnapshot.state == .background {
             startPrecondition = .backgroundLaunch

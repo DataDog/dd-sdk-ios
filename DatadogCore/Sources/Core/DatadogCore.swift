@@ -136,12 +136,12 @@ internal final class DatadogCore {
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
         let userInfo = UserInfo(
+            anonymousId: userInfoPublisher.current.anonymousId,
             id: id,
             name: name,
             email: email,
             extraInfo: extraInfo
         )
-
         userInfoPublisher.current = userInfo
     }
 
@@ -272,7 +272,6 @@ extension DatadogCore: DatadogCoreProtocol {
                 httpClient: httpClient,
                 performance: performancePreset,
                 backgroundTasksEnabled: backgroundTasksEnabled,
-                maxBatchesPerUpload: maxBatchesPerUpload,
                 isRunFromExtension: isRunFromExtension,
                 telemetry: telemetry
             )
@@ -316,6 +315,10 @@ extension DatadogCore: DatadogCoreProtocol {
 
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         bus.send(message: message, else: fallback)
+    }
+
+    func set(anonymousId: String?) {
+        userInfoPublisher.current.anonymousId = anonymousId
     }
 }
 
@@ -379,6 +382,10 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
         core?.set(baggage: baggage, forKey: key)
     }
 
+    func set(anonymousId: String?) {
+        core?.set(anonymousId: anonymousId)
+    }
+
     var telemetry: Telemetry {
         return core?.telemetry ?? NOPTelemetry()
     }
@@ -409,6 +416,7 @@ extension DatadogContextProvider {
         dateProvider: DateProvider,
         serverDateProvider: ServerDateProvider,
         notificationCenter: NotificationCenter,
+        appLaunchHandler: AppLaunchHandling,
         appStateProvider: AppStateProvider
     ) {
         let context = DatadogContext(
@@ -429,6 +437,7 @@ extension DatadogContextProvider {
             sdkInitDate: dateProvider.now,
             device: device,
             nativeSourceOverride: nativeSourceOverride,
+            launchTime: appLaunchHandler.currentValue,
             // this is a placeholder waiting for the `ApplicationStatePublisher`
             // to be initialized on the main thread, this value will be overrided
             // as soon as the subscription is made.
@@ -440,7 +449,7 @@ extension DatadogContextProvider {
         subscribe(\.serverTimeOffset, to: ServerOffsetPublisher(provider: serverDateProvider))
 
         #if !os(macOS)
-        subscribe(\.launchTime, to: LaunchTimePublisher())
+        subscribe(\.launchTime, to: LaunchTimePublisher(handler: appLaunchHandler))
         #endif
 
         subscribe(\.networkConnectionInfo, to: NWPathMonitorPublisher())

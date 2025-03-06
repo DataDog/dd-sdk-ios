@@ -724,9 +724,13 @@ extension RUMUUID: RandomMockable {
     }
 }
 
-struct RUMUUIDGeneratorMock: RUMUUIDGenerator {
-    let uuid: RUMUUID
+class RUMUUIDGeneratorMock: RUMUUIDGenerator {
+    var uuid: RUMUUID
     func generateUnique() -> RUMUUID { uuid }
+
+    init(uuid: RUMUUID) {
+        self.uuid = uuid
+    }
 }
 
 extension RUMContext {
@@ -952,20 +956,22 @@ func createMockViewInWindow() -> UIViewController {
 
 /// Creates an instance of `UIViewController` subclass with a given name.
 func createMockView(viewControllerClassName: String) -> UIViewController {
-    var theClass: AnyClass! // swiftlint:disable:this implicitly_unwrapped_optional
+    // swiftlint:disable implicitly_unwrapped_optional
+    let viewControllerType: UIViewController.Type
 
     if let existingClass = objc_lookUpClass(viewControllerClassName) {
-        theClass = existingClass
+        viewControllerType = existingClass as! UIViewController.Type
     } else {
         let newClass: AnyClass = objc_allocateClassPair(UIViewController.classForCoder(), viewControllerClassName, 0)!
         objc_registerClassPair(newClass)
-        theClass = newClass
+        viewControllerType = newClass as! UIViewController.Type
     }
 
-    let viewController = theClass.alloc() as! UIViewController
+    let viewController = viewControllerType.init()
     mockWindow.rootViewController = viewController
     mockWindow.makeKeyAndVisible()
     return viewController
+    // swiftlint:enable implicitly_unwrapped_optional
 }
 
 extension RUMViewScope {

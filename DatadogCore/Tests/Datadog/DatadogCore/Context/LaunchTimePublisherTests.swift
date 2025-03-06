@@ -6,27 +6,123 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
 @testable import DatadogCore
 
 class LaunchTimePublisherTests: XCTestCase {
-    override func tearDown() {
-        super.tearDown()
-        setenv("ActivePrewarm", "", 1)
-    }
+    func testInitialValueWhenTimeToDidBecomeActiveIsYetNotAvailable() {
+        let launchDate: Date = .mockRandom()
+        let isActivePrewarm: Bool = .mockRandom()
 
-    func testGivenStartedApplication_itHasLaunchDate() throws {
         // Given
-        let publisher = LaunchTimePublisher()
+        let handler = AppLaunchHandlerMock(
+            launchDate: launchDate,
+            timeToDidBecomeActive: nil, // not yet available
+            isActivePrewarm: isActivePrewarm
+        )
 
         // When
-        let launchTime = publisher.initialValue
+        let publisher = LaunchTimePublisher(handler: handler)
 
         // Then
-        XCTAssertNotNil(launchTime?.launchDate)
+        XCTAssertEqual(publisher.initialValue.launchDate, launchDate)
+        XCTAssertEqual(publisher.initialValue.isActivePrewarm, isActivePrewarm)
+        XCTAssertNil(publisher.initialValue.launchTime)
+    }
+
+    func testInitialValueWhenTimeToDidBecomeActiveIsAlreadyAvailable() {
+        let launchDate: Date = .mockRandom()
+        let isActivePrewarm: Bool = .mockRandom()
+        let timeToDidBecomeActive: TimeInterval = .mockRandom(min: 1, max: 10)
+
+        // Given
+        let handler = AppLaunchHandlerMock(
+            launchDate: launchDate,
+            timeToDidBecomeActive: timeToDidBecomeActive,
+            isActivePrewarm: isActivePrewarm
+        )
+
+        // When
+        let publisher = LaunchTimePublisher(handler: handler)
+
+        // Then
+        XCTAssertEqual(publisher.initialValue.launchDate, launchDate)
+        XCTAssertEqual(publisher.initialValue.isActivePrewarm, isActivePrewarm)
+        XCTAssertEqual(publisher.initialValue.launchTime, timeToDidBecomeActive)
+    }
+
+    func testUpdatingValue() {
+        let launchDate: Date = .mockRandom()
+        let isActivePrewarm: Bool = .mockRandom()
+        let timeToDidBecomeActive: TimeInterval = .mockRandom(min: 1, max: 10)
+
+        // Given
+        let handler = AppLaunchHandlerMock(
+            launchDate: launchDate,
+            timeToDidBecomeActive: nil, // it will be lazy updated
+            isActivePrewarm: isActivePrewarm
+        )
+        let contextUpdated = expectation(description: "Update context receiver")
+        let publisher = LaunchTimePublisher(handler: handler)
+
+        publisher.publish { launchTime in
+            XCTAssertEqual(launchTime.launchDate, launchDate)
+            XCTAssertEqual(launchTime.isActivePrewarm, isActivePrewarm)
+            XCTAssertEqual(launchTime.launchTime, timeToDidBecomeActive)
+            contextUpdated.fulfill()
+        }
+
+        // When
+        handler.simulateDidBecomeActive(timeInterval: timeToDidBecomeActive)
+
+        // Then
+        waitForExpectations(timeout: 1)
+    }
+}
+
+class AppLaunchHandlerTests: XCTestCase {
+    let notificationCenter = NotificationCenter()
+    let processInfo = ProcessInfoMock()
+
+    func testActivePrewarm() {
+        // When
+        let handler1 = AppLaunchHandler(processInfo: ProcessInfoMock(environment: ["ActivePrewarm": "1"]))
+        let handler2 = AppLaunchHandler(processInfo: ProcessInfoMock(environment: [:]))
+
+        // Then
+        XCTAssertTrue(handler1.currentValue.isActivePrewarm)
+        XCTAssertFalse(handler2.currentValue.isActivePrewarm)
+    }
+
+    func testLaunchTime() {
+        // Given
+        let handler = AppLaunchHandler(processInfo: processInfo)
+        XCTAssertNil(handler.launchTime)
+
+        // When
+        handler.observe(notificationCenter)
+        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+
+        // Then
+        XCTAssertNotNil(handler.launchTime)
+    }
+
+    func testSetApplicationDidBecomeActiveCallback() {
+        // Given
+        let handler = AppLaunchHandler(processInfo: processInfo)
+        let callbackNotified = expectation(description: "Notify setApplicationDidBecomeActiveCallback()")
+        handler.setApplicationDidBecomeActiveCallback { _ in callbackNotified.fulfill() }
+
+        // When
+        handler.observe(notificationCenter)
+        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+
+        // Then
+        waitForExpectations(timeout: 1)
     }
 
     func testThreadSafety() {
-        let handler = __dd_private_AppLaunchHandler.shared
+        let handler = AppLaunchHandler(processInfo: processInfo)
 
         // swiftlint:disable opening_brace
         callConcurrently(
@@ -39,28 +135,5 @@ class LaunchTimePublisherTests: XCTestCase {
             iterations: 1_000
         )
         // swiftlint:enable opening_brace
-    }
-
-    func testIsActivePrewarm_returnsTrue() {
-        // Given
-        setenv("ActivePrewarm", "1", 1)
-        NSClassFromString("__dd_private_AppLaunchHandler")?.load()
-
-        // When
-        let publisher = LaunchTimePublisher()
-
-        // Then
-        XCTAssertTrue(publisher.initialValue?.isActivePrewarm ?? false)
-    }
-
-    func testIsActivePrewarm_returnsFalse() {
-        // Given
-        NSClassFromString("__dd_private_AppLaunchHandler")?.load()
-
-        // When
-        let publisher = LaunchTimePublisher()
-
-        // Then
-        XCTAssertFalse(publisher.initialValue?.isActivePrewarm ?? true)
     }
 }

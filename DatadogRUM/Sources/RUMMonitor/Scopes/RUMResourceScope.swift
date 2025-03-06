@@ -276,9 +276,7 @@ internal class RUMResourceScope: RUMScope {
 
     private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand, context: DatadogContext, writer: Writer) {
         let errorFingerprint: String? = attributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
-        let timeSinceAppStart = context.launchTime.map {
-            command.time.timeIntervalSince($0.launchDate).toInt64Milliseconds
-        }
+        let timeSinceAppStart = command.time.timeIntervalSince(context.launchTime.launchDate).toInt64Milliseconds
 
         // Write error event
         let errorEvent = RUMErrorEvent(

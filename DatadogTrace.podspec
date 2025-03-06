@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogTrace"
-  s.version      = "2.23.0"
+  s.version      = "2.24.0"
   s.summary      = "Datadog Trace Module."
 
   s.homepage     = "https://www.datadoghq.com"
@@ -23,5 +23,5 @@ Pod::Spec.new do |s|
   s.source_files = ["DatadogTrace/Sources/**/*.swift"]
 
   s.dependency 'DatadogInternal', s.version.to_s
-  s.dependency 'OpenTelemetrySwiftApi', '1.6.0'
+  s.dependency 'OpenTelemetrySwiftApi', '1.13.0'
 end

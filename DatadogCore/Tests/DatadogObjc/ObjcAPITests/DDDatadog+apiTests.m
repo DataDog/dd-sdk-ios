@@ -34,7 +34,7 @@
     DDSDKVerbosityLevel verbosity = [DDDatadog verbosityLevel];
     [DDDatadog setVerbosityLevel:verbosity];
 
-    [DDDatadog setUserInfoWithId:@"" name:@"" email:@"" extraInfo:@{}];
+    [DDDatadog setUserInfoWithUserId:@"" name:@"" email:@"" extraInfo:@{}];
     [DDDatadog addUserExtraInfo:@{}];
     [DDDatadog setTrackingConsentWithConsent:[DDTrackingConsent notGranted]];
 

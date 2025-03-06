@@ -4,7 +4,6 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(macOS)
 import Foundation
 import DatadogInternal
 
@@ -12,24 +11,58 @@ import DatadogInternal
 import DatadogPrivate
 #endif
 
-internal struct LaunchTimePublisher: ContextValuePublisher {
-    private typealias AppLaunchHandler = __dd_private_AppLaunchHandler
+/// An interface for tracking key timestamps in the app launch sequence, including launch time and activation events.
+internal protocol AppLaunchHandling {
+    /// Indicates whether the application was prewarmed by the system.
+    var isActivePrewarm: Bool { get }
+    /// The timestamp when the application process was launched.
+    var launchDate: Date { get }
+    /// The time interval between the app process launch and the `UIApplication.didBecomeActiveNotification`.
+    /// Returns `nil` if the notification has not yet been received.
+    var timeToDidBecomeActive: TimeInterval? { get }
+    /// Sets a callback to be invoked when the application becomes active.
+    ///
+    /// The callback receives the time interval from process launch to app activation.
+    /// If the application became active before setting the callback, it will not be triggered.
+    ///
+    /// - Parameter callback: A closure executed upon app activation.
+    func setApplicationDidBecomeActiveCallback(_ callback: @escaping UIApplicationDidBecomeActiveCallback)
+}
 
-    let initialValue: LaunchTime?
-
-    init() {
-        initialValue = LaunchTime(
-            launchTime: AppLaunchHandler.shared.launchTime?.doubleValue,
-            launchDate: AppLaunchHandler.shared.launchDate,
-            isActivePrewarm: AppLaunchHandler.shared.isActivePrewarm
+internal extension AppLaunchHandling {
+    /// Returns latest available launch time information.
+    var currentValue: LaunchTime {
+        return LaunchTime(
+            launchTime: timeToDidBecomeActive,
+            launchDate: launchDate,
+            isActivePrewarm: isActivePrewarm
         )
     }
+}
 
-    func publish(to receiver: @escaping ContextValueReceiver<LaunchTime?>) {
-        let launchDate = AppLaunchHandler.shared.launchDate
-        let isActivePrewarm = AppLaunchHandler.shared.isActivePrewarm
+internal typealias AppLaunchHandler = __dd_private_AppLaunchHandler
 
-        AppLaunchHandler.shared.setApplicationDidBecomeActiveCallback { launchTime in
+extension AppLaunchHandler: AppLaunchHandling {
+    var timeToDidBecomeActive: TimeInterval? { launchTime?.doubleValue }
+}
+
+#if !os(macOS)
+
+internal struct LaunchTimePublisher: ContextValuePublisher {
+    private let handler: AppLaunchHandling
+
+    let initialValue: LaunchTime
+
+    init(handler: AppLaunchHandling) {
+        self.initialValue = handler.currentValue
+        self.handler = handler
+    }
+
+    func publish(to receiver: @escaping ContextValueReceiver<LaunchTime>) {
+        let launchDate = handler.launchDate
+        let isActivePrewarm = handler.isActivePrewarm
+
+        handler.setApplicationDidBecomeActiveCallback { launchTime in
             let value = LaunchTime(
                 launchTime: launchTime,
                 launchDate: launchDate,
@@ -40,7 +73,8 @@ internal struct LaunchTimePublisher: ContextValuePublisher {
     }
 
     func cancel() {
-        AppLaunchHandler.shared.setApplicationDidBecomeActiveCallback { _ in }
+        handler.setApplicationDidBecomeActiveCallback { _ in }
     }
 }
+
 #endif

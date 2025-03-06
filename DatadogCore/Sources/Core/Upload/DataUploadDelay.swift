@@ -22,8 +22,8 @@ internal class DataUploadDelay {
         self.current = performance.initialUploadDelay
     }
 
-    func decrease() {
-        current = max(minDelay, current * (1.0 - changeRate))
+    func reset() {
+        current = minDelay
     }
 
     func increase() {

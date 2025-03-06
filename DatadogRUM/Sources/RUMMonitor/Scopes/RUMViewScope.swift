@@ -32,10 +32,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// If this is the very first view created in the current app process.
     private let isInitialView: Bool
 
+    /// If this view ever had session replay
+    private var hasReplay: Bool
+
     /// The value holding stable identity of this RUM View.
     let identity: ViewIdentifier
     /// View attributes.
     private(set) var attributes: [AttributeKey: AttributeValue] = [:]
+    /// Internal view attributes - used by cross platform frameworks and should not be propagated to events
+    private(set) var internalAttributes: [AttributeKey: AttributeValue] = [:]
     /// View custom timings, keyed by name. The value of timing is given in nanoseconds.
     private(set) var customTimings: [String: Int64] = [:]
 
@@ -106,7 +111,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Time-to-Network-Settled metric for this view.
     private let networkSettledMetric: TNSMetricTracking
     /// Interaction-to-Next-View metric for this view.
-    private let interactionToNextViewMetric: INVMetricTracking
+    private var interactionToNextViewMetric: INVMetricTracking?
     /// Tracks "RUM View Ended" metric for this view.
     private let viewEndedMetric: ViewEndedMetricController
 
@@ -120,11 +125,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         customTimings: [String: Int64],
         startTime: Date,
         serverTimeOffset: TimeInterval,
-        interactionToNextViewMetric: INVMetricTracking
+        interactionToNextViewMetric: INVMetricTracking?
     ) {
         self.parent = parent
         self.dependencies = dependencies
         self.isInitialView = isInitialView
+        self.hasReplay = false
         self.identity = identity
         self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
@@ -143,7 +149,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         }
         self.networkSettledMetric = dependencies.networkSettledMetricFactory(viewStartTime, viewName)
-        interactionToNextViewMetric.trackViewStart(at: startTime, name: name, viewID: viewUUID)
+        interactionToNextViewMetric?.trackViewStart(at: startTime, name: name, viewID: viewUUID)
 
         self.viewEndedMetric = dependencies.viewEndedMetricFactory()
 
@@ -214,6 +220,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             // deactivated. This is achieved by setting `isActiveView` to `false` and sending one more view update.
             isActiveView = false
             needsViewUpdate = true
+        case let command as RUMSetInternalViewAttributeCommand where isActiveView:
+            internalAttributes[command.key] = command.value
+            // Purposefully don't perform a view update. Most (all?) internal view attributes
+            // aren't important enough to expect them to be uploaded automatically. They can
+            // get sent with the next view update.
+
         case let command as RUMStopViewCommand where identity == command.identity:
             isActiveView = false
             needsViewUpdate = true
@@ -284,7 +296,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let shouldComplete = !isActiveView && hasNoPendingResources
 
         if shouldComplete {
-            interactionToNextViewMetric.trackViewComplete(viewID: viewUUID)
+            interactionToNextViewMetric?.trackViewComplete(viewID: viewUUID)
             viewEndedMetric.send()
         }
 
@@ -413,14 +425,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         var attributes = self.attributes
         var loadingTime: Int64?
 
-        if context.launchTime?.isActivePrewarm == true {
+        if context.launchTime.isActivePrewarm {
             // Set `active_pre_warm` attribute to true in case
             // of pre-warmed app.
             attributes[Constants.activePrewarm] = true
-        } else if let launchTime = context.launchTime?.launchTime {
+        } else if let launchTime = context.launchTime.launchTime {
             // Report Application Launch Time only if not pre-warmed
             loadingTime = launchTime.toInt64Nanoseconds
-        } else if let launchDate = context.launchTime?.launchDate {
+        } else {
             // The launchTime can be `nil` if the application is not yet
             // active (UIApplicationDidBecomeActiveNotification). That is
             // the case when instrumenting a SwiftUI application that start
@@ -429,6 +441,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             // In that case, we consider the time between the application
             // launch and the sdkInitialization as the application loading
             // time.
+            let launchDate = context.launchTime.launchDate
             loadingTime = command.time.timeIntervalSince(launchDate).toInt64Nanoseconds
         }
 
@@ -494,6 +507,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         version += 1
 
+        if let hasContextReplay = context.hasReplay {
+            hasReplay = hasReplay || hasContextReplay
+        }
+
         // RUMM-3133 Don't override View attributes with commands that are not view related.
         if command is RUMViewScopePropagatableAttributes {
             attributes.merge(rumCommandAttributes: command.globalAttributes)
@@ -522,7 +539,28 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let refreshRateInfo = vitalInfoSampler?.refreshRate
         let isSlowRendered = refreshRateInfo?.meanValue.map { $0 < Constants.slowRenderingThresholdFPS }
         let networkSettledTime = networkSettledMetric.value(with: context.applicationStateHistory)
-        let interactionToNextViewTime = interactionToNextViewMetric.value(for: viewUUID)
+        var interactionToNextViewTime = interactionToNextViewMetric?.value(for: viewUUID) ?? .failure(.disabled)
+        // Only overwrite with a custom value if INV was disabled
+        if interactionToNextViewTime == .failure(.disabled),
+           let customInvValue = internalAttributes[CrossPlatformAttributes.customINVValue] as? (any BinaryInteger),
+           let customInvValue = Int64(exactly: customInvValue) {
+            interactionToNextViewTime = .success(TimeInterval(fromNanoseconds: customInvValue))
+        }
+
+        // Only add the performance member if we have a value for it
+        let performance: RUMViewEvent.View.Performance?
+        if let fbcMetric = internalAttributes[CrossPlatformAttributes.flutterFirstBuildComplete] as? (any BinaryInteger),
+           let fbcMetric = Int64(exactly: fbcMetric) {
+            performance = .init(
+                cls: nil,
+                fbc: .init(timestamp: fbcMetric),
+                fcp: nil,
+                fid: nil,
+                inp: nil
+            )
+        } else {
+            performance = nil
+        }
 
         let viewEvent = RUMViewEvent(
             dd: .init(
@@ -559,7 +597,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             privacy: nil,
             service: context.service,
             session: .init(
-                hasReplay: context.hasReplay,
+                hasReplay: hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
                 isActive: self.context.isSessionActive,
                 sampledForReplay: nil,
@@ -612,6 +650,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 memoryMax: memoryInfo?.maxValue,
                 name: viewName,
                 networkSettledTime: networkSettledTime.value?.toInt64Nanoseconds,
+                performance: performance,
                 referrer: nil,
                 refreshRateAverage: refreshRateInfo?.meanValue,
                 refreshRateMin: refreshRateInfo?.minValue,
@@ -657,10 +696,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         var commandAttributes = command.globalAttributes.merging(command.attributes) { $1 }
         let errorFingerprint: String? = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
-        var timeSinceAppStart: Int64? = nil
-        if let startTime = context.launchTime?.launchDate {
-            timeSinceAppStart = command.time.timeIntervalSince(startTime).toInt64Milliseconds
-        }
+        let timeSinceAppStart = command.time.timeIntervalSince(context.launchTime.launchDate).toInt64Milliseconds
 
         var binaryImages = command.binaryImages?.compactMap { $0.toRUMDataFormat }
         if commandAttributes.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages)?.dd.decode() == true {

@@ -441,6 +441,11 @@ public class DDRUMConfiguration: NSObject {
         set { swiftConfig.customEndpoint = newValue }
         get { swiftConfig.customEndpoint }
     }
+
+    @objc public var trackAnonymousUser: Bool {
+        set { swiftConfig.trackAnonymousUser = newValue }
+        get { swiftConfig.trackAnonymousUser }
+    }
 }
 
 @objc

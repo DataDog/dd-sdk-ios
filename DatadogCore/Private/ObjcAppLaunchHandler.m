@@ -21,14 +21,12 @@
 
 /// Get the process start time from kernel.
 ///
-/// The time interval is related to the 1 January 2001 00:00:00 GMT reference date.
+/// The time interval is relative to the 1 January 2001 00:00:00 GMT reference date.
 ///
 /// - Parameter timeInterval: Pointer to time interval to hold the process start time interval.
 int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval);
 
-/// `AppLaunchHandler` aims to track some times as part of the sequence
-/// described in Apple's "About the App Launch Sequence"
-///
+/// Tracks key timestamps in the app launch sequence
 /// ref. https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
 @implementation __dd_private_AppLaunchHandler {
     NSTimeInterval _processStartTime;
@@ -42,44 +40,19 @@ static __dd_private_AppLaunchHandler *_shared;
 
 + (void)load {
     // This is called at the `DatadogPrivate` load time, keep the work minimal
-    _shared = [[self alloc] initWithProcessInfo:NSProcessInfo.processInfo
-                                       loadTime:CFAbsoluteTimeGetCurrent()];
-
-    NSString *notificationName;
-#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION
-    notificationName = UIApplicationDidBecomeActiveNotification;
-#elif TARGET_OS_OSX
-    notificationName = NSApplicationDidBecomeActiveNotification;
-#endif
-
-#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION || TARGET_OS_OSX
-    NSNotificationCenter * __weak center = NSNotificationCenter.defaultCenter;
-    id __block __unused token = [center addObserverForName:notificationName
-                                                    object:nil
-                                                     queue:NSOperationQueue.mainQueue
-                                                usingBlock:^(NSNotification *_){
-
-        @synchronized(_shared) {
-            NSTimeInterval time = CFAbsoluteTimeGetCurrent() - _shared->_processStartTime;
-            _shared->_timeToApplicationDidBecomeActive = time;
-            _shared->_applicationDidBecomeActiveCallback(time);
-        }
-
-        [center removeObserver:token];
-        token = nil;
-    }];
-#endif
+    _shared = [[self alloc] initWithProcessInfo:NSProcessInfo.processInfo];
+    [_shared observeNotificationCenter:NSNotificationCenter.defaultCenter];
 }
 
 + (__dd_private_AppLaunchHandler *)shared {
     return _shared;
 }
 
-- (instancetype)initWithProcessInfo:(NSProcessInfo *)processInfo loadTime:(NSTimeInterval)loadTime {
+- (instancetype)initWithProcessInfo:(NSProcessInfo *)processInfo {
     NSTimeInterval startTime;
     if (processStartTimeIntervalSinceReferenceDate(&startTime) != 0) {
-        // fallback on the loading time
-        startTime = loadTime;
+        // Fall back to "now"
+        startTime = CFAbsoluteTimeGetCurrent();
     }
 
     // The ActivePrewarm variable indicates whether the app was launched via pre-warming.
@@ -96,6 +69,34 @@ static __dd_private_AppLaunchHandler *_shared;
     return self;
 }
 
+- (void)observeNotificationCenter:(NSNotificationCenter *)notificationCenter {
+    NSString *notificationName;
+#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION
+    notificationName = UIApplicationDidBecomeActiveNotification;
+#elif TARGET_OS_OSX
+    notificationName = NSApplicationDidBecomeActiveNotification;
+#endif
+
+    if (!notificationName || !notificationCenter) {
+        return;
+    }
+
+    __weak NSNotificationCenter *weakCenter = notificationCenter;
+    __block id __unused token = [notificationCenter addObserverForName:notificationName
+                                                                object:nil
+                                                                 queue:NSOperationQueue.mainQueue
+                                                            usingBlock:^(NSNotification *_){
+        @synchronized(self) {
+            NSTimeInterval time = CFAbsoluteTimeGetCurrent() - self->_processStartTime;
+            self->_timeToApplicationDidBecomeActive = time;
+            self->_applicationDidBecomeActiveCallback(time);
+        }
+
+        [weakCenter removeObserver:token];
+        token = nil;
+    }];
+}
+
 - (NSDate *)launchDate {
     @synchronized(self) {
         return [NSDate dateWithTimeIntervalSinceReferenceDate:_processStartTime];
@@ -104,8 +105,7 @@ static __dd_private_AppLaunchHandler *_shared;
 
 - (NSNumber *)launchTime {
     @synchronized(self) {
-        return _timeToApplicationDidBecomeActive > 0 ?
-            @(_timeToApplicationDidBecomeActive) : nil;
+        return _timeToApplicationDidBecomeActive > 0 ? @(_timeToApplicationDidBecomeActive) : nil;
     }
 }
 

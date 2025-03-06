@@ -351,6 +351,7 @@ public class DDRUMConfiguration: NSObject
     public func setLongTaskEventMapper(_ mapper: @escaping (DDRUMLongTaskEvent) -> DDRUMLongTaskEvent?)
     @objc public var onSessionStart: ((String, Bool) -> Void)?
     @objc public var customEndpoint: URL?
+    @objc public var trackAnonymousUser: Bool
 public class DDRUM: NSObject
     public static func enable(with configuration: DDRUMConfiguration)
 public class DDRUMMonitor: NSObject

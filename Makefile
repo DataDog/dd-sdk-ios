@@ -18,62 +18,6 @@ all: env-check repo-setup templates
 REPO_ROOT := $(PWD)
 include tools/utils/common.mk
 
-define DD_SDK_TESTING_XCCONFIG_CI
-DD_TEST_RUNNER=1\n
-DD_SDK_SWIFT_TESTING_SERVICE=dd-sdk-ios\n
-DD_SDK_SWIFT_TESTING_APIKEY=${DD_SDK_SWIFT_TESTING_APIKEY}\n
-DD_SDK_SWIFT_TESTING_ENV=ci\n
-DD_SDK_SWIFT_TESTING_APPLICATION_KEY=${DD_SDK_SWIFT_TESTING_APPLICATION_KEY}\n
-endef
-export DD_SDK_TESTING_XCCONFIG_CI
-
-define DD_SDK_BASE_XCCONFIG
-// Active compilation conditions - only enabled on local machine:\n
-// - DD_SDK_ENABLE_EXPERIMENTAL_APIS - enables APIs which are not available in released version of the SDK\n
-// - DD_SDK_COMPILED_FOR_TESTING - conditions the SDK code compiled for testing\n
-SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DD_SDK_ENABLE_EXPERIMENTAL_APIS DD_SDK_COMPILED_FOR_TESTING\n
-\n
-// To build only active architecture for all configurations. This gives us ~10% build time gain\n
-// in targets which do not use 'Debug' configuration.\n
-ONLY_ACTIVE_ARCH = YES\n
-endef
-export DD_SDK_BASE_XCCONFIG
-
-define DD_SDK_BASE_XCCONFIG_CI
-// To ensure no build time warnings slip in without being resolved, treat them as CI build errors:\n
-SWIFT_TREAT_WARNINGS_AS_ERRORS = YES\n
-\n
-// If running on CI. This value is injected to some targets through their `Info.plist`:\n
-IS_CI = true\n
-endef
-export DD_SDK_BASE_XCCONFIG_CI
-
-define DD_SDK_DATADOG_XCCONFIG_CI
-// Datadog secrets provisioning E2E tests data for 'Mobile - Integration' org:\n
-E2E_RUM_APPLICATION_ID=${E2E_RUM_APPLICATION_ID}\n
-E2E_DATADOG_CLIENT_TOKEN=${E2E_DATADOG_CLIENT_TOKEN}\n
-endef
-export DD_SDK_DATADOG_XCCONFIG_CI
-
-# Installs tools and dependencies with homebrew.
-# Do not call 'brew update' and instead let Bitrise use its own brew bottle mirror.
-dependencies:
-		@echo "⚙️  Installing dependencies..."
-		@bundle install
-		@brew list swiftlint &>/dev/null || brew install swiftlint
-		@brew upgrade carthage
-		@carthage bootstrap --platform iOS,tvOS --use-xcframeworks
-		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
-		@brew list gh &>/dev/null || brew install gh
-ifeq (${ci}, true)
-		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
-		@echo $$DD_SDK_DATADOG_XCCONFIG_CI > xcconfigs/Datadog.local.xcconfig;
-ifndef DD_DISABLE_TEST_INSTRUMENTING
-		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
-endif
-
-endif
-
 # Default ENV for setting up the repo
 DEFAULT_ENV := dev
 
@@ -379,17 +323,6 @@ api-surface:
 			--library-name DatadogObjc \
 			> ../../api-surface-objc && \
 			cd -
-
-# Generate Datadog monitors terraform definition for E2E tests:
-e2e-monitors-generate:
-		@echo "Deleting previous 'main.tf as it will be soon generated."
-		@rm -f tools/nightly-e2e-tests/monitors-gen/main.tf
-		@echo "Deleting previous Terraform state and backup as we don't need to track it."
-		@rm -f tools/nightly-e2e-tests/monitors-gen/terraform.tfstate
-		@rm -f tools/nightly-e2e-tests/monitors-gen/terraform.tfstate.backup
-		@echo "⚙️  Generating 'main.tf':"
-		@./tools/nightly-e2e-tests/nightly_e2e.py generate-tf --tests-dir ../../Datadog/E2ETests
-		@echo "⚠️  Remember to delete all iOS monitors manually from Mobile-Integration org before running 'terraform apply'."
 
 # Creates dogfooding PR in shopist-ios
 dogfood-shopist:

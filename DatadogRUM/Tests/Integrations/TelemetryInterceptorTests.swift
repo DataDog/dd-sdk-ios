@@ -6,7 +6,7 @@
 
 import XCTest
 import TestUtilities
-import DatadogInternal
+@testable import DatadogInternal
 @testable import DatadogRUM
 
 class TelemetryInterceptorTests: XCTestCase {
@@ -30,5 +30,25 @@ class TelemetryInterceptorTests: XCTestCase {
         let metric = try XCTUnwrap(telemetry.messages.lastMetric(named: SessionEndedMetric.Constants.name))
         let rse = try XCTUnwrap(metric.attributes[SessionEndedMetric.Constants.rseKey] as? SessionEndedMetric.Attributes)
         XCTAssertEqual(rse.sdkErrorsCount.total, 1)
+    }
+
+    func testWhenInterceptingUploadQualityMetric_itItUpdatesSessionEndedMetric() throws {
+        let sessionID: RUMUUID = .mockRandom()
+
+        // Given
+        let metricController = SessionEndedMetricController(telemetry: telemetry, sampleRate: 100)
+        let interceptor = TelemetryInterceptor(sessionEndedMetric: metricController)
+
+        // When
+        metricController.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockAny(), tracksBackgroundEvents: .mockRandom())
+        let metricTelemetry: TelemetryMessage = .metric(MetricTelemetry(name: UploadQualityMetric.name, attributes: [UploadQualityMetric.track: "feature"], sampleRate: .mockRandom()))
+        let result = interceptor.receive(message: .telemetry(metricTelemetry), from: NOPDatadogCore())
+        XCTAssertTrue(result)
+
+        // Then
+        metricController.endMetric(sessionID: sessionID, with: .mockRandom())
+        let metric = try XCTUnwrap(telemetry.messages.lastMetric(named: SessionEndedMetric.Constants.name))
+        let rse = try XCTUnwrap(metric.attributes[SessionEndedMetric.Constants.rseKey] as? SessionEndedMetric.Attributes)
+        XCTAssertEqual(rse.uploadQuality["feature"]?.cycleCount, 1)
     }
 }

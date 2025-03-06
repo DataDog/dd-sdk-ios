@@ -60,6 +60,10 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     /// An extra information to include in metrics or `nil` if metrics should not be reported for this orchestrator.
     let metricsData: MetricsData?
 
+    /// Tracks number of pending batches in the track's directory
+    @ReadWriteLock
+    private var pendingBatches: Int = 0
+
     var trackName: String {
         metricsData?.trackName ?? "Unknown"
     }
@@ -120,6 +124,9 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         lastWritableFileObjectsCount = 1
         lastWritableFileApproximatedSize = writeSize
         lastWritableFileLastWriteDate = dateProvider.now
+
+        // Increment pending batches for telemetry
+        _pendingBatches.mutate { $0 += 1 }
         return newFile
     }
 
@@ -174,9 +181,13 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
     func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String> = [], limit: Int = .max) -> [ReadableFile] {
         do {
-            let filesFromOldest = try directory.files()
-                .map { (file: $0, fileCreationDate: fileCreationDateFrom(fileName: $0.name)) }
-                .compactMap { try deleteFileIfItsObsolete(file: $0.file, fileCreationDate: $0.fileCreationDate) }
+            let files = try directory.files()
+
+            // Reset pending batches for telemetry
+            pendingBatches = files.count
+
+            let filesFromOldest = try files
+                .compactMap { try deleteFileIfItsObsolete(file: $0, fileCreationDate: fileCreationDateFrom(fileName: $0.name)) }
                 .sorted(by: { $0.fileCreationDate < $1.fileCreationDate })
 
             if ignoreFilesAgeWhenReading {
@@ -185,12 +196,11 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                     .map { $0.file }
             }
 
-            let filtered = filesFromOldest
+            return filesFromOldest
                 .filter {
-                    let fileAge = dateProvider.now.timeIntervalSince($0.fileCreationDate)
-                    return excludedFileNames.contains($0.file.name) == false && fileAge >= performance.minFileAgeForRead
+                    !excludedFileNames.contains($0.file.name) &&
+                    dateProvider.now.timeIntervalSince($0.fileCreationDate) >= performance.minFileAgeForRead
                 }
-            return filtered
                 .prefix(limit)
                 .map { $0.file }
         } catch {
@@ -202,6 +212,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) {
         do {
             try readableFile.delete()
+            // Decrement pending batches at each batch deletion
+            _pendingBatches.mutate { $0 -= 1 }
             sendBatchDeletedMetric(batchFile: readableFile, deletionReason: deletionReason)
         } catch {
             telemetry.error("Failed to delete file", error: error)
@@ -231,6 +243,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             while sizeFreed < sizeToFree && !filesWithSizeSortedByCreationDate.isEmpty {
                 let fileWithSize = filesWithSizeSortedByCreationDate.removeFirst()
                 try fileWithSize.file.delete()
+                // Decrement pending batches at each batch deletion
+                _pendingBatches.mutate { $0 -= 1 }
                 sendBatchDeletedMetric(batchFile: fileWithSize.file, deletionReason: .purged)
                 sizeFreed += fileWithSize.size
             }
@@ -242,6 +256,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
         if fileAge > performance.maxFileAgeForRead {
             try file.delete()
+            // Decrement pending batches at each batch deletion
+            _pendingBatches.mutate { $0 -= 1 }
             sendBatchDeletedMetric(batchFile: file, deletionReason: .obsolete)
             return nil
         } else {
@@ -278,7 +294,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
                 BatchDeletedMetric.inBackgroundKey: false,
-                BatchDeletedMetric.backgroundTasksEnabled: metricsData.backgroundTasksEnabled
+                BatchDeletedMetric.backgroundTasksEnabled: metricsData.backgroundTasksEnabled,
+                BatchDeletedMetric.pendingBatches: pendingBatches
             ],
             sampleRate: BatchDeletedMetric.sampleRate
         )
