@@ -20,10 +20,14 @@ public enum RUM {
         with configuration: RUM.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         do {
-            try enableOrThrow(with: configuration, in: core)
+            // To ensure the correct registration order between Core and Features,
+            // the entire initialization flow is synchronized on the main thread.
+            try runOnMainThreadSync {
+                try enableOrThrow(with: configuration, in: core)
+            }
         } catch let error {
             consolePrint("\(error)", .error)
-       }
+        }
     }
 
     internal static func enableOrThrow(
