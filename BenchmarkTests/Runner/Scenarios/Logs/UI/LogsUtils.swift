@@ -7,20 +7,20 @@
 import DatadogLogs
 import Foundation
 
-var logLevels: [String: LogLevel] = [
-    "DEBUG": .debug,
-    "INFO": .info,
-    "NOTICE": .notice,
-    "WARN": .warn,
-    "ERROR": .error,
-    "CRITICAL": .critical,
+var logLevels: [(String, LogLevel)] = [
+    ("DEBUG", .debug),
+    ("INFO", .info),
+    ("NOTICE", .notice),
+    ("WARN", .warn),
+    ("ERROR", .error),
+    ("CRITICAL", .critical),
 ]
 
-var payloadSizes: [String: [String: Encodable]] = [
-    "Small": [
+var payloadSizes: [(String, [String: Encodable])] = [
+    ("Small", [
         "log_type": "simple",
-    ],
-    "Medium": [
+    ]),
+    ("Medium", [
         "user": [
             "id": UUID().uuidString,
             "name": "John Doe",
@@ -31,8 +31,8 @@ var payloadSizes: [String: [String: Encodable]] = [
             "os": "iOS 17.0",
         ],
         "log_type": "user_event",
-    ],
-    "Large": [
+    ]),
+    ("Large", [
         "log_type": "user_event",
         "session": [
             "id": UUID().uuidString,
@@ -61,5 +61,5 @@ var payloadSizes: [String: [String: Encodable]] = [
             "stackTrace": "Error at module XYZ -> function ABC",
             "crashType": "NullPointerException",
         ],
-    ],
+    ]),
 ]

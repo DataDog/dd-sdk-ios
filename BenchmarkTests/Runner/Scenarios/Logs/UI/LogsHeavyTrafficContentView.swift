@@ -47,11 +47,11 @@ struct LogsHeavyTrafficContentView: View {
 
     /// Sends a batch of log messages using the current configuration.
     func log() {
-        guard let selectedLogLevel = logLevels[logLevel],
-              let attributes = payloadSizes[payloadSize] else { return }
+        guard let selectedLogLevel = logLevels.first(where: { $0.0 == self.logLevel }),
+              let attributes = payloadSizes.first(where: { $0.0 == self.payloadSize }) else { return }
 
         for _ in 1 ... self.logsPerBatch {
-            self.logger.log(level: selectedLogLevel, message: self.logMessage, error: nil, attributes: attributes)
+            self.logger.log(level: selectedLogLevel.1, message: self.logMessage, error: nil, attributes: attributes.1)
         }
     }
 }
@@ -104,13 +104,13 @@ struct LogsHeavyTrafficConfigView: View {
                 Section(header: Text("Log Configuration")) {
                     TextField("Log Message", text: $logMessage)
                     Picker("Log Level", selection: $logLevel) {
-                        ForEach(Array(logLevels.keys), id: \.self) { level in
-                            Text(level)
+                        ForEach(logLevels, id: \.1) { level in
+                            Text(level.0).tag(level.0)
                         }
                     }
                     Picker("Payload Size", selection: $payloadSize) {
-                        ForEach(Array(payloadSizes.keys), id: \.self) { size in
-                            Text(size)
+                        ForEach(payloadSizes, id: \.0) { size in
+                            Text(size.0).tag(size.0)
                         }
                     }
                 }
