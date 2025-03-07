@@ -1875,6 +1875,85 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.error.timeSinceAppStart, appLauchToErrorTimeDiff * 1_000)
     }
 
+    // MARK: - View Hitches
+
+    func testWhenThereAreHitches_theViewUpdatesTheViewEvents() {
+        // Given
+        var hitches: [Hitch] = []
+        (0...Int.mockRandom(min: 0, max: 1_000)).forEach {
+            hitches.append((start: TimeInterval($0).toInt64Nanoseconds, duration: 0.016.toInt64Nanoseconds))
+        }
+        let hitchesDuration = TimeInterval(fromNanoseconds: hitches.map { $0.duration }.reduce(0, +)) * 1_000 // milliseconds
+        let viewHitchesMetricFactory = { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(viewHitchesMetricFactory: viewHitchesMetricFactory),
+            identity: .mockViewIdentifier(),
+            path: .mockRandom(),
+            name: .mockRandom(),
+            customTimings: [:],
+            startTime: .mockAny(),
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: nil
+        )
+
+        // When
+        _ = scope.process(
+                command: RUMStartViewCommand.mockWith(),
+                context: context,
+                writer: writer
+        )
+
+        _ = scope.process(
+            command: RUMAddViewTimingCommand.mockAny(),
+            context: context,
+            writer: writer
+        )
+
+        // Resources
+        _ = scope.process(
+            command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1"),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2"),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1"),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2"),
+            context: context,
+            writer: writer
+        )
+
+        _ = scope.process(
+            command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(),
+            context: context,
+            writer: writer
+        )
+
+        _ = scope.process(
+            command: RUMStopViewCommand.mockAny(),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+
+        XCTAssertEqual(viewEvents.count, 6)
+        viewEvents.forEach {
+            XCTAssertEqual($0.view.slowFrames?.count, hitches.count)
+        }
+    }
+
     // MARK: - App Hangs
 
     func testWhenViewAppHangIsTracked_itSendsErrorEventAndViewUpdateEvent() throws {

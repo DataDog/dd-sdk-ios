@@ -29,6 +29,8 @@
 		116200352D786ED0001C2A51 /* RUMFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116200312D786ED0001C2A51 /* RUMFeatureMocks.swift */; };
 		116F84062CFDD06700705755 /* SampleRateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116F84052CFDD06700705755 /* SampleRateTests.swift */; };
 		116F84072CFDD06700705755 /* SampleRateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116F84052CFDD06700705755 /* SampleRateTests.swift */; };
+		11BA765D2D7F0EF30058C21C /* RUMViewHitchesIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BA765C2D7F0EE40058C21C /* RUMViewHitchesIntegrationTests.swift */; };
+		11BA765E2D7F0EF30058C21C /* RUMViewHitchesIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BA765C2D7F0EE40058C21C /* RUMViewHitchesIntegrationTests.swift */; };
 		1434A4612B7F73110072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
 		1434A4622B7F73110072E3BB /* OpenTelemetryApi.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1434A4632B7F73170072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
@@ -2139,6 +2141,7 @@
 		116200302D786ED0001C2A51 /* RUMDataModelMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDataModelMocks.swift; sourceTree = "<group>"; };
 		116200312D786ED0001C2A51 /* RUMFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeatureMocks.swift; sourceTree = "<group>"; };
 		116F84052CFDD06700705755 /* SampleRateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleRateTests.swift; sourceTree = "<group>"; };
+		11BA765C2D7F0EE40058C21C /* RUMViewHitchesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewHitchesIntegrationTests.swift; sourceTree = "<group>"; };
 		1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugOTelTracingViewController.swift; sourceTree = "<group>"; };
 		3C08F9CF2C2D652D002B0FF2 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
 		3C0CB3442C19A1ED003B0E9B /* WatchdogTerminationReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationReporter.swift; sourceTree = "<group>"; };
@@ -5430,10 +5433,11 @@
 				A757AE8F2D3815AC00C772FA /* AnonymousIdentifierTests.swift */,
 				6167E6DC2B811A8300C3CA2D /* AppHangsMonitoringTests.swift */,
 				1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */,
+				11BA765C2D7F0EE40058C21C /* RUMViewHitchesIntegrationTests.swift */,
 				61E8C5072B28898800E709B4 /* StartingRUMSessionTests.swift */,
+				6105C5022CF8D5AB00C4C5EE /* ViewLoadingMetricsTests.swift */,
 				3CA00B062C2AE52400E6FE01 /* WatchdogTerminationsMonitoringTests.swift */,
 				D2552AF42BBC47D900A45725 /* WebEventIntegrationTests.swift */,
-				6105C5022CF8D5AB00C4C5EE /* ViewLoadingMetricsTests.swift */,
 				61DCC84C2C05D4E500CB59E5 /* SDKMetrics */,
 			);
 			path = RUM;
@@ -8131,6 +8135,7 @@
 				D244B3A3271EDACD003E1B29 /* SwiftUIExtensionsTests.swift in Sources */,
 				D24C9C6429A7CB7B002057CF /* CrashLogReceiverTests.swift in Sources */,
 				61B5E42126DF85C7000B0A5F /* DDRUMMonitor+apiTests.m in Sources */,
+				11BA765D2D7F0EF30058C21C /* RUMViewHitchesIntegrationTests.swift in Sources */,
 				61133C4E2423990D00786299 /* UIKitMocks.swift in Sources */,
 				3CF673362B4807490016CE17 /* OTelSpanTests.swift in Sources */,
 				61F3E36D2BC7D66700C7881E /* HeadBasedSamplingTests.swift in Sources */,
@@ -9383,6 +9388,7 @@
 				D2CB6F2027C520D400A62B57 /* DatadogConfigurationTests.swift in Sources */,
 				D2CB6F2127C520D400A62B57 /* URLSessionClientTests.swift in Sources */,
 				D2CB6F2227C520D400A62B57 /* DatadogTests.swift in Sources */,
+				11BA765E2D7F0EF30058C21C /* RUMViewHitchesIntegrationTests.swift in Sources */,
 				61DA8CAD2861C3720074A606 /* DirectoriesTests.swift in Sources */,
 				614798972A459AA80095CB02 /* DDTraceTests.swift in Sources */,
 				D2CB6F2627C520D400A62B57 /* DataUploadDelayTests.swift in Sources */,

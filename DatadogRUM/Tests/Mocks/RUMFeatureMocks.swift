@@ -1314,9 +1314,9 @@ internal class INVMetricMock: INVMetricTracking {
 }
 
 final class ViewHitchesMock: ViewHitchesMetric {
-    var hitchesDataModel: HitchesDataModel = ([], 0.0)
+    var hitchesDataModel: HitchesDataModel
 
-    init(hitchesDataModel: HitchesDataModel) {
+    init(hitchesDataModel: HitchesDataModel = ([], 0)) {
         self.hitchesDataModel = hitchesDataModel
     }
 }
@@ -1331,7 +1331,7 @@ extension ViewHitchesMock: RenderLoopReader {
 
 extension ViewHitchesMock: AnyMockable, RandomMockable {
     static func mockAny() -> Self {
-        ViewHitchesMock(hitchesDataModel: ([(1, 10), (20, 10)], 100.0)) as! Self
+        ViewHitchesMock(hitchesDataModel: ([(1, 10), (20, 10)], 100)) as! Self
     }
 
     static func mockRandom() -> Self {

@@ -112,6 +112,12 @@ extension RUMViewEvent.DD.Configuration: RandomMockable {
     }
 }
 
+extension RUMViewEvent.View.SlowFrames: RandomMockable {
+    public static func mockRandom() -> RUMViewEvent.View.SlowFrames {
+        .init(duration: .mockRandom(), start: .mockRandom())
+    }
+}
+
 extension RUMViewEvent: RandomMockable {
     public static func mockRandom() -> RUMViewEvent {
         return mockRandomWith()
@@ -126,6 +132,7 @@ extension RUMViewEvent: RandomMockable {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                cls: nil,
                 configuration: .mockRandom(),
                 documentVersion: .mockRandom(),
                 pageStates: nil,
@@ -179,6 +186,7 @@ extension RUMViewEvent: RandomMockable {
                 firstInputTime: .mockRandom(),
                 flutterBuildTime: nil,
                 flutterRasterTime: nil,
+                freezeRate: .mockRandom(),
                 frozenFrame: .init(count: .mockRandom()),
                 frustration: nil,
                 id: .mockRandom(),
@@ -209,6 +217,8 @@ extension RUMViewEvent: RandomMockable {
                 refreshRateAverage: .mockRandom(),
                 refreshRateMin: .mockRandom(),
                 resource: .init(count: .mockRandom()),
+                slowFrames: .mockRandom(),
+                slowFramesRate: .mockRandom(),
                 timeSpent: viewTimeSpent,
                 url: .mockRandom()
             )
