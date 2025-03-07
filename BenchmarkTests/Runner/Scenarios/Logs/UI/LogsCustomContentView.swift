@@ -38,13 +38,13 @@ struct LogsCustomContentView: View {
                 Section(header: Text("Log Configuration")) {
                     TextField("Log Message", text: $logMessage)
                     Picker("Log Level", selection: $logLevel) {
-                        ForEach(Array(logLevels.keys), id: \.self) { level in
-                            Text(level)
+                        ForEach(logLevels, id: \.1) { level in
+                            Text(level.0).tag(level.0)
                         }
                     }
                     Picker("Payload Size", selection: $payloadSize) {
-                        ForEach(Array(payloadSizes.keys), id: \.self) { size in
-                            Text(size)
+                        ForEach(payloadSizes, id: \.0) { size in
+                            Text(size.0).tag(size.0)
                         }
                     }
                 }
@@ -126,8 +126,8 @@ struct LogsCustomContentView: View {
     func startLogging() {
         isLogging = true
 
-        guard let selectedLogLevel = logLevels[logLevel],
-              let attributes = payloadSizes[payloadSize] else { return }
+        guard let selectedLogLevel = logLevels.first(where: { $0.0 == self.logLevel }),
+              let attributes = payloadSizes.first(where: { $0.0 == self.payloadSize }) else { return }
 
         if isRepeating {
             Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
@@ -135,10 +135,10 @@ struct LogsCustomContentView: View {
                     timer.invalidate()
                     return
                 }
-                self.logBatch(selectedLogLevel: selectedLogLevel, attributes: attributes)
+                self.logBatch(selectedLogLevel: selectedLogLevel.1, attributes: attributes.1)
             }
         } else {
-            logBatch(selectedLogLevel: selectedLogLevel, attributes: attributes)
+            logBatch(selectedLogLevel: selectedLogLevel.1, attributes: attributes.1)
             isLogging = false
         }
     }
