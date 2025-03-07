@@ -33,6 +33,7 @@ public class DDDatadog: NSObject
     public static func initialize(configuration: DDConfiguration,trackingConsent: DDTrackingConsent)
     public static func setVerbosityLevel(_ verbosityLevel: DDSDKVerbosityLevel)
     public static func verbosityLevel() -> DDSDKVerbosityLevel
+    public static func setUserInfo(userId: String, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
     public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
     public static func addUserExtraInfo(_ extraInfo: [String: Any])
     public static func setTrackingConsent(consent: DDTrackingConsent)
@@ -384,6 +385,7 @@ public class DDRUMMonitor: NSObject
     @objc public var debug: Bool
 public class DDRUMActionEvent: NSObject
     @objc public var dd: DDRUMActionEventDD
+    @objc public var account: DDRUMActionEventAccount?
     @objc public var action: DDRUMActionEventAction
     @objc public var application: DDRUMActionEventApplication
     @objc public var buildId: String?
@@ -448,6 +450,10 @@ public enum DDRUMActionEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
+public class DDRUMActionEventAccount: NSObject
+    @objc public var id: String
+    @objc public var name: String?
+    @objc public var accountInfo: [String: Any]
 public class DDRUMActionEventAction: NSObject
     @objc public var crash: DDRUMActionEventActionCrash?
     @objc public var error: DDRUMActionEventActionError?
@@ -593,6 +599,7 @@ public class DDRUMActionEventView: NSObject
     @objc public var url: String
 public class DDRUMErrorEvent: NSObject
     @objc public var dd: DDRUMErrorEventDD
+    @objc public var account: DDRUMErrorEventAccount?
     @objc public var action: DDRUMErrorEventAction?
     @objc public var application: DDRUMErrorEventApplication
     @objc public var buildId: String?
@@ -640,6 +647,10 @@ public enum DDRUMErrorEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
+public class DDRUMErrorEventAccount: NSObject
+    @objc public var id: String
+    @objc public var name: String?
+    @objc public var accountInfo: [String: Any]
 public class DDRUMErrorEventAction: NSObject
     @objc public var id: DDRUMErrorEventActionRUMActionID
 public class DDRUMErrorEventActionRUMActionID: NSObject
@@ -884,6 +895,7 @@ public class DDRUMErrorEventView: NSObject
     @objc public var url: String
 public class DDRUMLongTaskEvent: NSObject
     @objc public var dd: DDRUMLongTaskEventDD
+    @objc public var account: DDRUMLongTaskEventAccount?
     @objc public var action: DDRUMLongTaskEventAction?
     @objc public var application: DDRUMLongTaskEventApplication
     @objc public var buildId: String?
@@ -930,6 +942,10 @@ public enum DDRUMLongTaskEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
+public class DDRUMLongTaskEventAccount: NSObject
+    @objc public var id: String
+    @objc public var name: String?
+    @objc public var accountInfo: [String: Any]
 public class DDRUMLongTaskEventAction: NSObject
     @objc public var id: DDRUMLongTaskEventActionRUMActionID
 public class DDRUMLongTaskEventActionRUMActionID: NSObject
@@ -1078,6 +1094,7 @@ public class DDRUMLongTaskEventView: NSObject
     @objc public var url: String
 public class DDRUMResourceEvent: NSObject
     @objc public var dd: DDRUMResourceEventDD
+    @objc public var account: DDRUMResourceEventAccount?
     @objc public var action: DDRUMResourceEventAction?
     @objc public var application: DDRUMResourceEventApplication
     @objc public var buildId: String?
@@ -1127,6 +1144,10 @@ public enum DDRUMResourceEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
+public class DDRUMResourceEventAccount: NSObject
+    @objc public var id: String
+    @objc public var name: String?
+    @objc public var accountInfo: [String: Any]
 public class DDRUMResourceEventAction: NSObject
     @objc public var id: DDRUMResourceEventActionRUMActionID
 public class DDRUMResourceEventActionRUMActionID: NSObject
@@ -1345,6 +1366,7 @@ public class DDRUMResourceEventView: NSObject
     @objc public var url: String
 public class DDRUMViewEvent: NSObject
     @objc public var dd: DDRUMViewEventDD
+    @objc public var account: DDRUMViewEventAccount?
     @objc public var application: DDRUMViewEventApplication
     @objc public var buildId: String?
     @objc public var buildVersion: String?
@@ -1407,6 +1429,10 @@ public enum DDRUMViewEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
+public class DDRUMViewEventAccount: NSObject
+    @objc public var id: String
+    @objc public var name: String?
+    @objc public var accountInfo: [String: Any]
 public class DDRUMViewEventApplication: NSObject
     @objc public var id: String
 public class DDRUMViewEventRUMCITest: NSObject
@@ -1565,6 +1591,7 @@ public class DDRUMViewEventView: NSObject
     @objc public var memoryMax: NSNumber?
     @objc public var name: String?
     @objc public var networkSettledTime: NSNumber?
+    @objc public var performance: DDRUMViewEventViewPerformance?
     @objc public var referrer: String?
     @objc public var refreshRateAverage: NSNumber?
     @objc public var refreshRateMin: NSNumber?
@@ -1611,10 +1638,50 @@ public enum DDRUMViewEventViewLoadingType: Int
     case viewControllerRedisplay
 public class DDRUMViewEventViewLongTask: NSObject
     @objc public var count: NSNumber
+public class DDRUMViewEventViewPerformance: NSObject
+    @objc public var cls: DDRUMViewEventViewPerformanceCLS?
+    @objc public var fbc: DDRUMViewEventViewPerformanceFBC?
+    @objc public var fcp: DDRUMViewEventViewPerformanceFCP?
+    @objc public var fid: DDRUMViewEventViewPerformanceFID?
+    @objc public var inp: DDRUMViewEventViewPerformanceINP?
+    @objc public var lcp: DDRUMViewEventViewPerformanceLCP?
+public class DDRUMViewEventViewPerformanceCLS: NSObject
+    @objc public var currentRect: DDRUMViewEventViewPerformanceCLSCurrentRect?
+    @objc public var previousRect: DDRUMViewEventViewPerformanceCLSPreviousRect?
+    @objc public var score: NSNumber
+    @objc public var targetSelector: String?
+    @objc public var timestamp: NSNumber?
+public class DDRUMViewEventViewPerformanceCLSCurrentRect: NSObject
+    @objc public var height: NSNumber
+    @objc public var width: NSNumber
+    @objc public var x: NSNumber
+    @objc public var y: NSNumber
+public class DDRUMViewEventViewPerformanceCLSPreviousRect: NSObject
+    @objc public var height: NSNumber
+    @objc public var width: NSNumber
+    @objc public var x: NSNumber
+    @objc public var y: NSNumber
+public class DDRUMViewEventViewPerformanceFBC: NSObject
+    @objc public var timestamp: NSNumber
+public class DDRUMViewEventViewPerformanceFCP: NSObject
+    @objc public var timestamp: NSNumber
+public class DDRUMViewEventViewPerformanceFID: NSObject
+    @objc public var duration: NSNumber
+    @objc public var targetSelector: String?
+    @objc public var timestamp: NSNumber
+public class DDRUMViewEventViewPerformanceINP: NSObject
+    @objc public var duration: NSNumber
+    @objc public var targetSelector: String?
+    @objc public var timestamp: NSNumber?
+public class DDRUMViewEventViewPerformanceLCP: NSObject
+    @objc public var resourceUrl: String?
+    @objc public var targetSelector: String?
+    @objc public var timestamp: NSNumber
 public class DDRUMViewEventViewResource: NSObject
     @objc public var count: NSNumber
 public class DDRUMVitalEvent: NSObject
     @objc public var dd: DDRUMVitalEventDD
+    @objc public var account: DDRUMVitalEventAccount?
     @objc public var application: DDRUMVitalEventApplication
     @objc public var buildId: String?
     @objc public var buildVersion: String?
@@ -1662,6 +1729,10 @@ public enum DDRUMVitalEventDDSessionRUMSessionPrecondition: Int
     case explicitStop
 public class DDRUMVitalEventDDVital: NSObject
     @objc public var computedValue: NSNumber?
+public class DDRUMVitalEventAccount: NSObject
+    @objc public var id: String
+    @objc public var name: String?
+    @objc public var accountInfo: [String: Any]
 public class DDRUMVitalEventApplication: NSObject
     @objc public var id: String
 public class DDRUMVitalEventRUMCITest: NSObject
@@ -1770,7 +1841,7 @@ public class DDRUMVitalEventView: NSObject
     @objc public var url: String
 public class DDRUMVitalEventVital: NSObject
     @objc public var custom: [String: NSNumber]?
-    @objc public var details: String?
+    @objc public var vitalDescription: String?
     @objc public var duration: NSNumber?
     @objc public var id: String
     @objc public var name: String?
@@ -1920,7 +1991,6 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var batchProcessingLevel: NSNumber?
     @objc public var batchSize: NSNumber?
     @objc public var batchUploadFrequency: NSNumber?
-    @objc public var collectFeatureFlagsOn: [Int]?
     @objc public var compressIntakeRequests: NSNumber?
     @objc public var dartVersion: String?
     @objc public var defaultPrivacyLevel: String?
@@ -1930,6 +2000,7 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var forwardReports: DDTelemetryConfigurationEventTelemetryConfigurationForwardReports?
     @objc public var imagePrivacyLevel: String?
     @objc public var initializationType: String?
+    @objc public var invTimeThresholdMs: NSNumber?
     @objc public var isMainProcess: NSNumber?
     @objc public var mobileVitalsUpdatePeriod: NSNumber?
     @objc public var plugins: [DDTelemetryConfigurationEventTelemetryConfigurationPlugins]?
@@ -1939,6 +2010,7 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var replaySampleRate: NSNumber?
     @objc public var selectedTracingPropagators: [Int]?
     @objc public var sendLogsAfterSessionExpiration: NSNumber?
+    @objc public var sessionPersistence: DDTelemetryConfigurationEventTelemetryConfigurationSessionPersistence
     @objc public var sessionReplaySampleRate: NSNumber?
     @objc public var sessionSampleRate: NSNumber?
     @objc public var silentMultipleInit: NSNumber?
@@ -1949,14 +2021,17 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var telemetrySampleRate: NSNumber?
     @objc public var telemetryUsageSampleRate: NSNumber?
     @objc public var textAndInputPrivacyLevel: String?
+    @objc public var tnsTimeThresholdMs: NSNumber?
     @objc public var touchPrivacyLevel: String?
     @objc public var traceContextInjection: DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjection
     @objc public var traceSampleRate: NSNumber?
     @objc public var tracerApi: String?
     @objc public var tracerApiVersion: String?
+    @objc public var trackAnonymousUser: NSNumber?
     @objc public var trackBackgroundEvents: NSNumber?
     @objc public var trackCrossPlatformLongTasks: NSNumber?
     @objc public var trackErrors: NSNumber?
+    @objc public var trackFeatureFlagsForEvents: [Int]?
     @objc public var trackFlutterPerformance: NSNumber?
     @objc public var trackFrustrations: NSNumber?
     @objc public var trackInteractions: NSNumber?
@@ -1985,11 +2060,6 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var useTracing: NSNumber?
     @objc public var useWorkerUrl: NSNumber?
     @objc public var viewTrackingStrategy: DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy
-public enum DDTelemetryConfigurationEventTelemetryConfigurationCollectFeatureFlagsOn: Int
-    case none
-    case view
-    case error
-    case vital
 public class DDTelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs: NSObject
     @objc public var stringsArray: [String]?
     @objc public var string: String?
@@ -2005,10 +2075,20 @@ public enum DDTelemetryConfigurationEventTelemetryConfigurationSelectedTracingPr
     case b3
     case b3multi
     case tracecontext
+public enum DDTelemetryConfigurationEventTelemetryConfigurationSessionPersistence: Int
+    case none
+    case localStorage
+    case cookie
 public enum DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjection: Int
     case none
     case all
     case sampled
+public enum DDTelemetryConfigurationEventTelemetryConfigurationTrackFeatureFlagsForEvents: Int
+    case none
+    case vital
+    case resource
+    case action
+    case longTask
 public enum DDTelemetryConfigurationEventTelemetryConfigurationTrackingConsent: Int
     case none
     case granted

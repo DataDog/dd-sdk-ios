@@ -565,6 +565,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let viewEvent = RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                cls: nil,
                 configuration: .init(
                     sessionReplaySampleRate: nil,
                     sessionSampleRate: Double(dependencies.sessionSampler.samplingRate),
@@ -629,6 +630,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 firstInputTime: nil,
                 flutterBuildTime: viewPerformanceMetrics[.flutterBuildTime]?.asFlutterBuildTime(),
                 flutterRasterTime: viewPerformanceMetrics[.flutterRasterTime]?.asFlutterRasterTime(),
+                freezeRate: nil,
                 frozenFrame: .init(count: frozenFramesCount),
                 frustration: .init(count: frustrationCount),
                 id: viewUUID.toRUMDataFormat,
@@ -655,6 +657,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 refreshRateAverage: refreshRateInfo?.meanValue,
                 refreshRateMin: refreshRateInfo?.minValue,
                 resource: .init(count: resourcesCount.toInt64),
+                slowFrames: nil,
+                slowFramesRate: nil,
                 timeSpent: timeSpent.toInt64Nanoseconds,
                 url: viewPath
             )
