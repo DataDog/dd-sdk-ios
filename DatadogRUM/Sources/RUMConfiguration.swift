@@ -251,6 +251,9 @@ extension RUM {
         /// and 100 means all telemetry will be uploaded. The default value is 20.0.
         public var telemetrySampleRate: SampleRate
 
+        /// Feature flags to preview features in RUM.
+        public var featureFlags: FeatureFlags
+
         // MARK: - Nested Types
 
         /// Configuration of automatic RUM resources tracking.
@@ -395,6 +398,7 @@ extension RUM.Configuration {
     ///   - onSessionStart: RUM session start callback. Default: `nil`.
     ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
+    ///   - featureFlags: Experimental feature flags.
     public init(
         applicationID: String,
         sessionSampleRate: SampleRate = .maxSampleRate,
@@ -417,7 +421,8 @@ extension RUM.Configuration {
         onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = nil,
         trackAnonymousUser: Bool = true,
-        telemetrySampleRate: SampleRate = 20
+        telemetrySampleRate: SampleRate = 20,
+        featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
         self.sessionSampleRate = sessionSampleRate
@@ -441,6 +446,7 @@ extension RUM.Configuration {
         self.trackAnonymousUser = trackAnonymousUser
         self.telemetrySampleRate = telemetrySampleRate
         self.trackWatchdogTerminations = trackWatchdogTerminations
+        self.featureFlags = featureFlags
     }
 }
 
@@ -454,5 +460,31 @@ extension InternalExtension where ExtendedType == RUM.Configuration {
     public var configurationTelemetrySampleRate: Float {
         get { type.configurationTelemetrySampleRate }
         set { type.configurationTelemetrySampleRate = newValue }
+    }
+}
+
+extension RUM.Configuration {
+    public typealias FeatureFlags = [FeatureFlag: Bool]
+
+    /// Feature Flag available in RUM
+    public enum FeatureFlag: String {
+        /// View Hitches
+        case viewHitches
+    }
+}
+
+extension RUM.Configuration.FeatureFlags {
+    /// The defaults Feature Flags applied to Session Replay Configuration
+    public static var defaults: Self {
+        [
+            .viewHitches: false
+        ]
+    }
+
+    /// Accesses the feature flag value.
+    ///
+    /// Return:  false by default.
+    public subscript(flag: Key) -> Bool {
+        self[flag, default: false]
     }
 }
