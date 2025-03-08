@@ -8,8 +8,13 @@ import Foundation
 import DatadogInternal
 
 internal struct CoreContext {
+    struct RUMSession: Decodable { let sessionUUID: String }
+
     /// Provides the history of app foreground / background states.
     var applicationStateHistory: AppStateHistory?
+
+    /// Provides the current active RUM Session information, if any
+    var rumSession: RUMSession?
 }
 
 internal final class ContextMessageReceiver: FeatureMessageReceiver {
@@ -28,6 +33,16 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
         switch message {
         case .context(let context):
             return update(context: context, from: core)
+        case .telemetry(let telemetry):
+            return false
+        case .baggage(let label, let baggage) where label == "rum-session-state":
+            do {
+                try _context.mutate { $0.rumSession = try baggage.decode() }
+            } catch {
+                core.telemetry
+                    .error("Fails to decode RUM Session State from Trace", error: error)
+            }
+            return false
         default:
             return false
         }

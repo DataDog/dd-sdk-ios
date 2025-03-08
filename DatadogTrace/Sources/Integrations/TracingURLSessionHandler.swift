@@ -50,7 +50,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             spanID: spanContext.spanID,
             parentSpanID: spanContext.parentSpanID,
             sampleRate: spanContext.sampleRate,
-            isKept: spanContext.isKept
+            isKept: spanContext.isKept,
+            rumSessionId: contextReceiver.context.rumSession?.sessionUUID
         )
 
         var request = request

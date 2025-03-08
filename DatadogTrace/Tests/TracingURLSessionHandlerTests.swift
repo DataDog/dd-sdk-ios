@@ -237,7 +237,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             spanID: 200,
             parentSpanID: nil,
             sampleRate: sampleRate,
-            isKept: isKept
+            isKept: isKept,
+            rumSessionId: nil
         ))
 
         // When

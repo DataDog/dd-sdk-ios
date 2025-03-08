@@ -352,7 +352,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             spanID: 200,
             parentSpanID: nil,
             sampleRate: .mockAny(),
-            isKept: .mockAny()
+            isKept: .mockAny(),
+            rumSessionId: .mockAny()
         ))
         XCTAssertNotNil(taskInterception.trace)
 
