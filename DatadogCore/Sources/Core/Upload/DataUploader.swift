@@ -26,10 +26,17 @@ internal final class DataUploader: DataUploaderType {
 
     private let httpClient: HTTPClient
     private let requestBuilder: FeatureRequestBuilder
+    /// Name of the feature this worker is performing uploads for.
+    private let featureName: String
 
-    init(httpClient: HTTPClient, requestBuilder: FeatureRequestBuilder) {
+    init(
+        httpClient: HTTPClient,
+        requestBuilder: FeatureRequestBuilder,
+        featureName: String
+    ) {
         self.httpClient = httpClient
         self.requestBuilder = requestBuilder
+        self.featureName = featureName
     }
 
     /// Uploads data synchronously (will block current thread) and returns the upload status.
@@ -70,6 +77,11 @@ internal final class DataUploader: DataUploaderType {
         }
 
         _ = semaphore.wait(timeout: .distantFuture)
+
+#if DD_BENCHMARK
+        bench.meter.counter(metric: "ios.benchmark.bytes_uploaded")
+            .increment(by: request.httpBody?.count ?? 0, attributes: ["track": featureName])
+#endif
 
         return uploadStatus ?? DataUploader.unreachableUploadStatus
     }

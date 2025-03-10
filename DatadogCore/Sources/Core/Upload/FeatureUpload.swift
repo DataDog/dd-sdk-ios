@@ -30,7 +30,8 @@ internal struct FeatureUpload {
 
         let dataUploader = DataUploader(
             httpClient: httpClient,
-            requestBuilder: requestBuilder
+            requestBuilder: requestBuilder,
+            featureName: featureName
         )
 
         #if canImport(UIKit)
