@@ -14,7 +14,6 @@ struct LogsCustomContentView: View {
     @State private var interval: Double
     @State private var isRepeating: Bool
     @State private var payloadSize: String
-    @State private var logs: [String]
     @State private var isLogging: Bool
 
     private let logger: LoggerProtocol
@@ -26,7 +25,6 @@ struct LogsCustomContentView: View {
         interval = 5
         isRepeating = false
         payloadSize = "Small"
-        logs = []
         isLogging = false
 
         logger = Logger.create()
@@ -86,14 +84,6 @@ struct LogsCustomContentView: View {
                 }
                 .listRowBackground(EmptyView())
                 .listRowInsets(EdgeInsets())
-
-                Section(header: Text("Console output:")) {
-                    ForEach(logs, id: \.self) { log in
-                        Text(log)
-                            .lineLimit(nil)
-                            .font(.footnote)
-                    }
-                }
             }
             .listSectionSpacing(10)
         }
@@ -105,17 +95,8 @@ struct LogsCustomContentView: View {
     ///   - attributes: The payload attributes corresponding to the selected payload size.
     func logBatch(selectedLogLevel: LogLevel, attributes: [String: Encodable]) {
         DispatchQueue.global(qos: .userInitiated).async {
-            var newLogEntries: [String] = []
-
             for _ in 1...self.logsPerBatch {
-                let logEntry = "\(Date()) [\(self.logLevel)] \(self.logMessage) - \(self.payloadSize)"
-                newLogEntries.append(logEntry)
-
                 self.logger.log(level: selectedLogLevel, message: self.logMessage, error: nil, attributes: attributes)
-            }
-
-            DispatchQueue.main.async {
-                self.logs.insert(contentsOf: newLogEntries, at: 0)
             }
         }
     }
