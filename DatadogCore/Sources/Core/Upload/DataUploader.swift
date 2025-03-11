@@ -58,7 +58,13 @@ internal final class DataUploader: DataUploaderType {
 
         let semaphore = DispatchSemaphore(value: 0)
 
-        httpClient.send(request: request) { result in
+#if DD_BENCHMARK
+        let delegate: URLSessionTaskDelegate = BenchmarkURLSessionTaskDelegate(track: featureName)
+#else
+        let delegate: URLSessionTaskDelegate? = nil
+#endif
+
+        httpClient.send(request: request, delegate: delegate) { result in
             switch result {
             case .success(let httpResponse):
                 uploadStatus = DataUploadStatus(
