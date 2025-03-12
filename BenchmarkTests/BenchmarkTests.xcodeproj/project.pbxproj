@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		86252B1B2D818E360098FAEF /* TraceScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86252B1A2D818E360098FAEF /* TraceScenario.swift */; };
+		86252B1D2D8190DA0098FAEF /* TraceContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86252B1C2D8190DA0098FAEF /* TraceContentView.swift */; };
 		868DA2E62D706456007D20D5 /* LogsCustomScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868DA2E52D706456007D20D5 /* LogsCustomScenario.swift */; };
 		868DA2EC2D706E61007D20D5 /* LogsCustomContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868DA2EB2D706E61007D20D5 /* LogsCustomContentView.swift */; };
 		868DA2F52D71DD47007D20D5 /* LogsHeavyTrafficScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868DA2F42D71DD47007D20D5 /* LogsHeavyTrafficScenario.swift */; };
@@ -238,6 +240,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		86252B1A2D818E360098FAEF /* TraceScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceScenario.swift; sourceTree = "<group>"; };
+		86252B1C2D8190DA0098FAEF /* TraceContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceContentView.swift; sourceTree = "<group>"; };
 		868DA2E52D706456007D20D5 /* LogsCustomScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsCustomScenario.swift; sourceTree = "<group>"; };
 		868DA2EB2D706E61007D20D5 /* LogsCustomContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsCustomContentView.swift; sourceTree = "<group>"; };
 		868DA2F42D71DD47007D20D5 /* LogsHeavyTrafficScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsHeavyTrafficScenario.swift; sourceTree = "<group>"; };
@@ -471,6 +475,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		86252B182D818DFB0098FAEF /* Trace */ = {
+			isa = PBXGroup;
+			children = (
+				86252B192D818E1F0098FAEF /* UI */,
+				86252B1A2D818E360098FAEF /* TraceScenario.swift */,
+			);
+			path = Trace;
+			sourceTree = "<group>";
+		};
+		86252B192D818E1F0098FAEF /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				86252B1C2D8190DA0098FAEF /* TraceContentView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
 		868DA2E42D70643A007D20D5 /* Logs */ = {
 			isa = PBXGroup;
 			children = (
@@ -591,6 +612,7 @@
 				D24BFD462C6B916B00AB9604 /* SyntheticScenario.swift */,
 				D27606992C514F37002D2A14 /* SessionReplay */,
 				868DA2E42D70643A007D20D5 /* Logs */,
+				86252B182D818DFB0098FAEF /* Trace */,
 			);
 			path = Scenarios;
 			sourceTree = "<group>";
@@ -1277,6 +1299,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				868DA2E62D706456007D20D5 /* LogsCustomScenario.swift in Sources */,
+				86252B1D2D8190DA0098FAEF /* TraceContentView.swift in Sources */,
 				868DA2F72D71DD8A007D20D5 /* LogsHeavyTrafficContentView.swift in Sources */,
 				868DA2EC2D706E61007D20D5 /* LogsCustomContentView.swift in Sources */,
 				D27606A42C514F37002D2A14 /* AppConfiguration.swift in Sources */,
@@ -1289,6 +1312,7 @@
 				D24BFD472C6B916B00AB9604 /* SyntheticScenario.swift in Sources */,
 				D27606A32C514F37002D2A14 /* Scenario.swift in Sources */,
 				D23734972D773DD8004CCAED /* BenchmarkMeter.swift in Sources */,
+				86252B1B2D818E360098FAEF /* TraceScenario.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
