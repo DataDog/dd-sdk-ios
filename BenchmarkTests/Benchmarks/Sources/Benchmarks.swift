@@ -13,6 +13,9 @@ import OpenTelemetryApi
 import OpenTelemetrySdk
 import DatadogExporter
 
+let instrumentationName = "benchmarks"
+let instrumentationVersion = "1.0.0"
+
 /// Benchmark entrypoint to configure opentelemetry with metrics meters
 /// and tracer.
 public enum Benchmarks {
@@ -72,38 +75,79 @@ public enum Benchmarks {
         }
     }
 
-    /// Configure an OpenTelemetry meter provider.
+    /// Configure OpenTelemetry metrics meter and start measuring Memory.
     ///
     /// - Parameter configuration: The Benchmark configuration.
-    public static func meterProvider(with configuration: Configuration) -> MeterProvider {
+    public static func enableMetrics(with configuration: Configuration) {
         let metricExporter = MetricExporter(
             configuration: MetricExporter.Configuration(
                 apiKey: configuration.apiKey,
-                version: configuration.context.applicationVersion
+                version: instrumentationVersion
             )
         )
 
-        return MeterProviderBuilder()
+        let meterProvider = MeterProviderBuilder()
             .with(pushInterval: 10)
             .with(processor: MetricProcessorSdk())
             .with(exporter: metricExporter)
-            .with(resource: Resource(attributes: [
-                "device_model": .string(configuration.context.deviceModel),
-                "os": .string(configuration.context.osName),
-                "os_version": .string(configuration.context.osVersion),
-                "run": .string(configuration.context.run),
-                "scenario": .string(configuration.context.scenario),
-                "application_id": .string(configuration.context.applicationIdentifier),
-                "sdk_version": .string(configuration.context.sdkVersion),
-                "branch": .string(configuration.context.branch),
-            ]))
+            .with(resource: Resource())
             .build()
+
+        let meter = meterProvider.get(
+            instrumentationName: instrumentationName,
+            instrumentationVersion: instrumentationVersion
+        )
+
+        let labels = [
+            "device_model": configuration.context.deviceModel,
+            "os": configuration.context.osName,
+            "os_version": configuration.context.osVersion,
+            "run": configuration.context.run,
+            "scenario": configuration.context.scenario,
+            "application_id": configuration.context.applicationIdentifier,
+            "sdk_version": configuration.context.sdkVersion,
+            "branch": configuration.context.branch,
+        ]
+
+        let queue = DispatchQueue(label: "com.datadoghq.benchmarks.metrics", qos: .utility)
+
+        let memory = Memory(queue: queue)
+        _ = meter.createDoubleObservableGauge(name: "ios.benchmark.memory") { metric in
+            // report the maximum memory footprint that was recorded during push interval
+            if let value = memory.aggregation?.max {
+                metric.observe(value: value, labels: labels)
+            }
+
+            memory.reset()
+        }
+
+        let cpu = CPU(queue: queue)
+        _ = meter.createDoubleObservableGauge(name: "ios.benchmark.cpu") { metric in
+            // report the average cpu usage that was recorded during push interval
+            if let value = cpu.aggregation?.avg {
+                metric.observe(value: value, labels: labels)
+            }
+
+            cpu.reset()
+        }
+
+        let fps = FPS()
+        _ = meter.createIntObservableGauge(name: "ios.benchmark.fps.min") { metric in
+            // report the minimum frame rate that was recorded during push interval
+            if let value = fps.aggregation?.min {
+                metric.observe(value: value, labels: labels)
+            }
+
+            fps.reset()
+        }
+
+        OpenTelemetry.registerMeterProvider(meterProvider: meterProvider)
     }
 
-    /// Configure an OpenTelemetry tracer provider.
+    /// Configure and register a OpenTelemetry Tracer.
     ///
     /// - Parameter configuration: The Benchmark configuration.
-    public static func tracerProvider(with configuration: Configuration) -> TracerProvider {
+    public static func enableTracer(with configuration: Configuration) {
         let exporterConfiguration = ExporterConfiguration(
             serviceName: configuration.context.applicationIdentifier,
             resource: "Benchmark Tracer",
@@ -118,8 +162,10 @@ public enum Benchmarks {
         let exporter = try! DatadogExporter(config: exporterConfiguration)
         let processor = SimpleSpanProcessor(spanExporter: exporter)
 
-        return TracerProviderBuilder()
+        let provider = TracerProviderBuilder()
             .add(spanProcessor: processor)
             .build()
+
+        OpenTelemetry.registerTracerProvider(tracerProvider: provider)
     }
 }

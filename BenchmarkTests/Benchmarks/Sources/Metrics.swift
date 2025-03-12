@@ -12,33 +12,33 @@ import QuartzCore
 let TASK_VM_INFO_COUNT = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
 let TASK_VM_INFO_REV1_COUNT = mach_msg_type_number_t(MemoryLayout.offset(of: \task_vm_info_data_t.min_address)! / MemoryLayout<integer_t>.size)
 
-public enum MachError: Error {
+internal enum MachError: Error {
     case task_info(return: kern_return_t)
     case task_threads(return: kern_return_t)
     case thread_info(return: kern_return_t)
 }
 
 /// Aggregate metric values and compute `min`, `max`, `sum`, `avg`, and `count`.
-public class MetricAggregator<T> where T: Numeric {
-    public struct Aggregation {
-        public let min: T
-        public let max: T
-        public let sum: T
-        public let count: Int
-        public let avg: Double
+internal class MetricAggregator<T> where T: Numeric {
+    internal struct Aggregation {
+        let min: T
+        let max: T
+        let sum: T
+        let count: Int
+        let avg: Double
     }
 
     private var mutex = pthread_mutex_t()
     private var _aggregation: Aggregation?
 
-    public var aggregation: Aggregation? {
+    var aggregation: Aggregation? {
         pthread_mutex_lock(&mutex)
         defer { pthread_mutex_unlock(&mutex) }
         return _aggregation
     }
 
     /// Resets the minimum frame rate to `nil`.
-    public func reset() {
+    func reset() {
         pthread_mutex_lock(&mutex)
         _aggregation = nil
         pthread_mutex_unlock(&mutex)
@@ -53,7 +53,7 @@ extension MetricAggregator where T: BinaryInteger {
     /// Records a `BinaryInteger` value.
     ///
     /// - Parameter value: The value to record.
-    public func record(value: T) {
+    func record(value: T) {
         pthread_mutex_lock(&mutex)
         _aggregation = _aggregation.map {
             let sum = $0.sum + value
@@ -74,7 +74,7 @@ extension MetricAggregator where T: BinaryFloatingPoint {
     /// Records a `BinaryFloatingPoint` value.
     ///
     /// - Parameter value: The value to record.
-    internal func record(value: T) {
+    func record(value: T) {
         pthread_mutex_lock(&mutex)
         _aggregation = _aggregation.map {
             let sum = $0.sum + value
@@ -94,7 +94,7 @@ extension MetricAggregator where T: BinaryFloatingPoint {
 /// Collect Memory footprint metric.
 ///
 /// Based on a timer, the `Memory` aggregator will periodically record the memory footprint.
-public final class Memory: MetricAggregator<Double> {
+internal final class Memory: MetricAggregator<Double> {
     /// Dispatch source object for monitoring timer events.
     private let timer: DispatchSourceTimer
 
@@ -107,7 +107,7 @@ public final class Memory: MetricAggregator<Double> {
     ///   - queue: The queue on which to execute the timer handler.
     ///   - interval: The timer interval, default to 100 ms.
     ///   - leeway: The timer leeway, default to 10 ms.
-    public required init(
+    required init(
         queue: DispatchQueue,
         every interval: DispatchTimeInterval = .milliseconds(100),
         leeway: DispatchTimeInterval = .milliseconds(10)
@@ -158,7 +158,7 @@ public final class Memory: MetricAggregator<Double> {
 /// Collect CPU usage metric.
 ///
 /// Based on a timer, the `CPU` aggregator will periodically record the CPU usage.
-public final class CPU: MetricAggregator<Double> {
+internal final class CPU: MetricAggregator<Double> {
     /// Dispatch source object for monitoring timer events.
     private let timer: DispatchSourceTimer
 
@@ -171,7 +171,7 @@ public final class CPU: MetricAggregator<Double> {
     ///   - queue: The queue on which to execute the timer handler.
     ///   - interval: The timer interval, default to 100 ms.
     ///   - leeway: The timer leeway, default to 10 ms.
-    public required init(
+    init(
         queue: DispatchQueue,
         every interval: DispatchTimeInterval = .milliseconds(100),
         leeway: DispatchTimeInterval = .milliseconds(10)
@@ -241,7 +241,7 @@ public final class CPU: MetricAggregator<Double> {
 }
 
 /// Collect Frame rate metric based on ``CADisplayLinker`` timer.
-public final class FPS: MetricAggregator<Int> {
+internal final class FPS: MetricAggregator<Int> {
     private class CADisplayLinker {
         weak var fps: FPS?
 
@@ -260,7 +260,7 @@ public final class FPS: MetricAggregator<Int> {
 
     private var displayLink: CADisplayLink
 
-    override public init() {
+    override init() {
         let linker = CADisplayLinker()
         displayLink = CADisplayLink(target: linker, selector: #selector(CADisplayLinker.tick(link:)))
         super.init()
