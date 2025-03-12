@@ -78,13 +78,14 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 DD.logger.debug("⏳ (\(self.featureName)) Uploading batches...")
                 self.backgroundTaskCoordinator?.beginBackgroundTask()
                 self.uploadFile(from: files.reversed(), context: context)
+                sendUploadCycleMetric()
             } else {
                 let batchLabel = files?.isEmpty == false ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
                 DD.logger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
                 self.delay.increase()
                 self.backgroundTaskCoordinator?.endBackgroundTask()
                 self.scheduleNextCycle()
-                sendUploadQualityMetric(blockers: blockersForUpload)
+                sendBatchBlockedMetric(blockers: blockersForUpload)
             }
         }
         self.readWork = readWorkItem
@@ -121,7 +122,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     )
 
                     previousUploadStatus = uploadStatus
-                    sendUploadQualityMetric(status: uploadStatus)
 
                     if uploadStatus.needsRetry {
                         DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
@@ -147,8 +147,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     previousUploadStatus = nil
 
                     if let error = uploadStatus.error {
-                        // Throw to report the request error accordingly
-                        throw error
+                        sendBatchBlockedMetric(error: error)
+                        throw error // Throw to report the request error accordingly
                     }
                 } catch DataUploadError.httpError(statusCode: .unauthorized), DataUploadError.httpError(statusCode: .forbidden) {
                     DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
@@ -166,7 +166,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     self.fileReader.markBatchAsRead(batch, reason: .invalid)
                     previousUploadStatus = nil
                     self.telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
-                    sendUploadQualityMetric(failure: "invalid")
                 }
             }
 
@@ -235,55 +234,51 @@ internal class DataUploadWorker: DataUploadWorkerType {
         }
     }
 
-    private func sendUploadQualityMetric(blockers: [DataUploadConditions.Blocker]) {
+    private func sendUploadCycleMetric() {
+        telemetry.metric(
+            name: UploadCycleMetric.name,
+            attributes: [UploadCycleMetric.track: featureName]
+        )
+    }
+
+    private func sendBatchBlockedMetric(blockers: [DataUploadConditions.Blocker]) {
         guard !blockers.isEmpty else {
-            return sendUploadQualityMetric()
+            return
         }
 
-        sendUploadQualityMetric(
-            failure: "blocker",
-            blockers: blockers.map {
-                switch $0 {
-                case .battery: return "low_battery"
-                case .lowPowerModeOn: return "lpm"
-                case .networkReachability: return "offline"
-                }
-            }
-        )
-    }
-
-    private func sendUploadQualityMetric(status: DataUploadStatus) {
-        guard let error = status.error else {
-            return sendUploadQualityMetric()
-        }
-
-        sendUploadQualityMetric(
-            failure: {
-                switch error {
-                case let .httpError(code): return "\(code)"
-                case let .networkError(error): return "\(error.code)"
-                }
-            }()
-        )
-    }
-
-    private func sendUploadQualityMetric() {
         telemetry.metric(
-            name: UploadQualityMetric.name,
+            name: BatchBlockedMetric.name,
             attributes: [
-                UploadQualityMetric.track: featureName
-            ]
+                SDKMetricFields.typeKey: BatchBlockedMetric.typeValue,
+                BatchMetric.trackKey: featureName,
+                BatchBlockedMetric.uploaderDelayKey: delay.current,
+                BatchBlockedMetric.blockers: blockers.map {
+                    switch $0 {
+                    case .battery: return "low_battery"
+                    case .lowPowerModeOn: return "lpm"
+                    case .networkReachability: return "offline"
+                    }
+                }
+            ],
+            sampleRate: BatchBlockedMetric.sampleRate
         )
     }
 
-    private func sendUploadQualityMetric(failure: String, blockers: [String] = []) {
+    private func sendBatchBlockedMetric(error: DataUploadError) {
         telemetry.metric(
-            name: UploadQualityMetric.name,
+            name: BatchBlockedMetric.name,
             attributes: [
-                UploadQualityMetric.track: featureName,
-                UploadQualityMetric.failure: failure,
-                UploadQualityMetric.blockers: blockers
-            ]
+                SDKMetricFields.typeKey: BatchBlockedMetric.typeValue,
+                BatchMetric.trackKey: featureName,
+                BatchBlockedMetric.uploaderDelayKey: delay.current,
+                BatchBlockedMetric.failure: {
+                    switch error {
+                    case let .httpError(code): return "intake-code-\(code.rawValue)"
+                    case let .networkError(error): return "network-code-\(error.code)"
+                    }
+                }()
+            ],
+            sampleRate: BatchBlockedMetric.sampleRate
         )
     }
 }

@@ -121,8 +121,8 @@ internal final class SessionEndedMetricController {
     ///
     /// - Parameters:
     ///   - attributes: The upload quality attributes
-    func track(uploadQuality attributes: [String: Encodable], in sessionID: RUMUUID?) {
-        updateMetric(for: sessionID) { $0?.track(uploadQuality: attributes) }
+    func track(uploadCycle attributes: [String: Encodable], in sessionID: RUMUUID?) {
+        updateMetric(for: sessionID) { $0?.track(uploadCycle: attributes) }
     }
 
     private func updateMetric(for sessionID: RUMUUID?, _ mutation: (inout SessionEndedMetric?) throws -> Void) {

@@ -593,35 +593,22 @@ class SessionEndedMetricTests: XCTestCase {
 
     func testUploadQualityMetricAggregation() throws {
         let metric = SessionEndedMetric.with(sessionID: sessionID, context: .mockWith(applicationBundleType: .iOSApp))
-        metric.track(uploadQuality: [
-            UploadQualityMetric.track: "feature",
-            UploadQualityMetric.failure: "error1"
-        ])
 
-        metric.track(uploadQuality: [
-            UploadQualityMetric.track: "feature",
-            UploadQualityMetric.failure: "error1",
-            UploadQualityMetric.blockers: ["blocker1", "blocker2"]
-        ])
+        let count1: Int = .mockRandom(min: 10, max: 100)
+        for _ in 0..<count1 {
+            metric.track(uploadCycle: [UploadCycleMetric.track: "feature1"])
+        }
 
-        metric.track(uploadQuality: [
-            UploadQualityMetric.track: "feature",
-        ])
-
-        metric.track(uploadQuality: [
-            UploadQualityMetric.track: "feature",
-            UploadQualityMetric.failure: "error2",
-            UploadQualityMetric.blockers: ["blocker1"]
-        ])
+        let count2: Int = .mockRandom(min: 10, max: 100)
+        for _ in 0..<count2 {
+            metric.track(uploadCycle: [UploadCycleMetric.track: "feature2"])
+        }
 
         // When
         let matcher = try JSONObjectMatcher(AnyEncodable(metric.asMetricAttributes()))
 
-        XCTAssertEqual(try matcher.value("rse.upload_quality.feature.cycle_count") as Int, 4)
-        XCTAssertEqual(try matcher.value("rse.upload_quality.feature.failure_count.error1") as Int, 2)
-        XCTAssertEqual(try matcher.value("rse.upload_quality.feature.failure_count.error2") as Int, 1)
-        XCTAssertEqual(try matcher.value("rse.upload_quality.feature.blocker_count.blocker1") as Int, 2)
-        XCTAssertEqual(try matcher.value("rse.upload_quality.feature.blocker_count.blocker2") as Int, 1)
+        XCTAssertEqual(try matcher.value("rse.upload_cycle.feature1") as Int, count1)
+        XCTAssertEqual(try matcher.value("rse.upload_cycle.feature2") as Int, count2)
     }
 
     // MARK: - Metric Spec
@@ -633,7 +620,7 @@ class SessionEndedMetricTests: XCTestCase {
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .swiftui)
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .uikit)
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .swiftuiAutomatic)
-        metric.track(uploadQuality: [UploadQualityMetric.track: "feature"])
+        metric.track(uploadCycle: [UploadCycleMetric.track: "feature"])
 
         // When
         let matcher = try JSONObjectMatcher(AnyEncodable(metric.asMetricAttributes()))
@@ -660,7 +647,7 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertNotNil(try matcher.value("rse.no_view_events_count.resources") as Int)
         XCTAssertNotNil(try matcher.value("rse.no_view_events_count.errors") as Int)
         XCTAssertNotNil(try matcher.value("rse.no_view_events_count.long_tasks") as Int)
-        XCTAssertNotNil(try matcher.value("rse.upload_quality.feature.cycle_count") as Int)
+        XCTAssertNotNil(try matcher.value("rse.upload_cycle.feature") as Int)
     }
 }
 

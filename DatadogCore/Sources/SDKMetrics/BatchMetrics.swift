@@ -130,3 +130,21 @@ internal enum BatchClosedMetric {
     /// If the batch was closed by core or after new batch was forced by the feature.
     static let forcedNewKey = "forced_new"
 }
+
+/// Definition of "Batch Blocked" telemetry.
+internal enum BatchBlockedMetric {
+    /// The name of this metric, included in telemetry log.
+    /// Note: the "[Mobile Metric]" prefix is added when sending this telemetry in RUM.
+    static let name = "Batch Blocked"
+    /// Metric type value.
+    static let typeValue = "batch blocked"
+    /// The sample rate for this metric.
+    /// It is applied in addition to the telemetry sample rate (20% by default).
+    static let sampleRate: Float = 1.5 // 1.5%
+    /// The key for uploader's current delay.
+    static let uploaderDelayKey = "uploader_delay"
+
+    /// List of upload blockers
+    static let blockers = "blockers"
+    static let failure = "failure"
+}
