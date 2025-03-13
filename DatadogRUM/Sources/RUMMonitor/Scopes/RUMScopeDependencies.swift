@@ -41,7 +41,7 @@ internal struct RUMScopeDependencies {
     let ciTest: RUMCITest?
     let syntheticsTest: RUMSyntheticsTest?
     let renderLoopObserver: RenderLoopObserver?
-    let viewHitchesMetricFactory: () -> ViewHitchesMetric & RenderLoopReader
+    let viewHitchesMetricFactory: () -> (ViewHitchesMetric & RenderLoopReader)?
     let vitalsReaders: VitalsReaders?
     let onSessionStart: RUM.SessionListener?
     let viewCache: ViewCache
@@ -78,7 +78,7 @@ internal struct RUMScopeDependencies {
         ciTest: RUMCITest?,
         syntheticsTest: RUMSyntheticsTest?,
         renderLoopObserver: RenderLoopObserver?,
-        viewHitchesMetricFactory: @escaping () -> ViewHitchesMetric & RenderLoopReader,
+        viewHitchesMetricFactory: @escaping () -> (ViewHitchesMetric & RenderLoopReader)?,
         vitalsReaders: VitalsReaders?,
         onSessionStart: RUM.SessionListener?,
         viewCache: ViewCache,

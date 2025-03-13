@@ -98,7 +98,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 }
             }(),
             renderLoopObserver: DisplayLinker(notificationCenter: configuration.notificationCenter),
-            viewHitchesMetricFactory: { ViewHitchesReader(hangThreshold: configuration.appHangThreshold) },
+            viewHitchesMetricFactory: {
+                configuration.featureFlags[.viewHitches]
+                ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
+                : nil
+            },
             vitalsReaders: configuration.vitalsUpdateFrequency.map {
                 VitalsReaders(
                     frequency: $0.timeInterval,

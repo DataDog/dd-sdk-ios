@@ -114,6 +114,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private var interactionToNextViewMetric: INVMetricTracking?
     /// Tracks "RUM View Ended" metric for this view.
     private let viewEndedMetric: ViewEndedMetricController
+    /// Tracks "View Hitches" for this view.
+    private let viewHitchesMetric: (ViewHitchesMetric & RenderLoopReader)?
 
     init(
         isInitialView: Bool,
@@ -152,6 +154,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         interactionToNextViewMetric?.trackViewStart(at: startTime, name: name, viewID: viewUUID)
 
         self.viewEndedMetric = dependencies.viewEndedMetricFactory()
+        self.viewHitchesMetric = dependencies.viewHitchesMetricFactory()
+
+        if let viewHitchesMetric { dependencies.renderLoopObserver?.register(viewHitchesMetric) }
 
         // Notify Synthetics if needed
         if dependencies.syntheticsTest != nil && self.context.sessionID != .nullUUID {
@@ -298,6 +303,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         if shouldComplete {
             interactionToNextViewMetric?.trackViewComplete(viewID: viewUUID)
             viewEndedMetric.send()
+            if let viewHitchesMetric { dependencies.renderLoopObserver?.unregister(viewHitchesMetric) }
         }
 
         return !shouldComplete
@@ -565,6 +571,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let viewEvent = RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                cls: nil,
                 configuration: .init(
                     sessionReplaySampleRate: nil,
                     sessionSampleRate: Double(dependencies.sessionSampler.samplingRate),
@@ -629,6 +636,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 firstInputTime: nil,
                 flutterBuildTime: viewPerformanceMetrics[.flutterBuildTime]?.asFlutterBuildTime(),
                 flutterRasterTime: viewPerformanceMetrics[.flutterRasterTime]?.asFlutterRasterTime(),
+                freezeRate: nil,
                 frozenFrame: .init(count: frozenFramesCount),
                 frustration: .init(count: frustrationCount),
                 id: viewUUID.toRUMDataFormat,
@@ -655,6 +663,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 refreshRateAverage: refreshRateInfo?.meanValue,
                 refreshRateMin: refreshRateInfo?.minValue,
                 resource: .init(count: resourcesCount.toInt64),
+                slowFrames: viewHitchesMetric?.hitchesDataModel.hitches.map { .init(duration: $0.duration, start: $0.start) },
+                slowFramesRate: nil,
                 timeSpent: timeSpent.toInt64Nanoseconds,
                 url: viewPath
             )

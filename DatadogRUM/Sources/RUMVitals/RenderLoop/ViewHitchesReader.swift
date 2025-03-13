@@ -6,7 +6,17 @@
 
 import UIKit
 
+/**
+ - parameters:
+   - start: Hitch duration in ns from the start of the view
+   - duration: Hitch duration in ns
+ */
 internal typealias Hitch = (start: Int64, duration: Int64)
+/**
+ - parameters:
+   - hitches: Array of view hitches (slow frames)
+   - hitchesDuration: Cumulative duration in ms of the view hitches
+ */
 internal typealias HitchesDataModel = (hitches: [Hitch], hitchesDuration: Double)
 
 internal protocol ViewHitchesMetric {

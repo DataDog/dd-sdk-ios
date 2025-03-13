@@ -2418,6 +2418,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
+        /// Additional information of the reported Cumulative Layout Shift
+        public let cls: CLS?
+
         /// Subset of the SDK configuration options in use during its execution
         public let configuration: Configuration?
 
@@ -2438,12 +2441,23 @@ public struct RUMViewEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case browserSdkVersion = "browser_sdk_version"
+            case cls = "cls"
             case configuration = "configuration"
             case documentVersion = "document_version"
             case formatVersion = "format_version"
             case pageStates = "page_states"
             case replayStats = "replay_stats"
             case session = "session"
+        }
+
+        /// Additional information of the reported Cumulative Layout Shift
+        public struct CLS: Codable {
+            /// Pixel ratio of the device where the layout shift was reported
+            public let devicePixelRatio: Double?
+
+            enum CodingKeys: String, CodingKey {
+                case devicePixelRatio = "device_pixel_ratio"
+            }
         }
 
         /// Subset of the SDK configuration options in use during its execution
@@ -2757,6 +2771,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Time taken for Flutter to rasterize the view.
         public let flutterRasterTime: FlutterRasterTime?
 
+        /// Rate of freezes during the view’s lifetime (in seconds per hour)
+        public let freezeRate: Double?
+
         /// Properties of the frozen frames of the view
         public let frozenFrame: FrozenFrame?
 
@@ -2835,6 +2852,12 @@ public struct RUMViewEvent: RUMDataModel {
         /// Properties of the resources of the view
         public let resource: Resource
 
+        /// List of slow frames during the view’s lifetime
+        public let slowFrames: [SlowFrames]?
+
+        /// Rate of slow frames during the view’s lifetime (in milliseconds per second)
+        public let slowFramesRate: Double?
+
         /// Time spent on the view in ns
         public let timeSpent: Int64
 
@@ -2861,6 +2884,7 @@ public struct RUMViewEvent: RUMDataModel {
             case firstInputTime = "first_input_time"
             case flutterBuildTime = "flutter_build_time"
             case flutterRasterTime = "flutter_raster_time"
+            case freezeRate = "freeze_rate"
             case frozenFrame = "frozen_frame"
             case frustration = "frustration"
             case id = "id"
@@ -2887,6 +2911,8 @@ public struct RUMViewEvent: RUMDataModel {
             case refreshRateAverage = "refresh_rate_average"
             case refreshRateMin = "refresh_rate_min"
             case resource = "resource"
+            case slowFrames = "slow_frames"
+            case slowFramesRate = "slow_frames_rate"
             case timeSpent = "time_spent"
             case url = "url"
         }
@@ -3224,6 +3250,20 @@ public struct RUMViewEvent: RUMDataModel {
 
             enum CodingKeys: String, CodingKey {
                 case count = "count"
+            }
+        }
+
+        /// Properties of the slow frames
+        public struct SlowFrames: Codable {
+            /// Duration in ns of the slow frame
+            public let duration: Int64
+
+            /// Duration in ns between start of the view and the start of the slow frame
+            public let start: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case duration = "duration"
+                case start = "start"
             }
         }
     }
@@ -5591,4 +5631,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/69147431d689b3e59bff87e15bb0088a9bb319a9
+// Generated from https://github.com/DataDog/rum-events-format/tree/45a80c1390b8ec886534f5f1b43763a6d9d0a643

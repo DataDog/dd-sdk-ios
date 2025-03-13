@@ -362,6 +362,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                cls: nil,
                 configuration: .init(
                     sessionReplaySampleRate: nil,
                     sessionSampleRate: Double(self.sessionSampler.samplingRate),
@@ -431,6 +432,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 firstInputTime: nil,
                 flutterBuildTime: nil,
                 flutterRasterTime: nil,
+                freezeRate: nil,
                 frozenFrame: .init(count: 0),
                 frustration: .init(count: 0),
                 id: viewUUID.toRUMDataFormat,
@@ -456,6 +458,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 refreshRateAverage: nil,
                 refreshRateMin: nil,
                 resource: .init(count: 0),
+                slowFrames: nil,
+                slowFramesRate: nil,
                 timeSpent: 1, // arbitrary, 1ns duration
                 url: viewURL
             )
