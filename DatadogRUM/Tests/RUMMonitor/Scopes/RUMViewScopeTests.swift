@@ -1877,7 +1877,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - View Hitches
 
-    func testWhenThereAreHitches_theViewUpdatesTheViewEvents() {
+    func testWhenThereAreHitches_theViewUpdatesContainsSlowFrames() {
         // Given
         var hitches: [Hitch] = []
         (0...Int.mockRandom(min: 0, max: 1_000)).forEach {

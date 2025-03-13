@@ -474,7 +474,7 @@ extension RUM.Configuration {
 }
 
 extension RUM.Configuration.FeatureFlags {
-    /// The defaults Feature Flags applied to Session Replay Configuration
+    /// The defaults Feature Flags applied to RUM Configuration
     public static var defaults: Self {
         [
             .viewHitches: false
