@@ -20,7 +20,6 @@ struct TraceContentView: View {
     var tracer: OTTracer { Tracer.shared() }
 
     private let queue1 = DispatchQueue(label: "com.datadoghq.benchmark-tracing1")
-    private let queue2 = DispatchQueue(label: "com.datadoghq.benchmark-tracing2")
 
     init() {
         operationName = "iOS Benchmark span operation"
@@ -28,7 +27,7 @@ struct TraceContentView: View {
         isError = false
         depth = 1
         childrenCount = 0
-        childDelay = 1
+        childDelay = 100
         traceCount = 0
         isSending = false
     }
@@ -67,13 +66,13 @@ struct TraceContentView: View {
                     }
 
                     HStack {
-                        Text("Child delay:")
+                        Text("Child delay (ms):")
                         Spacer()
                         TextField("Child delay:", value: $childDelay, formatter: NumberFormatter())
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .frame(width: 80)
                             .keyboardType(.numberPad)
-                        Stepper("", value: $childDelay, in: 1 ... 100, step: 1)
+                        Stepper("", value: $childDelay, in: 50 ... 10_000, step: 50)
                             .frame(width: 80)
                     }
                 }
@@ -128,13 +127,11 @@ struct TraceContentView: View {
                 )
             }
 
-            wait(seconds: 0.5)
+            Thread.sleep(forTimeInterval: childDelay / 1_000)
 
-            queue2.sync {
-                sendSpanTree(parent: rootSpan, currentLevel: 0, maxDepth: depth)
-            }
+            sendSpanTree(parent: rootSpan, currentLevel: 0, maxDepth: depth)
 
-            wait(seconds: 0.5)
+            Thread.sleep(forTimeInterval: 0.5)
             rootSpan.finish()
 
             DispatchQueue.main.async {
@@ -156,15 +153,12 @@ struct TraceContentView: View {
         for i in 1 ... childrenCount {
             let childOperation = "\(operationName) - Child \(i) at level \(currentLevel + 1)"
             let childSpan = tracer.startSpan(operationName: childOperation, childOf: parent.context)
-            wait(seconds: childDelay)
+
+            Thread.sleep(forTimeInterval: childDelay / 1_000)
 
             sendSpanTree(parent: childSpan, currentLevel: currentLevel + 1, maxDepth: maxDepth)
             childSpan.finish()
         }
-    }
-
-    private func wait(seconds: TimeInterval) {
-        Thread.sleep(forTimeInterval: seconds)
     }
 }
 
