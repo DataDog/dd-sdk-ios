@@ -33,6 +33,7 @@ internal struct RUMScopeDependencies {
     let sessionSampler: Sampler
     let trackBackgroundEvents: Bool
     let trackFrustrations: Bool
+    let hasAppHangsEnabled: Bool
     let firstPartyHosts: FirstPartyHosts?
     let eventBuilder: RUMEventBuilder
     let rumUUIDGenerator: RUMUUIDGenerator
@@ -71,6 +72,7 @@ internal struct RUMScopeDependencies {
         sessionSampler: Sampler,
         trackBackgroundEvents: Bool,
         trackFrustrations: Bool,
+        hasAppHangsEnabled: Bool,
         firstPartyHosts: FirstPartyHosts?,
         eventBuilder: RUMEventBuilder,
         rumUUIDGenerator: RUMUUIDGenerator,
@@ -94,6 +96,7 @@ internal struct RUMScopeDependencies {
         self.sessionSampler = sessionSampler
         self.trackBackgroundEvents = trackBackgroundEvents
         self.trackFrustrations = trackFrustrations
+        self.hasAppHangsEnabled = hasAppHangsEnabled
         self.firstPartyHosts = firstPartyHosts
         self.eventBuilder = eventBuilder
         self.rumUUIDGenerator = rumUUIDGenerator
