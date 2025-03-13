@@ -239,7 +239,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     path: rumView.path ?? viewController.canonicalClassName,
                     isUntrackedModal: rumView.isUntrackedModal,
                     attributes: rumView.attributes,
-                    instrumentationType: .uikit
+                    instrumentationType: .swiftui
                 )
             )
         } else if #available(iOS 13, tvOS 13, *), viewController.isModalInPresentation {

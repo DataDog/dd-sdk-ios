@@ -11,202 +11,142 @@ import SwiftUI
 
 @available(iOS 13.0, tvOS 13.0, *)
 class SwiftUIViewNameExtractorIntegrationTests: XCTestCase {
-    // MARK: Tests
-    func testHostingController_itExtractsTheViewName() throws {
-        // Fixture dump
-        let dumpFixture = """
-        SwiftUI.UIHostingController<SwiftUI.ModifiedContent<SwiftUI.AnyView, SwiftUI.RootModifier>>(
-          allowedBehaviors: SwiftUI.HostingControllerAllowedBehaviors(rawValue: 0),
-          requiredBridges: SwiftUI.HostingControllerBridges(rawValue: 179),
-          host: SwiftUI._UIHostingView<SwiftUI.ModifiedContent<SwiftUI.AnyView, SwiftUI.RootModifier>>(
-            _rootView: SwiftUI.ModifiedContent<SwiftUI.AnyView, SwiftUI.RootModifier>(
-              content: SwiftUI.AnyView(
-                storage: SwiftUI.(unknown context at $1d30dd964).AnyViewStorage<SwiftUI.LazyView<SwiftUITest.HomeView>>(
-                  view: SwiftUI.LazyView<SwiftUITest.HomeView>(content: (Function))
-                )
-              ),
-            ),
-          )
-        )
-        """
-
-        let (extractor, mockReflector) = createTestComponents(
-            mockOutput: dumpFixture,
-            reflectorHandler: { paths in
-                if paths.count == 5,
-                   case .key("host") = paths[0],
-                   case .key("_rootView") = paths[1],
-                   case .key("content") = paths[2],
-                   case .key("storage") = paths[3],
-                   case .key("view") = paths[4] {
-                    return "dummy-value"
-                }
-                return nil
+    // MARK: SwiftUIViewPath Tests
+    func testSwiftUIViewPath_hostingController() {
+        let mockReflector = MockReflector()
+        mockReflector.descendantHandler = { paths in
+            // Verify paths match what we expect
+            if paths.count == 5,
+               case .key("host") = paths[0],
+               case .key("_rootView") = paths[1],
+               case .key("content") = paths[2],
+               case .key("storage") = paths[3],
+               case .key("view") = paths[4] {
+                return "dummy-value"
             }
-        )
+            return nil
+        }
 
-        let extractedName = extractor.extractHostingControllerPath(with: mockReflector)
-        XCTAssertNotNil(extractedName)
-        let requiredKeys = ["host", "_rootView", "content", "storage", "view"]
-        verifyPathContainsKeys(mockReflector.lastCalledPaths, keys: requiredKeys)
+        // Test the path traversal
+        let result = SwiftUIViewPath.hostingController.traverse(with: mockReflector)
+        XCTAssertNotNil(result)
+        XCTAssertEqual(mockReflector.lastCalledPaths.count, 5)
+        verifyPathContainsKeys(
+            mockReflector.lastCalledPaths,
+            keys: ["host", "_rootView", "content", "storage", "view"]
+        )
     }
 
-    func testNavigationStackContainer_itIsIgnored() throws {
-        // Fixture dump
-        let dumpFixture = """
-        SwiftUI.NavigationStackHostingController<SwiftUI.AnyView>(
-          allowedBehaviors: SwiftUI.HostingControllerAllowedBehaviors(rawValue: 0),
-          requiredBridges: SwiftUI.HostingControllerBridges(rawValue: 17),
-          host: SwiftUI.NavigationStackHostingController<SwiftUI.AnyView>.(unknown context at $1d26184a0).HostingView(
-            _rootView: SwiftUI.AnyView(
-              storage: SwiftUI.(unknown context at $1d30dd964).AnyViewStorage<SwiftUI.ModifiedContent<SwiftUI.ModifiedContent<SwiftUI.ModifiedContent<SwiftUI._VariadicView.Tree<SwiftUI._VStackLayout, SwiftUI._VariadicView_Children>, SwiftUI.(unknown context at $1d26188a0).ReadDestinationsModifier<SwiftUI.ResolvedNavigationDestinations>>, SwiftUI._PreferenceTransformModifier<SwiftUI.NavigationDestinationKey>>, SwiftUI.ModifiedContent<SwiftUI.NavigationColumnModifier, SwiftUI.ModifiedContent<SwiftUI.InjectKeyModifier, SwiftUI.(unknown context at $1d26044a4).NavigationBackgroundReaderModifier>>>>(
-                view: SwiftUI.ModifiedContent<SwiftUI.ModifiedContent<SwiftUI.ModifiedContent<SwiftUI._VariadicView.Tree<SwiftUI._VStackLayout, SwiftUI._VariadicView_Children>, SwiftUI.(unknown context at $1d26188a0).ReadDestinationsModifier<SwiftUI.ResolvedNavigationDestinations>>, SwiftUI._PreferenceTransformModifier<SwiftUI.NavigationDestinationKey>>, SwiftUI.ModifiedContent<SwiftUI.NavigationColumnModifier, SwiftUI.ModifiedContent<SwiftUI.InjectKeyModifier, SwiftUI.(unknown context at $1d26044a4).NavigationBackgroundReaderModifier>>>(
-                  content: SwiftUI.ModifiedContent<SwiftUI.ModifiedContent<SwiftUI._VariadicView.Tree<SwiftUI._VStackLayout, SwiftUI._VariadicView_Children>, SwiftUI.(unknown context at $1d26188a0).ReadDestinationsModifier<SwiftUI.ResolvedNavigationDestinations>>, SwiftUI._PreferenceTransformModifier<SwiftUI.NavigationDestinationKey>>(
-                    content: SwiftUI.ModifiedContent<SwiftUI._VariadicView.Tree<SwiftUI._VStackLayout, SwiftUI._VariadicView_Children>, SwiftUI.(unknown context at $1d26188a0).ReadDestinationsModifier<SwiftUI.ResolvedNavigationDestinations>>(
-                      content: SwiftUI._VariadicView.Tree<SwiftUI._VStackLayout, SwiftUI._VariadicView_Children>(
-                        root: SwiftUI._VStackLayout(
-                          alignment: SwiftUI.HorizontalAlignment(
-                            key: SwiftUI.AlignmentKey(bits: 2)
-                          ),
-                          spacing: nil
-                        ),
-                    ),
-                ),
-            ),
-        ),
-        """
-
-        let (extractor, mockReflector) = createTestComponents(
-            mockOutput: dumpFixture,
-            reflectorHandler: { paths in
-                if paths.count == 8,
-                   case .key("host") = paths[0],
-                   case .key("_rootView") = paths[1],
-                   case .key("storage") = paths[2],
-                   case .key("view") = paths[3],
-                   case .key("content") = paths[4],
-                   case .key("content") = paths[5],
-                   case .key("content") = paths[6],
-                   case .key("root") = paths[7] {
-                    return "dummy-value"
-                }
-                return nil
+    func testSwiftUIViewPath_navigationStack() {
+        let mockReflector = MockReflector()
+        mockReflector.descendantHandler = { paths in
+            // Verify paths match what we expect
+            if paths.count == 7,
+               case .key("host") = paths[0],
+               case .key("_rootView") = paths[1],
+               case .key("storage") = paths[2],
+               case .key("view") = paths[3],
+               case .key("content") = paths[4],
+               case .key("content") = paths[5],
+               case .key("content") = paths[6] {
+                return "dummy-value"
             }
-        )
+            return nil
+        }
 
-        let extractedName = extractor.extractNavigationControllerPath(reflector: mockReflector)
-        XCTAssertNil(extractedName)
-        let requiredKeys = ["host", "_rootView", "storage", "view", "content", "content", "content", "root"]
-        verifyPathContainsKeys(mockReflector.lastCalledPaths, keys: requiredKeys)
+        // Test the path traversal
+        let result = SwiftUIViewPath.navigationStack.traverse(with: mockReflector)
+        XCTAssertNotNil(result)
+        XCTAssertEqual(mockReflector.lastCalledPaths.count, 7)
+        verifyPathContainsKeys(
+            mockReflector.lastCalledPaths,
+            keys: ["host", "_rootView", "storage", "view", "content", "content", "content"]
+        )
     }
 
-    func testNavigationStackHostingController_itExtractsTheViewName() throws {
-        // Fixture dump
-        let dumpFixture = """
-        SwiftUI.NavigationStackHostingController<SwiftUI.AnyView>(
-          allowedBehaviors: SwiftUI.HostingControllerAllowedBehaviors(rawValue: 0),
-          requiredBridges: SwiftUI.HostingControllerBridges(rawValue: 17),
-          host: SwiftUI.NavigationStackHostingController<SwiftUI.AnyView>.(unknown context at $1d26184a0).HostingView(
-            _rootView: SwiftUI.AnyView(
-              storage: SwiftUI.(unknown context at $1d30dd964).AnyViewStorage<SwiftUI.ModifiedContent<SwiftUI.ModifiedContent<SwiftUI.ModifiedContent<Swift.Optional<SwiftUITest.ProfileView>, SwiftUI.(unknown context at $1d26188a0).ReadDestinationsModifier<SwiftUI.ResolvedNavigationDestinations>>, SwiftUI._PreferenceTransformModifier<SwiftUI.NavigationDestinationKey>>, SwiftUI.ModifiedContent<SwiftUI.NavigationColumnModifier, SwiftUI.ModifiedContent<SwiftUI.InjectKeyModifier, SwiftUI.(unknown context at $1d26044a4).NavigationBackgroundReaderModifier>>>>(
-                view: SwiftUI.ModifiedContent<SwiftUI.ModifiedContent<SwiftUI.ModifiedContent<Swift.Optional<SwiftUITest.ProfileView>, SwiftUI.(unknown context at $1d26188a0).ReadDestinationsModifier<SwiftUI.ResolvedNavigationDestinations>>, SwiftUI._PreferenceTransformModifier<SwiftUI.NavigationDestinationKey>>, SwiftUI.ModifiedContent<SwiftUI.NavigationColumnModifier, SwiftUI.ModifiedContent<SwiftUI.InjectKeyModifier, SwiftUI.(unknown context at $1d26044a4).NavigationBackgroundReaderModifier>>>(
-                  content: SwiftUI.ModifiedContent<SwiftUI.ModifiedContent<Swift.Optional<SwiftUITest.ProfileView>, SwiftUI.(unknown context at $1d26188a0).ReadDestinationsModifier<SwiftUI.ResolvedNavigationDestinations>>, SwiftUI._PreferenceTransformModifier<SwiftUI.NavigationDestinationKey>>(
-                    content: SwiftUI.ModifiedContent<Swift.Optional<SwiftUITest.ProfileView>, SwiftUI.(unknown context at $1d26188a0).ReadDestinationsModifier<SwiftUI.ResolvedNavigationDestinations>>(
-                      content: SwiftUITest.ProfileView(),
-                      )
-                    ),
-                ),
-            ),
-        ),
-        """
-
-        let (extractor, mockReflector) = createTestComponents(
-            mockOutput: dumpFixture,
-            reflectorHandler: { paths in
-                if paths.count == 7,
-                   case .key("host") = paths[0],
-                   case .key("_rootView") = paths[1],
-                   case .key("storage") = paths[2],
-                   case .key("view") = paths[3],
-                   case .key("content") = paths[4],
-                   case .key("content") = paths[5],
-                   case .key("content") = paths[6] {
-                    return "dummy-value"
-                }
-                return nil
+    func testSwiftUIViewPath_navigationStackContainer() {
+        let mockReflector = MockReflector()
+        mockReflector.descendantHandler = { paths in
+            // Verify paths match what we expect
+            if paths.count == 8,
+               case .key("host") = paths[0],
+               case .key("_rootView") = paths[1],
+               case .key("storage") = paths[2],
+               case .key("view") = paths[3],
+               case .key("content") = paths[4],
+               case .key("content") = paths[5],
+               case .key("content") = paths[6],
+               case .key("root") = paths[7] {
+                return "dummy-value"
             }
-        )
+            return nil
+        }
 
-        let extractedName = extractor.extractNavigationControllerPath(reflector: mockReflector)
-        XCTAssertNotNil(extractedName)
-        let requiredKeys = ["host", "_rootView", "storage", "view", "content", "content", "content"]
-        verifyPathContainsKeys(mockReflector.lastCalledPaths, keys: requiredKeys)
+        // Test the path traversal
+        let result = SwiftUIViewPath.navigationStackContainer.traverse(with: mockReflector)
+        XCTAssertNotNil(result)
+        XCTAssertEqual(mockReflector.lastCalledPaths.count, 8)
+        verifyPathContainsKeys(
+            mockReflector.lastCalledPaths,
+            keys: ["host", "_rootView", "storage", "view", "content", "content", "content", "root"]
+        )
     }
 
-    func testSheetContent_itExtractsTheViewName() throws {
-        // Fixture dump
-        let dumpFixture = """
-        SwiftUI.(unknown context at $1d25dfaac).SheetContent<SwiftUI.Text>(
-            content: SwiftUI.Text(
-                storage: .anyTextStorage(
-                    SwiftUI.(unknown context at $1d30c62cc).LocalizedTextStorage(
-                        key: SwiftUI.LocalizedStringKey(
-                            key: Modal View,
-                            hasFormatting: false,
-                            arguments: []
-                        ),
-                        table: nil,
-                        bundle: nil
-                    )
-                ),
-              ),
-            ),
-          )
-        )
-        """
-
-        let (extractor, mockReflector) = createTestComponents(
-            mockOutput: dumpFixture,
-            reflectorHandler: { paths in
-                if paths.count == 5,
-                   case .key("host") = paths[0],
-                   case .key("_rootView") = paths[1],
-                   case .key("storage") = paths[2],
-                   case .key("view") = paths[3],
-                   case .key("content") = paths[4] {
-                    return "dummy-value"
-                }
-                return nil
+    func testSwiftUIViewPath_navigationStackDetail() {
+        let mockReflector = MockReflector()
+        mockReflector.descendantHandler = { paths in
+            if paths.count == 11,
+               case .key("host") = paths[0],
+               case .key("_rootView") = paths[1],
+               case .key("storage") = paths[2],
+               case .key("view") = paths[3],
+               case .key("content") = paths[4],
+               case .key("content") = paths[5],
+               case .key("content") = paths[6],
+               case .key("content") = paths[7],
+               case .key("list") = paths[8],
+               case .key("item") = paths[9],
+               case .key("type") = paths[10] {
+                return "dummy-value"
             }
-        )
+            return nil
+        }
 
-        let extractedName = extractor.extractSheetContentPath(with: mockReflector)
-        XCTAssertNotNil(extractedName)
-        let requiredKeys = ["host", "_rootView", "storage", "view", "content"]
-        verifyPathContainsKeys(mockReflector.lastCalledPaths, keys: requiredKeys)
+        // Test the path traversal
+        let result = SwiftUIViewPath.navigationStackDetail.traverse(with: mockReflector)
+        XCTAssertNotNil(result)
+        XCTAssertEqual(mockReflector.lastCalledPaths.count, 11)
+        verifyPathContainsKeys(
+            mockReflector.lastCalledPaths,
+            keys: ["host", "_rootView", "storage", "view", "content", "content", "content", "content", "list", "item", "type"]
+        )
     }
 
-    // MARK: TODO: RUM-8414 - Add more tests for each path extraction use case
+    func testSwiftUIViewPath_sheetContent() {
+        let mockReflector = MockReflector()
+        mockReflector.descendantHandler = { paths in
+            if paths.count == 5,
+               case .key("host") = paths[0],
+               case .key("_rootView") = paths[1],
+               case .key("storage") = paths[2],
+               case .key("view") = paths[3],
+               case .key("content") = paths[4] {
+                return "dummy-value"
+            }
+            return nil
+        }
+
+        // Test the path traversal
+        let result = SwiftUIViewPath.sheetContent.traverse(with: mockReflector)
+        XCTAssertNotNil(result)
+        XCTAssertEqual(mockReflector.lastCalledPaths.count, 5)
+        verifyPathContainsKeys(
+            mockReflector.lastCalledPaths,
+            keys: ["host", "_rootView", "storage", "view", "content"]
+        )
+    }
 
     // MARK: - Helper method
-    private func createTestComponents(
-        mockOutput: String,
-        reflectorHandler: @escaping ([ReflectionMirror.Path]) -> Any?
-    ) -> (extractor: SwiftUIReflectionBasedViewNameExtractor, reflector: MockReflector) {
-        let testDumper = TestDumper()
-        testDumper.mockOutput = mockOutput
-
-        let mockReflector = MockReflector()
-        mockReflector.descendantIfPresentHandler = reflectorHandler
-
-        let extractor = SwiftUIReflectionBasedViewNameExtractor(
-            reflectorFactory: { _ in mockReflector },
-            dumper: testDumper
-        )
-
-        return (extractor, mockReflector)
-    }
-
     private func verifyPathContainsKeys(_ paths: [ReflectionMirror.Path], keys: [String]) {
         XCTAssertEqual(paths.count, keys.count)
         for key in keys {
@@ -224,41 +164,26 @@ class SwiftUIViewNameExtractorIntegrationTests: XCTestCase {
 }
 
 // MARK: - MockReflector
-/// Mock implementation of the `ReflectorType` protocol for testing path traversal.
-
-private class MockReflector: ReflectorType {
+/// Mock implementation of the `TopLevelReflector` protocol for testing path traversal.
+private class MockReflector: TopLevelReflector {
     /// Handler that determines what to return for requested paths.
     ///
     /// The handler receives the full list of requested path components and returns
     /// either a value (to simulate finding something at that path) or nil (to simulate
     /// a path that doesn't exist).
-    var descendantIfPresentHandler: (([ReflectionMirror.Path]) -> Any?)?
+    var descendantHandler: (([ReflectionMirror.Path]) -> Any?)?
 
     /// Records the most recently requested paths for verification.
     var lastCalledPaths: [ReflectionMirror.Path] = []
 
-    /// Implements the `ReflectorType` protocol method by recording the requested path
+    /// Implements the `TopLevelReflector` protocol method by recording the requested path
     /// and delegating to the handler to determine the return value.
-    func descendantIfPresent(_ first: ReflectionMirror.Path, _ rest: ReflectionMirror.Path...) -> Any? {
-        lastCalledPaths = [first] + rest
-
-        if let handler = descendantIfPresentHandler {
+    func descendant(_ paths: [ReflectionMirror.Path]) -> Any? {
+        lastCalledPaths = paths
+        if let handler = descendantHandler {
             return handler(lastCalledPaths)
         }
 
         return nil
-    }
-}
-
-// MARK: - TestDumper
-/// Test dumper that returns predetermined output
-/// `TestDumper` bypasses the actual dumping logic and instead returns a predetermined string.
-private class TestDumper: Dumper {
-    /// The predefined output string to return when `dump` is called.
-    var mockOutput: String = ""
-
-    /// Returns the predefined `mockOutput` instead of actually dumping the value.
-    func dump<T, TargetStream>(_ value: T, to target: inout TargetStream) where TargetStream: TextOutputStream {
-        target.write(mockOutput)
     }
 }
