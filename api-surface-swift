@@ -49,6 +49,8 @@ public enum Datadog
     public static func setUserInfo(id: String,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func addUserExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func setAccountInfo(id: String,name: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func addAccountExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func set(trackingConsent: TrackingConsent, in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func clearAllData(in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func stopInstance(named instanceName: String = CoreRegistry.defaultInstanceName)
@@ -70,11 +72,6 @@ public struct LogEvent: Encodable
         case emergency
     public struct Attributes
         public var userAttributes: [String: Encodable]
-    public struct UserInfo
-        public let id: String?
-        public let name: String?
-        public let email: String?
-        public var extraInfo: [String: Encodable]
     public struct Error
         public struct BinaryImage: Codable
             public let arch: String?
@@ -116,6 +113,7 @@ public struct LogEvent: Encodable
     public let dd: Dd
     public let os: OperatingSystem
     public var userInfo: UserInfo
+    public var accountInfo: AccountInfo?
     public let networkConnectionInfo: NetworkConnectionInfo?
     public let mobileCarrierInfo: CarrierInfo?
     public var attributes: LogEvent.Attributes
@@ -308,7 +306,12 @@ public struct SpanEvent: Encodable
         public let name: String?
         public let email: String?
         public var extraInfo: [String: String]
+    public struct AccountInfo
+        public let id: String
+        public let name: String?
+        public var extraInfo: [String: String]
     public var userInfo: UserInfo
+    public var accountInfo: AccountInfo?
     public var tags: [String: String]
     public func encode(to encoder: Encoder) throws
 public enum Trace
@@ -345,7 +348,7 @@ public class Tracer
 
 public struct RUMActionEvent: RUMDataModel
     public var dd: DD
-    public var account: Account?
+    public var account: RUMAccount?
     public var action: Action
     public let application: Application
     public let buildId: String?
@@ -484,7 +487,7 @@ public struct RUMActionEvent: RUMDataModel
     public init(from decoder: Decoder) throws
 public struct RUMErrorEvent: RUMDataModel
     public let dd: DD
-    public var account: Account?
+    public var account: RUMAccount?
     public let action: Action?
     public let application: Application
     public let buildId: String?
@@ -691,7 +694,7 @@ public struct RUMErrorEvent: RUMDataModel
     public init(from decoder: Decoder) throws
 public struct RUMLongTaskEvent: RUMDataModel
     public let dd: DD
-    public var account: Account?
+    public var account: RUMAccount?
     public let action: Action?
     public let application: Application
     public let buildId: String?
@@ -811,7 +814,7 @@ public struct RUMLongTaskEvent: RUMDataModel
     public init(from decoder: Decoder) throws
 public struct RUMResourceEvent: RUMDataModel
     public let dd: DD
-    public var account: Account?
+    public var account: RUMAccount?
     public let action: Action?
     public let application: Application
     public let buildId: String?
@@ -992,7 +995,7 @@ public struct RUMResourceEvent: RUMDataModel
     public init(from decoder: Decoder) throws
 public struct RUMViewEvent: RUMDataModel
     public let dd: DD
-    public var account: Account?
+    public var account: RUMAccount?
     public let application: Application
     public let buildId: String?
     public let buildVersion: String?
@@ -1016,12 +1019,15 @@ public struct RUMViewEvent: RUMDataModel
     public var view: View
     public struct DD: Codable
         public let browserSdkVersion: String?
+        public let cls: CLS?
         public let configuration: Configuration?
         public let documentVersion: Int64
         public let formatVersion: Int64 = 2
         public let pageStates: [PageStates]?
         public let replayStats: ReplayStats?
         public let session: Session?
+        public struct CLS: Codable
+            public let devicePixelRatio: Double?
         public struct Configuration: Codable
             public let sessionReplaySampleRate: Double?
             public let sessionSampleRate: Double
@@ -1119,6 +1125,7 @@ public struct RUMViewEvent: RUMDataModel
         public let firstInputTime: Int64?
         public let flutterBuildTime: FlutterBuildTime?
         public let flutterRasterTime: FlutterRasterTime?
+        public let freezeRate: Double?
         public let frozenFrame: FrozenFrame?
         public let frustration: Frustration?
         public let id: String
@@ -1145,6 +1152,8 @@ public struct RUMViewEvent: RUMDataModel
         public let refreshRateAverage: Double?
         public let refreshRateMin: Double?
         public let resource: Resource
+        public let slowFrames: [SlowFrames]?
+        public let slowFramesRate: Double?
         public let timeSpent: Int64
         public var url: String
         public struct Action: Codable
@@ -1227,15 +1236,15 @@ public struct RUMViewEvent: RUMDataModel
                 public let timestamp: Int64
         public struct Resource: Codable
             public let count: Int64
-[?] extension RUMViewEvent.Account
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
+        public struct SlowFrames: Codable
+            public let duration: Int64
+            public let start: Int64
 [?] extension RUMViewEvent.FeatureFlags
     public func encode(to encoder: Encoder) throws
     public init(from decoder: Decoder) throws
 public struct RUMVitalEvent: RUMDataModel
     public let dd: DD
-    public var account: Account?
+    public var account: RUMAccount?
     public let application: Application
     public let buildId: String?
     public let buildVersion: String?
@@ -1686,6 +1695,13 @@ public enum RUMSessionPrecondition: String, Codable
     case prewarm = "prewarm"
     case fromNonInteractiveSession = "from_non_interactive_session"
     case explicitStop = "explicit_stop"
+public struct RUMAccount: Codable
+    public let id: String
+    public let name: String?
+    public var accountInfo: [String: Encodable]
+[?] extension RUMAccount
+    public func encode(to encoder: Encoder) throws
+    public init(from decoder: Decoder) throws
 public struct RUMCITest: Codable
     public let testExecutionId: String
 public struct RUMConnectivity: Codable
