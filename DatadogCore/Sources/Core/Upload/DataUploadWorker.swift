@@ -73,21 +73,23 @@ internal class DataUploadWorker: DataUploadWorkerType {
             let context = contextProvider.read()
             let blockersForUpload = uploadConditions.blockersForUpload(with: context)
             let isSystemReady = blockersForUpload.isEmpty
-            let files = isSystemReady ? fileReader.readFiles(limit: maxBatchesPerUpload) : nil
-            if let files = files, !files.isEmpty {
+            let files = fileReader.readFiles(limit: maxBatchesPerUpload)
+
+            if !files.isEmpty && isSystemReady {
                 DD.logger.debug("⏳ (\(self.featureName)) Uploading batches...")
                 self.backgroundTaskCoordinator?.beginBackgroundTask()
                 self.uploadFile(from: files.reversed(), context: context)
                 sendUploadCycleMetric()
             } else {
-                let batchLabel = files?.isEmpty == false ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
+                let batchLabel = files.isEmpty ? "NO" : "YES"
                 DD.logger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
                 self.delay.increase()
                 self.backgroundTaskCoordinator?.endBackgroundTask()
                 self.scheduleNextCycle()
-                sendBatchBlockedMetric(blockers: blockersForUpload)
+                sendBatchBlockedMetric(blockers: blockersForUpload, batchCount: files.count)
             }
         }
+
         self.readWork = readWorkItem
 
         // Start sending batches immediately after initialization:
@@ -107,6 +109,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 return
             }
 
+            let filesCount = files.count
             var files = files
             guard let file = files.popLast() else {
                 self.scheduleNextCycle()
@@ -127,6 +130,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                         DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
                         self.delay.increase()
                         self.scheduleNextCycle()
+                        sendBatchBlockedMetric(status: uploadStatus, batchCount: filesCount)
                         return
                     }
 
@@ -147,7 +151,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     previousUploadStatus = nil
 
                     if let error = uploadStatus.error {
-                        sendBatchBlockedMetric(error: error)
                         throw error // Throw to report the request error accordingly
                     }
                 } catch DataUploadError.httpError(statusCode: .unauthorized), DataUploadError.httpError(statusCode: .forbidden) {
@@ -241,7 +244,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         )
     }
 
-    private func sendBatchBlockedMetric(blockers: [DataUploadConditions.Blocker]) {
+    private func sendBatchBlockedMetric(blockers: [DataUploadConditions.Blocker], batchCount: Int) {
         guard !blockers.isEmpty else {
             return
         }
@@ -252,6 +255,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 SDKMetricFields.typeKey: BatchBlockedMetric.typeValue,
                 BatchMetric.trackKey: featureName,
                 BatchBlockedMetric.uploaderDelayKey: delay.current,
+                BatchBlockedMetric.batchCount: batchCount,
                 BatchBlockedMetric.blockers: blockers.map {
                     switch $0 {
                     case .battery: return "low_battery"
@@ -264,13 +268,18 @@ internal class DataUploadWorker: DataUploadWorkerType {
         )
     }
 
-    private func sendBatchBlockedMetric(error: DataUploadError) {
+    private func sendBatchBlockedMetric(status: DataUploadStatus, batchCount: Int) {
+        guard let error = status.error else {
+            return
+        }
+
         telemetry.metric(
             name: BatchBlockedMetric.name,
             attributes: [
                 SDKMetricFields.typeKey: BatchBlockedMetric.typeValue,
                 BatchMetric.trackKey: featureName,
                 BatchBlockedMetric.uploaderDelayKey: delay.current,
+                BatchBlockedMetric.batchCount: batchCount,
                 BatchBlockedMetric.failure: {
                     switch error {
                     case let .httpError(code): return "intake-code-\(code.rawValue)"
