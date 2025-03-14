@@ -148,7 +148,9 @@ struct TraceContentView: View {
     ///   - currentLevel: The current depth level in the span tree.
     ///   - maxDepth: The maximum depth (levels) for the span tree generation.
     private func sendSpanTree(parent: OTSpan, currentLevel: Int, maxDepth: Int) {
-        guard currentLevel < maxDepth, childrenCount > 0 else { return }
+        guard currentLevel < maxDepth, childrenCount > 0 else {
+            return
+        }
 
         for i in 1 ... childrenCount {
             let childOperation = "\(operationName) - Child \(i) at level \(currentLevel + 1)"
