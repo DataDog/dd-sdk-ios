@@ -609,13 +609,8 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(telemetry.messages.count, 2)
+        XCTAssertEqual(telemetry.messages.count, 1)
         XCTAssertNotNil(telemetry.messages.firstMetric(named: "upload_cycle"), "An upload cycle metric should be send to `telemetry`.")
-
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Blocked"), "A Batch Blocked metric should be send to `telemetry`.")
-        XCTAssertEqual(metric.attributes["failure"] as? String, "intake-code-\(randomStatusCode.rawValue)")
-        XCTAssertNil(metric.attributes["blockers"])
-        XCTAssertEqual(metric.attributes["track"] as? String, featureName)
     }
 
     func testWhenDataIsUploadedWithAlertingStatusCode_itSendsErrorTelemetry() throws {
@@ -659,17 +654,9 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(telemetry.messages.count, 3)
-
-        XCTAssertNotNil(telemetry.messages.firstMetric(named: "upload_cycle"), "An upload cycle metric should be send to `telemetry`.")
 
         let error = try XCTUnwrap(telemetry.messages.firstError(), "An error should be send to `telemetry`.")
         XCTAssertEqual(error.message,"Data upload finished with status code: \(randomStatusCode.rawValue)")
-
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Blocked"), "A Batch Blocked metric should be send to `telemetry`.")
-        XCTAssertEqual(metric.attributes["failure"] as? String, "intake-code-\(randomStatusCode.rawValue)")
-        XCTAssertNil(metric.attributes["blockers"])
-        XCTAssertEqual(metric.attributes["track"] as? String, featureName)
     }
 
     func testWhenDataCannotBeUploadedDueToNetworkError_itSendsErrorTelemetry() throws {
@@ -707,15 +694,52 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(telemetry.messages.count, 3)
-
-        XCTAssertNotNil(telemetry.messages.firstMetric(named: "upload_cycle"), "An upload cycle metric should be send to `telemetry`.")
-
         let error = try XCTUnwrap(telemetry.messages.firstError(), "An error should be send to `telemetry`.")
         XCTAssertEqual(error.message, #"Data upload finished with error - Error Domain=abc Code=0 "(null)""#)
+    }
 
+    func testWhenDataIsUploadedWithRetryableStatusCode_itSendsBatchBlockedTelemetry() throws {
+        // Given
+        let telemetry = TelemetryMock()
+
+        writer.write(value: ["key": "value"])
+        let randomStatusCode: HTTPResponseStatusCode = [
+            .requestTimeout,
+            .tooManyRequests,
+            .internalServerError,
+            .serviceUnavailable
+        ].randomElement()!
+
+        // When
+        let startUploadExpectation = self.expectation(description: "Upload has started")
+        let mockDataUploader = DataUploaderMock(
+            uploadStatus: .mockWith(needsRetry: true, error: .httpError(statusCode: randomStatusCode))
+        )
+
+        mockDataUploader.onUpload = { previousUploadStatus in
+            XCTAssertNil(previousUploadStatus)
+            startUploadExpectation.fulfill()
+        }
+
+        let featureName: String = .mockRandom()
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: mockDataUploader,
+            contextProvider: .mockAny(),
+            uploadConditions: .alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
+            featureName: featureName,
+            telemetry: telemetry,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
+        )
+
+        wait(for: [startUploadExpectation], timeout: 0.5)
+        worker.cancelSynchronously()
+
+        // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Blocked"), "A Batch Blocked metric should be send to `telemetry`.")
-        XCTAssertEqual(metric.attributes["failure"] as? String, "network-code-\(nserror.code)")
+        XCTAssertEqual(metric.attributes["failure"] as? String, "intake-code-\(randomStatusCode.rawValue)")
         XCTAssertNil(metric.attributes["blockers"])
         XCTAssertEqual(metric.attributes["track"] as? String, featureName)
     }

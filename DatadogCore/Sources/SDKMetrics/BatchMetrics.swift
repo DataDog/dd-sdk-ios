@@ -142,7 +142,9 @@ internal enum BatchBlockedMetric {
     /// It is applied in addition to the telemetry sample rate (20% by default).
     static let sampleRate: Float = 1.5 // 1.5%
     /// The key for uploader's current delay.
-    static let uploaderDelayKey = "uploader_delay"
+    static let uploaderDelayKey = "uploader_delay.current"
+    /// The key for count of bacthes being blocked.
+    static let batchCount = "batch_count"
 
     /// List of upload blockers
     static let blockers = "blockers"
