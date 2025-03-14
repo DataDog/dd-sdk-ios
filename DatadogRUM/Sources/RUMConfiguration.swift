@@ -84,6 +84,19 @@ extension RUM {
         /// Default: `nil` - which means automatic RUM action tracking is not enabled by default.
         public var uiKitActionsPredicate: UIKitRUMActionsPredicate?
 
+        /// The predicate for automatically tracking `UIViewControllers` as RUM views.
+        ///
+        /// RUM will query this predicate for each `UIViewController` presented in the app. The predicate implementation
+        /// should return RUM view parameters if the given controller should start a view, or `nil` to ignore it.
+        ///
+        /// You can use `DefaultSwiftUIRUMViewsPredicate` or create your own predicate by implementing `SwiftUIRUMViewsPredicate`.
+        ///
+        /// Note: Automatic RUM views tracking involves swizzling the `UIViewController` lifecycle methods.
+        ///
+        /// Default: `nil` - which means automatic RUM view tracking is not enabled by default.
+        @available(*, message: "This API is experimental and may change in future releases")
+        public var swiftUIViewsPredicate: SwiftUIRUMViewsPredicate?
+
         /// The configuration for automatic RUM resources tracking.
         ///
         /// RUM resources tracking requires enabling `URLSessionInstrumentation`. See
@@ -179,7 +192,7 @@ extension RUM {
         /// and do not make any assumptions on the thread used to run it.
         ///
         /// Note: This mapper ensures that all views are sent by preventing the return of `nil`. To drop certain automatically
-        /// collected RUM views, adjust the implementation of the view predicate (see the `uiKitViewsPredicate` option).
+        /// collected RUM views, adjust the implementation of the view predicate (see the `uiKitViewsPredicate` and `swiftUIPredicate` options).
         ///
         /// Default: `nil`.
         public var viewEventMapper: RUM.ViewEventMapper?
@@ -377,8 +390,9 @@ extension RUM.Configuration {
     /// - Parameters:
     ///   - applicationID: The RUM application identifier.
     ///   - sessionSampleRate: The sampling rate for RUM sessions. Must be a value between `0` and `100`. Default: `100`.
-    ///   - uiKitViewsPredicate: The predicate for automatically tracking `UIViewControllers` as RUM views. Default: `nil`.
+    ///   - uiKitViewsPredicate: The predicate for automatically tracking `UIViewControllers` in `UIKit` as RUM views. Default: `nil`.
     ///   - uiKitActionsPredicate: The predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`.
+    ///   - swiftUIViewsPredicate: The predicate for automatically tracking `UIViewControllers` in `SwiftUI` as RUM views. Default: `nil`.
     ///   - urlSessionTracking: The configuration for automatic RUM resources tracking. Default: `nil`.
     ///   - trackFrustrations: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
     ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
@@ -404,6 +418,7 @@ extension RUM.Configuration {
         sessionSampleRate: SampleRate = .maxSampleRate,
         uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,
+        swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = true,
         trackBackgroundEvents: Bool = false,
@@ -428,6 +443,7 @@ extension RUM.Configuration {
         self.sessionSampleRate = sessionSampleRate
         self.uiKitViewsPredicate = uiKitViewsPredicate
         self.uiKitActionsPredicate = uiKitActionsPredicate
+        self.swiftUIViewsPredicate = swiftUIViewsPredicate
         self.urlSessionTracking = urlSessionTracking
         self.trackFrustrations = trackFrustrations
         self.trackBackgroundEvents = trackBackgroundEvents
