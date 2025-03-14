@@ -90,11 +90,13 @@ extension RUMResourceType {
 public struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent {
     let attribute: String
     public var usr: RUMUser?
+    public var account: RUMAccount?
     public var context: RUMEventAttributes?
 
-    public init(attribute: String, usr: RUMUser? = nil, context: RUMEventAttributes? = nil) {
+    public init(attribute: String, usr: RUMUser? = nil, account: RUMAccount? = nil, context: RUMEventAttributes? = nil) {
         self.attribute = attribute
         self.usr = usr
+        self.account = account
         self.context = context
     }
 }

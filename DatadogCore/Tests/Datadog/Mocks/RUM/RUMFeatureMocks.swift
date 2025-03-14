@@ -97,6 +97,7 @@ extension RUMResourceType {
 struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent {
     let attribute: String
     var usr: RUMUser?
+    var account: RUMAccount?
     var context: RUMEventAttributes?
 }
 
