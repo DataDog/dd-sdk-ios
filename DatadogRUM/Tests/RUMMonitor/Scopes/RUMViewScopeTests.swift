@@ -1883,7 +1883,7 @@ class RUMViewScopeTests: XCTestCase {
         (0...Int.mockRandom(min: 0, max: 1_000)).forEach {
             hitches.append((start: TimeInterval($0).toInt64Nanoseconds, duration: 0.016.toInt64Nanoseconds))
         }
-        let hitchesDuration = TimeInterval(fromNanoseconds: hitches.map { $0.duration }.reduce(0, +)) * 1_000 // milliseconds
+        let hitchesDuration = TimeInterval(fromNanoseconds: hitches.map { $0.duration }.reduce(0, +))
         let viewHitchesMetricFactory = { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -1952,6 +1952,209 @@ class RUMViewScopeTests: XCTestCase {
         viewEvents.forEach {
             XCTAssertEqual($0.view.slowFrames?.count, hitches.count)
         }
+    }
+
+    func testWhenAppHangsAndViewHitchesAreDisabled_theRatesAreNotCalculated() {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(hasAppHangsEnabled: false, viewHitchesMetricFactory: { nil }),
+            identity: .mockViewIdentifier(),
+            path: .mockRandom(),
+            name: .mockRandom(),
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: nil
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime),
+                context: context,
+                writer: writer
+        )
+
+        currentTime.addTimeInterval(10)
+
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(time: currentTime),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+
+        XCTAssertEqual(viewEvents.count, 2)
+        let stopViewEvent = viewEvents.last
+        XCTAssertNil(stopViewEvent?.view.slowFrames)
+        XCTAssertNil(stopViewEvent?.view.slowFramesRate)
+        XCTAssertNil(stopViewEvent?.view.freezeRate)
+    }
+
+    func testWhenViewDurationIsTooSmall_theRatesAreNotCalculated() {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        var hitches: [Hitch] = []
+        (0...Int.mockRandom(min: 0, max: 1_000)).forEach {
+            hitches.append((start: TimeInterval($0).toInt64Nanoseconds, duration: 0.016.toInt64Nanoseconds))
+        }
+        let hitchesDuration = TimeInterval(fromNanoseconds: hitches.map { $0.duration }.reduce(0, +))
+        let viewHitchesMetricFactory = { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(hasAppHangsEnabled: true, viewHitchesMetricFactory: viewHitchesMetricFactory),
+            identity: .mockViewIdentifier(),
+            path: .mockRandom(),
+            name: .mockRandom(),
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: nil
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime),
+                context: context,
+                writer: writer
+        )
+
+        currentTime.addTimeInterval(0.9)
+
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(time: currentTime),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+
+        XCTAssertEqual(viewEvents.count, 2)
+        let stopViewEvent = viewEvents.last
+        XCTAssertEqual(stopViewEvent?.view.slowFrames?.count, hitches.count)
+        XCTAssertNil(stopViewEvent?.view.slowFramesRate)
+        XCTAssertNil(stopViewEvent?.view.freezeRate)
+    }
+
+    func testWhenThereAreViewHitches_theStopViewEventHasSlowFramesRate() {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        var hitches: [Hitch] = []
+        (0..<10).forEach {
+            hitches.append((start: TimeInterval($0).toInt64Nanoseconds, duration: 0.016.toInt64Nanoseconds))
+        }
+        let hitchesDuration = TimeInterval(fromNanoseconds: hitches.map { $0.duration }.reduce(0, +))
+        let viewHitchesMetricFactory = { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(viewHitchesMetricFactory: viewHitchesMetricFactory),
+            identity: .mockViewIdentifier(),
+            path: .mockRandom(),
+            name: .mockRandom(),
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: nil
+        )
+
+        // When
+        _ = scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime),
+                context: context,
+                writer: writer
+        )
+
+        currentTime.addTimeInterval(1)
+
+        _ = scope.process(
+            command: RUMAddViewTimingCommand.mockWith(time: currentTime),
+            context: context,
+            writer: writer
+        )
+
+        currentTime.addTimeInterval(9)
+
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(time: currentTime),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+
+        XCTAssertEqual(viewEvents.count, 3)
+        for event in viewEvents.dropLast() {
+            XCTAssertNil(event.view.slowFramesRate)
+        }
+        let stopViewEvent = viewEvents.last
+        XCTAssertEqual(stopViewEvent?.view.slowFrames?.count, hitches.count)
+        // The rate is only calculated in the Stop View event
+        XCTAssertEqual(stopViewEvent?.view.slowFramesRate, 16)
+    }
+
+    func testWhenThereAreAppHangs_theStopViewEventHasFreezeRate() {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(hasAppHangsEnabled: true),
+            identity: .mockViewIdentifier(),
+            path: .mockRandom(),
+            name: .mockRandom(),
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: nil
+        )
+
+        // When
+        _ = scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime),
+                context: context,
+                writer: writer
+        )
+
+        currentTime.addTimeInterval(2)
+
+        _ = scope.process(
+            command: RUMAddCurrentViewAppHangCommand.mockWith(
+                time: currentTime,
+                message: "App Hang",
+                type: "AppHang",
+                stack: "<hang stack>",
+                hangDuration: 5
+            ),
+            context: context,
+            writer: writer
+        )
+
+        currentTime.addTimeInterval(8)
+
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(time: currentTime),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+
+        XCTAssertEqual(viewEvents.count, 3)
+        for event in viewEvents.dropLast() {
+            XCTAssertNil(event.view.freezeRate)
+        }
+        // The rate is only calculated in the Stop View event
+        let stopViewEvent = viewEvents.last
+        XCTAssertEqual(stopViewEvent?.view.freezeRate, 0.5.hours)
     }
 
     // MARK: - App Hangs

@@ -74,6 +74,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
+            hasAppHangsEnabled: configuration.appHangThreshold != nil,
             firstPartyHosts: {
                 switch configuration.urlSessionTracking?.firstPartyHostsTracing {
                 case let .trace(hosts, _, _):

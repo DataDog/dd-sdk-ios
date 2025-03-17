@@ -15,7 +15,7 @@ internal typealias Hitch = (start: Int64, duration: Int64)
 /**
  - parameters:
    - hitches: Array of view hitches (slow frames)
-   - hitchesDuration: Cumulative duration in ms of the view hitches
+   - hitchesDuration: Cumulative duration in seconds of the view hitches
  */
 internal typealias HitchesDataModel = (hitches: [Hitch], hitchesDuration: Double)
 
@@ -42,8 +42,8 @@ internal final class ViewHitchesReader: ViewHitchesMetric {
     private var startTimestamp: Double = 0
     private var nextFrameTimestamp: Double?
 
-    private var hangThreshold: TimeInterval
-    private var acceptableLatency: TimeInterval
+    private let hangThreshold: TimeInterval
+    private let acceptableLatency: TimeInterval
 
     /// Amount of time when the frames are rendered too late.
     private var _hitchesDuration: Double = 0.0
