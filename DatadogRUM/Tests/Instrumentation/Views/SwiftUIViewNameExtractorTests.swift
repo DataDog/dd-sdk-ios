@@ -45,23 +45,23 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
     func testSwiftUIViewPathComponents() {
         XCTAssertEqual(
             SwiftUIViewPath.hostingController.pathComponents,
-            ["host", "_rootView", "content", "storage", "view"]
+            [.host, .rootView, .content, .storage, .view]
         )
         XCTAssertEqual(
             SwiftUIViewPath.navigationStack.pathComponents,
-            ["host", "_rootView", "storage", "view", "content", "content", "content"]
+            [.host, .rootView, .storage, .view, .content, .content, .content]
         )
         XCTAssertEqual(
             SwiftUIViewPath.navigationStackDetail.pathComponents,
-            ["host", "_rootView", "storage", "view", "content", "content", "content", "content", "list", "item", "type"]
+            [.host, .rootView, .storage, .view, .content, .content, .content, .content, .list, .item, .type]
         )
         XCTAssertEqual(
             SwiftUIViewPath.navigationStackContainer.pathComponents,
-            ["host", "_rootView", "storage", "view", "content", "content", "content", "root"]
+            [.host, .rootView, .storage, .view, .content, .content, .content, .root]
         )
         XCTAssertEqual(
             SwiftUIViewPath.sheetContent.pathComponents,
-            ["host", "_rootView", "storage", "view", "content"]
+            [.host, .rootView, .storage, .view, .content]
         )
     }
 

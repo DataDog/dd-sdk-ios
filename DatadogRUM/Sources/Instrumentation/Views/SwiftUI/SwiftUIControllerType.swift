@@ -6,10 +6,10 @@
 
 /// Controller type enum to identify different SwiftUI hosting controllers
 internal enum ControllerType {
+    case tabItem
     case hostingController
     case navigationController
     case modal
-    case tabItem
     case unknown
 
     /// Determines the controller type from the class name

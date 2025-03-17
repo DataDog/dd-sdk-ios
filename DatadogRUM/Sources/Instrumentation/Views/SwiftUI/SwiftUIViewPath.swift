@@ -7,10 +7,20 @@
 import DatadogInternal
 
 /// Common path components for SwiftUI view traversal
-internal enum RootPath {
-    static let hostingBase = ["host", "_rootView"]
-    static let navigationBase = ["host", "_rootView", "storage", "view", "content", "content", "content"]
-    static let sheetBase = ["host", "_rootView", "storage", "view", "content"]
+internal enum ViewNode: String {
+    case host
+    case rootView = "_rootView"
+    case root
+    case storage
+    case view
+    case content
+    case list
+    case item
+    case type
+
+    static let hostingBase: [ViewNode] = [.host, .rootView]
+    static let navigationBase: [ViewNode] = [.host, .rootView, .storage, .view, .content, .content, .content]
+    static let sheetBase: [ViewNode] = [.host, .rootView, .storage, .view, .content]
 }
 
 /// Defines the various traversal paths for different SwiftUI view structures
@@ -25,18 +35,18 @@ internal enum SwiftUIViewPath {
     case sheetContent
 
     /// The sequence of property names to traverse for this view type
-    var pathComponents: [String] {
+    var pathComponents: [ViewNode] {
         switch self {
         case .hostingController:
-            return RootPath.hostingBase + ["content", "storage", "view"]
+            return ViewNode.hostingBase + [.content, .storage, .view]
         case .navigationStack:
-            return RootPath.navigationBase
+            return ViewNode.navigationBase
         case .navigationStackDetail:
-            return RootPath.navigationBase + ["content", "list", "item", "type"]
+            return ViewNode.navigationBase + [.content, .list, .item, .type]
         case .navigationStackContainer:
-            return RootPath.navigationBase + ["root"]
+            return ViewNode.navigationBase + [.root]
         case .sheetContent:
-            return RootPath.sheetBase
+            return ViewNode.sheetBase
         }
     }
 
@@ -46,7 +56,7 @@ internal enum SwiftUIViewPath {
     /// - Returns: The object found at the end of the path, or nil if not found
     func traverse(with reflector: TopLevelReflector) -> Any? {
         // Convert string components to path objects
-        let paths = pathComponents.map { ReflectionMirror.Path.key($0) }
+        let paths = pathComponents.map { ReflectionMirror.Path.key($0.rawValue) }
 
         // Use descendant directly
         return reflector.descendant(paths)

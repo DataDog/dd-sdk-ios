@@ -16,7 +16,7 @@ internal protocol SwiftUIViewNameExtractor {
 // MARK: - SwiftUIReflectionBasedViewNameExtractor
 /// Default implementation that extracts SwiftUI view names using reflection and string parsing
 internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtractor {
-    internal let createReflector: (Any) -> TopLevelReflector
+    private let createReflector: (Any) -> TopLevelReflector
 
     init(
         reflectorFactory: @escaping (Any) -> TopLevelReflector = { subject in
@@ -34,10 +34,6 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
     /// - Parameter viewController: The `UIViewController` potentially hosting a SwiftUI view
     /// - Returns: The extracted view name or nil if extraction failed
     func extractName(from viewController: UIViewController) -> String? {
-        return extractViewNameFrom(from: viewController)
-    }
-
-    private func extractViewNameFrom(from viewController: UIViewController) -> String? {
         // Skip known container controllers that shouldn't be tracked
         if shouldSkipViewController(viewController: viewController) {
             return nil
@@ -52,7 +48,7 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
         )
     }
 
-    internal func extractViewName(
+    private func extractViewName(
         from viewController: UIViewController,
         withReflector reflector: TopLevelReflector
     ) -> String? {
@@ -61,7 +57,7 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
 
         switch controllerType {
         case .tabItem:
-            return extractTabViewName(viewController: viewController)
+            return extractTabViewName(from: viewController)
 
         case .hostingController:
             if let output = SwiftUIViewPath.hostingController.traverse(with: reflector) {
@@ -123,7 +119,7 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
         return input
     }
 
-    internal func extractTabViewName(viewController: UIViewController) -> String? {
+    private func extractTabViewName(from viewController: UIViewController) -> String? {
         // We fetch the parent, which corresponds to the TabBarController
         guard let parent = viewController.parent as? UITabBarController,
               let container = parent.parent else {
