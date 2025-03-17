@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		86252B1B2D818E360098FAEF /* TraceScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86252B1A2D818E360098FAEF /* TraceScenario.swift */; };
 		86252B1D2D8190DA0098FAEF /* TraceContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86252B1C2D8190DA0098FAEF /* TraceContentView.swift */; };
+		8649177D2D8875C300761363 /* RUMManualContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8649177C2D8875C300761363 /* RUMManualContentView.swift */; };
+		8649177F2D8875D100761363 /* RUMManualScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8649177E2D8875D100761363 /* RUMManualScenario.swift */; };
 		868DA2E62D706456007D20D5 /* LogsCustomScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868DA2E52D706456007D20D5 /* LogsCustomScenario.swift */; };
 		868DA2EC2D706E61007D20D5 /* LogsCustomContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868DA2EB2D706E61007D20D5 /* LogsCustomContentView.swift */; };
 		868DA2F52D71DD47007D20D5 /* LogsHeavyTrafficScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868DA2F42D71DD47007D20D5 /* LogsHeavyTrafficScenario.swift */; };
@@ -242,6 +244,8 @@
 /* Begin PBXFileReference section */
 		86252B1A2D818E360098FAEF /* TraceScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceScenario.swift; sourceTree = "<group>"; };
 		86252B1C2D8190DA0098FAEF /* TraceContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceContentView.swift; sourceTree = "<group>"; };
+		8649177C2D8875C300761363 /* RUMManualContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMManualContentView.swift; sourceTree = "<group>"; };
+		8649177E2D8875D100761363 /* RUMManualScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMManualScenario.swift; sourceTree = "<group>"; };
 		868DA2E52D706456007D20D5 /* LogsCustomScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsCustomScenario.swift; sourceTree = "<group>"; };
 		868DA2EB2D706E61007D20D5 /* LogsCustomContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsCustomContentView.swift; sourceTree = "<group>"; };
 		868DA2F42D71DD47007D20D5 /* LogsHeavyTrafficScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsHeavyTrafficScenario.swift; sourceTree = "<group>"; };
@@ -492,6 +496,23 @@
 			path = UI;
 			sourceTree = "<group>";
 		};
+		864917792D88759A00761363 /* RUM */ = {
+			isa = PBXGroup;
+			children = (
+				8649177A2D8875A800761363 /* UI */,
+				8649177E2D8875D100761363 /* RUMManualScenario.swift */,
+			);
+			path = RUM;
+			sourceTree = "<group>";
+		};
+		8649177A2D8875A800761363 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				8649177C2D8875C300761363 /* RUMManualContentView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
 		868DA2E42D70643A007D20D5 /* Logs */ = {
 			isa = PBXGroup;
 			children = (
@@ -613,6 +634,7 @@
 				D27606992C514F37002D2A14 /* SessionReplay */,
 				868DA2E42D70643A007D20D5 /* Logs */,
 				86252B182D818DFB0098FAEF /* Trace */,
+				864917792D88759A00761363 /* RUM */,
 			);
 			path = Scenarios;
 			sourceTree = "<group>";
@@ -1307,7 +1329,9 @@
 				D29F75502C4AA07E00288638 /* AppDelegate.swift in Sources */,
 				D294EA332D088377009582F3 /* SessionReplaySwiftUIScenario.swift in Sources */,
 				D27606A12C514F37002D2A14 /* SessionReplayScenario.swift in Sources */,
+				8649177D2D8875C300761363 /* RUMManualContentView.swift in Sources */,
 				868DA2F92D71E622007D20D5 /* LogsUtils.swift in Sources */,
+				8649177F2D8875D100761363 /* RUMManualScenario.swift in Sources */,
 				D24E15F32C776956005AE4E8 /* BenchmarkProfiler.swift in Sources */,
 				D24BFD472C6B916B00AB9604 /* SyntheticScenario.swift in Sources */,
 				D27606A32C514F37002D2A14 /* Scenario.swift in Sources */,
