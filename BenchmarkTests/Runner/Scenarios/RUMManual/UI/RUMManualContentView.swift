@@ -195,7 +195,7 @@ struct RUMManualContentView: View {
         let viewController = createUIViewControllerSubclassInstance(named: viewURL)
         rumMonitor.startView(viewController: viewController)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            rumMonitor.addAction(type: self.actionType, name: actionURL)
+            rumMonitor.addAction(type: actionType, name: actionURL)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             rumMonitor.stopView(viewController: viewController)
@@ -212,12 +212,12 @@ struct RUMManualContentView: View {
         let viewController = createUIViewControllerSubclassInstance(named: viewURL)
         rumMonitor.startView(viewController: viewController)
 
-        let request = URLRequest(url: URL(string: self.resourceURL)!)
+        let request = URLRequest(url: URL(string: resourceURL)!)
         rumMonitor.startResource(
             resourceKey: "/resource/1",
             request: request
         )
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             rumMonitor.stopResource(
                 resourceKey: "/resource/1",
@@ -244,7 +244,7 @@ struct RUMManualContentView: View {
         let viewController = createUIViewControllerSubclassInstance(named: viewURL)
         rumMonitor.startView(viewController: viewController)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            rumMonitor.addError(message: self.errorMessage, source: .source)
+            rumMonitor.addError(message: errorMessage, source: .source)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             rumMonitor.stopView(viewController: viewController)
