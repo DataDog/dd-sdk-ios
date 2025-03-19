@@ -16,4 +16,4 @@ internal protocol TopLevelReflector {
 }
 
 // MARK: - Reflector
-extension Reflector: TopLevelReflector {}
+extension ReflectionMirror: TopLevelReflector {}

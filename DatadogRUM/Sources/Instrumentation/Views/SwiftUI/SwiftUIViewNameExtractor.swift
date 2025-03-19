@@ -20,21 +20,10 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
 
     init(
         reflectorFactory: @escaping (Any) -> TopLevelReflector = { subject in
-            Reflector(
-                subject: subject,
-                // MARK: TODO: RUM-9035 - Telemetry
-                telemetry: NOPTelemetry()
-            )
+            ReflectionMirror(reflecting: subject)
         }
     ) {
         self.createReflector = reflectorFactory
-    }
-
-    /// Convenience initializer
-    init(telemetry: Telemetry) {
-        self.init(reflectorFactory: { subject in
-            Reflector(subject: subject, telemetry: telemetry)
-        })
     }
 
     /// Attempts to extract a meaningful SwiftUI view name from a `UIViewController`
@@ -105,11 +94,7 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
 
     // MARK: - Helpers
     private static let genericTypePattern: NSRegularExpression? = {
-        do {
-            return try NSRegularExpression(pattern: #"<(?:[^,>]*,\s+)?([^<>,]+?)>"#)
-        } catch {
-            return nil
-        }
+        return try? NSRegularExpression(pattern: #"<(?:[^,>]*,\s+)?([^<>,]+?)>"#)
     }()
 
     /// Extracts a view name from a type description
@@ -140,7 +125,7 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
         }
 
         let selectedIndex = parent.selectedIndex
-        let containerReflector = Reflector(subject: container, telemetry: NOPTelemetry())
+        let containerReflector = ReflectionMirror(reflecting: container)
 
         if let output = SwiftUIViewPath.hostingController.traverse(with: containerReflector) {
             let typeName = typeDescription(of: output)
