@@ -28,6 +28,7 @@
  * SOFTWARE.
  */
 
+#if DEBUG
 // swiftlint:disable function_default_parameter_at_end
 
 import Foundation
@@ -550,7 +551,6 @@ public struct FileHandlerOutputStream: TextOutputStream {
 }
 // swiftlint:enable function_default_parameter_at_end
 
-#if DEBUG
 /// Dumps the given value's contents in a file.
 public func dump<T>(_ value: T, filename: String) throws {
     let manager = FileManager.default

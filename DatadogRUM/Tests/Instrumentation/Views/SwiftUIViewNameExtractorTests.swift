@@ -25,14 +25,16 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
     // MARK: - View Name Extraction Tests
     func testViewNameExtraction() {
         let testCases: [(String, String)] = [
-            ("LazyView<ContentView>", "ContentView"),
+            ("LazyView<ViewType>", "ViewType"),
             ("SheetContent<Text>", "Text"),
             ("Optional<Text>", "Text"),
-            ("Optional<ProfileView>", "ProfileView"),
-            ("LazyView<HomeView>", "HomeView"),
-            ("ParameterizedLazyView<String, DetailViewForNavigationDestination>", "DetailViewForNavigationDestination"),
-            ("DetailView.Type", "DetailView"),
-            ("SheetContent<ModalSheet>", "ModalSheet")
+            ("Optional<ViewType>", "ViewType"),
+            ("ParameterizedLazyView<String, ViewType>", "ViewType"),
+            ("ParameterizedLazyView<String, ViewType>(value: \"xxx\", content: (Function))", "ViewType"),
+            ("ViewType.Type", "ViewType"),
+            ("SheetContent<ViewType>", "ViewType"),
+            ("ModifiedView<ModifierType, ModifiedView<ModifierType, ModifiedView<ModifierType, ModifiedView<ModifierType, ViewType>>>>", "ViewType"),
+            ("ModifiedView<ModifierType, ModifiedView<ModifierType, ModifiedView<ModifierType, ModifiedView<ModifierType, ContainerType<ViewType>>>>>", "ViewType")
         ]
 
         for (input, expected) in testCases {
@@ -46,6 +48,10 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
         XCTAssertEqual(
             SwiftUIViewPath.hostingController.pathComponents,
             [.host, .rootView, .content, .storage, .view]
+        )
+        XCTAssertEqual(
+            SwiftUIViewPath.hostingControllerRoot.pathComponents,
+            [.host, .rootView]
         )
         XCTAssertEqual(
             SwiftUIViewPath.navigationStack.pathComponents,

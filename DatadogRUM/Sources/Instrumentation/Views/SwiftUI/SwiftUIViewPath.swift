@@ -7,7 +7,7 @@
 import DatadogInternal
 
 /// Common path components for SwiftUI view traversal
-internal enum ViewNode: String {
+internal enum SwiftUIViewNode: String {
     case host
     case rootView = "_rootView"
     case root
@@ -18,9 +18,9 @@ internal enum ViewNode: String {
     case item
     case type
 
-    static let hostingBase: [ViewNode] = [.host, .rootView]
-    static let navigationBase: [ViewNode] = [.host, .rootView, .storage, .view, .content, .content, .content]
-    static let sheetBase: [ViewNode] = [.host, .rootView, .storage, .view, .content]
+    static let hostingBase: [SwiftUIViewNode] = [.host, .rootView]
+    static let navigationBase: [SwiftUIViewNode] = [.host, .rootView, .storage, .view, .content, .content, .content]
+    static let sheetBase: [SwiftUIViewNode] = [.host, .rootView, .storage, .view, .content]
 }
 
 /// Defines the various traversal paths for different SwiftUI view structures
@@ -29,24 +29,27 @@ internal enum ViewNode: String {
 /// through reflection.
 internal enum SwiftUIViewPath {
     case hostingController
+    case hostingControllerRoot
     case navigationStack
     case navigationStackDetail
     case navigationStackContainer
     case sheetContent
 
     /// The sequence of property names to traverse for this view type
-    var pathComponents: [ViewNode] {
+    var pathComponents: [SwiftUIViewNode] {
         switch self {
         case .hostingController:
-            return ViewNode.hostingBase + [.content, .storage, .view]
+            return SwiftUIViewNode.hostingBase + [.content, .storage, .view]
+        case .hostingControllerRoot:
+            return SwiftUIViewNode.hostingBase
         case .navigationStack:
-            return ViewNode.navigationBase
+            return SwiftUIViewNode.navigationBase
         case .navigationStackDetail:
-            return ViewNode.navigationBase + [.content, .list, .item, .type]
+            return SwiftUIViewNode.navigationBase + [.content, .list, .item, .type]
         case .navigationStackContainer:
-            return ViewNode.navigationBase + [.root]
+            return SwiftUIViewNode.navigationBase + [.root]
         case .sheetContent:
-            return ViewNode.sheetBase
+            return SwiftUIViewNode.sheetBase
         }
     }
 

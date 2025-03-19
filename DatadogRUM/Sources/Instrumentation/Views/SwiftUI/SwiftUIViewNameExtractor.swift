@@ -30,9 +30,16 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
         self.createReflector = reflectorFactory
     }
 
-    /// Attempts to extract a meaningful SwiftUI view name from a UIViewController
+    /// Convenience initializer
+    init(telemetry: Telemetry) {
+        self.init(reflectorFactory: { subject in
+            Reflector(subject: subject, telemetry: telemetry)
+        })
+    }
+
+    /// Attempts to extract a meaningful SwiftUI view name from a `UIViewController`
     /// - Parameter viewController: The `UIViewController` potentially hosting a SwiftUI view
-    /// - Returns: The extracted view name or nil if extraction failed
+    /// - Returns: The extracted view name or `nil` if extraction failed
     func extractName(from viewController: UIViewController) -> String? {
         // Skip known container controllers that shouldn't be tracked
         if shouldSkipViewController(viewController: viewController) {
@@ -61,6 +68,10 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
 
         case .hostingController:
             if let output = SwiftUIViewPath.hostingController.traverse(with: reflector) {
+                return extractViewName(from: typeDescription(of: output))
+            }
+
+            if let output = SwiftUIViewPath.hostingControllerRoot.traverse(with: reflector) {
                 return extractViewName(from: typeDescription(of: output))
             }
 
@@ -93,30 +104,32 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
     }
 
     // MARK: - Helpers
-    /// Extracts a view name from a type description using regex patterns
+    private static let genericTypePattern: NSRegularExpression? = {
+        do {
+            return try NSRegularExpression(pattern: #"<(?:[^,>]*,\s+)?([^<>,]+?)>"#)
+        } catch {
+            return nil
+        }
+    }()
+
+    /// Extracts a view name from a type description
     internal func extractViewName(from input: String) -> String? {
-        // Pattern 1: Extract the view name from generic types like LazyView<ContentView>
-        let simpleGenericPattern = #"<([^<>,]+)>"#
-        if let match = input.range(of: simpleGenericPattern, options: .regularExpression) {
-            let startIndex = input.index(match.lowerBound, offsetBy: 1)
-            let endIndex = input.index(match.upperBound, offsetBy: -1)
-            return String(input[startIndex..<endIndex])
+        // Extract the view name from generic types like ParameterizedLazyView<String, DetailView>
+        if let match = Self.genericTypePattern?.firstMatch(
+            in: input,
+            options: [],
+            range: NSRange(input.startIndex..<input.endIndex, in: input)
+        ),
+           let range = Range(match.range(at: 1), in: input) {
+            return String(input[range])
         }
 
-        // Pattern 2: Extract the view name from complex generic types like ParameterizedLazyView<String, DetailView>
-        let complexGenericPattern = #"<.*,\s*([^<>,]+)>"#
-        if let match = input.range(of: complexGenericPattern, options: .regularExpression),
-           let captureRange = input.range(of: #"([^<>,]+)(?=>)"#, options: .regularExpression, range: match) {
-            return String(input[captureRange]).trimmingCharacters(in: .whitespaces)
-        }
-
-        // Pattern 3: Extract the view name from metatypes like DetailView.Type
+        // Extract the view name from metatypes like DetailView.Type
         if input.hasSuffix(".Type") {
             return String(input.dropLast(5))
         }
 
-        // Return the input as a fallback
-        return input
+        return nil
     }
 
     private func extractTabViewName(from viewController: UIViewController) -> String? {
