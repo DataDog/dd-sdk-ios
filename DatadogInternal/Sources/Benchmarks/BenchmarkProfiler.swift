@@ -57,6 +57,11 @@ public protocol BenchmarkMeter {
     /// - Returns: The gauge instance.
     func gauge(metric: @autoclosure () -> String) -> BenchmarkGauge
 
+    /// Observe a measure value.
+    ///
+    /// - Parameters:
+    ///   - metric: The metric name.
+    ///   - callback: Callback providing a gauge instance to record a value.
     func observe(metric: @autoclosure () -> String, callback: @escaping (BenchmarkGauge) -> Void )
 }
 
