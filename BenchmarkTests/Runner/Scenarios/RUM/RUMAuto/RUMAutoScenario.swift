@@ -9,9 +9,9 @@ import SwiftUI
 import DatadogCore
 import DatadogRUM
 
-struct RUMManualScenario: Scenario {
+struct RUMAutoScenario: Scenario {
     var initialViewController: UIViewController {
-        UIHostingController(rootView: RUMManualContentView())
+        UIHostingController(rootView: RUMAutoContentView())
     }
 
     func instrument(with info: AppInfo) {
@@ -21,7 +21,11 @@ struct RUMManualScenario: Scenario {
         )
 
         RUM.enable(
-            with: RUM.Configuration(applicationID: info.applicationID)
+            with: RUM.Configuration(applicationID: info.applicationID,
+                                    uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
+                                    uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate())
         )
+
+        RUMMonitor.shared().addAttribute(forKey: "scenario", value: "RUMAuto")
     }
 }
