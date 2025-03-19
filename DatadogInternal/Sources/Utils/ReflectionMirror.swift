@@ -247,7 +247,7 @@ extension ReflectionMirror {
         return descendant(paths: &paths)
     }
 
-    func descendant(_ paths: [Path]) -> Any? {
+    public func descendant(_ paths: [Path]) -> Any? {
         var paths = paths
         return descendant(paths: &paths)
     }

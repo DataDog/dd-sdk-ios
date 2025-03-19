@@ -59,15 +59,19 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         watchdogTermination: WatchdogTerminationMonitor?,
         memoryWarningMonitor: MemoryWarningMonitor
     ) {
+        // MARK: TODO: RUM-8416 - Remove after we add SwiftUI view instrumentation option
         // Always create views handler (we can't know if it will be used by SwiftUI instrumentation)
         // and only swizzle `UIViewController` if UIKit instrumentation is configured:
         let viewsHandler = RUMViewsHandler(
             dateProvider: dateProvider,
-            predicate: uiKitRUMViewsPredicate,
+            uiKitPredicate: uiKitRUMViewsPredicate,
+            swiftUIPredicate: nil,
+            swiftUIViewNameExtractor: nil,
             notificationCenter: notificationCenter
         )
         let viewControllerSwizzler: UIViewControllerSwizzler? = {
             do {
+                // MARK: TODO: RUM-8416 - Check both predicates after we add SwiftUI view instrumentation option
                 if uiKitRUMViewsPredicate != nil {
                     return try UIViewControllerSwizzler(handler: viewsHandler)
                 }
@@ -80,11 +84,13 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             return nil
         }()
 
+        // MARK: TODO: RUM-8420 - Remove after we add SwiftUI action instrumentation option
         // Always create actions handler (we can't know if it will be used by SwiftUI instrumentation)
         // and only swizzle `UIApplicationSwizzler` if UIKit instrumentation is configured:
         let actionsHandler = RUMActionsHandler(dateProvider: dateProvider, predicate: uiKitRUMActionsPredicate)
         let uiApplicationSwizzler: UIApplicationSwizzler? = {
             do {
+                // MARK: TODO: RUM-8420 - Check both predicates after we add SwiftUI action instrumentation option
                 if uiKitRUMActionsPredicate != nil {
                     return try UIApplicationSwizzler(handler: actionsHandler)
                 }
