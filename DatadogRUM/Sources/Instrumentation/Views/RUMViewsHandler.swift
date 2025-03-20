@@ -242,17 +242,6 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     instrumentationType: .swiftui
                 )
             )
-        } else if #available(iOS 13, tvOS 13, *), viewController.isModalInPresentation {
-            add(
-                view: .init(
-                    identity: identity,
-                    name: "RUMUntrackedModal",
-                    path: viewController.canonicalClassName,
-                    isUntrackedModal: true,
-                    attributes: [:],
-                    instrumentationType: .uikit
-                )
-            )
         }
     }
 
