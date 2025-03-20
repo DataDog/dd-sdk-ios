@@ -192,7 +192,7 @@ extension RUM {
         /// and do not make any assumptions on the thread used to run it.
         ///
         /// Note: This mapper ensures that all views are sent by preventing the return of `nil`. To drop certain automatically
-        /// collected RUM views, adjust the implementation of the view predicate (see the `uiKitViewsPredicate` and `swiftUIPredicate` options).
+        /// collected RUM views, adjust the implementations of the view predicates (see the `uiKitViewsPredicate` and `swiftUIViewsPredicate` options).
         ///
         /// Default: `nil`.
         public var viewEventMapper: RUM.ViewEventMapper?
