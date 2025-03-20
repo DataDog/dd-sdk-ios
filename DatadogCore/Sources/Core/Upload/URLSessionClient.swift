@@ -35,9 +35,12 @@ internal class URLSessionClient: HTTPClient {
         self.session = session
     }
 
-    func send(request: URLRequest, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
+    func send(request: URLRequest, delegate: URLSessionTaskDelegate?, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
         let task = session.dataTask(with: request) { data, response, error in
             completion(httpClientResult(for: (data, response, error)))
+        }
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, *) {
+            task.delegate = delegate
         }
         task.resume()
     }

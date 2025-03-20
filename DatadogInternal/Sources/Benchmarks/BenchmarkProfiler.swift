@@ -56,6 +56,13 @@ public protocol BenchmarkMeter {
     /// - Parameter metric: The metric name.
     /// - Returns: The gauge instance.
     func gauge(metric: @autoclosure () -> String) -> BenchmarkGauge
+
+    /// Observe a measure value.
+    ///
+    /// - Parameters:
+    ///   - metric: The metric name.
+    ///   - callback: Callback providing a gauge instance to record a value.
+    func observe(metric: @autoclosure () -> String, callback: @escaping (BenchmarkGauge) -> Void )
 }
 
 /// The Benchmark Tracer will create and start spans in a benchmark environment.
@@ -87,6 +94,11 @@ public protocol BenchmarkCounter {
 }
 
 extension BenchmarkCounter {
+    /// Increment the counter by one.
+    public func increment(attributes: @autoclosure () -> [String: String] = [:]) {
+        add(value: 1, attributes: attributes())
+    }
+
     /// Increment the counter.
     ///
     /// - parameters:
@@ -99,7 +111,7 @@ extension BenchmarkCounter {
     ///
     /// - parameters:
     ///     - by: Amount to increment by.
-    public func increment<Integer>(by amount: Integer = 1, attributes: @autoclosure () -> [String: String] = [:]) where Integer: BinaryInteger {
+    public func increment<Integer>(by amount: Integer, attributes: @autoclosure () -> [String: String] = [:]) where Integer: BinaryInteger {
         add(value: Double(amount), attributes: attributes())
     }
 }
@@ -131,6 +143,8 @@ private final class NOPBench: BenchmarkProfiler, BenchmarkTracer, BenchmarkSpan,
     func counter(metric: @autoclosure () -> String) -> BenchmarkCounter { self }
     /// no-op
     func gauge(metric: @autoclosure () -> String) -> BenchmarkGauge { self }
+    /// no-op
+    func observe(metric: @autoclosure () -> String, callback: @escaping (any BenchmarkGauge) -> Void) { }
     /// no-op
     func add(value: Double, attributes: @autoclosure () -> [String: String]) { }
     /// no-op
