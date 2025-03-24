@@ -55,9 +55,11 @@ class DirectoryTests: XCTestCase {
 
         let uniqueName = uniqueSubdirectoryName()
         let expectedDirectory = try directory.createSubdirectory(path: uniqueName)
-        let actualDirectory = try directory.subdirectory(path: uniqueName)
+        let actualDirectory1 = try directory.subdirectory(path: uniqueName)
+        let actualDirectory2 = try directory.subdirectoryIfExists(path: uniqueName)
 
-        XCTAssertEqual(expectedDirectory.url, actualDirectory.url)
+        XCTAssertEqual(expectedDirectory.url, actualDirectory1.url)
+        XCTAssertEqual(expectedDirectory.url, actualDirectory2?.url)
     }
 
     func testItThrowsWhenAskedForSubdirectoryWhichDoesNotExist() throws {
@@ -68,6 +70,19 @@ class DirectoryTests: XCTestCase {
         XCTAssertThrowsError(try directory.subdirectory(path: "abc")) { error in
             XCTAssertTrue(error is InternalError, "It should throw as directory at given path doesn't exist")
         }
+
+        _ = try directory.createFile(named: "file-instead-of-directory")
+        XCTAssertThrowsError(try directory.subdirectory(path: "file-instead-of-directory")) { error in
+            XCTAssertTrue(error is InternalError, "It should throw as given path is a file, not directory")
+        }
+    }
+
+    func testReturnsNilWhenAskedForSubdirectoryWhichDoesNotExist() throws {
+        let directory = Directory(url: temporaryDirectory)
+        CreateTemporaryDirectory()
+        defer { DeleteTemporaryDirectory() }
+
+        XCTAssertNil(try directory.subdirectoryIfExists(path: "abc"))
 
         _ = try directory.createFile(named: "file-instead-of-directory")
         XCTAssertThrowsError(try directory.subdirectory(path: "file-instead-of-directory")) { error in
