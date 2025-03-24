@@ -7,6 +7,7 @@
 import SwiftUI
 import UIKit
 
+@MainActor
 class EpisodeDetailViewController: UIViewController {
     var episode: Episode?
     private var characters: [Character] = []

@@ -17,8 +17,6 @@ struct CharactersView: View {
             Group {
                 if characters.isEmpty {
                     Text("No characters. Should not happen :/")
-                } else if isLoading {
-                    ProgressView()
                 } else if let error {
                     Text("Error: \(error.localizedDescription)")
                 } else {

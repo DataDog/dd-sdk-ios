@@ -7,8 +7,7 @@
 import SwiftUI
 import UIKit
 
-// MARK: - Main View Controller
-
+@MainActor
 class LocationDetailViewController: UIViewController {
     var location: Location?
     private var residents: [Character] = []
@@ -90,27 +89,21 @@ class LocationDetailViewController: UIViewController {
                     allResidents.append(contentsOf: batchResidents)
                 }
 
-                DispatchQueue.main.async { [weak self] in
-                    guard let self else { return }
-                    residents = allResidents
-                    collectionView.reloadData()
-                    isLoading = false
-                }
+                residents = allResidents
+                collectionView.reloadData()
+                isLoading = false
             } catch {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self else { return }
-                    print("Error fetching residents: \(error)")
-                    isLoading = false
+                print("Error fetching residents: \(error)")
+                isLoading = false
 
-                    // Show error alert
-                    let alert = UIAlertController(
-                        title: "Error",
-                        message: "Failed to load residents: \(error.localizedDescription)",
-                        preferredStyle: .alert
-                    )
-                    alert.addAction(UIAlertAction(title: "OK", style: .default))
-                    present(alert, animated: true)
-                }
+                // Show error alert
+                let alert = UIAlertController(
+                    title: "Error",
+                    message: "Failed to load residents: \(error.localizedDescription)",
+                    preferredStyle: .alert
+                )
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                present(alert, animated: true)
             }
         }
     }

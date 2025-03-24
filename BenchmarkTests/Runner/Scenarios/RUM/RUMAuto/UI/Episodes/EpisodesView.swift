@@ -18,8 +18,6 @@ struct EpisodesView: View {
             Group {
                 if episodes.isEmpty {
                     Text("No episodes. Should not happen :/")
-                } else if isLoading {
-                    ProgressView()
                 } else if let error {
                     Text("Error: \(error.localizedDescription)")
                 } else {

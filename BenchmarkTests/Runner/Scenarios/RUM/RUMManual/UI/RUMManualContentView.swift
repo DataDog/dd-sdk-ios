@@ -6,34 +6,34 @@
 
 import DatadogRUM
 import SwiftUI
-import SwiftUICatalog
 
 struct RUMManualContentView: View {
     @State private var eventType: RUMEvent
-    @State private var viewURL: String
+    @State private var viewName: String
     @State private var actionType: RUMActionType
     @State private var actionURL: String
     @State private var resourceURL: String
     @State private var errorMessage: String
 
     @State private var eventsPerBatch: Int
-    @State private var interval: Double
+    @State private var interval: TimeInterval
     @State private var isRepeating: Bool
 
     @State private var isSending: Bool
     @State private var eventsCount: Int
+    @State private var timer: Timer?
 
     private var rumMonitor: RUMMonitorProtocol { RUMMonitor.shared() }
 
     init() {
         eventType = .view
-        viewURL = "FooViewController"
+        viewName = "FooViewController"
         actionType = .tap
         actionURL = "actionEventTitle"
         resourceURL = "https://api.shopist.io/checkout.json"
         errorMessage = "iOS benchmark debug error message"
         eventsPerBatch = 5
-        interval = 2
+        interval = 2.0
         isRepeating = false
         isSending = false
         eventsCount = 0
@@ -95,6 +95,9 @@ struct RUMManualContentView: View {
                 .listRowInsets(EdgeInsets())
             }
         }
+        .onDisappear {
+            stopSending()
+        }
     }
 
     @ViewBuilder
@@ -102,11 +105,11 @@ struct RUMManualContentView: View {
         switch event {
         case .view:
             Section(header: Text("View event configuration")) {
-                TextField("View url", text: $viewURL)
+                TextField("View name", text: $viewName)
             }
         case .action:
             Section(header: Text("Action event configuration")) {
-                TextField("View url", text: $viewURL)
+                TextField("View name", text: $viewName)
                 Picker("Action type", selection: $actionType) {
                     ForEach(RUMActionType.allCases, id: \.self) { type in
                         Text(type.toString).tag(type)
@@ -116,12 +119,12 @@ struct RUMManualContentView: View {
             }
         case .resource:
             Section(header: Text("Resource event configuration")) {
-                TextField("View url", text: $viewURL)
+                TextField("View name", text: $viewName)
                 TextField("Resource url", text: $resourceURL)
             }
         case .error:
             Section(header: Text("Error event configuration")) {
-                TextField("View url", text: $viewURL)
+                TextField("View name", text: $viewName)
                 TextField("Error message", text: $errorMessage)
             }
         }
@@ -134,9 +137,9 @@ struct RUMManualContentView: View {
         isSending = true
 
         if isRepeating {
-            Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
+            timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
                 if !isSending {
-                    timer.invalidate()
+                    stopSending()
                     return
                 }
                 sendEvents()
@@ -150,6 +153,8 @@ struct RUMManualContentView: View {
     /// Stops the RUM events sending process.
     private func stopSending() {
         isSending = false
+        timer?.invalidate()
+        timer = nil
     }
 
     /// Sends a batch of RUM events asynchronously based on the selected event type.
@@ -179,10 +184,9 @@ struct RUMManualContentView: View {
     /// - Starts a view event
     /// - Stops the view event after 0.5 seconds
     private func sendViewEvent() {
-        let viewController = createUIViewControllerSubclassInstance(named: viewURL)
-        rumMonitor.startView(viewController: viewController)
+        rumMonitor.startView(key: viewName)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            rumMonitor.stopView(viewController: viewController)
+            rumMonitor.stopView(key: viewName)
         }
     }
 
@@ -192,13 +196,12 @@ struct RUMManualContentView: View {
     /// - Adds an action event after 0.2 seconds with the specified type and URL
     /// - Stops the view event after 0.5 seconds
     private func sendActionEvent() {
-        let viewController = createUIViewControllerSubclassInstance(named: viewURL)
-        rumMonitor.startView(viewController: viewController)
+        rumMonitor.startView(key: viewName)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             rumMonitor.addAction(type: actionType, name: actionURL)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            rumMonitor.stopView(viewController: viewController)
+            rumMonitor.stopView(key: viewName)
         }
     }
 
@@ -209,10 +212,10 @@ struct RUMManualContentView: View {
     /// - Stops the resource event after 0.2 seconds with a successful response
     /// - Stops the view event after 0.5 seconds
     private func sendResourceEvent() {
-        let viewController = createUIViewControllerSubclassInstance(named: viewURL)
-        rumMonitor.startView(viewController: viewController)
-
-        let request = URLRequest(url: URL(string: resourceURL)!)
+        guard let url = URL(string: resourceURL) else {
+            return
+        }
+        let request = URLRequest(url: url)
         rumMonitor.startResource(
             resourceKey: "/resource/1",
             request: request
@@ -229,10 +232,6 @@ struct RUMManualContentView: View {
                 )!
             )
         }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            rumMonitor.stopView(viewController: viewController)
-        }
     }
 
     /// Creates and sends an error event.
@@ -241,20 +240,12 @@ struct RUMManualContentView: View {
     /// - Adds an error event after 0.2 seconds with the specified message
     /// - Stops the view event after 0.5 seconds
     private func sendErrorEvent() {
-        let viewController = createUIViewControllerSubclassInstance(named: viewURL)
-        rumMonitor.startView(viewController: viewController)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            rumMonitor.addError(message: errorMessage, source: .source)
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            rumMonitor.stopView(viewController: viewController)
-        }
+        rumMonitor.addError(message: errorMessage, source: .source)
     }
 }
 
 // MARK: - Private helpers
 
-// FIXME: check this is not somewhere else
 enum RUMEvent: String, CaseIterable {
     case view = "View"
     case action = "Action"
@@ -291,18 +282,7 @@ extension RUMActionType: CaseIterable {
         }
     }
 
-    static var `default`: RUMActionType = .custom
-}
-
-/// Creates an instance of `UIViewController` subclass with a given name.
-private func createUIViewControllerSubclassInstance(named viewControllerClassName: String) -> UIViewController {
-    let theClass: AnyClass = NSClassFromString(viewControllerClassName) ?? {
-        let cls: AnyClass
-        cls = objc_allocateClassPair(UIViewController.classForCoder(), viewControllerClassName, 0)!
-        objc_registerClassPair(cls)
-        return cls
-    }()
-    return theClass.alloc() as! UIViewController
+    static let `default`: RUMActionType = .custom
 }
 
 #Preview {

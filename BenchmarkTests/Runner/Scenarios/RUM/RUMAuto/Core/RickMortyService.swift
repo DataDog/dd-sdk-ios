@@ -16,6 +16,7 @@ enum RickMortyError: Error {
 class RickMortyService {
     static let shared = RickMortyService()
     private let baseURL = "https://rickandmortyapi.com/api"
+    private let decoder = JSONDecoder()
 
     private init() {}
 
@@ -32,7 +33,7 @@ class RickMortyService {
 
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(CharacterResponse.self, from: data)
+            let response = try decoder.decode(CharacterResponse.self, from: data)
             return (response.results, response.info.next)
         } catch let error as DecodingError {
             throw RickMortyError.decodingError(error)
@@ -54,7 +55,7 @@ class RickMortyService {
 
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(EpisodeResponse.self, from: data)
+            let response = try decoder.decode(EpisodeResponse.self, from: data)
             return (response.results, response.info.next)
         } catch let error as DecodingError {
             throw RickMortyError.decodingError(error)
@@ -75,10 +76,10 @@ class RickMortyService {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             if ids.count == 1 {
-                let episode = try JSONDecoder().decode(Episode.self, from: data)
+                let episode = try decoder.decode(Episode.self, from: data)
                 return [episode]
             } else {
-                return try JSONDecoder().decode([Episode].self, from: data)
+                return try decoder.decode([Episode].self, from: data)
             }
         } catch let error as DecodingError {
             throw RickMortyError.decodingError(error)
@@ -111,7 +112,7 @@ class RickMortyService {
 
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(LocationResponse.self, from: data)
+            let response = try decoder.decode(LocationResponse.self, from: data)
             return (response.results, response.info.next)
         } catch let error as DecodingError {
             throw RickMortyError.decodingError(error)
@@ -134,10 +135,10 @@ class RickMortyService {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             if ids.count == 1 {
-                let character = try JSONDecoder().decode(Character.self, from: data)
+                let character = try decoder.decode(Character.self, from: data)
                 return [character]
             } else {
-                return try JSONDecoder().decode([Character].self, from: data)
+                return try decoder.decode([Character].self, from: data)
             }
         } catch let error as DecodingError {
             throw RickMortyError.decodingError(error)

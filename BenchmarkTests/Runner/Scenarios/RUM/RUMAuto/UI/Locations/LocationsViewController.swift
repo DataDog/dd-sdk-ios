@@ -7,6 +7,7 @@
 import SwiftUI
 import UIKit
 
+@MainActor
 class LocationsViewController: UIViewController {
     @IBOutlet var collectionView: UICollectionView!
     @IBOutlet var activityIndicator: UIActivityIndicatorView!
@@ -47,39 +48,32 @@ class LocationsViewController: UIViewController {
             do {
                 let result = try await RickMortyService.shared.fetchLocations(nextPageURL: nextPageURL)
 
-                DispatchQueue.main.async { [weak self] in
-                    guard let self else { return }
-
-                    if nextPageURL == nil {
-                        locations = result.locations
-                    } else {
-                        locations.append(contentsOf: result.locations)
-                    }
-
-                    nextPageURL = result.nextPageURL
-                    collectionView.reloadData()
-                    activityIndicator.stopAnimating()
-                    isLoading = false
+                if nextPageURL == nil {
+                    locations = result.locations
+                } else {
+                    locations.append(contentsOf: result.locations)
                 }
+
+                nextPageURL = result.nextPageURL
+                collectionView.reloadData()
+                activityIndicator.stopAnimating()
+                isLoading = false
             } catch {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self else { return }
-                    print("Error fetching locations: \(error)")
-                    activityIndicator.stopAnimating()
-                    isLoading = false
+                print("Error fetching locations: \(error)")
+                activityIndicator.stopAnimating()
+                isLoading = false
 
-                    // Show error alert
-                    let alert = UIAlertController(
-                        title: "Error",
-                        message: "Failed to load locations: \(error.localizedDescription)",
-                        preferredStyle: .alert
-                    )
-                    alert.addAction(UIAlertAction(title: "Retry", style: .default) { [weak self] _ in
-                        self?.fetchLocations()
-                    })
-                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-                    present(alert, animated: true)
-                }
+                // Show error alert
+                let alert = UIAlertController(
+                    title: "Error",
+                    message: "Failed to load locations: \(error.localizedDescription)",
+                    preferredStyle: .alert
+                )
+                alert.addAction(UIAlertAction(title: "Retry", style: .default) { [weak self] _ in
+                    self?.fetchLocations()
+                })
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+                present(alert, animated: true)
             }
         }
     }

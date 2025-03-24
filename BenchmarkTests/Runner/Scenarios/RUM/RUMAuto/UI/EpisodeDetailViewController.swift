@@ -6,6 +6,7 @@
 
 import UIKit
 
+@MainActor
 class EpisodeDetailViewController: UIViewController {
     // MARK: - Properties
 

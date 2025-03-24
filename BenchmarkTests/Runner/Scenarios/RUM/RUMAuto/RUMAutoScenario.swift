@@ -4,10 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import SwiftUI
-
 import DatadogCore
 import DatadogRUM
+import SwiftUI
 
 struct RUMAutoScenario: Scenario {
     var initialViewController: UIViewController {
@@ -23,7 +22,8 @@ struct RUMAutoScenario: Scenario {
         RUM.enable(
             with: RUM.Configuration(applicationID: info.applicationID,
                                     uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
-                                    uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate())
+                                    uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate(),
+                                    swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate())
         )
 
         RUMMonitor.shared().addAttribute(forKey: "scenario", value: "RUMAuto")

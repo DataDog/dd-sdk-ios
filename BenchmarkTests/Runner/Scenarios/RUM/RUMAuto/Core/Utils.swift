@@ -6,13 +6,17 @@
 
 import Foundation
 
-func formatDate(_ dateString: String) -> String {
+private let dateFormatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-    if let date = formatter.date(from: dateString) {
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
+    return formatter
+}()
+
+func formatDate(_ dateString: String) -> String {
+    if let date = dateFormatter.date(from: dateString) {
+        dateFormatter.dateStyle = .medium
+        dateFormatter.timeStyle = .short
+        return dateFormatter.string(from: date)
     }
     return dateString
 }
