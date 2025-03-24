@@ -1124,6 +1124,54 @@ class UIKitRUMViewsPredicateMock: UIKitRUMViewsPredicate {
     }
 }
 
+class UIKitPredicateWithTrackingMock: UIKitRUMViewsPredicate {
+    var numberOfCalls = 0
+
+    func rumView(for viewController: UIViewController) -> RUMView? {
+        numberOfCalls += 1
+        return .init(name: .mockRandom())
+    }
+}
+
+class UIKitPredicateWithModalMock: UIKitRUMViewsPredicate {
+    let untrackedModal: UIViewController
+
+    init(untrackedModal: UIViewController) {
+        self.untrackedModal = untrackedModal
+    }
+
+    func rumView(for viewController: UIViewController) -> RUMView? {
+        let isUntrackedModal = viewController == untrackedModal
+        return .init(name: .mockRandom(), isUntrackedModal: isUntrackedModal)
+    }
+}
+
+class SwiftUIRUMViewsPredicateMock: SwiftUIRUMViewsPredicate {
+    var resultByViewName: [String: RUMView] = [:]
+    var result: RUMView?
+
+    init(result: RUMView? = nil) {
+        self.result = result
+    }
+
+    func rumView(for extractedViewName: String) -> RUMView? {
+        return resultByViewName[extractedViewName] ?? result
+    }
+}
+
+class SwiftUIViewNameExtractorMock: SwiftUIViewNameExtractor {
+    var resultByViewController: [UIViewController: String] = [:]
+    var defaultResult: String?
+
+    init(defaultResult: String? = nil) {
+        self.defaultResult = defaultResult
+    }
+
+    func extractName(from viewController: UIViewController) -> String? {
+        return resultByViewController[viewController] ?? defaultResult
+    }
+}
+
 #if os(tvOS)
 typealias UIKitRUMActionsPredicateMock = UIPressRUMActionsPredicateMock
 #else
