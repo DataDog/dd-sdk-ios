@@ -24,6 +24,8 @@ public protocol SwiftUIRUMViewsPredicate {
 /// This implementation tracks all detected SwiftUI views with their extracted names.
 /// The view name in RUM Explorer will match the name extracted from the SwiftUI view.
 public struct DefaultSwiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate {
+    public init() {}
+
     public func rumView(for extractedViewName: String) -> RUMView? {
         return RUMView(name: extractedViewName)
     }
