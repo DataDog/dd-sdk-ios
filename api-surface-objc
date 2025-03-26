@@ -38,6 +38,7 @@ public class DDDatadog: NSObject
     public static func addUserExtraInfo(_ extraInfo: [String: Any])
     public static func setAccountInfo(accountId: String, name: String? = nil, extraInfo: [String: Any] = [:])
     public static func addAccountExtraInfo(_ extraInfo: [String: Any])
+    public static func clearAccountInfo()
     public static func setTrackingConsent(consent: DDTrackingConsent)
     public static func isInitialized() -> Bool
     public static func stopInstance()

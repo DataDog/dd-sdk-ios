@@ -345,7 +345,7 @@ public enum Datadog {
     /// Add custom attributes to the current account information
     ///
     /// This extra info will be added to already existing extra info that is added
-    /// to  logs traces and RUM events automatically.
+    /// to logs traces and RUM events automatically.
     ///
     /// - Parameters:
     ///   - extraInfo: User's additional custom attributes
@@ -355,6 +355,26 @@ public enum Datadog {
     ) {
         let core = core as? DatadogCore
         core?.addAccountExtraInfo(extraInfo)
+    }
+
+    /// Clear the current account information
+    ///
+    /// Account information will be `nil`
+    /// Following Logs, Traces, RUM Events will not include the account information anymore
+    ///
+    /// Any active RUM Session, active RUM View at the time of call will have their `account` attribute emptied
+    ///
+    /// If you want to retain the current `account` on the active RUM session,
+    /// you need to stop the session first by using `RUMMonitor.stopSession()`
+    ///
+    /// If you want to retain the current `account` on the active RUM views,
+    /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
+    ///
+    public static func clearAccountInfo(
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) {
+        let core = core as? DatadogCore
+        core?.clearAccountInfo()
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.

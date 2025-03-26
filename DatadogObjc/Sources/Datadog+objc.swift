@@ -92,6 +92,11 @@ public class DDDatadog: NSObject {
     }
 
     @objc
+    public static func clearAccountInfo() {
+        Datadog.clearAccountInfo()
+    }
+
+    @objc
     public static func setTrackingConsent(consent: DDTrackingConsent) {
         Datadog.set(trackingConsent: consent.sdkConsent)
     }

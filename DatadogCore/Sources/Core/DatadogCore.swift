@@ -200,6 +200,23 @@ internal final class DatadogCore {
         accountInfoPublisher.current?.extraInfo = extraInfo
     }
 
+    /// Clear the current account information
+    ///
+    /// Account information will be `nil`
+    /// Following Logs, Traces, RUM Events will not include the account information anymore
+    ///
+    /// Any active RUM Session, active RUM View at the time of call will have their `account` attribute emptied
+    ///
+    /// If you want to retain the current `account` on the active RUM session,
+    /// you need to stop the session first by using `RUMMonitor.stopSession()`
+    ///
+    /// If you want to retain the current `account` on the active RUM views,
+    /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
+    ///
+    func clearAccountInfo() {
+        accountInfoPublisher.current = nil
+    }
+
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
     ///
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on

@@ -51,6 +51,7 @@ public enum Datadog
     public static func addUserExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func setAccountInfo(id: String,name: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func addAccountExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func clearAccountInfo(in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func set(trackingConsent: TrackingConsent, in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func clearAllData(in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func stopInstance(named instanceName: String = CoreRegistry.defaultInstanceName)
@@ -402,10 +403,6 @@ public struct RUMActionEvent: RUMDataModel
             public enum Plan: Int, Codable
                 case plan1 = 1
                 case plan2 = 2
-    public struct Account: Codable
-        public let id: String
-        public let name: String?
-        public var accountInfo: [String: Encodable]
     public struct Action: Codable
         public let crash: Crash?
         public let error: Error?
@@ -482,9 +479,6 @@ public struct RUMActionEvent: RUMDataModel
         public var name: String?
         public var referrer: String?
         public var url: String
-[?] extension RUMActionEvent.Account
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
 public struct RUMErrorEvent: RUMDataModel
     public let dd: DD
     public var account: RUMAccount?
@@ -525,10 +519,6 @@ public struct RUMErrorEvent: RUMDataModel
             public enum Plan: Int, Codable
                 case plan1 = 1
                 case plan2 = 2
-    public struct Account: Codable
-        public let id: String
-        public let name: String?
-        public var accountInfo: [String: Encodable]
     public struct Action: Codable
         public let id: RUMActionID
     public struct Application: Codable
@@ -686,9 +676,6 @@ public struct RUMErrorEvent: RUMDataModel
         public var name: String?
         public var referrer: String?
         public var url: String
-[?] extension RUMErrorEvent.Account
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
 [?] extension RUMErrorEvent.FeatureFlags
     public func encode(to encoder: Encoder) throws
     public init(from decoder: Decoder) throws
@@ -731,10 +718,6 @@ public struct RUMLongTaskEvent: RUMDataModel
             public enum Plan: Int, Codable
                 case plan1 = 1
                 case plan2 = 2
-    public struct Account: Codable
-        public let id: String
-        public let name: String?
-        public var accountInfo: [String: Encodable]
     public struct Action: Codable
         public let id: RUMActionID
     public struct Application: Codable
@@ -809,9 +792,6 @@ public struct RUMLongTaskEvent: RUMDataModel
         public var name: String?
         public var referrer: String?
         public var url: String
-[?] extension RUMLongTaskEvent.Account
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
 public struct RUMResourceEvent: RUMDataModel
     public let dd: DD
     public var account: RUMAccount?
@@ -854,10 +834,6 @@ public struct RUMResourceEvent: RUMDataModel
             public enum Plan: Int, Codable
                 case plan1 = 1
                 case plan2 = 2
-    public struct Account: Codable
-        public let id: String
-        public let name: String?
-        public var accountInfo: [String: Encodable]
     public struct Action: Codable
         public let id: RUMActionID
     public struct Application: Codable
@@ -990,9 +966,6 @@ public struct RUMResourceEvent: RUMDataModel
         public var name: String?
         public var referrer: String?
         public var url: String
-[?] extension RUMResourceEvent.Account
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
 public struct RUMViewEvent: RUMDataModel
     public let dd: DD
     public var account: RUMAccount?
@@ -1051,10 +1024,6 @@ public struct RUMViewEvent: RUMDataModel
             public enum Plan: Int, Codable
                 case plan1 = 1
                 case plan2 = 2
-    public struct Account: Codable
-        public let id: String
-        public let name: String?
-        public var accountInfo: [String: Encodable]
     public struct Application: Codable
         public let id: String
     public struct Container: Codable
@@ -1282,10 +1251,6 @@ public struct RUMVitalEvent: RUMDataModel
                 case plan2 = 2
         public struct Vital: Codable
             public let computedValue: Bool?
-    public struct Account: Codable
-        public let id: String
-        public let name: String?
-        public var accountInfo: [String: Encodable]
     public struct Application: Codable
         public let id: String
     public struct Container: Codable
@@ -1334,9 +1299,6 @@ public struct RUMVitalEvent: RUMDataModel
         public let type: VitalType
         public enum VitalType: String, Codable
             case duration = "duration"
-[?] extension RUMVitalEvent.Account
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
 public struct TelemetryErrorEvent: RUMDataModel
     public let dd: DD
     public let action: Action?
@@ -1812,8 +1774,6 @@ public struct DefaultUIKitRUMActionsPredicate
     public func rumAction(targetView: UIView) -> RUMAction?
 [?] extension DefaultUIKitRUMActionsPredicate: UIPressRUMActionsPredicate
     public func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction?
-public extension SwiftUI.View
-    func trackRUMView(name: String,attributes: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default) -> some View
 public struct RUMView
     public var name: String
     public var path: String?
@@ -1821,6 +1781,13 @@ public struct RUMView
     public var isUntrackedModal: Bool
     public init(path: String, attributes: [AttributeKey: AttributeValue] = [:])
     public init(name: String, attributes: [AttributeKey: AttributeValue] = [:], isUntrackedModal: Bool = false)
+public protocol SwiftUIRUMViewsPredicate
+    func rumView(for extractedViewName: String) -> RUMView?
+public struct DefaultSwiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate
+    public init()
+    public func rumView(for extractedViewName: String) -> RUMView?
+public extension SwiftUI.View
+    func trackRUMView(name: String,attributes: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default) -> some View
 public protocol UIKitRUMViewsPredicate
     func rumView(for viewController: UIViewController) -> RUMView?
 public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate
@@ -1830,7 +1797,7 @@ public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate
     public static func isEnabled(in core: DatadogCoreProtocol = CoreRegistry.default) -> Bool
     public static func enableURLSessionTracking(with configuration: RUM.Configuration.URLSessionTracking,in core: DatadogCoreProtocol = CoreRegistry.default) throws
 public enum RUM
-    public static func enable(with configuration: RUM.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func enable(with configuration: RUM.Configuration,in core: DatadogCoreProtocol = CoreRegistry.default)
 [?] extension RUM
     public struct Attributes
         public static let errorFingerprint = "_dd.error.fingerprint"
@@ -1847,6 +1814,7 @@ public enum RUM
         public var sessionSampleRate: Float
         public var uiKitViewsPredicate: UIKitRUMViewsPredicate?
         public var uiKitActionsPredicate: UIKitRUMActionsPredicate?
+        public var swiftUIViewsPredicate: SwiftUIRUMViewsPredicate?
         public var urlSessionTracking: URLSessionTracking?
         public var trackFrustrations: Bool
         public var trackBackgroundEvents: Bool
@@ -1865,6 +1833,7 @@ public enum RUM
         public var customEndpoint: URL?
         public var trackAnonymousUser: Bool
         public var telemetrySampleRate: SampleRate
+        public var featureFlags: FeatureFlags
         public struct URLSessionTracking
             public var firstPartyHostsTracing: FirstPartyHostsTracing?
             public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
@@ -1878,9 +1847,16 @@ public enum RUM
         case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil)
 [?] extension RUM.Configuration
-    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,telemetrySampleRate: SampleRate = 20)
+    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,telemetrySampleRate: SampleRate = 20,featureFlags: FeatureFlags = .defaults)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
     public var configurationTelemetrySampleRate: Float
+[?] extension RUM.Configuration
+    public typealias FeatureFlags = [FeatureFlag: Bool]
+    public enum FeatureFlag: String
+        case viewHitches
+[?] extension RUM.Configuration.FeatureFlags
+    public static var defaults: Self
+    public subscript(flag: Key) -> Bool
 public struct TNSResourceParams
     public let url: String
     public let timeSinceViewStart: TimeInterval
