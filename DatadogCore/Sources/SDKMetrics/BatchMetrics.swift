@@ -138,15 +138,10 @@ internal enum BatchBlockedMetric {
     static let name = "Batch Blocked"
     /// Metric type value.
     static let typeValue = "batch blocked"
-    /// The sample rate for this metric.
-    /// It is applied in addition to the telemetry sample rate (20% by default).
-    static let sampleRate: Float = 1.5 // 1.5%
-    /// The key for uploader's current delay.
-    static let uploaderDelayKey = "uploader_delay.current"
     /// The key for count of bacthes being blocked.
-    static let batchCount = "batch_count"
-
-    /// List of upload blockers
+    static let batchCount = "count"
+    /// List of upload blocker reasons
     static let blockers = "blockers"
+    /// The blocking failure reason.
     static let failure = "failure"
 }

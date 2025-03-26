@@ -20,7 +20,8 @@ internal struct FeatureUpload {
         performance: PerformancePreset,
         backgroundTasksEnabled: Bool,
         isRunFromExtension: Bool,
-        telemetry: Telemetry
+        telemetry: Telemetry,
+        batchBlockedMetricAggregator: BatchBlockedMetricAggregator? = nil
     ) {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-\(featureName)-upload",
@@ -63,7 +64,8 @@ internal struct FeatureUpload {
                 featureName: featureName,
                 telemetry: telemetry,
                 maxBatchesPerUpload: performance.maxBatchesPerUpload,
-                backgroundTaskCoordinator: backgroundTaskCoordinator
+                backgroundTaskCoordinator: backgroundTaskCoordinator,
+                batchBlockedMetricAggregator: batchBlockedMetricAggregator
             )
         )
     }

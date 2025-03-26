@@ -90,6 +90,22 @@ public struct MetricTelemetry: SampledTelemetry {
     ///
     /// This sample rate is applied in the telemetry receiver, after the metric has been processed by the SDK core (tail-based sampling).
     public let sampleRate: SampleRate
+    
+    /// Creates an Metric Telemtry object.
+    ///
+    /// - Parameters:
+    ///   - name: The name of the metric.
+    ///   - attributes: The attributes associated with this metric.
+    ///   - sampleRate: The sample rate for this metric, applied in addition to the telemetry sample rate.
+    public init(
+        name: String,
+        attributes: [String : Encodable],
+        sampleRate: SampleRate
+    ) {
+        self.name = name
+        self.attributes = attributes
+        self.sampleRate = sampleRate
+    }
 }
 
 /// Describes the type of the usage telemetry events supported by the SDK.

@@ -88,9 +88,8 @@ internal final class MessageBus {
     ///   - fallback: The fallback closure to call when the message could not be
     ///               processed by any Features on the bus.
     func send(message: FeatureMessage, else fallback: @escaping () -> Void = {}) {
-        if  // Configuration Telemetry Message
-            case .telemetry(let telemetry) = message,
-            case .configuration(let configuration) = telemetry {
+        if case .telemetry(.configuration(let configuration) ) = message {
+            // Configuration Telemetry Message
             return save(configuration: configuration)
         }
 
