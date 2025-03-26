@@ -524,7 +524,7 @@ class DataUploadWorkerTests: XCTestCase {
 
     func testWhenUploadIsBlocked_itDoesSendBatchBlockedTelemetry() throws {
         // Given
-        let telemetry = TelemetryMock()
+        let aggregator = BatchBlockedMetricAggregator()
 
         // When
         let uploadExpectation = self.expectation(description: "Upload has started")
@@ -553,19 +553,19 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .neverUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: featureName,
-            telemetry: telemetry,
-            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            batchBlockedMetricAggregator: aggregator
         )
 
         wait(for: [uploadExpectation], timeout: 0.5)
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(telemetry.messages.count, 1)
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Blocked"), "A Batch blocked metric should be send to `telemetry`.")
-        XCTAssertEqual(metric.attributes["blockers"] as? [String], ["offline", "low_battery"])
-        XCTAssertNil(metric.attributes["failure"])
-        XCTAssertEqual(metric.attributes["track"] as? String, featureName)
+        let metrics = aggregator.flush()
+        XCTAssertEqual(metrics.count, 1)
+        XCTAssertEqual(metrics.first?.attributes["blockers"] as? [String], ["offline", "low_battery"])
+        XCTAssertEqual(metrics.first?.attributes["track"] as? String, featureName)
     }
 
     func testWhenDataIsUploadedWithServerError_itDoesNotSendErrorTelemetry() throws {
@@ -700,7 +700,7 @@ class DataUploadWorkerTests: XCTestCase {
 
     func testWhenDataIsUploadedWithRetryableStatusCode_itSendsBatchBlockedTelemetry() throws {
         // Given
-        let telemetry = TelemetryMock()
+        let aggregator = BatchBlockedMetricAggregator()
 
         writer.write(value: ["key": "value"])
         let randomStatusCode: HTTPResponseStatusCode = [
@@ -730,18 +730,19 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: featureName,
-            telemetry: telemetry,
-            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            batchBlockedMetricAggregator: aggregator
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
         worker.cancelSynchronously()
 
         // Then
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Blocked"), "A Batch Blocked metric should be send to `telemetry`.")
-        XCTAssertEqual(metric.attributes["failure"] as? String, "intake-code-\(randomStatusCode.rawValue)")
-        XCTAssertNil(metric.attributes["blockers"])
-        XCTAssertEqual(metric.attributes["track"] as? String, featureName)
+        let metrics = aggregator.flush()
+        XCTAssertEqual(metrics.count, 1)
+        XCTAssertEqual(metrics.first?.attributes["failure"] as? String, "intake-code-\(randomStatusCode.rawValue)")
+        XCTAssertEqual(metrics.first?.attributes["track"] as? String, featureName)
     }
 
     func testWhenDataCannotBePreparedForUpload_itSendsErrorTelemetry() throws {

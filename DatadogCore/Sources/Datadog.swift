@@ -583,7 +583,8 @@ extension DatadogCore {
             applicationVersion: applicationVersion,
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
-            isRunFromExtension: isRunFromExtension
+            isRunFromExtension: isRunFromExtension,
+            notificationCenter: configuration.notificationCenter
         )
 
         telemetry.configuration(
