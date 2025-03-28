@@ -15,9 +15,9 @@ variables:
   MAIN_BRANCH: "master"
   DEVELOP_BRANCH: "develop"
   # Default Xcode and runtime versions for all jobs:
-  DEFAULT_XCODE: "15.4.0"
-  DEFAULT_IOS_OS: "17.5"
-  DEFAULT_TVOS_OS: "17.5"
+  DEFAULT_XCODE: "16.2.0"
+  DEFAULT_IOS_OS: "18.3.1"
+  DEFAULT_TVOS_OS: "18.2"
   # Prefilled variables for running a pipeline manually:
   # Ref.: https://docs.gitlab.com/ee/ci/pipelines/index.html#prefill-variables-in-manual-pipelines
   RELEASE_GIT_TAG:
@@ -99,7 +99,7 @@ Unit Tests (iOS):
     - !reference [.release-pipeline-job, rules]
   variables:
     PLATFORM: "iOS Simulator"
-    DEVICE: "iPhone 15 Pro"
+    DEVICE: "iPhone 16 Pro"
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
@@ -125,7 +125,7 @@ UI Tests:
     - !reference [.release-pipeline-job, rules]
   variables:
     PLATFORM: "iOS Simulator"
-    DEVICE: "iPhone 15 Pro"
+    DEVICE: "iPhone 16 Pro"
   parallel:
     matrix:
       - TEST_PLAN:
@@ -145,6 +145,7 @@ SR Snapshot Tests:
     - !reference [.release-pipeline-job, rules]
   variables:
     PLATFORM: "iOS Simulator"
+    IOS_OS: "17.5"
     DEVICE: "iPhone 15"
     ARTIFACTS_PATH: "artifacts"
   artifacts:
@@ -155,7 +156,7 @@ SR Snapshot Tests:
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
     - make clean repo-setup ENV=ci
-    - make sr-snapshots-pull sr-snapshot-test OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
+    - make sr-snapshots-pull sr-snapshot-test OS="$IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
 
 Tools Tests:
   stage: test
@@ -189,7 +190,7 @@ Smoke Tests (iOS):
     - !reference [.release-pipeline-job, rules]
   variables:
     PLATFORM: "iOS Simulator"
-    DEVICE: "iPhone 15 Pro"
+    DEVICE: "iPhone 16 Pro"
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
     - make clean repo-setup ENV=ci
@@ -206,7 +207,7 @@ Smoke Tests (tvOS):
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
     - make clean repo-setup ENV=ci
-    - make smoke-test-tvos-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+    - make smoke-test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
 SPM Build (Swift 5.10):
   stage: smoke-test
