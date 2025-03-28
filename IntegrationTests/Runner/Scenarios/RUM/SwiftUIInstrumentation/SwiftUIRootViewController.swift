@@ -94,8 +94,11 @@ struct ScreenView: View {
 
     var body: some View {
         VStack(spacing: 32) {
-            NavigationLink("Push to Next View", destination: destination)
-                .trackRUMTapAction(name: "Tap Push to Next View")
+            NavigationLink(
+                "Push to Next View",
+                destination: destination.dd_interactiveDismissDisabled()
+            )
+            .trackRUMTapAction(name: "Tap Push to Next View")
 
             Text("This is a Label")
 
@@ -185,6 +188,17 @@ class UIScreenViewController: UIViewController {
             } else {
                 ScreenView(index: index + 1)
             }
+        }
+    }
+}
+
+@available(iOS 13, *)
+extension View {
+    func dd_interactiveDismissDisabled(_ isDisabled: Bool = true) -> some View {
+        if #available(iOS 15.0, *) {
+            return interactiveDismissDisabled(isDisabled)
+        } else {
+            return self
         }
     }
 }

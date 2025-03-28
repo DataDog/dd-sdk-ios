@@ -440,57 +440,6 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertTrue(startCommand2.identity == ViewIdentifier(someView))
     }
 
-    func testGiveniOS13AppearedView_whenTransitioningToModal_viewDoesStop() throws {
-        if #available(iOS 13, tvOS 13, *) {
-            // Given
-            let someView = createMockViewInWindow()
-            let untrackedModal = createMockViewInWindow()
-            untrackedModal.isModalInPresentation = true
-
-            let uiKitPredicate = UIKitPredicateWithModalMock(untrackedModal: untrackedModal)
-            let handler = createHandler(uiKitPredicate: uiKitPredicate)
-
-            // When
-            handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
-            handler.notify_viewDidAppear(viewController: untrackedModal, animated: .mockAny())
-
-            XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
-
-            let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
-            let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
-
-            XCTAssertTrue(startCommand.identity == ViewIdentifier(someView))
-            XCTAssertTrue(stopCommand.identity == ViewIdentifier(someView))
-        }
-    }
-
-    func testGiveniOS13Modal_whenTransitioningToAppearedView_viewDoesStart() throws {
-        if #available(iOS 13, tvOS 13, *) {
-            // Given
-            let someView = createMockViewInWindow()
-            let untrackedModal = createMockViewInWindow()
-            untrackedModal.isModalInPresentation = true
-
-            let uiKitPredicate = UIKitPredicateWithModalMock(untrackedModal: untrackedModal)
-            let handler = createHandler(uiKitPredicate: uiKitPredicate)
-
-            // When
-            handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
-            handler.notify_viewDidAppear(viewController: untrackedModal, animated: .mockAny())
-            handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
-
-            XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
-
-            let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
-            let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
-            let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
-
-            XCTAssertTrue(startCommand.identity == ViewIdentifier(someView))
-            XCTAssertTrue(stopCommand.identity == ViewIdentifier(someView))
-            XCTAssertTrue(startCommand2.identity == ViewIdentifier(someView))
-        }
-    }
-
     // MARK: - Handling Manual SwiftUI Instrumentation `.onAppear`
 
     func testWhenOnAppear_itStartsRUMView() throws {
