@@ -58,4 +58,10 @@ func addOpenTelemetryDependency(_ version: Version) {
     }
 }
 
-addOpenTelemetryDependency("1.13.0")
+if ProcessInfo.processInfo.environment["OTEL_SWIFT"] != nil {
+    // RUM-9224: This condition was added to use DataDog/opentelemetry-swift-packages hotfix
+    // release. It should be removed with the next upgrade of OTelApi.
+    addOpenTelemetryDependency("1.13.0")
+} else {
+    addOpenTelemetryDependency("1.13.1")
+}
