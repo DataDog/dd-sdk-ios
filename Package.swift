@@ -16,8 +16,8 @@ import Foundation
 let useOTelSwiftPackage = ProcessInfo.processInfo.environment["OTEL_SWIFT"] != nil
 
 let opentelemetry = useOTelSwiftPackage ? 
-    (name: "opentelemetry-swift", url: "https://github.com/open-telemetry/opentelemetry-swift.git") :
-    (name: "opentelemetry-swift-packages", url: "https://github.com/DataDog/opentelemetry-swift-packages.git")
+    (name: "opentelemetry-swift", url: "https://github.com/open-telemetry/opentelemetry-swift.git", version: Version("1.13.0")) :
+    (name: "opentelemetry-swift-packages", url: "https://github.com/DataDog/opentelemetry-swift-packages.git", version: Version("1.13.1"))
 
 // `dd-sdk-ios` supports a broader range of platform versions than `OpenTelemetryApi`. 
 // When compiled in `OTEL_SWIFT` mode, we need to adjust the supported platforms accordingly.
@@ -67,7 +67,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/microsoft/plcrashreporter.git", from: "1.12.0"),
-        .package(url: opentelemetry.url, exact: "1.13.1"),
+        .package(url: opentelemetry.url, exact: opentelemetry.version),
     ],
     targets: [
         .target(
