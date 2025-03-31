@@ -1,5 +1,5 @@
 abstract_target 'Common' do
-  pod 'OpenTelemetrySwiftApi', '1.13.0'
+  pod 'OpenTelemetrySwiftApi', '1.13.1'
   pod 'DatadogInternal', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
   pod 'DatadogCore', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
   pod 'DatadogLogs', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE

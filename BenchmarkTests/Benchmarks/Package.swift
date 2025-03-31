@@ -58,4 +58,4 @@ func addOpenTelemetryDependency(_ version: Version) {
     }
 }
 
-addOpenTelemetryDependency("1.13.0")
+addOpenTelemetryDependency("1.13.1")
