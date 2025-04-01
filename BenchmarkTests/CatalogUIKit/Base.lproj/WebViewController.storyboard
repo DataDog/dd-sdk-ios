@@ -10,7 +10,7 @@
         <!--Web View-->
         <scene sceneID="U1S-K7-t1c">
             <objects>
-                <viewController id="i9U-A8-mkf" customClass="WebViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="i9U-A8-mkf" customClass="WebViewController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="cde-Ag-lVB">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

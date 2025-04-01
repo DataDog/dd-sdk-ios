@@ -11,7 +11,7 @@
         <!--Date Picker-->
         <scene sceneID="zWi-9k-VNG">
             <objects>
-                <viewController storyboardIdentifier="DatePickerController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="7Xn-ho-KP8" customClass="DatePickerController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="DatePickerController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="7Xn-ho-KP8" customClass="DatePickerController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="LFl-gd-u3P">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

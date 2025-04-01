@@ -11,7 +11,7 @@
         <!--Activity Indicators-->
         <scene sceneID="umG-hc-QKi">
             <objects>
-                <tableViewController id="YvC-vN-mSd" customClass="ActivityIndicatorViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController id="YvC-vN-mSd" customClass="ActivityIndicatorViewController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="none" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="Udh-X7-hOc">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

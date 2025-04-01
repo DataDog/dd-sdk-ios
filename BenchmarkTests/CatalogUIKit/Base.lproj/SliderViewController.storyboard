@@ -11,7 +11,7 @@
         <!--Sliders-->
         <scene sceneID="AcL-XD-MBK">
             <objects>
-                <tableViewController id="laz-6N-ZhE" customClass="SliderViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController id="laz-6N-ZhE" customClass="SliderViewController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="none" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="8xG-xW-Mvc">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

@@ -11,7 +11,7 @@
         <!--Custom Page Control-->
         <scene sceneID="udW-QU-LPM">
             <objects>
-                <viewController storyboardIdentifier="CustomPageControlViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="u2L-Jd-VCE" userLabel="Custom Page Control" customClass="CustomPageControlViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="CustomPageControlViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="u2L-Jd-VCE" userLabel="Custom Page Control" customClass="CustomPageControlViewController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="t2L-wD-sqn">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>

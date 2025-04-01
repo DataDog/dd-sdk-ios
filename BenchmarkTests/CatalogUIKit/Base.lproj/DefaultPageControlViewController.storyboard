@@ -11,7 +11,7 @@
         <!--Page Control-->
         <scene sceneID="dMs-Pg-XoX">
             <objects>
-                <viewController storyboardIdentifier="PageControlViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="srd-Os-5SR" customClass="PageControlViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="PageControlViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="srd-Os-5SR" customClass="PageControlViewController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="KHl-03-rZm">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>

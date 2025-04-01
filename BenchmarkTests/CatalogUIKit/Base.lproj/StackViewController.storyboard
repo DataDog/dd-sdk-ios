@@ -11,7 +11,7 @@
         <!--Stack Views-->
         <scene sceneID="upC-MR-WJj">
             <objects>
-                <viewController id="K8w-Uq-R9J" customClass="StackViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="K8w-Uq-R9J" customClass="StackViewController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Hwb-09-b4P">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

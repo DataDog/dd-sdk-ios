@@ -70,7 +70,7 @@
         <!--UIKitCatalog-->
         <scene sceneID="hcu-07-1H7">
             <objects>
-                <viewController storyboardIdentifier="OutlineViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="voO-Ai-mPL" customClass="OutlineViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="OutlineViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="voO-Ai-mPL" customClass="OutlineViewController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="716-hQ-1AE">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
