@@ -30,7 +30,9 @@ class EpisodeDetailViewController: UIViewController {
     }
 
     private func setupUI() {
-        guard let episode else { return }
+        guard let episode else {
+            return
+        }
 
         navigationItem.title = nil
         navigationItem.largeTitleDisplayMode = .never
@@ -47,12 +49,16 @@ class EpisodeDetailViewController: UIViewController {
     }
 
     private func fetchCharacters() {
-        guard let episode else { return }
+        guard let episode else {
+            return
+        }
 
         Task {
             do {
                 let characterIds = episode.characters.compactMap { url -> Int? in
-                    guard let id = url.split(separator: "/").last else { return nil }
+                    guard let id = url.split(separator: "/").last else {
+                        return nil
+                    }
                     return Int(id)
                 }
 

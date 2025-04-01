@@ -31,7 +31,9 @@ class LocationDetailViewController: UIViewController {
     }
 
     private func setupUI() {
-        guard let location else { return }
+        guard let location else {
+            return
+        }
 
         navigationItem.title = nil
         navigationItem.largeTitleDisplayMode = .never
@@ -66,7 +68,9 @@ class LocationDetailViewController: UIViewController {
     }
 
     private func fetchResidents() {
-        guard let location, !location.residents.isEmpty else { return }
+        guard let location, !location.residents.isEmpty else {
+            return
+        }
 
         isLoading = true
 
@@ -74,7 +78,9 @@ class LocationDetailViewController: UIViewController {
             do {
                 // Extract character IDs from URLs
                 let characterIds = location.residents.compactMap { url -> Int? in
-                    guard let id = url.split(separator: "/").last else { return nil }
+                    guard let id = url.split(separator: "/").last else {
+                        return nil
+                    }
                     return Int(id)
                 }
 

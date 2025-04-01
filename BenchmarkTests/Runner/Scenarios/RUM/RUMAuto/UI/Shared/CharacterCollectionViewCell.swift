@@ -38,7 +38,8 @@ class CharacterCollectionViewCell: UICollectionViewCell {
                         self?.imageView.image = image
                     }
                 }
-            }.resume()
+            }
+            .resume()
         }
     }
 

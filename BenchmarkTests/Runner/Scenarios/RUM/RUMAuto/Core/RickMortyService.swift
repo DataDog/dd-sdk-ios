@@ -93,7 +93,9 @@ class RickMortyService {
     /// - Returns: Array of Episode objects.
     func fetchEpisodesForCharacter(_ character: Character) async throws -> [Episode] {
         let episodeIds = character.episode.compactMap { url -> Int? in
-            guard let id = url.split(separator: "/").last else { return nil }
+            guard let id = url.split(separator: "/").last else {
+                 return nil
+            }
             return Int(id)
         }
         return try await fetchEpisodes(ids: episodeIds)
@@ -125,7 +127,9 @@ class RickMortyService {
     /// - Parameter ids: Array of character IDs to fetch.
     /// - Returns: Array of Character objects.
     func fetchCharactersByIds(_ ids: [Int]) async throws -> [Character] {
-        guard !ids.isEmpty else { return [] }
+        guard !ids.isEmpty else {
+            return []
+        }
 
         let idsString = ids.map(String.init).joined(separator: ",")
         guard let url = URL(string: "\(baseURL)/character/\(idsString)") else {
