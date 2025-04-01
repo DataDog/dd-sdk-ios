@@ -20,10 +20,12 @@ struct RUMAutoScenario: Scenario {
         )
 
         RUM.enable(
-            with: RUM.Configuration(applicationID: info.applicationID,
-                                    uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
-                                    uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate(),
-                                    swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate())
+            with: RUM.Configuration(
+                applicationID: info.applicationID,
+                uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
+                uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate(),
+                swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate()
+            )
         )
 
         RUMMonitor.shared().addAttribute(forKey: "scenario", value: "RUMAuto")

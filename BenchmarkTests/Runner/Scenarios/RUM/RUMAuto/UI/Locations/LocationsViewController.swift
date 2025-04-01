@@ -39,7 +39,9 @@ class LocationsViewController: UIViewController {
 
     /// Fetches locations from the API
     private func fetchLocations() {
-        guard !isLoading else { return }
+        guard !isLoading else {
+            return
+        }
 
         isLoading = true
         activityIndicator.startAnimating()

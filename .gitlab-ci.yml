@@ -54,6 +54,14 @@ default:
           - "*" # match any file in the root directory
         compare_to: 'develop' # cannot use $DEVELOP_BRANCH var due to: https://gitlab.com/gitlab-org/gitlab/-/issues/369916
 
+.benchmark-pipeline-job:
+  rules: 
+    - if: '$CI_COMMIT_BRANCH' # when on branch with following changes compared to develop
+      changes:
+        paths:
+          - "BenchmarkTests/**/*"
+        compare_to: 'develop' # cannot use $DEVELOP_BRANCH var due to: https://gitlab.com/gitlab-org/gitlab/-/issues/369916
+
 .release-pipeline-job:
   rules: 
     - if: '$CI_COMMIT_TAG || $RELEASE_GIT_TAG'
@@ -87,6 +95,7 @@ Lint:
   stage: lint
   rules: 
     - !reference [.test-pipeline-job, rules]
+    - !reference [.benchmark-pipeline-job, rules]
   script:
     - make clean repo-setup ENV=ci
     - make lint license-check
@@ -175,11 +184,7 @@ Tools Tests:
 Benchmark Build:
   stage: smoke-test
   rules:
-    - if: '$CI_COMMIT_BRANCH' # when on branch with following changes compared to develop
-      changes:
-        paths:
-          - "BenchmarkTests/**/*"
-        compare_to: 'develop'
+    - !reference [.benchmark-pipeline-job, rules]
   script:
     - make benchmark-build
 
