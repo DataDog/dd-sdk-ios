@@ -1,5 +1,9 @@
 # Unreleased
 
+# 2.24.1 / 31-04-2025
+
+- [FIX] Do not enforce dynamic linking for OpenTelemetryApi in `DatadogTrace`. See [#2244][]
+
 # 2.24.0 / 06-03-2025
 
 - [FEATURE] Adds anonymous identifier configuration for RUM Sessions linking. See [#2172][]
@@ -840,6 +844,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2177]: https://github.com/DataDog/dd-sdk-ios/pull/2177
 [#2217]: https://github.com/DataDog/dd-sdk-ios/pull/2217
 [#2182]: https://github.com/DataDog/dd-sdk-ios/pull/2182
+[#2244]: https://github.com/DataDog/dd-sdk-ios/pull/2244
 [#2200]: https://github.com/DataDog/dd-sdk-ios/pull/2200
 [#2195]: https://github.com/DataDog/dd-sdk-ios/pull/2195
 [@00fa9a]: https://github.com/00FA9A
