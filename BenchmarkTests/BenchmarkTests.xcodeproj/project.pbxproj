@@ -14,8 +14,8 @@
 		868DA2F52D71DD47007D20D5 /* LogsHeavyTrafficScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868DA2F42D71DD47007D20D5 /* LogsHeavyTrafficScenario.swift */; };
 		868DA2F72D71DD8A007D20D5 /* LogsHeavyTrafficContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868DA2F62D71DD8A007D20D5 /* LogsHeavyTrafficContentView.swift */; };
 		868DA2F92D71E622007D20D5 /* LogsUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868DA2F82D71E622007D20D5 /* LogsUtils.swift */; };
-		D231DC372C73355800F3F66C /* UIKitCatalog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D231DC312C73355800F3F66C /* UIKitCatalog.framework */; };
-		D231DC382C73355800F3F66C /* UIKitCatalog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D231DC312C73355800F3F66C /* UIKitCatalog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D231DC372C73355800F3F66C /* CatalogUIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D231DC312C73355800F3F66C /* CatalogUIKit.framework */; };
+		D231DC382C73355800F3F66C /* CatalogUIKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D231DC312C73355800F3F66C /* CatalogUIKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D231DCAF2C73356E00F3F66C /* ActivityIndicatorViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D231DC412C73356D00F3F66C /* ActivityIndicatorViewController.storyboard */; };
 		D231DCB02C73356E00F3F66C /* ActivityIndicatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D231DC422C73356D00F3F66C /* ActivityIndicatorViewController.swift */; };
 		D231DCB12C73356E00F3F66C /* AlertControllerViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D231DC442C73356D00F3F66C /* AlertControllerViewController.storyboard */; };
@@ -98,8 +98,8 @@
 		D27606AD2C514F77002D2A14 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = D27606AC2C514F77002D2A14 /* DatadogSessionReplay */; };
 		D27606AF2C514F77002D2A14 /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = D27606AE2C514F77002D2A14 /* DatadogTrace */; };
 		D28130D42D0C6A2300A3824C /* AnyViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D28130D32D0C6A2300A3824C /* AnyViewModifier.swift */; };
-		D294E9402D0880EB009582F3 /* SwiftUICatalog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D294E93A2D0880EB009582F3 /* SwiftUICatalog.framework */; };
-		D294E9412D0880EB009582F3 /* SwiftUICatalog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D294E93A2D0880EB009582F3 /* SwiftUICatalog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D294E9402D0880EB009582F3 /* CatalogSwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D294E93A2D0880EB009582F3 /* CatalogSwiftUI.framework */; };
+		D294E9412D0880EB009582F3 /* CatalogSwiftUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D294E93A2D0880EB009582F3 /* CatalogSwiftUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D294E9C92D088257009582F3 /* StoreKitConfiguration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = D294E9AB2D088257009582F3 /* StoreKitConfiguration.storekit */; };
 		D294E9CA2D088257009582F3 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D294E9502D088257009582F3 /* Preview Assets.xcassets */; };
 		D294E9CC2D088257009582F3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D294E94B2D088257009582F3 /* Assets.xcassets */; };
@@ -231,8 +231,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				D294E9412D0880EB009582F3 /* SwiftUICatalog.framework in Embed Frameworks */,
-				D231DC382C73355800F3F66C /* UIKitCatalog.framework in Embed Frameworks */,
+				D294E9412D0880EB009582F3 /* CatalogSwiftUI.framework in Embed Frameworks */,
+				D231DC382C73355800F3F66C /* CatalogUIKit.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -247,7 +247,7 @@
 		868DA2F42D71DD47007D20D5 /* LogsHeavyTrafficScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsHeavyTrafficScenario.swift; sourceTree = "<group>"; };
 		868DA2F62D71DD8A007D20D5 /* LogsHeavyTrafficContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsHeavyTrafficContentView.swift; sourceTree = "<group>"; };
 		868DA2F82D71E622007D20D5 /* LogsUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsUtils.swift; sourceTree = "<group>"; };
-		D231DC312C73355800F3F66C /* UIKitCatalog.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = UIKitCatalog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D231DC312C73355800F3F66C /* CatalogUIKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CatalogUIKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D231DC402C73356D00F3F66C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/ActivityIndicatorViewController.storyboard; sourceTree = "<group>"; };
 		D231DC422C73356D00F3F66C /* ActivityIndicatorViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActivityIndicatorViewController.swift; sourceTree = "<group>"; };
 		D231DC432C73356D00F3F66C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/AlertControllerViewController.storyboard; sourceTree = "<group>"; };
@@ -329,7 +329,7 @@
 		D27606B42C526908002D2A14 /* Synthetics.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Synthetics.xcconfig; sourceTree = "<group>"; };
 		D277C84A2C58D3210072343C /* Benchmarks */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Benchmarks; sourceTree = "<group>"; };
 		D28130D32D0C6A2300A3824C /* AnyViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyViewModifier.swift; sourceTree = "<group>"; };
-		D294E93A2D0880EB009582F3 /* SwiftUICatalog.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SwiftUICatalog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D294E93A2D0880EB009582F3 /* CatalogSwiftUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CatalogSwiftUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D294E94A2D088154009582F3 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		D294E94B2D088257009582F3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D294E94C2D088257009582F3 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -463,10 +463,10 @@
 			files = (
 				D27606A92C514F77002D2A14 /* DatadogLogs in Frameworks */,
 				D27606AF2C514F77002D2A14 /* DatadogTrace in Frameworks */,
-				D294E9402D0880EB009582F3 /* SwiftUICatalog.framework in Frameworks */,
+				D294E9402D0880EB009582F3 /* CatalogSwiftUI.framework in Frameworks */,
 				D27606AD2C514F77002D2A14 /* DatadogSessionReplay in Frameworks */,
 				D23DD32D2C58D80C00B90C4C /* DatadogBenchmarks in Frameworks */,
-				D231DC372C73355800F3F66C /* UIKitCatalog.framework in Frameworks */,
+				D231DC372C73355800F3F66C /* CatalogUIKit.framework in Frameworks */,
 				D27606AB2C514F77002D2A14 /* DatadogRUM in Frameworks */,
 				D27606A72C514F77002D2A14 /* DatadogCore in Frameworks */,
 			);
@@ -512,7 +512,7 @@
 			path = UI;
 			sourceTree = "<group>";
 		};
-		D231DC322C73355800F3F66C /* UIKitCatalog */ = {
+		D231DC322C73355800F3F66C /* CatalogUIKit */ = {
 			isa = PBXGroup;
 			children = (
 				D256FB522C737F5800377260 /* LICENSE */,
@@ -585,7 +585,7 @@
 				D231DCAB2C73356D00F3F66C /* WebViewController.swift */,
 				D231DCF82C7342D500F3F66C /* ModuleBundle.swift */,
 			);
-			path = UIKitCatalog;
+			path = CatalogUIKit;
 			sourceTree = "<group>";
 		};
 		D256FB522C737F5800377260 /* LICENSE */ = {
@@ -627,7 +627,7 @@
 			path = xcconfigs;
 			sourceTree = "<group>";
 		};
-		D294E9482D08813D009582F3 /* SwiftUICatalog */ = {
+		D294E9482D08813D009582F3 /* CatalogSwiftUI */ = {
 			isa = PBXGroup;
 			children = (
 				D294E94A2D088154009582F3 /* LICENSE */,
@@ -641,7 +641,7 @@
 				D294E9512D088257009582F3 /* Preview Content */,
 				D294E9C82D088257009582F3 /* Views */,
 			);
-			path = SwiftUICatalog;
+			path = CatalogSwiftUI;
 			sourceTree = "<group>";
 		};
 		D294E9512D088257009582F3 /* Preview Content */ = {
@@ -914,8 +914,8 @@
 				D2E60B9F2C732FBB00A18F1C /* README.md */,
 				D27606B52C526908002D2A14 /* xcconfigs */,
 				D29F754E2C4AA07E00288638 /* Runner */,
-				D231DC322C73355800F3F66C /* UIKitCatalog */,
-				D294E9482D08813D009582F3 /* SwiftUICatalog */,
+				D231DC322C73355800F3F66C /* CatalogUIKit */,
+				D294E9482D08813D009582F3 /* CatalogSwiftUI */,
 				D29F75482C4A9F9500288638 /* Frameworks */,
 				D29F75312C4A9EFA00288638 /* Products */,
 			);
@@ -925,8 +925,8 @@
 			isa = PBXGroup;
 			children = (
 				D29F754D2C4AA07E00288638 /* Runner.app */,
-				D231DC312C73355800F3F66C /* UIKitCatalog.framework */,
-				D294E93A2D0880EB009582F3 /* SwiftUICatalog.framework */,
+				D231DC312C73355800F3F66C /* CatalogUIKit.framework */,
+				D294E93A2D0880EB009582F3 /* CatalogSwiftUI.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -973,9 +973,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		D231DC302C73355800F3F66C /* UIKitCatalog */ = {
+		D231DC302C73355800F3F66C /* CatalogUIKit */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D231DC3C2C73355800F3F66C /* Build configuration list for PBXNativeTarget "UIKitCatalog" */;
+			buildConfigurationList = D231DC3C2C73355800F3F66C /* Build configuration list for PBXNativeTarget "CatalogUIKit" */;
 			buildPhases = (
 				D231DC2C2C73355800F3F66C /* Headers */,
 				D231DC2D2C73355800F3F66C /* Sources */,
@@ -986,14 +986,14 @@
 			);
 			dependencies = (
 			);
-			name = UIKitCatalog;
+			name = CatalogUIKit;
 			productName = UIKitCatalog;
-			productReference = D231DC312C73355800F3F66C /* UIKitCatalog.framework */;
+			productReference = D231DC312C73355800F3F66C /* CatalogUIKit.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		D294E9392D0880EB009582F3 /* SwiftUICatalog */ = {
+		D294E9392D0880EB009582F3 /* CatalogSwiftUI */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D294E9462D0880EB009582F3 /* Build configuration list for PBXNativeTarget "SwiftUICatalog" */;
+			buildConfigurationList = D294E9462D0880EB009582F3 /* Build configuration list for PBXNativeTarget "CatalogSwiftUI" */;
 			buildPhases = (
 				D294E9352D0880EB009582F3 /* Headers */,
 				D294E9362D0880EB009582F3 /* Sources */,
@@ -1004,11 +1004,11 @@
 			);
 			dependencies = (
 			);
-			name = SwiftUICatalog;
+			name = CatalogSwiftUI;
 			packageProductDependencies = (
 			);
 			productName = SwiftUICatalog;
-			productReference = D294E93A2D0880EB009582F3 /* SwiftUICatalog.framework */;
+			productReference = D294E93A2D0880EB009582F3 /* CatalogSwiftUI.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		D29F754C2C4AA07E00288638 /* Runner */ = {
@@ -1076,8 +1076,8 @@
 			projectRoot = "";
 			targets = (
 				D29F754C2C4AA07E00288638 /* Runner */,
-				D231DC302C73355800F3F66C /* UIKitCatalog */,
-				D294E9392D0880EB009582F3 /* SwiftUICatalog */,
+				D231DC302C73355800F3F66C /* CatalogUIKit */,
+				D294E9392D0880EB009582F3 /* CatalogSwiftUI */,
 			);
 		};
 /* End PBXProject section */
@@ -1321,12 +1321,12 @@
 /* Begin PBXTargetDependency section */
 		D231DC362C73355800F3F66C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D231DC302C73355800F3F66C /* UIKitCatalog */;
+			target = D231DC302C73355800F3F66C /* CatalogUIKit */;
 			targetProxy = D231DC352C73355800F3F66C /* PBXContainerItemProxy */;
 		};
 		D294E93F2D0880EB009582F3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D294E9392D0880EB009582F3 /* SwiftUICatalog */;
+			target = D294E9392D0880EB009582F3 /* CatalogSwiftUI */;
 			targetProxy = D294E93E2D0880EB009582F3 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -1617,7 +1617,7 @@
 				);
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.benchmarks.UIKitCatalog;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.benchmarks.CatalogUIKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1646,7 +1646,7 @@
 				);
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.benchmarks.UIKitCatalog;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.benchmarks.CatalogUIKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1675,7 +1675,7 @@
 				);
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.benchmarks.UIKitCatalog;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.benchmarks.CatalogUIKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1789,7 +1789,7 @@
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.SwiftUICatalog;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.benchmarks.CatalogSwiftUI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1820,7 +1820,7 @@
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.SwiftUICatalog;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.benchmarks.CatalogSwiftUI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1851,7 +1851,7 @@
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.SwiftUICatalog;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.benchmarks.CatalogSwiftUI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -2041,7 +2041,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D231DC3C2C73355800F3F66C /* Build configuration list for PBXNativeTarget "UIKitCatalog" */ = {
+		D231DC3C2C73355800F3F66C /* Build configuration list for PBXNativeTarget "CatalogUIKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D231DC392C73355800F3F66C /* Debug */,
@@ -2051,7 +2051,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D294E9462D0880EB009582F3 /* Build configuration list for PBXNativeTarget "SwiftUICatalog" */ = {
+		D294E9462D0880EB009582F3 /* Build configuration list for PBXNativeTarget "CatalogSwiftUI" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D294E9422D0880EB009582F3 /* Debug */,

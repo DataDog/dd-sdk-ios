@@ -12,11 +12,11 @@ import DatadogCore
 import DatadogRUM
 import DatadogSessionReplay
 
-import SwiftUICatalog
+import CatalogSwiftUI
 
 struct SessionReplaySwiftUIScenario: Scenario {
     var initialViewController: UIViewController {
-        UIHostingController(rootView: SwiftUICatalog.ContentView(monitor: DatadogMonitor()))
+        UIHostingController(rootView: CatalogSwiftUI.ContentView(monitor: DatadogMonitor()))
     }
 
     func instrument(with info: AppInfo) {
@@ -45,7 +45,7 @@ struct SessionReplaySwiftUIScenario: Scenario {
     }
 }
 
-private struct DatadogMonitor: SwiftUICatalog.DatadogMonitor {
+private struct DatadogMonitor: CatalogSwiftUI.DatadogMonitor {
     func viewModifier(name: String) -> AnyViewModifier {
         AnyViewModifier { content in
             content.trackRUMView(name: name)
