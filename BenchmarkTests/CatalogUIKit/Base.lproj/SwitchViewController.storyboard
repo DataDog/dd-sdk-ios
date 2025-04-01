@@ -11,7 +11,7 @@
         <!--Switches-->
         <scene sceneID="yZh-jH-dTD">
             <objects>
-                <tableViewController id="zcI-oN-J3j" customClass="SwitchViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController id="zcI-oN-J3j" customClass="SwitchViewController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="none" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="4ER-nG-feZ">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

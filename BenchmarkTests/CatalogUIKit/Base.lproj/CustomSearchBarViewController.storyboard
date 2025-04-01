@@ -11,7 +11,7 @@
         <!--Custom Search Bar-->
         <scene sceneID="dd9-nR-VNk">
             <objects>
-                <viewController storyboardIdentifier="CustomSearchBarViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Mhd-Bs-sIn" customClass="CustomSearchBarViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="CustomSearchBarViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Mhd-Bs-sIn" customClass="CustomSearchBarViewController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="YVy-et-UAQ">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

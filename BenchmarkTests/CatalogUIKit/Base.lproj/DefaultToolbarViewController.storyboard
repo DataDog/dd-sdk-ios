@@ -11,7 +11,7 @@
         <!--Default Toolbar-->
         <scene sceneID="LI9-fK-d77">
             <objects>
-                <viewController storyboardIdentifier="DefaultToolbarViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="P5B-ej-GR8" customClass="DefaultToolbarViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="DefaultToolbarViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="P5B-ej-GR8" customClass="DefaultToolbarViewController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="lTJ-Dz-yrG">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

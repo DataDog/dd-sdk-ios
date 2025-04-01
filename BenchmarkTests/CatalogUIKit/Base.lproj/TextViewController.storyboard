@@ -10,7 +10,7 @@
         <!--Text View-->
         <scene sceneID="DT7-pA-8MW">
             <objects>
-                <viewController id="pUP-b0-VMf" customClass="TextViewController" customModule="UIKitCatalog" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="pUP-b0-VMf" customClass="TextViewController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="eAJ-am-dgQ">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
