@@ -17,6 +17,8 @@ internal struct SyntheticScenario: Scenario {
         case logsCustom
         case logsHeavyTraffic
         case trace
+        case rumManual
+        case rumAuto
     }
     /// The scenario's name.
     let name: Name
@@ -48,6 +50,10 @@ internal struct SyntheticScenario: Scenario {
             _scenario = LogsHeavyTrafficScenario()
         case .trace:
             _scenario = TraceScenario()
+        case .rumManual:
+            _scenario = RUMManualScenario()
+        case .rumAuto:
+            _scenario = RUMAutoScenario()
         }
 
         self.name = name
