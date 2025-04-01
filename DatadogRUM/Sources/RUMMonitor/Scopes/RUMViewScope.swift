@@ -464,6 +464,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                     sessionPrecondition: self.context.sessionPrecondition
                 )
             ),
+            account: .init(context: context),
             action: .init(
                 crash: .init(count: 0),
                 error: .init(count: 0),
@@ -604,6 +605,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                     sessionPrecondition: self.context.sessionPrecondition
                 )
             ),
+            account: .init(context: context),
             application: .init(id: self.context.rumApplicationID),
             buildId: context.buildId,
             buildVersion: context.buildNumber,
@@ -742,6 +744,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                     sessionPrecondition: self.context.sessionPrecondition
                 )
             ),
+            account: .init(context: context),
             action: self.context.activeUserActionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
@@ -822,6 +825,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                     sessionPrecondition: self.context.sessionPrecondition
                 )
             ),
+            account: .init(context: context),
             action: self.context.activeUserActionID.map {
                 .init(id: .string(value: $0.toRUMDataFormat))
             },

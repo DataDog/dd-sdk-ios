@@ -232,7 +232,7 @@ class DatadogTests: XCTestCase {
         Datadog.flushAndDeinitialize()
     }
 
-    func testAddUserPreoprties_mergesProperties() {
+    func testAddUserProperties_mergesProperties() {
         Datadog.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
@@ -260,7 +260,7 @@ class DatadogTests: XCTestCase {
         Datadog.flushAndDeinitialize()
     }
 
-    func testAddUserPreoprties_removesProperties() {
+    func testAddUserProperties_removesProperties() {
         Datadog.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
@@ -285,7 +285,7 @@ class DatadogTests: XCTestCase {
         Datadog.flushAndDeinitialize()
     }
 
-    func testAddUserPreoprties_overwritesProperties() {
+    func testAddUserProperties_overwritesProperties() {
         Datadog.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
@@ -306,6 +306,101 @@ class DatadogTests: XCTestCase {
         XCTAssertEqual(core?.userInfoPublisher.current.name, "bar")
         XCTAssertEqual(core?.userInfoPublisher.current.email, "foo@bar.com")
         XCTAssertEqual(core?.userInfoPublisher.current.extraInfo as? [String: Int], ["abc": 444])
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testAccountInfo() {
+        Datadog.initialize(
+            with: defaultConfig,
+            trackingConsent: .mockRandom()
+        )
+
+        let core = CoreRegistry.default as? DatadogCore
+
+        XCTAssertNil(core?.accountInfoPublisher.current)
+
+        Datadog.setAccountInfo(
+            id: "foo",
+            name: "bar",
+            extraInfo: ["abc": 123]
+        )
+
+        XCTAssertEqual(core?.accountInfoPublisher.current?.id, "foo")
+        XCTAssertEqual(core?.accountInfoPublisher.current?.name, "bar")
+        XCTAssertEqual(core?.accountInfoPublisher.current?.extraInfo as? [String: Int], ["abc": 123])
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testAddAccountProperties_mergesProperties() {
+        Datadog.initialize(
+            with: defaultConfig,
+            trackingConsent: .mockRandom()
+        )
+
+        let core = CoreRegistry.default as? DatadogCore
+
+        Datadog.setAccountInfo(
+            id: "foo",
+            name: "bar",
+            extraInfo: ["abc": 123]
+        )
+
+        Datadog.addAccountExtraInfo(["second": 667])
+
+        XCTAssertEqual(core?.accountInfoPublisher.current?.id, "foo")
+        XCTAssertEqual(core?.accountInfoPublisher.current?.name, "bar")
+        XCTAssertEqual(
+            core?.accountInfoPublisher.current?.extraInfo as? [String: Int],
+            ["abc": 123, "second": 667]
+        )
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testAddAccountProperties_removesProperties() {
+        Datadog.initialize(
+            with: defaultConfig,
+            trackingConsent: .mockRandom()
+        )
+
+        let core = CoreRegistry.default as? DatadogCore
+
+        Datadog.setAccountInfo(
+            id: "foo",
+            name: "bar",
+            extraInfo: ["abc": 123]
+        )
+
+        Datadog.addAccountExtraInfo(["abc": nil, "second": 667])
+
+        XCTAssertEqual(core?.accountInfoPublisher.current?.id, "foo")
+        XCTAssertEqual(core?.accountInfoPublisher.current?.name, "bar")
+        XCTAssertEqual(core?.accountInfoPublisher.current?.extraInfo as? [String: Int], ["second": 667])
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testAddAccountProperties_overwritesProperties() {
+        Datadog.initialize(
+            with: defaultConfig,
+            trackingConsent: .mockRandom()
+        )
+
+        let core = CoreRegistry.default as? DatadogCore
+
+        Datadog.setAccountInfo(
+            id: "foo",
+            name: "bar",
+            extraInfo: ["abc": 123]
+        )
+
+        Datadog.addAccountExtraInfo(["abc": 444])
+
+        XCTAssertEqual(core?.accountInfoPublisher.current?.id, "foo")
+        XCTAssertEqual(core?.accountInfoPublisher.current?.name, "bar")
+        XCTAssertEqual(core?.accountInfoPublisher.current?.extraInfo as? [String: Int], ["abc": 444])
 
         Datadog.flushAndDeinitialize()
     }

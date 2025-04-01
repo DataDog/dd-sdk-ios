@@ -258,6 +258,30 @@ extension SpanEvent.UserInfo: AnyMockable, RandomMockable {
     }
 }
 
+extension SpanEvent.AccountInfo: AnyMockable, RandomMockable {
+    public static func mockWith(
+        id: String = .mockAny(),
+        name: String? = .mockAny(),
+        extraInfo: [String: String] = [:]
+    ) -> Self {
+        return .init(
+            id: id,
+            name: name,
+            extraInfo: extraInfo
+        )
+    }
+
+    public static func mockAny() -> Self { .mockWith() }
+
+    public static func mockRandom() -> Self {
+        return .init(
+            id: .mockRandom(),
+            name: .mockRandom(),
+            extraInfo: .mockRandom()
+        )
+    }
+}
+
 // MARK: - Component Mocks
 
 extension DatadogTracer {

@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Adds account information configuration. The account information propagates to Logs, RUM, Traces, Crash and Error Reporting. See [#2225][]
+
 # 2.24.0 / 06-03-2025
 
 - [FEATURE] Adds anonymous identifier configuration for RUM Sessions linking. See [#2172][]

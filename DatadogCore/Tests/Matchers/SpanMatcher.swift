@@ -135,6 +135,9 @@ internal class SpanMatcher {
         func userName()             throws -> String { try matcher.meta(forKeyPath: "meta.usr.name") }
         func userEmail()            throws -> String { try matcher.meta(forKeyPath: "meta.usr.email") }
 
+        func accountID()               throws -> String { try matcher.meta(forKeyPath: "meta.account.id") }
+        func accountName()             throws -> String { try matcher.meta(forKeyPath: "meta.account.name") }
+
         func networkReachability()            throws -> String { try matcher.meta(forKeyPath: "meta.network.client.reachability") }
         func networkAvailableInterfaces()     throws -> String { try matcher.meta(forKeyPath: "meta.network.client.available_interfaces") }
         func networkConnectionSupportsIPv4()  throws -> String { try matcher.meta(forKeyPath: "meta.network.client.supports_ipv4") }

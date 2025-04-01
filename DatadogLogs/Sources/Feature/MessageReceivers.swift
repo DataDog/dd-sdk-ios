@@ -129,6 +129,8 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
         let carrierInfo: CarrierInfo?
         /// Current user information.
         let userInfo: UserInfo?
+        /// Current account information.
+        let accountInfo: AccountInfo?
 
         /// A type representing part of last RUM view information required to link crash log with previous RUM session.
         /// It mirrors the schema of `RUMViewEvent`, so we can decode it from the last `RUMViewEvent` coded in crash context.
@@ -212,6 +214,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
         errorAttributes[LogEvent.Attributes.RUM.viewID] = crashContext.lastRUMViewEvent?.view.id
 
         let user = crashContext.userInfo
+        let accountInfo = crashContext.accountInfo
         let deviceInfo = crashContext.device
 
         // Merge logs attributes with crash report attributes
@@ -260,6 +263,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
                     email: user?.email,
                     extraInfo: user?.extraInfo ?? [:]
                 ),
+                accountInfo: accountInfo,
                 networkConnectionInfo: crashContext.networkConnectionInfo,
                 mobileCarrierInfo: crashContext.carrierInfo,
                 attributes: .init(

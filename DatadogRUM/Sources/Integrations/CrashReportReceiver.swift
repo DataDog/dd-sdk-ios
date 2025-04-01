@@ -61,6 +61,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let carrierInfo: CarrierInfo?
         /// Current user information.
         let userInfo: UserInfo?
+        /// Current account information.
+        let accountInfo: AccountInfo?
     }
 
     private struct AdjustedCrashTimings {
@@ -376,6 +378,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                     sessionPrecondition: nil
                 )
             ),
+            account: context.accountInfo.map { RUMAccount(accountInfo: $0) },
             application: .init(
                 id: applicationID
             ),

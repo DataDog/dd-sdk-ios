@@ -16,7 +16,7 @@ public struct RUMActionEvent: RUMDataModel {
     public var dd: DD
 
     /// Account properties
-    public var account: Account?
+    public var account: RUMAccount?
 
     /// Action properties
     public var action: Action
@@ -220,22 +220,6 @@ public struct RUMActionEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
-        }
-    }
-
-    /// Account properties
-    public struct Account: Codable {
-        /// Identifier of the account
-        public let id: String
-
-        /// Name of the account
-        public let name: String?
-
-        public var accountInfo: [String: Encodable]
-
-        enum StaticCodingKeys: String, CodingKey {
-            case id = "id"
-            case name = "name"
         }
     }
 
@@ -487,48 +471,13 @@ public struct RUMActionEvent: RUMDataModel {
     }
 }
 
-extension RUMActionEvent.Account {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(id, forKey: .id)
-        try staticContainer.encodeIfPresent(name, forKey: .name)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try accountInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.id = try staticContainer.decode(String.self, forKey: .id)
-        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
-
-        // Decode other properties into [String: Codable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
-        }
-
-        self.accountInfo = dictionary
-    }
-}
-
 /// Schema of all properties of an Error event
 public struct RUMErrorEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
 
     /// Account properties
-    public var account: Account?
+    public var account: RUMAccount?
 
     /// Action properties
     public let action: Action?
@@ -680,22 +629,6 @@ public struct RUMErrorEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
-        }
-    }
-
-    /// Account properties
-    public struct Account: Codable {
-        /// Identifier of the account
-        public let id: String
-
-        /// Name of the account
-        public let name: String?
-
-        public var accountInfo: [String: Encodable]
-
-        enum StaticCodingKeys: String, CodingKey {
-            case id = "id"
-            case name = "name"
         }
     }
 
@@ -1167,41 +1100,6 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 }
 
-extension RUMErrorEvent.Account {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(id, forKey: .id)
-        try staticContainer.encodeIfPresent(name, forKey: .name)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try accountInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.id = try staticContainer.decode(String.self, forKey: .id)
-        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
-
-        // Decode other properties into [String: Codable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
-        }
-
-        self.accountInfo = dictionary
-    }
-}
-
 extension RUMErrorEvent.FeatureFlags {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
@@ -1232,7 +1130,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let dd: DD
 
     /// Account properties
-    public var account: Account?
+    public var account: RUMAccount?
 
     /// Action properties
     public let action: Action?
@@ -1380,22 +1278,6 @@ public struct RUMLongTaskEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
-        }
-    }
-
-    /// Account properties
-    public struct Account: Codable {
-        /// Identifier of the account
-        public let id: String
-
-        /// Name of the account
-        public let name: String?
-
-        public var accountInfo: [String: Encodable]
-
-        enum StaticCodingKeys: String, CodingKey {
-            case id = "id"
-            case name = "name"
         }
     }
 
@@ -1643,48 +1525,13 @@ public struct RUMLongTaskEvent: RUMDataModel {
     }
 }
 
-extension RUMLongTaskEvent.Account {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(id, forKey: .id)
-        try staticContainer.encodeIfPresent(name, forKey: .name)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try accountInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.id = try staticContainer.decode(String.self, forKey: .id)
-        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
-
-        // Decode other properties into [String: Codable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
-        }
-
-        self.accountInfo = dictionary
-    }
-}
-
 /// Schema of all properties of a Resource event
 public struct RUMResourceEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
 
     /// Account properties
-    public var account: Account?
+    public var account: RUMAccount?
 
     /// Action properties
     public let action: Action?
@@ -1844,22 +1691,6 @@ public struct RUMResourceEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
-        }
-    }
-
-    /// Account properties
-    public struct Account: Codable {
-        /// Identifier of the account
-        public let id: String
-
-        /// Name of the account
-        public let name: String?
-
-        public var accountInfo: [String: Encodable]
-
-        enum StaticCodingKeys: String, CodingKey {
-            case id = "id"
-            case name = "name"
         }
     }
 
@@ -2281,48 +2112,13 @@ public struct RUMResourceEvent: RUMDataModel {
     }
 }
 
-extension RUMResourceEvent.Account {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(id, forKey: .id)
-        try staticContainer.encodeIfPresent(name, forKey: .name)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try accountInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.id = try staticContainer.decode(String.self, forKey: .id)
-        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
-
-        // Decode other properties into [String: Codable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
-        }
-
-        self.accountInfo = dictionary
-    }
-}
-
 /// Schema of all properties of a View event
 public struct RUMViewEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
 
     /// Account properties
-    public var account: Account?
+    public var account: RUMAccount?
 
     /// Application properties
     public let application: Application
@@ -2537,22 +2333,6 @@ public struct RUMViewEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
-        }
-    }
-
-    /// Account properties
-    public struct Account: Codable {
-        /// Identifier of the account
-        public let id: String
-
-        /// Name of the account
-        public let name: String?
-
-        public var accountInfo: [String: Encodable]
-
-        enum StaticCodingKeys: String, CodingKey {
-            case id = "id"
-            case name = "name"
         }
     }
 
@@ -3269,41 +3049,6 @@ public struct RUMViewEvent: RUMDataModel {
     }
 }
 
-extension RUMViewEvent.Account {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(id, forKey: .id)
-        try staticContainer.encodeIfPresent(name, forKey: .name)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try accountInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.id = try staticContainer.decode(String.self, forKey: .id)
-        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
-
-        // Decode other properties into [String: Codable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
-        }
-
-        self.accountInfo = dictionary
-    }
-}
-
 extension RUMViewEvent.FeatureFlags {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
@@ -3334,7 +3079,7 @@ public struct RUMVitalEvent: RUMDataModel {
     public let dd: DD
 
     /// Account properties
-    public var account: Account?
+    public var account: RUMAccount?
 
     /// Application properties
     public let application: Application
@@ -3488,22 +3233,6 @@ public struct RUMVitalEvent: RUMDataModel {
             enum CodingKeys: String, CodingKey {
                 case computedValue = "computed_value"
             }
-        }
-    }
-
-    /// Account properties
-    public struct Account: Codable {
-        /// Identifier of the account
-        public let id: String
-
-        /// Name of the account
-        public let name: String?
-
-        public var accountInfo: [String: Encodable]
-
-        enum StaticCodingKeys: String, CodingKey {
-            case id = "id"
-            case name = "name"
         }
     }
 
@@ -3662,41 +3391,6 @@ public struct RUMVitalEvent: RUMDataModel {
         public enum VitalType: String, Codable {
             case duration = "duration"
         }
-    }
-}
-
-extension RUMVitalEvent.Account {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(id, forKey: .id)
-        try staticContainer.encodeIfPresent(name, forKey: .name)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try accountInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.id = try staticContainer.decode(String.self, forKey: .id)
-        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
-
-        // Decode other properties into [String: Codable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
-        }
-
-        self.accountInfo = dictionary
     }
 }
 
@@ -5289,6 +4983,57 @@ public enum RUMSessionPrecondition: String, Codable {
     case prewarm = "prewarm"
     case fromNonInteractiveSession = "from_non_interactive_session"
     case explicitStop = "explicit_stop"
+}
+
+/// Account properties
+public struct RUMAccount: Codable {
+    /// Identifier of the account
+    public let id: String
+
+    /// Name of the account
+    public let name: String?
+
+    public var accountInfo: [String: Encodable]
+
+    enum StaticCodingKeys: String, CodingKey {
+        case id = "id"
+        case name = "name"
+    }
+}
+
+extension RUMAccount {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(id, forKey: .id)
+        try staticContainer.encodeIfPresent(name, forKey: .name)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try accountInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.id = try staticContainer.decode(String.self, forKey: .id)
+        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
+
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        }
+
+        self.accountInfo = dictionary
+    }
 }
 
 /// CI Visibility properties

@@ -20,6 +20,16 @@ extension RUMUser {
     }
 }
 
+extension RUMAccount {
+    static func mockRandom() -> Self {
+        return RUMAccount(
+            id: .mockRandom(),
+            name: .mockRandom(),
+            accountInfo: mockRandomAttributes()
+        )
+    }
+}
+
 extension RUMConnectivity {
     static func mockRandom() -> RUMConnectivity {
         return RUMConnectivity(
@@ -142,6 +152,7 @@ extension RUMViewEvent: RandomMockable {
                     sessionPrecondition: .mockRandom()
                 )
             ),
+            account: .mockRandom(),
             application: .init(id: .mockRandom()),
             buildId: nil,
             buildVersion: .mockRandom(),
@@ -247,6 +258,7 @@ extension RUMResourceEvent: RandomMockable {
                 spanId: .mockRandom(),
                 traceId: .mockRandom()
             ),
+            account: .mockRandom(),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
             buildId: nil,
@@ -330,6 +342,7 @@ extension RUMActionEvent: RandomMockable {
                     sessionPrecondition: .mockRandom()
                 )
             ),
+            account: .mockRandom(),
             action: .init(
                 crash: .init(count: .mockRandom()),
                 error: .init(count: .mockRandom()),
@@ -395,6 +408,7 @@ extension RUMErrorEvent: RandomMockable {
                     sessionPrecondition: .mockRandom()
                 )
             ),
+            account: .mockRandom(),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
             buildId: nil,
@@ -474,6 +488,7 @@ extension RUMLongTaskEvent: RandomMockable {
                     sessionPrecondition: .mockRandom()
                 )
             ),
+            account: .mockRandom(),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
             buildId: nil,

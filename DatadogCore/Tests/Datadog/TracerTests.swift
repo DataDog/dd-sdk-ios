@@ -378,6 +378,52 @@ class TracerTests: XCTestCase {
         XCTAssertNil(try? spanMatchers[3].meta.userEmail())
     }
 
+    // MARK: - Sending account info
+
+    func testSendingAccountInfo() throws {
+        core.context = .mockWith(
+            accountInfo: nil
+        )
+
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core).dd
+
+        tracer.startSpan(operationName: "span with no account info").finish()
+
+        core.context.accountInfo = AccountInfo(id: "abc-123", name: "Foo", extraInfo: [:])
+        tracer.startSpan(operationName: "span with account `id` and `name`").finish()
+
+        core.context.accountInfo = AccountInfo(
+            id: "abc-123",
+            name: "Foo",
+            extraInfo: [
+                "str": "value",
+                "int": 11_235,
+                "bool": true
+            ]
+        )
+        tracer.startSpan(operationName: "span with account `id`, `name`, `email` and `extraInfo`").finish()
+
+        core.context.accountInfo = nil
+        tracer.startSpan(operationName: "span with no account info").finish()
+
+        let spanMatchers = try core.waitAndReturnSpanMatchers()
+        XCTAssertNil(try? spanMatchers[0].meta.accountID())
+        XCTAssertNil(try? spanMatchers[0].meta.accountName())
+
+        XCTAssertEqual(try spanMatchers[1].meta.accountID(), "abc-123")
+        XCTAssertEqual(try spanMatchers[1].meta.accountName(), "Foo")
+
+        XCTAssertEqual(try spanMatchers[2].meta.accountID(), "abc-123")
+        XCTAssertEqual(try spanMatchers[2].meta.accountName(), "Foo")
+        XCTAssertEqual(try spanMatchers[2].meta.custom(keyPath: "meta.account.str"), "value")
+        XCTAssertEqual(try spanMatchers[2].meta.custom(keyPath: "meta.account.int"), "11235")
+        XCTAssertEqual(try spanMatchers[2].meta.custom(keyPath: "meta.account.bool"), "true")
+
+        XCTAssertNil(try? spanMatchers[3].meta.accountID())
+        XCTAssertNil(try? spanMatchers[3].meta.accountName())
+    }
+
     // MARK: - Sending carrier info
 
     func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {

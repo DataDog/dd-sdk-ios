@@ -190,30 +190,6 @@ extension LogEvent.Status: RandomMockable {
     }
 }
 
-extension LogEvent.UserInfo: AnyMockable, RandomMockable {
-    public static func mockAny() -> LogEvent.UserInfo {
-        return mockEmpty()
-    }
-
-    public static func mockEmpty() -> LogEvent.UserInfo {
-        return LogEvent.UserInfo(
-            id: nil,
-            name: nil,
-            email: nil,
-            extraInfo: [:]
-        )
-    }
-
-    public static func mockRandom() -> LogEvent.UserInfo {
-        return .init(
-            id: .mockRandom(),
-            name: .mockRandom(),
-            email: .mockRandom(),
-            extraInfo: mockRandomAttributes()
-        )
-    }
-}
-
 extension LogEvent.Dd: AnyMockable, RandomMockable {
     public static func mockAny() -> LogEvent.Dd {
         return LogEvent.Dd(

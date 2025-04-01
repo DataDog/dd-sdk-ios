@@ -49,6 +49,9 @@ internal struct CrashContext: Codable, Equatable {
     /// Current user information.
     let userInfo: UserInfo?
 
+    /// Current account information
+    let accountInfo: AccountInfo?
+
     /// Network information.
     ///
     /// Represents the current state of the device network connectivity and interface.
@@ -91,6 +94,7 @@ internal struct CrashContext: Codable, Equatable {
         source: String,
         trackingConsent: TrackingConsent,
         userInfo: UserInfo?,
+        accountInfo: AccountInfo?,
         networkConnectionInfo: NetworkConnectionInfo?,
         carrierInfo: CarrierInfo?,
         lastIsAppInForeground: Bool,
@@ -110,6 +114,7 @@ internal struct CrashContext: Codable, Equatable {
         self.source = source
         self.trackingConsent = trackingConsent
         self.userInfo = userInfo
+        self.accountInfo = accountInfo
         self.networkConnectionInfo = networkConnectionInfo
         self.carrierInfo = carrierInfo
         self.lastIsAppInForeground = lastIsAppInForeground
@@ -137,6 +142,7 @@ internal struct CrashContext: Codable, Equatable {
         self.source = context.source
         self.trackingConsent = context.trackingConsent
         self.userInfo = context.userInfo
+        self.accountInfo = context.accountInfo
         self.networkConnectionInfo = context.networkConnectionInfo
         self.carrierInfo = context.carrierInfo
         self.lastIsAppInForeground = context.applicationStateHistory.currentSnapshot.state.isRunningInForeground
@@ -151,18 +157,20 @@ internal struct CrashContext: Codable, Equatable {
 
     static func == (lhs: CrashContext, rhs: CrashContext) -> Bool {
         lhs.serverTimeOffset == rhs.serverTimeOffset &&
-            lhs.service == rhs.service &&
-            lhs.env == rhs.env &&
-            lhs.version == rhs.version &&
-            lhs.buildNumber == rhs.buildNumber &&
-            lhs.source == rhs.source &&
-            lhs.trackingConsent == rhs.trackingConsent &&
-            lhs.networkConnectionInfo == rhs.networkConnectionInfo &&
-            lhs.carrierInfo == rhs.carrierInfo &&
-            lhs.lastIsAppInForeground == rhs.lastIsAppInForeground &&
-            lhs.userInfo?.id == rhs.userInfo?.id &&
-            lhs.userInfo?.name == rhs.userInfo?.name &&
-            lhs.userInfo?.email == rhs.userInfo?.email &&
-            lhs.appLaunchDate == rhs.appLaunchDate
+        lhs.service == rhs.service &&
+        lhs.env == rhs.env &&
+        lhs.version == rhs.version &&
+        lhs.buildNumber == rhs.buildNumber &&
+        lhs.source == rhs.source &&
+        lhs.trackingConsent == rhs.trackingConsent &&
+        lhs.networkConnectionInfo == rhs.networkConnectionInfo &&
+        lhs.carrierInfo == rhs.carrierInfo &&
+        lhs.lastIsAppInForeground == rhs.lastIsAppInForeground &&
+        lhs.userInfo?.id == rhs.userInfo?.id &&
+        lhs.userInfo?.name == rhs.userInfo?.name &&
+        lhs.userInfo?.email == rhs.userInfo?.email &&
+        lhs.accountInfo?.id == rhs.accountInfo?.id &&
+        lhs.accountInfo?.name == rhs.accountInfo?.name &&
+        lhs.appLaunchDate == rhs.appLaunchDate
     }
 }
