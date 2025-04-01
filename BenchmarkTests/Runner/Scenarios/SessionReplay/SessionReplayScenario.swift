@@ -11,11 +11,11 @@ import DatadogCore
 import DatadogRUM
 import DatadogSessionReplay
 
-import UIKitCatalog
+import CatalogUIKit
 
 struct SessionReplayScenario: Scenario {
     var initialViewController: UIViewController {
-        let storyboard = UIStoryboard(name: "Main", bundle: UIKitCatalog.bundle)
+        let storyboard = UIStoryboard(name: "Main", bundle: CatalogUIKit.bundle)
         return storyboard.instantiateInitialViewController()!
     }
 
