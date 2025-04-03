@@ -26,7 +26,7 @@ public class DDHTTPHeadersWriter: NSObject {
     public init(sampleRate: Float = 20) {
         swiftHTTPHeadersWriter = HTTPHeadersWriter(
             samplingStrategy: .custom(sampleRate: sampleRate),
-            traceContextInjection: .all
+            traceContextInjection: .sampled
         )
     }
 

@@ -140,7 +140,7 @@ class TraceTests: XCTestCase {
             networkInstrumentation.handlers.firstElement(of: TracingURLSessionHandler.self),
             "It should register `TracingURLSessionHandler` to `NetworkInstrumentationFeature`"
         )
-        XCTAssertEqual(tracingHandler.distributedTraceSampler.samplingRate, 20)
+        XCTAssertEqual(tracingHandler.distributedTraceSampler.samplingRate, 100)
     }
 
     func testWhenEnabledWithURLSessionTrackingAndCustomSampleRate() throws {

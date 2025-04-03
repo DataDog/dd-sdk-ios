@@ -145,7 +145,7 @@ class HeadBasedSamplingTests: XCTestCase {
         // Given
         traceConfig.sampleRate = localTraceSampling
         traceConfig.urlSessionTracking = .init(
-            firstPartyHostsTracing: .trace(hosts: ["foo.com"], sampleRate: distributedTraceSampling)
+            firstPartyHostsTracing: .trace(hosts: ["foo.com"], sampleRate: distributedTraceSampling, traceControlInjection: .all)
         )
         Trace.enable(with: traceConfig, in: core)
         URLSessionInstrumentation.enable(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
@@ -233,7 +233,7 @@ class HeadBasedSamplingTests: XCTestCase {
         // Given
         traceConfig.sampleRate = localTraceSampling
         traceConfig.urlSessionTracking = .init(
-            firstPartyHostsTracing: .trace(hosts: ["foo.com"], sampleRate: distributedTraceSampling)
+            firstPartyHostsTracing: .trace(hosts: ["foo.com"], sampleRate: distributedTraceSampling, traceControlInjection: .all)
         )
         Trace.enable(with: traceConfig, in: core)
         URLSessionInstrumentation.enable(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
