@@ -1,8 +1,11 @@
-# Unreleased
+# 2.25.0 / 03-04-2025
 
+- [FEATURE] Calculate Hang rate and Hitch rate in RUM. See [#2234][]
 - [FIX] Fixed Swift 6.0.2 compatibility issue with `DatadogCrashReporting` framework. See [#2251][]
+- [IMPROVEMENT] Refine errors printed from `clearAllData()`. See [#2240][]
+- [IMPROVEMENT] Simplify host sanitizer logic. See [#2223][]
 
-# 2.24.1 / 31-04-2025
+# 2.24.1 / 31-03-2025
 
 - [FIX] Do not enforce dynamic linking for OpenTelemetryApi in `DatadogTrace`. See [#2244][]
 
@@ -850,6 +853,9 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2200]: https://github.com/DataDog/dd-sdk-ios/pull/2200
 [#2195]: https://github.com/DataDog/dd-sdk-ios/pull/2195
 [#2251]: https://github.com/DataDog/dd-sdk-ios/pull/2251
+[#2240]: https://github.com/DataDog/dd-sdk-ios/pull/2240
+[#2223]: https://github.com/DataDog/dd-sdk-ios/pull/2223
+[#2234]: https://github.com/DataDog/dd-sdk-ios/pull/2234
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
