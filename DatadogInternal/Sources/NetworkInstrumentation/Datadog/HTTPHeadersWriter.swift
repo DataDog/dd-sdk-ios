@@ -50,7 +50,7 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
     /// - Parameter sampleRate: The sampling rate applied for headers injection, with 20% as the default.
     @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
     public convenience init(sampleRate: Float = 20) {
-        self.init(samplingStrategy: .custom(sampleRate: sampleRate), traceContextInjection: .all)
+        self.init(samplingStrategy: .custom(sampleRate: sampleRate), traceContextInjection: .sampled)
     }
 
     /// Initializes the headers writer.

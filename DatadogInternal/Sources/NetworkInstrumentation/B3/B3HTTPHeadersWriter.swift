@@ -89,7 +89,7 @@ public class B3HTTPHeadersWriter: TracePropagationHeadersWriter {
         self.init(
             samplingStrategy: .custom(sampleRate: sampleRate),
             injectEncoding: injectEncoding,
-            traceContextInjection: .all
+            traceContextInjection: .sampled
         )
     }
 
@@ -97,11 +97,11 @@ public class B3HTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
     /// - Parameter samplingStrategy: The strategy for sampling trace propagation headers.
     /// - Parameter injectEncoding: The B3 header encoding type, with `.single` as the default.
-    /// - Parameter traceContextInjection: The trace context injection strategy, with `.all` as the default.
+    /// - Parameter traceContextInjection: The trace context injection strategy, with `.sampled` as the default.
     public init(
         samplingStrategy: TraceSamplingStrategy,
         injectEncoding: InjectEncoding = .single,
-        traceContextInjection: TraceContextInjection = .all
+        traceContextInjection: TraceContextInjection = .sampled
     ) {
         self.samplingStrategy = samplingStrategy
         self.injectEncoding = injectEncoding

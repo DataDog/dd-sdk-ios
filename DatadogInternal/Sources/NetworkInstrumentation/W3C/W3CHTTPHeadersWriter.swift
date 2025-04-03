@@ -56,7 +56,7 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     /// - Parameter tracestate: The tracestate to be injected.
     @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
     public convenience init(sampleRate: Float = 20, tracestate: [String: String] = [:]) {
-        self.init(samplingStrategy: .custom(sampleRate: sampleRate), tracestate: tracestate, traceContextInjection: .all)
+        self.init(samplingStrategy: .custom(sampleRate: sampleRate), tracestate: tracestate, traceContextInjection: .sampled)
     }
 
     /// Initializes the headers writer.
@@ -67,7 +67,7 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     public init(
         samplingStrategy: TraceSamplingStrategy,
         tracestate: [String: String] = [:],
-        traceContextInjection: TraceContextInjection = .all
+        traceContextInjection: TraceContextInjection = .sampled
     ) {
         self.samplingStrategy = samplingStrategy
         self.tracestate = tracestate

@@ -54,7 +54,7 @@ public class DDB3HTTPHeadersWriter: NSObject {
         swiftB3HTTPHeadersWriter = B3HTTPHeadersWriter(
             samplingStrategy: .custom(sampleRate: sampleRate),
             injectEncoding: .init(injectEncoding),
-            traceContextInjection: .all
+            traceContextInjection: .sampled
         )
     }
 
@@ -62,7 +62,7 @@ public class DDB3HTTPHeadersWriter: NSObject {
     public init(
         samplingStrategy: DDTraceSamplingStrategy,
         injectEncoding: DDInjectEncoding = .single,
-        traceContextInjection: DDTraceContextInjection = .all
+        traceContextInjection: DDTraceContextInjection = .sampled
     ) {
         swiftB3HTTPHeadersWriter = B3HTTPHeadersWriter(
             samplingStrategy: samplingStrategy.swiftType,

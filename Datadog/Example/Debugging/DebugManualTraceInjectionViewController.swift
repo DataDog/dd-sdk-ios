@@ -42,7 +42,7 @@ internal struct DebugManualTraceInjectionView: View {
     @State private var spanName = "network request"
     @State private var requestURL = "https://httpbin.org/get"
     @State private var selectedTraceHeaderTypes: Set<TraceHeaderType> = [.datadog, .w3c]
-    @State private var selectedTraceContextInjection: TraceContextInjection = .all
+    @State private var selectedTraceContextInjection: TraceContextInjection = .sampled
     @State private var sampleRate: SampleRate = .maxSampleRate
     @State private var isRequestPending = false
 
