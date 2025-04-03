@@ -48,7 +48,7 @@ public class DDB3HTTPHeadersWriter: NSObject {
     @objc
     @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
     public init(
-        sampleRate: Float = 20,
+        sampleRate: Float = .maxSampleRate,
         injectEncoding: DDInjectEncoding = .single
     ) {
         swiftB3HTTPHeadersWriter = B3HTTPHeadersWriter(

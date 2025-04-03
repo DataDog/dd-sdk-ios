@@ -79,11 +79,11 @@ public class B3HTTPHeadersWriter: TracePropagationHeadersWriter {
 
     /// Initializes the headers writer.
     ///
-    /// - Parameter sampleRate: The sampling rate applied for headers injection, with 20% as the default.
+    /// - Parameter sampleRate: The sampling rate applied for headers injection, with 100% as the default.
     /// - Parameter injectEncoding: The B3 header encoding type, with `.single` as the default.
     @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
     public convenience init(
-        sampleRate: Float = 20,
+        sampleRate: Float = .maxSampleRate,
         injectEncoding: InjectEncoding = .single
     ) {
         self.init(

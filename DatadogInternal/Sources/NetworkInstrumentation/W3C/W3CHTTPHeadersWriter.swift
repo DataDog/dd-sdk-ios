@@ -52,10 +52,10 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
 
     /// Initializes the headers writer.
     ///
-    /// - Parameter sampleRate: The sampling rate applied for headers injection, with 20% as the default.
+    /// - Parameter sampleRate: The sampling rate applied for headers injection, with 100% as the default.
     /// - Parameter tracestate: The tracestate to be injected.
     @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
-    public convenience init(sampleRate: Float = 20, tracestate: [String: String] = [:]) {
+    public convenience init(sampleRate: Float = .maxSampleRate, tracestate: [String: String] = [:]) {
         self.init(samplingStrategy: .custom(sampleRate: sampleRate), tracestate: tracestate, traceContextInjection: .sampled)
     }
 
