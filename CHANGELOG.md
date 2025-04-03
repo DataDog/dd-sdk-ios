@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Fixed Swift 6.0.2 compatibility issue with `DatadogCrashReporting` framework. See [#2251][]
+
 # 2.24.1 / 31-04-2025
 
 - [FIX] Do not enforce dynamic linking for OpenTelemetryApi in `DatadogTrace`. See [#2244][]
@@ -847,6 +849,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2244]: https://github.com/DataDog/dd-sdk-ios/pull/2244
 [#2200]: https://github.com/DataDog/dd-sdk-ios/pull/2200
 [#2195]: https://github.com/DataDog/dd-sdk-ios/pull/2195
+[#2251]: https://github.com/DataDog/dd-sdk-ios/pull/2251
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
