@@ -21,7 +21,7 @@ internal struct VitalsReaders {
         self.frequency = frequency
         self.cpu = VitalCPUReader(notificationCenter: .default, telemetry: telemetry)
         self.memory = VitalMemoryReader()
-        self.refreshRate = VitalRefreshRateReader(notificationCenter: .default)
+        self.refreshRate = VitalRefreshRateReader()
     }
 }
 
@@ -33,6 +33,7 @@ internal struct RUMScopeDependencies {
     let sessionSampler: Sampler
     let trackBackgroundEvents: Bool
     let trackFrustrations: Bool
+    let hasAppHangsEnabled: Bool
     let firstPartyHosts: FirstPartyHosts?
     let eventBuilder: RUMEventBuilder
     let rumUUIDGenerator: RUMUUIDGenerator
@@ -40,6 +41,8 @@ internal struct RUMScopeDependencies {
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
     let syntheticsTest: RUMSyntheticsTest?
+    let renderLoopObserver: RenderLoopObserver?
+    let viewHitchesMetricFactory: () -> (ViewHitchesMetric & RenderLoopReader)?
     let vitalsReaders: VitalsReaders?
     let onSessionStart: RUM.SessionListener?
     let viewCache: ViewCache
@@ -69,12 +72,15 @@ internal struct RUMScopeDependencies {
         sessionSampler: Sampler,
         trackBackgroundEvents: Bool,
         trackFrustrations: Bool,
+        hasAppHangsEnabled: Bool,
         firstPartyHosts: FirstPartyHosts?,
         eventBuilder: RUMEventBuilder,
         rumUUIDGenerator: RUMUUIDGenerator,
         backtraceReporter: BacktraceReporting?,
         ciTest: RUMCITest?,
         syntheticsTest: RUMSyntheticsTest?,
+        renderLoopObserver: RenderLoopObserver?,
+        viewHitchesMetricFactory: @escaping () -> (ViewHitchesMetric & RenderLoopReader)?,
         vitalsReaders: VitalsReaders?,
         onSessionStart: RUM.SessionListener?,
         viewCache: ViewCache,
@@ -90,12 +96,15 @@ internal struct RUMScopeDependencies {
         self.sessionSampler = sessionSampler
         self.trackBackgroundEvents = trackBackgroundEvents
         self.trackFrustrations = trackFrustrations
+        self.hasAppHangsEnabled = hasAppHangsEnabled
         self.firstPartyHosts = firstPartyHosts
         self.eventBuilder = eventBuilder
         self.rumUUIDGenerator = rumUUIDGenerator
         self.backtraceReporter = backtraceReporter
         self.ciTest = ciTest
         self.syntheticsTest = syntheticsTest
+        self.renderLoopObserver = renderLoopObserver
+        self.viewHitchesMetricFactory = viewHitchesMetricFactory
         self.vitalsReaders = vitalsReaders
         self.onSessionStart = onSessionStart
         self.viewCache = viewCache

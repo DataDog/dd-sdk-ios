@@ -13,10 +13,10 @@ class ApplicationStatePublisherTests: XCTestCase {
     private let notificationCenter = NotificationCenter()
 
     private let supportedNotifications = [
-        (name: UIApplication.didBecomeActiveNotification, expectedState: AppState.active),
-        (name: UIApplication.willResignActiveNotification, expectedState: AppState.inactive),
-        (name: UIApplication.didEnterBackgroundNotification, expectedState: AppState.background),
-        (name: UIApplication.willEnterForegroundNotification, expectedState: AppState.inactive),
+        (name: ApplicationNotifications.didBecomeActive, expectedState: AppState.active),
+        (name: ApplicationNotifications.willResignActive, expectedState: AppState.inactive),
+        (name: ApplicationNotifications.didEnterBackground, expectedState: AppState.background),
+        (name: ApplicationNotifications.willEnterForeground, expectedState: AppState.inactive),
     ]
 
     // MARK: - Handling UIApplication Notifications

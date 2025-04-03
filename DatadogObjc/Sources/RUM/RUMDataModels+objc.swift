@@ -4891,6 +4891,10 @@ public class DDRUMViewEventDD: NSObject {
         root.swiftModel.dd.browserSdkVersion
     }
 
+    @objc public var cls: DDRUMViewEventDDCLS? {
+        root.swiftModel.dd.cls != nil ? DDRUMViewEventDDCLS(root: root) : nil
+    }
+
     @objc public var configuration: DDRUMViewEventDDConfiguration? {
         root.swiftModel.dd.configuration != nil ? DDRUMViewEventDDConfiguration(root: root) : nil
     }
@@ -4913,6 +4917,19 @@ public class DDRUMViewEventDD: NSObject {
 
     @objc public var session: DDRUMViewEventDDSession? {
         root.swiftModel.dd.session != nil ? DDRUMViewEventDDSession(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMViewEventDDCLS: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var devicePixelRatio: NSNumber? {
+        root.swiftModel.dd.cls!.devicePixelRatio as NSNumber?
     }
 }
 
@@ -5777,6 +5794,10 @@ public class DDRUMViewEventView: NSObject {
         root.swiftModel.view.flutterRasterTime != nil ? DDRUMViewEventViewFlutterRasterTime(root: root) : nil
     }
 
+    @objc public var freezeRate: NSNumber? {
+        root.swiftModel.view.freezeRate as NSNumber?
+    }
+
     @objc public var frozenFrame: DDRUMViewEventViewFrozenFrame? {
         root.swiftModel.view.frozenFrame != nil ? DDRUMViewEventViewFrozenFrame(root: root) : nil
     }
@@ -5881,6 +5902,14 @@ public class DDRUMViewEventView: NSObject {
 
     @objc public var resource: DDRUMViewEventViewResource {
         DDRUMViewEventViewResource(root: root)
+    }
+
+    @objc public var slowFrames: [DDRUMViewEventViewSlowFrames]? {
+        root.swiftModel.view.slowFrames?.map { DDRUMViewEventViewSlowFrames(swiftModel: $0) }
+    }
+
+    @objc public var slowFramesRate: NSNumber? {
+        root.swiftModel.view.slowFramesRate as NSNumber?
     }
 
     @objc public var timeSpent: NSNumber {
@@ -6317,6 +6346,24 @@ public class DDRUMViewEventViewResource: NSObject {
 
     @objc public var count: NSNumber {
         root.swiftModel.view.resource.count as NSNumber
+    }
+}
+
+@objc
+public class DDRUMViewEventViewSlowFrames: NSObject {
+    internal var swiftModel: RUMViewEvent.View.SlowFrames
+    internal var root: DDRUMViewEventViewSlowFrames { self }
+
+    internal init(swiftModel: RUMViewEvent.View.SlowFrames) {
+        self.swiftModel = swiftModel
+    }
+
+    @objc public var duration: NSNumber {
+        root.swiftModel.duration as NSNumber
+    }
+
+    @objc public var start: NSNumber {
+        root.swiftModel.start as NSNumber
     }
 }
 
@@ -8467,4 +8514,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/69147431d689b3e59bff87e15bb0088a9bb319a9
+// Generated from https://github.com/DataDog/rum-events-format/tree/45a80c1390b8ec886534f5f1b43763a6d9d0a643

@@ -15,31 +15,21 @@ public protocol HostsSanitizing {
 }
 
 public struct HostsSanitizer: HostsSanitizing {
-    private let urlRegex = #"^(http|https)://(.*)"#
-    private let hostRegex = #"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)+([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$"#
+    private let hostRegex = #"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$"#
     private let ipRegex = #"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"#
 
     public init() { }
 
     private func sanitize(host: String, warningMessage: String) -> (String?, String?) {
-        if host.range(of: urlRegex, options: .regularExpression) != nil {
+        if let sanitizedHost = URL(string: host)?.host {
             // if an URL is given instead of the host, take its `host` part
-            if let sanitizedHost = URL(string: host)?.host {
-                let warning = "'\(host)' is an url and will be sanitized to: '\(sanitizedHost)'."
-                return (sanitizedHost, warning)
-            } else {
-                // otherwise, drop
-                let warning = "'\(host)' is not a valid host name and will be dropped."
-                return (nil, warning)
-            }
-        } else if host.range(of: hostRegex, options: .regularExpression) != nil {
-            // if a valid host name is given, accept it
-            return (host, nil)
+            let warning = "'\(host)' is an url and will be sanitized to: '\(sanitizedHost)'."
+            return (sanitizedHost, warning)
         } else if host.range(of: ipRegex, options: .regularExpression) != nil {
             // if a valid IP address is given, accept it
             return (host, nil)
-        } else if host == "localhost" {
-            // if "localhost" given, accept it
+        } else if host.range(of: hostRegex, options: .regularExpression) != nil {
+            // if a valid host name is given, accept it
             return (host, nil)
         } else {
             // otherwise, drop

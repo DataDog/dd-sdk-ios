@@ -74,6 +74,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
+            hasAppHangsEnabled: configuration.appHangThreshold != nil,
             firstPartyHosts: {
                 switch configuration.urlSessionTracking?.firstPartyHostsTracing {
                 case let .trace(hosts, _, _):
@@ -97,6 +98,12 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     return nil
                 }
             }(),
+            renderLoopObserver: DisplayLinker(notificationCenter: configuration.notificationCenter),
+            viewHitchesMetricFactory: {
+                configuration.featureFlags[.viewHitches]
+                ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
+                : nil
+            },
             vitalsReaders: configuration.vitalsUpdateFrequency.map {
                 VitalsReaders(
                     frequency: $0.timeInterval,
@@ -138,6 +145,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
             dateProvider: configuration.dateProvider
         )
 
+        if let refreshRateVital = dependencies.vitalsReaders?.refreshRate as? RenderLoopReader {
+            dependencies.renderLoopObserver?.register(refreshRateVital)
+        }
+
         let memoryWarningReporter = MemoryWarningReporter()
         let memoryWarningMonitor = MemoryWarningMonitor(
             backtraceReporter: core.backtraceReporter,
@@ -149,6 +160,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             featureScope: featureScope,
             uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
             uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
+            swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
             longTaskThreshold: configuration.longTaskThreshold,
             appHangThreshold: configuration.appHangThreshold,
             mainQueue: configuration.mainQueue,

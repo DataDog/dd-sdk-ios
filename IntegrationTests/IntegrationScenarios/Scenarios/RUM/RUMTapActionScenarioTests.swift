@@ -32,24 +32,12 @@ private extension ExampleApplication {
         buttons["Show various UIControls"].tap()
     }
 
-    func tapTextField() {
-        tables.cells
+    func tapTextField(_ text: String) {
+        let textField = tables.cells
             .containing(.staticText, identifier: "UITextField")
             .children(matching: .textField).element
-            .tap()
-    }
-
-    func enterTextUsingKeyboard(_ text: String) {
-        // NOTE: RUMM-740 iOS 13 Swipe typing feature presents its onboarding
-        // That blocks the keyboard with a Continue button
-        // it must be tapped first to get the real keyboard
-        let swipeTypingContinueButton = buttons["Continue"]
-        if swipeTypingContinueButton.exists {
-            swipeTypingContinueButton.tap()
-        }
-        text.forEach { letter in
-            keys[String(letter)].tap()
-        }
+        textField.tap()
+        textField.typeText(text)
     }
 
     func dismissKeyboard() {
@@ -63,7 +51,7 @@ private extension ExampleApplication {
     }
 
     func moveSlider(to position: CGFloat) {
-        tables.sliders["50%"].adjust(toNormalizedSliderPosition: position)
+        tables.sliders.firstMatch.adjust(toNormalizedSliderPosition: position)
     }
 
     func tapSegmentedControlSegment(label: String) {
@@ -96,8 +84,7 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapShowUICollectionView()
         app.tapCollectionViewItem(atIndex: 14)
         app.tapShowVariousUIControls()
-        app.tapTextField()
-        app.enterTextUsingKeyboard("foo")
+        app.tapTextField("foo")
         app.dismissKeyboard()
         app.tapStepperPlusButton()
         app.moveSlider(to: 0.25)

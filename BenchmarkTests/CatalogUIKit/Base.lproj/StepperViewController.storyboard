@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19142.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Ob2-pp-aCj">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19142.2"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Steppers-->
+        <scene sceneID="xBH-7V-3ks">
+            <objects>
+                <tableViewController id="Ob2-pp-aCj" customClass="StepperViewController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="none" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="aQ3-9F-Tmi">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <prototypes>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="defaultStepper" id="txD-Kd-WKO">
+                                <rect key="frame" x="0.0" y="55.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="txD-Kd-WKO" id="9Ly-79-FgI">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stepper opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" maximumValue="10" translatesAutoresizingMaskIntoConstraints="NO" id="Rwt-E0-Les">
+                                            <rect key="frame" x="140.5" y="6" width="94" height="32"/>
+                                        </stepper>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="Rwt-E0-Les" firstAttribute="centerX" secondItem="9Ly-79-FgI" secondAttribute="centerX" id="Djd-St-gHh"/>
+                                        <constraint firstItem="Rwt-E0-Les" firstAttribute="centerY" secondItem="9Ly-79-FgI" secondAttribute="centerY" id="dUb-YS-6Nn"/>
+                                    </constraints>
+                                    <variation key="heightClass=regular-userInterfaceIdiom=mac-widthClass=compact">
+                                        <mask key="subviews">
+                                            <exclude reference="Rwt-E0-Les"/>
+                                        </mask>
+                                    </variation>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="tintedStepper" id="6oV-1N-Grs">
+                                <rect key="frame" x="0.0" y="99.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="6oV-1N-Grs" id="vMM-mh-15P">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stepper opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" maximumValue="10" translatesAutoresizingMaskIntoConstraints="NO" id="m2X-w6-RUU">
+                                            <rect key="frame" x="140.5" y="6" width="94" height="32"/>
+                                        </stepper>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="m2X-w6-RUU" firstAttribute="centerX" secondItem="vMM-mh-15P" secondAttribute="centerX" id="M8s-QM-GS7"/>
+                                        <constraint firstItem="m2X-w6-RUU" firstAttribute="centerY" secondItem="vMM-mh-15P" secondAttribute="centerY" id="e8j-CB-x6c"/>
+                                    </constraints>
+                                    <variation key="heightClass=regular-userInterfaceIdiom=mac-widthClass=compact">
+                                        <mask key="subviews">
+                                            <exclude reference="m2X-w6-RUU"/>
+                                        </mask>
+                                    </variation>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="customStepper" id="6QE-YR-v8B">
+                                <rect key="frame" x="0.0" y="143.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="6QE-YR-v8B" id="20r-KY-uNw">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stepper opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" maximumValue="10" translatesAutoresizingMaskIntoConstraints="NO" id="xNt-Bk-wo8">
+                                            <rect key="frame" x="140.5" y="6" width="94" height="32"/>
+                                        </stepper>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="xNt-Bk-wo8" firstAttribute="centerX" secondItem="20r-KY-uNw" secondAttribute="centerX" id="pTg-IT-vAf"/>
+                                        <constraint firstItem="xNt-Bk-wo8" firstAttribute="centerY" secondItem="20r-KY-uNw" secondAttribute="centerY" id="zBQ-l9-vjB"/>
+                                    </constraints>
+                                    <variation key="heightClass=regular-userInterfaceIdiom=mac-widthClass=compact">
+                                        <mask key="subviews">
+                                            <exclude reference="xNt-Bk-wo8"/>
+                                        </mask>
+                                    </variation>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <sections/>
+                        <connections>
+                            <outlet property="dataSource" destination="Ob2-pp-aCj" id="VqG-Vh-qI4"/>
+                            <outlet property="delegate" destination="Ob2-pp-aCj" id="DfP-FZ-0PN"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Steppers" id="T8O-Ms-7gi"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="zYk-TL-2Rd" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="5177" y="3368"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

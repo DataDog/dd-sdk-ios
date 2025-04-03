@@ -11,28 +11,35 @@ import TestUtilities
 class RUMViewsHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()
-    private let predicate = UIKitRUMViewsPredicateMock()
     private let notificationCenter = NotificationCenter()
 
-    private lazy var handler: RUMViewsHandler = {
+    // MARK: - Helper
+    private func createHandler(
+        uiKitPredicate: UIKitRUMViewsPredicate? = nil,
+        swiftUIPredicate: SwiftUIRUMViewsPredicate? = nil,
+        swiftUIViewNameExtractor: SwiftUIViewNameExtractor? = nil
+    ) -> RUMViewsHandler {
         let handler = RUMViewsHandler(
             dateProvider: dateProvider,
-            predicate: predicate,
+            uiKitPredicate: uiKitPredicate,
+            swiftUIPredicate: swiftUIPredicate,
+            swiftUIViewNameExtractor: swiftUIViewNameExtractor,
             notificationCenter: notificationCenter
         )
         handler.publish(to: commandSubscriber)
         return handler
-    }()
+    }
 
     // MARK: - Handling `viewDidAppear`
 
-    func testGivenAcceptingPredicate_whenViewDidAppear_itStartsRUMView() throws {
+    func testGivenUIKitPredicate_whenViewDidAppear_itStartsRUMView() throws {
         let viewName: String = .mockRandom()
         let viewControllerClassName: String = .mockRandom()
         let view = createMockView(viewControllerClassName: viewControllerClassName)
 
         // Given
-        predicate.result = .init(name: viewName, attributes: ["foo": "bar"])
+        let uiKitPredicate = UIKitRUMViewsPredicateMock(result: .init(name: viewName, attributes: ["foo": "bar"]))
+        let handler = createHandler(uiKitPredicate: uiKitPredicate)
 
         // When
         handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
@@ -45,18 +52,21 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(command.path, viewControllerClassName)
         XCTAssertEqual(command.name, viewName)
         XCTAssertEqual(command.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(command.instrumentationType, .uikit)
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
     }
 
-    func testGivenAcceptingPredicate_whenViewDidAppear_itStopsPreviousRUMView() throws {
+    func testGivenUIKitPredicate_whenViewDidAppear_itStopsPreviousRUMView() throws {
         let view1 = createMockViewInWindow()
         let view2 = createMockViewInWindow()
 
         // Given
-        predicate.resultByViewController = [
+        let uiKitPredicate = UIKitRUMViewsPredicateMock()
+        uiKitPredicate.resultByViewController = [
             view1: .init(name: .mockRandom(), attributes: ["key1": "val1"]),
             view2: .init(name: .mockRandom(), attributes: ["key2": "val2"]),
         ]
+        let handler = createHandler(uiKitPredicate: uiKitPredicate)
 
         // When
         handler.notify_viewDidAppear(viewController: view1, animated: .mockAny())
@@ -76,11 +86,12 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(startCommand2.attributes as? [String: String], ["key2": "val2"])
     }
 
-    func testGivenAcceptingPredicate_whenViewDidAppear_itDoesNotStartTheSameRUMViewTwice() {
+    func testGivenUIKitPredicate_whenViewDidAppear_itDoesNotStartTheSameRUMViewTwice() {
         let view = createMockViewInWindow()
 
         // Given
-        predicate.result = .init(name: .mockRandom())
+        let uiKitPredicate = UIKitRUMViewsPredicateMock(result: .init(name: .mockRandom()))
+        let handler = createHandler(uiKitPredicate: uiKitPredicate)
 
         // When
         handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
@@ -91,17 +102,167 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertTrue(commandSubscriber.receivedCommands[0] is RUMStartViewCommand)
     }
 
-    func testGivenRejectingPredicate_whenViewDidAppear_itDoesNotStartAnyRUMView() {
+    func testGivenNoUIKitPredicate_whenViewDidAppear_itDoesNotStartAnyRUMView() {
         let view = createMockViewInWindow()
 
         // Given
-        predicate.result = nil
+        let handler = createHandler()
 
         // When
         handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
+    }
+
+    func testGivenSwiftUIPredicateAndNameExtractor_whenViewDidAppear_itStartsRUMView() throws {
+        let viewController = createMockViewInWindow()
+        let extractedName = "MySwiftUIView"
+        let viewName = "CustomizedName"
+
+        // Given
+        let swiftUIViewNameExtractor = SwiftUIViewNameExtractorMock(defaultResult: extractedName)
+        let swiftUIPredicate = SwiftUIRUMViewsPredicateMock(result: .init(name: viewName, attributes: ["foo": "bar"]))
+
+        let handler = createHandler(
+            swiftUIPredicate: swiftUIPredicate,
+            swiftUIViewNameExtractor: swiftUIViewNameExtractor
+        )
+
+        // When
+        handler.notify_viewDidAppear(viewController: viewController, animated: .mockAny())
+
+        // Then
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+        let command = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+        XCTAssertTrue(command.identity == ViewIdentifier(viewController))
+        XCTAssertEqual(command.path, viewController.canonicalClassName)
+        XCTAssertEqual(command.name, viewName)
+        XCTAssertEqual(command.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(command.instrumentationType, .swiftui)
+        XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
+    }
+
+    func testGivenSwiftUIPredicateAndNoNameExtractor_whenViewDidAppear_itDoesNotStartView() {
+        let viewController = createMockViewInWindow()
+
+        // Given
+        let swiftUIPredicate = SwiftUIRUMViewsPredicateMock(result: .init(name: "ShouldNotBeCalled"))
+
+        let handler = createHandler(
+            swiftUIPredicate: swiftUIPredicate,
+            swiftUIViewNameExtractor: nil
+        )
+
+        // When
+        handler.notify_viewDidAppear(viewController: viewController, animated: true)
+
+        // Then
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
+    }
+
+    func testGivenNameExtractorButNoSwiftUIPredicate_whenViewDidAppear_itDoesNotStartView() {
+        let viewController = createMockViewInWindow()
+
+        // Given
+        let swiftUIViewNameExtractor = SwiftUIViewNameExtractorMock(defaultResult: "MySwiftUIView")
+
+        let handler = createHandler(
+            swiftUIPredicate: nil,
+            swiftUIViewNameExtractor: swiftUIViewNameExtractor
+        )
+
+        // When
+        handler.notify_viewDidAppear(viewController: viewController, animated: true)
+
+        // Then
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
+    }
+
+    func testGivenSwiftUIPredicate_whenViewDidAppear_itStopsPreviousRUMView() throws {
+        let view1 = createMockViewInWindow()
+        let view2 = createMockViewInWindow()
+
+        // Given
+        let swiftUIViewNameExtractor = SwiftUIViewNameExtractorMock()
+        swiftUIViewNameExtractor.resultByViewController = [
+            view1: "view1",
+            view2: "view2"
+        ]
+
+        let swiftUIPredicate = SwiftUIRUMViewsPredicateMock()
+        swiftUIPredicate.resultByViewName = [
+            "view1": .init(name: .mockRandom(), attributes: ["key1": "val1"]),
+            "view2": .init(name: .mockRandom(), attributes: ["key2": "val2"]),
+        ]
+        let handler = createHandler(swiftUIPredicate: swiftUIPredicate, swiftUIViewNameExtractor: swiftUIViewNameExtractor)
+
+        // When
+        handler.notify_viewDidAppear(viewController: view1, animated: .mockAny())
+        handler.notify_viewDidAppear(viewController: view2, animated: .mockAny())
+
+        // Then
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+
+        let startCommand1 = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+        let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
+        let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
+
+        XCTAssertTrue(startCommand1.identity == ViewIdentifier(view1))
+        XCTAssertEqual(startCommand1.attributes as? [String: String], ["key1": "val1"])
+        XCTAssertEqual(startCommand1.instrumentationType, .swiftui)
+        XCTAssertTrue(stopCommand.identity == ViewIdentifier(view1))
+        XCTAssertEqual(stopCommand.attributes.count, 0)
+        XCTAssertTrue(startCommand2.identity == ViewIdentifier(view2))
+        XCTAssertEqual(startCommand2.attributes as? [String: String], ["key2": "val2"])
+        XCTAssertEqual(startCommand2.instrumentationType, .swiftui)
+    }
+
+    func testGivenBothPredicates_whenViewDidAppear_itUsesUIKitPredicate() throws {
+        let viewController = createMockViewInWindow()
+
+        // Given
+        let swiftUIViewNameExtractor = SwiftUIViewNameExtractorMock(defaultResult: "MySwiftUIView")
+        let swiftUIPredicate = SwiftUIRUMViewsPredicateMock(result: .init(name: "SwiftUIName"))
+        let uiKitPredicate = UIKitRUMViewsPredicateMock(result: .init(name: "UIKitName"))
+
+        let handler = createHandler(
+            uiKitPredicate: uiKitPredicate,
+            swiftUIPredicate: swiftUIPredicate,
+            swiftUIViewNameExtractor: swiftUIViewNameExtractor
+        )
+
+        // When
+        handler.notify_viewDidAppear(viewController: viewController, animated: true)
+
+        // Then
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+        let command = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+        XCTAssertEqual(command.name, "UIKitName")
+        XCTAssertEqual(command.instrumentationType, .uikit)
+    }
+
+    func testGivenNoUIKitPredicate_whenViewDidAppear_itFallsBackToSwiftUIPredicate() throws {
+        let viewController = createMockViewInWindow()
+
+        // Given
+        let swiftUIViewNameExtractor = SwiftUIViewNameExtractorMock(defaultResult: "MySwiftUIView")
+        let swiftUIPredicate = SwiftUIRUMViewsPredicateMock(result: .init(name: "SwiftUIName"))
+
+        let handler = createHandler(
+            swiftUIPredicate: swiftUIPredicate,
+            swiftUIViewNameExtractor: swiftUIViewNameExtractor
+        )
+        handler.publish(to: commandSubscriber)
+
+        // When
+        handler.notify_viewDidAppear(viewController: viewController, animated: true)
+
+        // Then
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+        let command = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+        XCTAssertEqual(command.name, "SwiftUIName")
+        XCTAssertEqual(command.instrumentationType, .swiftui)
     }
 
     // MARK: - Handling `viewDidDisappear`
@@ -112,7 +273,8 @@ class RUMViewsHandlerTests: XCTestCase {
         let view2 = createMockViewInWindow()
 
         // When
-        predicate.result = .init(name: .mockRandom())
+        let uiKitPredicate = UIKitRUMViewsPredicateMock(result: .init(name: .mockRandom()))
+        let handler = createHandler(uiKitPredicate: uiKitPredicate)
         handler.notify_viewDidAppear(viewController: view1, animated: .mockAny())
         handler.notify_viewDidAppear(viewController: view2, animated: .mockAny())
         handler.notify_viewDidDisappear(viewController: view2, animated: .mockAny())
@@ -133,11 +295,12 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertTrue(startCommand3.identity == ViewIdentifier(view1))
     }
 
-    func testGivenAcceptingPredicate_whenViewDidDisappearButPreviousView_itDoesNotStartAnyRUMView() {
+    func testGivenNoActiveView_whenViewDidDisappear_itDoesNotStartAnyRUMView() {
         let view = createMockViewInWindow()
 
         // Given
-        predicate.result = .init(name: .mockRandom())
+        let uiKitPredicate = UIKitRUMViewsPredicateMock(result: .init(name: .mockRandom()))
+        let handler = createHandler(uiKitPredicate: uiKitPredicate)
 
         // When
         handler.notify_viewDidDisappear(viewController: view, animated: .mockAny())
@@ -146,12 +309,12 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
     }
 
-    func testGivenRejectingPredicate_whenViewDidDisappear_itDoesNotStartAnyRUMView() {
+    func testGivenNoPredicates_whenViewDidDisappear_itDoesNotStartAnyRUMView() {
         let view1 = createMockViewInWindow()
         let view2 = createMockViewInWindow()
 
         // Given
-        predicate.result = nil
+        let handler = createHandler()
 
         // When
         handler.notify_viewDidAppear(viewController: view1, animated: .mockAny())
@@ -168,7 +331,8 @@ class RUMViewsHandlerTests: XCTestCase {
         let view = createMockView(viewControllerClassName: viewControllerClassName)
 
         // Given
-        predicate.result = .init(name: viewName, attributes: ["foo": "bar"])
+        let uiKitPredicate = UIKitRUMViewsPredicateMock(result: .init(name: viewName, attributes: ["foo": "bar"]))
+        let handler = createHandler(uiKitPredicate: uiKitPredicate)
         handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
 
         // When
@@ -197,7 +361,8 @@ class RUMViewsHandlerTests: XCTestCase {
         let viewName: String = .mockRandom()
 
         // Given
-        predicate.result = .init(name: viewName, attributes: ["foo": "bar"])
+        let uiKitPredicate = UIKitRUMViewsPredicateMock(result: .init(name: viewName, attributes: ["foo": "bar"]))
+        let handler = createHandler(uiKitPredicate: uiKitPredicate)
         handler.notify_viewDidDisappear(viewController: view, animated: .mockAny())
 
         // When
@@ -212,16 +377,8 @@ class RUMViewsHandlerTests: XCTestCase {
     // MARK: - Interacting with predicate
 
     func testGivenAppearedView_whenTransitioningBackAndForthFromThisViewToAnother_thenPredicateIsCalledOnlyTwice() {
-        class Predicate: UIKitRUMViewsPredicate {
-            var numberOfCalls = 0
-
-            func rumView(for viewController: UIViewController) -> RUMView? {
-                numberOfCalls += 1
-                return .init(name: .mockRandom())
-            }
-        }
-        let predicate = Predicate()
-        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
+        let uiKitPredicate = UIKitPredicateWithTrackingMock()
+        let handler = createHandler(uiKitPredicate: uiKitPredicate)
 
         // Given
         let someView = createMockViewInWindow()
@@ -235,30 +392,16 @@ class RUMViewsHandlerTests: XCTestCase {
         handler.notify_viewDidAppear(viewController: anotherView, animated: .mockAny()) // 5th: `anotherView` receives "did appear"
 
         // Then
-        XCTAssertEqual(predicate.numberOfCalls, 2)
+        XCTAssertEqual(uiKitPredicate.numberOfCalls, 2)
     }
 
     func testGivenAppearedView_whenTransitioningToUntrackedModal_viewDoesStop() throws {
-        class Predicate: UIKitRUMViewsPredicate {
-            let untrackedModal: UIViewController
-
-            init(untrackedModal: UIViewController) {
-                self.untrackedModal = untrackedModal
-            }
-
-            func rumView(for viewController: UIViewController) -> RUMView? {
-                let isUntrackedModal = viewController == untrackedModal
-
-                return .init(name: .mockRandom(), isUntrackedModal: isUntrackedModal)
-            }
-        }
         // Given
         let someView = createMockViewInWindow()
         let untrackedModal = createMockViewInWindow()
 
-        let predicate = Predicate(untrackedModal: untrackedModal)
-        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
-        handler.publish(to: commandSubscriber)
+        let uiKitPredicate = UIKitPredicateWithModalMock(untrackedModal: untrackedModal)
+        let handler = createHandler(uiKitPredicate: uiKitPredicate)
 
         // When
         handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
@@ -274,26 +417,12 @@ class RUMViewsHandlerTests: XCTestCase {
     }
 
     func testGivenUntrackedModal_whenTransitioningToAppearedView_viewDoesStart() throws {
-        class Predicate: UIKitRUMViewsPredicate {
-            let untrackedModal: UIViewController
-
-            init(untrackedModal: UIViewController) {
-                self.untrackedModal = untrackedModal
-            }
-
-            func rumView(for viewController: UIViewController) -> RUMView? {
-                let isUntrackedModal = viewController == untrackedModal
-
-                return .init(name: .mockRandom(), isUntrackedModal: isUntrackedModal)
-            }
-        }
         // Given
         let someView = createMockViewInWindow()
         let untrackedModal = createMockViewInWindow()
 
-        let predicate = Predicate(untrackedModal: untrackedModal)
-        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
-        handler.publish(to: commandSubscriber)
+        let uiKitPredicate = UIKitPredicateWithModalMock(untrackedModal: untrackedModal)
+        let handler = createHandler(uiKitPredicate: uiKitPredicate)
 
         // When
         handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
@@ -311,88 +440,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertTrue(startCommand2.identity == ViewIdentifier(someView))
     }
 
-    func testGiveniOS13AppearedView_whenTransitioningToModal_viewDoesStop() throws {
-        if #available(iOS 13, tvOS 13, *) {
-            class Predicate: UIKitRUMViewsPredicate {
-                let untrackedModal: UIViewController
-
-                init(untrackedModal: UIViewController) {
-                    self.untrackedModal = untrackedModal
-                }
-
-                func rumView(for viewController: UIViewController) -> RUMView? {
-                    let isUntrackedModal = viewController == untrackedModal
-
-                    return .init(name: .mockRandom(), isUntrackedModal: isUntrackedModal)
-                }
-            }
-            // Given
-            let someView = createMockViewInWindow()
-            let untrackedModal = createMockViewInWindow()
-            untrackedModal.isModalInPresentation = true
-
-            let predicate = Predicate(untrackedModal: untrackedModal)
-            let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
-            handler.publish(to: commandSubscriber)
-
-            // When
-            handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
-            handler.notify_viewDidAppear(viewController: untrackedModal, animated: .mockAny())
-
-            XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
-
-            let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
-            let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
-
-            XCTAssertTrue(startCommand.identity == ViewIdentifier(someView))
-            XCTAssertTrue(stopCommand.identity == ViewIdentifier(someView))
-        }
-    }
-
-    func testGiveniOS13Modal_whenTransitioningToAppearedView_viewDoesStart() throws {
-        if #available(iOS 13, tvOS 13, *) {
-            class Predicate: UIKitRUMViewsPredicate {
-                let untrackedModal: UIViewController
-
-                init(untrackedModal: UIViewController) {
-                    self.untrackedModal = untrackedModal
-                }
-
-                func rumView(for viewController: UIViewController) -> RUMView? {
-                    if viewController == untrackedModal {
-                        return nil
-                    }
-
-                    return .init(name: .mockRandom())
-                }
-            }
-            // Given
-            let someView = createMockViewInWindow()
-            let untrackedModal = createMockViewInWindow()
-            untrackedModal.isModalInPresentation = true
-
-            let predicate = Predicate(untrackedModal: untrackedModal)
-            let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate, notificationCenter: .default)
-            handler.publish(to: commandSubscriber)
-
-            // When
-            handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
-            handler.notify_viewDidAppear(viewController: untrackedModal, animated: .mockAny())
-            handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
-
-            XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
-
-            let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
-            let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
-            let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
-
-            XCTAssertTrue(startCommand.identity == ViewIdentifier(someView))
-            XCTAssertTrue(stopCommand.identity == ViewIdentifier(someView))
-            XCTAssertTrue(startCommand2.identity == ViewIdentifier(someView))
-        }
-    }
-
-    // MARK: - Handling SwiftUI `.onAppear`
+    // MARK: - Handling Manual SwiftUI Instrumentation `.onAppear`
 
     func testWhenOnAppear_itStartsRUMView() throws {
         // Given
@@ -402,6 +450,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let viewAttributes = mockRandomAttributes()
 
         // When
+        let handler = createHandler()
         handler.notify_onAppear(
             identity: viewIdentity,
             name: viewName,
@@ -431,6 +480,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let view2Name: String = .mockRandom()
         let view2Path: String = .mockRandom()
         let view2Attributes = mockRandomAttributes()
+        let handler = createHandler()
 
         // When
         handler.notify_onAppear(
@@ -468,6 +518,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let viewName: String = .mockRandom()
         let viewPath: String = .mockRandom()
         let viewAttributes = mockRandomAttributes()
+        let handler = createHandler()
 
         // When
         handler.notify_onAppear(
@@ -489,11 +540,12 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertTrue(commandSubscriber.receivedCommands[0] is RUMStartViewCommand)
     }
 
-    // MARK: - Handling SwiftUI `onDisappear`
+    // MARK: - Handling Manual SwiftUI Instrumentation `onDisappear`
 
     func testWhenOnDisappear_itDoesNotSendAnyCommand() {
         // Given
         let viewIdentity: String = UUID().uuidString
+        let handler = createHandler()
 
         // When
         handler.notify_onDisappear(identity: viewIdentity)
@@ -508,6 +560,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let viewName: String = .mockRandom()
         let viewPath: String = .mockRandom()
         let viewAttributes = mockRandomAttributes()
+        let handler = createHandler()
 
         // When
         handler.notify_onAppear(
@@ -542,6 +595,8 @@ class RUMViewsHandlerTests: XCTestCase {
         let view2Name: String = .mockRandom()
         let view2Path: String = .mockRandom()
         let view2Attributes = mockRandomAttributes()
+
+        let handler = createHandler()
 
         // When
         handler.notify_onAppear(
@@ -585,6 +640,8 @@ class RUMViewsHandlerTests: XCTestCase {
         let view2Name: String = .mockRandom()
         let view2Path: String = .mockRandom()
         let view2Attributes = mockRandomAttributes()
+
+        let handler = createHandler()
 
         // When
         handler.notify_onAppear(
@@ -630,6 +687,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let viewName: String = .mockRandom()
         let viewPath: String = .mockRandom()
         let viewAttributes = mockRandomAttributes()
+        let handler = createHandler()
 
         // When
         handler.notify_onAppear(
@@ -661,6 +719,7 @@ class RUMViewsHandlerTests: XCTestCase {
     func testGivenSwiftUIViewDidNotStart_whenAppStateChanges_itDoesNothing() throws {
         // Given
         let viewIdentity: String = UUID().uuidString
+        let handler = createHandler()
 
         // When
         handler.notify_onDisappear(identity: viewIdentity)

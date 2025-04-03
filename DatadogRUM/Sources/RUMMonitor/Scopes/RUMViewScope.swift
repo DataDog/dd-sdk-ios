@@ -11,6 +11,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {
         static let frozenFrameThresholdInNs = (0.7).toInt64Nanoseconds // 700ms
         static let slowRenderingThresholdFPS = 55.0
+        static let minimumTimeSpentForRates = 1.0 // 1s
         /// The pre-warming detection attribute key
         static let activePrewarm = "active_pre_warm"
     }
@@ -114,6 +115,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private var interactionToNextViewMetric: INVMetricTracking?
     /// Tracks "RUM View Ended" metric for this view.
     private let viewEndedMetric: ViewEndedMetricController
+    /// Tracks "View Hitches" for this view.
+    private let viewHitchesMetric: (ViewHitchesMetric & RenderLoopReader)?
+    /// Tracks "View Hangs" for this view.
+    private var totalAppHangDuration: Double = 0.0
 
     init(
         isInitialView: Bool,
@@ -152,6 +157,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         interactionToNextViewMetric?.trackViewStart(at: startTime, name: name, viewID: viewUUID)
 
         self.viewEndedMetric = dependencies.viewEndedMetricFactory()
+        self.viewHitchesMetric = dependencies.viewHitchesMetricFactory()
+
+        if let viewHitchesMetric { dependencies.renderLoopObserver?.register(viewHitchesMetric) }
 
         // Notify Synthetics if needed
         if dependencies.syntheticsTest != nil && self.context.sessionID != .nullUUID {
@@ -298,6 +306,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         if shouldComplete {
             interactionToNextViewMetric?.trackViewComplete(viewID: viewUUID)
             viewEndedMetric.send()
+            if let viewHitchesMetric { dependencies.renderLoopObserver?.unregister(viewHitchesMetric) }
         }
 
         return !shouldComplete
@@ -540,6 +549,18 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let isSlowRendered = refreshRateInfo?.meanValue.map { $0 < Constants.slowRenderingThresholdFPS }
         let networkSettledTime = networkSettledMetric.value(with: context.applicationStateHistory)
         var interactionToNextViewTime = interactionToNextViewMetric?.value(for: viewUUID) ?? .failure(.disabled)
+        var slowFramesRate: Double?
+        var freezeRate: Double?
+        if let command = command as? RUMStopViewCommand,
+           command.identity == identity,
+           timeSpent >= Constants.minimumTimeSpentForRates {
+            if let totalHitchesDuration = viewHitchesMetric?.hitchesDataModel.hitchesDuration {
+                slowFramesRate = totalHitchesDuration / timeSpent * Double(1.toMilliseconds) // milliseconds/second
+            }
+            if dependencies.hasAppHangsEnabled {
+                freezeRate = totalAppHangDuration / timeSpent * 1.hours // seconds/hour
+            }
+        }
         // Only overwrite with a custom value if INV was disabled
         if interactionToNextViewTime == .failure(.disabled),
            let customInvValue = internalAttributes[CrossPlatformAttributes.customINVValue] as? (any BinaryInteger),
@@ -565,6 +586,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let viewEvent = RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                cls: nil,
                 configuration: .init(
                     sessionReplaySampleRate: nil,
                     sessionSampleRate: Double(dependencies.sessionSampler.samplingRate),
@@ -629,6 +651,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 firstInputTime: nil,
                 flutterBuildTime: viewPerformanceMetrics[.flutterBuildTime]?.asFlutterBuildTime(),
                 flutterRasterTime: viewPerformanceMetrics[.flutterRasterTime]?.asFlutterRasterTime(),
+                freezeRate: freezeRate,
                 frozenFrame: .init(count: frozenFramesCount),
                 frustration: .init(count: frustrationCount),
                 id: viewUUID.toRUMDataFormat,
@@ -655,6 +678,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 refreshRateAverage: refreshRateInfo?.meanValue,
                 refreshRateMin: refreshRateInfo?.minValue,
                 resource: .init(count: resourcesCount.toInt64),
+                slowFrames: viewHitchesMetric?.hitchesDataModel.hitches.map { .init(duration: $0.duration, start: $0.start) },
+                slowFramesRate: slowFramesRate,
                 timeSpent: timeSpent.toInt64Nanoseconds,
                 url: viewPath
             )
@@ -693,6 +718,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private func sendErrorEvent(on command: RUMErrorCommand, context: DatadogContext, writer: Writer) {
         errorsCount += 1
+        totalAppHangDuration += (command as? RUMAddCurrentViewAppHangCommand)?.hangDuration ?? 0
 
         var commandAttributes = command.globalAttributes.merging(command.attributes) { $1 }
         let errorFingerprint: String? = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()

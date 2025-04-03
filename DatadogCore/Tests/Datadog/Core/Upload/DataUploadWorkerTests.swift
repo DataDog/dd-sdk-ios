@@ -765,7 +765,8 @@ class DataUploadWorkerTests: XCTestCase {
 
         let dataUploader = DataUploader(
             httpClient: httpClient,
-            requestBuilder: FeatureRequestBuilderMock()
+            requestBuilder: FeatureRequestBuilderMock(),
+            featureName: .mockRandom()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,

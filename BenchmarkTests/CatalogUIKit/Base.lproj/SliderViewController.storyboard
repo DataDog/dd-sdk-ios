@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19142.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="laz-6N-ZhE">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19129"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Sliders-->
+        <scene sceneID="AcL-XD-MBK">
+            <objects>
+                <tableViewController id="laz-6N-ZhE" customClass="SliderViewController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="none" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="8xG-xW-Mvc">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <prototypes>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="sliderDefault" id="4zC-vI-0NC">
+                                <rect key="frame" x="0.0" y="55.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="4zC-vI-0NC" id="VfF-ru-LCc">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="lhN-5T-HKR">
+                                            <rect key="frame" x="18" y="7.5" width="339" height="31"/>
+                                        </slider>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="centerY" secondItem="lhN-5T-HKR" secondAttribute="centerY" constant="-0.5" id="Ez3-DH-Gk6"/>
+                                        <constraint firstAttribute="centerX" secondItem="lhN-5T-HKR" secondAttribute="centerX" id="I1F-g6-cdT"/>
+                                        <constraint firstItem="lhN-5T-HKR" firstAttribute="leading" secondItem="VfF-ru-LCc" secondAttribute="leading" constant="20" symbolic="YES" id="QnE-iU-5Qj"/>
+                                        <constraint firstAttribute="trailing" secondItem="lhN-5T-HKR" secondAttribute="trailing" constant="20" symbolic="YES" id="eOh-IC-63m"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="sliderTinted" id="XKm-vp-Z4e">
+                                <rect key="frame" x="0.0" y="99.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="XKm-vp-Z4e" id="gcy-A0-hCb">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="y6j-bZ-afc">
+                                            <rect key="frame" x="18" y="7.5" width="339" height="31"/>
+                                        </slider>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="y6j-bZ-afc" firstAttribute="leading" secondItem="gcy-A0-hCb" secondAttribute="leading" constant="20" symbolic="YES" id="EKx-YK-Wfi"/>
+                                        <constraint firstAttribute="centerX" secondItem="y6j-bZ-afc" secondAttribute="centerX" id="YBj-dW-I4S"/>
+                                        <constraint firstAttribute="trailing" secondItem="y6j-bZ-afc" secondAttribute="trailing" constant="20" symbolic="YES" id="iyB-ii-Udq"/>
+                                        <constraint firstAttribute="centerY" secondItem="y6j-bZ-afc" secondAttribute="centerY" constant="-0.5" id="vGL-LN-ENO"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="sliderCustom" id="p07-nL-MO3">
+                                <rect key="frame" x="0.0" y="143.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="p07-nL-MO3" id="aH9-0B-8vB">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="SmN-ak-G2E">
+                                            <rect key="frame" x="18" y="7.5" width="339" height="31"/>
+                                        </slider>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="SmN-ak-G2E" firstAttribute="leading" secondItem="aH9-0B-8vB" secondAttribute="leading" constant="20" symbolic="YES" id="95t-uw-zP7"/>
+                                        <constraint firstAttribute="trailing" secondItem="SmN-ak-G2E" secondAttribute="trailing" constant="20" symbolic="YES" id="MoB-jI-3Gh"/>
+                                        <constraint firstAttribute="centerX" secondItem="SmN-ak-G2E" secondAttribute="centerX" id="XHr-Na-NXh"/>
+                                        <constraint firstAttribute="centerY" secondItem="SmN-ak-G2E" secondAttribute="centerY" constant="-0.5" id="hgn-jI-PGt"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="sliderMaxMinImage" id="47D-pV-Eeq">
+                                <rect key="frame" x="0.0" y="187.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="47D-pV-Eeq" id="xpQ-Bb-Ent">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="MiC-8a-nwg">
+                                            <rect key="frame" x="18" y="7.5" width="339" height="31"/>
+                                        </slider>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="centerX" secondItem="MiC-8a-nwg" secondAttribute="centerX" id="9Qo-ZL-aKD"/>
+                                        <constraint firstItem="MiC-8a-nwg" firstAttribute="leading" secondItem="xpQ-Bb-Ent" secondAttribute="leading" constant="20" symbolic="YES" id="E6F-Xk-RK4"/>
+                                        <constraint firstAttribute="centerY" secondItem="MiC-8a-nwg" secondAttribute="centerY" constant="-0.5" id="ntR-r4-03e"/>
+                                        <constraint firstAttribute="trailing" secondItem="MiC-8a-nwg" secondAttribute="trailing" constant="20" symbolic="YES" id="rOg-5K-S3g"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <sections/>
+                        <connections>
+                            <outlet property="dataSource" destination="laz-6N-ZhE" id="J0B-Vs-5pv"/>
+                            <outlet property="delegate" destination="laz-6N-ZhE" id="IsZ-mN-lte"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Sliders" id="Lp8-FI-W8w"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="vWL-oj-RdA" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4225" y="3368"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

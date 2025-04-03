@@ -21,7 +21,8 @@ class DataUploaderTests: XCTestCase {
 
         let uploader = DataUploader(
             httpClient: HTTPClientMock(response: randomResponse),
-            requestBuilder: FeatureRequestBuilderMock(request: randomRequest)
+            requestBuilder: FeatureRequestBuilderMock(request: randomRequest),
+            featureName: .mockRandom()
         )
 
         // When
@@ -50,7 +51,8 @@ class DataUploaderTests: XCTestCase {
 
         let uploader = DataUploader(
             httpClient: HTTPClientMock(error: randomError),
-            requestBuilder: FeatureRequestBuilderMock(request: randomRequest)
+            requestBuilder: FeatureRequestBuilderMock(request: randomRequest),
+            featureName: .mockRandom()
         )
 
         // When
@@ -72,7 +74,8 @@ class DataUploaderTests: XCTestCase {
 
         let uploader = DataUploader(
             httpClient: HTTPClientMock(),
-            requestBuilder: FailingRequestBuilderMock(error: error)
+            requestBuilder: FailingRequestBuilderMock(error: error),
+            featureName: .mockRandom()
         )
 
         // When & Then

@@ -223,17 +223,4 @@ internal extension ImagePrivacyLevel {
     }
 }
 
-#if DEBUG
-internal func dump<T>(_ value: T, filename: String) throws {
-    let manager = FileManager.default
-    let url = manager.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(filename) //swiftlint:disable:this force_unwrapping
-    manager.createFile(atPath: url.path, contents: nil, attributes: nil)
-    let handle = try FileHandle(forWritingTo: url)
-    var stream = FileHandlerOutputStream(handle)
-    customDump(value, to: &stream)
-    print("Dump:", url)
-    handle.closeFile()
-}
-#endif
-
 #endif

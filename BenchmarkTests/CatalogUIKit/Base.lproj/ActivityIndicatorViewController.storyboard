@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19115.3" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="YvC-vN-mSd">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19107.5"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Activity Indicators-->
+        <scene sceneID="umG-hc-QKi">
+            <objects>
+                <tableViewController id="YvC-vN-mSd" customClass="ActivityIndicatorViewController" customModule="CatalogUIKit" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="none" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="Udh-X7-hOc">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <prototypes>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="mediumIndicator" id="tgP-Bv-OZJ">
+                                <rect key="frame" x="0.0" y="55.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="tgP-Bv-OZJ" id="t4n-Fp-hZf">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="BhE-e0-XEQ">
+                                            <rect key="frame" x="177.5" y="12" width="20" height="20"/>
+                                        </activityIndicatorView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="BhE-e0-XEQ" firstAttribute="centerY" secondItem="t4n-Fp-hZf" secondAttribute="centerY" id="l0f-Zv-mkO"/>
+                                        <constraint firstItem="BhE-e0-XEQ" firstAttribute="centerX" secondItem="t4n-Fp-hZf" secondAttribute="centerX" id="pYa-yf-RPH"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="largeTintedIndicator" id="XTJ-Tf-hFJ">
+                                <rect key="frame" x="0.0" y="99.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="XTJ-Tf-hFJ" id="XdV-an-jUP">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="large" translatesAutoresizingMaskIntoConstraints="NO" id="F4W-ha-d4W">
+                                            <rect key="frame" x="168" y="-41" width="39" height="126"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="39" id="U31-3L-4Cp"/>
+                                            </constraints>
+                                        </activityIndicatorView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="F4W-ha-d4W" firstAttribute="centerY" secondItem="XdV-an-jUP" secondAttribute="centerY" id="9O7-It-vd3"/>
+                                        <constraint firstItem="F4W-ha-d4W" firstAttribute="centerX" secondItem="XdV-an-jUP" secondAttribute="centerX" id="QdK-5H-ZrI"/>
+                                        <constraint firstItem="F4W-ha-d4W" firstAttribute="top" secondItem="XdV-an-jUP" secondAttribute="topMargin" constant="-52" id="ThX-1U-KdZ"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="mediumTintedIndicator" id="V1a-px-nGs">
+                                <rect key="frame" x="0.0" y="143.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="V1a-px-nGs" id="EiR-Xd-gjh">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="jSR-AA-dfM">
+                                            <rect key="frame" x="177.5" y="12" width="20" height="20"/>
+                                        </activityIndicatorView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="jSR-AA-dfM" firstAttribute="centerX" secondItem="EiR-Xd-gjh" secondAttribute="centerX" id="PJF-Ll-EfR"/>
+                                        <constraint firstItem="jSR-AA-dfM" firstAttribute="centerY" secondItem="EiR-Xd-gjh" secondAttribute="centerY" id="bzY-9h-zub"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="largeIndicator" id="grT-ev-Cdb">
+                                <rect key="frame" x="0.0" y="187.5" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="grT-ev-Cdb" id="vHi-Pt-8IC">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="large" translatesAutoresizingMaskIntoConstraints="NO" id="R5k-I2-cs0">
+                                            <rect key="frame" x="168" y="-41" width="39" height="126"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="39" id="YCs-2l-mC1"/>
+                                            </constraints>
+                                        </activityIndicatorView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="R5k-I2-cs0" firstAttribute="top" secondItem="vHi-Pt-8IC" secondAttribute="topMargin" constant="-52" id="DA1-Oi-JYV"/>
+                                        <constraint firstItem="R5k-I2-cs0" firstAttribute="centerY" secondItem="vHi-Pt-8IC" secondAttribute="centerY" id="FbR-nl-pCD"/>
+                                        <constraint firstItem="R5k-I2-cs0" firstAttribute="centerX" secondItem="vHi-Pt-8IC" secondAttribute="centerX" id="aaz-PN-Eme"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <sections/>
+                        <connections>
+                            <outlet property="dataSource" destination="YvC-vN-mSd" id="teo-Yh-WfL"/>
+                            <outlet property="delegate" destination="YvC-vN-mSd" id="s5w-Zv-MyP"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Activity Indicators" id="Cch-q9-uGA"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dqV-LB-3XC" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-3991.1999999999998" y="2371.6641679160421"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

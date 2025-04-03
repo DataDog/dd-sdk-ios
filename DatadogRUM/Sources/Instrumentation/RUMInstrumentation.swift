@@ -48,6 +48,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         featureScope: FeatureScope,
         uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?,
         uiKitRUMActionsPredicate: UIKitRUMActionsPredicate?,
+        swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate?,
         longTaskThreshold: TimeInterval?,
         appHangThreshold: TimeInterval?,
         mainQueue: DispatchQueue,
@@ -59,16 +60,16 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         watchdogTermination: WatchdogTerminationMonitor?,
         memoryWarningMonitor: MemoryWarningMonitor
     ) {
-        // Always create views handler (we can't know if it will be used by SwiftUI instrumentation)
-        // and only swizzle `UIViewController` if UIKit instrumentation is configured:
         let viewsHandler = RUMViewsHandler(
             dateProvider: dateProvider,
-            predicate: uiKitRUMViewsPredicate,
+            uiKitPredicate: uiKitRUMViewsPredicate,
+            swiftUIPredicate: swiftUIRUMViewsPredicate,
+            swiftUIViewNameExtractor: SwiftUIReflectionBasedViewNameExtractor(),
             notificationCenter: notificationCenter
         )
         let viewControllerSwizzler: UIViewControllerSwizzler? = {
             do {
-                if uiKitRUMViewsPredicate != nil {
+                if uiKitRUMViewsPredicate != nil || swiftUIRUMViewsPredicate != nil {
                     return try UIViewControllerSwizzler(handler: viewsHandler)
                 }
             } catch {
@@ -80,11 +81,13 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             return nil
         }()
 
+        // MARK: TODO: RUM-8420 - Remove after we add SwiftUI action instrumentation option
         // Always create actions handler (we can't know if it will be used by SwiftUI instrumentation)
         // and only swizzle `UIApplicationSwizzler` if UIKit instrumentation is configured:
         let actionsHandler = RUMActionsHandler(dateProvider: dateProvider, predicate: uiKitRUMActionsPredicate)
         let uiApplicationSwizzler: UIApplicationSwizzler? = {
             do {
+                // MARK: TODO: RUM-8420 - Check both predicates after we add SwiftUI action instrumentation option
                 if uiKitRUMActionsPredicate != nil {
                     return try UIApplicationSwizzler(handler: actionsHandler)
                 }

@@ -144,6 +144,7 @@ internal struct FatalErrorBuilder {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: original.dd.browserSdkVersion,
+                cls: original.dd.cls,
                 configuration: original.dd.configuration,
                 documentVersion: original.dd.documentVersion + 1,
                 pageStates: original.dd.pageStates,
@@ -198,6 +199,7 @@ internal struct FatalErrorBuilder {
                 firstInputTime: original.view.firstInputTime,
                 flutterBuildTime: original.view.flutterBuildTime,
                 flutterRasterTime: original.view.flutterRasterTime,
+                freezeRate: original.view.freezeRate,
                 frozenFrame: original.view.frozenFrame,
                 frustration: original.view.frustration,
                 id: original.view.id,
@@ -223,6 +225,8 @@ internal struct FatalErrorBuilder {
                 refreshRateAverage: original.view.refreshRateAverage,
                 refreshRateMin: original.view.refreshRateMin,
                 resource: original.view.resource,
+                slowFrames: original.view.slowFrames,
+                slowFramesRate: original.view.slowFramesRate,
                 timeSpent: original.view.timeSpent,
                 url: original.view.url
             )

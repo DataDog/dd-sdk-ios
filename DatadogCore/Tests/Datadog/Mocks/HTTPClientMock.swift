@@ -42,7 +42,7 @@ internal class HTTPClientMock: HTTPClient {
 
     // MARK: - HTTPClient conformance
 
-    func send(request: URLRequest, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
+    func send(request: URLRequest, delegate: URLSessionTaskDelegate?, completion: @escaping (Result<HTTPURLResponse, any Error>) -> Void) {
         queue.async {
             completion(self.result(request))
             self.requests.append(request)
