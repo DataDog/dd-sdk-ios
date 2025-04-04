@@ -33,6 +33,8 @@ internal class DisplayLinker {
     private var displayLink: FrameInfoProvider?
     private let notificationCenter: NotificationCenter
 
+    var isActive: Bool { displayLink != nil }
+
     init(notificationCenter: NotificationCenter) {
         self.notificationCenter = notificationCenter
 

@@ -42,7 +42,7 @@ internal struct RUMScopeDependencies {
     let ciTest: RUMCITest?
     let syntheticsTest: RUMSyntheticsTest?
     let renderLoopObserver: RenderLoopObserver?
-    let viewHitchesMetricFactory: () -> (ViewHitchesMetric & RenderLoopReader)?
+    let viewHitchesReaderFactory: () -> (ViewHitchesModel & RenderLoopReader)?
     let vitalsReaders: VitalsReaders?
     let onSessionStart: RUM.SessionListener?
     let viewCache: ViewCache
@@ -55,7 +55,7 @@ internal struct RUMScopeDependencies {
     let watchdogTermination: WatchdogTerminationMonitor?
 
     /// A factory function that creates `ViewEndedMetricController` for each new view started.
-    let viewEndedMetricFactory: () -> ViewEndedMetricController
+    let viewEndedMetricFactory: () -> ViewEndedController
 
     /// A factory function that creates a `TNSMetric` for the given view start date.
     /// - Parameters:
@@ -80,13 +80,13 @@ internal struct RUMScopeDependencies {
         ciTest: RUMCITest?,
         syntheticsTest: RUMSyntheticsTest?,
         renderLoopObserver: RenderLoopObserver?,
-        viewHitchesMetricFactory: @escaping () -> (ViewHitchesMetric & RenderLoopReader)?,
+        viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)?,
         vitalsReaders: VitalsReaders?,
         onSessionStart: RUM.SessionListener?,
         viewCache: ViewCache,
         fatalErrorContext: FatalErrorContextNotifying,
         sessionEndedMetric: SessionEndedMetricController,
-        viewEndedMetricFactory: @escaping () -> ViewEndedMetricController,
+        viewEndedMetricFactory: @escaping () -> ViewEndedController,
         watchdogTermination: WatchdogTerminationMonitor?,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking,
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?
@@ -104,7 +104,7 @@ internal struct RUMScopeDependencies {
         self.ciTest = ciTest
         self.syntheticsTest = syntheticsTest
         self.renderLoopObserver = renderLoopObserver
-        self.viewHitchesMetricFactory = viewHitchesMetricFactory
+        self.viewHitchesReaderFactory = viewHitchesReaderFactory
         self.vitalsReaders = vitalsReaders
         self.onSessionStart = onSessionStart
         self.viewCache = viewCache
