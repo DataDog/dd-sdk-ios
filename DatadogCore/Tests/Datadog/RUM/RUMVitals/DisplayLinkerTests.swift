@@ -93,6 +93,30 @@ final class DisplayLinkerTests: XCTestCase {
         }
     }
 
+    func testAppStateHandlingForViewHitchesReader() {
+        let displayLinker = DisplayLinker(notificationCenter: mockNotificationCenter)
+        let reader = ViewHitchesReader()
+        displayLinker.register(reader)
+
+        mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        wait(during: 0.1) {
+            XCTAssertTrue(displayLinker.isActive)
+            XCTAssertTrue(reader.isActive)
+        }
+
+        mockNotificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
+        wait(during: 0.1) {
+            XCTAssertFalse(displayLinker.isActive)
+            XCTAssertFalse(reader.isActive)
+        }
+
+        mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        wait(during: 0.1) {
+            XCTAssertTrue(displayLinker.isActive)
+            XCTAssertTrue(reader.isActive)
+        }
+    }
+
     func testAppStateHandlingWithSeveralReaders() {
         let displayLinker = DisplayLinker(notificationCenter: mockNotificationCenter)
         let refreshRateReader = VitalRefreshRateReader()
@@ -127,6 +151,7 @@ final class DisplayLinkerTests: XCTestCase {
         let viewHitchesReader = ViewHitchesReader()
         let mockReader = ViewHitchesMock()
 
+        XCTAssertTrue(displayLinker.isActive)
         XCTAssertFalse(refreshRateReader.isActive)
         XCTAssertFalse(viewHitchesReader.isActive)
         XCTAssertFalse(mockReader.isActive)

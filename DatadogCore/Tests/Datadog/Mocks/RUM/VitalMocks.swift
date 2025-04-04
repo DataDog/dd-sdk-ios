@@ -28,12 +28,14 @@ struct FrameInfoProviderMock: FrameInfoProvider {
     func invalidate() { }
 }
 
-final class ViewHitchesMock: ViewHitchesMetric {
+final class ViewHitchesMock: ViewHitchesModel {
     private(set) var isActive: Bool = false
-    private(set) var hitchesDataModel: HitchesDataModel
+    var config: HitchesConfiguration = (100, 0, 1)
+    var dataModel: HitchesDataModel = ([], 0.0)
+    var telemetryModel: HitchesTelemetryModel = (0, 0, false, 0)
 
     init(hitchesDataModel: HitchesDataModel = ([], 0.0)) {
-        self.hitchesDataModel = hitchesDataModel
+        self.dataModel = hitchesDataModel
     }
 }
 

@@ -1884,11 +1884,11 @@ class RUMViewScopeTests: XCTestCase {
             hitches.append((start: TimeInterval($0).toInt64Nanoseconds, duration: 0.016.toInt64Nanoseconds))
         }
         let hitchesDuration = TimeInterval(fromNanoseconds: hitches.map { $0.duration }.reduce(0, +))
-        let viewHitchesMetricFactory = { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
+        let viewHitchesReaderFactory = { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(viewHitchesMetricFactory: viewHitchesMetricFactory),
+            dependencies: .mockWith(viewHitchesReaderFactory: viewHitchesReaderFactory),
             identity: .mockViewIdentifier(),
             path: .mockRandom(),
             name: .mockRandom(),
@@ -1960,7 +1960,7 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(hasAppHangsEnabled: false, viewHitchesMetricFactory: { nil }),
+            dependencies: .mockWith(hasAppHangsEnabled: false, viewHitchesReaderFactory: { nil }),
             identity: .mockViewIdentifier(),
             path: .mockRandom(),
             name: .mockRandom(),
@@ -2003,11 +2003,11 @@ class RUMViewScopeTests: XCTestCase {
             hitches.append((start: TimeInterval($0).toInt64Nanoseconds, duration: 0.016.toInt64Nanoseconds))
         }
         let hitchesDuration = TimeInterval(fromNanoseconds: hitches.map { $0.duration }.reduce(0, +))
-        let viewHitchesMetricFactory = { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
+        let viewHitchesReaderFactory = { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(hasAppHangsEnabled: true, viewHitchesMetricFactory: viewHitchesMetricFactory),
+            dependencies: .mockWith(hasAppHangsEnabled: true, viewHitchesReaderFactory: viewHitchesReaderFactory),
             identity: .mockViewIdentifier(),
             path: .mockRandom(),
             name: .mockRandom(),
@@ -2050,11 +2050,11 @@ class RUMViewScopeTests: XCTestCase {
             hitches.append((start: TimeInterval($0).toInt64Nanoseconds, duration: 0.016.toInt64Nanoseconds))
         }
         let hitchesDuration = TimeInterval(fromNanoseconds: hitches.map { $0.duration }.reduce(0, +))
-        let viewHitchesMetricFactory = { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
+        let viewHitchesReaderFactory = { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(viewHitchesMetricFactory: viewHitchesMetricFactory),
+            dependencies: .mockWith(viewHitchesReaderFactory: viewHitchesReaderFactory),
             identity: .mockViewIdentifier(),
             path: .mockRandom(),
             name: .mockRandom(),

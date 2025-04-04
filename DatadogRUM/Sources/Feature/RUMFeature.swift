@@ -92,14 +92,15 @@ internal final class RUMFeature: DatadogRemoteFeature {
             backtraceReporter: core.backtraceReporter,
             ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
             syntheticsTest: {
-                if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
+                if let testId = configuration.syntheticsTestId,
+                   let resultId = configuration.syntheticsResultId {
                     return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId)
                 } else {
                     return nil
                 }
             }(),
             renderLoopObserver: DisplayLinker(notificationCenter: configuration.notificationCenter),
-            viewHitchesMetricFactory: {
+            viewHitchesReaderFactory: {
                 configuration.featureFlags[.viewHitches]
                 ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
                 : nil
@@ -115,12 +116,13 @@ internal final class RUMFeature: DatadogRemoteFeature {
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,
             viewEndedMetricFactory: {
-                return ViewEndedMetricController(
-                    tnsPredicateType: tnsPredicateType,
-                    invPredicateType: invPredicateType,
+                let viewEndedController = ViewEndedController(
                     telemetry: featureScope.telemetry,
                     sampleRate: configuration.viewEndedSampleRate
                 )
+                viewEndedController.add(metric: ViewEndedMetric(tnsConfigPredicate: tnsPredicateType, invConfigPredicate: invPredicateType))
+
+                return viewEndedController
             },
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: { viewStartDate, viewName in

@@ -114,9 +114,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Interaction-to-Next-View metric for this view.
     private var interactionToNextViewMetric: INVMetricTracking?
     /// Tracks "RUM View Ended" metric for this view.
-    private let viewEndedMetric: ViewEndedMetricController
+    private let viewEndedMetric: ViewEndedController
     /// Tracks "View Hitches" for this view.
-    private let viewHitchesMetric: (ViewHitchesMetric & RenderLoopReader)?
+    private let viewHitchesReader: (ViewHitchesModel & RenderLoopReader)?
     /// Tracks "View Hangs" for this view.
     private var totalAppHangDuration: Double = 0.0
 
@@ -157,15 +157,31 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         interactionToNextViewMetric?.trackViewStart(at: startTime, name: name, viewID: viewUUID)
 
         self.viewEndedMetric = dependencies.viewEndedMetricFactory()
-        self.viewHitchesMetric = dependencies.viewHitchesMetricFactory()
+        self.viewHitchesReader = dependencies.viewHitchesReaderFactory()
 
-        if let viewHitchesMetric { dependencies.renderLoopObserver?.register(viewHitchesMetric) }
+        if let viewHitchesReader {
+            self.viewEndedMetric.add(
+                metric: ViewHitchesMetric(
+                    maxCount: viewHitchesReader.config.maxCollectedHitches,
+                    slowFrameThreshold: viewHitchesReader.config.acceptableLatency.toInt64Nanoseconds,
+                    maxDuration: viewHitchesReader.config.hangThreshold.toInt64Nanoseconds,
+                    viewMinDuration: Constants.minimumTimeSpentForRates.toInt64Nanoseconds
+                )
+            )
+            dependencies.renderLoopObserver?.register(viewHitchesReader)
+        }
 
         // Notify Synthetics if needed
         if dependencies.syntheticsTest != nil && self.context.sessionID != .nullUUID {
             NSLog("_dd.session.id=" + self.context.sessionID.toRUMDataFormat)
             NSLog("_dd.application.id=" + self.context.rumApplicationID)
             NSLog("_dd.view.id=" + self.viewUUID.toRUMDataFormat)
+        }
+    }
+
+    deinit {
+        if let viewHitchesReader {
+            dependencies.renderLoopObserver?.unregister(viewHitchesReader)
         }
     }
 
@@ -305,8 +321,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         if shouldComplete {
             interactionToNextViewMetric?.trackViewComplete(viewID: viewUUID)
+            if let viewHitchesReader {
+                viewEndedMetric.track(
+                    hitchesTelemetry: viewHitchesReader.telemetryModel,
+                    viewDuration: command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+                )
+                dependencies.renderLoopObserver?.unregister(viewHitchesReader)
+            }
             viewEndedMetric.send()
-            if let viewHitchesMetric { dependencies.renderLoopObserver?.unregister(viewHitchesMetric) }
         }
 
         return !shouldComplete
@@ -554,7 +576,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         if let command = command as? RUMStopViewCommand,
            command.identity == identity,
            timeSpent >= Constants.minimumTimeSpentForRates {
-            if let totalHitchesDuration = viewHitchesMetric?.hitchesDataModel.hitchesDuration {
+            if let totalHitchesDuration = viewHitchesReader?.dataModel.hitchesDuration {
                 slowFramesRate = totalHitchesDuration / timeSpent * Double(1.toMilliseconds) // milliseconds/second
             }
             if dependencies.hasAppHangsEnabled {
@@ -678,7 +700,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 refreshRateAverage: refreshRateInfo?.meanValue,
                 refreshRateMin: refreshRateInfo?.minValue,
                 resource: .init(count: resourcesCount.toInt64),
-                slowFrames: viewHitchesMetric?.hitchesDataModel.hitches.map { .init(duration: $0.duration, start: $0.start) },
+                slowFrames: viewHitchesReader?.dataModel.hitches.map { .init(duration: $0.duration, start: $0.start) },
                 slowFramesRate: slowFramesRate,
                 timeSpent: timeSpent.toInt64Nanoseconds,
                 url: viewPath
