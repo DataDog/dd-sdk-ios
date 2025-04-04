@@ -16,8 +16,6 @@
 		868DA2F52D71DD47007D20D5 /* LogsHeavyTrafficScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868DA2F42D71DD47007D20D5 /* LogsHeavyTrafficScenario.swift */; };
 		868DA2F72D71DD8A007D20D5 /* LogsHeavyTrafficContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868DA2F62D71DD8A007D20D5 /* LogsHeavyTrafficContentView.swift */; };
 		868DA2F92D71E622007D20D5 /* LogsUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868DA2F82D71E622007D20D5 /* LogsUtils.swift */; };
-		D231DC372C73355800F3F66C /* CatalogUIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D231DC312C73355800F3F66C /* CatalogUIKit.framework */; };
-		D231DC382C73355800F3F66C /* CatalogUIKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D231DC312C73355800F3F66C /* CatalogUIKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		86FA742B2D89C49400F69130 /* RUMAutoScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86FA742A2D89C49400F69130 /* RUMAutoScenario.swift */; };
 		86FA742D2D89C4B800F69130 /* RUMAutoContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86FA742C2D89C4B800F69130 /* RUMAutoContentView.swift */; };
 		86FA742F2D89CBF100F69130 /* CharactersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86FA742E2D89CBF100F69130 /* CharactersView.swift */; };
@@ -43,6 +41,8 @@
 		86FBEDD52D8C436D005CFCC4 /* EpisodeDetailHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86FBEDD42D8C436D005CFCC4 /* EpisodeDetailHostingController.swift */; };
 		86FBEDDC2D8C491E005CFCC4 /* EpisodeDetailView.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 86FBEDDA2D8C491E005CFCC4 /* EpisodeDetailView.storyboard */; };
 		86FBEDDD2D8C491E005CFCC4 /* EpisodeDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86FBEDDB2D8C491E005CFCC4 /* EpisodeDetailViewController.swift */; };
+		D231DC372C73355800F3F66C /* CatalogUIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D231DC312C73355800F3F66C /* CatalogUIKit.framework */; };
+		D231DC382C73355800F3F66C /* CatalogUIKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D231DC312C73355800F3F66C /* CatalogUIKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D231DCAF2C73356E00F3F66C /* ActivityIndicatorViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D231DC412C73356D00F3F66C /* ActivityIndicatorViewController.storyboard */; };
 		D231DCB02C73356E00F3F66C /* ActivityIndicatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D231DC422C73356D00F3F66C /* ActivityIndicatorViewController.swift */; };
 		D231DCB12C73356E00F3F66C /* AlertControllerViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D231DC442C73356D00F3F66C /* AlertControllerViewController.storyboard */; };
@@ -115,6 +115,7 @@
 		D23DD32D2C58D80C00B90C4C /* DatadogBenchmarks in Frameworks */ = {isa = PBXBuildFile; productRef = D23DD32C2C58D80C00B90C4C /* DatadogBenchmarks */; };
 		D24BFD472C6B916B00AB9604 /* SyntheticScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24BFD462C6B916B00AB9604 /* SyntheticScenario.swift */; };
 		D24E15F32C776956005AE4E8 /* BenchmarkProfiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24E15F22C776956005AE4E8 /* BenchmarkProfiler.swift */; };
+		D26806112D9D84130004C54A /* BenchmarkVitals.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26806102D9D84130004C54A /* BenchmarkVitals.swift */; };
 		D26DD6E72D0C774000D96148 /* DatadogMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26DD6E62D0C774000D96148 /* DatadogMonitor.swift */; };
 		D27606A12C514F37002D2A14 /* SessionReplayScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27606982C514F37002D2A14 /* SessionReplayScenario.swift */; };
 		D27606A32C514F37002D2A14 /* Scenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D276069B2C514F37002D2A14 /* Scenario.swift */; };
@@ -276,7 +277,6 @@
 		868DA2F42D71DD47007D20D5 /* LogsHeavyTrafficScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsHeavyTrafficScenario.swift; sourceTree = "<group>"; };
 		868DA2F62D71DD8A007D20D5 /* LogsHeavyTrafficContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsHeavyTrafficContentView.swift; sourceTree = "<group>"; };
 		868DA2F82D71E622007D20D5 /* LogsUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsUtils.swift; sourceTree = "<group>"; };
-		D231DC312C73355800F3F66C /* CatalogUIKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CatalogUIKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		86FA742A2D89C49400F69130 /* RUMAutoScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAutoScenario.swift; sourceTree = "<group>"; };
 		86FA742C2D89C4B800F69130 /* RUMAutoContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAutoContentView.swift; sourceTree = "<group>"; };
 		86FA742E2D89CBF100F69130 /* CharactersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharactersView.swift; sourceTree = "<group>"; };
@@ -302,6 +302,7 @@
 		86FBEDD42D8C436D005CFCC4 /* EpisodeDetailHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeDetailHostingController.swift; sourceTree = "<group>"; };
 		86FBEDDA2D8C491E005CFCC4 /* EpisodeDetailView.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = EpisodeDetailView.storyboard; sourceTree = "<group>"; };
 		86FBEDDB2D8C491E005CFCC4 /* EpisodeDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeDetailViewController.swift; sourceTree = "<group>"; };
+		D231DC312C73355800F3F66C /* CatalogUIKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CatalogUIKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D231DC402C73356D00F3F66C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/ActivityIndicatorViewController.storyboard; sourceTree = "<group>"; };
 		D231DC422C73356D00F3F66C /* ActivityIndicatorViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActivityIndicatorViewController.swift; sourceTree = "<group>"; };
 		D231DC432C73356D00F3F66C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/AlertControllerViewController.storyboard; sourceTree = "<group>"; };
@@ -374,6 +375,7 @@
 		D23734962D773DD1004CCAED /* BenchmarkMeter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkMeter.swift; sourceTree = "<group>"; };
 		D24BFD462C6B916B00AB9604 /* SyntheticScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticScenario.swift; sourceTree = "<group>"; };
 		D24E15F22C776956005AE4E8 /* BenchmarkProfiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkProfiler.swift; sourceTree = "<group>"; };
+		D26806102D9D84130004C54A /* BenchmarkVitals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkVitals.swift; sourceTree = "<group>"; };
 		D26DD6E62D0C774000D96148 /* DatadogMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogMonitor.swift; sourceTree = "<group>"; };
 		D27606982C514F37002D2A14 /* SessionReplayScenario.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayScenario.swift; sourceTree = "<group>"; };
 		D276069B2C514F37002D2A14 /* Scenario.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scenario.swift; sourceTree = "<group>"; };
@@ -571,82 +573,6 @@
 			path = UI;
 			sourceTree = "<group>";
 		};
-		D231DC322C73355800F3F66C /* CatalogUIKit */ = {
-			isa = PBXGroup;
-			children = (
-				D256FB522C737F5800377260 /* LICENSE */,
-				D231DC412C73356D00F3F66C /* ActivityIndicatorViewController.storyboard */,
-				D231DC422C73356D00F3F66C /* ActivityIndicatorViewController.swift */,
-				D231DC442C73356D00F3F66C /* AlertControllerViewController.storyboard */,
-				D231DC452C73356D00F3F66C /* AlertControllerViewController.swift */,
-				D231DC472C73356D00F3F66C /* Assets.xcassets */,
-				D231DC482C73356D00F3F66C /* BaseTableViewController.swift */,
-				D231DC4A2C73356D00F3F66C /* ButtonViewController.storyboard */,
-				D231DC4B2C73356D00F3F66C /* ButtonViewController.swift */,
-				D231DC4C2C73356D00F3F66C /* ButtonViewController+Configs.swift */,
-				D231DC4D2C73356D00F3F66C /* CaseElement.swift */,
-				D231DC4F2C73356D00F3F66C /* ColorPickerViewController.storyboard */,
-				D231DC502C73356D00F3F66C /* ColorPickerViewController.swift */,
-				D231DC522C73356D00F3F66C /* content.html */,
-				D231DC542C73356D00F3F66C /* Credits.rtf */,
-				D231DC562C73356D00F3F66C /* CustomPageControlViewController.storyboard */,
-				D231DC572C73356D00F3F66C /* CustomPageControlViewController.swift */,
-				D231DC592C73356D00F3F66C /* CustomSearchBarViewController.storyboard */,
-				D231DC5A2C73356D00F3F66C /* CustomSearchBarViewController.swift */,
-				D231DC5C2C73356D00F3F66C /* CustomToolbarViewController.storyboard */,
-				D231DC5D2C73356D00F3F66C /* CustomToolbarViewController.swift */,
-				D231DC5F2C73356D00F3F66C /* DatePickerController.storyboard */,
-				D231DC602C73356D00F3F66C /* DatePickerController.swift */,
-				D231DC622C73356D00F3F66C /* DefaultPageControlViewController.storyboard */,
-				D231DC632C73356D00F3F66C /* DefaultPageControlViewController.swift */,
-				D231DC652C73356D00F3F66C /* DefaultSearchBarViewController.storyboard */,
-				D231DC662C73356D00F3F66C /* DefaultSearchBarViewController.swift */,
-				D231DC682C73356D00F3F66C /* DefaultToolbarViewController.storyboard */,
-				D231DC692C73356D00F3F66C /* DefaultToolbarViewController.swift */,
-				D231DC6B2C73356D00F3F66C /* FontPickerViewController.storyboard */,
-				D231DC6C2C73356D00F3F66C /* FontPickerViewController.swift */,
-				D231DC6E2C73356D00F3F66C /* ImagePickerViewController.storyboard */,
-				D231DC6F2C73356D00F3F66C /* ImagePickerViewController.swift */,
-				D231DC712C73356D00F3F66C /* ImageViewController.storyboard */,
-				D231DC722C73356D00F3F66C /* ImageViewController.swift */,
-				D231DC782C73356D00F3F66C /* Localizable.strings */,
-				D231DC7A2C73356D00F3F66C /* Main.storyboard */,
-				D231DC7C2C73356D00F3F66C /* MenuButtonViewController.storyboard */,
-				D231DC7D2C73356D00F3F66C /* MenuButtonViewController.swift */,
-				D231DC7E2C73356D00F3F66C /* OutlineViewController.swift */,
-				D231DC802C73356D00F3F66C /* PickerViewController.storyboard */,
-				D231DC812C73356D00F3F66C /* PickerViewController.swift */,
-				D231DC832C73356D00F3F66C /* PointerInteractionButtonViewController.storyboard */,
-				D231DC842C73356D00F3F66C /* PointerInteractionButtonViewController.swift */,
-				D231DC862C73356D00F3F66C /* ProgressViewController.storyboard */,
-				D231DC872C73356D00F3F66C /* ProgressViewController.swift */,
-				D231DC8A2C73356D00F3F66C /* SegmentedControlViewController.storyboard */,
-				D231DC8B2C73356D00F3F66C /* SegmentedControlViewController.swift */,
-				D231DC8D2C73356D00F3F66C /* SliderViewController.storyboard */,
-				D231DC8E2C73356D00F3F66C /* SliderViewController.swift */,
-				D231DC902C73356D00F3F66C /* StackViewController.storyboard */,
-				D231DC912C73356D00F3F66C /* StackViewController.swift */,
-				D231DC932C73356D00F3F66C /* StepperViewController.storyboard */,
-				D231DC942C73356D00F3F66C /* StepperViewController.swift */,
-				D231DC962C73356D00F3F66C /* SwitchViewController.storyboard */,
-				D231DC972C73356D00F3F66C /* SwitchViewController.swift */,
-				D231DC992C73356D00F3F66C /* SymbolViewController.storyboard */,
-				D231DC9A2C73356D00F3F66C /* SymbolViewController.swift */,
-				D231DC9C2C73356D00F3F66C /* TextFieldViewController.storyboard */,
-				D231DC9D2C73356D00F3F66C /* TextFieldViewController.swift */,
-				D231DC9F2C73356D00F3F66C /* TextViewController.storyboard */,
-				D231DCA02C73356D00F3F66C /* TextViewController.swift */,
-				D231DCA22C73356D00F3F66C /* TintedToolbarViewController.storyboard */,
-				D231DCA32C73356D00F3F66C /* TintedToolbarViewController.swift */,
-				D231DCA72C73356D00F3F66C /* VisualEffectViewController.storyboard */,
-				D231DCA82C73356D00F3F66C /* VisualEffectViewController.swift */,
-				D231DCAA2C73356D00F3F66C /* WebViewController.storyboard */,
-				D231DCAB2C73356D00F3F66C /* WebViewController.swift */,
-				D231DCF82C7342D500F3F66C /* ModuleBundle.swift */,
-			);
-			path = CatalogUIKit;
-			sourceTree = "<group>";
-		};
 		86FA74242D89C34700F69130 /* UI */ = {
 			isa = PBXGroup;
 			children = (
@@ -802,6 +728,82 @@
 				86FA74382D8AC2C700F69130 /* RickMortyService.swift */,
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		D231DC322C73355800F3F66C /* CatalogUIKit */ = {
+			isa = PBXGroup;
+			children = (
+				D256FB522C737F5800377260 /* LICENSE */,
+				D231DC412C73356D00F3F66C /* ActivityIndicatorViewController.storyboard */,
+				D231DC422C73356D00F3F66C /* ActivityIndicatorViewController.swift */,
+				D231DC442C73356D00F3F66C /* AlertControllerViewController.storyboard */,
+				D231DC452C73356D00F3F66C /* AlertControllerViewController.swift */,
+				D231DC472C73356D00F3F66C /* Assets.xcassets */,
+				D231DC482C73356D00F3F66C /* BaseTableViewController.swift */,
+				D231DC4A2C73356D00F3F66C /* ButtonViewController.storyboard */,
+				D231DC4B2C73356D00F3F66C /* ButtonViewController.swift */,
+				D231DC4C2C73356D00F3F66C /* ButtonViewController+Configs.swift */,
+				D231DC4D2C73356D00F3F66C /* CaseElement.swift */,
+				D231DC4F2C73356D00F3F66C /* ColorPickerViewController.storyboard */,
+				D231DC502C73356D00F3F66C /* ColorPickerViewController.swift */,
+				D231DC522C73356D00F3F66C /* content.html */,
+				D231DC542C73356D00F3F66C /* Credits.rtf */,
+				D231DC562C73356D00F3F66C /* CustomPageControlViewController.storyboard */,
+				D231DC572C73356D00F3F66C /* CustomPageControlViewController.swift */,
+				D231DC592C73356D00F3F66C /* CustomSearchBarViewController.storyboard */,
+				D231DC5A2C73356D00F3F66C /* CustomSearchBarViewController.swift */,
+				D231DC5C2C73356D00F3F66C /* CustomToolbarViewController.storyboard */,
+				D231DC5D2C73356D00F3F66C /* CustomToolbarViewController.swift */,
+				D231DC5F2C73356D00F3F66C /* DatePickerController.storyboard */,
+				D231DC602C73356D00F3F66C /* DatePickerController.swift */,
+				D231DC622C73356D00F3F66C /* DefaultPageControlViewController.storyboard */,
+				D231DC632C73356D00F3F66C /* DefaultPageControlViewController.swift */,
+				D231DC652C73356D00F3F66C /* DefaultSearchBarViewController.storyboard */,
+				D231DC662C73356D00F3F66C /* DefaultSearchBarViewController.swift */,
+				D231DC682C73356D00F3F66C /* DefaultToolbarViewController.storyboard */,
+				D231DC692C73356D00F3F66C /* DefaultToolbarViewController.swift */,
+				D231DC6B2C73356D00F3F66C /* FontPickerViewController.storyboard */,
+				D231DC6C2C73356D00F3F66C /* FontPickerViewController.swift */,
+				D231DC6E2C73356D00F3F66C /* ImagePickerViewController.storyboard */,
+				D231DC6F2C73356D00F3F66C /* ImagePickerViewController.swift */,
+				D231DC712C73356D00F3F66C /* ImageViewController.storyboard */,
+				D231DC722C73356D00F3F66C /* ImageViewController.swift */,
+				D231DC782C73356D00F3F66C /* Localizable.strings */,
+				D231DC7A2C73356D00F3F66C /* Main.storyboard */,
+				D231DC7C2C73356D00F3F66C /* MenuButtonViewController.storyboard */,
+				D231DC7D2C73356D00F3F66C /* MenuButtonViewController.swift */,
+				D231DC7E2C73356D00F3F66C /* OutlineViewController.swift */,
+				D231DC802C73356D00F3F66C /* PickerViewController.storyboard */,
+				D231DC812C73356D00F3F66C /* PickerViewController.swift */,
+				D231DC832C73356D00F3F66C /* PointerInteractionButtonViewController.storyboard */,
+				D231DC842C73356D00F3F66C /* PointerInteractionButtonViewController.swift */,
+				D231DC862C73356D00F3F66C /* ProgressViewController.storyboard */,
+				D231DC872C73356D00F3F66C /* ProgressViewController.swift */,
+				D231DC8A2C73356D00F3F66C /* SegmentedControlViewController.storyboard */,
+				D231DC8B2C73356D00F3F66C /* SegmentedControlViewController.swift */,
+				D231DC8D2C73356D00F3F66C /* SliderViewController.storyboard */,
+				D231DC8E2C73356D00F3F66C /* SliderViewController.swift */,
+				D231DC902C73356D00F3F66C /* StackViewController.storyboard */,
+				D231DC912C73356D00F3F66C /* StackViewController.swift */,
+				D231DC932C73356D00F3F66C /* StepperViewController.storyboard */,
+				D231DC942C73356D00F3F66C /* StepperViewController.swift */,
+				D231DC962C73356D00F3F66C /* SwitchViewController.storyboard */,
+				D231DC972C73356D00F3F66C /* SwitchViewController.swift */,
+				D231DC992C73356D00F3F66C /* SymbolViewController.storyboard */,
+				D231DC9A2C73356D00F3F66C /* SymbolViewController.swift */,
+				D231DC9C2C73356D00F3F66C /* TextFieldViewController.storyboard */,
+				D231DC9D2C73356D00F3F66C /* TextFieldViewController.swift */,
+				D231DC9F2C73356D00F3F66C /* TextViewController.storyboard */,
+				D231DCA02C73356D00F3F66C /* TextViewController.swift */,
+				D231DCA22C73356D00F3F66C /* TintedToolbarViewController.storyboard */,
+				D231DCA32C73356D00F3F66C /* TintedToolbarViewController.swift */,
+				D231DCA72C73356D00F3F66C /* VisualEffectViewController.storyboard */,
+				D231DCA82C73356D00F3F66C /* VisualEffectViewController.swift */,
+				D231DCAA2C73356D00F3F66C /* WebViewController.storyboard */,
+				D231DCAB2C73356D00F3F66C /* WebViewController.swift */,
+				D231DCF82C7342D500F3F66C /* ModuleBundle.swift */,
+			);
+			path = CatalogUIKit;
 			sourceTree = "<group>";
 		};
 		D256FB522C737F5800377260 /* LICENSE */ = {
@@ -1164,6 +1166,7 @@
 				D276069D2C514F37002D2A14 /* AppConfiguration.swift */,
 				D24E15F22C776956005AE4E8 /* BenchmarkProfiler.swift */,
 				D23734962D773DD1004CCAED /* BenchmarkMeter.swift */,
+				D26806102D9D84130004C54A /* BenchmarkVitals.swift */,
 				D276069C2C514F37002D2A14 /* Scenarios */,
 				D29F755D2C4AA08000288638 /* Info.plist */,
 			);
@@ -1557,6 +1560,7 @@
 				D23734972D773DD8004CCAED /* BenchmarkMeter.swift in Sources */,
 				86252B1B2D818E360098FAEF /* TraceScenario.swift in Sources */,
 				86FBEDD32D8C4348005CFCC4 /* EpisodeListItem.swift in Sources */,
+				D26806112D9D84130004C54A /* BenchmarkVitals.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

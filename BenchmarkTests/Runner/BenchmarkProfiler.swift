@@ -8,7 +8,6 @@ import Foundation
 import DatadogInternal
 import DatadogBenchmarks
 import OpenTelemetryApi
-import OpenTelemetrySdk
 
 internal final class Profiler: DatadogInternal.BenchmarkProfiler {
     let provider: TracerProvider

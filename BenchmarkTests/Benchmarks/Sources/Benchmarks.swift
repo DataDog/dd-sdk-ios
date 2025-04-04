@@ -83,7 +83,7 @@ public enum Benchmarks {
             )
         )
 
-        let provider = MeterProviderBuilder()
+        return MeterProviderBuilder()
             .with(pushInterval: 10)
             .with(processor: MetricProcessorSdk())
             .with(exporter: metricExporter)
@@ -98,9 +98,6 @@ public enum Benchmarks {
                 "branch": .string(configuration.context.branch),
             ]))
             .build()
-
-        OpenTelemetry.registerMeterProvider(meterProvider: provider)
-        return provider
     }
 
     /// Configure an OpenTelemetry tracer provider.
@@ -121,11 +118,8 @@ public enum Benchmarks {
         let exporter = try! DatadogExporter(config: exporterConfiguration)
         let processor = SimpleSpanProcessor(spanExporter: exporter)
 
-        let provider = TracerProviderBuilder()
+        return TracerProviderBuilder()
             .add(spanProcessor: processor)
             .build()
-
-        OpenTelemetry.registerTracerProvider(tracerProvider: provider)
-        return provider
     }
 }
