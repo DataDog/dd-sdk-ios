@@ -11,7 +11,7 @@ import Observation
 import DatadogInternal
 
 @available(iOS 15.0, *)
-final class ViewHitchesViewModel: ObservableObject {
+public final class ViewHitchesViewModel: ObservableObject {
 
     @Published var progress: CGFloat = 0 // Value between 0.0 and 1.0
     @Published var hangs: [(CGFloat, CGFloat)] = [] // Range for green highlight (e.g., 0.2...0.3)
@@ -31,15 +31,20 @@ final class ViewHitchesViewModel: ObservableObject {
     private var viewMaxDuration = 60.0
 
     private let rumFeature: RUMFeature
+    let metricsManager: DatadogMetricSubscriber
 
     private var activeViewScope: RUMViewScope?
 
     private var lastHitchValue: CGFloat = 0
     private var hitchesDictionary: [String: [CGFloat]] = [:]
 
-    init (core: DatadogCoreProtocol = CoreRegistry.default) {
+    public init (
+        core: DatadogCoreProtocol = CoreRegistry.default,
+        metricsManager: DatadogMetricSubscriber = DatadogMetricSubscriber(core: CoreRegistry.default)
+    ) {
 
-        rumFeature = core.get(feature: RUMFeature.self)!
+        self.rumFeature = core.get(feature: RUMFeature.self)!
+        self.metricsManager = metricsManager
     }
 
     func updateTimeline() {

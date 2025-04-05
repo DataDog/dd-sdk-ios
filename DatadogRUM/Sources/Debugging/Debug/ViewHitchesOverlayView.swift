@@ -9,14 +9,16 @@ import SwiftUI
 @available(iOS 15.0, *)
 public struct ViewHitchesOverlayView: View {
 
-    @StateObject var viewModel = ViewHitchesViewModel()
+    @StateObject var viewModel: ViewHitchesViewModel
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
-    public init() {}
+    public init(viewModel: ViewHitchesViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
 
     public var body: some View {
-        VStack(alignment: .trailing) {
+        VStack {
 
             Text("**Screen**: \(self.viewModel.viewScopeName)")
                 .font(.caption)
@@ -72,12 +74,31 @@ public struct ViewHitchesOverlayView: View {
             .padding(.horizontal)
 
             Text("**Freeze Rate**: \(self.viewModel.hangsRatio > 1 ? self.viewModel.hangsRatio : 0, specifier: "%.2f") s/h")
-                    .font(.caption)
-                    .foregroundColor(self.viewModel.hangsRatio > 100 ? .red : .green)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding([.horizontal, .bottom])
+                .font(.caption)
+                .foregroundColor(self.viewModel.hangsRatio > 100 ? .red : .green)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding([.horizontal])
+                .padding(.bottom, self.viewModel.metricsManager.diagnosticsString.count > 0 ? 0 : 10)
+
+            if self.viewModel.metricsManager.diagnosticsString.count > 0 {
+                ScrollView {
+                    ZStack {
+
+                        Text("**Payload**:\n\(self.viewModel.metricsManager.diagnosticsString)")
+                            .font(.caption)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .textSelection(.enabled)
+                        Button("", systemImage: "document.on.document") {
+                            UIPasteboard.general.string = self.viewModel.metricsManager.diagnosticsString
+                        }
+                        .foregroundStyle(.blue)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                    }
+                }
+                .padding([.horizontal, .bottom])
+            }
         }
-        .frame(height: 140)
+        .frame(height: self.viewModel.metricsManager.diagnosticsString.count > 0 ? 180 : 130, alignment: .topLeading)
         .background(Color.white.opacity(0.9))
         .cornerRadius(12)
         .shadow(color: .gray, radius: 12)
