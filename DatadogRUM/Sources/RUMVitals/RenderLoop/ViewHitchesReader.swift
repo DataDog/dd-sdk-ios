@@ -26,7 +26,7 @@ internal typealias HitchesConfiguration = (maxCollectedHitches: Int, acceptableL
    - hitches: Array of view hitches (slow frames)
    - hitchesDuration: Cumulative duration in seconds of the view hitches
  */
-internal typealias HitchesDataModel = (hitches: [Hitch], hitchesDuration: Double)
+internal typealias HitchesDataModel = (hitches: [Hitch], startTimestamp: Double, hitchesDuration: Double)
 
 internal struct HitchesTelemetryModel {
     /// Total amount of slow frames collected.
@@ -75,7 +75,7 @@ internal final class ViewHitchesReader: ViewHitchesModel {
     private var hitches: [Hitch] = []
     /// Amount of time when the frames are rendered too late.
     private var hitchesDuration: Double = 0.0
-    var dataModel: HitchesDataModel { queue.sync { (hitches: self.hitches, hitchesDuration: self.hitchesDuration) } }
+    var dataModel: HitchesDataModel { queue.sync { (hitches: self.hitches, startTimestamp: startTimestamp, hitchesDuration: self.hitchesDuration) } }
 
     private var removedHitchesCount = 0
     private var ignoredHitchesCount = 0
@@ -152,3 +152,4 @@ extension ViewHitchesReader: RenderLoopReader {
         }
     }
 }
+
