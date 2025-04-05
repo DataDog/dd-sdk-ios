@@ -139,7 +139,8 @@ let package = Package(
             path: "DatadogRUM",
             sources: ["Sources"],
             resources: [
-                .copy("Resources/PrivacyInfo.xcprivacy")
+                .copy("Resources/PrivacyInfo.xcprivacy"),
+                .process("Resources/Assets.xcassets")
             ]
         ),
         .testTarget(

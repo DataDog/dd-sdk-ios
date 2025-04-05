@@ -8,7 +8,6 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 public struct ViewHitchesOverlayView: View {
-
     @StateObject var viewModel: ViewHitchesViewModel
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()

@@ -20,14 +20,12 @@ public final class DatadogMetricSubscriber: NSObject {
 import MetricKit
 
 public protocol SignpostController {
-
     func startMXMetric(for screen: StaticString)
     func stopMXMetric(for screen: StaticString)
 }
 
 @available(iOS 13.0, *)
 extension OSLog {
-
     public static var fetchItems = MXMetricManager.makeLogHandle(category: "Dashboard")
     public static var screenDuration = MXMetricManager.makeLogHandle(category: "Screen")
     public static var screenEvent = MXMetricManager.makeLogHandle(category: "Event")
@@ -35,14 +33,11 @@ extension OSLog {
 
 @available(iOS 13.0, *)
 extension SignpostController {
-
     public func startMXMetric(for screen: StaticString) {
-
         mxSignpost(.begin, log: .screenDuration, name: screen, #file, ["param simao"])
     }
- 
-    public func stopMXMetric(for screen: StaticString) {
 
+    public func stopMXMetric(for screen: StaticString) {
         mxSignpost(.end, log: .screenDuration, name: screen, #file, ["param simao end", "plus one"])
     }
 }
@@ -64,10 +59,9 @@ public final class DatadogMetricSubscriber: NSObject, MXMetricManagerSubscriber,
     }
 
     // Receive daily metrics.
-    public func didReceive(_ payloads: [MXMetricPayload]) {
-
-        UserDefaults.standard.set(Date(), forKey: "lastMetricKitReport")
-        UserDefaults.standard.set(UserDefaults.standard.integer(forKey: "numOfReports") + 1, forKey: "numOfReports")
+    public func didReceive(_ payloads: [MXMetricPayload], userDefaults: UserDefaults = .standard) {
+        userDefaults.set(Date(), forKey: "lastMetricKitReport")
+        userDefaults.set(UserDefaults.standard.integer(forKey: "numOfReports") + 1, forKey: "numOfReports")
 
         for payload in payloads {
             let timestamp = Date() // payload.timeStampEnd
@@ -158,10 +152,9 @@ public final class DatadogMetricSubscriber: NSObject, MXMetricManagerSubscriber,
 
     // Receive diagnostics immediately when available (iOS 15 and above).
     @available(iOS 14.0, *)
-    public func didReceive(_ payloads: [MXDiagnosticPayload]) {
-
-        UserDefaults.standard.set(Date(), forKey: "lastDiagnosticReport")
-        UserDefaults.standard.set(UserDefaults.standard.integer(forKey: "numOfDiagnostics") + 1, forKey: "numOfDiagnostics")
+    public func didReceive(_ payloads: [MXDiagnosticPayload], userDefaults: UserDefaults = .standard) {
+        userDefaults.set(Date(), forKey: "lastDiagnosticReport")
+        userDefaults.set(UserDefaults.standard.integer(forKey: "numOfDiagnostics") + 1, forKey: "numOfDiagnostics")
 
         var body = ""
         payloads.forEach { payload in
@@ -181,13 +174,9 @@ public final class DatadogMetricSubscriber: NSObject, MXMetricManagerSubscriber,
 
 @available(iOS 13.0, *)
 extension DatadogMetricSubscriber {
-
     func record(name: String, timestamp: Date, _ signpostMetrics: [MXSignpostMetric]) {
-
         signpostMetrics.forEach { signpostMetric in
-
             guard signpostMetric.signpostCategory == "Screen" else {
-
                 print(signpostMetric.signpostCategory)
                 return
             }
@@ -195,7 +184,6 @@ extension DatadogMetricSubscriber {
             print("[signpostName]\(signpostMetric.signpostName): \(signpostMetric.totalCount)")
 
             if let signpostIntervalData = signpostMetric.signpostIntervalData {
-
                 record(name: "histogrammedSignpostDuration", signpostName: signpostMetric.signpostName, timestamp: timestamp, signpostIntervalData.histogrammedSignpostDuration)
 
                 if let cumulativeCPUTime = signpostIntervalData.cumulativeCPUTime {

@@ -54,8 +54,6 @@ public final class ViewHitchesViewModel: ObservableObject {
         if activeViewScope !== viewScope {
 
             hitchesDictionary[activeViewScope?.viewName ?? ""] = hitchesDictionary[activeViewScope?.viewName ?? "", default: []] + [lastHitchValue]
-            print("*********************New view scope*****************+")
-            print("Slow Frame Rate:\(hitchesDictionary[activeViewScope?.viewName ?? ""])")
 
             viewMaxDuration = 60.0
             hitches = []
@@ -90,16 +88,9 @@ public final class ViewHitchesViewModel: ObservableObject {
                 //print("\(start / viewDuration) - \(duration)")
                 return (start / viewMaxDuration, CGFloat(duration < 1 ? 1 : duration))
             }
-        } else {
-
-//            viewMaxDuration = 60.0
-//            hitches = []
-//            hangs = []
-//            progress = 0
         }
 
         for hang in viewScope.hangs {
-
             self.hangs.append((hang.0 / viewMaxDuration, hang.1))
         }
     }
@@ -107,17 +98,14 @@ public final class ViewHitchesViewModel: ObservableObject {
     func getViewHitches(from viewScope: RUMViewScope) -> ViewHitchesModel? { viewScope.viewHitchesReader }
 
     var hitchesDuration: Double {
-
-        return (activeViewScope?.viewHitchesReader?.dataModel.hitchesDuration ?? 0)
+        (activeViewScope?.viewHitchesReader?.dataModel.hitchesDuration ?? 0)
     }
 
     var hangsDuration: Double {
-
-        return (activeViewScope?.totalAppHangDuration ?? 0)
+        (activeViewScope?.totalAppHangDuration ?? 0)
     }
 
     var viewScopeName: String {
-
-        return activeViewScope?.viewName ?? "Unknown"
+        activeViewScope?.viewName ?? "Unknown"
     }
 }
