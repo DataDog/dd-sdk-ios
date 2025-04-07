@@ -52,16 +52,16 @@ class SessionReplayTelemetryTests: XCTestCase {
         let expectation = self.expectation(description: "`telemetry` received 100 calls")
         expectation.expectedFulfillmentCount = 100
 
-        let forwarder = TelemetryMock(expectation: expectation)
+        let forwarder = TelemetryMock()
         let telemetry = SessionReplayTelemetry(telemetry: forwarder, queue: BackgroundAsyncQueue(label: "test"))
 
         // swiftlint:disable opening_brace
         callConcurrently(
             closures: [
-                { telemetry.send(telemetry: .error(id: .mockRandom(), message: .mockRandom(), kind: .mockRandom(), stack: .mockRandom())) },
-                { telemetry.send(telemetry: .debug(id: .mockRandom(), message: .mockRandom(), attributes: nil)) },
-                { telemetry.send(telemetry: .debug(id: .mockRandom(), message: .mockRandom(), attributes: nil)) },
-                { telemetry.send(telemetry: .metric(.init(name: .mockRandom(), attributes: [:], sampleRate: 100))) }
+                { telemetry.send(telemetry: .error(id: .mockRandom(), message: .mockRandom(), kind: .mockRandom(), stack: .mockRandom())); expectation.fulfill() },
+                { telemetry.send(telemetry: .debug(id: .mockRandom(), message: .mockRandom(), attributes: nil)); expectation.fulfill() },
+                { telemetry.send(telemetry: .debug(id: .mockRandom(), message: .mockRandom(), attributes: nil)); expectation.fulfill() },
+                { telemetry.send(telemetry: .metric(.init(name: .mockRandom(), attributes: [:], sampleRate: 100))); expectation.fulfill() }
             ],
             iterations: 25
         )

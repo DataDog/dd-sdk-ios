@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import TestUtilities
 import XCTest
 import UIKit
 @testable import DatadogRUM

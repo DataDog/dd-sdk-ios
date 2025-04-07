@@ -6,6 +6,7 @@
 
 import XCTest
 import DatadogInternal
+import TestUtilities
 
 @testable import DatadogLogs
 @testable import DatadogTrace
@@ -23,8 +24,8 @@ class DDTracerTests: XCTestCase {
         config = Trace.Configuration()
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         config = nil
         CoreRegistry.unregisterDefault()
         core = nil

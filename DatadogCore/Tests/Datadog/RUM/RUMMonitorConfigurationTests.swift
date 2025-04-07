@@ -28,7 +28,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
                 carrierInfo: carrierInfo
             )
         )
-        defer { core.flushAndTearDown() }
+        defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
 
         RUM.enable(
             with: .init(

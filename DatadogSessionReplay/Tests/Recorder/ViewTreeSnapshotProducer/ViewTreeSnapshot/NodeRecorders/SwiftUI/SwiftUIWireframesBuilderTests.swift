@@ -9,8 +9,8 @@ import XCTest
 #if os(iOS)
 import XCTest
 import SwiftUI
+@_spi(Internal)
 import TestUtilities
-
 @_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import DatadogInternal
