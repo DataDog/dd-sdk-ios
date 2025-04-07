@@ -27,7 +27,7 @@ public class DDW3CHTTPHeadersWriter: NSObject {
         swiftW3CHTTPHeadersWriter = W3CHTTPHeadersWriter(
             samplingStrategy: .custom(sampleRate: sampleRate),
             tracestate: [:],
-            traceContextInjection: .all
+            traceContextInjection: .sampled
         )
     }
 
