@@ -10,6 +10,8 @@ import WebKit
 import SwiftUI
 import SafariServices
 @_spi(Internal)
+import TestUtilities
+@_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import DatadogInternal
 

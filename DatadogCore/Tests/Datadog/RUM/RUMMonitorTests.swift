@@ -23,8 +23,8 @@ class RUMMonitorTests: XCTestCase {
         config = RUM.Configuration(applicationID: .mockAny(), trackAnonymousUser: false)
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         config = nil
         super.tearDown()
@@ -1261,7 +1261,7 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Usage
 
     func testGivenSDKNotInitialized_whenObtainingSharedMonitor_itPrintsError() throws {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 
@@ -1280,7 +1280,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testGivenRUMNotEnabled_whenObtainingSharedMonitor_itPrintsError() throws {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 

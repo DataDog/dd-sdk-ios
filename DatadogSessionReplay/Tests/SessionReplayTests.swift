@@ -40,7 +40,7 @@ class SessionReplayTests: XCTestCase {
     }
 
     func testWhenEnabledInNOPCore_itPrintsError() {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 
@@ -55,7 +55,7 @@ class SessionReplayTests: XCTestCase {
     }
 
     func testWhenEnabledMultipleTimes_itPrintsError() {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 
@@ -258,7 +258,7 @@ class SessionReplayTests: XCTestCase {
     // MARK: - Recording Tests
 
     func testWhenStartInNOPCore_itPrintsError() {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 

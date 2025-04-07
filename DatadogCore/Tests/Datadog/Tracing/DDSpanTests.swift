@@ -16,7 +16,7 @@ class DDSpanTests: XCTestCase {
 
     func testWhenLoggingSpanEvent_itWritesLogToLogOutput() throws {
         let core = DatadogCoreProxy()
-        defer { core.flushAndTearDown() }
+        defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
 
         Logs.enable(in: core)
         Trace.enable(in: core)

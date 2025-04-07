@@ -146,8 +146,8 @@ class DDRUMMonitorTests: XCTestCase {
         config = RUM.Configuration(applicationID: .mockAny())
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         config = nil
         CoreRegistry.unregisterDefault()
         core = nil

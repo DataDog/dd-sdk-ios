@@ -21,8 +21,8 @@ class RUMInternalProxyTests: XCTestCase {
         RUM.enable(with: .mockAny(), in: core)
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         super.tearDown()
     }

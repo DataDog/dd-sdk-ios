@@ -15,10 +15,11 @@ import DatadogInternal
 class CrashLogReceiverTests: XCTestCase {
     func testReceiveCrashLog() throws {
         // Given
-        let core = PassthroughCoreMock(
-            bypassConsentExpectation: expectation(description: "Send Event Bypass Consent"),
-            messageReceiver: CrashLogReceiver.mockAny()
-        )
+let expectation = expectation(description: "Send Event Bypass Consent")
+        let core = PassthroughCoreMock(messageReceiver: CrashLogReceiver.mockAny())
+        core.onEventWriteContext = { bypassConsent in
+            if bypassConsent { expectation.fulfill() }
+        }
 
         // When
         core.send(

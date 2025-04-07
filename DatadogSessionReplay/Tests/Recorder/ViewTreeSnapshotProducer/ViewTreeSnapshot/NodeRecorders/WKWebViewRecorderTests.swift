@@ -7,8 +7,8 @@
 import XCTest
 #if os(iOS)
 import WebKit
+@_spi(Internal)
 import TestUtilities
-
 @_spi(Internal)
 @testable import DatadogSessionReplay
 

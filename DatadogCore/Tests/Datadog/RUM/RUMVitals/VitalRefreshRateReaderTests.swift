@@ -4,8 +4,10 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import XCTest
+import TestUtilities
 import UIKit
+import XCTest
+
 @testable import DatadogRUM
 
 final class VitalRefreshRateReaderTests: XCTestCase {

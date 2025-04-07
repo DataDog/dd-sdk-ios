@@ -27,11 +27,16 @@ Pod::Spec.new do |s|
   s.framework = 'XCTest'
 
   s.source_files = [
-    "TestUtilities/Helpers/**/*.swift",
-    "TestUtilities/Mocks/**/*.swift",
-    "TestUtilities/Matchers/**/*.swift",
+    "TestUtilities/Sources/**/*.swift"
   ]
 
+  s.dependency 'DatadogCore'
   s.dependency 'DatadogInternal'
+  s.dependency 'DatadogLogs'
+  s.dependency 'DatadogRUM'
+  s.dependency 'DatadogSessionReplay'
+  s.dependency 'DatadogTrace'
+  s.dependency 'DatadogCrashReporting'
+  s.dependency 'DatadogWebViewTracking'
 
 end

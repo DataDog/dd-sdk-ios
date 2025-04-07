@@ -13,11 +13,11 @@ import DatadogInternal
 // MARK: - Span Mocks
 
 extension DDSpanContext {
-    static func mockAny() -> DDSpanContext {
+    public static func mockAny() -> DDSpanContext {
         return mockWith()
     }
 
-    static func mockWith(
+    public static func mockWith(
         traceID: TraceID = .mockAny(),
         spanID: SpanID = .mockAny(),
         parentSpanID: SpanID? = .mockAny(),
@@ -37,21 +37,22 @@ extension DDSpanContext {
 }
 
 extension BaggageItems {
-    static func mockAny() -> BaggageItems {
+    public static func mockAny() -> BaggageItems {
         return BaggageItems()
     }
 }
 
-internal struct NOPSpanWriteContext: SpanWriteContext {
-    func spanWriteContext(_ block: @escaping (DatadogContext, Writer) -> Void) {}
+public struct NOPSpanWriteContext: SpanWriteContext {
+    public init() {}
+    public func spanWriteContext(_ block: @escaping (DatadogContext, Writer) -> Void) {}
 }
 
 extension DDSpan {
-    static func mockAny(in core: DatadogCoreProtocol) -> DDSpan {
+    public static func mockAny(in core: DatadogCoreProtocol) -> DDSpan {
         return mockWith(core: core)
     }
 
-    static func mockWith(
+    public static func mockWith(
         tracer: DatadogTracer,
         context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
@@ -71,7 +72,7 @@ extension DDSpan {
         )
     }
 
-    static func mockWith(
+    public static func mockWith(
         core: DatadogCoreProtocol,
         context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
@@ -93,7 +94,7 @@ extension DDSpan {
 }
 
 extension SpanEvent: AnyMockable, RandomMockable {
-    static func mockWith(
+    public static func mockWith(
         traceID: TraceID = .mockAny(),
         spanID: SpanID = .mockAny(),
         parentID: SpanID? = .mockAny(),
@@ -261,11 +262,11 @@ extension SpanEvent.UserInfo: AnyMockable, RandomMockable {
 // MARK: - Component Mocks
 
 extension DatadogTracer {
-    static func mockAny(in core: DatadogCoreProtocol) -> DatadogTracer {
+    public static func mockAny(in core: DatadogCoreProtocol) -> DatadogTracer {
         return mockWith(core: core)
     }
 
-    static func mockWith(
+    public static func mockWith(
         core: DatadogCoreProtocol,
         localTraceSampler: Sampler = .mockKeepAll(),
         tags: [String: Encodable] = [:],
@@ -287,7 +288,7 @@ extension DatadogTracer {
         )
     }
 
-    static func mockWith(
+    public static func mockWith(
         featureScope: FeatureScope,
         localTraceSampler: Sampler = .mockKeepAll(),
         tags: [String: Encodable] = [:],
@@ -311,7 +312,7 @@ extension DatadogTracer {
 }
 
 extension TracingWithLoggingIntegration {
-    static func mockAny() -> TracingWithLoggingIntegration {
+    public static func mockAny() -> TracingWithLoggingIntegration {
         return TracingWithLoggingIntegration(
             core: NOPDatadogCore(),
             service: .mockAny(),
@@ -321,17 +322,17 @@ extension TracingWithLoggingIntegration {
 }
 
 extension ContextMessageReceiver {
-    static func mockAny() -> ContextMessageReceiver {
+    public static func mockAny() -> ContextMessageReceiver {
         return ContextMessageReceiver()
     }
 }
 
 extension SpanEventBuilder {
-    static func mockAny() -> SpanEventBuilder {
+    public static func mockAny() -> SpanEventBuilder {
         return mockWith()
     }
 
-    static func mockWith(
+    public static func mockWith(
         service: String = .mockAny(),
         networkInfoEnabled: Bool = false,
         eventsMapper: SpanEventMapper? = nil,

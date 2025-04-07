@@ -52,7 +52,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
     }
 
     func testGivenFirstPartyInterceptionWithNoError_itDoesNotSendLog() throws {
-        core.expectation = expectation(description: "Send span")
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
         let request: ImmutableRequest = .mockWith(httpMethod: "POST")
@@ -74,8 +75,9 @@ class TracingURLSessionHandlerTests: XCTestCase {
     }
 
     func testGivenFirstPartyInterceptionWithNetworkError_whenInterceptionCompletes_itEncodesRequestInfoInSpanAndSendsLog() throws {
-        core.expectation = expectation(description: "Send span and log")
-        core.expectation?.expectedFulfillmentCount = 2
+        let expectation = expectation(description: "Send span and log")
+        expectation.expectedFulfillmentCount = 2
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
         let request: ImmutableRequest = .mockWith(
@@ -146,8 +148,9 @@ class TracingURLSessionHandlerTests: XCTestCase {
     }
 
     func testGivenFirstPartyInterceptionWithClientError_whenInterceptionCompletes_itEncodesRequestInfoInSpanAndSendsLog() throws {
-        core.expectation = expectation(description: "Send span and log")
-        core.expectation?.expectedFulfillmentCount = 2
+        let expectation = expectation(description: "Send span and log")
+        expectation.expectedFulfillmentCount = 2
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
         let request: ImmutableRequest = .mockWith(httpMethod: "GET")
