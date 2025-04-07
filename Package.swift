@@ -25,8 +25,19 @@ let platforms: [SupportedPlatform] = useOTelSwiftPackage ?
     [.iOS(.v13), .tvOS(.v13), .macOS(.v12), .watchOS(.v7)] :
     [.iOS(.v12), .tvOS(.v12), .macOS(.v12), .watchOS(.v7)]
 
-let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment["DD_BENCHMARK"] != nil ?
-    [.define("DD_BENCHMARK")] : []
+// Enumeration of the development ENV vars that can be set.
+// To set ENV vars, use `open --env DD_BENCHMARK Package.swift`.
+enum EnvironmentVar: String, CaseIterable {
+    case benchmark = "DD_BENCHMARK"
+    case test = "DD_SDK_COMPILED_FOR_TESTING"
+}
+
+var internalSwiftSettings: [SwiftSetting] = EnvironmentVar.allCases.compactMap {
+    if ProcessInfo.processInfo.environment[$0.rawValue] != nil {
+        return .define($0.rawValue)
+    }
+    return nil
+}
 
 let package = Package(
     name: "Datadog",
@@ -222,10 +233,18 @@ let package = Package(
         .target(
             name: "TestUtilities",
             dependencies: [
+                .target(name: "DatadogCore"),
+                .target(name: "DatadogPrivate"),
                 .target(name: "DatadogInternal"),
+                .target(name: "DatadogLogs"),
+                .target(name: "DatadogRUM"),
+                .target(name: "DatadogSessionReplay"),
+                .target(name: "DatadogTrace"),
+                .target(name: "DatadogCrashReporting"),
+                .target(name: "DatadogWebViewTracking")
             ],
-            path: "TestUtilities",
-            sources: ["Mocks", "Helpers", "Matchers"]
+            path: "TestUtilities/Sources",
+            swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
         )
     ]
 )

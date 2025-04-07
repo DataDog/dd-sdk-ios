@@ -23,8 +23,8 @@ class LoggerTests: XCTestCase {
         core = DatadogCoreProxy()
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+    override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         super.tearDown()
     }

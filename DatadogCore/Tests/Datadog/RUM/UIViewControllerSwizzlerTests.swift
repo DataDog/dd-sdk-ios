@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import DatadogRUM
 
 private class ViewControllerMock: UIViewController {

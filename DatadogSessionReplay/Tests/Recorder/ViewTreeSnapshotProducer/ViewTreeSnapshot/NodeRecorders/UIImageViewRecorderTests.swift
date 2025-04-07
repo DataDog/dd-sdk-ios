@@ -7,8 +7,9 @@
 #if os(iOS)
 import XCTest
 @_spi(Internal)
-@testable import DatadogSessionReplay
 import TestUtilities
+@_spi(Internal)
+@testable import DatadogSessionReplay
 
 // swiftlint:disable opening_brace
 class UIImageViewRecorderTests: XCTestCase {

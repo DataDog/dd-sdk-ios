@@ -7,6 +7,8 @@
 #if os(iOS)
 import XCTest
 @testable import DatadogSessionReplay
+@_spi(Internal)
+import TestUtilities
 
 internal class AppWindowObserverMock: AppWindowObserver {
     var relevantWindow: UIWindow? = UIWindow(frame: .mockRandom(minWidth: 100, minHeight: 100))
