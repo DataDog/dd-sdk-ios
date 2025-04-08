@@ -8,80 +8,82 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 public struct DDVitalsView: View {
-
     public static let height: CGFloat = 250
     private static let padding: CGFloat = 10
 
     @StateObject var viewModel: DDVitalsViewModel
 
+    @State var isShowingConfigView: Bool
+
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     public init(viewModel: DDVitalsViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        isShowingConfigView = false
     }
 
     public var body: some View {
-        VStack {
-            // Navigation View
-            self.topView
-                .padding(Self.padding)
+        NavigationView {
+            VStack {
+                // Navigation View
+                topView
+                    .padding(Self.padding)
 
-            // Vitals
-            HStack(spacing: 10) {
-                self.vitalView(
-                    title: "CPU",
-                    value: self.viewModel.cpuValue,
-                    metric: "ticks/s",
-                    level: .low
-                )
-                self.vitalView(
-                    title: "Memory",
-                    value: self.viewModel.memoryValue,
-                    metric: "MB",
-                    level: .low
-                )
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, Self.padding)
-
-            // Timeline
-            self.timelineView
-                .padding(Self.padding)
-
-            HStack {
-                self.rateView(
-                    title: "SlowFrame Rate",
-                    value: self.viewModel.hitchesRatio > 1 ? self.viewModel.hitchesRatio : 0,
-                    metric: "ms/s",
-                    level: self.viewModel.hitchesRatio > 10 ? .high : .low
-                )
+                // Vitals
+                HStack(spacing: 10) {
+                    vitalView(
+                        title: "CPU",
+                        value: viewModel.cpuValue,
+                        metric: "ticks/s",
+                        level: .low
+                    )
+                    vitalView(
+                        title: "Memory",
+                        value: viewModel.memoryValue,
+                        metric: "MB",
+                        level: .low
+                    )
+                }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, Self.padding)
 
-                self.rateView(
-                    title: "Freeze Rate",
-                    value: self.viewModel.hangsRatio > 1 ? self.viewModel.hangsRatio : 0,
-                    metric: "s/h",
-                    level: self.viewModel.hangsRatio > 100 ? .high : .low
-                )
-                .frame(maxWidth: .infinity, alignment: .leading)
+                // Timeline
+                timelineView
+                    .padding(Self.padding)
+
+                HStack {
+                    rateView(
+                        title: "SlowFrame Rate",
+                        value: viewModel.hitchesRatio > 1 ? viewModel.hitchesRatio : 0,
+                        metric: "ms/s",
+                        level: viewModel.hitchesRatio > 10 ? .high : .low
+                    )
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    rateView(
+                        title: "Freeze Rate",
+                        value: viewModel.hangsRatio > 1 ? viewModel.hangsRatio : 0,
+                        metric: "s/h",
+                        level: viewModel.hangsRatio > 100 ? .high : .low
+                    )
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding([.horizontal, .bottom], Self.padding)
             }
-            .padding([.horizontal, .bottom], Self.padding)
         }
         .frame(height: Self.height, alignment: .topLeading)
         .background(Color.white.opacity(0.9))
         .cornerRadius(12)
         .shadow(color: .gray, radius: 12)
         .padding(Self.padding)
-        .onReceive(timer) { timer in
-
-            self.viewModel.updateView()
+        .onReceive(timer) { _ in
+            viewModel.updateView()
         }
     }
 }
 
 @available(iOS 15.0, *)
 extension DDVitalsView {
-
     var topView: some View {
         HStack {
             Image("datadog", bundle: .module)
@@ -98,12 +100,16 @@ extension DDVitalsView {
 
             Spacer()
 
-            Button("", systemImage: "gearshape.fill") {
-
-
+            VStack {
+                if isShowingConfigView {
+                    NavigationLink(destination: RUMConfigView(), isActive: $isShowingConfigView) { EmptyView() }
+                }
+                Button("", systemImage: "gearshape.fill") {
+                    self.isShowingConfigView = true
+                }
+                .foregroundStyle(Color.purple)
+                .frame(width: 32, height: 32)
             }
-            .foregroundStyle(Color.purple)
-            .frame(width: 32, height: 32)
         }
     }
 
@@ -122,7 +128,7 @@ extension DDVitalsView {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Self.padding)
-        .background(Color.gray.opacity(0.5))
+        .background(Color.gray.opacity(0.3))
         .cornerRadius(5)
     }
 
@@ -165,7 +171,7 @@ extension DDVitalsView {
                         Rectangle()
                             .fill(Color.blue.opacity(0.7))
                             .frame(
-                                width: (marker.1 * 3),
+                                width: marker.1 * 3,
                                 height: barHeight
                             )
                             .cornerRadius(5)
@@ -187,7 +193,6 @@ extension DDVitalsView {
 
 @available(iOS 15.0, *)
 private extension DDVitalsView {
-
     private func timeString(from seconds: Int) -> String {
         let minutes = seconds / 60
         let seconds = seconds % 60
@@ -204,17 +209,16 @@ enum WarningLevel {
     var color: Color {
         switch self {
         case .low:
-            return .green
+            .green
         case .medium:
-            return .yellow
+            .yellow
         case .high:
-            return .red
+            .red
         }
     }
 }
 
 @available(iOS 15.0, *)
 #Preview {
-
     DDVitalsView(viewModel: DDVitalsViewModel())
 }

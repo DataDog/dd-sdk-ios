@@ -4,12 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import SwiftUI
 import DatadogInternal
+import SwiftUI
 
 @available(iOS 15.0, *)
 public struct RUMWidgetView: View {
-
     @StateObject var viewModel = RUMWidgetViewModel()
     private var floatingViewModel = FloatingButtonViewModel()
 
@@ -17,19 +16,24 @@ public struct RUMWidgetView: View {
 
     public var body: some View {
         ZStack {
-            DDVitalsView(viewModel: DDVitalsViewModel(metricsManager: self.viewModel.metricsManager))
-                .frame(width: UIScreen.main.bounds.width)
-                .opacity(self.viewModel.isExpanded ? 1 : 0)
+            DDVitalsView(
+                viewModel: DDVitalsViewModel(metricsManager: viewModel.metricsManager)
+            )
+            .frame(width: UIScreen.main.bounds.width)
+            .opacity(viewModel.isExpanded ? 1 : 0)
+            .onTapGesture {
+                viewModel.isExpanded.toggle()
+            }
 
             FloatingButtonView(viewModel: floatingViewModel)
                 .frame(width: FloatingButtonView.size.width, height: FloatingButtonView.size.height)
-                .opacity(self.viewModel.isExpanded ? 0 : 1)
+                .opacity(viewModel.isExpanded ? 0 : 1)
+                .onTapGesture {
+                    viewModel.isExpanded.toggle()
+                }
         }
-        .onTapGesture {
-            self.viewModel.isExpanded.toggle()
-        }
-        .onChange(of: self.viewModel.isExpanded) { isExpanded in
-            self.onExpandView?(isExpanded)
+        .onChange(of: viewModel.isExpanded) { isExpanded in
+            onExpandView?(isExpanded)
         }
     }
 }

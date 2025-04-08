@@ -18,14 +18,14 @@ public class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
         let view = RUMWidgetView()
         super.init(rootView: view)
         self.view.backgroundColor = .clear
-        self.rootView.onExpandView = { [weak self] isExpanded in
-
+        rootView.onExpandView = { [weak self] isExpanded in
             self?.isExpanded = isExpanded
             self?.updateFrame(isExpanded: isExpanded)
         }
     }
 
-    @MainActor @objc required dynamic init?(coder aDecoder: NSCoder) {
+    @available(*, unavailable)
+    @MainActor @objc dynamic required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -33,23 +33,23 @@ public class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
         self.bottomPadding = bottomPadding
 
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handleDrag(_:)))
-        self.view.addGestureRecognizer(panGesture)
+        view.addGestureRecognizer(panGesture)
 
-        superView.addSubview(self.view)
+        superView.addSubview(view)
         updateFrame(isExpanded: false, isAnimated: false)
     }
 
     func updateFrame(isExpanded: Bool, isAnimated: Bool = true) {
         let frame = isExpanded
-        ? CGRect(x: 0, y: topPadding, width: UIScreen.main.bounds.width, height: DDVitalsView.height)
-        : CGRect(
-            x: UIScreen.main.bounds.width - FloatingButtonView.size.width - padding,
-            y: UIScreen.main.bounds.height - FloatingButtonView.size.height - padding - bottomPadding,
-            width: FloatingButtonView.size.width,
-            height: FloatingButtonView.size.height
-        )
+            ? CGRect(x: 0, y: topPadding, width: UIScreen.main.bounds.width, height: DDVitalsView.height)
+            : CGRect(
+                x: UIScreen.main.bounds.width - FloatingButtonView.size.width - padding,
+                y: UIScreen.main.bounds.height - FloatingButtonView.size.height - padding - bottomPadding,
+                width: FloatingButtonView.size.width,
+                height: FloatingButtonView.size.height
+            )
 
-        UIView.animate(withDuration: isAnimated ? 1/3 : 0, delay: 0, options: .curveEaseInOut) {
+        UIView.animate(withDuration: isAnimated ? 1 / 3 : 0, delay: 0, options: .curveEaseInOut) {
             self.view.frame = frame
         }
     }
@@ -72,21 +72,21 @@ public class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
             let screenHeight = UIScreen.main.bounds.height
 
             let x = draggedView.center.x < screenWidth / 2
-            ? padding
-            : screenWidth - padding - FloatingButtonView.size.width
+                ? padding
+                : screenWidth - padding - FloatingButtonView.size.width
 
             // Clamp Y within top/bottom bounds
-            let minY = self.isExpanded ? 240.0 : 165
-            let maxY = self.isExpanded ? topPadding : 105
+            let minY = isExpanded ? 240.0 : 165
+            let maxY = isExpanded ? topPadding : 105
             let clampedY = min(
                 max(padding + maxY, draggedView.frame.origin.y),
                 screenHeight - padding - minY
             )
 
-            UIView.animate(withDuration: 1/4, delay: 0, options: .curveEaseOut) {
+            UIView.animate(withDuration: 1 / 4, delay: 0, options: .curveEaseOut) {
                 let frame = self.isExpanded
-                ? CGRect(x: 0, y: clampedY, width: UIScreen.main.bounds.width, height: DDVitalsView.height)
-                : CGRect(x: x, y: clampedY, width: FloatingButtonView.size.width, height: FloatingButtonView.size.height)
+                    ? CGRect(x: 0, y: clampedY, width: UIScreen.main.bounds.width, height: DDVitalsView.height)
+                    : CGRect(x: x, y: clampedY, width: FloatingButtonView.size.width, height: FloatingButtonView.size.height)
 
                 draggedView.frame = frame
                 gesture.setTranslation(.zero, in: draggedView)

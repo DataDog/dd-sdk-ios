@@ -4,13 +4,12 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import SwiftUI
-import Observation
 import DatadogInternal
+import Observation
+import SwiftUI
 
 @available(iOS 15.0, *)
 public final class DDVitalsViewModel: ObservableObject {
-
     @Published var progress: CGFloat = 0 // Value between 0.0 and 1.0
     @Published var hangs: [(CGFloat, CGFloat)] = [] // Range for green highlight (e.g., 0.2...0.3)
     @Published var hitches: [(CGFloat, CGFloat)] = [] // Positions of vertical lines (e.g., [0.6, 0.7, 0.75])
@@ -19,7 +18,6 @@ public final class DDVitalsViewModel: ObservableObject {
     @Published var memoryValue: Double = 0
 
     var hitchesRatio: CGFloat {
-
         lastHitchValue = hitchesDuration / currentDuration * Double(1.toMilliseconds)
         return lastHitchValue
     } // milliseconds/second
@@ -39,12 +37,11 @@ public final class DDVitalsViewModel: ObservableObject {
     private var lastHitchValue: CGFloat = 0
     private var hitchesDictionary: [String: [CGFloat]] = [:]
 
-    public init (
+    public init(
         core: DatadogCoreProtocol = CoreRegistry.default,
         metricsManager: DatadogMetricSubscriber = DatadogMetricSubscriber(core: CoreRegistry.default)
     ) {
-
-        self.rumFeature = core.get(feature: RUMFeature.self)
+        rumFeature = core.get(feature: RUMFeature.self)
         self.metricsManager = metricsManager
     }
 
@@ -52,7 +49,6 @@ public final class DDVitalsViewModel: ObservableObject {
         guard let viewScope = rumFeature?.monitor.scopes.activeSession?.viewScopes.first(where: { $0.isActiveView }) else { return }
 
         if activeViewScope !== viewScope {
-
             hitchesDictionary[activeViewScope?.viewName ?? ""] = hitchesDictionary[activeViewScope?.viewName ?? "", default: []] + [lastHitchValue]
 
             viewMaxDuration = 60.0
@@ -61,53 +57,47 @@ public final class DDVitalsViewModel: ObservableObject {
             progress = 0
         }
 
-        self.activeViewScope = viewScope
+        activeViewScope = viewScope
 
-        self.updateTimeline(viewScope: viewScope)
-        self.updateVitals(viewScope: viewScope)
+        updateTimeline(viewScope: viewScope)
+        updateVitals(viewScope: viewScope)
     }
 
     func updateTimeline(viewScope: RUMViewScope) {
-
-        if let viewHitches = self.getViewHitches(from: viewScope),
+        if let viewHitches = getViewHitches(from: viewScope),
            viewHitches.dataModel.startTimestamp > 0 {
+            startTimestamp = viewHitches.dataModel.startTimestamp
 
-            self.startTimestamp = viewHitches.dataModel.startTimestamp
-
-            let interval = CACurrentMediaTime() - self.startTimestamp!
+            let interval = CACurrentMediaTime() - startTimestamp!
             currentDuration = interval
 
             progress = interval / viewMaxDuration
             if progress >= 1.0 {
-
                 withAnimation { viewMaxDuration = interval }
             }
 
             if progress > 500 {
-
-                print("\(self.startTimestamp)")
+                print("\(startTimestamp)")
             }
 
             hitches = viewHitches.dataModel.hitches.map {
-
                 let start = Double($0.start) / 1_000_000_000.0
                 let duration = Double($0.duration) / 1_000_000_000.0
-                //print("\(start / viewDuration) - \(duration)")
+                // print("\(start / viewDuration) - \(duration)")
                 return (start / viewMaxDuration, CGFloat(duration < 1 ? 1 : duration))
             }
         }
 
         for hang in viewScope.hangs {
-            self.hangs.append((hang.0 / viewMaxDuration, hang.1))
+            hangs.append((hang.0 / viewMaxDuration, hang.1))
         }
     }
 
     func updateVitals(viewScope: RUMViewScope) {
-
         guard let vitalInfoSampler = viewScope.vitalInfoSampler else { return }
 
-        self.cpuValue = (vitalInfoSampler.cpu.currentValue ?? 0) / 1000
-        self.memoryValue = (vitalInfoSampler.memory.currentValue ?? 0).MB
+        cpuValue = (vitalInfoSampler.cpu.currentValue ?? 0) / 1_000
+        memoryValue = (vitalInfoSampler.memory.currentValue ?? 0).MB
 
         print("CPU: \(vitalInfoSampler.cpu)")
         print("Memory: \(vitalInfoSampler.memory)")
@@ -129,5 +119,5 @@ public final class DDVitalsViewModel: ObservableObject {
 }
 
 private extension Double {
-    var MB: Self { self / 1000000 }
+    var MB: Self { self / 1_000_000 }
 }
