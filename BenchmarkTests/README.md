@@ -48,11 +48,11 @@ struct LogsScenario: Scenario {
 }
 ```
 
-Once the scenario is created, add its name as enum case of the [`SyntheticScenario`](Runner/Scenarios/SyntheticScenario.swift#L12) object so it can be selected by setting the `BENCHMARK_SCENARIO` environment variable.
+Once the scenario is created, add its name as an enum case of the [`SyntheticScenario`](Runner/Scenarios/SyntheticScenario.swift#L12) object so it can be selected by setting the `BENCHMARK_SCENARIO` environment variable.
 
 ### Run a scenario
 
-There are ways to execute a scenario:
+There are two ways to execute a scenario:
 1. Use environment variables in the `Runner.xcscheme` (Edit Scheme from Xcode)
 ```xml
 <EnvironmentVariables>
