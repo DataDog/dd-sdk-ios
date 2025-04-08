@@ -48,12 +48,12 @@ struct LogsScenario: Scenario {
 }
 ```
 
-Once the Scenario is created, add its name as enum case of the [`SyntheticScenario`](Runner/Scenarios/SyntheticScenario.swift#L12) object so it can be selected by setting the `BENCHMARK_SCENARIO` environment variable.
+Once the scenario is created, add its name as enum case of the [`SyntheticScenario`](Runner/Scenarios/SyntheticScenario.swift#L12) object so it can be selected by setting the `BENCHMARK_SCENARIO` environment variable.
 
-### Run a Scenario
+### Run a scenario
 
-There is 2 options to execute a Scenario:
-1. Using Environment Variables in the `Runner.xcscheme` (Edit Scheme from Xcode)
+There are ways to execute a scenario:
+1. Use environment variables in the `Runner.xcscheme` (Edit Scheme from Xcode)
 ```xml
 <EnvironmentVariables>
     <EnvironmentVariable
@@ -68,18 +68,18 @@ There is 2 options to execute a Scenario:
     </EnvironmentVariable>
 </EnvironmentVariables>
 ```
-2. Opening a Deep Link:
+2. Open a deep link:
 ```bash
 xcrun simctl openurl booted 'bench://start?scenario=<scenario>&run=<run>'
 ```
-If you intent to execute multiple Scenario/Run in the same application process, you must stop the previous execution with: 
+If you need to execute multiple scenarios/runs in the same application process, you must stop the previous execution with: 
 ```bash
 xcrun simctl openurl booted 'bench://stop'
 ```
 
 ### Synthetics Configuration
 
-Please refer to [Confluence page (internal)](https://datadoghq.atlassian.net/wiki/spaces/RUMP/pages/3981476482/Benchmarks+iOS)
+Please refer to the [Confluence page (internal)](https://datadoghq.atlassian.net/wiki/spaces/RUMP/pages/3981476482/Benchmarks+iOS)
 
 ## CI
 
