@@ -38,8 +38,8 @@ public class RUMEventMatcher {
         return try eventsData.map { eventJSONData in try RUMEventMatcher.fromJSONObjectData(eventJSONData) }
     }
 
-    let jsonData: Data
-    let jsonMatcher: JSONDataMatcher
+    public let jsonData: Data
+    public let jsonMatcher: JSONDataMatcher
 
     private let jsonDataDecoder = JSONDecoder()
 

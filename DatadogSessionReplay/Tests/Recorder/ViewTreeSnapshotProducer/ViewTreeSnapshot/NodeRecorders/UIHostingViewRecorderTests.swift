@@ -8,9 +8,9 @@
 import XCTest
 import SwiftUI
 @_spi(Internal)
-import TestUtilities
-@_spi(Internal)
 @testable import DatadogSessionReplay
+@_spi(Internal)
+@testable import TestUtilities
 
 @available(iOS 13.0, tvOS 13.0, *)
 class UIHostingViewRecorderTests: XCTestCase {

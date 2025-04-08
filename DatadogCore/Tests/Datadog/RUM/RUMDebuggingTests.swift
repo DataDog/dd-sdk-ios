@@ -6,8 +6,8 @@
 
 import XCTest
 import UIKit
-import TestUtilities
 import DatadogInternal
+@testable import TestUtilities
 @testable import DatadogRUM
 
 // TODO: RUMM-2034 Remove this flag once we have a host application for tests

@@ -14,7 +14,7 @@ public class JSONDataMatcher {
 
     // MARK: - Initialization
 
-    init(from jsonObject: [String: Any]) {
+    public init(from jsonObject: [String: Any]) {
         self.json = jsonObject
     }
 
@@ -92,7 +92,7 @@ public class JSONDataMatcher {
 
     /// Returns value at given key-path by casting it to expected type.
     /// Throws an error if  value at given key-path does not exist.
-    func value<T>(forKeyPath keyPath: String) throws -> T {
+    public func value<T>(forKeyPath keyPath: String) throws -> T {
         let dictionary = json as NSDictionary
         guard let anyValue = dictionary.value(forKeyPath: keyPath) else {
             throw Exception(
@@ -109,7 +109,7 @@ public class JSONDataMatcher {
 
     /// Returns value at given key-path by casting it to expected type.
     /// Returns `nil` if no value at given key-path exist.
-    func valueOrNil<T>(forKeyPath keyPath: String) throws -> T? {
+    public func valueOrNil<T>(forKeyPath keyPath: String) throws -> T? {
         let dictionary = json as NSDictionary
         guard let anyValue = dictionary.value(forKeyPath: keyPath) else {
             return nil

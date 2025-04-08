@@ -6,9 +6,9 @@
 
 import XCTest
 import UIKit
-import TestUtilities
 import DatadogInternal
 @testable import DatadogRUM
+@testable import TestUtilities
 
 class RUMViewScopeTests: XCTestCase {
     var context: DatadogContext = .mockWith(

@@ -4,8 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import HTTPServerMock
 import DatadogInternal
+import HTTPServerMock
+import TestUtilities
 import XCTest
 
 private extension ExampleApplication {

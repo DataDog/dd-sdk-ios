@@ -10,7 +10,7 @@ import XCTest
 /// Note: this file is individually referenced by integration tests target, so no dependency on other source files should be introduced.
 public class LogMatcher: JSONDataMatcher {
     /// Log JSON keys.
-    struct JSONKey {
+    public struct JSONKey {
         static let date = "date"
         static let status = "status"
         static let message = "message"
@@ -36,26 +36,26 @@ public class LogMatcher: JSONDataMatcher {
 
         // MARK: - Network connection info
 
-        static let networkReachability = "network.client.reachability"
-        static let networkAvailableInterfaces = "network.client.available_interfaces"
-        static let networkConnectionSupportsIPv4 = "network.client.supports_ipv4"
-        static let networkConnectionSupportsIPv6 = "network.client.supports_ipv6"
-        static let networkConnectionIsExpensive = "network.client.is_expensive"
-        static let networkConnectionIsConstrained = "network.client.is_constrained"
+        public static let networkReachability = "network.client.reachability"
+        public static let networkAvailableInterfaces = "network.client.available_interfaces"
+        public static let networkConnectionSupportsIPv4 = "network.client.supports_ipv4"
+        public static let networkConnectionSupportsIPv6 = "network.client.supports_ipv6"
+        public static let networkConnectionIsExpensive = "network.client.is_expensive"
+        public static let networkConnectionIsConstrained = "network.client.is_constrained"
 
         // MARK: - Mobile carrier info
 
-        static let mobileNetworkCarrierName = "network.client.sim_carrier.name"
-        static let mobileNetworkCarrierISOCountryCode = "network.client.sim_carrier.iso_country"
-        static let mobileNetworkCarrierRadioTechnology = "network.client.sim_carrier.technology"
-        static let mobileNetworkCarrierAllowsVoIP = "network.client.sim_carrier.allows_voip"
+        public static let mobileNetworkCarrierName = "network.client.sim_carrier.name"
+        public static let mobileNetworkCarrierISOCountryCode = "network.client.sim_carrier.iso_country"
+        public static let mobileNetworkCarrierRadioTechnology = "network.client.sim_carrier.technology"
+        public static let mobileNetworkCarrierAllowsVoIP = "network.client.sim_carrier.allows_voip"
 
         // MARK: - Error info
 
-        static let errorKind = "error.kind"
-        static let errorMessage = "error.message"
-        static let errorStack = "error.stack"
-        static let errorFingerprint = "error.fingerprint"
+        public static let errorKind = "error.kind"
+        public static let errorMessage = "error.message"
+        public static let errorStack = "error.stack"
+        public static let errorFingerprint = "error.fingerprint"
 
         // MARK: - Dd info
         static let dd = "_dd"
@@ -64,9 +64,9 @@ public class LogMatcher: JSONDataMatcher {
     }
 
     /// Allowed values for `network.client.available_interfaces` attribute.
-    static let allowedNetworkAvailableInterfacesValues: Set<String> = ["wifi", "wiredEthernet", "cellular", "loopback", "other"]
+    public static let allowedNetworkAvailableInterfacesValues: Set<String> = ["wifi", "wiredEthernet", "cellular", "loopback", "other"]
     /// Allowed values for `network.client.reachability` attribute.
-    static let allowedNetworkReachabilityValues: Set<String> = ["yes", "no", "maybe"]
+    public static let allowedNetworkReachabilityValues: Set<String> = ["yes", "no", "maybe"]
 
     // MARK: - Initialization
 

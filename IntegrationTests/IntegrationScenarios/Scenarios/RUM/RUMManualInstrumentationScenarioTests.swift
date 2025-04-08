@@ -4,9 +4,10 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import HTTPServerMock
-import XCTest
 import DatadogInternal
+import HTTPServerMock
+import TestUtilities
+import XCTest
 
 private class RUMFixture1Screen: XCUIApplication {
     func tapDownloadResourceButton() {

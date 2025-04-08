@@ -151,9 +151,9 @@ public class SpanMatcher {
     }
 
     /// Allowed values for `meta.network.client.available_interfaces` attribute.
-    static let allowedNetworkAvailableInterfacesValues: Set<String> = ["wifi", "wiredEthernet", "cellular", "loopback", "other"]
+    public static let allowedNetworkAvailableInterfacesValues: Set<String> = ["wifi", "wiredEthernet", "cellular", "loopback", "other"]
     /// Allowed values for `meta.network.client.reachability` attribute.
-    static let allowedNetworkReachabilityValues: Set<String> = ["yes", "no", "maybe"]
+    public static let allowedNetworkReachabilityValues: Set<String> = ["yes", "no", "maybe"]
 
     // MARK: - Private
 
