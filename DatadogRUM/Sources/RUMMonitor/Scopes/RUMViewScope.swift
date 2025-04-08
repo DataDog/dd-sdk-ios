@@ -110,7 +110,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// It can be toggled from inside `RUMResourceScope`/`RUMUserActionScope` callbacks, as they are called from processing `RUMCommand`s inside `process()`.
     private var needsViewUpdate = false
 
-    private let vitalInfoSampler: VitalInfoSampler?
+    let vitalInfoSampler: VitalInfoSampler?
 
     private var viewPerformanceMetrics: [PerformanceMetric: VitalInfo] = [:]
 

@@ -41,7 +41,7 @@ public class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
 
     func updateFrame(isExpanded: Bool, isAnimated: Bool = true) {
         let frame = isExpanded
-        ? CGRect(x: 0, y: topPadding, width: UIScreen.main.bounds.width, height: 180)
+        ? CGRect(x: 0, y: topPadding, width: UIScreen.main.bounds.width, height: DDVitalsView.height)
         : CGRect(
             x: UIScreen.main.bounds.width - FloatingButtonView.size.width - padding,
             y: UIScreen.main.bounds.height - FloatingButtonView.size.height - padding - bottomPadding,
@@ -85,7 +85,7 @@ public class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
 
             UIView.animate(withDuration: 1/4, delay: 0, options: .curveEaseOut) {
                 let frame = self.isExpanded
-                ? CGRect(x: 0, y: clampedY, width: UIScreen.main.bounds.width, height: 180)
+                ? CGRect(x: 0, y: clampedY, width: UIScreen.main.bounds.width, height: DDVitalsView.height)
                 : CGRect(x: x, y: clampedY, width: FloatingButtonView.size.width, height: FloatingButtonView.size.height)
 
                 draggedView.frame = frame

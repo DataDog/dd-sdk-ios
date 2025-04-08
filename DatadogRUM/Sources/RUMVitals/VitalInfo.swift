@@ -19,6 +19,8 @@ internal struct VitalInfo {
     private(set) var maxValue: Double?
     /// Average value across all samples
     private(set) var meanValue: Double?
+    /// Current Value
+    private(set) var currentValue: Double?
     /// Diff between max and min values
     var greatestDiff: Double? {
         if let someMax = maxValue, let someMin = minValue {
@@ -28,6 +30,7 @@ internal struct VitalInfo {
     }
 
     mutating func addSample(_ sample: Double) {
+        currentValue = sample
         // Assuming M(n) is the mean value of the first n samples
         // M(n) = ∑ sample(n) / n
         // n⨉M(n) = ∑ sample(n)

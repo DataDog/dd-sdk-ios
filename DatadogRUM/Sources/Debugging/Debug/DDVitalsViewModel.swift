@@ -1,21 +1,22 @@
-//
-//  ViewHitchesViewModel.swift
-//  Shopist
-//
-//  Created by Simao Seica on 02/03/2025.
-//  Copyright © 2025 Shopist. All rights reserved.
-//
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
 
 import SwiftUI
 import Observation
 import DatadogInternal
 
 @available(iOS 15.0, *)
-public final class ViewHitchesViewModel: ObservableObject {
+public final class DDVitalsViewModel: ObservableObject {
 
     @Published var progress: CGFloat = 0 // Value between 0.0 and 1.0
     @Published var hangs: [(CGFloat, CGFloat)] = [] // Range for green highlight (e.g., 0.2...0.3)
     @Published var hitches: [(CGFloat, CGFloat)] = [] // Positions of vertical lines (e.g., [0.6, 0.7, 0.75])
+
+    @Published var cpuValue: Double = 0
+    @Published var memoryValue: Double = 0
 
     var hitchesRatio: CGFloat {
 
@@ -30,7 +31,7 @@ public final class ViewHitchesViewModel: ObservableObject {
 
     private var viewMaxDuration = 60.0
 
-    private let rumFeature: RUMFeature
+    private let rumFeature: RUMFeature?
     let metricsManager: DatadogMetricSubscriber
 
     private var activeViewScope: RUMViewScope?
@@ -43,13 +44,12 @@ public final class ViewHitchesViewModel: ObservableObject {
         metricsManager: DatadogMetricSubscriber = DatadogMetricSubscriber(core: CoreRegistry.default)
     ) {
 
-        self.rumFeature = core.get(feature: RUMFeature.self)!
+        self.rumFeature = core.get(feature: RUMFeature.self)
         self.metricsManager = metricsManager
     }
 
-    func updateTimeline() {
-
-        guard let viewScope = rumFeature.monitor.scopes.activeSession?.viewScopes.first(where: { $0.isActiveView }) else { return }
+    func updateView() {
+        guard let viewScope = rumFeature?.monitor.scopes.activeSession?.viewScopes.first(where: { $0.isActiveView }) else { return }
 
         if activeViewScope !== viewScope {
 
@@ -60,7 +60,14 @@ public final class ViewHitchesViewModel: ObservableObject {
             hangs = []
             progress = 0
         }
+
         self.activeViewScope = viewScope
+
+        self.updateTimeline(viewScope: viewScope)
+        self.updateVitals(viewScope: viewScope)
+    }
+
+    func updateTimeline(viewScope: RUMViewScope) {
 
         if let viewHitches = self.getViewHitches(from: viewScope),
            viewHitches.dataModel.startTimestamp > 0 {
@@ -95,6 +102,17 @@ public final class ViewHitchesViewModel: ObservableObject {
         }
     }
 
+    func updateVitals(viewScope: RUMViewScope) {
+
+        guard let vitalInfoSampler = viewScope.vitalInfoSampler else { return }
+
+        self.cpuValue = (vitalInfoSampler.cpu.currentValue ?? 0) / 1000
+        self.memoryValue = (vitalInfoSampler.memory.currentValue ?? 0).MB
+
+        print("CPU: \(vitalInfoSampler.cpu)")
+        print("Memory: \(vitalInfoSampler.memory)")
+    }
+
     func getViewHitches(from viewScope: RUMViewScope) -> ViewHitchesModel? { viewScope.viewHitchesReader }
 
     var hitchesDuration: Double {
@@ -108,4 +126,8 @@ public final class ViewHitchesViewModel: ObservableObject {
     var viewScopeName: String {
         activeViewScope?.viewName ?? "Unknown"
     }
+}
+
+private extension Double {
+    var MB: Self { self / 1000000 }
 }

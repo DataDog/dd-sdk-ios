@@ -17,7 +17,7 @@ public struct RUMWidgetView: View {
 
     public var body: some View {
         ZStack {
-            ViewHitchesOverlayView(viewModel: ViewHitchesViewModel(metricsManager: self.viewModel.metricsManager))
+            DDVitalsView(viewModel: DDVitalsViewModel(metricsManager: self.viewModel.metricsManager))
                 .frame(width: UIScreen.main.bounds.width)
                 .opacity(self.viewModel.isExpanded ? 1 : 0)
 
