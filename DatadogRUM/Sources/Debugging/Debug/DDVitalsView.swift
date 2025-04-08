@@ -31,17 +31,23 @@ public struct DDVitalsView: View {
 
                 // Vitals
                 HStack(spacing: 10) {
-                    vitalView(
+                    self.vitalView(
                         title: "CPU",
                         value: viewModel.cpuValue,
-                        metric: "ticks/s",
-                        level: .low
+                        metric: "%",
+                        level: viewModel.levelFor(cpu: viewModel.cpuValue)
                     )
-                    vitalView(
+                    self.vitalView(
                         title: "Memory",
                         value: viewModel.memoryValue,
                         metric: "MB",
-                        level: .low
+                        level: viewModel.levelFor(memory: viewModel.memoryValue)
+                    )
+                    self.vitalView(
+                        title: "Stack",
+                        value: viewModel.threadsCount,
+                        metric: "threads",
+                        level: viewModel.levelFor(threads: viewModel.threadsCount)
                     )
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -114,7 +120,7 @@ extension DDVitalsView {
     }
 
     @ViewBuilder
-    func vitalView(title: String, value: Double, metric: String, level: WarningLevel) -> some View {
+    func vitalView(title: String, value: Int, metric: String, level: WarningLevel) -> some View {
         VStack(alignment: .leading) {
             Text(title)
                 .font(.caption)
@@ -122,8 +128,9 @@ extension DDVitalsView {
                 Circle()
                     .fill(level.color)
                     .frame(width: 10, height: 10)
-                Text("\(value, specifier: "%.2f") \(metric)")
-                    .font(.caption).bold()
+//                Text("\(value, specifier: "%.2f") \(metric)")
+                Text("\(value < 10 ? "0" : "")\(value) \(metric)")
+                    .font(.system(size: 12, design: .monospaced)).bold()
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

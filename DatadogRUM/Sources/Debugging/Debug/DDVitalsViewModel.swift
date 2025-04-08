@@ -7,6 +7,8 @@
 import DatadogInternal
 import Observation
 import SwiftUI
+import Foundation
+import MachO
 
 @available(iOS 15.0, *)
 public final class DDVitalsViewModel: ObservableObject {
@@ -14,8 +16,9 @@ public final class DDVitalsViewModel: ObservableObject {
     @Published var hangs: [(CGFloat, CGFloat)] = [] // Range for green highlight (e.g., 0.2...0.3)
     @Published var hitches: [(CGFloat, CGFloat)] = [] // Positions of vertical lines (e.g., [0.6, 0.7, 0.75])
 
-    @Published var cpuValue: Double = 0
-    @Published var memoryValue: Double = 0
+    @Published var cpuValue: Int = 0
+    @Published var memoryValue: Int = 0
+    @Published var threadsCount: Int = 0
 
     var hitchesRatio: CGFloat {
         lastHitchValue = hitchesDuration / currentDuration * Double(1.toMilliseconds)
@@ -96,11 +99,11 @@ public final class DDVitalsViewModel: ObservableObject {
     func updateVitals(viewScope: RUMViewScope) {
         guard let vitalInfoSampler = viewScope.vitalInfoSampler else { return }
 
-        cpuValue = (vitalInfoSampler.cpu.currentValue ?? 0) / 1_000
-        memoryValue = (vitalInfoSampler.memory.currentValue ?? 0).MB
+        cpuValue = Int(cpuUsage())
+        memoryValue = Int((vitalInfoSampler.memory.currentValue ?? 0).MB)
+        threadsCount = countThreads()
 
-        print("CPU: \(vitalInfoSampler.cpu)")
-        print("Memory: \(vitalInfoSampler.memory)")
+//        print("Logical CPU cores: \(ProcessInfo.processInfo.processorCount)")
     }
 
     func getViewHitches(from viewScope: RUMViewScope) -> ViewHitchesModel? { viewScope.viewHitchesReader }
@@ -115,6 +118,138 @@ public final class DDVitalsViewModel: ObservableObject {
 
     var viewScopeName: String {
         activeViewScope?.viewName ?? "Unknown"
+    }
+}
+
+@available(iOS 15.0, *)
+extension DDVitalsViewModel {
+
+    func levelFor(cpu: Int) -> WarningLevel {
+
+        switch cpu {
+        case ..<50:
+            return .low
+        case ..<90:
+            return .medium
+        default:
+            return .high
+        }
+    }
+
+    func levelFor(memory: Int) -> WarningLevel {
+
+        switch memory {
+        case ..<300:
+            return .low
+        case ..<500:
+            return .medium
+        default:
+            return .high
+        }
+    }
+
+    func levelFor(threads: Int) -> WarningLevel {
+
+        switch threads {
+        case ..<ProcessInfo.processInfo.processorCount:
+            return .low
+        case ..<(ProcessInfo.processInfo.processorCount * 2):
+            return .medium
+        default:
+            return .high
+        }
+    }
+}
+
+@available(iOS 15.0, *)
+private extension DDVitalsViewModel {
+
+    func cpuUsage() -> Double {
+        var kr: kern_return_t
+        var task_info_count: mach_msg_type_number_t
+
+        task_info_count = mach_msg_type_number_t(TASK_INFO_MAX)
+        var tinfo = [integer_t](repeating: 0, count: Int(task_info_count))
+
+        kr = task_info(mach_task_self_, task_flavor_t(TASK_BASIC_INFO), &tinfo, &task_info_count)
+        if kr != KERN_SUCCESS {
+            return -1
+        }
+
+        var thread_list: thread_act_array_t? = UnsafeMutablePointer(mutating: [thread_act_t]())
+        var thread_count: mach_msg_type_number_t = 0
+        defer {
+            if let thread_list = thread_list {
+                vm_deallocate(mach_task_self_, vm_address_t(UnsafePointer(thread_list).pointee), vm_size_t(thread_count))
+            }
+        }
+
+        kr = task_threads(mach_task_self_, &thread_list, &thread_count)
+
+        if kr != KERN_SUCCESS {
+            return -1
+        }
+
+        var tot_cpu: Double = 0
+
+        if let thread_list = thread_list {
+
+            for j in 0 ..< Int(thread_count) {
+                var thread_info_count = mach_msg_type_number_t(THREAD_INFO_MAX)
+                var thinfo = [integer_t](repeating: 0, count: Int(thread_info_count))
+                kr = thread_info(thread_list[j], thread_flavor_t(THREAD_BASIC_INFO),
+                                 &thinfo, &thread_info_count)
+                if kr != KERN_SUCCESS {
+                    return -1
+                }
+
+                let threadBasicInfo = convertThreadInfoToThreadBasicInfo(thinfo)
+
+                if threadBasicInfo.flags != TH_FLAGS_IDLE {
+                    tot_cpu += (Double(threadBasicInfo.cpu_usage) / Double(TH_USAGE_SCALE)) * 100.0
+                }
+            } // for each thread
+        }
+
+        return tot_cpu
+    }
+
+    fileprivate func convertThreadInfoToThreadBasicInfo(_ threadInfo: [integer_t]) -> thread_basic_info {
+        var result = thread_basic_info()
+
+        result.user_time = time_value_t(seconds: threadInfo[0], microseconds: threadInfo[1])
+        result.system_time = time_value_t(seconds: threadInfo[2], microseconds: threadInfo[3])
+        result.cpu_usage = threadInfo[4]
+        result.policy = threadInfo[5]
+        result.run_state = threadInfo[6]
+        result.flags = threadInfo[7]
+        result.suspend_count = threadInfo[8]
+        result.sleep_time = threadInfo[9]
+
+        return result
+    }
+
+//    func cpuUsage() -> Double? {
+//
+//        var kr: kern_return_t
+//        var task_info_count = mach_msg_type_number_t(MemoryLayout<task_info_data_t>.size / MemoryLayout<natural_t>.size)
+//        var tinfo = task_info_data_t()
+//
+//        kr = task_info(mach_task_self_, task_flavor_t(TASK_BASIC_INFO), &tinfo, &task_info_count)
+//        guard kr == KERN_SUCCESS else { return -1 }
+//
+//        let taskInfo = unsafeBitCast(tinfo, to: task_basic_info.self)
+//        return Double(taskInfo.cpu_usage) / Double(TH_USAGE_SCALE) * 100.0
+//    }
+
+    func countThreads() -> Int {
+        var count: mach_msg_type_number_t = 0
+        var threads: thread_act_array_t?
+        let kerr = task_threads(mach_task_self_, &threads, &count)
+        guard kerr == KERN_SUCCESS else {
+            return -1
+        }
+        return Int(count)
     }
 }
 
