@@ -29,8 +29,6 @@
 		612C13752A9DFEF70086B5D1 /* SRMultipleViewsRecordingScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 612C13742A9DFEF70086B5D1 /* SRMultipleViewsRecordingScenario.storyboard */; };
 		612C13772A9E1BA40086B5D1 /* SRFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = 612C13762A9E1BA40086B5D1 /* SRFixtures */; };
 		612C13CC2A9F94AF0086B5D1 /* SRMultipleViewsRecordingScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13CB2A9F94AF0086B5D1 /* SRMultipleViewsRecordingScenarioTests.swift */; };
-		612C13DB2AAB537F0086B5D1 /* SRSegmentMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13D82AAB537F0086B5D1 /* SRSegmentMatcher.swift */; };
-		612C13DD2AAB537F0086B5D1 /* SRRequestMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13DA2AAB537F0086B5D1 /* SRRequestMatcher.swift */; };
 		612C13DF2AAB6E940086B5D1 /* SRCommonAsserts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13DE2AAB6E940086B5D1 /* SRCommonAsserts.swift */; };
 		612D8F6925AEE68F000E2E09 /* RUMScrubbingScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 612D8F6825AEE68F000E2E09 /* RUMScrubbingScenario.storyboard */; };
 		612D8F6F25AEE6A7000E2E09 /* RUMScrubbingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612D8F6E25AEE6A7000E2E09 /* RUMScrubbingViewController.swift */; };
@@ -102,11 +100,6 @@
 		D22F06D229DAE5360026CC3C /* RUMStopSessionScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D22F06CE29DAE5360026CC3C /* RUMStopSessionScenario.storyboard */; };
 		D240688627CFA64A00C04F44 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D240688427CFA64A00C04F44 /* LaunchScreen.storyboard */; };
 		D263BCB829DB057E00FA0E21 /* RUMStopSessionScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F06D329DAE59A0026CC3C /* RUMStopSessionScenarioTests.swift */; };
-		D2774EE4299E2E90004EC36A /* RUMSessionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2774EDF299E2E90004EC36A /* RUMSessionMatcher.swift */; };
-		D2774EE5299E2E90004EC36A /* RUMEventMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2774EE0299E2E90004EC36A /* RUMEventMatcher.swift */; };
-		D2774EE6299E2E90004EC36A /* SpanMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2774EE1299E2E90004EC36A /* SpanMatcher.swift */; };
-		D2774EE7299E2E90004EC36A /* LogMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2774EE2299E2E90004EC36A /* LogMatcher.swift */; };
-		D2774EE8299E2E90004EC36A /* JSONDataMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2774EE3299E2E90004EC36A /* JSONDataMatcher.swift */; };
 		D2791EF927170A760046E07A /* RUMSwiftUIScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */; };
 		D2F5BB36271831C200BDE2A4 /* RUMSwiftUIInstrumentationScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D2F5BB35271831C200BDE2A4 /* RUMSwiftUIInstrumentationScenario.storyboard */; };
 		D2F5BB382718331800BDE2A4 /* SwiftUIRootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F5BB372718331800BDE2A4 /* SwiftUIRootViewController.swift */; };
@@ -166,8 +159,6 @@
 		612C13722A9DFE1C0086B5D1 /* SRMultipleViewsRecordingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRMultipleViewsRecordingViewController.swift; sourceTree = "<group>"; };
 		612C13742A9DFEF70086B5D1 /* SRMultipleViewsRecordingScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SRMultipleViewsRecordingScenario.storyboard; sourceTree = "<group>"; };
 		612C13CB2A9F94AF0086B5D1 /* SRMultipleViewsRecordingScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRMultipleViewsRecordingScenarioTests.swift; sourceTree = "<group>"; };
-		612C13D82AAB537F0086B5D1 /* SRSegmentMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRSegmentMatcher.swift; sourceTree = "<group>"; };
-		612C13DA2AAB537F0086B5D1 /* SRRequestMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRRequestMatcher.swift; sourceTree = "<group>"; };
 		612C13DE2AAB6E940086B5D1 /* SRCommonAsserts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRCommonAsserts.swift; sourceTree = "<group>"; };
 		612D8F6825AEE68F000E2E09 /* RUMScrubbingScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMScrubbingScenario.storyboard; sourceTree = "<group>"; };
 		612D8F6E25AEE6A7000E2E09 /* RUMScrubbingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScrubbingViewController.swift; sourceTree = "<group>"; };
@@ -253,11 +244,6 @@
 		D22F06CE29DAE5360026CC3C /* RUMStopSessionScenario.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = RUMStopSessionScenario.storyboard; sourceTree = "<group>"; };
 		D22F06D329DAE59A0026CC3C /* RUMStopSessionScenarioTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMStopSessionScenarioTests.swift; sourceTree = "<group>"; };
 		D240688527CFA64A00C04F44 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		D2774EDF299E2E90004EC36A /* RUMSessionMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMSessionMatcher.swift; sourceTree = "<group>"; };
-		D2774EE0299E2E90004EC36A /* RUMEventMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMEventMatcher.swift; sourceTree = "<group>"; };
-		D2774EE1299E2E90004EC36A /* SpanMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpanMatcher.swift; sourceTree = "<group>"; };
-		D2774EE2299E2E90004EC36A /* LogMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogMatcher.swift; sourceTree = "<group>"; };
-		D2774EE3299E2E90004EC36A /* JSONDataMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONDataMatcher.swift; sourceTree = "<group>"; };
 		D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIScenarioTests.swift; sourceTree = "<group>"; };
 		D29495F429967780003518CD /* http-server-mock */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "http-server-mock"; path = "../tools/http-server-mock"; sourceTree = "<group>"; };
 		D2A401D029925A2D00B230A3 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -523,7 +509,6 @@
 				61441C3B24617013003D8BB8 /* IntegrationTests.swift */,
 				61B9ED1E2461E57700C0DCFF /* UITestsHelpers.swift */,
 				D218664D29967CBC006F5B23 /* DataModels */,
-				D2774EDE299E2E90004EC36A /* Matchers */,
 				61F3CD9C251106EB00C816E5 /* Scenarios */,
 				D21866412996796B006F5B23 /* Info.plist */,
 			);
@@ -729,21 +714,6 @@
 				D22F06CE29DAE5360026CC3C /* RUMStopSessionScenario.storyboard */,
 			);
 			path = StopSessionScenario;
-			sourceTree = "<group>";
-		};
-		D2774EDE299E2E90004EC36A /* Matchers */ = {
-			isa = PBXGroup;
-			children = (
-				612C13DA2AAB537F0086B5D1 /* SRRequestMatcher.swift */,
-				612C13D82AAB537F0086B5D1 /* SRSegmentMatcher.swift */,
-				D2774EDF299E2E90004EC36A /* RUMSessionMatcher.swift */,
-				D2774EE0299E2E90004EC36A /* RUMEventMatcher.swift */,
-				D2774EE1299E2E90004EC36A /* SpanMatcher.swift */,
-				D2774EE2299E2E90004EC36A /* LogMatcher.swift */,
-				D2774EE3299E2E90004EC36A /* JSONDataMatcher.swift */,
-			);
-			name = Matchers;
-			path = ../../DatadogCore/Tests/Matchers;
 			sourceTree = "<group>";
 		};
 		D2791EF32716F16E0046E07A /* SwiftUIInstrumentation */ = {
@@ -1123,13 +1093,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				61DC6D922539E3E300FFAA22 /* LoggingCommonAsserts.swift in Sources */,
-				D2774EE6299E2E90004EC36A /* SpanMatcher.swift in Sources */,
 				61441C4024617013003D8BB8 /* IntegrationTests.swift in Sources */,
 				D2791EF927170A760046E07A /* RUMSwiftUIScenarioTests.swift in Sources */,
 				61163C4A252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift in Sources */,
 				61B9ED212462089600C0DCFF /* TracingManualInstrumentationScenarioTests.swift in Sources */,
 				61B6811F25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift in Sources */,
-				612C13DD2AAB537F0086B5D1 /* SRRequestMatcher.swift in Sources */,
 				61C2C20D24C1831700C0321C /* RUMManualInstrumentationScenarioTests.swift in Sources */,
 				61098D2D27FEE4130021237A /* MessagePortChannel.swift in Sources */,
 				D218665029967CBC006F5B23 /* RUMDataModels.swift in Sources */,
@@ -1137,24 +1105,19 @@
 				61B9ED1F2461E57700C0DCFF /* UITestsHelpers.swift in Sources */,
 				612C13DF2AAB6E940086B5D1 /* SRCommonAsserts.swift in Sources */,
 				61441C4124617013003D8BB8 /* LoggingScenarioTests.swift in Sources */,
-				612C13DB2AAB537F0086B5D1 /* SRSegmentMatcher.swift in Sources */,
 				612D8F8125AF1C74000E2E09 /* RUMScrubbingScenarioTests.swift in Sources */,
 				613B77382521E80800155458 /* RUMTabBarControllerScenarioTests.swift in Sources */,
 				9EA95C212791C9E200F6C1F3 /* WebViewScenarioTest.swift in Sources */,
 				6167ACFD251A22E00012B4D0 /* TracingURLSessionScenarioTests.swift in Sources */,
 				611EA16625825FB300BC0E56 /* TrackingConsentScenarioTests.swift in Sources */,
-				D2774EE5299E2E90004EC36A /* RUMEventMatcher.swift in Sources */,
 				61F3CD9A2510D8C500C816E5 /* Environment.swift in Sources */,
 				61B6815E25F135890015B4AF /* CrashReportingWithRUMScenarioTests.swift in Sources */,
-				D2774EE4299E2E90004EC36A /* RUMSessionMatcher.swift in Sources */,
 				61F9CA92251266F7000A5E61 /* RUMNavigationControllerScenarioTests.swift in Sources */,
 				612C13CC2A9F94AF0086B5D1 /* SRMultipleViewsRecordingScenarioTests.swift in Sources */,
 				61410141251A454500E3C2D9 /* TracingCommonAsserts.swift in Sources */,
 				615AAC29251E322D00C89EE9 /* RUMCommonAsserts.swift in Sources */,
 				D2FCA7552B4D87110014DC87 /* StopCoreScenarioTests.swift in Sources */,
-				D2774EE7299E2E90004EC36A /* LogMatcher.swift in Sources */,
 				6164AF2E252C9C51000D78C4 /* RUMResourcesScenarioTests.swift in Sources */,
-				D2774EE8299E2E90004EC36A /* JSONDataMatcher.swift in Sources */,
 				615AAC07251E217B00C89EE9 /* RUMTapActionScenarioTests.swift in Sources */,
 				D263BCB829DB057E00FA0E21 /* RUMStopSessionScenarioTests.swift in Sources */,
 			);
@@ -1236,6 +1199,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_SWIFT_FLAGS = "-D DEBUG";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";

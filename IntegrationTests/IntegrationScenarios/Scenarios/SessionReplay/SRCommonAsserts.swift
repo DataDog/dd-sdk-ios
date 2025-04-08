@@ -4,8 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import XCTest
 import HTTPServerMock
+import TestUtilities
+import XCTest
 
 /// A set of common assertions for all RUM tests.
 protocol SRCommonAsserts {

@@ -3,6 +3,7 @@
 // Copyright 2023-Present Datadog, Inc.
 
 import Foundation
+import TestUtilities
 import XCTest
 
 class RUMStopSessionKioskScreen: XCUIApplication {

@@ -5,13 +5,13 @@
  */
 
 import XCTest
-import TestUtilities
 import DatadogInternal
 
 @testable import DatadogTrace
 @testable import DatadogLogs
 @testable import DatadogCore
 @testable import DatadogRUM
+@testable import TestUtilities
 
 // swiftlint:disable multiline_arguments_brackets
 class TracerTests: XCTestCase {

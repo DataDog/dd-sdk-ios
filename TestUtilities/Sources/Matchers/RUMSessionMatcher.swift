@@ -94,22 +94,22 @@ public class RUMSessionMatcher {
     }
 
     /// RUM application ID for this session.
-    let applicationID: String
+    public let applicationID: String
     /// The ID of this session in RUM.
-    let sessionID: String
+    public let sessionID: String
 
     /// An array of view visits tracked during this RUM session.
     /// Each `ViewVisit` is determined by unique `view.id` and groups all RUM events linked to that `view.id`.'
     public let views: [View]
 
     /// All RUM events in this session.
-    let allEvents: [RUMEventMatcher]
+    public let allEvents: [RUMEventMatcher]
 
-    let viewEventMatchers: [RUMEventMatcher]
-    let actionEventMatchers: [RUMEventMatcher]
-    let resourceEventMatchers: [RUMEventMatcher]
-    let errorEventMatchers: [RUMEventMatcher]
-    let longTaskEventMatchers: [RUMEventMatcher]
+    public let viewEventMatchers: [RUMEventMatcher]
+    public let actionEventMatchers: [RUMEventMatcher]
+    public let resourceEventMatchers: [RUMEventMatcher]
+    public let errorEventMatchers: [RUMEventMatcher]
+    public let longTaskEventMatchers: [RUMEventMatcher]
 
     /// `RUMView` events tracked in this session.
     let viewEvents: [RUMViewEvent]
@@ -287,7 +287,7 @@ public class RUMSessionMatcher {
     /// Checks if this session contains a view with a specific ID.
     /// - Parameter viewID: The ID of the view to check.
     /// - Returns: `true` if a view with the given `viewID` is present in this session; otherwise, `false`.
-    func containsView(with viewID: String) -> Bool {
+    public func containsView(with viewID: String) -> Bool {
         let allIDs = Set(views.map { $0.viewID })
         return allIDs.contains(viewID)
     }

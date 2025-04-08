@@ -5,10 +5,10 @@
  */
 
 import XCTest
-import TestUtilities
 import DatadogInternal
 @_spi(Experimental)
 @testable import DatadogRUM
+@testable import TestUtilities
 
 class Monitor_GlobalAttributesTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
