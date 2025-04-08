@@ -375,7 +375,7 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
         )
     }
 
-    public static func mockWith(
+    static func mockWith(
         recorder: Recorder.Context = .mockAny(),
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
         ids: NodeIDGenerator = NodeIDGenerator(),
@@ -476,7 +476,7 @@ extension TouchSnapshot.Touch: AnyMockable, RandomMockable {
         )
     }
 
-    public static func mockWith(
+    static func mockWith(
         id: TouchIdentifier = .mockAny(),
         phase: TouchSnapshot.TouchPhase = .move,
         date: Date = .mockAny(),

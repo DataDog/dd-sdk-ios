@@ -36,7 +36,7 @@ extension LogsFeature {
     public static func mockAny() -> Self { .mockWith() }
 
     /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
-    public static func mockWith(
+    static func mockWith(
         logEventMapper: LogEventMapper? = nil,
         requestBuilder: FeatureRequestBuilder = RequestBuilder(),
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver(),

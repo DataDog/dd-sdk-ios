@@ -16,12 +16,12 @@ private enum SRRequestException: Error {
 /// Matcher for asserting known elements of Session Replay (multipart) request.
 ///
 /// See: ``DatadogSessionReplay.RequestBuilder`` to understand the encoding of multipart data operated by this matcher.
-internal struct SRRequestMatcher {
+public struct SRRequestMatcher {
     /// Creates matcher from Session Replay `URLRequest`.
     /// The `request` must be a valid Session Replay (multipart) request.
     ///
     /// - Parameter request: Session Replay request.
-    init(request: URLRequest) throws {
+    public init(request: URLRequest) throws {
         guard let body = request.httpBody else {
             throw SRRequestException.multipartRequestException("Request must define body")
         }
@@ -34,7 +34,7 @@ internal struct SRRequestMatcher {
     /// - Parameters:
     ///   - body: The body of request.
     ///   - headers: Request headers.
-    init(body: Data, headers: [String: String]) throws {
+    public init(body: Data, headers: [String: String]) throws {
         let contentTypePrefix = "multipart/form-data; boundary="
         guard let contentType = headers["Content-Type"] else {
             throw SRRequestException.multipartRequestException("Request must define Content-Type header")
@@ -56,18 +56,18 @@ internal struct SRRequestMatcher {
     /// - Parameters:
     ///   - multipartBody: The multipart HTTP body.
     ///   - multipartBoundary: The boundary encoded in `multipartBody`.
-    init(multipartBody: Data, multipartBoundary: String) throws {
+    public init(multipartBody: Data, multipartBoundary: String) throws {
         self.multipartForm = try MultipartFormDataParser(data: multipartBody, boundary: multipartBoundary)
     }
 
     /// Returns the blob file.
-    func blob<T>(_ transform: (Data) throws -> T) throws -> T {
+    public func blob<T>(_ transform: (Data) throws -> T) throws -> T {
         let data = try dataOfFile(named: "blob", fieldName: "event", mimeType: "application/json")
         return try transform(data)
     }
 
     /// Data of "segment" file in underlying multipart form.
-    func segment(at index: Int) throws -> SRSegmentMatcher {
+    public func segment(at index: Int) throws -> SRSegmentMatcher {
         let compressedData = try dataOfFile(named: "file\(index)", fieldName: "segment", mimeType: "application/octet-stream")
         guard let data = zlib.decode(compressedData) else {
             throw SRRequestException.segmentException("Failed to decompress segment JSON data: \(compressedData)")

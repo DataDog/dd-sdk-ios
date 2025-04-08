@@ -29,7 +29,7 @@ extension WebViewEventReceiver: AnyMockable {
         .mockWith()
     }
 
-    public static func mockWith(
+    static func mockWith(
         featureScope: FeatureScope = NOPFeatureScope(),
         dateProvider: DateProvider = SystemDateProvider(),
         commandSubscriber: RUMCommandSubscriber = RUMCommandSubscriberMock(),
@@ -49,7 +49,7 @@ extension CrashReportReceiver: AnyMockable {
         .mockWith()
     }
 
-    public static func mockWith(
+    static func mockWith(
         featureScope: FeatureScope = NOPFeatureScope(),
         applicationID: String = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
@@ -222,7 +222,7 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
         )
     }
 
-    public static func mockWith(
+    static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
         identity: ViewIdentifier = .mockViewIdentifier(),
@@ -290,7 +290,7 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         }
     }
 
-    public static func mockWithErrorObject(
+    static func mockWithErrorObject(
         time: Date = Date(),
         error: Error = ErrorMock(),
         source: RUMInternalErrorSource = .source,
@@ -305,7 +305,7 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         )
     }
 
-    public static func mockWithErrorMessage(
+    static func mockWithErrorMessage(
         time: Date = Date(),
         message: String = .mockAny(),
         type: String? = .mockAny(),
@@ -509,7 +509,7 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
         }
     }
 
-    public static func mockWithErrorObject(
+    static func mockWithErrorObject(
         resourceKey: String = .mockAny(),
         time: Date = Date(),
         error: Error = ErrorMock(),
@@ -527,7 +527,7 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
         )
     }
 
-    public static func mockWithErrorMessage(
+    static func mockWithErrorMessage(
         resourceKey: String = .mockAny(),
         time: Date = Date(),
         message: String = .mockAny(),
@@ -564,7 +564,7 @@ extension RUMStartUserActionCommand: AnyMockable, RandomMockable {
         )
     }
 
-    public static func mockWith(
+    static func mockWith(
         time: Date = Date(),
         globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
@@ -624,7 +624,7 @@ extension RUMAddUserActionCommand: AnyMockable, RandomMockable {
         )
     }
 
-    public static func mockWith(
+    static func mockWith(
         time: Date = Date(),
         globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
@@ -804,7 +804,7 @@ extension RUMScopeDependencies {
         return mockWith()
     }
 
-    public static func mockWith(
+    static func mockWith(
         featureScope: FeatureScope = NOPFeatureScope(),
         rumApplicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
@@ -987,7 +987,7 @@ extension RUMViewScope {
         return timings
     }
 
-    public static func mockWith(
+    static func mockWith(
         isInitialView: Bool = false,
         parent: RUMContextProvider = RUMContextProviderMock(),
         dependencies: RUMScopeDependencies = .mockAny(),
@@ -1016,7 +1016,7 @@ extension RUMViewScope {
 }
 
 extension RUMResourceScope {
-    public static func mockWith(
+    static func mockWith(
         context: RUMContext,
         dependencies: RUMScopeDependencies,
         resourceKey: String = .mockAny(),
@@ -1052,7 +1052,7 @@ extension RUMResourceScope {
 
 extension RUMUserActionScope {
     // swiftlint:disable function_default_parameter_at_end
-    public static func mockWith(
+    static func mockWith(
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies = .mockAny(),
         name: String = .mockAny(),
@@ -1369,7 +1369,7 @@ public class TNSMetricMock: TNSMetricTracking {
     /// Mocked value returned by this metric.
     public var value: Result<TimeInterval, TNSNoValueReason>
 
-    public init(value: Result<TimeInterval, TNSNoValueReason> = .failure(.unknown)) {
+    init(value: Result<TimeInterval, TNSNoValueReason> = .failure(.unknown)) {
         self.value = value
     }
 
@@ -1404,7 +1404,7 @@ public class INVMetricMock: INVMetricTracking {
     /// Mocked value returned by this metric.
     public var mockedValue: Result<TimeInterval, INVNoValueReason>
 
-    public init(mockedValue: Result<TimeInterval, INVNoValueReason> = .failure(.noTrackedActions)) {
+    init(mockedValue: Result<TimeInterval, INVNoValueReason> = .failure(.noTrackedActions)) {
         self.mockedValue = mockedValue
     }
 
@@ -1482,7 +1482,7 @@ extension RUMCoreContext: RandomMockable {
 }
 
 extension RUMResourceScope {
-    public static func mockWith(
+    static func mockWith(
         context: RUMContext,
         dependencies: RUMScopeDependencies,
         resourceKey: String = .mockAny(),
