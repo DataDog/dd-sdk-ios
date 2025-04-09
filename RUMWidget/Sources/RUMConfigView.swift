@@ -16,31 +16,36 @@ public struct RUMConfigView: View {
 
     public var body: some View {
         VStack(alignment: .leading) {
-            Text("Configuration")
-                .font(.subheadline)
+            HStack {
+                Text("Configuration")
+                    .font(.headline)
 
-            Text("Custom endpoint url")
-                .font(.caption)
-            TextField("Custom endpoint url", text: $viewModel.customEndpointUrl)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
+                Spacer()
 
-            Text("Feature flags")
-                .font(.caption)
-
-            ForEach(Array(viewModel.featureFlags.keys), id: \.self) { flag in
-                Toggle(isOn: Binding(
-                    get: { viewModel.featureFlags[flag] ?? false },
-                    set: { _ in viewModel.toggleFeatureFlag(flag) }
-                )) {
-                    Text(flag.rawValue)
-                        .font(.footnote)
+                Button(action: viewModel.isSDKEnabled ? viewModel.stopSdk : viewModel.startSdk) {
+                    Text(viewModel.isSDKEnabled ? "Stop SDK" : "Start SDK")
+                        .font(.subheadline)
                 }
+                .buttonStyle(.bordered)
             }
+
+            Toggle("Logs", isOn: $viewModel.isLogsEnabled)
+                .disabled(viewModel.isSDKEnabled)
+                .frame(maxHeight: 25)
+            Toggle("Traces", isOn: $viewModel.isTracesEnabled)
+                .disabled(viewModel.isSDKEnabled)
+                .frame(maxHeight: 25)
+            Toggle("RUM", isOn: $viewModel.isRUMEnabled)
+                .disabled(viewModel.isSDKEnabled)
+                .frame(maxHeight: 25)
+            Toggle("Session Replay", isOn: $viewModel.isSessionReplayEnabled)
+                .disabled(viewModel.isSDKEnabled)
+                .frame(maxHeight: 25)
 
             Spacer()
         }
-        .padding()
         .tint(.purple)
+        .padding(.horizontal)
     }
 }
 

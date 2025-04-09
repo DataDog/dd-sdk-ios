@@ -805,7 +805,6 @@ extension RUMViewScope {
         errorsCount += 1
         totalAppHangDuration += (command as? RUMAddCurrentViewAppHangCommand)?.hangDuration ?? 0
         if let command = (command as? RUMAddCurrentViewAppHangCommand) {
-
             self.hangs.append((command.time.timeIntervalSince(viewStartTime), command.hangDuration))
         }
 

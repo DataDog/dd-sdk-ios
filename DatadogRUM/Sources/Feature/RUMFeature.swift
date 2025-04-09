@@ -15,7 +15,7 @@ public final class RUMFeature: DatadogRemoteFeature {
 
     public let messageReceiver: FeatureMessageReceiver
 
-    public var activeView: RUMViewScope?  {
+    public var activeView: RUMViewScope? {
         self.monitor.scopes.activeSession?.viewScopes.first(where: { $0.isActiveView })
     }
 
