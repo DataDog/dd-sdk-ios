@@ -17,7 +17,7 @@ public struct RUMWidgetView: View {
     public var body: some View {
         ZStack {
             DDVitalsView(
-                viewModel: DDVitalsViewModel(metricsManager: viewModel.metricsManager)
+                viewModel: DDVitalsViewModel()
             )
             .frame(width: UIScreen.main.bounds.width)
             .opacity(viewModel.isExpanded ? 1 : 0)

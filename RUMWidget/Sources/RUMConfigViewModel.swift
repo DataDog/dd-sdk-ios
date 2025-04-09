@@ -6,22 +6,19 @@
 
 import DatadogInternal
 import Foundation
+import DatadogRUM
 
 @available(iOS 15.0, *)
 public final class RUMConfigViewModel: ObservableObject {
-    @Published var customEndpointUrl: String
-    @Published var featureFlags: [RUM.Configuration.FeatureFlag: Bool]
+    @Published var customEndpointUrl: String = ""
+    @Published var featureFlags: [RUM.Configuration.FeatureFlag: Bool] = [:]
 
     private let rumFeature: RUMFeature?
-//    let metricsManager: DatadogMetricSubscriber
 
     public init(
         core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         rumFeature = core.get(feature: RUMFeature.self)
-//        self.metricsManager = metricsManager
-        customEndpointUrl = rumFeature?.configuration.customEndpoint?.absoluteString ?? "Unknown"
-        featureFlags = rumFeature?.configuration.featureFlags ?? [:]
     }
 
     func toggleFeatureFlag(_ flag: RUM.Configuration.FeatureFlag) {

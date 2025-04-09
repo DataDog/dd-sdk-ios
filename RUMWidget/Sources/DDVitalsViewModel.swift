@@ -9,6 +9,7 @@ import Observation
 import SwiftUI
 import Foundation
 import MachO
+import DatadogRUM
 
 @available(iOS 15.0, *)
 public final class DDVitalsViewModel: ObservableObject {
@@ -26,14 +27,11 @@ public final class DDVitalsViewModel: ObservableObject {
     } // milliseconds/second
     var hangsRatio: CGFloat { hangsDuration / currentDuration * 1.hours } // seconds/hour
 
-    private var startTimestamp: CGFloat?
-
     var currentDuration: CGFloat = 0.1
 
     private var viewMaxDuration = 60.0
 
     private let rumFeature: RUMFeature?
-    let metricsManager: DatadogMetricSubscriber
 
     private var activeViewScope: RUMViewScope?
 
@@ -41,15 +39,13 @@ public final class DDVitalsViewModel: ObservableObject {
     private var hitchesDictionary: [String: [CGFloat]] = [:]
 
     public init(
-        core: DatadogCoreProtocol = CoreRegistry.default,
-        metricsManager: DatadogMetricSubscriber = DatadogMetricSubscriber(core: CoreRegistry.default)
+        core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         rumFeature = core.get(feature: RUMFeature.self)
-        self.metricsManager = metricsManager
     }
 
     func updateView() {
-        guard let viewScope = rumFeature?.monitor.scopes.activeSession?.viewScopes.first(where: { $0.isActiveView }) else { return }
+        guard let viewScope = rumFeature?.activeView else { return }
 
         if activeViewScope !== viewScope {
             hitchesDictionary[activeViewScope?.viewName ?? ""] = hitchesDictionary[activeViewScope?.viewName ?? "", default: []] + [lastHitchValue]
@@ -67,26 +63,20 @@ public final class DDVitalsViewModel: ObservableObject {
     }
 
     func updateTimeline(viewScope: RUMViewScope) {
+
         if let viewHitches = getViewHitches(from: viewScope),
-           viewHitches.dataModel.startTimestamp > 0 {
-            startTimestamp = viewHitches.dataModel.startTimestamp
+           viewScope.timeSpent > 0 {
 
-            let interval = CACurrentMediaTime() - startTimestamp!
-            currentDuration = interval
+            currentDuration = viewScope.timeSpent
 
-            progress = interval / viewMaxDuration
+            progress = currentDuration / viewMaxDuration
             if progress >= 1.0 {
-                withAnimation { viewMaxDuration = interval }
+                withAnimation { viewMaxDuration = currentDuration }
             }
 
-            if progress > 500 {
-                print("\(startTimestamp)")
-            }
-
-            hitches = viewHitches.dataModel.hitches.map {
+            hitches = viewHitches.map {
                 let start = Double($0.start) / 1_000_000_000.0
                 let duration = Double($0.duration) / 1_000_000_000.0
-                // print("\(start / viewDuration) - \(duration)")
                 return (start / viewMaxDuration, CGFloat(duration < 1 ? 1 : duration))
             }
         }
@@ -97,19 +87,16 @@ public final class DDVitalsViewModel: ObservableObject {
     }
 
     func updateVitals(viewScope: RUMViewScope) {
-        guard let vitalInfoSampler = viewScope.vitalInfoSampler else { return }
 
         cpuValue = Int(cpuUsage())
-        memoryValue = Int((vitalInfoSampler.memory.currentValue ?? 0).MB)
+        memoryValue = Int((viewScope.memoryValue ?? 0).MB)
         threadsCount = countThreads()
-
-//        print("Logical CPU cores: \(ProcessInfo.processInfo.processorCount)")
     }
 
-    func getViewHitches(from viewScope: RUMViewScope) -> ViewHitchesModel? { viewScope.viewHitchesReader }
+    func getViewHitches(from viewScope: RUMViewScope) -> [(start: Int64, duration: Int64)]?  { viewScope.viewHitches }
 
     var hitchesDuration: Double {
-        (activeViewScope?.viewHitchesReader?.dataModel.hitchesDuration ?? 0)
+        activeViewScope?.hitchesDuration ?? 0
     }
 
     var hangsDuration: Double {
@@ -228,19 +215,6 @@ private extension DDVitalsViewModel {
 
         return result
     }
-
-//    func cpuUsage() -> Double? {
-//
-//        var kr: kern_return_t
-//        var task_info_count = mach_msg_type_number_t(MemoryLayout<task_info_data_t>.size / MemoryLayout<natural_t>.size)
-//        var tinfo = task_info_data_t()
-//
-//        kr = task_info(mach_task_self_, task_flavor_t(TASK_BASIC_INFO), &tinfo, &task_info_count)
-//        guard kr == KERN_SUCCESS else { return -1 }
-//
-//        let taskInfo = unsafeBitCast(tinfo, to: task_basic_info.self)
-//        return Double(taskInfo.cpu_usage) / Double(TH_USAGE_SCALE) * 100.0
-//    }
 
     func countThreads() -> Int {
         var count: mach_msg_type_number_t = 0

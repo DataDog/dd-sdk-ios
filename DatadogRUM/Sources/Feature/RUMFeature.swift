@@ -8,12 +8,16 @@ import Foundation
 import DatadogInternal
 import UIKit
 
-internal final class RUMFeature: DatadogRemoteFeature {
-    static let name = "rum"
+public final class RUMFeature: DatadogRemoteFeature {
+    public static let name = "rum"
 
-    let requestBuilder: FeatureRequestBuilder
+    public let requestBuilder: FeatureRequestBuilder
 
-    let messageReceiver: FeatureMessageReceiver
+    public let messageReceiver: FeatureMessageReceiver
+
+    public var activeView: RUMViewScope?  {
+        self.monitor.scopes.activeSession?.viewScopes.first(where: { $0.isActiveView })
+    }
 
     let monitor: Monitor
 
@@ -298,7 +302,7 @@ extension RUMFeature: Flushable {
     /// Awaits completion of all asynchronous operations.
     ///
     /// **blocks the caller thread**
-    func flush() {
+    public func flush() {
         instrumentation.appHangs?.flush()
     }
 }

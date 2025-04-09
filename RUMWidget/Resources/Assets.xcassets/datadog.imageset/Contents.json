@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "09_iPhone_App_60pt@3x.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

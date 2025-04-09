@@ -128,7 +128,6 @@ extension DDVitalsView {
                 Circle()
                     .fill(level.color)
                     .frame(width: 10, height: 10)
-//                Text("\(value, specifier: "%.2f") \(metric)")
                 Text("\(value < 10 ? "0" : "")\(value) \(metric)")
                     .font(.system(size: 12, design: .monospaced)).bold()
             }

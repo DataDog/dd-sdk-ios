@@ -6,6 +6,7 @@
 
 import DatadogInternal
 import Foundation
+import DatadogRUM
 
 @available(iOS 15.0, *)
 public final class RUMWidgetViewModel: ObservableObject {
@@ -13,13 +14,10 @@ public final class RUMWidgetViewModel: ObservableObject {
     @Published var isHighlighted = false
 
     private let rumFeature: RUMFeature
-    let metricsManager: DatadogMetricSubscriber
 
     public init(
-        core: DatadogCoreProtocol = CoreRegistry.default,
-        metricsManager: DatadogMetricSubscriber = DatadogMetricSubscriber(core: CoreRegistry.default),
+        core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         rumFeature = core.get(feature: RUMFeature.self)!
-        self.metricsManager = metricsManager
     }
 }

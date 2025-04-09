@@ -7,7 +7,7 @@
 import DatadogInternal
 import Foundation
 
-internal class RUMViewScope: RUMScope, RUMContextProvider {
+public class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {
         static let frozenFrameThresholdInNs = (0.7).toInt64Nanoseconds // 700ms
         static let slowRenderingThresholdFPS = 55.0
@@ -58,8 +58,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// The path of this View, used as the `VIEW URL` in RUM Explorer.
     let viewPath: String
     /// The name of this View, used as the `VIEW NAME` in RUM Explorer.
-    let viewName: String
-    /// The start time of this View, based on device time without NTP correction.
+    public let viewName: String
+    /// The start time of this View.
     let viewStartTime: Date
     /// The load time of this View.
     private(set) var viewLoadingTime: TimeInterval?
@@ -123,9 +123,17 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Tracks "View Hitches" for this view.
     let viewHitchesReader: (ViewHitchesModel & RenderLoopReader)?
     /// Tracks "View Hangs" for this view.
-    var totalAppHangDuration: Double = 0.0
+    public var totalAppHangDuration: Double = 0.0
 
-    var hangs: [(CGFloat, CGFloat)] = [] // Range for green highlight (e.g., 0.2...0.3)
+    public var hangs: [(CGFloat, CGFloat)] = [] // Range for green highlight (e.g., 0.2...0.3)
+
+    public var memoryValue: Double? { self.vitalInfoSampler?.memory.currentValue }
+
+    public var viewHitches: [(start: Int64, duration: Int64)]? { viewHitchesReader?.dataModel.hitches.map { $0 } }
+
+    public var hitchesDuration: Double { self.viewHitchesReader?.dataModel.hitchesDuration ?? 0 }
+
+    public var timeSpent: Double { Date().timeIntervalSince(viewStartTime) }
 
     private var accessibilityReader: AccessibilityReading?
 
