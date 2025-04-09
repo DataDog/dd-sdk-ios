@@ -61,6 +61,7 @@ internal final class FatalAppHangsHandler {
     }
 
     func reportFatalAppHangIfFound() {
+        // Report pending app hang
         featureScope.rumDataStore.value(forKey: .fatalAppHangKey) { [weak self] (fatalHang: FatalAppHang?) in
             guard let fatalHang = fatalHang else {
                 DD.logger.debug("No pending App Hang found")
@@ -71,6 +72,9 @@ internal final class FatalAppHangsHandler {
             }
             self?.send(fatalHang: fatalHang)
         }
+
+        // Remove pending app hang
+        featureScope.rumDataStore.removeValue(forKey: .fatalAppHangKey)
     }
 
     private func send(fatalHang: FatalAppHang) {
