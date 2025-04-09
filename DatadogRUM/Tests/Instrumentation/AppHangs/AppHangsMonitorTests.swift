@@ -196,6 +196,7 @@ class AppHangsMonitorTests: XCTestCase {
         XCTAssertEqual(featureScope.eventsWritten.count, 2, "It must send both RUM error and RUM view")
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMErrorEvent.self).count, 1)
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMViewEvent.self).count, 1)
+        XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
     }
 
     func testGivenPendingHangStartedMoreThan4HoursAgo_whenStartedInAnotherProcess_itSendsOnlyRUMError() throws {
@@ -235,6 +236,7 @@ class AppHangsMonitorTests: XCTestCase {
 
         XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must send only RUM error")
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMErrorEvent.self).count, 1)
+        XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
     }
 
     func testGivenPendingHangStartedWithPendingOrNotGrantedConsent_whenStartedInAnotherProcess_itSendsNoEvent() throws {
@@ -272,6 +274,7 @@ class AppHangsMonitorTests: XCTestCase {
         )
 
         XCTAssertEqual(featureScope.eventsWritten.count, 0, "It must send no event")
+        XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
     }
 
     // MARK: - Fatal App Hangs - Testing Uploaded Data
