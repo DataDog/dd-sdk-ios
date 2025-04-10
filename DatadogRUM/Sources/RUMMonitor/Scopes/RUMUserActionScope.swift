@@ -7,6 +7,12 @@
 import Foundation
 import DatadogInternal
 
+extension RUMUserActionScope: EventScope {
+    var startTime: Date { self.actionStartTime }
+
+    var duration: TimeInterval { 1 }
+}
+
 internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     struct Constants {
         /// If no activity is observed within this period in a discrete (discontinous) User Action, it is condiered ended.

@@ -15,10 +15,10 @@ import Foundation
 @available(iOS 15.0, *)
 public final class RUMConfigViewModel: ObservableObject {
     @Published var isSDKEnabled: Bool
-    @Published var isLogsEnabled: Bool = false
-    @Published var isTracesEnabled: Bool = false
-    @Published var isRUMEnabled: Bool = false
-    @Published var isSessionReplayEnabled: Bool = false
+    @Published var isLogsEnabled: Bool = true
+    @Published var isTracesEnabled: Bool = true
+    @Published var isRUMEnabled: Bool = true
+    @Published var isSessionReplayEnabled: Bool = true
 
     public var configuration: Datadog.Configuration
 
@@ -29,25 +29,20 @@ public final class RUMConfigViewModel: ObservableObject {
         case sessionReplay = "Session Replay"
     }
 
-    private let core: DatadogCoreProtocol
     private var rumConfig: RUM.Configuration?
     private var sessionReplayConfig: SessionReplay.Configuration?
 
     public init(
-        configuration: Datadog.Configuration,
-        core: DatadogCoreProtocol = CoreRegistry.default
+        configuration: Datadog.Configuration
     ) {
         self.configuration = configuration
-        self.core = core
         isSDKEnabled = Datadog.isInitialized()
 
         retrieveCurrentConfigurations()
     }
 
     private func retrieveCurrentConfigurations() {
-        let datadogCore = CoreRegistry.default
-
-        if let rumFeature = core.get(feature: RUMFeature.self) {
+        if let rumFeature = CoreRegistry.default.get(feature: RUMFeature.self) {
             rumConfig = rumFeature.configuration
         }
 

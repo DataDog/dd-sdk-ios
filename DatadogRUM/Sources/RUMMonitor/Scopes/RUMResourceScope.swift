@@ -7,6 +7,12 @@
 import Foundation
 import DatadogInternal
 
+extension RUMResourceScope: EventScope {
+    var startTime: Date { self.resourceLoadingStartTime }
+
+    var duration: TimeInterval { resourceDuration }
+}
+
 internal class RUMResourceScope: RUMScope {
     // MARK: - Initialization
 
@@ -25,7 +31,8 @@ internal class RUMResourceScope: RUMScope {
     /// The Resource url.
     private var resourceURL: String
     /// The start time of this Resource loading.
-    private var resourceLoadingStartTime: Date
+    private let resourceLoadingStartTime: Date
+    var resourceDuration: TimeInterval = 0.0
 
     /// Server time offset for date correction.
     ///
@@ -117,7 +124,6 @@ internal class RUMResourceScope: RUMScope {
 
     private func sendResourceEvent(on command: RUMStopResourceCommand, context: DatadogContext, writer: Writer) {
         let resourceStartTime: Date
-        let resourceDuration: TimeInterval
         let size: Int64?
 
         // Check trace attributes

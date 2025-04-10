@@ -7,6 +7,12 @@
 import Foundation
 
 /// A Datadog Feature that can interact with the core through the message-bus.
+public protocol PlatformInterface {
+
+    var configuration: String { get }
+}
+
+/// A Datadog Feature that can interact with the core through the message-bus.
 public protocol DatadogFeature {
     /// The feature name.
     static var name: String { get }
@@ -35,4 +41,13 @@ public protocol DatadogRemoteFeature: DatadogFeature {
 
 extension DatadogRemoteFeature {
     public var performanceOverride: PerformancePresetOverride? { nil }
+}
+
+///
+///
+///
+public protocol EventScope {
+
+    var startTime: Date { get }
+    var duration: TimeInterval { get }
 }

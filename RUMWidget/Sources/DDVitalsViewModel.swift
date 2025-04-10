@@ -15,8 +15,8 @@ import SwiftUI
 @available(iOS 15.0, *)
 public final class DDVitalsViewModel: ObservableObject {
     @Published var progress: CGFloat = 0 // Value between 0.0 and 1.0
-    @Published var hangs: [(CGFloat, CGFloat)] = [] // Range for green highlight (e.g., 0.2...0.3)
-    @Published var hitches: [(CGFloat, CGFloat)] = [] // Positions of vertical lines (e.g., [0.6, 0.7, 0.75])
+
+    @Published var rumEvents: [TimelineEvent] = []
 
     @Published var cpuValue: Int = 0
     @Published var memoryValue: Int = 0
@@ -42,8 +42,7 @@ public final class DDVitalsViewModel: ObservableObject {
     private var hitchesDictionary: [String: [CGFloat]] = [:]
 
     public init(
-        configuration: Datadog.Configuration,
-        core _: DatadogCoreProtocol = CoreRegistry.default
+        configuration: Datadog.Configuration
     ) {
         self.configuration = configuration
     }
@@ -55,8 +54,7 @@ public final class DDVitalsViewModel: ObservableObject {
             hitchesDictionary[activeViewScope?.viewName ?? ""] = hitchesDictionary[activeViewScope?.viewName ?? "", default: []] + [lastHitchValue]
 
             viewMaxDuration = 60.0
-            hitches = []
-            hangs = []
+            rumEvents = []
             progress = 0
         }
 
@@ -67,9 +65,9 @@ public final class DDVitalsViewModel: ObservableObject {
     }
 
     func updateTimeline(viewScope: RUMViewScope) {
-        if let viewHitches = getViewHitches(from: viewScope),
-           viewScope.timeSpent > 0
-        {
+        if viewScope.timeSpent > 0 {
+
+            let viewHitches = viewScope.viewHitches ?? []
             currentDuration = viewScope.timeSpent
 
             progress = currentDuration / viewMaxDuration
@@ -77,15 +75,32 @@ public final class DDVitalsViewModel: ObservableObject {
                 withAnimation { viewMaxDuration = currentDuration }
             }
 
-            hitches = viewHitches.map {
-                let start = Double($0.start) / 1_000_000_000.0
-                let duration = Double($0.duration) / 1_000_000_000.0
-                return (start / viewMaxDuration, CGFloat(duration < 1 ? 1 : duration))
+            var events: [TimelineEvent] = []
+            for (index, scope) in viewScope.resourceEvents.enumerated() {
+                events.append(TimelineEvent(id: index,
+                                            start: scope.0 / viewMaxDuration,
+                                            duration: scope.1 < 1 ? 1 : scope.1, event: .resource))
             }
-        }
 
-        for hang in viewScope.hangs {
-            hangs.append((hang.0 / viewMaxDuration, hang.1))
+            for scope in viewScope.userEvents {
+                events.append(TimelineEvent(id: events.count + 1,
+                                            start: scope.0 / viewMaxDuration,
+                                            duration: scope.1 < 1 ? 1 : scope.1, event: .userAction))
+            }
+
+            for hitch in viewHitches {
+                let start = Double(hitch.start) / 1_000_000_000.0
+                let duration = Double(hitch.duration) / 1_000_000_000.0
+                events.append(TimelineEvent(id: events.count + 1, start: start / viewMaxDuration, duration: duration < 1 ? 1 : duration, event: .viewHitch))
+            }
+
+            for hang in viewScope.hangs {
+                let start = Double(hang.0)
+                let duration = Double(hang.1)
+                events.append(TimelineEvent(id: events.count + 1, start: start / viewMaxDuration, duration: duration < 1 ? 1 : duration, event: .appHang))
+            }
+
+            self.rumEvents = events
         }
     }
 
@@ -94,8 +109,6 @@ public final class DDVitalsViewModel: ObservableObject {
         memoryValue = Int((viewScope.memoryValue ?? 0).MB)
         threadsCount = countThreads()
     }
-
-    func getViewHitches(from viewScope: RUMViewScope) -> [(start: Int64, duration: Int64)]? { viewScope.viewHitches }
 
     var hitchesDuration: Double {
         activeViewScope?.hitchesDuration ?? 0
@@ -106,7 +119,11 @@ public final class DDVitalsViewModel: ObservableObject {
     }
 
     var viewScopeName: String {
-        activeViewScope?.viewName ?? "Unknown"
+        if let viewName = activeViewScope?.viewName.split(separator: ".").last {
+            return String(viewName)
+        }
+
+        return "Unknown"
     }
 }
 

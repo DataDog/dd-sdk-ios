@@ -8,7 +8,7 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 public struct DDVitalsView: View {
-    public static let height: CGFloat = 250
+    public static let height: CGFloat = 270
     private static let padding: CGFloat = 10
 
     @StateObject var viewModel: DDVitalsViewModel
@@ -30,10 +30,15 @@ public struct DDVitalsView: View {
                 topView
                     .padding(Self.padding)
 
+                Spacer()
+
                 if self.isShowingConfigView {
                     RUMConfigView(viewModel: RUMConfigViewModel(configuration: viewModel.configuration))
+                        .padding(.horizontal, Self.padding)
                 } else {
-                    self.vitalsView
+                    self.rumVitalsView
+                        .frame(maxHeight: .infinity, alignment: .top)
+                        .padding(.horizontal, Self.padding)
                 }
             }
         }
@@ -59,6 +64,7 @@ extension DDVitalsView {
             Text(self.isShowingConfigView ? "Settings" : self.viewModel.viewScopeName)
                 .font(.system(size: 16)).bold()
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .lineLimit(1)
 
             Text(timeString(from: Int(self.viewModel.currentDuration)))
                 .font(.system(size: 14, design: .monospaced))
@@ -72,60 +78,62 @@ extension DDVitalsView {
                         isShowingConfigView.toggle()
                     }
                 }
-                .foregroundStyle(Color.purple)
+                .foregroundStyle(Color("purple_top", bundle: .module))
                 .frame(width: 32, height: 32)
             }
         }
     }
 
-    @ViewBuilder
-    var vitalsView: some View {
-        // Vitals
-        HStack(spacing: 10) {
-            vitalView(
-                title: "CPU",
-                value: viewModel.cpuValue,
-                metric: "%",
-                level: viewModel.levelFor(cpu: viewModel.cpuValue)
-            )
-            vitalView(
-                title: "Memory",
-                value: viewModel.memoryValue,
-                metric: "MB",
-                level: viewModel.levelFor(memory: viewModel.memoryValue)
-            )
-            vitalView(
-                title: "Stack",
-                value: viewModel.threadsCount,
-                metric: "threads",
-                level: viewModel.levelFor(threads: viewModel.threadsCount)
-            )
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, Self.padding)
-
-        // Timeline
-        timelineView
-            .padding(Self.padding)
-
-        HStack {
-            rateView(
-                title: "SlowFrame Rate",
-                value: viewModel.hitchesRatio > 1 ? viewModel.hitchesRatio : 0,
-                metric: "ms/s",
-                level: viewModel.hitchesRatio > 10 ? .high : .low
-            )
+    var rumVitalsView: some View {
+        VStack(spacing: 10) {
+            // Vitals
+            HStack(spacing: 10) {
+                vitalView(
+                    title: "CPU",
+                    value: viewModel.cpuValue,
+                    metric: "%",
+                    level: viewModel.levelFor(cpu: viewModel.cpuValue)
+                )
+                vitalView(
+                    title: "Memory",
+                    value: viewModel.memoryValue,
+                    metric: "MB",
+                    level: viewModel.levelFor(memory: viewModel.memoryValue)
+                )
+                vitalView(
+                    title: "Stack",
+                    value: viewModel.threadsCount,
+                    metric: "threads",
+                    level: viewModel.levelFor(threads: viewModel.threadsCount)
+                )
+            }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            rateView(
-                title: "Freeze Rate",
-                value: viewModel.hangsRatio > 1 ? viewModel.hangsRatio : 0,
-                metric: "s/h",
-                level: viewModel.hangsRatio > 100 ? .high : .low
-            )
-            .frame(maxWidth: .infinity, alignment: .leading)
+            Divider()
+
+            // Timeline
+            timelineView(title: "RUM Timeline", progress: self.viewModel.progress, events: self.viewModel.rumEvents)
+
+            Divider()
+
+            HStack {
+                rateView(
+                    title: "SlowFrame Rate",
+                    value: viewModel.hitchesRatio > 1 ? viewModel.hitchesRatio : 0,
+                    metric: "ms/s",
+                    level: viewModel.hitchesRatio > 10 ? .high : .low
+                )
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                rateView(
+                    title: "Freeze Rate",
+                    value: viewModel.hangsRatio > 1 ? viewModel.hangsRatio : 0,
+                    metric: "s/h",
+                    level: viewModel.hangsRatio > 100 ? .high : .low
+                )
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
-        .padding([.horizontal, .bottom], Self.padding)
     }
 
     @ViewBuilder
@@ -159,50 +167,75 @@ extension DDVitalsView {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    @ViewBuilder
-    var timelineView: some View {
-        let barHeight: CGFloat = 40
-
-        VStack {
-            Text("Timeline")
+    func timelineView(title: String, progress: CGFloat, events: [TimelineEvent]) -> some View {
+        VStack(spacing: 0) {
+            Text(title)
                 .font(.system(size: 10)).bold()
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 5)
 
-            ZStack(alignment: .leading) {
-                GeometryReader { geometry in
-                    let barWidth = geometry.size.width
+            timelineView(progress: progress, events: events)
 
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.7))
-                        .frame(width: barWidth, height: barHeight)
-                        .cornerRadius(5)
+            HStack(spacing: 2) {
+                Circle()
+                    .fill(.blue)
+                    .frame(width: 10, height: 10)
+                Text("User action")
+                    .font(.system(size: 8))
+                Rectangle()
+                    .fill(Color("purple_top", bundle: .module))
+                    .frame(width: 10, height: 10)
+                    .padding(.leading, 5)
+                Text("Network resource")
+                    .font(.system(size: 8))
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .padding(.top, 2)
+        }
+    }
 
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.7))
-                        .frame(width: viewModel.progress * barWidth, height: barHeight)
-                        .cornerRadius(6)
+    @ViewBuilder
+    func timelineView(progress: CGFloat, events: [TimelineEvent]) -> some View {
+        let barHeight: CGFloat = 40
 
-                    ForEach(viewModel.hangs, id: \.0.self) { marker in
+        ZStack(alignment: .leading) {
+            GeometryReader { geometry in
+                let barWidth = geometry.size.width
+                let barHeight = geometry.size.height
+
+                Rectangle()
+                    .fill(Color.gray.opacity(0.7))
+                    .frame(width: barWidth, height: barHeight)
+                    .cornerRadius(5)
+
+                Rectangle()
+                    .fill(Color.gray.opacity(0.7))
+                    .frame(width: viewModel.progress * barWidth, height: barHeight)
+                    .cornerRadius(6)
+
+                ForEach(events) { marker in
+
+                    switch marker.event {
+                    case .userAction:
+                        Circle()
+                            .fill(marker.color)
+                            .frame(width: 10, height: 10)
+                            .offset(x: marker.start * barWidth - 5, y: (barHeight/2) - 5)
+                    case .resource:
                         Rectangle()
-                            .fill(Color.blue.opacity(0.7))
-                            .frame(
-                                width: marker.1 * 3,
-                                height: barHeight
-                            )
-                            .cornerRadius(5)
-                            .offset(x: marker.0 * barWidth)
-                    }
-
-                    ForEach(viewModel.hitches, id: \.0.self) { marker in
+                            .fill(marker.color)
+                            .frame(width: 10, height: 10)
+                            .offset(x: marker.start * barWidth - 5, y: barHeight - 10)
+                    default:
                         Rectangle()
-                            .fill(Color.orange)
-                            .frame(width: 2.0 * marker.1, height: barHeight)
-                            .offset(x: marker.0 * barWidth - 1) // Centering
+                            .fill(marker.color)
+                            .frame(width: 2.0 * marker.duration, height: barHeight)
+                            .offset(x: marker.start * barWidth - 1) // Centering
                     }
                 }
             }
-            .frame(maxHeight: barHeight)
         }
+        .frame(maxHeight: barHeight)
     }
 }
 
@@ -229,6 +262,22 @@ enum WarningLevel {
                 .yellow
         case .high:
                 .red
+        }
+    }
+}
+
+private extension TimelineEvent {
+    @available(iOS 13.0, *)
+    var color: Color {
+        switch event {
+        case .viewHitch:
+            return .orange
+        case .appHang:
+            return .red
+        case .userAction:
+            return .blue
+        case .resource:
+            return Color("purple_top", bundle: .module)
         }
     }
 }

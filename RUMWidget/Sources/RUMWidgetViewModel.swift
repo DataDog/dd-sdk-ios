@@ -16,13 +16,9 @@ public final class RUMWidgetViewModel: ObservableObject {
 
     let configuration: Datadog.Configuration
 
-    private let rumFeature: RUMFeature
-
     public init(
-        core: DatadogCoreProtocol = CoreRegistry.default,
         configuration: Datadog.Configuration
     ) {
-        rumFeature = core.get(feature: RUMFeature.self)!
         self.configuration = configuration
     }
 }

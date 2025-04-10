@@ -13,7 +13,7 @@ public class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
 
     private let padding: CGFloat = 10
     private let topPadding: CGFloat = 80
-    private var bottomPadding: CGFloat = 0
+    private var edgeInsets: EdgeInsets = .init()
 
     public init(configuration: Datadog.Configuration) {
         let view = RUMWidgetView(viewModel: RUMWidgetViewModel(configuration: configuration))
@@ -30,13 +30,20 @@ public class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
         fatalError("init(coder:) has not been implemented")
     }
 
-    public func setup(superView: UIView, bottomPadding: CGFloat = 0) {
-        self.bottomPadding = bottomPadding
+    public func setup(edgeInsets: EdgeInsets = .init(top: 10, leading: 10, bottom: 85, trailing: 10)) {
+        self.edgeInsets = edgeInsets
 
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handleDrag(_:)))
         view.addGestureRecognizer(panGesture)
 
-        superView.addSubview(view)
+        if var topController = UIApplication.shared.windows.first?.rootViewController {
+            while let presentedViewController = topController.presentedViewController {
+                topController = presentedViewController
+            }
+
+            topController.view.addSubview(view)
+        }
+
         updateFrame(isExpanded: false, isAnimated: false)
     }
 
@@ -45,7 +52,7 @@ public class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
             ? CGRect(x: 0, y: topPadding, width: UIScreen.main.bounds.width, height: DDVitalsView.height)
             : CGRect(
                 x: UIScreen.main.bounds.width - FloatingButtonView.size.width - padding,
-                y: UIScreen.main.bounds.height - FloatingButtonView.size.height - padding - bottomPadding,
+                y: UIScreen.main.bounds.height - FloatingButtonView.size.height - padding - edgeInsets.bottom,
                 width: FloatingButtonView.size.width,
                 height: FloatingButtonView.size.height
             )

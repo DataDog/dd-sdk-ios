@@ -23,25 +23,20 @@ public struct RUMConfigView: View {
                 )
                 .font(.subheadline)
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(.borderedProminent)
 
             Toggle("Logs", isOn: $viewModel.isLogsEnabled)
                 .disabled(viewModel.isSDKEnabled)
-                .frame(maxHeight: 25)
             Toggle("Traces", isOn: $viewModel.isTracesEnabled)
                 .disabled(viewModel.isSDKEnabled)
-                .frame(maxHeight: 25)
             Toggle("RUM", isOn: $viewModel.isRUMEnabled)
                 .disabled(viewModel.isSDKEnabled)
-                .frame(maxHeight: 25)
             Toggle("Session Replay", isOn: $viewModel.isSessionReplayEnabled)
                 .disabled(viewModel.isSDKEnabled)
-                .frame(maxHeight: 25)
 
             Spacer()
         }
-        .tint(.purple)
-        .padding(.horizontal)
+        .tint(Color("purple_top", bundle: .module))
     }
 }
 

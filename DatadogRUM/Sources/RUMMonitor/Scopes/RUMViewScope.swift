@@ -21,9 +21,25 @@ public class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 
     /// Active Resource scopes, keyed by .resourceKey.
-    private(set) var resourceScopes: [String: RUMResourceScope] = [:]
+    private(set) var resourceScopes: [String: RUMResourceScope] = [:]{
+        didSet {
+             resourceScopes.forEach {
+
+                 resourceEvents.append(($1.startTime.timeIntervalSince(viewStartTime), $1.duration))
+            }
+        }
+   }
+
     /// Active User Action scope. There can be only one active user action at a time.
-    private(set) var userActionScope: RUMUserActionScope?
+    private(set) var userActionScope: RUMUserActionScope? {
+        didSet {
+            guard let userActionScope else {
+                return
+            }
+
+            self.userEvents.append((userActionScope.startTime.timeIntervalSince(viewStartTime), userActionScope.duration))
+        }
+    }
 
     // MARK: - Initialization
 
@@ -125,7 +141,11 @@ public class RUMViewScope: RUMScope, RUMContextProvider {
     /// Tracks "View Hangs" for this view.
     public var totalAppHangDuration: Double = 0.0
 
-    public var hangs: [(CGFloat, CGFloat)] = [] // Range for green highlight (e.g., 0.2...0.3)
+    public var resourceEvents: [(CGFloat, TimeInterval)] = []
+
+    public var userEvents: [(CGFloat, TimeInterval)] = []
+
+    public var hangs: [(CGFloat, TimeInterval)] = []
 
     public var memoryValue: Double? { self.vitalInfoSampler?.memory.currentValue }
 
