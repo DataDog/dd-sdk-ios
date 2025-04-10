@@ -4516,7 +4516,7 @@
 				618353BA2A6946F40085F84A /* Internal */,
 			);
 			name = IntegrationUnitTests;
-			path = ../IntegrationUnitTests;
+			path = IntegrationUnitTests;
 			sourceTree = "<group>";
 		};
 		610ABD4A2A6930AB00AFEA34 /* Public */ = {
