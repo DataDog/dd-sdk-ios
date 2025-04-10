@@ -1,9 +1,16 @@
+# Unreleased
+
+# 2.26.0 / 10-04-2025
+
+- [FIX] Fix Fatal App Hang Duplicates. See [#2260][]
+
 # 2.25.0 / 03-04-2025
 
 - [FEATURE] Calculate Hang rate and Hitch rate in RUM. See [#2234][]
 - [FIX] Fixed Swift 6.0.2 compatibility issue with `DatadogCrashReporting` framework. See [#2251][]
 - [IMPROVEMENT] Refine errors printed from `clearAllData()`. See [#2240][]
 - [IMPROVEMENT] Simplify host sanitizer logic. See [#2223][]
+- [FIX] Fix view drop in SwiftUI modal navigation. See [#2236][]
 
 # 2.24.1 / 31-03-2025
 
@@ -856,6 +863,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2240]: https://github.com/DataDog/dd-sdk-ios/pull/2240
 [#2223]: https://github.com/DataDog/dd-sdk-ios/pull/2223
 [#2234]: https://github.com/DataDog/dd-sdk-ios/pull/2234
+[#2236]: https://github.com/DataDog/dd-sdk-ios/pull/2236
+[#2260]: https://github.com/DataDog/dd-sdk-ios/pull/2260
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
