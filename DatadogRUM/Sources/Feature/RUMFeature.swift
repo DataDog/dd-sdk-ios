@@ -23,7 +23,7 @@ public final class RUMFeature: DatadogRemoteFeature {
 
     let instrumentation: RUMInstrumentation
 
-    let configuration: RUM.Configuration
+    public let configuration: RUM.Configuration
 
     let anonymousIdentifierManager: AnonymousIdentifierManaging
 

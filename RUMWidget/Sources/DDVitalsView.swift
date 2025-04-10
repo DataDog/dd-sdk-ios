@@ -31,19 +31,19 @@ public struct DDVitalsView: View {
 
                 // Vitals
                 HStack(spacing: 10) {
-                    self.vitalView(
+                    vitalView(
                         title: "CPU",
                         value: viewModel.cpuValue,
                         metric: "%",
                         level: viewModel.levelFor(cpu: viewModel.cpuValue)
                     )
-                    self.vitalView(
+                    vitalView(
                         title: "Memory",
                         value: viewModel.memoryValue,
                         metric: "MB",
                         level: viewModel.levelFor(memory: viewModel.memoryValue)
                     )
-                    self.vitalView(
+                    vitalView(
                         title: "Stack",
                         value: viewModel.threadsCount,
                         metric: "threads",
@@ -108,7 +108,7 @@ extension DDVitalsView {
 
             VStack {
                 if isShowingConfigView {
-                    NavigationLink(destination: RUMConfigView(), isActive: $isShowingConfigView) { EmptyView() }
+                    NavigationLink(destination: RUMConfigView(viewModel: RUMConfigViewModel(configuration: viewModel.configuration)), isActive: $isShowingConfigView) { EmptyView() }
                 }
                 Button("", systemImage: "gearshape.fill") {
                     self.isShowingConfigView = true
@@ -226,5 +226,5 @@ enum WarningLevel {
 
 @available(iOS 15.0, *)
 #Preview {
-    DDVitalsView(viewModel: DDVitalsViewModel())
+    DDVitalsView(viewModel: DDVitalsViewModel(configuration: .init(clientToken: "dummy", env: "dummy")))
 }

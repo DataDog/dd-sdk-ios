@@ -4,12 +4,13 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import DatadogCore
 import DatadogInternal
-import Observation
-import SwiftUI
+import DatadogRUM
 import Foundation
 import MachO
-import DatadogRUM
+import Observation
+import SwiftUI
 
 @available(iOS 15.0, *)
 public final class DDVitalsViewModel: ObservableObject {
@@ -21,6 +22,8 @@ public final class DDVitalsViewModel: ObservableObject {
     @Published var memoryValue: Int = 0
     @Published var threadsCount: Int = 0
 
+    public var configuration: Datadog.Configuration
+
     var hitchesRatio: CGFloat {
         lastHitchValue = hitchesDuration / currentDuration * Double(1.toMilliseconds)
         return lastHitchValue
@@ -31,7 +34,7 @@ public final class DDVitalsViewModel: ObservableObject {
 
     private var viewMaxDuration = 60.0
 
-    private let rumFeature: RUMFeature?
+    private var rumFeature: RUMFeature? { CoreRegistry.default.get(feature: RUMFeature.self) }
 
     private var activeViewScope: RUMViewScope?
 
@@ -39,9 +42,10 @@ public final class DDVitalsViewModel: ObservableObject {
     private var hitchesDictionary: [String: [CGFloat]] = [:]
 
     public init(
-        core: DatadogCoreProtocol = CoreRegistry.default
+        configuration: Datadog.Configuration,
+        core _: DatadogCoreProtocol = CoreRegistry.default
     ) {
-        rumFeature = core.get(feature: RUMFeature.self)
+        self.configuration = configuration
     }
 
     func updateView() {
@@ -63,10 +67,9 @@ public final class DDVitalsViewModel: ObservableObject {
     }
 
     func updateTimeline(viewScope: RUMViewScope) {
-
         if let viewHitches = getViewHitches(from: viewScope),
-           viewScope.timeSpent > 0 {
-
+           viewScope.timeSpent > 0
+        {
             currentDuration = viewScope.timeSpent
 
             progress = currentDuration / viewMaxDuration
@@ -87,13 +90,12 @@ public final class DDVitalsViewModel: ObservableObject {
     }
 
     func updateVitals(viewScope: RUMViewScope) {
-
         cpuValue = Int(cpuUsage())
         memoryValue = Int((viewScope.memoryValue ?? 0).MB)
         threadsCount = countThreads()
     }
 
-    func getViewHitches(from viewScope: RUMViewScope) -> [(start: Int64, duration: Int64)]?  { viewScope.viewHitches }
+    func getViewHitches(from viewScope: RUMViewScope) -> [(start: Int64, duration: Int64)]? { viewScope.viewHitches }
 
     var hitchesDuration: Double {
         activeViewScope?.hitchesDuration ?? 0
@@ -110,47 +112,42 @@ public final class DDVitalsViewModel: ObservableObject {
 
 @available(iOS 15.0, *)
 extension DDVitalsViewModel {
-
     func levelFor(cpu: Int) -> WarningLevel {
-
         switch cpu {
         case ..<50:
-            return .low
+            .low
         case ..<90:
-            return .medium
+            .medium
         default:
-            return .high
+            .high
         }
     }
 
     func levelFor(memory: Int) -> WarningLevel {
-
         switch memory {
         case ..<300:
-            return .low
+            .low
         case ..<500:
-            return .medium
+            .medium
         default:
-            return .high
+            .high
         }
     }
 
     func levelFor(threads: Int) -> WarningLevel {
-
         switch threads {
         case ..<ProcessInfo.processInfo.processorCount:
-            return .low
+            .low
         case ..<(ProcessInfo.processInfo.processorCount * 2):
-            return .medium
+            .medium
         default:
-            return .high
+            .high
         }
     }
 }
 
 @available(iOS 15.0, *)
 private extension DDVitalsViewModel {
-
     func cpuUsage() -> Double {
         var kr: kern_return_t
         var task_info_count: mach_msg_type_number_t
@@ -166,7 +163,7 @@ private extension DDVitalsViewModel {
         var thread_list: thread_act_array_t? = UnsafeMutablePointer(mutating: [thread_act_t]())
         var thread_count: mach_msg_type_number_t = 0
         defer {
-            if let thread_list = thread_list {
+            if let thread_list {
                 vm_deallocate(mach_task_self_, vm_address_t(UnsafePointer(thread_list).pointee), vm_size_t(thread_count))
             }
         }
@@ -179,8 +176,7 @@ private extension DDVitalsViewModel {
 
         var tot_cpu: Double = 0
 
-        if let thread_list = thread_list {
-
+        if let thread_list {
             for j in 0 ..< Int(thread_count) {
                 var thread_info_count = mach_msg_type_number_t(THREAD_INFO_MAX)
                 var thinfo = [integer_t](repeating: 0, count: Int(thread_info_count))
@@ -201,7 +197,7 @@ private extension DDVitalsViewModel {
         return tot_cpu
     }
 
-    fileprivate func convertThreadInfoToThreadBasicInfo(_ threadInfo: [integer_t]) -> thread_basic_info {
+    func convertThreadInfoToThreadBasicInfo(_ threadInfo: [integer_t]) -> thread_basic_info {
         var result = thread_basic_info()
 
         result.user_time = time_value_t(seconds: threadInfo[0], microseconds: threadInfo[1])

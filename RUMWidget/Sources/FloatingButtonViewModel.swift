@@ -8,6 +8,5 @@ import Foundation
 
 @available(iOS 15.0, *)
 public final class FloatingButtonViewModel: ObservableObject {
-
     public init() {}
 }

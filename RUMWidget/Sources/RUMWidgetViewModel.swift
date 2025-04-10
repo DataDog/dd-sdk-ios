@@ -4,20 +4,25 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import DatadogCore
 import DatadogInternal
-import Foundation
 import DatadogRUM
+import Foundation
 
 @available(iOS 15.0, *)
 public final class RUMWidgetViewModel: ObservableObject {
     @Published var isExpanded: Bool = false
     @Published var isHighlighted = false
 
+    let configuration: Datadog.Configuration
+
     private let rumFeature: RUMFeature
 
     public init(
-        core: DatadogCoreProtocol = CoreRegistry.default
+        core: DatadogCoreProtocol = CoreRegistry.default,
+        configuration: Datadog.Configuration
     ) {
         rumFeature = core.get(feature: RUMFeature.self)!
+        self.configuration = configuration
     }
 }

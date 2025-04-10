@@ -10,7 +10,7 @@ import SwiftUI
 public struct RUMConfigView: View {
     @StateObject private var viewModel: RUMConfigViewModel
 
-    public init(viewModel: RUMConfigViewModel = RUMConfigViewModel()) {
+    public init(viewModel: RUMConfigViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
 
@@ -51,5 +51,5 @@ public struct RUMConfigView: View {
 
 @available(iOS 15.0, *)
 #Preview {
-    RUMConfigView()
+    RUMConfigView(viewModel: RUMConfigViewModel(configuration: .init(clientToken: "dummy", env: "dummy")))
 }

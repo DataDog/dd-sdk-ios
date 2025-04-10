@@ -8,12 +8,11 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 struct FloatingButtonView: View {
-
     static let size: CGSize = .init(width: 80, height: 80)
 
     @ObservedObject private var viewModel: FloatingButtonViewModel
 
-    init(viewModel: FloatingButtonViewModel){
+    init(viewModel: FloatingButtonViewModel) {
         self.viewModel = viewModel
     }
 
@@ -26,7 +25,7 @@ struct FloatingButtonView: View {
                 LinearGradient(
                     gradient: Gradient(colors: [
                         Color("purple_top", bundle: .module),
-                        Color("purple_bottom", bundle: .module)
+                        Color("purple_bottom", bundle: .module),
                     ]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing

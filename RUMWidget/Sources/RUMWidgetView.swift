@@ -4,20 +4,26 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import DatadogCore
 import DatadogInternal
 import SwiftUI
 
 @available(iOS 15.0, *)
 public struct RUMWidgetView: View {
-    @StateObject var viewModel = RUMWidgetViewModel()
-    private var floatingViewModel = FloatingButtonViewModel()
+    @StateObject var viewModel: RUMWidgetViewModel
+    private var floatingViewModel: FloatingButtonViewModel
 
     var onExpandView: ((Bool) -> Void)?
+
+    init(viewModel: RUMWidgetViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+        floatingViewModel = FloatingButtonViewModel()
+    }
 
     public var body: some View {
         ZStack {
             DDVitalsView(
-                viewModel: DDVitalsViewModel()
+                viewModel: DDVitalsViewModel(configuration: viewModel.configuration)
             )
             .frame(width: UIScreen.main.bounds.width)
             .opacity(viewModel.isExpanded ? 1 : 0)

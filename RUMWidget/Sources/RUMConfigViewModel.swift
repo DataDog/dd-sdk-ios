@@ -20,6 +20,8 @@ public final class RUMConfigViewModel: ObservableObject {
     @Published var isRUMEnabled: Bool = false
     @Published var isSessionReplayEnabled: Bool = false
 
+    public var configuration: Datadog.Configuration
+
     public enum Feature: String, CaseIterable {
         case logs = "Logs"
         case traces = "Traces"
@@ -28,28 +30,28 @@ public final class RUMConfigViewModel: ObservableObject {
     }
 
     private let core: DatadogCoreProtocol
-
-    private var sdkConfig: Datadog.Configuration?
-//    private var logsConfig: Logs.Configuration?
-//    private var tracesConfig: Trace.Configuration?
     private var rumConfig: RUM.Configuration?
     private var sessionReplayConfig: SessionReplay.Configuration?
 
     public init(
+        configuration: Datadog.Configuration,
         core: DatadogCoreProtocol = CoreRegistry.default
     ) {
+        self.configuration = configuration
         self.core = core
         isSDKEnabled = Datadog.isInitialized()
 
-        sdkConfig = nil // FIXME: Where do we retrieve the config
+        retrieveCurrentConfigurations()
+    }
 
-        rumConfig = nil
-        sessionReplayConfig = nil
+    private func retrieveCurrentConfigurations() {
+        let datadogCore = CoreRegistry.default
 
-        isLogsEnabled = false
-        isRUMEnabled = false
-        isTracesEnabled = false
-        isSessionReplayEnabled = false
+        if let rumFeature = core.get(feature: RUMFeature.self) {
+            rumConfig = rumFeature.configuration
+        }
+
+        sessionReplayConfig = SessionReplay.Configuration()
     }
 
     func stopSdk() {
@@ -59,12 +61,12 @@ public final class RUMConfigViewModel: ObservableObject {
 
     func startSdk() {
         do {
-            guard let sdkConfig else { return }
-
             Datadog.initialize(
-                with: sdkConfig,
+                with: configuration,
                 trackingConsent: .granted
             )
+
+            Datadog.verbosityLevel = .debug // FIXME: remove debug mode
 
             if isLogsEnabled {
                 Logs.enable()

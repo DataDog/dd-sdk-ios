@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import DatadogCore
 import SwiftUI
 
 @available(iOS 15.0, *)
@@ -14,8 +15,8 @@ public class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
     private let topPadding: CGFloat = 80
     private var bottomPadding: CGFloat = 0
 
-    public init() {
-        let view = RUMWidgetView()
+    public init(configuration: Datadog.Configuration) {
+        let view = RUMWidgetView(viewModel: RUMWidgetViewModel(configuration: configuration))
         super.init(rootView: view)
         self.view.backgroundColor = .clear
         rootView.onExpandView = { [weak self] isExpanded in
