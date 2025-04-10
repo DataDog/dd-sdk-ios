@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.26.0 / 10-04-2025
+
 - [FIX] Fix Fatal App Hang Duplicates. See [#2260][]
 
 # 2.25.0 / 03-04-2025
