@@ -23,7 +23,7 @@ import Foundation
 /// before you consider adding it here.
 public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
     /// Counts references to this mock, so we can test if there are no memory leaks.
-    public static var referenceCount = 0
+    public private(set) static var referenceCount = 0
 
     public internal(set) var registeredFeatures: [DatadogFeature] = []
 
