@@ -29,7 +29,7 @@ import DatadogInternal
 open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Sendable {
     /// Counts references to `PassthroughCoreMock` instances, so we can prevent memory
     /// leaks of SDK core in `DatadogTestsObserver`.
-    public static var referenceCount = 0
+    public private(set) static var referenceCount = 0
 
     /// Current context that will be passed to feature-scopes.
     @ReadWriteLock
