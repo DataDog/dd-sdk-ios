@@ -23,62 +23,21 @@ public struct DDVitalsView: View {
     }
 
     public var body: some View {
-        NavigationView {
+        ZStack {
+            Color.white.opacity(0.7)
             VStack {
                 // Navigation View
                 topView
                     .padding(Self.padding)
 
-                // Vitals
-                HStack(spacing: 10) {
-                    vitalView(
-                        title: "CPU",
-                        value: viewModel.cpuValue,
-                        metric: "%",
-                        level: viewModel.levelFor(cpu: viewModel.cpuValue)
-                    )
-                    vitalView(
-                        title: "Memory",
-                        value: viewModel.memoryValue,
-                        metric: "MB",
-                        level: viewModel.levelFor(memory: viewModel.memoryValue)
-                    )
-                    vitalView(
-                        title: "Stack",
-                        value: viewModel.threadsCount,
-                        metric: "threads",
-                        level: viewModel.levelFor(threads: viewModel.threadsCount)
-                    )
+                if self.isShowingConfigView {
+                    RUMConfigView(viewModel: RUMConfigViewModel(configuration: viewModel.configuration))
+                } else {
+                    self.vitalsView
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, Self.padding)
-
-                // Timeline
-                timelineView
-                    .padding(Self.padding)
-
-                HStack {
-                    rateView(
-                        title: "SlowFrame Rate",
-                        value: viewModel.hitchesRatio > 1 ? viewModel.hitchesRatio : 0,
-                        metric: "ms/s",
-                        level: viewModel.hitchesRatio > 10 ? .high : .low
-                    )
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                    rateView(
-                        title: "Freeze Rate",
-                        value: viewModel.hangsRatio > 1 ? viewModel.hangsRatio : 0,
-                        metric: "s/h",
-                        level: viewModel.hangsRatio > 100 ? .high : .low
-                    )
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .padding([.horizontal, .bottom], Self.padding)
             }
         }
         .frame(height: Self.height, alignment: .topLeading)
-        .background(Color.white.opacity(0.9))
         .cornerRadius(12)
         .shadow(color: .gray, radius: 12)
         .padding(Self.padding)
@@ -97,26 +56,76 @@ extension DDVitalsView {
                 .scaledToFit()
                 .frame(width: 32, height: 32)
 
-            Text(self.viewModel.viewScopeName)
+            Text(self.isShowingConfigView ? "Settings" : self.viewModel.viewScopeName)
                 .font(.system(size: 16)).bold()
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(timeString(from: Int(self.viewModel.currentDuration)))
                 .font(.system(size: 14, design: .monospaced))
+                .opacity(self.isShowingConfigView ? 0 : 1)
 
             Spacer()
 
             VStack {
-                if isShowingConfigView {
-                    NavigationLink(destination: RUMConfigView(viewModel: RUMConfigViewModel(configuration: viewModel.configuration)), isActive: $isShowingConfigView) { EmptyView() }
-                }
                 Button("", systemImage: "gearshape.fill") {
-                    self.isShowingConfigView = true
+                    withAnimation {
+                        isShowingConfigView.toggle()
+                    }
                 }
                 .foregroundStyle(Color.purple)
                 .frame(width: 32, height: 32)
             }
         }
+    }
+
+    @ViewBuilder
+    var vitalsView: some View {
+        // Vitals
+        HStack(spacing: 10) {
+            vitalView(
+                title: "CPU",
+                value: viewModel.cpuValue,
+                metric: "%",
+                level: viewModel.levelFor(cpu: viewModel.cpuValue)
+            )
+            vitalView(
+                title: "Memory",
+                value: viewModel.memoryValue,
+                metric: "MB",
+                level: viewModel.levelFor(memory: viewModel.memoryValue)
+            )
+            vitalView(
+                title: "Stack",
+                value: viewModel.threadsCount,
+                metric: "threads",
+                level: viewModel.levelFor(threads: viewModel.threadsCount)
+            )
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, Self.padding)
+
+        // Timeline
+        timelineView
+            .padding(Self.padding)
+
+        HStack {
+            rateView(
+                title: "SlowFrame Rate",
+                value: viewModel.hitchesRatio > 1 ? viewModel.hitchesRatio : 0,
+                metric: "ms/s",
+                level: viewModel.hitchesRatio > 10 ? .high : .low
+            )
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            rateView(
+                title: "Freeze Rate",
+                value: viewModel.hangsRatio > 1 ? viewModel.hangsRatio : 0,
+                metric: "s/h",
+                level: viewModel.hangsRatio > 100 ? .high : .low
+            )
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding([.horizontal, .bottom], Self.padding)
     }
 
     @ViewBuilder
@@ -134,7 +143,7 @@ extension DDVitalsView {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Self.padding)
-        .background(Color.gray.opacity(0.3))
+        .background(Color.gray.opacity(0.6))
         .cornerRadius(5)
     }
 
@@ -215,11 +224,11 @@ enum WarningLevel {
     var color: Color {
         switch self {
         case .low:
-            .green
+                .green
         case .medium:
-            .yellow
+                .yellow
         case .high:
-            .red
+                .red
         }
     }
 }

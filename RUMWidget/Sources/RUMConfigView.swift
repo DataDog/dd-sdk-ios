@@ -16,18 +16,14 @@ public struct RUMConfigView: View {
 
     public var body: some View {
         VStack(alignment: .leading) {
-            HStack {
-                Text("Configuration")
-                    .font(.headline)
-
-                Spacer()
-
-                Button(action: viewModel.isSDKEnabled ? viewModel.stopSdk : viewModel.startSdk) {
-                    Text(viewModel.isSDKEnabled ? "Stop SDK" : "Start SDK")
-                        .font(.subheadline)
-                }
-                .buttonStyle(.bordered)
+            Button(action: viewModel.isSDKEnabled ? viewModel.stopSdk : viewModel.startSdk) {
+                Label(
+                    viewModel.isSDKEnabled ? "Stop SDK" : "Start SDK",
+                    systemImage: viewModel.isSDKEnabled ? "stop.fill" : "play.fill"
+                )
+                .font(.subheadline)
             }
+            .buttonStyle(.bordered)
 
             Toggle("Logs", isOn: $viewModel.isLogsEnabled)
                 .disabled(viewModel.isSDKEnabled)
