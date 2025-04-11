@@ -41,6 +41,10 @@ let package = Package(
             targets: ["DatadogObjc"]
         ),
         .library(
+            name: "DatadogInternal",
+            targets: ["DatadogInternal"]
+        ),
+        .library(
             name: "DatadogLogs",
             targets: ["DatadogLogs"]
         ),
@@ -58,6 +62,7 @@ let package = Package(
         ),
         .library(
             name: "DatadogCrashReporting",
+            type: .dynamic,
             targets: ["DatadogCrashReporting"]
         ),
         .library(
