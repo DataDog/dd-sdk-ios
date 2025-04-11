@@ -6,18 +6,14 @@
 
 import Foundation
 
-/// Fields of the Upload Quality Metric.
+/// Fields of the Upload Cycle Metric.
 ///
 /// This metric is not sent to Telemetry as-is, values are sent on the message-bus
 /// and aggregated internally by RUM's message receiver. The aggregate is sent as an
 /// attribute of the "RUM Session Ended" metric.
-public enum UploadQualityMetric {
+public enum UploadCycleMetric {
     /// Metric's name
-    public static let name = "upload_quality"
+    public static let name = "upload_cycle"
     /// The Metrics' upload track, or feature name.
     public static let track = "track"
-    /// The upload's failure description.
-    public static let failure = "failure"
-    /// The upload's blockers list.
-    public static let blockers = "blockers"
 }
