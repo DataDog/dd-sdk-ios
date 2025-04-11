@@ -24,7 +24,7 @@ public struct DDVitalsView: View {
 
     public var body: some View {
         ZStack {
-            Color.white.opacity(0.7)
+            Color.black.opacity(0.7)
             VStack {
                 // Navigation View
                 topView
@@ -65,10 +65,12 @@ extension DDVitalsView {
                 .font(.system(size: 16)).bold()
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .lineLimit(1)
+                .foregroundStyle(.white)
 
             Text(timeString(from: Int(self.viewModel.currentDuration)))
                 .font(.system(size: 14, design: .monospaced))
                 .opacity(self.isShowingConfigView ? 0 : 1)
+                .foregroundStyle(.white)
 
             Spacer()
 
@@ -78,7 +80,7 @@ extension DDVitalsView {
                         isShowingConfigView.toggle()
                     }
                 }
-                .foregroundStyle(Color("purple_top", bundle: .module))
+                .foregroundStyle(.white)
                 .frame(width: 32, height: 32)
             }
         }
@@ -141,17 +143,19 @@ extension DDVitalsView {
         VStack(alignment: .leading) {
             Text(title)
                 .font(.caption)
+                .foregroundStyle(.white)
             HStack(spacing: 5) {
                 Circle()
                     .fill(level.color)
                     .frame(width: 10, height: 10)
                 Text("\(value < 10 ? "0" : "")\(value) \(metric)")
                     .font(.system(size: 12, design: .monospaced)).bold()
+                    .foregroundStyle(.white)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Self.padding)
-        .background(Color.gray.opacity(0.6))
+        .background(Color.black.opacity(0.6))
         .cornerRadius(5)
     }
 
@@ -163,6 +167,7 @@ extension DDVitalsView {
                 .frame(width: 10, height: 10)
             Text("**\(title)**\n\(value, specifier: "%.2f") \(metric)")
                 .font(.caption)
+                .foregroundStyle(.white)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -173,6 +178,7 @@ extension DDVitalsView {
                 .font(.system(size: 10)).bold()
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.bottom, 5)
+                .foregroundStyle(.white)
 
             timelineView(progress: progress, events: events)
 
@@ -182,12 +188,14 @@ extension DDVitalsView {
                     .frame(width: 10, height: 10)
                 Text("User action")
                     .font(.system(size: 8))
+                    .foregroundStyle(.white)
                 Rectangle()
                     .fill(Color("purple_top", bundle: .module))
                     .frame(width: 10, height: 10)
                     .padding(.leading, 5)
                 Text("Network resource")
                     .font(.system(size: 8))
+                    .foregroundStyle(.white)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.top, 2)
