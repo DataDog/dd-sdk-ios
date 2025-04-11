@@ -6,6 +6,7 @@
 
 import DatadogCore
 import SwiftUI
+import TipKit
 
 @available(iOS 15.0, *)
 public class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
@@ -22,6 +23,11 @@ public class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
         rootView.onExpandView = { [weak self] isExpanded in
             self?.isExpanded = isExpanded
             self?.updateFrame(isExpanded: isExpanded)
+        }
+
+        if #available(iOS 17.0, *) {
+            try? Tips.resetDatastore()
+            try? Tips.configure()
         }
     }
 

@@ -5,6 +5,7 @@
  */
 
 import SwiftUI
+import TipKit
 
 @available(iOS 15.0, *)
 public struct DDVitalsView: View {
@@ -14,6 +15,8 @@ public struct DDVitalsView: View {
     @StateObject var viewModel: DDVitalsViewModel
 
     @State var isShowingConfigView: Bool
+
+    @State var showTip: Bool = false
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -32,11 +35,11 @@ public struct DDVitalsView: View {
 
                 Spacer()
 
-                if self.isShowingConfigView {
+                if isShowingConfigView {
                     RUMConfigView(viewModel: RUMConfigViewModel(configuration: viewModel.configuration))
                         .padding(.horizontal, Self.padding)
                 } else {
-                    self.rumVitalsView
+                    rumVitalsView
                         .frame(maxHeight: .infinity, alignment: .top)
                         .padding(.horizontal, Self.padding)
                 }
@@ -90,18 +93,26 @@ extension DDVitalsView {
         VStack(spacing: 10) {
             // Vitals
             HStack(spacing: 10) {
-                vitalView(
-                    title: "CPU",
-                    value: viewModel.cpuValue,
-                    metric: "%",
-                    level: viewModel.levelFor(cpu: viewModel.cpuValue)
-                )
+                if #available(iOS 18.4, *) {
+                    vitalView(
+                        title: "CPU",
+                        value: viewModel.cpuValue,
+                        metric: "%",
+                        level: viewModel.levelFor(cpu: viewModel.cpuValue)
+                    )
+                    .popoverTip(showTip ? RUMCpuSuggestionTip() : nil)
+                    .onAppear {
+                        showTip = true
+                    }
+                }
+
                 vitalView(
                     title: "Memory",
                     value: viewModel.memoryValue,
                     metric: "MB",
                     level: viewModel.levelFor(memory: viewModel.memoryValue)
                 )
+
                 vitalView(
                     title: "Stack",
                     value: viewModel.threadsCount,
@@ -205,7 +216,7 @@ extension DDVitalsView {
     }
 
     @ViewBuilder
-    func timelineView(progress: CGFloat, events: [TimelineEvent]) -> some View {
+    func timelineView(progress _: CGFloat, events: [TimelineEvent]) -> some View {
         let barHeight: CGFloat = 40
 
         ZStack(alignment: .leading) {
@@ -230,7 +241,7 @@ extension DDVitalsView {
                         Circle()
                             .fill(marker.color)
                             .frame(width: 10, height: 10)
-                            .offset(x: marker.start * barWidth - 5, y: (barHeight/2) - 5)
+                            .offset(x: marker.start * barWidth - 5, y: (barHeight / 2) - 5)
                     case .resource:
                         Rectangle()
                             .fill(marker.color)
@@ -267,11 +278,11 @@ enum WarningLevel {
     var color: Color {
         switch self {
         case .low:
-                .green
+            .green
         case .medium:
-                .yellow
+            .yellow
         case .high:
-                .red
+            .red
         }
     }
 }
@@ -281,13 +292,13 @@ private extension TimelineEvent {
     var color: Color {
         switch event {
         case .viewHitch:
-            return .orange
+            .orange
         case .appHang:
-            return .red
+            .red
         case .userAction:
-            return .blue
+            .blue
         case .resource:
-            return .purple
+            .purple
         }
     }
 }

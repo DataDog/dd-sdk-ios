@@ -21,12 +21,11 @@ public class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 
     /// Active Resource scopes, keyed by .resourceKey.
-    private(set) var resourceScopes: [String: RUMResourceScope] = [:]{
+    private(set) var resourceScopes: [String: RUMResourceScope] = [:] {
         didSet {
              resourceScopes.forEach {
-
                  resourceEvents.append(($1.startTime.timeIntervalSince(viewStartTime), $1.duration))
-            }
+             }
         }
    }
 

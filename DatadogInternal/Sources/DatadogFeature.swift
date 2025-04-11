@@ -8,7 +8,6 @@ import Foundation
 
 /// A Datadog Feature that can interact with the core through the message-bus.
 public protocol PlatformInterface {
-
     var configuration: String { get }
 }
 
@@ -47,7 +46,6 @@ extension DatadogRemoteFeature {
 ///
 ///
 public protocol EventScope {
-
     var startTime: Date { get }
     var duration: TimeInterval { get }
 }
