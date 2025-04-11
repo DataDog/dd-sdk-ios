@@ -80,7 +80,7 @@ extension DDVitalsView {
                         isShowingConfigView.toggle()
                     }
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(.purple)
                 .frame(width: 32, height: 32)
             }
         }
@@ -112,11 +112,13 @@ extension DDVitalsView {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             Divider()
+                .background(.gray)
 
             // Timeline
             timelineView(title: "RUM Timeline", progress: self.viewModel.progress, events: self.viewModel.rumEvents)
 
             Divider()
+                .background(.gray)
 
             HStack {
                 rateView(
@@ -155,7 +157,7 @@ extension DDVitalsView {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Self.padding)
-        .background(Color.black.opacity(0.6))
+        .background(Color.black.opacity(0.3))
         .cornerRadius(5)
     }
 
@@ -190,7 +192,7 @@ extension DDVitalsView {
                     .font(.system(size: 8))
                     .foregroundStyle(.white)
                 Rectangle()
-                    .fill(Color("purple_top", bundle: .module))
+                    .fill(.purple)
                     .frame(width: 10, height: 10)
                     .padding(.leading, 5)
                 Text("Network resource")
@@ -285,7 +287,7 @@ private extension TimelineEvent {
         case .userAction:
             return .blue
         case .resource:
-            return Color("purple_top", bundle: .module)
+            return .purple
         }
     }
 }

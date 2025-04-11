@@ -37,7 +37,7 @@ public struct RUMConfigView: View {
             Spacer()
         }
         .foregroundStyle(.white)
-        .tint(Color("purple_top", bundle: .module))
+        .tint(.purple)
     }
 }
 
