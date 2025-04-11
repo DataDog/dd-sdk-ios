@@ -15,7 +15,7 @@ import OpenTelemetryApi
 final class OTelSpanTests: XCTestCase {
     func testAddEvent() {
         let core = DatadogCoreProxy()
-        defer { core.flushAndTearDown() }
+        defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
 
         Logs.enable(in: core)
         Trace.enable(in: core)
@@ -45,7 +45,7 @@ final class OTelSpanTests: XCTestCase {
 
     func testContextProviderSetActive_givenParentSpan() throws {
         let core = DatadogCoreProxy()
-        defer { core.flushAndTearDown() }
+        defer { XCTAssertNoThrow(try core.flushAndTearDown())}
 
         Trace.enable(in: core)
 
@@ -92,10 +92,10 @@ extension Dictionary where Key == String, Value == OpenTelemetryApi.AttributeVal
             "bool": .bool(true),
             "int": .int(2),
             "double": .double(2.0),
-            "stringArray": .stringArray(["value1", "value2"]),
-            "boolArray": .boolArray([true, false]),
-            "intArray": .intArray([1, 2]),
-            "doubleArray": .doubleArray([1.0, 2.0]),
+            "stringArray": .array(.init(values: [.string("value1"), .string("value2")])),
+            "boolArray": .array(.init(values: [.bool(true), .bool(false)])),
+            "intArray": .array(.init(values: [.int(1), .int(2)])),
+            "doubleArray": .array(.init(values: [.double(1.0), .double(2.0)])),
             "set": .set(.init(labels: .leafMock()))
         ]
     }
@@ -106,10 +106,10 @@ extension Dictionary where Key == String, Value == OpenTelemetryApi.AttributeVal
             "bool": .bool(true),
             "int": .int(2),
             "double": .double(2.0),
-            "stringArray": .stringArray(["value1", "value2"]),
-            "boolArray": .boolArray([true, false]),
-            "intArray": .intArray([1, 2]),
-            "doubleArray": .doubleArray([1.0, 2.0])
+            "stringArray": .array(.init(values: [.string("value1"), .string("value2")])),
+            "boolArray": .array(.init(values: [.bool(true), .bool(false)])),
+            "intArray": .array(.init(values: [.int(1), .int(2)])),
+            "doubleArray": .array(.init(values: [.double(1.0), .double(2.0)]))
         ]
     }
 }

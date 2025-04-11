@@ -15,7 +15,8 @@ class DDSpanTests: XCTestCase {
 
     func testWhenSpanIsFinished_itWritesSpanEventToCore() throws {
         let writeSpansExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpansExpectation)
+        let core = PassthroughCoreMock()
+        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
 
         // Given
         let tracer: DatadogTracer = .mockWith(core: core)
@@ -33,7 +34,8 @@ class DDSpanTests: XCTestCase {
     func testWhenSettingCustomOperationName_itOverwritesOriginalName() throws {
         let writeSpansExpectation = expectation(description: "write 2 span events")
         writeSpansExpectation.expectedFulfillmentCount = 2
-        let core = PassthroughCoreMock(expectation: writeSpansExpectation)
+        let core = PassthroughCoreMock()
+        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
 
         // Given
         let defaultOperationName: String = .mockRandom()
@@ -59,7 +61,8 @@ class DDSpanTests: XCTestCase {
     func testWhenSettingCustomTags_theyAreMergedWithDefaultTags() throws {
         let writeSpansExpectation = expectation(description: "write 2 span events")
         writeSpansExpectation.expectedFulfillmentCount = 2
-        let core = PassthroughCoreMock(expectation: writeSpansExpectation)
+        let core = PassthroughCoreMock()
+        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
 
         // Given
         let defaultTags: [String: String] = .mockRandom()
@@ -106,7 +109,8 @@ class DDSpanTests: XCTestCase {
 
     func testSpanCanBeSafelyAccessedFromDifferentThreads() throws {
         let writeSpansExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpansExpectation)
+        let core = PassthroughCoreMock()
+        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
 
         // Given
         let tracer: DatadogTracer = .mockWith(core: core)

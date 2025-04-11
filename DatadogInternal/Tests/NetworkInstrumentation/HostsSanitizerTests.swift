@@ -10,7 +10,7 @@ import TestUtilities
 
 class HostsSanitizerTests: XCTestCase {
     func testSanitizationAndWarningMessages() throws {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 

@@ -6,6 +6,7 @@
 
 import XCTest
 import DatadogInternal
+import TestUtilities
 @testable import DatadogCore
 
 class DatadogContextProviderTests: XCTestCase {

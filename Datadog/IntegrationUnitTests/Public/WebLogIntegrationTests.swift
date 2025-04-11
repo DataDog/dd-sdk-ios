@@ -9,6 +9,7 @@ import XCTest
 #if !os(tvOS)
 
 import DatadogInternal
+import TestUtilities
 
 @testable import DatadogLogs
 @testable import DatadogRUM
@@ -38,8 +39,8 @@ class WebLogIntegrationTests: XCTestCase {
         )
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+    override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         controller = nil
     }
@@ -90,7 +91,7 @@ class WebLogIntegrationTests: XCTestCase {
     func testWebLogWithRUMIntegration() throws {
         // Given
         let randomApplicationID: String = .mockRandom()
-        let randomUUID: UUID = .mockRandom()
+        let randomUUID: RUMUUID = .mockRandom()
 
         Logs.enable(in: core)
         RUM.enable(with: .mockWith(applicationID: randomApplicationID) {
@@ -119,7 +120,7 @@ class WebLogIntegrationTests: XCTestCase {
         controller.flush()
 
         // Then
-        let expectedUUID = randomUUID.uuidString.lowercased()
+        let expectedUUID = randomUUID.toRUMDataFormat
         let logMatcher = try XCTUnwrap(core.waitAndReturnLogMatchers().first)
         try logMatcher.assertItFullyMatches(
             jsonString: """

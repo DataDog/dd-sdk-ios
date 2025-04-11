@@ -8,9 +8,9 @@
 import XCTest
 import SafariServices
 import SwiftUI
-
 @_spi(Internal)
 @testable import DatadogSessionReplay
+@_spi(Internal)
 @testable import TestUtilities
 
 private struct MockSemantics: NodeSemantics {

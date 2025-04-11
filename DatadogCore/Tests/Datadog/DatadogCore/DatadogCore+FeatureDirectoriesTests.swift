@@ -6,6 +6,7 @@
 
 import XCTest
 import DatadogInternal
+import TestUtilities
 @testable import DatadogCore
 
 private struct RemoteFeatureMock: DatadogRemoteFeature {
@@ -41,7 +42,7 @@ class DatadogCore_FeatureDirectoriesTests: XCTestCase {
         )
     }
 
-    override func tearDown() {
+        override func tearDownWithError() throws {
         core.flushAndTearDown()
         core = nil
         temporaryCoreDirectory.delete()

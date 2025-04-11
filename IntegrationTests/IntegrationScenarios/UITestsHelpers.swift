@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import TestUtilities
 import XCTest
 
 // https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string

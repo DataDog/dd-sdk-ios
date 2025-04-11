@@ -6,6 +6,7 @@
 
 import XCTest
 import DatadogRUM
+import TestUtilities
 
 #if canImport(SwiftUI)
 import SwiftUI

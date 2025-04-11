@@ -10,7 +10,7 @@ import TestUtilities
 @testable import DatadogLogs
 
 class ConsoleLoggerTests: XCTestCase {
-    private let mock = PrintFunctionMock()
+    private let mock = PrintFunctionSpy()
 
     func testItPrintsMessageWithExpectedFormat() {
         let randomPrefix: String = .mockRandom(length: 10)

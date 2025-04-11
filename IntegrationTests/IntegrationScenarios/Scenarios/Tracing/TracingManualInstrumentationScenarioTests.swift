@@ -5,6 +5,7 @@
  */
 
 import HTTPServerMock
+import TestUtilities
 import XCTest
 
 class TracingManualInstrumentationScenarioTests: IntegrationTests, TracingCommonAsserts, LoggingCommonAsserts {
