@@ -57,6 +57,7 @@ public enum W3CHTTPHeaders {
         public static let origin = "o"
         public static let originRUM = "rum"
         public static let parentId = "p"
+        public static let rumSessionId = "t.rsid"
         public static let tracestateKeyValueSeparator = ":"
         public static let tracestatePairSeparator = ";"
     }

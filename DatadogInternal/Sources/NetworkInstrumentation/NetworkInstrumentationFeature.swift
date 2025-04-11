@@ -29,7 +29,9 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     )
 
     /// A no-op message bus receiver.
-    internal let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    let messageReceiver: FeatureMessageReceiver
+
+    let networkContextProvider: NetworkContextProvider
 
     /// The list of registered handlers.
     ///
@@ -45,6 +47,14 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     ///
     /// The interceptions **must** be accessed using the `queue`.
     private var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:]
+
+    init(
+        networkContextProvider: NetworkContextProvider,
+        messageReceiver: FeatureMessageReceiver
+    ) {
+        self.networkContextProvider = networkContextProvider
+        self.messageReceiver = messageReceiver
+    }
 
     /// Swizzles `URLSessionTaskDelegate`, `URLSessionDataDelegate`, and `URLSessionTask` methods
     /// to intercept `URLSessionTask` lifecycles.
@@ -148,10 +158,11 @@ extension NetworkInstrumentationFeature {
             return (request, [])
         }
 
+        let networkContext = self.networkContextProvider.currentNetworkContext
         var request = request
         var traceContexts: [TraceContext] = [] // each handler can inject distinct trace context
         for handler in handlers {
-            let (nextRequest, nextTraceContext) = handler.modify(request: request, headerTypes: headerTypes)
+            let (nextRequest, nextTraceContext) = handler.modify(request: request, headerTypes: headerTypes, networkContext: networkContext)
             request = nextRequest
             if let nextTraceContext = nextTraceContext {
                 traceContexts.append(nextTraceContext)
