@@ -36,7 +36,7 @@ public struct DDVitalsView: View {
                 Spacer()
 
                 if isShowingConfigView {
-                    RUMConfigView(viewModel: RUMConfigViewModel(configuration: viewModel.configuration))
+                    RUMConfigView(viewModel: RUMConfigViewModel())
                         .padding(.horizontal, Self.padding)
                 } else {
                     rumVitalsView
@@ -93,7 +93,7 @@ extension DDVitalsView {
         VStack(spacing: 10) {
             // Vitals
             HStack(spacing: 10) {
-                if #available(iOS 18.4, *) {
+                if #available(iOS 18.3, *) {
                     vitalView(
                         title: "CPU",
                         value: viewModel.cpuValue,
@@ -101,8 +101,12 @@ extension DDVitalsView {
                         level: viewModel.levelFor(cpu: viewModel.cpuValue)
                     )
                     .popoverTip(showTip ? RUMCpuSuggestionTip() : nil)
-                    .onAppear {
-                        showTip = true
+                    .onChange(of: self.viewModel.cpuValue) {
+
+                        if self.viewModel.cpuValue > 80 {
+
+                            showTip = true
+                        }
                     }
                 }
 
@@ -196,6 +200,12 @@ extension DDVitalsView {
             timelineView(progress: progress, events: events)
 
             HStack(spacing: 2) {
+                Rectangle()
+                    .fill(.orange)
+                    .frame(width: 2, height: 15)
+                Text("Slow frames ")
+                    .font(.system(size: 8))
+                    .foregroundStyle(.white)
                 Circle()
                     .fill(.blue)
                     .frame(width: 10, height: 10)
@@ -232,7 +242,7 @@ extension DDVitalsView {
                 Rectangle()
                     .fill(Color.gray.opacity(0.7))
                     .frame(width: viewModel.progress * barWidth, height: barHeight)
-                    .cornerRadius(6)
+                    .cornerRadius(5)
 
                 ForEach(events) { marker in
 
@@ -251,7 +261,7 @@ extension DDVitalsView {
                         Rectangle()
                             .fill(marker.color)
                             .frame(width: 2.0 * marker.duration, height: barHeight)
-                            .offset(x: marker.start * barWidth - 1) // Centering
+                            .offset(x: marker.start * barWidth - 2) // Centering
                     }
                 }
             }
@@ -305,5 +315,5 @@ private extension TimelineEvent {
 
 @available(iOS 15.0, *)
 #Preview {
-    DDVitalsView(viewModel: DDVitalsViewModel(configuration: .init(clientToken: "dummy", env: "dummy")))
+    DDVitalsView(viewModel: DDVitalsViewModel())
 }

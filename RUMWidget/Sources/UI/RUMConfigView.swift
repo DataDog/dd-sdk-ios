@@ -8,6 +8,7 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 public struct RUMConfigView: View {
+    @EnvironmentObject var feature: RUMWidgetFeature
     @StateObject private var viewModel: RUMConfigViewModel
 
     public init(viewModel: RUMConfigViewModel) {
@@ -16,7 +17,7 @@ public struct RUMConfigView: View {
 
     public var body: some View {
         VStack(alignment: .leading) {
-            Button(action: viewModel.isSDKEnabled ? viewModel.stopSdk : viewModel.startSdk) {
+            Button(action: { viewModel.updateSDK(feature: feature) }) {
                 Label(
                     viewModel.isSDKEnabled ? "Stop SDK" : "Start SDK",
                     systemImage: viewModel.isSDKEnabled ? "stop.fill" : "play.fill"
@@ -30,7 +31,7 @@ public struct RUMConfigView: View {
             Toggle("Traces", isOn: $viewModel.isTracesEnabled)
                 .disabled(viewModel.isSDKEnabled)
             Toggle("RUM", isOn: $viewModel.isRUMEnabled)
-                .disabled(viewModel.isSDKEnabled)
+                .disabled(true)
             Toggle("Session Replay", isOn: $viewModel.isSessionReplayEnabled)
                 .disabled(viewModel.isSDKEnabled)
 
@@ -43,5 +44,5 @@ public struct RUMConfigView: View {
 
 @available(iOS 15.0, *)
 #Preview {
-    RUMConfigView(viewModel: RUMConfigViewModel(configuration: .init(clientToken: "dummy", env: "dummy")))
+    RUMConfigView(viewModel: RUMConfigViewModel())
 }

@@ -9,15 +9,15 @@ import SwiftUI
 import TipKit
 
 @available(iOS 15.0, *)
-public class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
+final class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
     private var isExpanded: Bool = false
 
     private let padding: CGFloat = 10
     private let topPadding: CGFloat = 80
     private var edgeInsets: EdgeInsets = .init()
 
-    public init(configuration: Datadog.Configuration) {
-        let view = RUMWidgetView(viewModel: RUMWidgetViewModel(configuration: configuration))
+    init(feature: RUMWidgetFeature) {
+        let view = RUMWidgetView(viewModel: RUMWidgetViewModel(feature: feature))
         super.init(rootView: view)
         self.view.backgroundColor = .clear
         rootView.onExpandView = { [weak self] isExpanded in

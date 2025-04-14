@@ -14,11 +14,9 @@ public final class RUMWidgetViewModel: ObservableObject {
     @Published var isExpanded: Bool = false
     @Published var isHighlighted = false
 
-    let configuration: Datadog.Configuration
+    let feature: RUMWidgetFeature
 
-    public init(
-        configuration: Datadog.Configuration
-    ) {
-        self.configuration = configuration
+    init(feature: RUMWidgetFeature){
+        self.feature = feature
     }
 }

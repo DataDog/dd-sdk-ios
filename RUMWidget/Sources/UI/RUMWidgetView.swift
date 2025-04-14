@@ -23,21 +23,21 @@ public struct RUMWidgetView: View {
 
     public var body: some View {
         ZStack {
-            if viewModel.isExpanded {
-                DDVitalsView(
-                    viewModel: DDVitalsViewModel(configuration: viewModel.configuration),
-                )
-                .frame(width: UIScreen.main.bounds.width)
+            DDVitalsView(
+                viewModel: DDVitalsViewModel(),
+            )
+            .frame(width: UIScreen.main.bounds.width)
+            .opacity(viewModel.isExpanded ? 1 : 0)
+            .onTapGesture {
+                viewModel.isExpanded.toggle()
+            }
+            
+            FloatingButtonView(viewModel: floatingViewModel)
+                .frame(width: FloatingButtonView.size.width, height: FloatingButtonView.size.height)
+                .opacity(viewModel.isExpanded ? 0 : 1)
                 .onTapGesture {
                     viewModel.isExpanded.toggle()
                 }
-            } else {
-                FloatingButtonView(viewModel: floatingViewModel)
-                    .frame(width: FloatingButtonView.size.width, height: FloatingButtonView.size.height)
-                    .onTapGesture {
-                        viewModel.isExpanded.toggle()
-                    }
-            }
         }
         .onChange(of: viewModel.isExpanded) { isExpanded in
             onExpandView?(isExpanded)
@@ -46,5 +46,6 @@ public struct RUMWidgetView: View {
                 try? Tips.resetDatastore()
             }
         }
+        .environmentObject(self.viewModel.feature)
     }
 }
