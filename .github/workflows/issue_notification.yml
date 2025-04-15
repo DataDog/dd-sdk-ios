@@ -1,0 +1,47 @@
+name: Github Issue Notification
+
+on:
+  workflow_dispatch:    # Trigger manually
+    inputs:
+      issue_number:
+        description: 'Issue number to process'
+        required: true
+        type: number
+
+jobs:
+  process_issue:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: |
+          cd tools/issue_handler
+          pip install -r requirements.txt
+
+      - name: Set Issue Number
+        run: |
+          if [ "${{ github.event_name }}" = "issues" ]; then
+            echo "GITHUB_EVENT_NUMBER=${{ github.event.issue.number }}" >> $GITHUB_ENV
+          else
+            echo "GITHUB_EVENT_NUMBER=${{ github.event.inputs.issue_number }}" >> $GITHUB_ENV
+          fi
+
+      - name: Run the Processing Script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_TOKEN: ${{ secrets.OPENAI_TOKEN }}
+          OPENAI_SYSTEM_PROMPT: ${{ secrets.OPENAI_SYSTEM_PROMPT }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          cd tools/issue_handler
+          python -m src.analyze_issue $GITHUB_EVENT_NUMBER
