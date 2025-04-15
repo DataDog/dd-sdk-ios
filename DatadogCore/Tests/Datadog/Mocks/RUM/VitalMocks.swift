@@ -32,7 +32,12 @@ final class ViewHitchesMock: ViewHitchesModel {
     private(set) var isActive: Bool = false
     var config: HitchesConfiguration = (100, 0, 1)
     var dataModel: HitchesDataModel = ([], 0.0)
-    var telemetryModel: HitchesTelemetryModel = (0, 0, false, 0)
+    var telemetryModel: HitchesTelemetryModel = .init(
+        hitchesCount: 0,
+        ignoredHitchesCount: 0,
+        didApplyDynamicFraming: false,
+        ignoredDurationNs: 0
+    )
 
     init(hitchesDataModel: HitchesDataModel = ([], 0.0)) {
         self.dataModel = hitchesDataModel

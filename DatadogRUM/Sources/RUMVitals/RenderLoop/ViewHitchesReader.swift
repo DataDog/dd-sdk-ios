@@ -28,14 +28,16 @@ internal typealias HitchesConfiguration = (maxCollectedHitches: Int, acceptableL
  */
 internal typealias HitchesDataModel = (hitches: [Hitch], hitchesDuration: Double)
 
-/**
- - Parameters:
-   - hitchesCount: Total amount of slow frames collected.
-   - ignoredHitchesCount: Total slow frames that were outside of the min and max boundaries.
-   - didApplyDynamicFraming: Indicates that ProMotion was applied.
-   - ignoredDurationNs: Value indicating the extra duration used to calculate the slow frame rate.
- */
-internal typealias HitchesTelemetryModel = (hitchesCount: Int, ignoredHitchesCount: Int, didApplyDynamicFraming: Bool, ignoredDurationNs: Int64)
+internal struct HitchesTelemetryModel {
+    /// Total amount of slow frames collected.
+    let hitchesCount: Int
+    /// Total slow frames that were outside of the min and max boundaries.
+    let ignoredHitchesCount: Int
+    /// Indicates that ProMotion was applied.
+    let didApplyDynamicFraming: Bool
+    /// Value indicating the extra duration used to calculate the slow frame rate.
+    let ignoredDurationNs: Int64
+}
 
 internal protocol ViewHitchesModel {
     var config: HitchesConfiguration { get }
@@ -51,6 +53,8 @@ internal final class ViewHitchesReader: ViewHitchesModel {
         static let maxCollectedHitches = 1_000
         /// Threshold of old hitches to remove. 10% of `maxCollectedHitches`
         static let maxHitchesThreshold = 100
+        /// By default, a hitch is detected when a frame takes twice as long to render as the current refresh rate.
+        static let hitchesMultiplier: Double = 2
         /// Tolerance to handle timestamp conversions. 1ms of tolerance.
         static let timestampTolerance = 0.001
     }
@@ -81,7 +85,7 @@ internal final class ViewHitchesReader: ViewHitchesModel {
         queue.sync {
             let ignoredDurationNs = hitchesDuration.toInt64Nanoseconds - hitches.reduce(into: 0) { $0 += $1.duration }
 
-            return (
+            return .init(
                 hitchesCount: self.hitches.count + self.removedHitchesCount,
                 ignoredHitchesCount: self.ignoredHitchesCount,
                 didApplyDynamicFraming: self.didApplyDynamicFraming,

@@ -160,14 +160,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewHitchesReader = dependencies.viewHitchesReaderFactory()
 
         if let viewHitchesReader {
-            self.viewEndedMetric.add(
-                metric: ViewHitchesMetric(
-                    maxCount: viewHitchesReader.config.maxCollectedHitches,
-                    slowFrameThreshold: viewHitchesReader.config.acceptableLatency.toInt64Nanoseconds,
-                    maxDuration: viewHitchesReader.config.hangThreshold.toInt64Nanoseconds,
-                    viewMinDuration: Constants.minimumTimeSpentForRates.toInt64Nanoseconds
-                )
-            )
             dependencies.renderLoopObserver?.register(viewHitchesReader)
         }
 

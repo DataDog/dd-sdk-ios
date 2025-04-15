@@ -122,6 +122,17 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
                 viewEndedController.add(metric: ViewEndedMetric(tnsConfigPredicate: tnsPredicateType, invConfigPredicate: invPredicateType))
 
+                if configuration.featureFlags[.viewHitches] {
+                    viewEndedController.add(
+                        metric: ViewHitchesMetric(
+                            maxCount: ViewHitchesReader.Constants.maxCollectedHitches,
+                            slowFrameThreshold: Int64(ViewHitchesReader.Constants.hitchesMultiplier),
+                            maxDuration: (configuration.appHangThreshold ?? ViewHitchesReader.Constants.frozenFrameThreshold).toInt64Nanoseconds,
+                            viewMinDuration: RUMViewScope.Constants.minimumTimeSpentForRates.toInt64Nanoseconds
+                        )
+                    )
+                }
+
                 return viewEndedController
             },
             watchdogTermination: watchdogTermination,

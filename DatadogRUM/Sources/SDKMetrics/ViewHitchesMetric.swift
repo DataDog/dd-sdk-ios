@@ -79,7 +79,7 @@ extension ViewHitchesMetric: MetricAttributesConvertible {
 extension ViewHitchesMetric {
     /// Container to encode "SlowFrames" data according to the spec.
     internal struct Attributes: Encodable {
-        /// Duration of the view in nanoseconds (equal to `@view.time_spent`.
+        /// Duration of the view in nanoseconds (equal to `@view.time_spent`).
         let viewDuration: Int64
         /// Telemetry data for slow frames.
         let slowFrames: SlowFrames
