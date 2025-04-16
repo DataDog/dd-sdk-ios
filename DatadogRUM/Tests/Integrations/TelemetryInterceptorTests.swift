@@ -27,7 +27,7 @@ class TelemetryInterceptorTests: XCTestCase {
 
         // Then
         metricController.endMetric(sessionID: sessionID, with: .mockRandom())
-        let metric = try XCTUnwrap(telemetry.messages.lastMetric(named: SessionEndedMetric.Constants.name))
+        let metric = try XCTUnwrap(telemetry.messages.lastMetricReport(named: SessionEndedMetric.Constants.name))
         let rse = try XCTUnwrap(metric.attributes[SessionEndedMetric.Constants.rseKey] as? SessionEndedMetric.Attributes)
         XCTAssertEqual(rse.sdkErrorsCount.total, 1)
     }
@@ -41,7 +41,7 @@ class TelemetryInterceptorTests: XCTestCase {
 
         // When
         metricController.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockAny(), tracksBackgroundEvents: .mockRandom())
-        let metricTelemetry: TelemetryMessage = .metric(MetricTelemetry(name: UploadCycleMetric.name, attributes: [UploadCycleMetric.track: "feature"], sampleRate: .mockRandom()))
+        let metricTelemetry: TelemetryMessage = .metric(.report(.init(name: UploadCycleMetric.name, attributes: [UploadCycleMetric.track: "feature"], sampleRate: .mockRandom())))
         let result = interceptor.receive(message: .telemetry(metricTelemetry), from: NOPDatadogCore())
         XCTAssertTrue(result)
 

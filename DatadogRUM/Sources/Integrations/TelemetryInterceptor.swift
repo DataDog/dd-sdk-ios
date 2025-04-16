@@ -20,7 +20,7 @@ internal struct TelemetryInterceptor: FeatureMessageReceiver {
         switch telemetry {
         case .error(let id, let message, let kind, let stack):
             interceptError(id: id, message: message, kind: kind, stack: stack)
-        case .metric(let metric) where metric.name == UploadCycleMetric.name:
+        case let .metric(.report(metric)) where metric.name == UploadCycleMetric.name:
             // Intercept the 'upload_cycle' metric for aggregation in the rse
             // metric
             interceptUploadCycleMetric(attributes: metric.attributes)

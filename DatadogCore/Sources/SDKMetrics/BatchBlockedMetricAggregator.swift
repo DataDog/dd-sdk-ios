@@ -35,13 +35,13 @@ internal final class BatchBlockedMetricAggregator {
         _aggregations.mutate { $0[key, default: 0] += count }
     }
 
-    func flush() -> [MetricTelemetry] {
+    func flush() -> [MetricTelemetry.Event] {
         _aggregations.mutate { aggregations in
             defer { aggregations = [:] }
 
             return aggregations.compactMap { key, value in
                 if let failure = key.failure {
-                    return MetricTelemetry(
+                    return MetricTelemetry.Event(
                         name: BatchBlockedMetric.name,
                         attributes: [
                             SDKMetricFields.typeKey: BatchBlockedMetric.typeValue,
@@ -54,7 +54,7 @@ internal final class BatchBlockedMetricAggregator {
                 }
 
                 if let blockers = key.blockers {
-                    return MetricTelemetry(
+                    return MetricTelemetry.Event(
                         name: BatchBlockedMetric.name,
                         attributes: [
                             SDKMetricFields.typeKey: BatchBlockedMetric.typeValue,
