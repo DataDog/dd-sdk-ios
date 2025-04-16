@@ -527,9 +527,15 @@ extension DatadogCore: Storage {
         }
     }
 }
+// swiftlint:disable duplicate_imports
 #if SPM_BUILD
-import DatadogPrivate
+    #if swift(>=6.0)
+    internal import DatadogPrivate
+    #else
+    @_implementationOnly import DatadogPrivate
+    #endif
 #endif
+// swiftlint:enable duplicate_imports
 
 internal let registerObjcExceptionHandlerOnce: () -> Void = {
     ObjcException.rethrow = __dd_private_ObjcExceptionHandler.rethrow
