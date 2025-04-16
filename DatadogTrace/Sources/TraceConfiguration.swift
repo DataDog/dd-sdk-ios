@@ -24,7 +24,7 @@ import DatadogInternal
 
 extension Trace {
     /// Trace feature configuration.
-    public struct Configuration: SampledTelemetry {
+    public struct Configuration {
         public typealias EventMapper = (SpanEvent) -> SpanEvent
 
         /// The sampling rate for spans created with the default tracer.

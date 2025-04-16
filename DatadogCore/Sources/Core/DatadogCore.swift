@@ -331,8 +331,8 @@ internal final class DatadogCore {
     private func applicationDidEnterBackground() {
         // Report aggregated 'Batch Blocked' telemetry metric
         // when the application enters background.
-        for metric in batchBlockedMetricAggregator.flush() {
-            telemetry.send(telemetry: .metric(metric))
+        for event in batchBlockedMetricAggregator.flush() {
+            telemetry.metric(.report(event))
         }
     }
 }

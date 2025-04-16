@@ -65,51 +65,63 @@ public struct ConfigurationTelemetry: Equatable {
     public let useWorkerUrl: Bool?
 }
 
-/// A telemetry event that can be sampled in addition to the global telemetry sample rate.
-public protocol SampledTelemetry {
-    /// The sample rate for this metric, applied in addition to the telemetry sample rate.
-    var sampleRate: SampleRate { get }
-}
-
-public struct MetricTelemetry: SampledTelemetry {
+public enum MetricTelemetry {
     /// The default sample rate for metric events (15%), applied in addition to the telemetry sample rate (20% by default).
     public static let defaultSampleRate: SampleRate = 15
 
-    /// The name of the metric.
-    public let name: String
+    /// Cardinality of a metric used for  aggregation.
+    public typealias Cardinalities = [String: Cardinality]
 
-    /// The attributes associated with this metric.
-    public let attributes: [String: Encodable]
-
-    /// The sample rate for this metric, applied in addition to the telemetry sample rate.
-    ///
-    /// Must be a value between `0` (reject all) and `100` (keep all).
-    ///
-    /// Note: This sample rate is compounded with the telemetry sample rate. For example, if the telemetry sample rate is 20% (default)
-    /// and this metric's sample rate is 15%, the effective sample rate for this metric will be 3%.
-    ///
-    /// This sample rate is applied in the telemetry receiver, after the metric has been processed by the SDK core (tail-based sampling).
-    public let sampleRate: SampleRate
-    
-    /// Creates an Metric Telemtry object.
-    ///
-    /// - Parameters:
-    ///   - name: The name of the metric.
-    ///   - attributes: The attributes associated with this metric.
-    ///   - sampleRate: The sample rate for this metric, applied in addition to the telemetry sample rate.
-    public init(
-        name: String,
-        attributes: [String : Encodable],
-        sampleRate: SampleRate
-    ) {
-        self.name = name
-        self.attributes = attributes
-        self.sampleRate = sampleRate
+    /// Single cardinality of a metric.
+    public enum Cardinality: Hashable {
+        case string(String)
+        case array([Self])
     }
+
+    public struct Event {
+        /// The name of the metric.
+        public let name: String
+
+        /// The attributes associated with this metric.
+        public let attributes: [String: Encodable]
+
+        /// The sample rate for this metric, applied in addition to the telemetry sample rate.
+        ///
+        /// Must be a value between `0` (reject all) and `100` (keep all).
+        ///
+        /// Note: This sample rate is compounded with the telemetry sample rate. For example, if the telemetry sample rate is 20% (default)
+        /// and this metric's sample rate is 15%, the effective sample rate for this metric will be 3%.
+        ///
+        /// This sample rate is applied in the telemetry receiver, after the metric has been processed by the SDK core (tail-based sampling).
+        public let sampleRate: SampleRate
+
+        /// Creates an Metric Telemtry object.
+        ///
+        /// - Parameters:
+        ///   - name: The name of the metric.
+        ///   - attributes: The attributes associated with this metric.
+        ///   - sampleRate: The sample rate for this metric, applied in addition to the telemetry sample rate.
+        public init(
+            name: String,
+            attributes: [String: Encodable],
+            sampleRate: SampleRate
+        ) {
+            self.name = name
+            self.attributes = attributes
+            self.sampleRate = sampleRate
+        }
+    }
+
+    /// Increment a Counter metric aggregation.
+    case increment(String, by: Double, cardinalities: Cardinalities)
+    /// Record value of a Gauge metric aggregation.
+    case record(String, value: Double, cardinalities: Cardinalities)
+    /// Log a metric event (no aggregation applied
+    case report(MetricTelemetry.Event)
 }
 
 /// Describes the type of the usage telemetry events supported by the SDK.
-public struct UsageTelemetry: SampledTelemetry {
+public struct UsageTelemetry {
     /// Supported usage telemetry events.
     public enum Event {
         /// setTrackingConsent API
@@ -188,7 +200,9 @@ public enum TelemetryMessage {
     case error(id: String, message: String, kind: String, stack: String)
     /// A configuration telemetry.
     case configuration(ConfigurationTelemetry)
+    /// A metric telemetry.
     case metric(MetricTelemetry)
+    /// A usage telemetry.
     case usage(UsageTelemetry)
 }
 
@@ -254,9 +268,9 @@ public extension Telemetry {
         }
 
         let executionTime = -metric.startTime.timeIntervalSinceNow.toInt64Nanoseconds
-        send(
-            telemetry: .metric(
-                MetricTelemetry(
+        self.metric(
+            .report(
+                .init(
                     name: MethodCalledMetric.name,
                     attributes: [
                         MethodCalledMetric.executionTime: executionTime,
@@ -373,6 +387,90 @@ extension Telemetry {
     ///   - line: The line number in file.
     public func error(_ message: String, error: Error, file: String = #fileID, line: Int = #line) {
         self.error(message, error: DDError(error: error), file: file, line: line)
+    }
+
+    /// Increments a counter metric by a specified value.
+    ///
+    /// This method creates a counter metric that can be used to track the number of times an event occurs.
+    /// The metric will be incremented by the specified value each time this method is called.
+    ///
+    /// - Parameters:
+    ///   - metric: The name of the metric to increment.
+    ///   - value: The amount to increment the metric by. Defaults to 1.
+    ///   - cardinalities: The dimensions along which the metric will be aggregated.
+    public func increment(metric: String, by value: Double = 1, cardinalities: MetricTelemetry.Cardinalities) {
+        // swiftlint:disable:previous function_default_parameter_at_end
+        self.metric(.increment(metric, by: value, cardinalities: cardinalities))
+    }
+
+    /// Increments a counter metric by a specified integer value.
+    ///
+    /// This method creates a counter metric that can be used to track the number of times an event occurs.
+    /// The metric will be incremented by the specified integer value each time this method is called.
+    ///
+    /// - Parameters:
+    ///   - metric: The name of the metric to increment.
+    ///   - value: The integer amount to increment the metric by.
+    ///   - cardinalities: The dimensions along which the metric will be aggregated.
+    public func increment(metric: String, by value: Int, cardinalities: MetricTelemetry.Cardinalities) {
+        self.metric(.increment(metric, by: Double(value), cardinalities: cardinalities))
+    }
+
+    /// Records a gauge metric with a specified value.
+    ///
+    /// This method creates a gauge metric that can be used to track a value that can go up and down.
+    /// The metric will be recorded with the specified value each time this method is called.
+    ///
+    /// - Parameters:
+    ///   - metric: The name of the metric to record.
+    ///   - value: The value to record for the metric.
+    ///   - cardinalities: The dimensions along which the metric will be aggregated.
+    public func record(metric: String, value: Double, cardinalities: MetricTelemetry.Cardinalities) {
+        self.metric(.record(metric, value: value, cardinalities: cardinalities))
+    }
+
+    /// Records a gauge metric with a specified integer value.
+    ///
+    /// This method creates a gauge metric that can be used to track a value that can go up and down.
+    /// The metric will be recorded with the specified integer value each time this method is called.
+    ///
+    /// - Parameters:
+    ///   - metric: The name of the metric to record.
+    ///   - value: The integer value to record for the metric.
+    ///   - cardinalities: The dimensions along which the metric will be aggregated.
+    public func record(metric: String, value: Int, cardinalities: MetricTelemetry.Cardinalities) {
+        self.metric(.record(metric, value: Double(value), cardinalities: cardinalities))
+    }
+
+    /// Sends a metric telemetry message to the Datadog backend.
+    ///
+    /// This method is used to send various types of metric telemetry data, including:
+    /// - Counter metrics (increments)
+    /// - Gauge metrics (recorded values)
+    /// - Custom metric events
+    ///
+    /// - Parameter metric: The metric telemetry data to send.
+    public func metric(_ metric: MetricTelemetry) {
+        send(telemetry: .metric(metric))
+    }
+
+    /// Collects a metric value.
+    ///
+    /// Metrics are reported as debug telemetry. Unlike regular events, they are not subject to duplicate filtering and
+    /// are sampled at a different rate. Metric attributes are used to create facets for later querying and graphing.
+    ///
+    /// - Parameters:
+    ///   - name: The name of the metric.
+    ///   - attributes: The attributes associated with this metric.
+    ///   - sampleRate: The sample rate for this metric, applied in addition to the telemetry sample rate (15% by default).
+    ///     Must be a value between `0` (reject all) and `100` (keep all).
+    ///
+    ///     Note: This sample rate is compounded with the telemetry sample rate. For example, if the telemetry sample rate is 20% (default)
+    ///     and this metric's sample rate is 15%, the effective sample rate for this metric will be 3%.
+    ///
+    ///     This sample rate is applied in the telemetry receiver, after the metric has been processed by the SDK core (tail-based sampling).
+    public func metric(name: String, attributes: [String: Encodable], sampleRate: SampleRate = MetricTelemetry.defaultSampleRate) {
+        self.metric(.report(.init(name: name, attributes: attributes, sampleRate: sampleRate)))
     }
 
     /// Report a Configuration Telemetry.
@@ -494,25 +592,6 @@ extension Telemetry {
             useWorkerUrl: useWorkerUrl
         ))
     }
-
-    /// Collects a metric value.
-    ///
-    /// Metrics are reported as debug telemetry. Unlike regular events, they are not subject to duplicate filtering and
-    /// are sampled at a different rate. Metric attributes are used to create facets for later querying and graphing.
-    ///
-    /// - Parameters:
-    ///   - name: The name of the metric.
-    ///   - attributes: The attributes associated with this metric.
-    ///   - sampleRate: The sample rate for this metric, applied in addition to the telemetry sample rate (15% by default).
-    ///     Must be a value between `0` (reject all) and `100` (keep all).
-    ///
-    ///     Note: This sample rate is compounded with the telemetry sample rate. For example, if the telemetry sample rate is 20% (default)
-    ///     and this metric's sample rate is 15%, the effective sample rate for this metric will be 3%.
-    ///
-    ///     This sample rate is applied in the telemetry receiver, after the metric has been processed by the SDK core (tail-based sampling).
-    public func metric(name: String, attributes: [String: Encodable], sampleRate: SampleRate = MetricTelemetry.defaultSampleRate) {
-        send(telemetry: .metric(MetricTelemetry(name: name, attributes: attributes, sampleRate: sampleRate)))
-    }
 }
 
 public struct NOPTelemetry: Telemetry {
@@ -553,12 +632,6 @@ extension DatadogCoreProtocol {
     ///
     /// Use this property to report any telemetry event to the core.
     public var telemetry: Telemetry { CoreTelemetry(core: self) }
-}
-
-extension DatadogCoreProtocol {
-    /// Provides access to the `Storage` associated with the core.
-    /// - Returns: The `Storage` instance.
-    public var storage: Storage { CoreStorage(core: self) }
 }
 
 extension ConfigurationTelemetry {
@@ -620,5 +693,17 @@ extension ConfigurationTelemetry {
             useTracing: other.useTracing ?? useTracing,
             useWorkerUrl: other.useWorkerUrl ?? useWorkerUrl
         )
+    }
+}
+
+extension MetricTelemetry.Cardinality: Encodable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case let .string(value):
+            try container.encode(value)
+        case let .array(value):
+            try container.encode(value)
+        }
     }
 }

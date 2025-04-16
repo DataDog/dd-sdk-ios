@@ -63,7 +63,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         orchestrator.delete(readableFile: file, deletionReason: .intakeCode(responseCode: 202))
 
         // Then
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
+        let metric = try XCTUnwrap(telemetry.messages.firstMetricReport(named: "Batch Deleted"))
         DDAssertJSONEqual(metric.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
@@ -95,7 +95,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         _ = orchestrator.getReadableFiles()
 
         // Then
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
+        let metric = try XCTUnwrap(telemetry.messages.firstMetricReport(named: "Batch Deleted"))
         DDAssertJSONEqual(metric.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
@@ -130,7 +130,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         _ = try orchestrator.getWritableFile(writeSize: 1)
 
         // Then
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
+        let metric = try XCTUnwrap(telemetry.messages.firstMetricReport(named: "Batch Deleted"))
         DDAssertJSONEqual(metric.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
@@ -175,7 +175,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         _ = try orchestrator.getWritableFile(writeSize: 1)
 
         // Then
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Closed"))
+        let metric = try XCTUnwrap(telemetry.messages.firstMetricReport(named: "Batch Closed"))
         DDAssertReflectionEqual(metric.attributes, [
             "metric_type": "batch closed",
             "track": "track name",
