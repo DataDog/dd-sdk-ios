@@ -63,14 +63,16 @@ extension TraceContext: AnyMockable, RandomMockable {
         spanID: SpanID = .mockAny(),
         parentSpanID: SpanID? = nil,
         sampleRate: Float = .mockAny(),
-        isKept: Bool = .mockAny()
+        isKept: Bool = .mockAny(),
+        rumSessionId: String? = .mockAny()
     ) -> TraceContext {
         return TraceContext(
             traceID: traceID,
             spanID: spanID,
             parentSpanID: parentSpanID,
             sampleRate: sampleRate,
-            isKept: isKept
+            isKept: isKept,
+            rumSessionId: rumSessionId
         )
     }
 }
@@ -130,7 +132,7 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
     public var injectedTraceContext: TraceContext?
     public var shouldInterceptRequest: ((URLRequest) -> Bool)?
 
-    public var onRequestMutation: ((URLRequest, Set<TracingHeaderType>) -> Void)?
+    public var onRequestMutation: ((URLRequest, Set<TracingHeaderType>, NetworkContext?) -> Void)?
     public var onRequestInterception: ((URLRequest) -> Void)?
     public var onInterceptionDidStart: ((URLSessionTaskInterception) -> Void)?
     public var onInterceptionDidComplete: ((URLSessionTaskInterception) -> Void)?
@@ -150,8 +152,8 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
         interceptions.values.first { $0.request.url == url }
     }
 
-    public func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>) -> (URLRequest, TraceContext?) {
-        onRequestMutation?(request, headerTypes)
+    public func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?) {
+        onRequestMutation?(request, headerTypes, networkContext)
         return (modifiedRequest ?? request, injectedTraceContext)
     }
 
