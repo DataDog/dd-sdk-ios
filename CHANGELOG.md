@@ -1,5 +1,8 @@
 # Unreleased
 
+- [IMPROVEMENT] Update the default tracing sampling rate to 100%. See [#2253][] 
+- [IMPROVEMENT] Update the default TraceContextInjection to `.sampled`. See [#2253][] 
+
 # 2.24.1 / 31-04-2025
 
 - [FIX] Do not enforce dynamic linking for OpenTelemetryApi in `DatadogTrace`. See [#2244][]
