@@ -10,7 +10,7 @@ import DatadogCore
 
 /// A custom SwiftUI Hosting controller for `RootView`.
 ///
-/// This definition only exist to allow instantiation from `RUMSwiftUIInstrumentationScenario`
+/// This definition only exist to allow instantiation from `RUMSwiftUIManualInstrumentationScenario`
 /// storyboard and should be ignored from RUM instrumentation.
 @available(iOS 13, *)
 class SwiftUIRootViewController: UIHostingController<RootView> {
@@ -150,19 +150,19 @@ class UIScreenViewController: UIViewController {
 
     var index: Int = 0
 
-    /// Creates a `UIScreenViewController` instance from `RUMSwiftUIInstrumentationScenario` storyboard.
+    /// Creates a `UIScreenViewController` instance from `RUMSwiftUIManualInstrumentationScenario` storyboard.
     ///
     /// - Parameter index: The Screen index in the stack.
     /// - Returns: An instance of `UIScreenViewController`.
     static func create(at index: Int) -> UIScreenViewController {
-        let storyboard = UIStoryboard(name: "RUMSwiftUIInstrumentationScenario", bundle: .main)
+        let storyboard = UIStoryboard(name: "RUMSwiftUIManualInstrumentationScenario", bundle: .main)
 
         if let vc = storyboard.instantiateViewController(withIdentifier: "UIScreenViewController") as? UIScreenViewController {
             vc.index = index
             return vc
         }
 
-        fatalError("Unable to instantiate `UIScreenViewController` from stroyboard `RUMSwiftUIInstrumentationScenario`")
+        fatalError("Unable to instantiate `UIScreenViewController` from stroyboard `RUMSwiftUIManualInstrumentationScenario`")
     }
 
     /// Pushes a `ScreenView` onto the stack.
