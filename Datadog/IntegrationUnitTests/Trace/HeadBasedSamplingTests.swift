@@ -21,8 +21,8 @@ class HeadBasedSamplingTests: XCTestCase {
         traceConfig = Trace.Configuration()
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         traceConfig = nil
         super.tearDown()

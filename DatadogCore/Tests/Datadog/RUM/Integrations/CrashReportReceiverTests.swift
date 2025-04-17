@@ -5,10 +5,10 @@
  */
 
 import XCTest
-import TestUtilities
 import DatadogInternal
 @testable import DatadogRUM
 @testable import DatadogCrashReporting
+@testable import TestUtilities
 
 class CrashReportReceiverTests: XCTestCase {
     private let featureScope = FeatureScopeMock()

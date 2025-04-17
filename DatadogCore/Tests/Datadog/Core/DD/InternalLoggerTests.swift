@@ -10,7 +10,7 @@ import DatadogInternal
 @testable import DatadogCore
 
 class InternalLoggerTests: XCTestCase {
-    private let mock = PrintFunctionMock()
+    private let mock = PrintFunctionSpy()
 
     func testItPrintsMessageWithExpectedFormat() {
         // Given

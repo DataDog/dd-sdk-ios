@@ -5,7 +5,6 @@
  */
 
 import XCTest
-import TestUtilities
 import DatadogInternal
 import OpenTelemetryApi
 
@@ -13,6 +12,7 @@ import OpenTelemetryApi
 @testable import DatadogTrace
 @testable import DatadogRUM
 @testable import DatadogCore
+@testable import TestUtilities
 
 // swiftlint:disable multiline_arguments_brackets
 class LoggerTests: XCTestCase {
@@ -23,8 +23,8 @@ class LoggerTests: XCTestCase {
         core = DatadogCoreProxy()
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+    override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         super.tearDown()
     }

@@ -4,8 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import XCTest
 import HTTPServerMock
+import TestUtilities
+import XCTest
 
 /// A set of common assertions for all Logging tests.
 protocol LoggingCommonAsserts {
@@ -41,7 +42,7 @@ extension LoggingCommonAsserts {
 }
 
 extension LogMatcher {
-    class func from(requests: [HTTPServerMock.Request]) throws -> [LogMatcher] {
+    public class func from(requests: [HTTPServerMock.Request]) throws -> [LogMatcher] {
         return try requests
             .flatMap { request in try LogMatcher.fromArrayOfJSONObjectsData(request.httpBody) }
     }

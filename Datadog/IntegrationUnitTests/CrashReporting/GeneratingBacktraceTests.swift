@@ -18,8 +18,8 @@ class GeneratingBacktraceTests: XCTestCase {
         core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
@@ -38,7 +38,7 @@ class GeneratingBacktraceTests: XCTestCase {
         XCTAssertFalse(backtrace.threads.contains(where: { $0.crashed }), "No thread should be marked as crashed")
 
         XCTAssertTrue(
-            backtrace.stack.contains("DatadogCoreTests"),
+            backtrace.stack.contains("DatadogIntegrationTests"),
             "Backtrace stack should include at least one frame from `DatadogCoreTests` image"
         )
         XCTAssertTrue(
@@ -47,12 +47,12 @@ class GeneratingBacktraceTests: XCTestCase {
         )
         #if os(iOS)
         XCTAssertTrue(
-            backtrace.binaryImages.contains(where: { $0.libraryName == "DatadogCoreTests iOS" }),
+            backtrace.binaryImages.contains(where: { $0.libraryName == "DatadogIntegrationTests iOS" }),
             "Backtrace should include the image for `DatadogCoreTests iOS`"
         )
         #elseif os(tvOS)
         XCTAssertTrue(
-            backtrace.binaryImages.contains(where: { $0.libraryName == "DatadogCoreTests tvOS" }),
+            backtrace.binaryImages.contains(where: { $0.libraryName == "DatadogIntegrationTests tvOS" }),
             "Backtrace should include the image for `DatadogCoreTests tvOS`"
         )
         #endif

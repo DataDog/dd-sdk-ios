@@ -23,9 +23,9 @@ class DDLogsTests: XCTestCase {
         CoreRegistry.register(default: core)
     }
 
-    override func tearDown() {
+    override func tearDownWithError() throws {
         CoreRegistry.unregisterDefault()
-        core.flushAndTearDown()
+        try core.flushAndTearDown()
         core = nil
         super.tearDown()
     }

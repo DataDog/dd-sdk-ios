@@ -5,13 +5,13 @@
  */
 
 import XCTest
-import TestUtilities
 import DatadogInternal
 
 @testable import DatadogTrace
 @testable import DatadogLogs
 @testable import DatadogCore
 @testable import DatadogRUM
+@testable import TestUtilities
 
 // swiftlint:disable multiline_arguments_brackets
 class TracerTests: XCTestCase {
@@ -24,8 +24,8 @@ class TracerTests: XCTestCase {
         config = Trace.Configuration()
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         config = nil
         super.tearDown()
@@ -901,7 +901,7 @@ class TracerTests: XCTestCase {
     // MARK: - Usage errors
 
     func testGivenSDKNotInitialized_whenObtainingSharedTracer_itPrintsError() {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 
@@ -921,7 +921,7 @@ class TracerTests: XCTestCase {
     }
 
     func testGivenTraceNotEnabled_whenObtainingSharedTracer_itPrintsError() {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 

@@ -18,7 +18,7 @@ class MessageBusTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
 
-        let receiver = FeatureMessageReceiverMock(expectation: expectation) { message in
+        let receiver = FeatureMessageReceiverMock { message in
             // Then
             if let value: String = try? message.baggage(forKey: "test") {
                 XCTAssertEqual(value, "value")
@@ -26,6 +26,7 @@ class MessageBusTests: XCTestCase {
             } else {
                 XCTFail("wrong message case")
             }
+            expectation.fulfill()
         }
 
         let bus = MessageBus()
@@ -44,7 +45,7 @@ class MessageBusTests: XCTestCase {
 
     func testItForwardConfigurationAfterDispatch() throws {
         let expectation = XCTestExpectation(description: "dispatch configuration")
-        let receiver = FeatureMessageReceiverMock(expectation: expectation) { message in
+        let receiver = FeatureMessageReceiverMock { message in
             guard
                 case .telemetry(let telemetry) = message,
                 case .configuration(let configuration) = telemetry
