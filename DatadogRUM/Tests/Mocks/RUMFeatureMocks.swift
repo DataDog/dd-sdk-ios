@@ -803,14 +803,14 @@ extension RUMScopeDependencies {
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
         renderLoopObserver: RenderLoopObserver? = nil,
-        viewHitchesMetricFactory: @escaping () -> (RenderLoopReader & ViewHitchesMetric)? = { ViewHitchesMock.mockAny() },
+        viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)? = { ViewHitchesMock.mockAny() },
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
         viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
         sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0),
-        viewEndedMetricFactory: @escaping () -> ViewEndedMetricController = {
-            ViewEndedMetricController(tnsPredicateType: .custom, invPredicateType: .custom, telemetry: NOPTelemetry(), sampleRate: 0)
+        viewEndedMetricFactory: @escaping () -> ViewEndedController = {
+            ViewEndedController(telemetry: NOPTelemetry(), sampleRate: 0)
         },
         watchdogTermination: WatchdogTerminationMonitor = .mockRandom(),
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking = { _, _ in TNSMetricMock() },
@@ -830,7 +830,7 @@ extension RUMScopeDependencies {
             ciTest: ciTest,
             syntheticsTest: syntheticsTest,
             renderLoopObserver: renderLoopObserver,
-            viewHitchesMetricFactory: viewHitchesMetricFactory,
+            viewHitchesReaderFactory: viewHitchesReaderFactory,
             vitalsReaders: vitalsReaders,
             onSessionStart: onSessionStart,
             viewCache: viewCache,
@@ -857,13 +857,13 @@ extension RUMScopeDependencies {
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
         renderLoopObserver: RenderLoopObserver? = nil,
-        viewHitchesMetricFactory: (() -> RenderLoopReader & ViewHitchesMetric)? = nil,
+        viewHitchesReaderFactory: (() -> ViewHitchesModel & RenderLoopReader)? = nil,
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: RUM.SessionListener? = nil,
         viewCache: ViewCache? = nil,
         fatalErrorContext: FatalErrorContextNotifying? = nil,
         sessionEndedMetric: SessionEndedMetricController? = nil,
-        viewEndedMetricFactory: (() -> ViewEndedMetricController)? = nil,
+        viewEndedMetricFactory: (() -> ViewEndedController)? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
         interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil
@@ -882,7 +882,7 @@ extension RUMScopeDependencies {
             ciTest: ciTest ?? self.ciTest,
             syntheticsTest: syntheticsTest ?? self.syntheticsTest,
             renderLoopObserver: renderLoopObserver ?? self.renderLoopObserver,
-            viewHitchesMetricFactory: viewHitchesMetricFactory ?? self.viewHitchesMetricFactory,
+            viewHitchesReaderFactory: viewHitchesReaderFactory ?? self.viewHitchesReaderFactory,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
             onSessionStart: onSessionStart ?? self.onSessionStart,
             viewCache: viewCache ?? self.viewCache,
@@ -1365,11 +1365,18 @@ internal class INVMetricMock: INVMetricTracking {
     }
 }
 
-final class ViewHitchesMock: ViewHitchesMetric {
-    var hitchesDataModel: HitchesDataModel
+final class ViewHitchesMock: ViewHitchesModel {
+    var config: HitchesConfiguration = (100, 0, 1)
+    var dataModel: HitchesDataModel = ([], 0.0)
+    var telemetryModel: HitchesTelemetryModel = .init(
+        hitchesCount: 0,
+        ignoredHitchesCount: 0,
+        didApplyDynamicFraming: false,
+        ignoredDurationNs: 0
+    )
 
-    init(hitchesDataModel: HitchesDataModel = ([], 0)) {
-        self.hitchesDataModel = hitchesDataModel
+    init(hitchesDataModel: HitchesDataModel = ([], 0.0)) {
+        self.dataModel = hitchesDataModel
     }
 }
 

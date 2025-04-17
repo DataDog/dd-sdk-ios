@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		11030D762D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */; };
+		11030D772D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */; };
 		1117AA062D09A39400F86B29 /* RUMAttributesIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */; };
 		1117AA072D09A39400F86B29 /* RUMAttributesIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */; };
 		112877992D708D300082D11B /* VitalRefreshRateReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112877972D708D300082D11B /* VitalRefreshRateReader.swift */; };
@@ -19,6 +21,8 @@
 		112877A02D708D300082D11B /* ViewHitchesReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112877962D708D300082D11B /* ViewHitchesReader.swift */; };
 		112877A62D72161A0082D11B /* VitalMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112877A52D7216150082D11B /* VitalMocks.swift */; };
 		112877A72D72161A0082D11B /* VitalMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112877A52D7216150082D11B /* VitalMocks.swift */; };
+		1132B34C2D9E9A30002384F2 /* RUMViewHitchesMetricIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1132B34B2D9E9A03002384F2 /* RUMViewHitchesMetricIntegrationTests.swift */; };
+		1132B34D2D9E9A30002384F2 /* RUMViewHitchesMetricIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1132B34B2D9E9A03002384F2 /* RUMViewHitchesMetricIntegrationTests.swift */; };
 		114CA1592D75C65700262287 /* ViewHitchesReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CA1582D75C64E00262287 /* ViewHitchesReaderTests.swift */; };
 		114CA15A2D75C65700262287 /* ViewHitchesReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CA1582D75C64E00262287 /* ViewHitchesReaderTests.swift */; };
 		114CA15C2D75D6AB00262287 /* DisplayLinkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CA15B2D75D6A700262287 /* DisplayLinkerTests.swift */; };
@@ -444,8 +448,8 @@
 		615D52BF2C88A98300F8B8FC /* SynchronizedTagsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615D52BD2C88A98300F8B8FC /* SynchronizedTagsTests.swift */; };
 		615D52C12C88AB1E00F8B8FC /* SynchronizedAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615D52C02C88AB1E00F8B8FC /* SynchronizedAttributesTests.swift */; };
 		615D52C22C88AB1E00F8B8FC /* SynchronizedAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615D52C02C88AB1E00F8B8FC /* SynchronizedAttributesTests.swift */; };
-		615E2B8E2D39444300D85243 /* ViewEndedMetricController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615E2B8D2D39444300D85243 /* ViewEndedMetricController.swift */; };
-		615E2B8F2D39444300D85243 /* ViewEndedMetricController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615E2B8D2D39444300D85243 /* ViewEndedMetricController.swift */; };
+		615E2B8E2D39444300D85243 /* ViewEndedController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615E2B8D2D39444300D85243 /* ViewEndedController.swift */; };
+		615E2B8F2D39444300D85243 /* ViewEndedController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615E2B8D2D39444300D85243 /* ViewEndedController.swift */; };
 		615E2B952D425F5600D85243 /* ViewEndedMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615E2B942D425F5600D85243 /* ViewEndedMetric.swift */; };
 		615E2B962D425F5600D85243 /* ViewEndedMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615E2B942D425F5600D85243 /* ViewEndedMetric.swift */; };
 		6167E6D32B7F8B3300C3CA2D /* AppHangsMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E6D22B7F8B3300C3CA2D /* AppHangsMonitor.swift */; };
@@ -2155,12 +2159,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesMetric.swift; sourceTree = "<group>"; };
 		1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAttributesIntegrationTests.swift; sourceTree = "<group>"; };
 		112877942D708D300082D11B /* FrameInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameInfoProvider.swift; sourceTree = "<group>"; };
 		112877952D708D300082D11B /* RenderLoopObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderLoopObserver.swift; sourceTree = "<group>"; };
 		112877962D708D300082D11B /* ViewHitchesReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesReader.swift; sourceTree = "<group>"; };
 		112877972D708D300082D11B /* VitalRefreshRateReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalRefreshRateReader.swift; sourceTree = "<group>"; };
 		112877A52D7216150082D11B /* VitalMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalMocks.swift; sourceTree = "<group>"; };
+		1132B34B2D9E9A03002384F2 /* RUMViewHitchesMetricIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewHitchesMetricIntegrationTests.swift; sourceTree = "<group>"; };
 		114CA1582D75C64E00262287 /* ViewHitchesReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesReaderTests.swift; sourceTree = "<group>"; };
 		114CA15B2D75D6A700262287 /* DisplayLinkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayLinkerTests.swift; sourceTree = "<group>"; };
 		116200302D786ED0001C2A51 /* RUMDataModelMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDataModelMocks.swift; sourceTree = "<group>"; };
@@ -2515,7 +2521,7 @@
 		615D52BD2C88A98300F8B8FC /* SynchronizedTagsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedTagsTests.swift; sourceTree = "<group>"; };
 		615D52C02C88AB1E00F8B8FC /* SynchronizedAttributesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedAttributesTests.swift; sourceTree = "<group>"; };
 		615D9E2626048EAF006DC6D1 /* DatadogCrashReporting.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogCrashReporting.xcconfig; sourceTree = "<group>"; };
-		615E2B8D2D39444300D85243 /* ViewEndedMetricController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewEndedMetricController.swift; sourceTree = "<group>"; };
+		615E2B8D2D39444300D85243 /* ViewEndedController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewEndedController.swift; sourceTree = "<group>"; };
 		615E2B942D425F5600D85243 /* ViewEndedMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewEndedMetric.swift; sourceTree = "<group>"; };
 		615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensions.swift; sourceTree = "<group>"; };
 		6161247825CA9CA6009901BE /* CrashReporting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReporting.swift; sourceTree = "<group>"; };
@@ -5064,8 +5070,9 @@
 			children = (
 				6174D60F2BFDEA4600EC7469 /* SessionEndedMetric.swift */,
 				6174D61F2C009C6300EC7469 /* SessionEndedMetricController.swift */,
+				615E2B8D2D39444300D85243 /* ViewEndedController.swift */,
 				615E2B942D425F5600D85243 /* ViewEndedMetric.swift */,
-				615E2B8D2D39444300D85243 /* ViewEndedMetricController.swift */,
+				11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */,
 			);
 			path = SDKMetrics;
 			sourceTree = "<group>";
@@ -5408,6 +5415,7 @@
 			children = (
 				61DCC8492C05D4D600CB59E5 /* RUMSessionEndedMetricIntegrationTests.swift */,
 				61E141EE2D42BC74008C8851 /* RUMViewEndedMetricIntegrationTests.swift */,
+				1132B34B2D9E9A03002384F2 /* RUMViewHitchesMetricIntegrationTests.swift */,
 			);
 			path = SDKMetrics;
 			sourceTree = "<group>";
@@ -8145,6 +8153,7 @@
 				61E45BE724519A3700F2C652 /* JSONDataMatcher.swift in Sources */,
 				61133C592423990D00786299 /* FilesOrchestratorTests.swift in Sources */,
 				61A763DC252DB2B3005A23F2 /* NSURLSessionBridge.m in Sources */,
+				1132B34D2D9E9A30002384F2 /* RUMViewHitchesMetricIntegrationTests.swift in Sources */,
 				D2A1EE442886B8B400D28DFB /* UserInfoPublisherTests.swift in Sources */,
 				D29A9FD029DDC58E005C54A4 /* RUMFeatureTests.swift in Sources */,
 				D2552AF52BBC492400A45725 /* WebEventIntegrationTests.swift in Sources */,
@@ -8693,7 +8702,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6167E6D42B7F8B3300C3CA2D /* AppHangsMonitor.swift in Sources */,
-				615E2B8F2D39444300D85243 /* ViewEndedMetricController.swift in Sources */,
+				615E2B8F2D39444300D85243 /* ViewEndedController.swift in Sources */,
 				D23F8E5229DDCD28001CFAE8 /* UIViewControllerHandler.swift in Sources */,
 				D23F8E5329DDCD28001CFAE8 /* RUMCommand.swift in Sources */,
 				D23F8E5429DDCD28001CFAE8 /* ValuePublisher.swift in Sources */,
@@ -8773,6 +8782,7 @@
 				D23F8E7F29DDCD28001CFAE8 /* UIViewControllerSwizzler.swift in Sources */,
 				D23F8E8029DDCD28001CFAE8 /* VitalInfoSampler.swift in Sources */,
 				D23F8E8129DDCD28001CFAE8 /* RUMViewScope.swift in Sources */,
+				11030D762D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */,
 				D23F8E8229DDCD28001CFAE8 /* RUMSessionScope.swift in Sources */,
 				A7E6EA812D3146AD00997201 /* AnonymousIdentifierManager.swift in Sources */,
 				D23F8E8329DDCD28001CFAE8 /* RUMUser.swift in Sources */,
@@ -9052,7 +9062,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6167E6D32B7F8B3300C3CA2D /* AppHangsMonitor.swift in Sources */,
-				615E2B8E2D39444300D85243 /* ViewEndedMetricController.swift in Sources */,
+				615E2B8E2D39444300D85243 /* ViewEndedController.swift in Sources */,
 				D29A9F8029DD85BB005C54A4 /* UIViewControllerHandler.swift in Sources */,
 				D29A9F5929DD85BB005C54A4 /* RUMCommand.swift in Sources */,
 				D29A9F8C29DD861C005C54A4 /* ValuePublisher.swift in Sources */,
@@ -9132,6 +9142,7 @@
 				D29A9F7E29DD85BB005C54A4 /* UIViewControllerSwizzler.swift in Sources */,
 				D29A9F6B29DD85BB005C54A4 /* VitalInfoSampler.swift in Sources */,
 				D29A9F7529DD85BB005C54A4 /* RUMViewScope.swift in Sources */,
+				11030D772D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */,
 				D29A9F5C29DD85BB005C54A4 /* RUMSessionScope.swift in Sources */,
 				A7E6EA822D3146AD00997201 /* AnonymousIdentifierManager.swift in Sources */,
 				D29A9F6629DD85BB005C54A4 /* RUMUser.swift in Sources */,
@@ -9526,6 +9537,7 @@
 				D22743DD29DEB8B5001A7EF9 /* VitalInfoTests.swift in Sources */,
 				D2CB6F7027C520D400A62B57 /* UIKitMocks.swift in Sources */,
 				D2CB6F7327C520D400A62B57 /* CoreTelephonyMocks.swift in Sources */,
+				1132B34C2D9E9A30002384F2 /* RUMViewHitchesMetricIntegrationTests.swift in Sources */,
 				D20605B7287572640047275C /* DatadogContextProviderMock.swift in Sources */,
 				D2CB6F7527C520D400A62B57 /* UIKitExtensionsTests.swift in Sources */,
 				61F930C92BA1C51C005F0EE2 /* Storage+TLVTests.swift in Sources */,
