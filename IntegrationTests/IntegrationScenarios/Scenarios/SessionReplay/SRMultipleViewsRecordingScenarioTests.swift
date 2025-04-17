@@ -10,7 +10,7 @@ import XCTest
 
 private extension ExampleApplication {
     func tapNextButton() {
-        buttons["NEXT"].safeTap(within: 5)
+        tapButton(titled: "NEXT")
     }
 
     func wait(seconds: TimeInterval) {

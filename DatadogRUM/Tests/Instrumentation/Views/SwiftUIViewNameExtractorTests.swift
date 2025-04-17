@@ -5,9 +5,9 @@
  */
 
 import XCTest
+import SwiftUI
 @testable import DatadogRUM
 @testable import DatadogInternal
-import SwiftUI
 
 class SwiftUIViewNameExtractorTests: XCTestCase {
     var extractor: SwiftUIReflectionBasedViewNameExtractor! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -24,7 +24,8 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
 
     // MARK: - View Name Extraction Tests
     func testViewNameExtraction() {
-        let testCases: [(String, String)] = [
+        let testCases: [(String, String?)] = [
+            // Format: (input, expectedExtractedName)
             ("LazyView<ViewType>", "ViewType"),
             ("SheetContent<Text>", "Text"),
             ("Optional<Text>", "Text"),
@@ -34,7 +35,8 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
             ("ViewType.Type", "ViewType"),
             ("SheetContent<ViewType>", "ViewType"),
             ("ModifiedView<ModifierType, ModifiedView<ModifierType, ModifiedView<ModifierType, ModifiedView<ModifierType, ViewType>>>>", "ViewType"),
-            ("ModifiedView<ModifierType, ModifiedView<ModifierType, ModifiedView<ModifierType, ModifiedView<ModifierType, ContainerType<ViewType>>>>>", "ViewType")
+            ("ModifiedView<ModifierType, ModifiedView<ModifierType, ModifiedView<ModifierType, ModifiedView<ModifierType, ContainerType<ViewType>>>>>", "ViewType"),
+            ("DetailView", "DetailView")
         ]
 
         for (input, expected) in testCases {
@@ -43,28 +45,55 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
         }
     }
 
+    func testFallbackViewNameExtraction() {
+        let testCases: [(String, String)] = [
+            // Format: (input, expectedExtractedName)
+            // Hosting Controller cases
+            ("UIHostingController<HomeView>", "HomeView"),
+            ("UIHostingController<AnyView>", "UIHostingController<AnyView>"),
+            ("UIHostingController<ModifiedContent<ModifiedContent<Element, NavigationColumnModifier>, StyleContextWriter<SidebarStyleContext>>>", "AutoTracked_HostingController_Fallback"),
+            // Navigation Stack Hosting Controller cases
+            ("NavigationStackHostingController<DetailView>", "DetailView"),
+            ("NavigationStackHostingController<AnyView>", "NavigationStackHostingController<AnyView>"),
+            ("NavigationStackHostingController<ModifiedContent<ModifiedContent<Element, NavigationColumnModifier>, StyleContextWriter<SidebarStyleContext>>>", "AutoTracked_NavigationStackController_Fallback")
+        ]
+
+        for (input, expected) in testCases {
+            // Use the internal method directly
+            let result = extractor.extractFallbackViewName(from: input)
+            XCTAssertEqual(result, expected, "Failed to extract fallback name from: \(input)")
+        }
+    }
+
     // MARK: - SwiftUIViewPath Tests
     func testSwiftUIViewPathComponents() {
+        // HostingController cases
         XCTAssertEqual(
-            SwiftUIViewPath.hostingController.pathComponents,
+            SwiftUIViewPath.hostingControllerModifiedContent.pathComponents,
             [.host, .rootView, .content, .storage, .view]
         )
         XCTAssertEqual(
-            SwiftUIViewPath.hostingControllerRoot.pathComponents,
-            [.host, .rootView]
+            SwiftUIViewPath.hostingControllerRootView.pathComponents,
+            [.host, .rootView, .content, .storage, .view, .content, .storage, .view, .content, .content]
         )
         XCTAssertEqual(
-            SwiftUIViewPath.navigationStack.pathComponents,
+            SwiftUIViewPath.hostingControllerBase.pathComponents,
+            [.host, .rootView]
+        )
+        // NavigationStack cases
+        XCTAssertEqual(
+            SwiftUIViewPath.navigationStackBase.pathComponents,
             [.host, .rootView, .storage, .view, .content, .content, .content]
         )
         XCTAssertEqual(
-            SwiftUIViewPath.navigationStackDetail.pathComponents,
+            SwiftUIViewPath.navigationStackContent.pathComponents,
             [.host, .rootView, .storage, .view, .content, .content, .content, .content, .list, .item, .type]
         )
         XCTAssertEqual(
-            SwiftUIViewPath.navigationStackContainer.pathComponents,
+            SwiftUIViewPath.navigationStackAnyView.pathComponents,
             [.host, .rootView, .storage, .view, .content, .content, .content, .root]
         )
+        // Modal case
         XCTAssertEqual(
             SwiftUIViewPath.sheetContent.pathComponents,
             [.host, .rootView, .storage, .view, .content]
@@ -72,29 +101,65 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
     }
 
     // MARK: - Controller Detection Tests
+    @available(iOS 13.0, tvOS 13.0, *)
     func testDetectControllerType() {
-        // Define test cases with class name and expected controller type
-        let testCases: [(String, ControllerType)] = [
-            // Format: (className, expectedType)
-            ("_TtGC7SwiftUI19UIHostingController", .hostingController),
-            ("_TtGC7SwiftUI19UIHostingControllerVVS_7TabItem8RootView_", .tabItem),
-            ("SwiftUI.UIKitNavigationController", .navigationController),
-            ("NavigationStackHostingController", .navigationController),
-            ("_TtGC7SwiftUI29PresentationHostingController", .modal),
-            ("UIViewController", .unknown)
+        // Controllers
+        let hostingController = UIHostingController(rootView: EmptyView())
+        let navigationController = UINavigationController()
+        let viewController = UIViewController()
+
+        // Define test cases with controller, class name and expected controller type
+        let testCases: [(UIViewController, String, ControllerType)] = [
+            // Format: (controller, className, expectedType)
+            (hostingController, "_TtGC7SwiftUI19UIHostingController", .hostingController),
+            (navigationController, "SwiftUI.UIKitNavigationController", .navigationStackHostingController),
+            (navigationController, "NavigationStackHostingController", .navigationStackHostingController),
+            (viewController, "_TtGC7SwiftUI29PresentationHostingController", .modal),
+            (viewController, "UIViewController", .unknown)
         ]
 
-        for (className, expectedType) in testCases {
-            XCTAssertEqual(ControllerType(className: className), expectedType, "Controller type detection failed for: \(className)")
+        for (controller, className, expectedType) in testCases {
+            XCTAssertEqual(ControllerType(controller, className: className), expectedType, "Controller type detection failed for: \(className)")
         }
     }
 
     func testShouldSkipViewController() {
-        let tabbarResult = extractor.shouldSkipViewController(viewController: UITabBarController())
-        XCTAssertTrue(tabbarResult, "Skip logic failed for UITabBarController")
-        let navigationControllerResult = extractor.shouldSkipViewController(viewController: UINavigationController())
-        XCTAssertTrue(navigationControllerResult, "Skip logic failed for UINavigationController")
-        let viewControllerResult = extractor.shouldSkipViewController(viewController: UIViewController())
-        XCTAssertFalse(viewControllerResult, "Skip logic failed for UIViewController")
+        let navigationController = UINavigationController()
+        let mockViewController = UIViewController()
+
+        // Test cases with controller and class name
+        let testCases: [(UIViewController, String, Bool)] = [
+            // Format: (controller, className, expectedShouldSkipResult)
+            // TabBarController cases
+            (mockViewController, "SwiftUI.UIKitTabBarController", true),
+            (mockViewController, "SwiftUI.TabHostingController", true),
+            (mockViewController, "_TtGC7SwiftUI19UIHostingControllerVVS_7TabItem8RootView_", true),
+            // NavigationController case
+            (navigationController, navigationController.canonicalClassName, true),
+            // Other ViewControllers cases
+            (mockViewController, "SwiftUI.NotifyingMulticolumnSplitViewController", true),
+            (mockViewController, mockViewController.canonicalClassName, false),
+        ]
+
+        for (controller, className, expectedResult) in testCases {
+            let result = extractor.shouldSkipViewController(viewController: controller, className: className)
+            XCTAssertEqual(result, expectedResult, "Skip logic failed for \(className)")
+        }
+    }
+
+    func testExtractNameFilteringForUIKitControllers() {
+        let tabbar = UITabBarController()
+        let pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
+        let splitViewController = UISplitViewController()
+
+        // Should return nil for UIKit bundle controllers
+        XCTAssertNil(extractor.extractName(from: tabbar))
+        XCTAssertNil(extractor.extractName(from: pageViewController))
+        XCTAssertNil(extractor.extractName(from: splitViewController))
+
+        if #available(iOS 13.0, tvOS 13.0, *) {
+            let hostingController = UIHostingController(rootView: EmptyView())
+            XCTAssertNotNil(hostingController)
+        }
     }
 }

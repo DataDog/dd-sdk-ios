@@ -28,55 +28,63 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
 
     /// Attempts to extract a meaningful SwiftUI view name from a `UIViewController`
     /// - Parameter viewController: The `UIViewController` potentially hosting a SwiftUI view
-    /// - Returns: The extracted view name or `nil` if extraction failed
+    /// - Returns: The extracted view name or `nil`
     func extractName(from viewController: UIViewController) -> String? {
-        // Skip known container controllers that shouldn't be tracked
-        if shouldSkipViewController(viewController: viewController) {
+        // We ignore UIKit container view controllers
+        if Bundle(for: type(of: viewController)).isUIKit {
             return nil
         }
+
+        // Skip known container controllers that shouldn't be tracked
+        let className = NSStringFromClass(type(of: viewController))
+
+        if shouldSkipViewController(viewController: viewController, className: className) {
+            return nil
+        }
+
+        let controllerType = ControllerType(viewController, className: className)
 
         // Reflector to inspect the view controller's internals
         let reflector = createReflector(viewController)
 
         return extractViewName(
             from: viewController,
+            controllerType: controllerType,
             withReflector: reflector
         )
     }
 
     private func extractViewName(
         from viewController: UIViewController,
+        controllerType: ControllerType,
         withReflector reflector: TopLevelReflector
     ) -> String? {
-        let className = NSStringFromClass(type(of: viewController))
-        let controllerType = ControllerType(className: className)
-
         switch controllerType {
-        case .tabItem:
-            return extractTabViewName(from: viewController)
-
         case .hostingController:
-            if let output = SwiftUIViewPath.hostingController.traverse(with: reflector) {
+            if let output = SwiftUIViewPath.hostingControllerRootView.traverse(with: reflector) {
                 return extractViewName(from: typeDescription(of: output))
             }
 
-            if let output = SwiftUIViewPath.hostingControllerRoot.traverse(with: reflector) {
+            if let output = SwiftUIViewPath.hostingControllerModifiedContent.traverse(with: reflector) {
                 return extractViewName(from: typeDescription(of: output))
             }
 
-        case .navigationController:
-            // Try detail view first
-            if let output = SwiftUIViewPath.navigationStackDetail.traverse(with: reflector) {
+            // TODO: RUM-9892 - Implement more robust fallback identifiers
+            if SwiftUIViewPath.hostingControllerBase.traverse(with: reflector) != nil {
+                return extractFallbackViewName(from: typeDescription(of: viewController))
+            }
+
+        case .navigationStackHostingController:
+            if let output = SwiftUIViewPath.navigationStackContent.traverse(with: reflector) {
                 return extractViewName(from: typeDescription(of: output))
             }
 
-            // Check if it's a container view that we should ignore
-            if SwiftUIViewPath.navigationStackContainer.traverse(with: reflector) != nil {
-                return nil
+            // TODO: RUM-9892 - Implement more robust fallback identifiers
+            if SwiftUIViewPath.navigationStackAnyView.traverse(with: reflector) != nil {
+                return extractFallbackViewName(from: typeDescription(of: viewController))
             }
 
-            // Try standard navigation stack view
-            if let output = SwiftUIViewPath.navigationStack.traverse(with: reflector) {
+            if let output = SwiftUIViewPath.navigationStackBase.traverse(with: reflector) {
                 return extractViewName(from: typeDescription(of: output))
             }
 
@@ -94,7 +102,15 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
 
     // MARK: - Helpers
     private static let genericTypePattern: NSRegularExpression? = {
-        return try? NSRegularExpression(pattern: #"<(?:[^,>]*,\s+)?([^<>,]+?)>"#)
+        try? NSRegularExpression(pattern: #"<(?:[^,>]*,\s+)?([^<>,]+?)>"#)
+    }()
+
+    private static let hostingControllerPattern: NSRegularExpression? = {
+        try? NSRegularExpression(pattern: "UIHostingController<([A-Za-z0-9_]+)>")
+    }()
+
+    private static let navigationStackPattern: NSRegularExpression? = {
+        try? NSRegularExpression(pattern: "NavigationStackHostingController<([A-Za-z0-9_]+)>")
     }()
 
     /// Extracts a view name from a type description
@@ -110,41 +126,74 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
         }
 
         // Extract the view name from metatypes like DetailView.Type
-        if input.hasSuffix(".Type") {
+        else if input.hasSuffix(".Type") {
             return String(input.dropLast(5))
         }
 
-        return nil
-    }
-
-    private func extractTabViewName(from viewController: UIViewController) -> String? {
-        // We fetch the parent, which corresponds to the TabBarController
-        guard let parent = viewController.parent as? UITabBarController,
-              let container = parent.parent else {
-            return nil
-        }
-
-        let selectedIndex = parent.selectedIndex
-        let containerReflector = ReflectionMirror(reflecting: container)
-
-        if let output = SwiftUIViewPath.hostingController.traverse(with: containerReflector) {
-            let typeName = typeDescription(of: output)
-            if let containerViewName = extractViewName(from: typeName) {
-                return "\(containerViewName)_index_\(selectedIndex)"
-            }
+        // If the input is already a simple view name (no brackets, parentheses, etc.)
+        // and looks like a valid SwiftUI view name pattern
+        else if input.range(of: "^[A-Z][A-Za-z0-9_]*View$", options: .regularExpression) != nil {
+            return input
         }
 
         return nil
     }
 
-    internal func shouldSkipViewController(viewController: UIViewController) -> Bool {
-        // Skip Tab Bar Controllers as they're containers
-        if viewController is UITabBarController {
+    /// Extracts a fallback view name when reflection-based extraction fails.
+    /// This method attempts to extract a reasonable name from the controller's description
+    /// when our primary reflection-based methods cannot identify the hosted SwiftUI view.
+    internal func extractFallbackViewName(from viewControllerDescription: String) -> String {
+        // For generic `AnyView` containers, return the full description as it's
+        // already the most informative name available
+        if viewControllerDescription == "NavigationStackHostingController<AnyView>" || viewControllerDescription == "UIHostingController<AnyView>" {
+            return viewControllerDescription
+        }
+
+        // For UIHostingController<SomeView>, extract `SomeView` as the name
+        if let match = Self.hostingControllerPattern?.firstMatch(
+            in: viewControllerDescription,
+            options: [],
+            range: NSRange(viewControllerDescription.startIndex..<viewControllerDescription.endIndex, in: viewControllerDescription)
+        ),
+           let range = Range(match.range(at: 1), in: viewControllerDescription) {
+            return String(viewControllerDescription[range])
+        }
+
+        // For NavigationStackHostingController<SomeView>, extract `SomeView` as the name
+        if let match = Self.navigationStackPattern?.firstMatch(
+            in: viewControllerDescription,
+            options: [],
+            range: NSRange(viewControllerDescription.startIndex..<viewControllerDescription.endIndex, in: viewControllerDescription)
+        ),
+           let range = Range(match.range(at: 1), in: viewControllerDescription) {
+            return String(viewControllerDescription[range])
+        }
+
+        // When no specific view name can be extracted,
+        // return a generic fallback name based on the controller type
+        return viewControllerDescription.contains("UIHostingController") ? "AutoTracked_HostingController_Fallback" : "AutoTracked_NavigationStackController_Fallback"
+    }
+
+    internal func shouldSkipViewController(viewController: UIViewController, className: String) -> Bool {
+        // Skip TabBar controllers
+        if className == "SwiftUI.UIKitTabBarController" {
             return true
         }
 
-        // Skip Navigation Controllers
+        if className == "_TtGC7SwiftUI19UIHostingControllerVVS_7TabItem8RootView_" {
+            return true
+        }
+
+        if className == "SwiftUI.TabHostingController" {
+            return true
+        }
+
+        // Skip Navigation controllers
         if viewController is UINavigationController {
+            return true
+        }
+
+        if className == "SwiftUI.NotifyingMulticolumnSplitViewController" {
             return true
         }
 

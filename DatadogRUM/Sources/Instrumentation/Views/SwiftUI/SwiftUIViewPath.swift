@@ -28,26 +28,32 @@ internal enum SwiftUIViewNode: String {
 /// This enum provides a structured way to navigate SwiftUI's internal view hierarchy
 /// through reflection.
 internal enum SwiftUIViewPath {
-    case hostingController
-    case hostingControllerRoot
-    case navigationStack
-    case navigationStackDetail
-    case navigationStackContainer
+    case hostingControllerRootView
+    case hostingControllerModifiedContent
+    case hostingControllerBase
+    case navigationStackContent
+    case navigationStackAnyView
+    case navigationStackBase
     case sheetContent
 
     /// The sequence of property names to traverse for this view type
     var pathComponents: [SwiftUIViewNode] {
         switch self {
-        case .hostingController:
+        // HostingController cases
+        case .hostingControllerRootView:
+            return SwiftUIViewNode.hostingBase + [.content, .storage, .view, .content, .storage, .view, .content, .content]
+        case .hostingControllerModifiedContent:
             return SwiftUIViewNode.hostingBase + [.content, .storage, .view]
-        case .hostingControllerRoot:
+        case .hostingControllerBase:
             return SwiftUIViewNode.hostingBase
-        case .navigationStack:
-            return SwiftUIViewNode.navigationBase
-        case .navigationStackDetail:
+        // NavigationStack cases
+        case .navigationStackContent:
             return SwiftUIViewNode.navigationBase + [.content, .list, .item, .type]
-        case .navigationStackContainer:
+        case .navigationStackAnyView:
             return SwiftUIViewNode.navigationBase + [.root]
+        case .navigationStackBase:
+            return SwiftUIViewNode.navigationBase
+        // Modal case
         case .sheetContent:
             return SwiftUIViewNode.sheetBase
         }
