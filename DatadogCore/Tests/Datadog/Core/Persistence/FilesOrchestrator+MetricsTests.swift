@@ -46,7 +46,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
 
     // MARK: - "Batch Deleted" Metric
 
-    func testWhenReadableFileIsDeleted_itSendsBatchDeletedMetric() throws {
+    func testWhenReadableFileIsDeleted_itSendsTelemetryMetric() throws {
         // Given
         let orchestrator = createOrchestrator()
         let expectedBatchAge = storage.minFileAgeForRead + 1
@@ -63,8 +63,8 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         orchestrator.delete(readableFile: file, deletionReason: .intakeCode(responseCode: 202))
 
         // Then
-        let metric = try XCTUnwrap(telemetry.messages.firstMetricReport(named: "Batch Deleted"))
-        DDAssertJSONEqual(metric.attributes, [
+        let batchDeleted = try XCTUnwrap(telemetry.messages.firstMetricReport(named: "Batch Deleted"))
+        DDAssertJSONEqual(batchDeleted.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
             "consent": "consent value",
@@ -76,13 +76,20 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "in_background": false,
             "background_tasks_enabled": false,
             "batch_age": expectedBatchAge.toMilliseconds,
-            "batch_removal_reason": "intake-code-202",
-            "pending_batches": 1
+            "batch_removal_reason": "intake-code-202"
         ])
-        XCTAssertEqual(metric.sampleRate, BatchDeletedMetric.sampleRate)
+        XCTAssertEqual(batchDeleted.sampleRate, BatchDeletedMetric.sampleRate)
+
+        let pendingBatches = telemetry.messages.compactMap { $0.asMetricIncrement }.reduce(0) { count, metric in
+            XCTAssertEqual(metric.metric, "pending batches")
+            XCTAssertEqual(metric.cardinalities["track"], .string("track name"))
+            return count + metric.increment
+        }
+
+        XCTAssertEqual(pendingBatches, 1)
     }
 
-    func testWhenObsoleteFileIsDeleted_itSendsBatchDeletedMetric() throws {
+    func testWhenObsoleteFileIsDeleted_itSendsTelemetryMetric() throws {
         // Given:
         // - request some batch to be created
         let orchestrator = createOrchestrator()
@@ -95,8 +102,8 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         _ = orchestrator.getReadableFiles()
 
         // Then
-        let metric = try XCTUnwrap(telemetry.messages.firstMetricReport(named: "Batch Deleted"))
-        DDAssertJSONEqual(metric.attributes, [
+        let batchDeleted = try XCTUnwrap(telemetry.messages.firstMetricReport(named: "Batch Deleted"))
+        DDAssertJSONEqual(batchDeleted.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
             "consent": "consent value",
@@ -108,13 +115,29 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "in_background": false,
             "background_tasks_enabled": false,
             "batch_age": (storage.maxFileAgeForRead + 1).toMilliseconds,
-            "batch_removal_reason": "obsolete",
-            "pending_batches": 0
+            "batch_removal_reason": "obsolete"
         ])
-        XCTAssertEqual(metric.sampleRate, BatchDeletedMetric.sampleRate)
+        XCTAssertEqual(batchDeleted.sampleRate, BatchDeletedMetric.sampleRate)
+
+        let pendingBatches = telemetry.messages.reduce(0) { count, message in
+            switch message {
+            case let .metric(.record(metric, value, cardinalities)):
+                XCTAssertEqual(metric, "pending batches")
+                XCTAssertEqual(cardinalities["track"], .string("track name"))
+                return value
+            case let .metric(.increment(metric, value, cardinalities)):
+                XCTAssertEqual(metric, "pending batches")
+                XCTAssertEqual(cardinalities["track"], .string("track name"))
+                return count + value
+            default:
+                return count
+            }
+        }
+
+        XCTAssertEqual(pendingBatches, 0)
     }
 
-    func testWhenDirectoryIsPurged_itSendsBatchDeletedMetrics() throws {
+    func testWhenDirectoryIsPurged_itSendsTelemetryMetrics() throws {
         // Given: some batch
         // - request batch to be created
         // - write more data than allowed directory size limit
@@ -130,8 +153,8 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         _ = try orchestrator.getWritableFile(writeSize: 1)
 
         // Then
-        let metric = try XCTUnwrap(telemetry.messages.firstMetricReport(named: "Batch Deleted"))
-        DDAssertJSONEqual(metric.attributes, [
+        let batchDeleted = try XCTUnwrap(telemetry.messages.firstMetricReport(named: "Batch Deleted"))
+        DDAssertJSONEqual(batchDeleted.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
             "consent": "consent value",
@@ -143,10 +166,17 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "in_background": false,
             "background_tasks_enabled": false,
             "batch_age": expectedBatchAge.toMilliseconds,
-            "batch_removal_reason": "purged",
-            "pending_batches": 0
+            "batch_removal_reason": "purged"
         ])
-        XCTAssertEqual(metric.sampleRate, BatchDeletedMetric.sampleRate)
+        XCTAssertEqual(batchDeleted.sampleRate, BatchDeletedMetric.sampleRate)
+
+        let pendingBatches = telemetry.messages.compactMap { $0.asMetricIncrement }.reduce(0) { count, metric in
+            XCTAssertEqual(metric.metric, "pending batches")
+            XCTAssertEqual(metric.cardinalities["track"], .string("track name"))
+            return count + metric.increment
+        }
+
+        XCTAssertEqual(pendingBatches, 1)
     }
 
     // MARK: - "Batch Closed" Metric
