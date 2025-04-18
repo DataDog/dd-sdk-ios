@@ -114,7 +114,6 @@ class SessionEndedMetricControllerTests: XCTestCase {
                 { controller.track(missedEventType: .action, in: sessionIDs.randomElement()!) },
                 { controller.track(missedEventType: .resource, in: nil) },
                 { controller.trackWasStopped(sessionID: nil) },
-                { controller.track(uploadCycle: mockRandomAttributes(), in: nil) },
                 { controller.endMetric(sessionID: sessionIDs.randomElement()!, with: .mockRandom()) },
             ],
             iterations: 100

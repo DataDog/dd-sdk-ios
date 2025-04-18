@@ -95,9 +95,6 @@ internal class SessionEndedMetric {
     /// Indicates if the session was stopped through `stopSession()` API.
     private var wasStopped = false
 
-    /// Information about the upload cycle during the session.
-    private var uploadCycle: [String: Int] = [:]
-
     /// If `RUM.Configuration.trackBackgroundEvents` was enabled for this session.
     private let tracksBackgroundEvents: Bool
 
@@ -197,18 +194,6 @@ internal class SessionEndedMetric {
     /// Signals that the session was stopped with `stopSession()` API.
     func trackWasStopped() {
         wasStopped = true
-    }
-
-    /// Tracks the upload quality metric for aggregation.
-    ///
-    /// - Parameters:
-    ///   - attributes: The upload quality attributes
-    func track(uploadCycle attributes: [String: Encodable]) {
-        guard let track = attributes[UploadCycleMetric.track] as? String else {
-            return
-        }
-
-        uploadCycle[track, default: 0] += 1
     }
 
     // MARK: - Exporting Attributes
@@ -322,10 +307,6 @@ internal class SessionEndedMetric {
         /// Information on number of events missed due to absence of an active view.
         let noViewEventsCount: NoViewEventsCount
 
-        /// Information about the upload cycles during the session.
-        /// The upload cycles is splitting between upload track name.
-        let uploadCycle: [String: Int]
-
         enum CodingKeys: String, CodingKey {
             case processType = "process_type"
             case precondition
@@ -337,7 +318,6 @@ internal class SessionEndedMetric {
             case sdkErrorsCount = "sdk_errors_count"
             case ntpOffset = "ntp_offset"
             case noViewEventsCount = "no_view_events_count"
-            case uploadCycle = "upload_cycle"
         }
     }
 
@@ -409,8 +389,7 @@ internal class SessionEndedMetric {
                     resources: missedEvents[.resource] ?? 0,
                     errors: missedEvents[.error] ?? 0,
                     longTasks: missedEvents[.longTask] ?? 0
-                ),
-                uploadCycle: uploadCycle
+                )
             )
         ]
     }

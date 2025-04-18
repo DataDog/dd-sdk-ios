@@ -20,12 +20,6 @@ internal struct TelemetryInterceptor: FeatureMessageReceiver {
         switch telemetry {
         case .error(let id, let message, let kind, let stack):
             interceptError(id: id, message: message, kind: kind, stack: stack)
-        case let .metric(.report(metric)) where metric.name == UploadCycleMetric.name:
-            // Intercept the 'upload_cycle' metric for aggregation in the rse
-            // metric
-            interceptUploadCycleMetric(attributes: metric.attributes)
-            return true // do not forward the message
-
         default:
             break
         }
@@ -35,9 +29,5 @@ internal struct TelemetryInterceptor: FeatureMessageReceiver {
 
     private func interceptError(id: String, message: String, kind: String, stack: String) {
         sessionEndedMetric.track(sdkErrorKind: kind, in: nil) // `nil` - track in current session
-    }
-
-    private func interceptUploadCycleMetric(attributes: [String: Encodable]) {
-        sessionEndedMetric.track(uploadCycle: attributes, in: nil) // `nil` - track in current session
     }
 }
