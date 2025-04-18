@@ -140,3 +140,9 @@ internal enum BatchBlockedMetric {
     /// The blocking failure reason.
     static let failure = "failure"
 }
+
+/// Definition of "Pending Batches" telemetry.
+internal enum PendingBatchMetric {
+    /// Metric type value.
+    static let typeValue = "pending batches"
+}
