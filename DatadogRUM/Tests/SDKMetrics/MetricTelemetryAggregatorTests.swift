@@ -22,7 +22,7 @@ class MetricTelemetryAggregatorTests: XCTestCase {
 
         let metric2: String = .mockRandom()
         let cardinalities2: MetricTelemetry.Cardinalities = [
-            .mockRandom(): .integer(.mockRandom())
+            .mockRandom(): .string(.mockRandom())
         ]
 
         let iterations: Int = .mockRandom(min: 0, max: 100)
@@ -60,7 +60,7 @@ class MetricTelemetryAggregatorTests: XCTestCase {
 
         let metric2: String = .mockRandom()
         let cardinalities2: MetricTelemetry.Cardinalities = [
-            .mockRandom(): .integer(.mockRandom())
+            .mockRandom(): .string(.mockRandom())
         ]
         let value2: Double = .mockRandom()
 

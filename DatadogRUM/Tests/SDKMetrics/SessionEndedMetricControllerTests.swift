@@ -34,7 +34,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         XCTAssertEqual(metric.sdkErrorsCount.total, errorKinds.count)
         XCTAssertEqual(metric.noViewEventsCount.actions, 1)
         XCTAssertEqual(metric.wasStopped, true)
-        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: SessionEndedMetric.Constants.name))
+        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetricReport(named: SessionEndedMetric.Constants.name))
         XCTAssertEqual(metricTelemetry.sampleRate, 4.2)
     }
 
@@ -127,7 +127,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
 
 private extension Array where Element == TelemetryMessage {
     var lastSessionEndedMetric: SessionEndedMetric.Attributes? {
-        return lastMetric(named: SessionEndedMetric.Constants.name)?
+        return lastMetricReport(named: SessionEndedMetric.Constants.name)?
             .attributes[SessionEndedMetric.Constants.rseKey] as? SessionEndedMetric.Attributes
     }
 }

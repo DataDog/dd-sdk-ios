@@ -133,13 +133,8 @@ internal enum BatchClosedMetric {
 
 /// Definition of "Batch Blocked" telemetry.
 internal enum BatchBlockedMetric {
-    /// The name of this metric, included in telemetry log.
-    /// Note: the "[Mobile Metric]" prefix is added when sending this telemetry in RUM.
-    static let name = "Batch Blocked"
     /// Metric type value.
     static let typeValue = "batch blocked"
-    /// The key for count of bacthes being blocked.
-    static let batchCount = "count"
     /// List of upload blocker reasons
     static let blockers = "blockers"
     /// The blocking failure reason.

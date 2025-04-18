@@ -89,7 +89,7 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
 
         XCTAssertEqual(telemetry.messages.count, 3)
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_cycle"), "An upload cycle metric should be send to `telemetry`.")
+        let metric = try XCTUnwrap(telemetry.messages.firstMetricReport(named: "upload_cycle"), "An upload cycle metric should be send to `telemetry`.")
         XCTAssertEqual(metric.attributes["track"] as? String, featureName)
     }
 
@@ -140,7 +140,7 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(try orchestrator.directory.files().count, 1)
 
         XCTAssertEqual(telemetry.messages.count, 1)
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_cycle"), "An upload cycle metric should be send to `telemetry`.")
+        let metric = try XCTUnwrap(telemetry.messages.firstMetricReport(named: "upload_cycle"), "An upload cycle metric should be send to `telemetry`.")
         XCTAssertEqual(metric.attributes["track"] as? String, featureName)
     }
 
@@ -522,9 +522,10 @@ class DataUploadWorkerTests: XCTestCase {
         )
     }
 
-    func testWhenUploadIsBlocked_itDoesSendBatchBlockedTelemetry() throws {
+    func testWhenUploadIsBlocked_itIncrementsBatchBlockedTelemetry() throws {
         // Given
-        let aggregator = BatchBlockedMetricAggregator()
+        let telemetry = TelemetryMock()
+        writer.write(value: ["key": "value"])
 
         // When
         let uploadExpectation = self.expectation(description: "Upload has started")
@@ -553,19 +554,18 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .neverUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: featureName,
-            telemetry: NOPTelemetry(),
-            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
-            batchBlockedMetricAggregator: aggregator
+            telemetry: telemetry,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [uploadExpectation], timeout: 0.5)
         worker.cancelSynchronously()
 
         // Then
-        let metrics = aggregator.flush()
-        XCTAssertEqual(metrics.count, 1)
-        XCTAssertEqual(metrics.first?.attributes["blockers"] as? [String], ["offline", "low_battery"])
-        XCTAssertEqual(metrics.first?.attributes["track"] as? String, featureName)
+        let metric = try XCTUnwrap(telemetry.messages.firstMetricIncrement(named: BatchBlockedMetric.typeValue))
+        XCTAssertEqual(metric.increment, 1)
+        XCTAssertEqual(metric.cardinalities["blockers"], .array([.string("offline"), .string("low_battery")]))
+        XCTAssertEqual(metric.cardinalities["track"], .string(featureName))
     }
 
     func testWhenDataIsUploadedWithServerError_itDoesNotSendErrorTelemetry() throws {
@@ -610,7 +610,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         // Then
         XCTAssertEqual(telemetry.messages.count, 1)
-        XCTAssertNotNil(telemetry.messages.firstMetric(named: "upload_cycle"), "An upload cycle metric should be send to `telemetry`.")
+        XCTAssertNotNil(telemetry.messages.firstMetricReport(named: "upload_cycle"), "An upload cycle metric should be send to `telemetry`.")
     }
 
     func testWhenDataIsUploadedWithAlertingStatusCode_itSendsErrorTelemetry() throws {
@@ -698,11 +698,11 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(error.message, #"Data upload finished with error - Error Domain=abc Code=0 "(null)""#)
     }
 
-    func testWhenDataIsUploadedWithRetryableStatusCode_itSendsBatchBlockedTelemetry() throws {
+    func testWhenDataIsUploadedWithRetryableStatusCode_itIncrementsBatchBlockedTelemetry() throws {
         // Given
-        let aggregator = BatchBlockedMetricAggregator()
-
+        let telemetry = TelemetryMock()
         writer.write(value: ["key": "value"])
+
         let randomStatusCode: HTTPResponseStatusCode = [
             .requestTimeout,
             .tooManyRequests,
@@ -730,19 +730,18 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: featureName,
-            telemetry: NOPTelemetry(),
-            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
-            batchBlockedMetricAggregator: aggregator
+            telemetry: telemetry,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
         worker.cancelSynchronously()
 
         // Then
-        let metrics = aggregator.flush()
-        XCTAssertEqual(metrics.count, 1)
-        XCTAssertEqual(metrics.first?.attributes["failure"] as? String, "intake-code-\(randomStatusCode.rawValue)")
-        XCTAssertEqual(metrics.first?.attributes["track"] as? String, featureName)
+        let metric = try XCTUnwrap(telemetry.messages.firstMetricIncrement(named: BatchBlockedMetric.typeValue))
+        XCTAssertEqual(metric.increment, 1)
+        XCTAssertEqual(metric.cardinalities["failure"], .string("intake-code-\(randomStatusCode.rawValue)"))
+        XCTAssertEqual(metric.cardinalities["track"], .string(featureName))
     }
 
     func testWhenDataCannotBePreparedForUpload_itSendsErrorTelemetry() throws {
@@ -781,7 +780,7 @@ class DataUploadWorkerTests: XCTestCase {
         let error = try XCTUnwrap(telemetry.messages.firstError(), "An error should be send to `telemetry`.")
         XCTAssertEqual(error.message, #"Failed to initiate 'some-feature' data upload - Failed to prepare upload"#)
 
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_cycle"), "An upload cycle metric should be send to `telemetry`.")
+        let metric = try XCTUnwrap(telemetry.messages.firstMetricReport(named: "upload_cycle"), "An upload cycle metric should be send to `telemetry`.")
         XCTAssertEqual(metric.attributes["track"] as? String, "some-feature")
     }
 
