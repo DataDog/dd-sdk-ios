@@ -239,9 +239,9 @@ internal class DataUploadWorker: DataUploadWorkerType {
     }
 
     private func sendUploadCycleMetric() {
-        telemetry.metric(
-            name: UploadCycleMetric.name,
-            attributes: [UploadCycleMetric.track: featureName]
+        telemetry.increment(
+            metric: UploadCycleMetric.name,
+            cardinalities: [UploadCycleMetric.track: .string(featureName)]
         )
     }
 
