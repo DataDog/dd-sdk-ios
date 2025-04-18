@@ -75,10 +75,6 @@ internal final class DatadogCore {
     /// Maximum number of batches per upload.
     internal let maxBatchesPerUpload: Int
 
-    /// Instance to aggregate batch-blocked metric to be sent when the
-    /// application goes to background.
-    private let batchBlockedMetricAggregator = BatchBlockedMetricAggregator()
-
     /// Creates a core instance.
     ///
     /// - Parameters:
@@ -93,7 +89,6 @@ internal final class DatadogCore {
     ///   - maxBatchesPerUpload: Number of batch to process during an upload cycle.
     ///   - backgroundTasksEnabled: Enables upload background task.
     ///   - isRunFromExtension: Set `true` when the SDK is initialised from an extension.
-    ///   - notificationCenter: The Notification center to observe.
     init(
         directory: CoreDirectory,
         dateProvider: DateProvider,
@@ -105,8 +100,7 @@ internal final class DatadogCore {
         applicationVersion: String,
         maxBatchesPerUpload: Int,
         backgroundTasksEnabled: Bool,
-        isRunFromExtension: Bool = false,
-        notificationCenter: NotificationCenter = .default
+        isRunFromExtension: Bool = false
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
@@ -132,14 +126,6 @@ internal final class DatadogCore {
         self.contextProvider.publish { [weak self] context in
             self?.send(message: .context(context))
         }
-
-        // observe application entering background
-        notificationCenter.addObserver(
-            self,
-            selector: #selector(applicationDidEnterBackground),
-            name: ApplicationNotifications.didEnterBackground,
-            object: nil
-        )
     }
 
     /// Sets current user information.
@@ -326,15 +312,6 @@ internal final class DatadogCore {
         stores = [:]
         features = [:]
     }
-
-    @objc
-    private func applicationDidEnterBackground() {
-        // Report aggregated 'Batch Blocked' telemetry metric
-        // when the application enters background.
-        for event in batchBlockedMetricAggregator.flush() {
-            telemetry.metric(.report(event))
-        }
-    }
 }
 
 extension DatadogCore: DatadogCoreProtocol {
@@ -378,8 +355,7 @@ extension DatadogCore: DatadogCoreProtocol {
                 performance: performancePreset,
                 backgroundTasksEnabled: backgroundTasksEnabled,
                 isRunFromExtension: isRunFromExtension,
-                telemetry: telemetry,
-                batchBlockedMetricAggregator: batchBlockedMetricAggregator
+                telemetry: telemetry
             )
 
             stores[T.name] = (

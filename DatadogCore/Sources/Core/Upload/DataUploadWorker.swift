@@ -44,8 +44,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
     private var previousUploadStatus: DataUploadStatus?
 
-    private let batchBlockedMetricAggregator: BatchBlockedMetricAggregator?
-
     init(
         queue: DispatchQueue,
         fileReader: Reader,
@@ -56,8 +54,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         featureName: String,
         telemetry: Telemetry,
         maxBatchesPerUpload: Int,
-        backgroundTaskCoordinator: BackgroundTaskCoordinator? = nil,
-        batchBlockedMetricAggregator: BatchBlockedMetricAggregator? = nil
+        backgroundTaskCoordinator: BackgroundTaskCoordinator? = nil
     ) {
         self.queue = queue
         self.fileReader = fileReader
@@ -68,7 +65,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.delay = delay
         self.featureName = featureName
         self.telemetry = telemetry
-        self.batchBlockedMetricAggregator = batchBlockedMetricAggregator
 
         let readWorkItem = DispatchWorkItem { [weak self] in
             guard let self = self else {
@@ -250,20 +246,23 @@ internal class DataUploadWorker: DataUploadWorkerType {
     }
 
     private func sendBatchBlockedMetric(blockers: [DataUploadConditions.Blocker], batchCount: Int) {
-        guard !blockers.isEmpty else {
+        guard batchCount > 0, !blockers.isEmpty else {
             return
         }
 
-        batchBlockedMetricAggregator?.increment(
+        telemetry.increment(
+            metric: BatchBlockedMetric.typeValue,
             by: batchCount,
-            track: featureName,
-            blockers: blockers.map {
-                switch $0 {
-                case .battery: return "low_battery"
-                case .lowPowerModeOn: return "lpm"
-                case .networkReachability: return "offline"
-                }
-            }
+            cardinalities: [
+                BatchMetric.trackKey: .string(featureName),
+                BatchBlockedMetric.blockers: .array(blockers.map {
+                    switch $0 {
+                    case .battery: return .string("low_battery")
+                    case .lowPowerModeOn: return .string("lpm")
+                    case .networkReachability: return .string("offline")
+                    }
+                })
+            ]
         )
     }
 
@@ -272,15 +271,18 @@ internal class DataUploadWorker: DataUploadWorkerType {
             return
         }
 
-        batchBlockedMetricAggregator?.increment(
+        telemetry.increment(
+            metric: BatchBlockedMetric.typeValue,
             by: batchCount,
-            track: featureName,
-            failure: {
-                switch error {
-                case let .httpError(code): return "intake-code-\(code.rawValue)"
-                case let .networkError(error): return "network-code-\(error.code)"
-                }
-            }()
+            cardinalities: [
+                BatchMetric.trackKey: .string(featureName),
+                BatchBlockedMetric.failure: .string({
+                    switch error {
+                    case let .httpError(code): return "intake-code-\(code.rawValue)"
+                    case let .networkError(error): return "network-code-\(error.code)"
+                    }
+                }())
+            ]
         )
     }
 }

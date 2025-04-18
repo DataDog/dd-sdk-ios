@@ -1489,10 +1489,6 @@
 		D2A7A9002BA1C24A00F46845 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D2A7A8FE2BA1C24A00F46845 /* PrivacyInfo.xcprivacy */; };
 		D2A7A9022BA1C4B100F46845 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D2A7A9012BA1C4B100F46845 /* PrivacyInfo.xcprivacy */; };
 		D2A7A9032BA1C4B100F46845 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D2A7A9012BA1C4B100F46845 /* PrivacyInfo.xcprivacy */; };
-		D2AB80BD2D91AA0800B4A7FC /* BatchBlockedMetricAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AB80BC2D91AA0800B4A7FC /* BatchBlockedMetricAggregator.swift */; };
-		D2AB80BE2D91AA0800B4A7FC /* BatchBlockedMetricAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AB80BC2D91AA0800B4A7FC /* BatchBlockedMetricAggregator.swift */; };
-		D2AB80DF2D931C0800B4A7FC /* BatchBlockedMetricAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AB80DE2D931C0800B4A7FC /* BatchBlockedMetricAggregatorTests.swift */; };
-		D2AB80E02D931C0800B4A7FC /* BatchBlockedMetricAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AB80DE2D931C0800B4A7FC /* BatchBlockedMetricAggregatorTests.swift */; };
 		D2AD1CC32CE4AE6600106C74 /* Color+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CBA2CE4AE6600106C74 /* Color+Reflection.swift */; };
 		D2AD1CC42CE4AE6600106C74 /* DisplayList+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CBD2CE4AE6600106C74 /* DisplayList+Reflection.swift */; };
 		D2AD1CC52CE4AE6600106C74 /* DisplayList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CBC2CE4AE6600106C74 /* DisplayList.swift */; };
@@ -3259,8 +3255,6 @@
 		D2A7840129A534F9003B03BB /* DatadogLogsTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogLogsTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2A7A8FE2BA1C24A00F46845 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D2A7A9012BA1C4B100F46845 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		D2AB80BC2D91AA0800B4A7FC /* BatchBlockedMetricAggregator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchBlockedMetricAggregator.swift; sourceTree = "<group>"; };
-		D2AB80DE2D931C0800B4A7FC /* BatchBlockedMetricAggregatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchBlockedMetricAggregatorTests.swift; sourceTree = "<group>"; };
 		D2AD1CB92CE4AE6600106C74 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		D2AD1CBA2CE4AE6600106C74 /* Color+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Reflection.swift"; sourceTree = "<group>"; };
 		D2AD1CBC2CE4AE6600106C74 /* DisplayList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayList.swift; sourceTree = "<group>"; };
@@ -5408,7 +5402,6 @@
 			isa = PBXGroup;
 			children = (
 				614396712A67D74F00197326 /* BatchMetrics.swift */,
-				D2AB80BC2D91AA0800B4A7FC /* BatchBlockedMetricAggregator.swift */,
 				D2E6E8FA2D8039B200FF1398 /* BenchmarkURLSessionTaskDelegate.swift */,
 			);
 			path = SDKMetrics;
@@ -5418,7 +5411,6 @@
 			isa = PBXGroup;
 			children = (
 				6134CDB02A691E850061CCD9 /* BatchMetricsTests.swift */,
-				D2AB80DE2D931C0800B4A7FC /* BatchBlockedMetricAggregatorTests.swift */,
 			);
 			path = SDKMetrics;
 			sourceTree = "<group>";
@@ -8427,7 +8419,6 @@
 				D29CDD3228211A2200F7DAA5 /* TLVBlock.swift in Sources */,
 				6128F5742BA3280300D35B08 /* DataStoreFileReader.swift in Sources */,
 				D2553829288F0B2400727FAD /* LowPowerModePublisher.swift in Sources */,
-				D2AB80BE2D91AA0800B4A7FC /* BatchBlockedMetricAggregator.swift in Sources */,
 				D224430629E95C2C00274EC7 /* MessageBus.swift in Sources */,
 				61F930BE2BA1ACAC005F0EE2 /* Storage+TLV.swift in Sources */,
 				6128F5772BA32DE500D35B08 /* DataStoreFileWriter.swift in Sources */,
@@ -8547,7 +8538,6 @@
 				61BBD19724ED50040023E65F /* DatadogConfigurationTests.swift in Sources */,
 				61133C612423990D00786299 /* URLSessionClientTests.swift in Sources */,
 				61133C6A2423990D00786299 /* DatadogTests.swift in Sources */,
-				D2AB80DF2D931C0800B4A7FC /* BatchBlockedMetricAggregatorTests.swift in Sources */,
 				D22743DB29DEB8B4001A7EF9 /* VitalCPUReaderTests.swift in Sources */,
 				61DA8CAC2861C3720074A606 /* DirectoriesTests.swift in Sources */,
 				61133C5E2423990D00786299 /* DataUploadDelayTests.swift in Sources */,
@@ -9814,7 +9804,6 @@
 				6128F5752BA3280300D35B08 /* DataStoreFileReader.swift in Sources */,
 				D2303A0B298D5412001A1FA3 /* AsyncWriter.swift in Sources */,
 				D224430729E95C2E00274EC7 /* MessageBus.swift in Sources */,
-				D2AB80BD2D91AA0800B4A7FC /* BatchBlockedMetricAggregator.swift in Sources */,
 				61F930BF2BA1ACAC005F0EE2 /* Storage+TLV.swift in Sources */,
 				6128F5782BA32DE500D35B08 /* DataStoreFileWriter.swift in Sources */,
 				D2CB6E3627C50EAE00A62B57 /* ObjcAppLaunchHandler.m in Sources */,
@@ -9878,7 +9867,6 @@
 				61F930C62BA1C4EB005F0EE2 /* TLVBlockReaderTests.swift in Sources */,
 				D22743E029DEB8B5001A7EF9 /* VitalCPUReaderTests.swift in Sources */,
 				D2A1EE3C287EECC200D28DFB /* CarrierInfoPublisherTests.swift in Sources */,
-				D2AB80E02D931C0800B4A7FC /* BatchBlockedMetricAggregatorTests.swift in Sources */,
 				61112F8F2A4417D6006FFCA6 /* DDRUM+apiTests.m in Sources */,
 				D2DC4BBD27F234E000E4FB96 /* CITestIntegrationTests.swift in Sources */,
 				D2CB6EE427C520D400A62B57 /* FeatureTests.swift in Sources */,
