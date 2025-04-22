@@ -37,14 +37,11 @@ class MetricTelemetryAggregatorTests: XCTestCase {
 
         // Then
         let events = aggregator.flush()
-        XCTAssertEqual(events.count, 4)
-
-        let event1 = try XCTUnwrap(events.first(where: { metric1 == $0.name }))
-        XCTAssertEqual(event1.attributes["value"] as? Double, Double(iterations))
-
-        let event2 = try XCTUnwrap(events.first(where: { metric2 == $0.name }))
-        XCTAssertEqual(event2.attributes["value"] as? Double, Double(iterations))
-
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(events.first?.attributes[metric1] as? Double, Double(iterations))
+        XCTAssertEqual(events.first?.attributes[metric2] as? Double, Double(iterations))
+        XCTAssertEqual(events.last?.attributes[metric1] as? Double, Double(iterations))
+        XCTAssertEqual(events.last?.attributes[metric2] as? Double, Double(iterations))
         XCTAssertTrue(aggregator.flush().isEmpty)
     }
 
@@ -76,14 +73,11 @@ class MetricTelemetryAggregatorTests: XCTestCase {
 
         // Then
         let events = aggregator.flush()
-        XCTAssertEqual(events.count, 4)
-
-        let event1 = try XCTUnwrap(events.first(where: { metric1 == $0.name }))
-        XCTAssertEqual(event1.attributes["value"] as? Double, value1)
-
-        let event2 = try XCTUnwrap(events.first(where: { metric2 == $0.name }))
-        XCTAssertEqual(event2.attributes["value"] as? Double, value2)
-
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(events.first?.attributes[metric1] as? Double, value1)
+        XCTAssertEqual(events.first?.attributes[metric2] as? Double, value2)
+        XCTAssertEqual(events.last?.attributes[metric1] as? Double, value1)
+        XCTAssertEqual(events.last?.attributes[metric2] as? Double, value2)
         XCTAssertTrue(aggregator.flush().isEmpty)
     }
 

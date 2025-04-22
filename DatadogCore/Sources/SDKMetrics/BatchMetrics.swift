@@ -134,7 +134,7 @@ internal enum BatchClosedMetric {
 /// Definition of "Batch Blocked" telemetry.
 internal enum BatchBlockedMetric {
     /// Metric type value.
-    static let typeValue = "batch blocked"
+    static let typeValue = "batch_blocked"
     /// List of upload blocker reasons
     static let blockers = "blockers"
     /// The blocking failure reason.
@@ -144,5 +144,5 @@ internal enum BatchBlockedMetric {
 /// Definition of "Pending Batches" telemetry.
 internal enum PendingBatchMetric {
     /// Metric type value.
-    static let typeValue = "pending batches"
+    static let typeValue = "pending_batches"
 }

@@ -81,7 +81,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         XCTAssertEqual(batchDeleted.sampleRate, BatchDeletedMetric.sampleRate)
 
         let pendingBatches = telemetry.messages.compactMap { $0.asMetricIncrement }.reduce(0) { count, metric in
-            XCTAssertEqual(metric.metric, "pending batches")
+            XCTAssertEqual(metric.metric, "pending_batches")
             XCTAssertEqual(metric.cardinalities["track"], .string("track name"))
             return count + metric.increment
         }
@@ -122,11 +122,11 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         let pendingBatches = telemetry.messages.reduce(0) { count, message in
             switch message {
             case let .metric(.record(metric, value, cardinalities)):
-                XCTAssertEqual(metric, "pending batches")
+                XCTAssertEqual(metric, "pending_batches")
                 XCTAssertEqual(cardinalities["track"], .string("track name"))
                 return value
             case let .metric(.increment(metric, value, cardinalities)):
-                XCTAssertEqual(metric, "pending batches")
+                XCTAssertEqual(metric, "pending_batches")
                 XCTAssertEqual(cardinalities["track"], .string("track name"))
                 return count + value
             default:
@@ -171,7 +171,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         XCTAssertEqual(batchDeleted.sampleRate, BatchDeletedMetric.sampleRate)
 
         let pendingBatches = telemetry.messages.compactMap { $0.asMetricIncrement }.reduce(0) { count, metric in
-            XCTAssertEqual(metric.metric, "pending batches")
+            XCTAssertEqual(metric.metric, "pending_batches")
             XCTAssertEqual(metric.cardinalities["track"], .string("track name"))
             return count + metric.increment
         }
