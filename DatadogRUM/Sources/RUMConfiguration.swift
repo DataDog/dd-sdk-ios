@@ -14,6 +14,11 @@ import DatadogInternal
 @_exported import protocol DatadogInternal.__URLSessionDelegateProviding
 @_exported import enum DatadogInternal.URLSessionInstrumentation
 @_exported import enum DatadogInternal.TraceContextInjection
+@_exported import struct DatadogInternal.RUMViewEvent
+@_exported import struct DatadogInternal.RUMResourceEvent
+@_exported import struct DatadogInternal.RUMErrorEvent
+@_exported import struct DatadogInternal.RUMActionEvent
+@_exported import struct DatadogInternal.RUMLongTaskEvent
 // swiftlint:enable duplicate_imports
 
 extension RUM {
