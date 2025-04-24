@@ -7,6 +7,7 @@
 import XCTest
 import DatadogInternal
 @testable import DatadogRUM
+@testable import TestUtilities
 
 class RUMCommandTests: XCTestCase {
     struct SwiftError: Error, CustomDebugStringConvertible {

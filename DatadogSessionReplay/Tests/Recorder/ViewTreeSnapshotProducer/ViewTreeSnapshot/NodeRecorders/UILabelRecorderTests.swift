@@ -6,9 +6,10 @@
 
 #if os(iOS)
 import XCTest
-import TestUtilities
 @_spi(Internal)
 @testable import DatadogSessionReplay
+@_spi(Internal)
+@testable import TestUtilities
 
 // swiftlint:disable opening_brace
 class UILabelRecorderTests: XCTestCase {

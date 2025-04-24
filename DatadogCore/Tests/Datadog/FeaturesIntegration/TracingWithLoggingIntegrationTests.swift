@@ -26,7 +26,8 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
     }
 
     func testSendingLogWithOTMessageField() throws {
-        core.expectation = expectation(description: "Send log")
+        let expectation = expectation(description: "Send log")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
         let integration = TracingWithLoggingIntegration(core: core, service: .mockAny(), networkInfoEnabled: .mockAny())
@@ -63,8 +64,9 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
     }
 
     func testWritingLogWithOTErrorField() throws {
-        core.expectation = expectation(description: "Send 3 logs")
-        core.expectation?.expectedFulfillmentCount = 3
+        let expectation = expectation(description: "Send 3 logs")
+        expectation.expectedFulfillmentCount = 3
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
         let integration = TracingWithLoggingIntegration(core: core, service: .mockAny(), networkInfoEnabled: .mockAny())
@@ -103,7 +105,8 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
     }
 
     func testWritingCustomLogWithoutAnyOTFields() throws {
-        core.expectation = expectation(description: "Send log")
+        let expectation = expectation(description: "Send log")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
         let integration = TracingWithLoggingIntegration(core: core, service: .mockAny(), networkInfoEnabled: .mockAny())

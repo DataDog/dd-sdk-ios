@@ -83,11 +83,7 @@ build_xcframework() {
         xcoptions+=(-archive "$ARCHIVES_TEMP_OUTPUT/$product/tvos-simulator.xcarchive" -framework "$product.framework")
     fi
 
-    # Datadog class conflicts with module name and Swift emits invalid module interface
-    # cf. https://github.com/apple/swift/issues/56573
-    #
-    # Therefore, we cannot provide ABI stability and we have to supply '-allow-internal-distribution'.
-    xcodebuild -create-xcframework -allow-internal-distribution ${xcoptions[@]} -output "$XCFRAMEWORKS_OUTPUT/$product.xcframework" | xcbeautify
+    xcodebuild -create-xcframework ${xcoptions[@]} -output "$XCFRAMEWORKS_OUTPUT/$product.xcframework" | xcbeautify
 
     echo_succ "The '$product.xcframework' was created successfully in '$XCFRAMEWORKS_OUTPUT'"
 }

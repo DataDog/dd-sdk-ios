@@ -6,6 +6,7 @@
 
 import Foundation
 import HTTPServerMock
+import TestUtilities
 import XCTest
 
 class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {

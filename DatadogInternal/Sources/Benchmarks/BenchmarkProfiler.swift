@@ -136,21 +136,22 @@ extension BenchmarkGauge {
     }
 }
 
-private final class NOPBench: BenchmarkProfiler, BenchmarkTracer, BenchmarkSpan, BenchmarkMeter, BenchmarkCounter, BenchmarkGauge {
+public final class NOPBench: BenchmarkProfiler, BenchmarkTracer, BenchmarkSpan, BenchmarkMeter, BenchmarkCounter, BenchmarkGauge {
+    public init() { }
     /// no-op
-    func tracer(operation: @autoclosure () -> String) -> BenchmarkTracer { self }
+    public func tracer(operation: @autoclosure () -> String) -> BenchmarkTracer { self }
     /// no-op
-    func counter(metric: @autoclosure () -> String) -> BenchmarkCounter { self }
+    public func counter(metric: @autoclosure () -> String) -> BenchmarkCounter { self }
     /// no-op
-    func gauge(metric: @autoclosure () -> String) -> BenchmarkGauge { self }
+    public func gauge(metric: @autoclosure () -> String) -> BenchmarkGauge { self }
     /// no-op
-    func observe(metric: @autoclosure () -> String, callback: @escaping (any BenchmarkGauge) -> Void) { }
+    public func observe(metric: @autoclosure () -> String, callback: @escaping (any BenchmarkGauge) -> Void) { }
     /// no-op
-    func add(value: Double, attributes: @autoclosure () -> [String: String]) { }
+    public func add(value: Double, attributes: @autoclosure () -> [String: String]) { }
     /// no-op
-    func record(value: Double, attributes: @autoclosure () -> [String: String]) { }
+    public func record(value: Double, attributes: @autoclosure () -> [String: String]) { }
     /// no-op
-    func startSpan(named: @autoclosure () -> String) -> BenchmarkSpan { self }
+    public func startSpan(named: @autoclosure () -> String) -> BenchmarkSpan { self }
     /// no-op
-    func stop() {}
+    public func stop() {}
 }

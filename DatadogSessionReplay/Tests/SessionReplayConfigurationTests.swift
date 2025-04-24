@@ -7,8 +7,9 @@
 #if os(iOS)
 import XCTest
 @_spi(Internal)
-@testable import DatadogSessionReplay
 @testable import TestUtilities
+@_spi(Internal)
+@testable import DatadogSessionReplay
 
 class SessionReplayConfigurationTests: XCTestCase {
     func testDefaultConfiguration() {

@@ -20,9 +20,18 @@ let package = Package(
     targets: [
         .target(
             name: "TestUtilities",
-            dependencies: ["Datadog"],
+            dependencies: [
+                .product(name: "DatadogCore", package: "Datadog"),
+                .product(name: "DatadogRUM", package: "Datadog"),
+                .product(name: "DatadogLogs",package: "Datadog"),
+                .product(name: "DatadogTrace",package: "Datadog"),
+                .product(name: "DatadogCrashReporting",package: "Datadog"),
+                .product(name: "DatadogSessionReplay", package: "Datadog"),
+                .product(name: "DatadogWebViewTracking",package: "Datadog")
+            ],
             path: ".",
-            sources: ["Helpers", "Mocks"]
+            sources: ["Sources"],
+            swiftSettings: [.define("SPM_BUILD")]
         ),
     ]
 )

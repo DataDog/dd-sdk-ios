@@ -11,7 +11,7 @@ import UIKit
 /// variable to instantiate a `Scenario` compliant object.
 internal struct SyntheticScenario: Scenario {
     /// The Synthetics benchmark scenario value.
-    internal enum Name: String {
+    internal enum Name: String, CaseIterable {
         case sessionReplay
         case sessionReplaySwiftUI
         case logsCustom
@@ -33,12 +33,39 @@ internal struct SyntheticScenario: Scenario {
     /// configured
     init?(processInfo: ProcessInfo = .processInfo) {
         guard
-            let rawValue = processInfo.environment["BENCHMARK_SCENARIO"],
+            let rawValue = processInfo.environment["BENCHMARK_SCENARIO"]
+        else {
+            return nil
+        }
+
+        self.init(rawValue: rawValue)
+    }
+
+    /// Creates the scenario by reading the `scenario` value from the
+    /// URL query item.
+    ///
+    /// - Parameter urlComponents: The `URLComponents` to read.
+    init?(urlComponents: URLComponents) {
+        guard
+            let rawValue = urlComponents.queryItem("scenario")
+        else {
+            return nil
+        }
+
+        self.init(rawValue: rawValue)
+    }
+
+    init?(rawValue: String) {
+        guard
             let name = Name(rawValue: rawValue)
         else {
             return nil
         }
 
+        self.init(name: name)
+    }
+
+    init(name: Name) {
         switch name {
         case .sessionReplay:
             _scenario = SessionReplayScenario()
@@ -84,7 +111,7 @@ internal enum SyntheticRun: String {
     case profiling
     case none
 
-    /// Creates the scenario by reading the `BENCHMARK_RUN` value from the
+    /// Creates the run by reading the `BENCHMARK_RUN` value from the
     /// environment variables.
     ///
     /// - Parameter processInfo: The `ProcessInfo` with environment variables
@@ -94,5 +121,25 @@ internal enum SyntheticRun: String {
             .environment["BENCHMARK_RUN"]
             .flatMap(Self.init(rawValue:))
         ?? .none
+    }
+
+    /// Creates the run by reading the `run` value from the
+    /// URL query item.
+    ///
+    /// - Parameter urlComponents: The `URLComponents` to read.
+    init?(urlComponents: URLComponents) {
+        guard
+            let rawValue = urlComponents.queryItem("run")
+        else {
+            return nil
+        }
+
+        self.init(rawValue: rawValue)
+    }
+}
+
+extension URLComponents {
+    func queryItem(_ name: String) -> String? {
+        queryItems?.first(where: { $0.name == name })?.value
     }
 }

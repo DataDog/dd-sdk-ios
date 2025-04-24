@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import DatadogRUM
 
 class VitalInfoSamplerTests: XCTestCase {

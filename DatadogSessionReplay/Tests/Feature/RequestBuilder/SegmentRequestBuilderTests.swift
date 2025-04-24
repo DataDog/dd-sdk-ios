@@ -9,8 +9,9 @@ import XCTest
 import DatadogInternal
 
 @_spi(Internal)
-@testable import DatadogSessionReplay
 @testable import TestUtilities
+@_spi(Internal)
+@testable import DatadogSessionReplay
 
 class SegmentRequestBuilderTests: XCTestCase {
     private let rumContext: RUMContext = .mockRandom() // all records must reference the same RUM context
