@@ -13,7 +13,7 @@ import DatadogInternal
 class TelemetryReceiverTests: XCTestCase {
     // MARK: - Thread safety
 
-    func testSendTelemetryAndReset_onAnyThread() {
+    func testSendTelemetryAndReset_onAnyThread() throws {
         let core = DatadogCoreProxy(
             context: .mockWith(
                 version: .mockRandom(),
@@ -21,7 +21,7 @@ class TelemetryReceiverTests: XCTestCase {
                 sdkVersion: .mockRandom()
             )
         )
-        defer { core.flushAndTearDown() }
+        defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
 
         RUM.enable(with: .mockAny(), in: core)
 

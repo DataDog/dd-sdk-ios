@@ -58,9 +58,9 @@ class WebViewLogReceiverTests: XCTestCase {
         // Given
         let messageReceiver = WebViewLogReceiver()
 
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send Event")
-        )
+        let expectation = expectation(description: "Send Event")
+        let core = PassthroughCoreMock()
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         let value: String = .mockRandom()
 
@@ -149,6 +149,7 @@ class WebViewLogReceiverTests: XCTestCase {
         let viewID: String = .mockRandom()
         let actionID: String = .mockRandom()
 
+        let expectation = expectation(description: "Send log")
         let core = PassthroughCoreMock(
             context: .mockWith(
                 baggages: [
@@ -159,9 +160,9 @@ class WebViewLogReceiverTests: XCTestCase {
                         "user_action.id": actionID
                     ])
                 ]
-            ),
-            expectation: expectation(description: "Send log")
+            )
         )
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
         XCTAssert(
@@ -188,10 +189,9 @@ class WebViewLogReceiverTests: XCTestCase {
         // Given
         let messageReceiver = WebViewLogReceiver()
         let telemetryReceiver = TelemetryReceiverMock()
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send log"),
-            messageReceiver: telemetryReceiver
-        )
+        let expectation = expectation(description: "Send log")
+        let core = PassthroughCoreMock(messageReceiver: telemetryReceiver)
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
         XCTAssert(
@@ -219,15 +219,16 @@ class WebViewLogReceiverTests: XCTestCase {
         // Given
         let messageReceiver = WebViewLogReceiver()
         let telemetryReceiver = TelemetryReceiverMock()
+        let expectation = expectation(description: "Send log")
         let core = PassthroughCoreMock(
             context: .mockWith(
                 baggages: [
                     "rum": .init("malformed RUM context")
                 ]
             ),
-            expectation: expectation(description: "Send log"),
             messageReceiver: telemetryReceiver
         )
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
         XCTAssert(

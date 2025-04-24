@@ -40,8 +40,8 @@ class SendingCrashReportTests: XCTestCase {
         core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
@@ -104,7 +104,7 @@ class SendingCrashReportTests: XCTestCase {
         // Flush async tasks in Crash Reporting feature (this is yet not a part of `core.flushAndTearDown()` today)
         // TODO: RUM-2766 Stop core instance with completion
         (core.get(feature: CrashReportingFeature.self)!.crashContextProvider as! CrashContextCoreProvider).flush()
-        core.flushAndTearDown()
+        try core.flushAndTearDown()
 
         // When (starting an SDK with pending crash report)
         core = DatadogCoreProxy()

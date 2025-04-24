@@ -26,8 +26,8 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         rumConfig.dateProvider = dateProvider
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         rumConfig = nil
     }

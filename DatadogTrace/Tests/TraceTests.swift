@@ -33,7 +33,7 @@ class TraceTests: XCTestCase {
     }
 
     func testWhenEnabledInNOPCore_itPrintsError() {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 

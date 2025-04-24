@@ -8,6 +8,7 @@
 import XCTest
 @_spi(Internal)
 @testable import DatadogSessionReplay
+@_spi(Internal)
 @testable import TestUtilities
 
 // swiftlint:disable opening_brace
