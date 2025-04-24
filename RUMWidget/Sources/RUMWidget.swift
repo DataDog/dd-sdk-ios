@@ -7,6 +7,7 @@
 import DatadogInternal
 import Foundation
 import DatadogCore
+import UIKit
 
 @available(iOS 15.0, *)
 public enum RUMWidget {
@@ -28,7 +29,9 @@ public enum RUMWidget {
         with configuration: Datadog.Configuration,
         in core: DatadogCoreProtocol
     ) throws {
-        guard !(core is NOPDatadogCore) else {
+        guard !(core is NOPDatadogCore),
+        Self.buttonHostingController == nil,
+        let view = Self.superView() else {
             throw ProgrammerError(
                 description: "Datadog SDK must be initialized before calling `RUMWidget.enable(with:)`."
             )
@@ -39,7 +42,27 @@ public enum RUMWidget {
         //        try core.register(feature: rum)
 
         let buttonHostingController = RUMWidgetHostingController(feature: feature)
-        buttonHostingController.setup()
+        buttonHostingController.setup(superView: view)
         self.buttonHostingController = buttonHostingController
+    }
+
+    public static func bringToFront(superview: UIView? = nil) {
+
+        guard let superView = superview ?? self.superView(), let buttonHostingController else { return }
+
+        superView.bringSubviewToFront(buttonHostingController.view)
+    }
+
+    private static func superView() -> UIView? {
+
+        if var topController = UIApplication.shared.windows.first?.rootViewController {
+            while let presentedViewController = topController.presentedViewController {
+                topController = presentedViewController
+            }
+
+            return topController.view
+        }
+
+        return nil
     }
 }

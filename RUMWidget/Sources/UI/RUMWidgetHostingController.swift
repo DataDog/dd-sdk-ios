@@ -36,19 +36,16 @@ final class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
         fatalError("init(coder:) has not been implemented")
     }
 
-    public func setup(edgeInsets: EdgeInsets = .init(top: 10, leading: 10, bottom: 85, trailing: 10)) {
+    public func setup(
+        superView: UIView,
+        edgeInsets: EdgeInsets = .init(top: 10, leading: 10, bottom: 85, trailing: 10)
+    ) {
         self.edgeInsets = edgeInsets
 
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handleDrag(_:)))
         view.addGestureRecognizer(panGesture)
 
-        if var topController = UIApplication.shared.windows.first?.rootViewController {
-            while let presentedViewController = topController.presentedViewController {
-                topController = presentedViewController
-            }
-
-            topController.view.addSubview(view)
-        }
+        superView.addSubview(view)
 
         updateFrame(isExpanded: false, isAnimated: false)
     }
