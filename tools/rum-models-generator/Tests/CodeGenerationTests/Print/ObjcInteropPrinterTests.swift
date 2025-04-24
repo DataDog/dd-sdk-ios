@@ -70,6 +70,24 @@ final class ObjcInteropPrinterTests: XCTestCase {
             public var mutableString: String
 
             public var optionalMutableString: String?
+
+            ///
+            /// - Parameters:
+            ///   - immutableString:
+            ///   - optionalImmutableString:
+            ///   - mutableString:
+            ///   - optionalMutableString:
+            public init(
+                immutableString: String,
+                optionalImmutableString: String? = nil,
+                mutableString: String,
+                optionalMutableString: String? = nil
+            ) {
+                self.immutableString = immutableString
+                self.optionalImmutableString = optionalImmutableString
+                self.mutableString = mutableString
+                self.optionalMutableString = optionalMutableString
+            }
         }
 
         // MARK: - ObjcInterop
@@ -153,6 +171,24 @@ final class ObjcInteropPrinterTests: XCTestCase {
             public var mutableInt: Int
 
             public var optionalMutableInt: Int?
+
+            ///
+            /// - Parameters:
+            ///   - immutableInt:
+            ///   - optionalImmutableInt:
+            ///   - mutableInt:
+            ///   - optionalMutableInt:
+            public init(
+                immutableInt: Int,
+                optionalImmutableInt: Int? = nil,
+                mutableInt: Int,
+                optionalMutableInt: Int? = nil
+            ) {
+                self.immutableInt = immutableInt
+                self.optionalImmutableInt = optionalImmutableInt
+                self.mutableInt = mutableInt
+                self.optionalMutableInt = optionalMutableInt
+            }
         }
 
         // MARK: - ObjcInterop
@@ -236,6 +272,24 @@ final class ObjcInteropPrinterTests: XCTestCase {
             public var mutableInt: Int64
 
             public var optionalMutableInt64: Int64?
+
+            ///
+            /// - Parameters:
+            ///   - immutableInt64:
+            ///   - optionalImmutableInt64:
+            ///   - mutableInt:
+            ///   - optionalMutableInt64:
+            public init(
+                immutableInt64: Int64,
+                optionalImmutableInt64: Int64? = nil,
+                mutableInt: Int64,
+                optionalMutableInt64: Int64? = nil
+            ) {
+                self.immutableInt64 = immutableInt64
+                self.optionalImmutableInt64 = optionalImmutableInt64
+                self.mutableInt = mutableInt
+                self.optionalMutableInt64 = optionalMutableInt64
+            }
         }
 
         // MARK: - ObjcInterop
@@ -319,6 +373,24 @@ final class ObjcInteropPrinterTests: XCTestCase {
             public var mutableDouble: Double
 
             public var optionalMutableDouble: Double?
+
+            ///
+            /// - Parameters:
+            ///   - immutableDouble:
+            ///   - optionalImmutableDouble:
+            ///   - mutableDouble:
+            ///   - optionalMutableDouble:
+            public init(
+                immutableDouble: Double,
+                optionalImmutableDouble: Double? = nil,
+                mutableDouble: Double,
+                optionalMutableDouble: Double? = nil
+            ) {
+                self.immutableDouble = immutableDouble
+                self.optionalImmutableDouble = optionalImmutableDouble
+                self.mutableDouble = mutableDouble
+                self.optionalMutableDouble = optionalMutableDouble
+            }
         }
 
         // MARK: - ObjcInterop
@@ -402,6 +474,24 @@ final class ObjcInteropPrinterTests: XCTestCase {
             public var mutableBool: Bool
 
             public var optionalMutableBool: Bool?
+
+            ///
+            /// - Parameters:
+            ///   - immutableBool:
+            ///   - optionalImmutableBool:
+            ///   - mutableBool:
+            ///   - optionalMutableBool:
+            public init(
+                immutableBool: Bool,
+                optionalImmutableBool: Bool? = nil,
+                mutableBool: Bool,
+                optionalMutableBool: Bool? = nil
+            ) {
+                self.immutableBool = immutableBool
+                self.optionalImmutableBool = optionalImmutableBool
+                self.mutableBool = mutableBool
+                self.optionalMutableBool = optionalMutableBool
+            }
         }
 
         // MARK: - ObjcInterop
@@ -498,6 +588,24 @@ final class ObjcInteropPrinterTests: XCTestCase {
             public var mutableEnum: Enumeration3
 
             public var optionalMutableEnum: Enumeration4?
+
+            ///
+            /// - Parameters:
+            ///   - immutableEnum:
+            ///   - optionalImmutableEnum:
+            ///   - mutableEnum:
+            ///   - optionalMutableEnum:
+            public init(
+                immutableEnum: Enumeration1,
+                optionalImmutableEnum: Enumeration2? = nil,
+                mutableEnum: Enumeration3,
+                optionalMutableEnum: Enumeration4? = nil
+            ) {
+                self.immutableEnum = immutableEnum
+                self.optionalImmutableEnum = optionalImmutableEnum
+                self.mutableEnum = mutableEnum
+                self.optionalMutableEnum = optionalMutableEnum
+            }
 
             public enum Enumeration1: String {
                 case case1 = "case1"
@@ -705,6 +813,24 @@ final class ObjcInteropPrinterTests: XCTestCase {
             public var mutableStrings: [String]
 
             public var optionalMutableStrings: [String]?
+
+            ///
+            /// - Parameters:
+            ///   - immutableStrings:
+            ///   - optionalImmutableStrings:
+            ///   - mutableStrings:
+            ///   - optionalMutableStrings:
+            public init(
+                immutableStrings: [String],
+                optionalImmutableStrings: [String]? = nil,
+                mutableStrings: [String],
+                optionalMutableStrings: [String]? = nil
+            ) {
+                self.immutableStrings = immutableStrings
+                self.optionalImmutableStrings = optionalImmutableStrings
+                self.mutableStrings = mutableStrings
+                self.optionalMutableStrings = optionalMutableStrings
+            }
         }
 
         // MARK: - ObjcInterop
@@ -788,6 +914,24 @@ final class ObjcInteropPrinterTests: XCTestCase {
             public var mutableInt64s: [Int64]
 
             public var optionalMutableInt64s: [Int64]?
+
+            ///
+            /// - Parameters:
+            ///   - immutableInt64s:
+            ///   - optionalImmutableInt64s:
+            ///   - mutableInt64s:
+            ///   - optionalMutableInt64s:
+            public init(
+                immutableInt64s: [Int64],
+                optionalImmutableInt64s: [Int64]? = nil,
+                mutableInt64s: [Int64],
+                optionalMutableInt64s: [Int64]? = nil
+            ) {
+                self.immutableInt64s = immutableInt64s
+                self.optionalImmutableInt64s = optionalImmutableInt64s
+                self.mutableInt64s = mutableInt64s
+                self.optionalMutableInt64s = optionalMutableInt64s
+            }
         }
 
         // MARK: - ObjcInterop
@@ -868,6 +1012,18 @@ final class ObjcInteropPrinterTests: XCTestCase {
             public let immutableEnums: [Options1]
 
             public let optionalImmutableEnums: [Options2]?
+
+            ///
+            /// - Parameters:
+            ///   - immutableEnums:
+            ///   - optionalImmutableEnums:
+            public init(
+                immutableEnums: [Options1],
+                optionalImmutableEnums: [Options2]? = nil
+            ) {
+                self.immutableEnums = immutableEnums
+                self.optionalImmutableEnums = optionalImmutableEnums
+            }
 
             public enum Options1: String {
                 case option1 = "option1"
@@ -1006,12 +1162,42 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
             public let optionalImmutableStructs: [Bizz]?
 
+            ///
+            /// - Parameters:
+            ///   - immutableStructs:
+            ///   - optionalImmutableStructs:
+            public init(
+                immutableStructs: [Bar],
+                optionalImmutableStructs: [Bizz]? = nil
+            ) {
+                self.immutableStructs = immutableStructs
+                self.optionalImmutableStructs = optionalImmutableStructs
+            }
+
             public struct Bar {
                 public let property: String
+
+                ///
+                /// - Parameters:
+                ///   - property:
+                public init(
+                    property: String
+                ) {
+                    self.property = property
+                }
             }
 
             public struct Bizz {
                 public let property: String
+
+                ///
+                /// - Parameters:
+                ///   - property:
+                public init(
+                    property: String
+                ) {
+                    self.property = property
+                }
             }
         }
 
@@ -1116,6 +1302,24 @@ final class ObjcInteropPrinterTests: XCTestCase {
             public var mutableStrings: [String: String]
 
             public var optionalMutableStrings: [String: String]?
+
+            ///
+            /// - Parameters:
+            ///   - immutableStrings:
+            ///   - optionalImmutableStrings:
+            ///   - mutableStrings:
+            ///   - optionalMutableStrings:
+            public init(
+                immutableStrings: [String: String],
+                optionalImmutableStrings: [String: String]? = nil,
+                mutableStrings: [String: String],
+                optionalMutableStrings: [String: String]? = nil
+            ) {
+                self.immutableStrings = immutableStrings
+                self.optionalImmutableStrings = optionalImmutableStrings
+                self.mutableStrings = mutableStrings
+                self.optionalMutableStrings = optionalMutableStrings
+            }
         }
 
         // MARK: - ObjcInterop
@@ -1199,6 +1403,24 @@ final class ObjcInteropPrinterTests: XCTestCase {
             public var mutableInt64s: [String: Int64]
 
             public var optionalMutableInt64s: [String: Int64]?
+
+            ///
+            /// - Parameters:
+            ///   - immutableInt64s:
+            ///   - optionalImmutableInt64s:
+            ///   - mutableInt64s:
+            ///   - optionalMutableInt64s:
+            public init(
+                immutableInt64s: [String: Int64],
+                optionalImmutableInt64s: [String: Int64]? = nil,
+                mutableInt64s: [String: Int64],
+                optionalMutableInt64s: [String: Int64]? = nil
+            ) {
+                self.immutableInt64s = immutableInt64s
+                self.optionalImmutableInt64s = optionalImmutableInt64s
+                self.mutableInt64s = mutableInt64s
+                self.optionalMutableInt64s = optionalMutableInt64s
+            }
         }
 
         // MARK: - ObjcInterop
@@ -1266,6 +1488,18 @@ final class ObjcInteropPrinterTests: XCTestCase {
             public let immutableCodables: [String: Codable]
 
             public let optionalImmutableCodables: [String: Codable]?
+
+            ///
+            /// - Parameters:
+            ///   - immutableCodables:
+            ///   - optionalImmutableCodables:
+            public init(
+                immutableCodables: [String: Codable],
+                optionalImmutableCodables: [String: Codable]? = nil
+            ) {
+                self.immutableCodables = immutableCodables
+                self.optionalImmutableCodables = optionalImmutableCodables
+            }
         }
 
         // MARK: - ObjcInterop
@@ -1376,6 +1610,24 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
             public let optionalImmutableBar: OptionalImmutableBar?
 
+            ///
+            /// - Parameters:
+            ///   - mutableBar:
+            ///   - immutableBar:
+            ///   - optionalMutableBar:
+            ///   - optionalImmutableBar:
+            public init(
+                mutableBar: MutableBar,
+                immutableBar: ImmutableBar,
+                optionalMutableBar: OptionalMutableBar? = nil,
+                optionalImmutableBar: OptionalImmutableBar? = nil
+            ) {
+                self.mutableBar = mutableBar
+                self.immutableBar = immutableBar
+                self.optionalMutableBar = optionalMutableBar
+                self.optionalImmutableBar = optionalImmutableBar
+            }
+
             public struct MutableBar {
                 public let immutableString: String
 
@@ -1384,24 +1636,78 @@ final class ObjcInteropPrinterTests: XCTestCase {
                 public var mutableString: String
 
                 public var optionalMutableString: String?
+
+                ///
+                /// - Parameters:
+                ///   - immutableString:
+                ///   - optionalImmutableString:
+                ///   - mutableString:
+                ///   - optionalMutableString:
+                public init(
+                    immutableString: String,
+                    optionalImmutableString: String? = nil,
+                    mutableString: String,
+                    optionalMutableString: String? = nil
+                ) {
+                    self.immutableString = immutableString
+                    self.optionalImmutableString = optionalImmutableString
+                    self.mutableString = mutableString
+                    self.optionalMutableString = optionalMutableString
+                }
             }
 
             public struct ImmutableBar {
                 public let immutableString: String
 
                 public let optionalImmutableString: String?
+
+                ///
+                /// - Parameters:
+                ///   - immutableString:
+                ///   - optionalImmutableString:
+                public init(
+                    immutableString: String,
+                    optionalImmutableString: String? = nil
+                ) {
+                    self.immutableString = immutableString
+                    self.optionalImmutableString = optionalImmutableString
+                }
             }
 
             public struct OptionalMutableBar {
                 public let immutableString: String
 
                 public let optionalImmutableString: String?
+
+                ///
+                /// - Parameters:
+                ///   - immutableString:
+                ///   - optionalImmutableString:
+                public init(
+                    immutableString: String,
+                    optionalImmutableString: String? = nil
+                ) {
+                    self.immutableString = immutableString
+                    self.optionalImmutableString = optionalImmutableString
+                }
             }
 
             public struct OptionalImmutableBar {
                 public let immutableString: String
 
                 public let optionalImmutableString: String?
+
+                ///
+                /// - Parameters:
+                ///   - immutableString:
+                ///   - optionalImmutableString:
+                public init(
+                    immutableString: String,
+                    optionalImmutableString: String? = nil
+                ) {
+                    self.immutableString = immutableString
+                    self.optionalImmutableString = optionalImmutableString
+                }
             }
         }
 
@@ -1560,8 +1866,26 @@ final class ObjcInteropPrinterTests: XCTestCase {
         public struct Foo {
             public var bar: Bar
 
+            ///
+            /// - Parameters:
+            ///   - bar:
+            public init(
+                bar: Bar
+            ) {
+                self.bar = bar
+            }
+
             public struct Bar {
                 public var enumeration: Enumeration
+
+                ///
+                /// - Parameters:
+                ///   - enumeration:
+                public init(
+                    enumeration: Enumeration
+                ) {
+                    self.enumeration = enumeration
+                }
 
                 public enum Enumeration: String {
                     case case1 = "case1"
@@ -1724,25 +2048,76 @@ final class ObjcInteropPrinterTests: XCTestCase {
         public struct Foo {
             public var bar: Bar
 
+            ///
+            /// - Parameters:
+            ///   - bar:
+            public init(
+                bar: Bar
+            ) {
+                self.bar = bar
+            }
+
             public struct Bar {
                 public var sharedStruct: SharedStruct
 
                 public var sharedEnumeration: SharedEnum
+
+                ///
+                /// - Parameters:
+                ///   - sharedStruct:
+                ///   - sharedEnumeration:
+                public init(
+                    sharedStruct: SharedStruct,
+                    sharedEnumeration: SharedEnum
+                ) {
+                    self.sharedStruct = sharedStruct
+                    self.sharedEnumeration = sharedEnumeration
+                }
             }
         }
 
         public struct Bizz {
             public var buzz: Buzz
 
+            ///
+            /// - Parameters:
+            ///   - buzz:
+            public init(
+                buzz: Buzz
+            ) {
+                self.buzz = buzz
+            }
+
             public struct Buzz {
                 public var sharedStruct: SharedStruct
 
                 public var sharedEnumeration: SharedEnum
+
+                ///
+                /// - Parameters:
+                ///   - sharedStruct:
+                ///   - sharedEnumeration:
+                public init(
+                    sharedStruct: SharedStruct,
+                    sharedEnumeration: SharedEnum
+                ) {
+                    self.sharedStruct = sharedStruct
+                    self.sharedEnumeration = sharedEnumeration
+                }
             }
         }
 
         public struct SharedStruct {
             public var integer: Int?
+
+            ///
+            /// - Parameters:
+            ///   - integer:
+            public init(
+                integer: Int? = nil
+            ) {
+                self.integer = integer
+            }
         }
 
         public enum SharedEnum: String {
@@ -1942,8 +2317,26 @@ final class ObjcInteropPrinterTests: XCTestCase {
         public struct Foo {
             public var bar: Bar
 
+            ///
+            /// - Parameters:
+            ///   - bar:
+            public init(
+                bar: Bar
+            ) {
+                self.bar = bar
+            }
+
             public struct Bar {
                 public let sharedEnumeration: SharedAssociatedTypeEnum
+
+                ///
+                /// - Parameters:
+                ///   - sharedEnumeration:
+                public init(
+                    sharedEnumeration: SharedAssociatedTypeEnum
+                ) {
+                    self.sharedEnumeration = sharedEnumeration
+                }
             }
         }
 

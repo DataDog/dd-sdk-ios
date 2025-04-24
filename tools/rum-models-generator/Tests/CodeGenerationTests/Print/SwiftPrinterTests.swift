@@ -118,11 +118,27 @@ final class SwiftPrinterTests: XCTestCase {
             /// Description of FooBar's `propertiesByNames`.
             public let propertiesByNames: [String: String]?
 
-            enum CodingKeys: String, CodingKey {
+            public enum CodingKeys: String, CodingKey {
                 case bar = "bar"
                 case bizz = "bizz"
                 case buzz = "buzz"
                 case propertiesByNames = "propertiesByNames"
+            }
+
+            /// Description of FooBar.
+            ///
+            /// - Parameters:
+            ///   - bar: Description of Bar.
+            ///   - buzz: Description of FooBar's `buzz`.
+            ///   - propertiesByNames: Description of FooBar's `propertiesByNames`.
+            public init(
+                bar: BAR? = nil,
+                buzz: [Buzz]? = nil,
+                propertiesByNames: [String: String]? = nil
+            ) {
+                self.bar = bar
+                self.buzz = buzz
+                self.propertiesByNames = propertiesByNames
             }
 
             /// Description of Bar.
@@ -133,9 +149,22 @@ final class SwiftPrinterTests: XCTestCase {
                 /// Description of Bar's `internal`.
                 public var `internal`: String
 
-                enum CodingKeys: String, CodingKey {
+                public enum CodingKeys: String, CodingKey {
                     case `public` = "public"
                     case `internal` = "internal"
+                }
+
+                /// Description of Bar.
+                ///
+                /// - Parameters:
+                ///   - `public`: Description of Bar's `public`.
+                ///   - `internal`: Description of Bar's `internal`.
+                public init(
+                    `public`: String? = nil,
+                    `internal`: String
+                ) {
+                    self.`public` = `public`
+                    self.`internal` = `internal`
                 }
             }
 
@@ -208,11 +237,11 @@ final class SwiftPrinterTests: XCTestCase {
     func testPrintingSwiftStructWithStaticCodingKeys() throws {
         let `struct` = SwiftStruct(
             name: "Foo",
-            comment: nil,
+            comment: "Foo structure",
             properties: [
                 SwiftStruct.Property(
                     name: "property1",
-                    comment: nil,
+                    comment: "property_1",
                     type: SwiftPrimitive<String>(),
                     isOptional: false,
                     mutability: .immutable,
@@ -221,7 +250,7 @@ final class SwiftPrinterTests: XCTestCase {
                 ),
                 SwiftStruct.Property(
                     name: "property2",
-                    comment: nil,
+                    comment: "property_2",
                     type: SwiftDictionary(
                         value: SwiftPrimitive<Int>()
                     ),
@@ -232,7 +261,7 @@ final class SwiftPrinterTests: XCTestCase {
                 ),
                 SwiftStruct.Property(
                     name: "property3",
-                    comment: nil,
+                    comment: "property_3",
                     type: SwiftPrimitive<String>(),
                     isOptional: false,
                     mutability: .immutable,
@@ -248,17 +277,34 @@ final class SwiftPrinterTests: XCTestCase {
 
         let expected = """
 
+        /// Foo structure
         public struct Foo: Codable {
+            /// property_1
             public let property1: String
 
+            /// property_2
             public let property2: [String: Int]
 
+            /// property_3
             public let property3: String = "default value"
 
-            enum CodingKeys: String, CodingKey {
+            public enum CodingKeys: String, CodingKey {
                 case property1 = "property_1"
                 case property2 = "property_2"
                 case property3 = "property_3"
+            }
+
+            /// Foo structure
+            ///
+            /// - Parameters:
+            ///   - property1: property_1
+            ///   - property2: property_2
+            public init(
+                property1: String,
+                property2: [String: Int]
+            ) {
+                self.property1 = property1
+                self.property2 = property2
             }
         }
 
@@ -294,6 +340,15 @@ final class SwiftPrinterTests: XCTestCase {
 
         public struct Foo: Codable {
             public let context: [String: Codable]
+
+            ///
+            /// - Parameters:
+            ///   - context:
+            public init(
+                context: [String: Codable]
+            ) {
+                self.context = context
+            }
         }
 
         extension Foo {
@@ -386,10 +441,25 @@ final class SwiftPrinterTests: XCTestCase {
 
             public let property3: String = "default value"
 
-            enum StaticCodingKeys: String, CodingKey {
+            public enum StaticCodingKeys: String, CodingKey {
                 case property1 = "property_1"
                 case property2 = "property_2"
                 case property3 = "property_3"
+            }
+
+            ///
+            /// - Parameters:
+            ///   - property1:
+            ///   - context:
+            ///   - property2:
+            public init(
+                property1: Int,
+                context: [String: Encodable],
+                property2: Bool? = nil
+            ) {
+                self.property1 = property1
+                self.context = context
+                self.property2 = property2
             }
         }
 
@@ -504,9 +574,21 @@ final class SwiftPrinterTests: XCTestCase {
 
             public var associatedTypeEnum: AssociatedTypeEnum?
 
-            enum CodingKeys: String, CodingKey {
+            public enum CodingKeys: String, CodingKey {
                 case fooProperty = "foo_property"
                 case associatedTypeEnum = "associated_type_enum"
+            }
+
+            ///
+            /// - Parameters:
+            ///   - fooProperty:
+            ///   - associatedTypeEnum:
+            public init(
+                fooProperty: Int,
+                associatedTypeEnum: AssociatedTypeEnum? = nil
+            ) {
+                self.fooProperty = fooProperty
+                self.associatedTypeEnum = associatedTypeEnum
             }
 
             /// `AssociatedTypeEnum` comment
@@ -561,8 +643,18 @@ final class SwiftPrinterTests: XCTestCase {
                 public struct SomeStruct: Codable {
                     public let someStructProperty: Bool
 
-                    enum CodingKeys: String, CodingKey {
+                    public enum CodingKeys: String, CodingKey {
                         case someStructProperty = "some_struct_property"
+                    }
+
+                    /// `SomeStruct` comment
+                    ///
+                    /// - Parameters:
+                    ///   - someStructProperty:
+                    public init(
+                        someStructProperty: Bool
+                    ) {
+                        self.someStructProperty = someStructProperty
                     }
                 }
             }
@@ -613,6 +705,16 @@ final class SwiftPrinterTests: XCTestCase {
         @_spi(Internal)
         public struct Foo: Codable {
             public let context: [String: Codable]
+
+            /// This comment should be above the attribute
+            ///
+            /// - Parameters:
+            ///   - context:
+            public init(
+                context: [String: Codable]
+            ) {
+                self.context = context
+            }
         }
 
         extension Foo {
