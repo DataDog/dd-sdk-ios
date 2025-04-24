@@ -257,6 +257,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // User Action commands
         case let command as RUMStartUserActionCommand where isActiveView:
+            fatalError("Crash the app on user action")
             if userActionScope == nil {
                 startContinuousUserAction(on: command)
             } else {

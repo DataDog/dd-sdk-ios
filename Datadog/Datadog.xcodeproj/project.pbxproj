@@ -7,15 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		11030D762D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */; };
-		11030D772D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */; };
-		1117AA062D09A39400F86B29 /* RUMAttributesIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */; };
-		1117AA072D09A39400F86B29 /* RUMAttributesIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */; };
 		11030D5F2D959EAD00732D5F /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D207317C29A5226A00ECBF94 /* DatadogLogs.framework */; };
 		11030D642D959EC300732D5F /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D20731B429A5279D00ECBF94 /* DatadogLogs.framework */; };
 		11030D692D959F1700732D5F /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
 		11030D6D2D95A48B00732D5F /* DatadogCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* DatadogCore.framework */; };
 		11030D712D95A51100732D5F /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */; };
+		11030D762D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */; };
+		11030D772D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */; };
 		112877992D708D300082D11B /* VitalRefreshRateReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112877972D708D300082D11B /* VitalRefreshRateReader.swift */; };
 		1128779A2D708D300082D11B /* FrameInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112877942D708D300082D11B /* FrameInfoProvider.swift */; };
 		1128779B2D708D300082D11B /* RenderLoopObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112877952D708D300082D11B /* RenderLoopObserver.swift */; };
@@ -24,8 +22,6 @@
 		1128779E2D708D300082D11B /* FrameInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112877942D708D300082D11B /* FrameInfoProvider.swift */; };
 		1128779F2D708D300082D11B /* RenderLoopObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112877952D708D300082D11B /* RenderLoopObserver.swift */; };
 		112877A02D708D300082D11B /* ViewHitchesReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112877962D708D300082D11B /* ViewHitchesReader.swift */; };
-		112877A62D72161A0082D11B /* VitalMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112877A52D7216150082D11B /* VitalMocks.swift */; };
-		112877A72D72161A0082D11B /* VitalMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112877A52D7216150082D11B /* VitalMocks.swift */; };
 		1132B34C2D9E9A30002384F2 /* RUMViewHitchesMetricIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1132B34B2D9E9A03002384F2 /* RUMViewHitchesMetricIntegrationTests.swift */; };
 		1132B34D2D9E9A30002384F2 /* RUMViewHitchesMetricIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1132B34B2D9E9A03002384F2 /* RUMViewHitchesMetricIntegrationTests.swift */; };
 		114CA1592D75C65700262287 /* ViewHitchesReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CA1582D75C64E00262287 /* ViewHitchesReaderTests.swift */; };
@@ -2294,7 +2290,6 @@
 		112877952D708D300082D11B /* RenderLoopObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderLoopObserver.swift; sourceTree = "<group>"; };
 		112877962D708D300082D11B /* ViewHitchesReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesReader.swift; sourceTree = "<group>"; };
 		112877972D708D300082D11B /* VitalRefreshRateReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalRefreshRateReader.swift; sourceTree = "<group>"; };
-		112877A52D7216150082D11B /* VitalMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalMocks.swift; sourceTree = "<group>"; };
 		1132B34B2D9E9A03002384F2 /* RUMViewHitchesMetricIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewHitchesMetricIntegrationTests.swift; sourceTree = "<group>"; };
 		114CA1582D75C64E00262287 /* ViewHitchesReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesReaderTests.swift; sourceTree = "<group>"; };
 		114CA15B2D75D6A700262287 /* DisplayLinkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayLinkerTests.swift; sourceTree = "<group>"; };
@@ -9825,10 +9820,7 @@
 				D2CB6F6827C520D400A62B57 /* SwiftUIExtensionsTests.swift in Sources */,
 				D2CB6F6A27C520D400A62B57 /* DDRUMMonitor+apiTests.m in Sources */,
 				D22743DD29DEB8B5001A7EF9 /* VitalInfoTests.swift in Sources */,
-				D2CB6F7027C520D400A62B57 /* UIKitMocks.swift in Sources */,
-				D2CB6F7327C520D400A62B57 /* CoreTelephonyMocks.swift in Sources */,
 				1132B34C2D9E9A30002384F2 /* RUMViewHitchesMetricIntegrationTests.swift in Sources */,
-				D20605B7287572640047275C /* DatadogContextProviderMock.swift in Sources */,
 				D2CB6F7527C520D400A62B57 /* UIKitExtensionsTests.swift in Sources */,
 				61F930C92BA1C51C005F0EE2 /* Storage+TLVTests.swift in Sources */,
 				61DA8CB928647A500074A606 /* InternalLoggerTests.swift in Sources */,
