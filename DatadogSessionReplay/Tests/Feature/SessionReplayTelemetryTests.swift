@@ -34,7 +34,7 @@ class SessionReplayTelemetryTests: XCTestCase {
         // Given
         let forwarder = TelemetryMock()
         let telemetry = SessionReplayTelemetry(telemetry: forwarder, queue: NoQueue())
-        let metricMessage: TelemetryMessage = .metric(.init(name: "test", attributes: [:], sampleRate: 100))
+        let metricMessage: TelemetryMessage = .metric(.report(.init(name: "test", attributes: [:], sampleRate: 100)))
         let usageMessage: TelemetryMessage = .usage(.init(event: .addError))
 
         // When
@@ -43,7 +43,7 @@ class SessionReplayTelemetryTests: XCTestCase {
 
         // Then
         XCTAssertEqual(forwarder.messages.count, 2)
-        XCTAssertNotNil(forwarder.messages.firstMetric(named: "test"))
+        XCTAssertNotNil(forwarder.messages.firstMetricReport(named: "test"))
         XCTAssertNotNil(forwarder.messages.firstUsage())
     }
 
@@ -61,7 +61,7 @@ class SessionReplayTelemetryTests: XCTestCase {
                 { telemetry.send(telemetry: .error(id: .mockRandom(), message: .mockRandom(), kind: .mockRandom(), stack: .mockRandom())); expectation.fulfill() },
                 { telemetry.send(telemetry: .debug(id: .mockRandom(), message: .mockRandom(), attributes: nil)); expectation.fulfill() },
                 { telemetry.send(telemetry: .debug(id: .mockRandom(), message: .mockRandom(), attributes: nil)); expectation.fulfill() },
-                { telemetry.send(telemetry: .metric(.init(name: .mockRandom(), attributes: [:], sampleRate: 100))); expectation.fulfill() }
+                { telemetry.send(telemetry: .metric(.report(.init(name: .mockRandom(), attributes: [:], sampleRate: 100)))); expectation.fulfill() }
             ],
             iterations: 25
         )

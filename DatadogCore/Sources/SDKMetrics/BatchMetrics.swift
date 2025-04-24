@@ -130,3 +130,19 @@ internal enum BatchClosedMetric {
     /// If the batch was closed by core or after new batch was forced by the feature.
     static let forcedNewKey = "forced_new"
 }
+
+/// Definition of "Batch Blocked" telemetry.
+internal enum BatchBlockedMetric {
+    /// Metric type value.
+    static let typeValue = "batch_blocked"
+    /// List of upload blocker reasons
+    static let blockers = "blockers"
+    /// The blocking failure reason.
+    static let failure = "failure"
+}
+
+/// Definition of "Pending Batches" telemetry.
+internal enum PendingBatchMetric {
+    /// Metric type value.
+    static let typeValue = "pending_batches"
+}

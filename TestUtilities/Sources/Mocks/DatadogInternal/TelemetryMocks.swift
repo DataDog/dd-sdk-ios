@@ -71,26 +71,56 @@ public class TelemetryMock: Telemetry, CustomStringConvertible {
             description.append("\n - [error] \(message), kind: \(kind), stack: \(stack)")
         case .configuration(let configuration):
             description.append("\n- [configuration] \(configuration)")
-        case let .metric(metric):
+        case let .metric(.report(metric)):
             let attributesString = metric.attributes.map({ "\($0.key): \($0.value)" }).joined(separator: ", ")
             description.append("\n- [metric] '\(metric.name)' (" + attributesString + ")")
         case .usage(let usage):
             description.append("\n- [usage] \(usage)")
+        case let .metric(.increment(metric, by: value, attributes)):
+            let attributesString = attributes.map({ "\($0.key): \($0.value)" }).joined(separator: ", ")
+            description.append("\n- [metric] '\(metric)' + \(value) (" + attributesString + ")")
+        case let .metric(.record(metric, value, attributes)):
+            let attributesString = attributes.map({ "\($0.key): \($0.value)" }).joined(separator: ", ")
+            description.append("\n- [metric] '\(metric)' = \(value) (" + attributesString + ")")
         }
     }
 }
 
 public extension Array where Element == TelemetryMessage {
     /// Returns properties of the first metric message of given name.
-    func firstMetric(named metricName: String) -> MetricTelemetry? {
-        return compactMap({ $0.asMetric })
+    func firstMetricReport(named metricName: String) -> MetricTelemetry.Event? {
+        return compactMap({ $0.asMetricReport })
             .first(where: { $0.name == metricName })
     }
 
     /// Returns properties of the first metric message of given name.
-    func lastMetric(named metricName: String) -> MetricTelemetry? {
-        return compactMap({ $0.asMetric })
+    func lastMetricReport(named metricName: String) -> MetricTelemetry.Event? {
+        return compactMap({ $0.asMetricReport })
             .last(where: { $0.name == metricName })
+    }
+
+    /// Returns properties of the first metric message of given name.
+    func firstMetricIncrement(named metricName: String) -> (metric: String, increment: Double, cardinalities: MetricTelemetry.Cardinalities)? {
+        return compactMap({ $0.asMetricIncrement })
+            .first(where: { $0.metric == metricName })
+    }
+
+    /// Returns properties of the first metric message of given name.
+    func lastMetricIncrement(named metricName: String) -> (metric: String, increment: Double, cardinalities: MetricTelemetry.Cardinalities)? {
+        return compactMap({ $0.asMetricIncrement })
+            .last(where: { $0.metric == metricName })
+    }
+
+    /// Returns properties of the first metric message of given name.
+    func firstMetricRecord(named metricName: String) -> (metric: String, value: Double, cardinalities: MetricTelemetry.Cardinalities)? {
+        return compactMap({ $0.asMetricRecord })
+            .first(where: { $0.metric == metricName })
+    }
+
+    /// Returns properties of the first metric message of given name.
+    func lastMetricRecord(named metricName: String) -> (metric: String, value: Double, cardinalities: MetricTelemetry.Cardinalities)? {
+        return compactMap({ $0.asMetricRecord })
+            .last(where: { $0.metric == metricName })
     }
 
     /// Returns attributes of the first debug telemetry in this array.
@@ -139,12 +169,28 @@ public extension TelemetryMessage {
         return configuration
     }
 
-    /// Extracts metric attributes if this is metric message.
-    var asMetric: MetricTelemetry? {
-        guard case let .metric(metric) = self else {
+    /// Extracts metric report if this is metric message.
+    var asMetricReport: MetricTelemetry.Event? {
+        guard case let .metric(.report(metric)) = self else {
             return nil
         }
         return metric
+    }
+
+    /// Extracts metric increment if this is metric message.
+    var asMetricIncrement: (metric: String, increment: Double, cardinalities: MetricTelemetry.Cardinalities)? {
+        guard case let .metric(.increment(name, value, cardinalities)) = self else {
+            return nil
+        }
+        return (name, value, cardinalities)
+    }
+
+    /// Extracts metric record if this is metric message.
+    var asMetricRecord: (metric: String, value: Double, cardinalities: MetricTelemetry.Cardinalities)? {
+        guard case let .metric(.record(name, value, cardinalities)) = self else {
+            return nil
+        }
+        return (name, value, cardinalities)
     }
 
     var asUsage: UsageTelemetry? {

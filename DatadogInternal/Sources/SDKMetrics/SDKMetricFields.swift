@@ -10,6 +10,8 @@ import Foundation
 public enum SDKMetricFields {
     /// Metric type key. It expects `String` value.
     public static let typeKey = "metric_type"
+    /// Metric value key. It expects `Double` value.
+    public static let valueKey = "value"
     /// The first sample rate applied to the metric.
     public static let headSampleRate = "head_sample_rate"
     /// Key referencing the session ID (`String`) that the metric should be sent with. It expects `String` value.
