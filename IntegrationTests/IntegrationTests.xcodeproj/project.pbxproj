@@ -93,7 +93,6 @@
 		9EC2835A26CFEE0B00FACF1C /* RUMMobileVitalsScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC2835926CFEE0B00FACF1C /* RUMMobileVitalsScenarioTests.swift */; };
 		9EC2835E26CFF57A00FACF1C /* RUMMobileVitalsScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9EC2835D26CFF57A00FACF1C /* RUMMobileVitalsScenario.storyboard */; };
 		9EC2836026CFF59400FACF1C /* RUMMobileVitalsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC2835F26CFF59400FACF1C /* RUMMobileVitalsViewController.swift */; };
-		D218665029967CBC006F5B23 /* RUMDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D218664E29967CBC006F5B23 /* RUMDataModels.swift */; };
 		D22F06CF29DAE5360026CC3C /* KioskSendInterruptedEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F06CB29DAE5360026CC3C /* KioskSendInterruptedEventsViewController.swift */; };
 		D22F06D029DAE5360026CC3C /* KioskSendEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F06CC29DAE5360026CC3C /* KioskSendEventsViewController.swift */; };
 		D22F06D129DAE5360026CC3C /* KioskViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F06CD29DAE5360026CC3C /* KioskViewController.swift */; };
@@ -229,8 +228,6 @@
 		9EC2835D26CFF57A00FACF1C /* RUMMobileVitalsScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMMobileVitalsScenario.storyboard; sourceTree = "<group>"; };
 		9EC2835F26CFF59400FACF1C /* RUMMobileVitalsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMobileVitalsViewController.swift; sourceTree = "<group>"; };
 		D21866412996796B006F5B23 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = Info.plist; path = IntegrationScenarios/Info.plist; sourceTree = SOURCE_ROOT; };
-		D218664E29967CBC006F5B23 /* RUMDataModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMDataModels.swift; sourceTree = "<group>"; };
-		D218664F29967CBC006F5B23 /* RUMDataModelsMapping.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMDataModelsMapping.swift; sourceTree = "<group>"; };
 		D2186652299698E8006F5B23 /* IntegrationScenarios.debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = IntegrationScenarios.debug.xcconfig; sourceTree = "<group>"; };
 		D2186653299699DE006F5B23 /* IntegrationScenarios.integration.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = IntegrationScenarios.integration.xcconfig; sourceTree = "<group>"; };
 		D2186654299699FD006F5B23 /* IntegrationScenarios.release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = IntegrationScenarios.release.xcconfig; sourceTree = "<group>"; };
@@ -508,7 +505,6 @@
 			children = (
 				61441C3B24617013003D8BB8 /* IntegrationTests.swift */,
 				61B9ED1E2461E57700C0DCFF /* UITestsHelpers.swift */,
-				D218664D29967CBC006F5B23 /* DataModels */,
 				61F3CD9C251106EB00C816E5 /* Scenarios */,
 				D21866412996796B006F5B23 /* Info.plist */,
 			);
@@ -693,16 +689,6 @@
 				9EC2835F26CFF59400FACF1C /* RUMMobileVitalsViewController.swift */,
 			);
 			path = MobileVitals;
-			sourceTree = "<group>";
-		};
-		D218664D29967CBC006F5B23 /* DataModels */ = {
-			isa = PBXGroup;
-			children = (
-				D218664E29967CBC006F5B23 /* RUMDataModels.swift */,
-				D218664F29967CBC006F5B23 /* RUMDataModelsMapping.swift */,
-			);
-			name = DataModels;
-			path = ../../DatadogRUM/Sources/DataModels;
 			sourceTree = "<group>";
 		};
 		D22F06CA29DAE5360026CC3C /* StopSessionScenario */ = {
@@ -945,9 +931,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS/Pods-Runner iOS-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS/Pods-Runner iOS-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -962,9 +952,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1001,9 +995,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1018,9 +1016,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS/Pods-Runner iOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS/Pods-Runner iOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1100,7 +1102,6 @@
 				61B6811F25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift in Sources */,
 				61C2C20D24C1831700C0321C /* RUMManualInstrumentationScenarioTests.swift in Sources */,
 				61098D2D27FEE4130021237A /* MessagePortChannel.swift in Sources */,
-				D218665029967CBC006F5B23 /* RUMDataModels.swift in Sources */,
 				9EC2835A26CFEE0B00FACF1C /* RUMMobileVitalsScenarioTests.swift in Sources */,
 				61B9ED1F2461E57700C0DCFF /* UITestsHelpers.swift in Sources */,
 				612C13DF2AAB6E940086B5D1 /* SRCommonAsserts.swift in Sources */,
