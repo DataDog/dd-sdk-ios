@@ -105,6 +105,12 @@ internal final class ViewEndedMetric {
             case instrumentationType = "instrumentation_type"
         }
     }
+}
+
+// MARK: - MetricAttributesConvertible
+
+extension ViewEndedMetric: MetricAttributesConvertible {
+    var metricName: String { Constants.name }
 
     func asMetricAttributes() -> [String: Encodable]? {
         guard let durationNs else {

@@ -7,9 +7,15 @@
 import Foundation
 import DatadogInternal
 
+// swiftlint:disable duplicate_imports
 #if SPM_BUILD
-import DatadogPrivate
+    #if swift(>=6.0)
+    internal import DatadogPrivate
+    #else
+    @_implementationOnly import DatadogPrivate
+    #endif
 #endif
+// swiftlint:enable duplicate_imports
 
 /// An interface for tracking key timestamps in the app launch sequence, including launch time and activation events.
 internal protocol AppLaunchHandling {

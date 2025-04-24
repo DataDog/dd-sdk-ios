@@ -13,14 +13,14 @@ import TestUtilities
 @testable import DatadogCore
 
 class DatadogTests: XCTestCase {
-    private var printFunction: PrintFunctionMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var printFunction: PrintFunctionSpy! // swiftlint:disable:this implicitly_unwrapped_optional
     private var defaultConfig = Datadog.Configuration(clientToken: "abc-123", env: "tests")
 
     override func setUp() {
         super.setUp()
 
         XCTAssertFalse(Datadog.isInitialized())
-        printFunction = PrintFunctionMock()
+        printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
     }
 

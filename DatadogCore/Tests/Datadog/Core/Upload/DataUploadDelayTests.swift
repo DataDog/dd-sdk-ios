@@ -5,6 +5,8 @@
  */
 
 import XCTest
+import TestUtilities
+
 @testable import DatadogCore
 
 class DataUploadDelayTests: XCTestCase {
