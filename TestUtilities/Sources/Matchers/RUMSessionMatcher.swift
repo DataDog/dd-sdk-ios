@@ -10,7 +10,7 @@ import Foundation
 /// * The Unit Tests target can see `Datadog` by `@testable import DatadogCore`.
 /// * In Integration Tests target we want to compile `Datadog` in "Release" configuration, so testability is not possible.
 /// This compiler statement gives both targets the visibility of `RUMDataModels.swift` either by import or direct compilation.
-@testable import DatadogRUM
+@testable import DatadogInternal
 #endif
 
 /// An error thrown by the `RUMSessionMatcher` if it spots an inconsistency in tracked RUM Session, e.g. when

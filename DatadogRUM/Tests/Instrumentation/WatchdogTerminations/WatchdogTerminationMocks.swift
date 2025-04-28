@@ -49,7 +49,7 @@ class WatchdogTerminationReporterMock: WatchdogTerminationReporting {
         self.didSend = didSend
     }
 
-    func send(date: Date?, state: DatadogRUM.WatchdogTerminationAppState, viewEvent: DatadogRUM.RUMViewEvent) {
+    func send(date: Date?, state: DatadogRUM.WatchdogTerminationAppState, viewEvent: DatadogInternal.RUMViewEvent) {
         sendParams = SendParams(date: date, state: state, viewEvent: viewEvent)
         didSend.fulfill()
     }
@@ -57,7 +57,7 @@ class WatchdogTerminationReporterMock: WatchdogTerminationReporting {
     struct SendParams {
         let date: Date?
         let state: DatadogRUM.WatchdogTerminationAppState
-        let viewEvent: DatadogRUM.RUMViewEvent
+        let viewEvent: DatadogInternal.RUMViewEvent
     }
 }
 

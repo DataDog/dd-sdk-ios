@@ -4,13 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import DatadogInternal
-
 // This file was generated from JSON Schema. Do not modify it directly.
 
 // swiftlint:disable all
 
-internal protocol RUMDataModel: Codable {}
+public protocol RUMDataModel: Codable {}
 
 /// Schema of all properties of an Action event
 public struct RUMActionEvent: RUMDataModel {

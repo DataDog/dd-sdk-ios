@@ -6,7 +6,20 @@
 
 import Foundation
 
-@testable import DatadogRUM
+import DatadogInternal
+
+/// Creates random RUM event.
+public func randomRUMEvent() -> RUMDataModel {
+    // swiftlint:disable opening_brace
+    return oneOf([
+        { RUMViewEvent.mockRandom() },
+        { RUMActionEvent.mockRandom() },
+        { RUMResourceEvent.mockRandom() },
+        { RUMErrorEvent.mockRandom() },
+        { RUMLongTaskEvent.mockRandom() },
+    ])
+    // swiftlint:enable opening_brace
+}
 
 extension RUMUser: RandomMockable {
     public static func mockRandom() -> RUMUser {
@@ -125,7 +138,7 @@ extension RUMViewEvent: RandomMockable {
 
     /// Produces random `RUMViewEvent` with setting given fields to certain values.
     public static func mockRandomWith(
-        sessionID: RUMUUID = .mockRandom(),
+        sessionID: UUID = .mockRandom(),
         viewID: String = .mockRandom(),
         date: Int64 = .mockRandom(),
         viewIsActive: Bool? = .random(),
@@ -162,7 +175,7 @@ extension RUMViewEvent: RandomMockable {
             service: .mockRandom(),
             session: .init(
                 hasReplay: hasReplay,
-                id: sessionID.toRUMDataFormat,
+                id: sessionID.uuidString.lowercased(),
                 isActive: true,
                 sampledForReplay: nil,
                 type: .user

@@ -4,9 +4,10 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import DatadogInternal
 import Foundation
 import UIKit
+import DatadogInternal
+
 @testable import DatadogRUM
 
 extension RUM.Configuration {
@@ -96,19 +97,6 @@ public struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent {
         self.usr = usr
         self.context = context
     }
-}
-
-/// Creates random RUM event.
-public func randomRUMEvent() -> RUMDataModel {
-    // swiftlint:disable opening_brace
-    return oneOf([
-        { RUMViewEvent.mockRandom() },
-        { RUMActionEvent.mockRandom() },
-        { RUMResourceEvent.mockRandom() },
-        { RUMErrorEvent.mockRandom() },
-        { RUMLongTaskEvent.mockRandom() },
-    ])
-    // swiftlint:enable opening_brace
 }
 
 // MARK: - Component Mocks
