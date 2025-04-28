@@ -1356,7 +1356,7 @@ class RUMViewScopeTests: XCTestCase {
         func actionName(for instrumentationType: InstrumentationType) -> String {
             switch instrumentationType {
             case .manual: return "Manual action"
-            case .uikit: return "UIKit action"
+            case .predicate: return "Predicate action"
             case .swiftui: return "SwiftUI action"
             }
         }
@@ -1429,12 +1429,12 @@ class RUMViewScopeTests: XCTestCase {
             )
         }
 
-        try testTapActions(firstTap: .uikit, secondTap: .swiftui, expectedActionName: actionName(for: .swiftui))
-        try testTapActions(firstTap: .uikit, secondTap: .manual, expectedActionName: actionName(for: .manual))
+        try testTapActions(firstTap: .predicate, secondTap: .swiftui, expectedActionName: actionName(for: .swiftui))
+        try testTapActions(firstTap: .predicate, secondTap: .manual, expectedActionName: actionName(for: .manual))
         try testTapActions(firstTap: .swiftui, secondTap: .manual, expectedActionName: actionName(for: .manual))
-        try testTapActions(firstTap: .manual, secondTap: .uikit, expectedActionName: actionName(for: .manual))
+        try testTapActions(firstTap: .manual, secondTap: .predicate, expectedActionName: actionName(for: .manual))
         try testTapActions(firstTap: .manual, secondTap: .swiftui, expectedActionName: actionName(for: .manual))
-        try testTapActions(firstTap: .swiftui, secondTap: .uikit, expectedActionName: actionName(for: .swiftui))
+        try testTapActions(firstTap: .swiftui, secondTap: .predicate, expectedActionName: actionName(for: .swiftui))
     }
 
     // MARK: - Error Tracking

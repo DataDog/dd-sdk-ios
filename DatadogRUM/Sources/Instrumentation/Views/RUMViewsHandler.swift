@@ -225,7 +225,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     path: rumView.path ?? viewController.canonicalClassName,
                     isUntrackedModal: rumView.isUntrackedModal,
                     attributes: rumView.attributes,
-                    instrumentationType: .uikit
+                    instrumentationType: .predicate
                 )
             )
         } else if let swiftUIPredicate,
@@ -239,7 +239,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     path: rumView.path ?? viewController.canonicalClassName,
                     isUntrackedModal: rumView.isUntrackedModal,
                     attributes: rumView.attributes,
-                    instrumentationType: .swiftui
+                    instrumentationType: .predicate
                 )
             )
         }
