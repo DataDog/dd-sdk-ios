@@ -23,6 +23,8 @@ internal func generateRUMSwiftModels(from schema: URL) throws -> String {
 
             // This file was generated from JSON Schema. Do not modify it directly.
 
+            // swiftlint:disable all
+
             internal protocol RUMDataModel: Codable {}
 
             """,
