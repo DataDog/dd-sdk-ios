@@ -221,4 +221,43 @@ class B3HTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[B3HTTPHeaders.Multiple.sampledField], "1")
         XCTAssertNil(headers[B3HTTPHeaders.Multiple.parentSpanIDField])
     }
+
+    // The sampling based on session ID should pass at 18% sampling rate and fail at 17%
+    func testWritingSampledTraceContext_withCustomSamplingStrategy_18percent() {
+        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 18), injectEncoding: .multiple, traceContextInjection: .sampled)
+
+        writer.write(
+            traceContext: .mockWith(
+                traceID: .init(idHi: 1_234, idLo: 1_234),
+                spanID: 2_345,
+                isKept: .random(),
+                rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
+            )
+        )
+
+        let headers = writer.traceHeaderFields
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.traceIDField], "00000000000004d200000000000004d2")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.spanIDField], "0000000000000929")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.sampledField], "1")
+    }
+
+    func testWritingDroppedTraceContext_withCustomSamplingStrategy_17percent() {
+        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 17), injectEncoding: .multiple, traceContextInjection: .sampled)
+
+        writer.write(
+            traceContext: .mockWith(
+                traceID: .init(idHi: 1_234, idLo: 1_234),
+                spanID: 2_345,
+                isKept: .random(),
+                rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
+            )
+        )
+
+        let headers = writer.traceHeaderFields
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.traceIDField])
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.spanIDField])
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.sampledField])
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.parentSpanIDField])
+        XCTAssertNil(headers[W3CHTTPHeaders.baggage])
+    }
 }
