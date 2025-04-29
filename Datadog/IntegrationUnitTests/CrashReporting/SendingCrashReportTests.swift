@@ -51,7 +51,7 @@ class SendingCrashReportTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted, // CR from the app session that has enabled data collection
             lastIsAppInForeground: true, // CR occurred while the app was in the foreground
-            lastRUMAttributes: GlobalRUMAttributes(attributes: mockRandomAttributes()),
+            lastRUMAttributes: .mockRandom(),
             lastLogAttributes: .init(mockRandomAttributes())
         )
         let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
@@ -86,7 +86,7 @@ class SendingCrashReportTests: XCTestCase {
         XCTAssertNotNil(rumEvent.error.meta)
         XCTAssertNotNil(rumEvent.error.wasTruncated)
         let contextAttributes = try XCTUnwrap(rumEvent.context?.contextInfo)
-        let lastRUMAttributes = try XCTUnwrap(crashContext.lastRUMAttributes?.attributes)
+        let lastRUMAttributes = try XCTUnwrap(crashContext.lastRUMAttributes?.contextInfo)
         DDAssertJSONEqual(contextAttributes, lastRUMAttributes.merging(crashReportAttributes) { $1 })
     }
 

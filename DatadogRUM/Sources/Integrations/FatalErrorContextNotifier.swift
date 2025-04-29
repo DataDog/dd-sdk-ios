@@ -57,12 +57,7 @@ internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
     @ReadWriteLock
     var globalAttributes: [String: Encodable] = [:] {
         didSet {
-            messageBus.send(
-                message: .baggage(
-                    key: RUMBaggageKeys.attributes,
-                    value: GlobalRUMAttributes(attributes: globalAttributes)
-                )
-            )
+            messageBus.send(message: .dispatch(RUMEventAttributes(contextInfo: globalAttributes)))
         }
     }
 }

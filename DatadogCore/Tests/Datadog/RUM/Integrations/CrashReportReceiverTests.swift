@@ -719,7 +719,7 @@ class CrashReportReceiverTests: XCTestCase {
 
     func testGivenCrashDuringRUMSessionWithActiveViewAndLastRUMAttributesAvailable_itSendsEventsWithOverridingAttributes() throws {
         let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
-        let lastRUMAttributes = GlobalRUMAttributes(attributes: mockRandomAttributes())
+        let lastRUMAttributes: RUMEventAttributes = .mockRandom()
 
         // Given
         let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -748,8 +748,8 @@ class CrashReportReceiverTests: XCTestCase {
         // Then
         let sentRUMViewAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self)[0].context?.contextInfo)
         let sentRUMErrorAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0].context?.contextInfo)
-        DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes.attributes)
-        DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes.attributes)
+        DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes)
+        DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes)
     }
 
     // MARK: - Testing Uploaded Data - Crashes During RUM Session With No Active View
@@ -1058,7 +1058,7 @@ class CrashReportReceiverTests: XCTestCase {
             let featureScope = FeatureScopeMock()
 
             // Given
-            let lastRUMAttributes = GlobalRUMAttributes(attributes: mockRandomAttributes())
+            let lastRUMAttributes: RUMEventAttributes = .mockRandom()
             let crashDate: Date = .mockDecember15th2019At10AMUTC()
             let crashReport: DDCrashReport = .mockWith(
                 date: crashDate,
@@ -1100,8 +1100,8 @@ class CrashReportReceiverTests: XCTestCase {
             // Then
             let sentRUMViewAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self)[0].context?.contextInfo)
             let sentRUMErrorAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0].context?.contextInfo)
-            DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes.attributes)
-            DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes.attributes)
+            DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes)
+            DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes)
         }
 
         try test(
@@ -1423,7 +1423,7 @@ class CrashReportReceiverTests: XCTestCase {
             backgroundEventsTrackingEnabled: Bool
         ) throws {
             let featureScope = FeatureScopeMock()
-            let lastRUMAttributes = GlobalRUMAttributes(attributes: mockRandomAttributes())
+            let lastRUMAttributes: RUMEventAttributes = .mockRandom()
 
             // Given
             let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -1458,8 +1458,8 @@ class CrashReportReceiverTests: XCTestCase {
             // Then
             let sentRUMViewAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self)[0].context?.contextInfo)
             let sentRUMErrorAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0].context?.contextInfo)
-            DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes.attributes)
-            DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes.attributes)
+            DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes)
+            DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes)
         }
 
         try test(

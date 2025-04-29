@@ -43,7 +43,7 @@ internal class CrashContextCoreProvider: CrashContextProvider {
         didSet { _context?.lastLogAttributes = logAttributes }
     }
 
-    private var rumAttributes: GlobalRUMAttributes? {
+    private var rumAttributes: RUMEventAttributes? {
         didSet { _context?.lastRUMAttributes = rumAttributes }
     }
 
@@ -75,14 +75,14 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
             update(context: context)
         case .baggage(let label, let baggage) where label == RUMBaggageKeys.logAttributes:
             updateLogAttributes(with: baggage, to: core)
-        case .baggage(let label, let baggage) where label == RUMBaggageKeys.rumAttributes:
-            updateRUMAttributes(with: baggage, to: core)
         case let .dispatch(viewEvent as RUMViewEvent):
             queue.async { self.viewEvent = viewEvent }
         case let .dispatch(message as String) where message == RUMDispatchMessages.viewReset:
             queue.async { self.viewEvent = nil }
         case let .dispatch(sessionState as RUMSessionState):
             queue.async { self.sessionState = sessionState }
+        case let .dispatch(rumAttributes as RUMEventAttributes):
+            queue.async { self.rumAttributes = rumAttributes }
         default:
             return false
         }
@@ -117,17 +117,6 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
         queue.async { [weak core, weak self] in
             do {
                 self?.logAttributes = try baggage.decode(type: AnyCodable.self)
-            } catch {
-                core?.telemetry
-                    .error("Fails to decode log attributes from Crash Reporting", error: error)
-            }
-        }
-    }
-
-    private func updateRUMAttributes(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async { [weak core, weak self] in
-            do {
-                self?.rumAttributes = try baggage.decode(type: GlobalRUMAttributes.self)
             } catch {
                 core?.telemetry
                     .error("Fails to decode log attributes from Crash Reporting", error: error)

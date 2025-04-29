@@ -75,7 +75,7 @@ public struct CrashContext: Codable, Equatable {
     public var lastLogAttributes: AnyCodable?
 
     /// Last global RUM attributes. It gets updated with adding or removing attributes on `RUMMonitor`.
-    public var lastRUMAttributes: GlobalRUMAttributes?
+    public var lastRUMAttributes: RUMEventAttributes?
 
     // MARK: - Initialization
 
@@ -96,7 +96,7 @@ public struct CrashContext: Codable, Equatable {
         appLaunchDate: Date?,
         lastRUMViewEvent: RUMViewEvent?,
         lastRUMSessionState: RUMSessionState?,
-        lastRUMAttributes: GlobalRUMAttributes?,
+        lastRUMAttributes: RUMEventAttributes?,
         lastLogAttributes: AnyCodable?
     ) {
         self.serverTimeOffset = serverTimeOffset
@@ -123,7 +123,7 @@ public struct CrashContext: Codable, Equatable {
         _ context: DatadogContext,
         lastRUMViewEvent: RUMViewEvent?,
         lastRUMSessionState: RUMSessionState?,
-        lastRUMAttributes: GlobalRUMAttributes?,
+        lastRUMAttributes: RUMEventAttributes?,
         lastLogAttributes: AnyCodable?
     ) {
         self.serverTimeOffset = context.serverTimeOffset

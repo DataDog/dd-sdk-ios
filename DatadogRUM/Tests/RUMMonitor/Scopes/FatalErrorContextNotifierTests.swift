@@ -90,7 +90,7 @@ class FatalErrorContextNotifierTests: XCTestCase {
         // Then
         let messages = featureScope.messagesSent()
         XCTAssertEqual(messages.count, 1)
-        let attributesMessage = try XCTUnwrap(messages.lastBaggage(withKey: RUMBaggageKeys.attributes))
-        DDAssertJSONEqual(newGlobalAttributes, try attributesMessage.decode(type: GlobalRUMAttributes.self).attributes)
+        let attributesMessage = try XCTUnwrap(messages.lastDispatch as? RUMEventAttributes)
+        DDAssertJSONEqual(newGlobalAttributes, attributesMessage)
     }
 }

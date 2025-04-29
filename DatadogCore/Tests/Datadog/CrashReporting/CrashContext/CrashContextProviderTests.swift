@@ -198,11 +198,11 @@ class CrashContextProviderTests: XCTestCase {
 
         // Given
         let sdkContext: DatadogContext = .mockRandom()
-        let rumAttributes = GlobalRUMAttributes(attributes: mockRandomAttributes())
+        let rumAttributes: RUMEventAttributes = .mockRandom()
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.attributes, value: rumAttributes), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .dispatch(rumAttributes), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
@@ -217,12 +217,12 @@ class CrashContextProviderTests: XCTestCase {
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
-        let rumAttributes = GlobalRUMAttributes(attributes: mockRandomAttributes())
+        let rumAttributes: RUMEventAttributes = .mockRandom()
         let nextSDKContext: DatadogContext = .mockRandom()
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.attributes, value: rumAttributes), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .dispatch(rumAttributes), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then

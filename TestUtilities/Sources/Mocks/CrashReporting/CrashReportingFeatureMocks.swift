@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import DatadogInternal
 import Foundation
+import DatadogInternal
 
 @testable import DatadogLogs
 @testable import DatadogRUM
@@ -162,7 +162,7 @@ extension CrashContext {
         lastRUMSessionState: RUMSessionState? = nil,
         lastIsAppInForeground: Bool = .mockAny(),
         appLaunchDate: Date? = .mockRandomInThePast(),
-        lastRUMAttributes: GlobalRUMAttributes? = nil,
+        lastRUMAttributes: RUMEventAttributes? = nil,
         lastLogAttributes: AnyCodable? = nil
     ) -> Self {
         .init(
@@ -205,7 +205,7 @@ extension CrashContext {
             appLaunchDate: .mockRandomInThePast(),
             lastRUMViewEvent: .mockRandom(),
             lastRUMSessionState: .mockRandom(),
-            lastRUMAttributes: GlobalRUMAttributes(attributes: mockRandomAttributes()),
+            lastRUMAttributes: .mockRandom(),
             lastLogAttributes: AnyCodable(mockRandomAttributes())
         )
     }

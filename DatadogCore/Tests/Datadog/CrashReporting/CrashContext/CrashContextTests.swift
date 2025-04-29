@@ -66,7 +66,7 @@ class CrashContextTests: XCTestCase {
     }
 
     func testGivenContextWithLastRUMAttributesSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
-        let randomRUMAttributes = Bool.random() ? GlobalRUMAttributes(attributes: mockRandomAttributes()) : nil
+        let randomRUMAttributes: RUMEventAttributes? = Bool.random() ? .mockRandom() : nil
 
         // Given
         let context: CrashContext = .mockWith(lastRUMAttributes: randomRUMAttributes)
