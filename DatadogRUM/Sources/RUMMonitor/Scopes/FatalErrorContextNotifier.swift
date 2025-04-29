@@ -46,10 +46,10 @@ internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
     @ReadWriteLock
     var view: RUMViewEvent? {
         didSet {
-            if let lastRUMView = view {
-                messageBus.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: lastRUMView))
+            if let view {
+                messageBus.send(message: .dispatch(view))
             } else {
-                messageBus.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true))
+                messageBus.send(message: .dispatch(RUMDispatchMessages.viewReset))
             }
         }
     }

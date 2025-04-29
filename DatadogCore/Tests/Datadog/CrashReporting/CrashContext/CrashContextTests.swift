@@ -32,7 +32,7 @@ class CrashContextTests: XCTestCase {
     }
 
     func testGivenContextWithLastRUMViewEventSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
-        let randomRUMViewEvent = AnyCodable(mockRandomAttributes())
+        let randomRUMViewEvent: RUMViewEvent = .mockRandom()
 
         // Given
         let context: CrashContext = .mockWith(lastRUMViewEvent: randomRUMViewEvent)

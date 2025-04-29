@@ -158,7 +158,7 @@ extension CrashContext {
         userInfo: UserInfo? = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
         carrierInfo: CarrierInfo? = .mockAny(),
-        lastRUMViewEvent: AnyCodable? = nil,
+        lastRUMViewEvent: RUMViewEvent? = nil,
         lastRUMSessionState: AnyCodable? = nil,
         lastIsAppInForeground: Bool = .mockAny(),
         appLaunchDate: Date? = .mockRandomInThePast(),
@@ -203,7 +203,7 @@ extension CrashContext {
             carrierInfo: .mockRandom(),
             lastIsAppInForeground: .mockRandom(),
             appLaunchDate: .mockRandomInThePast(),
-            lastRUMViewEvent: AnyCodable(mockRandomAttributes()),
+            lastRUMViewEvent: .mockRandom(),
             lastRUMSessionState: AnyCodable(mockRandomAttributes()),
             lastRUMAttributes: GlobalRUMAttributes(attributes: mockRandomAttributes()),
             lastLogAttributes: AnyCodable(mockRandomAttributes())

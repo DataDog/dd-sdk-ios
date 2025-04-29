@@ -71,7 +71,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.viewEvent, value: rumView), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .dispatch(rumView), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
@@ -91,7 +91,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.viewEvent, value: rumView), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .dispatch(rumView), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -114,8 +114,8 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.viewEvent, value: rumView), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.viewReset, value: true), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .dispatch(rumView), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .dispatch(RUMDispatchMessages.viewReset), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
@@ -135,8 +135,8 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.viewEvent, value: rumView), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.viewReset, value: true), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .dispatch(rumView), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .dispatch(RUMDispatchMessages.viewReset), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -288,8 +288,8 @@ class CrashContextProviderTests: XCTestCase {
             closures: [
                 { _ = provider.currentCrashContext },
                 { _ = provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .baggage(key: RUMBaggageKeys.viewReset, value: true), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent), from: NOPDatadogCore()) },
+                { _ = provider.receive(message: .dispatch(viewEvent), from: NOPDatadogCore()) },
+                { _ = provider.receive(message: .dispatch(RUMDispatchMessages.viewReset), from: NOPDatadogCore()) },
                 { _ = provider.receive(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState), from: NOPDatadogCore()) },
             ],
             iterations: 50

@@ -8,13 +8,6 @@ import Foundation
 
 /// Defines keys referencing RUM baggage in `DatadogContext.featuresAttributes`.
 internal enum RUMBaggageKeys {
-    /// The key references RUM view event.
-    /// The view event associated with the key conforms to `Codable`.
-    static let viewEvent = "rum-view-event"
-
-    /// The key references a `true` value if the RUM view is reset.
-    static let viewReset = "rum-view-reset"
-
     /// The key references RUM session state.
     /// The state associated with the key conforms to `Codable`.
     static let sessionState = "rum-session-state"

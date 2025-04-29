@@ -43,7 +43,7 @@ class CrashReportReceiverTests: XCTestCase {
             value: MessageBusSender.Crash(
                 report: DDCrashReport.mockWith(date: Date()),
                 context: CrashContext.mockWith(
-                    lastRUMViewEvent: AnyCodable(lastRUMViewEvent)
+                    lastRUMViewEvent: lastRUMViewEvent
                 )
             )
         )
@@ -68,7 +68,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(activeRUMView) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: activeRUMView // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -103,7 +103,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(activeRUMView) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: activeRUMView // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -136,7 +136,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(activeRUMView) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: activeRUMView // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -342,7 +342,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             serverTimeOffset: dateCorrectionOffset,
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(lastRUMViewEvent) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: lastRUMViewEvent // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -440,7 +440,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             serverTimeOffset: dateCorrectionOffset,
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(lastRUMViewEvent) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: lastRUMViewEvent // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -527,7 +527,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             serverTimeOffset: dateCorrectionOffset,
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(lastRUMViewEvent) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: lastRUMViewEvent // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -559,7 +559,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             serverTimeOffset: dateCorrectionOffset,
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(lastRUMViewEvent) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: lastRUMViewEvent // means there was a RUM session and it was sampled
         )
 
         let modifiedViewName = String.mockRandom()
@@ -638,7 +638,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             serverTimeOffset: dateCorrectionOffset,
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(lastRUMViewEvent) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: lastRUMViewEvent // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -728,7 +728,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(lastRUMViewEvent),
+            lastRUMViewEvent: lastRUMViewEvent,
             lastRUMAttributes: lastRUMAttributes
         )
 
