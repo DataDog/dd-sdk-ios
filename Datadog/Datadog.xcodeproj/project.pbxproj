@@ -1692,6 +1692,8 @@
 		D2D36DCC2AC6DCCA0021F28A /* DatadogCoreProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D36DCA2AC6DCCA0021F28A /* DatadogCoreProtocolTests.swift */; };
 		D2D748232DC0FF7E00C61353 /* FatalErrorContextNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748222DC0FF7E00C61353 /* FatalErrorContextNotifier.swift */; };
 		D2D748242DC0FF7E00C61353 /* FatalErrorContextNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748222DC0FF7E00C61353 /* FatalErrorContextNotifier.swift */; };
+		D2D7482A2DC1214100C61353 /* LogEventAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748292DC1214100C61353 /* LogEventAttributes.swift */; };
+		D2D7482B2DC1214100C61353 /* LogEventAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748292DC1214100C61353 /* LogEventAttributes.swift */; };
 		D2D9A9D92DBFD360005DB31D /* CrashContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D9A9D82DBFD360005DB31D /* CrashContext.swift */; };
 		D2D9A9DA2DBFD360005DB31D /* CrashContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D9A9D82DBFD360005DB31D /* CrashContext.swift */; };
 		D2D9A9DC2DBFD507005DB31D /* RUMPPayloadMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D9A9DB2DBFD507005DB31D /* RUMPPayloadMessages.swift */; };
@@ -3234,6 +3236,7 @@
 		D2D3199929E98D970004F169 /* DefaultJSONEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultJSONEncoder.swift; sourceTree = "<group>"; };
 		D2D36DCA2AC6DCCA0021F28A /* DatadogCoreProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogCoreProtocolTests.swift; sourceTree = "<group>"; };
 		D2D748222DC0FF7E00C61353 /* FatalErrorContextNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FatalErrorContextNotifier.swift; sourceTree = "<group>"; };
+		D2D748292DC1214100C61353 /* LogEventAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventAttributes.swift; sourceTree = "<group>"; };
 		D2D9A9D82DBFD360005DB31D /* CrashContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashContext.swift; sourceTree = "<group>"; };
 		D2D9A9DB2DBFD507005DB31D /* RUMPPayloadMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMPPayloadMessages.swift; sourceTree = "<group>"; };
 		D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogInternal.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -5224,6 +5227,7 @@
 		6167E6DF2B81203A00C3CA2D /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				D2D748282DC1210A00C61353 /* Logs */,
 				D2EA0F442C0E1A8700CB20F8 /* SessionReplay */,
 				619F5CEB2BF5089B004BFE70 /* RUM */,
 				D25C834D2B88A261008E73B1 /* WebViewTracking */,
@@ -6603,6 +6607,14 @@
 				D2C5D52F2B84F71200B63F36 /* WebRecordIntegrationTests.swift */,
 			);
 			path = SessionReplay;
+			sourceTree = "<group>";
+		};
+		D2D748282DC1210A00C61353 /* Logs */ = {
+			isa = PBXGroup;
+			children = (
+				D2D748292DC1214100C61353 /* LogEventAttributes.swift */,
+			);
+			path = Logs;
 			sourceTree = "<group>";
 		};
 		D2DA238B298D588A00C6C7E6 /* DatadogInternalTests */ = {
@@ -8933,6 +8945,7 @@
 				D23039F0298D5236001A1FA3 /* AnyEncoder.swift in Sources */,
 				D2A783D429A5309F003B03BB /* SwiftExtensions.swift in Sources */,
 				3C0D5DD72A543B3B00446CF9 /* Event.swift in Sources */,
+				D2D7482B2DC1214100C61353 /* LogEventAttributes.swift in Sources */,
 				3CBDE68A2AA0C47300F6A7B6 /* URLSessionTask+Tracking.swift in Sources */,
 				D270CDDD2B46E3DB0002EACD /* URLSessionDataDelegateSwizzler.swift in Sources */,
 				D22F06D929DAFD500026CC3C /* TimeInterval+Convenience.swift in Sources */,
@@ -10011,6 +10024,7 @@
 				D2A783D529A530A0003B03BB /* SwiftExtensions.swift in Sources */,
 				3C0D5DD82A543B3B00446CF9 /* Event.swift in Sources */,
 				3CBDE68B2AA0C47300F6A7B6 /* URLSessionTask+Tracking.swift in Sources */,
+				D2D7482A2DC1214100C61353 /* LogEventAttributes.swift in Sources */,
 				96155A402D7F014D0029034E /* Reflector.swift in Sources */,
 				D270CDDE2B46E3DB0002EACD /* URLSessionDataDelegateSwizzler.swift in Sources */,
 				D22F06DA29DAFD500026CC3C /* TimeInterval+Convenience.swift in Sources */,

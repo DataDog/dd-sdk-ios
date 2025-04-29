@@ -336,3 +336,9 @@ extension SynchronizedAttributes: AnyMockable {
         return SynchronizedAttributes(attributes: [:])
     }
 }
+
+extension LogEventAttributes: RandomMockable {
+    public static func mockRandom() -> LogEventAttributes {
+        return .init(attributes: mockRandomAttributes())
+    }
+}

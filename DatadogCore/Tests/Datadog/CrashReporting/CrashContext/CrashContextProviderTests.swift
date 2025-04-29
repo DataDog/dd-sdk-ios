@@ -241,11 +241,11 @@ class CrashContextProviderTests: XCTestCase {
 
         // Given
         let sdkContext: DatadogContext = .mockRandom()
-        let logAttributes = AnyCodable(mockRandomAttributes())
+        let logAttributes: LogEventAttributes = .mockRandom()
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: GlobalLogAttributes.key, value: logAttributes), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .dispatch(logAttributes), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
@@ -260,12 +260,12 @@ class CrashContextProviderTests: XCTestCase {
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
-        let logAttributes = AnyCodable(mockRandomAttributes())
+        let logAttributes: LogEventAttributes = .mockRandom()
         let nextSDKContext: DatadogContext = .mockRandom()
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: GlobalLogAttributes.key, value: logAttributes), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .dispatch(logAttributes), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then

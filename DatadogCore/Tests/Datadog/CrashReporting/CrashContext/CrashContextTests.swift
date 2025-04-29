@@ -83,7 +83,7 @@ class CrashContextTests: XCTestCase {
     }
 
     func testGivenContextWithLastLogttributesSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
-        let randomLogAttributes = Bool.random() ? AnyCodable(mockRandomAttributes()) : nil
+        let randomLogAttributes: LogEventAttributes? = Bool.random() ? .mockRandom() : nil
 
         // Given
         let context: CrashContext = .mockWith(lastLogAttributes: randomLogAttributes)

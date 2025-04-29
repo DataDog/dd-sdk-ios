@@ -163,7 +163,7 @@ extension CrashContext {
         lastIsAppInForeground: Bool = .mockAny(),
         appLaunchDate: Date? = .mockRandomInThePast(),
         lastRUMAttributes: RUMEventAttributes? = nil,
-        lastLogAttributes: AnyCodable? = nil
+        lastLogAttributes: LogEventAttributes? = nil
     ) -> Self {
         .init(
             serverTimeOffset: serverTimeOffset,
@@ -206,7 +206,7 @@ extension CrashContext {
             lastRUMViewEvent: .mockRandom(),
             lastRUMSessionState: .mockRandom(),
             lastRUMAttributes: .mockRandom(),
-            lastLogAttributes: AnyCodable(mockRandomAttributes())
+            lastLogAttributes: .mockRandom()
         )
     }
 

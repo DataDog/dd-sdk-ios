@@ -26,33 +26,6 @@ internal struct ErrorMessage: Encodable {
     let binaryImages: [BinaryImage]?
 }
 
-internal struct GlobalLogAttributes: Codable {
-    static let key = "global-log-attributes"
-
-    let attributes: [AttributeKey: AttributeValue]
-
-    init(attributes: [AttributeKey: AttributeValue]) {
-        self.attributes = attributes
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try attributes.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
-        }
-    }
-
-    init(from decoder: Decoder) throws {
-        // Decode other properties into [String: Codable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        self.attributes = try dynamicContainer.allKeys
-            .reduce(into: [:]) {
-                $0[$1.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $1)
-            }
-    }
-}
-
 /// The Span context received from `DatadogCore`.
 internal struct SpanContext: Decodable {
     static let key = "span_context"
