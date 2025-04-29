@@ -49,8 +49,7 @@ class CrashContextTests: XCTestCase {
     }
 
     func testGivenContextWithLastRUMSessionStateSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
-        let randomRUMSessionState = Bool.random() ?
-            AnyCodable(mockRandomAttributes()) : nil
+        let randomRUMSessionState: RUMSessionState? = Bool.random() ? .mockRandom() : nil
 
         // Given
         let context: CrashContext = .mockWith(lastRUMSessionState: randomRUMSessionState)

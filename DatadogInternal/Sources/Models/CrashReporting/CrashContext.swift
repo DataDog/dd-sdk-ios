@@ -69,7 +69,7 @@ public struct CrashContext: Codable, Equatable {
     public var lastRUMViewEvent: RUMViewEvent?
 
     /// State of the last RUM session in crashed app process.
-    public var lastRUMSessionState: AnyCodable?
+    public var lastRUMSessionState: RUMSessionState?
 
     /// Last global log attributes, set with Logs.addAttribute / Logs.removeAttribute
     public var lastLogAttributes: AnyCodable?
@@ -95,7 +95,7 @@ public struct CrashContext: Codable, Equatable {
         lastIsAppInForeground: Bool,
         appLaunchDate: Date?,
         lastRUMViewEvent: RUMViewEvent?,
-        lastRUMSessionState: AnyCodable?,
+        lastRUMSessionState: RUMSessionState?,
         lastRUMAttributes: GlobalRUMAttributes?,
         lastLogAttributes: AnyCodable?
     ) {
@@ -122,7 +122,7 @@ public struct CrashContext: Codable, Equatable {
     public init(
         _ context: DatadogContext,
         lastRUMViewEvent: RUMViewEvent?,
-        lastRUMSessionState: AnyCodable?,
+        lastRUMSessionState: RUMSessionState?,
         lastRUMAttributes: GlobalRUMAttributes?,
         lastLogAttributes: AnyCodable?
     ) {

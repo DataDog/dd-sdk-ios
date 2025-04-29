@@ -25,8 +25,8 @@ class FatalErrorContextNotifierTests: XCTestCase {
         // Then
         let messages = featureScope.messagesSent()
         XCTAssertEqual(messages.count, 1)
-        let sessionStateMessage = try XCTUnwrap(messages.lastBaggage(withKey: RUMBaggageKeys.sessionState))
-        XCTAssertEqual(newSessionState, try sessionStateMessage.decode())
+        let sessionStateMessage = try XCTUnwrap(messages.lastDispatch as? RUMSessionState)
+        XCTAssertEqual(newSessionState, sessionStateMessage)
     }
 
     func testWhenSessionStateIsReset_itDoesNotSendNextSessionStateMessage() throws {
@@ -41,8 +41,8 @@ class FatalErrorContextNotifierTests: XCTestCase {
         // Then
         let messages = featureScope.messagesSent()
         XCTAssertEqual(messages.count, 1)
-        let sessionStateMessage = try XCTUnwrap(messages.lastBaggage(withKey: RUMBaggageKeys.sessionState))
-        XCTAssertEqual(originalSessionState, try sessionStateMessage.decode())
+        let sessionStateMessage = try XCTUnwrap(messages.lastDispatch as? RUMSessionState)
+        XCTAssertEqual(originalSessionState, sessionStateMessage)
     }
 
     // MARK: - Changing View State

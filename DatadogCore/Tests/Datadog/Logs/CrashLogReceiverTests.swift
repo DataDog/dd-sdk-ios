@@ -247,7 +247,6 @@ let expectation = expectation(description: "Send Event Bypass Consent")
         XCTAssertEqual(log.error?.sourceType, "ios+il2cpp")
     }
 
-
     func testWhenSendingCrashContextWithLogAttributes_itSendsThemToLog() throws {
         // Given
         let stringAttribute: String = .mockRandom()

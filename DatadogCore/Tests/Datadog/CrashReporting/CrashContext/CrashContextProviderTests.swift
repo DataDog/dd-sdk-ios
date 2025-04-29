@@ -159,14 +159,14 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.sessionState, value: rumSessionState), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .dispatch(rumSessionState), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
         let crashContext = try XCTUnwrap(latestCrashContext)
         XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: sdkContext)
-        DDAssertJSONEqual(crashContext.lastRUMSessionState, rumSessionState, "Last RUM session state must be available")
+        XCTAssertEqual(crashContext.lastRUMSessionState, rumSessionState, "Last RUM session state must be available")
     }
 
     func testWhenSDKContextIsReceivedAfterRUMSessionState_itNotifiesNewCrashContext() throws {
@@ -179,7 +179,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.sessionState, value: rumSessionState), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .dispatch(rumSessionState), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -187,7 +187,7 @@ class CrashContextProviderTests: XCTestCase {
         let crashContext = try XCTUnwrap(latestCrashContext)
         XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: nextSDKContext)
-        DDAssertJSONEqual(crashContext.lastRUMSessionState, rumSessionState, "Last RUM session state must be available even after next SDK context update")
+        XCTAssertEqual(crashContext.lastRUMSessionState, rumSessionState, "Last RUM session state must be available even after next SDK context update")
     }
 
     // MARK: - Receiving Global RUM Attributes
@@ -290,7 +290,7 @@ class CrashContextProviderTests: XCTestCase {
                 { _ = provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore()) },
                 { _ = provider.receive(message: .dispatch(viewEvent), from: NOPDatadogCore()) },
                 { _ = provider.receive(message: .dispatch(RUMDispatchMessages.viewReset), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState), from: NOPDatadogCore()) },
+                { _ = provider.receive(message: .dispatch(sessionState), from: NOPDatadogCore()) },
             ],
             iterations: 50
         )
