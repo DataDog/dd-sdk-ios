@@ -78,7 +78,7 @@ class RUMActionsHandlerTests: XCTestCase {
             let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, expectedRUMActionName)
             XCTAssertEqual(command?.actionType, .tap)
-            XCTAssertEqual(command?.instrumentation, .predicate)
+            XCTAssertEqual(command?.instrumentation, .automatic)
             XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
             XCTAssertEqual(command?.attributes.count, 0)
         }
@@ -116,7 +116,7 @@ class RUMActionsHandlerTests: XCTestCase {
             let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, expectedRUMActionName)
             XCTAssertEqual(command?.actionType, .tap)
-            XCTAssertEqual(command?.instrumentation, .predicate)
+            XCTAssertEqual(command?.instrumentation, .automatic)
             XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
             XCTAssertEqual(command?.attributes.count, 0)
         }
@@ -310,7 +310,7 @@ class RUMActionsHandlerTests: XCTestCase {
             let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, expect)
             XCTAssertEqual(command?.actionType, .click)
-            XCTAssertEqual(command?.instrumentation, .predicate)
+            XCTAssertEqual(command?.instrumentation, .automatic)
             XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
             XCTAssertEqual(command?.attributes.count, 0)
         }

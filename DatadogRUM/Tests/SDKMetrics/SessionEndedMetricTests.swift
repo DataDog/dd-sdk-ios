@@ -332,7 +332,7 @@ class SessionEndedMetricTests: XCTestCase {
             try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "swiftui\(idx)"), instrumentationType: .swiftui)
         }
         try (0..<uikitPredicateViewsCount).forEach { idx in
-            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "predicate\(idx)"), instrumentationType: .predicate)
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "automatic\(idx)"), instrumentationType: .automatic)
         }
         try (0..<unknownViewsCount).forEach { idx in
             try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "unknown\(idx)"), instrumentationType: nil)
@@ -347,7 +347,7 @@ class SessionEndedMetricTests: XCTestCase {
             [
                 "manual": manualViewsCount,
                 "swiftui": swiftuiViewsCount,
-                "predicate": uikitPredicateViewsCount
+                "automatic": uikitPredicateViewsCount
             ]
         )
     }
@@ -360,7 +360,7 @@ class SessionEndedMetricTests: XCTestCase {
         // When
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: nil)
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .swiftui)
-        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .predicate)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .automatic)
         let attributes = metric.asMetricAttributes()
 
         // Then
@@ -534,7 +534,7 @@ class SessionEndedMetricTests: XCTestCase {
         let metric = SessionEndedMetric.with(sessionID: sessionID, context: .mockWith(applicationBundleType: .iOSApp))
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .manual)
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .swiftui)
-        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .predicate)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .automatic)
         metric.track(uploadQuality: [UploadQualityMetric.track: "feature"])
 
         // When
@@ -551,7 +551,7 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertNotNil(try matcher.value("rse.views_count.app_launch") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.manual") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.swiftui") as Int)
-        XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.predicate") as Int)
+        XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.automatic") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.with_has_replay") as Int)
         XCTAssertNotNil(try matcher.value("rse.sdk_errors_count.total") as Int)
         XCTAssertNotNil(try matcher.value("rse.sdk_errors_count.by_kind") as [String: Int])

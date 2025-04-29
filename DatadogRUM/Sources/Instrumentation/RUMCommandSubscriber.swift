@@ -31,8 +31,8 @@ internal protocol RUMCommandPublisher: AnyObject {
 /// Represents the type of instrumentation used to create different RUM commands.
 internal enum InstrumentationType: Int {
     /// Command issued through UIKit or SwiftUI predicate-based instrumentation.
-    case predicate
-    /// Command issued through SwiftUI view modifiers-based instrumentation with view modifiers.
+    case automatic
+    /// Command issued through SwiftUI-based instrumentation with view modifiers.
     case swiftui
     /// Command issued through manual instrumentation, originating from the `RUMMonitor` API.
     case manual

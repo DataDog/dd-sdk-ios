@@ -65,7 +65,7 @@ internal struct UITouchCommandFactory: UIEventCommandFactory {
         return RUMAddUserActionCommand(
             time: dateProvider.now,
             attributes: action.attributes,
-            instrumentation: .predicate,
+            instrumentation: .automatic,
             actionType: .tap,
             name: action.name
         )
@@ -120,7 +120,7 @@ internal struct UIPressCommandFactory: UIEventCommandFactory {
         return RUMAddUserActionCommand(
             time: dateProvider.now,
             attributes: action.attributes,
-            instrumentation: .predicate,
+            instrumentation: .automatic,
             actionType: .click,
             name: action.name
         )

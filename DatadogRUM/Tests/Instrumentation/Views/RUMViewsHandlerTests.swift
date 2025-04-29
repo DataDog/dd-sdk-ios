@@ -52,7 +52,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(command.path, viewControllerClassName)
         XCTAssertEqual(command.name, viewName)
         XCTAssertEqual(command.attributes as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(command.instrumentationType, .predicate)
+        XCTAssertEqual(command.instrumentationType, .automatic)
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
     }
 
@@ -139,7 +139,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(command.path, viewController.canonicalClassName)
         XCTAssertEqual(command.name, viewName)
         XCTAssertEqual(command.attributes as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(command.instrumentationType, .predicate)
+        XCTAssertEqual(command.instrumentationType, .automatic)
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
     }
 
@@ -210,12 +210,12 @@ class RUMViewsHandlerTests: XCTestCase {
 
         XCTAssertTrue(startCommand1.identity == ViewIdentifier(view1))
         XCTAssertEqual(startCommand1.attributes as? [String: String], ["key1": "val1"])
-        XCTAssertEqual(startCommand1.instrumentationType, .predicate)
+        XCTAssertEqual(startCommand1.instrumentationType, .automatic)
         XCTAssertTrue(stopCommand.identity == ViewIdentifier(view1))
         XCTAssertEqual(stopCommand.attributes.count, 0)
         XCTAssertTrue(startCommand2.identity == ViewIdentifier(view2))
         XCTAssertEqual(startCommand2.attributes as? [String: String], ["key2": "val2"])
-        XCTAssertEqual(startCommand2.instrumentationType, .predicate)
+        XCTAssertEqual(startCommand2.instrumentationType, .automatic)
     }
 
     func testGivenBothPredicates_whenViewDidAppear_itUsesUIKitPredicate() throws {
@@ -239,7 +239,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
         let command = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
         XCTAssertEqual(command.name, "UIKitName")
-        XCTAssertEqual(command.instrumentationType, .predicate)
+        XCTAssertEqual(command.instrumentationType, .automatic)
     }
 
     func testGivenNoUIKitPredicate_whenViewDidAppear_itFallsBackToSwiftUIPredicate() throws {
@@ -262,7 +262,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
         let command = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
         XCTAssertEqual(command.name, "SwiftUIName")
-        XCTAssertEqual(command.instrumentationType, .predicate)
+        XCTAssertEqual(command.instrumentationType, .automatic)
     }
 
     // MARK: - Handling `viewDidDisappear`

@@ -44,7 +44,7 @@ internal class SessionEndedMetric {
         /// View was started manually through `RUMMonitor.shared().startView()` API.
         case manual
         /// View was started automatically with `UIKitRUMViewsPredicate` or `SwiftUIRUMViewsPredicate`.
-        case predicate
+        case automatic
         /// View was started through `trackRUMView()` SwiftUI modifier.
         case swiftui
     }
