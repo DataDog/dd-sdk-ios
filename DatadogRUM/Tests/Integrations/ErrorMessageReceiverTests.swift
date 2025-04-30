@@ -31,9 +31,10 @@ class ErrorMessageReceiverTests: XCTestCase {
     func testReceivePartialLogError() throws {
         // When
         let message: FeatureMessage = .payload(
-            LogErrorMessage(
+            RUMErrorMessage(
                 time: Date(),
                 message: "message-test",
+                source: "logger",
                 type: nil,
                 stack: nil,
                 attributes: [:],
@@ -55,9 +56,10 @@ class ErrorMessageReceiverTests: XCTestCase {
         let mockAttribute: String = .mockRandom()
         let mockBinaryImage: BinaryImage = .mockRandom()
         let message: FeatureMessage = .payload(
-            LogErrorMessage(
+            RUMErrorMessage(
                 time: Date(),
                 message: "message-test",
+                source: "custom",
                 type: "type-test",
                 stack: "stack-test",
                 attributes: [
@@ -76,7 +78,7 @@ class ErrorMessageReceiverTests: XCTestCase {
         XCTAssertEqual(event.error.message, "message-test")
         XCTAssertEqual(event.error.type, "type-test")
         XCTAssertEqual(event.error.stack, "stack-test")
-        XCTAssertEqual(event.error.source, .logger)
+        XCTAssertEqual(event.error.source, .custom)
         XCTAssertNotNil(event.error.binaryImages)
         XCTAssertEqual(event.error.binaryImages?.count, 1)
         if let image = event.error.binaryImages?.first {

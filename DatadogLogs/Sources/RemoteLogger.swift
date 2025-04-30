@@ -208,9 +208,10 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
 
                 self.featureScope.send(
                     message: .payload(
-                        LogErrorMessage(
+                        RUMErrorMessage(
                             time: date,
                             message: log.error?.message ?? log.message,
+                            source: "logger",
                             type: log.error?.kind,
                             stack: log.error?.stack,
                             attributes: busCombinedAttributes,

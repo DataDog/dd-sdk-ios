@@ -1694,8 +1694,6 @@
 		D2D748242DC0FF7E00C61353 /* FatalErrorContextNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748222DC0FF7E00C61353 /* FatalErrorContextNotifier.swift */; };
 		D2D7482A2DC1214100C61353 /* LogEventAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748292DC1214100C61353 /* LogEventAttributes.swift */; };
 		D2D7482B2DC1214100C61353 /* LogEventAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748292DC1214100C61353 /* LogEventAttributes.swift */; };
-		D2D7482E2DC128AD00C61353 /* LogErrorMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D7482D2DC128AD00C61353 /* LogErrorMessage.swift */; };
-		D2D7482F2DC128AD00C61353 /* LogErrorMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D7482D2DC128AD00C61353 /* LogErrorMessage.swift */; };
 		D2D9A9D92DBFD360005DB31D /* CrashContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D9A9D82DBFD360005DB31D /* CrashContext.swift */; };
 		D2D9A9DA2DBFD360005DB31D /* CrashContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D9A9D82DBFD360005DB31D /* CrashContext.swift */; };
 		D2D9A9DC2DBFD507005DB31D /* RUMPPayloadMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D9A9DB2DBFD507005DB31D /* RUMPPayloadMessages.swift */; };
@@ -3239,7 +3237,6 @@
 		D2D36DCA2AC6DCCA0021F28A /* DatadogCoreProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogCoreProtocolTests.swift; sourceTree = "<group>"; };
 		D2D748222DC0FF7E00C61353 /* FatalErrorContextNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FatalErrorContextNotifier.swift; sourceTree = "<group>"; };
 		D2D748292DC1214100C61353 /* LogEventAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventAttributes.swift; sourceTree = "<group>"; };
-		D2D7482D2DC128AD00C61353 /* LogErrorMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogErrorMessage.swift; sourceTree = "<group>"; };
 		D2D9A9D82DBFD360005DB31D /* CrashContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashContext.swift; sourceTree = "<group>"; };
 		D2D9A9DB2DBFD507005DB31D /* RUMPPayloadMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMPPayloadMessages.swift; sourceTree = "<group>"; };
 		D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogInternal.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -6616,7 +6613,6 @@
 			isa = PBXGroup;
 			children = (
 				D2D748292DC1214100C61353 /* LogEventAttributes.swift */,
-				D2D7482D2DC128AD00C61353 /* LogErrorMessage.swift */,
 			);
 			path = Logs;
 			sourceTree = "<group>";
@@ -8891,7 +8887,6 @@
 				D2160C9E29C0DE5700FAA9A5 /* TracingHeaderType.swift in Sources */,
 				D23039F5298D5236001A1FA3 /* AnyEncodable.swift in Sources */,
 				D2303A00298D5236001A1FA3 /* DatadogExtended.swift in Sources */,
-				D2D7482E2DC128AD00C61353 /* LogErrorMessage.swift in Sources */,
 				D23039E6298D5236001A1FA3 /* Sysctl.swift in Sources */,
 				D28FB6962DB7D3F000CD76D0 /* RUMDataModels.swift in Sources */,
 				614A708E2BF754D800D9AF42 /* ImmutableRequest.swift in Sources */,
@@ -9971,7 +9966,6 @@
 				D2DA236B298D57AA00C6C7E6 /* Sysctl.swift in Sources */,
 				614A708F2BF754D800D9AF42 /* ImmutableRequest.swift in Sources */,
 				D2160CF529C0EDFC00FAA9A5 /* UploadPerformancePreset.swift in Sources */,
-				D2D7482F2DC128AD00C61353 /* LogErrorMessage.swift in Sources */,
 				D2DA236C298D57AA00C6C7E6 /* AppState.swift in Sources */,
 				D28FB6972DB7D3F000CD76D0 /* RUMDataModels.swift in Sources */,
 				D2DE63542A30A7CA00441A54 /* CoreRegistry.swift in Sources */,

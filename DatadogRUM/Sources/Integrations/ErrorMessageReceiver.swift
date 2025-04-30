@@ -14,7 +14,7 @@ internal struct ErrorMessageReceiver: FeatureMessageReceiver {
 
     /// Adds RUM Error with given message and stack to current RUM View.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(error as LogErrorMessage) = message else {
+        guard case let .payload(error as RUMErrorMessage) = message else {
             return false
         }
 
@@ -23,7 +23,7 @@ internal struct ErrorMessageReceiver: FeatureMessageReceiver {
             message: error.message,
             type: error.type,
             stack: error.stack,
-            source: .logger,
+            source: .init(rawValue: error.source) ?? .custom,
             globalAttributes: [:],
             attributes: error.attributes,
             binaryImages: error.binaryImages
