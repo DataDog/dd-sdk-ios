@@ -74,7 +74,7 @@ class FatalErrorContextNotifierTests: XCTestCase {
         let messages = featureScope.messagesSent()
         XCTAssertEqual(messages.count, 2)
         let viewEventMessage = try XCTUnwrap(messages.lastDispatch as? String)
-        XCTAssertEqual(viewEventMessage, RUMDispatchMessages.viewReset)
+        XCTAssertEqual(viewEventMessage, RUMPayloadMessages.viewReset)
     }
 
     // MARK: - Changing Global Attributes

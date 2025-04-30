@@ -6,9 +6,9 @@
 
 import Foundation
 
-/// Defines types that are dispatched by RUM on the message-bus.
-public enum RUMDispatchMessages {
-    /// The key references a `true` value if the RUM view is reset.
+/// Defines types that are sent by RUM on the message-bus.
+public enum RUMPayloadMessages {
+    /// Message to send when RUM view is reset.
     public static let viewReset = "rum-view-reset"
 }
 

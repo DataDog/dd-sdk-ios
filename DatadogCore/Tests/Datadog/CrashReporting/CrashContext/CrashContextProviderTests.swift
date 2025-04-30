@@ -71,7 +71,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .dispatch(rumView), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
@@ -91,7 +91,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .dispatch(rumView), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -114,8 +114,8 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .dispatch(rumView), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .dispatch(RUMDispatchMessages.viewReset), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(RUMPayloadMessages.viewReset), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
@@ -135,8 +135,8 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .dispatch(rumView), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .dispatch(RUMDispatchMessages.viewReset), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(RUMPayloadMessages.viewReset), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -159,7 +159,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .dispatch(rumSessionState), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumSessionState), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
@@ -179,7 +179,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .dispatch(rumSessionState), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumSessionState), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -202,7 +202,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .dispatch(rumAttributes), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumAttributes), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
@@ -222,7 +222,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .dispatch(rumAttributes), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumAttributes), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -288,9 +288,9 @@ class CrashContextProviderTests: XCTestCase {
             closures: [
                 { _ = provider.currentCrashContext },
                 { _ = provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .dispatch(viewEvent), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .dispatch(RUMDispatchMessages.viewReset), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .dispatch(sessionState), from: NOPDatadogCore()) },
+                { _ = provider.receive(message: .payload(viewEvent), from: NOPDatadogCore()) },
+                { _ = provider.receive(message: .payload(RUMPayloadMessages.viewReset), from: NOPDatadogCore()) },
+                { _ = provider.receive(message: .payload(sessionState), from: NOPDatadogCore()) },
             ],
             iterations: 50
         )

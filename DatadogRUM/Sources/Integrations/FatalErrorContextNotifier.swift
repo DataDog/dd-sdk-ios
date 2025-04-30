@@ -36,7 +36,7 @@ internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
     var sessionState: RUMSessionState? {
         didSet {
             if let sessionState {
-                messageBus.send(message: .dispatch(sessionState))
+                messageBus.send(message: .payload(sessionState))
             }
         }
     }
@@ -47,9 +47,9 @@ internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
     var view: RUMViewEvent? {
         didSet {
             if let view {
-                messageBus.send(message: .dispatch(view))
+                messageBus.send(message: .payload(view))
             } else {
-                messageBus.send(message: .dispatch(RUMDispatchMessages.viewReset))
+                messageBus.send(message: .payload(RUMPayloadMessages.viewReset))
             }
         }
     }
@@ -57,7 +57,7 @@ internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
     @ReadWriteLock
     var globalAttributes: [String: Encodable] = [:] {
         didSet {
-            messageBus.send(message: .dispatch(RUMEventAttributes(contextInfo: globalAttributes)))
+            messageBus.send(message: .payload(RUMEventAttributes(contextInfo: globalAttributes)))
         }
     }
 }

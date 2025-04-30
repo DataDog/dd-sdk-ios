@@ -21,8 +21,8 @@ public enum FeatureMessage {
         baggage: FeatureBaggage
     )
 
-    /// A custom value to dispatch.
-    case dispatch(Any)
+    /// A custom payload message.
+    case payload(Any)
 
     /// A web-view message.
     ///

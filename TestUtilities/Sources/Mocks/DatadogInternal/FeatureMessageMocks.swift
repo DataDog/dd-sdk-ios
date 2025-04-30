@@ -63,7 +63,7 @@ public extension FeatureMessage {
 
     /// Extracts dispatch message.
     var asDispatch: Any? {
-        guard case let .dispatch(value) = self else {
+        guard case let .payload(value) = self else {
             return nil
         }
         return value

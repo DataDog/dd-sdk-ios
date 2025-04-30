@@ -75,13 +75,13 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
             update(context: context)
         case .baggage(let label, let baggage) where label == RUMBaggageKeys.logAttributes:
             updateLogAttributes(with: baggage, to: core)
-        case let .dispatch(viewEvent as RUMViewEvent):
+        case let .payload(viewEvent as RUMViewEvent):
             queue.async { self.viewEvent = viewEvent }
-        case let .dispatch(message as String) where message == RUMDispatchMessages.viewReset:
+        case let .payload(message as String) where message == RUMPayloadMessages.viewReset:
             queue.async { self.viewEvent = nil }
-        case let .dispatch(sessionState as RUMSessionState):
+        case let .payload(sessionState as RUMSessionState):
             queue.async { self.sessionState = sessionState }
-        case let .dispatch(rumAttributes as RUMEventAttributes):
+        case let .payload(rumAttributes as RUMEventAttributes):
             queue.async { self.rumAttributes = rumAttributes }
         default:
             return false
