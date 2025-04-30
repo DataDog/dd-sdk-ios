@@ -216,7 +216,7 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
         identity: ViewIdentifier = .mockViewIdentifier(),
         name: String = .mockAny(),
         path: String = .mockAny(),
-        instrumentationType: SessionEndedMetric.ViewInstrumentationType = .manual
+        instrumentationType: InstrumentationType = .manual
     ) -> RUMStartViewCommand {
         return RUMStartViewCommand(
             time: time,

@@ -59,7 +59,7 @@ internal final class SessionEndedMetricController {
     ///   - sessionID: session ID to track this view in (pass `nil` to track it for the last started session)
     func track(
         view: RUMViewEvent,
-        instrumentationType: SessionEndedMetric.ViewInstrumentationType?,
+        instrumentationType: InstrumentationType?,
         in sessionID: RUMUUID?
     ) {
         updateMetric(for: sessionID) { try $0?.track(view: view, instrumentationType: instrumentationType) }

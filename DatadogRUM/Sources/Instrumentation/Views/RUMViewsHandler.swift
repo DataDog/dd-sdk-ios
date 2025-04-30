@@ -28,7 +28,7 @@ internal final class RUMViewsHandler {
         let attributes: [AttributeKey: AttributeValue]
 
         /// The type of instrumentation that started this view.
-        let instrumentationType: SessionEndedMetric.ViewInstrumentationType
+        let instrumentationType: InstrumentationType
     }
 
     /// The current date provider.
