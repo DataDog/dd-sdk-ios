@@ -9,15 +9,6 @@ import DatadogInternal
 import DatadogLogs
 
 @objc
-public enum DDSDKVerbosityLevel: Int {
-    case none
-    case debug
-    case warn
-    case error
-    case critical
-}
-
-@objc
 public enum DDLogLevel: Int {
     case debug
     case info

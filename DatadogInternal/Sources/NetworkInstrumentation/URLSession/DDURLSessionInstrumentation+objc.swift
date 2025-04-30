@@ -5,13 +5,11 @@
  */
 
 import Foundation
-import DatadogCore
-import DatadogInternal
 
 /// Configuration of URLSession instrumentation.
 @objc
 public class DDURLSessionInstrumentationConfiguration: NSObject {
-    internal var swiftConfig: URLSessionInstrumentation.Configuration
+    public var swiftConfig: URLSessionInstrumentation.Configuration
 
     @objc
     public init(delegateClass: URLSessionDataDelegate.Type) {

@@ -5,7 +5,8 @@
 */
 
 #import <XCTest/XCTest.h>
-@import DatadogObjc;
+@import DatadogCore;
+@import DatadogInternal;
 
 @interface DDDatadog_apiTests : XCTestCase
 @end

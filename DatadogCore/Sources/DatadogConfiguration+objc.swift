@@ -107,20 +107,6 @@ public enum DDBatchProcessingLevel: Int {
 }
 
 @objc
-public class DDTracingHeaderType: NSObject {
-    internal let swiftType: TracingHeaderType
-
-    private init(_ swiftType: TracingHeaderType) {
-        self.swiftType = swiftType
-    }
-
-    @objc public static let datadog = DDTracingHeaderType(.datadog)
-    @objc public static let b3multi = DDTracingHeaderType(.b3multi)
-    @objc public static let b3 = DDTracingHeaderType(.b3)
-    @objc public static let tracecontext = DDTracingHeaderType(.tracecontext)
-}
-
-@objc
 public protocol DDDataEncryption: AnyObject {
     /// Encrypts given `Data` with user-chosen encryption.
     ///

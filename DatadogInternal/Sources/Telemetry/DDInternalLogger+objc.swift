@@ -5,8 +5,6 @@
  */
 
 import Foundation
-import DatadogInternal
-import DatadogCore
 
 @objc
 public class DDInternalLogger: NSObject {
@@ -24,12 +22,12 @@ public class DDInternalLogger: NSObject {
 
     @objc
     public static func telemetryDebug(id: String, message: String) {
-        Datadog._internal.telemetry.debug(id: id, message: message)
+        CoreRegistry.default.telemetry.debug(id: id, message: message)
     }
 
     @objc
     public static func telemetryError(id: String, message: String, kind: String?, stack: String?) {
-        Datadog._internal.telemetry.error(id: id, message: message, kind: kind, stack: stack)
+        CoreRegistry.default.telemetry.error(id: id, message: message, kind: kind ?? "", stack: stack ?? "")
     }
 }
 

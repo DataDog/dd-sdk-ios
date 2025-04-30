@@ -111,3 +111,12 @@ extension CoreLogger {
         log(.critical, message: message(), error: error)
     }
 }
+
+@objc
+public enum DDSDKVerbosityLevel: Int {
+    case none
+    case debug
+    case warn
+    case error
+    case critical
+}
