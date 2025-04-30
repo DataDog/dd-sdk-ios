@@ -319,6 +319,7 @@ class SessionEndedMetricTests: XCTestCase {
         let manualViewsCount: Int = .mockRandom(min: 1, max: 10)
         let swiftuiViewsCount: Int = .mockRandom(min: 1, max: 10)
         let uikitPredicateViewsCount: Int = .mockRandom(min: 1, max: 10)
+        let swiftuiAutomaticPredicateViewsCount: Int = .mockRandom(min: 1, max: 10)
         let unknownViewsCount: Int = .mockRandom(min: 1, max: 10)
 
         // Given
@@ -332,7 +333,10 @@ class SessionEndedMetricTests: XCTestCase {
             try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "swiftui\(idx)"), instrumentationType: .swiftui)
         }
         try (0..<uikitPredicateViewsCount).forEach { idx in
-            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "automatic\(idx)"), instrumentationType: .automatic)
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "uikit\(idx)"), instrumentationType: .uikit)
+        }
+        try (0..<swiftuiAutomaticPredicateViewsCount).forEach { idx in
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "swiftuiAutomatic\(idx)"), instrumentationType: .swiftuiAutomatic)
         }
         try (0..<unknownViewsCount).forEach { idx in
             try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "unknown\(idx)"), instrumentationType: nil)
@@ -341,13 +345,14 @@ class SessionEndedMetricTests: XCTestCase {
 
         // Then
         let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
-        XCTAssertEqual(rse.viewsCount.total, manualViewsCount + swiftuiViewsCount + uikitPredicateViewsCount + unknownViewsCount)
+        XCTAssertEqual(rse.viewsCount.total, manualViewsCount + swiftuiViewsCount + uikitPredicateViewsCount + swiftuiAutomaticPredicateViewsCount + unknownViewsCount)
         XCTAssertEqual(
             rse.viewsCount.byInstrumentation,
             [
                 "manual": manualViewsCount,
                 "swiftui": swiftuiViewsCount,
-                "automatic": uikitPredicateViewsCount
+                "uikit": uikitPredicateViewsCount,
+                "swiftuiAutomatic": swiftuiAutomaticPredicateViewsCount
             ]
         )
     }
@@ -360,7 +365,8 @@ class SessionEndedMetricTests: XCTestCase {
         // When
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: nil)
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .swiftui)
-        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .automatic)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .uikit)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .swiftuiAutomatic)
         let attributes = metric.asMetricAttributes()
 
         // Then
@@ -534,7 +540,8 @@ class SessionEndedMetricTests: XCTestCase {
         let metric = SessionEndedMetric.with(sessionID: sessionID, context: .mockWith(applicationBundleType: .iOSApp))
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .manual)
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .swiftui)
-        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .automatic)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .uikit)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .swiftuiAutomatic)
         metric.track(uploadQuality: [UploadQualityMetric.track: "feature"])
 
         // When
@@ -551,7 +558,8 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertNotNil(try matcher.value("rse.views_count.app_launch") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.manual") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.swiftui") as Int)
-        XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.automatic") as Int)
+        XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.uikit") as Int)
+        XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.swiftuiAutomatic") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.with_has_replay") as Int)
         XCTAssertNotNil(try matcher.value("rse.sdk_errors_count.total") as Int)
         XCTAssertNotNil(try matcher.value("rse.sdk_errors_count.by_kind") as [String: Int])

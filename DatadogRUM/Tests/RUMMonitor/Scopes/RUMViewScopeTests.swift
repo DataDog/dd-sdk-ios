@@ -1356,7 +1356,8 @@ class RUMViewScopeTests: XCTestCase {
         func actionName(for instrumentationType: InstrumentationType) -> String {
             switch instrumentationType {
             case .manual: return "Manual action"
-            case .automatic: return "Automatic action"
+            case .uikit: return "UIKit action"
+            case .swiftuiAutomatic: return "Automatic SwiftUI action"
             case .swiftui: return "SwiftUI action"
             }
         }
@@ -1429,12 +1430,15 @@ class RUMViewScopeTests: XCTestCase {
             )
         }
 
-        try testTapActions(firstTap: .automatic, secondTap: .swiftui, expectedActionName: actionName(for: .swiftui))
-        try testTapActions(firstTap: .automatic, secondTap: .manual, expectedActionName: actionName(for: .manual))
+        try testTapActions(firstTap: .uikit, secondTap: .swiftui, expectedActionName: actionName(for: .swiftui))
+        try testTapActions(firstTap: .uikit, secondTap: .manual, expectedActionName: actionName(for: .manual))
+        try testTapActions(firstTap: .uikit, secondTap: .swiftuiAutomatic, expectedActionName: actionName(for: .swiftuiAutomatic))
         try testTapActions(firstTap: .swiftui, secondTap: .manual, expectedActionName: actionName(for: .manual))
-        try testTapActions(firstTap: .manual, secondTap: .automatic, expectedActionName: actionName(for: .manual))
+        try testTapActions(firstTap: .swiftui, secondTap: .uikit, expectedActionName: actionName(for: .swiftui))
+        try testTapActions(firstTap: .swiftui, secondTap: .swiftuiAutomatic, expectedActionName: actionName(for: .swiftui))
+        try testTapActions(firstTap: .manual, secondTap: .uikit, expectedActionName: actionName(for: .manual))
         try testTapActions(firstTap: .manual, secondTap: .swiftui, expectedActionName: actionName(for: .manual))
-        try testTapActions(firstTap: .swiftui, secondTap: .automatic, expectedActionName: actionName(for: .swiftui))
+        try testTapActions(firstTap: .manual, secondTap: .swiftuiAutomatic, expectedActionName: actionName(for: .manual))
     }
 
     // MARK: - Error Tracking
