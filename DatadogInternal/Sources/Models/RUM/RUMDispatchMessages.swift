@@ -21,7 +21,7 @@ public struct RUMSessionState: Equatable, Codable {
     public let isInitialSession: Bool
     /// If this session has ever tracked any view (used to reason about "application launch" events).
     public let hasTrackedAnyView: Bool
-    /// If the there was a Session Replay recording pending at the moment of starting this session (`nil` if SR Feature was not configured).
+    /// If there was a Session Replay recording pending at the moment of starting this session (`nil` if SR Feature was not configured).
     public let didStartWithReplay: Bool?
 
     /// Creates a RUM Session State
@@ -29,7 +29,7 @@ public struct RUMSessionState: Equatable, Codable {
     ///   - sessionUUID: The session ID. Can be `.nullUUID` if the session was rejected by sampler.
     ///   - isInitialSession: If this is the very first session in the app process (`true`) or was re-created upon timeout (`false`).
     ///   - hasTrackedAnyView: If this session has ever tracked any view (used to reason about "application launch" events).
-    ///   - didStartWithReplay: If the there was a Session Replay recording pending at the moment of starting this session (`nil` if SR Feature was not configured).
+    ///   - didStartWithReplay: If there was a Session Replay recording pending at the moment of starting this session (`nil` if SR Feature was not configured).
     public init(
         sessionUUID: UUID,
         isInitialSession: Bool,
