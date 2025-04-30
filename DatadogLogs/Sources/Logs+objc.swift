@@ -6,10 +6,10 @@
 
 import Foundation
 import DatadogInternal
-import DatadogLogs
 
-@objc
-public enum DDLogLevel: Int {
+@objc(DDLogLevel)
+@_spi(objc)
+public enum objc_LogLevel: Int {
     case debug
     case info
     case notice
@@ -40,12 +40,14 @@ public enum DDLogLevel: Int {
     }
 }
 
-@objc
-public class DDLogsConfiguration: NSObject {
+@objc(DDLogsConfiguration)
+@objcMembers
+@_spi(objc)
+public class objc_LogsConfiguration: NSObject {
     internal var configuration: Logs.Configuration
 
     /// Overrides the custom server endpoint where Logs are sent.
-    @objc public var customEndpoint: URL? {
+    public var customEndpoint: URL? {
         get { configuration.customEndpoint }
         set { configuration.customEndpoint = newValue }
     }
@@ -54,7 +56,6 @@ public class DDLogsConfiguration: NSObject {
     ///
     /// - Parameters:
     ///   - customEndpoint: Overrides the custom server endpoint where Logs are sent.
-    @objc
     public init(
         customEndpoint: URL? = nil
     ) {
@@ -67,47 +68,47 @@ public class DDLogsConfiguration: NSObject {
     ///
     /// The implementation should obtain a mutable version of the `DDLogEvent`, modify it and return it. Returning `nil` will result
     /// with dropping the Log event entirely, so it won't be send to Datadog.
-    @objc
-    public func setEventMapper(_ mapper: @escaping (DDLogEvent) -> DDLogEvent?) {
+    public func setEventMapper(_ mapper: @escaping (objc_LogEvent) -> objc_LogEvent?) {
         configuration.eventMapper = { swiftEvent in
-            let objcEvent = DDLogEvent(swiftModel: swiftEvent)
+            let objcEvent = objc_LogEvent(swiftModel: swiftEvent)
             return mapper(objcEvent)?.swiftModel
         }
     }
 }
 
-@objc
-public class DDLogs: NSObject {
-    @objc
+@objc(DDLogs)
+@objcMembers
+@_spi(objc)
+public class objc_Logs: NSObject {
     public static func enable(
-        with configuration: DDLogsConfiguration = .init()
+        with configuration: objc_LogsConfiguration = .init()
     ) {
         Logs.enable(with: configuration.configuration)
     }
 
-    @objc
     public static func addAttribute(forKey key: String, value: Any) {
         Logs.addAttribute(forKey: key, value: AnyEncodable(value))
     }
 
-    @objc
     public static func removeAttribute(forKey key: String) {
         Logs.removeAttribute(forKey: key)
     }
 }
 
-@objc
-public class DDLoggerConfiguration: NSObject {
+@objc(DDLoggerConfiguration)
+@objcMembers
+@_spi(objc)
+public class objc_LoggerConfiguration: NSObject {
     internal var configuration: Logger.Configuration
 
     /// The service name  (default value is set to application bundle identifier)
-    @objc public var service: String? {
+    public var service: String? {
         get { configuration.service }
         set { configuration.service = newValue }
     }
 
     /// The logger custom name (default value is set to main bundle identifier)
-    @objc public var name: String? {
+    public var name: String? {
         get { configuration.name }
         set { configuration.name = newValue }
     }
@@ -118,7 +119,7 @@ public class DDLoggerConfiguration: NSObject {
     /// For full list of network info attributes see `NetworkConnectionInfo` and `CarrierInfo`.
     ///
     /// `false` by default
-    @objc public var networkInfoEnabled: Bool {
+    public var networkInfoEnabled: Bool {
         get { configuration.networkInfoEnabled }
         set { configuration.networkInfoEnabled = newValue }
     }
@@ -129,7 +130,7 @@ public class DDLoggerConfiguration: NSObject {
     /// it will be possible to see all the logs sent during a specific View lifespan in the RUM Explorer.
     ///
     /// `true` by default
-    @objc public var bundleWithRumEnabled: Bool {
+    public var bundleWithRumEnabled: Bool {
         get { configuration.bundleWithRumEnabled }
         set { configuration.bundleWithRumEnabled = newValue }
     }
@@ -140,7 +141,7 @@ public class DDLoggerConfiguration: NSObject {
     /// it will be possible to see all the logs sent during that specific trace.
     ///
     /// `true` by default
-    @objc public var bundleWithTraceEnabled: Bool {
+    public var bundleWithTraceEnabled: Bool {
         get { configuration.bundleWithTraceEnabled }
         set { configuration.bundleWithTraceEnabled = newValue }
     }
@@ -151,7 +152,7 @@ public class DDLoggerConfiguration: NSObject {
     /// means all logs will be processed.
     ///
     /// By default sampling is disabled, meaning that all logs are being processed).
-    @objc public var remoteSampleRate: Float {
+    public var remoteSampleRate: Float {
         get { configuration.remoteSampleRate }
         set { configuration.remoteSampleRate = newValue }
     }
@@ -159,7 +160,7 @@ public class DDLoggerConfiguration: NSObject {
     /// Enables  logs to be printed to debugger console.
     ///
     /// `false` by default.
-    @objc public var printLogsToConsole: Bool {
+    public var printLogsToConsole: Bool {
         get { configuration.consoleLogFormat != nil }
         set { configuration.consoleLogFormat = newValue ? .short : nil }
     }
@@ -171,8 +172,8 @@ public class DDLoggerConfiguration: NSObject {
     /// is used - all logs will be printed, no matter of their level.
     ///
     /// `DDLogLevel.debug` by default
-    @objc public var remoteLogThreshold: DDLogLevel {
-        get { DDLogLevel(configuration.remoteLogThreshold) }
+    public var remoteLogThreshold: objc_LogLevel {
+        get { objc_LogLevel(configuration.remoteLogThreshold) }
         set { configuration.remoteLogThreshold = newValue.swift }
     }
 
@@ -187,7 +188,6 @@ public class DDLoggerConfiguration: NSObject {
     ///   - remoteSampleRate: The sample rate for remote logging. **When set to `0`, no log entries will be sent to Datadog servers.**
     ///   - remoteLogThreshold: Set the minimum log level reported to Datadog servers. .debug by default.
     ///   - printLogsToConsole: Format to use when printing logs to console - either `.short` or `.json`.
-    @objc
     public init(
         service: String? = nil,
         name: String? = nil,
@@ -195,7 +195,7 @@ public class DDLoggerConfiguration: NSObject {
         bundleWithRumEnabled: Bool = true,
         bundleWithTraceEnabled: Bool = true,
         remoteSampleRate: SampleRate = .maxSampleRate,
-        remoteLogThreshold: DDLogLevel = .debug,
+        remoteLogThreshold: objc_LogLevel = .debug,
         printLogsToConsole: Bool = false
     ) {
         configuration = .init(
@@ -211,8 +211,10 @@ public class DDLoggerConfiguration: NSObject {
     }
 }
 
-@objc
-public class DDLogger: NSObject {
+@objc(DDLogger)
+@objcMembers
+@_spi(objc)
+public class objc_Logger: NSObject {
     internal let sdkLogger: LoggerProtocol
 
     internal init(sdkLogger: LoggerProtocol) {
@@ -221,128 +223,103 @@ public class DDLogger: NSObject {
 
     // MARK: - Public
 
-    @objc
     public func debug(_ message: String) {
         sdkLogger.debug(message)
     }
 
-    @objc
     public func debug(_ message: String, attributes: [String: Any]) {
         sdkLogger.debug(message, attributes: attributes.dd.swiftAttributes)
     }
 
-    @objc
     public func debug(_ message: String, error: NSError, attributes: [String: Any]) {
         sdkLogger.debug(message, error: error, attributes: attributes.dd.swiftAttributes)
     }
 
-    @objc
     public func info(_ message: String) {
         sdkLogger.info(message)
     }
 
-    @objc
     public func info(_ message: String, attributes: [String: Any]) {
         sdkLogger.info(message, attributes: attributes.dd.swiftAttributes)
     }
 
-    @objc
     public func info(_ message: String, error: NSError, attributes: [String: Any]) {
         sdkLogger.info(message, error: error, attributes: attributes.dd.swiftAttributes)
     }
 
-    @objc
     public func notice(_ message: String) {
         sdkLogger.notice(message)
     }
 
-    @objc
     public func notice(_ message: String, attributes: [String: Any]) {
         sdkLogger.notice(message, attributes: attributes.dd.swiftAttributes)
     }
 
-    @objc
     public func notice(_ message: String, error: NSError, attributes: [String: Any]) {
         sdkLogger.notice(message, error: error, attributes: attributes.dd.swiftAttributes)
     }
 
-    @objc
     public func warn(_ message: String) {
         sdkLogger.warn(message)
     }
 
-    @objc
     public func warn(_ message: String, attributes: [String: Any]) {
         sdkLogger.warn(message, attributes: attributes.dd.swiftAttributes)
     }
 
-    @objc
     public func warn(_ message: String, error: NSError, attributes: [String: Any]) {
         sdkLogger.warn(message, error: error, attributes: attributes.dd.swiftAttributes)
     }
 
-    @objc
     public func error(_ message: String) {
         sdkLogger.error(message)
     }
 
-    @objc
     public func error(_ message: String, attributes: [String: Any]) {
         sdkLogger.error(message, attributes: attributes.dd.swiftAttributes)
     }
 
-    @objc
     public func error(_ message: String, error: NSError, attributes: [String: Any]) {
         sdkLogger.error(message, error: error, attributes: attributes.dd.swiftAttributes)
     }
 
-    @objc
     public func critical(_ message: String) {
         sdkLogger.critical(message)
     }
 
-    @objc
     public func critical(_ message: String, attributes: [String: Any]) {
         sdkLogger.critical(message, attributes: attributes.dd.swiftAttributes)
     }
 
-    @objc
     public func critical(_ message: String, error: NSError, attributes: [String: Any]) {
         sdkLogger.critical(message, error: error, attributes: attributes.dd.swiftAttributes)
     }
 
-    @objc
     public func addAttribute(forKey key: String, value: Any) {
         sdkLogger.addAttribute(forKey: key, value: AnyEncodable(value))
     }
 
-    @objc
     public func removeAttribute(forKey key: String) {
         sdkLogger.removeAttribute(forKey: key)
     }
 
-    @objc
     public func addTag(withKey key: String, value: String) {
         sdkLogger.addTag(withKey: key, value: value)
     }
 
-    @objc
     public func removeTag(withKey key: String) {
         sdkLogger.removeTag(withKey: key)
     }
 
-    @objc
     public func add(tag: String) {
         sdkLogger.add(tag: tag)
     }
 
-    @objc
     public func remove(tag: String) {
         sdkLogger.remove(tag: tag)
     }
 
-    @objc
-    public static func create(with configuration: DDLoggerConfiguration = .init()) -> DDLogger {
-        return DDLogger(sdkLogger: Logger.create(with: configuration.configuration))
+    public static func create(with configuration: objc_LoggerConfiguration = .init()) -> objc_Logger {
+        return objc_Logger(sdkLogger: Logger.create(with: configuration.configuration))
     }
 }

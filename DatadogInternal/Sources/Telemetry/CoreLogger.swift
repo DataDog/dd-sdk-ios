@@ -46,6 +46,15 @@ public enum CoreLoggerLevel: Int, Comparable, CaseIterable {
     }
 }
 
+@objc
+public enum DDSDKVerbosityLevel: Int {
+    case none
+    case debug
+    case warn
+    case error
+    case critical
+}
+
 /// The `CoreLogger` protocol defines methods to log debug information and execution errors from Datadog SDK to user console.
 ///
 /// It is meant for debugging purposes when using the SDK, hence **it should log information useful and actionable
@@ -110,13 +119,4 @@ extension CoreLogger {
     public func critical(_ message: @autoclosure () -> String, error: Error? = nil) {
         log(.critical, message: message(), error: error)
     }
-}
-
-@objc
-public enum DDSDKVerbosityLevel: Int {
-    case none
-    case debug
-    case warn
-    case error
-    case critical
 }

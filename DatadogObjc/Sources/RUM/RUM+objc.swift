@@ -63,7 +63,7 @@ public class DDDefaultUIKitRUMActionsPredicate: NSObject, DDUIKitRUMActionsPredi
     #if os(tvOS)
     public func rumAction(press type: UIPress.PressType, targetView: UIView) -> DDRUMAction? {
         swiftPredicate.rumAction(press: type, targetView: targetView).map {
-            DDRUMAction(name: $0.name, attributes: $0.attributes.dd.objCAttributes)
+            objc_RUMAction(name: $0.name, attributes: $0.attributes.dd.objCAttributes)
         }
     }
     #else

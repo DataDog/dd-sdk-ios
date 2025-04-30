@@ -272,6 +272,10 @@
 		11BBF8E92DC1292700875558 /* DDURLSessionDelegate+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BBF8E42DC1292700875558 /* DDURLSessionDelegate+objc.swift */; };
 		11BBF8EB2DC12A5B00875558 /* DDInternalLogger+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BBF8EA2DC12A5B00875558 /* DDInternalLogger+objc.swift */; };
 		11BBF8EC2DC12A5B00875558 /* DDInternalLogger+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BBF8EA2DC12A5B00875558 /* DDInternalLogger+objc.swift */; };
+		11EA5C1F2DC27F7600E8DFA2 /* LogsDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C1E2DC27F7600E8DFA2 /* LogsDataModels+objc.swift */; };
+		11EA5C202DC27F7600E8DFA2 /* Logs+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C1D2DC27F7600E8DFA2 /* Logs+objc.swift */; };
+		11EA5C212DC27F7600E8DFA2 /* LogsDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C1E2DC27F7600E8DFA2 /* LogsDataModels+objc.swift */; };
+		11EA5C222DC27F7600E8DFA2 /* Logs+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C1D2DC27F7600E8DFA2 /* Logs+objc.swift */; };
 		1434A4612B7F73110072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
 		1434A4622B7F73110072E3BB /* OpenTelemetryApi.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1434A4632B7F73170072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
@@ -531,7 +535,6 @@
 		61133BD82423979B00786299 /* URLSessionClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB22423979B00786299 /* URLSessionClient.swift */; };
 		61133BD92423979B00786299 /* DataUploadDelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB32423979B00786299 /* DataUploadDelay.swift */; };
 		61133C00242397DA00786299 /* DatadogObjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 61133BF2242397DA00786299 /* DatadogObjc.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		61133C102423983800786299 /* Logs+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C0C2423983800786299 /* Logs+objc.swift */; };
 		61133C482423990D00786299 /* DDDatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C142423990D00786299 /* DDDatadogTests.swift */; };
 		61133C4A2423990D00786299 /* DDConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C162423990D00786299 /* DDConfigurationTests.swift */; };
 		61133C4B2423990D00786299 /* DDLogsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C172423990D00786299 /* DDLogsTests.swift */; };
@@ -1660,7 +1663,6 @@
 		D2CB6F9A27C5217A00A62B57 /* RUMDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6111C58125C0081F00F5C4A2 /* RUMDataModels+objc.swift */; };
 		D2CB6F9B27C5217A00A62B57 /* DDSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4824A49B6800D7BD17 /* DDSpanContext+objc.swift */; };
 		D2CB6F9C27C5217A00A62B57 /* OTTracer+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4124A38D2400D7BD17 /* OTTracer+objc.swift */; };
-		D2CB6F9F27C5217A00A62B57 /* Logs+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C0C2423983800786299 /* Logs+objc.swift */; };
 		D2CB6FA027C5217A00A62B57 /* Trace+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8224A3431600233986 /* Trace+objc.swift */; };
 		D2CB6FA127C5217A00A62B57 /* HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4B24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift */; };
 		D2CB6FA227C5217A00A62B57 /* DDSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4624A498D800D7BD17 /* DDSpan+objc.swift */; };
@@ -1825,8 +1827,6 @@
 		F603F12C2CAEA7180088E6B7 /* DDInternalLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F603F1282CAEA4E90088E6B7 /* DDInternalLoggerTests.swift */; };
 		F603F1302CAEA7620088E6B7 /* DDInternalLogger+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F603F12D2CAEA7590088E6B7 /* DDInternalLogger+apiTests.m */; };
 		F603F1312CAEA7630088E6B7 /* DDInternalLogger+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F603F12D2CAEA7590088E6B7 /* DDInternalLogger+apiTests.m */; };
-		F6E106542C75E0D000716DC6 /* LogsDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E106532C75E0D000716DC6 /* LogsDataModels+objc.swift */; };
-		F6E106552C75E0D000716DC6 /* LogsDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E106532C75E0D000716DC6 /* LogsDataModels+objc.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2386,6 +2386,8 @@
 		11BBF8E42DC1292700875558 /* DDURLSessionDelegate+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDURLSessionDelegate+objc.swift"; sourceTree = "<group>"; };
 		11BBF8E52DC1292700875558 /* DDURLSessionInstrumentation+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDURLSessionInstrumentation+objc.swift"; sourceTree = "<group>"; };
 		11BBF8EA2DC12A5B00875558 /* DDInternalLogger+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDInternalLogger+objc.swift"; sourceTree = "<group>"; };
+		11EA5C1D2DC27F7600E8DFA2 /* Logs+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logs+objc.swift"; sourceTree = "<group>"; };
+		11EA5C1E2DC27F7600E8DFA2 /* LogsDataModels+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogsDataModels+objc.swift"; sourceTree = "<group>"; };
 		1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugOTelTracingViewController.swift; sourceTree = "<group>"; };
 		3C08F9CF2C2D652D002B0FF2 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
 		3C0CB3442C19A1ED003B0E9B /* WatchdogTerminationReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationReporter.swift; sourceTree = "<group>"; };
@@ -2593,7 +2595,6 @@
 		61133BF0242397DA00786299 /* DatadogObjc.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogObjc.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		61133BF2242397DA00786299 /* DatadogObjc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DatadogObjc.h; sourceTree = "<group>"; };
 		61133BF3242397DA00786299 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		61133C0C2423983800786299 /* Logs+objc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Logs+objc.swift"; sourceTree = "<group>"; };
 		61133C142423990D00786299 /* DDDatadogTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDDatadogTests.swift; sourceTree = "<group>"; };
 		61133C162423990D00786299 /* DDConfigurationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDConfigurationTests.swift; sourceTree = "<group>"; };
 		61133C172423990D00786299 /* DDLogsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDLogsTests.swift; sourceTree = "<group>"; };
@@ -3282,7 +3283,6 @@
 		F603F1282CAEA4E90088E6B7 /* DDInternalLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDInternalLoggerTests.swift; sourceTree = "<group>"; };
 		F603F12D2CAEA7590088E6B7 /* DDInternalLogger+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDInternalLogger+apiTests.m"; sourceTree = "<group>"; };
 		F637AED12697404200516F32 /* UIKitRUMUserActionsPredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMUserActionsPredicate.swift; sourceTree = "<group>"; };
-		F6E106532C75E0D000716DC6 /* LogsDataModels+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogsDataModels+objc.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4725,7 +4725,6 @@
 		61133C082423983800786299 /* DatadogObjc */ = {
 			isa = PBXGroup;
 			children = (
-				D2A434A62A8E3FEA0028E329 /* Logs */,
 				6132BF4524A498B400D7BD17 /* Tracing */,
 				6111C58025C0080C00F5C4A2 /* RUM */,
 				6132BF4024A38D0600D7BD17 /* OpenTracing */,
@@ -6015,13 +6014,15 @@
 		D207317D29A5226A00ECBF94 /* DatadogLogs */ = {
 			isa = PBXGroup;
 			children = (
-				D2D30E5A2A40BF540020C553 /* Logs.swift */,
-				49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */,
+				6194E4BB2878AF7600EB6307 /* ConsoleLogger.swift */,
 				D24C9C3E29A79772002057CF /* Logger.swift */,
 				D243BBEB29A614CE000B9CEC /* LoggerProtocol.swift */,
 				D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */,
+				D2D30E5A2A40BF540020C553 /* Logs.swift */,
+				49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */,
+				11EA5C1D2DC27F7600E8DFA2 /* Logs+objc.swift */,
+				11EA5C1E2DC27F7600E8DFA2 /* LogsDataModels+objc.swift */,
 				6194E4B828785BFD00EB6307 /* RemoteLogger.swift */,
-				6194E4BB2878AF7600EB6307 /* ConsoleLogger.swift */,
 				D24C9C4129A7986E002057CF /* Feature */,
 				61133BC12423979B00786299 /* Log */,
 				D22C1F5A2714849700922024 /* Scrubbing */,
@@ -6510,15 +6511,6 @@
 				D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */,
 			);
 			path = SwiftUI;
-			sourceTree = "<group>";
-		};
-		D2A434A62A8E3FEA0028E329 /* Logs */ = {
-			isa = PBXGroup;
-			children = (
-				61133C0C2423983800786299 /* Logs+objc.swift */,
-				F6E106532C75E0D000716DC6 /* LogsDataModels+objc.swift */,
-			);
-			path = Logs;
 			sourceTree = "<group>";
 		};
 		D2A783D329A53049003B03BB /* Utils */ = {
@@ -8507,7 +8499,6 @@
 				A728ADAB2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */,
 				A79B0F66292BD7CA008742B3 /* B3HTTPHeadersWriter+objc.swift in Sources */,
 				3CA852642BF2148200B52CBA /* TraceContextInjection+objc.swift in Sources */,
-				61133C102423983800786299 /* Logs+objc.swift in Sources */,
 				615A4A8324A3431600233986 /* Trace+objc.swift in Sources */,
 				6132BF4C24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift in Sources */,
 				6132BF4724A498D800D7BD17 /* DDSpan+objc.swift in Sources */,
@@ -8515,7 +8506,6 @@
 				616AAA6D2BDA674C00AB9DAD /* TraceSamplingStrategy+objc.swift in Sources */,
 				9E55407C25812D1C00F6E3AD /* RUM+objc.swift in Sources */,
 				615A4A8D24A356A000233986 /* OTSpanContext+objc.swift in Sources */,
-				F6E106542C75E0D000716DC6 /* LogsDataModels+objc.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8769,6 +8759,8 @@
 				D243BBF229A6209C000B9CEC /* RequestBuilder.swift in Sources */,
 				D2B249942A4598FE00DD4F9F /* LoggerProtocol+Internal.swift in Sources */,
 				D20731C229A528EB00ECBF94 /* LogEventEncoder.swift in Sources */,
+				11EA5C212DC27F7600E8DFA2 /* LogsDataModels+objc.swift in Sources */,
+				11EA5C222DC27F7600E8DFA2 /* Logs+objc.swift in Sources */,
 				D243BBEC29A614CE000B9CEC /* LoggerProtocol.swift in Sources */,
 				D207319629A522F600ECBF94 /* ConsoleLogger.swift in Sources */,
 				D20731C529A528EC00ECBF94 /* LogEventSanitizer.swift in Sources */,
@@ -8810,6 +8802,8 @@
 				D243BBF329A6209C000B9CEC /* RequestBuilder.swift in Sources */,
 				D2B249952A4598FE00DD4F9F /* LoggerProtocol+Internal.swift in Sources */,
 				D20731C729A528ED00ECBF94 /* LogEventEncoder.swift in Sources */,
+				11EA5C1F2DC27F7600E8DFA2 /* LogsDataModels+objc.swift in Sources */,
+				11EA5C202DC27F7600E8DFA2 /* Logs+objc.swift in Sources */,
 				D243BBED29A614CE000B9CEC /* LoggerProtocol.swift in Sources */,
 				D20731A929A5279D00ECBF94 /* ConsoleLogger.swift in Sources */,
 				D20731CA29A528ED00ECBF94 /* LogEventSanitizer.swift in Sources */,
@@ -9849,14 +9843,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F6E106552C75E0D000716DC6 /* LogsDataModels+objc.swift in Sources */,
 				D2CB6F9927C5217A00A62B57 /* Casting.swift in Sources */,
 				D2CB6F9A27C5217A00A62B57 /* RUMDataModels+objc.swift in Sources */,
 				D2CB6F9B27C5217A00A62B57 /* DDSpanContext+objc.swift in Sources */,
 				D2CB6F9C27C5217A00A62B57 /* OTTracer+objc.swift in Sources */,
 				A728ADAC2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */,
 				A79B0F67292BD7CC008742B3 /* B3HTTPHeadersWriter+objc.swift in Sources */,
-				D2CB6F9F27C5217A00A62B57 /* Logs+objc.swift in Sources */,
 				D2CB6FA027C5217A00A62B57 /* Trace+objc.swift in Sources */,
 				D2CB6FA127C5217A00A62B57 /* HTTPHeadersWriter+objc.swift in Sources */,
 				616AAA6E2BDA674C00AB9DAD /* TraceSamplingStrategy+objc.swift in Sources */,
