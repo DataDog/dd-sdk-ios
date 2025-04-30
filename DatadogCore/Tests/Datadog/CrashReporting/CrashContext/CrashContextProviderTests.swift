@@ -245,7 +245,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .dispatch(logAttributes), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(logAttributes), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
@@ -265,7 +265,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .dispatch(logAttributes), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(logAttributes), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then

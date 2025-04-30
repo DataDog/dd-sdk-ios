@@ -105,7 +105,7 @@ public enum Logs {
 
     private static func sendAttributesChanged(for feature: LogsFeature, in core: DatadogCoreProtocol) {
         core.send(
-            message: .dispatch(LogEventAttributes(
+            message: .payload(LogEventAttributes(
                 attributes: feature.attributes.getAttributes()
             ))
         )

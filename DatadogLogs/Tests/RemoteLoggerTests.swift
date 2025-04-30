@@ -64,9 +64,8 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Error message")
 
         // Then
-        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
-        let error: ExpectedErrorMessage = try errorBaggage.decode()
-        XCTAssertEqual(error.message, "Error message")
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstDispatch as? LogErrorMessage)
+        XCTAssertEqual(errorMessage.message, "Error message")
     }
 
     func testWhenCrossPlatformCrashErrorLogged_itDoesNotPostToMessageBus() throws {
@@ -104,13 +103,12 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Information message", error: ErrorMock(), attributes: [CrossPlatformAttributes.includeBinaryImages: true])
 
         // Then
-        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
-        let error: ExpectedErrorMessage = try errorBaggage.decode()
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstDispatch as? LogErrorMessage)
         // This is removed because binary images are sent in the message, so the additional attribute isn't needed
-        XCTAssertNil(error.attributes[CrossPlatformAttributes.includeBinaryImages])
-        XCTAssertEqual(error.binaryImages?.count, stubBacktrace.binaryImages.count)
+        XCTAssertNil(errorMessage.attributes[CrossPlatformAttributes.includeBinaryImages])
+        XCTAssertEqual(errorMessage.binaryImages?.count, stubBacktrace.binaryImages.count)
         for i in 0..<stubBacktrace.binaryImages.count {
-            let logBacktrace = error.binaryImages![i]
+            let logBacktrace = errorMessage.binaryImages![i]
             let errorBacktrace = stubBacktrace.binaryImages[i]
             XCTAssertEqual(logBacktrace.libraryName, errorBacktrace.libraryName)
             XCTAssertEqual(logBacktrace.uuid, errorBacktrace.uuid)
@@ -145,10 +143,9 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // Then
-        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
-        let error: ExpectedErrorMessage = try errorBaggage.decode()
-        XCTAssertEqual(error.attributes[CrossPlatformAttributes.errorSourceType]?.value as? String, "flutter")
-        XCTAssertEqual(error.attributes[Logs.Attributes.errorFingerprint]?.value as? String, mockFingerprint)
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstDispatch as? LogErrorMessage)
+        XCTAssertEqual(errorMessage.attributes[CrossPlatformAttributes.errorSourceType] as? String, "flutter")
+        XCTAssertEqual(errorMessage.attributes[Logs.Attributes.errorFingerprint] as? String, mockFingerprint)
     }
 
     func testWhenErrorLoggedFromInternal_itPostsToMessageBus_withSourceTypeInjected() throws {
@@ -178,10 +175,9 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // Then
-        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
-        let error: ExpectedErrorMessage = try errorBaggage.decode()
-        XCTAssertEqual(error.attributes[CrossPlatformAttributes.errorSourceType]?.value as? String, "flutter")
-        XCTAssertEqual(error.attributes[Logs.Attributes.errorFingerprint]?.value as? String, mockFingerprint)
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstDispatch as? LogErrorMessage)
+        XCTAssertEqual(errorMessage.attributes[CrossPlatformAttributes.errorSourceType] as? String, "flutter")
+        XCTAssertEqual(errorMessage.attributes[Logs.Attributes.errorFingerprint] as? String, mockFingerprint)
     }
 
     // MARK: - Attributes
@@ -321,9 +317,8 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Error message")
 
         // Then
-        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
-        let error: ExpectedErrorMessage = try errorBaggage.decode()
-        XCTAssertEqual(error.attributes[attributeKey]?.value as? String, attributeValue)
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstDispatch as? LogErrorMessage)
+        XCTAssertEqual(errorMessage.attributes[attributeKey] as? String, attributeValue)
     }
 
     func testWhenAttributesContainErrorFingerprint_itAddsItToTheLogEvent() throws {

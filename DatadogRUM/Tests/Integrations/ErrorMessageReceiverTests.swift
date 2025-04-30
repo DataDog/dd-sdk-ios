@@ -28,59 +28,46 @@ class ErrorMessageReceiverTests: XCTestCase {
         receiver = nil
     }
 
-    func testReceiveIncompleteError() throws {
+    func testReceivePartialLogError() throws {
         // When
-        let message: FeatureMessage = .baggage(
-            key: ErrorMessageReceiver.ErrorMessage.key,
-            value: ["message": "message-test"]
+        let message: FeatureMessage = .payload(
+            LogErrorMessage(
+                time: Date(),
+                message: "message-test",
+                type: nil,
+                stack: nil,
+                attributes: [:],
+                binaryImages: nil
+            )
         )
-        let result = receiver.receive(message: message, from: NOPDatadogCore())
 
-        // Then
-        XCTAssertFalse(result, "It must reject the message")
-        let events: [RUMErrorEvent] = featureScope.eventsWritten()
-        XCTAssertTrue(events.isEmpty, "It should not send error")
-    }
-
-    func testReceivePartialError() throws {
-        // When
-        let baggage: [String: Any] = [
-            "time": Date(),
-            "message": "message-test",
-            "source": "custom"
-        ]
-        let message: FeatureMessage = .baggage(
-            key: ErrorMessageReceiver.ErrorMessage.key,
-            value: AnyEncodable(baggage)
-        )
         let result = receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
         XCTAssertTrue(result, "It must accept the message")
         let event: RUMErrorEvent = try XCTUnwrap(featureScope.eventsWritten().last, "It should send error")
         XCTAssertEqual(event.error.message, "message-test")
-        XCTAssertEqual(event.error.source, .custom)
+        XCTAssertEqual(event.error.source, .logger)
     }
 
-    func testReceiveCompleteError() throws {
+    func testReceiveCompleteLogError() throws {
+        // Given
         let mockAttribute: String = .mockRandom()
         let mockBinaryImage: BinaryImage = .mockRandom()
-        let baggage: [String: Any] = [
-            "time": Date(),
-            "message": "message-test",
-            "type": "type-test",
-            "stack": "stack-test",
-            "source": "logger",
-            "binaryImages": [
-                mockBinaryImage
-            ],
-            "attributes": [
-                "any-key": mockAttribute
-            ]
-        ]
+        let message: FeatureMessage = .payload(
+            LogErrorMessage(
+                time: Date(),
+                message: "message-test",
+                type: "type-test",
+                stack: "stack-test",
+                attributes: [
+                    "any-key": mockAttribute
+                ],
+                binaryImages: [mockBinaryImage]
+            )
+        )
 
         // When
-        let message: FeatureMessage = .baggage(key: ErrorMessageReceiver.ErrorMessage.key, value: AnyEncodable(baggage))
         let result = receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
@@ -101,7 +88,6 @@ class ErrorMessageReceiverTests: XCTestCase {
             XCTAssertEqual(mockBinaryImage.maxAddress, image.maxAddress)
         }
 
-        let attributeValue = (event.context?.contextInfo["any-key"] as? AnyCodable)?.value as? String
-        XCTAssertEqual(attributeValue, mockAttribute)
+        XCTAssertEqual(event.context?.contextInfo["any-key"] as? String, mockAttribute)
     }
 }

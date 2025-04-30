@@ -207,14 +207,13 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
                 }
 
                 self.featureScope.send(
-                    message: .baggage(
-                        key: ErrorMessage.key,
-                        value: ErrorMessage(
+                    message: .payload(
+                        LogErrorMessage(
                             time: date,
                             message: log.error?.message ?? log.message,
                             type: log.error?.kind,
                             stack: log.error?.stack,
-                            attributes: .init(busCombinedAttributes),
+                            attributes: busCombinedAttributes,
                             binaryImages: binaryImages
                         )
                     )
