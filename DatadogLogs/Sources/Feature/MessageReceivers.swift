@@ -7,12 +7,6 @@
 import Foundation
 import DatadogInternal
 
-/// Defines keys referencing RUM messages supported on the bus.
-internal enum LoggingMessageKeys {
-    /// The key references a crash message.
-    static let crash = "crash"
-}
-
 /// Receiver to consume a Log message
 internal struct LogMessageReceiver: FeatureMessageReceiver {
     /// The log event mapper
@@ -69,81 +63,6 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
 
 /// Receiver to consume a Crash Log message as Log.
 internal struct CrashLogReceiver: FeatureMessageReceiver {
-    private struct Crash: Decodable {
-        /// The crash report.
-        let report: DDCrashReport
-        /// The crash context
-        let context: CrashContext
-    }
-
-    private struct CrashContext: Decodable {
-        /// Interval between device and server time.
-        let serverTimeOffset: TimeInterval
-        /// The name of the service that data is generated from.
-        let service: String
-        /// The name of the environment that data is generated from.
-        let env: String
-        /// The version of the application that data is generated from.
-        let version: String
-        /// The build number of the application that data is generated from.
-        let buildNumber: String
-        /// Current device information.
-        let device: DeviceInfo
-        /// The version of Datadog iOS SDK.
-        let sdkVersion: String
-        /// Network information.
-        ///
-        /// Represents the current state of the device network connectivity and interface.
-        /// The value can be `unknown` if the network interface is not available or if it has not
-        /// yet been evaluated.
-        let networkConnectionInfo: NetworkConnectionInfo?
-        /// Carrier information.
-        ///
-        /// Represents the current telephony service info of the device.
-        /// This value can be `nil` of no service is currently registered, or if the device does
-        /// not support telephony services.
-        let carrierInfo: CarrierInfo?
-        /// Current user information.
-        let userInfo: UserInfo?
-
-        /// A type representing part of last RUM view information required to link crash log with previous RUM session.
-        /// It mirrors the schema of `RUMViewEvent`, so we can decode it from the last `RUMViewEvent` coded in crash context.
-        struct PartialRUMViewEvent: Decodable {
-            struct Application: Decodable {
-                let id: String
-            }
-            struct Session: Decodable {
-                let id: String
-            }
-            struct View: Decodable {
-                let id: String
-            }
-
-            let application: Application
-            let session: Session
-            let view: View
-        }
-
-        struct GlobalLogAttributes: Decodable {
-            let attributes: [AttributeKey: AttributeValue]
-
-            init(from decoder: Decoder) throws {
-                // Decode other properties into [String: Codable] dictionary:
-                let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-                self.attributes = try dynamicContainer.allKeys
-                    .reduce(into: [:]) {
-                        $0[$1.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $1)
-                    }
-            }
-        }
-
-        /// The last RUM view in crashed app process.
-        let lastRUMViewEvent: PartialRUMViewEvent?
-
-        /// Last global log attributes
-        let lastLogAttributes: GlobalLogAttributes?
-    }
-
     /// Time provider.
     let dateProvider: DateProvider
     let logEventMapper: LogEventMapper?
@@ -154,17 +73,11 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
     ///   - message: The Feature message
     ///   - core: The core from which the message is transmitted.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        do {
-            guard let crash: Crash = try message.baggage(forKey: LoggingMessageKeys.crash) else {
-                return false
-            }
-
-            return send(report: crash.report, with: crash.context, to: core)
-        } catch {
-            core.telemetry
-                .error("Failed to decode crash message in `LogMessageReceiver`", error: error)
+        guard case let .payload(crash as Crash) = message else {
+            return false
         }
-        return false
+
+        return send(report: crash.report, with: crash.context, to: core)
     }
 
     private func send(report: DDCrashReport, with crashContext: CrashContext, to core: DatadogCoreProtocol) -> Bool {

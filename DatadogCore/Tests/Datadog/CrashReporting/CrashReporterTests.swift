@@ -51,11 +51,11 @@ class CrashReporterTests: XCTestCase {
         XCTAssertTrue(plugin.hasPurgedCrashReport == true, "It should ask to purge the crash report")
     }
 
-    func testWhenPendingCrashReportIsFound_itIsSentToRumFeature() throws {
+    func testWhenPendingCrashReportIsFound_itIsSentMessageBus() throws {
         let expectation = self.expectation(description: "`CrashReportSender` sends the crash report to RUM feature")
         let crashContext: CrashContext = .mockRandom()
         let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
-        let rumCrashReceiver = RUMCrashReceiverMock()
+        let rumCrashReceiver = CrashReceiverMock()
 
         let core = PassthroughCoreMock(messageReceiver: rumCrashReceiver)
 
@@ -80,39 +80,7 @@ class CrashReporterTests: XCTestCase {
 
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        XCTAssertNotNil(rumCrashReceiver.receivedBaggage, "RUM baggage must not be empty")
-    }
-
-    func testWhenPendingCrashReportIsFound_itIsSentToLogsFeature() throws {
-        let expectation = self.expectation(description: "`CrashReportSender` sends the crash report to Logs feature")
-        let crashContext: CrashContext = .mockRandom()
-        let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
-        let logsCrashReceiver = LogsCrashReceiverMock()
-
-        let core = PassthroughCoreMock(messageReceiver: logsCrashReceiver)
-
-        let plugin = CrashReportingPluginMock()
-
-        // Given
-        plugin.pendingCrashReport = crashReport
-        plugin.injectedContextData = crashContext.data
-
-        // When
-        let feature = CrashReportingFeature(
-            crashReportingPlugin: plugin,
-            crashContextProvider: CrashContextProviderMock(),
-            sender: MessageBusSender(core: core),
-            messageReceiver: NOPFeatureMessageReceiver(),
-            telemetry: NOPTelemetry()
-        )
-
-        //Then
-        plugin.didReadPendingCrashReport = { expectation.fulfill() }
-        feature.sendCrashReportIfFound()
-
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        XCTAssertNotNil(logsCrashReceiver.receivedBaggage, "Logs baggage must not be empty")
+        XCTAssertNotNil(rumCrashReceiver.receivedCrash, "crash must not be empty")
     }
 
     func testWhenPendingCrashReportIsNotFound_itDoesNothing() {

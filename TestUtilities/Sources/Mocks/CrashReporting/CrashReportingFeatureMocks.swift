@@ -108,36 +108,18 @@ public class CrashReportSenderMock: CrashReportSender {
     public func send(launch: DatadogInternal.LaunchReport) {}
 }
 
-public class RUMCrashReceiverMock: FeatureMessageReceiver {
-    public var receivedBaggage: FeatureBaggage?
+public class CrashReceiverMock: FeatureMessageReceiver {
+    public var receivedCrash: Crash?
 
     public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        switch message {
-        case .baggage(let label, let baggage) where label == CrashReportReceiver.MessageKeys.crash:
-            receivedBaggage = baggage
-            return true
-        default:
+        guard case let .payload(crash as Crash) = message else {
             return false
         }
+        receivedCrash = crash
+        return true
     }
 
     public init() {}
-}
-
-public class LogsCrashReceiverMock: FeatureMessageReceiver {
-    public var receivedBaggage: FeatureBaggage?
-
-    public init() {}
-
-    public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        switch message {
-        case .baggage(let label, let baggage) where label == LoggingMessageKeys.crash:
-            receivedBaggage = baggage
-            return true
-        default:
-            return false
-        }
-    }
 }
 
 extension CrashContext {
