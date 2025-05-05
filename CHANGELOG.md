@@ -1,10 +1,5 @@
 # Unreleased
 
-# 2.27.0 / 06-05-2025
-
-- [FEATURE] Propagate RUM session ID in request headers. See [#2201][]
-- [FIX] Fix access level for `DatadogPrivate` imports. See [#2268][]
-
 # 2.26.0 / 10-04-2025
 
 - [FIX] Fix Fatal App Hang Duplicates. See [#2260][]
@@ -863,7 +858,6 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2182]: https://github.com/DataDog/dd-sdk-ios/pull/2182
 [#2244]: https://github.com/DataDog/dd-sdk-ios/pull/2244
 [#2200]: https://github.com/DataDog/dd-sdk-ios/pull/2200
-[#2201]: https://github.com/DataDog/dd-sdk-ios/pull/2201
 [#2195]: https://github.com/DataDog/dd-sdk-ios/pull/2195
 [#2251]: https://github.com/DataDog/dd-sdk-ios/pull/2251
 [#2240]: https://github.com/DataDog/dd-sdk-ios/pull/2240
@@ -871,7 +865,6 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2234]: https://github.com/DataDog/dd-sdk-ios/pull/2234
 [#2236]: https://github.com/DataDog/dd-sdk-ios/pull/2236
 [#2260]: https://github.com/DataDog/dd-sdk-ios/pull/2260
-[#2268]: https://github.com/DataDog/dd-sdk-ios/pull/2268
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
