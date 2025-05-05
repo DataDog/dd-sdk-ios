@@ -25,7 +25,14 @@ public enum TraceSamplingStrategy {
         case .headBased:
             return DeterministicSampler(shouldSample: traceContext.isKept, samplingRate: traceContext.sampleRate)
         case .custom(let sampleRate):
-            return DeterministicSampler(baseId: traceContext.traceID.idLo, samplingRate: sampleRate)
+            // for a UUID with value aaaaaaaa-bbbb-Mccc-Nddd-1234567890ab
+            // we use as the base id the last part : 0x1234567890ab
+            let baseId = traceContext.rumSessionId
+             .flatMap { $0.split(separator: "-").last }
+             .flatMap { UInt64($0, radix: 16) }
+            ?? traceContext.traceID.idLo
+
+            return DeterministicSampler(baseId: baseId, samplingRate: sampleRate)
         }
     }
 }
