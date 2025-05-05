@@ -11,6 +11,7 @@ import TestUtilities
 @testable import DatadogLogs
 @testable import DatadogTrace
 @testable import DatadogCore
+@_spi(objc)
 @testable import DatadogObjc
 
 class DDTracerTests: XCTestCase {

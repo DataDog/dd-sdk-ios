@@ -7,7 +7,7 @@
 import XCTest
 import DatadogObjc
 import TestUtilities
-
+@_spi(objc)
 @testable import DatadogRUM
 
 #if canImport(SwiftUI)
@@ -17,7 +17,7 @@ import SwiftUI
 class DDUIKitRUMViewsPredicateTests: XCTestCase {
     func testGivenDefaultPredicate_whenAskingForCustomSwiftViewController_itNamesTheViewByItsClassName() {
         // Given
-        let predicate = DDDefaultUIKitRUMViewsPredicate()
+        let predicate = objc_DefaultUIKitRUMViewsPredicate()
 
         // When
         let customViewController = createMockView(viewControllerClassName: "CustomSwiftViewController")
@@ -30,7 +30,7 @@ class DDUIKitRUMViewsPredicateTests: XCTestCase {
 
     func testGivenDefaultPredicate_whenAskingForCustomObjcViewController_itNamesTheViewByItsClassName() {
         // Given
-        let predicate = DDDefaultUIKitRUMViewsPredicate()
+        let predicate = objc_DefaultUIKitRUMViewsPredicate()
 
         // When
         let customViewController = CustomObjcViewController()
@@ -43,7 +43,7 @@ class DDUIKitRUMViewsPredicateTests: XCTestCase {
 
     func testGivenDefaultPredicate_whenAskingUIKitViewController_itReturnsNoView() {
         // Given
-        let predicate = DDDefaultUIKitRUMViewsPredicate()
+        let predicate = objc_DefaultUIKitRUMViewsPredicate()
 
         // When
         let uiKitViewController = UIViewController()
@@ -59,7 +59,7 @@ class DDUIKitRUMViewsPredicateTests: XCTestCase {
             return
         }
         // Given
-        let predicate = DDDefaultUIKitRUMViewsPredicate()
+        let predicate = objc_DefaultUIKitRUMViewsPredicate()
 
         // When
         let swiftUIHostingController = UIHostingController<EmptyView>(rootView: EmptyView())

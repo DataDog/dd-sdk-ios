@@ -7,8 +7,8 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+@_spi(objc)
 @testable import DatadogRUM
-@testable import DatadogObjc
 
 class DDRUMTests: XCTestCase {
     private var core: FeatureRegistrationCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -26,11 +26,11 @@ class DDRUMTests: XCTestCase {
     }
 
     func testWhenNotEnabled() {
-        XCTAssertTrue(DDRUMMonitor.shared().swiftRUMMonitor is NOPMonitor)
+        XCTAssertTrue(objc_RUMMonitor.shared().swiftRUMMonitor is NOPMonitor)
     }
 
     func testWhenEnabled() {
-        DDRUM.enable(with: DDRUMConfiguration(applicationID: "app-id"))
-        XCTAssertTrue(DDRUMMonitor.shared().swiftRUMMonitor is Monitor)
+        objc_RUM.enable(with: objc_RUMConfiguration(applicationID: "app-id"))
+        XCTAssertTrue(objc_RUMMonitor.shared().swiftRUMMonitor is Monitor)
     }
 }

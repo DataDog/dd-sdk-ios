@@ -6,7 +6,9 @@
 
 import XCTest
 import TestUtilities
+@_spi(objc)
 import DatadogInternal
+@_spi(objc)
 @testable import DatadogObjc
 
 final class DDURLSessionInstrumentationConfigurationTests: XCTestCase {

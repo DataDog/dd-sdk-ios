@@ -5,7 +5,7 @@
  */
 
 import XCTest
-import DatadogObjc
+@_spi(objc)
 import DatadogRUM
 
 #if canImport(SwiftUI)
@@ -15,7 +15,7 @@ import SwiftUI
 class DDUIKitRUMActionsPredicateTests: XCTestCase {
     func testGivenDefaultPredicate_whenAskingForCustomView_itNamesTheActionByItsClassName() {
         // Given
-        let predicate = DDDefaultUIKitRUMActionsPredicate()
+        let predicate = objc_DefaultUIKitRUMActionsPredicate()
 
         // When
         #if os(tvOS)
@@ -30,7 +30,7 @@ class DDUIKitRUMActionsPredicateTests: XCTestCase {
 
     func testGivenDefaultPredicate_whenAskingForViewWithAccesiblityIdentifier_itNamesTheActionWithIt() {
         // Given
-        let predicate = DDDefaultUIKitRUMActionsPredicate()
+        let predicate = objc_DefaultUIKitRUMActionsPredicate()
         let targetView = UIButton()
         targetView.accessibilityIdentifier = "Identifier"
 
@@ -52,7 +52,7 @@ class DDUIKitRUMActionsPredicateTests: XCTestCase {
             return
         }
         // Given
-        let predicate = DDDefaultUIKitRUMActionsPredicate()
+        let predicate = objc_DefaultUIKitRUMActionsPredicate()
 
         // When
         let swiftUIView = UIHostingController(rootView: EmptyView()).view!

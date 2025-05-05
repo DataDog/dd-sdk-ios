@@ -7,35 +7,34 @@
 import Foundation
 
 /// Configuration of URLSession instrumentation.
-@objc
+@objcMembers
+@_spi(objc)
 public class DDURLSessionInstrumentationConfiguration: NSObject {
-    public var swiftConfig: URLSessionInstrumentation.Configuration
+    public internal(set) var swiftConfig: URLSessionInstrumentation.Configuration
 
-    @objc
     public init(delegateClass: URLSessionDataDelegate.Type) {
         swiftConfig = .init(delegateClass: delegateClass)
     }
 
     /// Sets additional first party hosts to consider in the interception.
-    @objc
     public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: DDURLSessionInstrumentationFirstPartyHostsTracing) {
         swiftConfig.firstPartyHostsTracing = firstPartyHostsTracing.swiftType
     }
 
     /// The delegate class to be used to swizzle URLSessionTaskDelegate & URLSessionDataDelegate methods.
-    @objc public var delegateClass: URLSessionDataDelegate.Type {
+    public var delegateClass: URLSessionDataDelegate.Type {
         set { swiftConfig.delegateClass = newValue }
         get { swiftConfig.delegateClass }
     }
 }
 
 /// Defines configuration for first-party hosts in distributed tracing.
-@objc
+@objcMembers
+@_spi(objc)
 public class DDURLSessionInstrumentationFirstPartyHostsTracing: NSObject {
     internal var swiftType: URLSessionInstrumentation.FirstPartyHostsTracing
 
-    @objc
-    public init(hostsWithHeaderTypes: [String: Set<DDTracingHeaderType>]) {
+    public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>]) {
         let swiftHostsWithHeaders = hostsWithHeaderTypes.mapValues { headerTypes in
             Set(headerTypes.map {
                 $0.swiftType
@@ -44,19 +43,18 @@ public class DDURLSessionInstrumentationFirstPartyHostsTracing: NSObject {
         swiftType = .traceWithHeaders(hostsWithHeaders: swiftHostsWithHeaders)
     }
 
-    @objc
     public init(hosts: Set<String>) {
         swiftType = .trace(hosts: hosts)
     }
 }
 
-@objc
+@objcMembers
+@_spi(objc)
 public class DDURLSessionInstrumentation: NSObject {
     /// Enables URLSession instrumentation.
     ///
     /// - Parameters:
     ///   - configuration: Configuration of the feature.
-    @objc
     public static func enable(configuration: DDURLSessionInstrumentationConfiguration) {
         URLSessionInstrumentation.enable(with: configuration.swiftConfig)
     }
@@ -64,7 +62,6 @@ public class DDURLSessionInstrumentation: NSObject {
     /// Disables URLSession instrumentation.
     /// - Parameters:
     ///   - delegateClass: The delegate class to unbind.
-    @objc
     public static func disable(delegateClass: URLSessionDataDelegate.Type) {
         URLSessionInstrumentation.disable(delegateClass: delegateClass)
     }

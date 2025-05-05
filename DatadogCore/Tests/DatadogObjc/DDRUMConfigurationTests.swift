@@ -7,15 +7,15 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+@_spi(objc)
 @testable import DatadogRUM
-@testable import DatadogObjc
 
 class DDRUMConfigurationTests: XCTestCase {
-    private var objc = DDRUMConfiguration(applicationID: "app-id")
+    private var objc = objc_RUMConfiguration(applicationID: "app-id")
     private var swift: RUM.Configuration { objc.swiftConfig }
 
     func testApplicationID() {
-        objc = DDRUMConfiguration(applicationID: "rum-app-id")
+        objc = objc_RUMConfiguration(applicationID: "rum-app-id")
         XCTAssertEqual(swift.applicationID, "rum-app-id")
     }
 
@@ -32,8 +32,8 @@ class DDRUMConfigurationTests: XCTestCase {
     }
 
     func testUIKitViewsPredicate() {
-        class ObjcPredicate: DDUIKitRUMViewsPredicate {
-            func rumView(for viewController: UIViewController) -> DDRUMView? { nil }
+        class ObjcPredicate: objc_UIKitRUMViewsPredicate {
+            func rumView(for viewController: UIViewController) -> objc_RUMView? { nil }
         }
         let predicate = ObjcPredicate()
         objc.uiKitViewsPredicate = predicate
@@ -42,9 +42,9 @@ class DDRUMConfigurationTests: XCTestCase {
     }
 
     func testUIKitActionsPredicate() {
-        class ObjcPredicate: DDUIKitRUMActionsPredicate & DDUITouchRUMActionsPredicate & DDUIPressRUMActionsPredicate {
-            func rumAction(targetView: UIView) -> DDRUMAction? { nil }
-            func rumAction(press type: UIPress.PressType, targetView: UIView) -> DDRUMAction? { nil }
+        class ObjcPredicate: objc_UIKitRUMActionsPredicate & objc_UITouchRUMActionsPredicate & objc_UIPressRUMActionsPredicate {
+            func rumAction(targetView: UIView) -> objc_RUMAction? { nil }
+            func rumAction(press type: UIPress.PressType, targetView: UIView) -> objc_RUMAction? { nil }
         }
         let predicate = ObjcPredicate()
         objc.uiKitActionsPredicate = predicate
@@ -53,7 +53,7 @@ class DDRUMConfigurationTests: XCTestCase {
     }
 
     func testSetDDRUMURLSessionTrackingWithFirstPartyHosts() {
-        let tracking = DDRUMURLSessionTracking()
+        let tracking = objc_URLSessionTracking()
 
         objc.setURLSessionTracking(tracking)
         DDAssertReflectionEqual(swift.urlSessionTracking, RUM.Configuration.URLSessionTracking())
@@ -76,7 +76,7 @@ class DDRUMConfigurationTests: XCTestCase {
     }
 
     func testSetDDRUMURLSessionTrackingWithResourceAttributesProvider() {
-        let tracking = DDRUMURLSessionTracking()
+        let tracking = objc_URLSessionTracking()
 
         objc.setURLSessionTracking(tracking)
         XCTAssertNil(swift.urlSessionTracking?.resourceAttributesProvider)

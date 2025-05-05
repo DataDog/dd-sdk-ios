@@ -7,15 +7,16 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+@_spi(objc)
 @testable import DatadogRUM
+@_spi(objc)
 @testable import DatadogCore
-@testable import DatadogObjc
 
 class UIKitRUMViewsPredicateBridgeTests: XCTestCase {
     func testItForwardsCallToObjcPredicate() {
-        class MockPredicate: DDUIKitRUMViewsPredicate {
+        class MockPredicate: objc_UIKitRUMViewsPredicate {
             var didCallRUMView = false
-            func rumView(for viewController: UIViewController) -> DDRUMView? {
+            func rumView(for viewController: UIViewController) -> objc_RUMView? {
                 didCallRUMView = true
                 return nil
             }
@@ -32,7 +33,7 @@ class UIKitRUMViewsPredicateBridgeTests: XCTestCase {
 
 class DDRUMViewTests: XCTestCase {
     func testItCreatesSwiftRUMView() {
-        let objcRUMView = DDRUMView(name: "name", attributes: ["foo": "bar"])
+        let objcRUMView = objc_RUMView(name: "name", attributes: ["foo": "bar"])
         XCTAssertEqual(objcRUMView.swiftView.name, "name")
         XCTAssertEqual(objcRUMView.swiftView.attributes["foo"]?.dd.decode(), "bar")
         XCTAssertEqual(objcRUMView.name, "name")
@@ -42,9 +43,9 @@ class DDRUMViewTests: XCTestCase {
 
 class UIKitRUMActionsPredicateBridgeTests: XCTestCase {
     func testItForwardsCallToObjcTouchPredicate() {
-        class MockPredicate: DDUITouchRUMActionsPredicate {
+        class MockPredicate: objc_UITouchRUMActionsPredicate {
             var didCallRUMAction = false
-            func rumAction(targetView: UIView) -> DDRUMAction? {
+            func rumAction(targetView: UIView) -> objc_RUMAction? {
                 didCallRUMAction = true
                 return nil
             }
@@ -59,9 +60,9 @@ class UIKitRUMActionsPredicateBridgeTests: XCTestCase {
     }
 
     func testItForwardsCallToObjcPressPredicate() {
-        class MockPredicate: DDUIPressRUMActionsPredicate {
+        class MockPredicate: objc_UIPressRUMActionsPredicate {
             var didCallRUMAction = false
-            func rumAction(press: UIPress.PressType, targetView: UIView) -> DDRUMAction? {
+            func rumAction(press: UIPress.PressType, targetView: UIView) -> objc_RUMAction? {
                 didCallRUMAction = true
                 return nil
             }
@@ -78,7 +79,7 @@ class UIKitRUMActionsPredicateBridgeTests: XCTestCase {
 
 class DDRUMActionTests: XCTestCase {
     func testItCreatesSwiftRUMAction() {
-        let objcRUMAction = DDRUMAction(name: "name", attributes: ["foo": "bar"])
+        let objcRUMAction = objc_RUMAction(name: "name", attributes: ["foo": "bar"])
         XCTAssertEqual(objcRUMAction.swiftAction.name, "name")
         XCTAssertEqual(objcRUMAction.swiftAction.attributes["foo"]?.dd.decode(), "bar")
         XCTAssertEqual(objcRUMAction.name, "name")
@@ -88,50 +89,50 @@ class DDRUMActionTests: XCTestCase {
 
 class DDRUMUserActionTypeTests: XCTestCase {
     func testMappingToSwiftRUMActionType() {
-        XCTAssertEqual(DDRUMActionType.tap.swiftType, .tap)
-        XCTAssertEqual(DDRUMActionType.scroll.swiftType, .scroll)
-        XCTAssertEqual(DDRUMActionType.swipe.swiftType, .swipe)
-        XCTAssertEqual(DDRUMActionType.custom.swiftType, .custom)
+        XCTAssertEqual(objc_RUMActionType.tap.swiftType, .tap)
+        XCTAssertEqual(objc_RUMActionType.scroll.swiftType, .scroll)
+        XCTAssertEqual(objc_RUMActionType.swipe.swiftType, .swipe)
+        XCTAssertEqual(objc_RUMActionType.custom.swiftType, .custom)
     }
 }
 
 class DDRUMErrorSourceTests: XCTestCase {
     func testMappingToSwiftRUMErrorSource() {
-        XCTAssertEqual(DDRUMErrorSource.source.swiftType, .source)
-        XCTAssertEqual(DDRUMErrorSource.network.swiftType, .network)
-        XCTAssertEqual(DDRUMErrorSource.webview.swiftType, .webview)
-        XCTAssertEqual(DDRUMErrorSource.console.swiftType, .console)
-        XCTAssertEqual(DDRUMErrorSource.custom.swiftType, .custom)
+        XCTAssertEqual(objc_RUMErrorSource.source.swiftType, .source)
+        XCTAssertEqual(objc_RUMErrorSource.network.swiftType, .network)
+        XCTAssertEqual(objc_RUMErrorSource.webview.swiftType, .webview)
+        XCTAssertEqual(objc_RUMErrorSource.console.swiftType, .console)
+        XCTAssertEqual(objc_RUMErrorSource.custom.swiftType, .custom)
     }
 }
 
 class DDRUMResourceKindTests: XCTestCase {
     func testMappingToSwiftRUMResourceKind() {
-        XCTAssertEqual(DDRUMResourceType.image.swiftType, .image)
-        XCTAssertEqual(DDRUMResourceType.xhr.swiftType, .xhr)
-        XCTAssertEqual(DDRUMResourceType.beacon.swiftType, .beacon)
-        XCTAssertEqual(DDRUMResourceType.css.swiftType, .css)
-        XCTAssertEqual(DDRUMResourceType.document.swiftType, .document)
-        XCTAssertEqual(DDRUMResourceType.fetch.swiftType, .fetch)
-        XCTAssertEqual(DDRUMResourceType.font.swiftType, .font)
-        XCTAssertEqual(DDRUMResourceType.js.swiftType, .js)
-        XCTAssertEqual(DDRUMResourceType.media.swiftType, .media)
-        XCTAssertEqual(DDRUMResourceType.other.swiftType, .other)
-        XCTAssertEqual(DDRUMResourceType.native.swiftType, .native)
+        XCTAssertEqual(objc_ResourceType.image.swiftType, .image)
+        XCTAssertEqual(objc_ResourceType.xhr.swiftType, .xhr)
+        XCTAssertEqual(objc_ResourceType.beacon.swiftType, .beacon)
+        XCTAssertEqual(objc_ResourceType.css.swiftType, .css)
+        XCTAssertEqual(objc_ResourceType.document.swiftType, .document)
+        XCTAssertEqual(objc_ResourceType.fetch.swiftType, .fetch)
+        XCTAssertEqual(objc_ResourceType.font.swiftType, .font)
+        XCTAssertEqual(objc_ResourceType.js.swiftType, .js)
+        XCTAssertEqual(objc_ResourceType.media.swiftType, .media)
+        XCTAssertEqual(objc_ResourceType.other.swiftType, .other)
+        XCTAssertEqual(objc_ResourceType.native.swiftType, .native)
     }
 }
 
 class DDRUMMethodTests: XCTestCase {
     func testMappingToSwiftRUMMethod() {
-        XCTAssertEqual(DDRUMMethod.post.swiftType, .post)
-        XCTAssertEqual(DDRUMMethod.get.swiftType, .get)
-        XCTAssertEqual(DDRUMMethod.head.swiftType, .head)
-        XCTAssertEqual(DDRUMMethod.put.swiftType, .put)
-        XCTAssertEqual(DDRUMMethod.delete.swiftType, .delete)
-        XCTAssertEqual(DDRUMMethod.patch.swiftType, .patch)
-        XCTAssertEqual(DDRUMMethod.connect.swiftType, .connect)
-        XCTAssertEqual(DDRUMMethod.trace.swiftType, .trace)
-        XCTAssertEqual(DDRUMMethod.options.swiftType, .options)
+        XCTAssertEqual(objc_RUMMethod.post.swiftType, .post)
+        XCTAssertEqual(objc_RUMMethod.get.swiftType, .get)
+        XCTAssertEqual(objc_RUMMethod.head.swiftType, .head)
+        XCTAssertEqual(objc_RUMMethod.put.swiftType, .put)
+        XCTAssertEqual(objc_RUMMethod.delete.swiftType, .delete)
+        XCTAssertEqual(objc_RUMMethod.patch.swiftType, .patch)
+        XCTAssertEqual(objc_RUMMethod.connect.swiftType, .connect)
+        XCTAssertEqual(objc_RUMMethod.trace.swiftType, .trace)
+        XCTAssertEqual(objc_RUMMethod.options.swiftType, .options)
     }
 }
 
@@ -155,12 +156,12 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testWhenSwiftRUMIsNotEnabled_thenObjcMonitorIsNotRegistered() {
-        XCTAssertTrue(DDRUMMonitor.shared().swiftRUMMonitor is NOPMonitor)
+        XCTAssertTrue(objc_RUMMonitor.shared().swiftRUMMonitor is NOPMonitor)
     }
 
     func testWhenSwiftRUMIsEnabled_thenObjcMonitorIsRegistered() {
         RUM.enable(with: config)
-        XCTAssertTrue(DDRUMMonitor.shared().swiftRUMMonitor is Monitor)
+        XCTAssertTrue(objc_RUMMonitor.shared().swiftRUMMonitor is Monitor)
     }
 
     func testProvidingCurrentSessionID() throws {
@@ -168,7 +169,7 @@ class DDRUMMonitorTests: XCTestCase {
         var currentSessionID: String? = nil
 
         RUM.enable(with: config)
-        let objcRUMMonitor = DDRUMMonitor.shared()
+        let objcRUMMonitor = objc_RUMMonitor.shared()
         objcRUMMonitor.currentSessionID { sessionID in
             currentSessionID = sessionID
             callSessionIDCallback.fulfill()
@@ -187,7 +188,7 @@ class DDRUMMonitorTests: XCTestCase {
 
         // Given
         RUM.enable(with: config)
-        let objcRUMMonitor = DDRUMMonitor.shared()
+        let objcRUMMonitor = objc_RUMMonitor.shared()
         objcRUMMonitor.currentSessionID { sessionID in
             sessionID1 = sessionID
             callSessionIDCallback.fulfill()
@@ -210,7 +211,7 @@ class DDRUMMonitorTests: XCTestCase {
     func testSendingViewEvents() throws {
         RUM.enable(with: config)
 
-        let objcRUMMonitor = DDRUMMonitor.shared()
+        let objcRUMMonitor = objc_RUMMonitor.shared()
         let mockView = createMockView(viewControllerClassName: "FirstViewController")
 
         objcRUMMonitor.startView(viewController: mockView, name: "FirstView", attributes: ["event-attribute1": "foo1"])
@@ -245,7 +246,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingViewEventsWithTiming() throws {
         RUM.enable(with: config)
-        let objcRUMMonitor = DDRUMMonitor.shared()
+        let objcRUMMonitor = objc_RUMMonitor.shared()
 
         objcRUMMonitor.startView(viewController: mockView, name: "SomeView", attributes: ["event-attribute1": "foo1"])
         objcRUMMonitor.addTiming(name: "timing")
@@ -274,7 +275,7 @@ class DDRUMMonitorTests: XCTestCase {
         }
 
         RUM.enable(with: config)
-        let objcRUMMonitor = DDRUMMonitor.shared()
+        let objcRUMMonitor = objc_RUMMonitor.shared()
 
         objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
@@ -325,7 +326,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingErrorEvents() throws {
         RUM.enable(with: config)
-        let objcRUMMonitor = DDRUMMonitor.shared()
+        let objcRUMMonitor = objc_RUMMonitor.shared()
 
         objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
@@ -387,7 +388,7 @@ class DDRUMMonitorTests: XCTestCase {
     func testSendingActionEvents() throws {
         config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
         RUM.enable(with: config)
-        let objcRUMMonitor = DDRUMMonitor.shared()
+        let objcRUMMonitor = objc_RUMMonitor.shared()
 
         objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
@@ -419,7 +420,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingGlobalAttributes() throws {
         RUM.enable(with: config)
-        let objcRUMMonitor = DDRUMMonitor.shared()
+        let objcRUMMonitor = objc_RUMMonitor.shared()
 
         objcRUMMonitor.addAttribute(forKey: "global-attribute1", value: "foo1")
         objcRUMMonitor.addAttribute(forKey: "global-attribute2", value: "foo2")
@@ -441,7 +442,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingMultipleGlobalAttributes() throws {
         RUM.enable(with: config)
-        let objcRUMMonitor = DDRUMMonitor.shared()
+        let objcRUMMonitor = objc_RUMMonitor.shared()
 
         objcRUMMonitor.addAttributes(["global-attribute1": "foo1", "global-attribute2": "foo2", "global-attribute3": 2, "global-attribute4": true])
         objcRUMMonitor.removeAttribute(forKey: "global-attribute2")
@@ -463,7 +464,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testEvaluatingFeatureFlags() throws {
         RUM.enable(with: config)
-        let objcRUMMonitor = DDRUMMonitor.shared()
+        let objcRUMMonitor = objc_RUMMonitor.shared()
 
         objcRUMMonitor.addFeatureFlagEvaluation(name: "flag1", value: "value1")
         objcRUMMonitor.addFeatureFlagEvaluation(name: "flag2", value: true)
@@ -476,7 +477,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testChangingDebugFlag() throws {
         RUM.enable(with: config)
-        let objcRUMMonitor = DDRUMMonitor.shared()
+        let objcRUMMonitor = objc_RUMMonitor.shared()
 
         objcRUMMonitor.debug = true
         XCTAssertTrue(objcRUMMonitor.swiftRUMMonitor.debug)
