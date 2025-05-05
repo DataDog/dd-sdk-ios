@@ -33,7 +33,7 @@ internal final class ViewEndedMetric {
     var viewURL: String?
     /// The type of instrumentation that started this view.
     /// It can be `nil` if view was started implicitly by RUM, which is the case for "ApplicationLaunch" and "Background" views.
-    var instrumentationType: SessionEndedMetric.ViewInstrumentationType?
+    var instrumentationType: InstrumentationType?
     /// Duration of the view in nanoseconds (equal to `@view.time_spent`).
     var durationNs: Int64?
 
@@ -94,7 +94,7 @@ internal final class ViewEndedMetric {
         /// The type of the view.
         var viewType: ViewType?
         /// The type of instrumentation that this view was started by.
-        var instrumentationType: SessionEndedMetric.ViewInstrumentationType?
+        var instrumentationType: InstrumentationType?
 
         enum CodingKeys: String, CodingKey {
             case duration = "duration"

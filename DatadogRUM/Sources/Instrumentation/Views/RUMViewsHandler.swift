@@ -28,7 +28,7 @@ internal final class RUMViewsHandler {
         let attributes: [AttributeKey: AttributeValue]
 
         /// The type of instrumentation that started this view.
-        let instrumentationType: SessionEndedMetric.ViewInstrumentationType
+        let instrumentationType: InstrumentationType
     }
 
     /// The current date provider.
@@ -239,7 +239,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     path: rumView.path ?? viewController.canonicalClassName,
                     isUntrackedModal: rumView.isUntrackedModal,
                     attributes: rumView.attributes,
-                    instrumentationType: .swiftui
+                    instrumentationType: .swiftuiAutomatic
                 )
             )
         }
