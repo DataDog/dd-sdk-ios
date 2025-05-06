@@ -5,8 +5,6 @@
  */
 
 import Foundation
-import DatadogCore
-import DatadogInternal
 
 @objc
 @available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
@@ -44,4 +42,18 @@ open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionD
             })
         )
     }
+}
+
+@objc
+public class DDTracingHeaderType: NSObject {
+    public let swiftType: TracingHeaderType
+
+    private init(_ swiftType: TracingHeaderType) {
+        self.swiftType = swiftType
+    }
+
+    @objc public static let datadog = DDTracingHeaderType(.datadog)
+    @objc public static let b3multi = DDTracingHeaderType(.b3multi)
+    @objc public static let b3 = DDTracingHeaderType(.b3)
+    @objc public static let tracecontext = DDTracingHeaderType(.tracecontext)
 }

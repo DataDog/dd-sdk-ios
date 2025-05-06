@@ -5,7 +5,7 @@
 */
 
 #import <XCTest/XCTest.h>
-@import DatadogObjc;
+@import DatadogCore;
 @import DatadogCrashReporting;
 
 // MARK: - DDDataEncryption

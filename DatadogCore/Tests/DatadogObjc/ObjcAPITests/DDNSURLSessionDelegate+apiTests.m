@@ -6,6 +6,8 @@
 
 #import <XCTest/XCTest.h>
 @import DatadogObjc;
+@import DatadogCore;
+@import DatadogInternal;
 @import DatadogTrace;
 
 @interface DDNSURLSessionDelegate_apiTests : XCTestCase

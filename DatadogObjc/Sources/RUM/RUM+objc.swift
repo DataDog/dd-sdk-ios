@@ -8,6 +8,7 @@ import Foundation
 import UIKit
 import DatadogInternal
 import DatadogRUM
+import DatadogTrace
 
 internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
     let objcPredicate: DDUIKitRUMViewsPredicate
