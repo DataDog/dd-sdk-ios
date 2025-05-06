@@ -5,7 +5,7 @@
 */
 
 #import <XCTest/XCTest.h>
-@import DatadogObjc;
+@import DatadogRUM;
 
 @interface DDRUMMonitor_apiTests : XCTestCase
 @end

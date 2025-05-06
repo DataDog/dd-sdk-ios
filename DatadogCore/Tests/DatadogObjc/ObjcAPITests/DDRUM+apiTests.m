@@ -5,7 +5,8 @@
 */
 
 #import <XCTest/XCTest.h>
-@import DatadogObjc;
+@import DatadogRUM;
+@import DatadogInternal;
 
 // MARK: - DDUIKitRUMViewsPredicate
 

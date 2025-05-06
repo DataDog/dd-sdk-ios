@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 @testable import DatadogTrace
+@_spi(objc)
 @testable import DatadogObjc
 
 class DDTraceTests: XCTestCase {

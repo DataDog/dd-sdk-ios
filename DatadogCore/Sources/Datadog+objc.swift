@@ -5,10 +5,13 @@
  */
 
 import Foundation
+@_spi(objc)
 import DatadogInternal
 
-@objc
-public class DDTrackingConsent: NSObject {
+@objc(DDTrackingConsent)
+@objcMembers
+@_spi(objc)
+public class objc_TrackingConsent: NSObject {
     internal let sdkConsent: TrackingConsent
 
     internal init(sdkConsent: TrackingConsent) {
@@ -17,24 +20,22 @@ public class DDTrackingConsent: NSObject {
 
     // MARK: - Public
 
-    @objc
-    public static func granted() -> DDTrackingConsent { .init(sdkConsent: .granted) }
+    public static func granted() -> objc_TrackingConsent { .init(sdkConsent: .granted) }
 
-    @objc
-    public static func notGranted() -> DDTrackingConsent { .init(sdkConsent: .notGranted) }
+    public static func notGranted() -> objc_TrackingConsent { .init(sdkConsent: .notGranted) }
 
-    @objc
-    public static func pending() -> DDTrackingConsent { .init(sdkConsent: .pending) }
+    public static func pending() -> objc_TrackingConsent { .init(sdkConsent: .pending) }
 }
 
-@objc
-public class DDDatadog: NSObject {
+@objc(DDDatadog)
+@objcMembers
+@_spi(objc)
+public class objc_Datadog: NSObject {
     // MARK: - Public
 
-    @objc
     public static func initialize(
-        configuration: DDConfiguration,
-        trackingConsent: DDTrackingConsent
+        configuration: objc_Configuration,
+        trackingConsent: objc_TrackingConsent
     ) {
         Datadog.initialize(
             with: configuration.sdkConfiguration,
@@ -42,8 +43,7 @@ public class DDDatadog: NSObject {
         )
     }
 
-    @objc
-    public static func setVerbosityLevel(_ verbosityLevel: DDSDKVerbosityLevel) {
+    public static func setVerbosityLevel(_ verbosityLevel: objc_CoreLoggerLevel) {
         switch verbosityLevel {
         case .debug: Datadog.verbosityLevel = .debug
         case .warn: Datadog.verbosityLevel = .warn
@@ -53,8 +53,7 @@ public class DDDatadog: NSObject {
         }
     }
 
-    @objc
-    public static func verbosityLevel() -> DDSDKVerbosityLevel {
+    public static func verbosityLevel() -> objc_CoreLoggerLevel {
         switch Datadog.verbosityLevel {
         case .debug: return .debug
         case .warn: return .warn
@@ -64,44 +63,31 @@ public class DDDatadog: NSObject {
         }
     }
 
-    @objc
     public static func setUserInfo(userId: String, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:]) {
         Datadog.setUserInfo(id: userId, name: name, email: email, extraInfo: extraInfo.dd.swiftAttributes)
     }
 
-    @objc
-    @available(*, deprecated, message: "UserInfo id property is now mandatory.")
-    public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:]) {
-        Datadog.setUserInfo(id: id, name: name, email: email, extraInfo: extraInfo.dd.swiftAttributes)
-    }
-
-    @objc
     public static func addUserExtraInfo(_ extraInfo: [String: Any]) {
         Datadog.addUserExtraInfo(extraInfo.dd.swiftAttributes)
     }
 
-    @objc
-    public static func setTrackingConsent(consent: DDTrackingConsent) {
+    public static func setTrackingConsent(consent: objc_TrackingConsent) {
         Datadog.set(trackingConsent: consent.sdkConsent)
     }
 
-    @objc
     public static func isInitialized() -> Bool {
         return Datadog.isInitialized()
     }
 
-    @objc
     public static func stopInstance() {
         Datadog.stopInstance()
     }
 
-    @objc
     public static func clearAllData() {
         Datadog.clearAllData()
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING
-    @objc
     public static func flushAndDeinitialize() {
         Datadog.flushAndDeinitialize()
     }

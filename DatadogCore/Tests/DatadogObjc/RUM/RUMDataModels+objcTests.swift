@@ -7,9 +7,9 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+@_spi(objc)
 @testable import DatadogRUM
 @testable import DatadogCore
-@testable import DatadogObjc
 
 class RUMDataModels_objcTests: XCTestCase {
     func testGivenObjectiveCViewEventWithAnyAttributes_whenReadingAttributes_theirTypeIsNotAltered() throws {
@@ -21,7 +21,7 @@ class RUMDataModels_objcTests: XCTestCase {
         swiftView.context?.contextInfo = expectedContextAttributes.dd.swiftAttributes
         swiftView.usr?.usrInfo = expectedUserInfoAttributes.dd.swiftAttributes
 
-        let objcView = DDRUMViewEvent(swiftModel: swiftView)
+        let objcView = objc_RUMViewEvent(swiftModel: swiftView)
 
         // When
         let receivedContextAttributes = try XCTUnwrap(objcView.context?.contextInfo)
@@ -41,7 +41,7 @@ class RUMDataModels_objcTests: XCTestCase {
         swiftResource.context?.contextInfo = expectedContextAttributes.dd.swiftAttributes
         swiftResource.usr?.usrInfo = expectedUserInfoAttributes.dd.swiftAttributes
 
-        let objcResource = DDRUMResourceEvent(swiftModel: swiftResource)
+        let objcResource = objc_RUMResourceEvent(swiftModel: swiftResource)
 
         // When
         let receivedContextAttributes = try XCTUnwrap(objcResource.context?.contextInfo)
@@ -61,7 +61,7 @@ class RUMDataModels_objcTests: XCTestCase {
         swiftAction.context?.contextInfo = expectedContextAttributes.dd.swiftAttributes
         swiftAction.usr?.usrInfo = expectedUserInfoAttributes.dd.swiftAttributes
 
-        let objcAction = DDRUMActionEvent(swiftModel: swiftAction)
+        let objcAction = objc_RUMActionEvent(swiftModel: swiftAction)
 
         // When
         let receivedContextAttributes = try XCTUnwrap(objcAction.context?.contextInfo)
@@ -81,7 +81,7 @@ class RUMDataModels_objcTests: XCTestCase {
         swiftError.context?.contextInfo = expectedContextAttributes.dd.swiftAttributes
         swiftError.usr?.usrInfo = expectedUserInfoAttributes.dd.swiftAttributes
 
-        let objcError = DDRUMErrorEvent(swiftModel: swiftError)
+        let objcError = objc_RUMErrorEvent(swiftModel: swiftError)
 
         // When
         let receivedContextAttributes = try XCTUnwrap(objcError.context?.contextInfo)
@@ -101,7 +101,7 @@ class RUMDataModels_objcTests: XCTestCase {
         swiftLongTask.context?.contextInfo = expectedContextAttributes.dd.swiftAttributes
         swiftLongTask.usr?.usrInfo = expectedUserInfoAttributes.dd.swiftAttributes
 
-        let objcLongTask = DDRUMLongTaskEvent(swiftModel: swiftLongTask)
+        let objcLongTask = objc_RUMLongTaskEvent(swiftModel: swiftLongTask)
 
         // When
         let receivedContextAttributes = try XCTUnwrap(objcLongTask.context?.contextInfo)

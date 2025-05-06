@@ -6,10 +6,10 @@
 
 import Foundation
 
-@objc
+@objcMembers
+@_spi(objc)
 @available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate {
-    @objc
     override public init() {
         URLSessionInstrumentation.enable(
             with: .init(
@@ -20,8 +20,7 @@ open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionD
         super.init()
     }
 
-    @objc
-    public init(additionalFirstPartyHostsWithHeaderTypes: [String: Set<DDTracingHeaderType>]) {
+    public init(additionalFirstPartyHostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>]) {
         URLSessionInstrumentation.enable(
             with: .init(
                 delegateClass: Self.self,
@@ -34,7 +33,6 @@ open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionD
         super.init()
     }
 
-    @objc
     public convenience init(additionalFirstPartyHosts: Set<String>) {
         self.init(
             additionalFirstPartyHostsWithHeaderTypes: additionalFirstPartyHosts.reduce(into: [:], { partialResult, host in
@@ -42,18 +40,4 @@ open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionD
             })
         )
     }
-}
-
-@objc
-public class DDTracingHeaderType: NSObject {
-    public let swiftType: TracingHeaderType
-
-    private init(_ swiftType: TracingHeaderType) {
-        self.swiftType = swiftType
-    }
-
-    @objc public static let datadog = DDTracingHeaderType(.datadog)
-    @objc public static let b3multi = DDTracingHeaderType(.b3multi)
-    @objc public static let b3 = DDTracingHeaderType(.b3)
-    @objc public static let tracecontext = DDTracingHeaderType(.tracecontext)
 }
