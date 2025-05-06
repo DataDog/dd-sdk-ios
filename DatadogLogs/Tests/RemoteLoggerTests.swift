@@ -64,7 +64,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Error message")
 
         // Then
-        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstDispatch as? RUMErrorMessage)
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
         XCTAssertEqual(errorMessage.message, "Error message")
     }
 
@@ -103,7 +103,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Information message", error: ErrorMock(), attributes: [CrossPlatformAttributes.includeBinaryImages: true])
 
         // Then
-        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstDispatch as? RUMErrorMessage)
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
         // This is removed because binary images are sent in the message, so the additional attribute isn't needed
         XCTAssertNil(errorMessage.attributes[CrossPlatformAttributes.includeBinaryImages])
         XCTAssertEqual(errorMessage.binaryImages?.count, stubBacktrace.binaryImages.count)
@@ -143,7 +143,7 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // Then
-        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstDispatch as? RUMErrorMessage)
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
         XCTAssertEqual(errorMessage.attributes[CrossPlatformAttributes.errorSourceType] as? String, "flutter")
         XCTAssertEqual(errorMessage.attributes[Logs.Attributes.errorFingerprint] as? String, mockFingerprint)
     }
@@ -175,7 +175,7 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // Then
-        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstDispatch as? RUMErrorMessage)
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
         XCTAssertEqual(errorMessage.attributes[CrossPlatformAttributes.errorSourceType] as? String, "flutter")
         XCTAssertEqual(errorMessage.attributes[Logs.Attributes.errorFingerprint] as? String, mockFingerprint)
     }
@@ -317,7 +317,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Error message")
 
         // Then
-        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstDispatch as? RUMErrorMessage)
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
         XCTAssertEqual(errorMessage.attributes[attributeKey] as? String, attributeValue)
     }
 

@@ -141,7 +141,7 @@ class LogsTests: XCTestCase {
         Logs.addAttribute(forKey: attributeKey, value: attributeValue, in: core)
 
         // Then
-        let messages = mockMessageReciever.messages.compactMap { $0.asDispatch as? LogEventAttributes }
+        let messages = mockMessageReciever.messages.compactMap { $0.asPayload as? LogEventAttributes }
         XCTAssertEqual(messages.count, 1)
         let message = try XCTUnwrap(messages.first)
         XCTAssertEqual(message.attributes[attributeKey] as? String, attributeValue)
@@ -163,7 +163,7 @@ class LogsTests: XCTestCase {
         Logs.removeAttribute(forKey: attributeKey, in: core)
 
         // Then
-        let messages = mockMessageReciever.messages.compactMap { $0.asDispatch as? LogEventAttributes }
+        let messages = mockMessageReciever.messages.compactMap { $0.asPayload as? LogEventAttributes }
         XCTAssertEqual(messages.count, 2)
         let message = try XCTUnwrap(messages.last)
         XCTAssertNil(message.attributes[attributeKey])

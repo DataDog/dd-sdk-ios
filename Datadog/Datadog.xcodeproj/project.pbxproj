@@ -1696,8 +1696,8 @@
 		D2D7482B2DC1214100C61353 /* LogEventAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748292DC1214100C61353 /* LogEventAttributes.swift */; };
 		D2D9A9D92DBFD360005DB31D /* CrashContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D9A9D82DBFD360005DB31D /* CrashContext.swift */; };
 		D2D9A9DA2DBFD360005DB31D /* CrashContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D9A9D82DBFD360005DB31D /* CrashContext.swift */; };
-		D2D9A9DC2DBFD507005DB31D /* RUMPPayloadMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D9A9DB2DBFD507005DB31D /* RUMPPayloadMessages.swift */; };
-		D2D9A9DD2DBFD507005DB31D /* RUMPPayloadMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D9A9DB2DBFD507005DB31D /* RUMPPayloadMessages.swift */; };
+		D2D9A9DC2DBFD507005DB31D /* RUMPayloadMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D9A9DB2DBFD507005DB31D /* RUMPayloadMessages.swift */; };
+		D2D9A9DD2DBFD507005DB31D /* RUMPayloadMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D9A9DB2DBFD507005DB31D /* RUMPayloadMessages.swift */; };
 		D2DA2358298D57AA00C6C7E6 /* CoreLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039CF298D5235001A1FA3 /* CoreLogger.swift */; };
 		D2DA2359298D57AA00C6C7E6 /* NetworkConnectionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039B9298D5235001A1FA3 /* NetworkConnectionInfo.swift */; };
 		D2DA235A298D57AA00C6C7E6 /* TrackingConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039BB298D5235001A1FA3 /* TrackingConsent.swift */; };
@@ -3238,7 +3238,7 @@
 		D2D748222DC0FF7E00C61353 /* FatalErrorContextNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FatalErrorContextNotifier.swift; sourceTree = "<group>"; };
 		D2D748292DC1214100C61353 /* LogEventAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventAttributes.swift; sourceTree = "<group>"; };
 		D2D9A9D82DBFD360005DB31D /* CrashContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashContext.swift; sourceTree = "<group>"; };
-		D2D9A9DB2DBFD507005DB31D /* RUMPPayloadMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMPPayloadMessages.swift; sourceTree = "<group>"; };
+		D2D9A9DB2DBFD507005DB31D /* RUMPayloadMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMPayloadMessages.swift; sourceTree = "<group>"; };
 		D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogInternal.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2DA238A298D588800C6C7E6 /* DatadogInternalTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogInternalTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2DA2395298D58F300C6C7E6 /* ReadWriteLockTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReadWriteLockTests.swift; sourceTree = "<group>"; };
@@ -5510,7 +5510,7 @@
 			isa = PBXGroup;
 			children = (
 				D28FB6952DB7D3F000CD76D0 /* RUMDataModels.swift */,
-				D2D9A9DB2DBFD507005DB31D /* RUMPPayloadMessages.swift */,
+				D2D9A9DB2DBFD507005DB31D /* RUMPayloadMessages.swift */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -8922,7 +8922,7 @@
 				3C3EF2B02C1AEBAB009E9E57 /* LaunchReport.swift in Sources */,
 				6167E7002B81EF7500C3CA2D /* BacktraceReportingFeature.swift in Sources */,
 				D2EBEE2729BA160F00B15732 /* B3HTTPHeadersWriter.swift in Sources */,
-				D2D9A9DD2DBFD507005DB31D /* RUMPPayloadMessages.swift in Sources */,
+				D2D9A9DD2DBFD507005DB31D /* RUMPayloadMessages.swift in Sources */,
 				D23039E2298D5236001A1FA3 /* UserInfo.swift in Sources */,
 				D23039FB298D5236001A1FA3 /* URLRequestBuilder.swift in Sources */,
 				3CA8525F2BF2073800B52CBA /* TraceContextInjection.swift in Sources */,
@@ -10001,7 +10001,7 @@
 				D2EBEE3529BA161100B15732 /* B3HTTPHeadersWriter.swift in Sources */,
 				D2DA2376298D57AA00C6C7E6 /* UserInfo.swift in Sources */,
 				D2DA2377298D57AA00C6C7E6 /* URLRequestBuilder.swift in Sources */,
-				D2D9A9DC2DBFD507005DB31D /* RUMPPayloadMessages.swift in Sources */,
+				D2D9A9DC2DBFD507005DB31D /* RUMPayloadMessages.swift in Sources */,
 				3CA852602BF2073800B52CBA /* TraceContextInjection.swift in Sources */,
 				D2DA2378298D57AA00C6C7E6 /* Attributes.swift in Sources */,
 				96155A3E2D7F01250029034E /* CustomDump.swift in Sources */,
