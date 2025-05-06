@@ -19,9 +19,7 @@
 #pragma clang diagnostic ignored "-Wunused-value"
 
 - (void)testInitWithSamplingRate {
-    [[DDW3CHTTPHeadersWriter alloc] initWithSamplingStrategy:[DDTraceSamplingStrategy headBased] traceContextInjection:DDTraceContextInjectionAll];
-    [[DDW3CHTTPHeadersWriter alloc] initWithSamplingStrategy:[DDTraceSamplingStrategy headBased] traceContextInjection:DDTraceContextInjectionAll];
-
+    [[DDW3CHTTPHeadersWriter alloc] initWithTraceContextInjection:DDTraceContextInjectionAll];
 }
 
 #pragma clang diagnostic pop

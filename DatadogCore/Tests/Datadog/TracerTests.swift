@@ -748,7 +748,7 @@ class TracerTests: XCTestCase {
         let injectedContext = tracer.startSpan(operationName: .mockAny()).context
 
         // When
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
+        let writer = HTTPHeadersWriter(traceContextInjection: .all)
         tracer.inject(spanContext: injectedContext, writer: writer)
 
         let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
@@ -769,7 +769,7 @@ class TracerTests: XCTestCase {
         let injectedContext = tracer.startSpan(operationName: .mockAny()).context
 
         // When
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .headBased, injectEncoding: .single, traceContextInjection: .all)
+        let writer = B3HTTPHeadersWriter(injectEncoding: .single, traceContextInjection: .all)
         tracer.inject(spanContext: injectedContext, writer: writer)
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
@@ -790,7 +790,7 @@ class TracerTests: XCTestCase {
         let injectedContext = tracer.startSpan(operationName: .mockAny()).context
 
         // When
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .headBased, injectEncoding: .multiple, traceContextInjection: .all)
+        let writer = B3HTTPHeadersWriter(injectEncoding: .multiple, traceContextInjection: .all)
         tracer.inject(spanContext: injectedContext, writer: writer)
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
@@ -811,7 +811,7 @@ class TracerTests: XCTestCase {
         let injectedContext = tracer.startSpan(operationName: .mockAny()).context
 
         // When
-        let writer = W3CHTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
+        let writer = W3CHTTPHeadersWriter(traceContextInjection: .all)
         tracer.inject(spanContext: injectedContext, writer: writer)
 
         let reader = W3CHTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)

@@ -6,20 +6,6 @@
 
 import Foundation
 
-/// Available strategies for sampling trace propagation headers.
-public enum TraceSamplingStrategy {
-    /// Trace propagation headers will be sampled same as propagated span.
-    ///
-    /// Use this option to leverage head-based sampling, where the decision to keep or drop the trace
-    /// is determined from the first span of the trace, the head, when the trace is created. With `.headBased`
-    /// strategy, this decision is propagated through the request context to downstream services.
-    case headBased
-
-    internal func sampler(for traceContext: TraceContext) -> Sampling {
-        DeterministicSampler(shouldSample: traceContext.isKept, samplingRate: traceContext.sampleRate)
-    }
-}
-
 /// Write interface for a custom carrier
 public protocol TracePropagationHeadersWriter {
     var traceHeaderFields: [String: String] { get }

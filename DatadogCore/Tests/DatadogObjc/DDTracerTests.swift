@@ -205,7 +205,6 @@ class DDTracerTests: XCTestCase {
         )
 
         let objcWriter = DDHTTPHeadersWriter(
-            samplingStrategy: .headBased(),
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -227,7 +226,6 @@ class DDTracerTests: XCTestCase {
         )
 
         let objcWriter = DDHTTPHeadersWriter(
-            samplingStrategy: .headBased(),
             traceContextInjection: .sampled
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -241,7 +239,6 @@ class DDTracerTests: XCTestCase {
         let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
 
         let objcValidWriter = DDHTTPHeadersWriter(
-            samplingStrategy: .headBased(),
             traceContextInjection: .all
         )
         let objcInvalidFormat = "foo"
@@ -264,7 +261,6 @@ class DDTracerTests: XCTestCase {
         )
 
         let objcWriter = DDB3HTTPHeadersWriter(
-            samplingStrategy: .headBased(),
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -283,7 +279,6 @@ class DDTracerTests: XCTestCase {
         )
 
         let objcWriter = DDB3HTTPHeadersWriter(
-            samplingStrategy: .headBased(),
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -300,7 +295,6 @@ class DDTracerTests: XCTestCase {
         let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
 
         let objcValidWriter = DDB3HTTPHeadersWriter(
-            samplingStrategy: .headBased(),
             traceContextInjection: .all
         )
         let objcInvalidFormat = "foo"
@@ -323,7 +317,6 @@ class DDTracerTests: XCTestCase {
         )
 
         let objcWriter = DDW3CHTTPHeadersWriter(
-            samplingStrategy: .headBased(),
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -343,7 +336,6 @@ class DDTracerTests: XCTestCase {
         )
 
         let objcWriter = DDW3CHTTPHeadersWriter(
-            samplingStrategy: .headBased(),
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -361,7 +353,6 @@ class DDTracerTests: XCTestCase {
         let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
 
         let objcValidWriter = DDW3CHTTPHeadersWriter(
-            samplingStrategy: .headBased(),
             traceContextInjection: .all
         )
         let objcInvalidFormat = "foo"

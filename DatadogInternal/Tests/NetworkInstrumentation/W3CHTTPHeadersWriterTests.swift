@@ -11,7 +11,6 @@ import DatadogInternal
 class W3CHTTPHeadersWriterTests: XCTestCase {
     func testWritingSampledTraceContext_withHeadBasedSamplingStrategy() {
         let writer = W3CHTTPHeadersWriter(
-            samplingStrategy: .headBased,
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
             ],
@@ -35,7 +34,6 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withHeadBasedSamplingStrategy() {
         let writer = W3CHTTPHeadersWriter(
-            samplingStrategy: .headBased,
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
             ],
@@ -60,7 +58,6 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
 
     func testWritingSampledTraceContext_withCustomSamplingStrategy() {
         let writer = W3CHTTPHeadersWriter(
-            samplingStrategy: .headBased,
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
             ],
@@ -84,7 +81,6 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withCustomSamplingStrategy() {
         let writer = W3CHTTPHeadersWriter(
-            samplingStrategy: .headBased,
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
             ],
@@ -110,7 +106,6 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
     // The sampling based on session ID should pass at 18% sampling rate and fail at 17%
     func testWritingSampledTraceContext_withCustomSamplingStrategy_18percent() {
         let writer = W3CHTTPHeadersWriter(
-            samplingStrategy: .headBased,
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
             ],
@@ -135,7 +130,6 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withCustomSamplingStrategy_17percent() {
         let writer = W3CHTTPHeadersWriter(
-            samplingStrategy: .headBased,
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
             ],
@@ -159,7 +153,6 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
 
     func testNotWritingDroppedTraceContext_withCustomSamplingStrategy() {
         let writer = W3CHTTPHeadersWriter(
-            samplingStrategy: .headBased,
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
             ],

@@ -10,7 +10,7 @@ import TestUtilities
 
 class HTTPHeadersReaderTests: XCTestCase {
     func testReadingSampledTraceContext() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
+        let writer = HTTPHeadersWriter(traceContextInjection: .all)
         writer.write(traceContext: .mockWith(isKept: true))
 
         let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
@@ -19,7 +19,7 @@ class HTTPHeadersReaderTests: XCTestCase {
     }
 
     func testReadingNotSampledTraceContext_givenTraceContextInjectionIsAll() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
+        let writer = HTTPHeadersWriter(traceContextInjection: .all)
         writer.write(traceContext: .mockWith(isKept: false))
 
         let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
@@ -28,7 +28,7 @@ class HTTPHeadersReaderTests: XCTestCase {
     }
 
     func testReadingNotSampledTraceContext_givenTraceContextInjectionIsSampled() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .sampled)
+        let writer = HTTPHeadersWriter(traceContextInjection: .sampled)
         writer.write(traceContext: .mockWith(isKept: false))
 
         let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)

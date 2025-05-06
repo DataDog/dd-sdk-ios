@@ -38,20 +38,16 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     /// This value will be merged with the tracestate from the trace context.
     private let tracestate: [String: String]
 
-    private let samplingStrategy: TraceSamplingStrategy
     private let traceContextInjection: TraceContextInjection
 
     /// Initializes the headers writer.
     ///
-    /// - Parameter samplingStrategy: The strategy for sampling trace propagation headers.
     /// - Parameter tracestate: The tracestate to be injected.
     /// - Parameter traceContextInjection: The strategy for injecting trace context into requests.
     public init(
-        samplingStrategy: TraceSamplingStrategy,
         tracestate: [String: String] = [:],
         traceContextInjection: TraceContextInjection = .sampled
     ) {
-        self.samplingStrategy = samplingStrategy
         self.tracestate = tracestate
         self.traceContextInjection = traceContextInjection
     }
@@ -64,8 +60,7 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     public func write(traceContext: TraceContext) {
         typealias Constants = W3CHTTPHeaders.Constants
 
-        let sampler = samplingStrategy.sampler(for: traceContext)
-        let sampled = sampler.sample()
+        let sampled = traceContext.isKept
 
         switch (traceContextInjection, sampled) {
         case (.all, _), (.sampled, true):

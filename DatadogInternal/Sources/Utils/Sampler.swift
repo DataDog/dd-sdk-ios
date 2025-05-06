@@ -35,35 +35,6 @@ public struct Sampler: Sampling {
     }
 }
 
-/// A sampler that determines sampling decisions deterministically (the same each time).
-internal struct DeterministicSampler: Sampling {
-    enum Constants {
-        /// Good number for Knuth hashing (large, prime, fit in 64 bit long)
-        internal static let samplerHasher: UInt64 = 1_111_111_111_111_111_111
-        internal static let maxID: UInt64 = 0xFFFFFFFFFFFFFFFF
-    }
-
-    /// Value between `0.0` and `100.0`, where `0.0` means NO event will be sent and `100.0` means ALL events will be sent.
-    let samplingRate: SampleRate
-    /// Persisted sampling decision.
-    private let shouldSample: Bool
-
-    init(shouldSample: Bool, samplingRate: SampleRate) {
-        self.samplingRate = samplingRate
-        self.shouldSample = shouldSample
-    }
-
-    init(baseId: UInt64, samplingRate: SampleRate) {
-        // We use overflow multiplication to create a "randomized" hash based on the input id
-        let hash = baseId &* Constants.samplerHasher
-        let threshold = Float(Constants.maxID) * samplingRate.percentageProportion
-        self.samplingRate = samplingRate
-        self.shouldSample = Float(hash) < threshold
-    }
-
-    func sample() -> Bool { shouldSample }
-}
-
 extension SampleRate {
     /// Maximum sampling rate. It means every event is kept.
     public static let maxSampleRate: Self = 100.0

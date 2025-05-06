@@ -27,7 +27,7 @@ class W3CHTTPHeadersReaderTests: XCTestCase {
     }
 
     func testReadingSampledTraceContext() {
-        let writer = W3CHTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
+        let writer = W3CHTTPHeadersWriter(traceContextInjection: .all)
         writer.write(traceContext: .mockWith(isKept: true))
 
         let reader = W3CHTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
@@ -36,7 +36,7 @@ class W3CHTTPHeadersReaderTests: XCTestCase {
     }
 
     func testReadingNotSampledTraceContext_givenTraceContextInjectionIsAll() {
-        let writer = W3CHTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
+        let writer = W3CHTTPHeadersWriter(traceContextInjection: .all)
         writer.write(traceContext: .mockWith(isKept: false))
 
         let reader = W3CHTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
@@ -45,7 +45,7 @@ class W3CHTTPHeadersReaderTests: XCTestCase {
     }
 
     func testReadingNotSampledTraceContext_givenTraceContextInjectionIsSampled() {
-        let writer = W3CHTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .sampled)
+        let writer = W3CHTTPHeadersWriter(traceContextInjection: .sampled)
         writer.write(traceContext: .mockWith(isKept: false))
 
         let reader = W3CHTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)

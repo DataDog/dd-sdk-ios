@@ -11,7 +11,6 @@ import DatadogInternal
 class B3HTTPHeadersWriterTests: XCTestCase {
     func testWritingSampledTraceContext_withSingleEncoding_andAutoSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .single,
             traceContextInjection: .all
         )
@@ -31,7 +30,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withSingleEncoding_andAutoSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .single,
             traceContextInjection: .all
         )
@@ -51,7 +49,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingSampledTraceContext_withSingleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .single,
             traceContextInjection: .all
         )
@@ -71,7 +68,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withSingleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .single,
             traceContextInjection: .all
         )
@@ -91,7 +87,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testItWritesSingleHeaderWithoutOptionalValues() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .single,
             traceContextInjection: .all
         )
@@ -110,7 +105,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingSampledTraceContext_withMultipleEncoding_andAutoSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .multiple,
             traceContextInjection: .all
         )
@@ -133,7 +127,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withMultipleEncoding_andAutoSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .multiple,
             traceContextInjection: .all
         )
@@ -156,7 +149,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingSampledTraceContext_withMultipleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .multiple,
             traceContextInjection: .all
         )
@@ -179,7 +171,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withMultipleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .multiple,
             traceContextInjection: .all
         )
@@ -202,7 +193,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testItWritesMultipleHeaderWithoutOptionalValues() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .multiple,
             traceContextInjection: .all
         )
@@ -224,7 +214,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     // The sampling based on session ID should pass at 18% sampling rate and fail at 17%
     func testWritingSampledTraceContext_withCustomSamplingStrategy_18percent() {
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .headBased, injectEncoding: .multiple, traceContextInjection: .sampled)
+        let writer = B3HTTPHeadersWriter(injectEncoding: .multiple, traceContextInjection: .sampled)
 
         writer.write(
             traceContext: .mockWith(
@@ -242,7 +232,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
     }
 
     func testWritingDroppedTraceContext_withCustomSamplingStrategy_17percent() {
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .headBased, injectEncoding: .multiple, traceContextInjection: .sampled)
+        let writer = B3HTTPHeadersWriter(injectEncoding: .multiple, traceContextInjection: .sampled)
 
         writer.write(
             traceContext: .mockWith(

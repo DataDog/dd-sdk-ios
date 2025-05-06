@@ -17,11 +17,9 @@ public class DDW3CHTTPHeadersWriter: NSObject {
 
     @objc
     public init(
-        samplingStrategy: DDTraceSamplingStrategy,
         traceContextInjection: DDTraceContextInjection
     ) {
         swiftW3CHTTPHeadersWriter = W3CHTTPHeadersWriter(
-            samplingStrategy: samplingStrategy.swiftType,
             tracestate: [:],
             traceContextInjection: traceContextInjection.swiftType
         )

@@ -16,13 +16,7 @@ public class DDHTTPHeadersWriter: NSObject {
     }
 
     @objc
-    public init(
-        samplingStrategy: DDTraceSamplingStrategy,
-        traceContextInjection: DDTraceContextInjection
-    ) {
-        swiftHTTPHeadersWriter = HTTPHeadersWriter(
-            samplingStrategy: samplingStrategy.swiftType,
-            traceContextInjection: traceContextInjection.swiftType
-        )
+    public init(traceContextInjection: DDTraceContextInjection) {
+        swiftHTTPHeadersWriter = HTTPHeadersWriter(traceContextInjection: traceContextInjection.swiftType)
     }
 }

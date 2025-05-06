@@ -10,7 +10,7 @@ import DatadogInternal
 
 class HTTPHeadersWriterTests: XCTestCase {
     func testWritingSampledTraceContext_withHeadBasedSamplingStrategy() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
+        let writer = HTTPHeadersWriter(traceContextInjection: .all)
 
         writer.write(
             traceContext: .mockWith(
@@ -30,7 +30,7 @@ class HTTPHeadersWriterTests: XCTestCase {
     }
 
     func testWritingDroppedTraceContext_withHeadBasedSamplingStrategy() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .sampled)
+        let writer = HTTPHeadersWriter(traceContextInjection: .sampled)
 
         writer.write(
             traceContext: .mockWith(
@@ -48,7 +48,7 @@ class HTTPHeadersWriterTests: XCTestCase {
     }
 
     func testWritingSampledTraceContext_withCustomSamplingStrategy() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
+        let writer = HTTPHeadersWriter(traceContextInjection: .all)
 
         writer.write(
             traceContext: .mockWith(
@@ -69,7 +69,7 @@ class HTTPHeadersWriterTests: XCTestCase {
 
     // The sampling based on session ID should pass at 18% sampling rate and fail at 17% 
     func testWritingSampledTraceContext_withCustomSamplingStrategy_18percent() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .sampled)
+        let writer = HTTPHeadersWriter(traceContextInjection: .sampled)
 
         writer.write(
             traceContext: .mockWith(
@@ -89,7 +89,7 @@ class HTTPHeadersWriterTests: XCTestCase {
     }
 
     func testWritingDroppedTraceContext_withCustomSamplingStrategy_17percent() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .sampled)
+        let writer = HTTPHeadersWriter(traceContextInjection: .sampled)
 
         writer.write(
             traceContext: .mockWith(
@@ -109,7 +109,7 @@ class HTTPHeadersWriterTests: XCTestCase {
     }
 
     func testWritingDroppedTraceContext_withCustomSamplingStrategy() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .sampled)
+        let writer = HTTPHeadersWriter(traceContextInjection: .sampled)
 
         writer.write(
             traceContext: .mockWith(

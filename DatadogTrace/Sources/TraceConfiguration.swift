@@ -17,7 +17,6 @@ import DatadogInternal
 @_exported import class DatadogInternal.HTTPHeadersWriter
 @_exported import class DatadogInternal.B3HTTPHeadersWriter
 @_exported import class DatadogInternal.W3CHTTPHeadersWriter
-@_exported import enum DatadogInternal.TraceSamplingStrategy
 @_exported import enum DatadogInternal.TraceContextInjection
 @_exported import enum DatadogInternal.TracingHeaderType
 // swiftlint:enable duplicate_imports
