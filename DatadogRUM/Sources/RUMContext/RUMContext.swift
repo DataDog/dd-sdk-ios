@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal struct RUMContext {
     /// The ID of RUM application.
