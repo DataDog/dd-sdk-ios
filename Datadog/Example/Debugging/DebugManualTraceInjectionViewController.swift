@@ -130,14 +130,14 @@ internal struct DebugManualTraceInjectionView: View {
             switch selectedTraceHeaderType {
             case .datadog:
                 let writer = HTTPHeadersWriter(
-                    samplingStrategy: .custom(sampleRate: sampleRate),
+                    samplingStrategy: .headBased,
                     traceContextInjection: selectedTraceContextInjection
                 )
                 Tracer.shared().inject(spanContext: span.context, writer: writer)
                 writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
             case .w3c:
                 let writer = W3CHTTPHeadersWriter(
-                    samplingStrategy: .custom(sampleRate: sampleRate),
+                    samplingStrategy: .headBased,
                     tracestate: [:],
                     traceContextInjection: selectedTraceContextInjection
                 )
@@ -145,7 +145,7 @@ internal struct DebugManualTraceInjectionView: View {
                 writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
             case .b3Single:
                 let writer = B3HTTPHeadersWriter(
-                    samplingStrategy: .custom(sampleRate: sampleRate),
+                    samplingStrategy: .headBased,
                     injectEncoding: .single,
                     traceContextInjection: selectedTraceContextInjection
                 )
@@ -153,7 +153,7 @@ internal struct DebugManualTraceInjectionView: View {
                 writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
             case .b3Multiple:
                 let writer = B3HTTPHeadersWriter(
-                    samplingStrategy: .custom(sampleRate: sampleRate),
+                    samplingStrategy: .headBased,
                     injectEncoding: .multiple,
                     traceContextInjection: selectedTraceContextInjection
                 )

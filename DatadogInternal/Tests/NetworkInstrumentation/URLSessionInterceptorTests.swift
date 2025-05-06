@@ -34,7 +34,7 @@ class URLSessionInterceptorTests: XCTestCase {
         let trace: TraceContext = .mockWith(isKept: true)
         let writer: TracePropagationHeadersWriter = oneOf([
             { HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all) },
-            { B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 100)) },
+            { B3HTTPHeadersWriter(samplingStrategy: .headBased) },
             { W3CHTTPHeadersWriter(samplingStrategy: .headBased) }
         ])
 

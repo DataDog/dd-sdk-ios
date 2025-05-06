@@ -22,7 +22,7 @@
     [[DDB3HTTPHeadersWriter alloc] initWithSamplingStrategy:[DDTraceSamplingStrategy headBased]
                                              injectEncoding:DDInjectEncodingSingle
                                       traceContextInjection:DDTraceContextInjectionAll];
-    [[DDB3HTTPHeadersWriter alloc] initWithSamplingStrategy:[DDTraceSamplingStrategy customWithSampleRate:50]
+    [[DDB3HTTPHeadersWriter alloc] initWithSamplingStrategy:[DDTraceSamplingStrategy headBased]
                                              injectEncoding:DDInjectEncodingMultiple
                                       traceContextInjection:DDTraceContextInjectionAll];
 }

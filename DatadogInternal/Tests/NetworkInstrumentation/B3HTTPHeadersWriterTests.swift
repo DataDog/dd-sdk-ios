@@ -51,7 +51,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingSampledTraceContext_withSingleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 100),
+            samplingStrategy: .headBased,
             injectEncoding: .single,
             traceContextInjection: .all
         )
@@ -61,7 +61,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: .random()
+                isKept: true
             )
         )
 
@@ -71,7 +71,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withSingleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 0),
+            samplingStrategy: .headBased,
             injectEncoding: .single,
             traceContextInjection: .all
         )
@@ -81,7 +81,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: .random()
+                isKept: false
             )
         )
 
@@ -156,7 +156,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingSampledTraceContext_withMultipleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 100),
+            samplingStrategy: .headBased,
             injectEncoding: .multiple,
             traceContextInjection: .all
         )
@@ -166,7 +166,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: .random()
+                isKept: true
             )
         )
 
@@ -179,7 +179,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withMultipleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 0),
+            samplingStrategy: .headBased,
             injectEncoding: .multiple,
             traceContextInjection: .all
         )
@@ -189,7 +189,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: .random()
+                isKept: false
             )
         )
 
@@ -224,13 +224,13 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     // The sampling based on session ID should pass at 18% sampling rate and fail at 17%
     func testWritingSampledTraceContext_withCustomSamplingStrategy_18percent() {
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 18), injectEncoding: .multiple, traceContextInjection: .sampled)
+        let writer = B3HTTPHeadersWriter(samplingStrategy: .headBased, injectEncoding: .multiple, traceContextInjection: .sampled)
 
         writer.write(
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: .random(),
+                isKept: true,
                 rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
             )
         )
@@ -242,13 +242,13 @@ class B3HTTPHeadersWriterTests: XCTestCase {
     }
 
     func testWritingDroppedTraceContext_withCustomSamplingStrategy_17percent() {
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 17), injectEncoding: .multiple, traceContextInjection: .sampled)
+        let writer = B3HTTPHeadersWriter(samplingStrategy: .headBased, injectEncoding: .multiple, traceContextInjection: .sampled)
 
         writer.write(
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: .random(),
+                isKept: false,
                 rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
             )
         )

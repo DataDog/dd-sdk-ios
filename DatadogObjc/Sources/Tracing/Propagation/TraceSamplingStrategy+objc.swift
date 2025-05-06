@@ -22,15 +22,6 @@ public class DDTraceSamplingStrategy: NSObject {
         return DDTraceSamplingStrategy(swiftType: .headBased)
     }
 
-    /// Trace propagation headers will be sampled independently from sampling decision in propagated span.
-    ///
-    /// Use this option to apply the provided `sampleRate` for determining the decision to keep or drop the trace
-    /// in downstream services independently of sampling their parent span.
-    @objc
-    public static func custom(sampleRate: Float) -> DDTraceSamplingStrategy {
-        return DDTraceSamplingStrategy(swiftType: .custom(sampleRate: sampleRate))
-    }
-
     private init(swiftType: DatadogInternal.TraceSamplingStrategy) {
         self.swiftType = swiftType
     }

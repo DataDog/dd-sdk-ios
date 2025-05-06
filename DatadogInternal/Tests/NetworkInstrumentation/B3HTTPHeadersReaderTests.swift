@@ -81,8 +81,8 @@ class B3HTTPHeadersReaderTests: XCTestCase {
 
     func testReadingSampledTraceContext() {
         let encoding: B3HTTPHeadersWriter.InjectEncoding = [.multiple, .single].randomElement()!
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 100), injectEncoding: encoding, traceContextInjection: .all)
-        writer.write(traceContext: .mockRandom())
+        let writer = B3HTTPHeadersWriter(samplingStrategy: .headBased, injectEncoding: encoding, traceContextInjection: .all)
+        writer.write(traceContext: .mockWith(isKept: true))
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNotNil(reader.read(), "When sampled, it should return trace context")
@@ -91,8 +91,8 @@ class B3HTTPHeadersReaderTests: XCTestCase {
 
     func testReadingNotSampledTraceContext_givenTraceContextInjectionIsAll() {
         let encoding: B3HTTPHeadersWriter.InjectEncoding = [.multiple, .single].randomElement()!
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 0), injectEncoding: encoding, traceContextInjection: .all)
-        writer.write(traceContext: .mockRandom())
+        let writer = B3HTTPHeadersWriter(samplingStrategy: .headBased, injectEncoding: encoding, traceContextInjection: .all)
+        writer.write(traceContext: .mockWith(isKept: false))
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNil(reader.read(), "When not sampled, it should return no trace context")
@@ -101,8 +101,8 @@ class B3HTTPHeadersReaderTests: XCTestCase {
 
     func testReadingNotSampledTraceContext_givenTraceContextInjectionIsSampled() {
         let encoding: B3HTTPHeadersWriter.InjectEncoding = [.multiple, .single].randomElement()!
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 0), injectEncoding: encoding, traceContextInjection: .sampled)
-        writer.write(traceContext: .mockRandom())
+        let writer = B3HTTPHeadersWriter(samplingStrategy: .headBased, injectEncoding: encoding, traceContextInjection: .sampled)
+        writer.write(traceContext: .mockWith(isKept: false))
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNil(reader.read(), "When not sampled, it should return no trace context")

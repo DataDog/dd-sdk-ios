@@ -67,34 +67,6 @@ public class B3HTTPHeadersWriter: TracePropagationHeadersWriter {
 
     /// Initializes the headers writer.
     ///
-    /// - Parameter samplingRate: The sampling rate applied for headers injection.
-    /// - Parameter injectEncoding: The B3 header encoding type, with `.single` as the default.
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
-    public convenience init(
-        samplingRate: Float,
-        injectEncoding: InjectEncoding = .single
-    ) {
-        self.init(sampleRate: samplingRate, injectEncoding: injectEncoding)
-    }
-
-    /// Initializes the headers writer.
-    ///
-    /// - Parameter sampleRate: The sampling rate applied for headers injection, with 100% as the default.
-    /// - Parameter injectEncoding: The B3 header encoding type, with `.single` as the default.
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
-    public convenience init(
-        sampleRate: Float = .maxSampleRate,
-        injectEncoding: InjectEncoding = .single
-    ) {
-        self.init(
-            samplingStrategy: .custom(sampleRate: sampleRate),
-            injectEncoding: injectEncoding,
-            traceContextInjection: .sampled
-        )
-    }
-
-    /// Initializes the headers writer.
-    ///
     /// - Parameter samplingStrategy: The strategy for sampling trace propagation headers.
     /// - Parameter injectEncoding: The B3 header encoding type, with `.single` as the default.
     /// - Parameter traceContextInjection: The trace context injection strategy, with `.sampled` as the default.
