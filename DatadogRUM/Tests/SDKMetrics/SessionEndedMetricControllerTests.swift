@@ -22,7 +22,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         controller.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
 
         // When
-        viewIDs.forEach { controller.track(view: .mockRandomWith(sessionID: sessionID, viewID: $0), instrumentationType: nil, in: sessionID) }
+        viewIDs.forEach { controller.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: $0), instrumentationType: nil, in: sessionID) }
         errorKinds.forEach { controller.track(sdkErrorKind: $0, in: sessionID) }
         controller.track(missedEventType: .action, in: sessionID)
         controller.trackWasStopped(sessionID: sessionID)
@@ -47,7 +47,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         controller.startMetric(sessionID: sessionID1, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
         controller.startMetric(sessionID: sessionID2, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
         // Session 1:
-        controller.track(view: .mockRandomWith(sessionID: sessionID1), instrumentationType: nil, in: sessionID1)
+        controller.track(view: .mockRandomWith(sessionID: sessionID1.rawValue), instrumentationType: nil, in: sessionID1)
         controller.track(sdkErrorKind: "error.kind1", in: sessionID1)
         controller.trackWasStopped(sessionID: sessionID1)
         // Session 2:
@@ -79,7 +79,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         controller.startMetric(sessionID: sessionID1, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
         controller.startMetric(sessionID: sessionID2, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
         // Track latest session (`sessionID: nil`)
-        controller.track(view: .mockRandomWith(sessionID: sessionID2), instrumentationType: nil, in: nil)
+        controller.track(view: .mockRandomWith(sessionID: sessionID2.rawValue), instrumentationType: nil, in: nil)
         controller.track(sdkErrorKind: "error.kind1", in: nil)
         controller.track(missedEventType: .resource, in: nil)
         controller.trackWasStopped(sessionID: nil)

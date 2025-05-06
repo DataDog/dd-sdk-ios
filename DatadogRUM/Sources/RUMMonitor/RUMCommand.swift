@@ -74,7 +74,7 @@ internal struct RUMStartViewCommand: RUMCommand, RUMViewScopePropagatableAttribu
     let path: String
 
     /// The type of instrumentation that started this view.
-    let instrumentationType: SessionEndedMetric.ViewInstrumentationType
+    let instrumentationType: InstrumentationType
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 
     init(
@@ -83,7 +83,7 @@ internal struct RUMStartViewCommand: RUMCommand, RUMViewScopePropagatableAttribu
         name: String,
         path: String,
         attributes: [AttributeKey: AttributeValue],
-        instrumentationType: SessionEndedMetric.ViewInstrumentationType
+        instrumentationType: InstrumentationType
     ) {
         self.time = time
         self.attributes = attributes

@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import DatadogRUM
+import DatadogInternal
 
 // This file was generated from JSON Schema. Do not modify it directly.
 
@@ -7973,6 +7973,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.mobileVitalsUpdatePeriod as NSNumber? }
     }
 
+    @objc public var numberOfDisplays: NSNumber? {
+        root.swiftModel.telemetry.configuration.numberOfDisplays as NSNumber?
+    }
+
     @objc public var plugins: [DDTelemetryConfigurationEventTelemetryConfigurationPlugins]? {
         set { root.swiftModel.telemetry.configuration.plugins = newValue?.map { $0.swiftModel } }
         get { root.swiftModel.telemetry.configuration.plugins?.map { DDTelemetryConfigurationEventTelemetryConfigurationPlugins(swiftModel: $0) } }
@@ -8514,4 +8518,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/45a80c1390b8ec886534f5f1b43763a6d9d0a643
+// Generated from https://github.com/DataDog/rum-events-format/tree/2d2cd6aecf0ea4f1ffe61b7149dfdef75397fdbf

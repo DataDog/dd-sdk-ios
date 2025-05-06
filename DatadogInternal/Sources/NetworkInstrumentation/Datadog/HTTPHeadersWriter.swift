@@ -82,6 +82,9 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
             traceHeaderFields[TracingHTTPHeaders.traceIDField] = String(traceContext.traceID.idLo)
             traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(traceContext.spanID, representation: .decimal)
             traceHeaderFields[TracingHTTPHeaders.tagsField] = "_dd.p.tid=\(traceContext.traceID.idHiHex)"
+            if let sessionId = traceContext.rumSessionId {
+                traceHeaderFields[W3CHTTPHeaders.baggage] = "\(W3CHTTPHeaders.Constants.rumSessionBaggageKey)=\(sessionId)"
+            }
         case (.sampled, false):
             break
         }

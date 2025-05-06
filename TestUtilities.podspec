@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "TestUtilities"
-  s.version      = "2.26.0"
+  s.version      = "2.27.0"
   s.summary      = "Datadog Testing Utilities. This module is for internal testing and should not be published."
 
   s.homepage     = "https://www.datadoghq.com"
@@ -27,11 +27,16 @@ Pod::Spec.new do |s|
   s.framework = 'XCTest'
 
   s.source_files = [
-    "TestUtilities/Helpers/**/*.swift",
-    "TestUtilities/Mocks/**/*.swift",
-    "TestUtilities/Matchers/**/*.swift",
+    "TestUtilities/Sources/**/*.swift"
   ]
 
+  s.dependency 'DatadogCore'
   s.dependency 'DatadogInternal'
+  s.dependency 'DatadogLogs'
+  s.dependency 'DatadogRUM'
+  s.dependency 'DatadogSessionReplay'
+  s.dependency 'DatadogTrace'
+  s.dependency 'DatadogCrashReporting'
+  s.dependency 'DatadogWebViewTracking'
 
 end

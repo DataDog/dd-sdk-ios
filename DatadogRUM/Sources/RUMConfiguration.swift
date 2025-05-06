@@ -14,6 +14,11 @@ import DatadogInternal
 @_exported import protocol DatadogInternal.__URLSessionDelegateProviding
 @_exported import enum DatadogInternal.URLSessionInstrumentation
 @_exported import enum DatadogInternal.TraceContextInjection
+@_exported import struct DatadogInternal.RUMViewEvent
+@_exported import struct DatadogInternal.RUMResourceEvent
+@_exported import struct DatadogInternal.RUMErrorEvent
+@_exported import struct DatadogInternal.RUMActionEvent
+@_exported import struct DatadogInternal.RUMLongTaskEvent
 // swiftlint:enable duplicate_imports
 
 extension RUM {
@@ -317,7 +322,7 @@ extension RUM {
         /// An extra sampling rate for configuration telemetry events. It is applied on top of the value configured in public `telemetrySampleRate`.
         internal var configurationTelemetrySampleRate: SampleRate = 20.0
         /// Sample rate for "view ended" metric in telemetry.
-        internal var viewEndedSampleRate = ViewEndedMetricController.defaultSampleRate
+        internal var viewEndedSampleRate = ViewEndedController.defaultSampleRate
         /// Sample rate for "session ended" metric in telemetry.
         internal var sessionEndedSampleRate = SessionEndedMetricController.defaultSampleRate
 
