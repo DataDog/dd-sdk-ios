@@ -159,7 +159,7 @@ class DDDatadogTests: XCTestCase {
     private let swiftVerbosityLevels: [CoreLoggerLevel?] = [
         .debug, .warn, .error, .critical, nil
     ]
-    private let objcVerbosityLevels: [DDSDKVerbosityLevel] = [
+    private let objcVerbosityLevels: [objc_CoreLoggerLevel] = [
         .debug, .warn, .error, .critical, .none
     ]
 

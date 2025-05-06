@@ -32,7 +32,7 @@
 
     [DDDatadog isInitialized];
 
-    DDSDKVerbosityLevel verbosity = [DDDatadog verbosityLevel];
+    DDCoreLoggerLevel verbosity = [DDDatadog verbosityLevel];
     [DDDatadog setVerbosityLevel:verbosity];
 
     [DDDatadog setUserInfoWithUserId:@"" name:@"" email:@"" extraInfo:@{}];

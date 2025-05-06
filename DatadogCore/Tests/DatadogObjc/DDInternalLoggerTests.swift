@@ -6,7 +6,7 @@
 
 import XCTest
 import TestUtilities
-
+@_spi(objc)
 @testable import DatadogInternal
 @testable import DatadogCore
 @testable import DatadogObjc
@@ -35,7 +35,7 @@ class DDInternalLoggerTests: XCTestCase {
         let message: String = .mockAny()
 
         // When
-        DDInternalLogger.telemetryDebug(id: id, message: message)
+        objc_InternalLogger.telemetryDebug(id: id, message: message)
 
         // Then
         XCTAssertEqual(telemetry.messages.count, 1)
@@ -55,7 +55,7 @@ class DDInternalLoggerTests: XCTestCase {
         let kind: String = .mockAny()
 
         // When
-        DDInternalLogger.telemetryError(id: id, message: message, kind: kind, stack: stack)
+        objc_InternalLogger.telemetryError(id: id, message: message, kind: kind, stack: stack)
 
         // Then
         XCTAssertEqual(telemetry.messages.count, 1)
@@ -74,8 +74,8 @@ class DDInternalLoggerTests: XCTestCase {
         // When
         let randomDebugMessage: String = .mockRandom()
         let randomErrorMessage: String = .mockRandom()
-        DDInternalLogger.telemetryDebug(id: .mockAny(), message: randomDebugMessage)
-        DDInternalLogger.telemetryError(id: .mockAny(), message: randomErrorMessage, kind: .mockAny(), stack: .mockAny())
+        objc_InternalLogger.telemetryDebug(id: .mockAny(), message: randomDebugMessage)
+        objc_InternalLogger.telemetryError(id: .mockAny(), message: randomErrorMessage, kind: .mockAny(), stack: .mockAny())
 
         // Then
         XCTAssertEqual(telemetry.messages.count, 2)

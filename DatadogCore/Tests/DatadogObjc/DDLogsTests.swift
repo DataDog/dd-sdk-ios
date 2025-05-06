@@ -7,7 +7,7 @@
 import XCTest
 import DatadogInternal
 import TestUtilities
-
+@_spi(objc)
 @testable import DatadogLogs
 @testable import DatadogCore
 @testable import DatadogObjc
@@ -32,7 +32,7 @@ class DDLogsTests: XCTestCase {
 
     func testDefaultConfiguration() {
         // Given
-        let config = DDLogsConfiguration()
+        let config = objc_LogsConfiguration()
 
         // Then
         XCTAssertNil(config.configuration.customEndpoint)
@@ -43,8 +43,8 @@ class DDLogsTests: XCTestCase {
         let customEndpoint: URL = .mockRandom()
 
         // When
-        DDLogs.enable(
-            with: DDLogsConfiguration(
+        objc_Logs.enable(
+            with: objc_LogsConfiguration(
                 customEndpoint: customEndpoint
             )
         )
@@ -57,19 +57,19 @@ class DDLogsTests: XCTestCase {
 
     func testAddGlobalAttributes() throws {
         // Given
-        DDLogs.enable()
+        objc_Logs.enable()
 
-        DDLogs.addAttribute(forKey: "nsstring", value: NSString(string: "hello"))
-        DDLogs.addAttribute(forKey: "nsbool", value: NSNumber(booleanLiteral: true))
-        DDLogs.addAttribute(forKey: "nsint", value: NSInteger(integerLiteral: 10))
-        DDLogs.addAttribute(forKey: "nsnumber", value: NSNumber(value: 10.5))
-        DDLogs.addAttribute(forKey: "nsnull", value: NSNull())
-        DDLogs.addAttribute(forKey: "nsurl", value: NSURL(string: "http://apple.com")!)
-        DDLogs.addAttribute(
+        objc_Logs.addAttribute(forKey: "nsstring", value: NSString(string: "hello"))
+        objc_Logs.addAttribute(forKey: "nsbool", value: NSNumber(booleanLiteral: true))
+        objc_Logs.addAttribute(forKey: "nsint", value: NSInteger(integerLiteral: 10))
+        objc_Logs.addAttribute(forKey: "nsnumber", value: NSNumber(value: 10.5))
+        objc_Logs.addAttribute(forKey: "nsnull", value: NSNull())
+        objc_Logs.addAttribute(forKey: "nsurl", value: NSURL(string: "http://apple.com")!)
+        objc_Logs.addAttribute(
             forKey: "nsarray-of-int",
             value: NSArray(array: [1, 2, 3])
         )
-        DDLogs.addAttribute(
+        objc_Logs.addAttribute(
             forKey: "nsdictionary-of-date",
             value: NSDictionary(dictionary: [
                 "date1": Date.mockDecember15th2019At10AMUTC(),
@@ -78,7 +78,7 @@ class DDLogsTests: XCTestCase {
         )
 
         // When
-        let objcLogger = DDLogger.create()
+        let objcLogger = objc_Logger.create()
         objcLogger.info("message")
 
         // Then
@@ -96,13 +96,13 @@ class DDLogsTests: XCTestCase {
 
     func testRemoveGlobalAttributes() throws {
         // Given
-        DDLogs.enable()
+        objc_Logs.enable()
 
-        DDLogs.addAttribute(forKey: "custom-attribute", value: NSString(string: "custom-value"))
-        DDLogs.removeAttribute(forKey: "custom-attribute")
+        objc_Logs.addAttribute(forKey: "custom-attribute", value: NSString(string: "custom-value"))
+        objc_Logs.removeAttribute(forKey: "custom-attribute")
 
         // When
-        let objcLogger = DDLogger.create()
+        let objcLogger = objc_Logger.create()
         objcLogger.info("message")
 
         // Then
@@ -114,7 +114,7 @@ class DDLogsTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
-        let objcLogger = DDLogger.create()
+        let objcLogger = objc_Logger.create()
 
         objcLogger.debug("message")
         objcLogger.info("message")
@@ -136,7 +136,7 @@ class DDLogsTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
-        let objcLogger = DDLogger.create()
+        let objcLogger = objc_Logger.create()
 
         let error = NSError(domain: "UnitTest", code: 11_235, userInfo: [NSLocalizedDescriptionKey: "UnitTest error"])
 
@@ -168,7 +168,7 @@ class DDLogsTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
-        let objcLogger = DDLogger.create()
+        let objcLogger = objc_Logger.create()
 
         objcLogger.debug("message", attributes: ["foo": "bar"])
         objcLogger.info("message", attributes: ["foo": "bar"])
@@ -193,7 +193,7 @@ class DDLogsTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
-        let objcLogger = DDLogger.create()
+        let objcLogger = objc_Logger.create()
 
         objcLogger.addAttribute(forKey: "nsstring", value: NSString(string: "hello"))
         objcLogger.addAttribute(forKey: "nsbool", value: NSNumber(booleanLiteral: true))
@@ -235,7 +235,7 @@ class DDLogsTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
-        let objcLogger = DDLogger.create()
+        let objcLogger = objc_Logger.create()
 
         objcLogger.addAttribute(forKey: "foo", value: "bar")
         objcLogger.addAttribute(forKey: "bizz", value: "buzz")
@@ -258,7 +258,7 @@ class DDLogsTests: XCTestCase {
     }
 
     func testItForwardsLoggerConfigurationToSwift() {
-        let objcConfig = DDLoggerConfiguration()
+        let objcConfig = objc_LoggerConfiguration()
         objcConfig.name = "logger-name"
         objcConfig.service = "service-name"
         objcConfig.networkInfoEnabled = true
@@ -273,15 +273,15 @@ class DDLogsTests: XCTestCase {
     }
 
     func testEventMapping() throws {
-        let logsConfiguration = DDLogsConfiguration()
+        let logsConfiguration = objc_LogsConfiguration()
         logsConfiguration.setEventMapper { logEvent in
             logEvent.message = "custom-log-message"
             logEvent.attributes.userAttributes["custom-attribute"] = "custom-value"
             return logEvent
         }
-        DDLogs.enable(with: logsConfiguration)
+        objc_Logs.enable(with: logsConfiguration)
 
-        let objcLogger = DDLogger.create()
+        let objcLogger = objc_Logger.create()
 
         objcLogger.debug("message")
 
