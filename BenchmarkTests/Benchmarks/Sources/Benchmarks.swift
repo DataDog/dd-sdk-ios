@@ -24,6 +24,7 @@ public enum Benchmarks {
             var applicationIdentifier: String
             var applicationName: String
             var applicationVersion: String
+            var env: String
             var sdkVersion: String
             var deviceModel: String
             var osName: String
@@ -36,6 +37,7 @@ public enum Benchmarks {
                 applicationIdentifier: String,
                 applicationName: String,
                 applicationVersion: String,
+                env: String,
                 sdkVersion: String,
                 deviceModel: String,
                 osName: String,
@@ -47,6 +49,7 @@ public enum Benchmarks {
                 self.applicationIdentifier = applicationIdentifier
                 self.applicationName = applicationName
                 self.applicationVersion = applicationVersion
+                self.env = env
                 self.sdkVersion = sdkVersion
                 self.deviceModel = deviceModel
                 self.osName = osName
@@ -93,6 +96,7 @@ public enum Benchmarks {
                 "os_version": .string(configuration.context.osVersion),
                 "run": .string(configuration.context.run),
                 "scenario": .string(configuration.context.scenario),
+                "env": .string(configuration.context.env),
                 "application_id": .string(configuration.context.applicationIdentifier),
                 "sdk_version": .string(configuration.context.sdkVersion),
                 "branch": .string(configuration.context.branch),
