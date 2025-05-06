@@ -44,7 +44,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         /// State of the last RUM session in crashed app process.
         var lastRUMSessionState: RUMSessionState?
         /// The last global RUM attributes in crashed app process.
-        var lastRUMAttributes: GlobalRUMAttributes?
+        var lastRUMAttributes: RUMEventAttributes?
         /// The last _"Is app in foreground?"_ information from crashed app process.
         let lastIsAppInForeground: Bool
         /// Network information.
@@ -151,7 +151,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 // RUM-3588: If last RUM attributes are available, use them to replace view attributes as we know that
                 // global RUM attributes can be updated more often than attributes in `lastRUMView`.
                 // See https://github.com/DataDog/dd-sdk-ios/pull/1834 for more context.
-                lastRUMViewEvent.context?.contextInfo = lastRUMAttributes.attributes
+                lastRUMViewEvent.context = lastRUMAttributes
             }
             if lastRUMViewEvent.view.crash?.count ?? 0 < 1 {
                 sendCrashReportLinkedToLastViewInPreviousSession(
@@ -390,7 +390,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // RUM-3588: We know that last RUM view is not available, so we're creating a new one. No matter that, try using last
             // RUM attributes if available. There is a chance of having them as global RUM attributes can be updated more often than RUM view.
             // See https://github.com/DataDog/dd-sdk-ios/pull/1834 for more context.
-            context: context.lastRUMAttributes.map { .init(contextInfo: $0.attributes) },
+            context: context.lastRUMAttributes,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
             device: .init(device: context.device, telemetry: featureScope.telemetry),
             display: nil,

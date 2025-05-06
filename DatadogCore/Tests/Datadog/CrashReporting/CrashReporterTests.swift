@@ -233,8 +233,7 @@ class CrashReporterTests: XCTestCase {
         let expectation = self.expectation(description: "`plugin` checks the crash report")
         // Given
         let core = PassthroughCoreMock()
-        let lastRUMViewEvent = Bool.random() ?
-            AnyCodable(mockRandomAttributes()) : nil
+        let lastRUMViewEvent: RUMViewEvent? = Bool.random() ? .mockRandom() : nil
 
         let crashReport: DDCrashReport = .mockWith(
             date: .mockDecember15th2019At10AMUTC(),

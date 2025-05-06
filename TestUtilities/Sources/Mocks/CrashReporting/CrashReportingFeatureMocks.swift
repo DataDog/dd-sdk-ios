@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import DatadogInternal
 import Foundation
+import DatadogInternal
 
 @testable import DatadogLogs
 @testable import DatadogRUM
@@ -158,11 +158,11 @@ extension CrashContext {
         userInfo: UserInfo? = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
         carrierInfo: CarrierInfo? = .mockAny(),
-        lastRUMViewEvent: AnyCodable? = nil,
-        lastRUMSessionState: AnyCodable? = nil,
+        lastRUMViewEvent: RUMViewEvent? = nil,
+        lastRUMSessionState: RUMSessionState? = nil,
         lastIsAppInForeground: Bool = .mockAny(),
         appLaunchDate: Date? = .mockRandomInThePast(),
-        lastRUMAttributes: GlobalRUMAttributes? = nil,
+        lastRUMAttributes: RUMEventAttributes? = nil,
         lastLogAttributes: AnyCodable? = nil
     ) -> Self {
         .init(
@@ -203,9 +203,9 @@ extension CrashContext {
             carrierInfo: .mockRandom(),
             lastIsAppInForeground: .mockRandom(),
             appLaunchDate: .mockRandomInThePast(),
-            lastRUMViewEvent: AnyCodable(mockRandomAttributes()),
-            lastRUMSessionState: AnyCodable(mockRandomAttributes()),
-            lastRUMAttributes: GlobalRUMAttributes(attributes: mockRandomAttributes()),
+            lastRUMViewEvent: .mockRandom(),
+            lastRUMSessionState: .mockRandom(),
+            lastRUMAttributes: .mockRandom(),
             lastLogAttributes: AnyCodable(mockRandomAttributes())
         )
     }

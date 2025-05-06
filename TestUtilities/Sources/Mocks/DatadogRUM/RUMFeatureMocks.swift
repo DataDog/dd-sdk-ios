@@ -744,35 +744,6 @@ extension RUMContext {
     }
 }
 
-extension RUMSessionState: AnyMockable, RandomMockable {
-    public static func mockAny() -> RUMSessionState {
-        return mockWith()
-    }
-
-    public static func mockRandom() -> RUMSessionState {
-        return .init(
-            sessionUUID: .mockRandom(),
-            isInitialSession: .mockRandom(),
-            hasTrackedAnyView: .mockRandom(),
-            didStartWithReplay: .mockRandom()
-        )
-    }
-
-    public static func mockWith(
-        sessionUUID: UUID = .mockAny(),
-        isInitialSession: Bool = .mockAny(),
-        hasTrackedAnyView: Bool = .mockAny(),
-        didStartWithReplay: Bool? = .mockAny()
-    ) -> RUMSessionState {
-        return RUMSessionState(
-            sessionUUID: sessionUUID,
-            isInitialSession: isInitialSession,
-            hasTrackedAnyView: hasTrackedAnyView,
-            didStartWithReplay: didStartWithReplay
-        )
-    }
-}
-
 // MARK: - RUMScope Mocks
 
 public func mockNoOpSessionListener() -> RUM.SessionListener {

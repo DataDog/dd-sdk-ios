@@ -35,8 +35,8 @@ internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
     @ReadWriteLock
     var sessionState: RUMSessionState? {
         didSet {
-            if let sessionState = sessionState {
-                messageBus.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState))
+            if let sessionState {
+                messageBus.send(message: .payload(sessionState))
             }
         }
     }
@@ -46,10 +46,10 @@ internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
     @ReadWriteLock
     var view: RUMViewEvent? {
         didSet {
-            if let lastRUMView = view {
-                messageBus.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: lastRUMView))
+            if let view {
+                messageBus.send(message: .payload(view))
             } else {
-                messageBus.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true))
+                messageBus.send(message: .payload(RUMPayloadMessages.viewReset))
             }
         }
     }
@@ -57,12 +57,7 @@ internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
     @ReadWriteLock
     var globalAttributes: [String: Encodable] = [:] {
         didSet {
-            messageBus.send(
-                message: .baggage(
-                    key: RUMBaggageKeys.attributes,
-                    value: GlobalRUMAttributes(attributes: globalAttributes)
-                )
-            )
+            messageBus.send(message: .payload(RUMEventAttributes(contextInfo: globalAttributes)))
         }
     }
 }

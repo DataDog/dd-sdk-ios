@@ -43,7 +43,7 @@ class CrashReportReceiverTests: XCTestCase {
             value: MessageBusSender.Crash(
                 report: DDCrashReport.mockWith(date: Date()),
                 context: CrashContext.mockWith(
-                    lastRUMViewEvent: AnyCodable(lastRUMViewEvent)
+                    lastRUMViewEvent: lastRUMViewEvent
                 )
             )
         )
@@ -68,7 +68,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(activeRUMView) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: activeRUMView // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -103,7 +103,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(activeRUMView) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: activeRUMView // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -136,7 +136,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(activeRUMView) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: activeRUMView // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -169,7 +169,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
             lastRUMViewEvent: nil, // means there was no active view in this RUM session
-            lastRUMSessionState: AnyCodable(activeRUMSessionState), // means there was RUM session (sampled)
+            lastRUMSessionState: activeRUMSessionState, // means there was RUM session (sampled)
             lastIsAppInForeground: false // app in background
         )
 
@@ -205,7 +205,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
             lastRUMViewEvent: nil, // means there was no active view
-            lastRUMSessionState: AnyCodable(activeRUMSessionState), // there was no RUM session OR it was just started w/o yet tracking first view
+            lastRUMSessionState: activeRUMSessionState, // there was no RUM session OR it was just started w/o yet tracking first view
             lastIsAppInForeground: .mockRandom() // no matter if crashed in foreground or in background
         )
 
@@ -295,12 +295,10 @@ class CrashReportReceiverTests: XCTestCase {
         // Given
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let crashDate: Date = currentDate.secondsAgo(.random(in: 10..<1_000))
-        let activeRUMSessionState = AnyCodable(
-            RUMSessionState.mockWith(
-                sessionUUID: .nullUUID, // there was RUM session but it was not sampled
-                isInitialSession: .mockRandom(),
-                hasTrackedAnyView: false // as it was not sampled, it couldn't track any view
-            )
+        let activeRUMSessionState: RUMSessionState = .mockWith(
+            sessionUUID: .nullUUID, // there was RUM session but it was not sampled
+            isInitialSession: .mockRandom(),
+            hasTrackedAnyView: false // as it was not sampled, it couldn't track any view
         )
 
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
@@ -342,7 +340,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             serverTimeOffset: dateCorrectionOffset,
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(lastRUMViewEvent) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: lastRUMViewEvent // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -440,7 +438,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             serverTimeOffset: dateCorrectionOffset,
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(lastRUMViewEvent) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: lastRUMViewEvent // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -527,7 +525,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             serverTimeOffset: dateCorrectionOffset,
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(lastRUMViewEvent) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: lastRUMViewEvent // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -559,7 +557,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             serverTimeOffset: dateCorrectionOffset,
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(lastRUMViewEvent) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: lastRUMViewEvent // means there was a RUM session and it was sampled
         )
 
         let modifiedViewName = String.mockRandom()
@@ -638,7 +636,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             serverTimeOffset: dateCorrectionOffset,
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(lastRUMViewEvent) // means there was a RUM session and it was sampled
+            lastRUMViewEvent: lastRUMViewEvent // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -721,14 +719,14 @@ class CrashReportReceiverTests: XCTestCase {
 
     func testGivenCrashDuringRUMSessionWithActiveViewAndLastRUMAttributesAvailable_itSendsEventsWithOverridingAttributes() throws {
         let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
-        let lastRUMAttributes = GlobalRUMAttributes(attributes: mockRandomAttributes())
+        let lastRUMAttributes: RUMEventAttributes = .mockRandom()
 
         // Given
         let crashDate: Date = .mockDecember15th2019At10AMUTC()
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(lastRUMViewEvent),
+            lastRUMViewEvent: lastRUMViewEvent,
             lastRUMAttributes: lastRUMAttributes
         )
 
@@ -750,8 +748,8 @@ class CrashReportReceiverTests: XCTestCase {
         // Then
         let sentRUMViewAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self)[0].context?.contextInfo)
         let sentRUMErrorAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0].context?.contextInfo)
-        DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes.attributes)
-        DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes.attributes)
+        DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes)
+        DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes)
     }
 
     // MARK: - Testing Uploaded Data - Crashes During RUM Session With No Active View
@@ -794,7 +792,7 @@ class CrashReportReceiverTests: XCTestCase {
                 networkConnectionInfo: randomNetworkConnectionInfo,
                 carrierInfo: randomCarrierInfo,
                 lastRUMViewEvent: nil, // means there was no active RUM view
-                lastRUMSessionState: AnyCodable(lastRUMSessionState), // means there was RUM session (sampled)
+                lastRUMSessionState: lastRUMSessionState, // means there was RUM session (sampled)
                 lastIsAppInForeground: launchInForeground
             )
 
@@ -931,7 +929,7 @@ class CrashReportReceiverTests: XCTestCase {
                 networkConnectionInfo: .mockRandom(),
                 carrierInfo: .mockRandom(),
                 lastRUMViewEvent: nil, // means there was no active RUM view
-                lastRUMSessionState: AnyCodable(lastRUMSessionState), // means there was RUM session (sampled)
+                lastRUMSessionState: lastRUMSessionState, // means there was RUM session (sampled)
                 lastIsAppInForeground: launchInForeground
             )
 
@@ -996,7 +994,7 @@ class CrashReportReceiverTests: XCTestCase {
                 networkConnectionInfo: .mockRandom(),
                 carrierInfo: .mockRandom(),
                 lastRUMViewEvent: nil, // means there was no active RUM view
-                lastRUMSessionState: AnyCodable(lastRUMSessionState), // means there was RUM session (sampled)
+                lastRUMSessionState: lastRUMSessionState, // means there was RUM session (sampled)
                 lastIsAppInForeground: launchInForeground
             )
 
@@ -1060,7 +1058,7 @@ class CrashReportReceiverTests: XCTestCase {
             let featureScope = FeatureScopeMock()
 
             // Given
-            let lastRUMAttributes = GlobalRUMAttributes(attributes: mockRandomAttributes())
+            let lastRUMAttributes: RUMEventAttributes = .mockRandom()
             let crashDate: Date = .mockDecember15th2019At10AMUTC()
             let crashReport: DDCrashReport = .mockWith(
                 date: crashDate,
@@ -1078,7 +1076,7 @@ class CrashReportReceiverTests: XCTestCase {
                 networkConnectionInfo: .mockRandom(),
                 carrierInfo: .mockRandom(),
                 lastRUMViewEvent: nil, // means there was no active RUM view
-                lastRUMSessionState: AnyCodable(lastRUMSessionState), // means there was RUM session (sampled)
+                lastRUMSessionState: lastRUMSessionState, // means there was RUM session (sampled)
                 lastIsAppInForeground: launchInForeground,
                 lastRUMAttributes: lastRUMAttributes
             )
@@ -1102,8 +1100,8 @@ class CrashReportReceiverTests: XCTestCase {
             // Then
             let sentRUMViewAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self)[0].context?.contextInfo)
             let sentRUMErrorAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0].context?.contextInfo)
-            DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes.attributes)
-            DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes.attributes)
+            DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes)
+            DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes)
         }
 
         try test(
@@ -1425,7 +1423,7 @@ class CrashReportReceiverTests: XCTestCase {
             backgroundEventsTrackingEnabled: Bool
         ) throws {
             let featureScope = FeatureScopeMock()
-            let lastRUMAttributes = GlobalRUMAttributes(attributes: mockRandomAttributes())
+            let lastRUMAttributes: RUMEventAttributes = .mockRandom()
 
             // Given
             let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -1460,8 +1458,8 @@ class CrashReportReceiverTests: XCTestCase {
             // Then
             let sentRUMViewAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self)[0].context?.contextInfo)
             let sentRUMErrorAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0].context?.contextInfo)
-            DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes.attributes)
-            DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes.attributes)
+            DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes)
+            DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes)
         }
 
         try test(
