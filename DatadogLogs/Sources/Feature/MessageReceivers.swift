@@ -9,38 +9,12 @@ import DatadogInternal
 
 /// Defines keys referencing RUM messages supported on the bus.
 internal enum LoggingMessageKeys {
-    /// The key references a log entry message.
-    static let log = "log"
-
     /// The key references a crash message.
     static let crash = "crash"
 }
 
 /// Receiver to consume a Log message
 internal struct LogMessageReceiver: FeatureMessageReceiver {
-    struct LogMessage: Decodable {
-        /// The Logger name
-        let logger: String
-        /// The Logger service
-        let service: String?
-        /// The Log date
-        let date: Date
-        /// The Log message
-        let message: String
-        /// The Log error
-        let error: DDError?
-        /// The Log level
-        let level: LogLevel
-        /// The thread name
-        let thread: String
-        /// The thread name
-        let networkInfoEnabled: Bool?
-        /// The Log user custom attributes
-        let userAttributes: [String: AnyCodable]?
-        /// The Log internal attributes
-        let internalAttributes: [String: AnyCodable]?
-    }
-
     /// The log event mapper
     let logEventMapper: LogEventMapper?
 
@@ -50,41 +24,43 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
     ///   - message: The Feature message
     ///   - core: The core from which the message is transmitted.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        do {
-            guard let log: LogMessage = try message.baggage(forKey: LoggingMessageKeys.log) else {
-                return false
-            }
+        guard case let .payload(log as LogMessage) = message else {
+            return false
+        }
 
-            core.scope(for: LogsFeature.self).eventWriteContext { context, writer in
-                let builder = LogEventBuilder(
-                    service: log.service ?? context.service,
-                    loggerName: log.logger,
-                    networkInfoEnabled: log.networkInfoEnabled ?? false,
-                    eventMapper: logEventMapper
-                )
+        core.scope(for: LogsFeature.self).eventWriteContext { context, writer in
+            let builder = LogEventBuilder(
+                service: log.service ?? context.service,
+                loggerName: log.logger,
+                networkInfoEnabled: log.networkInfoEnabled ?? false,
+                eventMapper: logEventMapper
+            )
 
-                builder.createLogEvent(
-                    date: log.date,
-                    level: log.level,
-                    message: log.message,
-                    error: log.error,
-                    errorFingerprint: nil,
-                    binaryImages: nil,
-                    attributes: .init(
-                        userAttributes: log.userAttributes ?? [:],
-                        internalAttributes: log.internalAttributes
-                    ),
-                    tags: [],
-                    context: context,
-                    threadName: log.thread,
-                    callback: writer.write
-                )
-            }
-
-            return true
-        } catch {
-            core.telemetry
-                .error("Failed to decode log message in `LogMessageReceiver`", error: error)
+            builder.createLogEvent(
+                date: log.date,
+                level: {
+                    switch log.level {
+                    case .debug: return .debug
+                    case .info: return .info
+                    case .notice: return .notice
+                    case .warn: return .warn
+                    case .error: return .error
+                    case .critical: return .critical
+                    }
+                }(),
+                message: log.message,
+                error: log.error,
+                errorFingerprint: nil,
+                binaryImages: nil,
+                attributes: .init(
+                    userAttributes: log.userAttributes ?? [:],
+                    internalAttributes: log.internalAttributes
+                ),
+                tags: [],
+                context: context,
+                threadName: log.thread,
+                callback: writer.write
+            )
         }
 
         return false

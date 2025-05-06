@@ -16,11 +16,7 @@ public struct TraceID: RawRepresentable, Equatable, Hashable {
     }
 
     /// The unique 128-bit identifier for a trace.
-    public var rawValue: (UInt64, UInt64) {
-        get {
-            return (idHi, idLo)
-        }
-    }
+    public var rawValue: (UInt64, UInt64) { (idHi, idLo) }
 
     /// Invalid trace ID with all bits set to `0`.
     public static let invalidId: UInt64 = 0
