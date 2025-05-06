@@ -96,7 +96,7 @@ included:
   - ../../Datadog/IntegrationUnitTests
   - ../../E2ETests
   - ../../BenchmarkTests/Runner
-  - ../../BenchmarkTests/Benchmarks
+  - ../../BenchmarkTests/Benchmarks/Sources
   - ../../tools/http-server-mock/Tests
   - ../../tools/api-surface/Tests
   - ../../tools/rum-models-generator/Tests

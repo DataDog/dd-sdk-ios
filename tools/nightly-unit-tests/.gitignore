@@ -1,5 +1,0 @@
-# Ignore `bitrise.yml` generated from `bitrise.yml.src`
-bitrise.yml
-
-# Ignore debug logs from `xcrun simctl` and `xcversion`
-env-logs

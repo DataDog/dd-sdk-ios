@@ -39,16 +39,6 @@ internal class SessionEndedMetric {
         static let rseKey = "rse"
     }
 
-    /// Represents the type of instrumentation used to start a view.
-    internal enum ViewInstrumentationType: String, Encodable {
-        /// View was started manually through `RUMMonitor.shared().startView()` API.
-        case manual
-        /// View was started automatically with `UIKitRUMViewsPredicate`.
-        case uikit
-        /// View was started through `trackRUMView()` SwiftUI modifier.
-        case swiftui
-    }
-
     /// An ID of the session being tracked through this metric object.
     let sessionID: RUMUUID
 
@@ -64,7 +54,7 @@ internal class SessionEndedMetric {
         let viewURL: String
         /// The type of instrumentation that started this view.
         /// It can be `nil` if view was started implicitly by RUM, which is the case for "ApplicationLaunch" and "Background" views.
-        let instrumentationType: ViewInstrumentationType?
+        let instrumentationType: InstrumentationType?
         /// The start of the view in milliseconds from from epoch.
         let startMs: Int64
         /// The duration of the view in nanoseconds.
@@ -74,7 +64,7 @@ internal class SessionEndedMetric {
 
         init(
             viewURL: String,
-            instrumentationType: ViewInstrumentationType?,
+            instrumentationType: InstrumentationType?,
             startMs: Int64,
             durationNs: Int64,
             hasReplay: Bool
@@ -149,7 +139,7 @@ internal class SessionEndedMetric {
     ///   - view: the view event to track
     ///   - instrumentationType: the type of instrumentation used to start this view (only the first value for each `view.id` is tracked; succeeding values
     ///   will be ignored so it is okay to pass value on first call and then follow with `nil` for next updates of given `view.id`)
-    func track(view: RUMViewEvent, instrumentationType: ViewInstrumentationType?) throws {
+    func track(view: RUMViewEvent, instrumentationType: InstrumentationType?) throws {
         guard view.session.id == sessionID.toRUMDataFormat else {
             throw SessionEndedMetricError.trackingViewInForeignSession(viewURL: view.view.url, sessionID: sessionID)
         }
@@ -387,8 +377,8 @@ internal class SessionEndedMetric {
         let appLaunchViewsCount = trackedViews.values.filter({ $0.viewURL == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL }).count
         var byInstrumentationViewsCount: [String: Int] = [:]
         trackedViews.values.forEach {
-            if let instrumentationType = $0.instrumentationType?.rawValue {
-                byInstrumentationViewsCount[instrumentationType] = (byInstrumentationViewsCount[instrumentationType] ?? 0) + 1
+            if let instrumentationType = $0.instrumentationType {
+                byInstrumentationViewsCount[instrumentationType.metricKey] = (byInstrumentationViewsCount[instrumentationType.metricKey] ?? 0) + 1
             }
         }
         let withHasReplayCount = trackedViews.values.reduce(0, { acc, next in acc + (next.hasReplay ? 1 : 0) })
@@ -462,4 +452,15 @@ internal class SessionEndedMetric {
 private extension Int64 {
     /// Converts timestamp represented in milliseconds to nanoseconds with preventing Int64 overflow.
     var msToNs: Int64 { multipliedReportingOverflow(by: 1_000_000).partialValue }
+}
+
+extension InstrumentationType: Encodable {
+    var metricKey: String {
+        switch self {
+        case .uikit: return "uikit"
+        case .swiftuiAutomatic: return "swiftuiAutomatic"
+        case .swiftui: return "swiftui"
+        case .manual: return "manual"
+        }
+    }
 }

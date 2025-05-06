@@ -64,7 +64,7 @@ extension ViewEndedController {
     ///   will be ignored so it is okay to pass value on first call and then follow with `nil` for next updates of given `view.id`)
     func track(
         viewEvent: RUMViewEvent,
-        instrumentationType: SessionEndedMetric.ViewInstrumentationType?
+        instrumentationType: InstrumentationType?
     ) {
         guard let metric = self.metrics[ViewEndedMetric.Constants.name] as? ViewEndedMetric else {
             return
