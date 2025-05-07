@@ -8,7 +8,6 @@
 #include <sys/wait.h>
 @import DatadogObjc;
 @import DatadogCore;
-@import DatadogInternal;
 @import DatadogTrace;
 
 #import <Foundation/Foundation.h>

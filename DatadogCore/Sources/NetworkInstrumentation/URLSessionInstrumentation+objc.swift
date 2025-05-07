@@ -5,11 +5,14 @@
  */
 
 import Foundation
+@_spi(objc)
+import DatadogInternal
 
 /// Configuration of URLSession instrumentation.
+@objc(DDURLSessionInstrumentationConfiguration)
 @objcMembers
 @_spi(objc)
-public class DDURLSessionInstrumentationConfiguration: NSObject {
+public class objc_URLSessionInstrumentationConfiguration: NSObject {
     public internal(set) var swiftConfig: URLSessionInstrumentation.Configuration
 
     public init(delegateClass: URLSessionDataDelegate.Type) {
@@ -17,7 +20,7 @@ public class DDURLSessionInstrumentationConfiguration: NSObject {
     }
 
     /// Sets additional first party hosts to consider in the interception.
-    public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: DDURLSessionInstrumentationFirstPartyHostsTracing) {
+    public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: objc_URLSessionInstrumentationFirstPartyHostsTracing) {
         swiftConfig.firstPartyHostsTracing = firstPartyHostsTracing.swiftType
     }
 
@@ -29,9 +32,10 @@ public class DDURLSessionInstrumentationConfiguration: NSObject {
 }
 
 /// Defines configuration for first-party hosts in distributed tracing.
+@objc(DDURLSessionInstrumentationFirstPartyHostsTracing)
 @objcMembers
 @_spi(objc)
-public class DDURLSessionInstrumentationFirstPartyHostsTracing: NSObject {
+public class objc_URLSessionInstrumentationFirstPartyHostsTracing: NSObject {
     internal var swiftType: URLSessionInstrumentation.FirstPartyHostsTracing
 
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>]) {
@@ -48,14 +52,15 @@ public class DDURLSessionInstrumentationFirstPartyHostsTracing: NSObject {
     }
 }
 
+@objc(DDURLSessionInstrumentation)
 @objcMembers
 @_spi(objc)
-public class DDURLSessionInstrumentation: NSObject {
+public class objc_URLSessionInstrumentation: NSObject {
     /// Enables URLSession instrumentation.
     ///
     /// - Parameters:
     ///   - configuration: Configuration of the feature.
-    public static func enable(configuration: DDURLSessionInstrumentationConfiguration) {
+    public static func enable(configuration: objc_URLSessionInstrumentationConfiguration) {
         URLSessionInstrumentation.enable(with: configuration.swiftConfig)
     }
 
