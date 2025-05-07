@@ -1694,8 +1694,6 @@
 		D2D7482B2DC1214100C61353 /* LogEventAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748292DC1214100C61353 /* LogEventAttributes.swift */; };
 		D2D748322DC220B100C61353 /* LogMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748312DC220B100C61353 /* LogMessage.swift */; };
 		D2D748332DC220B100C61353 /* LogMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748312DC220B100C61353 /* LogMessage.swift */; };
-		D2D748362DC2247A00C61353 /* SpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748352DC2247A00C61353 /* SpanContext.swift */; };
-		D2D748372DC2247A00C61353 /* SpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748352DC2247A00C61353 /* SpanContext.swift */; };
 		D2D7483A2DC2306100C61353 /* TraceID.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748382DC2306100C61353 /* TraceID.swift */; };
 		D2D7483B2DC2306100C61353 /* SpanID.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748392DC2306100C61353 /* SpanID.swift */; };
 		D2D7483C2DC2306100C61353 /* TraceID.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D748382DC2306100C61353 /* TraceID.swift */; };
@@ -3241,7 +3239,6 @@
 		D2D748222DC0FF7E00C61353 /* FatalErrorContextNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FatalErrorContextNotifier.swift; sourceTree = "<group>"; };
 		D2D748292DC1214100C61353 /* LogEventAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventAttributes.swift; sourceTree = "<group>"; };
 		D2D748312DC220B100C61353 /* LogMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogMessage.swift; sourceTree = "<group>"; };
-		D2D748352DC2247A00C61353 /* SpanContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanContext.swift; sourceTree = "<group>"; };
 		D2D748382DC2306100C61353 /* TraceID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceID.swift; sourceTree = "<group>"; };
 		D2D748392DC2306100C61353 /* SpanID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanID.swift; sourceTree = "<group>"; };
 		D2D9A9D82DBFD360005DB31D /* CrashContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashContext.swift; sourceTree = "<group>"; };
@@ -6628,7 +6625,6 @@
 		D2D748342DC223EE00C61353 /* Trace */ = {
 			isa = PBXGroup;
 			children = (
-				D2D748352DC2247A00C61353 /* SpanContext.swift */,
 				D2D748382DC2306100C61353 /* TraceID.swift */,
 				D2D748392DC2306100C61353 /* SpanID.swift */,
 			);
@@ -8921,7 +8917,6 @@
 				D2216EC02A94DE2900ADAEC8 /* FeatureBaggage.swift in Sources */,
 				D23039F1298D5236001A1FA3 /* AnyDecodable.swift in Sources */,
 				6167E6E22B81207200C3CA2D /* DDCrashReport.swift in Sources */,
-				D2D748362DC2247A00C61353 /* SpanContext.swift in Sources */,
 				D2160CC529C0DED100FAA9A5 /* URLSessionTaskInterception.swift in Sources */,
 				6167E6FD2B81EC0400C3CA2D /* BacktraceReporter.swift in Sources */,
 				D23039DD298D5235001A1FA3 /* DD.swift in Sources */,
@@ -10002,7 +9997,6 @@
 				6167E6E32B81207200C3CA2D /* DDCrashReport.swift in Sources */,
 				D2160CC629C0DED100FAA9A5 /* URLSessionTaskInterception.swift in Sources */,
 				6167E6FE2B81EC0400C3CA2D /* BacktraceReporter.swift in Sources */,
-				D2D748372DC2247A00C61353 /* SpanContext.swift in Sources */,
 				D2DA2372298D57AA00C6C7E6 /* DD.swift in Sources */,
 				D2160C9B29C0DE5700FAA9A5 /* FirstPartyHosts.swift in Sources */,
 				D2EBEE3029BA161100B15732 /* TracePropagationHeadersReader.swift in Sources */,

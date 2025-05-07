@@ -12,6 +12,10 @@ internal struct TracingWithLoggingIntegration {
     private struct Constants {
         static let defaultLogMessage = "Span event"
         static let defaultErrorProperty = "Unknown"
+        /// Key referencing the trace ID.
+        static let traceIDKey = "dd.trace_id"
+        /// Key referencing the span ID.
+        static let spanIDKey = "dd.span_id"
     }
 
     /// `DatadogCore` instance managing this integration.
@@ -70,8 +74,8 @@ internal struct TracingWithLoggingIntegration {
                     networkInfoEnabled: networkInfoEnabled,
                     userAttributes: userAttributes,
                     internalAttributes: [
-                        SpanContext.CodingKeys.traceID.rawValue: String(spanContext.traceID, representation: .hexadecimal),
-                        SpanContext.CodingKeys.spanID.rawValue: String(spanContext.spanID, representation: .hexadecimal)
+                        Constants.traceIDKey: String(spanContext.traceID, representation: .hexadecimal),
+                        Constants.spanIDKey: String(spanContext.spanID, representation: .hexadecimal)
                     ]
                 )
             ),

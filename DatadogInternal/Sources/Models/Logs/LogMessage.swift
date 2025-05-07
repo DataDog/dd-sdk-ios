@@ -9,7 +9,7 @@ import Foundation
 public struct LogMessage {
     /// Log levels ordered by their severity, with `.debug` being the least severe and
     /// `.critical` being the most severe.
-    public enum Level: Int, Codable {
+    public enum Level: Int {
         case debug
         case info
         case notice
