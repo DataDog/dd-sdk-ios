@@ -21,7 +21,7 @@ internal class RecordingCoordinator {
     let touchPrivacy: TouchPrivacyLevel
     let srContextPublisher: SRContextPublisher
 
-    private var currentRUMContext: RUMContext? = nil
+    private var currentRUMContext: RUMCoreContext? = nil
     private var isSampled = false
 
     /// `recordingEnabled` is used to track when the user 
@@ -97,7 +97,7 @@ internal class RecordingCoordinator {
        updateHasReplay()
    }
 
-    private func onRUMContextChanged(rumContext: RUMContext?) {
+    private func onRUMContextChanged(rumContext: RUMCoreContext?) {
         if currentRUMContext?.sessionID != rumContext?.sessionID || currentRUMContext == nil {
             isSampled = sampler.sample()
         }

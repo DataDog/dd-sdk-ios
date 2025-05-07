@@ -60,7 +60,7 @@ class RecordingCoordinatorTests: XCTestCase {
         prepareRecordingCoordinator(textAndInputPrivacy: textAndInputPrivacy, imagePrivacy: imagePrivacy, touchPrivacy: touchPrivacy)
 
         // When
-        let rumContext = RUMContext.mockRandom()
+        let rumContext: RUMCoreContext = .mockRandom()
         rumContextObserver.notify(rumContext: rumContext)
 
         // Then
@@ -102,7 +102,7 @@ class RecordingCoordinatorTests: XCTestCase {
         prepareRecordingCoordinator()
 
         // When
-        let rumContext = RUMContext.mockWith(viewID: nil)
+        let rumContext: RUMCoreContext = .mockWith(viewID: nil)
         rumContextObserver.notify(rumContext: rumContext)
 
         // Then
@@ -177,7 +177,7 @@ class RecordingCoordinatorTests: XCTestCase {
         prepareRecordingCoordinator()
 
         // When
-        let rumContext = RUMContext.mockRandom()
+        let rumContext: RUMCoreContext = .mockRandom()
         rumContextObserver.notify(rumContext: rumContext)
 
         // Then
@@ -191,7 +191,7 @@ class RecordingCoordinatorTests: XCTestCase {
         prepareRecordingCoordinator(startRecordingImmediately: true)
 
         // When
-        let rumContext = RUMContext.mockRandom()
+        let rumContext: RUMCoreContext = .mockRandom()
         rumContextObserver.notify(rumContext: rumContext)
 
         // Then
@@ -205,7 +205,7 @@ class RecordingCoordinatorTests: XCTestCase {
         prepareRecordingCoordinator(startRecordingImmediately: false)
 
         // When
-        let rumContext = RUMContext.mockRandom()
+        let rumContext: RUMCoreContext = .mockRandom()
         rumContextObserver.notify(rumContext: rumContext)
 
         // Then
@@ -219,7 +219,7 @@ class RecordingCoordinatorTests: XCTestCase {
     func test_whenStopRecording_shouldStopRecord() throws {
         // Given
         prepareRecordingCoordinator()
-        let rumContext = RUMContext.mockRandom()
+        let rumContext: RUMCoreContext = .mockRandom()
         rumContextObserver.notify(rumContext: rumContext)
 
         // When
@@ -233,7 +233,7 @@ class RecordingCoordinatorTests: XCTestCase {
     func test_startRecording_whenAlreadyRecording_shouldRecord() throws {
         // Given
         prepareRecordingCoordinator()
-        let rumContext = RUMContext.mockRandom()
+        let rumContext: RUMCoreContext = .mockRandom()
         rumContextObserver.notify(rumContext: rumContext)
         recordingCoordinator?.startRecording()
 
@@ -248,7 +248,7 @@ class RecordingCoordinatorTests: XCTestCase {
     func test_stopRecording_whenAlreadyStopped_shouldNotRecord() throws {
         // Given
         prepareRecordingCoordinator()
-        let rumContext = RUMContext.mockRandom()
+        let rumContext: RUMCoreContext = .mockRandom()
         rumContextObserver.notify(rumContext: rumContext)
         recordingCoordinator?.stopRecording()
 

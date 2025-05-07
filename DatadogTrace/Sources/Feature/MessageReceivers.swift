@@ -8,18 +8,11 @@ import Foundation
 import DatadogInternal
 
 internal struct CoreContext {
-    struct RUMContext: Decodable {
-        enum CodingKeys: String, CodingKey {
-            case sessionID = "session.id"
-        }
-        let sessionID: String
-    }
-
     /// Provides the history of app foreground / background states.
     var applicationStateHistory: AppStateHistory?
 
     /// Provides the current active RUM context, if any
-    var rumContext: RUMContext?
+    var rumContext: RUMCoreContext?
 }
 
 internal final class ContextMessageReceiver: FeatureMessageReceiver {
@@ -49,12 +42,7 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
     private func update(context: DatadogContext, from core: DatadogCoreProtocol) -> Bool {
         _context.mutate {
             $0.applicationStateHistory = context.applicationStateHistory
-            do {
-                $0.rumContext = try context.baggages["rum"]?.decode()
-            } catch {
-                core.telemetry
-                    .error("Fails to decode RUM Context from Trace", error: error)
-            }
+            $0.rumContext = context.additionalContext()
         }
 
         return true

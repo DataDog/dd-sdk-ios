@@ -37,9 +37,10 @@ extension DatadogContext: AnyMockable, RandomMockable {
         carrierInfo: CarrierInfo? = .mockAny(),
         batteryStatus: BatteryStatus? = .mockAny(),
         isLowPowerModeEnabled: Bool = false,
+        additionalContext: [AdditionalContext] = [],
         baggages: [String: FeatureBaggage] = [:]
     ) -> DatadogContext {
-        .init(
+        var context = DatadogContext(
             site: site,
             clientToken: clientToken,
             service: service,
@@ -68,6 +69,13 @@ extension DatadogContext: AnyMockable, RandomMockable {
             isLowPowerModeEnabled: isLowPowerModeEnabled,
             baggages: baggages
         )
+
+        additionalContext.forEach { context.set(context: $0) }
+        return context
+    }
+
+    public mutating func set<Context>(context: Context) where Context: AdditionalContext {
+        additionalContext[Context.key] = context
     }
 
     public static func mockRandom() -> DatadogContext {

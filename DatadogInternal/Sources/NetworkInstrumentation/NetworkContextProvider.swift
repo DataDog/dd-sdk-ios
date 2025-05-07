@@ -25,19 +25,7 @@ extension NetworkContextCoreProvider: FeatureMessageReceiver {
             return false
         }
 
-        update(context: context, to: core)
+        currentNetworkContext = NetworkContext(rumContext: context.additionalContext())
         return true
-    }
-
-    /// Updates crash context.
-    ///
-    /// - Parameter context: The updated core context.
-    private func update(context: DatadogContext, to core: DatadogCoreProtocol) {
-        do {
-            self.currentNetworkContext = NetworkContext(rumContext: try context.baggages["rum"]?.decode())
-        } catch {
-            core.telemetry
-                .error("Fails to decode RUM Context from Trace", error: error)
-        }
     }
 }

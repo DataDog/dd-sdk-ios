@@ -218,7 +218,7 @@ class WebViewEventReceiverTests: XCTestCase {
         )
 
         // When
-        let otherMessage: FeatureMessage = .baggage(key: "message to other receiver", value: String.mockRandom())
+        let otherMessage: FeatureMessage = .payload(String.mockRandom())
         let result = receiver.receive(message: otherMessage, from: NOPDatadogCore())
 
         // Then
@@ -232,9 +232,7 @@ class WebViewEventReceiverTests: XCTestCase {
         let dateProvider = RelativeDateProvider()
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock = .mockWith(
-            baggages: [
-                RUMFeature.name: FeatureBaggage(rumContext)
-            ]
+            additionalContext: [rumContext]
         )
 
         let receiver = WebViewEventReceiver(
@@ -284,7 +282,7 @@ class WebViewEventReceiverTests: XCTestCase {
 
     func testGivenRUMContextNotAvailable_whenReceivingWebEvent_itIsDropped() throws {
         // Given
-        XCTAssertNil(featureScope.contextMock.baggages[RUMFeature.name])
+        XCTAssertNil(featureScope.contextMock.additionalContext[RUMFeature.name])
 
         let receiver = WebViewEventReceiver(
             featureScope: featureScope,
@@ -301,42 +299,14 @@ class WebViewEventReceiverTests: XCTestCase {
         XCTAssertTrue(featureScope.eventsWritten.isEmpty, "The event must be dropped")
     }
 
-    func testGivenInvalidRUMContext_whenReceivingEvent_itSendsErrorTelemetry() throws {
-        struct InvalidRUMContext: Codable {
-            var foo = "bar"
-        }
-
-        // Given
-        featureScope.contextMock = .mockWith(
-            baggages: [
-                RUMFeature.name: FeatureBaggage(InvalidRUMContext())
-            ]
-        )
-
-        let receiver = WebViewEventReceiver(
-            featureScope: featureScope,
-            dateProvider: DateProviderMock(),
-            commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: SystemDateProvider())
-        )
-
-        // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: randomWebEvent()), from: NOPDatadogCore())
-
-        // Then
-        XCTAssertTrue(result, "It should accept the message")
-        let errorTelemetry = try XCTUnwrap(featureScope.telemetryMock.messages.firstError(), "It must send error telemetry")
-        XCTAssertTrue(errorTelemetry.message.hasPrefix("Failed to decode `RUMCoreContext`"))
-    }
-
     func testGivenReplayContextAvailable_whenReceivingWebEvent_itInjectReplayInfo() throws {
         // Given
         let dateProvider = RelativeDateProvider()
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock = .mockWith(
             source: "react-native",
+            additionalContext: [rumContext],
             baggages: [
-                RUMFeature.name: FeatureBaggage(rumContext),
                 SessionReplayDependency.hasReplay: FeatureBaggage(true)
             ]
         )
@@ -417,8 +387,8 @@ class WebViewEventReceiverTests: XCTestCase {
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock = .mockWith(
             source: "react-native",
+            additionalContext: [rumContext],
             baggages: [
-                RUMFeature.name: FeatureBaggage(rumContext),
                 SessionReplayDependency.hasReplay: FeatureBaggage(false)
             ]
         )

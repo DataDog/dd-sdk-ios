@@ -25,8 +25,7 @@ class MonitorTests: XCTestCase {
 
         // Then
         let expectedContext = monitor.currentRUMContext
-        let rumBaggage = try XCTUnwrap(featureScope.contextMock.baggages[RUMFeature.name])
-        let rumContext = try rumBaggage.decode(type: RUMCoreContext.self)
+        let rumContext = try XCTUnwrap(featureScope.contextMock.additionalContext(ofType: RUMCoreContext.self))
         XCTAssertEqual(rumContext.applicationID, expectedContext.rumApplicationID)
         XCTAssertEqual(rumContext.sessionID, expectedContext.sessionID.toRUMDataFormat)
         XCTAssertEqual(rumContext.viewID, expectedContext.activeViewID?.toRUMDataFormat)
@@ -44,7 +43,7 @@ class MonitorTests: XCTestCase {
         monitor.startView(key: "foo")
 
         // Then
-        XCTAssertNil(featureScope.contextMock.baggages[RUMFeature.name])
+        XCTAssertNil(featureScope.contextMock.additionalContext(ofType: RUMCoreContext.self))
     }
 
     func testStartView_withViewController_itUsesClassNameAsViewName() throws {
