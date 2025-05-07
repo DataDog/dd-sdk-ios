@@ -107,7 +107,11 @@ public struct DatadogContext {
     /// `true` if the Low Power Mode is enabled.
     public var isLowPowerModeEnabled = false
 
+    /// Additional context that can set from `core` instance.
+    public var additionalContext: [String: Any] = [:]
+
     /// Type-less context baggages.
+    @available(*, deprecated, renamed: "additionalContext", message: "`FeatureBaggage` is deprecated in favor of strongly typed `additionalContext`.")
     public var baggages: [String: FeatureBaggage] = [:]
 
     // swiftlint:disable function_default_parameter_at_end
@@ -138,6 +142,7 @@ public struct DatadogContext {
         carrierInfo: CarrierInfo? = nil,
         batteryStatus: BatteryStatus? = nil,
         isLowPowerModeEnabled: Bool = false,
+        additionalContext: [String: Any] = [:],
         baggages: [String: FeatureBaggage] = [:]
     ) {
         self.site = site
@@ -166,6 +171,7 @@ public struct DatadogContext {
         self.carrierInfo = carrierInfo
         self.batteryStatus = batteryStatus
         self.isLowPowerModeEnabled = isLowPowerModeEnabled
+        self.additionalContext = additionalContext
         self.baggages = baggages
     }
     // swiftlint:enable function_default_parameter_at_end

@@ -313,6 +313,10 @@ extension DatadogCore: DatadogCoreProtocol {
         contextProvider.write { $0.baggages[key] = baggage() }
     }
 
+    func set(context: @escaping () -> Any?, forKey key: String) {
+        contextProvider.write { $0.additionalContext[key] = context() }
+    }
+
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         bus.send(message: message, else: fallback)
     }
@@ -380,6 +384,10 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
 
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         core?.set(baggage: baggage, forKey: key)
+    }
+
+    func set(context: @escaping () -> Any?, forKey key: String) {
+        core?.set(context: context, forKey: key)
     }
 
     func set(anonymousId: String?) {
@@ -489,6 +497,7 @@ extension DatadogCore: Flushable {
 
         // Reset baggages that need not be persisted across flushes.
         set(baggage: nil, forKey: LaunchReport.baggageKey)
+        set(context: nil, forKey: LaunchReport.baggageKey)
 
         let features = features.values.compactMap { $0 as? Flushable }
 

@@ -10,7 +10,7 @@ import TestUtilities
 @testable import DatadogCore
 
 class FeatureContextTests: XCTestCase {
-    func testV2FeatureContextSharing() throws {
+    func testFeatureContextSharing() throws {
         // Given
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -29,14 +29,11 @@ class FeatureContextTests: XCTestCase {
 
         // When
         let attributes = ["key": "value"]
-        core.set(baggage: attributes, forKey: "test")
+        core.set(context: attributes, forKey: "test")
 
         // Then
         let context = core.contextProvider.read()
-        let testBaggage = try XCTUnwrap(context.baggages["test"])
-        try DDAssertDictionariesEqual(
-            testBaggage.decode(type: [String: String].self),
-            attributes
-        )
+        let testContext = try XCTUnwrap(context.additionalContext["test"] as? [String: String])
+        XCTAssertEqual(testContext, attributes)
     }
 }
