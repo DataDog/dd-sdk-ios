@@ -14,7 +14,7 @@ public enum RUMPayloadMessages {
 
 /// Lightweight representation of current RUM session state, used to compute `RUMOffViewEventsHandlingRule`.
 /// It gets serialized into fatal error context for computing the rule upon app process restart.
-public struct RUMSessionState: Equatable, Codable {
+public struct RUMSessionState: Codable, Equatable {
     /// The session ID. Can be `.nullUUID` if the session was rejected by sampler.
     public let sessionUUID: UUID
     /// If this is the very first session in the app process (`true`) or was re-created upon timeout (`false`).
