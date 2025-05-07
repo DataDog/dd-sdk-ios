@@ -16,14 +16,14 @@ class WebViewRecordReceiverTests: XCTestCase {
     func testGivenRUMContextAvailable_whenReceivingWebRecord_itCreatesSegment() throws {
         let serverTimeOffset: TimeInterval = .mockRandom(min: -10, max: 10).rounded()
 
-        let rumContext: RUMContext = .mockWith(
+        let rumContext: RUMCoreContext = .mockWith(
             serverTimeOffset: serverTimeOffset
         )
 
         let scope = FeatureScopeMock(
             context: .mockWith(
                 source: "react-native",
-                baggages: ["rum": FeatureBaggage(rumContext)]
+                additionalContext: [rumContext]
             )
         )
 
@@ -68,7 +68,7 @@ class WebViewRecordReceiverTests: XCTestCase {
         let scope = FeatureScopeMock()
 
         // Given
-        XCTAssertNil(scope.contextMock.baggages["rum"])
+        XCTAssertNil(scope.contextMock.additionalContext["rum"])
 
         let receiver = WebViewRecordReceiver(scope: scope)
 
@@ -88,34 +88,11 @@ class WebViewRecordReceiverTests: XCTestCase {
         let receiver = WebViewRecordReceiver(scope: scope)
 
         // When
-        let otherMessage: FeatureMessage = .baggage(key: "message to other receiver", value: String.mockRandom())
+        let otherMessage: FeatureMessage = .payload(String.mockRandom())
         let result = receiver.receive(message: otherMessage, from: NOPDatadogCore())
 
         // Then
         XCTAssertFalse(result, "It must reject messages addressed to other receivers")
-    }
-
-    func testWhenReceivingInvalidBaggage_itSendsTelemetryError() throws {
-        // Given
-        let telemetry = TelemetryReceiverMock()
-        let scope = FeatureScopeMock(
-            context: .mockWith(baggages: ["rum": FeatureBaggage(123)])
-        )
-        let core = PassthroughCoreMock(
-            messageReceiver: telemetry
-        )
-
-        let receiver = WebViewRecordReceiver(scope: scope)
-
-        // When
-        let record = WebViewMessage.record(mockRandomAttributes(), WebViewMessage.View(id: .mockRandom()))
-        XCTAssert(
-            receiver.receive(message: .webview(record), from: core)
-        )
-
-        // Then
-        let message = try XCTUnwrap(telemetry.messages.first?.asError?.message)
-        XCTAssert(message.contains("Fails to decode RUM context from Session Replay - typeMismatch"))
     }
 }
 

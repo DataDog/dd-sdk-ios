@@ -67,87 +67,77 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             )
         )
 
-        featureScope.eventWriteContext { [featureScope] context, writer in
-            guard let rumBaggage = context.baggages[RUMFeature.name] else {
+        featureScope.eventWriteContext { context, writer in
+            guard let rum: RUMCoreContext = context.additionalContext() else {
                 return // Drop event if RUM is not enabled or RUM session is not sampled
             }
 
-            do {
-                let rum: RUMCoreContext = try rumBaggage.decode()
-                var event = event
+            var event = event
 
-                if let date = event["date"] as? Int,
-                   let view = event["view"] as? JSON,
-                   let id = view["id"] as? String {
-                    let correctedDate = Int64(date) + self.offset(forView: id, context: context)
-                    event["date"] = correctedDate
+            if let date = event["date"] as? Int,
+               let view = event["view"] as? JSON,
+               let id = view["id"] as? String {
+                let correctedDate = Int64(date) + self.offset(forView: id, context: context)
+                event["date"] = correctedDate
 
-                    // Inject the container source and view id
-                    if let viewID = self.viewCache.lastView(before: correctedDate, hasReplay: true) {
-                        event[RUMViewEvent.CodingKeys.container.rawValue] = RUMViewEvent.Container(
-                            source: RUMViewEvent.Container.Source(rawValue: context.source) ?? .ios,
-                            view: RUMViewEvent.Container.View(id: viewID)
-                        )
-                    }
+                // Inject the container source and view id
+                if let viewID = self.viewCache.lastView(before: correctedDate, hasReplay: true) {
+                    event[RUMViewEvent.CodingKeys.container.rawValue] = RUMViewEvent.Container(
+                        source: RUMViewEvent.Container.Source(rawValue: context.source) ?? .ios,
+                        view: RUMViewEvent.Container.View(id: viewID)
+                    )
                 }
-
-                if var application = event["application"] as? JSON {
-                    application["id"] = rum.applicationID
-                    event["application"] = application
-                }
-
-                if var session = event["session"] as? JSON {
-                    session["id"] = rum.sessionID
-                    // Unset `has_replay` if native replay is disabled
-                    if context.hasReplay != true {
-                        session["has_replay"] = context.hasReplay
-                    }
-
-                    event["session"] = session
-                }
-
-                if var dd = event["_dd"] as? JSON, context.hasReplay != true {
-                    // Remove stats if native replay is disabled
-                    dd["replay_stats"] = nil
-                    event["_dd"] = dd
-                }
-
-                writer.write(value: AnyEncodable(event))
-            } catch {
-                featureScope.telemetry.error("Failed to decode `RUMCoreContext`", error: error)
             }
+
+            if var application = event["application"] as? JSON {
+                application["id"] = rum.applicationID
+                event["application"] = application
+            }
+
+            if var session = event["session"] as? JSON {
+                session["id"] = rum.sessionID
+                // Unset `has_replay` if native replay is disabled
+                if context.hasReplay != true {
+                    session["has_replay"] = context.hasReplay
+                }
+
+                event["session"] = session
+            }
+
+            if var dd = event["_dd"] as? JSON, context.hasReplay != true {
+                // Remove stats if native replay is disabled
+                dd["replay_stats"] = nil
+                event["_dd"] = dd
+            }
+
+            writer.write(value: AnyEncodable(event))
         }
     }
 
     private func receive(telemetry event: JSON) {
         // RUM-2866: Update with dedicated telemetry track
-        featureScope.eventWriteContext { [featureScope] context, writer in
-            guard let rumBaggage = context.baggages[RUMFeature.name] else {
+        featureScope.eventWriteContext { context, writer in
+            guard let rum: RUMCoreContext = context.additionalContext() else {
                 return // Drop event if RUM is not enabled or RUM session is not sampled
             }
 
-            do {
-                let rum: RUMCoreContext = try rumBaggage.decode()
-                var event = event
+            var event = event
 
-                if let date = event["date"] as? Int {
-                    event["date"] = Int64(date) + context.serverTimeOffset.toInt64Milliseconds
-                }
-
-                if var application = event["application"] as? JSON {
-                    application["id"] = rum.applicationID
-                    event["application"] = application
-                }
-
-                if var session = event["session"] as? JSON {
-                    session["id"] = rum.sessionID
-                    event["session"] = session
-                }
-
-                writer.write(value: AnyEncodable(event))
-            } catch {
-                featureScope.telemetry.error("Failed to decode `RUMCoreContext`", error: error)
+            if let date = event["date"] as? Int {
+                event["date"] = Int64(date) + context.serverTimeOffset.toInt64Milliseconds
             }
+
+            if var application = event["application"] as? JSON {
+                application["id"] = rum.applicationID
+                event["application"] = application
+            }
+
+            if var session = event["session"] as? JSON {
+                session["id"] = rum.sessionID
+                event["session"] = session
+            }
+
+            writer.write(value: AnyEncodable(event))
         }
     }
 

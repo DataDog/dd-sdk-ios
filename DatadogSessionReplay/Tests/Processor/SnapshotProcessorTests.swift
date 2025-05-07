@@ -26,7 +26,7 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenProcessingFirstViewTreeSnapshot_itWritesRecordsThatIndicateStartOfASegment() throws {
         let time = Date()
-        let rum: RUMContext = .mockWith(serverTimeOffset: 0)
+        let rum: RUMCoreContext = .mockWith(serverTimeOffset: 0)
 
         // Given
         let core = PassthroughCoreMock()
@@ -64,7 +64,7 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenRUMContextDoesNotChangeInSucceedingViewTreeSnapshots_itWritesRecordsThatContinueCurrentSegment() {
         let time = Date()
-        let rum: RUMContext = .mockWith(serverTimeOffset: 0)
+        let rum: RUMCoreContext = .mockWith(serverTimeOffset: 0)
 
         // Given
         let core = PassthroughCoreMock()
@@ -113,7 +113,7 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenOrientationChanges_itWritesRecordsViewportResizeDataSegment() {
         let time = Date()
-        let rum: RUMContext = .mockRandom()
+        let rum: RUMCoreContext = .mockRandom()
 
         // Given
         let core = PassthroughCoreMock()
@@ -157,8 +157,8 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenRUMContextChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatIndicateNextSegments() {
         let time = Date()
-        let rum1: RUMContext = .mockRandom()
-        let rum2: RUMContext = .mockRandom()
+        let rum1: RUMCoreContext = .mockRandom()
+        let rum2: RUMCoreContext = .mockRandom()
 
         // Given
         let core = PassthroughCoreMock()
@@ -214,7 +214,7 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenProcessingViewTreeSnapshot_itIncludeWebViewSlotFromNode() throws {
         let time = Date()
-        let rum: RUMContext = .mockWith(serverTimeOffset: 0)
+        let rum: RUMCoreContext = .mockWith(serverTimeOffset: 0)
 
         // Given
         let core = PassthroughCoreMock()
@@ -268,7 +268,7 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenProcessingViewTreeSnapshot_itIncludeWebViewSlotFromCache() throws {
         let time = Date()
-        let rum: RUMContext = .mockWith(serverTimeOffset: 0)
+        let rum: RUMCoreContext = .mockWith(serverTimeOffset: 0)
 
         // Given
         let core = PassthroughCoreMock()
@@ -345,7 +345,7 @@ class SnapshotProcessorTests: XCTestCase {
         let earliestTouchTime = Date()
         let snapshotTime = earliestTouchTime.addingTimeInterval(5)
         let numberOfTouches = 10
-        let rum: RUMContext = .mockWith(serverTimeOffset: 0)
+        let rum: RUMCoreContext = .mockWith(serverTimeOffset: 0)
 
         // Given
         let core = PassthroughCoreMock()
@@ -393,8 +393,8 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenRUMContextTimeOffsetChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatContinueCurrentSegment() {
         let time = Date()
-        let rum1: RUMContext = .mockWith(serverTimeOffset: 123)
-        let rum2: RUMContext = .mockWith(serverTimeOffset: 456)
+        let rum1: RUMCoreContext = .mockWith(serverTimeOffset: 123)
+        let rum2: RUMCoreContext = .mockWith(serverTimeOffset: 456)
 
         // Given
         let core = PassthroughCoreMock()
@@ -446,7 +446,7 @@ class SnapshotProcessorTests: XCTestCase {
             view.dd.sessionReplayPrivacyOverrides.imagePrivacy = .maskAll
 
             let time = Date()
-            let rum: RUMContext = .mockWith(serverTimeOffset: 0)
+            let rum: RUMCoreContext = .mockWith(serverTimeOffset: 0)
 
             // Given
             let core = PassthroughCoreMock()
@@ -478,7 +478,7 @@ class SnapshotProcessorTests: XCTestCase {
 
     private let snapshotBuilder = ViewTreeSnapshotBuilder(additionalNodeRecorders: [], featureFlags: .allEnabled)
 
-    private func generateViewTreeSnapshot(for viewTree: UIView, date: Date, rumContext: RUMContext) -> ViewTreeSnapshot {
+    private func generateViewTreeSnapshot(for viewTree: UIView, date: Date, rumContext: RUMCoreContext) -> ViewTreeSnapshot {
         snapshotBuilder.createSnapshot(
             of: viewTree,
             with: .init(

@@ -137,17 +137,11 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
             var internalAttributes: [String: Encodable] = [:]
 
             // When bundle with RUM is enabled, link RUM context (if available):
-            if self.rumContextIntegration, let rum = context.baggages[RUMContext.key] {
-                do {
-                    let rum = try rum.decode(type: RUMContext.self)
-                    internalAttributes[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
-                    internalAttributes[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
-                    internalAttributes[LogEvent.Attributes.RUM.viewID] = rum.viewID
-                    internalAttributes[LogEvent.Attributes.RUM.actionID] = rum.userActionID
-                } catch {
-                    self.featureScope.telemetry
-                        .error("Fails to decode RUM context from Logs", error: error)
-                }
+            if self.rumContextIntegration, let rum: RUMCoreContext = context.additionalContext() {
+                internalAttributes[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
+                internalAttributes[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
+                internalAttributes[LogEvent.Attributes.RUM.viewID] = rum.viewID
+                internalAttributes[LogEvent.Attributes.RUM.actionID] = rum.userActionID
             }
 
             // When bundle with Trace is enabled, link RUM context (if available):

@@ -63,7 +63,12 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 .b3multi,
                 .tracecontext
             ],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "100")
@@ -118,7 +123,12 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 .b3multi,
                 .tracecontext
             ],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "custom")
@@ -155,7 +165,12 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 .b3multi,
                 .tracecontext
             ],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField))
@@ -193,7 +208,12 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 .b3multi,
                 .tracecontext
             ],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         span.finish()

@@ -6,18 +6,20 @@
 
 #if os(iOS)
 import Foundation
+import DatadogInternal
+
 @testable import DatadogSessionReplay
 
 class RUMContextObserverMock: RUMContextObserver {
     private var queue: Queue?
-    private var onNew: ((RUMContext?) -> Void)?
+    private var onNew: ((RUMCoreContext?) -> Void)?
 
-    func observe(on queue: Queue, notify: @escaping (RUMContext?) -> Void) {
+    func observe(on queue: Queue, notify: @escaping (RUMCoreContext?) -> Void) {
         self.queue = queue
         self.onNew = notify
     }
 
-    func notify(rumContext: RUMContext?) {
+    func notify(rumContext: RUMCoreContext?) {
         queue?.run { self.onNew?(rumContext) }
     }
 }

@@ -197,16 +197,11 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
                 event[dateKey] = correctedTimestamp
             }
 
-            if let rum = context.baggages[RUMContext.key] {
-                do {
-                    let rum = try rum.decode(type: RUMContext.self)
-                    event[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
-                    event[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
-                    event[LogEvent.Attributes.RUM.viewID] = rum.viewID
-                    event[LogEvent.Attributes.RUM.actionID] = rum.userActionID
-                } catch {
-                    core.telemetry.error("Fails to decode RUM context from Logs in `WebViewLogReceiver`", error: error)
-                }
+            if let rum: RUMCoreContext = context.additionalContext() {
+                event[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
+                event[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
+                event[LogEvent.Attributes.RUM.viewID] = rum.viewID
+                event[LogEvent.Attributes.RUM.actionID] = rum.userActionID
             }
 
             writer.write(value: AnyEncodable(event))
