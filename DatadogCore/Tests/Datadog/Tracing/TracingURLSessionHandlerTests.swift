@@ -123,16 +123,16 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "network error")
         XCTAssertEqual(
-            log.attributes.internalAttributes?["dd.trace_id"] as? AnyCodable,
-            AnyCodable(String(span.traceID, representation: .hexadecimal))
+            log.attributes.internalAttributes?["dd.trace_id"] as? String,
+            String(span.traceID, representation: .hexadecimal)
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?["dd.trace_id"] as? AnyCodable,
-            AnyCodable(String(span.traceID, representation: .hexadecimal))
+            log.attributes.internalAttributes?["dd.trace_id"] as? String,
+            String(span.traceID, representation: .hexadecimal)
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?["dd.span_id"] as? AnyCodable,
-            AnyCodable(String(span.spanID, representation: .hexadecimal))
+            log.attributes.internalAttributes?["dd.span_id"] as? String,
+            String(span.spanID, representation: .hexadecimal)
         )
         XCTAssertEqual(log.error?.kind, "domain - 123")
         XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
