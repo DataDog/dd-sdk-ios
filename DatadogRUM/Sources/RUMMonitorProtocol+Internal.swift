@@ -49,6 +49,7 @@ public struct DatadogInternalInterface {
             threads: nil,
             binaryImages: binaryImages,
             isStackTraceTruncated: nil,
+            globalAttributes: globalAttributes,
             attributes: attributes
         )
         monitor.process(command: addErrorCommand)

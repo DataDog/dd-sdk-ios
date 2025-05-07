@@ -29,6 +29,7 @@ class RUMCommandTests: XCTestCase {
             time: .mockAny(),
             error: SwiftError(),
             source: .source,
+            globalAttributes: [:],
             attributes: [:]
         )
 
@@ -40,6 +41,7 @@ class RUMCommandTests: XCTestCase {
             time: .mockAny(),
             error: SwiftEnumeratedError.errorLabel,
             source: .source,
+            globalAttributes: [:],
             attributes: [:]
         )
 
@@ -51,6 +53,7 @@ class RUMCommandTests: XCTestCase {
             time: .mockAny(),
             error: nsError,
             source: .source,
+            globalAttributes: [:],
             attributes: [:]
         )
 

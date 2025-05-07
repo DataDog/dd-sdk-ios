@@ -82,10 +82,12 @@ internal struct RUMStartViewCommand: RUMCommand, RUMViewScopePropagatableAttribu
         identity: ViewIdentifier,
         name: String,
         path: String,
+        globalAttributes: [AttributeKey: AttributeValue],
         attributes: [AttributeKey: AttributeValue],
         instrumentationType: InstrumentationType
     ) {
         self.time = time
+        self.globalAttributes = globalAttributes
         self.attributes = attributes
         self.identity = identity
         self.name = name
@@ -135,7 +137,7 @@ internal protocol RUMErrorCommand: RUMCommand {
 /// Using this command results with classifying the error as "Exception" in Datadog app (`@error.category: Exception`).
 internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
     var time: Date
-    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+    var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track errors in "Background" view
     let isUserInteraction = false // an error is not an interactive event
@@ -159,6 +161,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
         type: String?,
         stack: String?,
         source: RUMInternalErrorSource,
+        globalAttributes: [AttributeKey: AttributeValue],
         attributes: [AttributeKey: AttributeValue]
     ) {
         self.init(
@@ -171,6 +174,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
             threads: nil,
             binaryImages: nil,
             isStackTraceTruncated: nil,
+            globalAttributes: globalAttributes,
             attributes: attributes
         )
     }
@@ -180,6 +184,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
         time: Date,
         error: Error,
         source: RUMInternalErrorSource,
+        globalAttributes: [AttributeKey: AttributeValue],
         attributes: [AttributeKey: AttributeValue]
     ) {
         let dderror = DDError(error: error)
@@ -193,6 +198,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
             threads: nil,
             binaryImages: nil,
             isStackTraceTruncated: nil,
+            globalAttributes: globalAttributes,
             attributes: attributes
         )
     }
@@ -208,6 +214,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
         threads: [DDThread]?,
         binaryImages: [BinaryImage]?,
         isStackTraceTruncated: Bool?,
+        globalAttributes: [AttributeKey: AttributeValue],
         attributes: [AttributeKey: AttributeValue]
     ) {
         var attributes = attributes
@@ -215,6 +222,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
         let crossPlatformSourceType = RUMErrorSourceType.extract(from: &attributes)
 
         self.time = time
+        self.globalAttributes = globalAttributes
         self.attributes = attributes
         self.message = message
         self.type = type
@@ -277,7 +285,7 @@ internal struct RUMAddCurrentViewMemoryWarningCommand: RUMErrorCommand {
 
 internal struct RUMAddViewLoadingTime: RUMCommand, RUMViewScopePropagatableAttributes {
     var time: Date
-    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+    var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, it doesn't make sense to start "Background" view on receiving custom timing, as it will be `0ns` timing
     let isUserInteraction = false // a custom view timing is not an interactive event
@@ -288,7 +296,7 @@ internal struct RUMAddViewLoadingTime: RUMCommand, RUMViewScopePropagatableAttri
 
 internal struct RUMAddViewTimingCommand: RUMCommand, RUMViewScopePropagatableAttributes {
     var time: Date
-    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+    var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, it doesn't make sense to start "Background" view on receiving custom timing, as it will be `0ns` timing
     let isUserInteraction = false // a custom view timing is not an interactive event
@@ -369,7 +377,7 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
 internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     let resourceKey: String
     var time: Date
-    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+    var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
     let isUserInteraction = false // a resource is not an interactive event
@@ -395,6 +403,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         type: String?,
         source: RUMInternalErrorSource,
         httpStatusCode: Int?,
+        globalAttributes: [AttributeKey: AttributeValue],
         attributes: [AttributeKey: AttributeValue]
     ) {
         self.resourceKey = resourceKey
@@ -402,6 +411,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         self.errorMessage = message
         self.errorType = type
         self.errorSource = source
+        self.globalAttributes = globalAttributes
         self.attributes = attributes
         self.httpStatusCode = httpStatusCode
         // The stack will be meaningless in most cases as it will go down to the networking code:
@@ -416,11 +426,13 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         error: Error,
         source: RUMInternalErrorSource,
         httpStatusCode: Int?,
+        globalAttributes: [AttributeKey: AttributeValue],
         attributes: [AttributeKey: AttributeValue]
     ) {
         self.resourceKey = resourceKey
         self.time = time
         self.errorSource = source
+        self.globalAttributes = globalAttributes
         self.attributes = attributes
         self.httpStatusCode = httpStatusCode
 
@@ -444,7 +456,7 @@ internal protocol RUMUserActionCommand: RUMCommand {
 /// Starts continuous User Action.
 internal struct RUMStartUserActionCommand: RUMUserActionCommand {
     var time: Date
-    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+    var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track actions in "Background" view (e.g. it makes sense for custom actions)
     let isUserInteraction = true // a user action definitely is a User Interacgion
@@ -459,7 +471,7 @@ internal struct RUMStartUserActionCommand: RUMUserActionCommand {
 /// Stops continuous User Action.
 internal struct RUMStopUserActionCommand: RUMUserActionCommand {
     var time: Date
-    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+    var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartUserActionCommand`)
     let isUserInteraction = true // a user action definitely is a User Interacgion
@@ -487,7 +499,7 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
 /// Adds that a feature flag has been evaluated to the view
 internal struct RUMAddFeatureFlagEvaluationCommand: RUMCommand {
     var time: Date
-    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+    var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we don't want to miss evaluation of flags that may affect background tasks
     let isUserInteraction = false

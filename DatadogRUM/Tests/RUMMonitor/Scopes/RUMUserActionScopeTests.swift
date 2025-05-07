@@ -198,6 +198,7 @@ class RUMUserActionScopeTests: XCTestCase {
             scope.process(
                 command: RUMStopUserActionCommand(
                     time: currentTime,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"],
                     actionType: .swipe,
                     name: nil
@@ -247,6 +248,7 @@ class RUMUserActionScopeTests: XCTestCase {
             scope.process(
                 command: RUMStopUserActionCommand(
                     time: currentTime,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"],
                     actionType: .swipe,
                     name: nil
@@ -298,6 +300,7 @@ class RUMUserActionScopeTests: XCTestCase {
             scope.process(
                 command: RUMStopUserActionCommand(
                     time: currentTime,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"],
                     actionType: .swipe,
                     name: nil
@@ -683,6 +686,7 @@ class RUMUserActionScopeTests: XCTestCase {
             scope.process(
                 command: RUMStopUserActionCommand(
                     time: currentTime,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"],
                     actionType: .tap,
                     name: nil
@@ -726,6 +730,7 @@ class RUMUserActionScopeTests: XCTestCase {
             scope.process(
                 command: RUMStopUserActionCommand(
                     time: currentTime,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"],
                     actionType: .tap,
                     name: nil

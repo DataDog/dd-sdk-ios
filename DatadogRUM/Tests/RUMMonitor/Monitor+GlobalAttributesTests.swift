@@ -129,9 +129,9 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.addAction(type: .custom, name: "custom action")
 
         // Then
-        let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
-        XCTAssertEqual(lastView.view.name, RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName)
-        XCTAssertNil(lastView.attribute(forKey: "attribute"))
+        let actionViewEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
+        XCTAssertEqual(actionViewEvent.view.name, RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName)
+        XCTAssertEqual(actionViewEvent.attribute(forKey: "attribute"), "value") // "ApplicationLaunch" event triggered by RUM action
     }
 
     func testAddingGlobalAttributesAfterSDKInit_thenRemovingAttribute() throws {
@@ -231,7 +231,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         // Then
         let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(lastView.view.name, "View")
-        XCTAssertNil(lastView.attribute(forKey: "attribute"))
+        XCTAssertEqual(lastView.attribute(forKey: "attribute"), "value")
     }
 
     func testAddingGlobalAttributesAfterViewIsStarted_thenRemovingAttribute() throws {
@@ -328,7 +328,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(lastView1.attribute(forKey: "attribute2"), "value2")
         XCTAssertEqual(lastView1.attribute(forKey: "attribute3"), "value3")
 
-        XCTAssertEqual(lastView2.attribute(forKey: "attribute1"), "value1")
+        XCTAssertNil(lastView2.attribute(forKey: "attribute1"))
         XCTAssertEqual(lastView2.attribute(forKey: "attribute2"), "value2")
         XCTAssertEqual(lastView2.attribute(forKey: "attribute3"), "value3")
 
@@ -393,7 +393,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         let lastActiveView = try XCTUnwrap(viewEvents.last(where: { $0.view.name == "ActiveView" }))
 
         XCTAssertEqual(lastInactiveView.view.resource.count, 1)
-        XCTAssertNil(lastInactiveView.attribute(forKey: "attribute"))
+        XCTAssertEqual(lastInactiveView.attribute(forKey: "attribute"), "value")
         XCTAssertNil(lastActiveView.attribute(forKey: "attribute"))
     }
 
@@ -416,8 +416,8 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         let lastActiveView = try XCTUnwrap(viewEvents.last(where: { $0.view.name == "ActiveView" }))
 
         XCTAssertEqual(lastInactiveView.view.resource.count, 1)
-        XCTAssertNil(lastInactiveView.attribute(forKey: "attribute1"))
-        XCTAssertNil(lastInactiveView.attribute(forKey: "attribute2"))
+        XCTAssertNil(lastInactiveView.attribute(forKey: "attribute1"), "value1")
+        XCTAssertEqual(lastInactiveView.attribute(forKey: "attribute2"), "value2")
         XCTAssertNil(lastActiveView.attribute(forKey: "attribute1"))
         XCTAssertNil(lastActiveView.attribute(forKey: "attribute2"))
     }
@@ -443,7 +443,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
 
         XCTAssertEqual(lastInactiveView.view.resource.count, 1)
         XCTAssertNil(lastInactiveView.attribute(forKey: "attribute1"))
-        XCTAssertNil(lastInactiveView.attribute(forKey: "attribute2"))
+        XCTAssertEqual(lastInactiveView.attribute(forKey: "attribute2"), "value2")
         XCTAssertNil(lastActiveView.attribute(forKey: "attribute1"))
         XCTAssertEqual(lastActiveView.attribute(forKey: "attribute2"), "value2")
     }
@@ -471,7 +471,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(lastView.view.error.count, 1)
         XCTAssertEqual(lastView.view.action.count, 1)
         XCTAssertEqual(lastView.view.resource.count, 1)
-        XCTAssertNil(lastView.attribute(forKey: "attribute"))
+        XCTAssertEqual(lastView.context?.contextInfo["attribute"] as? String, "value") // "ActiveView" event triggered by `stopResource`
         XCTAssertEqual(errorEvent.context?.contextInfo["attribute"] as? String, "value")
         XCTAssertEqual(actionEvent.context?.contextInfo["attribute"] as? String, "value")
         XCTAssertEqual(resourceEvent.context?.contextInfo["attribute"] as? String, "value")
@@ -492,7 +492,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.stopResource(resourceKey: "resource", response: .mockAny())
 
         // Then
-        let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
+        let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last) // "ActiveView" event triggered by RUM resource
         let errorEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).last)
         let actionEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMActionEvent.self).last)
         let resourceEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMResourceEvent.self).last)
@@ -501,7 +501,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(lastView.view.action.count, 1)
         XCTAssertEqual(lastView.view.resource.count, 1)
         XCTAssertNil(lastView.attribute(forKey: "attribute1"))
-        XCTAssertNil(lastView.attribute(forKey: "attribute2"))
+        XCTAssertEqual(lastView.context?.contextInfo["attribute2"] as? String, "value2")
         XCTAssertNil(errorEvent.context?.contextInfo["attribute1"])
         XCTAssertEqual(errorEvent.context?.contextInfo["attribute2"] as? String, "value2")
         XCTAssertNil(actionEvent.context?.contextInfo["attribute1"])
@@ -524,7 +524,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.stopResource(resourceKey: "resource", response: .mockAny())
 
         // Then
-        let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
+        let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last) // "ActiveView" event triggered by RUM resource
         let errorEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).last)
         let actionEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMActionEvent.self).last)
         let resourceEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMResourceEvent.self).last)
@@ -532,7 +532,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(lastView.view.error.count, 1)
         XCTAssertEqual(lastView.view.action.count, 1)
         XCTAssertEqual(lastView.view.resource.count, 1)
-        XCTAssertNil(lastView.attribute(forKey: "attribute"))
+        XCTAssertEqual(lastView.context?.contextInfo["attribute"] as? String, "new-value")
         XCTAssertEqual(errorEvent.context?.contextInfo["attribute"] as? String, "new-value")
         XCTAssertEqual(actionEvent.context?.contextInfo["attribute"] as? String, "new-value")
         XCTAssertEqual(resourceEvent.context?.contextInfo["attribute"] as? String, "new-value")

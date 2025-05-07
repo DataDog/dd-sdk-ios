@@ -377,7 +377,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies: dependencies,
             name: command.name,
             actionType: command.actionType,
-            attributes: command.globalAttributes.merging(command.attributes, uniquingKeysWith: { $1 }),
+            attributes: command.attributes,
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             isContinuous: true,
@@ -395,7 +395,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies: dependencies,
             name: command.name,
             actionType: command.actionType,
-            attributes: command.globalAttributes.merging(command.attributes, uniquingKeysWith: { $1 }),
+            attributes: command.attributes,
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             isContinuous: false,
@@ -495,7 +495,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: attributes),
+            context: .init(contextInfo: command.globalAttributes.merging(attributes) { $1 }),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
@@ -536,8 +536,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // RUMM-3133 Don't override View attributes with commands that are not view related.
         if command is RUMViewScopePropagatableAttributes {
-            attributes.merge(rumCommandAttributes: command.globalAttributes)
-
             // The local attributes should only be updated by commands related to this 'RUMViewScope'
             switch command {
             case let command as RUMStartViewCommand where identity == command.identity:
@@ -624,7 +622,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: attributes),
+            context: .init(contextInfo: command.globalAttributes.merging(attributes) { $1 }),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
