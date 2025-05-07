@@ -25,7 +25,7 @@ class FatalErrorContextNotifierTests: XCTestCase {
         // Then
         let messages = featureScope.messagesSent()
         XCTAssertEqual(messages.count, 1)
-        let sessionStateMessage = try XCTUnwrap(messages.lastDispatch as? RUMSessionState)
+        let sessionStateMessage = try XCTUnwrap(messages.lastPayload as? RUMSessionState)
         XCTAssertEqual(newSessionState, sessionStateMessage)
     }
 
@@ -41,7 +41,7 @@ class FatalErrorContextNotifierTests: XCTestCase {
         // Then
         let messages = featureScope.messagesSent()
         XCTAssertEqual(messages.count, 1)
-        let sessionStateMessage = try XCTUnwrap(messages.lastDispatch as? RUMSessionState)
+        let sessionStateMessage = try XCTUnwrap(messages.lastPayload as? RUMSessionState)
         XCTAssertEqual(originalSessionState, sessionStateMessage)
     }
 
@@ -58,7 +58,7 @@ class FatalErrorContextNotifierTests: XCTestCase {
         // Then
         let messages = featureScope.messagesSent()
         XCTAssertEqual(messages.count, 1)
-        let viewEventMessage = try XCTUnwrap(messages.firstDispatch as? RUMViewEvent)
+        let viewEventMessage = try XCTUnwrap(messages.firstPayload as? RUMViewEvent)
         DDAssertJSONEqual(newViewEvent, viewEventMessage)
     }
 
@@ -73,7 +73,7 @@ class FatalErrorContextNotifierTests: XCTestCase {
         // Then
         let messages = featureScope.messagesSent()
         XCTAssertEqual(messages.count, 2)
-        let viewEventMessage = try XCTUnwrap(messages.lastDispatch as? String)
+        let viewEventMessage = try XCTUnwrap(messages.lastPayload as? String)
         XCTAssertEqual(viewEventMessage, RUMPayloadMessages.viewReset)
     }
 
@@ -90,7 +90,7 @@ class FatalErrorContextNotifierTests: XCTestCase {
         // Then
         let messages = featureScope.messagesSent()
         XCTAssertEqual(messages.count, 1)
-        let attributesMessage = try XCTUnwrap(messages.lastDispatch as? RUMEventAttributes)
+        let attributesMessage = try XCTUnwrap(messages.lastPayload as? RUMEventAttributes)
         DDAssertJSONEqual(newGlobalAttributes, attributesMessage)
     }
 }

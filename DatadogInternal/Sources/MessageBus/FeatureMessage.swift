@@ -14,8 +14,8 @@ public enum FeatureMessage {
     /// The encoding/decoding processes will have an impact on performances, opt for a baggage
     /// only if the data-structure is small.
     ///
-    /// For large data type, use the `.dispatch` case with shared type definition.
-    @available(*, deprecated, message: "Use .dispatch instead")
+    /// For large data type, use the `.payload` case with shared type definition.
+    @available(*, deprecated, message: "Use .payload instead")
     case baggage(
         key: String,
         baggage: FeatureBaggage
@@ -52,7 +52,7 @@ extension FeatureMessage {
     ///   - key: The baggage key.
     ///   - baggage: The baggage value.
     /// - Returns: a `.baggage` case.
-    @available(*, deprecated, message: "Use .dispatch instead")
+    @available(*, deprecated, message: "Use .payload instead")
     public static func baggage<Value>(key: String, value: Value) -> FeatureMessage where Value: Encodable {
         .baggage(key: key, baggage: .init(value))
     }

@@ -42,3 +42,49 @@ public struct RUMSessionState: Equatable, Codable {
         self.didStartWithReplay = didStartWithReplay
     }
 }
+
+/// Error message consumed by RUM on the message-bus.
+public struct RUMErrorMessage {
+    /// The time of the error
+    public let time: Date
+    /// The RUM error message
+    public let message: String
+    /// The RUM error source
+    public let source: String
+    /// The RUM error type
+    public let type: String?
+    /// The RUM error stack
+    public let stack: String?
+    /// The RUM attributes
+    public let attributes: [String: Encodable]
+    /// Binary images if need to decode the stack trace
+    public let binaryImages: [BinaryImage]?
+
+    /// Create a Log error message to be sent on the message-bus.
+    /// 
+    /// - Parameters:
+    ///   - time: The time of the error
+    ///   - message: The RUM error message
+    ///   - source: The RUM error source
+    ///   - type: The RUM error type
+    ///   - stack: The RUM error stack
+    ///   - attributes: The RUM attributes
+    ///   - binaryImages: Binary images if need to decode the stack trace
+    public init(
+        time: Date,
+        message: String,
+        source: String,
+        type: String?,
+        stack: String?,
+        attributes: [String: Encodable],
+        binaryImages: [BinaryImage]?
+    ) {
+        self.time = time
+        self.message = message
+        self.source = source
+        self.type = type
+        self.stack = stack
+        self.attributes = attributes
+        self.binaryImages = binaryImages
+    }
+}

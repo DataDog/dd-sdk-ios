@@ -39,7 +39,7 @@ internal class CrashContextCoreProvider: CrashContextProvider {
         didSet { _context?.lastRUMSessionState = sessionState }
     }
 
-    private var logAttributes: AnyCodable? {
+    private var logAttributes: LogEventAttributes? {
         didSet { _context?.lastLogAttributes = logAttributes }
     }
 
@@ -60,21 +60,10 @@ internal class CrashContextCoreProvider: CrashContextProvider {
 }
 
 extension CrashContextCoreProvider: FeatureMessageReceiver {
-    /// Defines keys referencing RUM baggage in `DatadogContext.featuresAttributes`.
-    internal enum RUMBaggageKeys {
-        /// This key references the global log attributes
-        static let logAttributes = "global-log-attributes"
-
-        /// The key referencing ``DatadogInternal.GlobalRUMAttributes`` value holding RUM global attributes.
-        static let rumAttributes = "global-rum-attributes"
-    }
-
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
         case .context(let context):
             update(context: context)
-        case .baggage(let label, let baggage) where label == RUMBaggageKeys.logAttributes:
-            updateLogAttributes(with: baggage, to: core)
         case let .payload(viewEvent as RUMViewEvent):
             queue.async { self.viewEvent = viewEvent }
         case let .payload(message as String) where message == RUMPayloadMessages.viewReset:
@@ -83,6 +72,8 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
             queue.async { self.sessionState = sessionState }
         case let .payload(rumAttributes as RUMEventAttributes):
             queue.async { self.rumAttributes = rumAttributes }
+        case let .payload(logAttributes as LogEventAttributes):
+            queue.async { self.logAttributes = logAttributes }
         default:
             return false
         }
@@ -109,17 +100,6 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
 
             if crashContext != self._context {
                 self._context = crashContext
-            }
-        }
-    }
-
-    private func updateLogAttributes(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async { [weak core, weak self] in
-            do {
-                self?.logAttributes = try baggage.decode(type: AnyCodable.self)
-            } catch {
-                core?.telemetry
-                    .error("Fails to decode log attributes from Crash Reporting", error: error)
             }
         }
     }

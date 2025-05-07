@@ -15,7 +15,7 @@ import DatadogInternal
 class CrashLogReceiverTests: XCTestCase {
     func testReceiveCrashLog() throws {
         // Given
-let expectation = expectation(description: "Send Event Bypass Consent")
+        let expectation = expectation(description: "Send Event Bypass Consent")
         let core = PassthroughCoreMock(messageReceiver: CrashLogReceiver.mockAny())
         core.onEventWriteContext = { bypassConsent in
             if bypassConsent { expectation.fulfill() }
@@ -109,7 +109,7 @@ let expectation = expectation(description: "Send Event Bypass Consent")
         )
     }
 
-    private func crashContextWith(lastLogAttributes: AnyCodable?) -> CrashContext {
+    private func crashContextWith(lastLogAttributes: LogEventAttributes?) -> CrashContext {
         return .mockWith(
             serverTimeOffset: .mockRandom(),
             service: .mockRandom(),
@@ -252,10 +252,10 @@ let expectation = expectation(description: "Send Event Bypass Consent")
         let stringAttribute: String = .mockRandom()
         let boolAttribute: Bool = .mockRandom()
         let crashContext = crashContextWith(lastLogAttributes: .init(
-            [
+            attributes: [
                 "mock-string-attribute": stringAttribute,
                 "mock-bool-attribute": boolAttribute
-            ] as [String: Any]
+            ]
         ))
         let core = PassthroughCoreMock(
             messageReceiver: CrashLogReceiver(dateProvider: SystemDateProvider(), logEventMapper: nil)

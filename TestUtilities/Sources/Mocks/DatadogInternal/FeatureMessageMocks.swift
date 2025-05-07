@@ -21,14 +21,14 @@ public extension Array where Element == FeatureMessage {
             .last(where: { $0.key == key })?.baggage
     }
 
-    /// Unpacks the first "dispatch message" in this array.
-    var firstDispatch: Any? {
-        lazy.compactMap { $0.asDispatch }.first
+    /// Unpacks the first "payload message" in this array.
+    var firstPayload: Any? {
+        lazy.compactMap { $0.asPayload }.first
     }
 
-    /// Unpacks the last "dispatch message" in this array.
-    var lastDispatch: Any? {
-        lazy.compactMap { $0.asDispatch }.last
+    /// Unpacks the last "payload message" in this array.
+    var lastPayload: Any? {
+        lazy.compactMap { $0.asPayload }.last
     }
 
     /// Unpacks the first "baggage message" with given key in this array.
@@ -61,8 +61,8 @@ public extension FeatureMessage {
         return (key: key, baggage: baggage)
     }
 
-    /// Extracts dispatch message.
-    var asDispatch: Any? {
+    /// Extracts payload message.
+    var asPayload: Any? {
         guard case let .payload(value) = self else {
             return nil
         }
