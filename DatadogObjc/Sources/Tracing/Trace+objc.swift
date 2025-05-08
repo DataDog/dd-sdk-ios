@@ -10,7 +10,7 @@ import DatadogInternal
 import DatadogTrace
 
 @objcMembers
-public class DDTraceConfiguration: NSObject {
+public final class DDTraceConfiguration: NSObject {
     internal var swiftConfig: Trace.Configuration
 
     override public init() {
@@ -53,7 +53,7 @@ public class DDTraceConfiguration: NSObject {
 }
 
 @objcMembers
-public class DDTraceFirstPartyHostsTracing: NSObject {
+public final class DDTraceFirstPartyHostsTracing: NSObject {
     internal var swiftType: Trace.Configuration.URLSessionTracking.FirstPartyHostsTracing
 
     @_spi(objc)
@@ -78,7 +78,7 @@ public class DDTraceFirstPartyHostsTracing: NSObject {
 }
 
 @objcMembers
-public class DDTraceURLSessionTracking: NSObject {
+public final class DDTraceURLSessionTracking: NSObject {
     internal var swiftConfig: Trace.Configuration.URLSessionTracking
 
     public init(firstPartyHostsTracing: DDTraceFirstPartyHostsTracing) {
@@ -92,7 +92,7 @@ public class DDTraceURLSessionTracking: NSObject {
 
 @objcMembers
 @_spi(objc)
-public class DDTrace: NSObject {
+public final class DDTrace: NSObject {
     public static func enable(with configuration: DDTraceConfiguration) {
         Trace.enable(with: configuration.swiftConfig)
     }
@@ -100,7 +100,7 @@ public class DDTrace: NSObject {
 
 @objcMembers
 @_spi(objc)
-public class DDTracer: NSObject, DatadogObjc.OTTracer {
+public final class DDTracer: NSObject, DatadogObjc.OTTracer {
     // MARK: - Internal
 
     internal let swiftTracer: DatadogTrace.OTTracer

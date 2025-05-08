@@ -9,7 +9,7 @@ import Foundation
 @objc(DDInternalLogger)
 @objcMembers
 @_spi(objc)
-public class objc_InternalLogger: NSObject {
+public final class objc_InternalLogger: NSObject {
     /// Function printing `String` content to console. Intended to be used only by SDK components.
     @objc
     public static func consolePrint(_ message: String, _ level: objc_CoreLoggerLevel) {

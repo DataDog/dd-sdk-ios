@@ -26,7 +26,7 @@ private extension B3HTTPHeadersWriter.InjectEncoding {
 
 @objc
 @available(*, deprecated, renamed: "DDB3HTTPHeadersWriter")
-public class DDOTelHTTPHeadersWriter: DDB3HTTPHeadersWriter {}
+public final class DDOTelHTTPHeadersWriter: DDB3HTTPHeadersWriter {}
 
 @objc
 public class DDB3HTTPHeadersWriter: NSObject {

@@ -10,7 +10,7 @@ import DatadogInternal
 @objc(DDSite)
 @objcMembers
 @_spi(objc)
-public class objc_DatadogSite: NSObject {
+public final class objc_DatadogSite: NSObject {
     internal let sdkSite: DatadogSite
 
     internal init(sdkSite: DatadogSite) {
@@ -157,7 +157,7 @@ internal struct DDServerDateProviderBridge: ServerDateProvider {
 @objc(DDConfiguration)
 @objcMembers
 @_spi(objc)
-public class objc_Configuration: NSObject {
+public final class objc_Configuration: NSObject {
     internal var sdkConfiguration: Datadog.Configuration
 
     /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.

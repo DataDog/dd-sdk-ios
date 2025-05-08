@@ -8,7 +8,7 @@ import Foundation
 import class DatadogInternal.W3CHTTPHeadersWriter
 
 @objc
-public class DDW3CHTTPHeadersWriter: NSObject {
+public final class DDW3CHTTPHeadersWriter: NSObject {
     let swiftW3CHTTPHeadersWriter: W3CHTTPHeadersWriter
 
     @objc public var traceHeaderFields: [String: String] {

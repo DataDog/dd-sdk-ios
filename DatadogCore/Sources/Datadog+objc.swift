@@ -11,7 +11,7 @@ import DatadogInternal
 @objc(DDTrackingConsent)
 @objcMembers
 @_spi(objc)
-public class objc_TrackingConsent: NSObject {
+public final class objc_TrackingConsent: NSObject {
     internal let sdkConsent: TrackingConsent
 
     internal init(sdkConsent: TrackingConsent) {
@@ -30,7 +30,7 @@ public class objc_TrackingConsent: NSObject {
 @objc(DDDatadog)
 @objcMembers
 @_spi(objc)
-public class objc_Datadog: NSObject {
+public final class objc_Datadog: NSObject {
     // MARK: - Public
 
     public static func initialize(

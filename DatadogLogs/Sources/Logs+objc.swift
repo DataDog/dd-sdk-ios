@@ -43,7 +43,7 @@ public enum objc_LogLevel: Int {
 @objc(DDLogsConfiguration)
 @objcMembers
 @_spi(objc)
-public class objc_LogsConfiguration: NSObject {
+public final class objc_LogsConfiguration: NSObject {
     internal var configuration: Logs.Configuration
 
     /// Overrides the custom server endpoint where Logs are sent.
@@ -79,7 +79,7 @@ public class objc_LogsConfiguration: NSObject {
 @objc(DDLogs)
 @objcMembers
 @_spi(objc)
-public class objc_Logs: NSObject {
+public final class objc_Logs: NSObject {
     public static func enable(
         with configuration: objc_LogsConfiguration = .init()
     ) {
@@ -98,7 +98,7 @@ public class objc_Logs: NSObject {
 @objc(DDLoggerConfiguration)
 @objcMembers
 @_spi(objc)
-public class objc_LoggerConfiguration: NSObject {
+public final class objc_LoggerConfiguration: NSObject {
     internal var configuration: Logger.Configuration
 
     /// The service name  (default value is set to application bundle identifier)
@@ -214,7 +214,7 @@ public class objc_LoggerConfiguration: NSObject {
 @objc(DDLogger)
 @objcMembers
 @_spi(objc)
-public class objc_Logger: NSObject {
+public final class objc_Logger: NSObject {
     internal let sdkLogger: LoggerProtocol
 
     internal init(sdkLogger: LoggerProtocol) {

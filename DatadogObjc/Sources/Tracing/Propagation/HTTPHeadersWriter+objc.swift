@@ -8,7 +8,7 @@ import Foundation
 import class DatadogInternal.HTTPHeadersWriter
 
 @objc
-public class DDHTTPHeadersWriter: NSObject {
+public final class DDHTTPHeadersWriter: NSObject {
     let swiftHTTPHeadersWriter: HTTPHeadersWriter
 
     @objc public var traceHeaderFields: [String: String] {

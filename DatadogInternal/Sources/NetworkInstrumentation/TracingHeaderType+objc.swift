@@ -10,7 +10,7 @@ import Foundation
 @objc(DDTracingHeaderType)
 @objcMembers
 @_spi(objc)
-public class objc_TracingHeaderType: NSObject {
+public final class objc_TracingHeaderType: NSObject {
     public let swiftType: TracingHeaderType
 
     private init(_ swiftType: TracingHeaderType) {

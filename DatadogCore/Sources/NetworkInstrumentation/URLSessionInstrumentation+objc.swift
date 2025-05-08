@@ -12,7 +12,7 @@ import DatadogInternal
 @objc(DDURLSessionInstrumentationConfiguration)
 @objcMembers
 @_spi(objc)
-public class objc_URLSessionInstrumentationConfiguration: NSObject {
+public final class objc_URLSessionInstrumentationConfiguration: NSObject {
     public internal(set) var swiftConfig: URLSessionInstrumentation.Configuration
 
     public init(delegateClass: URLSessionDataDelegate.Type) {
@@ -35,7 +35,7 @@ public class objc_URLSessionInstrumentationConfiguration: NSObject {
 @objc(DDURLSessionInstrumentationFirstPartyHostsTracing)
 @objcMembers
 @_spi(objc)
-public class objc_URLSessionInstrumentationFirstPartyHostsTracing: NSObject {
+public final class objc_URLSessionInstrumentationFirstPartyHostsTracing: NSObject {
     internal var swiftType: URLSessionInstrumentation.FirstPartyHostsTracing
 
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>]) {
@@ -55,7 +55,7 @@ public class objc_URLSessionInstrumentationFirstPartyHostsTracing: NSObject {
 @objc(DDURLSessionInstrumentation)
 @objcMembers
 @_spi(objc)
-public class objc_URLSessionInstrumentation: NSObject {
+public final class objc_URLSessionInstrumentation: NSObject {
     /// Enables URLSession instrumentation.
     ///
     /// - Parameters:
