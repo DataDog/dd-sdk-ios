@@ -12,7 +12,7 @@ all: env-check repo-setup templates
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
 		dogfood-shopist dogfood-datadog-app \
 		release-build release-validate release-publish-github \
-		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs release-publish-legacy-podspecs \
+		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs \
 		set-ci-secret
 
 REPO_ROOT := $(PWD)
@@ -395,10 +395,6 @@ release-publish-dependent-podspecs:
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSessionReplay.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogCrashReporting.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogWebViewTracking.podspec"
-
-# Publish legacy podspecs
-release-publish-legacy-podspecs:
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogAlamofireExtension.podspec"
 
 # Set ot update CI secrets
 set-ci-secret:
