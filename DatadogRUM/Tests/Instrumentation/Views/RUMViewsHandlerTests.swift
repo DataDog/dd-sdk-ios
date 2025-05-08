@@ -81,7 +81,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertTrue(startCommand1.identity == ViewIdentifier(view1))
         XCTAssertEqual(startCommand1.attributes as? [String: String], ["key1": "val1"])
         XCTAssertTrue(stopCommand.identity == ViewIdentifier(view1))
-        XCTAssertEqual(stopCommand.attributes.count, 0)
+        XCTAssertEqual(stopCommand.attributes as? [String: String], ["key1": "val1"])
         XCTAssertTrue(startCommand2.identity == ViewIdentifier(view2))
         XCTAssertEqual(startCommand2.attributes as? [String: String], ["key2": "val2"])
     }
@@ -212,7 +212,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(startCommand1.attributes as? [String: String], ["key1": "val1"])
         XCTAssertEqual(startCommand1.instrumentationType, .swiftuiAutomatic)
         XCTAssertTrue(stopCommand.identity == ViewIdentifier(view1))
-        XCTAssertEqual(stopCommand.attributes.count, 0)
+        XCTAssertEqual(stopCommand.attributes as? [String: String], ["key1": "val1"])
         XCTAssertTrue(startCommand2.identity == ViewIdentifier(view2))
         XCTAssertEqual(startCommand2.attributes as? [String: String], ["key2": "val2"])
         XCTAssertEqual(startCommand2.instrumentationType, .swiftuiAutomatic)
@@ -345,7 +345,7 @@ class RUMViewsHandlerTests: XCTestCase {
 
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
         XCTAssertTrue(stopCommand.identity == ViewIdentifier(view))
-        XCTAssertEqual(stopCommand.attributes.count, 0)
+        XCTAssertEqual(stopCommand.attributes as? [String: String], ["foo": "bar"])
         XCTAssertEqual(stopCommand.time, .mockDecember15th2019At10AMUTC())
 
         let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
@@ -507,7 +507,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertTrue(startCommand1.identity == ViewIdentifier(view1Identity))
         DDAssertDictionariesEqual(startCommand1.attributes, view1Attributes)
         XCTAssertTrue(stopCommand.identity == ViewIdentifier(view1Identity))
-        XCTAssertEqual(stopCommand.attributes.count, 0)
+        XCTAssertGreaterThan(stopCommand.attributes.count, 0)
         XCTAssertTrue(startCommand2.identity == ViewIdentifier(view2Identity))
         DDAssertDictionariesEqual(startCommand2.attributes, view2Attributes)
     }
@@ -581,7 +581,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertTrue(startCommand.identity == ViewIdentifier(viewIdentity))
         DDAssertDictionariesEqual(startCommand.attributes, viewAttributes)
         XCTAssertTrue(stopCommand.identity == ViewIdentifier(viewIdentity))
-        XCTAssertEqual(stopCommand.attributes.count, 0)
+        XCTAssertGreaterThan(stopCommand.attributes.count, 0)
     }
 
     func testGiven2AppearedView_whenTheFirstDisappears_itDoesNotStopItTwice() throws {
@@ -707,7 +707,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
         let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
         XCTAssertTrue(stopCommand.identity == ViewIdentifier(viewIdentity))
-        XCTAssertEqual(stopCommand.attributes.count, 0)
+        XCTAssertGreaterThan(stopCommand.attributes.count, 0)
         XCTAssertEqual(stopCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertTrue(startCommand.identity == ViewIdentifier(viewIdentity))
         XCTAssertEqual(startCommand.path, viewPath)

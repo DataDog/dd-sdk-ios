@@ -141,7 +141,6 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     // MARK: - Sending RUM Events
 
     private func sendActionEvent(completionTime: Date, on command: RUMCommand?, context: DatadogContext, writer: Writer) {
-        attributes.merge(rumCommandAttributes: command?.globalAttributes)
         attributes.merge(rumCommandAttributes: command?.attributes)
 
         var frustrations: [RUMActionEvent.Action.Frustration.FrustrationType]? = nil
@@ -176,7 +175,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: attributes),
+            context: .init(contextInfo: (command?.globalAttributes ?? [:]).merging(attributes) { $1 }),
             date: actionStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
