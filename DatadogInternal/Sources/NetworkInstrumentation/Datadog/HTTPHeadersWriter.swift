@@ -34,34 +34,12 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
     public private(set) var traceHeaderFields: [String: String] = [:]
 
-    private let samplingStrategy: TraceSamplingStrategy
     private let traceContextInjection: TraceContextInjection
 
     /// Initializes the headers writer.
     ///
-    /// - Parameter samplingRate: The sampling rate applied for headers injection.
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
-    public convenience init(samplingRate: Float) {
-        self.init(sampleRate: samplingRate)
-    }
-
-    /// Initializes the headers writer.
-    ///
-    /// - Parameter sampleRate: The sampling rate applied for headers injection, with 100% as the default.
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
-    public convenience init(sampleRate: Float = .maxSampleRate) {
-        self.init(samplingStrategy: .custom(sampleRate: sampleRate), traceContextInjection: .sampled)
-    }
-
-    /// Initializes the headers writer.
-    ///
-    /// - Parameter samplingStrategy: The strategy for sampling trace propagation headers.
     /// - Parameter traceContextInjection: The strategy for injecting trace context into requests.
-    public init(
-        samplingStrategy: TraceSamplingStrategy,
-        traceContextInjection: TraceContextInjection
-    ) {
-        self.samplingStrategy = samplingStrategy
+    public init(traceContextInjection: TraceContextInjection) {
         self.traceContextInjection = traceContextInjection
     }
 
@@ -71,13 +49,10 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
     /// - Parameter spanID: The span ID.
     /// - Parameter parentSpanID: The parent span ID, if applicable.
     public func write(traceContext: TraceContext) {
-        let sampler = samplingStrategy.sampler(for: traceContext)
-        let sampled = sampler.sample()
-
-        switch (traceContextInjection, sampled) {
+        switch (traceContextInjection, traceContext.isKept) {
         case (.all, _), (.sampled, true):
             traceHeaderFields = [
-                TracingHTTPHeaders.samplingPriorityField: sampled ? "1" : "0"
+                TracingHTTPHeaders.samplingPriorityField: traceContext.isKept ? "1" : "0"
             ]
             traceHeaderFields[TracingHTTPHeaders.traceIDField] = String(traceContext.traceID.idLo)
             traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(traceContext.spanID, representation: .decimal)

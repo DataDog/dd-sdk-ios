@@ -60,22 +60,19 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             let writer: TracePropagationHeadersWriter
             switch $0 {
             case .datadog:
-                writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: traceContextInjection)
+                writer = HTTPHeadersWriter(traceContextInjection: traceContextInjection)
             case .b3:
                 writer = B3HTTPHeadersWriter(
-                    samplingStrategy: .headBased,
                     injectEncoding: .single,
                     traceContextInjection: traceContextInjection
                 )
             case .b3multi:
                 writer = B3HTTPHeadersWriter(
-                    samplingStrategy: .headBased,
                     injectEncoding: .multiple,
                     traceContextInjection: traceContextInjection
                 )
             case .tracecontext:
                 writer = W3CHTTPHeadersWriter(
-                    samplingStrategy: .headBased,
                     tracestate: [:],
                     traceContextInjection: traceContextInjection
                 )

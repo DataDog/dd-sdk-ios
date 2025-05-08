@@ -16,28 +16,7 @@ public class DDHTTPHeadersWriter: NSObject {
     }
 
     @objc
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
-    public convenience init(samplingRate: Float) {
-        self.init(sampleRate: samplingRate)
-    }
-
-    @objc
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
-    public init(sampleRate: Float = 20) {
-        swiftHTTPHeadersWriter = HTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: sampleRate),
-            traceContextInjection: .sampled
-        )
-    }
-
-    @objc
-    public init(
-        samplingStrategy: DDTraceSamplingStrategy,
-        traceContextInjection: DDTraceContextInjection
-    ) {
-        swiftHTTPHeadersWriter = HTTPHeadersWriter(
-            samplingStrategy: samplingStrategy.swiftType,
-            traceContextInjection: traceContextInjection.swiftType
-        )
+    public init(traceContextInjection: DDTraceContextInjection) {
+        swiftHTTPHeadersWriter = HTTPHeadersWriter(traceContextInjection: traceContextInjection.swiftType)
     }
 }

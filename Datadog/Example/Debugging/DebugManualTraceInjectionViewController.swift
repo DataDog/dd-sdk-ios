@@ -43,7 +43,6 @@ internal struct DebugManualTraceInjectionView: View {
     @State private var requestURL = "https://httpbin.org/get"
     @State private var selectedTraceHeaderTypes: Set<TraceHeaderType> = [.datadog, .w3c]
     @State private var selectedTraceContextInjection: TraceContextInjection = .sampled
-    @State private var sampleRate: SampleRate = .maxSampleRate
     @State private var isRequestPending = false
 
     private let session: URLSession = URLSession(
@@ -86,16 +85,6 @@ internal struct DebugManualTraceInjectionView: View {
                     optionToString: { $0.rawValue },
                     selected: $selectedTraceHeaderTypes
                 )
-                Section(header: Text("Trace sample Rate")) {
-                    Slider(
-                        value: $sampleRate,
-                        in: 0...100, step: 1,
-                        minimumValueLabel: Text("0"),
-                        maximumValueLabel: Text("100")
-                    ) {
-                        Text("Sample Rate")
-                    }
-                }
             }
 
             Spacer()
@@ -130,14 +119,12 @@ internal struct DebugManualTraceInjectionView: View {
             switch selectedTraceHeaderType {
             case .datadog:
                 let writer = HTTPHeadersWriter(
-                    samplingStrategy: .custom(sampleRate: sampleRate),
                     traceContextInjection: selectedTraceContextInjection
                 )
                 Tracer.shared().inject(spanContext: span.context, writer: writer)
                 writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
             case .w3c:
                 let writer = W3CHTTPHeadersWriter(
-                    samplingStrategy: .custom(sampleRate: sampleRate),
                     tracestate: [:],
                     traceContextInjection: selectedTraceContextInjection
                 )
@@ -145,7 +132,6 @@ internal struct DebugManualTraceInjectionView: View {
                 writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
             case .b3Single:
                 let writer = B3HTTPHeadersWriter(
-                    samplingStrategy: .custom(sampleRate: sampleRate),
                     injectEncoding: .single,
                     traceContextInjection: selectedTraceContextInjection
                 )
@@ -153,7 +139,6 @@ internal struct DebugManualTraceInjectionView: View {
                 writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
             case .b3Multiple:
                 let writer = B3HTTPHeadersWriter(
-                    samplingStrategy: .custom(sampleRate: sampleRate),
                     injectEncoding: .multiple,
                     traceContextInjection: selectedTraceContextInjection
                 )

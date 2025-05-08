@@ -33,9 +33,9 @@ class URLSessionInterceptorTests: XCTestCase {
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         let trace: TraceContext = .mockWith(isKept: true)
         let writer: TracePropagationHeadersWriter = oneOf([
-            { HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all) },
-            { B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 100)) },
-            { W3CHTTPHeadersWriter(samplingStrategy: .headBased) }
+            { HTTPHeadersWriter(traceContextInjection: .all) },
+            { B3HTTPHeadersWriter() },
+            { W3CHTTPHeadersWriter() }
         ])
 
         let url: URL = .mockAny()

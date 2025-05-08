@@ -201,11 +201,10 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = DDTracer.shared()
         let objcSpanContext = DDSpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, isKept: true)
         )
 
         let objcWriter = DDHTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 100),
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -227,7 +226,6 @@ class DDTracerTests: XCTestCase {
         )
 
         let objcWriter = DDHTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 0),
             traceContextInjection: .sampled
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -241,7 +239,6 @@ class DDTracerTests: XCTestCase {
         let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
 
         let objcValidWriter = DDHTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 100),
             traceContextInjection: .all
         )
         let objcInvalidFormat = "foo"
@@ -260,11 +257,10 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = DDTracer.shared()
         let objcSpanContext = DDSpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, isKept: true)
         )
 
         let objcWriter = DDB3HTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 100),
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -283,7 +279,6 @@ class DDTracerTests: XCTestCase {
         )
 
         let objcWriter = DDB3HTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 0),
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -300,7 +295,6 @@ class DDTracerTests: XCTestCase {
         let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
 
         let objcValidWriter = DDB3HTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 100),
             traceContextInjection: .all
         )
         let objcInvalidFormat = "foo"
@@ -319,11 +313,10 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = DDTracer.shared()
         let objcSpanContext = DDSpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, isKept: true)
         )
 
         let objcWriter = DDW3CHTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 100),
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -343,7 +336,6 @@ class DDTracerTests: XCTestCase {
         )
 
         let objcWriter = DDW3CHTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 0),
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -361,7 +353,6 @@ class DDTracerTests: XCTestCase {
         let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
 
         let objcValidWriter = DDW3CHTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 100),
             traceContextInjection: .all
         )
         let objcInvalidFormat = "foo"
