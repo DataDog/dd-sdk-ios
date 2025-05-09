@@ -5,7 +5,6 @@
  */
 
 import XCTest
-import DatadogObjc
 import TestUtilities
 @_spi(objc)
 @testable import DatadogRUM

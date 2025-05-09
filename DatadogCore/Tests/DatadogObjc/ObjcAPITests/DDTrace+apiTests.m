@@ -5,7 +5,7 @@
 */
 
 #import <XCTest/XCTest.h>
-@import DatadogObjc;
+@import DatadogTrace;
 
 @interface DDTrace_apiTests : XCTestCase
 @end

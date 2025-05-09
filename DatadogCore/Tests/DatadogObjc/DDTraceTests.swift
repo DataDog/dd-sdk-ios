@@ -7,9 +7,8 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
-@testable import DatadogTrace
 @_spi(objc)
-@testable import DatadogObjc
+@testable import DatadogTrace
 
 class DDTraceTests: XCTestCase {
     private var core: FeatureRegistrationCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -27,11 +26,11 @@ class DDTraceTests: XCTestCase {
     }
 
     func testWhenNotEnabled() {
-        XCTAssertTrue(DDTracer.shared().dd?.swiftTracer is DDNoopTracer)
+        XCTAssertTrue(objc_Tracer.shared().dd?.swiftTracer is DDNoopTracer)
     }
 
     func testWhenEnabled() {
-        DDTrace.enable(with: DDTraceConfiguration())
-        XCTAssertTrue(DDTracer.shared().dd?.swiftTracer is DatadogTracer)
+        objc_Trace.enable(with: objc_TraceConfiguration())
+        XCTAssertTrue(objc_Tracer.shared().dd?.swiftTracer is DatadogTracer)
     }
 }

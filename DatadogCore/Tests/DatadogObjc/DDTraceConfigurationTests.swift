@@ -8,12 +8,11 @@ import XCTest
 import TestUtilities
 @_spi(objc)
 import DatadogInternal
-@testable import DatadogTrace
 @_spi(objc)
-@testable import DatadogObjc
+@testable import DatadogTrace
 
 class DDTraceConfigurationTests: XCTestCase {
-    private var objc = DDTraceConfiguration()
+    private var objc = objc_TraceConfiguration()
     private var swift: Trace.Configuration { objc.swiftConfig }
 
     func testSampleRate() {
@@ -36,21 +35,21 @@ class DDTraceConfigurationTests: XCTestCase {
     }
 
     func testSetDDTraceURLSessionTracking() {
-        var tracking: DDTraceURLSessionTracking
+        var tracking: objc_TraceURLSessionTracking
 
-        tracking = DDTraceURLSessionTracking(firstPartyHostsTracing: .init(hosts: ["foo.com"]))
+        tracking = objc_TraceURLSessionTracking(firstPartyHostsTracing: .init(hosts: ["foo.com"]))
         objc.setURLSessionTracking(tracking)
         DDAssertReflectionEqual(swift.urlSessionTracking, .init(firstPartyHostsTracing: .trace(hosts: ["foo.com"])))
 
-        tracking = DDTraceURLSessionTracking(firstPartyHostsTracing: .init(hosts: ["foo.com"], sampleRate: 99))
+        tracking = objc_TraceURLSessionTracking(firstPartyHostsTracing: .init(hosts: ["foo.com"], sampleRate: 99))
         objc.setURLSessionTracking(tracking)
         DDAssertReflectionEqual(swift.urlSessionTracking, .init(firstPartyHostsTracing: .trace(hosts: ["foo.com"], sampleRate: 99)))
 
-        tracking = DDTraceURLSessionTracking(firstPartyHostsTracing: .init(hostsWithHeaderTypes: ["foo.com": [.b3, .datadog]]))
+        tracking = objc_TraceURLSessionTracking(firstPartyHostsTracing: .init(hostsWithHeaderTypes: ["foo.com": [.b3, .datadog]]))
         objc.setURLSessionTracking(tracking)
         DDAssertReflectionEqual(swift.urlSessionTracking, .init(firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: ["foo.com": [.b3, .datadog]])))
 
-        tracking = DDTraceURLSessionTracking(firstPartyHostsTracing: .init(hostsWithHeaderTypes: ["foo.com": [.b3, .datadog]], sampleRate: 99))
+        tracking = objc_TraceURLSessionTracking(firstPartyHostsTracing: .init(hostsWithHeaderTypes: ["foo.com": [.b3, .datadog]], sampleRate: 99))
         objc.setURLSessionTracking(tracking)
         DDAssertReflectionEqual(swift.urlSessionTracking, .init(firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: ["foo.com": [.b3, .datadog]], sampleRate: 99)))
     }
