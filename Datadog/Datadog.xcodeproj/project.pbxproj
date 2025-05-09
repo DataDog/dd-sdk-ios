@@ -274,8 +274,6 @@
 		11EA5C222DC27F7600E8DFA2 /* Logs+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C1D2DC27F7600E8DFA2 /* Logs+objc.swift */; };
 		11EA5C252DC288DD00E8DFA2 /* RUM+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C232DC288DD00E8DFA2 /* RUM+objc.swift */; };
 		11EA5C272DC288DD00E8DFA2 /* RUM+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C232DC288DD00E8DFA2 /* RUM+objc.swift */; };
-		11EA5C2A2DC2898A00E8DFA2 /* RUMDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C292DC2898A00E8DFA2 /* RUMDataModels+objc.swift */; };
-		11EA5C2B2DC2898A00E8DFA2 /* RUMDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C292DC2898A00E8DFA2 /* RUMDataModels+objc.swift */; };
 		11EA5C2D2DC3CCA500E8DFA2 /* DatadogConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C2C2DC3CC9900E8DFA2 /* DatadogConfiguration.swift */; };
 		11EA5C2E2DC3CCA500E8DFA2 /* DatadogConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C2C2DC3CC9900E8DFA2 /* DatadogConfiguration.swift */; };
 		11EA5C332DC5077500E8DFA2 /* InternalLogger+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C322DC5077000E8DFA2 /* InternalLogger+objc.swift */; };
@@ -286,6 +284,8 @@
 		11F55FD52DCBB61A00DE4944 /* TracingHeaderType+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C2F2DC4FE4500E8DFA2 /* TracingHeaderType+objc.swift */; };
 		11F55FD62DCBBAD700DE4944 /* DDURLSessionInstrumentationTests+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C1890132ABDE99200CE9E73 /* DDURLSessionInstrumentationTests+apiTests.m */; };
 		11F55FD72DCBBAD700DE4944 /* DDURLSessionInstrumentationTests+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C1890132ABDE99200CE9E73 /* DDURLSessionInstrumentationTests+apiTests.m */; };
+		11F55FD92DCE183500DE4944 /* RUMDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FD82DCE183500DE4944 /* RUMDataModels+objc.swift */; };
+		11F55FDA2DCE183500DE4944 /* RUMDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FD82DCE183500DE4944 /* RUMDataModels+objc.swift */; };
 		1434A4612B7F73110072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
 		1434A4622B7F73110072E3BB /* OpenTelemetryApi.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1434A4632B7F73170072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
@@ -2384,10 +2384,10 @@
 		11EA5C1D2DC27F7600E8DFA2 /* Logs+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logs+objc.swift"; sourceTree = "<group>"; };
 		11EA5C1E2DC27F7600E8DFA2 /* LogsDataModels+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LogsDataModels+objc.swift"; sourceTree = "<group>"; };
 		11EA5C232DC288DD00E8DFA2 /* RUM+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUM+objc.swift"; sourceTree = "<group>"; };
-		11EA5C292DC2898A00E8DFA2 /* RUMDataModels+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objc.swift"; sourceTree = "<group>"; };
 		11EA5C2C2DC3CC9900E8DFA2 /* DatadogConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogConfiguration.swift; sourceTree = "<group>"; };
 		11EA5C2F2DC4FE4500E8DFA2 /* TracingHeaderType+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TracingHeaderType+objc.swift"; sourceTree = "<group>"; };
 		11EA5C322DC5077000E8DFA2 /* InternalLogger+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InternalLogger+objc.swift"; sourceTree = "<group>"; };
+		11F55FD82DCE183500DE4944 /* RUMDataModels+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objc.swift"; sourceTree = "<group>"; };
 		1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugOTelTracingViewController.swift; sourceTree = "<group>"; };
 		3C08F9CF2C2D652D002B0FF2 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
 		3C0CB3442C19A1ED003B0E9B /* WatchdogTerminationReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationReporter.swift; sourceTree = "<group>"; };
@@ -5497,7 +5497,6 @@
 			children = (
 				619F5CEA2BF5089B004BFE70 /* GlobalRUMAttributes.swift */,
 				D28FB6952DB7D3F000CD76D0 /* RUMDataModels.swift */,
-				11EA5C292DC2898A00E8DFA2 /* RUMDataModels+objc.swift */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -5700,6 +5699,7 @@
 		61E5333224B7A504003D6C4E /* DataModels */ = {
 			isa = PBXGroup;
 			children = (
+				11F55FD82DCE183500DE4944 /* RUMDataModels+objc.swift */,
 				618715F824DC13A100FC0F69 /* RUMDataModelsMapping.swift */,
 			);
 			path = DataModels;
@@ -8867,7 +8867,6 @@
 				614A708E2BF754D800D9AF42 /* ImmutableRequest.swift in Sources */,
 				D2160CF429C0EDFC00FAA9A5 /* UploadPerformancePreset.swift in Sources */,
 				D23039E1298D5236001A1FA3 /* AppState.swift in Sources */,
-				11EA5C2B2DC2898A00E8DFA2 /* RUMDataModels+objc.swift in Sources */,
 				D2DE63532A30A7CA00441A54 /* CoreRegistry.swift in Sources */,
 				E2AA55EA2C32C76A002FEF28 /* WatchKitExtensions.swift in Sources */,
 				D2EBEE2829BA160F00B15732 /* W3CHTTPHeadersWriter.swift in Sources */,
@@ -8983,6 +8982,7 @@
 				D224430529E9588500274EC7 /* TelemetryReceiver.swift in Sources */,
 				D23F8E7029DDCD28001CFAE8 /* URLSessionRUMResourcesHandler.swift in Sources */,
 				965497062D761FCB006428EE /* SwiftUIViewNameExtractor.swift in Sources */,
+				11F55FDA2DCE183500DE4944 /* RUMDataModels+objc.swift in Sources */,
 				D23F8E7129DDCD28001CFAE8 /* RUMEventBuilder.swift in Sources */,
 				D23F8E7229DDCD28001CFAE8 /* ErrorMessageReceiver.swift in Sources */,
 				D23F8E7329DDCD28001CFAE8 /* SwiftUIActionModifier.swift in Sources */,
@@ -9423,6 +9423,7 @@
 				D224430429E9588100274EC7 /* TelemetryReceiver.swift in Sources */,
 				D29A9F5729DD85BB005C54A4 /* URLSessionRUMResourcesHandler.swift in Sources */,
 				965497052D761FCB006428EE /* SwiftUIViewNameExtractor.swift in Sources */,
+				11F55FD92DCE183500DE4944 /* RUMDataModels+objc.swift in Sources */,
 				D29A9F7C29DD85BB005C54A4 /* RUMEventBuilder.swift in Sources */,
 				D29A9F8829DD85BB005C54A4 /* ErrorMessageReceiver.swift in Sources */,
 				D29A9F8729DD85BB005C54A4 /* SwiftUIActionModifier.swift in Sources */,
@@ -9945,7 +9946,6 @@
 				D2DE63542A30A7CA00441A54 /* CoreRegistry.swift in Sources */,
 				E2AA55EC2C32C78B002FEF28 /* WatchKitExtensions.swift in Sources */,
 				D2EBEE3629BA161100B15732 /* W3CHTTPHeadersWriter.swift in Sources */,
-				11EA5C2A2DC2898A00E8DFA2 /* RUMDataModels+objc.swift in Sources */,
 				D2DA236D298D57AA00C6C7E6 /* DeviceInfo.swift in Sources */,
 				D2EBEE3129BA161100B15732 /* B3HTTPHeadersReader.swift in Sources */,
 				96155A3F2D7F013A0029034E /* ReflectionMirror.swift in Sources */,

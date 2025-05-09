@@ -13,7 +13,7 @@ import DatadogInternal
 @objcMembers
 @_spi(objc)
 public final class objc_URLSessionInstrumentationConfiguration: NSObject {
-    public internal(set) var swiftConfig: URLSessionInstrumentation.Configuration
+    internal var swiftConfig: URLSessionInstrumentation.Configuration
 
     public init(delegateClass: URLSessionDataDelegate.Type) {
         swiftConfig = .init(delegateClass: delegateClass)

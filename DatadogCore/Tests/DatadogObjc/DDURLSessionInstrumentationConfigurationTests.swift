@@ -10,7 +10,7 @@ import DatadogInternal
 @_spi(objc)
 @testable import DatadogObjc
 @_spi(objc)
-import DatadogCore
+@testable import DatadogCore
 
 final class DDURLSessionInstrumentationConfigurationTests: XCTestCase {
     private var objc = objc_URLSessionInstrumentationConfiguration(delegateClass: MockDelegate.self)
