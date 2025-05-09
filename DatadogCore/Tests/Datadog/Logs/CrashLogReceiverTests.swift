@@ -23,9 +23,8 @@ class CrashLogReceiverTests: XCTestCase {
 
         // When
         core.send(
-            message: .baggage(
-                key: MessageBusSender.MessageKeys.crash,
-                value: MessageBusSender.Crash(
+            message: .payload(
+                Crash(
                     report: DDCrashReport.mockAny(),
                     context: CrashContext.mockWith(lastRUMViewEvent: nil)
                 )
@@ -268,8 +267,8 @@ class CrashLogReceiverTests: XCTestCase {
         // Then
         let log = try XCTUnwrap(core.events(ofType: LogEvent.self).first)
 
-        XCTAssertEqual((log.attributes.userAttributes["mock-string-attribute"] as? AnyCodable)?.value as? String, stringAttribute)
-        XCTAssertEqual((log.attributes.userAttributes["mock-bool-attribute"] as? AnyCodable)?.value as? Bool, boolAttribute)
+        XCTAssertEqual(log.attributes.userAttributes["mock-string-attribute"] as? String, stringAttribute)
+        XCTAssertEqual(log.attributes.userAttributes["mock-bool-attribute"] as? Bool, boolAttribute)
     }
 
     func testWhenSendingCrashWithLogMapper_itSendsModifiedCrash() throws {
