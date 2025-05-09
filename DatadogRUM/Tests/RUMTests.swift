@@ -416,7 +416,8 @@ class RUMTests: XCTestCase {
         RUM.enable(with: config, in: core)
 
         // Then
-        let context: RUMCoreContext? = try core.context.baggages["rum"]?.decode()
+        let context: RUMCoreContext? = core.context.additionalContext()
+
         XCTAssertNotNil(context)
         XCTAssertEqual(context?.applicationID, applicationID)
         XCTAssertEqual(context?.sessionID, sessionID.toRUMDataFormat)

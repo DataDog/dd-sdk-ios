@@ -314,7 +314,7 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 
     func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
-        contextProvider.write { $0.additionalContext[Context.key] = context() }
+        contextProvider.write { $0.set(additionalContext: context()) }
     }
 
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {

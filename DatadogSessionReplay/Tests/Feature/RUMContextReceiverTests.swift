@@ -14,33 +14,21 @@ import DatadogInternal
 class RUMContextReceiverTests: XCTestCase {
     private let receiver = RUMContextReceiver()
 
-    internal struct RUMContextMock: Encodable {
-        enum CodingKeys: String, CodingKey {
-            case applicationID = "application.id"
-            case sessionID = "session.id"
-            case viewID = "view.id"
-            case viewServerTimeOffset = "server_time_offset"
-        }
-
-        let applicationID: String
-        let sessionID: String
-        let viewID: String?
-        let viewServerTimeOffset: TimeInterval?
-    }
-
     func testWhenMessageContainsNonEmptyRUMBaggage_itNotifiesRUMContext() throws {
         // Given
         let core = PassthroughCoreMock()
-        let coreContext: DatadogContext = .mockWith(baggages: [
-            RUMContext.key: .init(RUMContextMock(
-                applicationID: "app-id",
-                sessionID: "session-id",
-                viewID: "view-id",
-                viewServerTimeOffset: 123
-            ))
-        ])
+        let coreContext: DatadogContext = .mockWith(
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: "app-id",
+                    sessionID: "session-id",
+                    viewID: "view-id",
+                    viewServerTimeOffset: 123
+                )
+            ]
+        )
 
-        var rumContext: RUMContext?
+        var rumContext: RUMCoreContext?
         receiver.observe(on: NoQueue()) { context in
             rumContext = context
         }
@@ -60,25 +48,29 @@ class RUMContextReceiverTests: XCTestCase {
     func testWhenSucceedingMessagesContainDifferentRUMBaggages_itNotifiesRUMContextChange() throws {
         // Given
         let core = PassthroughCoreMock()
-        let coreContext1: DatadogContext = .mockWith(baggages: [
-            RUMContext.key: .init(RUMContextMock(
-                applicationID: "app-id-1",
-                sessionID: "session-id-1",
-                viewID: "view-id-1",
-                viewServerTimeOffset: 123
-            ))
-        ])
+        let coreContext1: DatadogContext = .mockWith(
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: "app-id-1",
+                    sessionID: "session-id-1",
+                    viewID: "view-id-1",
+                    viewServerTimeOffset: 123
+                )
+            ]
+        )
 
-        let coreContext2: DatadogContext = .mockWith(baggages: [
-            RUMContext.key: .init(RUMContextMock(
-                applicationID: "app-id-2",
-                sessionID: "session-id-2",
-                viewID: "view-id-2",
-                viewServerTimeOffset: 345
-            ))
-        ])
+        let coreContext2: DatadogContext = .mockWith(
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: "app-id-2",
+                    sessionID: "session-id-2",
+                    viewID: "view-id-2",
+                    viewServerTimeOffset: 345
+                )
+            ]
+        )
 
-        var rumContexts: [RUMContext] = []
+        var rumContexts: [RUMCoreContext] = []
         receiver.observe(on: NoQueue()) { context in
             context.flatMap { rumContexts.append($0) }
         }
@@ -106,25 +98,29 @@ class RUMContextReceiverTests: XCTestCase {
     func testWhenSucceedingMessagesContainSameRUMBaggages_itNotifiesRUMContextChangeOnce() throws {
         // Given
         let core = PassthroughCoreMock()
-        let coreContext1: DatadogContext = .mockWith(baggages: [
-            RUMContext.key: .init(RUMContextMock(
-                applicationID: "app-id",
-                sessionID: "session-id",
-                viewID: "view-id",
-                viewServerTimeOffset: 123
-            ))
-        ])
+        let coreContext1: DatadogContext = .mockWith(
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: "app-id",
+                    sessionID: "session-id",
+                    viewID: "view-id",
+                    viewServerTimeOffset: 123
+                )
+            ]
+        )
 
-        let coreContext2: DatadogContext = .mockWith(baggages: [
-            RUMContext.key: .init(RUMContextMock(
-                applicationID: "app-id",
-                sessionID: "session-id",
-                viewID: "view-id",
-                viewServerTimeOffset: 123
-            ))
-        ])
+        let coreContext2: DatadogContext = .mockWith(
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: "app-id",
+                    sessionID: "session-id",
+                    viewID: "view-id",
+                    viewServerTimeOffset: 123
+                )
+            ]
+        )
 
-        var rumContexts: [RUMContext] = []
+        var rumContexts: [RUMCoreContext] = []
         receiver.observe(on: NoQueue()) { context in
             context.flatMap { rumContexts.append($0) }
         }
@@ -148,18 +144,20 @@ class RUMContextReceiverTests: XCTestCase {
     func testWhenMessageContainsNoRUMBaggage_itResetRUMContext() throws {
         // Given
         let core = PassthroughCoreMock()
-        let coreContext1: DatadogContext = .mockWith(baggages: [
-            RUMContext.key: .init(RUMContextMock(
-                applicationID: "app-id",
-                sessionID: "session-id",
-                viewID: "view-id",
-                viewServerTimeOffset: 123
-            ))
-        ])
+        let coreContext1: DatadogContext = .mockWith(
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: "app-id",
+                    sessionID: "session-id",
+                    viewID: "view-id",
+                    viewServerTimeOffset: 123
+                )
+            ]
+        )
 
         let coreContext2: DatadogContext = .mockWith()
 
-        var rumContext: RUMContext? = .mockAny()
+        var rumContext: RUMCoreContext? = .mockAny()
         receiver.observe(on: NoQueue()) { context in
             rumContext = context
         }
@@ -182,48 +180,6 @@ class RUMContextReceiverTests: XCTestCase {
         XCTAssertNil(rumContext)
     }
 
-    func testWhenMessageContainsMalformedRUMBaggage_itSendsTelemetry() throws {
-        // Given
-        let telemetryReceiver = TelemetryReceiverMock()
-        let core = PassthroughCoreMock(
-            messageReceiver: telemetryReceiver
-        )
-
-        let coreContext1: DatadogContext = .mockWith(baggages: [
-            RUMContext.key: .init(RUMContextMock(
-                applicationID: "app-id-1",
-                sessionID: "session-id-1",
-                viewID: "view-id-1",
-                viewServerTimeOffset: 123
-            ))
-        ])
-
-        let coreContext2: DatadogContext = .mockWith(baggages: [
-            RUMContext.key: .init("malformed RUM context")
-        ])
-
-        var rumContext: RUMContext? = .mockAny()
-        receiver.observe(on: NoQueue()) { context in
-            rumContext = context
-        }
-
-        // When
-        XCTAssert(
-            receiver.receive(message: .context(coreContext1), from: core)
-        )
-
-        // When
-        XCTAssert(
-            receiver.receive(message: .context(coreContext2), from: core)
-        )
-
-        // Then
-        XCTAssertNil(rumContext)
-
-        let error = try XCTUnwrap(telemetryReceiver.messages.first?.asError)
-        XCTAssert(error.message.contains("Fails to decode RUM context from Session Replay - typeMismatch"))
-    }
-
     func testWhenMessageIsNotContext_itReturnsFalse() throws {
         // Given
         let expectation = expectation(description: "observe not called")
@@ -236,7 +192,7 @@ class RUMContextReceiverTests: XCTestCase {
 
         // When
         XCTAssertFalse(
-            receiver.receive(message: .baggage(key: "key", value: "value"), from: core)
+            receiver.receive(message: .payload("value"), from: core)
         )
 
         // Then

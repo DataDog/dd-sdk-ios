@@ -17,24 +17,3 @@ internal struct SpanCoreContext: Encodable {
     let traceID: String?
     let spanID: String?
 }
-
-/// The RUM context received from `DatadogCore`.
-internal struct RUMContext: Codable {
-    static let key = "rum"
-
-    enum CodingKeys: String, CodingKey {
-        case applicationID = "application.id"
-        case sessionID = "session.id"
-        case viewID = "view.id"
-        case userActionID = "user_action.id"
-    }
-
-    /// Current RUM application ID - standard UUID string, lowecased.
-    let applicationID: String
-    /// Current RUM session ID - standard UUID string, lowecased.
-    let sessionID: String
-    /// Current RUM view ID - standard UUID string, lowecased. It can be empty when view is being loaded.
-    let viewID: String?
-    /// The ID of current RUM action (standard UUID `String`, lowercased).
-    let userActionID: String?
-}

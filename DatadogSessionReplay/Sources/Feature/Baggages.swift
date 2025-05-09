@@ -17,24 +17,3 @@ internal enum RUMDependency {
     /// They key referencing a `[String: Int64]` dictionary of viewIDs and associated records count.
     static let recordsCountByViewID = "sr_records_count_by_view_id"
 }
-
-/// The RUM context received from `DatadogCore`.
-internal struct RUMContext: Codable, Equatable {
-    static let key = "rum"
-
-    enum CodingKeys: String, CodingKey {
-        case applicationID = "application.id"
-        case sessionID = "session.id"
-        case viewID = "view.id"
-        case viewServerTimeOffset = "server_time_offset"
-    }
-
-    /// Current RUM application ID - standard UUID string, lowecased.
-    let applicationID: String
-    /// Current RUM session ID - standard UUID string, lowecased.
-    let sessionID: String
-    /// Current RUM view ID - standard UUID string, lowecased. It can be empty when view is being loaded.
-    let viewID: String?
-    /// Current view related server time offset
-    let viewServerTimeOffset: TimeInterval?
-}

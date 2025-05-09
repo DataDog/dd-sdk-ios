@@ -14,7 +14,7 @@ import DatadogInternal
 @testable import DatadogSessionReplay
 
 class SegmentRequestBuilderTests: XCTestCase {
-    private let rumContext: RUMContext = .mockRandom() // all records must reference the same RUM context
+    private let rumContext: RUMCoreContext = .mockRandom() // all records must reference the same RUM context
     private var mockEvents: [Event] {
         let records = [
             EnrichedRecord(context: .mockWith(rumContext: self.rumContext), records: .mockRandom(count: 5)),
@@ -139,8 +139,8 @@ class SegmentRequestBuilderTests: XCTestCase {
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()
 
-        let context0: RUMContext = .mockRandom()
-        let context1: RUMContext = .mockRandom()
+        let context0: RUMCoreContext = .mockRandom()
+        let context1: RUMCoreContext = .mockRandom()
         let events = try [
             EnrichedRecord(context: .mockWith(rumContext: context0), records: .mockRandom(count: 5)),
             EnrichedRecord(context: .mockWith(rumContext: context0), records: .mockRandom(count: 10)),
