@@ -90,7 +90,7 @@ class TelemetryReceiverTests: XCTestCase {
     func testSendTelemetryDebug_withRUMContext() {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
-        featureScope.contextMock.additionalContext = [RUMFeature.name: rumContext]
+        featureScope.contextMock.set(additionalContext: rumContext)
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
 
         // When
@@ -110,7 +110,7 @@ class TelemetryReceiverTests: XCTestCase {
     func testSendTelemetryError_withRUMContext() throws {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
-        featureScope.contextMock.additionalContext = [RUMFeature.name: rumContext]
+        featureScope.contextMock.set(additionalContext: rumContext)
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
 
         // When
@@ -257,16 +257,20 @@ class TelemetryReceiverTests: XCTestCase {
         let telemetry = TelemetryMock(with: receiver)
         let applicationId: String = .mockRandom()
 
-        featureScope.contextMock.additionalContext[RUMFeature.name] = RUMCoreContext(
-            applicationID: applicationId,
-            sessionID: .mockRandom()
+        featureScope.contextMock.set(
+            additionalContext: RUMCoreContext(
+                applicationID: applicationId,
+                sessionID: .mockRandom()
+            )
         )
         telemetry.debug(id: "0", message: "telemetry debug")
 
         // When
-        featureScope.contextMock.additionalContext[RUMFeature.name] = RUMCoreContext(
-            applicationID: applicationId,
-            sessionID: .mockRandom()
+        featureScope.contextMock.set(
+            additionalContext: RUMCoreContext(
+                applicationID: applicationId,
+                sessionID: .mockRandom()
+            )
         )
         telemetry.debug(id: "0", message: "telemetry debug")
 
@@ -429,7 +433,7 @@ class TelemetryReceiverTests: XCTestCase {
         let rumContext: RUMCoreContext = .mockRandom()
         let deviceMock: DeviceInfo = .mockRandom()
         featureScope.contextMock = .mockWith(device: deviceMock)
-        featureScope.contextMock.additionalContext = [RUMFeature.name: rumContext]
+        featureScope.contextMock.set(additionalContext: rumContext)
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
 
         // When
@@ -455,7 +459,7 @@ class TelemetryReceiverTests: XCTestCase {
     func testSendTelemetryMetricWithRUMContextAndSessionIDOverride() {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
-        featureScope.contextMock.additionalContext = [RUMFeature.name: rumContext]
+        featureScope.contextMock.set(additionalContext: rumContext)
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
         let sessionIDOverride = "session-id-override"
 

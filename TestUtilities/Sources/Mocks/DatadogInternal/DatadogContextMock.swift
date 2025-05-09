@@ -70,12 +70,8 @@ extension DatadogContext: AnyMockable, RandomMockable {
             baggages: baggages
         )
 
-        additionalContext.forEach { context.set(context: $0) }
+        additionalContext.forEach { context.set(additionalContext: $0) }
         return context
-    }
-
-    public mutating func set<Context>(context: Context) where Context: AdditionalContext {
-        additionalContext[Context.key] = context
     }
 
     public static func mockRandom() -> DatadogContext {

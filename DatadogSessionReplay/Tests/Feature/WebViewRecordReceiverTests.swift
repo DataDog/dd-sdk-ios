@@ -68,7 +68,7 @@ class WebViewRecordReceiverTests: XCTestCase {
         let scope = FeatureScopeMock()
 
         // Given
-        XCTAssertNil(scope.contextMock.additionalContext["rum"])
+        XCTAssertNil(scope.contextMock.additionalContext(ofType: RUMCoreContext.self))
 
         let receiver = WebViewRecordReceiver(scope: scope)
 
