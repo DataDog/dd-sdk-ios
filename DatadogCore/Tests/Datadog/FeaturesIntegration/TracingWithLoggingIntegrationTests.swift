@@ -17,7 +17,9 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        core = PassthroughCoreMock(messageReceiver: LogMessageReceiver.mockAny())
+        core = PassthroughCoreMock(
+            messageReceiver: TraceLogMessageReceiver(logEventMapper: nil)
+        )
     }
 
     override func tearDown() {
