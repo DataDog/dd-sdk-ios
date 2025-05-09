@@ -53,6 +53,17 @@ public protocol DatadogCoreProtocol: AnyObject, MessageSending, AdditionalContex
     func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature
 }
 
+extension DatadogCoreProtocol {
+    /// Returns a `DatadogFeature` conforming type from the
+    /// Feature registry.
+    ///
+    /// - Parameter type: The Feature instance type.
+    /// - Returns: The Feature if any.
+    public func get<T>(feature type: T.Type = T.self) -> T? where T: DatadogFeature {
+        feature(named: T.name, type: type)
+    }
+}
+
 public protocol MessageSending {
     /// Sends a message on the bus shared by features registered to the sam core.
     ///
@@ -64,6 +75,16 @@ public protocol MessageSending {
     ///   - fallback: The fallback closure to call when the message could not be
     ///               processed by any Features on the bus.
     func send(message: FeatureMessage, else fallback: @escaping () -> Void)
+}
+
+extension MessageSending {
+    /// Sends a message on the bus shared by features registered to the same core.
+    ///
+    /// - Parameters:
+    ///   - message: The message.
+    public func send(message: FeatureMessage) {
+        send(message: message, else: {})
+    }
 }
 
 @available(*, deprecated, message: "FeatureBaggage has performance implications and will be removed.")
@@ -100,93 +121,82 @@ public protocol BaggageSharing {
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String)
 }
 
-extension DatadogCoreProtocol {
-    /// Returns a `DatadogFeature` conforming type from the
-    /// Feature registry.
-    ///
-    /// - Parameter type: The Feature instance type.
-    /// - Returns: The Feature if any.
-    public func get<T>(feature type: T.Type = T.self) -> T? where T: DatadogFeature {
-        feature(named: T.name, type: type)
-    }
-}
-
-extension MessageSending {
-    /// Sends a message on the bus shared by features registered to the same core.
-    ///
-    /// - Parameters:
-    ///   - message: The message.
-    public func send(message: FeatureMessage) {
-        send(message: message, else: {})
-    }
-}
-
 public protocol AdditionalContextSharing {
-    /// Sets addtional context for sharing data through `DatadogContext`.
+    /// Sets additional context for sharing data through `DatadogContext`.
     ///
-    /// This method provides a passive communication chanel between Features of the Core.
+    /// This method provides a passive communication channel between Features of the Core.
     /// For an active Feature-to-Feature communication, please use the `send(message:)`
     /// method.
     ///
-    /// Setting context will update the Core Context's addtional property that is shared across Features.
+    /// Setting context will update the Core Context's additional property that is shared across Features.
     /// In the following examples, the Feature `foo` will set an value and a second
     /// Feature `bar` will read it through the event write context.
     ///
+    ///     // MyContext.swift
+    ///     struct MyContext: AdditionalContext {
+    ///         static let key = "my-context"
+    ///         let value: String
+    ///     }
+    ///
     ///     // Foo.swift
-    ///     core.set(context: { "value" }, forKey: "key")
+    ///     core.set(context: { MyContext(value: "value") })
     ///
     ///     // Bar.swift
     ///     core.scope(for: "bar").eventWriteContext { context, writer in
-    ///         if let value = context.additionalContext["key"] as? String {
+    ///         if let value: MyContext = context.additionalContext() {
     ///             // If success, handle the `value`.
     ///         }
     ///     }
     ///
     /// - Parameters:
-    ///   - context: The addtional context to set.
-    ///   - key: The context's key.
-    func set(context: @escaping () -> Any?, forKey key: String)
+    ///   - context: The additional context to set.
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext
 }
 
 extension AdditionalContextSharing {
-    /// Sets addtional context for sharing data through `DatadogContext`.
+    /// Sets additional context for sharing data through `DatadogContext`.
     ///
-    /// This method provides a passive communication chanel between Features of the Core.
+    /// This method provides a passive communication channel between Features of the Core.
     /// For an active Feature-to-Feature communication, please use the `send(message:)`
     /// method.
     ///
-    /// Setting context will update the Core Context's addtional property that is shared across Features.
+    /// Setting context will update the Core Context's additional property that is shared across Features.
     /// In the following examples, the Feature `foo` will set an value and a second
     /// Feature `bar` will read it through the event write context.
     ///
+    ///     // MyContext.swift
+    ///     struct MyContext: AdditionalContext {
+    ///         static let key = "my-context"
+    ///         let value: String
+    ///     }
+    ///
     ///     // Foo.swift
-    ///     core.set(context: { "value" }, forKey: "key")
+    ///     core.set(context: MyContext(value: "value"))
     ///
     ///     // Bar.swift
     ///     core.scope(for: "bar").eventWriteContext { context, writer in
-    ///         if let value = context.additionalContext["key"] as? String {
+    ///         if let value: MyContext = context.additionalContext() {
     ///             // If success, handle the `value`.
     ///         }
     ///     }
     ///
     /// - Parameters:
-    ///   - context: The addtional context to set.
-    ///   - key: The context's key.
-    public func set(context: Any?, forKey key: String) {
-        set(context: { context }, forKey: key)
+    ///   - context: The additional context to set.
+    public func set<Context>(context: Context?) where Context: AdditionalContext {
+        set(context: { context })
     }
 
-    /// Removes addtional context from `DatadogContext`.
+    /// Removes additional context from `DatadogContext`.
     ///
-    /// This method provides a passive communication chanel between Features of the Core.
+    /// This method provides a passive communication channel between Features of the Core.
     /// For an active Feature-to-Feature communication, please use the `send(message:)`
     /// method.
     ///
-    /// Removing context will update the Core Context's addtional property that is shared across Features.
+    /// Removing context will update the Core Context's additional property that is shared across Features.
     /// - Parameters:
-    ///   - key: The context's key.
-    public func removeContext(forKey key: String) {
-        set(context: { nil }, forKey: key)
+    ///   - type: The context's type to remove..
+    public func removeContext<Context>(ofType type: Context.Type) where Context: AdditionalContext {
+        set(context: { nil as Context? })
     }
 }
 
@@ -385,7 +395,7 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     @available(*, deprecated, message: "FeatureBaggage has performance implications and will be removed.")
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) { }
     /// no-op
-    public func set(context: @escaping () -> Any?, forKey key: String) { }
+    public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { }
     /// no-op
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
     /// no-op
@@ -408,7 +418,7 @@ public struct NOPFeatureScope: FeatureScope {
     @available(*, deprecated, message: "FeatureBaggage has performance implications and will be removed.")
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) { }
     /// no-op
-    public func set(context: @escaping () -> Any?, forKey key: String) { }
+    public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { }
     /// no-op
     public func set(anonymousId: String?) { }
 }

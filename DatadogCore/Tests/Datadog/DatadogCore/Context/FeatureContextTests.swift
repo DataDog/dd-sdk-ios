@@ -27,13 +27,17 @@ class FeatureContextTests: XCTestCase {
 
         defer { temporaryCoreDirectory.delete() }
 
+        struct ContextMock: AdditionalContext {
+            static let key: String = "test"
+            let attribute: [String: String]
+        }
+
         // When
         let attributes = ["key": "value"]
-        core.set(context: attributes, forKey: "test")
+        core.set(context: ContextMock(attribute: attributes))
 
         // Then
         let context = core.contextProvider.read()
-        let testContext = try XCTUnwrap(context.additionalContext["test"] as? [String: String])
-        XCTAssertEqual(testContext, attributes)
+        XCTAssertEqual(context.additionalContext(ofType: ContextMock.self)?.attribute, attributes)
     }
 }

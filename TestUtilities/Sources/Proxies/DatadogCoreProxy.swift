@@ -107,8 +107,8 @@ public final class DatadogCoreProxy: DatadogCoreProtocol {
         core.set(baggage: baggage, forKey: key)
     }
 
-    public func set(context: @escaping () -> Any?, forKey key: String) {
-        core.set(context: context, forKey: key)
+    public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
+        core.set(context: context)
     }
 
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
@@ -168,8 +168,8 @@ private struct FeatureScopeProxy: FeatureScope {
         proxy.set(baggage: baggage, forKey: key)
     }
 
-    func set(context: @escaping () -> Any?, forKey key: String) {
-        proxy.set(context: context, forKey: key)
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
+        proxy.set(context: context)
     }
 
     func set(anonymousId: String?) {

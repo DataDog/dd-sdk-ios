@@ -108,7 +108,7 @@ public struct DatadogContext {
     public var isLowPowerModeEnabled = false
 
     /// Additional context that can set from `core` instance.
-    public var additionalContext: [String: Any] = [:]
+    public var additionalContext: [String: AdditionalContext] = [:]
 
     /// Type-less context baggages.
     @available(*, deprecated, renamed: "additionalContext", message: "`FeatureBaggage` is deprecated in favor of strongly typed `additionalContext`.")
@@ -142,7 +142,7 @@ public struct DatadogContext {
         carrierInfo: CarrierInfo? = nil,
         batteryStatus: BatteryStatus? = nil,
         isLowPowerModeEnabled: Bool = false,
-        additionalContext: [String: Any] = [:],
+        additionalContext: [String: AdditionalContext] = [:],
         baggages: [String: FeatureBaggage] = [:]
     ) {
         self.site = site
@@ -175,4 +175,20 @@ public struct DatadogContext {
         self.baggages = baggages
     }
     // swiftlint:enable function_default_parameter_at_end
+}
+
+/// Defines an additional context value type associated to a key.
+public protocol AdditionalContext {
+    /// The additional context key.
+    static var key: String { get }
+}
+
+extension DatadogContext {
+    /// Gets an additional context value.
+    ///
+    /// - Parameter type: The value type.
+    /// - Returns: The `Context` if found
+    public func additionalContext<Context>(ofType type: Context.Type = Context.self) -> Context? where Context: AdditionalContext {
+        additionalContext[type.key] as? Context
+    }
 }

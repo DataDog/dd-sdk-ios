@@ -313,8 +313,8 @@ extension DatadogCore: DatadogCoreProtocol {
         contextProvider.write { $0.baggages[key] = baggage() }
     }
 
-    func set(context: @escaping () -> Any?, forKey key: String) {
-        contextProvider.write { $0.additionalContext[key] = context() }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
+        contextProvider.write { $0.additionalContext[Context.key] = context() }
     }
 
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
@@ -386,8 +386,8 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
         core?.set(baggage: baggage, forKey: key)
     }
 
-    func set(context: @escaping () -> Any?, forKey key: String) {
-        core?.set(context: context, forKey: key)
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
+        core?.set(context: context)
     }
 
     func set(anonymousId: String?) {
@@ -496,8 +496,8 @@ extension DatadogCore: Flushable {
         // follow our design choices around SDK core's threading.
 
         // Reset baggages that need not be persisted across flushes.
-        set(baggage: nil, forKey: LaunchReport.baggageKey)
-        set(context: nil, forKey: LaunchReport.baggageKey)
+        set(baggage: nil, forKey: LaunchReport.key)
+        removeContext(ofType: LaunchReport.self)
 
         let features = features.values.compactMap { $0 as? Flushable }
 
