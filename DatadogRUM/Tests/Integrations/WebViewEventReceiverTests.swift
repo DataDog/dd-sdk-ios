@@ -282,7 +282,7 @@ class WebViewEventReceiverTests: XCTestCase {
 
     func testGivenRUMContextNotAvailable_whenReceivingWebEvent_itIsDropped() throws {
         // Given
-        XCTAssertNil(featureScope.contextMock.additionalContext[RUMFeature.name])
+        XCTAssertNil(featureScope.contextMock.additionalContext(ofType: RUMCoreContext.self))
 
         let receiver = WebViewEventReceiver(
             featureScope: featureScope,

@@ -83,7 +83,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
     }
 
     public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
-        self.context.additionalContext[Context.key] = context()
+        self.context.set(additionalContext: context())
     }
 
     public func send(message: FeatureMessage, else fallback: () -> Void) {

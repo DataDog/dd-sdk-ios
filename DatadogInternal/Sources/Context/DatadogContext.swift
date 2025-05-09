@@ -108,7 +108,7 @@ public struct DatadogContext {
     public var isLowPowerModeEnabled = false
 
     /// Additional context that can set from `core` instance.
-    public var additionalContext: [String: AdditionalContext] = [:]
+    private var additionalContext: [String: AdditionalContext] = [:]
 
     /// Type-less context baggages.
     @available(*, deprecated, renamed: "additionalContext", message: "`FeatureBaggage` is deprecated in favor of strongly typed `additionalContext`.")
@@ -186,9 +186,15 @@ public protocol AdditionalContext {
 extension DatadogContext {
     /// Gets an additional context value.
     ///
-    /// - Parameter type: The value type.
+    /// - Parameter type: The additional context type.
     /// - Returns: The `Context` if found
     public func additionalContext<Context>(ofType type: Context.Type = Context.self) -> Context? where Context: AdditionalContext {
         additionalContext[type.key] as? Context
+    }
+
+    /// Gets an additional context value.
+    /// - Parameter context: The additional context.
+    public mutating func set<Context>(additionalContext context: Context?) where Context: AdditionalContext {
+        additionalContext[Context.key] = context
     }
 }
