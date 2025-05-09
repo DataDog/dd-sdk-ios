@@ -168,7 +168,7 @@ extension WatchdogTerminationMonitor: FeatureMessageReceiver {
 
         if currentState == .stopped {
             do {
-                guard let launchReport = try context.baggages[LaunchReport.baggageKey]?.decode(type: LaunchReport.self) else {
+                guard let launchReport = try context.baggages[LaunchReport.key]?.decode(type: LaunchReport.self) else {
                     return false
                 }
                 self.start(launchReport: launchReport)
