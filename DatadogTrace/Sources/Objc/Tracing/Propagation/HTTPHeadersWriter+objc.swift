@@ -7,16 +7,17 @@
 import Foundation
 import class DatadogInternal.HTTPHeadersWriter
 
-@objc
-public final class DDHTTPHeadersWriter: NSObject {
+@objc(DDHTTPHeadersWriter)
+@objcMembers
+@_spi(objc)
+public final class objc_HTTPHeadersWriter: NSObject {
     let swiftHTTPHeadersWriter: HTTPHeadersWriter
 
-    @objc public var traceHeaderFields: [String: String] {
+    public var traceHeaderFields: [String: String] {
         swiftHTTPHeadersWriter.traceHeaderFields
     }
 
-    @objc
-    public init(traceContextInjection: DDTraceContextInjection) {
+    public init(traceContextInjection: objc_TraceContextInjection) {
         swiftHTTPHeadersWriter = HTTPHeadersWriter(traceContextInjection: traceContextInjection.swiftType)
     }
 }

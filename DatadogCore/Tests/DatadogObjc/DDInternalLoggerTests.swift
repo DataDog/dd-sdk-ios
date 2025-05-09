@@ -9,7 +9,6 @@ import TestUtilities
 @_spi(objc)
 @testable import DatadogInternal
 @testable import DatadogCore
-@testable import DatadogObjc
 
 class DDInternalLoggerTests: XCTestCase {
     let telemetry = TelemetryReceiverMock()

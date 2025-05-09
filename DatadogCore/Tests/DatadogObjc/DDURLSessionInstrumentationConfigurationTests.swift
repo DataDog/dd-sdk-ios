@@ -8,8 +8,6 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 @_spi(objc)
-@testable import DatadogObjc
-@_spi(objc)
 @testable import DatadogCore
 
 final class DDURLSessionInstrumentationConfigurationTests: XCTestCase {

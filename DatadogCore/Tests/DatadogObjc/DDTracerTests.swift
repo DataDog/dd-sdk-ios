@@ -9,10 +9,9 @@ import DatadogInternal
 import TestUtilities
 
 @testable import DatadogLogs
-@testable import DatadogTrace
 @testable import DatadogCore
 @_spi(objc)
-@testable import DatadogObjc
+@testable import DatadogTrace
 
 class DDTracerTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -34,18 +33,18 @@ class DDTracerTests: XCTestCase {
     }
 
     func testWhenSwiftTraceIsNotEnabled_thenObjcTracerIsNotRegistered() {
-        XCTAssertTrue(DDTracer.shared().dd?.swiftTracer is DDNoopTracer)
+        XCTAssertTrue(objc_Tracer.shared().dd?.swiftTracer is DDNoopTracer)
     }
 
     func testWhenSwiftTraceIsEnabled_thenObjcTracerIsRegistered() {
         Trace.enable(with: config)
-        XCTAssertTrue(DDTracer.shared().dd?.swiftTracer is DatadogTracer)
+        XCTAssertTrue(objc_Tracer.shared().dd?.swiftTracer is DatadogTracer)
     }
 
     func testSendingCustomizedSpans() throws {
         Trace.enable(with: config)
 
-        let objcTracer = DDTracer.shared()
+        let objcTracer = objc_Tracer.shared()
 
         let objcSpan1 = objcTracer.startSpan("operation")
         let objcSpan2 = objcTracer.startSpan(
@@ -136,7 +135,7 @@ class DDTracerTests: XCTestCase {
     func testSendingSpanLogs() throws {
         Logs.enable()
         Trace.enable(with: config)
-        let objcTracer = DDTracer.shared()
+        let objcTracer = objc_Tracer.shared()
 
         let objcSpan = objcTracer.startSpan("operation")
         objcSpan.log(["foo": NSString(string: "bar")], timestamp: Date.mockDecember15th2019At10AMUTC())
@@ -154,7 +153,7 @@ class DDTracerTests: XCTestCase {
     func testSendingSpanLogsWithErrorFromArguments() throws {
         Logs.enable()
         Trace.enable(with: config)
-        let objcTracer = DDTracer.shared()
+        let objcTracer = objc_Tracer.shared()
 
         let objcSpan = objcTracer.startSpan("operation")
         objcSpan.log(["foo": NSString(string: "bar")], timestamp: Date.mockDecember15th2019At10AMUTC())
@@ -175,7 +174,7 @@ class DDTracerTests: XCTestCase {
     func testSendingSpanLogsWithErrorFromNSError() throws {
         Logs.enable()
         Trace.enable(with: config)
-        let objcTracer = DDTracer.shared()
+        let objcTracer = objc_Tracer.shared()
 
         let objcSpan = objcTracer.startSpan("operation")
         objcSpan.log(["foo": NSString(string: "bar")], timestamp: Date.mockDecember15th2019At10AMUTC())
@@ -200,12 +199,12 @@ class DDTracerTests: XCTestCase {
 
     func testInjectingSpanContextToValidCarrierAndFormat() throws {
         Trace.enable(with: config)
-        let objcTracer = DDTracer.shared()
-        let objcSpanContext = DDSpanContextObjc(
+        let objcTracer = objc_Tracer.shared()
+        let objcSpanContext = objc_SpanContextObjc(
             swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, isKept: true)
         )
 
-        let objcWriter = DDHTTPHeadersWriter(
+        let objcWriter = objc_HTTPHeadersWriter(
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -221,12 +220,12 @@ class DDTracerTests: XCTestCase {
 
     func testInjectingRejectedSpanContextToValidCarrierAndFormat() throws {
         Trace.enable(with: config)
-        let objcTracer = DDTracer.shared()
-        let objcSpanContext = DDSpanContextObjc(
+        let objcTracer = objc_Tracer.shared()
+        let objcSpanContext = objc_SpanContextObjc(
             swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200)
         )
 
-        let objcWriter = DDHTTPHeadersWriter(
+        let objcWriter = objc_HTTPHeadersWriter(
             traceContextInjection: .sampled
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -236,10 +235,10 @@ class DDTracerTests: XCTestCase {
 
     func testInjectingSpanContextToInvalidCarrierOrFormat() throws {
         Trace.enable(with: config)
-        let objcTracer = DDTracer.shared()
-        let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
+        let objcTracer = objc_Tracer.shared()
+        let objcSpanContext = objc_SpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
 
-        let objcValidWriter = DDHTTPHeadersWriter(
+        let objcValidWriter = objc_HTTPHeadersWriter(
             traceContextInjection: .all
         )
         let objcInvalidFormat = "foo"
@@ -256,12 +255,12 @@ class DDTracerTests: XCTestCase {
 
     func testInjectingSpanContextToValidCarrierAndFormatForB3() throws {
         Trace.enable(with: config)
-        let objcTracer = DDTracer.shared()
-        let objcSpanContext = DDSpanContextObjc(
+        let objcTracer = objc_Tracer.shared()
+        let objcSpanContext = objc_SpanContextObjc(
             swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, isKept: true)
         )
 
-        let objcWriter = DDB3HTTPHeadersWriter(
+        let objcWriter = objc_B3HTTPHeadersWriter(
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -274,12 +273,12 @@ class DDTracerTests: XCTestCase {
 
     func testInjectingRejectedSpanContextToValidCarrierAndFormatForB3() throws {
         Trace.enable(with: config)
-        let objcTracer = DDTracer.shared()
-        let objcSpanContext = DDSpanContextObjc(
+        let objcTracer = objc_Tracer.shared()
+        let objcSpanContext = objc_SpanContextObjc(
             swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200)
         )
 
-        let objcWriter = DDB3HTTPHeadersWriter(
+        let objcWriter = objc_B3HTTPHeadersWriter(
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -292,10 +291,10 @@ class DDTracerTests: XCTestCase {
 
     func testInjectingSpanContextToInvalidCarrierOrFormatForB3() throws {
         Trace.enable(with: config)
-        let objcTracer = DDTracer.shared()
-        let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
+        let objcTracer = objc_Tracer.shared()
+        let objcSpanContext = objc_SpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
 
-        let objcValidWriter = DDB3HTTPHeadersWriter(
+        let objcValidWriter = objc_B3HTTPHeadersWriter(
             traceContextInjection: .all
         )
         let objcInvalidFormat = "foo"
@@ -312,12 +311,12 @@ class DDTracerTests: XCTestCase {
 
     func testInjectingSpanContextToValidCarrierAndFormatForW3C() throws {
         Trace.enable(with: config)
-        let objcTracer = DDTracer.shared()
-        let objcSpanContext = DDSpanContextObjc(
+        let objcTracer = objc_Tracer.shared()
+        let objcSpanContext = objc_SpanContextObjc(
             swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, isKept: true)
         )
 
-        let objcWriter = DDW3CHTTPHeadersWriter(
+        let objcWriter = objc_W3CHTTPHeadersWriter(
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -331,12 +330,12 @@ class DDTracerTests: XCTestCase {
 
     func testInjectingRejectedSpanContextToValidCarrierAndFormatForW3C() throws {
         Trace.enable(with: config)
-        let objcTracer = DDTracer.shared()
-        let objcSpanContext = DDSpanContextObjc(
+        let objcTracer = objc_Tracer.shared()
+        let objcSpanContext = objc_SpanContextObjc(
             swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200)
         )
 
-        let objcWriter = DDW3CHTTPHeadersWriter(
+        let objcWriter = objc_W3CHTTPHeadersWriter(
             traceContextInjection: .all
         )
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
@@ -350,10 +349,10 @@ class DDTracerTests: XCTestCase {
 
     func testInjectingSpanContextToInvalidCarrierOrFormatForW3C() throws {
         Trace.enable(with: config)
-        let objcTracer = DDTracer.shared()
-        let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
+        let objcTracer = objc_Tracer.shared()
+        let objcSpanContext = objc_SpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
 
-        let objcValidWriter = DDW3CHTTPHeadersWriter(
+        let objcValidWriter = objc_W3CHTTPHeadersWriter(
             traceContextInjection: .all
         )
         let objcInvalidFormat = "foo"
@@ -373,7 +372,7 @@ class DDTracerTests: XCTestCase {
     func testsWhenTagsDictionaryContainsInvalidKeys_thenThosesTagsAreDropped() throws {
         // Given
         Trace.enable(with: config)
-        let objcTracer = DDTracer.shared()
+        let objcTracer = objc_Tracer.shared()
 
         // When
         let tags = NSDictionary(

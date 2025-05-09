@@ -7,10 +7,11 @@
 import Foundation
 @_spi(objc)
 import DatadogInternal
-import DatadogTrace
 
+@objc(DDTraceConfiguration)
 @objcMembers
-public final class DDTraceConfiguration: NSObject {
+@_spi(objc)
+public final class objc_TraceConfiguration: NSObject {
     internal var swiftConfig: Trace.Configuration
 
     override public init() {
@@ -32,7 +33,7 @@ public final class DDTraceConfiguration: NSObject {
         get { swiftConfig.tags?.dd.objCAttributes }
     }
 
-    public func setURLSessionTracking(_ tracking: DDTraceURLSessionTracking) {
+    public func setURLSessionTracking(_ tracking: objc_TraceURLSessionTracking) {
         swiftConfig.urlSessionTracking = tracking.swiftConfig
     }
 
@@ -52,8 +53,10 @@ public final class DDTraceConfiguration: NSObject {
     }
 }
 
+@objc(DDTraceFirstPartyHostsTracing)
 @objcMembers
-public final class DDTraceFirstPartyHostsTracing: NSObject {
+@_spi(objc)
+public final class objc_TraceFirstPartyHostsTracing: NSObject {
     internal var swiftType: Trace.Configuration.URLSessionTracking.FirstPartyHostsTracing
 
     @_spi(objc)
@@ -77,53 +80,57 @@ public final class DDTraceFirstPartyHostsTracing: NSObject {
     }
 }
 
+@objc(DDTraceURLSessionTracking)
 @objcMembers
-public final class DDTraceURLSessionTracking: NSObject {
+@_spi(objc)
+public final class objc_TraceURLSessionTracking: NSObject {
     internal var swiftConfig: Trace.Configuration.URLSessionTracking
 
-    public init(firstPartyHostsTracing: DDTraceFirstPartyHostsTracing) {
+    public init(firstPartyHostsTracing: objc_TraceFirstPartyHostsTracing) {
         swiftConfig = .init(firstPartyHostsTracing: firstPartyHostsTracing.swiftType)
     }
 
-    public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: DDTraceFirstPartyHostsTracing) {
+    public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: objc_TraceFirstPartyHostsTracing) {
         swiftConfig.firstPartyHostsTracing = firstPartyHostsTracing.swiftType
     }
 }
 
+@objc(DDTrace)
 @objcMembers
 @_spi(objc)
-public final class DDTrace: NSObject {
-    public static func enable(with configuration: DDTraceConfiguration) {
+public final class objc_Trace: NSObject {
+    public static func enable(with configuration: objc_TraceConfiguration) {
         Trace.enable(with: configuration.swiftConfig)
     }
 }
 
+@objc(DDTracer)
 @objcMembers
 @_spi(objc)
-public final class DDTracer: NSObject, DatadogObjc.OTTracer {
+public final class objc_Tracer: NSObject, objc_OTTracer {
     // MARK: - Internal
 
-    internal let swiftTracer: DatadogTrace.OTTracer
+    internal let swiftTracer: OTTracer
 
-    internal init(swiftTracer: DatadogTrace.OTTracer) {
+    internal init(swiftTracer: OTTracer) {
         self.swiftTracer = swiftTracer
     }
 
     // MARK: - Public
 
-    public static func shared() -> DatadogObjc.OTTracer {
-        DDTracer(swiftTracer: Tracer.shared())
+    public static func shared() -> objc_OTTracer {
+        objc_Tracer(swiftTracer: Tracer.shared())
     }
 
-    public func startSpan(_ operationName: String) -> OTSpan {
-        return DDSpanObjc(
+    public func startSpan(_ operationName: String) -> objc_OTSpan {
+        return objc_SpanObjc(
             objcTracer: self,
             swiftSpan: swiftTracer.startSpan(operationName: operationName)
         )
     }
 
-    public func startSpan(_ operationName: String, tags: NSDictionary?) -> OTSpan {
-        return DDSpanObjc(
+    public func startSpan(_ operationName: String, tags: NSDictionary?) -> objc_OTSpan {
+        return objc_SpanObjc(
             objcTracer: self,
             swiftSpan: swiftTracer.startSpan(
                 operationName: operationName,
@@ -132,9 +139,9 @@ public final class DDTracer: NSObject, DatadogObjc.OTTracer {
         )
     }
 
-    public func startSpan(_ operationName: String, childOf parent: OTSpanContext?) -> OTSpan {
+    public func startSpan(_ operationName: String, childOf parent: objc_OTSpanContext?) -> objc_OTSpan {
         let ddspanContext = parent?.dd
-        return DDSpanObjc(
+        return objc_SpanObjc(
             objcTracer: self,
             swiftSpan: swiftTracer.startSpan(
                 operationName: operationName,
@@ -145,11 +152,11 @@ public final class DDTracer: NSObject, DatadogObjc.OTTracer {
 
     public func startSpan(
         _ operationName: String,
-        childOf parent: OTSpanContext?,
+        childOf parent: objc_OTSpanContext?,
         tags: NSDictionary?
-    ) -> OTSpan {
+    ) -> objc_OTSpan {
         let ddspanContext = parent?.dd
-        return DDSpanObjc(
+        return objc_SpanObjc(
             objcTracer: self,
             swiftSpan: swiftTracer.startSpan(
                 operationName: operationName,
@@ -161,12 +168,12 @@ public final class DDTracer: NSObject, DatadogObjc.OTTracer {
 
     public func startSpan(
         _ operationName: String,
-        childOf parent: OTSpanContext?,
+        childOf parent: objc_OTSpanContext?,
         tags: NSDictionary?,
         startTime: Date?
-    ) -> OTSpan {
+    ) -> objc_OTSpan {
         let ddspanContext = parent?.dd
-        return DDSpanObjc(
+        return objc_SpanObjc(
             objcTracer: self,
             swiftSpan: swiftTracer.startSpan(
                 operationName: operationName,
@@ -177,8 +184,8 @@ public final class DDTracer: NSObject, DatadogObjc.OTTracer {
         )
     }
 
-    public func inject(_ spanContext: OTSpanContext, format: String, carrier: Any) throws {
-        if let objcWriter = carrier as? DDHTTPHeadersWriter, format == OT.formatTextMap {
+    public func inject(_ spanContext: objc_OTSpanContext, format: String, carrier: Any) throws {
+        if let objcWriter = carrier as? objc_HTTPHeadersWriter, format == OT.formatTextMap {
             guard let ddspanContext = spanContext.dd else {
                 return
             }
@@ -186,7 +193,7 @@ public final class DDTracer: NSObject, DatadogObjc.OTTracer {
                 spanContext: ddspanContext.swiftSpanContext,
                 writer: objcWriter.swiftHTTPHeadersWriter
             )
-        } else if let objcWriter = carrier as? DDB3HTTPHeadersWriter, format == OT.formatTextMap {
+        } else if let objcWriter = carrier as? objc_B3HTTPHeadersWriter, format == OT.formatTextMap {
             guard let ddspanContext = spanContext.dd else {
                 return
             }
@@ -194,7 +201,7 @@ public final class DDTracer: NSObject, DatadogObjc.OTTracer {
                 spanContext: ddspanContext.swiftSpanContext,
                 writer: objcWriter.swiftB3HTTPHeadersWriter
             )
-        } else if let objcWriter = carrier as? DDW3CHTTPHeadersWriter, format == OT.formatTextMap {
+        } else if let objcWriter = carrier as? objc_W3CHTTPHeadersWriter, format == OT.formatTextMap {
             guard let ddspanContext = spanContext.dd else {
                 return
             }

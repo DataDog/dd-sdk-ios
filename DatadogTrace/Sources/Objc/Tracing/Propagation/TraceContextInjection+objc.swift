@@ -8,8 +8,9 @@ import Foundation
 import DatadogInternal
 
 /// Defines whether the trace context should be injected into all requests or only sampled ones.
-@objc
-public enum DDTraceContextInjection: Int {
+@objc(DDTraceContextInjection)
+@_spi(objc)
+public enum objc_TraceContextInjection: Int {
     internal var swiftType: DatadogInternal.TraceContextInjection {
         switch self {
         case .all:
