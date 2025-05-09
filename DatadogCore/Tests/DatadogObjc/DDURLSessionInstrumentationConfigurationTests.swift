@@ -7,10 +7,13 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+@_spi(objc)
 @testable import DatadogObjc
+@_spi(objc)
+@testable import DatadogCore
 
 final class DDURLSessionInstrumentationConfigurationTests: XCTestCase {
-    private var objc = DDURLSessionInstrumentationConfiguration(delegateClass: MockDelegate.self)
+    private var objc = objc_URLSessionInstrumentationConfiguration(delegateClass: MockDelegate.self)
     private var swift: URLSessionInstrumentation.Configuration { objc.swiftConfig }
 
     func testDelegateClass() {

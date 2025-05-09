@@ -9,8 +9,8 @@ import TestUtilities
 
 @testable import DatadogInternal
 @testable import DatadogLogs
+@_spi(objc)
 @testable import DatadogCore
-@testable import DatadogObjc
 
 /// This tests verify that objc-compatible `DatadogObjc` wrapper properly interacts with`Datadog` public API (swift).
 class DDDatadogTests: XCTestCase {
@@ -27,14 +27,14 @@ class DDDatadogTests: XCTestCase {
     // MARK: - SDK initialization / stop lifecycle
 
     func testItForwardsInitializationToSwift() throws {
-        let config = DDConfiguration(
+        let config = objc_Configuration(
             clientToken: "abcefghi",
             env: "tests"
         )
 
         config.bundle = .mockWith(CFBundleExecutable: "app-name")
 
-        DDDatadog.initialize(
+        objc_Datadog.initialize(
             configuration: config,
             trackingConsent: randomConsent().objc
         )
@@ -51,20 +51,20 @@ class DDDatadogTests: XCTestCase {
     }
 
     func testItReflectsInitializationStatus() throws {
-        let config = DDConfiguration(
+        let config = objc_Configuration(
             clientToken: "abcefghi",
             env: "tests"
         )
 
         config.bundle = .mockWith(CFBundleExecutable: "app-name")
-        XCTAssertFalse(DDDatadog.isInitialized())
+        XCTAssertFalse(objc_Datadog.isInitialized())
 
-        DDDatadog.initialize(
+        objc_Datadog.initialize(
             configuration: config,
             trackingConsent: randomConsent().objc
         )
 
-        XCTAssertTrue(DDDatadog.isInitialized())
+        XCTAssertTrue(objc_Datadog.isInitialized())
 
         Datadog.flushAndDeinitialize()
 
@@ -72,21 +72,21 @@ class DDDatadogTests: XCTestCase {
     }
 
     func testItForwardsStopInstanceToSwift() throws {
-        let config = DDConfiguration(
+        let config = objc_Configuration(
             clientToken: "abcefghi",
             env: "tests"
         )
 
         config.bundle = .mockWith(CFBundleExecutable: "app-name")
 
-        DDDatadog.initialize(
+        objc_Datadog.initialize(
             configuration: config,
             trackingConsent: randomConsent().objc
         )
 
         XCTAssertTrue(Datadog.isInitialized())
 
-        DDDatadog.stopInstance()
+        objc_Datadog.stopInstance()
 
         XCTAssertFalse(Datadog.isInitialized())
 
@@ -99,15 +99,15 @@ class DDDatadogTests: XCTestCase {
         let initialConsent = randomConsent()
         let nextConsent = randomConsent()
 
-        DDDatadog.initialize(
-            configuration: DDConfiguration(clientToken: "abcefghi", env: "tests"),
+        objc_Datadog.initialize(
+            configuration: objc_Configuration(clientToken: "abcefghi", env: "tests"),
             trackingConsent: initialConsent.objc
         )
 
         let core = CoreRegistry.default as? DatadogCore
         XCTAssertEqual(core?.consentPublisher.consent, initialConsent.swift)
 
-        DDDatadog.setTrackingConsent(consent: nextConsent.objc)
+        objc_Datadog.setTrackingConsent(consent: nextConsent.objc)
 
         XCTAssertEqual(core?.consentPublisher.consent, nextConsent.swift)
 
@@ -117,16 +117,16 @@ class DDDatadogTests: XCTestCase {
     // MARK: - Setting user info
 
     func testItForwardsUserInfoToSwift() throws {
-        DDDatadog.initialize(
-            configuration: DDConfiguration(clientToken: "abcefghi", env: "tests"),
+        objc_Datadog.initialize(
+            configuration: objc_Configuration(clientToken: "abcefghi", env: "tests"),
             trackingConsent: randomConsent().objc
         )
 
         let core = CoreRegistry.default as? DatadogCore
         let userInfo = try XCTUnwrap(core?.userInfoPublisher)
 
-        DDDatadog.setUserInfo(
-            id: "id",
+        objc_Datadog.setUserInfo(
+            userId: "id",
             name: "name",
             email: "email",
             extraInfo: [
@@ -135,7 +135,7 @@ class DDDatadogTests: XCTestCase {
                 "attribute-string": "string value"
             ]
         )
-        DDDatadog.addUserExtraInfo(["foo": "bar"])
+        objc_Datadog.addUserExtraInfo(["foo": "bar"])
         XCTAssertEqual(userInfo.current.id, "id")
         XCTAssertEqual(userInfo.current.name, "name")
         XCTAssertEqual(userInfo.current.email, "email")
@@ -145,8 +145,8 @@ class DDDatadogTests: XCTestCase {
         XCTAssertEqual(extraInfo["attribute-string"]?.dd.decode(), "string value")
         XCTAssertEqual(extraInfo["foo"]?.dd.decode(), "bar")
 
-        DDDatadog.setUserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
-        XCTAssertNil(userInfo.current.id)
+        objc_Datadog.setUserInfo(userId: "id", name: nil, email: nil, extraInfo: [:])
+        XCTAssertNotNil(userInfo.current.id)
         XCTAssertNil(userInfo.current.name)
         XCTAssertNil(userInfo.current.email)
         XCTAssertTrue(userInfo.current.extraInfo.isEmpty)
@@ -159,7 +159,7 @@ class DDDatadogTests: XCTestCase {
     private let swiftVerbosityLevels: [CoreLoggerLevel?] = [
         .debug, .warn, .error, .critical, nil
     ]
-    private let objcVerbosityLevels: [DDSDKVerbosityLevel] = [
+    private let objcVerbosityLevels: [objc_CoreLoggerLevel] = [
         .debug, .warn, .error, .critical, .none
     ]
 
@@ -167,7 +167,7 @@ class DDDatadogTests: XCTestCase {
         defer { Datadog.verbosityLevel = nil }
 
         zip(swiftVerbosityLevels, objcVerbosityLevels).forEach { swiftLevel, objcLevel in
-            DDDatadog.setVerbosityLevel(objcLevel)
+            objc_Datadog.setVerbosityLevel(objcLevel)
             XCTAssertEqual(Datadog.verbosityLevel, swiftLevel)
         }
     }
@@ -177,14 +177,14 @@ class DDDatadogTests: XCTestCase {
 
         zip(swiftVerbosityLevels, objcVerbosityLevels).forEach { swiftLevel, objcLevel in
             Datadog.verbosityLevel = swiftLevel
-            XCTAssertEqual(DDDatadog.verbosityLevel(), objcLevel)
+            XCTAssertEqual(objc_Datadog.verbosityLevel(), objcLevel)
         }
     }
 
     // MARK: - Helpers
 
-    private func randomConsent() -> (objc: DDTrackingConsent, swift: TrackingConsent) {
-        let objcConsents: [DDTrackingConsent] = [.granted(), .notGranted(), .pending()]
+    private func randomConsent() -> (objc: objc_TrackingConsent, swift: TrackingConsent) {
+        let objcConsents: [objc_TrackingConsent] = [.granted(), .notGranted(), .pending()]
         let swiftConsents: [TrackingConsent] = [.granted, .notGranted, .pending]
         let index: Int = .random(in: 0..<3)
         return (objc: objcConsents[index], swift: swiftConsents[index])

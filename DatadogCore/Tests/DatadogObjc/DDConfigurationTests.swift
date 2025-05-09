@@ -7,14 +7,13 @@
 import XCTest
 import TestUtilities
 import DatadogRUM
-
+@_spi(objc)
 @testable import DatadogCore
-@testable import DatadogObjc
 
 /// This tests verify that objc-compatible `DatadogObjc` wrapper properly interacts with`Datadog` public API (swift).
 class DDConfigurationTests: XCTestCase {
     func testDefaultBuilderForwardsInitializationToSwift() throws {
-        let objcConfig = DDConfiguration(clientToken: "abc-123", env: "tests")
+        let objcConfig = objc_Configuration(clientToken: "abc-123", env: "tests")
         XCTAssertEqual(objcConfig.sdkConfiguration.clientToken, "abc-123")
         XCTAssertEqual(objcConfig.sdkConfiguration.site, .us1)
         XCTAssertEqual(objcConfig.sdkConfiguration.env, "tests")
@@ -28,7 +27,7 @@ class DDConfigurationTests: XCTestCase {
     }
 
     func testCustomizedBuilderForwardsInitializationToSwift() throws {
-        let objcConfig = DDConfiguration(clientToken: "abc-123", env: "tests")
+        let objcConfig = objc_Configuration(clientToken: "abc-123", env: "tests")
 
         objcConfig.site = .eu1()
         XCTAssertEqual(objcConfig.sdkConfiguration.site, .eu1)
@@ -79,7 +78,7 @@ class DDConfigurationTests: XCTestCase {
         XCTAssertEqual(objcConfig.sdkConfiguration.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
         XCTAssertEqual(objcConfig.sdkConfiguration._internal.additionalConfiguration["additional"] as? String, "config")
 
-        class ObjCDataEncryption: DDDataEncryption {
+        class ObjCDataEncryption: objc_DataEncryption {
             func encrypt(data: Data) throws -> Data { data }
             func decrypt(data: Data) throws -> Data { data }
         }
@@ -87,7 +86,7 @@ class DDConfigurationTests: XCTestCase {
         objcConfig.setEncryption(dataEncryption)
         XCTAssertTrue((objcConfig.sdkConfiguration.encryption as? DDDataEncryptionBridge)?.objcEncryption === dataEncryption)
 
-        class ObjcServerDateProvider: DDServerDateProvider {
+        class ObjcServerDateProvider: objc_ServerDateProvider {
             func synchronize(update: @escaping (TimeInterval) -> Void) { }
         }
         let serverDateProvider = ObjcServerDateProvider()
@@ -101,7 +100,7 @@ class DDConfigurationTests: XCTestCase {
 
     func testDataEncryption() throws {
         // Given
-        class ObjCDataEncryption: DDDataEncryption {
+        class ObjCDataEncryption: objc_DataEncryption {
             let encData: Data = .mockRandom()
             let decData: Data = .mockRandom()
             func encrypt(data: Data) throws -> Data { encData }
@@ -111,7 +110,7 @@ class DDConfigurationTests: XCTestCase {
         let encryption = ObjCDataEncryption()
 
         // When
-        let objcConfig = DDConfiguration(
+        let objcConfig = objc_Configuration(
             clientToken: "abc-123",
             env: "tests"
         )

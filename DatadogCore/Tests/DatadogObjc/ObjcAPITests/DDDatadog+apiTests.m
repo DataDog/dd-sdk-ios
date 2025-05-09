@@ -5,7 +5,8 @@
 */
 
 #import <XCTest/XCTest.h>
-@import DatadogObjc;
+@import DatadogCore;
+@import DatadogInternal;
 
 @interface DDDatadog_apiTests : XCTestCase
 @end
@@ -31,7 +32,7 @@
 
     [DDDatadog isInitialized];
 
-    DDSDKVerbosityLevel verbosity = [DDDatadog verbosityLevel];
+    DDCoreLoggerLevel verbosity = [DDDatadog verbosityLevel];
     [DDDatadog setVerbosityLevel:verbosity];
 
     [DDDatadog setUserInfoWithUserId:@"" name:@"" email:@"" extraInfo:@{}];

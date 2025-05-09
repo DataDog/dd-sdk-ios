@@ -7,6 +7,7 @@
 #import <XCTest/XCTest.h>
 #include <sys/wait.h>
 @import DatadogObjc;
+@import DatadogCore;
 @import DatadogTrace;
 
 #import <Foundation/Foundation.h>

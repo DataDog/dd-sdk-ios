@@ -5,31 +5,32 @@
  */
 
 import Foundation
-import DatadogLogs
 import DatadogInternal
 
-@objc
-public class DDLogEvent: NSObject {
+@objc(DDLogEvent)
+@objcMembers
+@_spi(objc)
+public class objc_LogEvent: NSObject {
     internal var swiftModel: LogEvent
 
     internal init(swiftModel: LogEvent) {
         self.swiftModel = swiftModel
     }
 
-    @objc public var date: Date {
+    public var date: Date {
         swiftModel.date
     }
 
-    @objc public var status: DDLogEventStatus {
+    public var status: objc_LogEventStatus {
         .init(swift: swiftModel.status)
     }
 
-    @objc public var message: String {
+    public var message: String {
         set { swiftModel.message = newValue }
         get { swiftModel.message }
     }
 
-    @objc public var error: DDLogEventError? {
+    public var error: objc_LogEventError? {
         if swiftModel.error != nil {
             .init(root: self)
         } else {
@@ -37,55 +38,55 @@ public class DDLogEvent: NSObject {
         }
     }
 
-    @objc public var serviceName: String {
+    public var serviceName: String {
         swiftModel.serviceName
     }
 
-    @objc public var environment: String {
+    public var environment: String {
         swiftModel.environment
     }
 
-    @objc public var loggerName: String {
+    public var loggerName: String {
         swiftModel.loggerName
     }
 
-    @objc public var loggerVersion: String {
+    public var loggerVersion: String {
         swiftModel.loggerVersion
     }
 
-    @objc public var threadName: String? {
+    public var threadName: String? {
         swiftModel.threadName
     }
 
-    @objc public var applicationVersion: String {
+    public var applicationVersion: String {
         swiftModel.applicationVersion
     }
 
-    @objc public var applicationBuildNumber: String {
+    public var applicationBuildNumber: String {
         swiftModel.applicationBuildNumber
     }
 
-    @objc public var buildId: String? {
+    public var buildId: String? {
         swiftModel.buildId
     }
 
-    @objc public var variant: String? {
+    public var variant: String? {
         swiftModel.variant
     }
 
-    @objc public var dd: DDLogEventDd {
+    public var dd: objc_LogEventDd {
         .init(root: self)
     }
 
-    @objc public var os: DDLogEventOperatingSystem {
+    public var os: objc_LogEventOperatingSystem {
         .init(root: self)
     }
 
-    @objc public var userInfo: DDLogEventUserInfo {
+    public var userInfo: objc_LogEventUserInfo {
         .init(root: self)
     }
 
-    @objc public var networkConnectionInfo: DDLogEventNetworkConnectionInfo? {
+    public var networkConnectionInfo: objc_LogEventNetworkConnectionInfo? {
         if swiftModel.networkConnectionInfo != nil {
             .init(root: self)
         } else {
@@ -93,7 +94,7 @@ public class DDLogEvent: NSObject {
         }
     }
 
-    @objc public var mobileCarrierInfo: DDLogEventCarrierInfo? {
+    public var mobileCarrierInfo: objc_LogEventCarrierInfo? {
         if swiftModel.mobileCarrierInfo != nil {
             .init(root: self)
         } else {
@@ -101,18 +102,19 @@ public class DDLogEvent: NSObject {
         }
     }
 
-    @objc public var attributes: DDLogEventAttributes {
+    public var attributes: objc_LogEventAttributes {
         .init(root: self)
     }
 
-    @objc public var tags: [String]? {
+    public var tags: [String]? {
         set { swiftModel.tags = newValue }
         get { swiftModel.tags }
     }
 }
 
-@objc
-public enum DDLogEventStatus: Int {
+@objc(DDLogEventStatus)
+@_spi(objc)
+public enum objc_LogEventStatus: Int {
     internal init(swift: LogEvent.Status) {
         switch swift {
         case .debug: self = .debug
@@ -146,216 +148,233 @@ public enum DDLogEventStatus: Int {
     case emergency
 }
 
-@objc
-public class DDLogEventAttributes: NSObject {
-    internal var root: DDLogEvent
+@objc(DDLogEventAttributes)
+@objcMembers
+@_spi(objc)
+public class objc_LogEventAttributes: NSObject {
+    internal var root: objc_LogEvent
 
-    internal init(root: DDLogEvent) {
+    internal init(root: objc_LogEvent) {
         self.root = root
     }
 
-    @objc public var userAttributes: [String: Any] {
+    public var userAttributes: [String: Any] {
         set { root.swiftModel.attributes.userAttributes = newValue.dd.swiftAttributes }
         get { root.swiftModel.attributes.userAttributes.dd.objCAttributes }
     }
 }
 
-@objc
-public class DDLogEventUserInfo: NSObject {
-    internal var root: DDLogEvent
+@objc(DDLogEventUserInfo)
+@objcMembers
+@_spi(objc)
+public class objc_LogEventUserInfo: NSObject {
+    internal var root: objc_LogEvent
 
-    internal init(root: DDLogEvent) {
+    internal init(root: objc_LogEvent) {
         self.root = root
     }
 
-    @objc public var id: String? {
+    public var id: String? {
         root.swiftModel.userInfo.id
     }
 
-    @objc public var name: String? {
+    public var name: String? {
         root.swiftModel.userInfo.name
     }
 
-    @objc public var email: String? {
+    public var email: String? {
         root.swiftModel.userInfo.email
     }
 
-    @objc public var extraInfo: [String: Any] {
+    public var extraInfo: [String: Any] {
         set { root.swiftModel.userInfo.extraInfo = newValue.dd.swiftAttributes }
         get { root.swiftModel.userInfo.extraInfo.dd.objCAttributes }
     }
 }
 
-@objc
-public class DDLogEventError: NSObject {
-    internal var root: DDLogEvent
+@objc(DDLogEventError)
+@objcMembers
+@_spi(objc)
+public class objc_LogEventError: NSObject {
+    internal var root: objc_LogEvent
 
-    internal init(root: DDLogEvent) {
+    internal init(root: objc_LogEvent) {
         self.root = root
     }
 
-    @objc public var kind: String? {
+    public var kind: String? {
         set { root.swiftModel.error?.kind = newValue }
         get { root.swiftModel.error?.kind }
     }
 
-    @objc public var message: String? {
+    public var message: String? {
         set { root.swiftModel.error?.message = newValue }
         get { root.swiftModel.error?.message }
     }
 
-    @objc public var stack: String? {
+    public var stack: String? {
         set { root.swiftModel.error?.stack = newValue }
         get { root.swiftModel.error?.stack }
     }
 
-    @objc public var sourceType: String {
+    public var sourceType: String {
         // swiftlint:disable force_unwrapping
         set { root.swiftModel.error!.sourceType = newValue }
         get { root.swiftModel.error!.sourceType }
         // swiftlint:enable force_unwrapping
     }
 
-    @objc public var fingerprint: String? {
+    public var fingerprint: String? {
         set { root.swiftModel.error?.fingerprint = newValue }
         get { root.swiftModel.error?.fingerprint }
     }
 
-    @objc public var binaryImages: [DDLogEventBinaryImage]? {
+    public var binaryImages: [objc_LogEventBinaryImage]? {
         set { root.swiftModel.error?.binaryImages = newValue?.map { $0.swiftModel } }
-        get { root.swiftModel.error?.binaryImages?.map { DDLogEventBinaryImage(swiftModel: $0) } }
+        get { root.swiftModel.error?.binaryImages?.map { objc_LogEventBinaryImage(swiftModel: $0) } }
     }
 }
 
-@objc
-public class DDLogEventBinaryImage: NSObject {
+@objc(DDLogEventBinaryImage)
+@objcMembers
+@_spi(objc)
+public class objc_LogEventBinaryImage: NSObject {
     internal let swiftModel: LogEvent.Error.BinaryImage
 
     internal init(swiftModel: LogEvent.Error.BinaryImage) {
         self.swiftModel = swiftModel
     }
 
-    @objc public var arch: String? {
+    public var arch: String? {
         swiftModel.arch
     }
 
-    @objc public var isSystem: Bool {
+    public var isSystem: Bool {
         swiftModel.isSystem
     }
 
-    @objc public var loadAddress: String? {
+    public var loadAddress: String? {
         swiftModel.loadAddress
     }
 
-    @objc public var maxAddress: String? {
+    public var maxAddress: String? {
         swiftModel.maxAddress
     }
 
-    @objc public var name: String {
+    public var name: String {
         swiftModel.name
     }
 
-    @objc public var uuid: String {
+    public var uuid: String {
         swiftModel.uuid
     }
 }
 
-@objc
-public class DDLogEventOperatingSystem: NSObject {
-    internal let root: DDLogEvent
+@objc(DDLogEventOperatingSystem)
+@objcMembers
+@_spi(objc)
+public class objc_LogEventOperatingSystem: NSObject {
+    internal let root: objc_LogEvent
 
-    internal init(root: DDLogEvent) {
+    internal init(root: objc_LogEvent) {
         self.root = root
     }
 
-    @objc public var name: String {
+    public var name: String {
         root.swiftModel.os.name
     }
 
-    @objc public var version: String {
+    public var version: String {
         root.swiftModel.os.version
     }
 
-    @objc public var build: String? {
+    public var build: String? {
         root.swiftModel.os.build
     }
 }
 
-@objc
-public class DDLogEventDd: NSObject {
-    internal let root: DDLogEvent
+@objc(DDLogEventDd)
+@objcMembers
+@_spi(objc)
+public class objc_LogEventDd: NSObject {
+    internal let root: objc_LogEvent
 
-    internal init(root: DDLogEvent) {
+    internal init(root: objc_LogEvent) {
         self.root = root
     }
 
-    @objc public var device: DDLogEventDeviceInfo {
+    public var device: objc_LogEventDeviceInfo {
         .init(root: root)
     }
 }
 
-@objc
-public class DDLogEventDeviceInfo: NSObject {
-    internal let root: DDLogEvent
+@objc(DDLogEventDeviceInfo)
+@objcMembers
+@_spi(objc)
+public class objc_LogEventDeviceInfo: NSObject {
+    internal let root: objc_LogEvent
 
-    internal init(root: DDLogEvent) {
+    internal init(root: objc_LogEvent) {
         self.root = root
     }
 
-    @objc public var brand: String {
+    public var brand: String {
         root.swiftModel.dd.device.brand
     }
 
-    @objc public var name: String {
+    public var name: String {
         root.swiftModel.dd.device.name
     }
 
-    @objc public var model: String {
+    public var model: String {
         root.swiftModel.dd.device.model
     }
 
-    @objc public var architecture: String {
+    public var architecture: String {
         root.swiftModel.dd.device.architecture
     }
 }
 
-@objc
-public class DDLogEventNetworkConnectionInfo: NSObject {
-    internal let root: DDLogEvent
+@objc(DDLogEventNetworkConnectionInfo)
+@objcMembers
+@_spi(objc)
+public class objc_LogEventNetworkConnectionInfo: NSObject {
+    internal let root: objc_LogEvent
 
-    internal init(root: DDLogEvent) {
+    internal init(root: objc_LogEvent) {
         self.root = root
     }
 
-    @objc public var reachability: DDLogEventReachability {
+    public var reachability: objc_LogEventReachability {
         // swiftlint:disable force_unwrapping
         .init(swift: root.swiftModel.networkConnectionInfo!.reachability)
         // swiftlint:enable force_unwrapping
     }
 
-    @objc public var availableInterfaces: [Int]? {
-        root.swiftModel.networkConnectionInfo?.availableInterfaces?.map { DDLogEventInterface(swift: $0).rawValue }
+    public var availableInterfaces: [Int]? {
+        root.swiftModel.networkConnectionInfo?.availableInterfaces?.map { objc_LogEventInterface(swift: $0).rawValue }
     }
 
-    @objc public var supportsIPv4: NSNumber? {
+    public var supportsIPv4: NSNumber? {
         root.swiftModel.networkConnectionInfo?.supportsIPv4 as NSNumber?
     }
 
-    @objc public var supportsIPv6: NSNumber? {
+    public var supportsIPv6: NSNumber? {
         root.swiftModel.networkConnectionInfo?.supportsIPv6 as NSNumber?
     }
 
-    @objc public var isExpensive: NSNumber? {
+    public var isExpensive: NSNumber? {
         root.swiftModel.networkConnectionInfo?.isExpensive as NSNumber?
     }
 
-    @objc public var isConstrained: NSNumber? {
+    public var isConstrained: NSNumber? {
         root.swiftModel.networkConnectionInfo?.isConstrained as NSNumber?
     }
 }
 
-@objc
-public enum DDLogEventReachability: Int {
+@objc(DDLogEventReachability)
+@_spi(objc)
+public enum objc_LogEventReachability: Int {
     internal init(swift: NetworkConnectionInfo.Reachability) {
         switch swift {
         case .yes: self = .yes
@@ -377,8 +396,9 @@ public enum DDLogEventReachability: Int {
     case no
 }
 
-@objc
-public enum DDLogEventInterface: Int {
+@objc(DDLogEventInterface)
+@_spi(objc)
+public enum objc_LogEventInterface: Int {
     internal init(swift: NetworkConnectionInfo.Interface) {
         switch swift {
         case .wifi: self = .wifi
@@ -406,37 +426,40 @@ public enum DDLogEventInterface: Int {
     case other
 }
 
-@objc
-public class DDLogEventCarrierInfo: NSObject {
-    internal let root: DDLogEvent
+@objc(DDLogEventCarrierInfo)
+@objcMembers
+@_spi(objc)
+public class objc_LogEventCarrierInfo: NSObject {
+    internal let root: objc_LogEvent
 
-    internal init(root: DDLogEvent) {
+    internal init(root: objc_LogEvent) {
         self.root = root
     }
 
-    @objc public var carrierName: String? {
+    public var carrierName: String? {
         root.swiftModel.mobileCarrierInfo?.carrierName
     }
 
-    @objc public var carrierISOCountryCode: String? {
+    public var carrierISOCountryCode: String? {
         root.swiftModel.mobileCarrierInfo?.carrierISOCountryCode
     }
 
-    @objc public var carrierAllowsVOIP: Bool {
+    public var carrierAllowsVOIP: Bool {
         // swiftlint:disable force_unwrapping
         root.swiftModel.mobileCarrierInfo!.carrierAllowsVOIP
         // swiftlint:enable force_unwrapping
     }
 
-    @objc public var radioAccessTechnology: DDLogEventRadioAccessTechnology {
+    public var radioAccessTechnology: objc_LogEventRadioAccessTechnology {
         // swiftlint:disable force_unwrapping
         .init(swift: root.swiftModel.mobileCarrierInfo!.radioAccessTechnology)
         // swiftlint:enable force_unwrapping
     }
 }
 
-@objc
-public enum DDLogEventRadioAccessTechnology: Int {
+@objc(DDLogEventRadioAccessTechnology)
+@_spi(objc)
+public enum objc_LogEventRadioAccessTechnology: Int {
     internal init(swift: CarrierInfo.RadioAccessTechnology) {
         switch swift {
         case .GPRS: self = .GPRS

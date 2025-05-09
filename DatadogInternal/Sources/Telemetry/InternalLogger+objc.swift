@@ -5,15 +5,16 @@
  */
 
 import Foundation
-import DatadogInternal
-import DatadogCore
 
-@objc
-public class DDInternalLogger: NSObject {
+@objc(DDInternalLogger)
+@objcMembers
+@_spi(objc)
+public final class objc_InternalLogger: NSObject {
     /// Function printing `String` content to console. Intended to be used only by SDK components.
     @objc
-    public static func consolePrint(_ message: String, _ level: DDCoreLoggerLevel) {
+    public static func consolePrint(_ message: String, _ level: objc_CoreLoggerLevel) {
         let coreLoggerLevel: CoreLoggerLevel = switch level {
+        case .none: .debug
         case .debug: .debug
         case .warn: .warn
         case .error: .error
@@ -24,19 +25,11 @@ public class DDInternalLogger: NSObject {
 
     @objc
     public static func telemetryDebug(id: String, message: String) {
-        Datadog._internal.telemetry.debug(id: id, message: message)
+        CoreRegistry.default.telemetry.debug(id: id, message: message)
     }
 
     @objc
     public static func telemetryError(id: String, message: String, kind: String?, stack: String?) {
-        Datadog._internal.telemetry.error(id: id, message: message, kind: kind, stack: stack)
+        CoreRegistry.default.telemetry.error(id: id, message: message, kind: kind ?? "", stack: stack ?? "")
     }
-}
-
-@objc
-public enum DDCoreLoggerLevel: Int {
-    case debug
-    case warn
-    case error
-    case critical
 }

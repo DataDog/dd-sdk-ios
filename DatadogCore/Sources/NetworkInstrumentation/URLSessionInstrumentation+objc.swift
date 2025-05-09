@@ -5,39 +5,40 @@
  */
 
 import Foundation
-import DatadogCore
+@_spi(objc)
 import DatadogInternal
 
 /// Configuration of URLSession instrumentation.
-@objc
-public class DDURLSessionInstrumentationConfiguration: NSObject {
+@objc(DDURLSessionInstrumentationConfiguration)
+@objcMembers
+@_spi(objc)
+public final class objc_URLSessionInstrumentationConfiguration: NSObject {
     internal var swiftConfig: URLSessionInstrumentation.Configuration
 
-    @objc
     public init(delegateClass: URLSessionDataDelegate.Type) {
         swiftConfig = .init(delegateClass: delegateClass)
     }
 
     /// Sets additional first party hosts to consider in the interception.
-    @objc
-    public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: DDURLSessionInstrumentationFirstPartyHostsTracing) {
+    public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: objc_URLSessionInstrumentationFirstPartyHostsTracing) {
         swiftConfig.firstPartyHostsTracing = firstPartyHostsTracing.swiftType
     }
 
     /// The delegate class to be used to swizzle URLSessionTaskDelegate & URLSessionDataDelegate methods.
-    @objc public var delegateClass: URLSessionDataDelegate.Type {
+    public var delegateClass: URLSessionDataDelegate.Type {
         set { swiftConfig.delegateClass = newValue }
         get { swiftConfig.delegateClass }
     }
 }
 
 /// Defines configuration for first-party hosts in distributed tracing.
-@objc
-public class DDURLSessionInstrumentationFirstPartyHostsTracing: NSObject {
+@objc(DDURLSessionInstrumentationFirstPartyHostsTracing)
+@objcMembers
+@_spi(objc)
+public final class objc_URLSessionInstrumentationFirstPartyHostsTracing: NSObject {
     internal var swiftType: URLSessionInstrumentation.FirstPartyHostsTracing
 
-    @objc
-    public init(hostsWithHeaderTypes: [String: Set<DDTracingHeaderType>]) {
+    public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>]) {
         let swiftHostsWithHeaders = hostsWithHeaderTypes.mapValues { headerTypes in
             Set(headerTypes.map {
                 $0.swiftType
@@ -46,27 +47,26 @@ public class DDURLSessionInstrumentationFirstPartyHostsTracing: NSObject {
         swiftType = .traceWithHeaders(hostsWithHeaders: swiftHostsWithHeaders)
     }
 
-    @objc
     public init(hosts: Set<String>) {
         swiftType = .trace(hosts: hosts)
     }
 }
 
-@objc
-public class DDURLSessionInstrumentation: NSObject {
+@objc(DDURLSessionInstrumentation)
+@objcMembers
+@_spi(objc)
+public final class objc_URLSessionInstrumentation: NSObject {
     /// Enables URLSession instrumentation.
     ///
     /// - Parameters:
     ///   - configuration: Configuration of the feature.
-    @objc
-    public static func enable(configuration: DDURLSessionInstrumentationConfiguration) {
+    public static func enable(configuration: objc_URLSessionInstrumentationConfiguration) {
         URLSessionInstrumentation.enable(with: configuration.swiftConfig)
     }
 
     /// Disables URLSession instrumentation.
     /// - Parameters:
     ///   - delegateClass: The delegate class to unbind.
-    @objc
     public static func disable(delegateClass: URLSessionDataDelegate.Type) {
         URLSessionInstrumentation.disable(delegateClass: delegateClass)
     }
