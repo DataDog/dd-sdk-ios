@@ -86,6 +86,12 @@
 		61F9CA8025125C01000A5E61 /* RUMNCSScreen3ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9CA7F25125C01000A5E61 /* RUMNCSScreen3ViewController.swift */; };
 		61F9CA92251266F7000A5E61 /* RUMNavigationControllerScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9CA86251266CB000A5E61 /* RUMNavigationControllerScenarioTests.swift */; };
 		638925C797CD9A7F6A08AC6B /* libPods-Runner iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E0F3607A83689002423C29E4 /* libPods-Runner iOS.a */; };
+		961611382DB147F100A429F9 /* RUMSwiftUIAutoInstrumentationRootTabbarScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 961611372DB147F100A429F9 /* RUMSwiftUIAutoInstrumentationRootTabbarScenario.storyboard */; };
+		963F6B112DB79B5700F9425A /* ExampleApplication+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963F6B102DB79B5300F9425A /* ExampleApplication+Extensions.swift */; };
+		963F72412DB0FD4C00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963F72402DB0FD4B00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift */; };
+		964537F02DCBB7EF00C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 964537EF2DCBB7EF00C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard */; };
+		964537F42DCBBAC900C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964537F32DCBBAC800C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.swift */; };
+		96E1E1B32DAFE4C700EF013F /* RUMSwiftUIAutoInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E1E1B22DAFE4C500EF013F /* RUMSwiftUIAutoInstrumentationTests.swift */; };
 		9EA95C1C2791C9BE00F6C1F3 /* WebViewTrackingFixtureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA95C192791C9BE00F6C1F3 /* WebViewTrackingFixtureViewController.swift */; };
 		9EA95C1D2791C9BE00F6C1F3 /* WebViewTrackingScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9EA95C1A2791C9BE00F6C1F3 /* WebViewTrackingScenario.storyboard */; };
 		9EA95C1E2791C9BE00F6C1F3 /* WebViewScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA95C1B2791C9BE00F6C1F3 /* WebViewScenarios.swift */; };
@@ -99,8 +105,8 @@
 		D22F06D229DAE5360026CC3C /* RUMStopSessionScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D22F06CE29DAE5360026CC3C /* RUMStopSessionScenario.storyboard */; };
 		D240688627CFA64A00C04F44 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D240688427CFA64A00C04F44 /* LaunchScreen.storyboard */; };
 		D263BCB829DB057E00FA0E21 /* RUMStopSessionScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F06D329DAE59A0026CC3C /* RUMStopSessionScenarioTests.swift */; };
-		D2791EF927170A760046E07A /* RUMSwiftUIScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */; };
-		D2F5BB36271831C200BDE2A4 /* RUMSwiftUIInstrumentationScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D2F5BB35271831C200BDE2A4 /* RUMSwiftUIInstrumentationScenario.storyboard */; };
+		D2791EF927170A760046E07A /* RUMSwiftUIManualInstrumentationScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2791EF827170A760046E07A /* RUMSwiftUIManualInstrumentationScenarioTests.swift */; };
+		D2F5BB36271831C200BDE2A4 /* RUMSwiftUIManualInstrumentationScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D2F5BB35271831C200BDE2A4 /* RUMSwiftUIManualInstrumentationScenario.storyboard */; };
 		D2F5BB382718331800BDE2A4 /* SwiftUIRootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F5BB372718331800BDE2A4 /* SwiftUIRootViewController.swift */; };
 		D2FCA74D2B4D829F0014DC87 /* CSPictureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA7482B4D829F0014DC87 /* CSPictureViewController.swift */; };
 		D2FCA74E2B4D829F0014DC87 /* StopCoreScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D2FCA7492B4D829F0014DC87 /* StopCoreScenario.storyboard */; };
@@ -219,6 +225,12 @@
 		61F9CA782512593A000A5E61 /* RUMNavigationControllerScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMNavigationControllerScenario.storyboard; sourceTree = "<group>"; };
 		61F9CA7F25125C01000A5E61 /* RUMNCSScreen3ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMNCSScreen3ViewController.swift; sourceTree = "<group>"; };
 		61F9CA86251266CB000A5E61 /* RUMNavigationControllerScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMNavigationControllerScenarioTests.swift; sourceTree = "<group>"; };
+		961611372DB147F100A429F9 /* RUMSwiftUIAutoInstrumentationRootTabbarScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMSwiftUIAutoInstrumentationRootTabbarScenario.storyboard; sourceTree = "<group>"; };
+		963F6B102DB79B5300F9425A /* ExampleApplication+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExampleApplication+Extensions.swift"; sourceTree = "<group>"; };
+		963F72402DB0FD4B00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIAutoInstrumentationTabbarRootView.swift; sourceTree = "<group>"; };
+		964537EF2DCBB7EF00C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard; sourceTree = "<group>"; };
+		964537F32DCBBAC800C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIAutoInstrumentationSingleRootViewScenario.swift; sourceTree = "<group>"; };
+		96E1E1B22DAFE4C500EF013F /* RUMSwiftUIAutoInstrumentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIAutoInstrumentationTests.swift; sourceTree = "<group>"; };
 		9A2B176DAB4566F41D745DE6 /* Pods-Runner iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS.debug.xcconfig"; path = "Target Support Files/Pods-Runner iOS/Pods-Runner iOS.debug.xcconfig"; sourceTree = "<group>"; };
 		9EA95C192791C9BE00F6C1F3 /* WebViewTrackingFixtureViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewTrackingFixtureViewController.swift; sourceTree = "<group>"; };
 		9EA95C1A2791C9BE00F6C1F3 /* WebViewTrackingScenario.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = WebViewTrackingScenario.storyboard; sourceTree = "<group>"; };
@@ -241,12 +253,12 @@
 		D22F06CE29DAE5360026CC3C /* RUMStopSessionScenario.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = RUMStopSessionScenario.storyboard; sourceTree = "<group>"; };
 		D22F06D329DAE59A0026CC3C /* RUMStopSessionScenarioTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMStopSessionScenarioTests.swift; sourceTree = "<group>"; };
 		D240688527CFA64A00C04F44 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIScenarioTests.swift; sourceTree = "<group>"; };
+		D2791EF827170A760046E07A /* RUMSwiftUIManualInstrumentationScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIManualInstrumentationScenarioTests.swift; sourceTree = "<group>"; };
 		D29495F429967780003518CD /* http-server-mock */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "http-server-mock"; path = "../tools/http-server-mock"; sourceTree = "<group>"; };
 		D2A401D029925A2D00B230A3 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D2AEFF1A29925BEC00A28997 /* CrashReporting.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = CrashReporting.xctestplan; sourceTree = "<group>"; };
 		D2AEFF1B29925BEC00A28997 /* Default.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Default.xctestplan; sourceTree = "<group>"; };
-		D2F5BB35271831C200BDE2A4 /* RUMSwiftUIInstrumentationScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMSwiftUIInstrumentationScenario.storyboard; sourceTree = "<group>"; };
+		D2F5BB35271831C200BDE2A4 /* RUMSwiftUIManualInstrumentationScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMSwiftUIManualInstrumentationScenario.storyboard; sourceTree = "<group>"; };
 		D2F5BB372718331800BDE2A4 /* SwiftUIRootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIRootViewController.swift; sourceTree = "<group>"; };
 		D2FCA7482B4D829F0014DC87 /* CSPictureViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSPictureViewController.swift; sourceTree = "<group>"; };
 		D2FCA7492B4D829F0014DC87 /* StopCoreScenario.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = StopCoreScenario.storyboard; sourceTree = "<group>"; };
@@ -451,13 +463,14 @@
 			isa = PBXGroup;
 			children = (
 				61D50C532580EF41006038A3 /* RUMScenarios.swift */,
+				96E1E1AD2DAFCC3800EF013F /* SwiftUIAutoInstrumentation */,
 				9EC2835C26CFF56B00FACF1C /* MobileVitals */,
 				61337037250F84FD00236D58 /* ManualInstrumentation */,
 				61F9CA7725125918000A5E61 /* NavigationControllerAutoInstrumentation */,
 				615AAC34251E34EF00C89EE9 /* TabBarAutoInstrumentation */,
 				6137E647252DD85400720485 /* ModalViewsAutoInstrumentation */,
 				6193DCA2251B5669009B8011 /* TapActionAutoInstrumentation */,
-				D2791EF32716F16E0046E07A /* SwiftUIInstrumentation */,
+				D2791EF32716F16E0046E07A /* SwiftUIManualInstrumentation */,
 				612D8F6725AEE65F000E2E09 /* Scrubbing */,
 				D22F06CA29DAE5360026CC3C /* StopSessionScenario */,
 			);
@@ -505,6 +518,7 @@
 			children = (
 				61441C3B24617013003D8BB8 /* IntegrationTests.swift */,
 				61B9ED1E2461E57700C0DCFF /* UITestsHelpers.swift */,
+				963F6B102DB79B5300F9425A /* ExampleApplication+Extensions.swift */,
 				61F3CD9C251106EB00C816E5 /* Scenarios */,
 				D21866412996796B006F5B23 /* Info.plist */,
 			);
@@ -649,8 +663,9 @@
 				6164AF2D252C9C51000D78C4 /* RUMResourcesScenarioTests.swift */,
 				612D8F8025AF1C74000E2E09 /* RUMScrubbingScenarioTests.swift */,
 				9EC2835926CFEE0B00FACF1C /* RUMMobileVitalsScenarioTests.swift */,
-				D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */,
+				D2791EF827170A760046E07A /* RUMSwiftUIManualInstrumentationScenarioTests.swift */,
 				D22F06D329DAE59A0026CC3C /* RUMStopSessionScenarioTests.swift */,
+				96E1E1B22DAFE4C500EF013F /* RUMSwiftUIAutoInstrumentationTests.swift */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -662,6 +677,17 @@
 				61F9CA7F25125C01000A5E61 /* RUMNCSScreen3ViewController.swift */,
 			);
 			path = NavigationControllerAutoInstrumentation;
+			sourceTree = "<group>";
+		};
+		96E1E1AD2DAFCC3800EF013F /* SwiftUIAutoInstrumentation */ = {
+			isa = PBXGroup;
+			children = (
+				963F72402DB0FD4B00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift */,
+				964537F32DCBBAC800C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.swift */,
+				961611372DB147F100A429F9 /* RUMSwiftUIAutoInstrumentationRootTabbarScenario.storyboard */,
+				964537EF2DCBB7EF00C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard */,
+			);
+			path = SwiftUIAutoInstrumentation;
 			sourceTree = "<group>";
 		};
 		9EA95C182791C9BE00F6C1F3 /* WebView */ = {
@@ -702,13 +728,13 @@
 			path = StopSessionScenario;
 			sourceTree = "<group>";
 		};
-		D2791EF32716F16E0046E07A /* SwiftUIInstrumentation */ = {
+		D2791EF32716F16E0046E07A /* SwiftUIManualInstrumentation */ = {
 			isa = PBXGroup;
 			children = (
-				D2F5BB35271831C200BDE2A4 /* RUMSwiftUIInstrumentationScenario.storyboard */,
+				D2F5BB35271831C200BDE2A4 /* RUMSwiftUIManualInstrumentationScenario.storyboard */,
 				D2F5BB372718331800BDE2A4 /* SwiftUIRootViewController.swift */,
 			);
-			path = SwiftUIInstrumentation;
+			path = SwiftUIManualInstrumentation;
 			sourceTree = "<group>";
 		};
 		D29495F329967780003518CD /* Packages */ = {
@@ -870,7 +896,8 @@
 			files = (
 				61337032250F82AE00236D58 /* LoggingManualInstrumentationScenario.storyboard in Resources */,
 				612D8F6925AEE68F000E2E09 /* RUMScrubbingScenario.storyboard in Resources */,
-				D2F5BB36271831C200BDE2A4 /* RUMSwiftUIInstrumentationScenario.storyboard in Resources */,
+				964537F02DCBB7EF00C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard in Resources */,
+				D2F5BB36271831C200BDE2A4 /* RUMSwiftUIManualInstrumentationScenario.storyboard in Resources */,
 				611EA13C2580F77400BC0E56 /* TrackingConsentScenario.storyboard in Resources */,
 				9EA95C1D2791C9BE00F6C1F3 /* WebViewTrackingScenario.storyboard in Resources */,
 				61337039250F852E00236D58 /* RUMManualInstrumentationScenario.storyboard in Resources */,
@@ -885,6 +912,7 @@
 				615AAC36251E353700C89EE9 /* RUMTabBarAutoInstrumentationScenario.storyboard in Resources */,
 				9EC2835E26CFF57A00FACF1C /* RUMMobileVitalsScenario.storyboard in Resources */,
 				6167AD19251A27B80012B4D0 /* URLSessionScenario.storyboard in Resources */,
+				961611382DB147F100A429F9 /* RUMSwiftUIAutoInstrumentationRootTabbarScenario.storyboard in Resources */,
 				61F9CA792512593A000A5E61 /* RUMNavigationControllerScenario.storyboard in Resources */,
 				D2FCA74E2B4D829F0014DC87 /* StopCoreScenario.storyboard in Resources */,
 				61337035250F84BF00236D58 /* TracingManualInstrumentationScenario.storyboard in Resources */,
@@ -1062,7 +1090,9 @@
 				61C2C20B24C1045300C0321C /* SendRUMFixture1ViewController.swift in Sources */,
 				615C3155251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift in Sources */,
 				61441C9D2461A796003D8BB8 /* AppConfiguration.swift in Sources */,
+				964537F42DCBBAC900C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.swift in Sources */,
 				9EC2836026CFF59400FACF1C /* RUMMobileVitalsViewController.swift in Sources */,
+				963F72412DB0FD4C00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift in Sources */,
 				6164AF06252C9004000D78C4 /* ObjcSendFirstPartyRequestsViewController.m in Sources */,
 				6167AD20251A27CC0012B4D0 /* SendFirstPartyRequestsViewController.swift in Sources */,
 				6193DCE8251B9AB1009B8011 /* RUMTASCollectionViewController.swift in Sources */,
@@ -1096,7 +1126,7 @@
 			files = (
 				61DC6D922539E3E300FFAA22 /* LoggingCommonAsserts.swift in Sources */,
 				61441C4024617013003D8BB8 /* IntegrationTests.swift in Sources */,
-				D2791EF927170A760046E07A /* RUMSwiftUIScenarioTests.swift in Sources */,
+				D2791EF927170A760046E07A /* RUMSwiftUIManualInstrumentationScenarioTests.swift in Sources */,
 				61163C4A252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift in Sources */,
 				61B9ED212462089600C0DCFF /* TracingManualInstrumentationScenarioTests.swift in Sources */,
 				61B6811F25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift in Sources */,
@@ -1108,6 +1138,7 @@
 				61441C4124617013003D8BB8 /* LoggingScenarioTests.swift in Sources */,
 				612D8F8125AF1C74000E2E09 /* RUMScrubbingScenarioTests.swift in Sources */,
 				613B77382521E80800155458 /* RUMTabBarControllerScenarioTests.swift in Sources */,
+				96E1E1B32DAFE4C700EF013F /* RUMSwiftUIAutoInstrumentationTests.swift in Sources */,
 				9EA95C212791C9E200F6C1F3 /* WebViewScenarioTest.swift in Sources */,
 				6167ACFD251A22E00012B4D0 /* TracingURLSessionScenarioTests.swift in Sources */,
 				611EA16625825FB300BC0E56 /* TrackingConsentScenarioTests.swift in Sources */,
@@ -1121,6 +1152,7 @@
 				6164AF2E252C9C51000D78C4 /* RUMResourcesScenarioTests.swift in Sources */,
 				615AAC07251E217B00C89EE9 /* RUMTapActionScenarioTests.swift in Sources */,
 				D263BCB829DB057E00FA0E21 /* RUMStopSessionScenarioTests.swift in Sources */,
+				963F6B112DB79B5700F9425A /* ExampleApplication+Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

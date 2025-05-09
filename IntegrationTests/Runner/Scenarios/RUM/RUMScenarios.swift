@@ -288,8 +288,8 @@ final class RUMStopSessionsScenario: TestScenario {
 @available(iOS 13, *)
 /// Scenario which presents `SwiftUI`-based hierarchy and navigates through
 /// its views and view controllers.
-final class RUMSwiftUIInstrumentationScenario: TestScenario {
-    static var storyboardName: String = "RUMSwiftUIInstrumentationScenario"
+final class RUMSwiftUIManualInstrumentationScenario: TestScenario {
+    static var storyboardName: String = "RUMSwiftUIManualInstrumentationScenario"
 
     private class Predicate: UIKitRUMViewsPredicate {
         let `default` = DefaultUIKitRUMViewsPredicate()
@@ -315,6 +315,62 @@ final class RUMSwiftUIInstrumentationScenario: TestScenario {
         RUM.enable(with: config)
     }
 }
+
+// MARK: SwiftUI Auto-instrumentation
+/// Scenarios which presents `SwiftUI`-based hierarchies and navigate through its views.
+/// It uses the RUM Swift auto-instrumentation (or mixed instrumentations).
+
+/// 1. Single hosting controller root view.
+@available(iOS 16.0, *)
+final class RUMSwiftUIAutoInstrumentationSingleRootViewScenario: TestScenario {
+    static var storyboardName: String = "RUMSwiftUIAutoInstrumentationSingleRootViewScenario"
+
+    private class SwiftUIPredicate: SwiftUIRUMViewsPredicate {
+        let `default` = DefaultSwiftUIRUMViewsPredicate()
+
+        func rumView(for extractedViewName: String) -> DatadogRUM.RUMView? {
+            if extractedViewName == "RUMSessionEndView" {
+                return nil
+            }
+
+            return RUMView(name: extractedViewName)
+        }
+    }
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.swiftUIViewsPredicate = SwiftUIPredicate()
+        RUM.enable(with: config)
+    }
+}
+
+/// 2. Tabbar root view and multiple navigation scenario in each tab.
+@available(iOS 13, *)
+final class RUMSwiftUIAutoInstrumentationRootTabbarScenario: TestScenario {
+    static var storyboardName: String = "RUMSwiftUIAutoInstrumentationRootTabbarScenario"
+
+    private class SwiftUIPredicate: SwiftUIRUMViewsPredicate {
+        let `default` = DefaultSwiftUIRUMViewsPredicate()
+
+        func rumView(for extractedViewName: String) -> DatadogRUM.RUMView? {
+            if extractedViewName == "RUMSessionEndView" {
+                return nil
+            }
+
+            return RUMView(name: extractedViewName)
+        }
+    }
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.swiftUIViewsPredicate = SwiftUIPredicate()
+        RUM.enable(with: config)
+    }
+}
+
+// TODO: RUM-9888 - Manual + Auto instrumentation scenario
 
 // MARK: - Helpers
 

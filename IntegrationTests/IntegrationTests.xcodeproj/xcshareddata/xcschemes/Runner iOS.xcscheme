@@ -128,7 +128,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_CLASS_NAME"
-            value = "RUMSwiftUIInstrumentationScenario"
+            value = "RUMSwiftUIManualInstrumentationScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
@@ -219,6 +219,16 @@
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "SRMultipleViewsRecordingScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMSwiftUIAutoInstrumentationRootTabbarScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMSwiftUIAutoInstrumentationSingleRootViewScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
