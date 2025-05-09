@@ -538,7 +538,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanLogs() throws {
         let logging: LogsFeature = .mockWith(
-            messageReceiver: LogMessageReceiver.mockAny()
+            messageReceiver: TraceLogMessageReceiver(logEventMapper: nil)
         )
         try core.register(feature: logging)
 
@@ -571,7 +571,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
         let logging: LogsFeature = .mockWith(
-            messageReceiver: LogMessageReceiver.mockAny()
+            messageReceiver: TraceLogMessageReceiver(logEventMapper: nil)
         )
         try core.register(feature: logging)
 
@@ -596,7 +596,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
         let logging: LogsFeature = .mockWith(
-            messageReceiver: LogMessageReceiver.mockAny()
+            messageReceiver: TraceLogMessageReceiver(logEventMapper: nil)
         )
         try core.register(feature: logging)
 
@@ -627,7 +627,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanLogsWithErrorFromSwiftError() throws {
         let logging: LogsFeature = .mockWith(
-            messageReceiver: LogMessageReceiver.mockAny()
+            messageReceiver: TraceLogMessageReceiver(logEventMapper: nil)
         )
         try core.register(feature: logging)
 

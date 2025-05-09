@@ -9,66 +9,27 @@ import TestUtilities
 import DatadogInternal
 @testable import DatadogLogs
 
-class LogMessageReceiverTests: XCTestCase {
-    struct LogMessage: Encodable {
-        let logger: String
-        let service: String?
-        let date: Date
-        let message: String
-        let level: LogLevel
-        let thread: String
-        let error: DDError?
-        let networkInfoEnabled: Bool?
-        let userAttributes: [String: String]?
-        let internalAttributes: [String: String]?
-    }
-
-    func testReceiveIncompleteLogMessage() throws {
-        let expectation = expectation(description: "Don't send log fallback")
-
-        // Given
-        let core = PassthroughCoreMock(
-            context: .mockWith(service: "service-test"),
-            messageReceiver: LogMessageReceiver.mockAny()
-        )
-
-        // When
-        core.send(
-            message: .baggage(
-                key: "log",
-                value: "wrong-type"
-            ),
-            else: { expectation.fulfill() }
-        )
-
-        // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertTrue(core.events.isEmpty)
-    }
-
+class TraceLogMessageReceiverTests: XCTestCase {
     func testReceivePartialLogMessage() throws {
         // Given
         let expectation = expectation(description: "Send log")
         let core = PassthroughCoreMock(
             context: .mockWith(service: "service-test"),
-            messageReceiver: LogMessageReceiver.mockAny()
+            messageReceiver: TraceLogMessageReceiver(logEventMapper: nil)
         )
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
         core.send(
-            message: .baggage(
-                key: "log",
-                value: LogMessage(
-                    logger: "logger-test",
+            message: .payload(
+                TraceLogMessage(
                     service: nil,
                     date: .mockDecember15th2019At10AMUTC(),
                     message: "message-test",
-                    level: .info,
-                    thread: "thread-test",
                     error: nil,
-                    networkInfoEnabled: nil,
-                    userAttributes: nil,
+                    thread: "thread-test",
+                    networkInfoEnabled: false,
+                    userAttributes: [:],
                     internalAttributes: nil
                 )
             )
@@ -79,7 +40,7 @@ class LogMessageReceiverTests: XCTestCase {
 
         let log: LogEvent = try XCTUnwrap(core.events().last, "It should send log")
         XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
-        XCTAssertEqual(log.loggerName, "logger-test")
+        XCTAssertEqual(log.loggerName, "trace")
         XCTAssertEqual(log.serviceName, "service-test")
         XCTAssertEqual(log.threadName, "thread-test")
         XCTAssertEqual(log.message, "message-test")
@@ -95,22 +56,19 @@ class LogMessageReceiverTests: XCTestCase {
         let expectation = expectation(description: "Send log")
         let core = PassthroughCoreMock(
             context: .mockAny(),
-            messageReceiver: LogMessageReceiver.mockAny()
+            messageReceiver: TraceLogMessageReceiver(logEventMapper: nil)
         )
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
         core.send(
-            message: .baggage(
-                key: "log",
-                value: LogMessage(
-                    logger: "logger-test",
+            message: .payload(
+                TraceLogMessage(
                     service: "service-test",
                     date: .mockDecember15th2019At10AMUTC(),
                     message: "message-test",
-                    level: .info,
-                    thread: "thread-test",
                     error: .mockAny(),
+                    thread: "thread-test",
                     networkInfoEnabled: true,
                     userAttributes: ["user": "attribute"],
                     internalAttributes: ["internal": "attribute"]
@@ -123,11 +81,11 @@ class LogMessageReceiverTests: XCTestCase {
 
         let log: LogEvent = try XCTUnwrap(core.events().last, "It should send log")
         XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
-        XCTAssertEqual(log.loggerName, "logger-test")
+        XCTAssertEqual(log.loggerName, "trace")
         XCTAssertEqual(log.serviceName, "service-test")
         XCTAssertEqual(log.threadName, "thread-test")
         XCTAssertEqual(log.message, "message-test")
-        XCTAssertEqual(log.status, .info)
+        XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.error?.message, "abc")
         DDAssertJSONEqual(
             AnyEncodable(log.attributes.userAttributes),
@@ -145,7 +103,7 @@ class LogMessageReceiverTests: XCTestCase {
         let expectation = expectation(description: "Open scope but don't send log")
         let core = PassthroughCoreMock(
             context: .mockWith(service: "service-test"),
-            messageReceiver: LogMessageReceiver(
+            messageReceiver: TraceLogMessageReceiver(
                 logEventMapper: SyncLogEventMapper { _ in nil }
             )
         )
@@ -153,18 +111,15 @@ class LogMessageReceiverTests: XCTestCase {
 
         // When
         core.send(
-            message: .baggage(
-                key: "log",
-                value: LogMessage(
-                    logger: "logger-test",
+            message: .payload(
+                TraceLogMessage(
                     service: nil,
                     date: .mockDecember15th2019At10AMUTC(),
                     message: "message-test",
-                    level: .info,
-                    thread: "thread-test",
                     error: nil,
-                    networkInfoEnabled: nil,
-                    userAttributes: nil,
+                    thread: "thread-test",
+                    networkInfoEnabled: false,
+                    userAttributes: [:],
                     internalAttributes: nil
                 )
             )

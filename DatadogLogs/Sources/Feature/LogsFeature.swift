@@ -38,7 +38,7 @@ internal struct LogsFeature: DatadogRemoteFeature {
                 telemetry: telemetry
             ),
             messageReceiver: CombinedFeatureMessageReceiver(
-                LogMessageReceiver(logEventMapper: logEventMapper),
+                TraceLogMessageReceiver(logEventMapper: logEventMapper),
                 CrashLogReceiver(dateProvider: dateProvider, logEventMapper: logEventMapper),
                 WebViewLogReceiver()
             ),
