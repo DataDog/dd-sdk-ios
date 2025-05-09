@@ -14,7 +14,7 @@ Whereas all products in version 1.x were contained in the single module, `Datado
 - `DatadogRUM`
 - `DatadogWebViewTracking`
 
-These come in addition to the existing `DatadogCrashReporting` and `DatadogObjc`.
+These come in addition to the existing `DatadogCrashReporting`.
 
 <details>
   <summary>SPM</summary>
@@ -52,7 +52,6 @@ let package = Package(
   pod 'DatadogRUM'
   pod 'DatadogCrashReporting'
   pod 'DatadogWebViewTracking'
-  pod 'DatadogObjc'
   ```
 </details>
 
@@ -77,7 +76,6 @@ let package = Package(
   DatadogRUM.xcframework
   DatadogCrashReporting.xcframework + CrashReporter.xcframework
   DatadogWebViewTracking.xcframework
-  DatadogObjc.xcframework
   ```
 </details>
 

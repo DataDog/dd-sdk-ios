@@ -8,7 +8,6 @@ target 'Runner iOS' do
     pod 'DatadogCrashReporting', :path => '..'
     pod 'DatadogSessionReplay', :path => '..'
     pod 'DatadogWebViewTracking', :path => '..'
-    pod 'DatadogObjc', :path => '..'
 
     target 'IntegrationScenarios' do
         pod 'DatadogInternal', :path => '..'

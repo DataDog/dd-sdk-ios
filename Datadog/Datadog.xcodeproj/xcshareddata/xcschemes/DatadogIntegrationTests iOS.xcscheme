@@ -195,13 +195,6 @@
             BlueprintName = "DatadogCore iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "61133BEF242397DA00786299"
-            BuildableName = "DatadogObjc.framework"
-            BlueprintName = "DatadogObjc iOS"
-            ReferencedContainer = "container:Datadog.xcodeproj">
-         </BuildableReference>
       </CodeCoverageTargets>
       <Testables>
          <TestableReference

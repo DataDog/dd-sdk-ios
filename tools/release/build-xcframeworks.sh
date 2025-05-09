@@ -115,7 +115,6 @@ build_xcframework DatadogCore "$PLATFORMS"
 build_xcframework DatadogLogs "$PLATFORMS"
 build_xcframework DatadogTrace "$PLATFORMS"
 build_xcframework DatadogRUM "$PLATFORMS"
-build_xcframework DatadogObjc "$PLATFORMS"
 build_xcframework DatadogCrashReporting "$PLATFORMS"
 
 # Build iOS-only Datadog XCFrameworks

@@ -11,7 +11,7 @@
 @end
 
 /*
- * `DatadogObjc` APIs smoke tests - only check if the interface is available to Objc.
+ * Objc APIs smoke tests - only check if the interface is available to Objc.
  */
 @implementation DDB3HTTPHeadersWriter_apiTests
 

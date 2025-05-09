@@ -6,7 +6,6 @@
 
 #import "Runner-Swift.h"
 #import "ObjcSendThirdPartyRequestsViewController.h"
-@import DatadogObjc;
 
 @interface ObjcSendThirdPartyRequestsViewController ()
 @property URLSessionBaseScenario *testScenario;
