@@ -6,6 +6,7 @@
 
 import Foundation
 import ArgumentParser
+import SourceKittenFramework
 
 public var printFunction: (String) -> Void = { print($0) }
 
@@ -21,12 +22,15 @@ public struct SPMLibrarySurfaceCommand: ParsableCommand {
     @Option(help: "The path to the folder containing `Package.swift`.")
     var path: String
 
+    @Option(help: "The language of the API surface to print.")
+    var language: Language
+
     public init() {}
 
     public func run() throws {
         var printSeparator = false
         for libraryName in libraryName {
-            let surface = try APISurface(spmLibraryName: libraryName, inPath: path)
+            let surface = try APISurface(spmLibraryName: libraryName, inPath: path, language: language)
             if printSeparator {
                 printFunction("\n")
             }

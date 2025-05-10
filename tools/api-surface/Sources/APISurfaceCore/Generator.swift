@@ -37,9 +37,13 @@ internal class Generator {
     /// Tracks currently traversed items.
     private var items: [SurfaceItem] = []
 
-    func generateSurfaceItems(for module: Module) throws -> [SurfaceItem] {
+    func generateSurfaceItems(for module: Module, language: Language) throws -> [SurfaceItem] {
         items = []
         for docs in module.docs {
+            guard let path = docs.file.path,
+                  language.shouldParse(path: path) else {
+                continue
+            }
             guard let dictionaries = (docs.docsDictionary as [String: Any]).substructure else {
                 throw APISurfaceError(description: "Could not find `SourceKitten.substructure` in file: \(docs.file.path ?? "")")
             }
