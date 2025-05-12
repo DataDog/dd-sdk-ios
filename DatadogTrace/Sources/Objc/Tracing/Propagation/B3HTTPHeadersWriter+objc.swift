@@ -28,7 +28,7 @@ private extension B3HTTPHeadersWriter.InjectEncoding {
 @objc(DDB3HTTPHeadersWriter)
 @objcMembers
 @_spi(objc)
-public class objc_B3HTTPHeadersWriter: NSObject {
+public final class objc_B3HTTPHeadersWriter: NSObject {
     let swiftB3HTTPHeadersWriter: B3HTTPHeadersWriter
 
     public var traceHeaderFields: [String: String] {
