@@ -145,15 +145,9 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
             }
 
             // When bundle with Trace is enabled, link RUM context (if available):
-            if self.activeSpanIntegration, let spanContext = context.baggages[SpanContext.key] {
-                do {
-                    let trace = try spanContext.decode(type: SpanContext.self)
-                    internalAttributes[LogEvent.Attributes.Trace.traceID] = trace.traceID?.toString(representation: .hexadecimal)
-                    internalAttributes[LogEvent.Attributes.Trace.spanID] = trace.spanID?.toString(representation: .decimal)
-                } catch {
-                    self.featureScope.telemetry
-                        .error("Fails to decode Span context from Logs", error: error)
-                }
+            if self.activeSpanIntegration, let spanContext = context.additionalContext(ofType: SpanCoreContext.self) {
+                internalAttributes[LogEvent.Attributes.Trace.traceID] = spanContext.traceID
+                internalAttributes[LogEvent.Attributes.Trace.spanID] = spanContext.spanID
             }
 
             // When binary images are requested, add them
