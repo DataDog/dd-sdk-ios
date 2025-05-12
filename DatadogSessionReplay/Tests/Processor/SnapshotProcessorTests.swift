@@ -548,7 +548,9 @@ class SnapshotProcessorTests: XCTestCase {
 
 fileprivate extension PassthroughCoreMock {
     var recordsCountByViewID: [String: Int64]? {
-        return try? context.baggages["sr_records_count_by_view_id"]?.decode()
+        context.additionalContext(
+            ofType: SessionReplayCoreContext.RecordsCount.self
+        )?.value
     }
 }
 #endif

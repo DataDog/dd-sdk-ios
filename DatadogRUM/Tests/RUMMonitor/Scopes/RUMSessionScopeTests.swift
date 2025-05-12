@@ -342,15 +342,15 @@ class RUMSessionScopeTests: XCTestCase {
         let featureScope = FeatureScopeMock()
         let fatalErrorContext = FatalErrorContextNotifierMock()
         let randomIsInitialSession: Bool = .mockRandom()
-        let randomIsReplayBeingRecorded: Bool? = .mockRandom()
+        let randomIsReplayBeingRecorded: Bool = .mockRandom()
 
         // When
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: randomIsInitialSession,
             parent: parent,
             context: .mockWith(
-                baggages: [
-                    SessionReplayDependency.hasReplay: FeatureBaggage(randomIsReplayBeingRecorded),
+                additionalContext: [
+                    SessionReplayCoreContext.HasReplay(value: randomIsReplayBeingRecorded)
                 ]
             ),
             dependencies: .mockWith(
@@ -375,7 +375,7 @@ class RUMSessionScopeTests: XCTestCase {
         let featureScope = FeatureScopeMock()
         let fatalErrorContext = FatalErrorContextNotifierMock()
         let randomIsInitialSession: Bool = .mockRandom()
-        let randomIsReplayBeingRecorded: Bool? = .mockRandom()
+        let randomIsReplayBeingRecorded: Bool = .mockRandom()
 
         // Given
         let sessionStartTime = Date()
@@ -384,8 +384,8 @@ class RUMSessionScopeTests: XCTestCase {
             parent: parent,
             startTime: sessionStartTime,
             context: .mockWith(
-                baggages: [
-                    SessionReplayDependency.hasReplay: FeatureBaggage(randomIsReplayBeingRecorded),
+                additionalContext: [
+                    SessionReplayCoreContext.HasReplay(value: randomIsReplayBeingRecorded)
                 ]
             ),
             dependencies: .mockWith(

@@ -150,11 +150,7 @@ internal class SnapshotProcessor: SnapshotProcessing {
     }
 
     private func trackRecord(key: String, value: Int64) {
-        if let existingValue = recordsCountByViewID[key] {
-            recordsCountByViewID[key] = existingValue + value
-        } else {
-            recordsCountByViewID[key] = value
-        }
+        recordsCountByViewID[key, default: 0] += value
         srContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
     }
 }
