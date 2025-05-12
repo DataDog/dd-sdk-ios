@@ -47,6 +47,7 @@ import Foundation
 ///
 /// A Feature Baggage does not ensure thread-safety of values that holds references, make
 /// sure that any value can be accessibe from any thread.
+@available(*, deprecated, message: "FeatureBaggage has performance implications and will be removed.")
 public final class FeatureBaggage {
     /// The raw value contained in the baggage.
     @ReadWriteLock

@@ -55,6 +55,10 @@ public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
         // not supported - use different type of core mock if you need this
     }
 
+    public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
+        // not supported - use different type of core mock if you need this
+    }
+
     public func send(message: DatadogInternal.FeatureMessage, else fallback: @escaping () -> Void) {
         // not supported - use different type of core mock if you need this
     }
