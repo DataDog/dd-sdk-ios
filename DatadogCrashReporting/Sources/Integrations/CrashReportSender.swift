@@ -61,6 +61,6 @@ internal struct MessageBusSender: CrashReportSender {
     /// - Parameters:
     ///   - launch: The launch report.
     func send(launch: DatadogInternal.LaunchReport) {
-        core?.set(baggage: launch, forKey: LaunchReport.key)
+        core?.set(context: launch)
     }
 }
