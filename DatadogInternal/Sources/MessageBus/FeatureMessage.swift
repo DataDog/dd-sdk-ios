@@ -6,21 +6,8 @@
 
 import Foundation
 
-/// The set of messages that can be transimtted on the Features message bus.
+/// The set of messages that can be transmitted on the Features message bus.
 public enum FeatureMessage {
-    /// A custom message with generic encodable attributes.
-    ///
-    /// A baggage can be used to transmit loosely-typed data structure using `Codable`.
-    /// The encoding/decoding processes will have an impact on performances, opt for a baggage
-    /// only if the data-structure is small.
-    ///
-    /// For large data type, use the `.payload` case with shared type definition.
-    @available(*, deprecated, message: "Use .payload instead")
-    case baggage(
-        key: String,
-        baggage: FeatureBaggage
-    )
-
     /// A custom payload message.
     case payload(Any)
 
@@ -31,45 +18,13 @@ public enum FeatureMessage {
 
     /// A core context message.
     ///
-    /// The core will send updated context throught the bus. Do not send new context values
+    /// The core will send updated context through the bus. Do not send new context values
     /// from a Feature or Integration.
     case context(DatadogContext)
 
-    /// A telemtry message.
+    /// A telemetry message.
     ///
-    /// The core can send telemtry data coming from all Features.
+    /// The core can send t
+    /// elemetry data coming from all Features.
     case telemetry(TelemetryMessage)
-}
-
-extension FeatureMessage {
-    /// Creates a `.baggage` message with the given key and `Encodable` value.
-    ///
-    /// A baggage can be used to transmit loosely-typed data structure using `Codable`.
-    /// The encoding/decoding processes will have an impact on performances, opt for a baggage
-    /// only if the data-structure is small.
-    /// 
-    /// - Parameters:
-    ///   - key: The baggage key.
-    ///   - baggage: The baggage value.
-    /// - Returns: a `.baggage` case.
-    @available(*, deprecated, message: "Use .payload instead")
-    public static func baggage<Value>(key: String, value: Value) -> FeatureMessage where Value: Encodable {
-        .baggage(key: key, baggage: .init(value))
-    }
-
-    /// Returns the baggage if the key matches the message.
-    ///
-    /// - Parameters:
-    ///   - key: The requested baggage key.
-    ///   - type: The expected type of the baggage value.
-    /// - Returns: The decoded baggage value, or nil if the key doesn't match.
-    /// - Throws: A `DecodingError` if decoding fails.
-    @available(*, deprecated, message: "Use .value instead")
-    public func baggage<Value>(forKey key: String, type: Value.Type = Value.self) throws -> Value? where Value: Decodable {
-        guard case let .baggage(messageKey, baggage) = self, messageKey == key else {
-            return nil
-        }
-
-        return try baggage.decode(type: type)
-    }
 }

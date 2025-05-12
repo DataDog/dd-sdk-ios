@@ -88,7 +88,7 @@ class WebViewRecordReceiverTests: XCTestCase {
         let receiver = WebViewRecordReceiver(scope: scope)
 
         // When
-        let otherMessage: FeatureMessage = .baggage(key: "message to other receiver", value: String.mockRandom())
+        let otherMessage: FeatureMessage = .payload(String.mockRandom())
         let result = receiver.receive(message: otherMessage, from: NOPDatadogCore())
 
         // Then

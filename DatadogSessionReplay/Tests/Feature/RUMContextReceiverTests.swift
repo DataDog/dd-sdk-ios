@@ -236,7 +236,7 @@ class RUMContextReceiverTests: XCTestCase {
 
         // When
         XCTAssertFalse(
-            receiver.receive(message: .baggage(key: "key", value: "value"), from: core)
+            receiver.receive(message: .payload("value"), from: core)
         )
 
         // Then
