@@ -510,11 +510,11 @@ class RemoteLoggerTests: XCTestCase {
 
         // When
         featureScope.contextMock = .mockWith(
-            baggages: [
-                "span_context": .init([
-                    "dd.trace_id": traceID.toString(representation: .hexadecimal),
-                    "dd.span_id": spanID.toString(representation: .decimal)
-                ])
+            additionalContext: [
+                SpanCoreContext(
+                    traceID: traceID.toString(representation: .hexadecimal),
+                    spanID: spanID.toString(representation: .decimal)
+                )
             ]
         )
         logger.info("message")
@@ -551,37 +551,5 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertNil(log.attributes.internalAttributes?["dd.trace_id"])
         XCTAssertNil(log.attributes.internalAttributes?["dd.span_id"])
         XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
-    }
-
-    func testWhenActiveSpanIntegrationIsEnabled_withMalformedRUMContext_itSendsTelemetryError() throws {
-        // Given
-        let logger = RemoteLogger(
-            featureScope: featureScope,
-            globalAttributes: .mockAny(),
-            configuration: .mockAny(),
-            dateProvider: RelativeDateProvider(),
-            rumContextIntegration: false,
-            activeSpanIntegration: true,
-            backtraceReporter: BacktraceReporterMock()
-        )
-
-        // When
-        featureScope.contextMock = .mockWith(
-            baggages: [
-                "span_context": .init("malformed Span context")
-            ]
-        )
-        logger.info("message")
-
-        // Then
-        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
-        XCTAssertEqual(logs.count, 1)
-
-        let log = try XCTUnwrap(logs.first)
-        XCTAssertNil(log.attributes.internalAttributes?["dd.trace_id"])
-        XCTAssertNil(log.attributes.internalAttributes?["dd.span_id"])
-
-        let error = try XCTUnwrap(featureScope.telemetryMock.messages.firstError())
-        XCTAssert(error.message.contains("Fails to decode Span context from Logs - typeMismatch"))
     }
 }
