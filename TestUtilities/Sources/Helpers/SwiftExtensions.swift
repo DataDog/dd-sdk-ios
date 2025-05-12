@@ -26,12 +26,6 @@ extension Optional {
     }
 }
 
-extension Date {
-    public func secondsAgo(_ seconds: TimeInterval) -> Date {
-        return addingTimeInterval(-seconds)
-    }
-}
-
 extension String {
     public var utf8Data: Data { data(using: .utf8)! }
 

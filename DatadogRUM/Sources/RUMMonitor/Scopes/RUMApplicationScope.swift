@@ -18,7 +18,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Might be re-created later according to session duration constraints.
     private(set) var sessionScopes: [RUMSessionScope] = []
 
-    /// Last active view from the last active session. Used to restart the active view on a user action.
+    /// The last active foreground view from the previous session.
+    /// Used to restore the view when a new session starts after `sessionStop()`.
     private var lastActiveView: RUMViewScope?
 
     /// The end reason from the last active session. Used as "start reason" for the new session.
@@ -59,8 +60,20 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         if command is RUMSDKInitCommand {
             createInitialSession(with: context, on: command)
 
-            // If the app was started by a user (foreground & not prewarmed):
-            if context.applicationStateHistory.currentState == .active && !context.launchTime.isActivePrewarm {
+            // RUM-6698: When the user launches an app that was not running (cold start), the expected
+            // initial app state is `.inactive`:
+            //
+            // Ref.: https://developer.apple.com/documentation/uikit/app_and_environment/managing_your_app_s_life_cycle
+            // > After launch, the system puts the app in the inactive or background state, depending on whether the UI
+            // > is about to appear onscreen. When launching to the foreground, the system transitions the app to the
+            // > active state automatically.
+            //
+            // However, for apps that initialize RUM after `application(_:didFinishLaunchingWithOptions:)`,
+            // the initial state can be `.active`. Therefore, we consider both `.inactive` and `.active` as valid
+            // initial states for starting the initial view.
+            let appState = context.applicationStateHistory.currentState
+
+            if appState == .inactive || appState == .active {
                 // Start "ApplicationLaunch" view immediatelly:
                 startApplicationLaunchView(on: command, context: context, writer: writer)
             }
@@ -81,14 +94,20 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             startApplicationLaunchView(on: command, context: context, writer: writer)
         }
 
-        if activeSession == nil && command.isUserInteraction {
+        if activeSession == nil {
             // No active sessions, start a new one
-            startNewSession(on: command, context: context, writer: writer)
+            if !(command is RUMHandleAppLifecycleEventCommand) {
+                startNewSession(on: command, context: context, writer: writer)
+            }
         }
 
+        // Store the last foreground view that was active before the session expired or was stopped.
+        // This allows the next session to lazily restart the same view if needed.
+        let lastActiveForegroundView = activeSession?.viewScopes.first(where: { $0.isActiveView && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL })
+        lastActiveView = lastActiveForegroundView ?? lastActiveView
+
         if command is RUMStopSessionCommand {
-            // Reach in and grab the last active view
-            lastActiveView = activeSession?.viewScopes.first(where: { $0.isActiveView })
+            dependencies.applicationState.wasAnySessionStopped = true
         }
 
         // Can't use scope(byPropagating:context:writer) because of the extra step in looking for sessions
@@ -117,10 +136,17 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
             switch endReason {
             case .timeOut, .maxDuration:
-                // Replace this session scope with the scope for refreshed session:
-                return refresh(expiredSession: scope, on: command, context: context, writer: writer)
+                dependencies.applicationState.wasPreviousSessionStopped = false
+                if !(command is RUMHandleAppLifecycleEventCommand) {
+                    // Replace this session scope with the scope for refreshed session:
+                    return refresh(expiredSession: scope, on: command, context: context, writer: writer)
+                } else {
+                    // The next session will start lazily on next event
+                    return nil
+                }
             case .stopAPI:
                 // Remove this session scope (a new on will be started upon receiving user interaction):
+                dependencies.applicationState.wasPreviousSessionStopped = true
                 return nil
             }
         })
@@ -148,10 +174,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         var startPrecondition: RUMSessionPrecondition? = nil
 
-        if context.launchTime.isActivePrewarm {
-            startPrecondition = .prewarm
-        } else if context.applicationStateHistory.currentState == .background {
-            startPrecondition = .backgroundLaunch
+        if context.applicationStateHistory.currentState == .background {
+            startPrecondition = context.launchTime.isActivePrewarm ? .prewarm : .backgroundLaunch
         } else {
             startPrecondition = .userAppLaunch
         }
@@ -182,24 +206,35 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.error("Failed to determine session precondition for REFRESHED session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
         }
 
+        let refreshingInForeground = context.applicationStateHistory.currentState == .active
+        let lastActiveViewPath = expiredSession.viewScopes.last(where: { $0.isActiveView })?.viewPath
+        let transferActiveView = command.shouldRestartLastViewAfterSessionExpiration
+            && refreshingInForeground
+            && lastActiveViewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+
         let refreshedSession = RUMSessionScope(
             from: expiredSession,
             startTime: command.time,
             startPrecondition: startPrecondition,
-            context: context
+            context: context,
+            transferActiveView: transferActiveView
         )
         sessionScopeDidUpdate(refreshedSession)
+        lastActiveView = nil
         lastSessionEndReason = nil
         _ = refreshedSession.process(command: command, context: context, writer: writer)
         return refreshedSession
     }
 
-    /// Starts new RUM Session some time after previous one was ended with ``RUMMonitorProtocol.stopSession()`` API. It may re-activate the last view from previous session.
     private func startNewSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         var startPrecondition: RUMSessionPrecondition? = nil
 
         if lastSessionEndReason == .stopAPI {
             startPrecondition = .explicitStop
+        } else if lastSessionEndReason == .timeOut {
+            startPrecondition = .inactivityTimeout
+        } else if lastSessionEndReason == .maxDuration {
+            startPrecondition = .maxDuration
         } else {
             dependencies.telemetry.error("Failed to determine session precondition for NEW session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
         }
@@ -209,7 +244,15 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.error("Starting NEW session on due to \(type(of: command)), but initial sesison never existed")
         }
 
-        let resumingViewScope = command is RUMStartViewCommand ? nil : lastActiveView
+        let startingInForeground = context.applicationStateHistory.currentState == .active
+        var resumeViewScope = false
+
+        if lastSessionEndReason == .stopAPI {
+            resumeViewScope = command.shouldRestartLastViewAfterSessionStop && startingInForeground
+        } else if lastSessionEndReason == .timeOut || lastSessionEndReason == .maxDuration {
+            resumeViewScope = command.shouldRestartLastViewAfterSessionExpiration && startingInForeground
+        }
+
         let newSession = RUMSessionScope(
             isInitialSession: false,
             parent: self,
@@ -217,11 +260,10 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             startPrecondition: startPrecondition,
             context: context,
             dependencies: dependencies,
-            resumingViewScope: resumingViewScope
+            resumingViewScope: resumeViewScope ? lastActiveView : nil
         )
         lastActiveView = nil
         lastSessionEndReason = nil
-
         sessionScopes.append(newSession)
         sessionScopeDidUpdate(newSession)
     }
@@ -235,11 +277,14 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Forces the `ApplicationLaunchView` to be started.
     /// Added as part of https://github.com/DataDog/dd-sdk-ios/pull/1290 to separate creation of first view
     /// from creation of initial session due to receiving `RUMSDKInitCommand`. Starting from RUM-1649 the "application launch" view
-    /// is started on SDK init only when the app is launched by user with no prewarming.
+    /// is started on SDK init only when the app is launched by user with no prewarming or when app was prewarmed but SDK was initialized
+    /// after it became active.
     private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         applicationActive = true
 
-        guard context.applicationStateHistory.currentState != .background else {
+        let userLaunchWithNoPrewarming = context.applicationStateHistory.initialState != .background && !context.launchTime.isActivePrewarm
+        let prewarmedButLaunchedInForeground = context.launchTime.isActivePrewarm && command is RUMSDKInitCommand && context.applicationStateHistory.currentState != .background
+        guard userLaunchWithNoPrewarming || prewarmedButLaunchedInForeground else {
             return
         }
 

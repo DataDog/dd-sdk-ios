@@ -409,6 +409,8 @@ public class AppLaunchHandlerMock: AppLaunchHandling {
     /// - Parameter timeInterval: The time interval from launch to activation.
     public func simulateDidBecomeActive(timeInterval: TimeInterval) {
         guard timeToDidBecomeActive == nil else {
+            // Following the `AppLaunchHandling.setApplicationDidBecomeActiveCallback(_:)` requirement, do not
+            // notify the callback for subsequent activations.
             return
         }
 

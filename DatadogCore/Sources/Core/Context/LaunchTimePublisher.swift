@@ -29,7 +29,8 @@ internal protocol AppLaunchHandling {
     /// Sets a callback to be invoked when the application becomes active.
     ///
     /// The callback receives the time interval from process launch to app activation.
-    /// If the application became active before setting the callback, it will not be triggered.
+    /// The callback must be triggered only once upon the next `UIApplicationDidBecomeActiveNotification`
+    /// and should be not retained for subsequent activations.
     ///
     /// - Parameter callback: A closure executed upon app activation.
     func setApplicationDidBecomeActiveCallback(_ callback: @escaping UIApplicationDidBecomeActiveCallback)
