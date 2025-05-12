@@ -140,6 +140,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
                     error: error,
                     source: .network,
                     httpStatusCode: interception.completion?.httpResponse?.statusCode,
+                    globalAttributes: [:],
                     attributes: userAttributes
                 )
             )

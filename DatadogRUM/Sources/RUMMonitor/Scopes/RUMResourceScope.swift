@@ -95,9 +95,7 @@ internal class RUMResourceScope: RUMScope {
     // MARK: - RUMScope
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
-        self.attributes = self.attributes
-            .merging(command.globalAttributes, uniquingKeysWith: { $1 })
-            .merging(command.attributes, uniquingKeysWith: { $1 })
+        self.attributes = self.attributes.merging(command.attributes, uniquingKeysWith: { $1 })
 
         switch command {
         case let command as RUMStopResourceCommand where command.resourceKey == resourceKey:
@@ -187,7 +185,7 @@ internal class RUMResourceScope: RUMScope {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: attributes),
+            context: .init(contextInfo: command.globalAttributes.merging(attributes) { $1 }),
             date: resourceStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
@@ -297,7 +295,7 @@ internal class RUMResourceScope: RUMScope {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: attributes),
+            context: .init(contextInfo: command.globalAttributes.merging(attributes) { $1 }),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,

@@ -212,6 +212,7 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
 
     static func mockWith(
         time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         identity: ViewIdentifier = .mockViewIdentifier(),
         name: String = .mockAny(),
@@ -223,6 +224,7 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
             identity: identity,
             name: name,
             path: path,
+            globalAttributes: globalAttributes,
             attributes: attributes,
             instrumentationType: instrumentationType
         )
@@ -289,6 +291,7 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
             time: time,
             error: error,
             source: source,
+            globalAttributes: globalAttributes,
             attributes: attributes
         )
     }
@@ -299,6 +302,7 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         type: String? = .mockAny(),
         source: RUMInternalErrorSource = .source,
         stack: String? = "Foo.swift:10",
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
@@ -307,6 +311,7 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
             type: type,
             stack: stack,
             source: source,
+            globalAttributes: globalAttributes,
             attributes: attributes
         )
     }
@@ -503,6 +508,7 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
         error: Error = ErrorMock(),
         source: RUMInternalErrorSource = .source,
         httpStatusCode: Int? = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMStopResourceWithErrorCommand {
         return RUMStopResourceWithErrorCommand(
@@ -511,6 +517,7 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
             error: error,
             source: source,
             httpStatusCode: httpStatusCode,
+            globalAttributes: globalAttributes,
             attributes: attributes
         )
     }
@@ -522,6 +529,7 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
         type: String? = .mockAny(),
         source: RUMInternalErrorSource = .source,
         httpStatusCode: Int? = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMStopResourceWithErrorCommand {
         return RUMStopResourceWithErrorCommand(
@@ -531,6 +539,7 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
             type: type,
             source: source,
             httpStatusCode: httpStatusCode,
+            globalAttributes: globalAttributes,
             attributes: attributes
         )
     }

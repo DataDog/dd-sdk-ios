@@ -545,6 +545,7 @@ class RUMResourceScopeTests: XCTestCase {
                     error: ErrorMock("network issue explanation"),
                     source: .network,
                     httpStatusCode: 500,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"]
                 ),
                 context: context,
@@ -607,6 +608,7 @@ class RUMResourceScopeTests: XCTestCase {
                     error: ErrorMock("network issue explanation"),
                     source: .network,
                     httpStatusCode: 500,
+                    globalAttributes: [:],
                     attributes: [
                         "foo": "bar",
                         RUM.Attributes.errorFingerprint: "custom-fingerprint"
@@ -674,6 +676,7 @@ class RUMResourceScopeTests: XCTestCase {
                     error: ErrorMock("network issue explanation"),
                     source: .network,
                     httpStatusCode: 500,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"]
                 ),
                 context: context,
@@ -739,6 +742,7 @@ class RUMResourceScopeTests: XCTestCase {
                     error: ErrorMock("network issue explanation"),
                     source: .network,
                     httpStatusCode: 500,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"]
                 ),
                 context: context,
@@ -809,6 +813,7 @@ class RUMResourceScopeTests: XCTestCase {
                     error: ErrorMock("network issue explanation"),
                     source: .network,
                     httpStatusCode: 500,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"]
                 ),
                 context: customContext,

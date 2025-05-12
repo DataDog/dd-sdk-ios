@@ -46,9 +46,8 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .takeSingle()
 
         let firstView = try XCTUnwrap(session.views.first(where: { $0.name == firstViewName }))
-        firstView.viewEvents.forEach { viewEvent in
-            XCTAssertEqual(viewEvent.numberOfAttributes, 3)
-        }
+        XCTAssertEqual(firstView.viewEvents[0].numberOfAttributes, 3) // startView
+        XCTAssertEqual(firstView.viewEvents[1].numberOfAttributes, 0) // stopView
 
         let secondView = try XCTUnwrap(session.views.first(where: { $0.name == secondViewName }))
         secondView.viewEvents.forEach { viewEvent in
@@ -262,7 +261,7 @@ final class RUMAttributesIntegrationTests: XCTestCase {
         }
 
         XCTAssertEqual(lastCustomViewEvent?.attribute(forKey: "key2"), "value2")
-        XCTAssertEqual(lastCustomViewEvent?.attribute(forKey: "sameKey"), "globalValue")
+        XCTAssertEqual(lastCustomViewEvent?.attribute(forKey: "sameKey"), "value1") // view attributes take precedence
     }
 
     func testWhenViewReceivesActions_theViewAttributesAreNotUpdated_withActionAttributes() throws {

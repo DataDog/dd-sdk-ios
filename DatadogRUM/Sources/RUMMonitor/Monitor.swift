@@ -247,6 +247,7 @@ extension Monitor: RUMMonitorProtocol {
                 identity: ViewIdentifier(viewController),
                 name: name ?? viewController.canonicalClassName,
                 path: viewController.canonicalClassName,
+                globalAttributes: self.attributes,
                 attributes: attributes,
                 instrumentationType: .manual
             )
@@ -257,6 +258,7 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMStopViewCommand(
                 time: dateProvider.now,
+                globalAttributes: self.attributes,
                 attributes: attributes,
                 identity: ViewIdentifier(viewController)
             )
@@ -270,6 +272,7 @@ extension Monitor: RUMMonitorProtocol {
                 identity: ViewIdentifier(key),
                 name: name ?? key,
                 path: key,
+                globalAttributes: self.attributes,
                 attributes: attributes,
                 instrumentationType: .manual
             )
@@ -280,6 +283,7 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMStopViewCommand(
                 time: dateProvider.now,
+                globalAttributes: self.attributes,
                 attributes: attributes,
                 identity: ViewIdentifier(key)
             )
@@ -290,6 +294,7 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMAddViewLoadingTime(
                 time: dateProvider.now,
+                globalAttributes: self.attributes,
                 attributes: [:],
                 overwrite: overwrite
             )
@@ -302,6 +307,7 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMAddViewTimingCommand(
                 time: dateProvider.now,
+                globalAttributes: self.attributes,
                 attributes: [:],
                 timingName: name
             )
@@ -326,6 +332,7 @@ extension Monitor: RUMMonitorProtocol {
                 type: type,
                 stack: stack,
                 source: RUMInternalErrorSource(source),
+                globalAttributes: self.attributes,
                 attributes: attributes
             )
         )
@@ -337,6 +344,7 @@ extension Monitor: RUMMonitorProtocol {
                 time: dateProvider.now,
                 error: error,
                 source: RUMInternalErrorSource(source),
+                globalAttributes: self.attributes,
                 attributes: attributes
             )
         )
@@ -349,6 +357,7 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.now,
+                globalAttributes: self.attributes,
                 attributes: attributes,
                 url: request.url?.absoluteString ?? "unknown_url",
                 httpMethod: RUMMethod(httpMethod: request.httpMethod),
@@ -363,6 +372,7 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.now,
+                globalAttributes: self.attributes,
                 attributes: attributes,
                 url: url.absoluteString,
                 httpMethod: .get,
@@ -377,6 +387,7 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.now,
+                globalAttributes: self.attributes,
                 attributes: attributes,
                 url: urlString,
                 httpMethod: httpMethod,
@@ -391,6 +402,7 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMAddResourceMetricsCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.now,
+                globalAttributes: self.attributes,
                 attributes: attributes,
                 metrics: ResourceMetrics(taskMetrics: metrics)
             )
@@ -412,6 +424,7 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStopResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.now,
+                globalAttributes: self.attributes,
                 attributes: attributes,
                 kind: resourceKind,
                 httpStatusCode: statusCode,
@@ -425,6 +438,7 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStopResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.now,
+                globalAttributes: self.attributes,
                 attributes: attributes,
                 kind: kind,
                 httpStatusCode: statusCode,
@@ -441,6 +455,7 @@ extension Monitor: RUMMonitorProtocol {
                 error: error,
                 source: .network,
                 httpStatusCode: (response as? HTTPURLResponse)?.statusCode,
+                globalAttributes: self.attributes,
                 attributes: attributes
             )
         )
@@ -455,6 +470,7 @@ extension Monitor: RUMMonitorProtocol {
                 type: type,
                 source: .network,
                 httpStatusCode: (response as? HTTPURLResponse)?.statusCode,
+                globalAttributes: self.attributes,
                 attributes: attributes
             )
         )
@@ -466,6 +482,7 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMAddUserActionCommand(
                 time: dateProvider.now,
+                globalAttributes: self.attributes,
                 attributes: attributes,
                 instrumentation: .manual,
                 actionType: type,
@@ -478,6 +495,7 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMStartUserActionCommand(
                 time: dateProvider.now,
+                globalAttributes: self.attributes,
                 attributes: attributes,
                 instrumentation: .manual,
                 actionType: type,
@@ -490,6 +508,7 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMStopUserActionCommand(
                 time: dateProvider.now,
+                globalAttributes: self.attributes,
                 attributes: attributes,
                 actionType: type,
                 name: name
@@ -553,6 +572,7 @@ extension Monitor {
                 type: type,
                 stack: stack,
                 source: source,
+                globalAttributes: self.attributes,
                 attributes: attributes
             )
         )
