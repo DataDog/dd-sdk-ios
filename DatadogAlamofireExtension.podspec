@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogAlamofireExtension"
-  s.version      = "2.23.0"
+  s.version      = "2.27.0"
   s.summary      = "An Official Extensions of Datadog Swift SDK for Alamofire."
   s.description  = <<-DESC
                    The DatadogAlamofireExtension pod is deprecated and will no longer be maintained.

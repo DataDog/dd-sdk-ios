@@ -207,7 +207,6 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(child.parentID, nil)
     }
 
-    /// TODO: RUM-4795 This test is currently disabled as it proves to be flaky.
     func testSetActive_givenParentSpan() throws {
         // Given
         let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
@@ -217,6 +216,26 @@ final class OTelSpanTests: XCTestCase {
         // When
         childSpan.end()
         parentSpan.end()
+
+        // Then
+        let recordedSpans = try featureScope.spanEventsWritten()
+        XCTAssertEqual(recordedSpans.count, 2)
+        let child = recordedSpans.first!
+        let parent = recordedSpans.last!
+        XCTAssertEqual(child.traceID, parent.traceID)
+        XCTAssertNil(parent.parentID)
+        XCTAssertEqual(child.parentID, parent.spanID)
+    }
+
+    func testWithActiveSpan() throws {
+        // Given
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
+
+        // When
+        tracer.spanBuilder(spanName: "Parent").withActiveSpan { _ in
+            let childSpan = tracer.spanBuilder(spanName: "Child").startSpan()
+            childSpan.end()
+        }
 
         // Then
         let recordedSpans = try featureScope.spanEventsWritten()

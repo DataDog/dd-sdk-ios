@@ -76,6 +76,9 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
         if swiftStruct.conforms(to: codableProtocol) {
             try printCodingKeys(for: swiftStruct.properties)
         }
+
+        writeEmptyLine()
+        try printInit(swiftStruct)
         try printNestedTypes(in: swiftStruct)
         indentLeft()
         writeLine("}")
@@ -101,7 +104,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
                 case let enumValue as SwiftEnum.Case:
                     return " = .\(enumValue.label)"
                 default:
-                    throw Exception.unimplemented("Failed to print prooperty default value: \(value)")
+                    throw Exception.unimplemented("Failed to print property default value: \(value)")
                 }
             }
 
@@ -112,6 +115,44 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
                 writeEmptyLine()
             }
         }
+    }
+
+    private func printInit(_ swiftStruct: SwiftStruct) throws {
+        let properties = swiftStruct.properties.filter { $0.defaultValue == nil }
+
+        printComment(swiftStruct.comment)
+        guard !properties.isEmpty else {
+            writeLine("\(configuration.accessLevel) init() { }")
+            return
+        }
+
+        writeLine("///")
+        printComment("- Parameters:")
+        properties.enumerated().forEach { index, property in
+            printComment("  - \(property.backtickName):\(property.comment.map { " \($0)" } ?? "")")
+        }
+
+        writeLine("\(configuration.accessLevel) init(")
+        indentRight()
+        try properties.enumerated().forEach { index, property in
+            let name = property.backtickName
+            let type = try typeDeclaration(property.type)
+            let optionality = property.isOptional ? "? = nil" : ""
+            let separator = index < properties.count - 1 ? "," : ""
+            writeLine("\(name): \(type)\(optionality)\(separator)")
+        }
+
+        indentLeft()
+        writeLine(") {")
+        indentRight()
+
+        properties.enumerated().forEach { index, property in
+            let name = property.backtickName
+            writeLine("self.\(name) = \(name)")
+        }
+
+        indentLeft()
+        writeLine("}")
     }
 
     /// Prints `CodingKeys` for given properties.
@@ -125,7 +166,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
 
         func printStaticCodingKeys(named codingKeyEnumName: String) throws {
             writeEmptyLine()
-            writeLine("enum \(codingKeyEnumName): String, CodingKey {")
+            writeLine("\(configuration.accessLevel) enum \(codingKeyEnumName): String, CodingKey {")
             indentRight()
             try staticallyCodedProperties
                 .forEach { property in

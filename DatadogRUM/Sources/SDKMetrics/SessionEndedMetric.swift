@@ -39,16 +39,6 @@ internal class SessionEndedMetric {
         static let rseKey = "rse"
     }
 
-    /// Represents the type of instrumentation used to start a view.
-    internal enum ViewInstrumentationType: String, Encodable {
-        /// View was started manually through `RUMMonitor.shared().startView()` API.
-        case manual
-        /// View was started automatically with `UIKitRUMViewsPredicate`.
-        case uikit
-        /// View was started through `trackRUMView()` SwiftUI modifier.
-        case swiftui
-    }
-
     /// An ID of the session being tracked through this metric object.
     let sessionID: RUMUUID
 
@@ -64,7 +54,7 @@ internal class SessionEndedMetric {
         let viewURL: String
         /// The type of instrumentation that started this view.
         /// It can be `nil` if view was started implicitly by RUM, which is the case for "ApplicationLaunch" and "Background" views.
-        let instrumentationType: ViewInstrumentationType?
+        let instrumentationType: InstrumentationType?
         /// The start of the view in milliseconds from from epoch.
         let startMs: Int64
         /// The duration of the view in nanoseconds.
@@ -74,7 +64,7 @@ internal class SessionEndedMetric {
 
         init(
             viewURL: String,
-            instrumentationType: ViewInstrumentationType?,
+            instrumentationType: InstrumentationType?,
             startMs: Int64,
             durationNs: Int64,
             hasReplay: Bool
@@ -103,7 +93,7 @@ internal class SessionEndedMetric {
     private var wasStopped = false
 
     /// Information about the upload quality during the session.
-    private var uploadQuality: Attributes.UploadQuality
+    private var uploadQuality: [String: Attributes.UploadQuality] = [:]
 
     /// If `RUM.Configuration.trackBackgroundEvents` was enabled for this session.
     private let tracksBackgroundEvents: Bool
@@ -142,11 +132,6 @@ internal class SessionEndedMetric {
         self.precondition = precondition
         self.tracksBackgroundEvents = tracksBackgroundEvents
         self.ntpOffsetAtStart = context.serverTimeOffset
-        self.uploadQuality = Attributes.UploadQuality(
-            cycleCount: 0,
-            failureCount: [:],
-            blockerCount: [:]
-        )
     }
 
     /// Tracks the view event that occurred during the session.
@@ -154,7 +139,7 @@ internal class SessionEndedMetric {
     ///   - view: the view event to track
     ///   - instrumentationType: the type of instrumentation used to start this view (only the first value for each `view.id` is tracked; succeeding values
     ///   will be ignored so it is okay to pass value on first call and then follow with `nil` for next updates of given `view.id`)
-    func track(view: RUMViewEvent, instrumentationType: ViewInstrumentationType?) throws {
+    func track(view: RUMViewEvent, instrumentationType: InstrumentationType?) throws {
         guard view.session.id == sessionID.toRUMDataFormat else {
             throw SessionEndedMetricError.trackingViewInForeignSession(viewURL: view.view.url, sessionID: sessionID)
         }
@@ -212,6 +197,16 @@ internal class SessionEndedMetric {
     /// - Parameters:
     ///   - attributes: The upload quality attributes
     func track(uploadQuality attributes: [String: Encodable]) {
+        guard let track = attributes[UploadQualityMetric.track] as? String else {
+            return
+        }
+
+        let uploadQuality = self.uploadQuality[track] ?? Attributes.UploadQuality(
+            cycleCount: 0,
+            failureCount: [:],
+            blockerCount: [:]
+        )
+
         var failureCount = uploadQuality.failureCount
         var blockerCount = uploadQuality.blockerCount
 
@@ -227,7 +222,7 @@ internal class SessionEndedMetric {
             }
         }
 
-        uploadQuality = Attributes.UploadQuality(
+        self.uploadQuality[track] = Attributes.UploadQuality(
             cycleCount: uploadQuality.cycleCount + 1,
             failureCount: failureCount,
             blockerCount: blockerCount
@@ -344,7 +339,10 @@ internal class SessionEndedMetric {
         }
 
         /// Information about the upload quality during the session.
-        let uploadQuality: UploadQuality
+        /// The upload quality is splitting between upload track name.
+/// Tracks upload quality during the session, aggregating them by track name.
+/// Each track reports its own upload quality metrics.
+        let uploadQuality: [String: UploadQuality]
 
         enum CodingKeys: String, CodingKey {
             case processType = "process_type"
@@ -379,8 +377,8 @@ internal class SessionEndedMetric {
         let appLaunchViewsCount = trackedViews.values.filter({ $0.viewURL == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL }).count
         var byInstrumentationViewsCount: [String: Int] = [:]
         trackedViews.values.forEach {
-            if let instrumentationType = $0.instrumentationType?.rawValue {
-                byInstrumentationViewsCount[instrumentationType] = (byInstrumentationViewsCount[instrumentationType] ?? 0) + 1
+            if let instrumentationType = $0.instrumentationType {
+                byInstrumentationViewsCount[instrumentationType.metricKey] = (byInstrumentationViewsCount[instrumentationType.metricKey] ?? 0) + 1
             }
         }
         let withHasReplayCount = trackedViews.values.reduce(0, { acc, next in acc + (next.hasReplay ? 1 : 0) })
@@ -454,4 +452,15 @@ internal class SessionEndedMetric {
 private extension Int64 {
     /// Converts timestamp represented in milliseconds to nanoseconds with preventing Int64 overflow.
     var msToNs: Int64 { multipliedReportingOverflow(by: 1_000_000).partialValue }
+}
+
+extension InstrumentationType: Encodable {
+    var metricKey: String {
+        switch self {
+        case .uikit: return "uikit"
+        case .swiftuiAutomatic: return "swiftuiAutomatic"
+        case .swiftui: return "swiftui"
+        case .manual: return "manual"
+        }
+    }
 }

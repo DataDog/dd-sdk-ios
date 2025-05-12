@@ -22,6 +22,8 @@ func addOpenTelemetryDependency(_ version: Version) {
     // sub directories, in this case the project will depend on the default
     // 'DataDog/opentelemetry-swift-packages' depedency.
     if ProcessInfo.processInfo.environment["OTEL_SWIFT"] != nil {
+        package.platforms = [.iOS(.v13), .tvOS(.v13)]
+
         package.dependencies = [
             .package(url: "https://github.com/open-telemetry/opentelemetry-swift", exact: version)
         ]
@@ -38,6 +40,8 @@ func addOpenTelemetryDependency(_ version: Version) {
             )
         ]
     } else {
+        package.platforms = [.iOS(.v12), .tvOS(.v12)]
+
         package.dependencies = [
             .package(url: "https://github.com/DataDog/opentelemetry-swift-packages", exact: version)
         ]
@@ -54,4 +58,10 @@ func addOpenTelemetryDependency(_ version: Version) {
     }
 }
 
-addOpenTelemetryDependency("1.6.0")
+if ProcessInfo.processInfo.environment["OTEL_SWIFT"] != nil {
+    // RUM-9224: This condition was added to use DataDog/opentelemetry-swift-packages hotfix
+    // release. It should be removed with the next upgrade of OTelApi.
+    addOpenTelemetryDependency("1.13.0")
+} else {
+    addOpenTelemetryDependency("1.13.1")
+}

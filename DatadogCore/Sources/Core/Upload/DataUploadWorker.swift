@@ -132,13 +132,17 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
                     DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
                     if files.isEmpty {
-                        self.delay.decrease()
+                        self.delay.reset()
                     }
 
                     self.fileReader.markBatchAsRead(
                         batch,
                         reason: .intakeCode(responseCode: uploadStatus.responseCode)
                     )
+#if DD_BENCHMARK
+                    bench.meter.counter(metric: "ios.benchmark.upload_count")
+                        .increment(attributes: ["track": self.featureName])
+#endif
 
                     previousUploadStatus = nil
 

@@ -10,62 +10,26 @@ import DatadogInternal
 @testable import DatadogLogs
 
 class LogMessageReceiverTests: XCTestCase {
-    struct LogMessage: Encodable {
-        let logger: String
-        let service: String?
-        let date: Date
-        let message: String
-        let level: LogLevel
-        let thread: String
-        let error: DDError?
-        let networkInfoEnabled: Bool?
-        let userAttributes: [String: String]?
-        let internalAttributes: [String: String]?
-    }
-
-    func testReceiveIncompleteLogMessage() throws {
-        let expectation = expectation(description: "Don't send log fallback")
-
-        // Given
-        let core = PassthroughCoreMock(
-            context: .mockWith(service: "service-test"),
-            messageReceiver: LogMessageReceiver.mockAny()
-        )
-
-        // When
-        core.send(
-            message: .baggage(
-                key: "log",
-                value: "wrong-type"
-            ),
-            else: { expectation.fulfill() }
-        )
-
-        // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertTrue(core.events.isEmpty)
-    }
-
     func testReceivePartialLogMessage() throws {
         // Given
+        let expectation = expectation(description: "Send log")
         let core = PassthroughCoreMock(
             context: .mockWith(service: "service-test"),
-            expectation: expectation(description: "Send log"),
             messageReceiver: LogMessageReceiver.mockAny()
         )
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
         core.send(
-            message: .baggage(
-                key: "log",
-                value: LogMessage(
+            message: .payload(
+                LogMessage(
                     logger: "logger-test",
                     service: nil,
                     date: .mockDecember15th2019At10AMUTC(),
                     message: "message-test",
+                    error: nil,
                     level: .info,
                     thread: "thread-test",
-                    error: nil,
                     networkInfoEnabled: nil,
                     userAttributes: nil,
                     internalAttributes: nil
@@ -91,24 +55,24 @@ class LogMessageReceiverTests: XCTestCase {
 
     func testReceiveCompleteLogMessage() throws {
         // Given
+        let expectation = expectation(description: "Send log")
         let core = PassthroughCoreMock(
             context: .mockAny(),
-            expectation: expectation(description: "Send log"),
             messageReceiver: LogMessageReceiver.mockAny()
         )
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
         core.send(
-            message: .baggage(
-                key: "log",
-                value: LogMessage(
+            message: .payload(
+                LogMessage(
                     logger: "logger-test",
                     service: "service-test",
                     date: .mockDecember15th2019At10AMUTC(),
                     message: "message-test",
+                    error: .mockAny(),
                     level: .info,
                     thread: "thread-test",
-                    error: .mockAny(),
                     networkInfoEnabled: true,
                     userAttributes: ["user": "attribute"],
                     internalAttributes: ["internal": "attribute"]
@@ -140,26 +104,26 @@ class LogMessageReceiverTests: XCTestCase {
 
     func testReceiveRejectedLogMessage() throws {
         // Given
+        let expectation = expectation(description: "Open scope but don't send log")
         let core = PassthroughCoreMock(
             context: .mockWith(service: "service-test"),
-            expectation: expectation(description: "Open scope but don't send log"),
             messageReceiver: LogMessageReceiver(
                 logEventMapper: SyncLogEventMapper { _ in nil }
             )
         )
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
         core.send(
-            message: .baggage(
-                key: "log",
-                value: LogMessage(
+            message: .payload(
+                LogMessage(
                     logger: "logger-test",
                     service: nil,
                     date: .mockDecember15th2019At10AMUTC(),
                     message: "message-test",
+                    error: nil,
                     level: .info,
                     thread: "thread-test",
-                    error: nil,
                     networkInfoEnabled: nil,
                     userAttributes: nil,
                     internalAttributes: nil

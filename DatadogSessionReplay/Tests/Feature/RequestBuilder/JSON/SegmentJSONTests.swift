@@ -6,9 +6,10 @@
 
 #if os(iOS)
 import XCTest
-import TestUtilities
 import DatadogInternal
 
+@_spi(Internal)
+import TestUtilities
 @_spi(Internal)
 @testable import DatadogSessionReplay
 

@@ -110,6 +110,10 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
                 .joined(separator: Constants.tracestatePairSeparator)
 
             traceHeaderFields[W3CHTTPHeaders.tracestate] = "\(Constants.dd)=\(ddtracestate)"
+
+            if let sessionId = traceContext.rumSessionId {
+                traceHeaderFields[W3CHTTPHeaders.baggage] = "\(Constants.rumSessionBaggageKey)=\(sessionId)"
+            }
         case (.sampled, false):
             break
         }

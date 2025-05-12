@@ -10,7 +10,7 @@ import TestUtilities
 
 class HostsSanitizerTests: XCTestCase {
     func testSanitizationAndWarningMessages() throws {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 
@@ -21,31 +21,30 @@ class HostsSanitizerTests: XCTestCase {
             "https://first-party.com/v2/api", // sanitize to → "first-party.com"
             "https://192.168.0.1/api", // sanitize to → "192.168.0.1"
             "https://192.168.0.2", // sanitize to → "192.168.0.2"
-            "invalid-host-name", // drop
+            "invalid_host_name", // drop
             "192.168.0.3:8080", // drop
             "", // drop
             "localhost", // accept
             "192.168.0.4", // accept
             "valid-host-name.com", // accept
+            "customprotocol://name" // accept
         ]
 
         // Then
         let sanitizer = HostsSanitizer()
         let sanitizedHosts = sanitizer.sanitized(hosts: hosts, warningMessage: "Host is not valid")
 
-        XCTAssertEqual(
-            sanitizedHosts,
-            [
-                "first-party.com",
-                "api.first-party.com",
-                "localhost",
-                "192.168.0.1",
-                "192.168.0.2",
-                "localhost",
-                "192.168.0.4",
-                "valid-host-name.com"
-            ]
-        )
+        XCTAssertEqual(sanitizedHosts.count, 8)
+        XCTAssertTrue(sanitizedHosts.contains("first-party.com"))
+        XCTAssertTrue(sanitizedHosts.contains("api.first-party.com"))
+        XCTAssertTrue(sanitizedHosts.contains("192.168.0.1"))
+        XCTAssertTrue(sanitizedHosts.contains("192.168.0.2"))
+        XCTAssertTrue(sanitizedHosts.contains("localhost"))
+        XCTAssertTrue(sanitizedHosts.contains("192.168.0.4"))
+        XCTAssertTrue(sanitizedHosts.contains("valid-host-name.com"))
+        XCTAssertTrue(sanitizedHosts.contains("name"))
+
+        XCTAssertEqual(printFunction.printedMessages.count, 9)
 
         XCTAssertTrue(
             printFunction.printedMessages.contains("⚠️ Host is not valid: '192.168.0.3:8080' is not a valid host name and will be dropped.")
@@ -66,11 +65,13 @@ class HostsSanitizerTests: XCTestCase {
             printFunction.printedMessages.contains("⚠️ Host is not valid: 'https://first-party.com/v2/api' is an url and will be sanitized to: 'first-party.com'.")
         )
         XCTAssertTrue(
-            printFunction.printedMessages.contains("⚠️ Host is not valid: 'invalid-host-name' is not a valid host name and will be dropped.")
+            printFunction.printedMessages.contains("⚠️ Host is not valid: 'invalid_host_name' is not a valid host name and will be dropped.")
         )
         XCTAssertTrue(
             printFunction.printedMessages.contains("⚠️ Host is not valid: 'https://192.168.0.2' is an url and will be sanitized to: '192.168.0.2'.")
         )
-        XCTAssertEqual(printFunction.printedMessages.count, 8)
+        XCTAssertTrue(
+            printFunction.printedMessages.contains("⚠️ Host is not valid: 'customprotocol://name' is an url and will be sanitized to: 'name'.")
+        )
     }
 }

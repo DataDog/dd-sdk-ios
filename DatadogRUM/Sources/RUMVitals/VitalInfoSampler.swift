@@ -70,7 +70,7 @@ internal final class VitalInfoSampler {
         RunLoop.main.perform(inModes: [.common]) { [weak self] in
             self?.takeSample()
         }
-        // Schedule reoccuring samples
+        // Schedule reoccurring samples
         let timer = Timer(
             timeInterval: frequency,
             repeats: true

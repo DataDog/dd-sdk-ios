@@ -90,8 +90,8 @@ internal final class FeatureDataStore: DataStore {
     func clearAllData() {
         queue.async {
             do {
-                let directory = try self.coreDirectory.coreDirectory.subdirectory(path: self.directoryPath)
-                try directory.deleteAllFiles()
+                let directory = try self.coreDirectory.coreDirectory.subdirectoryIfExists(path: self.directoryPath)
+                try directory?.deleteAllFiles()
             } catch let error {
                 DD.logger.error("[Data Store] Error on clearing all data for `\(self.feature)`", error: error)
                 self.telemetry.error("[Data Store] Error on clearing all data for `\(self.feature)`", error: DDError(error: error))

@@ -1,6 +1,32 @@
 # Unreleased
+
+# 2.27.0 / 06-05-2025
+
+- [FEATURE] Propagate RUM session ID in request headers. See [#2201][]
+- [FIX] Fix access level for `DatadogPrivate` imports. See [#2268][]
+
+# 2.26.0 / 10-04-2025
+
+- [FIX] Fix Fatal App Hang Duplicates. See [#2260][]
+
+# 2.25.0 / 03-04-2025
+
+- [FEATURE] Calculate Hang rate and Hitch rate in RUM. See [#2234][]
+- [FIX] Fixed Swift 6.0.2 compatibility issue with `DatadogCrashReporting` framework. See [#2251][]
+- [IMPROVEMENT] Refine errors printed from `clearAllData()`. See [#2240][]
+- [IMPROVEMENT] Simplify host sanitizer logic. See [#2223][]
+- [FIX] Fix view drop in SwiftUI modal navigation. See [#2236][]
+
+# 2.24.1 / 31-03-2025
+
+- [FIX] Do not enforce dynamic linking for OpenTelemetryApi in `DatadogTrace`. See [#2244][]
+
+# 2.24.0 / 06-03-2025
+
 - [FEATURE] Adds anonymous identifier configuration for RUM Sessions linking. See [#2172][]
+- [FEATURE] Update `DatadogTrace` to OpenTelemetryApi 1.13.0. See [#2217][]
 - [FIX] Session Replay: Fix captured displayed image frame computation when `UIImageView.contentMode` is `scaleAspectFill`. See [#2200][]
+- [IMPROVEMENT] Updates `setUserInfo` to require `id` parameter. See [#2195][]
 
 # 2.23.0 / 05-02-2025
 
@@ -833,7 +859,19 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2169]: https://github.com/DataDog/dd-sdk-ios/pull/2169
 [#2170]: https://github.com/DataDog/dd-sdk-ios/pull/2170
 [#2177]: https://github.com/DataDog/dd-sdk-ios/pull/2177
+[#2217]: https://github.com/DataDog/dd-sdk-ios/pull/2217
 [#2182]: https://github.com/DataDog/dd-sdk-ios/pull/2182
+[#2244]: https://github.com/DataDog/dd-sdk-ios/pull/2244
+[#2200]: https://github.com/DataDog/dd-sdk-ios/pull/2200
+[#2201]: https://github.com/DataDog/dd-sdk-ios/pull/2201
+[#2195]: https://github.com/DataDog/dd-sdk-ios/pull/2195
+[#2251]: https://github.com/DataDog/dd-sdk-ios/pull/2251
+[#2240]: https://github.com/DataDog/dd-sdk-ios/pull/2240
+[#2223]: https://github.com/DataDog/dd-sdk-ios/pull/2223
+[#2234]: https://github.com/DataDog/dd-sdk-ios/pull/2234
+[#2236]: https://github.com/DataDog/dd-sdk-ios/pull/2236
+[#2260]: https://github.com/DataDog/dd-sdk-ios/pull/2260
+[#2268]: https://github.com/DataDog/dd-sdk-ios/pull/2268
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

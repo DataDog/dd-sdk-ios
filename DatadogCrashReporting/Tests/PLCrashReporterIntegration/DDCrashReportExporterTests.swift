@@ -491,4 +491,26 @@ class DDCrashReportExporterTests: XCTestCase {
             )
         }
     }
+
+    // MARK: - Validate size of the Crash report
+
+    func testPLCrashReporterWithSmallSizeForTheReport() throws {
+        // Given
+        let maxReportBytes: UInt = 1_024
+
+        // When
+        let crashReporter = try PLCrashReporter(configuration: .ddConfiguration(maxReportBytes: maxReportBytes))
+
+        // Then
+        var plCrashReport: PLCrashReport?
+        do {
+            // The generated report is bigger than the defined maxReportBytes
+            let data = try crashReporter?.generateLiveReportAndReturnError()
+            plCrashReport = try PLCrashReport(data: data)
+        } catch {
+            XCTAssertTrue(error.localizedDescription.matches(regex: "Could not decode crash report with size of (\\d+) bytes."))
+        }
+
+        XCTAssertNil(plCrashReport)
+    }
 }

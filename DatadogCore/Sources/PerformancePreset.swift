@@ -65,13 +65,15 @@ internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPe
     let minUploadDelay: TimeInterval
     let maxUploadDelay: TimeInterval
     let uploadDelayChangeRate: Double
+    let maxBatchesPerUpload: Int
 }
 
 internal extension PerformancePreset {
     init(
         batchSize: Datadog.Configuration.BatchSize,
         uploadFrequency: Datadog.Configuration.UploadFrequency,
-        bundleType: BundleType
+        bundleType: BundleType,
+        batchProcessingLevel: Datadog.Configuration.BatchProcessingLevel
     ) {
         let meanFileAgeInSeconds: TimeInterval = {
             switch (bundleType, batchSize) {
@@ -113,14 +115,16 @@ internal extension PerformancePreset {
         self.init(
             meanFileAge: meanFileAgeInSeconds,
             minUploadDelay: minUploadDelayInSeconds,
-            uploadDelayFactors: uploadDelayFactors
+            uploadDelayFactors: uploadDelayFactors,
+            maxBatchesPerUpload: batchProcessingLevel.maxBatchesPerUpload
         )
     }
 
     init(
         meanFileAge: TimeInterval,
         minUploadDelay: TimeInterval,
-        uploadDelayFactors: (initial: Double, min: Double, max: Double, changeRate: Double)
+        uploadDelayFactors: (initial: Double, min: Double, max: Double, changeRate: Double),
+        maxBatchesPerUpload: Int
     ) {
         self.maxFileSize = 4.MB.asUInt32()
         self.maxDirectorySize = 512.MB.asUInt32()
@@ -133,6 +137,7 @@ internal extension PerformancePreset {
         self.minUploadDelay = minUploadDelay * uploadDelayFactors.min
         self.maxUploadDelay = minUploadDelay * uploadDelayFactors.max
         self.uploadDelayChangeRate = uploadDelayFactors.changeRate
+        self.maxBatchesPerUpload = maxBatchesPerUpload
     }
 
     func updated(with override: PerformancePresetOverride) -> PerformancePreset {
@@ -147,7 +152,8 @@ internal extension PerformancePreset {
             initialUploadDelay: override.initialUploadDelay ?? initialUploadDelay,
             minUploadDelay: override.minUploadDelay ?? minUploadDelay,
             maxUploadDelay: override.maxUploadDelay ?? maxUploadDelay,
-            uploadDelayChangeRate: override.uploadDelayChangeRate ?? uploadDelayChangeRate
+            uploadDelayChangeRate: override.uploadDelayChangeRate ?? uploadDelayChangeRate,
+            maxBatchesPerUpload: maxBatchesPerUpload
         )
     }
 }

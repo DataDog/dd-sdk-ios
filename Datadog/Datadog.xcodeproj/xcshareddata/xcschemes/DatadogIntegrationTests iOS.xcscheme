@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1410"
+   version = "1.3">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "118247B32D908BEF00E3D16F"
+               BuildableName = "DatadogIntegrationTests iOS.xctest"
+               BlueprintName = "DatadogIntegrationTests iOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "NO"
+      enableThreadSanitizer = "YES"
+      codeCoverageEnabled = "YES"
+      onlyGenerateCoverageForSpecifiedTargets = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "118247B32D908BEF00E3D16F"
+            BuildableName = "DatadogIntegrationTests iOS.xctest"
+            BlueprintName = "DatadogIntegrationTests iOS"
+            ReferencedContainer = "container:Datadog.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "IS_RUNNING_UNIT_TESTS"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "DD_TEST_RUNNER"
+            value = "$(DD_TEST_RUNNER)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_API_KEY"
+            value = "$(DD_API_KEY)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_ENV"
+            value = "$(DD_ENV)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_SERVICE"
+            value = "$(DD_SERVICE)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "SRCROOT"
+            value = "$(SRCROOT)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_ENABLE_STDOUT_INSTRUMENTATION"
+            value = "$(DD_ENABLE_STDOUT_INSTRUMENTATION)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_ENABLE_STDERR_INSTRUMENTATION"
+            value = "$(DD_ENABLE_STDERR_INSTRUMENTATION)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_DISABLE_NETWORK_INSTRUMENTATION"
+            value = "$(DD_DISABLE_NETWORK_INSTRUMENTATION)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_DISABLE_RUM_INTEGRATION"
+            value = "$(DD_DISABLE_RUM_INTEGRATION)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_DISABLE_SOURCE_LOCATION"
+            value = "$(DD_DISABLE_SOURCE_LOCATION)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_DISABLE_CRASH_HANDLER"
+            value = "$(DD_DISABLE_CRASH_HANDLER)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_GIT_REPOSITORY_URL"
+            value = "$(DD_GIT_REPOSITORY_URL)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TRACE_DEBUG"
+            value = "$(DD_TRACE_DEBUG)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "GITLAB_CI"
+            value = "$(GITLAB_CI)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PROJECT_DIR"
+            value = "$(CI_PROJECT_DIR)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_JOB_STAGE"
+            value = "$(CI_JOB_STAGE)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_JOB_NAME"
+            value = "$(CI_JOB_NAME)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_JOB_URL"
+            value = "$(CI_JOB_URL)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PIPELINE_ID"
+            value = "$(CI_PIPELINE_ID)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PIPELINE_IID"
+            value = "$(CI_PIPELINE_IID)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PIPELINE_URL"
+            value = "$(CI_PIPELINE_URL)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_PROJECT_PATH"
+            value = "$(CI_PROJECT_PATH)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_SHA"
+            value = "$(CI_COMMIT_SHA)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_BRANCH"
+            value = "$(CI_COMMIT_BRANCH)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_TAG"
+            value = "$(CI_COMMIT_TAG)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_MESSAGE"
+            value = "$(CI_COMMIT_MESSAGE)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_AUTHOR"
+            value = "$(CI_COMMIT_AUTHOR)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "CI_COMMIT_TIMESTAMP"
+            value = "$(CI_COMMIT_TIMESTAMP)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
+      <CodeCoverageTargets>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61133B81242393DE00786299"
+            BuildableName = "DatadogCore.framework"
+            BlueprintName = "DatadogCore iOS"
+            ReferencedContainer = "container:Datadog.xcodeproj">
+         </BuildableReference>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61133BEF242397DA00786299"
+            BuildableName = "DatadogObjc.framework"
+            BlueprintName = "DatadogObjc iOS"
+            ReferencedContainer = "container:Datadog.xcodeproj">
+         </BuildableReference>
+      </CodeCoverageTargets>
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "118247B32D908BEF00E3D16F"
+               BuildableName = "DatadogIntegrationTests iOS.xctest"
+               BlueprintName = "DatadogIntegrationTests iOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>

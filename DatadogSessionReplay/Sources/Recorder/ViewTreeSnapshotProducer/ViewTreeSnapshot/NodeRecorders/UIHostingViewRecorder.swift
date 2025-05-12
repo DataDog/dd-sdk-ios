@@ -41,13 +41,13 @@ internal class UIHostingViewRecorder: NodeRecorder {
 
         do {
             let nodeID = context.ids.nodeID(view: view, nodeRecorder: self)
-            return try semantics(refelecting: view, nodeID: nodeID, with: attributes, in: context)
+            return try semantics(reflecting: view, nodeID: nodeID, with: attributes, in: context)
         } catch {
             return nil
         }
     }
 
-    func semantics(refelecting subject: AnyObject, nodeID: NodeID, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics? {
+    func semantics(reflecting subject: AnyObject, nodeID: NodeID, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics? {
         guard
             let ivar = class_getInstanceVariable(type(of: subject), "renderer"),
             let renderer = object_getIvar(subject, ivar) as? AnyObject
@@ -82,7 +82,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
 
 @available(iOS 18.1, tvOS 18.1, *)
 internal class iOS18HostingViewRecorder: UIHostingViewRecorder {
-    override func semantics(refelecting subject: AnyObject, nodeID: NodeID, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics? {
+    override func semantics(reflecting subject: AnyObject, nodeID: NodeID, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics? {
         guard
             let ivar = class_getInstanceVariable(type(of: subject), "_base"),
             let _base = object_getIvar(subject, ivar) as? AnyObject
@@ -90,7 +90,7 @@ internal class iOS18HostingViewRecorder: UIHostingViewRecorder {
             return nil
         }
 
-        return try super.semantics(refelecting: _base, nodeID: nodeID, with: attributes, in: context)
+        return try super.semantics(reflecting: _base, nodeID: nodeID, with: attributes, in: context)
     }
 }
 

@@ -100,7 +100,7 @@ class CrashReportingPluginTests: XCTestCase {
 
     // MARK: - Handling Errors
 
-    private let printFunction = PrintFunctionMock()
+    private let printFunction = PrintFunctionSpy()
 
     func testGivenPendingCrashReport_whenItsLoadingFails_itPrintsError() throws {
         let expectation = self.expectation(description: "No Crash Report was delivered to the caller.")

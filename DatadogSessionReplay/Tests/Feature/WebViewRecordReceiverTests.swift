@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
+
 import XCTest
 import TestUtilities
 
@@ -116,3 +118,5 @@ class WebViewRecordReceiverTests: XCTestCase {
         XCTAssert(message.contains("Fails to decode RUM context from Session Replay - typeMismatch"))
     }
 }
+
+#endif

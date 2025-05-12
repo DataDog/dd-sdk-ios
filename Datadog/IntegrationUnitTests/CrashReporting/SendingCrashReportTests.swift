@@ -40,8 +40,8 @@ class SendingCrashReportTests: XCTestCase {
         core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
@@ -51,8 +51,8 @@ class SendingCrashReportTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted, // CR from the app session that has enabled data collection
             lastIsAppInForeground: true, // CR occurred while the app was in the foreground
-            lastRUMAttributes: GlobalRUMAttributes(attributes: mockRandomAttributes()),
-            lastLogAttributes: .init(mockRandomAttributes())
+            lastRUMAttributes: .mockRandom(),
+            lastLogAttributes: .mockRandom()
         )
         let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
         let crashReportAttributes: [String: Encodable] = try XCTUnwrap(crashReport.additionalAttributes.dd.decode())
@@ -69,7 +69,7 @@ class SendingCrashReportTests: XCTestCase {
         XCTAssertEqual(log.error?.message, crashReport.message)
         XCTAssertEqual(log.error?.kind, crashReport.type)
         XCTAssertEqual(log.error?.stack, crashReport.stack)
-        let lastLogAttributes: [String: Encodable] = try XCTUnwrap(crashContext.lastLogAttributes.dd.decode())
+        let lastLogAttributes = try XCTUnwrap(crashContext.lastLogAttributes?.attributes)
         DDAssertJSONEqual(log.attributes.userAttributes, lastLogAttributes.merging(crashReportAttributes) { $1 })
         XCTAssertNotNil(log.attributes.internalAttributes?[DDError.threads])
         XCTAssertNotNil(log.attributes.internalAttributes?[DDError.binaryImages])
@@ -86,7 +86,7 @@ class SendingCrashReportTests: XCTestCase {
         XCTAssertNotNil(rumEvent.error.meta)
         XCTAssertNotNil(rumEvent.error.wasTruncated)
         let contextAttributes = try XCTUnwrap(rumEvent.context?.contextInfo)
-        let lastRUMAttributes = try XCTUnwrap(crashContext.lastRUMAttributes?.attributes)
+        let lastRUMAttributes = try XCTUnwrap(crashContext.lastRUMAttributes?.contextInfo)
         DDAssertJSONEqual(contextAttributes, lastRUMAttributes.merging(crashReportAttributes) { $1 })
     }
 
@@ -104,7 +104,7 @@ class SendingCrashReportTests: XCTestCase {
         // Flush async tasks in Crash Reporting feature (this is yet not a part of `core.flushAndTearDown()` today)
         // TODO: RUM-2766 Stop core instance with completion
         (core.get(feature: CrashReportingFeature.self)!.crashContextProvider as! CrashContextCoreProvider).flush()
-        core.flushAndTearDown()
+        try core.flushAndTearDown()
 
         // When (starting an SDK with pending crash report)
         core = DatadogCoreProxy()

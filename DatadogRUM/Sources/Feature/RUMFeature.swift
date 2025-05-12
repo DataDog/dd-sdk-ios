@@ -43,7 +43,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             sampleRate: configuration.sessionEndedSampleRate
         )
         let tnsPredicateType = configuration.networkSettledResourcePredicate.metricPredicateType
-        let invPredicateType = configuration.nextViewActionPredicate.metricPredicateType
+        let invPredicateType = configuration.nextViewActionPredicate?.metricPredicateType ?? .disabled
 
         var watchdogTermination: WatchdogTerminationMonitor?
         if configuration.trackWatchdogTerminations {
@@ -74,6 +74,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
+            hasAppHangsEnabled: configuration.appHangThreshold != nil,
             firstPartyHosts: {
                 switch configuration.urlSessionTracking?.firstPartyHostsTracing {
                 case let .trace(hosts, _, _):
@@ -91,12 +92,19 @@ internal final class RUMFeature: DatadogRemoteFeature {
             backtraceReporter: core.backtraceReporter,
             ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
             syntheticsTest: {
-                if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
+                if let testId = configuration.syntheticsTestId,
+                   let resultId = configuration.syntheticsResultId {
                     return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId)
                 } else {
                     return nil
                 }
             }(),
+            renderLoopObserver: DisplayLinker(notificationCenter: configuration.notificationCenter),
+            viewHitchesReaderFactory: {
+                configuration.featureFlags[.viewHitches]
+                ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
+                : nil
+            },
             vitalsReaders: configuration.vitalsUpdateFrequency.map {
                 VitalsReaders(
                     frequency: $0.timeInterval,
@@ -108,12 +116,24 @@ internal final class RUMFeature: DatadogRemoteFeature {
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,
             viewEndedMetricFactory: {
-                return ViewEndedMetricController(
-                    tnsPredicateType: tnsPredicateType,
-                    invPredicateType: invPredicateType,
+                let viewEndedController = ViewEndedController(
                     telemetry: featureScope.telemetry,
                     sampleRate: configuration.viewEndedSampleRate
                 )
+                viewEndedController.add(metric: ViewEndedMetric(tnsConfigPredicate: tnsPredicateType, invConfigPredicate: invPredicateType))
+
+                if configuration.featureFlags[.viewHitches] {
+                    viewEndedController.add(
+                        metric: ViewHitchesMetric(
+                            maxCount: ViewHitchesReader.Constants.maxCollectedHitches,
+                            slowFrameThreshold: Int64(ViewHitchesReader.Constants.hitchesMultiplier),
+                            maxDuration: (configuration.appHangThreshold ?? ViewHitchesReader.Constants.frozenFrameThreshold).toInt64Nanoseconds,
+                            viewMinDuration: RUMViewScope.Constants.minimumTimeSpentForRates.toInt64Nanoseconds
+                        )
+                    )
+                }
+
+                return viewEndedController
             },
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: { viewStartDate, viewName in
@@ -124,8 +144,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
             },
             interactionToNextViewMetricFactory: {
+                guard let nextViewActionPredicate = configuration.nextViewActionPredicate else {
+                    return nil
+                }
                 return INVMetric(
-                    predicate: configuration.nextViewActionPredicate
+                    predicate: nextViewActionPredicate
                 )
             }
         )
@@ -134,6 +157,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
             dependencies: dependencies,
             dateProvider: configuration.dateProvider
         )
+
+        if let refreshRateVital = dependencies.vitalsReaders?.refreshRate as? RenderLoopReader {
+            dependencies.renderLoopObserver?.register(refreshRateVital)
+        }
 
         let memoryWarningReporter = MemoryWarningReporter()
         let memoryWarningMonitor = MemoryWarningMonitor(
@@ -146,6 +173,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             featureScope: featureScope,
             uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
             uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
+            swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
             longTaskThreshold: configuration.longTaskThreshold,
             appHangThreshold: configuration.appHangThreshold,
             mainQueue: configuration.mainQueue,

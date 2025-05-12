@@ -14,6 +14,11 @@ import DatadogInternal
 @_exported import protocol DatadogInternal.__URLSessionDelegateProviding
 @_exported import enum DatadogInternal.URLSessionInstrumentation
 @_exported import enum DatadogInternal.TraceContextInjection
+@_exported import struct DatadogInternal.RUMViewEvent
+@_exported import struct DatadogInternal.RUMResourceEvent
+@_exported import struct DatadogInternal.RUMErrorEvent
+@_exported import struct DatadogInternal.RUMActionEvent
+@_exported import struct DatadogInternal.RUMLongTaskEvent
 // swiftlint:enable duplicate_imports
 
 extension RUM {
@@ -83,6 +88,19 @@ extension RUM {
         ///
         /// Default: `nil` - which means automatic RUM action tracking is not enabled by default.
         public var uiKitActionsPredicate: UIKitRUMActionsPredicate?
+
+        /// The predicate for automatically tracking `UIViewControllers` as RUM views.
+        ///
+        /// RUM will query this predicate for each `UIViewController` presented in the app. The predicate implementation
+        /// should return RUM view parameters if the given controller should start a view, or `nil` to ignore it.
+        ///
+        /// You can use `DefaultSwiftUIRUMViewsPredicate` or create your own predicate by implementing `SwiftUIRUMViewsPredicate`.
+        ///
+        /// Note: Automatic RUM views tracking involves swizzling the `UIViewController` lifecycle methods.
+        ///
+        /// Default: `nil` - which means automatic RUM view tracking is not enabled by default.
+        @available(*, message: "This API is experimental and may change in future releases")
+        public var swiftUIViewsPredicate: SwiftUIRUMViewsPredicate?
 
         /// The configuration for automatic RUM resources tracking.
         ///
@@ -166,9 +184,11 @@ extension RUM {
         /// The `NextViewActionPredicate` determines which action in the previous view should be considered the "last interaction" for INV,
         /// based on properties such as action type, name, or timing relative to the next view’s start.
         ///
+        /// Setting this property to `nil` will disable measuring Interaction to Next View.
+        ///
         /// Default: The default predicate, `TimeBasedINVActionPredicate`, classifies actions as the last interaction if they occur within a
         /// 3-second threshold before the next view starts. You can customize this time threshold or provide your own predicate.
-        public var nextViewActionPredicate: NextViewActionPredicate
+        public var nextViewActionPredicate: NextViewActionPredicate?
 
         /// Custom mapper for RUM view events.
         ///
@@ -177,7 +197,7 @@ extension RUM {
         /// and do not make any assumptions on the thread used to run it.
         ///
         /// Note: This mapper ensures that all views are sent by preventing the return of `nil`. To drop certain automatically
-        /// collected RUM views, adjust the implementation of the view predicate (see the `uiKitViewsPredicate` option).
+        /// collected RUM views, adjust the implementations of the view predicates (see the `uiKitViewsPredicate` and `swiftUIViewsPredicate` options).
         ///
         /// Default: `nil`.
         public var viewEventMapper: RUM.ViewEventMapper?
@@ -249,6 +269,9 @@ extension RUM {
         /// and 100 means all telemetry will be uploaded. The default value is 20.0.
         public var telemetrySampleRate: SampleRate
 
+        /// Feature flags to preview features in RUM.
+        public var featureFlags: FeatureFlags
+
         // MARK: - Nested Types
 
         /// Configuration of automatic RUM resources tracking.
@@ -299,7 +322,7 @@ extension RUM {
         /// An extra sampling rate for configuration telemetry events. It is applied on top of the value configured in public `telemetrySampleRate`.
         internal var configurationTelemetrySampleRate: SampleRate = 20.0
         /// Sample rate for "view ended" metric in telemetry.
-        internal var viewEndedSampleRate = ViewEndedMetricController.defaultSampleRate
+        internal var viewEndedSampleRate = ViewEndedController.defaultSampleRate
         /// Sample rate for "session ended" metric in telemetry.
         internal var sessionEndedSampleRate = SessionEndedMetricController.defaultSampleRate
 
@@ -372,8 +395,9 @@ extension RUM.Configuration {
     /// - Parameters:
     ///   - applicationID: The RUM application identifier.
     ///   - sessionSampleRate: The sampling rate for RUM sessions. Must be a value between `0` and `100`. Default: `100`.
-    ///   - uiKitViewsPredicate: The predicate for automatically tracking `UIViewControllers` as RUM views. Default: `nil`.
+    ///   - uiKitViewsPredicate: The predicate for automatically tracking `UIViewControllers` in `UIKit` as RUM views. Default: `nil`.
     ///   - uiKitActionsPredicate: The predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`.
+    ///   - swiftUIViewsPredicate: The predicate for automatically tracking `UIViewControllers` in `SwiftUI` as RUM views. Default: `nil`.
     ///   - urlSessionTracking: The configuration for automatic RUM resources tracking. Default: `nil`.
     ///   - trackFrustrations: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
     ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
@@ -393,11 +417,13 @@ extension RUM.Configuration {
     ///   - onSessionStart: RUM session start callback. Default: `nil`.
     ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
+    ///   - featureFlags: Experimental feature flags.
     public init(
         applicationID: String,
         sessionSampleRate: SampleRate = .maxSampleRate,
         uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,
+        swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = true,
         trackBackgroundEvents: Bool = false,
@@ -406,7 +432,7 @@ extension RUM.Configuration {
         trackWatchdogTerminations: Bool = false,
         vitalsUpdateFrequency: VitalsFrequency? = .average,
         networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
-        nextViewActionPredicate: NextViewActionPredicate = TimeBasedINVActionPredicate(),
+        nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
         viewEventMapper: RUM.ViewEventMapper? = nil,
         resourceEventMapper: RUM.ResourceEventMapper? = nil,
         actionEventMapper: RUM.ActionEventMapper? = nil,
@@ -415,12 +441,14 @@ extension RUM.Configuration {
         onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = nil,
         trackAnonymousUser: Bool = true,
-        telemetrySampleRate: SampleRate = 20
+        telemetrySampleRate: SampleRate = 20,
+        featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
         self.sessionSampleRate = sessionSampleRate
         self.uiKitViewsPredicate = uiKitViewsPredicate
         self.uiKitActionsPredicate = uiKitActionsPredicate
+        self.swiftUIViewsPredicate = swiftUIViewsPredicate
         self.urlSessionTracking = urlSessionTracking
         self.trackFrustrations = trackFrustrations
         self.trackBackgroundEvents = trackBackgroundEvents
@@ -439,6 +467,7 @@ extension RUM.Configuration {
         self.trackAnonymousUser = trackAnonymousUser
         self.telemetrySampleRate = telemetrySampleRate
         self.trackWatchdogTerminations = trackWatchdogTerminations
+        self.featureFlags = featureFlags
     }
 }
 
@@ -452,5 +481,31 @@ extension InternalExtension where ExtendedType == RUM.Configuration {
     public var configurationTelemetrySampleRate: Float {
         get { type.configurationTelemetrySampleRate }
         set { type.configurationTelemetrySampleRate = newValue }
+    }
+}
+
+extension RUM.Configuration {
+    public typealias FeatureFlags = [FeatureFlag: Bool]
+
+    /// Feature Flag available in RUM
+    public enum FeatureFlag: String {
+        /// View Hitches
+        case viewHitches
+    }
+}
+
+extension RUM.Configuration.FeatureFlags {
+    /// The defaults Feature Flags applied to RUM Configuration
+    public static var defaults: Self {
+        [
+            .viewHitches: false
+        ]
+    }
+
+    /// Accesses the feature flag value.
+    ///
+    /// Return:  false by default.
+    public subscript(flag: Key) -> Bool {
+        self[flag, default: false]
     }
 }

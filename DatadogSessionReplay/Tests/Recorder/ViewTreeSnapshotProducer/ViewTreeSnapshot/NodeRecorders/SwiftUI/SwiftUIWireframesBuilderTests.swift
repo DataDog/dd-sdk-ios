@@ -9,11 +9,11 @@ import XCTest
 #if os(iOS)
 import XCTest
 import SwiftUI
-import DatadogInternal
+@_spi(Internal)
 import TestUtilities
-
 @_spi(Internal)
 @testable import DatadogSessionReplay
+@testable import DatadogInternal
 
 @available(iOS 13.0, tvOS 13.0, *)
 class SwiftUIWireframesBuilderTests: XCTestCase {

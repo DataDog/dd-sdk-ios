@@ -8,6 +8,7 @@
 import XCTest
 import SwiftUI
 import DatadogInternal
+import TestUtilities
 @testable import DatadogSessionReplay
 
 @available(iOS 13.0, tvOS 13.0, *)

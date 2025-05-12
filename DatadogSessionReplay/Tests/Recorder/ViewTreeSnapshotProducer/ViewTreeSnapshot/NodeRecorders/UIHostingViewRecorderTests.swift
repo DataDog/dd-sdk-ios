@@ -7,11 +7,10 @@
 #if os(iOS)
 import XCTest
 import SwiftUI
-import DatadogInternal
-import TestUtilities
-
 @_spi(Internal)
 @testable import DatadogSessionReplay
+@_spi(Internal)
+@testable import TestUtilities
 
 @available(iOS 13.0, tvOS 13.0, *)
 class UIHostingViewRecorderTests: XCTestCase {

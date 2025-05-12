@@ -64,9 +64,9 @@ public enum Datadog {
             var maxBatchesPerUpload: Int {
                 switch self {
                 case .low:
-                    return 1
+                    return 5
                 case .medium:
-                    return 10
+                    return 20
                 case .high:
                     return 100
                 }
@@ -269,10 +269,26 @@ public enum Datadog {
     /// Those will be added to logs, traces and RUM events automatically.
     ///
     /// - Parameters:
-    ///   - id: User ID, if any
+    ///   - id: Mandatory User ID
     ///   - name: Name representing the user, if any
     ///   - email: User's email, if any
     ///   - extraInfo: User's custom attributes, if any
+    public static func setUserInfo(
+        id: String,
+        name: String? = nil,
+        email: String? = nil,
+        extraInfo: [AttributeKey: AttributeValue] = [:],
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) {
+        let core = core as? DatadogCore
+        core?.setUserInfo(
+            id: id,
+            name: name,
+            email: email,
+            extraInfo: extraInfo
+        )
+    }
+    @available(*, deprecated, message: "UserInfo id property is now mandatory.")
     public static func setUserInfo(
         id: String? = nil,
         name: String? = nil,
@@ -527,7 +543,8 @@ extension DatadogCore {
         let performance = PerformancePreset(
             batchSize: debug ? .small : configuration.batchSize,
             uploadFrequency: debug ? .frequent : configuration.uploadFrequency,
-            bundleType: bundleType
+            bundleType: bundleType,
+            batchProcessingLevel: configuration.batchProcessingLevel
         )
         let isRunFromExtension = bundleType == .iOSAppExtension
 

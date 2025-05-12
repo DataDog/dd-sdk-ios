@@ -25,6 +25,7 @@ internal final class ViewEndedMetric {
     internal enum MetricPredicateType: String {
         case timeBasedDefault = "time_based_default"
         case timeBasedCustom = "time_based_custom"
+        case disabled = "disabled"
         case custom = "custom"
     }
 
@@ -32,7 +33,7 @@ internal final class ViewEndedMetric {
     var viewURL: String?
     /// The type of instrumentation that started this view.
     /// It can be `nil` if view was started implicitly by RUM, which is the case for "ApplicationLaunch" and "Background" views.
-    var instrumentationType: SessionEndedMetric.ViewInstrumentationType?
+    var instrumentationType: InstrumentationType?
     /// Duration of the view in nanoseconds (equal to `@view.time_spent`).
     var durationNs: Int64?
 
@@ -93,7 +94,7 @@ internal final class ViewEndedMetric {
         /// The type of the view.
         var viewType: ViewType?
         /// The type of instrumentation that this view was started by.
-        var instrumentationType: SessionEndedMetric.ViewInstrumentationType?
+        var instrumentationType: InstrumentationType?
 
         enum CodingKeys: String, CodingKey {
             case duration = "duration"
@@ -104,6 +105,12 @@ internal final class ViewEndedMetric {
             case instrumentationType = "instrumentation_type"
         }
     }
+}
+
+// MARK: - MetricAttributesConvertible
+
+extension ViewEndedMetric: MetricAttributesConvertible {
+    var metricName: String { Constants.name }
 
     func asMetricAttributes() -> [String: Encodable]? {
         guard let durationNs else {

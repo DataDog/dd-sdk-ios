@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
 @testable import DatadogRUM
 
 class ViewLoadingMetricsTests: XCTestCase {
@@ -17,8 +18,8 @@ class ViewLoadingMetricsTests: XCTestCase {
         rumConfig = RUM.Configuration(applicationID: .mockAny())
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         rumConfig = nil
     }
@@ -478,5 +479,71 @@ class ViewLoadingMetricsTests: XCTestCase {
             accuracy: 0.01,
             "The INV value should be computed from the last 'Sign Up' action that leads to 'WelcomeView'."
         )
+    }
+
+    func testGivenDisabledINV_thenViewEventHasNoINVValue() throws {
+        // This duplicates the first INV test, but ensures that INV has no value when it is disabled
+        let rumTime = DateProviderMock()
+        rumConfig.dateProvider = rumTime
+        rumConfig.nextViewActionPredicate = nil
+        RUM.enable(with: rumConfig, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+
+        monitor.startView(key: "previous", name: "PreviousView")
+        rumTime.now += 2.seconds
+        monitor.addAction(type: .tap, name: "Tap in Previous View")
+
+        // When (the next view is started within the INV threshold after the action)
+        let expectedINV: TimeInterval = .mockRandom(
+            min: 0, max: TimeBasedINVActionPredicate.defaultMaxTimeToNextView * 0.99
+        )
+        rumTime.now += expectedINV
+        monitor.startView(key: "next", name: "NextView")
+
+        // Then (INV is tracked for the next view)
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+
+        let nextViewEvent = try XCTUnwrap(session.views.first(where: { $0.name == "NextView" })?.viewEvents.last)
+        let actualINV = nextViewEvent.view.interactionToNextViewTime
+        XCTAssertNil(actualINV)
+    }
+
+    func testGivenDisabledINV_whenGivenCustomINVValue_thenViewEventHasCustomINVValue() throws {
+        // This duplicates the first INV test with a custom INV value added in.
+        let rumTime = DateProviderMock()
+        rumConfig.dateProvider = rumTime
+        rumConfig.nextViewActionPredicate = nil
+        RUM.enable(with: rumConfig, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+
+        monitor.startView(key: "previous", name: "PreviousView")
+        rumTime.now += 2.seconds
+        monitor.addAction(type: .tap, name: "Tap in Previous View")
+
+        let nextTime: TimeInterval = .mockRandom(
+            min: 0, max: 2.5
+        )
+        rumTime.now += nextTime
+        monitor.startView(key: "next", name: "NextView")
+        monitor._internal?.setInternalViewAttribute(
+            at: .mockAny(),
+            key: CrossPlatformAttributes.customINVValue,
+            value: 180_000
+        )
+        // Force a view update
+        monitor.stopView(key: "next")
+
+        // Then (INV is tracked for the next view)
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+
+        let nextViewEvent = try XCTUnwrap(session.views.first(where: { $0.name == "NextView" })?.viewEvents.last)
+        let actualINV = nextViewEvent.view.interactionToNextViewTime
+        XCTAssertEqual(180_000, actualINV)
     }
 }

@@ -9,60 +9,6 @@ import DatadogInternal
 
 /// Receiver to consume crash reports as RUM events.
 internal struct CrashReportReceiver: FeatureMessageReceiver {
-    /// Defines keys referencing Crash message on the bus.
-    enum MessageKeys {
-        /// The key references a crash message.
-        static let crash = "crash"
-    }
-
-    struct Crash: Decodable {
-        /// The crash report.
-        let report: DDCrashReport
-        /// The crash context
-        let context: CrashContext
-    }
-
-    struct CrashContext: Decodable {
-        /// The Application launch date
-        let appLaunchDate: Date?
-        /// Interval between device and server time.
-        let serverTimeOffset: TimeInterval
-        /// The name of the service that data is generated from.
-        let service: String
-        /// Current device information.
-        let device: DeviceInfo
-        /// The version of the application that data is generated from.
-        let version: String
-        /// The build Id of the applicaiton that data is generated from
-        let buildId: String?
-        /// The build number of the application that data is generated from.
-        let buildNumber: String
-        /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
-        let source: String
-        /// The last RUM view in crashed app process.
-        var lastRUMViewEvent: RUMViewEvent?
-        /// State of the last RUM session in crashed app process.
-        var lastRUMSessionState: RUMSessionState?
-        /// The last global RUM attributes in crashed app process.
-        var lastRUMAttributes: GlobalRUMAttributes?
-        /// The last _"Is app in foreground?"_ information from crashed app process.
-        let lastIsAppInForeground: Bool
-        /// Network information.
-        ///
-        /// Represents the current state of the device network connectivity and interface.
-        /// The value can be `unknown` if the network interface is not available or if it has not
-        /// yet been evaluated.
-        let networkConnectionInfo: NetworkConnectionInfo?
-        /// Carrier information.
-        ///
-        /// Represents the current telephony service info of the device.
-        /// This value can be `nil` of no service is currently registered, or if the device does
-        /// not support telephony services.
-        let carrierInfo: CarrierInfo?
-        /// Current user information.
-        let userInfo: UserInfo?
-    }
-
     private struct AdjustedCrashTimings {
         /// Crash date read from `CrashReport`. It uses device time.
         let crashDate: Date
@@ -112,18 +58,11 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        do {
-            guard let crash: Crash = try message.baggage(forKey: MessageKeys.crash) else {
-                return false
-            }
-
-            return send(report: crash.report, with: crash.context)
-        } catch {
-            featureScope.telemetry
-                .error("Fails to decode crash from RUM", error: error)
+        guard case let .payload(crash as Crash) = message else {
+            return false
         }
 
-        return false
+        return send(report: crash.report, with: crash.context)
     }
 
     private func send(report: DDCrashReport, with context: CrashContext) -> Bool {
@@ -151,7 +90,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 // RUM-3588: If last RUM attributes are available, use them to replace view attributes as we know that
                 // global RUM attributes can be updated more often than attributes in `lastRUMView`.
                 // See https://github.com/DataDog/dd-sdk-ios/pull/1834 for more context.
-                lastRUMViewEvent.context?.contextInfo = lastRUMAttributes.attributes
+                lastRUMViewEvent.context = lastRUMAttributes
             }
             if lastRUMViewEvent.view.crash?.count ?? 0 < 1 {
                 sendCrashReportLinkedToLastViewInPreviousSession(
@@ -362,6 +301,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                cls: nil,
                 configuration: .init(
                     sessionReplaySampleRate: nil,
                     sessionSampleRate: Double(self.sessionSampler.samplingRate),
@@ -378,7 +318,6 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             application: .init(
                 id: applicationID
             ),
-            buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: ciTest,
             connectivity: RUMConnectivity(
@@ -389,7 +328,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // RUM-3588: We know that last RUM view is not available, so we're creating a new one. No matter that, try using last
             // RUM attributes if available. There is a chance of having them as global RUM attributes can be updated more often than RUM view.
             // See https://github.com/DataDog/dd-sdk-ios/pull/1834 for more context.
-            context: context.lastRUMAttributes.map { .init(contextInfo: $0.attributes) },
+            context: context.lastRUMAttributes,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
             device: .init(device: context.device, telemetry: featureScope.telemetry),
             display: nil,
@@ -431,6 +370,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 firstInputTime: nil,
                 flutterBuildTime: nil,
                 flutterRasterTime: nil,
+                freezeRate: nil,
                 frozenFrame: .init(count: 0),
                 frustration: .init(count: 0),
                 id: viewUUID.toRUMDataFormat,
@@ -456,6 +396,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 refreshRateAverage: nil,
                 refreshRateMin: nil,
                 resource: .init(count: 0),
+                slowFrames: nil,
+                slowFramesRate: nil,
                 timeSpent: 1, // arbitrary, 1ns duration
                 url: viewURL
             )

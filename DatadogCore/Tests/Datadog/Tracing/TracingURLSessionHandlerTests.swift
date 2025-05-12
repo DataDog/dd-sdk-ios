@@ -52,7 +52,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
     }
 
     func testGivenFirstPartyInterceptionWithNoError_itDoesNotSendLog() throws {
-        core.expectation = expectation(description: "Send span")
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
         let request: ImmutableRequest = .mockWith(httpMethod: "POST")
@@ -74,8 +75,9 @@ class TracingURLSessionHandlerTests: XCTestCase {
     }
 
     func testGivenFirstPartyInterceptionWithNetworkError_whenInterceptionCompletes_itEncodesRequestInfoInSpanAndSendsLog() throws {
-        core.expectation = expectation(description: "Send span and log")
-        core.expectation?.expectedFulfillmentCount = 2
+        let expectation = expectation(description: "Send span and log")
+        expectation.expectedFulfillmentCount = 2
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
         let request: ImmutableRequest = .mockWith(
@@ -121,16 +123,16 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "network error")
         XCTAssertEqual(
-            log.attributes.internalAttributes?["dd.trace_id"] as? AnyCodable,
-            AnyCodable(String(span.traceID, representation: .hexadecimal))
+            log.attributes.internalAttributes?["dd.trace_id"] as? String,
+            String(span.traceID, representation: .hexadecimal)
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?["dd.trace_id"] as? AnyCodable,
-            AnyCodable(String(span.traceID, representation: .hexadecimal))
+            log.attributes.internalAttributes?["dd.trace_id"] as? String,
+            String(span.traceID, representation: .hexadecimal)
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?["dd.span_id"] as? AnyCodable,
-            AnyCodable(String(span.spanID, representation: .hexadecimal))
+            log.attributes.internalAttributes?["dd.span_id"] as? String,
+            String(span.spanID, representation: .hexadecimal)
         )
         XCTAssertEqual(log.error?.kind, "domain - 123")
         XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
@@ -146,8 +148,9 @@ class TracingURLSessionHandlerTests: XCTestCase {
     }
 
     func testGivenFirstPartyInterceptionWithClientError_whenInterceptionCompletes_itEncodesRequestInfoInSpanAndSendsLog() throws {
-        core.expectation = expectation(description: "Send span and log")
-        core.expectation?.expectedFulfillmentCount = 2
+        let expectation = expectation(description: "Send span and log")
+        expectation.expectedFulfillmentCount = 2
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
         let request: ImmutableRequest = .mockWith(httpMethod: "GET")
@@ -212,7 +215,18 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testGivenAllTracingHeaderTypes_itUsesTheSameIds() throws {
         let request: URLRequest = .mockWith(httpMethod: "GET")
-        let (modifiedRequest, _) = handler.modify(request: request, headerTypes: [.datadog, .tracecontext, .b3, .b3multi])
+        let fakeSessionId = "8b723a25-e941-47ea-9173-910c866ccf19"
+        let fakeRumContext: [String: String] = ["session.id": fakeSessionId]
+        let fakeContext: DatadogContext = .mockWith(
+            baggages: ["rum": FeatureBaggage(fakeRumContext)]
+        )
+        let message = FeatureMessage.context(fakeContext)
+        handler.contextReceiver.receive(message: message, from: core)
+        let (modifiedRequest, _) = handler.modify(
+            request: request,
+            headerTypes: [.datadog, .tracecontext, .b3, .b3multi],
+            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+        )
 
         XCTAssertEqual(
             modifiedRequest.allHTTPHeaderFields,
@@ -224,6 +238,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 "b3": "000000000000000a0000000000000064-0000000000000064-1",
                 "x-datadog-trace-id": "100",
                 "x-datadog-tags": "_dd.p.tid=a",
+                "baggage": "session.id=\(fakeSessionId)",
                 "tracestate": "dd=p:0000000000000064;s:1",
                 "x-datadog-parent-id": "100",
                 "x-datadog-sampling-priority": "1"

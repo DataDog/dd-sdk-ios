@@ -21,7 +21,7 @@ internal struct VitalsReaders {
         self.frequency = frequency
         self.cpu = VitalCPUReader(notificationCenter: .default, telemetry: telemetry)
         self.memory = VitalMemoryReader()
-        self.refreshRate = VitalRefreshRateReader(notificationCenter: .default)
+        self.refreshRate = VitalRefreshRateReader()
     }
 }
 
@@ -33,6 +33,7 @@ internal struct RUMScopeDependencies {
     let sessionSampler: Sampler
     let trackBackgroundEvents: Bool
     let trackFrustrations: Bool
+    let hasAppHangsEnabled: Bool
     let firstPartyHosts: FirstPartyHosts?
     let eventBuilder: RUMEventBuilder
     let rumUUIDGenerator: RUMUUIDGenerator
@@ -40,6 +41,8 @@ internal struct RUMScopeDependencies {
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
     let syntheticsTest: RUMSyntheticsTest?
+    let renderLoopObserver: RenderLoopObserver?
+    let viewHitchesReaderFactory: () -> (RenderLoopReader & ViewHitchesModel)?
     let vitalsReaders: VitalsReaders?
     let onSessionStart: RUM.SessionListener?
     let viewCache: ViewCache
@@ -52,7 +55,7 @@ internal struct RUMScopeDependencies {
     let watchdogTermination: WatchdogTerminationMonitor?
 
     /// A factory function that creates `ViewEndedMetricController` for each new view started.
-    let viewEndedMetricFactory: () -> ViewEndedMetricController
+    let viewEndedMetricFactory: () -> ViewEndedController
 
     /// A factory function that creates a `TNSMetric` for the given view start date.
     /// - Parameters:
@@ -61,7 +64,7 @@ internal struct RUMScopeDependencies {
     let networkSettledMetricFactory: (Date, String) -> TNSMetricTracking
 
     /// A factory function that creates a `INVMetric` when session starts.
-    let interactionToNextViewMetricFactory: () -> INVMetricTracking
+    let interactionToNextViewMetricFactory: () -> INVMetricTracking?
 
     init(
         featureScope: FeatureScope,
@@ -69,33 +72,39 @@ internal struct RUMScopeDependencies {
         sessionSampler: Sampler,
         trackBackgroundEvents: Bool,
         trackFrustrations: Bool,
+        hasAppHangsEnabled: Bool,
         firstPartyHosts: FirstPartyHosts?,
         eventBuilder: RUMEventBuilder,
         rumUUIDGenerator: RUMUUIDGenerator,
         backtraceReporter: BacktraceReporting?,
         ciTest: RUMCITest?,
         syntheticsTest: RUMSyntheticsTest?,
+        renderLoopObserver: RenderLoopObserver?,
+        viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)?,
         vitalsReaders: VitalsReaders?,
         onSessionStart: RUM.SessionListener?,
         viewCache: ViewCache,
         fatalErrorContext: FatalErrorContextNotifying,
         sessionEndedMetric: SessionEndedMetricController,
-        viewEndedMetricFactory: @escaping () -> ViewEndedMetricController,
+        viewEndedMetricFactory: @escaping () -> ViewEndedController,
         watchdogTermination: WatchdogTerminationMonitor?,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking,
-        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking
+        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?
     ) {
         self.featureScope = featureScope
         self.rumApplicationID = rumApplicationID
         self.sessionSampler = sessionSampler
         self.trackBackgroundEvents = trackBackgroundEvents
         self.trackFrustrations = trackFrustrations
+        self.hasAppHangsEnabled = hasAppHangsEnabled
         self.firstPartyHosts = firstPartyHosts
         self.eventBuilder = eventBuilder
         self.rumUUIDGenerator = rumUUIDGenerator
         self.backtraceReporter = backtraceReporter
         self.ciTest = ciTest
         self.syntheticsTest = syntheticsTest
+        self.renderLoopObserver = renderLoopObserver
+        self.viewHitchesReaderFactory = viewHitchesReaderFactory
         self.vitalsReaders = vitalsReaders
         self.onSessionStart = onSessionStart
         self.viewCache = viewCache

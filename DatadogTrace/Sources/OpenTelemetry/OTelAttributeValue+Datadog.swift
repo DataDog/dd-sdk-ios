@@ -64,6 +64,14 @@ extension Dictionary where Key == String, Value == OpenTelemetryApi.AttributeVal
                         tags["\(key).\(nestedKey)"] = nestedValue
                     }
                 }
+            case .array(let array):
+                if array.values.isEmpty {
+                    tags[key] = ""
+                } else {
+                    for (index, element) in array.values.enumerated() {
+                        tags["\(key).\(index)"] = element.description
+                    }
+                }
             @unknown default:
                 break
             }

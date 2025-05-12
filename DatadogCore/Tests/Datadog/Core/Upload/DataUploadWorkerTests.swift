@@ -390,24 +390,31 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
     }
 
-    func testWhenBatchSucceeds_thenIntervalDecreases() {
-        let delayChangeExpectation = expectation(description: "Upload delay is decreased")
-        let initialUploadDelay = 0.05
+    func testWhenBatchSucceeds_thenIntervalResets() {
+        let startUploadExpectation = expectation(description: "Upload started")
+        let minUploadDelay: Double = .mockRandom(min: 1, max: 2)
         let delay = DataUploadDelay(
             performance: UploadPerformanceMock(
-                initialUploadDelay: initialUploadDelay,
-                minUploadDelay: 0,
-                maxUploadDelay: 1,
+                initialUploadDelay: 0.05,
+                minUploadDelay: minUploadDelay,
+                maxUploadDelay: 2,
                 uploadDelayChangeRate: 0.01
             )
         )
+
+        let dataUploader = DataUploaderMock(uploadStatus: .mockWith(responseCode: 202)) { status in
+            XCTAssertNil(status)
+            startUploadExpectation.fulfill()
+        }
+
         // When
+        // Given
         writer.write(value: ["k1": "v1"])
 
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
-            dataUploader: DataUploaderMock(uploadStatus: .mockWith(needsRetry: false)),
+            dataUploader: dataUploader,
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: delay,
@@ -417,13 +424,10 @@ class DataUploadWorkerTests: XCTestCase {
         )
 
         // Then
-        wait(until: { [uploaderQueue] in
-            uploaderQueue.sync {
-                delay.current < initialUploadDelay
-            }
-        }, andThenFulfill: delayChangeExpectation)
-        wait(for: [delayChangeExpectation], timeout: 0.5)
+        wait(for: [startUploadExpectation], timeout: 0.5)
         worker.cancelSynchronously()
+
+        XCTAssertEqual(delay.current, minUploadDelay)
     }
 
     // MARK: - Notifying Upload Progress
@@ -761,7 +765,8 @@ class DataUploadWorkerTests: XCTestCase {
 
         let dataUploader = DataUploader(
             httpClient: httpClient,
-            requestBuilder: FeatureRequestBuilderMock()
+            requestBuilder: FeatureRequestBuilderMock(),
+            featureName: .mockRandom()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,

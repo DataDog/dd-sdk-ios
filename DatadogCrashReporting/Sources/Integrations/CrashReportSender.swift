@@ -24,22 +24,6 @@ internal protocol CrashReportSender {
 
 /// An object for sending crash reports on the Core message-bus.
 internal struct MessageBusSender: CrashReportSender {
-    /// Defines keys referencing Crash Report message on the bus.
-    internal enum MessageKeys {
-        /// The key for a crash message.
-        ///
-        /// Use this key when the crash should be reported
-        /// as a RUM and a Logs event.
-        static let crash = "crash"
-    }
-
-    struct Crash: Encodable {
-        /// The crash report.
-        let report: DDCrashReport
-        /// The crash context
-        let context: CrashContext
-    }
-
     /// The core for sending crash report and context.
     ///
     /// It must be a weak reference to avoid retain cycle (the `CrashReportSender` is held by crash reporting
@@ -58,9 +42,8 @@ internal struct MessageBusSender: CrashReportSender {
         }
 
         core.send(
-            message: .baggage(
-                key: MessageKeys.crash,
-                value: Crash(report: report, context: context)
+            message: .payload(
+                Crash(report: report, context: context)
             ),
             else: {
                 DD.logger.warn(

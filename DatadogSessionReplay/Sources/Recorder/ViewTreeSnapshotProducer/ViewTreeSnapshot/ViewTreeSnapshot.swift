@@ -168,20 +168,20 @@ extension ViewAttributes {
     var isTranslucent: Bool { !isVisible || alpha < 1 || backgroundColor?.alpha ?? 0 < 1 }
 }
 
-extension ViewAttributes {
+@_spi(Internal)
+public extension SessionReplayViewAttributes {
     /// Resolves the effective privacy level for text and input elements by considering the view's local override.
     /// Falls back to the global privacy setting in the absence of local overrides.
-    func resolveTextAndInputPrivacyLevel(in context: ViewTreeRecordingContext) -> TextAndInputPrivacyLevel {
-        return self.textAndInputPrivacy ?? context.recorder.textAndInputPrivacy
+    func resolveTextAndInputPrivacyLevel(in context: SessionReplayViewTreeRecordingContext) -> TextAndInputPrivacyLevel {
+        return textAndInputPrivacy ?? context.recorder.textAndInputPrivacy
     }
 
     /// Resolves the effective privacy level for image elements by considering the view's local override.
     /// Falls back to the global privacy setting in the absence of local overrides.
-    func resolveImagePrivacyLevel(in context: ViewTreeRecordingContext) -> ImagePrivacyLevel {
-        return self.imagePrivacy ?? context.recorder.imagePrivacy
+    func resolveImagePrivacyLevel(in context: SessionReplayViewTreeRecordingContext) -> ImagePrivacyLevel {
+        return imagePrivacy ?? context.recorder.imagePrivacy
     }
 }
-
 /// A type defining semantics of portion of view-tree hierarchy (one or more `Nodes`).
 ///
 /// It is leveraged during view-tree traversal in `Recorder`:
