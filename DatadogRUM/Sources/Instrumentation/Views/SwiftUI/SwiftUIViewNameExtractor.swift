@@ -42,7 +42,7 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
             return nil
         }
 
-        let controllerType = ControllerType(viewController, className: className)
+        let controllerType = ControllerType(from: className)
 
         // Reflector to inspect the view controller's internals
         let reflector = createReflector(viewController)
@@ -139,6 +139,9 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
         return nil
     }
 
+    private static let HostingControllerFallbackViewName = "AutoTracked_HostingController_Fallback"
+    private static let NavigationStackControllerFallbackViewName = "AutoTracked_NavigationStackController_Fallback"
+
     /// Extracts a fallback view name when reflection-based extraction fails.
     /// This method attempts to extract a reasonable name from the controller's description
     /// when our primary reflection-based methods cannot identify the hosted SwiftUI view.
@@ -150,28 +153,35 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
         }
 
         // For UIHostingController<SomeView>, extract `SomeView` as the name
-        if let match = Self.hostingControllerPattern?.firstMatch(
-            in: viewControllerDescription,
-            options: [],
-            range: NSRange(viewControllerDescription.startIndex..<viewControllerDescription.endIndex, in: viewControllerDescription)
-        ),
-           let range = Range(match.range(at: 1), in: viewControllerDescription) {
-            return String(viewControllerDescription[range])
+        if let viewName = extractGenericViewName(from: viewControllerDescription, using: Self.hostingControllerPattern) {
+            return viewName
         }
 
         // For NavigationStackHostingController<SomeView>, extract `SomeView` as the name
-        if let match = Self.navigationStackPattern?.firstMatch(
-            in: viewControllerDescription,
-            options: [],
-            range: NSRange(viewControllerDescription.startIndex..<viewControllerDescription.endIndex, in: viewControllerDescription)
-        ),
-           let range = Range(match.range(at: 1), in: viewControllerDescription) {
-            return String(viewControllerDescription[range])
+        if let viewName = extractGenericViewName(from: viewControllerDescription, using: Self.navigationStackPattern) {
+            return viewName
         }
 
         // When no specific view name can be extracted,
         // return a generic fallback name based on the controller type
-        return viewControllerDescription.contains("UIHostingController") ? "AutoTracked_HostingController_Fallback" : "AutoTracked_NavigationStackController_Fallback"
+        return viewControllerDescription.contains("UIHostingController") ? Self.HostingControllerFallbackViewName : Self.NavigationStackControllerFallbackViewName
+    }
+
+    private func extractGenericViewName(from description: String, using pattern: NSRegularExpression?) -> String? {
+        guard let pattern else {
+            return nil
+        }
+
+        if let match = pattern.firstMatch(
+            in: description,
+            options: [],
+            range: NSRange(description.startIndex..<description.endIndex, in: description)
+        ),
+           let range = Range(match.range(at: 1), in: description) {
+            return String(description[range])
+        }
+
+        return nil
     }
 
     internal func shouldSkipViewController(viewController: UIViewController, className: String) -> Bool {

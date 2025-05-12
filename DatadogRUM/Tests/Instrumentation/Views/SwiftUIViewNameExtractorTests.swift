@@ -103,23 +103,18 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
     // MARK: - Controller Detection Tests
     @available(iOS 13.0, tvOS 13.0, *)
     func testDetectControllerType() {
-        // Controllers
-        let hostingController = UIHostingController(rootView: EmptyView())
-        let navigationController = UINavigationController()
-        let viewController = UIViewController()
-
         // Define test cases with controller, class name and expected controller type
-        let testCases: [(UIViewController, String, ControllerType)] = [
+        let testCases: [(String, ControllerType)] = [
             // Format: (controller, className, expectedType)
-            (hostingController, "_TtGC7SwiftUI19UIHostingController", .hostingController),
-            (navigationController, "SwiftUI.UIKitNavigationController", .navigationStackHostingController),
-            (navigationController, "NavigationStackHostingController", .navigationStackHostingController),
-            (viewController, "_TtGC7SwiftUI29PresentationHostingController", .modal),
-            (viewController, "UIViewController", .unknown)
+            ("_TtGC7SwiftUI19UIHostingController", .hostingController),
+            ("SwiftUI.UIKitNavigationController", .navigationStackHostingController),
+            ("NavigationStackHostingController", .navigationStackHostingController),
+            ("_TtGC7SwiftUI29PresentationHostingController", .modal),
+            ("UIViewController", .unknown)
         ]
 
-        for (controller, className, expectedType) in testCases {
-            XCTAssertEqual(ControllerType(controller, className: className), expectedType, "Controller type detection failed for: \(className)")
+        for (className, expectedType) in testCases {
+            XCTAssertEqual(ControllerType(from: className), expectedType, "Controller type detection failed for: \(className)")
         }
     }
 

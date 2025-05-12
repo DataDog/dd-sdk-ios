@@ -4,8 +4,6 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import UIKit
-
 /// Controller type enum to identify different SwiftUI hosting controllers
 internal enum ControllerType {
     case hostingController
@@ -14,7 +12,7 @@ internal enum ControllerType {
     case unknown
 
     /// Determines the controller type from the class name
-    init(_ viewController: UIViewController, className: String) {
+    init(from className: String) {
         if className.hasPrefix("_TtGC7SwiftUI19UIHostingController") {
             self = .hostingController
         } else if className.contains("Navigation") {
