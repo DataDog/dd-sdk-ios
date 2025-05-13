@@ -110,7 +110,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         let date = dateProvider.now
 
         record(event: id) { context, writer in
-            let rum: RUMCoreContext? = context.additionalContext()
+            let rum = context.additionalContext(ofType: RUMCoreContext.self)
 
             let event = TelemetryDebugEvent(
                 dd: .init(),
@@ -151,7 +151,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         let date = dateProvider.now
 
         record(event: id) { context, writer in
-            let rum: RUMCoreContext? = context.additionalContext()
+            let rum = context.additionalContext(ofType: RUMCoreContext.self)
 
             let event = TelemetryErrorEvent(
                 dd: .init(),
@@ -182,7 +182,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         let date = dateProvider.now
 
         self.record(event: nil) { context, writer in
-            let rum: RUMCoreContext? = context.additionalContext()
+            let rum = context.additionalContext(ofType: RUMCoreContext.self)
 
             let event = TelemetryUsageEvent(
                 dd: .init(),
@@ -222,7 +222,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         let date = dateProvider.now
 
         self.record(event: "_dd.configuration") { context, writer in
-            let rum: RUMCoreContext? = context.additionalContext()
+            let rum = context.additionalContext(ofType: RUMCoreContext.self)
 
             let event = TelemetryConfigurationEvent(
                 dd: .init(),
@@ -252,7 +252,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         let date = dateProvider.now
 
         record(event: nil) { context, writer in
-            let rum: RUMCoreContext? = context.additionalContext()
+            let rum = context.additionalContext(ofType: RUMCoreContext.self)
 
             // Override sessionID using standard `SDKMetricFields`, otherwise use current RUM session ID:
             var attributes = metric.attributes
@@ -296,7 +296,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
 
         featureScope.eventWriteContext { context, writer in
             // reset recorded events on session renewal
-            let rum: RUMCoreContext? = context.additionalContext()
+            let rum = context.additionalContext(ofType: RUMCoreContext.self)
 
             if rum?.sessionID != self.currentSessionID {
                 self.currentSessionID = rum?.sessionID

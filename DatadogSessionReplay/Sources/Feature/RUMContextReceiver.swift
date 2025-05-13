@@ -31,7 +31,7 @@ internal class RUMContextReceiver: FeatureMessageReceiver, RUMContextObserver {
             return false
         }
 
-        let new: RUMCoreContext? = context.additionalContext()
+        let new = context.additionalContext(ofType: RUMCoreContext.self)
 
         // Notify only if it has changed:
         if new != previous {

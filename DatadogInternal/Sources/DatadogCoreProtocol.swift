@@ -143,7 +143,7 @@ public protocol AdditionalContextSharing {
     ///
     ///     // Bar.swift
     ///     core.scope(for: "bar").eventWriteContext { context, writer in
-    ///         if let value: MyContext = context.additionalContext() {
+    ///         if let value = context.additionalContext(ofType: MyContext.self) {
     ///             // If success, handle the `value`.
     ///         }
     ///     }
@@ -175,7 +175,7 @@ extension AdditionalContextSharing {
     ///
     ///     // Bar.swift
     ///     core.scope(for: "bar").eventWriteContext { context, writer in
-    ///         if let value: MyContext = context.additionalContext() {
+    ///         if let value = context.additionalContext(ofType: MyContext.self) {
     ///             // If success, handle the `value`.
     ///         }
     ///     }
@@ -193,8 +193,9 @@ extension AdditionalContextSharing {
     /// method.
     ///
     /// Removing context will update the Core Context's additional property that is shared across Features.
+    /// 
     /// - Parameters:
-    ///   - type: The context's type to remove..
+    ///   - type: The context's type to remove.
     public func removeContext<Context>(ofType type: Context.Type) where Context: AdditionalContext {
         set(context: { nil as Context? })
     }

@@ -29,7 +29,7 @@ internal struct WebViewRecordReceiver: FeatureMessageReceiver {
 
         scope.eventWriteContext { context, writer in
             // Extract the `RUMContext` or `nil` if RUM session is not sampled:
-            guard let rumContext: RUMCoreContext = context.additionalContext() else {
+            guard let rumContext = context.additionalContext(ofType: RUMCoreContext.self) else {
                 return
             }
 

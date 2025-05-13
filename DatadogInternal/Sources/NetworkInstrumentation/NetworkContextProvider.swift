@@ -25,7 +25,9 @@ extension NetworkContextCoreProvider: FeatureMessageReceiver {
             return false
         }
 
-        currentNetworkContext = NetworkContext(rumContext: context.additionalContext())
+        currentNetworkContext = NetworkContext(
+            rumContext: context.additionalContext(ofType: RUMCoreContext.self)
+        )
         return true
     }
 }

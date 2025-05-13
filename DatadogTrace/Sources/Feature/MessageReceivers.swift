@@ -42,7 +42,7 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
     private func update(context: DatadogContext, from core: DatadogCoreProtocol) -> Bool {
         _context.mutate {
             $0.applicationStateHistory = context.applicationStateHistory
-            $0.rumContext = context.additionalContext()
+            $0.rumContext = context.additionalContext(ofType: RUMCoreContext.self)
         }
 
         return true

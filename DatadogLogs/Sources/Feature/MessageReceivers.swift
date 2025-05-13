@@ -197,7 +197,7 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
                 event[dateKey] = correctedTimestamp
             }
 
-            if let rum: RUMCoreContext = context.additionalContext() {
+            if let rum = context.additionalContext(ofType: RUMCoreContext.self) {
                 event[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
                 event[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
                 event[LogEvent.Attributes.RUM.viewID] = rum.viewID
