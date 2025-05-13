@@ -11,7 +11,7 @@ import XCTest
 
 private extension ExampleApplication {
     func tapSend3rdPartyRequests() {
-        buttons["Send 3rd party requests"].tap()
+        tapButton(titled: "Send 3rd party requests")
     }
 }
 
