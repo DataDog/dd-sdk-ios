@@ -184,7 +184,7 @@ extension WatchdogTerminationMonitor: FeatureMessageReceiver {
             return false
         }
 
-        let state = context.applicationStateHistory.currentSnapshot.state
+        let state = context.applicationStateHistory.currentState
         appStateManager.updateAppState(state: state)
 
         return false

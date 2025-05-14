@@ -55,9 +55,29 @@ public enum Logs {
     ///   - configuration: The Logs configuration.
     ///   - core: The instance of Datadog SDK to enable Logs in (global instance by default).
     public static func enable(
-        with configuration: Configuration = .init(),
+        with configuration: Logs.Configuration = .init(),
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
+        do {
+            // To ensure the correct registration order between Core and Features,
+            // the entire initialization flow is synchronized on the main thread.
+            try runOnMainThreadSync {
+                try enableOrThrow(with: configuration, in: core)
+            }
+        } catch let error {
+            consolePrint("\(error)", .error)
+        }
+    }
+
+    internal static func enableOrThrow(
+        with configuration: Logs.Configuration, in core: DatadogCoreProtocol
+    ) throws {
+        guard !(core is NOPDatadogCore) else {
+            throw ProgrammerError(
+                description: "Datadog SDK must be initialized before calling `Logs.enable(with:)`."
+            )
+        }
+
         let logEventMapper = configuration._internalEventMapper ?? configuration.eventMapper.map(SyncLogEventMapper.init)
 
         let feature = LogsFeature(
@@ -68,11 +88,7 @@ public enum Logs {
             backtraceReporter: core.backtraceReporter
         )
 
-        do {
-            try core.register(feature: feature)
-        } catch {
-            consolePrint("\(error)", .error)
-        }
+        try core.register(feature: feature)
     }
 
     /// Adds a custom attribute to all future logs sent by any logger created from the provided Core.
