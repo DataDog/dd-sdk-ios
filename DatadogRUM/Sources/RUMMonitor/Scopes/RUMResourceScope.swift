@@ -98,6 +98,8 @@ internal class RUMResourceScope: RUMScope {
         self.attributes = self.attributes.merging(command.attributes, uniquingKeysWith: { $1 })
 
         switch command {
+        case let command as RUMRemoveViewAttributesCommand:
+            command.keysToRemove.forEach { self.attributes.removeValue(forKey: $0) }
         case let command as RUMStopResourceCommand where command.resourceKey == resourceKey:
             sendResourceEvent(on: command, context: context, writer: writer)
             return false
