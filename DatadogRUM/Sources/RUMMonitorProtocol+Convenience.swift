@@ -12,7 +12,7 @@ import DatadogInternal
 
 /// Convenience extension for defining `RUMMonitorProtocol` methods with default parameter values.
 ///
-/// ⚠️ Be extra caucious when adding new methods here. Each method overloads (shadows) its original
+/// ⚠️ Be extra cautious when adding new methods here. Each method overloads (shadows) its original
 /// definition in extended protocol, which makes the Swift compiler no longer require it on the type conforming
 /// to `RUMMonitorProtocol`. If that conformance is not provided, it will cause an infinite recursive call and crash.
 ///

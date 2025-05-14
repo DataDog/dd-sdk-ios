@@ -57,7 +57,29 @@ internal struct RUMStopSessionCommand: RUMCommand {
 
 // MARK: - RUM View related commands
 
-internal struct RUMStartViewCommand: RUMCommand, RUMViewScopePropagatableAttributes {
+internal struct RUMAddViewAttributesCommand: RUMCommand {
+    var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+    var attributes: [AttributeKey: AttributeValue]
+    var canStartBackgroundView = false
+    var isUserInteraction = false
+    var missedEventType: SessionEndedMetric.MissedEventType? = nil
+
+    var areInternalAttributes = false
+}
+
+internal struct RUMRemoveViewAttributesCommand: RUMCommand {
+    var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+    var attributes: [AttributeKey: AttributeValue] = [:]
+    var canStartBackgroundView = false
+    var isUserInteraction = false
+    var missedEventType: SessionEndedMetric.MissedEventType? = nil
+
+    var keysToRemove: [AttributeKey]
+}
+
+internal struct RUMStartViewCommand: RUMCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
@@ -96,7 +118,7 @@ internal struct RUMStartViewCommand: RUMCommand, RUMViewScopePropagatableAttribu
     }
 }
 
-internal struct RUMStopViewCommand: RUMCommand, RUMViewScopePropagatableAttributes {
+internal struct RUMStopViewCommand: RUMCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
@@ -283,7 +305,7 @@ internal struct RUMAddCurrentViewMemoryWarningCommand: RUMErrorCommand {
     let missedEventType: SessionEndedMetric.MissedEventType? = .error
 }
 
-internal struct RUMAddViewLoadingTime: RUMCommand, RUMViewScopePropagatableAttributes {
+internal struct RUMAddViewLoadingTime: RUMCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -294,7 +316,7 @@ internal struct RUMAddViewLoadingTime: RUMCommand, RUMViewScopePropagatableAttri
     let overwrite: Bool
 }
 
-internal struct RUMAddViewTimingCommand: RUMCommand, RUMViewScopePropagatableAttributes {
+internal struct RUMAddViewTimingCommand: RUMCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -459,7 +481,7 @@ internal struct RUMStartUserActionCommand: RUMUserActionCommand {
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track actions in "Background" view (e.g. it makes sense for custom actions)
-    let isUserInteraction = true // a user action definitely is a User Interacgion
+    let isUserInteraction = true // a user action definitely is a User Interaction
     /// The type of instrumentation used to create this command.
     let instrumentation: InstrumentationType
 
@@ -474,7 +496,7 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartUserActionCommand`)
-    let isUserInteraction = true // a user action definitely is a User Interacgion
+    let isUserInteraction = true // a user action definitely is a User Interaction
 
     let actionType: RUMActionType
     let name: String?
@@ -487,7 +509,7 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track actions in "Background" view (e.g. it makes sense for custom actions)
-    let isUserInteraction = true // a user action definitely is a User Interacgion
+    let isUserInteraction = true // a user action definitely is a User Interaction
     /// The type of instrumentation used to create this command.
     let instrumentation: InstrumentationType
 
@@ -552,16 +574,4 @@ internal struct RUMUpdatePerformanceMetric: RUMCommand {
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
-}
-
-internal struct RUMSetInternalViewAttributeCommand: RUMCommand {
-    let canStartBackgroundView = false
-    let isUserInteraction = false
-    var time: Date
-    var globalAttributes: [AttributeKey: AttributeValue] = [:]
-    var attributes: [AttributeKey: AttributeValue] = [:]
-    let missedEventType: SessionEndedMetric.MissedEventType? = nil
-
-    let key: AttributeKey
-    let value: AttributeValue
 }
