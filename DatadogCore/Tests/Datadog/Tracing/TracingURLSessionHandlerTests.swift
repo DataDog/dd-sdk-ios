@@ -218,14 +218,24 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let fakeSessionId = "8b723a25-e941-47ea-9173-910c866ccf19"
         let fakeRumContext: [String: String] = ["session.id": fakeSessionId]
         let fakeContext: DatadogContext = .mockWith(
-            baggages: ["rum": FeatureBaggage(fakeRumContext)]
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: .mockRandom(),
+                    sessionID: fakeSessionId
+                )
+            ]
         )
         let message = FeatureMessage.context(fakeContext)
         handler.contextReceiver.receive(message: message, from: core)
         let (modifiedRequest, _) = handler.modify(
             request: request,
             headerTypes: [.datadog, .tracecontext, .b3, .b3multi],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertEqual(

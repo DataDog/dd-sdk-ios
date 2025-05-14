@@ -108,7 +108,7 @@ public struct DatadogContext {
     public var isLowPowerModeEnabled = false
 
     /// Additional context that can set from `core` instance.
-    public var additionalContext: [String: AdditionalContext] = [:]
+    private var additionalContext: [String: AdditionalContext] = [:]
 
     /// Type-less context baggages.
     @available(*, deprecated, renamed: "additionalContext", message: "`FeatureBaggage` is deprecated in favor of strongly typed `additionalContext`.")
@@ -184,11 +184,33 @@ public protocol AdditionalContext {
 }
 
 extension DatadogContext {
-    /// Gets an additional context value.
+    /// Gets an additional context value of `Context` type.
     ///
-    /// - Parameter type: The value type.
+    /// - Parameter type: The additional context type.
     /// - Returns: The `Context` if found
-    public func additionalContext<Context>(ofType type: Context.Type = Context.self) -> Context? where Context: AdditionalContext {
+    public func additionalContext<Context>(ofType type: Context.Type) -> Context? where Context: AdditionalContext {
         additionalContext[type.key] as? Context
+    }
+
+    /// Sets additional context to `DatadogContext`.
+    ///
+    /// This method only mutates the current instance. To propagate an additional context
+    /// across the Datadog SDK, please use the ``DatadogCoreProtocol/set(context:)`` instead.
+    ///
+    /// - Parameters:
+    ///   - context: The additional context to set.
+    public mutating func set<Context>(additionalContext context: Context?) where Context: AdditionalContext {
+        additionalContext[Context.key] = context
+    }
+
+    /// Removes additional context from `DatadogContext`.
+    ///
+    /// This method only mutates the current instance. To propagate an additional context
+    /// across the Datadog SDK, please use the ``DatadogCoreProtocol/removeContext(ofType:)`` instead
+    /// 
+    /// - Parameters:
+    ///   - type: The context's type to remove.
+    public mutating func removeContext<Context>(ofType type: Context.Type) where Context: AdditionalContext {
+        additionalContext[Context.key] = nil
     }
 }

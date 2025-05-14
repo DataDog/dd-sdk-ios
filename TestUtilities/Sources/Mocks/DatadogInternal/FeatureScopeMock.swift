@@ -49,7 +49,7 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     }
 
     public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
-        contextMock.additionalContext[Context.key] = context()
+        contextMock.set(additionalContext: context())
     }
 
     public func set(anonymousId: String?) {

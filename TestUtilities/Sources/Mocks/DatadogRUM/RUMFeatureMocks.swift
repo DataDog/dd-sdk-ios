@@ -719,7 +719,7 @@ public class RUMUUIDGeneratorMock: RUMUUIDGenerator {
 }
 
 extension RUMContext {
-    public static func mockAny() -> RUMContext {
+    public static func mockAny() -> Self {
         return mockWith()
     }
 
@@ -731,7 +731,7 @@ extension RUMContext {
         activeViewPath: String? = nil,
         activeViewName: String? = nil,
         activeUserActionID: RUMUUID? = nil
-    ) -> RUMContext {
+    ) -> Self {
         return RUMContext(
             rumApplicationID: rumApplicationID,
             sessionID: sessionID,
@@ -1429,8 +1429,26 @@ extension RUMAddCurrentViewAppHangCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMCoreContext: RandomMockable {
-    public static func mockRandom() -> RUMCoreContext {
-        RUMCoreContext(
+    public static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    public static func mockWith(
+        applicationID: String = .mockAny(),
+        sessionID: String = .mockAny(),
+        viewID: String? = .mockAny(),
+        serverTimeOffset: TimeInterval = .mockAny()
+    ) -> Self {
+        .init(
+            applicationID: applicationID,
+            sessionID: sessionID,
+            viewID: viewID,
+            viewServerTimeOffset: serverTimeOffset
+        )
+    }
+
+    public static func mockRandom() -> Self {
+        .init(
             applicationID: .mockRandom(),
             sessionID: .mockRandom(),
             viewID: .mockRandom(),

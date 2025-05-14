@@ -441,13 +441,13 @@ class RemoteLoggerTests: XCTestCase {
 
         // When
         featureScope.contextMock = .mockWith(
-            baggages: [
-                "rum": .init([
-                    "application.id": applicationID,
-                    "session.id": sessionID,
-                    "view.id": viewID,
-                    "user_action.id": actionID
-                ])
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: applicationID,
+                    sessionID: sessionID,
+                    viewID: viewID,
+                    userActionID: actionID
+                )
             ]
         )
 
@@ -489,40 +489,6 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertNil(log.attributes.internalAttributes?["view.id"])
         XCTAssertNil(log.attributes.internalAttributes?["user_action.id"])
         XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
-    }
-
-    func testWhenRUMIntegrationIsEnabled_withMalformedRUMContext_itSendsTelemetryError() throws {
-        // Given
-        let logger = RemoteLogger(
-            featureScope: featureScope,
-            globalAttributes: .mockAny(),
-            configuration: .mockAny(),
-            dateProvider: RelativeDateProvider(),
-            rumContextIntegration: true,
-            activeSpanIntegration: false,
-            backtraceReporter: BacktraceReporterMock()
-        )
-
-        // When
-        featureScope.contextMock = .mockWith(
-            baggages: [
-                "rum": .init("malformed RUM context")
-            ]
-        )
-        logger.info("message")
-
-        // Then
-        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
-        XCTAssertEqual(logs.count, 1)
-
-        let log = try XCTUnwrap(logs.first)
-        XCTAssertNil(log.attributes.internalAttributes?["application_id"])
-        XCTAssertNil(log.attributes.internalAttributes?["session_id"])
-        XCTAssertNil(log.attributes.internalAttributes?["view.id"])
-        XCTAssertNil(log.attributes.internalAttributes?["user_action.id"])
-
-        let error = try XCTUnwrap(featureScope.telemetryMock.messages.firstError())
-        XCTAssert(error.message.contains("Fails to decode RUM context from Logs - typeMismatch"))
     }
 
     // MARK: - Span Integration

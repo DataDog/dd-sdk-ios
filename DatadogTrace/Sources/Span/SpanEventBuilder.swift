@@ -51,15 +51,11 @@ internal struct SpanEventBuilder {
 
         if bundleWithRUM {
             // Enrich with RUM context
-            do {
-                if let rum: RUMContext = try context.baggages[RUMContext.key]?.decode() {
-                    tags[SpanTags.rumApplicationID] = rum.applicationID
-                    tags[SpanTags.rumSessionID] = rum.sessionID
-                    tags[SpanTags.rumViewID] = rum.viewID
-                    tags[SpanTags.rumActionID] = rum.userActionID
-                }
-            } catch let error {
-                telemetry.error("Failed to decode RUM context for enriching span", error: error)
+            if let rum = context.additionalContext(ofType: RUMCoreContext.self) {
+                tags[SpanTags.rumApplicationID] = rum.applicationID
+                tags[SpanTags.rumSessionID] = rum.sessionID
+                tags[SpanTags.rumViewID] = rum.viewID
+                tags[SpanTags.rumActionID] = rum.userActionID
             }
         }
 
