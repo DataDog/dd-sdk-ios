@@ -105,10 +105,10 @@ public struct DatadogInternalInterface {
         key: AttributeKey,
         value: AttributeValue
     ) {
-        let attributeCommand = RUMSetInternalViewAttributeCommand(
+        let attributeCommand = RUMAddViewAttributesCommand(
             time: time,
-            key: key,
-            value: value
+            attributes: [key: value],
+            areInternalAttributes: true
         )
         monitor.process(command: attributeCommand)
     }

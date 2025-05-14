@@ -187,15 +187,21 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         context.activeViewName = viewName
         return context
     }
+}
 
-    // MARK: - RUMScope
+// MARK: - RUMCommands Processing
 
+extension RUMViewScope {
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         // Tells if the View did change and an update event should be send.
         needsViewUpdate = false
 
         // Propagate to User Action scope
-        userActionScope = userActionScope?.scope(byPropagating: command, context: context, writer: writer)
+        userActionScope = userActionScope?.scope(
+            byPropagating: command.with(viewAttributes: attributes, isActiveView: isActiveView), // user action events also have view attributes
+            context: context,
+            writer: writer
+        )
 
         let hasSentNoViewUpdatesYet = version == 0
         if isInitialView, hasSentNoViewUpdatesYet {
@@ -222,12 +228,25 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             needsViewUpdate = true
 
         // View commands
+        case let command as RUMAddViewAttributesCommand where isActiveView:
+            if command.areInternalAttributes {
+                internalAttributes.merge(command.attributes) { $1 }
+            } else {
+                attributes.merge(command.attributes) { $1 }
+                // active resources are also updated with view attributes
+                resourceScopes.forEach { _ = $1.scope(byPropagating: command, context: context, writer: writer) }
+            }
+        case let command as RUMRemoveViewAttributesCommand where isActiveView:
+            command.keysToRemove.forEach { attributes.removeValue(forKey: $0) }
+            // active resources should also remove their view attributes
+            resourceScopes.forEach { _ = $1.scope(byPropagating: command, context: context, writer: writer) }
         case let command as RUMStartViewCommand where identity == command.identity:
             if didReceiveStartCommand {
                 // This is the case of duplicated "start" command. We know that the Session scope has created another instance of
                 // the `RUMViewScope` for tracking this View, so we mark this one as inactive.
                 isActiveView = false
             }
+            attributes.merge(command.attributes) { $1 }
             didReceiveStartCommand = true
             needsViewUpdate = true
         case let command as RUMStartViewCommand where identity != command.identity && isActiveView:
@@ -236,18 +255,18 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             // deactivated. This is achieved by setting `isActiveView` to `false` and sending one more view update.
             isActiveView = false
             needsViewUpdate = true
-        case let command as RUMSetInternalViewAttributeCommand where isActiveView:
-            internalAttributes[command.key] = command.value
-            // Purposefully don't perform a view update. Most (all?) internal view attributes
-            // aren't important enough to expect them to be uploaded automatically. They can
-            // get sent with the next view update.
-
+            // View attributes are updated with the last snapshot of the global attributes
+            attributes = command.globalAttributes.merging(self.attributes) { $1 }
         case let command as RUMStopViewCommand where identity == command.identity:
             isActiveView = false
             needsViewUpdate = true
+            // View attributes are updated with the last snapshot of the global attributes
+            attributes = command.globalAttributes.merging(self.attributes) { $1 }.merging(command.attributes) { $1 }
         case let command as RUMAddViewLoadingTime where isActiveView:
+            attributes.merge(command.attributes) { $1 }
             addViewLoadingTime(on: command)
         case let command as RUMAddViewTimingCommand where isActiveView:
+            attributes.merge(command.attributes) { $1 }
             customTimings[command.timingName] = command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
             needsViewUpdate = true
 
@@ -297,7 +316,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // Propagate to Resource scopes
         if let resourceCommand = command as? RUMResourceCommand {
             resourceScopes[resourceCommand.resourceKey] = resourceScopes[resourceCommand.resourceKey]?.scope(
-                byPropagating: resourceCommand,
+                byPropagating: resourceCommand.with(viewAttributes: attributes, isActiveView: isActiveView), // resource events also have view attributes
                 context: context,
                 writer: writer
             )
@@ -325,8 +344,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         return !shouldComplete
     }
-
-    // MARK: - RUMCommands Processing
 
     private func addViewLoadingTime(on command: RUMAddViewLoadingTime) {
         if viewLoadingTime == nil {
@@ -377,7 +394,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies: dependencies,
             name: command.name,
             actionType: command.actionType,
-            attributes: command.attributes,
+            attributes: attributes.merging(command.attributes) { $1 }, // user action events also have view attributes
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             isContinuous: true,
@@ -395,7 +412,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies: dependencies,
             name: command.name,
             actionType: command.actionType,
-            attributes: command.attributes,
+            attributes: attributes.merging(command.attributes) { $1 }, // user action events also have view attributes
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             isContinuous: false,
@@ -423,7 +440,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             command: RUMStopUserActionCommand(
                 time: command.time,
                 globalAttributes: command.globalAttributes,
-                attributes: command.attributes,
+                attributes: attributes.merging(command.attributes) { $1 }, // user action events also have view attributes
                 actionType: .custom,
                 name: nil
             ),
@@ -445,13 +462,17 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private func sendApplicationStartAction(on command: RUMApplicationStartCommand, context: DatadogContext, writer: Writer) {
         actionsCount += 1
 
-        var attributes = self.attributes
+        // Application start event attributes
+        // Attribute Precedence: global attributes <- view attributes (highest priority)
+        var commandAttributes = command.globalAttributes
+            .merging(attributes) { $1 }
+
         var loadingTime: Int64?
 
         if context.launchTime.isActivePrewarm {
             // Set `active_pre_warm` attribute to true in case
             // of pre-warmed app.
-            attributes[Constants.activePrewarm] = true
+            commandAttributes[Constants.activePrewarm] = true
         } else if let launchTime = context.launchTime.launchTime {
             // Report Application Launch Time only if not pre-warmed
             loadingTime = launchTime.toInt64Nanoseconds
@@ -496,7 +517,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: command.globalAttributes.merging(attributes) { $1 }),
+            context: .init(contextInfo: commandAttributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
@@ -535,20 +556,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             hasReplay = hasReplay || hasContextReplay
         }
 
-        // RUMM-3133 Don't override View attributes with commands that are not view related.
-        if command is RUMViewScopePropagatableAttributes {
-            // The local attributes should only be updated by commands related to this 'RUMViewScope'
-            switch command {
-            case let command as RUMStartViewCommand where identity == command.identity:
-                attributes.merge(rumCommandAttributes: command.attributes)
-            case let command as RUMStopViewCommand where identity == command.identity:
-                attributes.merge(rumCommandAttributes: command.attributes)
-            case let command as RUMAddViewLoadingTime:
-                attributes.merge(rumCommandAttributes: command.attributes)
-            case let command as RUMAddViewTimingCommand:
-                attributes.merge(rumCommandAttributes: command.attributes)
-            default: break
-            }
+        let attributes: [AttributeKey: AttributeValue]
+        if isActiveView {
+            // View event attributes
+            // Attribute Precedence: global attributes <- view attributes (highest priority)
+            attributes = command.globalAttributes.merging(self.attributes) { $1 }
+        } else {
+            // This view is not active. The attributes should not be changed.
+            attributes = self.attributes
         }
 
         let isCrash = (command as? RUMErrorCommand).map { $0.isCrash ?? false } ?? false
@@ -624,7 +639,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: command.globalAttributes.merging(attributes) { $1 }),
+            context: .init(contextInfo: attributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
@@ -734,7 +749,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         errorsCount += 1
         totalAppHangDuration += (command as? RUMAddCurrentViewAppHangCommand)?.hangDuration ?? 0
 
-        var commandAttributes = command.globalAttributes.merging(command.attributes) { $1 }
+        // Error event attributes
+        // Attribute Precedence: global attributes <- view attributes <- event attributes (highest priority)
+        var commandAttributes = command.globalAttributes
+            .merging(attributes) { $1 }
+            .merging(command.attributes) { $1 }
         let errorFingerprint: String? = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
         let timeSinceAppStart = command.time.timeIntervalSince(context.launchTime.launchDate).toInt64Milliseconds
 
@@ -827,6 +846,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let taskDurationInNs = command.duration.toInt64Nanoseconds
         let isFrozenFrame = taskDurationInNs > Constants.frozenFrameThresholdInNs
 
+        // Long task event attributes
+        // Attribute Precedence: global attributes <- view attributes <- event attributes (highest priority)
+        let commandAttributes = command.globalAttributes
+            .merging(attributes) { $1 }
+            .merging(command.attributes) { $1 }
+
         let longTaskEvent = RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -847,7 +872,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: command.globalAttributes.merging(command.attributes) { $1 }),
+            context: .init(contextInfo: commandAttributes),
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
@@ -948,15 +973,23 @@ private extension VitalInfo {
     }
 }
 
-/// A protocol for `RUMCommand`s that can propagate their attributes to the `RUMViewScope``.
-internal protocol RUMViewScopePropagatableAttributes where Self: RUMCommand {
-}
-
 private extension Result {
     var value: Success? {
         switch self {
         case .success(let success): return success
         case .failure: return nil
         }
+    }
+}
+
+private extension RUMCommand {
+    func with(viewAttributes: [AttributeKey: AttributeValue], isActiveView: Bool) -> RUMCommand {
+        guard isActiveView else {
+            return self
+        }
+
+        var command = self
+        command.attributes = viewAttributes.merging(command.attributes) { $1 }
+        return command
     }
 }

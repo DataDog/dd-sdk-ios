@@ -112,6 +112,10 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
         lastActivityTime = command.time
         switch command {
+        case let command as RUMAddViewAttributesCommand:
+            attributes.merge(command.attributes) { $1 }
+        case let command as RUMRemoveViewAttributesCommand:
+            command.keysToRemove.forEach { attributes.removeValue(forKey: $0) }
         case is RUMStartViewCommand, is RUMStopViewCommand:
             sendActionEvent(completionTime: command.time, on: command, context: context, writer: writer)
             return false
@@ -141,7 +145,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     // MARK: - Sending RUM Events
 
     private func sendActionEvent(completionTime: Date, on command: RUMCommand?, context: DatadogContext, writer: Writer) {
-        attributes.merge(rumCommandAttributes: command?.attributes)
+        if let commandAttributes = command?.attributes {
+            attributes.merge(commandAttributes) { $1 }
+        }
 
         var frustrations: [RUMActionEvent.Action.Frustration.FrustrationType]? = nil
         if dependencies.trackFrustrations, errorsCount > 0, actionType == .tap {

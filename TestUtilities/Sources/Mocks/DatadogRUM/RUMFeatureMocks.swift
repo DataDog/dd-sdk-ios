@@ -199,6 +199,60 @@ extension RUMCommand {
     }
 }
 
+extension RUMAddViewAttributesCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMAddViewAttributesCommand { mockWith() }
+
+    public static func mockRandom() -> RUMAddViewAttributesCommand {
+        .mockWith(
+            time: .mockRandomInThePast(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes(),
+            areInternalAttributes: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:],
+        areInternalAttributes: Bool = .mockAny()
+    ) -> RUMAddViewAttributesCommand {
+        RUMAddViewAttributesCommand(
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            areInternalAttributes: areInternalAttributes
+        )
+    }
+}
+
+extension RUMRemoveViewAttributesCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMRemoveViewAttributesCommand { mockWith() }
+
+    public static func mockRandom() -> RUMRemoveViewAttributesCommand {
+        .mockWith(
+            time: .mockRandomInThePast(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes(),
+            keysToRemove: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:],
+        keysToRemove: [AttributeKey] = []
+    ) -> RUMRemoveViewAttributesCommand {
+        RUMRemoveViewAttributesCommand(
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            keysToRemove: keysToRemove
+        )
+    }
+}
+
 extension RUMStartViewCommand: AnyMockable, RandomMockable {
     public static func mockAny() -> RUMStartViewCommand { mockWith() }
 
