@@ -151,7 +151,11 @@ struct RUMCommandMock: RUMCommand {
     var time = Date()
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue] = [:]
+    var canStartApplicationLaunchView = false
     var canStartBackgroundView = false
+    var shouldRestartLastViewAfterSessionExpiration = false
+    var shouldRestartLastViewAfterSessionStop = false
+    var canStartBackgroundViewAfterSessionStop = false
     var isUserInteraction = false
     var missedEventType: SessionEndedMetric.MissedEventType? = nil
 }

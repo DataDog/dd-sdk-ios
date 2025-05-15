@@ -242,79 +242,6 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertNotNil(scope.activeSession)
     }
 
-    func testGivenStoppedSession_whenUserActionOccurs_itRestartsTheLastKnownView() throws {
-        // Given
-        let currentTime = Date()
-        let scope = createRUMApplicationScope(
-            dependencies: .mockWith(
-                sessionSampler: .mockKeepAll()
-            )
-        )
-        let viewName: String = .mockRandom()
-        let viewPath: String = .mockRandom()
-        _ = scope.process(
-            command: RUMStartViewCommand.mockWith(
-                name: viewName,
-                path: viewPath
-            ),
-            context: .mockAny(),
-            writer: writer
-        )
-        _ = scope.process(
-            command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(2)),
-            context: .mockAny(),
-            writer: writer
-        )
-
-        // When
-        let secondSesionStartTime = currentTime.addingTimeInterval(3)
-        _ = scope.process(
-            command: RUMCommandMock(time: secondSesionStartTime, isUserInteraction: true),
-            context: .mockAny(),
-            writer: writer
-        )
-
-        // Then
-        XCTAssertEqual(scope.sessionScopes.count, 1)
-        let activeSession = try XCTUnwrap(scope.activeSession)
-        XCTAssertEqual(activeSession.viewScopes.count, 1)
-        let activeView = try XCTUnwrap(activeSession.viewScopes.first)
-        XCTAssertEqual(activeView.viewPath, viewPath)
-        XCTAssertEqual(activeView.viewName, viewName)
-        XCTAssertEqual(activeView.viewStartTime, secondSesionStartTime)
-    }
-
-    func testGivenStoppedSession_whenNonUserInteractionEvent_itDoesNotStartANewSession() throws {
-        // Given
-        let currentTime = Date()
-        let scope = createRUMApplicationScope(
-            dependencies: .mockWith(
-                sessionSampler: .mockKeepAll()
-            )
-        )
-        _ = scope.process(
-            command: RUMCommandMock(time: currentTime.addingTimeInterval(1), isUserInteraction: true),
-            context: .mockAny(),
-            writer: writer
-        )
-        _ = scope.process(
-            command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(2)),
-            context: .mockAny(),
-            writer: writer
-        )
-
-        // When
-        _ = scope.process(
-            command: RUMCommandMock(time: currentTime.addingTimeInterval(3), isUserInteraction: false),
-            context: .mockAny(),
-            writer: writer
-        )
-
-        // Then
-        XCTAssertEqual(scope.sessionScopes.count, 0)
-        XCTAssertNil(scope.activeSession)
-    }
-
     func testGivenSessionProcessingResources_whenStopped_itStaysInactive() throws {
         // Given
         let currentTime = Date()
@@ -458,7 +385,7 @@ class RUMApplicationScopeTests: XCTestCase {
                 launchDate: .mockDecember15th2019At10AMUTC(),
                 isActivePrewarm: true
             ),
-            applicationStateHistory: .mockRandom(since: .mockDecember15th2019At10AMUTC())
+            applicationStateHistory: .mockWith(initialState: .background, date: .mockDecember15th2019At10AMUTC())
         )
 
         // When

@@ -18,6 +18,7 @@ class RUMViewEndedMetricIntegrationTests: XCTestCase {
     override func setUp() {
         core = DatadogCoreProxy()
         core.context = .mockWith(
+            sdkInitDate: dateProvider.now,
             launchTime: .mockWith(launchDate: dateProvider.now),
             applicationStateHistory: .mockAppInForeground(since: dateProvider.now)
         )
@@ -27,7 +28,7 @@ class RUMViewEndedMetricIntegrationTests: XCTestCase {
         rumConfig.dateProvider = dateProvider
     }
 
-        override func tearDownWithError() throws {
+    override func tearDownWithError() throws {
         try core.flushAndTearDown()
         core = nil
         rumConfig = nil
@@ -88,10 +89,10 @@ class RUMViewEndedMetricIntegrationTests: XCTestCase {
         XCTAssertEqual(metrics.count, 2)
         XCTAssertEqual(metrics[0].attributes?.viewType, .applicationLaunch)
         XCTAssertNil(metrics[0].attributes?.instrumentationType)
-        XCTAssertEqual(metrics[0].attributes?.duration, 1_000_000_000)
+        XCTAssertEqual(metrics[0].attributes?.duration.nanosecondsToSeconds, 1)
         XCTAssertEqual(metrics[1].attributes?.viewType, .custom)
         XCTAssertEqual(metrics[1].attributes?.instrumentationType, .manual)
-        XCTAssertEqual(metrics[1].attributes?.duration, 3_000_000_000)
+        XCTAssertEqual(metrics[1].attributes?.duration.nanosecondsToSeconds, 3)
     }
 
     func testReportingTNSValue() throws {

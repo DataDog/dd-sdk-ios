@@ -150,7 +150,11 @@ public struct RUMCommandMock: RUMCommand {
     public var time: Date
     public var globalAttributes: [AttributeKey: AttributeValue]
     public var attributes: [AttributeKey: AttributeValue]
+    public var canStartApplicationLaunchView: Bool
     public var canStartBackgroundView: Bool
+    public var shouldRestartLastViewAfterSessionExpiration: Bool
+    public var shouldRestartLastViewAfterSessionStop: Bool
+    public var canStartBackgroundViewAfterSessionStop: Bool
     public var isUserInteraction: Bool
     public var missedEventType: SessionEndedMetric.MissedEventType? = nil
 
@@ -158,13 +162,21 @@ public struct RUMCommandMock: RUMCommand {
         time: Date = Date(),
         globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
+        canStartApplicationLaunchView: Bool = false,
         canStartBackgroundView: Bool = false,
+        shouldRestartLastViewAfterSessionExpiration: Bool = false,
+        shouldRestartLastViewAfterSessionStop: Bool = false,
+        canStartBackgroundViewAfterSessionStop: Bool = false,
         isUserInteraction: Bool = false
     ) {
         self.time = time
         self.globalAttributes = globalAttributes
         self.attributes = attributes
+        self.canStartApplicationLaunchView = canStartApplicationLaunchView
         self.canStartBackgroundView = canStartBackgroundView
+        self.shouldRestartLastViewAfterSessionExpiration = shouldRestartLastViewAfterSessionExpiration
+        self.shouldRestartLastViewAfterSessionStop = shouldRestartLastViewAfterSessionStop
+        self.canStartBackgroundViewAfterSessionStop = canStartBackgroundViewAfterSessionStop
         self.isUserInteraction = isUserInteraction
     }
 }

@@ -66,6 +66,9 @@ internal struct RUMScopeDependencies {
     /// A factory function that creates a `INVMetric` when session starts.
     let interactionToNextViewMetricFactory: () -> INVMetricTracking?
 
+    /// Tracks the overall application state since `RUM.enable()` was called.
+    let applicationState = RUMApplicationState()
+
     init(
         featureScope: FeatureScope,
         rumApplicationID: String,

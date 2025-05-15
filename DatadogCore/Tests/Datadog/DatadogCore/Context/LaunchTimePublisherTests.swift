@@ -121,6 +121,22 @@ class AppLaunchHandlerTests: XCTestCase {
         waitForExpectations(timeout: 1)
     }
 
+    func testApplicationDidBecomeActiveCallbackIsOnlyCalledOnce() {
+        // Given
+        let handler = AppLaunchHandler(processInfo: processInfo)
+        let callbackNotified = expectation(description: "Notify setApplicationDidBecomeActiveCallback()")
+        handler.setApplicationDidBecomeActiveCallback { _ in callbackNotified.fulfill() }
+
+        // When
+        handler.observe(notificationCenter)
+        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+
+        // Then
+        waitForExpectations(timeout: 1)
+    }
+
     func testThreadSafety() {
         let handler = AppLaunchHandler(processInfo: processInfo)
 
