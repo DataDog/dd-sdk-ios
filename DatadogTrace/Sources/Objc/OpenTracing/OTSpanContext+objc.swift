@@ -7,7 +7,8 @@
 import Foundation
 
 /// Corresponds to: https://github.com/opentracing/opentracing-objc/blob/master/Pod/Classes/OTSpanContext.h
-@objc
-public protocol OTSpanContext {
+@objc(OTSpanContext)
+@_spi(objc)
+public protocol objc_OTSpanContext {
     func forEachBaggageItem(_ callback: (_ key: String, _ value: String) -> Bool)
 }

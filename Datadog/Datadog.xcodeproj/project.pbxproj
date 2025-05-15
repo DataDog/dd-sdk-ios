@@ -286,6 +286,28 @@
 		11F55FD72DCBBAD700DE4944 /* DDURLSessionInstrumentationTests+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C1890132ABDE99200CE9E73 /* DDURLSessionInstrumentationTests+apiTests.m */; };
 		11F55FD92DCE183500DE4944 /* RUMDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FD82DCE183500DE4944 /* RUMDataModels+objc.swift */; };
 		11F55FDA2DCE183500DE4944 /* RUMDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FD82DCE183500DE4944 /* RUMDataModels+objc.swift */; };
+		11F55FEB2DCE501A00DE4944 /* HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE02DCE501A00DE4944 /* HTTPHeadersWriter+objc.swift */; };
+		11F55FEC2DCE501A00DE4944 /* Casting+Tracing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE42DCE501A00DE4944 /* Casting+Tracing.swift */; };
+		11F55FED2DCE501A00DE4944 /* OTSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FDB2DCE501A00DE4944 /* OTSpan+objc.swift */; };
+		11F55FEE2DCE501A00DE4944 /* W3CHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE22DCE501A00DE4944 /* W3CHTTPHeadersWriter+objc.swift */; };
+		11F55FEF2DCE501A00DE4944 /* TraceContextInjection+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE12DCE501A00DE4944 /* TraceContextInjection+objc.swift */; };
+		11F55FF02DCE501A00DE4944 /* Trace+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE82DCE501A00DE4944 /* Trace+objc.swift */; };
+		11F55FF12DCE501A00DE4944 /* OTSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FDC2DCE501A00DE4944 /* OTSpanContext+objc.swift */; };
+		11F55FF22DCE501A00DE4944 /* DDSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE62DCE501A00DE4944 /* DDSpan+objc.swift */; };
+		11F55FF32DCE501A00DE4944 /* B3HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FDF2DCE501A00DE4944 /* B3HTTPHeadersWriter+objc.swift */; };
+		11F55FF42DCE501A00DE4944 /* DDSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE72DCE501A00DE4944 /* DDSpanContext+objc.swift */; };
+		11F55FF52DCE501A00DE4944 /* OTTracer+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FDD2DCE501A00DE4944 /* OTTracer+objc.swift */; };
+		11F55FF62DCE501A00DE4944 /* HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE02DCE501A00DE4944 /* HTTPHeadersWriter+objc.swift */; };
+		11F55FF72DCE501A00DE4944 /* Casting+Tracing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE42DCE501A00DE4944 /* Casting+Tracing.swift */; };
+		11F55FF82DCE501A00DE4944 /* OTSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FDB2DCE501A00DE4944 /* OTSpan+objc.swift */; };
+		11F55FF92DCE501A00DE4944 /* W3CHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE22DCE501A00DE4944 /* W3CHTTPHeadersWriter+objc.swift */; };
+		11F55FFA2DCE501A00DE4944 /* TraceContextInjection+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE12DCE501A00DE4944 /* TraceContextInjection+objc.swift */; };
+		11F55FFB2DCE501A00DE4944 /* Trace+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE82DCE501A00DE4944 /* Trace+objc.swift */; };
+		11F55FFC2DCE501A00DE4944 /* OTSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FDC2DCE501A00DE4944 /* OTSpanContext+objc.swift */; };
+		11F55FFD2DCE501A00DE4944 /* DDSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE62DCE501A00DE4944 /* DDSpan+objc.swift */; };
+		11F55FFE2DCE501A00DE4944 /* B3HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FDF2DCE501A00DE4944 /* B3HTTPHeadersWriter+objc.swift */; };
+		11F55FFF2DCE501A00DE4944 /* DDSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE72DCE501A00DE4944 /* DDSpanContext+objc.swift */; };
+		11F560002DCE501A00DE4944 /* OTTracer+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FDD2DCE501A00DE4944 /* OTTracer+objc.swift */; };
 		1434A4612B7F73110072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
 		1434A4622B7F73110072E3BB /* OpenTelemetryApi.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1434A4632B7F73170072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
@@ -360,8 +382,6 @@
 		3C9C6BB429F7C0C000581C43 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
 		3CA8525F2BF2073800B52CBA /* TraceContextInjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CA8525E2BF2073800B52CBA /* TraceContextInjection.swift */; };
 		3CA852602BF2073800B52CBA /* TraceContextInjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CA8525E2BF2073800B52CBA /* TraceContextInjection.swift */; };
-		3CA852642BF2148200B52CBA /* TraceContextInjection+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CA852612BF2147600B52CBA /* TraceContextInjection+objc.swift */; };
-		3CA852652BF2148400B52CBA /* TraceContextInjection+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CA852612BF2147600B52CBA /* TraceContextInjection+objc.swift */; };
 		3CB012DD2B482E0400557951 /* NOPOTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB012DB2B482E0400557951 /* NOPOTelSpan.swift */; };
 		3CB012DE2B482E0400557951 /* NOPOTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB012DB2B482E0400557951 /* NOPOTelSpan.swift */; };
 		3CB012DF2B482E0400557951 /* NOPOTelSpanBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB012DC2B482E0400557951 /* NOPOTelSpanBuilder.swift */; };
@@ -586,11 +606,6 @@
 		6128F5852BA8CAAB00D35B08 /* DataStoreFileWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6128F5832BA8CAAB00D35B08 /* DataStoreFileWriterTests.swift */; };
 		6128F58A2BA9860B00D35B08 /* DataStoreFileReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6128F5892BA9860B00D35B08 /* DataStoreFileReaderTests.swift */; };
 		6128F58B2BA9860B00D35B08 /* DataStoreFileReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6128F5892BA9860B00D35B08 /* DataStoreFileReaderTests.swift */; };
-		6132BF4224A38D2400D7BD17 /* OTTracer+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4124A38D2400D7BD17 /* OTTracer+objc.swift */; };
-		6132BF4724A498D800D7BD17 /* DDSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4624A498D800D7BD17 /* DDSpan+objc.swift */; };
-		6132BF4924A49B6800D7BD17 /* DDSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4824A49B6800D7BD17 /* DDSpanContext+objc.swift */; };
-		6132BF4C24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4B24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift */; };
-		6132BF5124A49F7400D7BD17 /* Casting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF5024A49F7400D7BD17 /* Casting.swift */; };
 		6133D1EF2A6ED9E100384BEF /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
 		6133D2012A6EDB7700384BEF /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257953E298ABA65008A1BE5 /* TestUtilities.framework */; };
 		6133D20B2A6EDBC100384BEF /* DatadogSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */; };
@@ -638,10 +653,7 @@
 		6156A9072BF75A7C00DF66C3 /* ImmutableRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156A9062BF75A7C00DF66C3 /* ImmutableRequestTests.swift */; };
 		6156A9082BF75A7C00DF66C3 /* ImmutableRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156A9062BF75A7C00DF66C3 /* ImmutableRequestTests.swift */; };
 		61570005246AADFA00E96950 /* DatadogObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; };
-		615A4A8324A3431600233986 /* Trace+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8224A3431600233986 /* Trace+objc.swift */; };
 		615A4A8924A34FD700233986 /* DDTracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8824A34FD700233986 /* DDTracerTests.swift */; };
-		615A4A8B24A3568900233986 /* OTSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8A24A3568900233986 /* OTSpan+objc.swift */; };
-		615A4A8D24A356A000233986 /* OTSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8C24A356A000233986 /* OTSpanContext+objc.swift */; };
 		615B0F8B2BB33C2800E9ED6C /* AppHangsMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615B0F8A2BB33C2800E9ED6C /* AppHangsMonitorTests.swift */; };
 		615B0F8C2BB33C2800E9ED6C /* AppHangsMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615B0F8A2BB33C2800E9ED6C /* AppHangsMonitorTests.swift */; };
 		615CC40C2694A56D0005F08C /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615CC40B2694A56D0005F08C /* SwiftExtensions.swift */; };
@@ -914,8 +926,6 @@
 		A70ADCD22B583B1300321BC9 /* UIImageResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70ADCD12B583B1300321BC9 /* UIImageResource.swift */; };
 		A71013D62B178FAD00101E60 /* ResourcesWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71013D52B178FAD00101E60 /* ResourcesWriterTests.swift */; };
 		A727C4BB2BADB3AB00707DFD /* DDSessionReplay+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A795069D2B974CAA00AC4814 /* DDSessionReplay+apiTests.m */; };
-		A728ADAB2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */; };
-		A728ADAC2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */; };
 		A728ADB02934EB0900397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
 		A728ADB12934EB0C00397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
 		A73A54982B16406900E1F7E3 /* ResourcesFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A73A54972B16406900E1F7E3 /* ResourcesFeature.swift */; };
@@ -924,8 +934,6 @@
 		A795069C2B974C8200AC4814 /* SessionReplay+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A795069B2B974C8100AC4814 /* SessionReplay+objc.swift */; };
 		A79B0F64292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F63292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m */; };
 		A79B0F65292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F63292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m */; };
-		A79B0F66292BD7CA008742B3 /* B3HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F5E292BA435008742B3 /* B3HTTPHeadersWriter+objc.swift */; };
-		A79B0F67292BD7CC008742B3 /* B3HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F5E292BA435008742B3 /* B3HTTPHeadersWriter+objc.swift */; };
 		A7B932F52B1F694000AE6477 /* ResourcesProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B932F42B1F694000AE6477 /* ResourcesProcessor.swift */; };
 		A7B932FB2B1F6A0A00AE6477 /* EnrichedRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B932F72B1F6A0A00AE6477 /* EnrichedRecord.swift */; };
 		A7B932FC2B1F6A0A00AE6477 /* SRDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B932F82B1F6A0A00AE6477 /* SRDataModels.swift */; };
@@ -1657,14 +1665,6 @@
 		D2CB6F8427C520D400A62B57 /* DatadogTestsObserverLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = 6184751726EFD03400C7C9C5 /* DatadogTestsObserverLoader.m */; };
 		D2CB6F8527C520D400A62B57 /* PerformancePresetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61345612244756E300E7DA6B /* PerformancePresetTests.swift */; };
 		D2CB6F9627C5217A00A62B57 /* DatadogObjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 61133BF2242397DA00786299 /* DatadogObjc.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D2CB6F9927C5217A00A62B57 /* Casting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF5024A49F7400D7BD17 /* Casting.swift */; };
-		D2CB6F9B27C5217A00A62B57 /* DDSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4824A49B6800D7BD17 /* DDSpanContext+objc.swift */; };
-		D2CB6F9C27C5217A00A62B57 /* OTTracer+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4124A38D2400D7BD17 /* OTTracer+objc.swift */; };
-		D2CB6FA027C5217A00A62B57 /* Trace+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8224A3431600233986 /* Trace+objc.swift */; };
-		D2CB6FA127C5217A00A62B57 /* HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4B24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift */; };
-		D2CB6FA227C5217A00A62B57 /* DDSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4624A498D800D7BD17 /* DDSpan+objc.swift */; };
-		D2CB6FA327C5217A00A62B57 /* OTSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8A24A3568900233986 /* OTSpan+objc.swift */; };
-		D2CB6FA627C5217A00A62B57 /* OTSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8C24A356A000233986 /* OTSpanContext+objc.swift */; };
 		D2CB6FB327C5234300A62B57 /* DatadogCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6ED127C50EAE00A62B57 /* DatadogCore.framework */; };
 		D2CB6FB827C523DA00A62B57 /* DatadogCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6ED127C50EAE00A62B57 /* DatadogCore.framework */; };
 		D2CB6FB927C523DA00A62B57 /* DatadogObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FB027C5217A00A62B57 /* DatadogObjc.framework */; };
@@ -2388,6 +2388,17 @@
 		11EA5C2F2DC4FE4500E8DFA2 /* TracingHeaderType+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TracingHeaderType+objc.swift"; sourceTree = "<group>"; };
 		11EA5C322DC5077000E8DFA2 /* InternalLogger+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InternalLogger+objc.swift"; sourceTree = "<group>"; };
 		11F55FD82DCE183500DE4944 /* RUMDataModels+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objc.swift"; sourceTree = "<group>"; };
+		11F55FDB2DCE501A00DE4944 /* OTSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpan+objc.swift"; sourceTree = "<group>"; };
+		11F55FDC2DCE501A00DE4944 /* OTSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpanContext+objc.swift"; sourceTree = "<group>"; };
+		11F55FDD2DCE501A00DE4944 /* OTTracer+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTTracer+objc.swift"; sourceTree = "<group>"; };
+		11F55FDF2DCE501A00DE4944 /* B3HTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "B3HTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
+		11F55FE02DCE501A00DE4944 /* HTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
+		11F55FE12DCE501A00DE4944 /* TraceContextInjection+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraceContextInjection+objc.swift"; sourceTree = "<group>"; };
+		11F55FE22DCE501A00DE4944 /* W3CHTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "W3CHTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
+		11F55FE42DCE501A00DE4944 /* Casting+Tracing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Casting+Tracing.swift"; sourceTree = "<group>"; };
+		11F55FE62DCE501A00DE4944 /* DDSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDSpan+objc.swift"; sourceTree = "<group>"; };
+		11F55FE72DCE501A00DE4944 /* DDSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDSpanContext+objc.swift"; sourceTree = "<group>"; };
+		11F55FE82DCE501A00DE4944 /* Trace+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Trace+objc.swift"; sourceTree = "<group>"; };
 		1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugOTelTracingViewController.swift; sourceTree = "<group>"; };
 		3C08F9CF2C2D652D002B0FF2 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
 		3C0CB3442C19A1ED003B0E9B /* WatchdogTerminationReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationReporter.swift; sourceTree = "<group>"; };
@@ -2424,7 +2435,6 @@
 		3C9B27242B9F174700569C07 /* SpanID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanID.swift; sourceTree = "<group>"; };
 		3CA00B062C2AE52400E6FE01 /* WatchdogTerminationsMonitoringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationsMonitoringTests.swift; sourceTree = "<group>"; };
 		3CA8525E2BF2073800B52CBA /* TraceContextInjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceContextInjection.swift; sourceTree = "<group>"; };
-		3CA852612BF2147600B52CBA /* TraceContextInjection+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraceContextInjection+objc.swift"; sourceTree = "<group>"; };
 		3CB012DB2B482E0400557951 /* NOPOTelSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NOPOTelSpan.swift; sourceTree = "<group>"; };
 		3CB012DC2B482E0400557951 /* NOPOTelSpanBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NOPOTelSpanBuilder.swift; sourceTree = "<group>"; };
 		3CBDE6732AA08C2F00F6A7B6 /* URLSessionInstrumentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionInstrumentation.swift; sourceTree = "<group>"; };
@@ -2633,11 +2643,6 @@
 		6128F57D2BA8A3A000D35B08 /* DataStore+TLVTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DataStore+TLVTests.swift"; sourceTree = "<group>"; };
 		6128F5832BA8CAAB00D35B08 /* DataStoreFileWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStoreFileWriterTests.swift; sourceTree = "<group>"; };
 		6128F5892BA9860B00D35B08 /* DataStoreFileReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStoreFileReaderTests.swift; sourceTree = "<group>"; };
-		6132BF4124A38D2400D7BD17 /* OTTracer+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTTracer+objc.swift"; sourceTree = "<group>"; };
-		6132BF4624A498D800D7BD17 /* DDSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDSpan+objc.swift"; sourceTree = "<group>"; };
-		6132BF4824A49B6800D7BD17 /* DDSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDSpanContext+objc.swift"; sourceTree = "<group>"; };
-		6132BF4B24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
-		6132BF5024A49F7400D7BD17 /* Casting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Casting.swift; sourceTree = "<group>"; };
 		6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogSessionReplay.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6133D2082A6EDB7700384BEF /* DatadogSessionReplayTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogSessionReplayTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		61345612244756E300E7DA6B /* PerformancePresetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformancePresetTests.swift; sourceTree = "<group>"; };
@@ -2693,10 +2698,7 @@
 		6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContextProvider.swift; sourceTree = "<group>"; };
 		615950EA291C029700470E0C /* SessionReplayDependencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayDependencyTests.swift; sourceTree = "<group>"; };
 		615950ED291C058F00470E0C /* SessionReplayDependency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayDependency.swift; sourceTree = "<group>"; };
-		615A4A8224A3431600233986 /* Trace+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Trace+objc.swift"; sourceTree = "<group>"; };
 		615A4A8824A34FD700233986 /* DDTracerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDTracerTests.swift; sourceTree = "<group>"; };
-		615A4A8A24A3568900233986 /* OTSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpan+objc.swift"; sourceTree = "<group>"; };
-		615A4A8C24A356A000233986 /* OTSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpanContext+objc.swift"; sourceTree = "<group>"; };
 		615B0F8A2BB33C2800E9ED6C /* AppHangsMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHangsMonitorTests.swift; sourceTree = "<group>"; };
 		615C3195251DD5080018781C /* RUMActionsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMActionsHandlerTests.swift; sourceTree = "<group>"; };
 		615CC40B2694A56D0005F08C /* SwiftExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
@@ -2978,7 +2980,6 @@
 		A728ADA02934CE5D00397996 /* W3CHTTPHeadersReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeadersReader.swift; sourceTree = "<group>"; };
 		A728ADA22934DB5000397996 /* W3CHTTPHeadersWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeadersWriterTests.swift; sourceTree = "<group>"; };
 		A728ADA52934DF2400397996 /* W3CHTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
-		A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "W3CHTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
 		A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDW3CHTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
 		A73A54972B16406900E1F7E3 /* ResourcesFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesFeature.swift; sourceTree = "<group>"; };
 		A74A72802B0CEE4900771FEB /* ResourceRequestBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResourceRequestBuilder.swift; sourceTree = "<group>"; };
@@ -2987,7 +2988,6 @@
 		A795069B2B974C8100AC4814 /* SessionReplay+objc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SessionReplay+objc.swift"; sourceTree = "<group>"; };
 		A795069D2B974CAA00AC4814 /* DDSessionReplay+apiTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DDSessionReplay+apiTests.m"; sourceTree = "<group>"; };
 		A79B0F5A292B7C06008742B3 /* B3HTTPHeadersWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = B3HTTPHeadersWriterTests.swift; sourceTree = "<group>"; };
-		A79B0F5E292BA435008742B3 /* B3HTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "B3HTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
 		A79B0F60292BB071008742B3 /* B3HTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = B3HTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
 		A79B0F63292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDB3HTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
 		A7B932F42B1F694000AE6477 /* ResourcesProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesProcessor.swift; sourceTree = "<group>"; };
@@ -3885,6 +3885,56 @@
 			path = NetworkInstrumentation;
 			sourceTree = "<group>";
 		};
+		11F55FDE2DCE501A00DE4944 /* OpenTracing */ = {
+			isa = PBXGroup;
+			children = (
+				11F55FDB2DCE501A00DE4944 /* OTSpan+objc.swift */,
+				11F55FDC2DCE501A00DE4944 /* OTSpanContext+objc.swift */,
+				11F55FDD2DCE501A00DE4944 /* OTTracer+objc.swift */,
+			);
+			path = OpenTracing;
+			sourceTree = "<group>";
+		};
+		11F55FE32DCE501A00DE4944 /* Propagation */ = {
+			isa = PBXGroup;
+			children = (
+				11F55FDF2DCE501A00DE4944 /* B3HTTPHeadersWriter+objc.swift */,
+				11F55FE02DCE501A00DE4944 /* HTTPHeadersWriter+objc.swift */,
+				11F55FE12DCE501A00DE4944 /* TraceContextInjection+objc.swift */,
+				11F55FE22DCE501A00DE4944 /* W3CHTTPHeadersWriter+objc.swift */,
+			);
+			path = Propagation;
+			sourceTree = "<group>";
+		};
+		11F55FE52DCE501A00DE4944 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				11F55FE42DCE501A00DE4944 /* Casting+Tracing.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		11F55FE92DCE501A00DE4944 /* Tracing */ = {
+			isa = PBXGroup;
+			children = (
+				11F55FE32DCE501A00DE4944 /* Propagation */,
+				11F55FE52DCE501A00DE4944 /* Utils */,
+				11F55FE62DCE501A00DE4944 /* DDSpan+objc.swift */,
+				11F55FE72DCE501A00DE4944 /* DDSpanContext+objc.swift */,
+				11F55FE82DCE501A00DE4944 /* Trace+objc.swift */,
+			);
+			path = Tracing;
+			sourceTree = "<group>";
+		};
+		11F55FEA2DCE501A00DE4944 /* Objc */ = {
+			isa = PBXGroup;
+			children = (
+				11F55FDE2DCE501A00DE4944 /* OpenTracing */,
+				11F55FE92DCE501A00DE4944 /* Tracing */,
+			);
+			path = Objc;
+			sourceTree = "<group>";
+		};
 		3C4CF9932C47BE10006DE1C0 /* MemoryWarnings */ = {
 			isa = PBXGroup;
 			children = (
@@ -4535,7 +4585,6 @@
 				61133B9C2423979B00786299 /* DatadogCore */,
 				9E68FB52244707FD0013A8AA /* DatadogPrivate */,
 				61133C122423990D00786299 /* DatadogCoreTests */,
-				61133C082423983800786299 /* DatadogObjc */,
 				D23039A6298D513D001A1FA3 /* DatadogInternal */,
 				D2DA238B298D588A00C6C7E6 /* DatadogInternalTests */,
 				D207317D29A5226A00ECBF94 /* DatadogLogs */,
@@ -4715,16 +4764,6 @@
 				61441C9E2461AF4D003D8BB8 /* Example */,
 			);
 			path = TargetSupport;
-			sourceTree = "<group>";
-		};
-		61133C082423983800786299 /* DatadogObjc */ = {
-			isa = PBXGroup;
-			children = (
-				6132BF4524A498B400D7BD17 /* Tracing */,
-				6132BF4024A38D0600D7BD17 /* OpenTracing */,
-			);
-			name = DatadogObjc;
-			path = ../DatadogObjc/Sources;
 			sourceTree = "<group>";
 		};
 		61133C122423990D00786299 /* DatadogCoreTests */ = {
@@ -4934,47 +4973,6 @@
 				6128F5892BA9860B00D35B08 /* DataStoreFileReaderTests.swift */,
 			);
 			path = DataStore;
-			sourceTree = "<group>";
-		};
-		6132BF4024A38D0600D7BD17 /* OpenTracing */ = {
-			isa = PBXGroup;
-			children = (
-				6132BF4124A38D2400D7BD17 /* OTTracer+objc.swift */,
-				615A4A8A24A3568900233986 /* OTSpan+objc.swift */,
-				615A4A8C24A356A000233986 /* OTSpanContext+objc.swift */,
-			);
-			path = OpenTracing;
-			sourceTree = "<group>";
-		};
-		6132BF4524A498B400D7BD17 /* Tracing */ = {
-			isa = PBXGroup;
-			children = (
-				615A4A8224A3431600233986 /* Trace+objc.swift */,
-				6132BF4624A498D800D7BD17 /* DDSpan+objc.swift */,
-				6132BF4824A49B6800D7BD17 /* DDSpanContext+objc.swift */,
-				6132BF4A24A49C7200D7BD17 /* Propagation */,
-				6132BF4F24A49F6400D7BD17 /* Utils */,
-			);
-			path = Tracing;
-			sourceTree = "<group>";
-		};
-		6132BF4A24A49C7200D7BD17 /* Propagation */ = {
-			isa = PBXGroup;
-			children = (
-				3CA852612BF2147600B52CBA /* TraceContextInjection+objc.swift */,
-				6132BF4B24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift */,
-				A79B0F5E292BA435008742B3 /* B3HTTPHeadersWriter+objc.swift */,
-				A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */,
-			);
-			path = Propagation;
-			sourceTree = "<group>";
-		};
-		6132BF4F24A49F6400D7BD17 /* Utils */ = {
-			isa = PBXGroup;
-			children = (
-				6132BF5024A49F7400D7BD17 /* Casting.swift */,
-			);
-			path = Utils;
 			sourceTree = "<group>";
 		};
 		613E79412577C08900DFCC17 /* Writing */ = {
@@ -6334,20 +6332,21 @@
 		D25EE93529C4C3C300CE3839 /* DatadogTrace */ = {
 			isa = PBXGroup;
 			children = (
-				3C6C7FDE2B459AAA006F5CBC /* OpenTelemetry */,
-				61A2CC382A44B0EA0000FF25 /* Trace.swift */,
-				61A2CC352A44B0A20000FF25 /* TraceConfiguration.swift */,
-				61A2CC3B2A44BED30000FF25 /* Tracer.swift */,
 				D2546BF029AF4F550054E00B /* DatadogTracer.swift */,
+				D2EBEDD629B8F08E00B15732 /* DDFormat.swift */,
 				61C5A87924509A0C00DA608C /* DDNoOps.swift */,
 				61C5A87824509A0C00DA608C /* DDSpan.swift */,
 				61C5A87E24509A0C00DA608C /* DDSpanContext.swift */,
-				D2EBEDD629B8F08E00B15732 /* DDFormat.swift */,
-				61E909E524A24DD3005EA2DE /* OpenTracing */,
+				61A2CC382A44B0EA0000FF25 /* Trace.swift */,
+				61A2CC352A44B0A20000FF25 /* TraceConfiguration.swift */,
+				61A2CC3B2A44BED30000FF25 /* Tracer.swift */,
 				D2546C0629AF55CE0054E00B /* Feature */,
-				61C5A8A324509FAA00DA608C /* Span */,
-				618D9DE5263AD77600A3FAD2 /* Scrubbing */,
 				D21C26E928AF9D22005DD405 /* Integrations */,
+				11F55FEA2DCE501A00DE4944 /* Objc */,
+				3C6C7FDE2B459AAA006F5CBC /* OpenTelemetry */,
+				61E909E524A24DD3005EA2DE /* OpenTracing */,
+				618D9DE5263AD77600A3FAD2 /* Scrubbing */,
+				61C5A8A324509FAA00DA608C /* Span */,
 				61C5A87A24509A0C00DA608C /* Utils */,
 			);
 			name = DatadogTrace;
@@ -8484,17 +8483,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6132BF5124A49F7400D7BD17 /* Casting.swift in Sources */,
-				6132BF4924A49B6800D7BD17 /* DDSpanContext+objc.swift in Sources */,
-				6132BF4224A38D2400D7BD17 /* OTTracer+objc.swift in Sources */,
-				A728ADAB2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */,
-				A79B0F66292BD7CA008742B3 /* B3HTTPHeadersWriter+objc.swift in Sources */,
-				3CA852642BF2148200B52CBA /* TraceContextInjection+objc.swift in Sources */,
-				615A4A8324A3431600233986 /* Trace+objc.swift in Sources */,
-				6132BF4C24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift in Sources */,
-				6132BF4724A498D800D7BD17 /* DDSpan+objc.swift in Sources */,
-				615A4A8B24A3568900233986 /* OTSpan+objc.swift in Sources */,
-				615A4A8D24A356A000233986 /* OTSpanContext+objc.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9306,6 +9294,17 @@
 				3CB012DD2B482E0400557951 /* NOPOTelSpan.swift in Sources */,
 				61CE585A2B48174D00479510 /* SpanWriteContext.swift in Sources */,
 				D2C1A51829C4C53F00946C31 /* OTSpan.swift in Sources */,
+				11F55FEB2DCE501A00DE4944 /* HTTPHeadersWriter+objc.swift in Sources */,
+				11F55FEC2DCE501A00DE4944 /* Casting+Tracing.swift in Sources */,
+				11F55FED2DCE501A00DE4944 /* OTSpan+objc.swift in Sources */,
+				11F55FEE2DCE501A00DE4944 /* W3CHTTPHeadersWriter+objc.swift in Sources */,
+				11F55FEF2DCE501A00DE4944 /* TraceContextInjection+objc.swift in Sources */,
+				11F55FF02DCE501A00DE4944 /* Trace+objc.swift in Sources */,
+				11F55FF12DCE501A00DE4944 /* OTSpanContext+objc.swift in Sources */,
+				11F55FF22DCE501A00DE4944 /* DDSpan+objc.swift in Sources */,
+				11F55FF32DCE501A00DE4944 /* B3HTTPHeadersWriter+objc.swift in Sources */,
+				11F55FF42DCE501A00DE4944 /* DDSpanContext+objc.swift in Sources */,
+				11F55FF52DCE501A00DE4944 /* OTTracer+objc.swift in Sources */,
 				D2C1A51429C4C53F00946C31 /* OTSpanContext.swift in Sources */,
 				3C6C7FEB2B459AAA006F5CBC /* OTelTraceId+Datadog.swift in Sources */,
 				3C6C7FE92B459AAA006F5CBC /* OTelSpanBuilder.swift in Sources */,
@@ -9568,6 +9567,17 @@
 				3CB012DE2B482E0400557951 /* NOPOTelSpan.swift in Sources */,
 				61CE585B2B48174D00479510 /* SpanWriteContext.swift in Sources */,
 				D2C1A53D29C4F2DF00946C31 /* OTSpan.swift in Sources */,
+				11F55FF62DCE501A00DE4944 /* HTTPHeadersWriter+objc.swift in Sources */,
+				11F55FF72DCE501A00DE4944 /* Casting+Tracing.swift in Sources */,
+				11F55FF82DCE501A00DE4944 /* OTSpan+objc.swift in Sources */,
+				11F55FF92DCE501A00DE4944 /* W3CHTTPHeadersWriter+objc.swift in Sources */,
+				11F55FFA2DCE501A00DE4944 /* TraceContextInjection+objc.swift in Sources */,
+				11F55FFB2DCE501A00DE4944 /* Trace+objc.swift in Sources */,
+				11F55FFC2DCE501A00DE4944 /* OTSpanContext+objc.swift in Sources */,
+				11F55FFD2DCE501A00DE4944 /* DDSpan+objc.swift in Sources */,
+				11F55FFE2DCE501A00DE4944 /* B3HTTPHeadersWriter+objc.swift in Sources */,
+				11F55FFF2DCE501A00DE4944 /* DDSpanContext+objc.swift in Sources */,
+				11F560002DCE501A00DE4944 /* OTTracer+objc.swift in Sources */,
 				D2C1A53E29C4F2DF00946C31 /* OTSpanContext.swift in Sources */,
 				3C6C7FEC2B459AAA006F5CBC /* OTelTraceId+Datadog.swift in Sources */,
 				3C6C7FEA2B459AAA006F5CBC /* OTelSpanBuilder.swift in Sources */,
@@ -9836,17 +9846,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D2CB6F9927C5217A00A62B57 /* Casting.swift in Sources */,
-				D2CB6F9B27C5217A00A62B57 /* DDSpanContext+objc.swift in Sources */,
-				D2CB6F9C27C5217A00A62B57 /* OTTracer+objc.swift in Sources */,
-				A728ADAC2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */,
-				A79B0F67292BD7CC008742B3 /* B3HTTPHeadersWriter+objc.swift in Sources */,
-				D2CB6FA027C5217A00A62B57 /* Trace+objc.swift in Sources */,
-				D2CB6FA127C5217A00A62B57 /* HTTPHeadersWriter+objc.swift in Sources */,
-				D2CB6FA227C5217A00A62B57 /* DDSpan+objc.swift in Sources */,
-				3CA852652BF2148400B52CBA /* TraceContextInjection+objc.swift in Sources */,
-				D2CB6FA327C5217A00A62B57 /* OTSpan+objc.swift in Sources */,
-				D2CB6FA627C5217A00A62B57 /* OTSpanContext+objc.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

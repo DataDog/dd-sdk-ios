@@ -10,7 +10,6 @@ import TestUtilities
 @_spi(objc)
 @testable import DatadogLogs
 @testable import DatadogCore
-@testable import DatadogObjc
 
 // swiftlint:disable multiline_arguments_brackets
 // swiftlint:disable compiler_protocol_init

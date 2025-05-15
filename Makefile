@@ -308,6 +308,7 @@ api-surface:
 		@cd tools/api-surface && \
 			swift run api-surface spm \
 			--path ../../ \
+			--language swift \
 			--library-name DatadogCore \
 			--library-name DatadogLogs \
 			--library-name DatadogTrace \
@@ -322,7 +323,14 @@ api-surface:
 		@cd tools/api-surface && \
 			swift run api-surface spm \
 			--path ../../ \
-			--library-name DatadogObjc \
+			--language objc \
+			--library-name DatadogCore \
+			--library-name DatadogLogs \
+			--library-name DatadogTrace \
+			--library-name DatadogRUM \
+			--library-name DatadogCrashReporting \
+			--library-name DatadogWebViewTracking \
+			--library-name DatadogSessionReplay \
 			> ../../api-surface-objc && \
 			cd -
 

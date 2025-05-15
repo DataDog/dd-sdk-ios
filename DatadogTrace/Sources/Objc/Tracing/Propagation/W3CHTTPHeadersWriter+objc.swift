@@ -7,17 +7,18 @@
 import Foundation
 import class DatadogInternal.W3CHTTPHeadersWriter
 
-@objc
-public final class DDW3CHTTPHeadersWriter: NSObject {
+@objc(DDW3CHTTPHeadersWriter)
+@objcMembers
+@_spi(objc)
+public final class objc_W3CHTTPHeadersWriter: NSObject {
     let swiftW3CHTTPHeadersWriter: W3CHTTPHeadersWriter
 
-    @objc public var traceHeaderFields: [String: String] {
+    public var traceHeaderFields: [String: String] {
         swiftW3CHTTPHeadersWriter.traceHeaderFields
     }
 
-    @objc
     public init(
-        traceContextInjection: DDTraceContextInjection
+        traceContextInjection: objc_TraceContextInjection
     ) {
         swiftW3CHTTPHeadersWriter = W3CHTTPHeadersWriter(
             tracestate: [:],

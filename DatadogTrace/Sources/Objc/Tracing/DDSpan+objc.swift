@@ -6,22 +6,23 @@
 
 import Foundation
 import DatadogInternal
-import DatadogTrace
 
-internal class DDSpanObjc: NSObject, DatadogObjc.OTSpan {
-    let swiftSpan: DatadogTrace.OTSpan
+@objc(DDSpanObjc)
+@objcMembers
+internal class objc_SpanObjc: NSObject, objc_OTSpan {
+    let swiftSpan: OTSpan
 
-    init(objcTracer: DatadogObjc.OTTracer, swiftSpan: DatadogTrace.OTSpan) {
+    init(objcTracer: objc_OTTracer, swiftSpan: OTSpan) {
         self.tracer = objcTracer
-        self.context = DDSpanContextObjc(swiftSpanContext: swiftSpan.context)
+        self.context = objc_SpanContextObjc(swiftSpanContext: swiftSpan.context)
         self.swiftSpan = swiftSpan
     }
 
     // MARK: - Open Tracing Objective-C Interface
 
-    let tracer: OTTracer
+    let tracer: objc_OTTracer
 
-    let context: OTSpanContext
+    let context: objc_OTSpanContext
 
     func setOperationName(_ operationName: String) {
         swiftSpan.setOperationName(operationName)
@@ -56,7 +57,7 @@ internal class DDSpanObjc: NSObject, DatadogObjc.OTSpan {
         }
     }
 
-    func setBaggageItem(_ key: String, value: String) -> OTSpan {
+    func setBaggageItem(_ key: String, value: String) -> objc_OTSpan {
         swiftSpan.setBaggageItem(key: key, value: value)
         return self
     }
@@ -85,7 +86,7 @@ internal class DDSpanObjc: NSObject, DatadogObjc.OTSpan {
         }
     }
 
-    func setActive() -> DatadogObjc.OTSpan {
+    func setActive() -> objc_OTSpan {
         _ = swiftSpan.setActive()
         return self
     }

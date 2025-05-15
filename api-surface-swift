@@ -16,20 +16,6 @@ public struct _TelemetryProxy
     public func error(id: String, message: String, kind: String?, stack: String?)
 [?] extension InternalExtension where ExtendedType == Datadog.Configuration
     public var additionalConfiguration: [String: Any]
-public class objc_TrackingConsent: NSObject
-    public static func granted() -> objc_TrackingConsent
-    public static func notGranted() -> objc_TrackingConsent
-    public static func pending() -> objc_TrackingConsent
-public class objc_Datadog: NSObject
-    public static func initialize(configuration: objc_Configuration,trackingConsent: objc_TrackingConsent)
-    public static func setVerbosityLevel(_ verbosityLevel: objc_CoreLoggerLevel)
-    public static func verbosityLevel() -> objc_CoreLoggerLevel
-    public static func setUserInfo(userId: String, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
-    public static func addUserExtraInfo(_ extraInfo: [String: Any])
-    public static func setTrackingConsent(consent: objc_TrackingConsent)
-    public static func isInitialized() -> Bool
-    public static func stopInstance()
-    public static func clearAllData()
 public enum Datadog
     public static var verbosityLevel: CoreLoggerLevel?
     public static func isInitialized(instanceName name: String = CoreRegistry.defaultInstanceName) -> Bool
@@ -41,45 +27,6 @@ public enum Datadog
     public static func clearAllData(in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func stopInstance(named instanceName: String = CoreRegistry.defaultInstanceName)
     public static func initialize(with configuration: Configuration,trackingConsent: TrackingConsent,instanceName: String = CoreRegistry.defaultInstanceName) -> DatadogCoreProtocol
-public class objc_DatadogSite: NSObject
-    public static func us1() -> objc_DatadogSite
-    public static func us3() -> objc_DatadogSite
-    public static func us5() -> objc_DatadogSite
-    public static func eu1() -> objc_DatadogSite
-    public static func ap1() -> objc_DatadogSite
-    public static func us1_fed() -> objc_DatadogSite
-public enum objc_BatchSize: Int
-    case small
-    case medium
-    case large
-public enum objc_UploadFrequency: Int
-    case frequent
-    case average
-    case rare
-public enum objc_BatchProcessingLevel: Int
-    case low
-    case medium
-    case high
-public protocol objc_DataEncryption: AnyObject
-    func encrypt(data: Data) throws -> Data
-    func decrypt(data: Data) throws -> Data
-public protocol objc_ServerDateProvider: AnyObject
-    func synchronize(update: @escaping (TimeInterval) -> Void)
-public class objc_Configuration: NSObject
-    public var clientToken: String
-    public var env: String
-    public var site: objc_DatadogSite
-    public var service: String?
-    public var batchSize: objc_BatchSize
-    public var uploadFrequency: objc_UploadFrequency
-    public var batchProcessingLevel: objc_BatchProcessingLevel
-    public var proxyConfiguration: [AnyHashable: Any]?
-    public func setEncryption(_ encryption: objc_DataEncryption)
-    public func setServerDateProvider(_ serverDateProvider: objc_ServerDateProvider)
-    public var bundle: Bundle
-    public var additionalConfiguration: [String: Any]
-    public var backgroundTasksEnabled: Bool
-    public init(clientToken: String, env: String)
 [?] extension Datadog
     public struct Configuration
         public enum BatchSize
@@ -220,57 +167,6 @@ public extension LoggerProtocol
     func critical(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
 [?] extension InternalExtension where ExtendedType == Logs
     public static func isEnabled(in core: DatadogCoreProtocol = CoreRegistry.default) -> Bool
-public enum DDLogLevel: Int
-    case debug
-    case info
-    case notice
-    case warn
-    case error
-    case critical
-public class DDLogsConfiguration: NSObject
-    @objc public var customEndpoint: URL?
-    public init(customEndpoint: URL? = nil)
-    public func setEventMapper(_ mapper: @escaping (DDLogEvent) -> DDLogEvent?)
-public class DDLogs: NSObject
-    public static func enable(with configuration: DDLogsConfiguration = .init())
-    public static func addAttribute(forKey key: String, value: Any)
-    public static func removeAttribute(forKey key: String)
-public class DDLoggerConfiguration: NSObject
-    @objc public var service: String?
-    @objc public var name: String?
-    @objc public var networkInfoEnabled: Bool
-    @objc public var bundleWithRumEnabled: Bool
-    @objc public var bundleWithTraceEnabled: Bool
-    @objc public var remoteSampleRate: Float
-    @objc public var printLogsToConsole: Bool
-    @objc public var remoteLogThreshold: DDLogLevel
-    public init(service: String? = nil,name: String? = nil,networkInfoEnabled: Bool = false,bundleWithRumEnabled: Bool = true,bundleWithTraceEnabled: Bool = true,remoteSampleRate: SampleRate = .maxSampleRate,remoteLogThreshold: DDLogLevel = .debug,printLogsToConsole: Bool = false)
-public class DDLogger: NSObject
-    public func debug(_ message: String)
-    public func debug(_ message: String, attributes: [String: Any])
-    public func debug(_ message: String, error: NSError, attributes: [String: Any])
-    public func info(_ message: String)
-    public func info(_ message: String, attributes: [String: Any])
-    public func info(_ message: String, error: NSError, attributes: [String: Any])
-    public func notice(_ message: String)
-    public func notice(_ message: String, attributes: [String: Any])
-    public func notice(_ message: String, error: NSError, attributes: [String: Any])
-    public func warn(_ message: String)
-    public func warn(_ message: String, attributes: [String: Any])
-    public func warn(_ message: String, error: NSError, attributes: [String: Any])
-    public func error(_ message: String)
-    public func error(_ message: String, attributes: [String: Any])
-    public func error(_ message: String, error: NSError, attributes: [String: Any])
-    public func critical(_ message: String)
-    public func critical(_ message: String, attributes: [String: Any])
-    public func critical(_ message: String, error: NSError, attributes: [String: Any])
-    public func addAttribute(forKey key: String, value: Any)
-    public func removeAttribute(forKey key: String)
-    public func addTag(withKey key: String, value: String)
-    public func removeTag(withKey key: String)
-    public func add(tag: String)
-    public func remove(tag: String)
-    public static func create(with configuration: DDLoggerConfiguration = .init()) -> DDLogger
 public enum Logs
     public struct Configuration
         public typealias EventMapper = (LogEvent) -> LogEvent?
@@ -285,102 +181,6 @@ public enum Logs
         public static let errorFingerprint = "_dd.error.fingerprint"
 [?] extension InternalExtension where ExtendedType == Logs.Configuration
     public mutating func setLogEventMapper(_ mapper: LogEventMapper)
-public class DDLogEvent: NSObject
-    @objc public var date: Date
-    @objc public var status: DDLogEventStatus
-    @objc public var message: String
-    @objc public var error: DDLogEventError?
-    @objc public var serviceName: String
-    @objc public var environment: String
-    @objc public var loggerName: String
-    @objc public var loggerVersion: String
-    @objc public var threadName: String?
-    @objc public var applicationVersion: String
-    @objc public var applicationBuildNumber: String
-    @objc public var buildId: String?
-    @objc public var variant: String?
-    @objc public var dd: DDLogEventDd
-    @objc public var os: DDLogEventOperatingSystem
-    @objc public var userInfo: DDLogEventUserInfo
-    @objc public var networkConnectionInfo: DDLogEventNetworkConnectionInfo?
-    @objc public var mobileCarrierInfo: DDLogEventCarrierInfo?
-    @objc public var attributes: DDLogEventAttributes
-    @objc public var tags: [String]?
-public enum DDLogEventStatus: Int
-    case debug
-    case info
-    case notice
-    case warn
-    case error
-    case critical
-    case emergency
-public class DDLogEventAttributes: NSObject
-    @objc public var userAttributes: [String: Any]
-public class DDLogEventUserInfo: NSObject
-    @objc public var id: String?
-    @objc public var name: String?
-    @objc public var email: String?
-    @objc public var extraInfo: [String: Any]
-public class DDLogEventError: NSObject
-    @objc public var kind: String?
-    @objc public var message: String?
-    @objc public var stack: String?
-    @objc public var sourceType: String
-    @objc public var fingerprint: String?
-    @objc public var binaryImages: [DDLogEventBinaryImage]?
-public class DDLogEventBinaryImage: NSObject
-    @objc public var arch: String?
-    @objc public var isSystem: Bool
-    @objc public var loadAddress: String?
-    @objc public var maxAddress: String?
-    @objc public var name: String
-    @objc public var uuid: String
-public class DDLogEventOperatingSystem: NSObject
-    @objc public var name: String
-    @objc public var version: String
-    @objc public var build: String?
-public class DDLogEventDd: NSObject
-    @objc public var device: DDLogEventDeviceInfo
-public class DDLogEventDeviceInfo: NSObject
-    @objc public var brand: String
-    @objc public var name: String
-    @objc public var model: String
-    @objc public var architecture: String
-public class DDLogEventNetworkConnectionInfo: NSObject
-    @objc public var reachability: DDLogEventReachability
-    @objc public var availableInterfaces: [Int]?
-    @objc public var supportsIPv4: NSNumber?
-    @objc public var supportsIPv6: NSNumber?
-    @objc public var isExpensive: NSNumber?
-    @objc public var isConstrained: NSNumber?
-public enum DDLogEventReachability: Int
-    case yes
-    case maybe
-    case no
-public enum DDLogEventInterface: Int
-    case wifi
-    case wiredEthernet
-    case cellular
-    case loopback
-    case other
-public class DDLogEventCarrierInfo: NSObject
-    @objc public var carrierName: String?
-    @objc public var carrierISOCountryCode: String?
-    @objc public var carrierAllowsVOIP: Bool
-    @objc public var radioAccessTechnology: DDLogEventRadioAccessTechnology
-public enum DDLogEventRadioAccessTechnology: Int
-    case GPRS
-    case Edge
-    case WCDMA
-    case HSDPA
-    case HSUPA
-    case CDMA1x
-    case CDMAEVDORev0
-    case CDMAEVDORevA
-    case CDMAEVDORevB
-    case eHRPD
-    case LTE
-    case unknown
 public protocol LogEventMapper
     func map(event: LogEvent, callback: @escaping (LogEvent) -> Void)
 
@@ -528,8 +328,8 @@ public enum Trace
         public struct URLSessionTracking
             public var firstPartyHostsTracing: FirstPartyHostsTracing
             public enum FirstPartyHostsTracing
-                case trace(hosts: Set<String>,sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
-                case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
+                case trace(hosts: Set<String>,sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
+                case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
             public init(firstPartyHostsTracing: FirstPartyHostsTracing)
         public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: Encodable]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
 public enum SpanTags
@@ -583,124 +383,6 @@ public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate
 [?] extension InternalExtension where ExtendedType == RUM
     public static func isEnabled(in core: DatadogCoreProtocol = CoreRegistry.default) -> Bool
     public static func enableURLSessionTracking(with configuration: RUM.Configuration.URLSessionTracking,in core: DatadogCoreProtocol = CoreRegistry.default) throws
-public class objc_RUMView: NSObject
-    public var name: String
-    public var attributes: [String: Any]
-    public init(name: String, attributes: [String: Any])
-public protocol objc_UIKitRUMViewsPredicate: AnyObject
-    func rumView(for viewController: UIViewController) -> objc_RUMView?
-public class objc_DefaultUIKitRUMViewsPredicate: NSObject, objc_UIKitRUMViewsPredicate
-    public func rumView(for viewController: UIViewController) -> objc_RUMView?
-public class objc_DefaultUIKitRUMActionsPredicate: NSObject, objc_UIKitRUMActionsPredicate
-    public func rumAction(targetView: UIView) -> objc_RUMAction?
-public class objc_RUMAction: NSObject
-    public var name: String
-    public var attributes: [String: Any]
-    public init(name: String, attributes: [String: Any])
-public protocol objc_UIKitRUMActionsPredicate: objc_UITouchRUMActionsPredicate
-public protocol objc_UITouchRUMActionsPredicate: AnyObject
-    func rumAction(targetView: UIView) -> objc_RUMAction?
-public protocol objc_UIPressRUMActionsPredicate: AnyObject
-    func rumAction(press type: UIPress.PressType, targetView: UIView) -> objc_RUMAction?
-public enum objc_RUMErrorSource: Int
-    case source
-    case network
-    case webview
-    case console
-    case custom
-public enum objc_RUMActionType: Int
-    case tap
-    case scroll
-    case swipe
-    case custom
-public enum objc_ResourceType: Int
-    case image
-    case xhr
-    case beacon
-    case css
-    case document
-    case fetch
-    case font
-    case js
-    case media
-    case other
-    case native
-public enum objc_RUMMethod: Int
-    case post
-    case get
-    case head
-    case put
-    case delete
-    case patch
-    case connect
-    case trace
-    case options
-public enum objc_VitalsFrequency: Int
-    case frequent
-    case average
-    case rare
-    case never
-public class objc_FirstPartyHostsTracing: NSObject
-    public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>])
-    public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>], sampleRate: Float)
-    public init(hosts: Set<String>)
-    public init(hosts: Set<String>, sampleRate: Float)
-public class objc_URLSessionTracking: NSObject
-    override public init()
-    public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: objc_FirstPartyHostsTracing)
-    public func setResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [String: Any]?)
-public class objc_RUMConfiguration: NSObject
-    public init(applicationID: String)
-    public var applicationID: String
-    public var sessionSampleRate: Float
-    public var telemetrySampleRate: Float
-    public var uiKitViewsPredicate: objc_UIKitRUMViewsPredicate?
-    public var uiKitActionsPredicate: objc_UIKitRUMActionsPredicate?
-    public func setURLSessionTracking(_ tracking: objc_URLSessionTracking)
-    public var trackFrustrations: Bool
-    public var trackBackgroundEvents: Bool
-    public var trackWatchdogTerminations: Bool
-    public var longTaskThreshold: TimeInterval
-    public var appHangThreshold: TimeInterval
-    public var vitalsUpdateFrequency: objc_VitalsFrequency
-    public func setViewEventMapper(_ mapper: @escaping (objc_RUMViewEvent) -> objc_RUMViewEvent)
-    public func setResourceEventMapper(_ mapper: @escaping (objc_RUMResourceEvent) -> objc_RUMResourceEvent?)
-    public func setActionEventMapper(_ mapper: @escaping (objc_RUMActionEvent) -> objc_RUMActionEvent?)
-    public func setErrorEventMapper(_ mapper: @escaping (objc_RUMErrorEvent) -> objc_RUMErrorEvent?)
-    public func setLongTaskEventMapper(_ mapper: @escaping (objc_RUMLongTaskEvent) -> objc_RUMLongTaskEvent?)
-    public var onSessionStart: ((String, Bool) -> Void)?
-    public var customEndpoint: URL?
-    public var trackAnonymousUser: Bool
-public class objc_RUM: NSObject
-    public static func enable(with configuration: objc_RUMConfiguration)
-public class objc_RUMMonitor: NSObject
-    public static func shared() -> objc_RUMMonitor
-    public func currentSessionID(completion: @escaping (String?) -> Void)
-    public func stopSession()
-    public func startView(viewController: UIViewController,name: String?,attributes: [String: Any])
-    public func stopView(viewController: UIViewController,attributes: [String: Any])
-    public func startView(key: String,name: String?,attributes: [String: Any])
-    public func stopView(key: String,attributes: [String: Any])
-    public func addTiming(name: String)
-    public func addError(message: String,stack: String?,source: objc_RUMErrorSource,attributes: [String: Any])
-    public func addError(error: Error,source: objc_RUMErrorSource,attributes: [String: Any])
-    public func startResource(resourceKey: String,request: URLRequest,attributes: [String: Any])
-    public func startResource(resourceKey: String,url: URL,attributes: [String: Any])
-    public func startResource(resourceKey: String,httpMethod: objc_RUMMethod,urlString: String,attributes: [String: Any])
-    public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [String: Any])
-    public func stopResource(resourceKey: String,response: URLResponse,size: NSNumber?,attributes: [String: Any])
-    public func stopResource(resourceKey: String,statusCode: NSNumber?,kind: objc_ResourceType,size: NSNumber?,attributes: [String: Any])
-    public func stopResourceWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [String: Any])
-    public func stopResourceWithError(resourceKey: String,message: String,response: URLResponse?,attributes: [String: Any])
-    public func startAction(type: objc_RUMActionType,name: String,attributes: [String: Any])
-    public func stopAction(type: objc_RUMActionType,name: String?,attributes: [String: Any])
-    public func addAction(type: objc_RUMActionType,name: String,attributes: [String: Any])
-    public func addAttribute(forKey key: String,value: Any)
-    public func addAttributes(_ attributes: [String: Any])
-    public func removeAttribute(forKey key: String)
-    public func removeAttributes(forKeys keys: [String])
-    public func addFeatureFlagEvaluation(name: String, value: Any)
-    public var debug: Bool
 public enum RUM
     public static func enable(with configuration: RUM.Configuration,in core: DatadogCoreProtocol = CoreRegistry.default)
 [?] extension RUM
@@ -748,8 +430,8 @@ public enum RUM
             case rare
 [?] extension RUM.Configuration.URLSessionTracking
     public enum FirstPartyHostsTracing
-        case trace(hosts: Set<String>,sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
-        case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
+        case trace(hosts: Set<String>,sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
+        case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil)
 [?] extension RUM.Configuration
     public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,telemetrySampleRate: SampleRate = 20,featureFlags: FeatureFlags = .defaults)
@@ -875,9 +557,6 @@ public protocol CrashReportingPlugin: AnyObject
 # API surface for DatadogWebViewTracking:
 # ----------------------------------
 
-public final class objc_WebViewTracking: NSObject
-    public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: SampleRate = .maxSampleRate)
-    public static func disable(webView: WKWebView)
 public enum WebViewTracking
     public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: SampleRate = .maxSampleRate,in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func disable(webView: WKWebView)
@@ -1526,37 +1205,6 @@ public struct SessionReplaySpecificElement: SessionReplayNodeSemantics
     public let subtreeStrategy: SessionReplayNodeSubtreeStrategy
     public let nodes: [SessionReplayNode]
     public init(subtreeStrategy: SessionReplayNodeSubtreeStrategy,nodes: [SessionReplayNode])
-public final class objc_SessionReplay: NSObject
-    public static func enable(with configuration: objc_SessionReplayConfiguration)
-    public static func startRecording()
-    public static func stopRecording()
-public final class objc_SessionReplayConfiguration: NSObject
-    @objc public var replaySampleRate: Float
-    @objc public var defaultPrivacyLevel: objc_SessionReplayConfigurationPrivacyLevel
-    @objc public var textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel
-    @objc public var imagePrivacyLevel: objc_ImagePrivacyLevel
-    @objc public var touchPrivacyLevel: objc_TouchPrivacyLevel
-    @objc public var startRecordingImmediately: Bool
-    @objc public var customEndpoint: URL?
-    @objc public var featureFlags: [String: Bool]
-    public required init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel,featureFlags: [String: Bool]?)
-    public convenience init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel)
-    public required init(replaySampleRate: Float)
-public enum objc_SessionReplayConfigurationPrivacyLevel: Int
-    case allow
-    case mask
-    case maskUserInput
-public enum objc_TextAndInputPrivacyLevel: Int
-    case maskSensitiveInputs
-    case maskAllInputs
-    case maskAll
-public enum objc_ImagePrivacyLevel: Int
-    case maskNonBundledOnly
-    case maskAll
-    case maskNone
-public enum objc_TouchPrivacyLevel: Int
-    case show
-    case hide
 public enum SessionReplay
     public static func enable(with configuration: SessionReplay.Configuration,in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func startRecording(in core: DatadogCoreProtocol = CoreRegistry.default)
@@ -1581,20 +1229,6 @@ public enum SessionReplay
 [?] extension SessionReplay.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
-public enum objc_TextAndInputPrivacyLevelOverride: Int
-    case none
-    case maskSensitiveInputs
-    case maskAllInputs
-    case maskAll
-public enum objc_ImagePrivacyLevelOverride: Int
-    case none
-    case maskNone
-    case maskNonBundledOnly
-    case maskAll
-public enum objc_TouchPrivacyLevelOverride: Int
-    case none
-    case show
-    case hide
 [?] extension DatadogExtension where ExtendedType: UIView
     public var sessionReplayPrivacyOverrides: SessionReplayPrivacyOverrides
 public final class SessionReplayPrivacyOverrides
@@ -1604,11 +1238,3 @@ public final class SessionReplayPrivacyOverrides
     public var hide: Bool?
 [?] extension PrivacyOverrides: Equatable
     public static func == (lhs: SessionReplayPrivacyOverrides, rhs: SessionReplayPrivacyOverrides) -> Bool
-public extension UIView
-    @objc var ddSessionReplayPrivacyOverrides: objc_SessionReplayPrivacyOverrides
-public final class objc_SessionReplayPrivacyOverrides: NSObject
-    public init(view: UIView)
-    @objc public var textAndInputPrivacy: objc_TextAndInputPrivacyLevelOverride
-    @objc public var imagePrivacy: objc_ImagePrivacyLevelOverride
-    @objc public var touchPrivacy: objc_TouchPrivacyLevelOverride
-    @objc public var hide: NSNumber?
