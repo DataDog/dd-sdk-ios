@@ -31,13 +31,13 @@ class FeatureMessageReceiverTests: XCTestCase {
 
     func testNOPReceiver_returnsFalse() throws {
         let receiver = NOPFeatureMessageReceiver()
-        XCTAssertFalse(receiver.receive(message: .baggage(key: .mockAny(), value: "test"), from: core))
+        XCTAssertFalse(receiver.receive(message: .payload("test"), from: core))
         XCTAssertFalse(receiver.receive(message: .context(.mockRandom()), from: core))
     }
 
     func testEmptyCombinedReceiver_returnsFalse() throws {
         let receiver = CombinedFeatureMessageReceiver([])
-        XCTAssertFalse(receiver.receive(message: .baggage(key: .mockAny(), value: "test"), from: core))
+        XCTAssertFalse(receiver.receive(message: .payload("test"), from: core))
         XCTAssertFalse(receiver.receive(message: .context(.mockRandom()), from: core))
     }
 
@@ -50,7 +50,7 @@ class FeatureMessageReceiverTests: XCTestCase {
             TestReceiver(expectation: expectation)
         )
 
-        XCTAssertTrue(receiver.receive(message: .baggage(key: .mockAny(), value: "test"), from: core))
+        XCTAssertTrue(receiver.receive(message: .payload("test"), from: core))
         XCTAssertTrue(receiver.receive(message: .context(.mockRandom()), from: core))
         waitForExpectations(timeout: 0)
     }
@@ -65,7 +65,7 @@ class FeatureMessageReceiverTests: XCTestCase {
             TestReceiver(expectation: noExpectation)
         )
 
-        XCTAssertTrue(receiver.receive(message: .baggage(key: .mockAny(), value: "test"), from: core))
+        XCTAssertTrue(receiver.receive(message: .payload("test"), from: core))
         waitForExpectations(timeout: 0)
     }
 }
