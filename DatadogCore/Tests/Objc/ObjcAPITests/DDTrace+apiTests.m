@@ -11,7 +11,7 @@
 @end
 
 /*
- * `DatadogObjc` APIs smoke tests - minimal assertions, mainly check if the interface is available to Objc.
+ * Objc APIs smoke tests - minimal assertions, mainly check if the interface is available to Objc.
  */
 @implementation DDTrace_apiTests
 

@@ -7,19 +7,19 @@
 #import <XCTest/XCTest.h>
 @import DatadogTrace;
 
-@interface DDW3CHTTPHeadersWriter_apiTests : XCTestCase
+@interface DDHTTPHeadersWriter_apiTests : XCTestCase
 @end
 
 /*
- * `DatadogObjc` APIs smoke tests - only check if the interface is available to Objc.
+ * Objc APIs smoke tests - only check if the interface is available to Objc.
  */
-@implementation DDW3CHTTPHeadersWriter_apiTests
+@implementation DDHTTPHeadersWriter_apiTests
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-value"
 
 - (void)testInitWithSamplingRate {
-    [[DDW3CHTTPHeadersWriter alloc] initWithTraceContextInjection:DDTraceContextInjectionAll];
+    [[DDHTTPHeadersWriter alloc] initWithTraceContextInjection:DDTraceContextInjectionAll];
 }
 
 #pragma clang diagnostic pop

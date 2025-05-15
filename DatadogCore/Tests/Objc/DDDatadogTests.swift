@@ -12,7 +12,7 @@ import TestUtilities
 @_spi(objc)
 @testable import DatadogCore
 
-/// This tests verify that objc-compatible `DatadogObjc` wrapper properly interacts with`Datadog` public API (swift).
+/// These tests verify that Objc APIs properly interact with`Datadog` public API (swift).
 class DDDatadogTests: XCTestCase {
     override func setUp() {
         super.setUp()
