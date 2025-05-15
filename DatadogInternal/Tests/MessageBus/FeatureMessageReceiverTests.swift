@@ -37,7 +37,7 @@ class FeatureMessageReceiverTests: XCTestCase {
 
     func testEmptyCombinedReceiver_returnsFalse() throws {
         let receiver = CombinedFeatureMessageReceiver([])
-        XCTAssertFalse(receiver.receive(message: .payload( "test"), from: core))
+        XCTAssertFalse(receiver.receive(message: .payload("test"), from: core))
         XCTAssertFalse(receiver.receive(message: .context(.mockRandom()), from: core))
     }
 
