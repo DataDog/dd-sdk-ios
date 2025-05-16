@@ -302,7 +302,7 @@ sr-snapshot-tests-open:
 	@$(ECHO_TITLE) "make sr-snapshot-tests-open"
 	./tools/sr-snapshot-test.sh --open-project
 
-# Generate api-surface files for Datadog and DatadogObjc.
+# Generate api-surface files for Datadog.
 api-surface:
 		@echo "Generating api-surface-swift"
 		@cd tools/api-surface && \
@@ -398,7 +398,6 @@ release-publish-dependent-podspecs:
 
 # Publish legacy podspecs
 release-publish-legacy-podspecs:
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogObjc.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogAlamofireExtension.podspec"
 
 # Set ot update CI secrets

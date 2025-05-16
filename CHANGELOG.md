@@ -1,7 +1,9 @@
 # Unreleased
 
 - [IMPROVEMENT] Update the default tracing sampling rate to 100%. See [#2253][] 
-- [IMPROVEMENT] Update the default TraceContextInjection to `.sampled`. See [#2253][] 
+- [IMPROVEMENT] Update the default TraceContextInjection to `.sampled`. See [#2253][]
+- [IMPROVEMENT] Migrate all Obj-c interfaces to corresponding modules. See [#2286][] [#2295][] 
+- [IMPROVEMENT] Remove `DatadogObjc` module. See [#2298][] 
 
 # 2.24.1 / 31-04-2025
 # 2.26.0 / 10-04-2025
