@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
 import DatadogInternal
+import Foundation
 
 internal struct RUMContext {
     /// The ID of RUM application.
@@ -25,4 +25,7 @@ internal struct RUMContext {
     var activeViewName: String?
     /// The ID of active user action.
     var activeUserActionID: RUMUUID?
+
+    /// The current accessibility
+    var accessibility: Accessibility
 }

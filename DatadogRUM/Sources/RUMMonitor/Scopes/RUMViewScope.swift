@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
 import DatadogInternal
+import Foundation
 
 internal class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {
@@ -120,6 +120,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Tracks "View Hangs" for this view.
     private var totalAppHangDuration: Double = 0.0
 
+    private var accessibilityReader: AccessibilityReader?
+
     init(
         isInitialView: Bool,
         parent: RUMContextProvider,
@@ -144,6 +146,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewStartTime = startTime
         self.serverTimeOffset = serverTimeOffset
         self.interactionToNextViewMetric = interactionToNextViewMetric
+        self.accessibilityReader = dependencies.accessibilityReader
 
         self.vitalInfoSampler = dependencies.vitalsReaders.map {
             .init(
@@ -551,6 +554,49 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             default: break
             }
         }
+
+        // FIXME: Adding accessibility state as custom attributes
+        let accessibilityState = self.context.accessibility
+        var accessibilityAttributes: [AttributeKey: AttributeValue] = [:]
+
+        // Add all accessibility properties as custom attributes
+        if let textSize = accessibilityState.textSize {
+            accessibilityAttributes["accessibility.text_size"] = textSize
+        }
+        if let isVideoAutoplayEnabled = accessibilityState.videoAutoplayEnabled {
+            accessibilityAttributes["accessibility.video_autoplay_enabled"] = isVideoAutoplayEnabled
+        }
+        if let shouldDifferentiateWithoutColor = accessibilityState.shouldDifferentiateWithoutColor {
+            accessibilityAttributes["accessibility.differentiate_without_color"] = shouldDifferentiateWithoutColor
+        }
+        if let onOffSwitchLabelsEnabled = accessibilityState.onOffSwitchLabelsEnabled {
+            accessibilityAttributes["accessibility.on_off_switch_labels_enabled"] = onOffSwitchLabelsEnabled
+        }
+        if let buttonShapesEnabled = accessibilityState.buttonShapesEnabled {
+            accessibilityAttributes["accessibility.button_shapes_enabled"] = buttonShapesEnabled
+        }
+        if let reducedAnimationsEnabled = accessibilityState.reducedAnimationsEnabled {
+            accessibilityAttributes["accessibility.reduced_animations_enabled"] = reducedAnimationsEnabled
+        }
+
+        accessibilityAttributes["accessibility.screen_reader_enabled"] = accessibilityState.screenReaderEnabled
+        accessibilityAttributes["accessibility.bold_text_enabled"] = accessibilityState.boldTextEnabled
+        accessibilityAttributes["accessibility.reduce_transparency_enabled"] = accessibilityState.reduceTransparencyEnabled
+        accessibilityAttributes["accessibility.reduce_motion_enabled"] = accessibilityState.reduceMotionEnabled
+        accessibilityAttributes["accessibility.invert_colors_enabled"] = accessibilityState.invertColorsEnabled
+        accessibilityAttributes["accessibility.increase_contrast_enabled"] = accessibilityState.increaseContrastEnabled
+        accessibilityAttributes["accessibility.assistive_switch_enabled"] = accessibilityState.assistiveSwitchEnabled
+        accessibilityAttributes["accessibility.assistive_touch_enabled"] = accessibilityState.assistiveTouchEnabled
+        accessibilityAttributes["accessibility.closed_captioning_enabled"] = accessibilityState.closedCaptioningEnabled
+        accessibilityAttributes["accessibility.mono_audio_enabled"] = accessibilityState.monoAudioEnabled
+        accessibilityAttributes["accessibility.shake_to_undo_enabled"] = accessibilityState.shakeToUndoEnabled
+        accessibilityAttributes["accessibility.grayscale_enabled"] = accessibilityState.grayscaleEnabled
+        accessibilityAttributes["accessibility.single_app_mode_enabled"] = accessibilityState.singleAppModeEnabled
+        accessibilityAttributes["accessibility.speak_screen_enabled"] = accessibilityState.speakScreenEnabled
+        accessibilityAttributes["accessibility.speak_selection_enabled"] = accessibilityState.speakSelectionEnabled
+
+        // Merge accessibility attributes with existing attributes
+        attributes.merge(accessibilityAttributes) { $1 }
 
         let isCrash = (command as? RUMErrorCommand).map { $0.isCrash ?? false } ?? false
         // RUMM-1779 Keep view active as long as we have ongoing resources

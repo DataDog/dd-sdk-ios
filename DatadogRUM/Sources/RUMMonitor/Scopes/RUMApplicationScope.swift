@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
 import DatadogInternal
+import Foundation
 
 internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
@@ -42,7 +42,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             activeViewID: nil,
             activeViewPath: nil,
             activeViewName: nil,
-            activeUserActionID: nil
+            activeUserActionID: nil,
+            accessibility: dependencies.accessibilityReader.state
         )
     }
 
