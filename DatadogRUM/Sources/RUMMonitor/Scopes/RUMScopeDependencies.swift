@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
 import DatadogInternal
+import Foundation
 
 internal struct VitalsReaders {
     let frequency: TimeInterval
@@ -53,6 +53,8 @@ internal struct RUMScopeDependencies {
     let sessionType: RUMSessionType
     let sessionEndedMetric: SessionEndedMetricController
     let watchdogTermination: WatchdogTerminationMonitor?
+    /// The accessibility state reader
+    let accessibilityReader: AccessibilityReader
 
     /// A factory function that creates `ViewEndedMetricController` for each new view started.
     let viewEndedMetricFactory: () -> ViewEndedController
@@ -89,7 +91,8 @@ internal struct RUMScopeDependencies {
         viewEndedMetricFactory: @escaping () -> ViewEndedController,
         watchdogTermination: WatchdogTerminationMonitor?,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking,
-        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?
+        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?,
+        accessibilityReader: AccessibilityReader = AccessibilityReader()
     ) {
         self.featureScope = featureScope
         self.rumApplicationID = rumApplicationID
@@ -115,6 +118,7 @@ internal struct RUMScopeDependencies {
         self.watchdogTermination = watchdogTermination
         self.networkSettledMetricFactory = networkSettledMetricFactory
         self.interactionToNextViewMetricFactory = interactionToNextViewMetricFactory
+        self.accessibilityReader = accessibilityReader
 
         if ciTest != nil {
             self.sessionType = .ciTest
