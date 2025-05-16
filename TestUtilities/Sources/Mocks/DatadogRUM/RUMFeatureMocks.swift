@@ -1264,17 +1264,6 @@ public class ValueObserverMock<Value>: ValueObserver {
     }
 }
 
-// MARK: - Dependency on Session Replay
-
-extension Dictionary where Key == String, Value == FeatureBaggage {
-    public static func mockSessionReplayAttributes(hasReplay: Bool?, recordsCountByViewID: [String: Int64]? = nil) throws -> Self {
-        return [
-            SessionReplayDependency.hasReplay: .init(hasReplay),
-            SessionReplayDependency.recordsCountByViewID: .init(recordsCountByViewID)
-        ]
-    }
-}
-
 // MARK: - App Hangs Monitoring
 
 extension AppHang: AnyMockable, RandomMockable {

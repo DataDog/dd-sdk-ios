@@ -305,9 +305,9 @@ class WebViewEventReceiverTests: XCTestCase {
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock = .mockWith(
             source: "react-native",
-            additionalContext: [rumContext],
-            baggages: [
-                SessionReplayDependency.hasReplay: FeatureBaggage(true)
+            additionalContext: [
+                rumContext,
+                SessionReplayCoreContext.HasReplay(value: true)
             ]
         )
 
@@ -387,9 +387,9 @@ class WebViewEventReceiverTests: XCTestCase {
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock = .mockWith(
             source: "react-native",
-            additionalContext: [rumContext],
-            baggages: [
-                SessionReplayDependency.hasReplay: FeatureBaggage(false)
+            additionalContext: [
+                rumContext,
+                SessionReplayCoreContext.HasReplay(value: false)
             ]
         )
 

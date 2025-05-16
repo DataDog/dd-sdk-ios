@@ -15,7 +15,10 @@ class SessionReplayDependencyTests: XCTestCase {
 
         // When
         let context: DatadogContext = .mockWith(
-            baggages: try .mockSessionReplayAttributes(hasReplay: hasReplay, recordsCountByViewID: recordsCountByViewID)
+            additionalContext: [
+                SessionReplayCoreContext.HasReplay(value: hasReplay),
+                SessionReplayCoreContext.RecordsCount(value: recordsCountByViewID)
+            ]
         )
 
         // Then
