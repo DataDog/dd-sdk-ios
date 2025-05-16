@@ -7,41 +7,35 @@
 import UIKit
 import DatadogInternal
 
+/// Factory responsible for creating RUM user action commands from UIEvents.
+/// This abstraction allows for platform-specific implementations (iOS/tvOS).
 internal protocol UIEventCommandFactory {
+    /// Creates a RUM command from a `UIEvent` if applicable
+    /// - Parameter event: The `UIEvent` to process
+    /// - Returns: A command to add a user action, or `nil` if the event shouldn't be tracked
     func command(from event: UIEvent) -> RUMAddUserActionCommand?
 }
 
-private extension UIView {
-    /// Traverses the hierarchy of this view from bottom-up to find any parent view matching
-    /// the given predicate. It starts from `self`.
-    func findInParentHierarchy(viewMatching predicate: (UIView) -> Bool) -> UIView? {
-        if predicate(self) {
-            return self
-        } else if let superview = superview {
-            return superview.findInParentHierarchy(viewMatching: predicate)
-        } else {
-            return nil
-        }
-    }
-}
-
-extension UIEventCommandFactory {
-    /// Tells if capturing given `UIView` is safe for the user privacy.
-    func isSafeForPrivacy(_ view: UIView) -> Bool {
-        guard let window = view.window else {
-            return false // The view is invisible, we can't determine if it's safe.
-        }
-        guard !NSStringFromClass(type(of: window)).contains("Keyboard") else {
-            return false // The window class name suggests that it's the on-screen keyboard.
-        }
-        return true
-    }
-}
-
-internal struct UITouchCommandFactory: UIEventCommandFactory {
+// MARK: iOS implementation
+/// iOS-specific implementation that detects user interactions through touches.
+/// Handles both UIKit and SwiftUI components using different detection strategies.
+internal final class UITouchCommandFactory: UIEventCommandFactory {
     let dateProvider: DateProvider
+    let uiKitPredicate: UITouchRUMActionsPredicate?
+    let swiftUIPredicate: SwiftUIRUMActionsPredicate?
+    let swiftUIDetector: SwiftUIComponentDetector?
 
-    let predicate: UITouchRUMActionsPredicate
+    init(
+        dateProvider: DateProvider,
+        uiKitPredicate: UITouchRUMActionsPredicate?,
+        swiftUIPredicate: SwiftUIRUMActionsPredicate?,
+        swiftUIDetector: SwiftUIComponentDetector?
+    ) {
+        self.dateProvider = dateProvider
+        self.uiKitPredicate = uiKitPredicate
+        self.swiftUIPredicate = swiftUIPredicate
+        self.swiftUIDetector = swiftUIDetector
+    }
 
     func command(from event: UIEvent) -> RUMAddUserActionCommand? {
         guard let allTouches = event.allTouches else {
@@ -50,16 +44,40 @@ internal struct UITouchCommandFactory: UIEventCommandFactory {
         guard allTouches.count == 1, let tap = allTouches.first else {
             return nil // not a single touch event
         }
+
+        // Detect UIKit interactions first,
+        // as they are more likely to happen.
+        if let rumAction = createUIKitActionCommand(from: tap) {
+            return rumAction
+        }
+
+        return swiftUIDetector?.createActionCommand(from: tap, predicate: swiftUIPredicate, dateProvider: dateProvider)
+    }
+
+    // MARK: UIKit
+
+    private func createUIKitActionCommand(from tap: UITouch) -> RUMAddUserActionCommand? {
+        guard let uiKitPredicate else {
+            return nil
+        }
+
         guard tap.phase == .ended else {
             return nil // not in `.ended` phase
         }
-        guard let view = tap.view, isSafeForPrivacy(view) else {
+
+        guard let view = tap.view else {
+            return nil
+        }
+
+        guard view.isSafeForPrivacy else {
             return nil // no valid view
         }
+
         guard let targetView = bestActionTarget(for: view) else {
             return nil // Tapped view is not eligible for producing RUM Action
         }
-        guard let action = predicate.rumAction(targetView: targetView) else {
+
+        guard let action = uiKitPredicate.rumAction(targetView: targetView) else {
             return nil
         }
         return RUMAddUserActionCommand(
@@ -70,8 +88,6 @@ internal struct UITouchCommandFactory: UIEventCommandFactory {
             name: action.name
         )
     }
-
-    // MARK: - RUM Action Target Capturing
 
     /// Traverses the hierarchy of the `view` bottom-up to find the best view which could be considered for RUM Action's target,
     /// e.g. if the tapped `view` is a `UILabel` embedded in a `UIStackView` inside the `UITableViewCell` it will
@@ -89,17 +105,19 @@ internal struct UITouchCommandFactory: UIEventCommandFactory {
             // or `UICollectionCell`, which is a common pattern when building list-based navigation on iOS.
             let bestParent = view.findInParentHierarchy { parent in
                 return parent is UITableViewCell
-                    || parent is UICollectionViewCell
+                || parent is UICollectionViewCell
             }
             return bestParent // best parent or `nil`
         }
     }
 }
 
+// MARK: tvOS implementation
+/// tvOS-specific implementation that detects user interactions through touches.
 internal struct UIPressCommandFactory: UIEventCommandFactory {
     let dateProvider: DateProvider
 
-    let predicate: UIPressRUMActionsPredicate
+    let uiKitPredicate: UIPressRUMActionsPredicate
 
     func command(from event: UIEvent) -> RUMAddUserActionCommand? {
         guard let event = event as? UIPressesEvent else {
@@ -111,10 +129,10 @@ internal struct UIPressCommandFactory: UIEventCommandFactory {
         guard press.phase == .ended else {
             return nil // not in `.ended` phase
         }
-        guard let view = press.responder as? UIView, isSafeForPrivacy(view) else {
+        guard let view = press.responder as? UIView, view.isSafeForPrivacy else {
             return nil // no valid view
         }
-        guard let action = predicate.rumAction(press: press.type, targetView: view) else {
+        guard let action = uiKitPredicate.rumAction(press: press.type, targetView: view) else {
             return nil
         }
         return RUMAddUserActionCommand(
@@ -124,5 +142,20 @@ internal struct UIPressCommandFactory: UIEventCommandFactory {
             actionType: .click,
             name: action.name
         )
+    }
+}
+
+// MARK: Helpers
+private extension UIView {
+    /// Traverses the hierarchy of this view from bottom-up to find any parent view matching
+    /// the given predicate. It starts from `self`.
+    func findInParentHierarchy(viewMatching predicate: (UIView) -> Bool) -> UIView? {
+        if predicate(self) {
+            return self
+        } else if let superview = superview {
+            return superview.findInParentHierarchy(viewMatching: predicate)
+        } else {
+            return nil
+        }
     }
 }
