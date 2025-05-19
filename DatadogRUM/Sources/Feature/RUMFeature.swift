@@ -23,6 +23,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
     let anonymousIdentifierManager: AnonymousIdentifierManaging
 
+    let performanceOverride = PerformancePresetOverride(
+        maxFileAgeForRead: 24.hours // RUM intake can ingest events up to 24hrs old
+    )
+
     init(
         in core: DatadogCoreProtocol,
         configuration: RUM.Configuration
