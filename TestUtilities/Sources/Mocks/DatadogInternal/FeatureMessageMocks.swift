@@ -8,19 +8,6 @@ import Foundation
 import DatadogInternal
 
 public extension Array where Element == FeatureMessage {
-    /// Unpacks the first "baggage message" with given key in this array.
-    func firstBaggage(withKey key: String) -> FeatureBaggage? {
-        lazy
-            .compactMap { $0.asBaggage }
-            .first(where: { $0.key == key })?.baggage
-    }
-
-    /// Unpacks the last "baggage message" with given key in this array.
-    func lastBaggage(withKey key: String) -> FeatureBaggage? {
-        compactMap({ $0.asBaggage })
-            .last(where: { $0.key == key })?.baggage
-    }
-
     /// Unpacks the first "payload message" in this array.
     var firstPayload: Any? {
         lazy.compactMap { $0.asPayload }.first
@@ -53,14 +40,6 @@ public extension Array where Element == FeatureMessage {
 }
 
 public extension FeatureMessage {
-    /// Extracts baggage attributes from feature message.
-    var asBaggage: (key: String, baggage: FeatureBaggage)? {
-        guard case let .baggage(key, baggage) = self else {
-            return nil
-        }
-        return (key: key, baggage: baggage)
-    }
-
     /// Extracts payload message.
     var asPayload: Any? {
         guard case let .payload(value) = self else {
