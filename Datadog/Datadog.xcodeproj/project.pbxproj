@@ -157,7 +157,6 @@
 		1182FA5B2DA2F827007FE71A /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9C22DA2F827007FE71A /* SwiftExtensions.swift */; };
 		1182FA5C2DA2F827007FE71A /* Decompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9BE2DA2F827007FE71A /* Decompression.swift */; };
 		1182FA5D2DA2F827007FE71A /* RUMFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9F92DA2F827007FE71A /* RUMFeatureMocks.swift */; };
-		1182FA5E2DA2F827007FE71A /* FeatureBaggageMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9E62DA2F827007FE71A /* FeatureBaggageMock.swift */; };
 		1182FA5F2DA2F827007FE71A /* DatadogContextProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9D92DA2F827007FE71A /* DatadogContextProviderMock.swift */; };
 		1182FA602DA2F827007FE71A /* SRDataModelsMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182FA0A2DA2F827007FE71A /* SRDataModelsMocks.swift */; };
 		1182FA612DA2F827007FE71A /* FeatureMessageMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9E72DA2F827007FE71A /* FeatureMessageMocks.swift */; };
@@ -239,7 +238,6 @@
 		1182FAAF2DA2F827007FE71A /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9C22DA2F827007FE71A /* SwiftExtensions.swift */; };
 		1182FAB02DA2F827007FE71A /* Decompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9BE2DA2F827007FE71A /* Decompression.swift */; };
 		1182FAB12DA2F827007FE71A /* RUMFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9F92DA2F827007FE71A /* RUMFeatureMocks.swift */; };
-		1182FAB22DA2F827007FE71A /* FeatureBaggageMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9E62DA2F827007FE71A /* FeatureBaggageMock.swift */; };
 		1182FAB32DA2F827007FE71A /* DatadogContextProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9D92DA2F827007FE71A /* DatadogContextProviderMock.swift */; };
 		1182FAB42DA2F827007FE71A /* SRDataModelsMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182FA0A2DA2F827007FE71A /* SRDataModelsMocks.swift */; };
 		1182FAB52DA2F827007FE71A /* FeatureMessageMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9E72DA2F827007FE71A /* FeatureMessageMocks.swift */; };
@@ -1021,10 +1019,6 @@
 		D21C26C628A3B49C005DD405 /* FeatureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26C428A3B49C005DD405 /* FeatureStorage.swift */; };
 		D21C26D128A64599005DD405 /* MessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D028A64599005DD405 /* MessageBusTests.swift */; };
 		D21C26D228A64599005DD405 /* MessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D028A64599005DD405 /* MessageBusTests.swift */; };
-		D2216EC02A94DE2900ADAEC8 /* FeatureBaggage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2216EBF2A94DE2800ADAEC8 /* FeatureBaggage.swift */; };
-		D2216EC12A94DE2900ADAEC8 /* FeatureBaggage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2216EBF2A94DE2800ADAEC8 /* FeatureBaggage.swift */; };
-		D2216EC32A96649500ADAEC8 /* FeatureBaggageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2216EC22A96632F00ADAEC8 /* FeatureBaggageTests.swift */; };
-		D2216EC42A96649700ADAEC8 /* FeatureBaggageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2216EC22A96632F00ADAEC8 /* FeatureBaggageTests.swift */; };
 		D22442C52CA301DA002E71E4 /* UIColor+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */; };
 		D224430429E9588100274EC7 /* TelemetryReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */; };
 		D224430529E9588500274EC7 /* TelemetryReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */; };
@@ -2337,7 +2331,6 @@
 		1182F9E32DA2F827007FE71A /* DateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateProvider.swift; sourceTree = "<group>"; };
 		1182F9E42DA2F827007FE71A /* DDErrorMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDErrorMocks.swift; sourceTree = "<group>"; };
 		1182F9E52DA2F827007FE71A /* EventMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventMocks.swift; sourceTree = "<group>"; };
-		1182F9E62DA2F827007FE71A /* FeatureBaggageMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureBaggageMock.swift; sourceTree = "<group>"; };
 		1182F9E72DA2F827007FE71A /* FeatureMessageMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureMessageMocks.swift; sourceTree = "<group>"; };
 		1182F9E82DA2F827007FE71A /* FeatureMessageReceiverMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureMessageReceiverMock.swift; sourceTree = "<group>"; };
 		1182F9E92DA2F827007FE71A /* FeatureRegistrationCoreMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureRegistrationCoreMock.swift; sourceTree = "<group>"; };
@@ -3056,8 +3049,6 @@
 		D21C26D028A64599005DD405 /* MessageBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusTests.swift; sourceTree = "<group>"; };
 		D21C26EA28AFA11E005DD405 /* LogMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D21C26ED28AFB65B005DD405 /* ErrorMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageReceiverTests.swift; sourceTree = "<group>"; };
-		D2216EBF2A94DE2800ADAEC8 /* FeatureBaggage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureBaggage.swift; sourceTree = "<group>"; };
-		D2216EC22A96632F00ADAEC8 /* FeatureBaggageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureBaggageTests.swift; sourceTree = "<group>"; };
 		D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+SessionReplay.swift"; sourceTree = "<group>"; };
 		D224430C29E95D6600274EC7 /* CrashReportReceiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CrashReportReceiverTests.swift; sourceTree = "<group>"; };
 		D22789352D64A0D3007E9DB0 /* UploadQualityMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadQualityMetric.swift; sourceTree = "<group>"; };
@@ -3751,7 +3742,6 @@
 				1182F9E32DA2F827007FE71A /* DateProvider.swift */,
 				1182F9E42DA2F827007FE71A /* DDErrorMocks.swift */,
 				1182F9E52DA2F827007FE71A /* EventMocks.swift */,
-				1182F9E62DA2F827007FE71A /* FeatureBaggageMock.swift */,
 				1182F9E72DA2F827007FE71A /* FeatureMessageMocks.swift */,
 				1182F9E82DA2F827007FE71A /* FeatureMessageReceiverMock.swift */,
 				1182F9E92DA2F827007FE71A /* FeatureRegistrationCoreMock.swift */,
@@ -6184,7 +6174,6 @@
 		D23039BF298D5235001A1FA3 /* MessageBus */ = {
 			isa = PBXGroup;
 			children = (
-				D2216EBF2A94DE2800ADAEC8 /* FeatureBaggage.swift */,
 				D23039C1298D5235001A1FA3 /* FeatureMessageReceiver.swift */,
 				D23039C2298D5235001A1FA3 /* FeatureMessage.swift */,
 			);
@@ -6565,7 +6554,6 @@
 		D2A783D829A530DC003B03BB /* MessageBus */ = {
 			isa = PBXGroup;
 			children = (
-				D2216EC22A96632F00ADAEC8 /* FeatureBaggageTests.swift */,
 				D2DA23A0298D58F400C6C7E6 /* FeatureMessageReceiverTests.swift */,
 			);
 			path = MessageBus;
@@ -8915,7 +8903,6 @@
 				D23039F8298D5236001A1FA3 /* InternalLogger.swift in Sources */,
 				6174D6132BFDF16C00EC7469 /* BundleType.swift in Sources */,
 				D2303A01298D5236001A1FA3 /* DateFormatting.swift in Sources */,
-				D2216EC02A94DE2900ADAEC8 /* FeatureBaggage.swift in Sources */,
 				D23039F1298D5236001A1FA3 /* AnyDecodable.swift in Sources */,
 				6167E6E22B81207200C3CA2D /* DDCrashReport.swift in Sources */,
 				D2160CC529C0DED100FAA9A5 /* URLSessionTaskInterception.swift in Sources */,
@@ -9214,7 +9201,6 @@
 				1182FA5B2DA2F827007FE71A /* SwiftExtensions.swift in Sources */,
 				1182FA5C2DA2F827007FE71A /* Decompression.swift in Sources */,
 				1182FA5D2DA2F827007FE71A /* RUMFeatureMocks.swift in Sources */,
-				1182FA5E2DA2F827007FE71A /* FeatureBaggageMock.swift in Sources */,
 				1182FA5F2DA2F827007FE71A /* DatadogContextProviderMock.swift in Sources */,
 				1182FA602DA2F827007FE71A /* SRDataModelsMocks.swift in Sources */,
 				1182FA612DA2F827007FE71A /* FeatureMessageMocks.swift in Sources */,
@@ -9304,7 +9290,6 @@
 				1182FAAF2DA2F827007FE71A /* SwiftExtensions.swift in Sources */,
 				1182FAB02DA2F827007FE71A /* Decompression.swift in Sources */,
 				1182FAB12DA2F827007FE71A /* RUMFeatureMocks.swift in Sources */,
-				1182FAB22DA2F827007FE71A /* FeatureBaggageMock.swift in Sources */,
 				1182FAB32DA2F827007FE71A /* DatadogContextProviderMock.swift in Sources */,
 				1182FAB42DA2F827007FE71A /* SRDataModelsMocks.swift in Sources */,
 				1182FAB52DA2F827007FE71A /* FeatureMessageMocks.swift in Sources */,
@@ -9993,7 +9978,6 @@
 				D2D9A9DA2DBFD360005DB31D /* CrashContext.swift in Sources */,
 				6174D6142BFDF16C00EC7469 /* BundleType.swift in Sources */,
 				D2DA236F298D57AA00C6C7E6 /* DateFormatting.swift in Sources */,
-				D2216EC12A94DE2900ADAEC8 /* FeatureBaggage.swift in Sources */,
 				D2DA2370298D57AA00C6C7E6 /* AnyDecodable.swift in Sources */,
 				6167E6E32B81207200C3CA2D /* DDCrashReport.swift in Sources */,
 				D2160CC629C0DED100FAA9A5 /* URLSessionTaskInterception.swift in Sources */,
@@ -10082,7 +10066,6 @@
 				D2DA23A6298D58F400C6C7E6 /* AnyCoderTests.swift in Sources */,
 				D2EBEE3E29BA163E00B15732 /* W3CHTTPHeadersReaderTests.swift in Sources */,
 				D2160CE929C0E00200FAA9A5 /* MethodSwizzlerTests.swift in Sources */,
-				D2216EC32A96649500ADAEC8 /* FeatureBaggageTests.swift in Sources */,
 				D2160CDC29C0DF6700FAA9A5 /* HostsSanitizerTests.swift in Sources */,
 				615192CD2BD6948B0005A782 /* HTTPHeadersWriterTests.swift in Sources */,
 				6156A9072BF75A7C00DF66C3 /* ImmutableRequestTests.swift in Sources */,
@@ -10135,7 +10118,6 @@
 				D2160CEA29C0E00200FAA9A5 /* MethodSwizzlerTests.swift in Sources */,
 				D2DA23B6298D59DC00C6C7E6 /* AnyCoderTests.swift in Sources */,
 				D2EBEE4229BA163F00B15732 /* W3CHTTPHeadersReaderTests.swift in Sources */,
-				D2216EC42A96649700ADAEC8 /* FeatureBaggageTests.swift in Sources */,
 				D2160CDD29C0DF6700FAA9A5 /* HostsSanitizerTests.swift in Sources */,
 				615192CE2BD6948B0005A782 /* HTTPHeadersWriterTests.swift in Sources */,
 				6156A9082BF75A7C00DF66C3 /* ImmutableRequestTests.swift in Sources */,

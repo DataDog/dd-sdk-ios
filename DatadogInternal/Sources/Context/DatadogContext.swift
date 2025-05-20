@@ -110,10 +110,6 @@ public struct DatadogContext {
     /// Additional context that can set from `core` instance.
     private var additionalContext: [String: AdditionalContext] = [:]
 
-    /// Type-less context baggages.
-    @available(*, deprecated, renamed: "additionalContext", message: "`FeatureBaggage` is deprecated in favor of strongly typed `additionalContext`.")
-    public var baggages: [String: FeatureBaggage] = [:]
-
     // swiftlint:disable function_default_parameter_at_end
     public init(
         site: DatadogSite,
@@ -142,8 +138,7 @@ public struct DatadogContext {
         carrierInfo: CarrierInfo? = nil,
         batteryStatus: BatteryStatus? = nil,
         isLowPowerModeEnabled: Bool = false,
-        additionalContext: [String: AdditionalContext] = [:],
-        baggages: [String: FeatureBaggage] = [:]
+        additionalContext: [String: AdditionalContext] = [:]
     ) {
         self.site = site
         self.clientToken = clientToken
@@ -172,7 +167,6 @@ public struct DatadogContext {
         self.batteryStatus = batteryStatus
         self.isLowPowerModeEnabled = isLowPowerModeEnabled
         self.additionalContext = additionalContext
-        self.baggages = baggages
     }
     // swiftlint:enable function_default_parameter_at_end
 }

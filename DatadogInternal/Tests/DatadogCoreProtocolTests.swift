@@ -24,36 +24,6 @@ class DatadogCoreProtocolTests: XCTestCase {
         )
     }
 
-    func testSetBaggageExtension() throws {
-        // Given
-        let core = PassthroughCoreMock()
-
-        // Then
-        core.set(baggage: FeatureBaggage("value"), forKey: "test")
-        XCTAssertEqual(
-            try core.context.baggages["test"]?.decode(), "value", "DatadogCoreProtocol.set(baggage:) should forward baggage"
-        )
-
-        core.set(baggage: nil, forKey: "test")
-        XCTAssertNil(core.context.baggages["test"], "DatadogCoreProtocol.set(baggage:) should forward baggage" )
-
-        core.set(baggage: { "value" }, forKey: "test")
-        XCTAssertEqual(
-            try core.context.baggages["test"]?.decode(), "value", "DatadogCoreProtocol.set(baggage:) should forward baggage"
-        )
-
-        core.set(baggage: { nil as String? }, forKey: "test")
-        XCTAssertNil(core.context.baggages["test"], "DatadogCoreProtocol.set(baggage:) should forward baggage" )
-
-        core.set(baggage: "value", forKey: "test")
-        XCTAssertEqual(
-            try core.context.baggages["test"]?.decode(), "value", "DatadogCoreProtocol.set(baggage:) should forward baggage"
-        )
-
-        core.set(baggage: nil as String?, forKey: "test")
-        XCTAssertNil(core.context.baggages["test"], "DatadogCoreProtocol.set(baggage:) should forward baggage" )
-    }
-
     func testAdditionalContextExtension() throws {
         // Given
         let core = PassthroughCoreMock()
