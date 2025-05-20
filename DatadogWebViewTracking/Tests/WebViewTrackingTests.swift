@@ -19,7 +19,7 @@ class WebViewTrackingTests: XCTestCase {
 
         let host: String = .mockRandom()
 
-        WebViewTracking.enable(
+        try WebViewTracking.enableOrThrow(
             tracking: controller,
             hosts: [host],
             hostsSanitizer: mockSanitizer,
@@ -71,7 +71,7 @@ class WebViewTrackingTests: XCTestCase {
             touchPrivacy: sr.touchPrivacyLevel
         )
 
-        WebViewTracking.enable(
+        try WebViewTracking.enableOrThrow(
             tracking: controller,
             hosts: [host],
             hostsSanitizer: mockSanitizer,
@@ -105,7 +105,7 @@ class WebViewTrackingTests: XCTestCase {
 
         let initialUserScriptCount = controller.userScripts.count
 
-        WebViewTracking.enable(
+        try WebViewTracking.enableOrThrow(
             tracking: controller,
             hosts: ["datadoghq.com"],
             hostsSanitizer: mockSanitizer,
@@ -135,8 +135,8 @@ class WebViewTrackingTests: XCTestCase {
         let initialUserScriptCount = controller.userScripts.count
 
         let multipleTimes = 5
-        (0..<multipleTimes).forEach { _ in
-            WebViewTracking.enable(
+        try (0..<multipleTimes).forEach { _ in
+            try WebViewTracking.enableOrThrow(
                 tracking: controller,
                 hosts: ["datadoghq.com"],
                 hostsSanitizer: mockSanitizer,
@@ -214,7 +214,7 @@ class WebViewTrackingTests: XCTestCase {
         )
 
         let controller = DDUserContentController()
-        WebViewTracking.enable(
+        try WebViewTracking.enableOrThrow(
             tracking: controller,
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
@@ -266,7 +266,7 @@ class WebViewTrackingTests: XCTestCase {
         )
 
         let controller = DDUserContentController()
-        WebViewTracking.enable(
+        try WebViewTracking.enableOrThrow(
             tracking: controller,
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
@@ -358,7 +358,7 @@ class WebViewTrackingTests: XCTestCase {
             }
         )
 
-        WebViewTracking.enable(
+        try WebViewTracking.enableOrThrow(
             tracking: controller,
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
