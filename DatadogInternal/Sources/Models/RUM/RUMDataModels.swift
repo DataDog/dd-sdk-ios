@@ -129,7 +129,7 @@ public struct RUMActionEvent: RUMDataModel {
     ///   - view: View properties
     public init(
         dd: DD,
-        account: Account? = nil,
+        account: RUMAccount? = nil,
         action: Action,
         application: Application,
         buildId: String? = nil,
@@ -953,7 +953,7 @@ public struct RUMErrorEvent: RUMDataModel {
     ///   - view: View properties
     public init(
         dd: DD,
-        account: Account? = nil,
+        account: RUMAccount? = nil,
         action: Action? = nil,
         application: Application,
         buildId: String? = nil,
@@ -2041,7 +2041,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     ///   - view: View properties
     public init(
         dd: DD,
-        account: Account? = nil,
+        account: RUMAccount? = nil,
         action: Action? = nil,
         application: Application,
         buildId: String? = nil,
@@ -2737,7 +2737,7 @@ public struct RUMResourceEvent: RUMDataModel {
     ///   - view: View properties
     public init(
         dd: DD,
-        account: Account? = nil,
+        account: RUMAccount? = nil,
         action: Action? = nil,
         application: Application,
         buildId: String? = nil,
@@ -3751,7 +3751,7 @@ public struct RUMViewEvent: RUMDataModel {
     ///   - view: View properties
     public init(
         dd: DD,
-        account: Account? = nil,
+        account: RUMAccount? = nil,
         application: Application,
         buildId: String? = nil,
         buildVersion: String? = nil,
@@ -5459,7 +5459,7 @@ public struct RUMVitalEvent: RUMDataModel {
     ///   - vital: Vital properties
     public init(
         dd: DD,
-        account: Account? = nil,
+        account: RUMAccount? = nil,
         application: Application,
         buildId: String? = nil,
         buildVersion: String? = nil,
@@ -6889,6 +6889,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether RUM events are tracked when the application is in Background
             public var trackBackgroundEvents: Bool?
 
+            /// Whether views loaded from the bfcache are tracked
+            public var trackBfcacheViews: Bool?
+
             /// Whether long task tracking is performed automatically for cross platform SDKs
             public var trackCrossPlatformLongTasks: Bool?
 
@@ -6945,6 +6948,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether the allowed tracing urls list is used
             public let useAllowedTracingUrls: Bool?
+
+            /// Whether a list of allowed origins is used to control SDK execution in browser extension contexts. When enabled, the SDK will check if the current origin matches the allowed origins list before running.
+            public var useAllowedTrackingOrigins: Bool?
 
             /// Whether beforeSend callback function is used
             public let useBeforeSend: Bool?
@@ -7030,6 +7036,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case tracerApiVersion = "tracer_api_version"
                 case trackAnonymousUser = "track_anonymous_user"
                 case trackBackgroundEvents = "track_background_events"
+                case trackBfcacheViews = "track_bfcache_views"
                 case trackCrossPlatformLongTasks = "track_cross_platform_long_tasks"
                 case trackErrors = "track_errors"
                 case trackFeatureFlagsForEvents = "track_feature_flags_for_events"
@@ -7049,6 +7056,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case unityVersion = "unity_version"
                 case useAllowedTracingOrigins = "use_allowed_tracing_origins"
                 case useAllowedTracingUrls = "use_allowed_tracing_urls"
+                case useAllowedTrackingOrigins = "use_allowed_tracking_origins"
                 case useBeforeSend = "use_before_send"
                 case useCrossSiteSessionCookie = "use_cross_site_session_cookie"
                 case useExcludedActivityUrls = "use_excluded_activity_urls"
@@ -7113,6 +7121,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - tracerApiVersion: The version of the tracer API used by the SDK. Eg. '0.1.0'
             ///   - trackAnonymousUser: Whether the anonymous users are tracked
             ///   - trackBackgroundEvents: Whether RUM events are tracked when the application is in Background
+            ///   - trackBfcacheViews: Whether views loaded from the bfcache are tracked
             ///   - trackCrossPlatformLongTasks: Whether long task tracking is performed automatically for cross platform SDKs
             ///   - trackErrors: Whether error monitoring & crash reporting is enabled for the source platform
             ///   - trackFeatureFlagsForEvents: The list of events that include feature flags collection. The tracking is always enabled for views and errors.
@@ -7132,6 +7141,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - unityVersion: The version of Unity used in a Unity application
             ///   - useAllowedTracingOrigins: Whether the allowed tracing origins list is used (deprecated in favor of use_allowed_tracing_urls)
             ///   - useAllowedTracingUrls: Whether the allowed tracing urls list is used
+            ///   - useAllowedTrackingOrigins: Whether a list of allowed origins is used to control SDK execution in browser extension contexts. When enabled, the SDK will check if the current origin matches the allowed origins list before running.
             ///   - useBeforeSend: Whether beforeSend callback function is used
             ///   - useCrossSiteSessionCookie: Whether a secure cross-site session cookie is used (deprecated)
             ///   - useExcludedActivityUrls: Whether the request origins list to ignore when computing the page activity is used
@@ -7192,6 +7202,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 tracerApiVersion: String? = nil,
                 trackAnonymousUser: Bool? = nil,
                 trackBackgroundEvents: Bool? = nil,
+                trackBfcacheViews: Bool? = nil,
                 trackCrossPlatformLongTasks: Bool? = nil,
                 trackErrors: Bool? = nil,
                 trackFeatureFlagsForEvents: [TrackFeatureFlagsForEvents]? = nil,
@@ -7211,6 +7222,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 unityVersion: String? = nil,
                 useAllowedTracingOrigins: Bool? = nil,
                 useAllowedTracingUrls: Bool? = nil,
+                useAllowedTrackingOrigins: Bool? = nil,
                 useBeforeSend: Bool? = nil,
                 useCrossSiteSessionCookie: Bool? = nil,
                 useExcludedActivityUrls: Bool? = nil,
@@ -7271,6 +7283,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.tracerApiVersion = tracerApiVersion
                 self.trackAnonymousUser = trackAnonymousUser
                 self.trackBackgroundEvents = trackBackgroundEvents
+                self.trackBfcacheViews = trackBfcacheViews
                 self.trackCrossPlatformLongTasks = trackCrossPlatformLongTasks
                 self.trackErrors = trackErrors
                 self.trackFeatureFlagsForEvents = trackFeatureFlagsForEvents
@@ -7290,6 +7303,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.unityVersion = unityVersion
                 self.useAllowedTracingOrigins = useAllowedTracingOrigins
                 self.useAllowedTracingUrls = useAllowedTracingUrls
+                self.useAllowedTrackingOrigins = useAllowedTrackingOrigins
                 self.useBeforeSend = useBeforeSend
                 self.useCrossSiteSessionCookie = useCrossSiteSessionCookie
                 self.useExcludedActivityUrls = useExcludedActivityUrls
@@ -8460,9 +8474,25 @@ public struct RUMAccount: Codable {
 
     public var accountInfo: [String: Encodable]
 
-    enum StaticCodingKeys: String, CodingKey {
+    public enum StaticCodingKeys: String, CodingKey {
         case id = "id"
         case name = "name"
+    }
+
+    /// Account properties
+    ///
+    /// - Parameters:
+    ///   - id: Identifier of the account
+    ///   - name: Name of the account
+    ///   - accountInfo:
+    public init(
+        id: String,
+        name: String? = nil,
+        accountInfo: [String: Encodable]
+    ) {
+        self.id = id
+        self.name = name
+        self.accountInfo = accountInfo
     }
 }
 
@@ -9004,4 +9034,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/2d2cd6aecf0ea4f1ffe61b7149dfdef75397fdbf
+// Generated from https://github.com/DataDog/rum-events-format/tree/df69253e7a875963d2a9cf0abb97882a97ebf85e

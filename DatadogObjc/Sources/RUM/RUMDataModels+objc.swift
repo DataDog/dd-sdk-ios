@@ -8095,6 +8095,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.trackBackgroundEvents as NSNumber? }
     }
 
+    @objc public var trackBfcacheViews: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.trackBfcacheViews = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.trackBfcacheViews as NSNumber? }
+    }
+
     @objc public var trackCrossPlatformLongTasks: NSNumber? {
         set { root.swiftModel.telemetry.configuration.trackCrossPlatformLongTasks = newValue?.boolValue }
         get { root.swiftModel.telemetry.configuration.trackCrossPlatformLongTasks as NSNumber? }
@@ -8183,6 +8188,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     @objc public var useAllowedTracingUrls: NSNumber? {
         root.swiftModel.telemetry.configuration.useAllowedTracingUrls as NSNumber?
+    }
+
+    @objc public var useAllowedTrackingOrigins: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.useAllowedTrackingOrigins = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.useAllowedTrackingOrigins as NSNumber? }
     }
 
     @objc public var useBeforeSend: NSNumber? {
@@ -8518,4 +8528,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/2d2cd6aecf0ea4f1ffe61b7149dfdef75397fdbf
+// Generated from https://github.com/DataDog/rum-events-format/tree/df69253e7a875963d2a9cf0abb97882a97ebf85e
