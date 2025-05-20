@@ -27,5 +27,5 @@ internal struct RUMContext {
     var activeUserActionID: RUMUUID?
 
     /// The current accessibility
-    var accessibility: Accessibility
+    var accessibility: Accessibility?
 }

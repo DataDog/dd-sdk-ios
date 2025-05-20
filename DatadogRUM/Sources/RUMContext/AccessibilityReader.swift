@@ -1,8 +1,14 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
 import DatadogInternal
 import Foundation
 import UIKit
 
-final class AccessibilityReader {
+internal final class AccessibilityReader {
     @ReadWriteLock
     var state: Accessibility
 
@@ -10,9 +16,10 @@ final class AccessibilityReader {
     private var observers: [NSObjectProtocol] = []
 
     init(notificationCenter: NotificationCenter = .default) {
-        state = AccessibilityReader.currentState
+        self.state = Accessibility()
         self.notificationCenter = notificationCenter
         startObserving()
+        updateState()
     }
 
     deinit {
@@ -20,11 +27,13 @@ final class AccessibilityReader {
     }
 
     private func updateState() {
-        state = AccessibilityReader.currentState
+        DispatchQueue.main.async { [weak self] in
+            self?.state = AccessibilityReader.currentState
+        }
     }
 
     private func startObserving() {
-        if #available(iOS 13.0, *) {
+        if #available(iOS 13.0, tvOS 13.0, *) {
             let videoAutoplayObserver = notificationCenter.addObserver(
                 forName: UIAccessibility.videoAutoplayStatusDidChangeNotification,
                 object: nil,
@@ -53,7 +62,7 @@ final class AccessibilityReader {
             observers.append(onOffSwitchLabelsObserver)
         }
 
-        if #available(iOS 14.0, *) {
+        if #available(iOS 14.0, tvOS 14.0, *) {
             let buttonShapesObserver = notificationCenter.addObserver(
                 forName: UIAccessibility.buttonShapesEnabledStatusDidChangeNotification,
                 object: nil,
@@ -217,11 +226,11 @@ final class AccessibilityReader {
     private static var currentState: Accessibility {
         var state = Accessibility()
 
-        if let contentSize = UIApplication.shared.preferredContentSizeCategory.rawValue as String? {
+        if let contentSize = UIApplication.dd.managedShared?.preferredContentSizeCategory.rawValue as String? {
             state.textSize = contentSize
         }
 
-        if #available(iOS 13.0, *) {
+        if #available(iOS 13.0, tvOS 13.0, *) {
             state.videoAutoplayEnabled = UIAccessibility.isVideoAutoplayEnabled
             state.shouldDifferentiateWithoutColor = UIAccessibility.shouldDifferentiateWithoutColor
             state.onOffSwitchLabelsEnabled = UIAccessibility.isOnOffSwitchLabelsEnabled
@@ -231,7 +240,7 @@ final class AccessibilityReader {
             state.onOffSwitchLabelsEnabled = nil
         }
 
-        if #available(iOS 14.0, *) {
+        if #available(iOS 14.0, tvOS 14.0, *) {
             state.buttonShapesEnabled = UIAccessibility.buttonShapesEnabled
             state.reducedAnimationsEnabled = UIAccessibility.prefersCrossFadeTransitions
         } else {
@@ -240,8 +249,7 @@ final class AccessibilityReader {
         }
 
         state.screenReaderEnabled = UIAccessibility.isVoiceOverRunning
-        state.boldTextEnabled = UIAccessibility.isBoldTextEnabled
-        state.reduceTransparencyEnabled = UIAccessibility.isReduceTransparencyEnabled
+        state.boldTextEnabled = UIAccessibility.isReduceTransparencyEnabled
         state.reduceMotionEnabled = UIAccessibility.isReduceMotionEnabled
         state.invertColorsEnabled = UIAccessibility.isInvertColorsEnabled
         state.increaseContrastEnabled = UIAccessibility.isDarkerSystemColorsEnabled
@@ -254,7 +262,7 @@ final class AccessibilityReader {
         state.singleAppModeEnabled = UIAccessibility.isGuidedAccessEnabled
         state.speakScreenEnabled = UIAccessibility.isSpeakScreenEnabled
         state.speakSelectionEnabled = UIAccessibility.isSpeakSelectionEnabled
-        state.rtlEnabled = UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft
+        state.rtlEnabled = UIApplication.dd.managedShared?.userInterfaceLayoutDirection == .rightToLeft
 
         return state
     }
