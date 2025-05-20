@@ -146,7 +146,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewStartTime = startTime
         self.serverTimeOffset = serverTimeOffset
         self.interactionToNextViewMetric = interactionToNextViewMetric
-        self.accessibilityReader = dependencies.accessibilityReader
+        self.accessibilityReader = dependencies.accessibilityReaderFactory()
 
         self.vitalInfoSampler = dependencies.vitalsReaders.map {
             .init(
@@ -556,7 +556,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             }
         }
 
-        self.attributes["accessibility"] = self.context.accessibility
+        if let accessibility = self.context.accessibility {
+            self.attributes["accessibility"] = accessibility
+        }
 
         let isCrash = (command as? RUMErrorCommand).map { $0.isCrash ?? false } ?? false
         // RUMM-1779 Keep view active as long as we have ongoing resources

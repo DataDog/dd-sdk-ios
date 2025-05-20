@@ -845,6 +845,10 @@
 		61FDBA1326971953001D9D43 /* CrashReportMinifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1226971953001D9D43 /* CrashReportMinifier.swift */; };
 		61FDBA15269722B4001D9D43 /* CrashReportMinifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA14269722B4001D9D43 /* CrashReportMinifierTests.swift */; };
 		61FDBA1726974CA9001D9D43 /* DDCrashReportBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1626974CA9001D9D43 /* DDCrashReportBuilderTests.swift */; };
+		864A70792DDF742A00AC0619 /* Accessibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864A70782DDF742A00AC0619 /* Accessibility.swift */; };
+		864A707A2DDF742A00AC0619 /* Accessibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864A70782DDF742A00AC0619 /* Accessibility.swift */; };
+		864A707C2DDF743900AC0619 /* AccessibilityReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864A707B2DDF743900AC0619 /* AccessibilityReader.swift */; };
+		864A707D2DDF743900AC0619 /* AccessibilityReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864A707B2DDF743900AC0619 /* AccessibilityReader.swift */; };
 		960A0D3B2D6E2490004BB999 /* Reflector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D3A2D6E2490004BB999 /* Reflector.swift */; };
 		960A0D3C2D6E2490004BB999 /* CustomDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D382D6E2490004BB999 /* CustomDump.swift */; };
 		960A0D3D2D6E2490004BB999 /* ReflectionMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D392D6E2490004BB999 /* ReflectionMirror.swift */; };
@@ -2922,6 +2926,8 @@
 		61FF282F24BC5E2D000B3D9B /* RUMEventFileOutputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventFileOutputTests.swift; sourceTree = "<group>"; };
 		61FF416125EE5FF400CE35EC /* CrashLogReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashLogReceiverTests.swift; sourceTree = "<group>"; };
 		61FF9A4425AC5DEA001058CC /* ViewIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewIdentifier.swift; sourceTree = "<group>"; };
+		864A70782DDF742A00AC0619 /* Accessibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accessibility.swift; sourceTree = "<group>"; };
+		864A707B2DDF743900AC0619 /* AccessibilityReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityReader.swift; sourceTree = "<group>"; };
 		960A0D382D6E2490004BB999 /* CustomDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomDump.swift; sourceTree = "<group>"; };
 		960A0D392D6E2490004BB999 /* ReflectionMirror.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionMirror.swift; sourceTree = "<group>"; };
 		960A0D3A2D6E2490004BB999 /* Reflector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reflector.swift; sourceTree = "<group>"; };
@@ -5140,6 +5146,7 @@
 		6156CB8A24DDA186008CB2B2 /* RUMContext */ = {
 			isa = PBXGroup;
 			children = (
+				864A707B2DDF743900AC0619 /* AccessibilityReader.swift */,
 				61C3E63824BF19B4008053F2 /* RUMContext.swift */,
 				6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */,
 			);
@@ -5709,6 +5716,7 @@
 		61E5333224B7A504003D6C4E /* DataModels */ = {
 			isa = PBXGroup;
 			children = (
+				864A70782DDF742A00AC0619 /* Accessibility.swift */,
 				618715F824DC13A100FC0F69 /* RUMDataModelsMapping.swift */,
 			);
 			path = DataModels;
@@ -8995,6 +9003,7 @@
 				D23F8E6529DDCD28001CFAE8 /* RUMFeature.swift in Sources */,
 				D23F8E6629DDCD28001CFAE8 /* RUMDebugging.swift in Sources */,
 				3C4CF9912C47BE07006DE1C0 /* MemoryWarningMonitor.swift in Sources */,
+				864A707A2DDF742A00AC0619 /* Accessibility.swift in Sources */,
 				D23F8E6729DDCD28001CFAE8 /* RUMUUID.swift in Sources */,
 				D23F8E6829DDCD28001CFAE8 /* UIKitExtensions.swift in Sources */,
 				61C713A82A3B78F900FA735A /* RUMMonitorProtocol+Convenience.swift in Sources */,
@@ -9031,6 +9040,7 @@
 				61C713A62A3B78F900FA735A /* RUMMonitorProtocol+Internal.swift in Sources */,
 				D23F8E7829DDCD28001CFAE8 /* LongTaskObserver.swift in Sources */,
 				615E2B962D425F5600D85243 /* ViewEndedMetric.swift in Sources */,
+				864A707C2DDF743900AC0619 /* AccessibilityReader.swift in Sources */,
 				D23F8E7A29DDCD28001CFAE8 /* SessionReplayDependency.swift in Sources */,
 				616F8C282BB1CD990061EA53 /* ProcessIdentifier.swift in Sources */,
 				D23F8E7B29DDCD28001CFAE8 /* RUMDeviceInfo.swift in Sources */,
@@ -9429,6 +9439,7 @@
 				D29A9F7429DD85BB005C54A4 /* RUMFeature.swift in Sources */,
 				D29A9F7729DD85BB005C54A4 /* RUMDebugging.swift in Sources */,
 				3C4CF9922C47BE07006DE1C0 /* MemoryWarningMonitor.swift in Sources */,
+				864A70792DDF742A00AC0619 /* Accessibility.swift in Sources */,
 				D29A9F6E29DD85BB005C54A4 /* RUMUUID.swift in Sources */,
 				D29A9F8D29DD8665005C54A4 /* UIKitExtensions.swift in Sources */,
 				61C713A72A3B78F900FA735A /* RUMMonitorProtocol+Convenience.swift in Sources */,
@@ -9465,6 +9476,7 @@
 				61C713A52A3B78F900FA735A /* RUMMonitorProtocol+Internal.swift in Sources */,
 				D29A9F5129DD85BB005C54A4 /* LongTaskObserver.swift in Sources */,
 				615E2B952D425F5600D85243 /* ViewEndedMetric.swift in Sources */,
+				864A707D2DDF743900AC0619 /* AccessibilityReader.swift in Sources */,
 				D29A9F8629DD85BB005C54A4 /* SessionReplayDependency.swift in Sources */,
 				616F8C272BB1CD990061EA53 /* ProcessIdentifier.swift in Sources */,
 				D29A9F7129DD85BB005C54A4 /* RUMDeviceInfo.swift in Sources */,

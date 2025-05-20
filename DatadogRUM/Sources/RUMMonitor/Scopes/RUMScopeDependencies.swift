@@ -44,6 +44,7 @@ internal struct RUMScopeDependencies {
     let renderLoopObserver: RenderLoopObserver?
     let viewHitchesReaderFactory: () -> (RenderLoopReader & ViewHitchesModel)?
     let vitalsReaders: VitalsReaders?
+    let accessibilityReaderFactory: () -> AccessibilityReader?
     let onSessionStart: RUM.SessionListener?
     let viewCache: ViewCache
     /// The RUM context necessary for tracking fatal errors like Crashes or fatal App Hangs.
@@ -53,8 +54,6 @@ internal struct RUMScopeDependencies {
     let sessionType: RUMSessionType
     let sessionEndedMetric: SessionEndedMetricController
     let watchdogTermination: WatchdogTerminationMonitor?
-    /// The accessibility state reader
-    let accessibilityReader: AccessibilityReader
 
     /// A factory function that creates `ViewEndedMetricController` for each new view started.
     let viewEndedMetricFactory: () -> ViewEndedController
@@ -84,6 +83,7 @@ internal struct RUMScopeDependencies {
         renderLoopObserver: RenderLoopObserver?,
         viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)?,
         vitalsReaders: VitalsReaders?,
+        accessibilityReaderFactory: @escaping () -> AccessibilityReader?,
         onSessionStart: RUM.SessionListener?,
         viewCache: ViewCache,
         fatalErrorContext: FatalErrorContextNotifying,
@@ -91,8 +91,7 @@ internal struct RUMScopeDependencies {
         viewEndedMetricFactory: @escaping () -> ViewEndedController,
         watchdogTermination: WatchdogTerminationMonitor?,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking,
-        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?,
-        accessibilityReader: AccessibilityReader = AccessibilityReader()
+        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?
     ) {
         self.featureScope = featureScope
         self.rumApplicationID = rumApplicationID
@@ -109,6 +108,7 @@ internal struct RUMScopeDependencies {
         self.renderLoopObserver = renderLoopObserver
         self.viewHitchesReaderFactory = viewHitchesReaderFactory
         self.vitalsReaders = vitalsReaders
+        self.accessibilityReaderFactory = accessibilityReaderFactory
         self.onSessionStart = onSessionStart
         self.viewCache = viewCache
         self.fatalErrorContext = fatalErrorContext
@@ -118,7 +118,6 @@ internal struct RUMScopeDependencies {
         self.watchdogTermination = watchdogTermination
         self.networkSettledMetricFactory = networkSettledMetricFactory
         self.interactionToNextViewMetricFactory = interactionToNextViewMetricFactory
-        self.accessibilityReader = accessibilityReader
 
         if ciTest != nil {
             self.sessionType = .ciTest

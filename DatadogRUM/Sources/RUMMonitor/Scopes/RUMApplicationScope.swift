@@ -35,6 +35,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     init(dependencies: RUMScopeDependencies) {
         self.dependencies = dependencies
+
         self.context = RUMContext(
             rumApplicationID: dependencies.rumApplicationID,
             sessionID: .nullUUID,
@@ -43,7 +44,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             activeViewPath: nil,
             activeViewName: nil,
             activeUserActionID: nil,
-            accessibility: dependencies.accessibilityReader.state
+            accessibility: dependencies.accessibilityReaderFactory()?.state
         )
     }
 
