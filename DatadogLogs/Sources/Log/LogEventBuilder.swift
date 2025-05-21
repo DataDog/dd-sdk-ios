@@ -56,6 +56,7 @@ internal struct LogEventBuilder {
         callback: @escaping (LogEvent) -> Void
     ) {
         let userInfo = context.userInfo ?? .empty
+        let accountInfo = context.accountInfo
 
         let log = LogEvent(
             date: date.addingTimeInterval(context.serverTimeOffset),
@@ -93,12 +94,8 @@ internal struct LogEventBuilder {
                 version: context.device.osVersion,
                 build: context.device.osBuildNumber
             ),
-            userInfo: .init(
-                id: userInfo.id,
-                name: userInfo.name,
-                email: userInfo.email,
-                extraInfo: userInfo.extraInfo
-            ),
+            userInfo: userInfo,
+            accountInfo: accountInfo,
             networkConnectionInfo: networkInfoEnabled ? context.networkConnectionInfo : nil,
             mobileCarrierInfo: networkInfoEnabled ? context.carrierInfo : nil,
             attributes: attributes,
