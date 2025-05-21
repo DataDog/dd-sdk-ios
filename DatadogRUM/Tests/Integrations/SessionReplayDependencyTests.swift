@@ -28,7 +28,7 @@ class SessionReplayDependencyTests: XCTestCase {
 
     func testWhenSessionReplayIsNotConfigured_itReadsNoSRBaggage() {
         // When
-        let context: DatadogContext = .mockWith(baggages: [:])
+        let context: DatadogContext = .mockAny()
 
         // Then
         XCTAssertNil(context.hasReplay)

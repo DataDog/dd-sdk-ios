@@ -37,8 +37,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
         carrierInfo: CarrierInfo? = .mockAny(),
         batteryStatus: BatteryStatus? = .mockAny(),
         isLowPowerModeEnabled: Bool = false,
-        additionalContext: [AdditionalContext] = [],
-        baggages: [String: FeatureBaggage] = [:]
+        additionalContext: [AdditionalContext] = []
     ) -> DatadogContext {
         var context = DatadogContext(
             site: site,
@@ -66,8 +65,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             networkConnectionInfo: networkConnectionInfo,
             carrierInfo: carrierInfo,
             batteryStatus: batteryStatus,
-            isLowPowerModeEnabled: isLowPowerModeEnabled,
-            baggages: baggages
+            isLowPowerModeEnabled: isLowPowerModeEnabled
         )
 
         additionalContext.forEach { context.set(additionalContext: $0) }
@@ -100,8 +98,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
             batteryStatus: nil,
-            isLowPowerModeEnabled: .mockRandom(),
-            baggages: .mockRandom()
+            isLowPowerModeEnabled: .mockRandom()
         )
     }
 }
