@@ -394,6 +394,64 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(userAfter.email, "user-email")
     }
 
+    func testItAppendsAccountDataAndUpdatesIt() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        let accountBefore = core.accountInfoPublisher.current
+        XCTAssertNil(accountBefore)
+
+        core.setAccountInfo(id: "account-id", name: "account-name")
+        let accountAfterInitialSet = core.accountInfoPublisher.current
+        XCTAssertNotNil(accountAfterInitialSet)
+        XCTAssertEqual(accountAfterInitialSet?.id, "account-id")
+        XCTAssertEqual(accountAfterInitialSet?.name, "account-name")
+
+        core.setAccountInfo(id: "account-id-2", name: "account-name-2")
+        let accountAfterUpdate = core.accountInfoPublisher.current
+        XCTAssertNotNil(accountAfterUpdate)
+        XCTAssertEqual(accountAfterUpdate?.id, "account-id-2")
+        XCTAssertEqual(accountAfterUpdate?.name, "account-name-2")
+    }
+
+    func testItUpdatesAccountExtraInfoWhileKeepingOriginalAccountInfo() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        let accountBefore = core.accountInfoPublisher.current
+        XCTAssertNil(accountBefore)
+
+        core.setAccountInfo(id: "account-id", name: "account-name")
+        let accountAfterInitialSet = core.accountInfoPublisher.current
+        XCTAssertNotNil(accountAfterInitialSet)
+        XCTAssertEqual(accountAfterInitialSet?.id, "account-id")
+        XCTAssertEqual(accountAfterInitialSet?.name, "account-name")
+
+        core.addAccountExtraInfo(["test": "test"])
+        let accountAfterAddExtraInfo = core.accountInfoPublisher.current
+        XCTAssertNotNil(accountAfterAddExtraInfo)
+        XCTAssertEqual(accountAfterAddExtraInfo?.id, "account-id")
+        XCTAssertEqual(accountAfterAddExtraInfo?.name, "account-name")
+    }
+
     func testItClearsAnonymousIdentifier() {
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
