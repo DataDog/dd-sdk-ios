@@ -19,6 +19,7 @@ import DatadogInternal
 
 /// An interface for tracking key timestamps in the app launch sequence, including launch time and activation events.
 internal protocol AppLaunchHandling {
+    var launchType: LaunchType { get }
     /// Indicates whether the application was prewarmed by the system.
     var isActivePrewarm: Bool { get }
     /// The timestamp when the application process was launched.
@@ -40,6 +41,7 @@ internal extension AppLaunchHandling {
     /// Returns latest available launch time information.
     var currentValue: LaunchTime {
         return LaunchTime(
+            launchType: launchType,
             launchTime: timeToDidBecomeActive,
             launchDate: launchDate,
             isActivePrewarm: isActivePrewarm
@@ -51,6 +53,16 @@ internal typealias AppLaunchHandler = __dd_private_AppLaunchHandler
 
 extension AppLaunchHandler: AppLaunchHandling {
     var timeToDidBecomeActive: TimeInterval? { launchTime?.doubleValue }
+
+    var launchType: LaunchType {
+        switch ddLaunchType {
+        case .userLaunch:       return .userLaunch
+        case .backgroundLaunch: return .backgroundLaunch
+        case .prewarmed:        return .prewarmed
+        case .unknown:          return .unknown
+        @unknown default:       return .unknown
+        }
+    }
 }
 
 #if !os(macOS)
@@ -66,11 +78,13 @@ internal struct LaunchTimePublisher: ContextValuePublisher {
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<LaunchTime>) {
+        let launchType = handler.launchType
         let launchDate = handler.launchDate
         let isActivePrewarm = handler.isActivePrewarm
 
         handler.setApplicationDidBecomeActiveCallback { launchTime in
             let value = LaunchTime(
+                launchType: launchType,
                 launchTime: launchTime,
                 launchDate: launchDate,
                 isActivePrewarm: isActivePrewarm

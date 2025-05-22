@@ -15,6 +15,8 @@
 #import <AppKit/AppKit.h>
 #endif
 
+#import <mach/mach.h>
+
 // A very long application launch time is most-likely the result of a pre-warmed process.
 // We consider 30s as a threshold for pre-warm detection.
 #define COLD_START_TIME_THRESHOLD 30
@@ -32,6 +34,7 @@ int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval);
     NSTimeInterval _processStartTime;
     NSTimeInterval _timeToApplicationDidBecomeActive;
     BOOL _isActivePrewarm;
+    DDLaunchType   _launchType;
     UIApplicationDidBecomeActiveCallback _applicationDidBecomeActiveCallback;
 }
 
@@ -48,24 +51,75 @@ static __dd_private_AppLaunchHandler *_shared;
     return _shared;
 }
 
-- (instancetype)initWithProcessInfo:(NSProcessInfo *)processInfo {
-    NSTimeInterval startTime;
-    if (processStartTimeIntervalSinceReferenceDate(&startTime) != 0) {
-        // Fall back to "now"
-        startTime = CFAbsoluteTimeGetCurrent();
-    }
+- (instancetype)initWithProcessInfo:(NSProcessInfo *)processInfo
+{
+    DDLaunchType launchType = DDLaunchTypeUnknown;
 
-    // The ActivePrewarm variable indicates whether the app was launched via pre-warming.
+#if TARGET_OS_IOS
+    task_category_policy_data_t policy;
+    mach_msg_type_number_t count = TASK_CATEGORY_POLICY_COUNT;
+    boolean_t get_default = FALSE;
+    kern_return_t kr = task_policy_get(mach_task_self(),
+                                       TASK_CATEGORY_POLICY,
+                                       (task_policy_t)&policy,
+                                       &count,
+                                       &get_default);
+    if (kr == KERN_SUCCESS && !get_default) {
+        switch (policy.role) {
+            case TASK_FOREGROUND_APPLICATION:
+                launchType = DDLaunchTypeUserLaunch;
+                break;
+            case TASK_NONUI_APPLICATION:
+                launchType = DDLaunchTypeBackgroundLaunch;
+                break;
+            case TASK_DARWINBG_APPLICATION:
+                launchType = DDLaunchTypePrewarmed;
+                break;
+            default:
+                launchType = DDLaunchTypeUnknown;
+        }
+    } else {
+        BOOL isActivePrewarm = [processInfo.environment[@"ActivePrewarm"] isEqualToString:@"1"];
+        launchType = isActivePrewarm
+                     ? DDLaunchTypePrewarmed
+                     : DDLaunchTypeUnknown;
+    }
+#else
     BOOL isActivePrewarm = [processInfo.environment[@"ActivePrewarm"] isEqualToString:@"1"];
-    return [self initWithStartTime:startTime isActivePrewarm:isActivePrewarm];
+    launchType = isActivePrewarm
+                 ? DDLaunchTypePrewarmed
+                 : DDLaunchTypeUnknown;
+#endif
+
+    return [self initWithProcessInfo:processInfo launchType:launchType];
 }
 
-- (instancetype)initWithStartTime:(NSTimeInterval)startTime isActivePrewarm:(BOOL)isActivePrewarm {
+- (instancetype)initWithProcessInfo:(NSProcessInfo *)processInfo
+                         launchType:(DDLaunchType)launchType
+{
+    NSTimeInterval startTime;
+    if (processStartTimeIntervalSinceReferenceDate(&startTime) != 0) {
+        startTime = CFAbsoluteTimeGetCurrent(); // fall back to now on error
+    }
+
+    // The ActivePrewarm ENV indicates whether the app was launched via iOS15+ pre-warming.
+    BOOL isActivePrewarm = [processInfo.environment[@"ActivePrewarm"] isEqualToString:@"1"];
+
+    return [self initWithStartTime:startTime
+                   isActivePrewarm:isActivePrewarm
+                        launchType:launchType];
+}
+
+- (instancetype)initWithStartTime:(NSTimeInterval)startTime
+                  isActivePrewarm:(BOOL)isActivePrewarm
+                       launchType:(DDLaunchType)launchType
+{
     self = [super init];
     if (!self) return nil;
     _processStartTime = startTime;
-    _isActivePrewarm = isActivePrewarm;
-    _applicationDidBecomeActiveCallback = ^(NSTimeInterval _) {};
+    _isActivePrewarm   = isActivePrewarm;
+    _launchType        = launchType;
+    _applicationDidBecomeActiveCallback = ^(NSTimeInterval _){};
     return self;
 }
 
@@ -95,6 +149,12 @@ static __dd_private_AppLaunchHandler *_shared;
         [weakCenter removeObserver:token];
         token = nil;
     }];
+}
+
+- (DDLaunchType)ddLaunchType {
+    @synchronized(self) {
+        return _launchType;
+    }
 }
 
 - (NSDate *)launchDate {

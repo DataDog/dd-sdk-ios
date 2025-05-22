@@ -72,8 +72,10 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             // the initial state can be `.active`. Therefore, we consider both `.inactive` and `.active` as valid
             // initial states for starting the initial view.
             let appState = context.applicationStateHistory.currentState
+            let sdkInitInForeground = appState == .inactive || appState == .active
+            let isUserLaunch = context.launchTime.launchType == .userLaunch
 
-            if appState == .inactive || appState == .active {
+            if sdkInitInForeground || isUserLaunch {
                 // Start "ApplicationLaunch" view immediatelly:
                 startApplicationLaunchView(on: command, context: context, writer: writer)
             }

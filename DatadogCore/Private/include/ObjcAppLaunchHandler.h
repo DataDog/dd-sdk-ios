@@ -8,6 +8,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSInteger, DDLaunchType) {
+    DDLaunchTypeUserLaunch,
+    DDLaunchTypeBackgroundLaunch,
+    DDLaunchTypePrewarmed,
+    DDLaunchTypeUnknown
+};
+
 /// `AppLaunchHandler` tracks key timestamps in the app launch sequence,
 /// as described in Apple's documentation:
 /// https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
@@ -17,6 +24,8 @@ typedef void (^UIApplicationDidBecomeActiveCallback) (NSTimeInterval);
 
 /// The singleton instance of `AppLaunchHandler`.
 @property (class, readonly) __dd_private_AppLaunchHandler *shared;
+
+@property (nonatomic, readonly) DDLaunchType ddLaunchType;
 
 /// The timestamp when the application process was launched.
 @property (atomic, readonly) NSDate* launchDate;
@@ -34,6 +43,9 @@ typedef void (^UIApplicationDidBecomeActiveCallback) (NSTimeInterval);
 /// - Parameter processInfo: The `NSProcessInfo` instance used to retrieve environment variables,
 ///   including information about whether the app was prewarmed.
 - (instancetype)initWithProcessInfo:(NSProcessInfo *)processInfo;
+
+- (instancetype)initWithProcessInfo:(NSProcessInfo *)processInfo
+                        launchType:(DDLaunchType)launchType;
 
 /// Observes the given notification center for application lifecycle events.
 ///
