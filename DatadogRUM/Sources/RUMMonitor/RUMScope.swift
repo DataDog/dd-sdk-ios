@@ -37,13 +37,3 @@ extension Array where Element: RUMScope {
         }
     }
 }
-
-extension Dictionary where Key == AttributeKey, Value == AttributeValue {
-    /// Merges given `rumCommandAttributes` to current dictionary, by overwriting values.
-    mutating func merge(rumCommandAttributes: [AttributeKey: AttributeValue]?) {
-        guard let additionalAttributes = rumCommandAttributes else {
-            return
-        }
-        merge(additionalAttributes) { _, new in new }
-    }
-}
