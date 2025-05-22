@@ -7,27 +7,35 @@
 import XCTest
 @testable import DatadogProfiler
 
-func workload_2() {
-    var sum = 0.0
-    for i in 0..<25_000 {
-        sum += sin(Double(i)) * cos(Double(i))
-    }
-}
-
-func workload_1() {
-    var sum = 0.0
-    for i in 0..<50_000 {
-        sum += sin(Double(i)) * cos(Double(i))
-    }
-    workload_2()
-}
-
+// A workload that is CPU-intensive and has consistent execution time
 func workload() {
-    var sum = 0.0
-    for i in 0..<100_000 {
-        sum += sin(Double(i)) * cos(Double(i))
+    // Use a large enough number to make the workload meaningful
+    let iterations = 1_000_000
+    
+    // Use volatile to prevent compiler optimizations
+    var volatileSum: Double = 0.0
+    var volatileCount: Int = 0
+    
+    // Mix of floating point and integer operations
+    for i in 0..<iterations {
+        // Floating point operations
+        volatileSum += sin(Double(i)) * cos(Double(i))
+        
+        // Integer operations and branching
+        if i % 2 == 0 {
+            volatileCount += i
+        } else {
+            volatileCount -= i
+        }
+        
+        // Prevent compiler from optimizing away the loop
+        if volatileSum.isNaN {
+            break
+        }
     }
-    workload_1()
+    
+    // Use the results to prevent compiler optimizations
+    _ = volatileSum + Double(volatileCount)
 }
 
 final class DatadogProfilerTests: XCTestCase {
@@ -53,5 +61,4 @@ final class DatadogProfilerTests: XCTestCase {
             profiler.stop()
         }
     }
-
 }
