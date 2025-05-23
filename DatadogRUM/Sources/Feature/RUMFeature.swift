@@ -115,6 +115,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     telemetry: core.telemetry
                 )
             },
+            accessibilityReaderFactory: {
+                configuration.featureFlags[.collectAccessibilitySettings]
+                ? AccessibilityReader()
+                : nil
+            },
             onSessionStart: configuration.onSessionStart,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
