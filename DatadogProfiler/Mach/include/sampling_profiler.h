@@ -21,6 +21,38 @@ extern "C" {
 #define MAX_STACK_DEPTH 128
 
 /**
+ * Structure representing a binary image loaded in memory.
+ */
+typedef struct {
+    uint64_t load_address;  ///< Base address where the image is loaded
+    uuid_t uuid;           ///< UUID of the binary
+} binary_image_t;
+
+/**
+ * Represents a single stack frame in a profile.
+ */
+typedef struct stack_frame {
+    /** The instruction pointer */
+    uint64_t instruction_ptr;
+    /** The binary image information */
+    binary_image_t image;
+} stack_frame_t;
+
+/**
+ * Represents a complete stack trace.
+ */
+typedef struct stack_trace {
+    /** Thread ID */
+    mach_port_t tid;
+    /** Timestamp in nanoseconds since system boot */
+    uint64_t timestamp;
+    /** The stack frames array */
+    stack_frame_t* frames;
+    /** Number of frames in the trace */
+    uint32_t frame_count;
+} stack_trace_t;
+
+/**
  * Default configuration values
  */
 #define SAMPLING_CONFIG_DEFAULT { \
@@ -43,36 +75,6 @@ typedef struct sampling_config {
     /** Maximum number of samples to buffer before calling the callback */
     size_t max_buffer_size;
 } sampling_config_t;
-
-/**
- * Represents a single stack frame in a profile.
- */
-typedef struct stack_frame {
-    /** The instruction pointer */
-    uint64_t instruction_ptr;
-    /** The UUID of the image. */
-	uuid_t uuid;
-    /** The load address of the binary */
-    uint64_t load_address;
-    /** The size of the binary */
-    uint64_t binary_size;
-    /** The name of the binary */
-    char binary_name[256]; // <-- should be dropped. Used by pprof symbolizer, but uuid should be sufficient for lookup
-} stack_frame_t;
-
-/**
- * Represents a complete stack trace.
- */
-typedef struct stack_trace {
-    /** Thread ID */
-    mach_port_t tid;
-    /** Timestamp in nanoseconds since system boot */
-    uint64_t timestamp;
-    /** The stack frames array */
-    stack_frame_t* frames;
-    /** Number of frames in the trace */
-    uint32_t frame_count;
-} stack_trace_t;
 
 /**
  * Opaque handle to a profiler instance
@@ -146,8 +148,6 @@ int profiler_is_running(const profiler_t* profiler);
 int profiler_get_config(
     const profiler_t* profiler,
     sampling_config_t* config);
-
-
 
 #ifdef __cplusplus
 }

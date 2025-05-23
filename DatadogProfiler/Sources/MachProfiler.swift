@@ -61,28 +61,24 @@ internal class Profile {
 
     private func addMapping(_ frame: stack_frame_t) -> UInt64 {
         // Check if we already have a mapping for this binary
-        if let mappingId = mappingTable[frame.load_address] {
+        if let mappingId = mappingTable[frame.image.load_address] {
             return mappingId
         }
         
         var mapping = Perftools_Profiles_Mapping()
         mapping.id = UInt64(profile.mapping.count + 1)
-        mapping.memoryStart = frame.load_address
-        mapping.memoryLimit = frame.load_address + frame.binary_size
+        mapping.memoryStart = frame.image.load_address
+        mapping.memoryLimit = .max
         mapping.fileOffset = 0 // For unsymbolized profiles, we don't need file offset
-        
-        withUnsafeBytes(of: frame.binary_name) { buffer in
-            mapping.filename = addString(String(cString: buffer.baseAddress!.assumingMemoryBound(to: CChar.self)))
-        }
-
-        mapping.buildID = addString(UUID(uuid: frame.uuid).uuidString)
+        mapping.filename = addString(.empty)
+        mapping.buildID = addString(UUID(uuid: frame.image.uuid).uuidString)
         mapping.hasFunctions_p = false // No functions in unsymbolized profile
         mapping.hasFilenames_p = false
         mapping.hasLineNumbers_p = false
         mapping.hasInlineFrames_p = false
         
         profile.mapping.append(mapping)
-        mappingTable[frame.load_address] = mapping.id
+        mappingTable[frame.image.load_address] = mapping.id
         return mapping.id
     }
     
@@ -101,7 +97,7 @@ internal class Profile {
         var function = Perftools_Profiles_Function()
         function.id = UInt64(profile.function.count + 1)
         function.name = addString(String(format: .hexFormat, frame.instruction_ptr))
-        function.systemName = function.name
+        function.systemName = addString(.empty)
         function.filename = addString(.empty)
         function.startLine = 0
         profile.function.append(function)
@@ -140,7 +136,6 @@ internal class Profile {
             }
         }
     }
-
 
     func serializedData(partial: Bool = false) throws -> Data {
         try profile.serializedData(partial: partial)

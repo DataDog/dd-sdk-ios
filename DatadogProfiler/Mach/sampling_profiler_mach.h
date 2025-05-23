@@ -1,5 +1,5 @@
-#ifndef DD_PROFILER_SAMPLING_PROFILER_POSIX_H_
-#define DD_PROFILER_SAMPLING_PROFILER_POSIX_H_
+#ifndef DD_PROFILER_SAMPLING_PROFILER_MACH_H_
+#define DD_PROFILER_SAMPLING_PROFILER_MACH_H_
 
 #include "sampling_profiler.h"
 
@@ -12,6 +12,7 @@
 #include <mach/mach_time.h>
 #include <vector>
 #include <pthread.h>
+#include <unordered_map>
 
 namespace dd {
 namespace profiler {
@@ -146,4 +147,4 @@ struct profiler {
 } // namespace dd
 
 #endif // __APPLE__
-#endif // DD_PROFILER_SAMPLING_PROFILER_POSIX_H_ 
+#endif // DD_PROFILER_SAMPLING_PROFILER_MACH_H_ 

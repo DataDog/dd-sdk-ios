@@ -9,7 +9,7 @@
 #include <mach/thread_status.h>
 #include <mach/machine/thread_state.h>
 #include <mach-o/loader.h>
-#include <algorithm>
+#include <mach-o/dyld.h>
 
 namespace dd {
 namespace profiler {
@@ -60,52 +60,42 @@ void get_frame_pointers(const thread_state_t& state, void** fp, void** pc) {
 }
 
 /**
- * Processes a Mach-O header to extract image binary information.
+ * Gets binary image information for a program counter address.
  *
- * @param header The Mach-O header to process
- * @param frame The stack frame to update with image binary information
+ * @param pc The program counter address to get image info for
+ * @param[out] info Where to store the binary image information
+ * @return true if binary image was found, false otherwise
  */
-void get_image_info(const struct mach_header_64* header, stack_frame_t& frame) {
-    if (header->magic != MH_MAGIC_64) return;
+bool get_image_info(void* pc, binary_image_t& info) {
+    Dl_info dl_info;
+    if (dladdr(pc, &dl_info) == 0) {
+        return false;
+    }
+
+    // Get UUID from the image
+    const struct mach_header_64* header = (const struct mach_header_64*)dl_info.dli_fbase;
+    if (!header || header->magic != MH_MAGIC_64) {
+        return false;
+    }
 
     const struct load_command* cmd = (const struct load_command*)(header + 1);
-    for (uint32_t i = 0; i < header->ncmds; i++) {
-        switch (cmd->cmd) {
-            case LC_SEGMENT_64: {
-                const struct segment_command_64* seg = (const struct segment_command_64*)cmd;
-                frame.binary_size = std::max(frame.binary_size, seg->vmaddr + seg->vmsize);
-                break;
-            }
-            case LC_UUID: {
-                const struct uuid_command* uuid_cmd = (const struct uuid_command*)cmd;
-                memcpy(frame.uuid, uuid_cmd->uuid, sizeof(uuid_t));
-                break;
-            }
+    for (uint32_t i = 0; i < header->ncmds; ++i) {
+        if (cmd->cmd == LC_UUID) {
+            const struct uuid_command* uuid_cmd = (const struct uuid_command*)cmd;
+            memcpy(info.uuid, uuid_cmd->uuid, sizeof(uuid_t));
+            info.load_address = (uintptr_t)dl_info.dli_fbase;
+            return true;
         }
         cmd = (const struct load_command*)((char*)cmd + cmd->cmdsize);
     }
-}
 
-/**
- * Gets symbol information for a program counter address.
- *
- * @param pc The program counter address to get symbol info for
- * @param frame The stack frame to update with symbol information
- */
-void get_symbol_info(void* pc, stack_frame_t& frame) {
-    Dl_info info;
-    if (!dladdr(pc, &info)) return;
-
-    frame.load_address = (uint64_t)info.dli_fbase;
-    strcpy(frame.binary_name, info.dli_fname);
-    get_image_info((const struct mach_header_64*)info.dli_fbase, frame); // <-- works for 64-bit only
+    return false;
 }
 
 /**
  * Walks the stack of a thread to collect stack trace information.
  *
  * @param thread The thread to walk the stack of
- * @param config The sampling configuration to use
  * @return A stack trace containing frame information
  */
 stack_trace_t walk_stack(thread_t thread) {
@@ -129,7 +119,6 @@ stack_trace_t walk_stack(thread_t thread) {
     while (trace.frame_count < MAX_STACK_DEPTH && pc != nullptr) {
         auto& frame = frames[trace.frame_count];
         frame.instruction_ptr = (uint64_t)pc;
-        get_symbol_info(pc, frame);
 
         if (fp == nullptr) break;
         pc = *(void**)fp;
@@ -199,6 +188,15 @@ void profiler::sample_thread(thread_t thread) {
  */
 void profiler::flush_buffer() {
     if (sample_buffer.empty()) return;
+
+    // Fill in binary image information for all frames
+    for (auto& trace : sample_buffer) {
+        for (uint32_t i = 0; i < trace.frame_count; i++) {
+            auto& frame = trace.frames[i];
+            get_image_info((void*)frame.instruction_ptr, frame.image);
+        }
+    }
+
     callback(sample_buffer.data(), sample_buffer.size(), user_data);
     sample_buffer.clear();
 }
