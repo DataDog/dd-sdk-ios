@@ -43,8 +43,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             activeViewID: nil,
             activeViewPath: nil,
             activeViewName: nil,
-            activeUserActionID: nil,
-            accessibility: dependencies.accessibilityReaderFactory()?.state
+            activeUserActionID: nil
         )
     }
 

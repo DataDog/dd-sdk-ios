@@ -3390,4 +3390,111 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(events[1].session.hasReplay, true)
         XCTAssertEqual(events[2].session.hasReplay, true)
     }
+
+    // MARK: - View Attributes
+    @MainActor
+    func testAccessibilityAttributesInViewEvents() throws {
+        // Given
+        let initialMockValues = MockAccessibilityValues()
+        initialMockValues.isVoiceOverRunning = false
+        initialMockValues.textSize = "medium"
+        initialMockValues.isBoldTextEnabled = true
+
+        let mockParent = RUMContextProviderMock()
+        let testContext = context
+
+        var accessibilityReader: AccessibilityReader?
+        let dependencies = RUMScopeDependencies.mockWith(
+            accessibilityReaderFactory: {
+                let reader = AccessibilityReader(notificationCenter: .default, accessibilityValues: initialMockValues)
+                accessibilityReader = reader
+                return reader
+            }
+        )
+
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: mockParent,
+            dependencies: dependencies,
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "MyView",
+            customTimings: [:],
+            startTime: .mockDecember15th2019At10AMUTC(),
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock()
+        )
+
+        let readerInitExpectation = XCTestExpectation(description: "AccessibilityReader initialized")
+        DispatchQueue.main.async {
+            accessibilityReader?.updateState()
+            DispatchQueue.main.async {
+                readerInitExpectation.fulfill()
+            }
+        }
+        wait(for: [readerInitExpectation], timeout: 2.0)
+
+        // When
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(identity: scope.identity),
+            context: testContext,
+            writer: writer
+        )
+        let initialExpectation = XCTestExpectation(description: "Initial accessibility state set")
+        DispatchQueue.main.async {
+            initialExpectation.fulfill()
+        }
+        wait(for: [initialExpectation], timeout: 1.0)
+
+        // Then
+        let initialEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
+
+        print("DEBUG: Initial event context: \(initialEvent.context?.contextInfo ?? [:])")
+
+        let initialAccessibilityData = try XCTUnwrap(
+            initialEvent.context?.contextInfo["accessibility"] as? Accessibility
+        )
+        let finalExpectation = XCTestExpectation(description: "Initial accessibility state set")
+        DispatchQueue.main.async {
+            XCTAssertEqual(initialAccessibilityData.screenReaderEnabled, false)
+            XCTAssertEqual(initialAccessibilityData.textSize, "medium")
+            XCTAssertEqual(initialAccessibilityData.boldTextEnabled, true)
+            finalExpectation.fulfill()
+        }
+        wait(for: [finalExpectation], timeout: 1.0)
+    }
+
+    func testNoAccessibilityAttributesWhenNil() throws {
+        // Given
+        let mockParent = RUMContextProviderMock()
+        let testContext = context
+
+        let dependencies = RUMScopeDependencies.mockWith(
+            accessibilityReaderFactory: { nil }
+        )
+
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: mockParent,
+            dependencies: dependencies,
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "MyView",
+            customTimings: [:],
+            startTime: .mockDecember15th2019At10AMUTC(),
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock()
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(identity: scope.identity),
+            context: testContext,
+            writer: writer
+        )
+
+        // Then
+        let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
+        XCTAssertNil(viewEvent.context?.contextInfo["accessibility"])
+    }
 }

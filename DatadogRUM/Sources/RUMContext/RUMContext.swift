@@ -25,7 +25,4 @@ internal struct RUMContext {
     var activeViewName: String?
     /// The ID of active user action.
     var activeUserActionID: RUMUUID?
-
-    /// The current accessibility
-    var accessibility: Accessibility?
 }

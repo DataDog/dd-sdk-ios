@@ -556,10 +556,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             }
         }
 
-        if let accessibility = self.context.accessibility {
-            self.attributes["accessibility"] = accessibility
-        }
-
         let isCrash = (command as? RUMErrorCommand).map { $0.isCrash ?? false } ?? false
         // RUMM-1779 Keep view active as long as we have ongoing resources
         let isActive = isActiveView || !resourceScopes.isEmpty
@@ -605,6 +601,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             performance = nil
         }
 
+        var localAttributes = attributes
+
+        if let accessibility = self.accessibilityReader?.state {
+            localAttributes["accessibility"] = accessibility
+        }
+
         let viewEvent = RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -633,7 +635,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: attributes),
+            context: .init(contextInfo: localAttributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
