@@ -159,6 +159,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                     sessionPrecondition: self.context.sessionPrecondition
                 )
             ),
+            account: .init(context: context),
             action: .init(
                 crash: .init(count: 0),
                 error: .init(count: errorsCount.toInt64),

@@ -71,6 +71,7 @@ internal struct FatalErrorBuilder {
                     sessionPrecondition: lastRUMView.dd.session?.sessionPrecondition
                 )
             ),
+            account: lastRUMView.account,
             action: nil,
             application: .init(id: lastRUMView.application.id),
             buildId: lastRUMView.buildId,
@@ -151,6 +152,7 @@ internal struct FatalErrorBuilder {
                 replayStats: original.dd.replayStats,
                 session: original.dd.session
             ),
+            account: original.account,
             application: original.application,
             buildId: original.buildId,
             buildVersion: original.buildVersion,

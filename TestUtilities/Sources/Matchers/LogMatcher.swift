@@ -34,6 +34,11 @@ public class LogMatcher: JSONDataMatcher {
         static let userName = "usr.name"
         static let userEmail = "usr.email"
 
+        // MARK: - Account info
+
+        static let accountId = "account.id"
+        static let accountName = "account.name"
+
         // MARK: - Network connection info
 
         public static let networkReachability = "network.client.reachability"
@@ -156,6 +161,19 @@ public class LogMatcher: JSONDataMatcher {
             assertValue(forKey: JSONKey.userEmail, equals: email, file: file, line: line)
         } else {
             assertNoValue(forKey: JSONKey.userEmail, file: file, line: line)
+        }
+    }
+
+    public func assertAccountInfo(equals accountInfo: (id: String, name: String?)?, file: StaticString = #file, line: UInt = #line) {
+        if let id = accountInfo?.id {
+            assertValue(forKey: JSONKey.accountId, equals: id, file: file, line: line)
+        } else {
+            assertNoValue(forKey: JSONKey.accountId, file: file, line: line)
+        }
+        if let name = accountInfo?.name {
+            assertValue(forKey: JSONKey.accountName, equals: name, file: file, line: line)
+        } else {
+            assertNoValue(forKey: JSONKey.accountName, file: file, line: line)
         }
     }
 

@@ -101,6 +101,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
         errorAttributes[LogEvent.Attributes.RUM.viewID] = crashContext.lastRUMViewEvent?.view.id
 
         let user = crashContext.userInfo
+        let accountInfo = crashContext.accountInfo
         let deviceInfo = crashContext.device
 
         // Merge logs attributes with crash report attributes
@@ -149,6 +150,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
                     email: user?.email,
                     extraInfo: user?.extraInfo ?? [:]
                 ),
+                accountInfo: accountInfo,
                 networkConnectionInfo: crashContext.networkConnectionInfo,
                 mobileCarrierInfo: crashContext.carrierInfo,
                 attributes: .init(

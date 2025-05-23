@@ -315,6 +315,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                     sessionPrecondition: nil
                 )
             ),
+            account: context.accountInfo.map { RUMAccount(accountInfo: $0) },
             application: .init(
                 id: applicationID
             ),

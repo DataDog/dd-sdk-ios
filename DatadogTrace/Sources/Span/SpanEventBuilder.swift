@@ -67,6 +67,18 @@ internal struct SpanEventBuilder {
             extraInfo: context.userInfo.map { castValuesToString($0.extraInfo) } ?? [:]
         )
 
+        // Transform account info to `SpanEvent.AccountInfo` representation
+        let spanEventAccountInfo: SpanEvent.AccountInfo?
+        if let accountInfo = context.accountInfo {
+            spanEventAccountInfo = SpanEvent.AccountInfo(
+                id: accountInfo.id,
+                name: accountInfo.name,
+                extraInfo: castValuesToString(accountInfo.extraInfo)
+            )
+        } else {
+            spanEventAccountInfo = nil
+        }
+
         let span = SpanEvent(
             traceID: traceID,
             spanID: spanID,
@@ -108,6 +120,7 @@ internal struct SpanEventBuilder {
                 versionMajor: context.device.osVersionMajor
             ),
             userInfo: spanUserInfo,
+            accountInfo: spanEventAccountInfo,
             tags: tags
         )
 

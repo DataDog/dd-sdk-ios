@@ -108,6 +108,8 @@ public struct UsageTelemetry: SampledTelemetry {
         case setGlobalContext
         /// setUser, setUserProperty, setUserInfo APIs
         case setUser
+        /// setAccount, setAccountInfo APIs
+        case setAccount
         /// addFeatureFlagEvaluation API
         case addFeatureFlagEvaluation
         /// addFeatureFlagEvaluation API

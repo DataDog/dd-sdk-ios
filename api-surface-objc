@@ -36,6 +36,9 @@ public class DDDatadog: NSObject
     public static func setUserInfo(userId: String, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
     public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
     public static func addUserExtraInfo(_ extraInfo: [String: Any])
+    public static func setAccountInfo(accountId: String, name: String? = nil, extraInfo: [String: Any] = [:])
+    public static func addAccountExtraInfo(_ extraInfo: [String: Any])
+    public static func clearAccountInfo()
     public static func setTrackingConsent(consent: DDTrackingConsent)
     public static func isInitialized() -> Bool
     public static func stopInstance()
@@ -385,7 +388,7 @@ public class DDRUMMonitor: NSObject
     @objc public var debug: Bool
 public class DDRUMActionEvent: NSObject
     @objc public var dd: DDRUMActionEventDD
-    @objc public var account: DDRUMActionEventAccount?
+    @objc public var account: DDRUMActionEventRUMAccount?
     @objc public var action: DDRUMActionEventAction
     @objc public var application: DDRUMActionEventApplication
     @objc public var buildId: String?
@@ -450,7 +453,7 @@ public enum DDRUMActionEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
-public class DDRUMActionEventAccount: NSObject
+public class DDRUMActionEventRUMAccount: NSObject
     @objc public var id: String
     @objc public var name: String?
     @objc public var accountInfo: [String: Any]
@@ -599,7 +602,7 @@ public class DDRUMActionEventView: NSObject
     @objc public var url: String
 public class DDRUMErrorEvent: NSObject
     @objc public var dd: DDRUMErrorEventDD
-    @objc public var account: DDRUMErrorEventAccount?
+    @objc public var account: DDRUMErrorEventRUMAccount?
     @objc public var action: DDRUMErrorEventAction?
     @objc public var application: DDRUMErrorEventApplication
     @objc public var buildId: String?
@@ -647,7 +650,7 @@ public enum DDRUMErrorEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
-public class DDRUMErrorEventAccount: NSObject
+public class DDRUMErrorEventRUMAccount: NSObject
     @objc public var id: String
     @objc public var name: String?
     @objc public var accountInfo: [String: Any]
@@ -895,7 +898,7 @@ public class DDRUMErrorEventView: NSObject
     @objc public var url: String
 public class DDRUMLongTaskEvent: NSObject
     @objc public var dd: DDRUMLongTaskEventDD
-    @objc public var account: DDRUMLongTaskEventAccount?
+    @objc public var account: DDRUMLongTaskEventRUMAccount?
     @objc public var action: DDRUMLongTaskEventAction?
     @objc public var application: DDRUMLongTaskEventApplication
     @objc public var buildId: String?
@@ -942,7 +945,7 @@ public enum DDRUMLongTaskEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
-public class DDRUMLongTaskEventAccount: NSObject
+public class DDRUMLongTaskEventRUMAccount: NSObject
     @objc public var id: String
     @objc public var name: String?
     @objc public var accountInfo: [String: Any]
@@ -1094,7 +1097,7 @@ public class DDRUMLongTaskEventView: NSObject
     @objc public var url: String
 public class DDRUMResourceEvent: NSObject
     @objc public var dd: DDRUMResourceEventDD
-    @objc public var account: DDRUMResourceEventAccount?
+    @objc public var account: DDRUMResourceEventRUMAccount?
     @objc public var action: DDRUMResourceEventAction?
     @objc public var application: DDRUMResourceEventApplication
     @objc public var buildId: String?
@@ -1144,7 +1147,7 @@ public enum DDRUMResourceEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
-public class DDRUMResourceEventAccount: NSObject
+public class DDRUMResourceEventRUMAccount: NSObject
     @objc public var id: String
     @objc public var name: String?
     @objc public var accountInfo: [String: Any]
@@ -1366,7 +1369,7 @@ public class DDRUMResourceEventView: NSObject
     @objc public var url: String
 public class DDRUMViewEvent: NSObject
     @objc public var dd: DDRUMViewEventDD
-    @objc public var account: DDRUMViewEventAccount?
+    @objc public var account: DDRUMViewEventRUMAccount?
     @objc public var application: DDRUMViewEventApplication
     @objc public var buildId: String?
     @objc public var buildVersion: String?
@@ -1390,12 +1393,15 @@ public class DDRUMViewEvent: NSObject
     @objc public var view: DDRUMViewEventView
 public class DDRUMViewEventDD: NSObject
     @objc public var browserSdkVersion: String?
+    @objc public var cls: DDRUMViewEventDDCLS?
     @objc public var configuration: DDRUMViewEventDDConfiguration?
     @objc public var documentVersion: NSNumber
     @objc public var formatVersion: NSNumber
     @objc public var pageStates: [DDRUMViewEventDDPageStates]?
     @objc public var replayStats: DDRUMViewEventDDReplayStats?
     @objc public var session: DDRUMViewEventDDSession?
+public class DDRUMViewEventDDCLS: NSObject
+    @objc public var devicePixelRatio: NSNumber?
 public class DDRUMViewEventDDConfiguration: NSObject
     @objc public var sessionReplaySampleRate: NSNumber?
     @objc public var sessionSampleRate: NSNumber
@@ -1429,7 +1435,7 @@ public enum DDRUMViewEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
-public class DDRUMViewEventAccount: NSObject
+public class DDRUMViewEventRUMAccount: NSObject
     @objc public var id: String
     @objc public var name: String?
     @objc public var accountInfo: [String: Any]
@@ -1570,6 +1576,7 @@ public class DDRUMViewEventView: NSObject
     @objc public var firstInputTime: NSNumber?
     @objc public var flutterBuildTime: DDRUMViewEventViewFlutterBuildTime?
     @objc public var flutterRasterTime: DDRUMViewEventViewFlutterRasterTime?
+    @objc public var freezeRate: NSNumber?
     @objc public var frozenFrame: DDRUMViewEventViewFrozenFrame?
     @objc public var frustration: DDRUMViewEventViewFrustration?
     @objc public var id: String
@@ -1596,6 +1603,8 @@ public class DDRUMViewEventView: NSObject
     @objc public var refreshRateAverage: NSNumber?
     @objc public var refreshRateMin: NSNumber?
     @objc public var resource: DDRUMViewEventViewResource
+    @objc public var slowFrames: [DDRUMViewEventViewSlowFrames]?
+    @objc public var slowFramesRate: NSNumber?
     @objc public var timeSpent: NSNumber
     @objc public var url: String
 public class DDRUMViewEventViewAction: NSObject
@@ -1679,9 +1688,12 @@ public class DDRUMViewEventViewPerformanceLCP: NSObject
     @objc public var timestamp: NSNumber
 public class DDRUMViewEventViewResource: NSObject
     @objc public var count: NSNumber
+public class DDRUMViewEventViewSlowFrames: NSObject
+    @objc public var duration: NSNumber
+    @objc public var start: NSNumber
 public class DDRUMVitalEvent: NSObject
     @objc public var dd: DDRUMVitalEventDD
-    @objc public var account: DDRUMVitalEventAccount?
+    @objc public var account: DDRUMVitalEventRUMAccount?
     @objc public var application: DDRUMVitalEventApplication
     @objc public var buildId: String?
     @objc public var buildVersion: String?
@@ -1729,7 +1741,7 @@ public enum DDRUMVitalEventDDSessionRUMSessionPrecondition: Int
     case explicitStop
 public class DDRUMVitalEventDDVital: NSObject
     @objc public var computedValue: NSNumber?
-public class DDRUMVitalEventAccount: NSObject
+public class DDRUMVitalEventRUMAccount: NSObject
     @objc public var id: String
     @objc public var name: String?
     @objc public var accountInfo: [String: Any]

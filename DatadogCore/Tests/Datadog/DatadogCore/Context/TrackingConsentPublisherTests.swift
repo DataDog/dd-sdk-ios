@@ -13,7 +13,7 @@ class TrackingConsentPublisherTests: XCTestCase {
         XCTAssertEqual(publisher.initialValue, .pending)
     }
 
-    func testPublishUserInfo() throws {
+    func testPublishTrackingConsent() throws {
         let expectation = expectation(description: "tracking consenr publisher publishes data")
 
         // Given
@@ -28,7 +28,7 @@ class TrackingConsentPublisherTests: XCTestCase {
 
         publisher.consent = .notGranted
 
-        // UserInfoPublisher publishes in sync
+        // TrackingConsentPublisher publishes in sync
         waitForExpectations(timeout: 0)
     }
 }
