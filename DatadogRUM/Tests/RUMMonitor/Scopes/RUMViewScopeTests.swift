@@ -3390,4 +3390,106 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(events[1].session.hasReplay, true)
         XCTAssertEqual(events[2].session.hasReplay, true)
     }
+
+    // MARK: - View Attributes
+
+    func testAccessibilityAttributesInViewEvents() throws {
+        // Given - Initial accessibility state
+        var initialAccessibility = Accessibility()
+        initialAccessibility.screenReaderEnabled = false
+        initialAccessibility.textSize = "medium"
+        initialAccessibility.boldTextEnabled = true
+
+        let mockParent = RUMContextProviderMock()
+        mockParent.context.accessibility = initialAccessibility
+
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: mockParent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "MyView",
+            customTimings: [:],
+            startTime: .mockDecember15th2019At10AMUTC(),
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock()
+        )
+
+        // When - Start view with initial accessibility state
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(identity: scope.identity),
+            context: context,
+            writer: writer
+        )
+
+        // Then - Verify initial accessibility attributes are included
+        let initialEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
+        let initialAccessibilityData = try XCTUnwrap(
+            initialEvent.context?.contextInfo["accessibility"] as? Accessibility
+        )
+        XCTAssertEqual(initialAccessibilityData.screenReaderEnabled, false)
+        XCTAssertEqual(initialAccessibilityData.textSize, "medium")
+        XCTAssertEqual(initialAccessibilityData.boldTextEnabled, true)
+
+        // When - Update accessibility context and trigger view update
+        var updatedAccessibility = Accessibility()
+        updatedAccessibility.screenReaderEnabled = true
+        updatedAccessibility.textSize = "large"
+        updatedAccessibility.boldTextEnabled = false
+        updatedAccessibility.reduceMotionEnabled = true
+
+        mockParent.context.accessibility = updatedAccessibility
+
+        _ = scope.process(
+            command: RUMAddViewTimingCommand.mockWith(),
+            context: context,
+            writer: writer
+        )
+
+        // Then - Verify updated accessibility attributes are reflected
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+        XCTAssertEqual(viewEvents.count, 2, "Should have initial view and update")
+
+        let updatedEvent = try XCTUnwrap(viewEvents.last)
+        let updatedAccessibilityData = try XCTUnwrap(
+            updatedEvent.context?.contextInfo["accessibility"] as? Accessibility
+        )
+        XCTAssertEqual(updatedAccessibilityData.screenReaderEnabled, true)
+        XCTAssertEqual(updatedAccessibilityData.textSize, "large")
+        XCTAssertEqual(updatedAccessibilityData.boldTextEnabled, false)
+        XCTAssertEqual(updatedAccessibilityData.reduceMotionEnabled, true)
+    }
+
+    func testNoAccessibilityAttributesWhenNil() throws {
+        // Given
+        let mockParent = RUMContextProviderMock()
+        mockParent.context.accessibility = nil
+
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: mockParent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "MyView",
+            customTimings: [:],
+            startTime: .mockDecember15th2019At10AMUTC(),
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock()
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(identity: scope.identity),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
+
+        // Verify that accessibility is not included when nil
+        XCTAssertNil(viewEvent.context?.contextInfo["accessibility"])
+    }
 }

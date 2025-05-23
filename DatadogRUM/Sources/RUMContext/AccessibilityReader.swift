@@ -8,7 +8,7 @@ import DatadogInternal
 import Foundation
 import UIKit
 
-internal final class AccessibilityReader {
+internal class AccessibilityReader {
     @ReadWriteLock
     var state: Accessibility
 
@@ -26,7 +26,7 @@ internal final class AccessibilityReader {
         stopObserving()
     }
 
-    private func updateState() {
+    func updateState() {
         DispatchQueue.main.async { [weak self] in
             self?.state = AccessibilityReader.currentState
         }
