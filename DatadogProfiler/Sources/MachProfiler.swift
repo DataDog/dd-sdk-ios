@@ -148,15 +148,15 @@ internal class MachProfiler {
     
     init(
         samplingIntervalMs: UInt32 = 1,
-        maxStackDepth: UInt32 = 64,
         currentThreadOnly: Bool = false,
-        maxBufferSize: Int = 100
+        maxBufferSize: Int = 100,
+        qos: DispatchQoS = .userInteractive
     ) {
         var config = sampling_config_t(
             sampling_interval_ms: samplingIntervalMs,
-            max_stack_depth: maxStackDepth,
             profile_current_thread_only: currentThreadOnly ? 1: 0,
-            max_buffer_size: maxBufferSize
+            max_buffer_size: maxBufferSize,
+            qos_class: qos.qosClass.rawValue
         )
         
         profile = Profile(samplingIntervalMs: samplingIntervalMs)

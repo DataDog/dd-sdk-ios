@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <mach/mach.h>
+#include <pthread/qos.h>
 
 #ifdef __cplusplus
 namespace dd {
@@ -57,9 +58,9 @@ typedef struct stack_trace {
  */
 #define SAMPLING_CONFIG_DEFAULT { \
     .sampling_interval_ms = 1, \
-    .max_stack_depth = 128, \
     .profile_current_thread_only = 0, \
-    .max_buffer_size = 100 \
+    .max_buffer_size = 1000, \
+    .qos_class = QOS_CLASS_USER_INTERACTIVE \
 }
 
 /**
@@ -68,12 +69,12 @@ typedef struct stack_trace {
 typedef struct sampling_config {
     /** Sampling interval in milliseconds */
     uint32_t sampling_interval_ms;  // default: 1ms
-    /** Maximum stack depth to capture */
-    uint32_t max_stack_depth;
     /** Whether to profile only the current thread */
     uint8_t profile_current_thread_only;
     /** Maximum number of samples to buffer before calling the callback */
     size_t max_buffer_size;
+    /** QoS class for the sampling thread */
+    qos_class_t qos_class;
 } sampling_config_t;
 
 /**

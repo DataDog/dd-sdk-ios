@@ -8,7 +8,7 @@ import XCTest
 @testable import DatadogProfiler
 
 // A workload that is CPU-intensive and has consistent execution time
-func workload() {
+private func workload() {
     // Use a large enough number to make the workload meaningful
     let iterations = 1_000_000
     

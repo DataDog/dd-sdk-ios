@@ -253,11 +253,10 @@ bool profiler::start_sampling() {
 
     pthread_attr_t attr;
     pthread_attr_init(&attr);
-    struct sched_param param;
-    param.sched_priority = 50;
-    pthread_attr_setschedparam(&attr, &param);
-    
+    pthread_attr_set_qos_class_np(&attr, config.qos_class, 0);
+
     pthread_create(&sampling_thread, &attr, [](void* arg) -> void* {
+        pthread_setname_np("com.datadoghq.profiler.sampling");
         static_cast<profiler*>(arg)->sampling_loop();
         return nullptr;
     }, this);

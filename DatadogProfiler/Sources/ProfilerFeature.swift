@@ -27,7 +27,10 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
     }
 
     func start(currentThreadOnly: Bool = false) {
-        profiler = MachProfiler(currentThreadOnly: currentThreadOnly)
+        profiler = MachProfiler(
+            currentThreadOnly: currentThreadOnly,
+            qos: .userInteractive
+        )
         startDate = Date()
         profiler?.start()
     }
