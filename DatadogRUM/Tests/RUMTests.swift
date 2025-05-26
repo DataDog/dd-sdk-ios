@@ -89,6 +89,7 @@ class RUMTests: XCTestCase {
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
         let telemetryReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: TelemetryReceiver.self)
         let crashReportReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: CrashReportReceiver.self)
+        XCTAssertEqual(rum.performanceOverride.maxFileAgeForRead, 24.hours)
         XCTAssertEqual(monitor.scopes.dependencies.rumApplicationID, applicationID)
         XCTAssertEqual(monitor.scopes.dependencies.sessionSampler.samplingRate, 100)
         XCTAssertEqual(monitor.scopes.dependencies.sessionEndedMetric.sampleRate, 15)
@@ -416,7 +417,8 @@ class RUMTests: XCTestCase {
         RUM.enable(with: config, in: core)
 
         // Then
-        let context: RUMCoreContext? = try core.context.baggages["rum"]?.decode()
+        let context = core.context.additionalContext(ofType: RUMCoreContext.self)
+
         XCTAssertNotNil(context)
         XCTAssertEqual(context?.applicationID, applicationID)
         XCTAssertEqual(context?.sessionID, sessionID.toRUMDataFormat)

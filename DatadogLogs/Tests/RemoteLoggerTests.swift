@@ -64,9 +64,8 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Error message")
 
         // Then
-        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
-        let error: ExpectedErrorMessage = try errorBaggage.decode()
-        XCTAssertEqual(error.message, "Error message")
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        XCTAssertEqual(errorMessage.message, "Error message")
     }
 
     func testWhenCrossPlatformCrashErrorLogged_itDoesNotPostToMessageBus() throws {
@@ -104,13 +103,12 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Information message", error: ErrorMock(), attributes: [CrossPlatformAttributes.includeBinaryImages: true])
 
         // Then
-        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
-        let error: ExpectedErrorMessage = try errorBaggage.decode()
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
         // This is removed because binary images are sent in the message, so the additional attribute isn't needed
-        XCTAssertNil(error.attributes[CrossPlatformAttributes.includeBinaryImages])
-        XCTAssertEqual(error.binaryImages?.count, stubBacktrace.binaryImages.count)
+        XCTAssertNil(errorMessage.attributes[CrossPlatformAttributes.includeBinaryImages])
+        XCTAssertEqual(errorMessage.binaryImages?.count, stubBacktrace.binaryImages.count)
         for i in 0..<stubBacktrace.binaryImages.count {
-            let logBacktrace = error.binaryImages![i]
+            let logBacktrace = errorMessage.binaryImages![i]
             let errorBacktrace = stubBacktrace.binaryImages[i]
             XCTAssertEqual(logBacktrace.libraryName, errorBacktrace.libraryName)
             XCTAssertEqual(logBacktrace.uuid, errorBacktrace.uuid)
@@ -145,10 +143,9 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // Then
-        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
-        let error: ExpectedErrorMessage = try errorBaggage.decode()
-        XCTAssertEqual(error.attributes[CrossPlatformAttributes.errorSourceType]?.value as? String, "flutter")
-        XCTAssertEqual(error.attributes[Logs.Attributes.errorFingerprint]?.value as? String, mockFingerprint)
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        XCTAssertEqual(errorMessage.attributes[CrossPlatformAttributes.errorSourceType] as? String, "flutter")
+        XCTAssertEqual(errorMessage.attributes[Logs.Attributes.errorFingerprint] as? String, mockFingerprint)
     }
 
     func testWhenErrorLoggedFromInternal_itPostsToMessageBus_withSourceTypeInjected() throws {
@@ -178,10 +175,9 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // Then
-        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
-        let error: ExpectedErrorMessage = try errorBaggage.decode()
-        XCTAssertEqual(error.attributes[CrossPlatformAttributes.errorSourceType]?.value as? String, "flutter")
-        XCTAssertEqual(error.attributes[Logs.Attributes.errorFingerprint]?.value as? String, mockFingerprint)
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        XCTAssertEqual(errorMessage.attributes[CrossPlatformAttributes.errorSourceType] as? String, "flutter")
+        XCTAssertEqual(errorMessage.attributes[Logs.Attributes.errorFingerprint] as? String, mockFingerprint)
     }
 
     // MARK: - Attributes
@@ -321,9 +317,8 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Error message")
 
         // Then
-        let errorBaggage = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: "error"))
-        let error: ExpectedErrorMessage = try errorBaggage.decode()
-        XCTAssertEqual(error.attributes[attributeKey]?.value as? String, attributeValue)
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        XCTAssertEqual(errorMessage.attributes[attributeKey] as? String, attributeValue)
     }
 
     func testWhenAttributesContainErrorFingerprint_itAddsItToTheLogEvent() throws {
@@ -446,13 +441,13 @@ class RemoteLoggerTests: XCTestCase {
 
         // When
         featureScope.contextMock = .mockWith(
-            baggages: [
-                "rum": .init([
-                    "application.id": applicationID,
-                    "session.id": sessionID,
-                    "view.id": viewID,
-                    "user_action.id": actionID
-                ])
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: applicationID,
+                    sessionID: sessionID,
+                    viewID: viewID,
+                    userActionID: actionID
+                )
             ]
         )
 
@@ -496,40 +491,6 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
     }
 
-    func testWhenRUMIntegrationIsEnabled_withMalformedRUMContext_itSendsTelemetryError() throws {
-        // Given
-        let logger = RemoteLogger(
-            featureScope: featureScope,
-            globalAttributes: .mockAny(),
-            configuration: .mockAny(),
-            dateProvider: RelativeDateProvider(),
-            rumContextIntegration: true,
-            activeSpanIntegration: false,
-            backtraceReporter: BacktraceReporterMock()
-        )
-
-        // When
-        featureScope.contextMock = .mockWith(
-            baggages: [
-                "rum": .init("malformed RUM context")
-            ]
-        )
-        logger.info("message")
-
-        // Then
-        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
-        XCTAssertEqual(logs.count, 1)
-
-        let log = try XCTUnwrap(logs.first)
-        XCTAssertNil(log.attributes.internalAttributes?["application_id"])
-        XCTAssertNil(log.attributes.internalAttributes?["session_id"])
-        XCTAssertNil(log.attributes.internalAttributes?["view.id"])
-        XCTAssertNil(log.attributes.internalAttributes?["user_action.id"])
-
-        let error = try XCTUnwrap(featureScope.telemetryMock.messages.firstError())
-        XCTAssert(error.message.contains("Fails to decode RUM context from Logs - typeMismatch"))
-    }
-
     // MARK: - Span Integration
 
     func testWhenActiveSpanIntegrationIsEnabled_itSendsLogWithSpanContext() throws {
@@ -549,11 +510,11 @@ class RemoteLoggerTests: XCTestCase {
 
         // When
         featureScope.contextMock = .mockWith(
-            baggages: [
-                "span_context": .init([
-                    "dd.trace_id": traceID.toString(representation: .hexadecimal),
-                    "dd.span_id": spanID.toString(representation: .decimal)
-                ])
+            additionalContext: [
+                SpanCoreContext(
+                    traceID: traceID.toString(representation: .hexadecimal),
+                    spanID: spanID.toString(representation: .decimal)
+                )
             ]
         )
         logger.info("message")
@@ -590,37 +551,5 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertNil(log.attributes.internalAttributes?["dd.trace_id"])
         XCTAssertNil(log.attributes.internalAttributes?["dd.span_id"])
         XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
-    }
-
-    func testWhenActiveSpanIntegrationIsEnabled_withMalformedRUMContext_itSendsTelemetryError() throws {
-        // Given
-        let logger = RemoteLogger(
-            featureScope: featureScope,
-            globalAttributes: .mockAny(),
-            configuration: .mockAny(),
-            dateProvider: RelativeDateProvider(),
-            rumContextIntegration: false,
-            activeSpanIntegration: true,
-            backtraceReporter: BacktraceReporterMock()
-        )
-
-        // When
-        featureScope.contextMock = .mockWith(
-            baggages: [
-                "span_context": .init("malformed Span context")
-            ]
-        )
-        logger.info("message")
-
-        // Then
-        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
-        XCTAssertEqual(logs.count, 1)
-
-        let log = try XCTUnwrap(logs.first)
-        XCTAssertNil(log.attributes.internalAttributes?["dd.trace_id"])
-        XCTAssertNil(log.attributes.internalAttributes?["dd.span_id"])
-
-        let error = try XCTUnwrap(featureScope.telemetryMock.messages.firstError())
-        XCTAssert(error.message.contains("Fails to decode Span context from Logs - typeMismatch"))
     }
 }

@@ -32,7 +32,7 @@ class CrashContextTests: XCTestCase {
     }
 
     func testGivenContextWithLastRUMViewEventSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
-        let randomRUMViewEvent = AnyCodable(mockRandomAttributes())
+        let randomRUMViewEvent: RUMViewEvent = .mockRandom()
 
         // Given
         let context: CrashContext = .mockWith(lastRUMViewEvent: randomRUMViewEvent)
@@ -49,8 +49,7 @@ class CrashContextTests: XCTestCase {
     }
 
     func testGivenContextWithLastRUMSessionStateSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
-        let randomRUMSessionState = Bool.random() ?
-            AnyCodable(mockRandomAttributes()) : nil
+        let randomRUMSessionState: RUMSessionState? = Bool.random() ? .mockRandom() : nil
 
         // Given
         let context: CrashContext = .mockWith(lastRUMSessionState: randomRUMSessionState)
@@ -67,7 +66,7 @@ class CrashContextTests: XCTestCase {
     }
 
     func testGivenContextWithLastRUMAttributesSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
-        let randomRUMAttributes = Bool.random() ? GlobalRUMAttributes(attributes: mockRandomAttributes()) : nil
+        let randomRUMAttributes: RUMEventAttributes? = Bool.random() ? .mockRandom() : nil
 
         // Given
         let context: CrashContext = .mockWith(lastRUMAttributes: randomRUMAttributes)
@@ -84,7 +83,7 @@ class CrashContextTests: XCTestCase {
     }
 
     func testGivenContextWithLastLogttributesSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
-        let randomLogAttributes = Bool.random() ? AnyCodable(mockRandomAttributes()) : nil
+        let randomLogAttributes: LogEventAttributes? = Bool.random() ? .mockRandom() : nil
 
         // Given
         let context: CrashContext = .mockWith(lastLogAttributes: randomLogAttributes)

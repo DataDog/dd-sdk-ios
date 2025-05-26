@@ -141,11 +141,10 @@ class LogsTests: XCTestCase {
         Logs.addAttribute(forKey: attributeKey, value: attributeValue, in: core)
 
         // Then
-        let logMessage: [FeatureMessage] = mockMessageReciever.messages.filter { $0.asBaggage?.key == GlobalLogAttributes.key }
-        XCTAssertEqual(logMessage.count, 1)
-        let message = try XCTUnwrap(logMessage.first)
-        let baggage: GlobalLogAttributes = try XCTUnwrap(message.baggage(forKey: GlobalLogAttributes.key))
-        XCTAssertEqual((baggage.attributes[attributeKey] as? AnyCodable)?.value as? String, attributeValue)
+        let messages = mockMessageReciever.messages.compactMap { $0.asPayload as? LogEventAttributes }
+        XCTAssertEqual(messages.count, 1)
+        let message = try XCTUnwrap(messages.first)
+        XCTAssertEqual(message.attributes[attributeKey] as? String, attributeValue)
     }
 
     func testItSendsGlobalLogUpdates_whenRemoveAttribute() throws {
@@ -164,10 +163,9 @@ class LogsTests: XCTestCase {
         Logs.removeAttribute(forKey: attributeKey, in: core)
 
         // Then
-        let logMessage: [FeatureMessage] = mockMessageReciever.messages.filter { $0.asBaggage?.key == GlobalLogAttributes.key }
-        XCTAssertEqual(logMessage.count, 2)
-        let message = try XCTUnwrap(logMessage.last)
-        let baggage: GlobalLogAttributes = try XCTUnwrap(message.baggage(forKey: GlobalLogAttributes.key))
-        XCTAssertNil(baggage.attributes[attributeKey])
+        let messages = mockMessageReciever.messages.compactMap { $0.asPayload as? LogEventAttributes }
+        XCTAssertEqual(messages.count, 2)
+        let message = try XCTUnwrap(messages.last)
+        XCTAssertNil(message.attributes[attributeKey])
     }
 }

@@ -6,21 +6,18 @@
 
 /// Controller type enum to identify different SwiftUI hosting controllers
 internal enum ControllerType {
-    case tabItem
     case hostingController
-    case navigationController
+    case navigationStackHostingController
     case modal
     case unknown
 
     /// Determines the controller type from the class name
-    init(className: String) {
-        if className.contains("_TtGC7SwiftUI19UIHostingControllerVVS_7TabItem8RootView_") {
-            self = .tabItem
-        } else if className.contains("TtGC7SwiftUI19UIHostingController") {
+    init(from className: String) {
+        if className.hasPrefix("_TtGC7SwiftUI19UIHostingController") {
             self = .hostingController
         } else if className.contains("Navigation") {
-            self = .navigationController
-        } else if className.contains("_TtGC7SwiftUI29PresentationHostingController") {
+            self = .navigationStackHostingController
+        } else if className.hasPrefix("_TtGC7SwiftUI29PresentationHostingController") {
             self = .modal
         } else {
             self = .unknown

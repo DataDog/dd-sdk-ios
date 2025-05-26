@@ -18,12 +18,12 @@ internal class SRContextPublisher {
 
     /// Notifies other Features if Session Replay is recording.
     func setHasReplay(_ value: Bool) {
-        core?.set(baggage: value, forKey: RUMDependency.hasReplay)
+        core?.set(context: SessionReplayCoreContext.HasReplay(value: value))
     }
 
     /// Notifies other Features on the state of Session Replay records count.
     func setRecordsCountByViewID(_ value: [String: Int64]) {
-        core?.set(baggage: value, forKey: RUMDependency.recordsCountByViewID)
+        core?.set(context: SessionReplayCoreContext.RecordsCount(value: value))
     }
 }
 #endif

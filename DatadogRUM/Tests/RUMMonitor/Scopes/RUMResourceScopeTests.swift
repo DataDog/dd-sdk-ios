@@ -54,7 +54,7 @@ class RUMResourceScopeTests: XCTestCase {
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEvent() throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
@@ -135,7 +135,7 @@ class RUMResourceScopeTests: XCTestCase {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
         let fakeCiTestId: String = .mockRandom()
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
@@ -218,7 +218,7 @@ class RUMResourceScopeTests: XCTestCase {
         var context = self.context
         let fakeSyntheticsTestId: String = .mockRandom()
         let fakeSyntheticsResultId: String = .mockRandom()
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 

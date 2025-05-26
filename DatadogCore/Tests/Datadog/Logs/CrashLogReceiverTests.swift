@@ -15,7 +15,7 @@ import DatadogInternal
 class CrashLogReceiverTests: XCTestCase {
     func testReceiveCrashLog() throws {
         // Given
-let expectation = expectation(description: "Send Event Bypass Consent")
+        let expectation = expectation(description: "Send Event Bypass Consent")
         let core = PassthroughCoreMock(messageReceiver: CrashLogReceiver.mockAny())
         core.onEventWriteContext = { bypassConsent in
             if bypassConsent { expectation.fulfill() }
@@ -23,9 +23,8 @@ let expectation = expectation(description: "Send Event Bypass Consent")
 
         // When
         core.send(
-            message: .baggage(
-                key: MessageBusSender.MessageKeys.crash,
-                value: MessageBusSender.Crash(
+            message: .payload(
+                Crash(
                     report: DDCrashReport.mockAny(),
                     context: CrashContext.mockWith(lastRUMViewEvent: nil)
                 )
@@ -88,7 +87,7 @@ let expectation = expectation(description: "Send Event Bypass Consent")
         wasTruncated: false
     )
 
-    private func crashContextWith(lastRUMViewEvent: AnyCodable?) -> CrashContext {
+    private func crashContextWith(lastRUMViewEvent: RUMViewEvent?) -> CrashContext {
         return .mockWith(
             serverTimeOffset: .mockRandom(),
             service: .mockRandom(),
@@ -109,7 +108,7 @@ let expectation = expectation(description: "Send Event Bypass Consent")
         )
     }
 
-    private func crashContextWith(lastLogAttributes: AnyCodable?) -> CrashContext {
+    private func crashContextWith(lastLogAttributes: LogEventAttributes?) -> CrashContext {
         return .mockWith(
             serverTimeOffset: .mockRandom(),
             service: .mockRandom(),
@@ -206,15 +205,9 @@ let expectation = expectation(description: "Send Event Bypass Consent")
     // swiftlint:disable multiline_literal_brackets
     func testWhenSendingCrashReportWithRUMContext_itEncodesErrorInformation() throws {
         // Given (CR with the link to RUM view)
-        let crashContext = crashContextWith(
-            lastRUMViewEvent: AnyCodable(
-                [ // partial RUM view information, necessary for the link
-                    "application": ["id": "rum-app-id"],
-                    "session": ["id": "rum-session-id"],
-                    "view": ["id": "rum-view-id"],
-                ]
-            )
-        )
+        let viewEvent: RUMViewEvent = .mockRandom()
+
+        let crashContext = crashContextWith(lastRUMViewEvent: viewEvent)
 
         // When
         let core = PassthroughCoreMock(
@@ -227,9 +220,9 @@ let expectation = expectation(description: "Send Event Bypass Consent")
         // Then
         let log = try XCTUnwrap(core.events(ofType: LogEvent.self).first)
 
-        XCTAssertEqual(log.attributes.internalAttributes?[LogEvent.Attributes.RUM.applicationID] as? String, "rum-app-id")
-        XCTAssertEqual(log.attributes.internalAttributes?[LogEvent.Attributes.RUM.sessionID] as? String, "rum-session-id")
-        XCTAssertEqual(log.attributes.internalAttributes?[LogEvent.Attributes.RUM.viewID] as? String, "rum-view-id")
+        XCTAssertEqual(log.attributes.internalAttributes?[LogEvent.Attributes.RUM.applicationID] as? String, viewEvent.application.id)
+        XCTAssertEqual(log.attributes.internalAttributes?[LogEvent.Attributes.RUM.sessionID] as? String, viewEvent.session.id)
+        XCTAssertEqual(log.attributes.internalAttributes?[LogEvent.Attributes.RUM.viewID] as? String, viewEvent.view.id)
         XCTAssertNil(log.attributes.internalAttributes?[LogEvent.Attributes.RUM.actionID])
     }
     // swiftlint:enable multiline_literal_brackets
@@ -253,39 +246,15 @@ let expectation = expectation(description: "Send Event Bypass Consent")
         XCTAssertEqual(log.error?.sourceType, "ios+il2cpp")
     }
 
-    func testWhenSendingCrashReportWithMalformedRUMContext_itSendsErrorTelemetry() throws {
-        // Given (CR with the link to RUM view)
-        let crashContext = crashContextWith(
-            lastRUMViewEvent: AnyCodable(["rum-view": "malformed"])
-        )
-
-        // When
-        let telemetry = TelemetryReceiverMock()
-        let core = PassthroughCoreMock(
-            messageReceiver: CombinedFeatureMessageReceiver([
-                CrashLogReceiver(dateProvider: SystemDateProvider(), logEventMapper: nil),
-                telemetry
-            ])
-        )
-
-        let sender = MessageBusSender(core: core)
-        sender.send(report: crashReport, with: crashContext)
-
-        // Then
-        let error = try XCTUnwrap(telemetry.messages.firstError())
-        XCTAssertTrue(error.message.hasPrefix("Failed to decode crash message in `LogMessageReceiver`"))
-        XCTAssertTrue(core.events(ofType: LogEvent.self).isEmpty, "It should send no log")
-    }
-
     func testWhenSendingCrashContextWithLogAttributes_itSendsThemToLog() throws {
         // Given
         let stringAttribute: String = .mockRandom()
         let boolAttribute: Bool = .mockRandom()
         let crashContext = crashContextWith(lastLogAttributes: .init(
-            [
+            attributes: [
                 "mock-string-attribute": stringAttribute,
                 "mock-bool-attribute": boolAttribute
-            ] as [String: Any]
+            ]
         ))
         let core = PassthroughCoreMock(
             messageReceiver: CrashLogReceiver(dateProvider: SystemDateProvider(), logEventMapper: nil)
@@ -298,8 +267,8 @@ let expectation = expectation(description: "Send Event Bypass Consent")
         // Then
         let log = try XCTUnwrap(core.events(ofType: LogEvent.self).first)
 
-        XCTAssertEqual((log.attributes.userAttributes["mock-string-attribute"] as? AnyCodable)?.value as? String, stringAttribute)
-        XCTAssertEqual((log.attributes.userAttributes["mock-bool-attribute"] as? AnyCodable)?.value as? Bool, boolAttribute)
+        XCTAssertEqual(log.attributes.userAttributes["mock-string-attribute"] as? String, stringAttribute)
+        XCTAssertEqual(log.attributes.userAttributes["mock-bool-attribute"] as? Bool, boolAttribute)
     }
 
     func testWhenSendingCrashWithLogMapper_itSendsModifiedCrash() throws {

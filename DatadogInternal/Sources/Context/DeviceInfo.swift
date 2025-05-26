@@ -7,9 +7,9 @@
 import Foundation
 
 /// Describes current device information.
-public struct DeviceInfo: Codable, Equatable, PassthroughAnyCodable {
+public struct DeviceInfo: Codable, Equatable {
     /// Represents the type of device.
-    public enum DeviceType: Codable, Equatable, PassthroughAnyCodable {
+    public enum DeviceType: Codable, Equatable {
         case iPhone
         case iPod
         case iPad

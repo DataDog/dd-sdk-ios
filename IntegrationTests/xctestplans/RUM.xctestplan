@@ -26,6 +26,9 @@
         "RUMNavigationControllerScenarioTests\/testRUMNavigationControllerScenario()",
         "RUMScrubbingScenarioTests\/testRUMScrubbingScenario()",
         "RUMStopSessionScenarioTests\/testRUMStopSessionScenario()",
+        "RUMSwiftUIAutoInstrumentationTests\/testRootTabbar()",
+        "RUMSwiftUIAutoInstrumentationTests\/testSingleViewRoot()",
+        "RUMSwiftUIManualInstrumentationScenarioTests\/testSwiftUIManualScenario()",
         "RUMSwiftUIScenarioTests\/testSwiftUIScenario()",
         "RUMTabBarControllerScenarioTests\/testRUMTabBarScenario()",
         "RUMTapActionScenarioTests\/testRUMTapActionScenario()"

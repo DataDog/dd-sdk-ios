@@ -8,20 +8,12 @@ import TestUtilities
 import XCTest
 
 private extension ExampleApplication {
-    func tapTapBar(item name: String) {
-        tabBars.buttons[name].safeTap()
-    }
-
     func tapPushToNextView() {
-        buttons["Push to Next View"].safeTap(within: 10)
+        tapButton(titled: "Push to Next View")
     }
 
     func tapPresentModalView() {
-        buttons["Present Modal View"].safeTap(within: 10)
-    }
-
-    func tapBackButton(to index: Int) {
-        buttons["Screen \(index)"].safeTap(within: 10)
+        tapButton(titled: "Present Modal View")
     }
 
     func swipeRightInteraction() {
@@ -29,16 +21,10 @@ private extension ExampleApplication {
         let coordinate2 = coordinate(withNormalizedOffset: .init(dx: 0.80, dy: 0.5))
         coordinate1.press(forDuration: 0.5, thenDragTo: coordinate2)
     }
-
-    func swipeDownInteraction() {
-        let coordinate1 = coordinate(withNormalizedOffset: .init(dx: 0.5, dy: 0.2))
-        let coordinate2 = coordinate(withNormalizedOffset: .init(dx: 0.5, dy: 0.8))
-        coordinate1.press(forDuration: 0.5, thenDragTo: coordinate2)
-    }
 }
 
-class RUMSwiftUIScenarioTests: IntegrationTests, RUMCommonAsserts {
-    func testSwiftUIScenario() throws {
+class RUMSwiftUIManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts {
+    func testSwiftUIManualScenario() throws {
         guard #available(iOS 13, *) else {
             return
         }
@@ -48,7 +34,7 @@ class RUMSwiftUIScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenarioClassName: "RUMSwiftUIInstrumentationScenario",
+            testScenarioClassName: "RUMSwiftUIManualInstrumentationScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 rumEndpoint: recording.recordingURL
             )
