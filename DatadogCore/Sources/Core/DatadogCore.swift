@@ -474,6 +474,7 @@ extension DatadogContextProvider {
         applicationVersion: String,
         sdkInitDate: Date,
         device: DeviceInfo,
+        locale: LocaleInfo,
         processInfo: ProcessInfo,
         dateProvider: DateProvider,
         serverDateProvider: ServerDateProvider,
@@ -498,6 +499,7 @@ extension DatadogContextProvider {
             applicationBundleType: applicationBundleType,
             sdkInitDate: dateProvider.now,
             device: device,
+            localeInfo: locale,
             nativeSourceOverride: nativeSourceOverride,
             launchTime: appLaunchHandler.currentValue,
             // this is a placeholder waiting for the `ApplicationStatePublisher`
@@ -528,6 +530,8 @@ extension DatadogContextProvider {
         #if os(iOS)
         subscribe(\.brightnessLevel, to: BrightnessLevelPublisher(notificationCenter: notificationCenter))
         #endif
+
+        subscribe(\.localeInfo, to: LocaleInfoPublisher(initialLocale: locale, notificationCenter: notificationCenter))
 
         #if os(iOS) || os(tvOS)
         DispatchQueue.main.async {
