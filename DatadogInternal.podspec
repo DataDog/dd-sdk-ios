@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogInternal"
-  s.version      = "2.27.0"
+  s.version      = "2.28.0"
   s.summary      = "Datadog Internal Package. This module is not for public use."
 
   s.homepage     = "https://www.datadoghq.com"
