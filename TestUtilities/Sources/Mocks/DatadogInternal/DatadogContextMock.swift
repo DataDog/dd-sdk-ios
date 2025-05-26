@@ -29,6 +29,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
         sdkInitDate: Date = Date(),
         nativeSourceOverride: String? = nil,
         device: DeviceInfo = .mockAny(),
+        localeInfo: LocaleInfo = .mockAny(),
         userInfo: UserInfo = .mockAny(),
         accountInfo: AccountInfo? = nil,
         trackingConsent: TrackingConsent = .pending,
@@ -58,6 +59,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             applicationBundleType: applicationBundleType,
             sdkInitDate: sdkInitDate,
             device: device,
+            localeInfo: localeInfo,
             nativeSourceOverride: nativeSourceOverride,
             userInfo: userInfo,
             accountInfo: accountInfo,
@@ -93,6 +95,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             applicationBundleType: .mockRandom(),
             sdkInitDate: .mockRandomInThePast(),
             device: .mockRandom(),
+            localeInfo: .mockRandom(),
             userInfo: .mockRandom(),
             accountInfo: .mockRandom(),
             trackingConsent: .mockRandom(),
@@ -123,6 +126,32 @@ extension BundleType: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> Self {
         return [.iOSApp, .iOSAppExtension].randomElement()!
+    }
+}
+
+extension LocaleInfo: AnyMockable, RandomMockable {
+    public static func mockAny() -> LocaleInfo {
+        return .mockWith()
+    }
+
+    public static func mockWith(
+        locales: [String] = ["en"],
+        currentLocale: String = "en-US",
+        timeZoneIdentifier: String = "Europe/Paris"
+    ) -> LocaleInfo {
+        return .init(
+            locales: locales,
+            currentLocale: currentLocale,
+            timeZoneIdentifier: timeZoneIdentifier
+        )
+    }
+
+    public static func mockRandom() -> LocaleInfo {
+        return .init(
+            locales: .mockRandom(),
+            currentLocale: .mockRandom(),
+            timeZoneIdentifier: .mockRandom()
+        )
     }
 }
 
