@@ -38,6 +38,9 @@ public struct CrashContext: Codable, Equatable {
     /// Operating System information.
     public let os: OperatingSystem
 
+    /// Current locale information.
+    public let localeInfo: LocaleInfo?
+
     /// The version of Datadog iOS SDK.
     public let sdkVersion: String
 
@@ -104,6 +107,7 @@ public struct CrashContext: Codable, Equatable {
         buildNumber: String,
         device: Device,
         os: OperatingSystem,
+        localeInfo: LocaleInfo?,
         sdkVersion: String,
         source: String,
         trackingConsent: TrackingConsent,
@@ -128,6 +132,7 @@ public struct CrashContext: Codable, Equatable {
         self.buildNumber = buildNumber
         self.device = device
         self.os = os
+        self.localeInfo = localeInfo
         self.sdkVersion = service
         self.source = source
         self.trackingConsent = trackingConsent
@@ -160,6 +165,8 @@ public struct CrashContext: Codable, Equatable {
         self.buildNumber = context.buildNumber
         self.device = context.device.normalizedDevice
         self.os = context.os
+        self.device = context.device
+        self.localeInfo = context.localeInfo
         self.sdkVersion = context.sdkVersion
         self.source = context.source
         self.trackingConsent = context.trackingConsent

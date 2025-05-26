@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import DatadogInternal
+@testable import DatadogInternal
 
 extension DatadogContext: AnyMockable, RandomMockable {
     public static func mockAny() -> DatadogContext { mockWith() }
@@ -30,6 +30,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
         nativeSourceOverride: String? = nil,
         device: DeviceInfo = .mockAny(),
         os: OperatingSystem = .mockAny(),
+        localeInfo: LocaleInfo = .mockAny(),
         userInfo: UserInfo = .mockAny(),
         accountInfo: AccountInfo? = nil,
         trackingConsent: TrackingConsent = .pending,
@@ -60,6 +61,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             sdkInitDate: sdkInitDate,
             device: device,
             os: os,
+            localeInfo: localeInfo,
             nativeSourceOverride: nativeSourceOverride,
             userInfo: userInfo,
             accountInfo: accountInfo,
@@ -96,6 +98,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             sdkInitDate: .mockRandomInThePast(),
             device: .mockRandom(),
             os: .mockRandom(),
+            localeInfo: .mockRandom(),
             userInfo: .mockRandom(),
             accountInfo: .mockRandom(),
             trackingConsent: .mockRandom(),
@@ -129,7 +132,33 @@ extension BundleType: AnyMockable, RandomMockable {
     }
 }
 
-extension DeviceInfo: AnyMockable, RandomMockable {
+extension LocaleInfo: AnyMockable, RandomMockable {
+    public static func mockAny() -> LocaleInfo {
+        return .mockWith()
+    }
+
+    public static func mockWith(
+        locales: [String] = ["en"],
+        currentLocale: Locale = Locale(identifier: "en-US"),
+        timeZone: TimeZone = TimeZone(identifier: "Europe/Paris")!
+    ) -> LocaleInfo {
+        return .init(
+            locales: locales,
+            currentLocale: currentLocale,
+            timeZone: timeZone
+        )
+    }
+
+    public static func mockRandom() -> LocaleInfo {
+        return .init(
+            locales: .mockRandom(),
+            currentLocale: Locale(identifier: .mockRandom()),
+            timeZone: TimeZone(identifier: .mockRandom()) ?? TimeZone.current
+        )
+    }
+}
+
+extension DeviceInfo {
     public static func mockAny() -> DeviceInfo {
         return .mockWith()
     }

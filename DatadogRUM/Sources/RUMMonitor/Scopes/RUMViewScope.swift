@@ -638,7 +638,7 @@ extension RUMViewScope {
                 )
             ),
             account: .init(context: context),
-            application: .init(id: self.context.rumApplicationID),
+            application: .init(currentLocale: context.localeInfo.currentLocale, id: self.context.rumApplicationID),
             buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
