@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.28.0 / 26-05-2025
+
 - [IMPROVEMENT] Increase RUM batch maximum age to 24hrs. See [#2302][]
 - [IMPROVEMENT] Improve feature-to-feature communication performances. See [#2304][]
 
