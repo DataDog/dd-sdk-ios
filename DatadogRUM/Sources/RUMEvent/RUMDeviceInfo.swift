@@ -14,19 +14,23 @@ extension RUMDevice {
     ) {
         self.init(
             device: context.device,
+            localeInfo: context.localeInfo,
             telemetry: telemetry
         )
     }
 
     init(
         device: DeviceInfo,
+        localeInfo: LocaleInfo,
         telemetry: Telemetry = NOPTelemetry()
     ) {
         self.init(
             architecture: device.architecture,
             brand: device.brand,
+            locales: localeInfo.locales,
             model: device.model,
             name: device.name,
+            timeZone: localeInfo.timeZoneIdentifier,
             type: {
                 switch device.type {
                 case .iPhone, .iPod: return .mobile

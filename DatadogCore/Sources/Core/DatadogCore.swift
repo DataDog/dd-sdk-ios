@@ -474,6 +474,7 @@ extension DatadogContextProvider {
         applicationVersion: String,
         sdkInitDate: Date,
         device: DeviceInfo,
+        locale: LocaleInfo,
         processInfo: ProcessInfo,
         dateProvider: DateProvider,
         serverDateProvider: ServerDateProvider,
@@ -498,6 +499,7 @@ extension DatadogContextProvider {
             applicationBundleType: applicationBundleType,
             sdkInitDate: dateProvider.now,
             device: device,
+            localeInfo: locale,
             nativeSourceOverride: nativeSourceOverride,
             launchTime: appLaunchHandler.currentValue,
             // this is a placeholder waiting for the `ApplicationStatePublisher`
@@ -524,6 +526,8 @@ extension DatadogContextProvider {
         subscribe(\.batteryStatus, to: BatteryStatusPublisher(notificationCenter: notificationCenter, device: .current))
         subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher(notificationCenter: notificationCenter, processInfo: processInfo))
         #endif
+
+        subscribe(\.localeInfo, to: LocaleInfoPublisher(initialLocale: LocaleInfo(), notificationCenter: notificationCenter))
 
         #if os(iOS) || os(tvOS)
         DispatchQueue.main.async {
