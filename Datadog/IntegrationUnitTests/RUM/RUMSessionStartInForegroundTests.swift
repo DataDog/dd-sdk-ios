@@ -43,13 +43,13 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             // When
             let session = try when.then().takeSingle()
             XCTAssertNotNil(session.applicationStartAction)
-            XCTAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
-            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-            XCTAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+            DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+            DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
             XCTAssertEqual(session.views.count, 1)
             XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-            XCTAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+            DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
         }
 
         // Given
@@ -66,12 +66,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             let session = try when.then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
             XCTAssertNil(session.applicationStartupTime)
-            XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-            XCTAssertEqual(session.duration, dt1, accuracy: accuracy)
+            DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+            DDAssertEqual(session.duration, dt1, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
             XCTAssertEqual(session.views.count, 1)
             XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-            XCTAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
+            DDAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
         }
     }
 
@@ -96,15 +96,15 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 // Then
                 let session = try when.then().takeSingle()
                 XCTAssertNotNil(session.applicationStartAction)
-                XCTAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-                XCTAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 2)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                 XCTAssertEqual(session.views[1].name, manualViewName)
-                XCTAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
             }
         }
 
@@ -129,14 +129,14 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 2)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
                 XCTAssertEqual(session.views[1].name, manualViewName)
-                XCTAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
             }
         }
     }
@@ -164,15 +164,15 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 // Then
                 let session = try when.then().takeSingle()
                 XCTAssertNotNil(session.applicationStartAction)
-                XCTAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-                XCTAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 2)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                 XCTAssertEqual(session.views[1].name, automaticViewName)
-                XCTAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
             }
         }
 
@@ -198,14 +198,14 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 2)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
                 XCTAssertEqual(session.views[1].name, automaticViewName)
-                XCTAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
             }
         }
     }
@@ -229,13 +229,13 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 // Then
                 let session = try when.then().takeSingle()
                 XCTAssertNotNil(session.applicationStartAction)
-                XCTAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-                XCTAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertNotNil(session.views[0].actionEvents.first(where: { $0.action.target?.name == "CustomAction1" }))
                 XCTAssertNotNil(session.views[0].actionEvents.first(where: { $0.action.target?.name == "CustomAction2" }))
             }
@@ -259,12 +259,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertNotNil(session.views[0].actionEvents.first(where: { $0.action.target?.name == "CustomAction1" }))
                 XCTAssertNotNil(session.views[0].actionEvents.first(where: { $0.action.target?.name == "CustomAction2" }))
             }
@@ -290,13 +290,13 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 // Then
                 let session = try when.then().takeSingle()
                 XCTAssertNotNil(session.applicationStartAction)
-                XCTAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-                XCTAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertNotNil(session.views[0].resourceEvents.first(where: { $0.resource.url == "https://resource.url" }))
             }
         }
@@ -320,12 +320,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertNotNil(session.views[0].resourceEvents.first(where: { $0.resource.url == "https://resource.url" }))
             }
         }
@@ -350,13 +350,13 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 // Then
                 let session = try when.then().takeSingle()
                 XCTAssertNotNil(session.applicationStartAction)
-                XCTAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-                XCTAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.views[0].viewEvents.last?.view.longTask?.count, 2)
             }
         }
@@ -380,12 +380,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.views[0].viewEvents.last?.view.longTask?.count, 2)
             }
         }
@@ -425,12 +425,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             let session = try when.then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
             XCTAssertNil(session.applicationStartupTime)
-            XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-            XCTAssertEqual(session.duration, dt1, accuracy: accuracy)
+            DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+            DDAssertEqual(session.duration, dt1, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
             XCTAssertEqual(session.views.count, 1)
             XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-            XCTAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
+            DDAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
         }
     }
 
@@ -456,12 +456,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .prewarm)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, manualViewName)
-                XCTAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
             }
         }
 
@@ -486,14 +486,14 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 2)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
                 XCTAssertEqual(session.views[1].name, manualViewName)
-                XCTAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
             }
         }
     }
@@ -521,12 +521,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartupTime)
                 XCTAssertNil(session.applicationStartAction)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .prewarm)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, automaticViewName)
-                XCTAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
             }
         }
 
@@ -552,14 +552,14 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 2)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
                 XCTAssertEqual(session.views[1].name, automaticViewName)
-                XCTAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
             }
         }
     }
@@ -583,12 +583,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartupTime)
                 XCTAssertNil(session.applicationStartAction)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .prewarm)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
                 XCTAssertNotNil(session.views[0].actionEvents.first(where: { $0.action.target?.name == "CustomAction1" }))
                 XCTAssertNotNil(session.views[0].actionEvents.first(where: { $0.action.target?.name == "CustomAction2" }))
             }
@@ -612,12 +612,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertNotNil(session.views[0].actionEvents.first(where: { $0.action.target?.name == "CustomAction1" }))
                 XCTAssertNotNil(session.views[0].actionEvents.first(where: { $0.action.target?.name == "CustomAction2" }))
             }
@@ -643,12 +643,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartupTime)
                 XCTAssertNil(session.applicationStartAction)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .prewarm)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
                 XCTAssertNotNil(session.views[0].resourceEvents.first(where: { $0.resource.url == "https://resource.url" }))
             }
         }
@@ -671,12 +671,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertNotNil(session.views[0].resourceEvents.first(where: { $0.resource.url == "https://resource.url" }))
             }
         }
@@ -702,12 +702,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartupTime)
                 XCTAssertNil(session.applicationStartAction)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .prewarm)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.views[0].viewEvents.last?.view.longTask?.count, 2)
             }
         }
@@ -731,12 +731,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
             }
         }
     }
@@ -775,12 +775,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             let session = try when.then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
             XCTAssertNil(session.applicationStartupTime)
-            XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-            XCTAssertEqual(session.duration, dt1, accuracy: accuracy)
+            DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+            DDAssertEqual(session.duration, dt1, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
             XCTAssertEqual(session.views.count, 1)
             XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-            XCTAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
+            DDAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
         }
     }
 
@@ -806,12 +806,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .backgroundLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, manualViewName)
-                XCTAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
             }
         }
 
@@ -835,14 +835,14 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 // Then
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 2)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
                 XCTAssertEqual(session.views[1].name, manualViewName)
-                XCTAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
             }
         }
     }
@@ -870,12 +870,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartupTime)
                 XCTAssertNil(session.applicationStartAction)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .backgroundLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, automaticViewName)
-                XCTAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
             }
         }
 
@@ -901,14 +901,14 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 2)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
                 XCTAssertEqual(session.views[1].name, automaticViewName)
-                XCTAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
             }
         }
     }
@@ -932,12 +932,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartupTime)
                 XCTAssertNil(session.applicationStartAction)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .backgroundLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
                 XCTAssertNotNil(session.views[0].actionEvents.first(where: { $0.action.target?.name == "CustomAction1" }))
                 XCTAssertNotNil(session.views[0].actionEvents.first(where: { $0.action.target?.name == "CustomAction2" }))
             }
@@ -961,12 +961,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertNotNil(session.views[0].actionEvents.first(where: { $0.action.target?.name == "CustomAction1" }))
                 XCTAssertNotNil(session.views[0].actionEvents.first(where: { $0.action.target?.name == "CustomAction2" }))
             }
@@ -992,12 +992,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartupTime)
                 XCTAssertNil(session.applicationStartAction)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .backgroundLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
                 XCTAssertNotNil(session.views[0].resourceEvents.first(where: { $0.resource.url == "https://resource.url" }))
             }
         }
@@ -1020,12 +1020,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertNotNil(session.views[0].resourceEvents.first(where: { $0.resource.url == "https://resource.url" }))
             }
         }
@@ -1051,12 +1051,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartupTime)
                 XCTAssertNil(session.applicationStartAction)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .backgroundLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.views[0].viewEvents.last?.view.longTask?.count, 2)
             }
         }
@@ -1080,12 +1080,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 let session = try when.then().takeSingle()
                 XCTAssertNil(session.applicationStartAction)
                 XCTAssertNil(session.applicationStartupTime)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
+                DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+                DDAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
             }
         }
     }

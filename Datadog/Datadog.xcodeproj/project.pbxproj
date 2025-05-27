@@ -546,9 +546,7 @@
 		61181CDD2BF35BC000632A7A /* FatalErrorContextNotifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61181CDB2BF35BC000632A7A /* FatalErrorContextNotifierTests.swift */; };
 		61193AAE2CB54C7300C3CDF5 /* RUMActionsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61193AAD2CB54C7300C3CDF5 /* RUMActionsHandler.swift */; };
 		61193AAF2CB54C7300C3CDF5 /* RUMActionsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61193AAD2CB54C7300C3CDF5 /* RUMActionsHandler.swift */; };
-		6119DDBE2DD2443B00DA80F9 /* XCTExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6119DDBD2DD2443B00DA80F9 /* XCTExtensions.swift */; };
 		6119DDBF2DD2443B00DA80F9 /* DateAndTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6119DDBC2DD2443B00DA80F9 /* DateAndTime.swift */; };
-		6119DDC02DD2443B00DA80F9 /* XCTExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6119DDBD2DD2443B00DA80F9 /* XCTExtensions.swift */; };
 		6119DDC12DD2443B00DA80F9 /* DateAndTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6119DDBC2DD2443B00DA80F9 /* DateAndTime.swift */; };
 		6119DDC82DD24A9600DA80F9 /* RUMSessionTestsBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6119DDC52DD24A9600DA80F9 /* RUMSessionTestsBase.swift */; };
 		6119DDC92DD24A9600DA80F9 /* RUMSessionWithNoViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6119DDC72DD24A9600DA80F9 /* RUMSessionWithNoViewTests.swift */; };
@@ -2647,7 +2645,6 @@
 		61181CDB2BF35BC000632A7A /* FatalErrorContextNotifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FatalErrorContextNotifierTests.swift; sourceTree = "<group>"; };
 		61193AAD2CB54C7300C3CDF5 /* RUMActionsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMActionsHandler.swift; sourceTree = "<group>"; };
 		6119DDBC2DD2443B00DA80F9 /* DateAndTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateAndTime.swift; sourceTree = "<group>"; };
-		6119DDBD2DD2443B00DA80F9 /* XCTExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XCTExtensions.swift; sourceTree = "<group>"; };
 		6119DDC22DD24A9600DA80F9 /* RUMSessionStartInBackgroundTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionStartInBackgroundTests.swift; sourceTree = "<group>"; };
 		6119DDC32DD24A9600DA80F9 /* RUMSessionStartInForegroundTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionStartInForegroundTests.swift; sourceTree = "<group>"; };
 		6119DDC42DD24A9600DA80F9 /* RUMSessionStopTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionStopTests.swift; sourceTree = "<group>"; };
@@ -3728,7 +3725,6 @@
 			isa = PBXGroup;
 			children = (
 				6119DDBC2DD2443B00DA80F9 /* DateAndTime.swift */,
-				6119DDBD2DD2443B00DA80F9 /* XCTExtensions.swift */,
 				1182F9BD2DA2F827007FE71A /* DDAssert.swift */,
 				1182F9BE2DA2F827007FE71A /* Decompression.swift */,
 				1182F9BF2DA2F827007FE71A /* Encoding.swift */,
@@ -9246,7 +9242,6 @@
 				1182FA272DA2F827007FE71A /* FeatureScopeMock.swift in Sources */,
 				1182FA282DA2F827007FE71A /* SRRequestMatcher.swift in Sources */,
 				1182FA292DA2F827007FE71A /* PassthroughCoreMock.swift in Sources */,
-				6119DDC02DD2443B00DA80F9 /* XCTExtensions.swift in Sources */,
 				6119DDC12DD2443B00DA80F9 /* DateAndTime.swift in Sources */,
 				1182FA2A2DA2F827007FE71A /* SpanMatcher.swift in Sources */,
 				1182FA2B2DA2F827007FE71A /* DirectoriesMock.swift in Sources */,
@@ -9339,7 +9334,6 @@
 				1182FA7B2DA2F827007FE71A /* FeatureScopeMock.swift in Sources */,
 				1182FA7C2DA2F827007FE71A /* SRRequestMatcher.swift in Sources */,
 				1182FA7D2DA2F827007FE71A /* PassthroughCoreMock.swift in Sources */,
-				6119DDBE2DD2443B00DA80F9 /* XCTExtensions.swift in Sources */,
 				6119DDBF2DD2443B00DA80F9 /* DateAndTime.swift in Sources */,
 				1182FA7E2DA2F827007FE71A /* SpanMatcher.swift in Sources */,
 				1182FA7F2DA2F827007FE71A /* DirectoriesMock.swift in Sources */,

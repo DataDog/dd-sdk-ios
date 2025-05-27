@@ -69,12 +69,12 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
             let session = try when.then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
             XCTAssertNil(session.applicationStartupTime)
-            XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
-            XCTAssertEqual(session.duration, dt2, accuracy: accuracy)
+            DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
+            DDAssertEqual(session.duration, dt2, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .prewarm)
             XCTAssertEqual(session.views.count, 1)
             XCTAssertEqual(session.views[0].name, backgroundViewName)
-            XCTAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
+            DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
         }
     }
 
@@ -145,12 +145,12 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
             let session = try when.then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
             XCTAssertNil(session.applicationStartupTime)
-            XCTAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
-            XCTAssertEqual(session.duration, dt2, accuracy: accuracy)
+            DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
+            DDAssertEqual(session.duration, dt2, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .backgroundLaunch)
             XCTAssertEqual(session.views.count, 1)
             XCTAssertEqual(session.views[0].name, backgroundViewName)
-            XCTAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
+            DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
         }
     }
 

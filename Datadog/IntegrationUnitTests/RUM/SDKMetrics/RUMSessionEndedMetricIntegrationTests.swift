@@ -144,7 +144,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         // Then
         let expectedDuration = dateProvider.now.timeIntervalSince(startTime)
         let metricAttributes = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent()?.attributes)
-        XCTAssertEqual(metricAttributes.duration?.nanosecondsToSeconds, expectedDuration, accuracy: 0.1)
+        DDAssertEqual(metricAttributes.duration?.nanosecondsToSeconds, expectedDuration, accuracy: 0.1)
     }
 
     func testTrackingViewsCount() throws {
