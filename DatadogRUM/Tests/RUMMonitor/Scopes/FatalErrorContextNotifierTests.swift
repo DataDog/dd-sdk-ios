@@ -25,8 +25,8 @@ class FatalErrorContextNotifierTests: XCTestCase {
         // Then
         let messages = featureScope.messagesSent()
         XCTAssertEqual(messages.count, 1)
-        let sessionStateMessage = try XCTUnwrap(messages.lastBaggage(withKey: RUMBaggageKeys.sessionState))
-        XCTAssertEqual(newSessionState, try sessionStateMessage.decode())
+        let sessionStateMessage = try XCTUnwrap(messages.lastPayload as? RUMSessionState)
+        XCTAssertEqual(newSessionState, sessionStateMessage)
     }
 
     func testWhenSessionStateIsReset_itDoesNotSendNextSessionStateMessage() throws {
@@ -41,8 +41,8 @@ class FatalErrorContextNotifierTests: XCTestCase {
         // Then
         let messages = featureScope.messagesSent()
         XCTAssertEqual(messages.count, 1)
-        let sessionStateMessage = try XCTUnwrap(messages.lastBaggage(withKey: RUMBaggageKeys.sessionState))
-        XCTAssertEqual(originalSessionState, try sessionStateMessage.decode())
+        let sessionStateMessage = try XCTUnwrap(messages.lastPayload as? RUMSessionState)
+        XCTAssertEqual(originalSessionState, sessionStateMessage)
     }
 
     // MARK: - Changing View State
@@ -58,8 +58,8 @@ class FatalErrorContextNotifierTests: XCTestCase {
         // Then
         let messages = featureScope.messagesSent()
         XCTAssertEqual(messages.count, 1)
-        let viewEventMessage = try XCTUnwrap(messages.lastBaggage(withKey: RUMBaggageKeys.viewEvent))
-        DDAssertJSONEqual(newViewEvent, try viewEventMessage.decode(type: RUMViewEvent.self))
+        let viewEventMessage = try XCTUnwrap(messages.firstPayload as? RUMViewEvent)
+        DDAssertJSONEqual(newViewEvent, viewEventMessage)
     }
 
     func testWhenViewIsReset_itSendsViewResetMessage() throws {
@@ -73,8 +73,8 @@ class FatalErrorContextNotifierTests: XCTestCase {
         // Then
         let messages = featureScope.messagesSent()
         XCTAssertEqual(messages.count, 2)
-        let viewResetMessage = try XCTUnwrap(messages.lastBaggage(withKey: RUMBaggageKeys.viewReset))
-        XCTAssertTrue(try viewResetMessage.decode(type: Bool.self))
+        let viewEventMessage = try XCTUnwrap(messages.lastPayload as? String)
+        XCTAssertEqual(viewEventMessage, RUMPayloadMessages.viewReset)
     }
 
     // MARK: - Changing Global Attributes
@@ -90,7 +90,7 @@ class FatalErrorContextNotifierTests: XCTestCase {
         // Then
         let messages = featureScope.messagesSent()
         XCTAssertEqual(messages.count, 1)
-        let attributesMessage = try XCTUnwrap(messages.lastBaggage(withKey: RUMBaggageKeys.attributes))
-        DDAssertJSONEqual(newGlobalAttributes, try attributesMessage.decode(type: GlobalRUMAttributes.self).attributes)
+        let attributesMessage = try XCTUnwrap(messages.lastPayload as? RUMEventAttributes)
+        DDAssertJSONEqual(newGlobalAttributes, attributesMessage)
     }
 }

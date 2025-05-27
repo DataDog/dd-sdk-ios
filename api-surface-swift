@@ -23,6 +23,9 @@ public enum Datadog
     public static func setUserInfo(id: String,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func addUserExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func setAccountInfo(id: String,name: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func addAccountExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func clearAccountInfo(in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func set(trackingConsent: TrackingConsent, in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func clearAllData(in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func stopInstance(named instanceName: String = CoreRegistry.defaultInstanceName)
@@ -71,11 +74,6 @@ public struct LogEvent: Encodable
         case emergency
     public struct Attributes
         public var userAttributes: [String: Encodable]
-    public struct UserInfo
-        public let id: String?
-        public let name: String?
-        public let email: String?
-        public var extraInfo: [String: Encodable]
     public struct Error
         public struct BinaryImage: Codable
             public let arch: String?
@@ -117,6 +115,7 @@ public struct LogEvent: Encodable
     public let dd: Dd
     public let os: OperatingSystem
     public var userInfo: UserInfo
+    public var accountInfo: AccountInfo?
     public let networkConnectionInfo: NetworkConnectionInfo?
     public let mobileCarrierInfo: CarrierInfo?
     public var attributes: LogEvent.Attributes
@@ -193,13 +192,6 @@ public protocol LogEventMapper
     public func inject(spanContext: OTSpanContext)
 [?] extension TracePropagationHeadersReader where Self: OTFormatReader
     public func extract() -> OTSpanContext?
-    public enum LogLevel: Int, Codable
-        case debug
-        case info
-        case notice
-        case warn
-        case error
-        case critical
 [?] extension OpenTelemetryApi.TraceState
     public func w3c() -> String
 public class OTelTracerProvider: OpenTelemetryApi.TracerProvider
@@ -309,7 +301,12 @@ public struct SpanEvent: Encodable
         public let name: String?
         public let email: String?
         public var extraInfo: [String: String]
+    public struct AccountInfo
+        public let id: String
+        public let name: String?
+        public var extraInfo: [String: String]
     public var userInfo: UserInfo
+    public var accountInfo: AccountInfo?
     public var tags: [String: String]
     public func encode(to encoder: Encoder) throws
 public enum Trace

@@ -26,8 +26,8 @@ public class objc_RUMActionEvent: NSObject {
         objc_RUMActionEventDD(root: root)
     }
 
-    public var account: objc_RUMActionEventAccount? {
-        root.swiftModel.account != nil ? objc_RUMActionEventAccount(root: root) : nil
+    public var account: objc_RUMActionEventRUMAccount? {
+        root.swiftModel.account != nil ? objc_RUMActionEventRUMAccount(root: root) : nil
     }
 
     public var action: objc_RUMActionEventAction {
@@ -345,10 +345,10 @@ public enum objc_RUMActionEventDDSessionRUMSessionPrecondition: Int {
     case explicitStop
 }
 
-@objc(DDRUMActionEventAccount)
+@objc(DDRUMActionEventRUMAccount)
 @objcMembers
 @_spi(objc)
-public class objc_RUMActionEventAccount: NSObject {
+public class objc_RUMActionEventRUMAccount: NSObject {
     internal let root: objc_RUMActionEvent
 
     internal init(root: objc_RUMActionEvent) {
@@ -1158,8 +1158,8 @@ public class objc_RUMErrorEvent: NSObject {
         objc_RUMErrorEventDD(root: root)
     }
 
-    public var account: objc_RUMErrorEventAccount? {
-        root.swiftModel.account != nil ? objc_RUMErrorEventAccount(root: root) : nil
+    public var account: objc_RUMErrorEventRUMAccount? {
+        root.swiftModel.account != nil ? objc_RUMErrorEventRUMAccount(root: root) : nil
     }
 
     public var action: objc_RUMErrorEventAction? {
@@ -1383,10 +1383,10 @@ public enum objc_RUMErrorEventDDSessionRUMSessionPrecondition: Int {
     case explicitStop
 }
 
-@objc(DDRUMErrorEventAccount)
+@objc(DDRUMErrorEventRUMAccount)
 @objcMembers
 @_spi(objc)
-public class objc_RUMErrorEventAccount: NSObject {
+public class objc_RUMErrorEventRUMAccount: NSObject {
     internal let root: objc_RUMErrorEvent
 
     internal init(root: objc_RUMErrorEvent) {
@@ -2659,8 +2659,8 @@ public class objc_RUMLongTaskEvent: NSObject {
         objc_RUMLongTaskEventDD(root: root)
     }
 
-    public var account: objc_RUMLongTaskEventAccount? {
-        root.swiftModel.account != nil ? objc_RUMLongTaskEventAccount(root: root) : nil
+    public var account: objc_RUMLongTaskEventRUMAccount? {
+        root.swiftModel.account != nil ? objc_RUMLongTaskEventRUMAccount(root: root) : nil
     }
 
     public var action: objc_RUMLongTaskEventAction? {
@@ -2880,10 +2880,10 @@ public enum objc_RUMLongTaskEventDDSessionRUMSessionPrecondition: Int {
     case explicitStop
 }
 
-@objc(DDRUMLongTaskEventAccount)
+@objc(DDRUMLongTaskEventRUMAccount)
 @objcMembers
 @_spi(objc)
-public class objc_RUMLongTaskEventAccount: NSObject {
+public class objc_RUMLongTaskEventRUMAccount: NSObject {
     internal let root: objc_RUMLongTaskEvent
 
     internal init(root: objc_RUMLongTaskEvent) {
@@ -3692,8 +3692,8 @@ public class objc_RUMResourceEvent: NSObject {
         objc_RUMResourceEventDD(root: root)
     }
 
-    public var account: objc_RUMResourceEventAccount? {
-        root.swiftModel.account != nil ? objc_RUMResourceEventAccount(root: root) : nil
+    public var account: objc_RUMResourceEventRUMAccount? {
+        root.swiftModel.account != nil ? objc_RUMResourceEventRUMAccount(root: root) : nil
     }
 
     public var action: objc_RUMResourceEventAction? {
@@ -3925,10 +3925,10 @@ public enum objc_RUMResourceEventDDSessionRUMSessionPrecondition: Int {
     case explicitStop
 }
 
-@objc(DDRUMResourceEventAccount)
+@objc(DDRUMResourceEventRUMAccount)
 @objcMembers
 @_spi(objc)
-public class objc_RUMResourceEventAccount: NSObject {
+public class objc_RUMResourceEventRUMAccount: NSObject {
     internal let root: objc_RUMResourceEvent
 
     internal init(root: objc_RUMResourceEvent) {
@@ -5083,8 +5083,8 @@ public class objc_RUMViewEvent: NSObject {
         objc_RUMViewEventDD(root: root)
     }
 
-    public var account: objc_RUMViewEventAccount? {
-        root.swiftModel.account != nil ? objc_RUMViewEventAccount(root: root) : nil
+    public var account: objc_RUMViewEventRUMAccount? {
+        root.swiftModel.account != nil ? objc_RUMViewEventRUMAccount(root: root) : nil
     }
 
     public var application: objc_RUMViewEventApplication {
@@ -5408,10 +5408,10 @@ public enum objc_RUMViewEventDDSessionRUMSessionPrecondition: Int {
     case explicitStop
 }
 
-@objc(DDRUMViewEventAccount)
+@objc(DDRUMViewEventRUMAccount)
 @objcMembers
 @_spi(objc)
-public class objc_RUMViewEventAccount: NSObject {
+public class objc_RUMViewEventRUMAccount: NSObject {
     internal let root: objc_RUMViewEvent
 
     internal init(root: objc_RUMViewEvent) {
@@ -6779,8 +6779,8 @@ public class objc_RUMVitalEvent: NSObject {
         objc_RUMVitalEventDD(root: root)
     }
 
-    public var account: objc_RUMVitalEventAccount? {
-        root.swiftModel.account != nil ? objc_RUMVitalEventAccount(root: root) : nil
+    public var account: objc_RUMVitalEventRUMAccount? {
+        root.swiftModel.account != nil ? objc_RUMVitalEventRUMAccount(root: root) : nil
     }
 
     public var application: objc_RUMVitalEventApplication {
@@ -7011,10 +7011,10 @@ public class objc_RUMVitalEventDDVital: NSObject {
     }
 }
 
-@objc(DDRUMVitalEventAccount)
+@objc(DDRUMVitalEventRUMAccount)
 @objcMembers
 @_spi(objc)
-public class objc_RUMVitalEventAccount: NSObject {
+public class objc_RUMVitalEventRUMAccount: NSObject {
     internal let root: objc_RUMVitalEvent
 
     internal init(root: objc_RUMVitalEvent) {
@@ -8601,6 +8601,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.trackBackgroundEvents as NSNumber? }
     }
 
+    public var trackBfcacheViews: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.trackBfcacheViews = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.trackBfcacheViews as NSNumber? }
+    }
+
     public var trackCrossPlatformLongTasks: NSNumber? {
         set { root.swiftModel.telemetry.configuration.trackCrossPlatformLongTasks = newValue?.boolValue }
         get { root.swiftModel.telemetry.configuration.trackCrossPlatformLongTasks as NSNumber? }
@@ -8689,6 +8694,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     public var useAllowedTracingUrls: NSNumber? {
         root.swiftModel.telemetry.configuration.useAllowedTracingUrls as NSNumber?
+    }
+
+    public var useAllowedTrackingOrigins: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.useAllowedTrackingOrigins = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.useAllowedTrackingOrigins as NSNumber? }
     }
 
     public var useBeforeSend: NSNumber? {
@@ -9042,4 +9052,4 @@ public class objc_TelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/2d2cd6aecf0ea4f1ffe61b7149dfdef75397fdbf
+// Generated from https://github.com/DataDog/rum-events-format/tree/df69253e7a875963d2a9cf0abb97882a97ebf85e

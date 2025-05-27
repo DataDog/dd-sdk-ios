@@ -6,7 +6,7 @@
 
 import Foundation
 
-public let SessionReplayFeaturneName = "session-replay"
+public let SessionReplayFeatureName = "session-replay"
 
 // MARK: Deprecated Global Privacy Level
 
@@ -78,5 +78,5 @@ public protocol SessionReplayConfiguration {
 }
 
 extension DatadogFeature where Self: SessionReplayConfiguration {
-    public static var name: String { SessionReplayFeaturneName }
+    public static var name: String { SessionReplayFeatureName }
 }

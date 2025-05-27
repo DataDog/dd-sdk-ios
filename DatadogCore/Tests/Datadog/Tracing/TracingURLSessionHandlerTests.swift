@@ -123,16 +123,16 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "network error")
         XCTAssertEqual(
-            log.attributes.internalAttributes?["dd.trace_id"] as? AnyCodable,
-            AnyCodable(String(span.traceID, representation: .hexadecimal))
+            log.attributes.internalAttributes?["dd.trace_id"] as? String,
+            String(span.traceID, representation: .hexadecimal)
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?["dd.trace_id"] as? AnyCodable,
-            AnyCodable(String(span.traceID, representation: .hexadecimal))
+            log.attributes.internalAttributes?["dd.trace_id"] as? String,
+            String(span.traceID, representation: .hexadecimal)
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?["dd.span_id"] as? AnyCodable,
-            AnyCodable(String(span.spanID, representation: .hexadecimal))
+            log.attributes.internalAttributes?["dd.span_id"] as? String,
+            String(span.spanID, representation: .hexadecimal)
         )
         XCTAssertEqual(log.error?.kind, "domain - 123")
         XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
@@ -218,14 +218,24 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let fakeSessionId = "8b723a25-e941-47ea-9173-910c866ccf19"
         let fakeRumContext: [String: String] = ["session.id": fakeSessionId]
         let fakeContext: DatadogContext = .mockWith(
-            baggages: ["rum": FeatureBaggage(fakeRumContext)]
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: .mockRandom(),
+                    sessionID: fakeSessionId
+                )
+            ]
         )
         let message = FeatureMessage.context(fakeContext)
         handler.contextReceiver.receive(message: message, from: core)
         let (modifiedRequest, _) = handler.modify(
             request: request,
             headerTypes: [.datadog, .tracecontext, .b3, .b3multi],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertEqual(

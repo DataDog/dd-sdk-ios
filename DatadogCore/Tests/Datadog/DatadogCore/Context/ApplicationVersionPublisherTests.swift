@@ -13,7 +13,7 @@ class ApplicationVersionPublisherTests: XCTestCase {
         XCTAssertEqual(publisher.initialValue, "0")
     }
 
-    func testPublishUserInfo() throws {
+    func testPublishApplicationVersion() throws {
         let expectation = expectation(description: "application version publisher publishes data")
 
         // Given
@@ -29,7 +29,7 @@ class ApplicationVersionPublisherTests: XCTestCase {
 
         publisher.version = version
 
-        // UserInfoPublisher publishes in sync
+        // ApplicationVersionPublisher publishes in sync
         waitForExpectations(timeout: 0)
     }
 }

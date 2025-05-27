@@ -100,19 +100,76 @@ public enum Datadog {
         )
     }
 
-    /// Add custom attributes  to the current user information
+    /// Add custom attributes to the current user information
     ///
     /// This extra info will be added to already existing extra info that is added
     /// to  logs traces and RUM events automatically.
     ///
     /// - Parameters:
-    ///   - extraInfo: User's additionall custom attributes
+    ///   - extraInfo: User's additional custom attributes
     public static func addUserExtraInfo(
         _ extraInfo: [AttributeKey: AttributeValue?],
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         let core = core as? DatadogCore
         core?.addUserExtraInfo(extraInfo)
+    }
+
+    /// Sets current account information.
+    ///
+    /// Those will be added to logs, traces and RUM events automatically.
+    ///
+    /// - Parameters:
+    ///   - id: Account ID
+    ///   - name: Name representing the account, if any
+    ///   - extraInfo: Account's custom attributes, if any
+    public static func setAccountInfo(
+        id: String,
+        name: String? = nil,
+        extraInfo: [AttributeKey: AttributeValue] = [:],
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) {
+        let core = core as? DatadogCore
+        core?.setAccountInfo(
+            id: id,
+            name: name,
+            extraInfo: extraInfo
+        )
+    }
+
+    /// Add custom attributes to the current account information
+    ///
+    /// This extra info will be added to already existing extra info that is added
+    /// to logs traces and RUM events automatically.
+    ///
+    /// - Parameters:
+    ///   - extraInfo: User's additional custom attributes
+    public static func addAccountExtraInfo(
+        _ extraInfo: [AttributeKey: AttributeValue?],
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) {
+        let core = core as? DatadogCore
+        core?.addAccountExtraInfo(extraInfo)
+    }
+
+    /// Clear the current account information
+    ///
+    /// Account information will be `nil`
+    /// Following Logs, Traces, RUM Events will not include the account information anymore
+    ///
+    /// Any active RUM Session, active RUM View at the time of call will have their `account` attribute emptied
+    ///
+    /// If you want to retain the current `account` on the active RUM session,
+    /// you need to stop the session first by using `RUMMonitor.stopSession()`
+    ///
+    /// If you want to retain the current `account` on the active RUM views,
+    /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
+    ///
+    public static func clearAccountInfo(
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) {
+        let core = core as? DatadogCore
+        core?.clearAccountInfo()
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct UserInfo: Codable, PassthroughAnyCodable {
+public struct UserInfo: Codable {
     /// User anonymous ID, if configured.
     public var anonymousId: String?
     /// User ID, if any.

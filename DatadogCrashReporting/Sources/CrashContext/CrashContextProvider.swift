@@ -31,19 +31,19 @@ internal class CrashContextCoreProvider: CrashContextProvider {
         didSet { _context.map(_callback) }
     }
 
-    private var viewEvent: AnyCodable? {
+    private var viewEvent: RUMViewEvent? {
         didSet { _context?.lastRUMViewEvent = viewEvent }
     }
 
-    private var sessionState: AnyCodable? {
+    private var sessionState: RUMSessionState? {
         didSet { _context?.lastRUMSessionState = sessionState }
     }
 
-    private var logAttributes: AnyCodable? {
+    private var logAttributes: LogEventAttributes? {
         didSet { _context?.lastLogAttributes = logAttributes }
     }
 
-    private var rumAttributes: GlobalRUMAttributes? {
+    private var rumAttributes: RUMEventAttributes? {
         didSet { _context?.lastRUMAttributes = rumAttributes }
     }
 
@@ -60,40 +60,20 @@ internal class CrashContextCoreProvider: CrashContextProvider {
 }
 
 extension CrashContextCoreProvider: FeatureMessageReceiver {
-    /// Defines keys referencing RUM baggage in `DatadogContext.featuresAttributes`.
-    internal enum RUMBaggageKeys {
-        /// The key references RUM view event.
-        /// The view event associated with the key conforms to `Codable`.
-        static let viewEvent = "rum-view-event"
-
-        /// The key references a `true` value if the RUM view is reset.
-        static let viewReset = "rum-view-reset"
-
-        /// The key references RUM session state.
-        /// The state associated with the key conforms to `Codable`.
-        static let sessionState = "rum-session-state"
-
-        /// This key references the global log attributes
-        static let logAttributes = "global-log-attributes"
-
-        /// The key referencing ``DatadogInternal.GlobalRUMAttributes`` value holding RUM global attributes.
-        static let rumAttributes = "global-rum-attributes"
-    }
-
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
         case .context(let context):
             update(context: context)
-        case .baggage(let label, let baggage) where label == RUMBaggageKeys.viewEvent:
-            updateRUMView(with: baggage, to: core)
-        case .baggage(let label, let baggage) where label == RUMBaggageKeys.viewReset:
-            resetRUMView(with: baggage, to: core)
-        case .baggage(let label, let baggage) where label == RUMBaggageKeys.sessionState:
-            updateSessionState(with: baggage, to: core)
-        case .baggage(let label, let baggage) where label == RUMBaggageKeys.logAttributes:
-            updateLogAttributes(with: baggage, to: core)
-        case .baggage(let label, let baggage) where label == RUMBaggageKeys.rumAttributes:
-            updateRUMAttributes(with: baggage, to: core)
+        case let .payload(viewEvent as RUMViewEvent):
+            queue.async { self.viewEvent = viewEvent }
+        case let .payload(message as String) where message == RUMPayloadMessages.viewReset:
+            queue.async { self.viewEvent = nil }
+        case let .payload(sessionState as RUMSessionState):
+            queue.async { self.sessionState = sessionState }
+        case let .payload(rumAttributes as RUMEventAttributes):
+            queue.async { self.rumAttributes = rumAttributes }
+        case let .payload(logAttributes as LogEventAttributes):
+            queue.async { self.logAttributes = logAttributes }
         default:
             return false
         }
@@ -120,63 +100,6 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
 
             if crashContext != self._context {
                 self._context = crashContext
-            }
-        }
-    }
-
-    private func updateRUMView(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async { [weak core, weak self] in
-            do {
-                self?.viewEvent = try baggage.decode(type: AnyCodable.self)
-            } catch {
-                core?.telemetry
-                    .error("Fails to decode RUM view event from Crash Reporting", error: error)
-            }
-        }
-    }
-
-    private func resetRUMView(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async { [weak core, weak self] in
-            do {
-                if try baggage.decode(type: Bool.self) {
-                    self?.viewEvent = nil
-                }
-            } catch {
-                core?.telemetry
-                    .error("Fails to decode RUM view reset from Crash Reporting", error: error)
-            }
-        }
-    }
-
-    private func updateSessionState(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async { [weak core, weak self] in
-            do {
-                self?.sessionState = try baggage.decode(type: AnyCodable.self)
-            } catch {
-                core?.telemetry
-                    .error("Fails to decode RUM session state from Crash Reporting", error: error)
-            }
-        }
-    }
-
-    private func updateLogAttributes(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async { [weak core, weak self] in
-            do {
-                self?.logAttributes = try baggage.decode(type: AnyCodable.self)
-            } catch {
-                core?.telemetry
-                    .error("Fails to decode log attributes from Crash Reporting", error: error)
-            }
-        }
-    }
-
-    private func updateRUMAttributes(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async { [weak core, weak self] in
-            do {
-                self?.rumAttributes = try baggage.decode(type: GlobalRUMAttributes.self)
-            } catch {
-                core?.telemetry
-                    .error("Fails to decode log attributes from Crash Reporting", error: error)
             }
         }
     }

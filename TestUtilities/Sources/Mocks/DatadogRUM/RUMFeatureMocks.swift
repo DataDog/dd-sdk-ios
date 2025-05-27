@@ -90,11 +90,13 @@ extension RUMResourceType {
 public struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent {
     let attribute: String
     public var usr: RUMUser?
+    public var account: RUMAccount?
     public var context: RUMEventAttributes?
 
-    public init(attribute: String, usr: RUMUser? = nil, context: RUMEventAttributes? = nil) {
+    public init(attribute: String, usr: RUMUser? = nil, account: RUMAccount? = nil, context: RUMEventAttributes? = nil) {
         self.attribute = attribute
         self.usr = usr
+        self.account = account
         self.context = context
     }
 }
@@ -728,7 +730,7 @@ public class RUMUUIDGeneratorMock: RUMUUIDGenerator {
 }
 
 extension RUMContext {
-    public static func mockAny() -> RUMContext {
+    public static func mockAny() -> Self {
         return mockWith()
     }
 
@@ -740,7 +742,7 @@ extension RUMContext {
         activeViewPath: String? = nil,
         activeViewName: String? = nil,
         activeUserActionID: RUMUUID? = nil
-    ) -> RUMContext {
+    ) -> Self {
         return RUMContext(
             rumApplicationID: rumApplicationID,
             sessionID: sessionID,
@@ -749,35 +751,6 @@ extension RUMContext {
             activeViewPath: activeViewPath,
             activeViewName: activeViewName,
             activeUserActionID: activeUserActionID
-        )
-    }
-}
-
-extension RUMSessionState: AnyMockable, RandomMockable {
-    public static func mockAny() -> RUMSessionState {
-        return mockWith()
-    }
-
-    public static func mockRandom() -> RUMSessionState {
-        return .init(
-            sessionUUID: .mockRandom(),
-            isInitialSession: .mockRandom(),
-            hasTrackedAnyView: .mockRandom(),
-            didStartWithReplay: .mockRandom()
-        )
-    }
-
-    public static func mockWith(
-        sessionUUID: UUID = .mockAny(),
-        isInitialSession: Bool = .mockAny(),
-        hasTrackedAnyView: Bool = .mockAny(),
-        didStartWithReplay: Bool? = .mockAny()
-    ) -> RUMSessionState {
-        return RUMSessionState(
-            sessionUUID: sessionUUID,
-            isInitialSession: isInitialSession,
-            hasTrackedAnyView: hasTrackedAnyView,
-            didStartWithReplay: didStartWithReplay
         )
     }
 }
@@ -1302,17 +1275,6 @@ public class ValueObserverMock<Value>: ValueObserver {
     }
 }
 
-// MARK: - Dependency on Session Replay
-
-extension Dictionary where Key == String, Value == FeatureBaggage {
-    public static func mockSessionReplayAttributes(hasReplay: Bool?, recordsCountByViewID: [String: Int64]? = nil) throws -> Self {
-        return [
-            SessionReplayDependency.hasReplay: .init(hasReplay),
-            SessionReplayDependency.recordsCountByViewID: .init(recordsCountByViewID)
-        ]
-    }
-}
-
 // MARK: - App Hangs Monitoring
 
 extension AppHang: AnyMockable, RandomMockable {
@@ -1467,8 +1429,26 @@ extension RUMAddCurrentViewAppHangCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMCoreContext: RandomMockable {
-    public static func mockRandom() -> RUMCoreContext {
-        RUMCoreContext(
+    public static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    public static func mockWith(
+        applicationID: String = .mockAny(),
+        sessionID: String = .mockAny(),
+        viewID: String? = .mockAny(),
+        serverTimeOffset: TimeInterval = .mockAny()
+    ) -> Self {
+        .init(
+            applicationID: applicationID,
+            sessionID: sessionID,
+            viewID: viewID,
+            viewServerTimeOffset: serverTimeOffset
+        )
+    }
+
+    public static func mockRandom() -> Self {
+        .init(
             applicationID: .mockRandom(),
             sessionID: .mockRandom(),
             viewID: .mockRandom(),

@@ -12,6 +12,9 @@ public final class objc_Datadog: NSObject
     public static func verbosityLevel() -> objc_CoreLoggerLevel
     public static func setUserInfo(userId: String, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
     public static func addUserExtraInfo(_ extraInfo: [String: Any])
+    public static func setAccountInfo(accountId: String, name: String? = nil, extraInfo: [String: Any] = [:])
+    public static func addAccountExtraInfo(_ extraInfo: [String: Any])
+    public static func clearAccountInfo()
     public static func setTrackingConsent(consent: objc_TrackingConsent)
     public static func isInitialized() -> Bool
     public static func stopInstance()
@@ -255,7 +258,7 @@ public protocol objc_OTTracer
 public enum objc_InjectEncoding: Int
     case multiple = 0
     case single = 1
-public class objc_B3HTTPHeadersWriter: NSObject
+public final class objc_B3HTTPHeadersWriter: NSObject
     public var traceHeaderFields: [String: String]
     public init(injectEncoding: objc_InjectEncoding = .single,traceContextInjection: objc_TraceContextInjection = .sampled)
 public final class objc_HTTPHeadersWriter: NSObject

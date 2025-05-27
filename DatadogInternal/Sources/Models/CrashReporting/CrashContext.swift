@@ -5,82 +5,84 @@
  */
 
 import Foundation
-import DatadogInternal
 
 /// Describes current Datadog SDK context, so the app state information can be attached to
 /// the crash report and retrieved back when the application is started again.
 ///
 /// Note: as it gets saved along with the crash report during process interruption, it's good
 /// to keep this data well-packed and as small as possible.
-internal struct CrashContext: Codable, Equatable {
+public struct CrashContext: Codable, Equatable {
     /// The Application Launch Date
-    var appLaunchDate: Date?
+    public var appLaunchDate: Date?
 
     /// Interval between device and server time.
     ///
     /// The value can change as the device continue to sync with the server.
-    let serverTimeOffset: TimeInterval
+    public let serverTimeOffset: TimeInterval
 
     /// The name of the service that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
-    let service: String
+    public let service: String
 
     /// The name of the environment that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
-    let env: String
+    public let env: String
 
     /// The version of the application that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
-    let version: String
+    public let version: String
 
     /// The build number of the application that data is generated from.
-    let buildNumber: String
+    public let buildNumber: String
 
     /// Current device information.
-    let device: DeviceInfo
+    public let device: DeviceInfo
 
     /// The version of Datadog iOS SDK.
-    let sdkVersion: String
+    public let sdkVersion: String
 
     /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
     ///  - See: Datadog [Reserved Attributes](https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes).
-    let source: String
+    public let source: String
 
     /// The user's consent to data collection
-    let trackingConsent: TrackingConsent
+    public let trackingConsent: TrackingConsent
 
     /// Current user information.
-    let userInfo: UserInfo?
+    public let userInfo: UserInfo?
+
+    /// Current account information
+    public let accountInfo: AccountInfo?
 
     /// Network information.
     ///
     /// Represents the current state of the device network connectivity and interface.
     /// The value can be `unknown` if the network interface is not available or if it has not
     /// yet been evaluated.
-    let networkConnectionInfo: NetworkConnectionInfo?
+    public let networkConnectionInfo: NetworkConnectionInfo?
 
     /// Carrier information.
     ///
     /// Represents the current telephony service info of the device.
     /// This value can be `nil` of no service is currently registered, or if the device does
     /// not support telephony services.
-    let carrierInfo: CarrierInfo?
+    public let carrierInfo: CarrierInfo?
 
     /// The last _"Is app in foreground?"_ information from crashed app process.
-    let lastIsAppInForeground: Bool
+    public let lastIsAppInForeground: Bool
 
     /// The last RUM view in crashed app process.
-    var lastRUMViewEvent: AnyCodable?
+    public var lastRUMViewEvent: RUMViewEvent?
 
     /// State of the last RUM session in crashed app process.
-    var lastRUMSessionState: AnyCodable?
+    public var lastRUMSessionState: RUMSessionState?
 
     /// Last global log attributes, set with Logs.addAttribute / Logs.removeAttribute
-    var lastLogAttributes: AnyCodable?
+    public var lastLogAttributes: LogEventAttributes?
 
     /// Last global RUM attributes. It gets updated with adding or removing attributes on `RUMMonitor`.
-    var lastRUMAttributes: GlobalRUMAttributes?
+    public var lastRUMAttributes: RUMEventAttributes?
 
     // MARK: - Initialization
 
-    init(
+    public init(
         serverTimeOffset: TimeInterval,
         service: String,
         env: String,
@@ -91,14 +93,15 @@ internal struct CrashContext: Codable, Equatable {
         source: String,
         trackingConsent: TrackingConsent,
         userInfo: UserInfo?,
+        accountInfo: AccountInfo?,
         networkConnectionInfo: NetworkConnectionInfo?,
         carrierInfo: CarrierInfo?,
         lastIsAppInForeground: Bool,
         appLaunchDate: Date?,
-        lastRUMViewEvent: AnyCodable?,
-        lastRUMSessionState: AnyCodable?,
-        lastRUMAttributes: GlobalRUMAttributes?,
-        lastLogAttributes: AnyCodable?
+        lastRUMViewEvent: RUMViewEvent?,
+        lastRUMSessionState: RUMSessionState?,
+        lastRUMAttributes: RUMEventAttributes?,
+        lastLogAttributes: LogEventAttributes?
     ) {
         self.serverTimeOffset = serverTimeOffset
         self.service = service
@@ -110,6 +113,7 @@ internal struct CrashContext: Codable, Equatable {
         self.source = source
         self.trackingConsent = trackingConsent
         self.userInfo = userInfo
+        self.accountInfo = accountInfo
         self.networkConnectionInfo = networkConnectionInfo
         self.carrierInfo = carrierInfo
         self.lastIsAppInForeground = lastIsAppInForeground
@@ -120,12 +124,12 @@ internal struct CrashContext: Codable, Equatable {
         self.lastLogAttributes = lastLogAttributes
     }
 
-    init(
+    public init(
         _ context: DatadogContext,
-        lastRUMViewEvent: AnyCodable?,
-        lastRUMSessionState: AnyCodable?,
-        lastRUMAttributes: GlobalRUMAttributes?,
-        lastLogAttributes: AnyCodable?
+        lastRUMViewEvent: RUMViewEvent?,
+        lastRUMSessionState: RUMSessionState?,
+        lastRUMAttributes: RUMEventAttributes?,
+        lastLogAttributes: LogEventAttributes?
     ) {
         self.serverTimeOffset = context.serverTimeOffset
         self.service = context.service
@@ -137,6 +141,7 @@ internal struct CrashContext: Codable, Equatable {
         self.source = context.source
         self.trackingConsent = context.trackingConsent
         self.userInfo = context.userInfo
+        self.accountInfo = context.accountInfo
         self.networkConnectionInfo = context.networkConnectionInfo
         self.carrierInfo = context.carrierInfo
         self.lastIsAppInForeground = context.applicationStateHistory.currentSnapshot.state.isRunningInForeground
@@ -149,20 +154,22 @@ internal struct CrashContext: Codable, Equatable {
         self.appLaunchDate = context.launchTime.launchDate
     }
 
-    static func == (lhs: CrashContext, rhs: CrashContext) -> Bool {
+    public static func == (lhs: CrashContext, rhs: CrashContext) -> Bool {
         lhs.serverTimeOffset == rhs.serverTimeOffset &&
-            lhs.service == rhs.service &&
-            lhs.env == rhs.env &&
-            lhs.version == rhs.version &&
-            lhs.buildNumber == rhs.buildNumber &&
-            lhs.source == rhs.source &&
-            lhs.trackingConsent == rhs.trackingConsent &&
-            lhs.networkConnectionInfo == rhs.networkConnectionInfo &&
-            lhs.carrierInfo == rhs.carrierInfo &&
-            lhs.lastIsAppInForeground == rhs.lastIsAppInForeground &&
-            lhs.userInfo?.id == rhs.userInfo?.id &&
-            lhs.userInfo?.name == rhs.userInfo?.name &&
-            lhs.userInfo?.email == rhs.userInfo?.email &&
-            lhs.appLaunchDate == rhs.appLaunchDate
+        lhs.service == rhs.service &&
+        lhs.env == rhs.env &&
+        lhs.version == rhs.version &&
+        lhs.buildNumber == rhs.buildNumber &&
+        lhs.source == rhs.source &&
+        lhs.trackingConsent == rhs.trackingConsent &&
+        lhs.networkConnectionInfo == rhs.networkConnectionInfo &&
+        lhs.carrierInfo == rhs.carrierInfo &&
+        lhs.lastIsAppInForeground == rhs.lastIsAppInForeground &&
+        lhs.userInfo?.id == rhs.userInfo?.id &&
+        lhs.userInfo?.name == rhs.userInfo?.name &&
+        lhs.userInfo?.email == rhs.userInfo?.email &&
+        lhs.accountInfo?.id == rhs.accountInfo?.id &&
+        lhs.accountInfo?.name == rhs.accountInfo?.name &&
+        lhs.appLaunchDate == rhs.appLaunchDate
     }
 }

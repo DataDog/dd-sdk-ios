@@ -15,14 +15,14 @@ internal protocol RUMContextObserver {
     /// - Parameters:
     ///   - queue: a queue to call `notify` block on
     ///   - notify: a closure receiving new `RUMContext` or `nil` if current RUM session is not sampled
-    func observe(on queue: Queue, notify: @escaping (RUMContext?) -> Void)
+    func observe(on queue: Queue, notify: @escaping (RUMCoreContext?) -> Void)
 }
 
 /// Receives RUM context from `DatadogCore` and notifies it through `RUMContextObserver` interface.
 internal class RUMContextReceiver: FeatureMessageReceiver, RUMContextObserver {
     /// Notifies new `RUMContext` or `nil` if current RUM session is not sampled.
-    private var onNew: ((RUMContext?) -> Void)?
-    private var previous: RUMContext?
+    private var onNew: ((RUMCoreContext?) -> Void)?
+    private var previous: RUMCoreContext?
 
     // MARK: - FeatureMessageReceiver
 
@@ -31,15 +31,7 @@ internal class RUMContextReceiver: FeatureMessageReceiver, RUMContextObserver {
             return false
         }
 
-        var new: RUMContext? = nil
-
-        do {
-            // Extract the `RUMContext` or `nil` if RUM session is not sampled:
-            new = try context.baggages[RUMContext.key]?.decode()
-        } catch {
-            core.telemetry
-                .error("Fails to decode RUM context from Session Replay", error: error)
-        }
+        let new = context.additionalContext(ofType: RUMCoreContext.self)
 
         // Notify only if it has changed:
         if new != previous {
@@ -52,7 +44,7 @@ internal class RUMContextReceiver: FeatureMessageReceiver, RUMContextObserver {
 
     // MARK: - RUMContextObserver
 
-    func observe(on queue: Queue, notify: @escaping (RUMContext?) -> Void) {
+    func observe(on queue: Queue, notify: @escaping (RUMCoreContext?) -> Void) {
         onNew = { new in
             queue.run {
                 notify(new)

@@ -9,17 +9,7 @@ import TestUtilities
 import XCTest
 
 private extension ExampleApplication {
-    func tapButton(titled buttonTitle: String) {
-        buttons[buttonTitle].safeTap(within: 5)
-    }
-
-    func swipeToPullModalDown() {
-        let coordinate1 = coordinate(withNormalizedOffset: .init(dx: 0.5, dy: 0.25))
-        let coordinate2 = coordinate(withNormalizedOffset: .init(dx: 0.5, dy: 0.75))
-        coordinate1.press(forDuration: 0.3, thenDragTo: coordinate2)
-    }
-
-    func swipeToPullModalDownButThenCancel() {
+    func swipeDownInteractionButThenCancel() {
         let coordinate1 = coordinate(withNormalizedOffset: .init(dx: 0.5, dy: 0.25))
         let coordinate2 = coordinate(withNormalizedOffset: .init(dx: 0.5, dy: 0.35))
         coordinate1.press(forDuration: 0.3, thenDragTo: coordinate2)
@@ -46,10 +36,10 @@ class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapButton(titled: "Dismiss by parent.dismiss()") // dismiss to "Screen"
 
         app.tapButton(titled: "Present modally - .pageSheet") // go to modal "Modal"
-        app.swipeToPullModalDown() // interactive dismiss to "Screen"
+        app.swipeDownInteraction() // interactive dismiss to "Screen"
 
         app.tapButton(titled: "Present modally - .pageSheet") // go to modal "Modal"
-        app.swipeToPullModalDownButThenCancel() // interactive and cancelled dismiss, stay on "Modal"
+        app.swipeDownInteractionButThenCancel() // interactive and cancelled dismiss, stay on "Modal"
         app.tapButton(titled: "Dismiss by self.dismiss()") // dismiss to "Screen"
 
         try app.endRUMSession()
@@ -124,10 +114,10 @@ class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapButton(titled: "Dismiss by parent.dismiss()") // dismiss to "Screen"
 
         app.tapButton(titled: "Present modally - .pageSheet") // go to modal "Modal"
-        app.swipeToPullModalDown() // interactive dismiss to "Screen"
+        app.swipeDownInteraction() // interactive dismiss to "Screen"
 
         app.tapButton(titled: "Present modally - .pageSheet") // go to modal "Modal"
-        app.swipeToPullModalDownButThenCancel() // interactive and cancelled dismiss, stay on "Modal"
+        app.swipeDownInteractionButThenCancel() // interactive and cancelled dismiss, stay on "Modal"
         app.tapButton(titled: "Dismiss by self.dismiss()") // dismiss to "Screen"
 
         try app.endRUMSession()
