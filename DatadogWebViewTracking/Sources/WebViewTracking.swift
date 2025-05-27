@@ -107,7 +107,7 @@ public enum WebViewTracking {
             .joined(separator: ",")
 
         let sessionReplay = core.feature(
-            named: SessionReplayFeaturneName,
+            named: SessionReplayFeatureName,
             type: SessionReplayConfiguration.self
         )
 

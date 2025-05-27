@@ -5,19 +5,7 @@
  */
 
 import Foundation
-
-/// Lightweight representation of current RUM session state, used to compute `RUMOffViewEventsHandlingRule`.
-/// It gets serialized into fatal error context for computing the rule upon app process restart.
-internal struct RUMSessionState: Equatable, Codable {
-    /// The session ID. Can be `.nullUUID` if the session was rejected by sampler.
-    let sessionUUID: UUID
-    /// If this is the very first session in the app process (`true`) or was re-created upon timeout (`false`).
-    let isInitialSession: Bool
-    /// If this session has ever tracked any view (used to reason about "application launch" events).
-    let hasTrackedAnyView: Bool
-    /// If the there was a Session Replay recording pending at the moment of starting this session (`nil` if SR Feature was not configured).
-    let didStartWithReplay: Bool?
-}
+import DatadogInternal
 
 /// The rule for handling RUM events which are tracked while there is no active view.
 ///

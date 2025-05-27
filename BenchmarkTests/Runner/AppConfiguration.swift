@@ -27,27 +27,34 @@ import DatadogCore
 ///             <string>$(DD_SITE)</string>
 ///         </dict>
 ///     </dict>
-struct AppInfo: Decodable {
+struct AppInfo {
     let clientToken: String
     let applicationID: String
     let apiKey: String
     let site: DatadogSite
     let env: String
-
-    enum CodingKeys: String, CodingKey {
-        case clientToken = "ClientToken"
-        case applicationID = "ApplicationID"
-        case apiKey = "ApiKey"
-        case site = "Site"
-        case env = "Environment"
-    }
 }
 
 extension AppInfo {
     init(bundle: Bundle = .main) throws {
-        let decoder = AnyDecoder()
-        let obj = bundle.object(forInfoDictionaryKey: "DatadogConfiguration")
-        self = try decoder.decode(from: obj)
+        guard
+            let obj = bundle.object(forInfoDictionaryKey: "DatadogConfiguration") as? [String: String],
+            let clientToken = obj["ClientToken"],
+            let applicationID = obj["ApplicationID"],
+            let apiKey = obj["ApiKey"],
+            let site = obj["Site"].flatMap(DatadogSite.init(rawValue:)),
+            let env = obj["Environment"]
+        else {
+            throw ProgrammerError(description: "Missing required Info.plist keys")
+        }
+
+        self = .init(
+            clientToken: clientToken,
+            applicationID: applicationID,
+            apiKey: apiKey,
+            site: site,
+            env: env
+        )
     }
 }
 
@@ -62,8 +69,6 @@ extension AppInfo {
         )
     }
 }
-
-extension DatadogSite: Decodable {}
 
 extension Datadog.Configuration {
     static func benchmark(info: AppInfo) -> Self {

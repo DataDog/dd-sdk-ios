@@ -515,7 +515,7 @@ extension Recorder.Context: AnyMockable, RandomMockable {
         textAndInputPrivacy: TextAndInputPrivacyLevel = .mockAny(),
         imagePrivacy: ImagePrivacyLevel = .mockAny(),
         touchPrivacy: TouchPrivacyLevel = .mockAny(),
-        rumContext: RUMContext = .mockAny()
+        rumContext: RUMCoreContext = .mockAny()
     ) -> Recorder.Context {
         return Recorder.Context(
             textAndInputPrivacy: textAndInputPrivacy,
@@ -530,7 +530,7 @@ extension Recorder.Context: AnyMockable, RandomMockable {
         textAndInputPrivacy: TextAndInputPrivacyLevel,
         imagePrivacy: ImagePrivacyLevel,
         touchPrivacy: TouchPrivacyLevel,
-        rumContext: RUMContext,
+        rumContext: RUMCoreContext,
         date: Date = Date(),
         telemetry: Telemetry = NOPTelemetry()
     ) {

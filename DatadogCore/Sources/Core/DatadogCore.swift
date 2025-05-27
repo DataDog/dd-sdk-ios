@@ -45,6 +45,10 @@ internal final class DatadogCore {
     /// `contextProvider`
     let userInfoPublisher = UserInfoPublisher()
 
+    /// The account info publisher that publishes value to the
+    /// `contextProvider`
+    let accountInfoPublisher = AccountInfoPublisher()
+
     /// The application version publisher.
     let applicationVersionPublisher: ApplicationVersionPublisher
 
@@ -107,6 +111,7 @@ internal final class DatadogCore {
         self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
         self.consentPublisher = TrackingConsentPublisher(consent: initialConsent)
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
+        self.contextProvider.subscribe(\.accountInfo, to: accountInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
         self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
 
@@ -153,6 +158,63 @@ internal final class DatadogCore {
         var extraInfo = userInfoPublisher.current.extraInfo
         newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
         userInfoPublisher.current.extraInfo = extraInfo
+    }
+
+    /// Sets current account information.
+    ///
+    /// Those will be added to logs, traces and RUM events automatically.
+    ///
+    /// - Parameters:
+    ///   - id: Account ID
+    ///   - name: Name representing the account, if any
+    ///   - extraInfo: Account's custom attributes, if any
+    func setAccountInfo(
+        id: String,
+        name: String? = nil,
+        extraInfo: [AttributeKey: AttributeValue] = [:]
+    ) {
+        let accountInfo = AccountInfo(
+            id: id,
+            name: name,
+            extraInfo: extraInfo
+        )
+        accountInfoPublisher.current = accountInfo
+    }
+
+    /// Add or override the extra info of the current account
+    ///
+    ///  - Parameters:
+    ///    - extraInfo: The account's custom attibutes to add or override
+    func addAccountExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
+        guard let accountInfo = accountInfoPublisher.current else {
+            DD.logger.error(
+                "Failed to add Account ExtraInfo because no Account Info exist yet. Please call `setAccountInfo` first."
+            )
+            #if DEBUG
+            assertionFailure("Failed to add Account ExtraInfo because no Account Info exist yet. Please call `setAccountInfo` first.")
+            #endif
+            return
+        }
+        var extraInfo = accountInfo.extraInfo
+        newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
+        accountInfoPublisher.current?.extraInfo = extraInfo
+    }
+
+    /// Clear the current account information
+    ///
+    /// Account information will be `nil`
+    /// Following Logs, Traces, RUM Events will not include the account information anymore
+    ///
+    /// Any active RUM Session, active RUM View at the time of call will have their `account` attribute emptied
+    ///
+    /// If you want to retain the current `account` on the active RUM session,
+    /// you need to stop the session first by using `RUMMonitor.stopSession()`
+    ///
+    /// If you want to retain the current `account` on the active RUM views,
+    /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
+    ///
+    func clearAccountInfo() {
+        accountInfoPublisher.current = nil
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
@@ -309,8 +371,8 @@ extension DatadogCore: DatadogCoreProtocol {
         return CoreFeatureScope<Feature>(in: self)
     }
 
-    func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
-        contextProvider.write { $0.baggages[key] = baggage() }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
+        contextProvider.write { $0.set(additionalContext: context()) }
     }
 
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
@@ -378,8 +440,8 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
         core?.send(message: message, else: fallback)
     }
 
-    func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
-        core?.set(baggage: baggage, forKey: key)
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
+        core?.set(context: context)
     }
 
     func set(anonymousId: String?) {
@@ -488,7 +550,7 @@ extension DatadogCore: Flushable {
         // follow our design choices around SDK core's threading.
 
         // Reset baggages that need not be persisted across flushes.
-        set(baggage: nil, forKey: LaunchReport.baggageKey)
+        removeContext(ofType: LaunchReport.self)
 
         let features = features.values.compactMap { $0 as? Flushable }
 

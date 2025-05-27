@@ -176,6 +176,7 @@ internal class RUMResourceScope: RUMScope {
                 spanId: spanId?.toString(representation: .decimal),
                 traceId: traceId?.toString(representation: .hexadecimal)
             ),
+            account: .init(context: context),
             action: self.context.activeUserActionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
@@ -286,6 +287,7 @@ internal class RUMResourceScope: RUMScope {
                     sessionPrecondition: self.context.sessionPrecondition
                 )
             ),
+            account: .init(context: context),
             action: self.context.activeUserActionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },

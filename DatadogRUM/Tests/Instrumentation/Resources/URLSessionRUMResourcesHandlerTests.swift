@@ -44,7 +44,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let (request, traceContext) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.datadog],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
@@ -79,7 +84,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let (request, traceContext) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.b3],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
@@ -110,7 +120,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let (request, traceContext) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.b3multi],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
@@ -144,7 +159,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let (request, traceContext) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.tracecontext],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
@@ -175,7 +195,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let (request, traceContext) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.datadog],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
@@ -202,7 +227,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let (request, traceContext) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.b3],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
@@ -227,7 +257,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let (request, traceContext) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.b3multi],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
@@ -255,7 +290,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let (request, traceContext) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.tracecontext],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
@@ -299,7 +339,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 .b3multi,
                 .tracecontext
             ],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "custom")
@@ -550,7 +595,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let (modifiedRequest, _) = handler.modify(
             request: request,
             headerTypes: [.datadog, .tracecontext, .b3, .b3multi],
-            networkContext: NetworkContext(rumContext: .init(sessionID: "abcdef01-2345-6789-abcd-ef0123456789"))
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
         )
 
         XCTAssertEqual(

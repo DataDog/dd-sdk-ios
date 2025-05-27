@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Encapsulates Python server configuration passed through ENV variable from  UITest runner to the app process.
+/// Encapsulates Python server configuration passed through ENV variable from UITest runner to the app process.
 internal struct HTTPServerMockConfiguration: Codable {
     /// Python server URL to record Logging requests.
     var logsEndpoint: URL? = nil

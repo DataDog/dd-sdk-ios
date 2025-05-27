@@ -12,6 +12,8 @@ internal protocol RUMSanitizableEvent {
     /// Mutable user property.
     var usr: RUMUser? { get set }
 
+    var account: RUMAccount? { get set }
+
     /// Mutable event context.
     var context: RUMEventAttributes? { get set }
 }
@@ -28,6 +30,7 @@ internal struct RUMEventSanitizer {
         // event attributes, then user info extra attributes.
         var limit = AttributesSanitizer.Constraints.maxNumberOfAttributes
         event.usr = sanitize(usr: event.usr, limit: &limit)
+        event.account = sanitize(account: event.account, limit: &limit)
         event.context = sanitize(context: event.context, limit: &limit)
 
         return event
@@ -46,6 +49,21 @@ internal struct RUMEventSanitizer {
 
         limit -= usr.usrInfo.count
         return usr
+    }
+
+    private func sanitize(account: RUMAccount?, limit: inout Int) -> RUMAccount? {
+        guard var account = account else {
+            return nil
+        }
+
+        // Sanitize attribute names
+        let attributes = attributesSanitizer.sanitizeKeys(for: account.accountInfo, prefixLevels: 1)
+
+        // Limit to max number of attributes.
+        account.accountInfo = attributesSanitizer.limitNumberOf(attributes: attributes, to: limit)
+
+        limit -= account.accountInfo.count
+        return account
     }
 
     private func sanitize(context: RUMEventAttributes?, limit: inout Int) -> RUMEventAttributes? {

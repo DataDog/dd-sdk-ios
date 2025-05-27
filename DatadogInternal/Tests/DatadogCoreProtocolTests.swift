@@ -10,47 +10,39 @@ import TestUtilities
 @testable import DatadogInternal
 
 class DatadogCoreProtocolTests: XCTestCase {
-    func testSendMessageExtension() throws {
+    func testSendMessageExtension() {
         // Given
         let receiver = FeatureMessageReceiverMock()
         let core = PassthroughCoreMock(messageReceiver: receiver)
 
         // When
-        core.send(message: .baggage(key: "test", value: "value"))
+        core.send(message: .payload("value"))
 
         // Then
         XCTAssertEqual(
-            try receiver.messages.last?.baggage(forKey: "test"), "value", "DatadogCoreProtocol.send(message:) should forward message"
+            receiver.messages.last?.asPayload as? String, "value", "DatadogCoreProtocol.send(message:) should forward message"
         )
     }
 
-    func testSetBaggageExtension() throws {
+    func testAdditionalContextExtension() throws {
         // Given
         let core = PassthroughCoreMock()
 
+        struct MyContext: AdditionalContext, Equatable {
+            static let key = "my-context"
+            let value: String
+        }
+
+        // When
+        core.set(context: MyContext(value: "value"))
+
         // Then
-        core.set(baggage: FeatureBaggage("value"), forKey: "test")
-        XCTAssertEqual(
-            try core.context.baggages["test"]?.decode(), "value", "DatadogCoreProtocol.set(baggage:) should forward baggage"
-        )
+        XCTAssertEqual(core.context.additionalContext(ofType: MyContext.self), MyContext(value: "value"))
 
-        core.set(baggage: nil, forKey: "test")
-        XCTAssertNil(core.context.baggages["test"], "DatadogCoreProtocol.set(baggage:) should forward baggage" )
+        // When
+        core.removeContext(ofType: MyContext.self)
 
-        core.set(baggage: { "value" }, forKey: "test")
-        XCTAssertEqual(
-            try core.context.baggages["test"]?.decode(), "value", "DatadogCoreProtocol.set(baggage:) should forward baggage"
-        )
-
-        core.set(baggage: { nil as String? }, forKey: "test")
-        XCTAssertNil(core.context.baggages["test"], "DatadogCoreProtocol.set(baggage:) should forward baggage" )
-
-        core.set(baggage: "value", forKey: "test")
-        XCTAssertEqual(
-            try core.context.baggages["test"]?.decode(), "value", "DatadogCoreProtocol.set(baggage:) should forward baggage"
-        )
-
-        core.set(baggage: nil as String?, forKey: "test")
-        XCTAssertNil(core.context.baggages["test"], "DatadogCoreProtocol.set(baggage:) should forward baggage" )
+        // Then
+        XCTAssertNil(core.context.additionalContext(ofType: MyContext.self))
     }
 }

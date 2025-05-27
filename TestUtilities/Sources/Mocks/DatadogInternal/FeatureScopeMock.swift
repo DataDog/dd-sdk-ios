@@ -43,9 +43,8 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         messages.append(message)
     }
-
-    public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
-        contextMock.baggages[key] = baggage()
+    public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
+        contextMock.set(additionalContext: context())
     }
 
     public func set(anonymousId: String?) {

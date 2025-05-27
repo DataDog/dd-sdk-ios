@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import DatadogInternal
 import Foundation
+import DatadogInternal
 
 @testable import DatadogLogs
 @testable import DatadogRUM
@@ -108,36 +108,18 @@ public class CrashReportSenderMock: CrashReportSender {
     public func send(launch: DatadogInternal.LaunchReport) {}
 }
 
-public class RUMCrashReceiverMock: FeatureMessageReceiver {
-    public var receivedBaggage: FeatureBaggage?
+public class CrashReceiverMock: FeatureMessageReceiver {
+    public var receivedCrash: Crash?
 
     public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        switch message {
-        case .baggage(let label, let baggage) where label == CrashReportReceiver.MessageKeys.crash:
-            receivedBaggage = baggage
-            return true
-        default:
+        guard case let .payload(crash as Crash) = message else {
             return false
         }
+        receivedCrash = crash
+        return true
     }
 
     public init() {}
-}
-
-public class LogsCrashReceiverMock: FeatureMessageReceiver {
-    public var receivedBaggage: FeatureBaggage?
-
-    public init() {}
-
-    public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        switch message {
-        case .baggage(let label, let baggage) where label == LoggingMessageKeys.crash:
-            receivedBaggage = baggage
-            return true
-        default:
-            return false
-        }
-    }
 }
 
 extension CrashContext {
@@ -156,14 +138,15 @@ extension CrashContext {
         source: String = .mockAny(),
         trackingConsent: TrackingConsent = .granted,
         userInfo: UserInfo? = .mockAny(),
+        accountInfo: AccountInfo? = nil,
         networkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
         carrierInfo: CarrierInfo? = .mockAny(),
-        lastRUMViewEvent: AnyCodable? = nil,
-        lastRUMSessionState: AnyCodable? = nil,
+        lastRUMViewEvent: RUMViewEvent? = nil,
+        lastRUMSessionState: RUMSessionState? = nil,
         lastIsAppInForeground: Bool = .mockAny(),
         appLaunchDate: Date? = .mockRandomInThePast(),
-        lastRUMAttributes: GlobalRUMAttributes? = nil,
-        lastLogAttributes: AnyCodable? = nil
+        lastRUMAttributes: RUMEventAttributes? = nil,
+        lastLogAttributes: LogEventAttributes? = nil
     ) -> Self {
         .init(
             serverTimeOffset: serverTimeOffset,
@@ -176,6 +159,7 @@ extension CrashContext {
             source: source,
             trackingConsent: trackingConsent,
             userInfo: userInfo,
+            accountInfo: accountInfo,
             networkConnectionInfo: networkConnectionInfo,
             carrierInfo: carrierInfo,
             lastIsAppInForeground: lastIsAppInForeground,
@@ -199,14 +183,15 @@ extension CrashContext {
             source: .mockRandom(),
             trackingConsent: .granted,
             userInfo: .mockRandom(),
+            accountInfo: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
             lastIsAppInForeground: .mockRandom(),
             appLaunchDate: .mockRandomInThePast(),
-            lastRUMViewEvent: AnyCodable(mockRandomAttributes()),
-            lastRUMSessionState: AnyCodable(mockRandomAttributes()),
-            lastRUMAttributes: GlobalRUMAttributes(attributes: mockRandomAttributes()),
-            lastLogAttributes: AnyCodable(mockRandomAttributes())
+            lastRUMViewEvent: .mockRandom(),
+            lastRUMSessionState: .mockRandom(),
+            lastRUMAttributes: .mockRandom(),
+            lastLogAttributes: .mockRandom()
         )
     }
 

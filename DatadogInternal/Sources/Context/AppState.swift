@@ -16,7 +16,7 @@ public protocol AppStateProvider: Sendable {
 }
 
 /// Application state.
-public enum AppState: Codable, PassthroughAnyCodable {
+public enum AppState: Codable {
     /// The app is running in the foreground and currently receiving events.
     case active
     /// The app is running in the foreground but is not receiving events.
@@ -39,7 +39,7 @@ public enum AppState: Codable, PassthroughAnyCodable {
 }
 
 /// A data structure to represent recorded app states in a given period of time
-public struct AppStateHistory: Codable, Equatable, PassthroughAnyCodable {
+public struct AppStateHistory: Codable, Equatable {
     /// Snapshot of the app state at `date`
     public struct Snapshot: Codable, Equatable {
         /// The app state at this `date`.

@@ -74,6 +74,9 @@ public struct DatadogContext {
     /// Current user information.
     public var userInfo: UserInfo?
 
+    /// Current user information.
+    public var accountInfo: AccountInfo?
+
     /// The user's consent to data collection
     public var trackingConsent: TrackingConsent = .pending
 
@@ -107,8 +110,8 @@ public struct DatadogContext {
     /// `true` if the Low Power Mode is enabled.
     public var isLowPowerModeEnabled = false
 
-    /// Type-less context baggages.
-    public var baggages: [String: FeatureBaggage] = [:]
+    /// Additional context that can set from `core` instance.
+    private var additionalContext: [String: AdditionalContext] = [:]
 
     // swiftlint:disable function_default_parameter_at_end
     public init(
@@ -131,6 +134,7 @@ public struct DatadogContext {
         device: DeviceInfo,
         nativeSourceOverride: String? = nil,
         userInfo: UserInfo? = nil,
+        accountInfo: AccountInfo? = nil,
         trackingConsent: TrackingConsent = .pending,
         launchTime: LaunchTime,
         applicationStateHistory: AppStateHistory,
@@ -138,7 +142,7 @@ public struct DatadogContext {
         carrierInfo: CarrierInfo? = nil,
         batteryStatus: BatteryStatus? = nil,
         isLowPowerModeEnabled: Bool = false,
-        baggages: [String: FeatureBaggage] = [:]
+        additionalContext: [String: AdditionalContext] = [:]
     ) {
         self.site = site
         self.clientToken = clientToken
@@ -159,6 +163,7 @@ public struct DatadogContext {
         self.device = device
         self.nativeSourceOverride = nativeSourceOverride
         self.userInfo = userInfo
+        self.accountInfo = accountInfo
         self.trackingConsent = trackingConsent
         self.launchTime = launchTime
         self.applicationStateHistory = applicationStateHistory
@@ -166,7 +171,45 @@ public struct DatadogContext {
         self.carrierInfo = carrierInfo
         self.batteryStatus = batteryStatus
         self.isLowPowerModeEnabled = isLowPowerModeEnabled
-        self.baggages = baggages
+        self.additionalContext = additionalContext
     }
     // swiftlint:enable function_default_parameter_at_end
+}
+
+/// Defines an additional context value type associated to a key.
+public protocol AdditionalContext {
+    /// The additional context key.
+    static var key: String { get }
+}
+
+extension DatadogContext {
+    /// Gets an additional context value of `Context` type.
+    ///
+    /// - Parameter type: The additional context type.
+    /// - Returns: The `Context` if found
+    public func additionalContext<Context>(ofType type: Context.Type) -> Context? where Context: AdditionalContext {
+        additionalContext[type.key] as? Context
+    }
+
+    /// Sets additional context to `DatadogContext`.
+    ///
+    /// This method only mutates the current instance. To propagate an additional context
+    /// across the Datadog SDK, please use the ``DatadogCoreProtocol/set(context:)`` instead.
+    ///
+    /// - Parameters:
+    ///   - context: The additional context to set.
+    public mutating func set<Context>(additionalContext context: Context?) where Context: AdditionalContext {
+        additionalContext[Context.key] = context
+    }
+
+    /// Removes additional context from `DatadogContext`.
+    ///
+    /// This method only mutates the current instance. To propagate an additional context
+    /// across the Datadog SDK, please use the ``DatadogCoreProtocol/removeContext(ofType:)`` instead
+    /// 
+    /// - Parameters:
+    ///   - type: The context's type to remove.
+    public mutating func removeContext<Context>(ofType type: Context.Type) where Context: AdditionalContext {
+        additionalContext[Context.key] = nil
+    }
 }

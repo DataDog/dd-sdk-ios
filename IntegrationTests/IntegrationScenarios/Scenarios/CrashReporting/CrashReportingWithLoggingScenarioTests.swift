@@ -10,7 +10,7 @@ import XCTest
 private extension ExampleApplication {
     /// Tapping this button will crash the app.
     func tapCallFatalError() {
-        buttons["Call fatalError()"].safeTap()
+        tapButton(titled: "Call fatalError()")
     }
 }
 

@@ -20,46 +20,14 @@ internal class NetworkContextCoreProvider: NetworkContextProvider {
 }
 
 extension NetworkContextCoreProvider: FeatureMessageReceiver {
-    /// Defines keys referencing RUM baggage in `DatadogContext.featuresAttributes`.
-    internal enum RUMBaggageKeys {
-        /// The key references RUM view event.
-        /// The view event associated with the key conforms to `Codable`.
-        static let viewEvent = "rum-view-event"
-
-        /// The key references a `true` value if the RUM view is reset.
-        static let viewReset = "rum-view-reset"
-
-        /// The key references RUM session state.
-        /// The state associated with the key conforms to `Codable`.
-        static let sessionState = "rum-session-state"
-
-        /// This key references the global log attributes
-        static let logAttributes = "global-log-attributes"
-
-        /// The key referencing ``DatadogInternal.GlobalRUMAttributes`` value holding RUM global attributes.
-        static let rumAttributes = "global-rum-attributes"
-    }
-
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        switch message {
-        case .context(let context):
-            update(context: context, to: core)
-        default:
+        guard case let .context(context) = message else {
             return false
         }
 
+        currentNetworkContext = NetworkContext(
+            rumContext: context.additionalContext(ofType: RUMCoreContext.self)
+        )
         return true
-    }
-
-    /// Updates crash context.
-    ///
-    /// - Parameter context: The updated core context.
-    private func update(context: DatadogContext, to core: DatadogCoreProtocol) {
-        do {
-            self.currentNetworkContext = NetworkContext(rumContext: try context.baggages["rum"]?.decode())
-        } catch {
-            core.telemetry
-                .error("Fails to decode RUM Context from Trace", error: error)
-        }
     }
 }

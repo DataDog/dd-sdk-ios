@@ -139,7 +139,7 @@ internal class Monitor: RUMCommandSubscriber {
 
         // update the core context with rum context
         featureScope.set(
-            baggage: { [weak self] () -> RUMCoreContext? in
+            context: { [weak self] () -> RUMCoreContext? in
                 guard let self = self else {
                     return nil
                 }
@@ -160,8 +160,7 @@ internal class Monitor: RUMCommandSubscriber {
                     userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
                     viewServerTimeOffset: self.scopes.activeSession?.viewScopes.last?.serverTimeOffset
                 )
-            },
-            forKey: RUMFeature.name
+            }
         )
     }
 

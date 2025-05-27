@@ -159,14 +159,22 @@ class PerformancePresetTests: XCTestCase {
             range: (TimeInterval.mockRandom(min: 1, max: 10)..<TimeInterval.mockRandom(min: 11, max: 100)),
             changeRate: .mockRandom()
         )
+        let maxFileAgeForRead: TimeInterval = .mockRandom(min: 100, max: 1_000)
 
         // When
-        let preset = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom(), bundleType: .mockRandom(), batchProcessingLevel: .mockRandom())
+        let preset = PerformancePreset(
+            batchSize: .mockRandom(),
+            uploadFrequency: .mockRandom(),
+            bundleType: .mockRandom(),
+            batchProcessingLevel: .mockRandom()
+        )
+
         let updatedPreset = preset.updated(
             with: PerformancePresetOverride(
                 maxFileSize: maxFileSizeOverride,
                 maxObjectSize: maxObjectSizeOverride,
                 meanFileAge: meanFileAgeOverride,
+                maxFileAgeForRead: maxFileAgeForRead,
                 uploadDelay: uploadDelayOverride
             )
         )
@@ -176,6 +184,7 @@ class PerformancePresetTests: XCTestCase {
         XCTAssertEqual(updatedPreset.maxObjectSize, maxObjectSizeOverride)
         XCTAssertEqual(updatedPreset.maxFileAgeForWrite, meanFileAgeOverride * 0.95, accuracy: 0.01)
         XCTAssertEqual(updatedPreset.minFileAgeForRead, meanFileAgeOverride * 1.05, accuracy: 0.01)
+        XCTAssertEqual(updatedPreset.maxFileAgeForRead, maxFileAgeForRead)
         XCTAssertEqual(updatedPreset.uploaderWindow, meanFileAgeOverride, accuracy: 0.01)
         XCTAssertEqual(updatedPreset.initialUploadDelay, uploadDelayOverride.initial)
         XCTAssertEqual(updatedPreset.minUploadDelay, uploadDelayOverride.range.lowerBound)

@@ -169,13 +169,12 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         let context = activeSpan?.context as? DDSpanContext
 
         featureScope.set(
-            baggage: context.map {
+            context: context.map {
                 SpanCoreContext(
                     traceID: String($0.traceID, representation: .hexadecimal),
                     spanID: String($0.spanID, representation: .decimal)
                 )
-            },
-            forKey: SpanCoreContext.key
+            }
         )
     }
     // MARK: - OpenTelemetry

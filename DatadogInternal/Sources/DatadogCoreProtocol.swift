@@ -11,7 +11,7 @@ import Foundation
 ///
 /// Any reference to `DatadogCoreProtocol` must be captured as `weak` within a Feature. This is to avoid
 /// retain cycle of core holding the Feature and vice-versa.
-public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing, Storage {
+public protocol DatadogCoreProtocol: AnyObject, MessageSending, AdditionalContextSharing, Storage {
     // Remove `DatadogCoreProtocol` conformance to `MessageSending` and `BaggageSharing` once
     // all features are migrated to depend on `FeatureScope` interface.
 
@@ -53,6 +53,17 @@ public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing, 
     func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature
 }
 
+extension DatadogCoreProtocol {
+    /// Returns a `DatadogFeature` conforming type from the
+    /// Feature registry.
+    ///
+    /// - Parameter type: The Feature instance type.
+    /// - Returns: The Feature if any.
+    public func get<T>(feature type: T.Type = T.self) -> T? where T: DatadogFeature {
+        feature(named: T.name, type: type)
+    }
+}
+
 public protocol MessageSending {
     /// Sends a message on the bus shared by features registered to the sam core.
     ///
@@ -66,50 +77,6 @@ public protocol MessageSending {
     func send(message: FeatureMessage, else fallback: @escaping () -> Void)
 }
 
-public protocol BaggageSharing {
-    /// Sets given baggage for a given Feature for sharing data through `DatadogContext`.
-    ///
-    /// This method provides a passive communication chanel between Features of the Core.
-    /// For an active Feature-to-Feature communication, please use the `send(message:)`
-    /// method.
-    ///
-    /// Setting baggages will update the Core Context that is shared across Features.
-    /// In the following examples, the Feature `foo` will set an value and a second
-    /// Feature `bar` will read it through the event write context.
-    ///
-    ///     // Foo.swift
-    ///     core.set(baggage: { .init("value") }, forKey: "key")
-    ///
-    ///     // Bar.swift
-    ///     core.scope(for: "bar").eventWriteContext { context, writer in
-    ///         if let baggage = context.baggages["key"] {
-    ///             do {
-    ///                 // Try decoding context to expected type:
-    ///                 let value: String = try baggage.decode()
-    ///                 // If success, handle the `value`.
-    ///             } catch {
-    ///                 // Otherwise, handle the error (e.g. consider sending as telemetry).
-    ///             }
-    ///         }
-    ///     }
-    ///
-    /// - Parameters:
-    ///   - baggage: The Feature's baggage to set.
-    ///   - key: The baggage's key.
-    func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String)
-}
-
-extension DatadogCoreProtocol {
-    /// Returns a `DatadogFeature` conforming type from the
-    /// Feature registry.
-    ///
-    /// - Parameter type: The Feature instance type.
-    /// - Returns: The Feature if any.
-    public func get<T>(feature type: T.Type = T.self) -> T? where T: DatadogFeature {
-        feature(named: T.name, type: type)
-    }
-}
-
 extension MessageSending {
     /// Sends a message on the bus shared by features registered to the same core.
     ///
@@ -120,104 +87,83 @@ extension MessageSending {
     }
 }
 
-extension BaggageSharing {
-    /// Sets given baggage for a given Feature for sharing data through `DatadogContext`.
+public protocol AdditionalContextSharing {
+    /// Sets additional context for sharing data through `DatadogContext`.
     ///
-    /// This method provides a passive communication chanel between Features of the Core.
+    /// This method provides a passive communication channel between Features of the Core.
     /// For an active Feature-to-Feature communication, please use the `send(message:)`
     /// method.
     ///
-    /// Setting baggages will update the Core Context that is shared across Features.
+    /// Setting context will update the Core Context's additional property that is shared across Features.
     /// In the following examples, the Feature `foo` will set an value and a second
     /// Feature `bar` will read it through the event write context.
     ///
+    ///     // MyContext.swift
+    ///     struct MyContext: AdditionalContext {
+    ///         static let key = "my-context"
+    ///         let value: String
+    ///     }
+    ///
     ///     // Foo.swift
-    ///     core.set(baggage: FeatureBaggage("value"), forKey: "key")
+    ///     core.set(context: { MyContext(value: "value") })
     ///
     ///     // Bar.swift
     ///     core.scope(for: "bar").eventWriteContext { context, writer in
-    ///         if let baggage = context.baggages["key"] {
-    ///             try {
-    ///                 // Try decoding context to expected type:
-    ///                 let value: String = try baggage.decode()
-    ///                 // If success, handle the `value`.
-    ///             } catch {
-    ///                 // Otherwise, handle the error (e.g. consider sending as telemetry).
-    ///             }
+    ///         if let value = context.additionalContext(ofType: MyContext.self) {
+    ///             // If success, handle the `value`.
     ///         }
     ///     }
     ///
     /// - Parameters:
-    ///   - baggage: The Feature's baggage to set.
-    ///   - label: The baggage's label.
-    public func set(baggage: FeatureBaggage?, forKey key: String) {
-        self.set(baggage: { baggage }, forKey: key)
+    ///   - context: The additional context to set.
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext
+}
+
+extension AdditionalContextSharing {
+    /// Sets additional context for sharing data through `DatadogContext`.
+    ///
+    /// This method provides a passive communication channel between Features of the Core.
+    /// For an active Feature-to-Feature communication, please use the `send(message:)`
+    /// method.
+    ///
+    /// Setting context will update the Core Context's additional property that is shared across Features.
+    /// In the following examples, the Feature `foo` will set an value and a second
+    /// Feature `bar` will read it through the event write context.
+    ///
+    ///     // MyContext.swift
+    ///     struct MyContext: AdditionalContext {
+    ///         static let key = "my-context"
+    ///         let value: String
+    ///     }
+    ///
+    ///     // Foo.swift
+    ///     core.set(context: MyContext(value: "value"))
+    ///
+    ///     // Bar.swift
+    ///     core.scope(for: "bar").eventWriteContext { context, writer in
+    ///         if let value = context.additionalContext(ofType: MyContext.self) {
+    ///             // If success, handle the `value`.
+    ///         }
+    ///     }
+    ///
+    /// - Parameters:
+    ///   - context: The additional context to set.
+    public func set<Context>(context: Context?) where Context: AdditionalContext {
+        set(context: { context })
     }
 
-    /// Sets given baggage for a given Feature for sharing data through `DatadogContext`.
+    /// Removes additional context from `DatadogContext`.
     ///
-    /// This method provides a passive communication chanel between Features of the Core.
+    /// This method provides a passive communication channel between Features of the Core.
     /// For an active Feature-to-Feature communication, please use the `send(message:)`
     /// method.
     ///
-    /// Setting baggages will update the Core Context that is shared across Features.
-    /// In the following examples, the Feature `foo` will set an value and a second
-    /// Feature `bar` will read it through the event write context.
-    ///
-    ///     // Foo.swift
-    ///     core.set(baggage: "value", forKey: "key")
-    ///
-    ///     // Bar.swift
-    ///     core.scope(for: "bar").eventWriteContext { context, writer in
-    ///         if let baggage = context.baggages["key"] {
-    ///             try {
-    ///                 // Try decoding context to expected type:
-    ///                 let value: String = try baggage.decode()
-    ///                 // If success, handle the `value`.
-    ///             } catch {
-    ///                 // Otherwise, handle the error (e.g. consider sending as telemetry).
-    ///             }
-    ///         }
-    ///     }
-    ///
+    /// Removing context will update the Core Context's additional property that is shared across Features.
+    /// 
     /// - Parameters:
-    ///   - baggage: The Feature's baggage to set.
-    ///   - label: The baggage's label.
-    public func set<Baggage>(baggage: Baggage?, forKey key: String) where Baggage: Encodable {
-        self.set(baggage: { baggage }, forKey: key)
-    }
-
-    /// Sets given baggage for a given Feature for sharing data through `DatadogContext`.
-    ///
-    /// This method provides a passive communication chanel between Features of the Core.
-    /// For an active Feature-to-Feature communication, please use the `send(message:)`
-    /// method.
-    ///
-    /// Setting baggages will update the Core Context that is shared across Features.
-    /// In the following examples, the Feature `foo` will set an value and a second
-    /// Feature `bar` will read it through the event write context.
-    ///
-    ///     // Foo.swift
-    ///     core.set(baggage: { "value" }, forKey: "key")
-    ///
-    ///     // Bar.swift
-    ///     core.scope(for: "bar").eventWriteContext { context, writer in
-    ///         if let baggage = context.baggages["key"] {
-    ///             try {
-    ///                 // Try decoding context to expected type:
-    ///                 let value: String = try baggage.decode()
-    ///                 // If success, handle the `value`.
-    ///             } catch {
-    ///                 // Otherwise, handle the error (e.g. consider sending as telemetry).
-    ///             }
-    ///         }
-    ///     }
-    ///
-    /// - Parameters:
-    ///   - baggage: The Feature's baggage to set.
-    ///   - label: The baggage's label.
-    public func set<Baggage>(baggage: @escaping () -> Baggage?, forKey key: String) where Baggage: Encodable {
-        self.set(baggage: { baggage().map(FeatureBaggage.init) }, forKey: key)
+    ///   - type: The context's type to remove.
+    public func removeContext<Context>(ofType type: Context.Type) where Context: AdditionalContext {
+        set(context: { nil as Context? })
     }
 }
 
@@ -229,7 +175,7 @@ public protocol AnonymousIdentifierManaging {
 }
 
 /// Feature scope provides a context and a writer to build a record event.
-public protocol FeatureScope: MessageSending, BaggageSharing, AnonymousIdentifierManaging, Sendable {
+public protocol FeatureScope: MessageSending, AdditionalContextSharing, AnonymousIdentifierManaging, Sendable {
     /// Retrieve the core context and event writer.
     ///
     /// The Feature scope provides the current Datadog context and event writer for building and recording events.
@@ -311,7 +257,7 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     /// no-op
     public func scope<T>(for featureType: T.Type) -> FeatureScope { NOPFeatureScope() }
     /// no-op
-    public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) { }
+    public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { }
     /// no-op
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
     /// no-op
@@ -331,7 +277,7 @@ public struct NOPFeatureScope: FeatureScope {
     /// no-op
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
     /// no-op
-    public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) { }
+    public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { }
     /// no-op
     public func set(anonymousId: String?) { }
 }
