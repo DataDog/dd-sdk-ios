@@ -123,6 +123,7 @@ extension LogEvent: AnyMockable, RandomMockable {
         dd: LogEvent.Dd = .mockAny(),
         os: LogEvent.OperatingSystem = .mockAny(),
         userInfo: UserInfo = .mockAny(),
+        accountInfo: AccountInfo = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
         mobileCarrierInfo: CarrierInfo? = .mockAny(),
         attributes: LogEvent.Attributes = .mockAny(),
@@ -145,6 +146,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             dd: dd,
             os: os,
             userInfo: userInfo,
+            accountInfo: accountInfo,
             networkConnectionInfo: networkConnectionInfo,
             mobileCarrierInfo: mobileCarrierInfo,
             attributes: attributes,
@@ -170,6 +172,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             dd: .mockRandom(),
             os: .mockRandom(),
             userInfo: .mockRandom(),
+            accountInfo: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
             mobileCarrierInfo: .mockRandom(),
             attributes: .mockRandom(),
@@ -185,30 +188,6 @@ extension LogEvent.Status: RandomMockable {
 
     public static func mockRandom() -> LogEvent.Status {
         return allCases.randomElement()!
-    }
-}
-
-extension LogEvent.UserInfo: AnyMockable, RandomMockable {
-    public static func mockAny() -> LogEvent.UserInfo {
-        return mockEmpty()
-    }
-
-    public static func mockEmpty() -> LogEvent.UserInfo {
-        return LogEvent.UserInfo(
-            id: nil,
-            name: nil,
-            email: nil,
-            extraInfo: [:]
-        )
-    }
-
-    public static func mockRandom() -> LogEvent.UserInfo {
-        return .init(
-            id: .mockRandom(),
-            name: .mockRandom(),
-            email: .mockRandom(),
-            extraInfo: mockRandomAttributes()
-        )
     }
 }
 

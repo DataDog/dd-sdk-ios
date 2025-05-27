@@ -51,18 +51,6 @@ public struct LogEvent: Encodable {
         internal let internalAttributes: [String: Encodable]?
     }
 
-    /// User information associated with a the log event.
-    public struct UserInfo {
-        /// User ID, if any.
-        public let id: String?
-        /// Name representing the user, if any.
-        public let name: String?
-        /// User email, if any.
-        public let email: String?
-        /// User custom attributes, if any.
-        public var extraInfo: [String: Encodable]
-    }
-
     /// Error description associated with a log event.
     public struct Error {
         /// Description of BinaryImage (used for symbolicaiton of stack traces)
@@ -172,6 +160,8 @@ public struct LogEvent: Encodable {
     public let os: OperatingSystem
     /// Custom user information configured globally for the SDK.
     public var userInfo: UserInfo
+    /// Custom account information configured globally for the SDK.
+    public var accountInfo: AccountInfo?
     /// The network connection information from the moment the log was sent.
     public let networkConnectionInfo: NetworkConnectionInfo?
     /// The mobile carrier information from the moment the log was sent.
@@ -215,6 +205,7 @@ internal struct LogEventEncoder {
         case buildId = "build_id"
 
         // MARK: - Dd info
+
         case dd = "_dd"
 
         // MARK: - Logger info
@@ -225,9 +216,15 @@ internal struct LogEventEncoder {
 
         // MARK: - User info
 
+        case userAnonymousId = "usr.anonymous_id"
         case userId = "usr.id"
         case userName = "usr.name"
         case userEmail = "usr.email"
+
+        // MARK: - Account info
+
+        case accountId = "account.id"
+        case accountName = "account.name"
 
         // MARK: - Network connection info
 
@@ -293,6 +290,13 @@ internal struct LogEventEncoder {
         try log.userInfo.id.ifNotNil { try container.encode($0, forKey: .userId) }
         try log.userInfo.name.ifNotNil { try container.encode($0, forKey: .userName) }
         try log.userInfo.email.ifNotNil { try container.encode($0, forKey: .userEmail) }
+        try log.userInfo.anonymousId.ifNotNil { try container.encode($0, forKey: .userAnonymousId) }
+
+        // Encode account info
+        if let accountInfo = log.accountInfo {
+            try container.encode(accountInfo.id, forKey: .accountId)
+            try accountInfo.name.ifNotNil { try container.encode($0, forKey: .accountName) }
+        }
 
         // Encode network info
         if let networkConnectionInfo = log.networkConnectionInfo {
@@ -327,13 +331,19 @@ internal struct LogEventEncoder {
             try attributesContainer.encode(AnyEncodable($1), forKey: key)
         }
 
-        // 2. user attributes
+        // 2. account info attributes
+        try log.accountInfo?.extraInfo.forEach {
+            let key = DynamicCodingKey("account.\($0)")
+            try attributesContainer.encode(AnyEncodable($1), forKey: key)
+        }
+
+        // 3. user attributes
         let encodableUserAttributes = Dictionary(
             uniqueKeysWithValues: log.attributes.userAttributes.map { name, value in (name, AnyEncodable(value)) }
         )
         try encodableUserAttributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
 
-        // 3. internal attributes
+        // 4. internal attributes
         if let internalAttributes = log.attributes.internalAttributes {
             let encodableInternalAttributes = Dictionary(
                 uniqueKeysWithValues: internalAttributes.map { name, value in (name, AnyEncodable(value)) }

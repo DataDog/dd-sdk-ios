@@ -30,6 +30,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
         nativeSourceOverride: String? = nil,
         device: DeviceInfo = .mockAny(),
         userInfo: UserInfo = .mockAny(),
+        accountInfo: AccountInfo? = nil,
         trackingConsent: TrackingConsent = .pending,
         launchTime: LaunchTime = .mockAny(),
         applicationStateHistory: AppStateHistory = .mockAny(),
@@ -59,6 +60,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             device: device,
             nativeSourceOverride: nativeSourceOverride,
             userInfo: userInfo,
+            accountInfo: accountInfo,
             trackingConsent: trackingConsent,
             launchTime: launchTime,
             applicationStateHistory: applicationStateHistory,
@@ -92,6 +94,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             sdkInitDate: .mockRandomInThePast(),
             device: .mockRandom(),
             userInfo: .mockRandom(),
+            accountInfo: .mockRandom(),
             trackingConsent: .mockRandom(),
             launchTime: .mockRandom(),
             applicationStateHistory: .mockRandom(),
@@ -184,6 +187,20 @@ extension UserInfo: AnyMockable, RandomMockable {
             id: .mockRandom(),
             name: .mockRandom(),
             email: .mockRandom(),
+            extraInfo: mockRandomAttributes()
+        )
+    }
+}
+
+extension AccountInfo: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self {
+        return mockRandom()
+    }
+
+    public static func mockRandom() -> Self {
+        return .init(
+            id: .mockRandom(),
+            name: .mockRandom(),
             extraInfo: mockRandomAttributes()
         )
     }

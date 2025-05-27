@@ -23,6 +23,7 @@
 # 2.24.1 / 31-03-2025
 
 - [FIX] Do not enforce dynamic linking for OpenTelemetryApi in `DatadogTrace`. See [#2244][]
+- [FEATURE] Adds account information configuration. The account information propagates to Logs, RUM, Traces, Crash and Error Reporting. See [#2225][]
 
 # 2.24.0 / 06-03-2025
 

@@ -336,6 +336,8 @@ private extension TelemetryUsageEvent.Telemetry.Usage {
             self = .telemetryCommonFeaturesUsage(value: .setGlobalContext(value: .init()))
         case .setUser:
             self = .telemetryCommonFeaturesUsage(value: .setUser(value: .init()))
+        case .setAccount:
+            self = .telemetryCommonFeaturesUsage(value: .setAccount(value: .init()))
         case .addFeatureFlagEvaluation:
             self = .telemetryCommonFeaturesUsage(value: .addFeatureFlagEvaluation(value: .init()))
         case .addViewLoadingTime(let viewLoadingTime):

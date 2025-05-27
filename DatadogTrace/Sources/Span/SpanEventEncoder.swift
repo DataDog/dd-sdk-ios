@@ -122,8 +122,20 @@ public struct SpanEvent: Encodable {
         public var extraInfo: [String: String]
     }
 
+    public struct AccountInfo {
+        /// Account ID
+        public let id: String
+        /// Name representing the account, if any.
+        public let name: String?
+        /// Account custom attributes, if any.
+        public var extraInfo: [String: String]
+    }
+
     /// Custom user information configured globally for the SDK.
     public var userInfo: UserInfo
+
+    /// Custom account information configured globally for the SDK.
+    public var accountInfo: AccountInfo?
 
     /// Tags associated with the span.
     public var tags: [String: String]
@@ -181,6 +193,9 @@ internal struct SpanEventEncoder {
         case userId = "meta.usr.id"
         case userName = "meta.usr.name"
         case userEmail = "meta.usr.email"
+
+        case accountId = "meta.account.id"
+        case accountName = "meta.account.name"
 
         case networkReachability = "meta.network.client.reachability"
         case networkAvailableInterfaces = "meta.network.client.available_interfaces"
@@ -264,6 +279,11 @@ internal struct SpanEventEncoder {
         try span.userInfo.name.ifNotNil { try container.encode($0, forKey: .userName) }
         try span.userInfo.email.ifNotNil { try container.encode($0, forKey: .userEmail) }
 
+        if let accountInfo = span.accountInfo {
+            try container.encode(accountInfo.id, forKey: .accountId)
+            try accountInfo.name.ifNotNil { try container.encode($0, forKey: .accountName) }
+        }
+
         if let networkConnectionInfo = span.networkConnectionInfo {
             try container.encode(networkConnectionInfo.reachability, forKey: .networkReachability)
             if let availableInterfaces = networkConnectionInfo.availableInterfaces, availableInterfaces.count > 0 {
@@ -308,6 +328,10 @@ internal struct SpanEventEncoder {
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
         }
 
+        try span.accountInfo?.extraInfo.forEach {
+            let metaKey = "meta.account.\($0.key)"
+            try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
+        }
         try span.tags.forEach {
             let metaKey = "meta.\($0.key)"
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))

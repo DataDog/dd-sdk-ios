@@ -103,6 +103,24 @@ public final class DatadogCoreProxy: DatadogCoreProtocol {
         core.setUserInfo(id: id, name: name, email: email, extraInfo: extraInfo)
     }
 
+    public func addUserExtraInfo(
+        _ newExtraInfo: [AttributeKey: AttributeValue?]
+    ) {
+        core.addUserExtraInfo(newExtraInfo)
+    }
+
+    public func setAccountInfo(
+        id: String,
+        name: String? = nil,
+        extraInfo: [AttributeKey: AttributeValue] = [:]
+    ) {
+        core.setAccountInfo(id: id, name: name, extraInfo: extraInfo)
+    }
+
+    public func clearAccountInfo() {
+        core.clearAccountInfo()
+    }
+
     public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
         core.set(context: context)
     }
