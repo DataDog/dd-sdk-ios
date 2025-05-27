@@ -2,6 +2,10 @@ Pod::Spec.new do |s|
   s.name         = "DatadogObjc"
   s.version      = "2.28.0"
   s.summary      = "Official Datadog Objective-C SDK for iOS."
+  s.description  = <<-DESC
+                   The DatadogObjc pod is deprecated and will no longer be maintained.
+                   Starting with version 3.0.0, Objective-C interfaces are available directly in their respective feature modules.
+                   DESC
 
   s.homepage     = "https://www.datadoghq.com"
   s.social_media_url   = "https://twitter.com/datadoghq"
@@ -13,6 +17,8 @@ Pod::Spec.new do |s|
     "Ganesh Jangir" => "ganesh.jangir@datadoghq.com",
     "Maciej Burda" => "maciej.burda@datadoghq.com"
   }
+
+  s.deprecated = true
 
   s.swift_version = '5.9'
   s.ios.deployment_target = '12.0'
