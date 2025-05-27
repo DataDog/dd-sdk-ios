@@ -11,7 +11,7 @@ import DatadogInternal
 
 internal extension PLCrashReporterConfig {
     /// `PLCR` configuration used for `DatadogCrashReporting`
-    static func ddConfiguration() throws -> PLCrashReporterConfig {
+    static func ddConfiguration(useMachExceptions: Bool = false) throws -> PLCrashReporterConfig {
         let version = "v1"
 
         guard let cache = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
@@ -19,11 +19,19 @@ internal extension PLCrashReporterConfig {
         }
 
         let directory = cache.appendingPathComponent("com.datadoghq.crash-reporting/\(version)", isDirectory: true)
+        
+        #if DEBUG
+        if useMachExceptions {
+            throw CrashReportException(description: "Cannot use Mach signal handler in debug mode.")
+        }
+        #endif
 
+        DD.logger.debug("PLCrashReporter initialized with \(useMachExceptions ? "mach" : "BSD") signal handler")
+        
         return PLCrashReporterConfig(
             // The choice of `.BSD` over `.mach` is well discussed here:
             // https://github.com/microsoft/PLCrashReporter/blob/7f27b272d5ff0d6650fc41317127bb2378ed6e88/Source/CrashReporter.h#L238-L363
-            signalHandlerType: .BSD,
+            signalHandlerType: useMachExceptions ? .mach : .BSD,
             // We don't symbolicate on device. All symbolication will happen backend-side.
             symbolicationStrategy: [],
             // Set a custom path to avoid conflicts with other PLC instances
@@ -35,12 +43,18 @@ internal extension PLCrashReporterConfig {
 internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
     private let crashReporter: PLCrashReporter
     private let builder = DDCrashReportBuilder()
-
+    
     init() throws {
         self.crashReporter = try PLCrashReporter(configuration: .ddConfiguration())
         try crashReporter.enableAndReturnError()
     }
 
+    // Overrides PLCrashReporterConfig to use the "mach" signal handler type instead of "BSD". Defaults to false
+    init(useMachExceptions: Bool = false) throws {
+        self.crashReporter = try PLCrashReporter(configuration: .ddConfiguration(useMachExceptions: useMachExceptions))
+        try crashReporter.enableAndReturnError()
+    }
+    
     func hasPendingCrashReport() -> Bool {
         return crashReporter.hasPendingCrashReport()
     }

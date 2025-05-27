@@ -19,6 +19,11 @@ internal class PLCrashReporterPlugin: NSObject, CrashReportingPlugin {
         self.init { try PLCrashReporterIntegration() }
     }
 
+    // Overrides PLCrashReporterConfig to use the "mach" signal handler type instead of "BSD". Defaults to false
+    convenience init(useMachExceptions: Bool = false) {
+        self.init { try PLCrashReporterIntegration(useMachExceptions: useMachExceptions) }
+    }
+    
     internal init(thirdPartyCrashReporterFactory: () throws -> ThirdPartyCrashReporter) {
         PLCrashReporterPlugin.enableOnce(using: thirdPartyCrashReporterFactory)
     }

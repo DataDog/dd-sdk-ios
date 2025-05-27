@@ -21,8 +21,8 @@ import DatadogInternal
 public final class CrashReporting {
     /// Initializes the Datadog Crash Reporter using the default
     /// `PLCrashReporter` plugin.
-    public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
-        enable(with: PLCrashReporterPlugin(), in: core)
+    public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default, useMachExceptions: Bool = false) {
+        enable(with: PLCrashReporterPlugin(useMachExceptions: useMachExceptions), in: core)
     }
 
     /// Initializes the Datadog Crash Reporter with a custom Crash Reporting Plugin.
