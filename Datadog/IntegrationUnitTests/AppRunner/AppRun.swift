@@ -11,7 +11,7 @@ import TestUtilities
 /// Allows building scenarios using `given()`, `when()`, and `then()` for fluent test composition.
 internal struct AppRun: Hashable {
     /// Ordered steps to perform in this run.
-    private(set) var steps: [AppRunStep]
+    let steps: [AppRunStep]
 
     /// Starts a new test scenario with the initial step.
     /// - Parameter initialStep: The first step to define the starting point of the test.
@@ -22,9 +22,7 @@ internal struct AppRun: Hashable {
     /// Adds a step to the scenario in the "when" phase.
     /// - Parameter step: The next step representing an action or change.
     func when(_ step: AppRunStep) -> Self {
-        var new = self
-        new.steps.append(step)
-        return new
+        return .init(steps: steps + [step])
     }
 
     /// Adds an additional step to the scenario (alias for `when()`).

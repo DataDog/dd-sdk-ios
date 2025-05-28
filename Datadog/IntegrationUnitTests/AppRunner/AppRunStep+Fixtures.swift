@@ -108,12 +108,12 @@ extension AppRunStep {
         })
     }
 
-    static func trackTwoLongTasks(after1 dt1: TimeInterval, after2 dt2: TimeInterval) -> AppRunStep {
+    static func trackTwoLongTasks(after1 dt1: TimeInterval, after2 dt2: TimeInterval, duration1: TimeInterval = 0.1, duration2: TimeInterval = 0.1) -> AppRunStep {
         return AppRunStep({ app in
             app.advanceTime(by: dt1)
-            app.rum._internal?.addLongTask(at: app.currentTime, duration: 0.1)
+            app.rum._internal?.addLongTask(at: app.currentTime, duration: duration1)
             app.advanceTime(by: dt2)
-            app.rum._internal?.addLongTask(at: app.currentTime, duration: 0.1)
+            app.rum._internal?.addLongTask(at: app.currentTime, duration: duration2)
         })
     }
 }

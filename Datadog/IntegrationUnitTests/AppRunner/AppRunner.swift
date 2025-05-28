@@ -58,6 +58,8 @@ internal class AppRunner {
 
     /// Cleans up and resets the test environment.
     func tearDown() {
+        appStateObservers.forEach { notificationCenter.removeObserver($0) }
+
         DeleteTemporaryDirectory()
 
         appDirectory = nil
@@ -76,6 +78,7 @@ internal class AppRunner {
     private var appLaunchHandler: AppLaunchHandlerMock!
     private var core: DatadogCoreProxy!
     // swiftlint:enable implicitly_unwrapped_optional
+    private var appStateObservers: [NSObjectProtocol] = []
 
     // MARK: - App Lifecycle
 
@@ -90,42 +93,47 @@ internal class AppRunner {
             timeToDidBecomeActive: nil, // will wait for SimulationStep.changeAppState(_:)
             isActivePrewarm: launchType.activePrewarm
         )
+
+        appStateObservers = [
+            notificationCenter.addObserver(forName: ApplicationNotifications.didBecomeActive, object: nil, queue: nil) { [weak self] _ in
+                guard let self else {
+                    return
+                }
+
+                appStateProvider.current = .active
+
+                // Simulate the application becoming active in `appLaunchHandler`:
+                let launchTime = dateProvider.now.timeIntervalSince(appLaunchHandler.launchDate)
+                appLaunchHandler.simulateDidBecomeActive(timeInterval: launchTime)
+            },
+            notificationCenter.addObserver(forName: ApplicationNotifications.willResignActive, object: nil, queue: nil) { [weak self] _ in
+                self?.appStateProvider.current = .inactive
+            },
+            notificationCenter.addObserver(forName: ApplicationNotifications.didEnterBackground, object: nil, queue: nil) { [weak self] _ in
+                self?.appStateProvider.current = .background
+            },
+            notificationCenter.addObserver(forName: ApplicationNotifications.willEnterForeground, object: nil, queue: nil) { [weak self] _ in
+                self?.appStateProvider.current = .inactive
+            }
+        ]
     }
 
     /// Simulates transition to the active state.
     func transitionToActive() {
         precondition(currentState != .active, "The app is already ACTIVE")
         if currentState != .inactive { // apps do not send "will enter foreground" when in INACTIVE
-            receiveAppStateNotification(ApplicationNotifications.willEnterForeground)
+            notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
         }
-        receiveAppStateNotification(ApplicationNotifications.didBecomeActive)
+        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
     }
 
     /// Simulates transition to the background state.
     func transitionToBackground() {
         precondition(currentState != .background, "The app is already in BACKGROUND")
         if currentState != .inactive { // apps do not send "will resign active" when in INACTIVE
-            receiveAppStateNotification(ApplicationNotifications.willResignActive)
+            notificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
         }
-        receiveAppStateNotification(ApplicationNotifications.didEnterBackground)
-    }
-
-    private func receiveAppStateNotification(_ notificationName: Notification.Name) {
-        notificationCenter.post(name: notificationName, object: nil)
-        appStateProvider.current = {
-            switch notificationName {
-            case ApplicationNotifications.didBecomeActive: return .active
-            case ApplicationNotifications.willResignActive: return .inactive
-            case ApplicationNotifications.didEnterBackground: return .background
-            case ApplicationNotifications.willEnterForeground: return .inactive
-            default: fatalError("Unrecognized notification: \(notificationName)")
-            }
-        }()
-
-        if notificationName == ApplicationNotifications.didBecomeActive {
-            let launchTime = dateProvider.now.timeIntervalSince(appLaunchHandler.launchDate)
-            appLaunchHandler.simulateDidBecomeActive(timeInterval: launchTime)
-        }
+        notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
     }
 
     /// Returns the current simulated app state.
@@ -142,6 +150,7 @@ internal class AppRunner {
     private var lastAppearedViewController: UIViewController?
 
     /// Simulates `viewDidAppear()` for a given view controller.
+    /// If another view controller had previously appeared, it will automatically simulate `viewDidDisappear()` for it.
     func viewDidAppear(vc: UIViewController) {
         if let lastAppearedViewController {
             viewDidDisappear(vc: lastAppearedViewController)
