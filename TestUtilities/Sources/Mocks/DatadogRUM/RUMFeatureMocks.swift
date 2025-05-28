@@ -730,6 +730,12 @@ public class RUMUUIDGeneratorMock: RUMUUIDGenerator {
     }
 }
 
+extension RUMApplicationState: AnyMockable {
+    public static func mockAny() -> RUMApplicationState {
+        return RUMApplicationState()
+    }
+}
+
 extension RUMContext {
     public static func mockAny() -> RUMContext {
         return mockWith()
@@ -905,7 +911,7 @@ extension RUMSessionScope {
         startPrecondition: RUMSessionPrecondition? = .userAppLaunch,
         context: DatadogContext = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        applicationState: RUMApplicationState = RUMApplicationState(),
+        applicationState: RUMApplicationState = .mockAny(),
         hasReplay: Bool? = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
