@@ -905,6 +905,7 @@ extension RUMSessionScope {
         startPrecondition: RUMSessionPrecondition? = .userAppLaunch,
         context: DatadogContext = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
+        applicationState: RUMApplicationState = RUMApplicationState(),
         hasReplay: Bool? = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
@@ -913,7 +914,8 @@ extension RUMSessionScope {
             startTime: startTime,
             startPrecondition: startPrecondition,
             context: context,
-            dependencies: dependencies
+            dependencies: dependencies,
+            applicationState: applicationState
         )
     }
     // swiftlint:enable function_default_parameter_at_end

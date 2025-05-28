@@ -43,6 +43,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
     }
 
+    /// Information about the application state since `RUM.enable()` was called.
+    private let applicationState: RUMApplicationState
+
     /// Information about this session state, shared with `CrashContext`.
     private var state: RUMSessionState {
         didSet {
@@ -89,10 +92,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         startPrecondition: RUMSessionPrecondition?,
         context: DatadogContext,
         dependencies: RUMScopeDependencies,
+        applicationState: RUMApplicationState,
         resumingViewScope: RUMViewScope? = nil
     ) {
         self.parent = parent
         self.dependencies = dependencies
+        self.applicationState = applicationState
         self.isSampled = dependencies.sessionSampler.sample()
         self.startPrecondition = startPrecondition
         self.sessionUUID = isSampled ? dependencies.rumUUIDGenerator.generateUnique() : .nullUUID
@@ -141,7 +146,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         startTime: Date,
         startPrecondition: RUMSessionPrecondition?,
         context: DatadogContext,
-        transferActiveView: Bool
+        transferActiveView: Bool,
+        applicationState: RUMApplicationState
     ) {
         self.init(
             // If the expired session was marked as "initial" but didn’t track any views, mark this new session as the new "initial".
@@ -150,7 +156,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             startTime: startTime,
             startPrecondition: startPrecondition,
             context: context,
-            dependencies: expiredSession.dependencies
+            dependencies: expiredSession.dependencies,
+            applicationState: applicationState
         )
 
         // Transfer active View to new `RUMViewScope`:
@@ -320,7 +327,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
 
         if path != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
-            dependencies.applicationState.numberOfNonApplicationLaunchViewsCreated += 1
+            applicationState.numberOfNonApplicationLaunchViewsCreated += 1
         }
 
         viewScopes.append(scope)
@@ -374,7 +381,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     private func handleOffViewCommand(command: RUMCommand, context: DatadogContext, writer: Writer) {
         let handlingRule = RUMOffViewEventsHandlingRule(
-            applicationState: dependencies.applicationState,
+            applicationState: applicationState,
             sessionState: state,
             isAppInForeground: context.applicationStateHistory.currentState.isRunningInForeground,
             isBETEnabled: trackBackgroundEvents,

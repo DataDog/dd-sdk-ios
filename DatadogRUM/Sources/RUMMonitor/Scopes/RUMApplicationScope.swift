@@ -8,6 +8,9 @@ import Foundation
 import DatadogInternal
 
 internal class RUMApplicationScope: RUMScope, RUMContextProvider {
+    /// Tracks the overall application state since `RUM.enable()` was called.
+    private let applicationState = RUMApplicationState()
+
     // MARK: - Child Scopes
 
     // Whether the applciation is already active. Set to true
@@ -107,7 +110,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         lastActiveView = lastActiveForegroundView ?? lastActiveView
 
         if command is RUMStopSessionCommand {
-            dependencies.applicationState.wasAnySessionStopped = true
+            applicationState.wasAnySessionStopped = true
         }
 
         // Can't use scope(byPropagating:context:writer) because of the extra step in looking for sessions
@@ -136,7 +139,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
             switch endReason {
             case .timeOut, .maxDuration:
-                dependencies.applicationState.wasPreviousSessionStopped = false
+                applicationState.wasPreviousSessionStopped = false
                 if !(command is RUMHandleAppLifecycleEventCommand) {
                     // Replace this session scope with the scope for refreshed session:
                     return refresh(expiredSession: scope, on: command, context: context, writer: writer)
@@ -146,7 +149,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
                 }
             case .stopAPI:
                 // Remove this session scope (a new on will be started upon receiving user interaction):
-                dependencies.applicationState.wasPreviousSessionStopped = true
+                applicationState.wasPreviousSessionStopped = true
                 return nil
             }
         })
@@ -186,7 +189,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             startTime: context.sdkInitDate,
             startPrecondition: startPrecondition,
             context: context,
-            dependencies: dependencies
+            dependencies: dependencies,
+            applicationState: applicationState
         )
 
         lastSessionEndReason = nil
@@ -217,7 +221,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             startTime: command.time,
             startPrecondition: startPrecondition,
             context: context,
-            transferActiveView: transferActiveView
+            transferActiveView: transferActiveView,
+            applicationState: applicationState
         )
         sessionScopeDidUpdate(refreshedSession)
         lastActiveView = nil
@@ -260,6 +265,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             startPrecondition: startPrecondition,
             context: context,
             dependencies: dependencies,
+            applicationState: applicationState,
             resumingViewScope: resumeViewScope ? lastActiveView : nil
         )
         lastActiveView = nil
