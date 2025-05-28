@@ -1,5 +1,9 @@
 # Unreleased
 
+# 2.28.1 / 29-05-2025
+
+- [FIX] Fix `RUMMethod` export from RUM. See [#2316][]
+
 # 2.28.0 / 26-05-2025
 
 - [IMPROVEMENT] Increase RUM batch maximum age to 24hrs. See [#2302][]
@@ -879,6 +883,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2268]: https://github.com/DataDog/dd-sdk-ios/pull/2268
 [#2302]: https://github.com/DataDog/dd-sdk-ios/pull/2302
 [#2304]: https://github.com/DataDog/dd-sdk-ios/pull/2304
+[#2316]: https://github.com/DataDog/dd-sdk-ios/pull/2316
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
