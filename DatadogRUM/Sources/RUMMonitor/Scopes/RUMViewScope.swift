@@ -414,6 +414,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         actionsCount += 1
         frustrationCount += event.action.frustration?.type.count.toInt64 ?? 0
         needsViewUpdate = true
+
+        // Track action in session ended metric
+        if let userActionScope = userActionScope {
+            dependencies.sessionEndedMetric.track(
+                action: event,
+                instrumentationType: userActionScope.instrumentation,
+                in: self.context.sessionID
+            )
+        }
     }
 
     private func addDiscreteUserAction(on command: RUMAddUserActionCommand) {

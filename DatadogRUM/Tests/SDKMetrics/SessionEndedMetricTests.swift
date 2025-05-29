@@ -27,6 +27,7 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertEqual(rse.viewsCount.total, 0)
         XCTAssertEqual(rse.viewsCount.background, 0)
         XCTAssertEqual(rse.viewsCount.applicationLaunch, 0)
+        XCTAssertEqual(rse.actionsCount.total, 0)
         XCTAssertEqual(rse.sdkErrorsCount.total, 0)
         XCTAssertEqual(rse.sdkErrorsCount.byKind, [:])
     }
@@ -405,6 +406,96 @@ class SessionEndedMetricTests: XCTestCase {
         // Then
         let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
         XCTAssertEqual(rse.viewsCount.total, 0)
+    }
+
+    // MARK: - Actions Count
+
+    func testReportingTotalActionsCount() throws {
+        let actionCount: Int = .mockRandom(min: 1, max: 10)
+
+        // Given
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
+
+        // When
+        (0..<actionCount).forEach { _ in
+            metric.track(
+                action: .mockRandomWith(sessionID: sessionID.rawValue),
+                instrumentationType: .manual
+            )
+        }
+        let attributes = metric.asMetricAttributes()
+
+        // Then
+        let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
+        XCTAssertEqual(rse.actionsCount.total, actionCount)
+    }
+
+    func testReportingActionsCountByInstrumentationType() throws {
+        let manualActionsCount: Int = .mockRandom(min: 1, max: 10)
+        let swiftuiActionsCount: Int = .mockRandom(min: 1, max: 10)
+        let uikitPredicateActionsCount: Int = .mockRandom(min: 1, max: 10)
+        let swiftuiAutomaticPredicateActionsCount: Int = .mockRandom(min: 1, max: 10)
+
+        // Given
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
+
+        // When
+        (0..<manualActionsCount).forEach { _ in
+            metric.track(
+                action: .mockRandomWith(sessionID: sessionID.rawValue),
+                instrumentationType: .manual
+            )
+        }
+        (0..<swiftuiActionsCount).forEach { _ in
+            metric.track(
+                action: .mockRandomWith(sessionID: sessionID.rawValue),
+                instrumentationType: .swiftui
+            )
+        }
+        (0..<uikitPredicateActionsCount).forEach { _ in
+            metric.track(
+                action: .mockRandomWith(sessionID: sessionID.rawValue),
+                instrumentationType: .uikit
+            )
+        }
+        (0..<swiftuiAutomaticPredicateActionsCount).forEach { _ in
+            metric.track(
+                action: .mockRandomWith(sessionID: sessionID.rawValue),
+                instrumentationType: .swiftuiAutomatic
+            )
+        }
+        let attributes = metric.asMetricAttributes()
+
+        // Then
+        let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
+        XCTAssertEqual(
+            rse.actionsCount.total,
+            manualActionsCount + swiftuiActionsCount + uikitPredicateActionsCount + swiftuiAutomaticPredicateActionsCount
+        )
+        XCTAssertEqual(
+            rse.actionsCount.byInstrumentation,
+            [
+                "manual": manualActionsCount,
+                "swiftui": swiftuiActionsCount,
+                "uikit": uikitPredicateActionsCount,
+                "swiftuiAutomatic": swiftuiAutomaticPredicateActionsCount
+            ]
+        )
+    }
+
+    func testWhenReportingActionsCount_itIgnoresActionsFromDifferentSession() throws {
+        // Given
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
+
+        // When
+        metric.track(action: .mockRandom(), instrumentationType: .manual)
+        metric.track(action: .mockRandom(), instrumentationType: .manual)
+        let attributes = metric.asMetricAttributes()
+
+        // Then
+        let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
+        XCTAssertEqual(rse.actionsCount.total, 0)
+        XCTAssertEqual(rse.actionsCount.byInstrumentation, [:])
     }
 
     // MARK: - SDK Errors Count

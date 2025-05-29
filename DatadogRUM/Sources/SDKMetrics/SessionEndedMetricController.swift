@@ -65,6 +65,19 @@ internal final class SessionEndedMetricController {
         updateMetric(for: sessionID) { try $0?.track(view: view, instrumentationType: instrumentationType) }
     }
 
+    /// Tracks the action event that occurred during the session.
+    /// - Parameters:
+    ///   - action: the action event to track
+    ///   - instrumentationType: the type of instrumentation used to start this action
+    ///   - sessionID: session ID to track this action in (pass `nil` to track it for the last started session)
+    func track(
+        action: RUMActionEvent,
+        instrumentationType: InstrumentationType?,
+        in sessionID: RUMUUID?
+    ) {
+        updateMetric(for: sessionID) { $0?.track(action: action, instrumentationType: instrumentationType) }
+    }
+
     /// Tracks the kind of SDK error that occurred during the session.
     /// - Parameters:
     ///   - sdkErrorKind: the kind of SDK error to track

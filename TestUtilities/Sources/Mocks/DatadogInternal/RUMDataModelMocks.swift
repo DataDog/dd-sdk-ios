@@ -371,6 +371,12 @@ extension RUMActionEvent.DD.Configuration: RandomMockable {
 
 extension RUMActionEvent: RandomMockable {
     public static func mockRandom() -> RUMActionEvent {
+        return mockRandomWith()
+    }
+
+    public static func mockRandomWith(
+        sessionID: UUID = .mockRandom()
+    ) -> RUMActionEvent {
         return RUMActionEvent(
             dd: .init(
                 action: .init(
@@ -414,7 +420,7 @@ extension RUMActionEvent: RandomMockable {
             service: .mockRandom(),
             session: .init(
                 hasReplay: nil,
-                id: .mockRandom(),
+                id: sessionID.uuidString.lowercased(),
                 type: .user
             ),
             source: .ios,

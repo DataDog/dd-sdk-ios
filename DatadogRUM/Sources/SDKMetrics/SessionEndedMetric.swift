@@ -86,6 +86,9 @@ internal class SessionEndedMetric {
     /// Info about the last tracked view.
     private var lastTrackedView: TrackedViewInfo?
 
+    /// Stores information about tracked actions, referencing them by their instrumentation type.
+    private var trackedActions: [String: Int] = [:]
+
     /// Tracks the number of SDK errors by their kind.
     private var trackedSDKErrors: [String: Int] = [:]
 
@@ -165,6 +168,20 @@ internal class SessionEndedMetric {
             firstTrackedView = info
         }
         lastTrackedView = info
+    }
+
+    /// Tracks information about an action that occurred during the session.
+    /// - Parameters:
+    ///   - action: the action event to track
+    ///   - instrumentationType: the type of instrumentation used to start this action
+    func track(action: RUMActionEvent, instrumentationType: InstrumentationType?) {
+        guard action.session.id == sessionID.toRUMDataFormat else {
+            return
+        }
+
+        if let instrumentationType = instrumentationType {
+            trackedActions[instrumentationType.metricKey] = (trackedActions[instrumentationType.metricKey] ?? 0) + 1
+        }
     }
 
     /// Tracks the kind of SDK error that occurred during the session.
@@ -274,6 +291,20 @@ internal class SessionEndedMetric {
 
         let viewsCount: ViewsCount
 
+        struct ActionsCount: Encodable {
+            /// The number of distinct actions sent during this session.
+            let total: Int
+            /// The map of action instrumentation types to the number of actions tracked with each instrumentation.
+            let byInstrumentation: [String: Int]
+
+            enum CodingKeys: String, CodingKey {
+                case total
+                case byInstrumentation = "by_instrumentation"
+            }
+        }
+
+        let actionsCount: ActionsCount
+
         struct SDKErrorsCount: Encodable {
             /// The total number of SDK errors that occurred during the session, excluding any effects from telemetry limits
             /// such as duplicate filtering or maximum caps.
@@ -340,8 +371,8 @@ internal class SessionEndedMetric {
 
         /// Information about the upload quality during the session.
         /// The upload quality is splitting between upload track name.
-/// Tracks upload quality during the session, aggregating them by track name.
-/// Each track reports its own upload quality metrics.
+        /// Tracks upload quality during the session, aggregating them by track name.
+        /// Each track reports its own upload quality metrics.
         let uploadQuality: [String: UploadQuality]
 
         enum CodingKeys: String, CodingKey {
@@ -351,6 +382,7 @@ internal class SessionEndedMetric {
             case wasStopped = "was_stopped"
             case hasBackgroundEventsTrackingEnabled = "has_background_events_tracking_enabled"
             case viewsCount = "views_count"
+            case actionsCount = "actions_count"
             case sdkErrorsCount = "sdk_errors_count"
             case ntpOffset = "ntp_offset"
             case noViewEventsCount = "no_view_events_count"
@@ -381,6 +413,7 @@ internal class SessionEndedMetric {
                 byInstrumentationViewsCount[instrumentationType.metricKey] = (byInstrumentationViewsCount[instrumentationType.metricKey] ?? 0) + 1
             }
         }
+        let totalActionsCount = trackedActions.values.reduce(0, +)
         let withHasReplayCount = trackedViews.values.reduce(0, { acc, next in acc + (next.hasReplay ? 1 : 0) })
 
         // Compute SDK errors count
@@ -407,6 +440,10 @@ internal class SessionEndedMetric {
                     applicationLaunch: appLaunchViewsCount,
                     byInstrumentation: byInstrumentationViewsCount,
                     withHasReplay: withHasReplayCount
+                ),
+                actionsCount: .init(
+                    total: totalActionsCount,
+                    byInstrumentation: trackedActions
                 ),
                 sdkErrorsCount: .init(
                     total: totalSDKErrors,
