@@ -456,21 +456,23 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(os.build, deviceMock.osBuildNumber)
     }
 
-    func testSendTelemetryMetricWithRUMContextAndSessionIDOverride() {
+    func testSendTelemetryMetricWithRUMContextAndOverrides() {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock.set(additionalContext: rumContext)
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
         let sessionIDOverride = "session-id-override"
+        let applicationIDOverride = "application-id-override"
 
         // When
         var attributes = mockRandomAttributes()
         attributes[SDKMetricFields.sessionIDOverrideKey] = sessionIDOverride
+        attributes[SDKMetricFields.applicationIDOverrideKey] = applicationIDOverride
         TelemetryMock(with: receiver).metric(name: .mockRandom(), attributes: attributes, sampleRate: 100)
 
         // Then
         let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
-        XCTAssertEqual(event?.application?.id, rumContext.applicationID)
+        XCTAssertEqual(event?.application?.id, applicationIDOverride)
         XCTAssertEqual(event?.session?.id, sessionIDOverride)
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
         XCTAssertEqual(event?.action?.id, rumContext.userActionID)

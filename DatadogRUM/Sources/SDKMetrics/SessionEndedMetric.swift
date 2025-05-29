@@ -39,8 +39,11 @@ internal class SessionEndedMetric {
         static let rseKey = "rse"
     }
 
-   /// An ID of the session being tracked through this metric object.
+    /// An ID of the session being tracked through this metric object.
     let sessionID: RUMUUID
+
+    /// An ID of the session being tracked through this metric object.
+    let applicationID: String
 
     /// The type of OS component where the session was tracked.
     private let bundleType: BundleType
@@ -121,16 +124,19 @@ internal class SessionEndedMetric {
     /// Initializer.
     /// - Parameters:
     ///   - sessionID: An ID of the session that is being tracked with this metric.
+    ///   - applicationID: The RUM application ID for this session.
     ///   - precondition: The precondition that led to starting this session.
     ///   - context: The SDK context at the moment of starting this session.
     ///   - tracksBackgroundEvents: If background events tracking is enabled for this session.
     init(
         sessionID: RUMUUID,
+        applicationID: String,
         precondition: RUMSessionPrecondition?,
         context: DatadogContext,
         tracksBackgroundEvents: Bool
     ) {
         self.sessionID = sessionID
+        self.applicationID = applicationID
         self.bundleType = context.applicationBundleType
         self.precondition = precondition
         self.tracksBackgroundEvents = tracksBackgroundEvents
@@ -413,6 +419,7 @@ internal class SessionEndedMetric {
         return [
             SDKMetricFields.typeKey: Constants.typeValue,
             SDKMetricFields.sessionIDOverrideKey: sessionID.toRUMDataFormat,
+            SDKMetricFields.applicationIDOverrideKey: applicationID,
             Constants.rseKey: Attributes(
                 processType: {
                     switch bundleType {

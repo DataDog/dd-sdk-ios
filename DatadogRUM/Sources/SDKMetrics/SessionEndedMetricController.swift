@@ -12,26 +12,35 @@ internal final class SessionEndedMetricController {
     /// The default sample rate for "session ended" metric (15%), applied in addition to the telemetry sample rate (20% by default).
     static let defaultSampleRate: SampleRate = 15
 
+    /// Dependencies required by the Session Ended metric.
+    internal struct SessionEndedMetricDependencies {
+        /// The telemetry endpoint for sending metrics.
+        let telemetry: Telemetry
+        /// The RUM application ID.
+        let applicationID: String
+        /// The sample rate for "RUM Session Ended" metric.
+        let sampleRate: SampleRate
+
+        init(telemetry: Telemetry, applicationID: String, sampleRate: SampleRate = defaultSampleRate) {
+            self.telemetry = telemetry
+            self.applicationID = applicationID
+            self.sampleRate = sampleRate
+        }
+    }
+
     /// Dictionary to keep track of pending metrics, keyed by session ID.
     @ReadWriteLock
     private var metricsBySessionID: [RUMUUID: SessionEndedMetric] = [:]
     /// Array to keep track of pending session IDs in their start order.
     private var pendingSessionIDs: [RUMUUID] = []
 
-    /// Telemetry endpoint for sending metrics.
-    private let telemetry: Telemetry
-
-    /// The sample rate for "RUM Session Ended" metric.
-    internal var sampleRate: SampleRate
+    /// Dependencies for this controller.
+    internal let dependencies: SessionEndedMetricDependencies
 
     /// Initializes a new instance of the metric controller.
-    /// - Parameters:
-    ///    - telemetry: The telemetry endpoint used for sending metrics.
-    ///    - sampleRate: The sample rate for "RUM Session Ended" metric.
-
-    init(telemetry: Telemetry, sampleRate: SampleRate) {
-        self.telemetry = telemetry
-        self.sampleRate = sampleRate
+    /// - Parameter dependencies: The dependencies required by this controller.
+    init(dependencies: SessionEndedMetricDependencies) {
+        self.dependencies = dependencies
     }
 
     /// Starts a new metric for a given session.
@@ -46,7 +55,13 @@ internal final class SessionEndedMetricController {
             return // do not track metric when session is not sampled
         }
         _metricsBySessionID.mutate { metrics in
-            metrics[sessionID] = SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context, tracksBackgroundEvents: tracksBackgroundEvents)
+            metrics[sessionID] = SessionEndedMetric(
+                sessionID: sessionID,
+                applicationID: dependencies.applicationID,
+                precondition: precondition,
+                context: context,
+                tracksBackgroundEvents: tracksBackgroundEvents
+            )
             pendingSessionIDs.append(sessionID)
         }
     }
@@ -107,10 +122,10 @@ internal final class SessionEndedMetricController {
             guard let metric = metrics[sessionID] else {
                 return
             }
-            telemetry.metric(
+            dependencies.telemetry.metric(
                 name: SessionEndedMetric.Constants.name,
                 attributes: metric.asMetricAttributes(with: context),
-                sampleRate: sampleRate
+                sampleRate: dependencies.sampleRate
             )
             metrics[sessionID] = nil
             pendingSessionIDs.removeAll(where: { $0 == sessionID }) // O(n), but "ending the metric" is very rare event
@@ -133,7 +148,7 @@ internal final class SessionEndedMetricController {
             do {
                 try mutation(&metrics[sessionID])
             } catch let error {
-                telemetry.error(error)
+                dependencies.telemetry.error(error)
             }
         }
     }

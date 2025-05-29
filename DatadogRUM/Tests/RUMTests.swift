@@ -92,7 +92,7 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(rum.performanceOverride.maxFileAgeForRead, 24.hours)
         XCTAssertEqual(monitor.scopes.dependencies.rumApplicationID, applicationID)
         XCTAssertEqual(monitor.scopes.dependencies.sessionSampler.samplingRate, 100)
-        XCTAssertEqual(monitor.scopes.dependencies.sessionEndedMetric.sampleRate, 15)
+        XCTAssertEqual(monitor.scopes.dependencies.sessionEndedMetric.dependencies.sampleRate, 15)
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 20)
         XCTAssertEqual(crashReportReceiver?.sessionSampler.samplingRate, 100)
     }

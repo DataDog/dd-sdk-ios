@@ -785,7 +785,7 @@ extension RUMScopeDependencies {
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
         viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
-        sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0),
+        sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(dependencies: .init(telemetry: NOPTelemetry(), applicationID: .mockAny(), sampleRate: 0)),
         viewEndedMetricFactory: @escaping () -> ViewEndedController = {
             ViewEndedController(telemetry: NOPTelemetry(), sampleRate: 0)
         },

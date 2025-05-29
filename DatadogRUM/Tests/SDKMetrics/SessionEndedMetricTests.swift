@@ -58,6 +58,20 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertEqual(attributes[SDKMetricFields.sessionIDOverrideKey] as? String, sessionID.toRUMDataFormat)
     }
 
+    // MARK: - Application ID
+
+    func testReportingApplicationID() throws {
+        // Given
+        let expectedApplicationID = "test-app-id"
+        let metric = SessionEndedMetric.with(sessionID: sessionID, applicationID: expectedApplicationID)
+
+        // When
+        let attributes = metric.asMetricAttributes()
+
+        // Then
+        XCTAssertEqual(attributes[SDKMetricFields.applicationIDOverrideKey] as? String, expectedApplicationID)
+    }
+
     // MARK: - Process Type
 
     func testReportingAppProcessType() throws {
@@ -678,11 +692,12 @@ private extension Int {
 private extension SessionEndedMetric {
     static func with(
         sessionID: RUMUUID,
+        applicationID: String = .mockRandom(),
         precondition: RUMSessionPrecondition? = .mockRandom(),
         context: DatadogContext = .mockRandom(),
         tracksBackgroundEvents: Bool = .mockRandom()
     ) -> SessionEndedMetric {
-        SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context, tracksBackgroundEvents: tracksBackgroundEvents)
+        SessionEndedMetric(sessionID: sessionID, applicationID: applicationID, precondition: precondition, context: context, tracksBackgroundEvents: tracksBackgroundEvents)
     }
 
     func asMetricAttributes() -> [String: Encodable] {

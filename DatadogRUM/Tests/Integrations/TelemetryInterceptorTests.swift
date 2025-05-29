@@ -16,7 +16,7 @@ class TelemetryInterceptorTests: XCTestCase {
         let sessionID: RUMUUID = .mockRandom()
 
         // Given
-        let metricController = SessionEndedMetricController(telemetry: telemetry, sampleRate: 100)
+        let metricController = SessionEndedMetricController(dependencies: .init(telemetry: telemetry, applicationID: .mockRandom(), sampleRate: 100))
         let interceptor = TelemetryInterceptor(sessionEndedMetric: metricController)
 
         // When
@@ -36,7 +36,7 @@ class TelemetryInterceptorTests: XCTestCase {
         let sessionID: RUMUUID = .mockRandom()
 
         // Given
-        let metricController = SessionEndedMetricController(telemetry: telemetry, sampleRate: 100)
+        let metricController = SessionEndedMetricController(dependencies: .init(telemetry: telemetry, applicationID: .mockRandom(), sampleRate: 100))
         let interceptor = TelemetryInterceptor(sessionEndedMetric: metricController)
 
         // When
