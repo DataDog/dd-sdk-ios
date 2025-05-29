@@ -198,7 +198,7 @@ extension RUMViewScope {
 
         // Propagate to User Action scope
         userActionScope = userActionScope?.scope(
-            byPropagating: command.with(viewAttributes: attributes, isActiveView: isActiveView), // user action events also have view attributes
+            byPropagating: command,
             context: context,
             writer: writer
         )
@@ -233,13 +233,9 @@ extension RUMViewScope {
                 internalAttributes.merge(command.attributes) { $1 }
             } else {
                 attributes.merge(command.attributes) { $1 }
-                // active resources are also updated with view attributes
-                resourceScopes.forEach { _ = $1.scope(byPropagating: command, context: context, writer: writer) }
             }
         case let command as RUMRemoveViewAttributesCommand where isActiveView:
             command.keysToRemove.forEach { attributes.removeValue(forKey: $0) }
-            // active resources should also remove their view attributes
-            resourceScopes.forEach { _ = $1.scope(byPropagating: command, context: context, writer: writer) }
         case let command as RUMStartViewCommand where identity == command.identity:
             if didReceiveStartCommand {
                 // This is the case of duplicated "start" command. We know that the Session scope has created another instance of
@@ -316,7 +312,7 @@ extension RUMViewScope {
         // Propagate to Resource scopes
         if let resourceCommand = command as? RUMResourceCommand {
             resourceScopes[resourceCommand.resourceKey] = resourceScopes[resourceCommand.resourceKey]?.scope(
-                byPropagating: resourceCommand.with(viewAttributes: attributes, isActiveView: isActiveView), // resource events also have view attributes
+                byPropagating: resourceCommand,
                 context: context,
                 writer: writer
             )
@@ -363,7 +359,7 @@ extension RUMViewScope {
 
     private func startResource(on command: RUMStartResourceCommand) {
         resourceScopes[command.resourceKey] = RUMResourceScope(
-            context: context,
+            parent: self,
             dependencies: dependencies,
             resourceKey: command.resourceKey,
             startTime: command.time,
@@ -979,17 +975,5 @@ private extension Result {
         case .success(let success): return success
         case .failure: return nil
         }
-    }
-}
-
-private extension RUMCommand {
-    func with(viewAttributes: [AttributeKey: AttributeValue], isActiveView: Bool) -> RUMCommand {
-        guard isActiveView else {
-            return self
-        }
-
-        var command = self
-        command.attributes = viewAttributes.merging(command.attributes) { $1 }
-        return command
     }
 }

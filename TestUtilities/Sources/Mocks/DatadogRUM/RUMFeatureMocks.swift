@@ -1041,7 +1041,7 @@ extension RUMViewScope {
 
 extension RUMResourceScope {
     static func mockWith(
-        context: RUMContext,
+        parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         resourceKey: String = .mockAny(),
         globalAttributes: [AttributeKey: AttributeValue] = [:],
@@ -1058,7 +1058,7 @@ extension RUMResourceScope {
         onErrorEvent: @escaping (Bool) -> Void = { _ in }
     ) -> RUMResourceScope {
         return RUMResourceScope(
-            context: context,
+            parent: parent,
             dependencies: dependencies,
             resourceKey: resourceKey,
             startTime: startTime,
@@ -1107,11 +1107,13 @@ extension RUMUserActionScope {
 }
 
 public class RUMContextProviderMock: RUMContextProvider {
-    public init(context: RUMContext = .mockAny()) {
+    public init(context: RUMContext = .mockAny(), attributes: [AttributeKey: AttributeValue] = [:]) {
         self.context = context
+        self.attributes = attributes
     }
 
     public var context: RUMContext
+    public var attributes: [AttributeKey: AttributeValue]
 }
 
 // MARK: - Auto Instrumentation Mocks
@@ -1514,7 +1516,7 @@ extension RUMCoreContext: RandomMockable {
 
 extension RUMResourceScope {
     static func mockWith(
-        context: RUMContext,
+        parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         resourceKey: String = .mockAny(),
         startTime: Date = .mockAny(),
@@ -1529,7 +1531,7 @@ extension RUMResourceScope {
         onErrorEvent: @escaping (Bool) -> Void = { _ in }
     ) -> RUMResourceScope {
         return RUMResourceScope(
-            context: context,
+            parent: parent,
             dependencies: dependencies,
             resourceKey: resourceKey,
             startTime: startTime,

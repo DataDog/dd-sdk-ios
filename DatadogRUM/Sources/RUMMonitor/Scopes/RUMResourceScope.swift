@@ -10,7 +10,7 @@ import DatadogInternal
 internal class RUMResourceScope: RUMScope {
     // MARK: - Initialization
 
-    let context: RUMContext
+    let parent: RUMContextProvider
 
     /// Container bundling dependencies for this scope.
     let dependencies: RUMScopeDependencies
@@ -60,7 +60,7 @@ internal class RUMResourceScope: RUMScope {
     private let onErrorEvent: (_ sent: Bool) -> Void
 
     init(
-        context: RUMContext,
+        parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         resourceKey: String,
         startTime: Date,
@@ -73,7 +73,7 @@ internal class RUMResourceScope: RUMScope {
         onResourceEvent: @escaping (Bool) -> Void,
         onErrorEvent: @escaping (Bool) -> Void
     ) {
-        self.context = context
+        self.parent = parent
         self.dependencies = dependencies
         self.resourceUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.resourceKey = resourceKey
@@ -98,10 +98,6 @@ internal class RUMResourceScope: RUMScope {
         self.attributes = self.attributes.merging(command.attributes, uniquingKeysWith: { $1 })
 
         switch command {
-        case let command as RUMAddViewAttributesCommand:
-            attributes.merge(command.attributes) { $1 }
-        case let command as RUMRemoveViewAttributesCommand:
-            command.keysToRemove.forEach { attributes.removeValue(forKey: $0) }
         case let command as RUMStopResourceCommand where command.resourceKey == resourceKey:
             sendResourceEvent(on: command, context: context, writer: writer)
             return false
@@ -175,22 +171,22 @@ internal class RUMResourceScope: RUMScope {
                 rulePsr: traceSamplingRate,
                 session: .init(
                     plan: .plan1,
-                    sessionPrecondition: self.context.sessionPrecondition
+                    sessionPrecondition: parent.context.sessionPrecondition
                 ),
                 spanId: spanId?.toString(representation: .decimal),
                 traceId: traceId?.toString(representation: .hexadecimal)
             ),
             account: .init(context: context),
-            action: self.context.activeUserActionID.map { rumUUID in
+            action: parent.context.activeUserActionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
-            application: .init(id: self.context.rumApplicationID),
+            application: .init(id: parent.context.rumApplicationID),
             buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: command.globalAttributes.merging(attributes) { $1 }),
+            context: .init(contextInfo: command.globalAttributes.merging(parent.attributes) { $1 }.merging(attributes) { $1 }),
             date: resourceStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
@@ -252,7 +248,7 @@ internal class RUMResourceScope: RUMScope {
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
-                id: self.context.sessionID.toRUMDataFormat,
+                id: parent.context.sessionID.toRUMDataFormat,
                 type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -260,10 +256,10 @@ internal class RUMResourceScope: RUMScope {
             usr: .init(context: context),
             version: context.version,
             view: .init(
-                id: self.context.activeViewID.orNull.toRUMDataFormat,
-                name: self.context.activeViewName,
+                id: parent.context.activeViewID.orNull.toRUMDataFormat,
+                name: parent.context.activeViewName,
                 referrer: nil,
-                url: self.context.activeViewPath ?? ""
+                url: parent.context.activeViewPath ?? ""
             )
         )
 
@@ -288,20 +284,20 @@ internal class RUMResourceScope: RUMScope {
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 session: .init(
                     plan: .plan1,
-                    sessionPrecondition: self.context.sessionPrecondition
+                    sessionPrecondition: parent.context.sessionPrecondition
                 )
             ),
             account: .init(context: context),
-            action: self.context.activeUserActionID.map { rumUUID in
+            action: parent.context.activeUserActionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
-            application: .init(id: self.context.rumApplicationID),
+            application: .init(id: parent.context.rumApplicationID),
             buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: command.globalAttributes.merging(attributes) { $1 }),
+            context: .init(contextInfo: command.globalAttributes.merging(parent.attributes) { $1 }.merging(attributes) { $1 }),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
@@ -335,7 +331,7 @@ internal class RUMResourceScope: RUMScope {
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
-                id: self.context.sessionID.toRUMDataFormat,
+                id: parent.context.sessionID.toRUMDataFormat,
                 type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -343,11 +339,11 @@ internal class RUMResourceScope: RUMScope {
             usr: .init(context: context),
             version: context.version,
             view: .init(
-                id: self.context.activeViewID.orNull.toRUMDataFormat,
+                id: parent.context.activeViewID.orNull.toRUMDataFormat,
                 inForeground: nil,
-                name: self.context.activeViewName,
+                name: parent.context.activeViewName,
                 referrer: nil,
-                url: self.context.activeViewPath ?? ""
+                url: parent.context.activeViewPath ?? ""
             )
         )
 

@@ -49,6 +49,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - RUMContextProvider
 
     let context: RUMContext
+    var attributes: [AttributeKey: AttributeValue] { [:] }
 
     // MARK: - RUMScope
 

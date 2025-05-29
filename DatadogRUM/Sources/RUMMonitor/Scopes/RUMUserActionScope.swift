@@ -112,10 +112,6 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
         lastActivityTime = command.time
         switch command {
-        case let command as RUMAddViewAttributesCommand:
-            attributes.merge(command.attributes) { $1 }
-        case let command as RUMRemoveViewAttributesCommand:
-            command.keysToRemove.forEach { attributes.removeValue(forKey: $0) }
         case is RUMStartViewCommand, is RUMStopViewCommand:
             sendActionEvent(completionTime: command.time, on: command, context: context, writer: writer)
             return false
@@ -182,7 +178,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: (command?.globalAttributes ?? [:]).merging(attributes) { $1 }),
+            context: .init(contextInfo: (command?.globalAttributes ?? [:]).merging(parent.attributes) { $1 }.merging(attributes) { $1 }),
             date: actionStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
