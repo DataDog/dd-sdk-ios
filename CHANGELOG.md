@@ -3,7 +3,8 @@
 - [IMPROVEMENT] Update the default tracing sampling rate to 100%. See [#2253][] 
 - [IMPROVEMENT] Update the default TraceContextInjection to `.sampled`. See [#2253][]
 - [IMPROVEMENT] Migrate all Obj-c interfaces to corresponding modules. See [#2286][] [#2295][] 
-- [IMPROVEMENT] Remove `DatadogObjc` module. See [#2298][] 
+- [IMPROVEMENT] Remove `DatadogObjc` module. See [#2298][]
+- [IMPROVEMENT] Improve Memory vital collected using `phys_footprint`. See [#2310][] 
 
 # 2.24.1 / 31-04-2025
 # 2.28.0 / 26-05-2025
@@ -886,6 +887,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2268]: https://github.com/DataDog/dd-sdk-ios/pull/2268
 [#2302]: https://github.com/DataDog/dd-sdk-ios/pull/2302
 [#2304]: https://github.com/DataDog/dd-sdk-ios/pull/2304
+[#2310]: https://github.com/DataDog/dd-sdk-ios/pull/2310
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
