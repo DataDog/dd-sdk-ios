@@ -237,69 +237,6 @@ extension Monitor: RUMMonitorProtocol {
         process(command: RUMStopSessionCommand(time: dateProvider.now))
     }
 
-    // MARK: - views
-
-    func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) {
-        process(
-            command: RUMStartViewCommand(
-                time: dateProvider.now,
-                identity: ViewIdentifier(viewController),
-                name: name ?? viewController.canonicalClassName,
-                path: viewController.canonicalClassName,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                instrumentationType: .manual
-            )
-        )
-    }
-
-    func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) {
-        process(
-            command: RUMStopViewCommand(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                identity: ViewIdentifier(viewController)
-            )
-        )
-    }
-
-    func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) {
-        process(
-            command: RUMStartViewCommand(
-                time: dateProvider.now,
-                identity: ViewIdentifier(key),
-                name: name ?? key,
-                path: key,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                instrumentationType: .manual
-            )
-        )
-    }
-
-    func stopView(key: String, attributes: [AttributeKey: AttributeValue]) {
-        process(
-            command: RUMStopViewCommand(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                identity: ViewIdentifier(key)
-            )
-        )
-    }
-
-    func addViewLoadingTime(overwrite: Bool) {
-        process(
-            command: RUMAddViewLoadingTime(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: [:],
-                overwrite: overwrite
-            )
-        )
-    }
-
     // MARK: - custom timings
 
     func addTiming(name: String) {
@@ -545,6 +482,108 @@ extension Monitor: RUMMonitorProtocol {
         get {
             debugging != nil
         }
+    }
+}
+
+// MARK: - View
+
+/// Declares `Monitor` conformance to public `RUMMonitorViewProtocol`.
+extension Monitor: RUMMonitorViewProtocol {
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue) {
+        process(
+            command: RUMAddViewAttributesCommand(
+                time: dateProvider.now,
+                attributes: [key: value]
+            )
+        )
+    }
+
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue]) {
+        process(
+            command: RUMAddViewAttributesCommand(
+                time: dateProvider.now,
+                attributes: attributes
+            )
+        )
+    }
+
+    func removeViewAttribute(forKey key: AttributeKey) {
+        process(
+            command: RUMRemoveViewAttributesCommand(
+                time: dateProvider.now,
+                keysToRemove: [key]
+            )
+        )
+    }
+
+    func removeViewAttributes(forKeys keys: [AttributeKey]) {
+        process(
+            command: RUMRemoveViewAttributesCommand(
+                time: dateProvider.now,
+                keysToRemove: keys
+            )
+        )
+    }
+
+    func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) {
+        process(
+            command: RUMStartViewCommand(
+                time: dateProvider.now,
+                identity: ViewIdentifier(viewController),
+                name: name ?? viewController.canonicalClassName,
+                path: viewController.canonicalClassName,
+                globalAttributes: self.attributes,
+                attributes: attributes,
+                instrumentationType: .manual
+            )
+        )
+    }
+
+    func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) {
+        process(
+            command: RUMStopViewCommand(
+                time: dateProvider.now,
+                globalAttributes: self.attributes,
+                attributes: attributes,
+                identity: ViewIdentifier(viewController)
+            )
+        )
+    }
+
+    func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) {
+        process(
+            command: RUMStartViewCommand(
+                time: dateProvider.now,
+                identity: ViewIdentifier(key),
+                name: name ?? key,
+                path: key,
+                globalAttributes: self.attributes,
+                attributes: attributes,
+                instrumentationType: .manual
+            )
+        )
+    }
+
+    func stopView(key: String, attributes: [AttributeKey: AttributeValue]) {
+        process(
+            command: RUMStopViewCommand(
+                time: dateProvider.now,
+                globalAttributes: self.attributes,
+                attributes: attributes,
+                identity: ViewIdentifier(key)
+            )
+        )
+    }
+
+    func addViewLoadingTime(overwrite: Bool) {
+        process(
+            command: RUMAddViewLoadingTime(
+                time: dateProvider.now,
+                globalAttributes: self.attributes,
+                attributes: [:],
+                overwrite: overwrite
+            )
+        )
     }
 }
 

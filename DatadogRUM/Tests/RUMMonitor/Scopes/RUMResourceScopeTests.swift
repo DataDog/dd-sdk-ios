@@ -25,30 +25,32 @@ class RUMResourceScopeTests: XCTestCase {
         firstPartyHosts: FirstPartyHosts(["firstparty.com": [.datadog]])
     )
 
-    private let rumContext = RUMContext.mockWith(
-        rumApplicationID: "rum-123",
-        sessionID: .mockRandom(),
-        activeViewID: .mockRandom(),
-        activeViewPath: "FooViewController",
-        activeViewName: "FooViewName",
-        activeUserActionID: .mockRandom()
+    private let provider = RUMContextProviderMock(
+        context: .mockWith(
+            rumApplicationID: "rum-123",
+            sessionID: .mockRandom(),
+            activeViewID: .mockRandom(),
+            activeViewPath: "FooViewController",
+            activeViewName: "FooViewName",
+            activeUserActionID: .mockRandom()
+        )
     )
 
     let writer = FileWriterMock()
 
     func testDefaultContext() {
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: .mockAny(),
             resourceKey: .mockAny(),
             startTime: .mockAny()
         )
 
-        XCTAssertEqual(scope.context.rumApplicationID, rumContext.rumApplicationID)
-        XCTAssertEqual(scope.context.sessionID, rumContext.sessionID)
-        XCTAssertEqual(scope.context.activeViewID, try XCTUnwrap(rumContext.activeViewID))
-        XCTAssertEqual(scope.context.activeViewPath, try XCTUnwrap(rumContext.activeViewPath))
-        XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(rumContext.activeUserActionID))
+        XCTAssertEqual(scope.parent.context.rumApplicationID, provider.context.rumApplicationID)
+        XCTAssertEqual(scope.parent.context.sessionID, provider.context.sessionID)
+        XCTAssertEqual(scope.parent.context.activeViewID, try XCTUnwrap(provider.context.activeViewID))
+        XCTAssertEqual(scope.parent.context.activeViewPath, try XCTUnwrap(provider.context.activeViewPath))
+        XCTAssertEqual(scope.parent.context.activeUserActionID, try XCTUnwrap(provider.context.activeUserActionID))
     }
 
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEvent() throws {
@@ -60,7 +62,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -95,12 +97,12 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
         XCTAssertEqual(event.session.hasReplay, hasReplay)
         XCTAssertEqual(event.source, .ios)
-        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, provider.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         DDTAssertValidRUMUUID(event.resource.id)
@@ -117,7 +119,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.ssl)
         XCTAssertNil(event.resource.firstByte)
         XCTAssertNil(event.resource.download)
-        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.traceId, "64")
         XCTAssertEqual(event.dd.spanId, "200")
@@ -141,7 +143,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies.replacing(ciTest: .init(testExecutionId: fakeCiTestId)),
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -176,12 +178,12 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .ciTest)
         XCTAssertEqual(event.session.hasReplay, hasReplay)
         XCTAssertEqual(event.source, .ios)
-        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, provider.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         DDTAssertValidRUMUUID(event.resource.id)
@@ -198,7 +200,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.ssl)
         XCTAssertNil(event.resource.firstByte)
         XCTAssertNil(event.resource.download)
-        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.traceId, "64")
         XCTAssertEqual(event.dd.spanId, "200")
@@ -224,7 +226,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies.replacing(syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId)),
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -259,12 +261,12 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .synthetics)
         XCTAssertEqual(event.session.hasReplay, hasReplay)
         XCTAssertEqual(event.source, .ios)
-        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, provider.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         DDTAssertValidRUMUUID(event.resource.id)
@@ -281,7 +283,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.ssl)
         XCTAssertNil(event.resource.firstByte)
         XCTAssertNil(event.resource.download)
-        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.traceId, "64")
         XCTAssertEqual(event.dd.spanId, "200")
@@ -300,7 +302,7 @@ class RUMResourceScopeTests: XCTestCase {
     func testGivenStartedResourceWithSpanContext_whenResourceLoadingEnds_itSendsResourceEvent() throws {
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             spanContext: .init(
@@ -329,7 +331,7 @@ class RUMResourceScopeTests: XCTestCase {
     func testGivenStartedResourceWithoutSpanContext_whenResourceLoadingEnds_itSendsResourceEvent() throws {
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             spanContext: nil
@@ -359,7 +361,7 @@ class RUMResourceScopeTests: XCTestCase {
         let customContext: DatadogContext = .mockWith(source: customSource)
 
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -395,7 +397,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -424,11 +426,11 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
         XCTAssertEqual(event.source, .ios)
-        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, provider.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         DDTAssertValidRUMUUID(event.resource.id)
@@ -445,7 +447,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.ssl)
         XCTAssertNil(event.resource.firstByte)
         XCTAssertNil(event.resource.download)
-        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.service, "test-service")
@@ -461,7 +463,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -490,10 +492,10 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
-        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, provider.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         DDTAssertValidRUMUUID(event.resource.id)
@@ -510,7 +512,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.ssl)
         XCTAssertNil(event.resource.firstByte)
         XCTAssertNil(event.resource.download)
-        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
@@ -526,7 +528,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -556,10 +558,10 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
-        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, provider.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         XCTAssertEqual(event.error.type, "ErrorMock")
@@ -572,7 +574,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.error.resource?.provider)
         XCTAssertEqual(event.error.resource?.statusCode, 500)
         XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")
-        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
@@ -589,7 +591,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -622,10 +624,10 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
-        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, provider.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         XCTAssertEqual(event.error.type, "ErrorMock")
@@ -639,7 +641,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.error.resource?.provider)
         XCTAssertEqual(event.error.resource?.statusCode, 500)
         XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")
-        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
@@ -657,7 +659,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies.replacing(ciTest: .init(testExecutionId: fakeCITestId)),
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -687,10 +689,10 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .ciTest)
-        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, provider.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         XCTAssertEqual(event.error.type, "ErrorMock")
@@ -703,7 +705,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.error.resource?.provider)
         XCTAssertEqual(event.error.resource?.statusCode, 500)
         XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")
-        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
@@ -723,7 +725,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies.replacing(syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId)),
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -753,10 +755,10 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .synthetics)
-        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, provider.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         XCTAssertEqual(event.error.type, "ErrorMock")
@@ -769,7 +771,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.error.resource?.provider)
         XCTAssertEqual(event.error.resource?.statusCode, 500)
         XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")
-        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
@@ -794,7 +796,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -832,7 +834,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -904,10 +906,10 @@ class RUMResourceScopeTests: XCTestCase {
         let metrics = metricsCommand.metrics
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, metrics.fetch.start.timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
-        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, provider.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         DDTAssertValidRUMUUID(event.resource.id)
@@ -929,7 +931,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.resource.firstByte?.duration, 1_000_000_000)
         XCTAssertEqual(event.resource.download?.start, 9_000_000_000)
         XCTAssertEqual(event.resource.download?.duration, 1_000_000_000)
-        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
@@ -944,7 +946,7 @@ class RUMResourceScopeTests: XCTestCase {
         let resourceKey: String = .mockAny()
         func createScope(url: String) -> RUMResourceScope {
             RUMResourceScope.mockWith(
-                context: rumContext,
+                parent: provider,
                 dependencies: dependencies,
                 resourceKey: resourceKey,
                 url: url
@@ -982,7 +984,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: Date(),
@@ -1012,7 +1014,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -1045,7 +1047,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -1075,7 +1077,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -1109,7 +1111,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -1140,7 +1142,7 @@ class RUMResourceScopeTests: XCTestCase {
         let resourceKey = "/resource/1"
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: resourceKey,
             startTime: currentTime,
@@ -1181,7 +1183,7 @@ class RUMResourceScopeTests: XCTestCase {
         ) )
 
         let scope = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -1214,7 +1216,7 @@ class RUMResourceScopeTests: XCTestCase {
         var onErrorEventCalled = false
         // Given
         let scope1 = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -1224,7 +1226,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         let scope2 = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/2",
             startTime: currentTime,
@@ -1285,7 +1287,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // swiftlint:disable trailing_closure
         let scope1 = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             startTime: currentTime,
@@ -1295,7 +1297,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         let scope2 = RUMResourceScope.mockWith(
-            context: rumContext,
+            parent: provider,
             dependencies: dependencies,
             resourceKey: "/resource/2",
             startTime: currentTime,
@@ -1346,7 +1348,7 @@ class RUMResourceScopeTests: XCTestCase {
         // Given
         let metric = TNSMetricMock()
         let scope = RUMResourceScope(
-            context: .mockAny(),
+            parent: RUMContextProviderMock(),
             dependencies: .mockWith(
                 rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: resourceUUID)
             ),
@@ -1387,7 +1389,7 @@ class RUMResourceScopeTests: XCTestCase {
         // Given
         let metric = TNSMetricMock()
         let scope = RUMResourceScope(
-            context: .mockAny(),
+            parent: RUMContextProviderMock(),
             dependencies: .mockWith(
                 rumUUIDGenerator: RUMUUIDGeneratorMock(uuid: resourceUUID)
             ),
@@ -1427,7 +1429,7 @@ class RUMResourceScopeTests: XCTestCase {
         // Given
         let metric = TNSMetricMock()
         let scope = RUMResourceScope(
-            context: .mockAny(),
+            parent: RUMContextProviderMock(),
             dependencies: .mockWith(
                 eventBuilder: RUMEventBuilder(
                     eventsMapper: .mockWith(

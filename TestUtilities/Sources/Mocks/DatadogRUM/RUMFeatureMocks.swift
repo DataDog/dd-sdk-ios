@@ -199,6 +199,60 @@ extension RUMCommand {
     }
 }
 
+extension RUMAddViewAttributesCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMAddViewAttributesCommand { mockWith() }
+
+    public static func mockRandom() -> RUMAddViewAttributesCommand {
+        .mockWith(
+            time: .mockRandomInThePast(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes(),
+            areInternalAttributes: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:],
+        areInternalAttributes: Bool = .mockAny()
+    ) -> RUMAddViewAttributesCommand {
+        RUMAddViewAttributesCommand(
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            areInternalAttributes: areInternalAttributes
+        )
+    }
+}
+
+extension RUMRemoveViewAttributesCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMRemoveViewAttributesCommand { mockWith() }
+
+    public static func mockRandom() -> RUMRemoveViewAttributesCommand {
+        .mockWith(
+            time: .mockRandomInThePast(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes(),
+            keysToRemove: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:],
+        keysToRemove: [AttributeKey] = []
+    ) -> RUMRemoveViewAttributesCommand {
+        RUMRemoveViewAttributesCommand(
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            keysToRemove: keysToRemove
+        )
+    }
+}
+
 extension RUMStartViewCommand: AnyMockable, RandomMockable {
     public static func mockAny() -> RUMStartViewCommand { mockWith() }
 
@@ -987,7 +1041,7 @@ extension RUMViewScope {
 
 extension RUMResourceScope {
     static func mockWith(
-        context: RUMContext,
+        parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         resourceKey: String = .mockAny(),
         globalAttributes: [AttributeKey: AttributeValue] = [:],
@@ -1004,7 +1058,7 @@ extension RUMResourceScope {
         onErrorEvent: @escaping (Bool) -> Void = { _ in }
     ) -> RUMResourceScope {
         return RUMResourceScope(
-            context: context,
+            parent: parent,
             dependencies: dependencies,
             resourceKey: resourceKey,
             startTime: startTime,
@@ -1053,11 +1107,13 @@ extension RUMUserActionScope {
 }
 
 public class RUMContextProviderMock: RUMContextProvider {
-    public init(context: RUMContext = .mockAny()) {
+    public init(context: RUMContext = .mockAny(), attributes: [AttributeKey: AttributeValue] = [:]) {
         self.context = context
+        self.attributes = attributes
     }
 
     public var context: RUMContext
+    public var attributes: [AttributeKey: AttributeValue]
 }
 
 // MARK: - Auto Instrumentation Mocks
@@ -1460,7 +1516,7 @@ extension RUMCoreContext: RandomMockable {
 
 extension RUMResourceScope {
     static func mockWith(
-        context: RUMContext,
+        parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         resourceKey: String = .mockAny(),
         startTime: Date = .mockAny(),
@@ -1475,7 +1531,7 @@ extension RUMResourceScope {
         onErrorEvent: @escaping (Bool) -> Void = { _ in }
     ) -> RUMResourceScope {
         return RUMResourceScope(
-            context: context,
+            parent: parent,
             dependencies: dependencies,
             resourceKey: resourceKey,
             startTime: startTime,

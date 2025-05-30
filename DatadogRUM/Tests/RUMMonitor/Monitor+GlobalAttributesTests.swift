@@ -393,7 +393,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         let lastActiveView = try XCTUnwrap(viewEvents.last(where: { $0.view.name == "ActiveView" }))
 
         XCTAssertEqual(lastInactiveView.view.resource.count, 1)
-        XCTAssertEqual(lastInactiveView.attribute(forKey: "attribute"), "value")
+        XCTAssertNil(lastInactiveView.attribute(forKey: "attribute"))
         XCTAssertNil(lastActiveView.attribute(forKey: "attribute"))
     }
 
@@ -416,8 +416,8 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         let lastActiveView = try XCTUnwrap(viewEvents.last(where: { $0.view.name == "ActiveView" }))
 
         XCTAssertEqual(lastInactiveView.view.resource.count, 1)
-        XCTAssertNil(lastInactiveView.attribute(forKey: "attribute1"), "value1")
-        XCTAssertEqual(lastInactiveView.attribute(forKey: "attribute2"), "value2")
+        XCTAssertNil(lastInactiveView.attribute(forKey: "attribute1"))
+        XCTAssertNil(lastInactiveView.attribute(forKey: "attribute2"))
         XCTAssertNil(lastActiveView.attribute(forKey: "attribute1"))
         XCTAssertNil(lastActiveView.attribute(forKey: "attribute2"))
     }
@@ -443,7 +443,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
 
         XCTAssertEqual(lastInactiveView.view.resource.count, 1)
         XCTAssertNil(lastInactiveView.attribute(forKey: "attribute1"))
-        XCTAssertEqual(lastInactiveView.attribute(forKey: "attribute2"), "value2")
+        XCTAssertNil(lastInactiveView.attribute(forKey: "attribute2"))
         XCTAssertNil(lastActiveView.attribute(forKey: "attribute1"))
         XCTAssertEqual(lastActiveView.attribute(forKey: "attribute2"), "value2")
     }
