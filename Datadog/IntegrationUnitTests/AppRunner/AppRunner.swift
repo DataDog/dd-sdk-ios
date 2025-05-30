@@ -59,6 +59,7 @@ internal class AppRunner {
     /// Cleans up and resets the test environment.
     func tearDown() {
         appStateObservers.forEach { notificationCenter.removeObserver($0) }
+        appStateObservers = []
 
         DeleteTemporaryDirectory()
 
