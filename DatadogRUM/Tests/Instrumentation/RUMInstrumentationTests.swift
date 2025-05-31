@@ -27,6 +27,7 @@ class RUMInstrumentationTests: XCTestCase {
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
             notificationCenter: .default,
+            bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom()
         )
@@ -56,6 +57,7 @@ class RUMInstrumentationTests: XCTestCase {
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
             notificationCenter: .default,
+            bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom()
         )
@@ -82,6 +84,7 @@ class RUMInstrumentationTests: XCTestCase {
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
             notificationCenter: .default,
+            bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom()
         )
@@ -111,6 +114,7 @@ class RUMInstrumentationTests: XCTestCase {
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
             notificationCenter: .default,
+            bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom()
         )
@@ -140,6 +144,7 @@ class RUMInstrumentationTests: XCTestCase {
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
             notificationCenter: .default,
+            bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom()
         )
@@ -165,6 +170,7 @@ class RUMInstrumentationTests: XCTestCase {
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
             notificationCenter: .default,
+            bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom()
         )
@@ -190,6 +196,33 @@ class RUMInstrumentationTests: XCTestCase {
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
             notificationCenter: .default,
+            bundleType: .iOSApp,
+            watchdogTermination: .mockRandom(),
+            memoryWarningMonitor: .mockRandom()
+        )
+
+        // Then
+        withExtendedLifetime(instrumentation) {
+            XCTAssertNil(instrumentation.appHangs)
+        }
+    }
+
+    func testAppHangsAreDisabled_oniOSWidgets() {
+        // When
+        let instrumentation = RUMInstrumentation(
+            featureScope: NOPFeatureScope(),
+            uiKitRUMViewsPredicate: nil,
+            uiKitRUMActionsPredicate: nil,
+            swiftUIRUMViewsPredicate: nil,
+            longTaskThreshold: 0.1,
+            appHangThreshold: 0.1,
+            mainQueue: .main,
+            dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
+            fatalErrorContext: FatalErrorContextNotifierMock(),
+            processID: .mockAny(),
+            notificationCenter: .default,
+            bundleType: .iOSAppExtension,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom()
         )
@@ -215,6 +248,7 @@ class RUMInstrumentationTests: XCTestCase {
             fatalErrorContext: FatalErrorContextNotifierMock(),
             processID: .mockAny(),
             notificationCenter: .default,
+            bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom()
         )
