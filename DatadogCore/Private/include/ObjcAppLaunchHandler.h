@@ -44,8 +44,9 @@ typedef void (^UIApplicationDidBecomeActiveCallback) (NSTimeInterval);
 
 /// Sets a callback to be invoked when the application becomes active.
 ///
-/// The callback receives the time interval from launch to activation.
-/// If the application became active before setting the callback, it will not be triggered.
+/// The callback receives the time interval from process launch to app activation.
+/// The callback is triggered only once upon the next `UIApplicationDidBecomeActiveNotification`
+/// and is not retained for subsequent activations.
 ///
 /// - Parameter callback: A closure executed upon app activation.
 - (void)setApplicationDidBecomeActiveCallback:(UIApplicationDidBecomeActiveCallback)callback;

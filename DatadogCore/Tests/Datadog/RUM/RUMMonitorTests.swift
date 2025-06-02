@@ -334,28 +334,26 @@ class RUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
-        try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.action.type, .applicationStart)
-        }
+
         // Start ApplicationLaunch view
-        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.view.action.count, 1)
-            XCTAssertEqual(rumModel.view.resource.count, 0)
-        }
-        // Stop ApplicationLaunch view
-        try rumEventMatchers[2].model(ofType: RUMViewEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.view.action.count, 1)
-            XCTAssertEqual(rumModel.view.resource.count, 0)
-        }
-        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[0].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 0)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
-        try rumEventMatchers[4].model(ofType: RUMActionEvent.self) { rumModel in
+        // Stop ApplicationLaunch view
+        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 0)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+        }
+        try rumEventMatchers[2].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 0)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+        }
+        try rumEventMatchers[3].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .tap)
             XCTAssertEqual(rumModel.action.target?.name, actionName)
         }
-        try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[4].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
@@ -628,22 +626,18 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
         let actionEvents = rumEventMatchers.filterRUMEvents(ofType: RUMActionEvent.self)
-        XCTAssertEqual(actionEvents.count, 3)
+        XCTAssertEqual(actionEvents.count, 2)
 
         let event1Matcher = actionEvents[0]
         let event1: RUMActionEvent = try event1Matcher.model()
-        XCTAssertEqual(event1.action.type, .applicationStart)
+        XCTAssertEqual(event1.action.type, .tap)
+        XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
 
         let event2Matcher = actionEvents[1]
         let event2: RUMActionEvent = try event2Matcher.model()
-        XCTAssertEqual(event2.action.type, .tap)
+        XCTAssertEqual(event2.action.type, .swipe)
         XCTAssertEqual(try event2Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
-
-        let event3Matcher = actionEvents[2]
-        let event3: RUMActionEvent = try event3Matcher.model()
-        XCTAssertEqual(event3.action.type, .swipe)
-        XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
-        XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
+        XCTAssertEqual(try event2Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
     }
 
     // MARK: - Sending user info
@@ -947,11 +941,10 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)[0]
 
-        let views = try session.views.dropApplicationLaunchView()
-        let viewEvents = views[0].viewEvents
-        let actionEvents = views[0].actionEvents
-        let resourceEvents = views[0].resourceEvents
-        let errorEvents = views[0].errorEvents
+        let viewEvents = session.views[0].viewEvents
+        let actionEvents = session.views[0].actionEvents
+        let resourceEvents = session.views[0].resourceEvents
+        let errorEvents = session.views[0].errorEvents
 
         XCTAssertGreaterThan(viewEvents.count, 0)
         XCTAssertGreaterThan(actionEvents.count, 0)
@@ -977,7 +970,7 @@ class RUMMonitorTests: XCTestCase {
 
     // MARK: - Tracking App Launch Events
 
-    func testWhenInitializing_itStartsApplicationLaunchView_withLaunchTime() throws {
+    func testWhenInitializing_itStartsApplicationLaunchView() throws {
         // Given
         let launchDate: Date = .mockDecember15th2019At10AMUTC()
         let sdkInitDate = launchDate.addingTimeInterval(10)
@@ -1002,7 +995,6 @@ class RUMMonitorTests: XCTestCase {
 
         XCTAssertEqual(view.view.name, RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName)
         XCTAssertEqual(view.view.url, RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL)
-        XCTAssertEqual(view.date, launchDate.timeIntervalSince1970.toInt64Milliseconds)
     }
 
     func testWhenInitializingWithActivePrewarm_itStartsApplicationLaunchView_withSdkInitDate() throws {
@@ -1073,16 +1065,13 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(session.views.count, 2, "It should track 2 views")
 
         let appLaunchView = session.views[0]
-        let launchDateInMilliseconds = launchDate.timeIntervalSince1970.toInt64Milliseconds
         let sdkInitDateInMilliseconds = sdkInitDate.timeIntervalSince1970.toInt64Milliseconds
 
         XCTAssertEqual(appLaunchView.name, "ApplicationLaunch", "It should track 'ApplicationLaunch' view")
-        XCTAssertEqual(appLaunchView.viewEvents.first?.date, launchDateInMilliseconds, "'ApplicationLaunch' view should start at launch time")
-        XCTAssertEqual(appLaunchView.actionEvents.count, 2, "'ApplicationLaunch' should track 2 actions")
-        XCTAssertEqual(appLaunchView.actionEvents[0].action.type, .applicationStart, "'ApplicationLaunch' should track 'application start' action")
-        XCTAssertEqual(appLaunchView.actionEvents[0].date, launchDateInMilliseconds, "'application start' action should be tracked at launch time")
-        XCTAssertEqual(appLaunchView.actionEvents[1].action.target?.name, "A1", "'ApplicationLaunch' should track 'A1' action")
-        XCTAssertGreaterThan(appLaunchView.actionEvents[1].date, sdkInitDateInMilliseconds, "'A1' action should be tracked after SDK init")
+        XCTAssertEqual(appLaunchView.viewEvents.first?.date, sdkInitDateInMilliseconds, "'ApplicationLaunch' view should start at launch time")
+        XCTAssertEqual(appLaunchView.actionEvents.count, 1, "'ApplicationLaunch' should track 2 actions")
+        XCTAssertEqual(appLaunchView.actionEvents[0].action.target?.name, "A1", "'ApplicationLaunch' should track 'A1' action")
+        XCTAssertGreaterThan(appLaunchView.actionEvents[0].date, sdkInitDateInMilliseconds, "'A1' action should be tracked after SDK init")
         XCTAssertEqual(appLaunchView.errorEvents.count, 1, "'ApplicationLaunch' should track 1 error")
         XCTAssertEqual(appLaunchView.errorEvents[0].error.message, "E1", "'ApplicationLaunch' should track 'E1' error")
         XCTAssertEqual(appLaunchView.resourceEvents.count, 1, "'ApplicationLaunch' should track 1 resource")

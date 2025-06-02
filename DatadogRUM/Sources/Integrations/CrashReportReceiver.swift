@@ -151,9 +151,11 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         using crashTimings: AdjustedCrashTimings
     ) {
         let handlingRule = RUMOffViewEventsHandlingRule(
+            applicationState: nil,
             sessionState: lastRUMSessionState,
             isAppInForeground: crashContext.lastIsAppInForeground,
-            isBETEnabled: trackBackgroundEvents
+            isBETEnabled: trackBackgroundEvents,
+            command: nil
         )
 
         let newRUMView: RUMViewEvent?
@@ -203,9 +205,11 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         // the `lastRUMSessionState` would have been set in `CrashContext` and we could be sending the crash to previous session
         // through `sendCrashReportToPreviousSession()`.
         let handlingRule = RUMOffViewEventsHandlingRule(
+            applicationState: nil,
             sessionState: nil,
             isAppInForeground: crashContext.lastIsAppInForeground,
-            isBETEnabled: trackBackgroundEvents
+            isBETEnabled: trackBackgroundEvents,
+            command: nil
         )
 
         let newRUMView: RUMViewEvent?

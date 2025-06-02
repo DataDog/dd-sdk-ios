@@ -17,6 +17,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
     override func setUp() {
         core = DatadogCoreProxy()
         core.context = .mockWith(
+            sdkInitDate: dateProvider.now,
             launchTime: .mockWith(launchDate: dateProvider.now),
             applicationStateHistory: .mockAppInForeground(since: dateProvider.now)
         )
@@ -143,7 +144,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         // Then
         let expectedDuration = dateProvider.now.timeIntervalSince(startTime)
         let metricAttributes = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent()?.attributes)
-        XCTAssertEqual(metricAttributes.duration, expectedDuration.toInt64Nanoseconds)
+        DDAssertEqual(metricAttributes.duration?.nanosecondsToSeconds, expectedDuration, accuracy: 0.1)
     }
 
     func testTrackingViewsCount() throws {
@@ -276,4 +277,8 @@ private extension TelemetryDebugEvent {
     var attributes: SessionEndedMetric.Attributes? {
         return telemetry.telemetryInfo[SessionEndedMetric.Constants.rseKey] as? SessionEndedMetric.Attributes
     }
+}
+
+private extension Int64 {
+    var nanosecondsToSeconds: TimeInterval { TimeInterval(fromNanoseconds: self) }
 }

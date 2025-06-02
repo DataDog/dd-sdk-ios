@@ -206,7 +206,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         switch command {
         // Application Launch
         case let command as RUMApplicationStartCommand:
-            sendApplicationStartAction(on: command, context: context, writer: writer)
+            if context.applicationStateHistory.currentState == .inactive {
+                // If the SDK is initialized after the app became active, we can't determine
+                // whether the process was started by the user or resumed from background.
+                // In that case, we skip reporting the application start action.
+                sendApplicationStartAction(on: command, context: context, writer: writer)
+            }
             if !isInitialView || viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
                 dependencies.telemetry.error(
                     "A RUMApplicationStartCommand got sent to a View other than the ApplicationLaunch view."
@@ -215,6 +220,17 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             // Application Launch also serves as a StartView command for this view
             didReceiveStartCommand = true
             needsViewUpdate = true
+
+        case let command as RUMHandleAppLifecycleEventCommand:
+            if command.event == .didEnterBackground && viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
+                // Stop 'ApplicationLaunch' view on transition to background
+                isActiveView = false
+                needsViewUpdate = true // yes, to update duration
+            } else if command.event == .willEnterForeground && viewPath == RUMOffViewEventsHandlingRule.Constants.backgroundViewURL {
+                // Stop 'Background' view on transition to foreground
+                isActiveView = false
+                needsViewUpdate = false // no, to not update the duration
+            }
 
         // Session stop
         case is RUMStopSessionCommand:
