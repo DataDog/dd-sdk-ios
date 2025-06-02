@@ -9,10 +9,17 @@ import DatadogInternal
 
 public enum Profiler {
     public struct Configuration {
-        let apiKey: String
+        public let apiKey: String
 
-        public init(apiKey: String) {
+        /// Overrides the custom server endpoint where Profiles are sent.
+        public var customEndpoint: URL?
+
+        public init(
+            apiKey: String,
+            customEndpoint: URL? = nil
+        ) {
             self.apiKey = apiKey
+            self.customEndpoint = customEndpoint
         }
     }
 
@@ -21,6 +28,7 @@ public enum Profiler {
             feature: ProfilerFeature(
                 requestBuilder: RequestBuilder(
                     apiKey: configuration.apiKey,
+                    customUploadURL: configuration.customEndpoint,
                     telemetry: core.telemetry
                 ),
                 messageReceiver: NOPFeatureMessageReceiver())

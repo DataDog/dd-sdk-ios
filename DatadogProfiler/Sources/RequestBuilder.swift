@@ -39,7 +39,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         var multipart = multipartBuilder
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .custom { decoder in
-            var container = try decoder.singleValueContainer()
+            let container = try decoder.singleValueContainer()
             let str = try container.decode(String.self)
             return iso8601DateFormatter.date(from: str) ?? Date()
         }
