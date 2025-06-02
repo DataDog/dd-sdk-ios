@@ -7,6 +7,7 @@ stages:
   - e2e-test
   - benchmark-test
   - dogfood
+  - release
   - release-build
   - release-publish
   - post
@@ -307,6 +308,40 @@ Dogfood (Datadog app):
   script:
     - ./tools/runner-setup.sh --ssh
     - DRY_RUN=0 make dogfood-datadog-app
+
+# ┌────────────────────┐
+# │ Automated release: │
+# └────────────────────┘
+
+Release (iOS SDK):
+  stage: release
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $SS_BRANCH'
+      when: manual
+      allow_failure: true
+  script:
+    - echo "Releasing new iOS SDK version"
+    - echo "Release notes:"
+  variables:
+    RELEASE_VERSION: "1.0.0"
+    RELEASE_NOTES: "Initial release template"
+    SS_BRANCH: "simaoseica/release_automation"
+  needs: ["ENV check"]
+#  needs:
+#    - $[[ inputs.release_version ]]
+#    - $[[ inputs.release_notes ]]
+#spec:
+#  inputs:
+#    release_version:
+#      description: "Enter the release version"
+#      type: text
+#      default: "1.0.0"
+#    release_notes:
+#      description: "Enter the release notes"
+#      type: text
+#      default: "template"
+
+
 
 # ┌──────────────┐
 # │ SDK release: │
