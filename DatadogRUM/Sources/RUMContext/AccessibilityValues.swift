@@ -7,80 +7,72 @@
 import UIKit
 
 internal protocol AccessibilityValues: AnyObject {
-    @available(iOS 13.0, tvOS 13.0, *)
-    @MainActor var isVideoAutoplayEnabled: Bool { get }
-
-    @available(iOS 13.0, tvOS 13.0, *)
-    @MainActor var shouldDifferentiateWithoutColor: Bool { get }
-
-    @available(iOS 13.0, tvOS 13.0, *)
-    @MainActor var isOnOffSwitchLabelsEnabled: Bool { get }
-
-    @available(iOS 14.0, tvOS 14.0, *)
-    @MainActor var buttonShapesEnabled: Bool { get }
-
-    @available(iOS 14.0, tvOS 14.0, *)
-    @MainActor var prefersCrossFadeTransitions: Bool { get }
-
+    @MainActor var isVideoAutoplayEnabled: Bool? { get }
+    @MainActor var shouldDifferentiateWithoutColor: Bool? { get }
+    @MainActor var isOnOffSwitchLabelsEnabled: Bool? { get }
+    @MainActor var buttonShapesEnabled: Bool? { get }
+    @MainActor var prefersCrossFadeTransitions: Bool? { get }
     @MainActor var isVoiceOverRunning: Bool { get }
-
     @MainActor var isMonoAudioEnabled: Bool { get }
-
     @MainActor var isClosedCaptioningEnabled: Bool { get }
-
     @MainActor var isInvertColorsEnabled: Bool { get }
-
     @MainActor var isGuidedAccessEnabled: Bool { get }
-
     @MainActor var isBoldTextEnabled: Bool { get }
-
     @MainActor var isGrayscaleEnabled: Bool { get }
-
     @MainActor var isReduceTransparencyEnabled: Bool { get }
-
     @MainActor var isReduceMotionEnabled: Bool { get }
-
     @MainActor var isDarkerSystemColorsEnabled: Bool { get }
-
     @MainActor var isSwitchControlRunning: Bool { get }
-
     @MainActor var isSpeakSelectionEnabled: Bool { get }
-
     @MainActor var isSpeakScreenEnabled: Bool { get }
-
     @MainActor var isShakeToUndoEnabled: Bool { get }
-
     @MainActor var isAssistiveTouchRunning: Bool { get }
-
     @MainActor var rtlEnabled: Bool { get }
-
     @MainActor var textSize: String { get }
 }
 
 internal final class LiveAccessibilityValues: AccessibilityValues {
-    @available(iOS 13.0, tvOS 13.0, *)
-    var isVideoAutoplayEnabled: Bool {
-        UIAccessibility.isVideoAutoplayEnabled
+    init() {
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
-    var shouldDifferentiateWithoutColor: Bool {
-        UIAccessibility.shouldDifferentiateWithoutColor
+    @MainActor var isVideoAutoplayEnabled: Bool? {
+        if #available(iOS 13.0, tvOS 13.0, *) {
+            return UIAccessibility.isVideoAutoplayEnabled
+        } else {
+            return nil
+        }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
-    var isOnOffSwitchLabelsEnabled: Bool {
-        UIAccessibility.isOnOffSwitchLabelsEnabled
+    @MainActor var shouldDifferentiateWithoutColor: Bool? {
+        if #available(iOS 13.0, tvOS 13.0, *) {
+            return UIAccessibility.shouldDifferentiateWithoutColor
+        } else {
+            return nil
+        }
     }
 
-    @available(iOS 14.0, tvOS 14.0, *)
-    @MainActor var buttonShapesEnabled: Bool {
-        UIAccessibility.buttonShapesEnabled
+    @MainActor var isOnOffSwitchLabelsEnabled: Bool? {
+        if #available(iOS 13.0, tvOS 13.0, *) {
+            return UIAccessibility.isOnOffSwitchLabelsEnabled
+        } else {
+            return nil
+        }
     }
 
-    @available(iOS 14.0, tvOS 14.0, *)
-    @MainActor var prefersCrossFadeTransitions: Bool {
-        UIAccessibility.prefersCrossFadeTransitions
+    @MainActor var buttonShapesEnabled: Bool? {
+        if #available(iOS 14.0, tvOS 14.0, *) {
+            return UIAccessibility.buttonShapesEnabled
+        } else {
+            return nil
+        }
+    }
+
+    @MainActor var prefersCrossFadeTransitions: Bool? {
+        if #available(iOS 14.0, tvOS 14.0, *) {
+            return UIAccessibility.prefersCrossFadeTransitions
+        } else {
+            return nil
+        }
     }
 
     @MainActor var isVoiceOverRunning: Bool {

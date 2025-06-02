@@ -5,8 +5,10 @@
  */
 
 @testable import DatadogRUM
+@testable import TestUtilities
 import XCTest
 
+@available(iOS 13.0, tvOS 13.0, *)
 final class AccessibilityReaderTests: XCTestCase {
     // MARK: - Test Helpers
 
@@ -81,15 +83,6 @@ final class AccessibilityReaderTests: XCTestCase {
         XCTAssertTrue(observerNames.contains(UIAccessibility.guidedAccessStatusDidChangeNotification))
         XCTAssertTrue(observerNames.contains(UIAccessibility.speakScreenStatusDidChangeNotification))
         XCTAssertTrue(observerNames.contains(UIAccessibility.speakSelectionStatusDidChangeNotification))
-    }
-
-    @available(iOS 13.0, tvOS 13.0, *)
-    func testRegistersIOS13Observers() {
-        let mockNotificationCenter = MockNotificationCenter()
-        _ = AccessibilityReader(notificationCenter: mockNotificationCenter)
-
-        let observerNames = mockNotificationCenter.getObserverNames()
-
         XCTAssertTrue(observerNames.contains(UIAccessibility.videoAutoplayStatusDidChangeNotification))
         XCTAssertTrue(observerNames.contains(UIAccessibility.differentiateWithoutColorDidChangeNotification))
         XCTAssertTrue(observerNames.contains(UIAccessibility.onOffSwitchLabelsDidChangeNotification))
@@ -110,7 +103,7 @@ final class AccessibilityReaderTests: XCTestCase {
     func testStateUpdatesWhenNotificationIsSent() {
         // Given
         let mockNotificationCenter = MockNotificationCenter()
-        let mockValues = MockAccessibilityValues()
+        let mockValues = AccessibilityValuesMock.mockAny()
         let reader = AccessibilityReader(notificationCenter: mockNotificationCenter, accessibilityValues: mockValues)
 
         // When
@@ -131,33 +124,33 @@ final class AccessibilityReaderTests: XCTestCase {
     @MainActor
     func testAccessibilityValuesArePropagated() {
         // Given
-        let mock = MockAccessibilityValues()
-        mock.textSize = "large"
-        mock.isVoiceOverRunning = true
-        mock.isBoldTextEnabled = true
-        mock.isReduceTransparencyEnabled = true
-        mock.isReduceMotionEnabled = true
-        mock.buttonShapesEnabled = true
-        mock.isInvertColorsEnabled = true
-        mock.isDarkerSystemColorsEnabled = true
-        mock.isSwitchControlRunning = true
-        mock.isAssistiveTouchRunning = true
-        mock.isVideoAutoplayEnabled = true
-        mock.isClosedCaptioningEnabled = true
-        mock.isMonoAudioEnabled = true
-        mock.isShakeToUndoEnabled = true
-        mock.prefersCrossFadeTransitions = true
-        mock.shouldDifferentiateWithoutColor = true
-        mock.isGrayscaleEnabled = true
-        mock.isGuidedAccessEnabled = true
-        mock.isOnOffSwitchLabelsEnabled = true
-        mock.isSpeakScreenEnabled = true
-        mock.isSpeakSelectionEnabled = true
-        mock.rtlEnabled = true
+        let mock = AccessibilityValuesMock(
+            isVideoAutoplayEnabled: true,
+            shouldDifferentiateWithoutColor: true,
+            isOnOffSwitchLabelsEnabled: true,
+            buttonShapesEnabled: true,
+            prefersCrossFadeTransitions: true,
+            isVoiceOverRunning: true,
+            isMonoAudioEnabled: true,
+            isClosedCaptioningEnabled: true,
+            isInvertColorsEnabled: true,
+            isGuidedAccessEnabled: true,
+            isBoldTextEnabled: true,
+            isGrayscaleEnabled: true,
+            isReduceTransparencyEnabled: true,
+            isReduceMotionEnabled: true,
+            isDarkerSystemColorsEnabled: true,
+            isSwitchControlRunning: true,
+            isSpeakSelectionEnabled: true,
+            isSpeakScreenEnabled: true,
+            isShakeToUndoEnabled: true,
+            isAssistiveTouchRunning: true,
+            rtlEnabled: true,
+            textSize: "large"
+        )
 
         // When
         let reader = AccessibilityReader(notificationCenter: .init(), accessibilityValues: mock)
-        reader.updateState()
 
         // Then
         let expectation = XCTestExpectation(description: "State updated")
@@ -186,7 +179,40 @@ final class AccessibilityReaderTests: XCTestCase {
             XCTAssertEqual(state.rtlEnabled, true)
             expectation.fulfill()
         }
-        reader.updateState()
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor
+    func testAccessibilityValuesWithRandomMock() {
+        // Given
+        let randomMock = AccessibilityValuesMock.mockRandom()
+
+        // When
+        let reader = AccessibilityReader(notificationCenter: .init(), accessibilityValues: randomMock)
+
+        // Then
+        let expectation = XCTestExpectation(description: "State updated with random values")
+        DispatchQueue.main.async {
+            let state = reader.state
+            XCTAssertNotNil(state.textSize)
+            XCTAssertNotNil(state.screenReaderEnabled)
+            XCTAssertNotNil(state.boldTextEnabled)
+            XCTAssertNotNil(state.reduceTransparencyEnabled)
+            XCTAssertNotNil(state.reduceMotionEnabled)
+            XCTAssertNotNil(state.invertColorsEnabled)
+            XCTAssertNotNil(state.increaseContrastEnabled)
+            XCTAssertNotNil(state.assistiveSwitchEnabled)
+            XCTAssertNotNil(state.assistiveTouchEnabled)
+            XCTAssertNotNil(state.closedCaptioningEnabled)
+            XCTAssertNotNil(state.monoAudioEnabled)
+            XCTAssertNotNil(state.shakeToUndoEnabled)
+            XCTAssertNotNil(state.grayscaleEnabled)
+            XCTAssertNotNil(state.singleAppModeEnabled)
+            XCTAssertNotNil(state.speakScreenEnabled)
+            XCTAssertNotNil(state.speakSelectionEnabled)
+            XCTAssertNotNil(state.rtlEnabled)
+            expectation.fulfill()
+        }
         wait(for: [expectation], timeout: 1.0)
     }
 }

@@ -3392,24 +3392,24 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     // MARK: - View Attributes
+    @available(iOS 13.0, tvOS 13.0, *)
     @MainActor
     func testAccessibilityAttributesInViewEvents() throws {
         // Given
-        let initialMockValues = MockAccessibilityValues()
-        initialMockValues.isVoiceOverRunning = false
-        initialMockValues.textSize = "medium"
-        initialMockValues.isBoldTextEnabled = true
+        let initialMockValues = AccessibilityValuesMock(
+            isVoiceOverRunning: false,
+            isBoldTextEnabled: true,
+            textSize: "medium"
+        )
 
         let mockParent = RUMContextProviderMock()
         let testContext = context
 
-        var accessibilityReader: AccessibilityReader?
         let dependencies = RUMScopeDependencies.mockWith(
-            accessibilityReaderFactory: {
-                let reader = AccessibilityReader(notificationCenter: .default, accessibilityValues: initialMockValues)
-                accessibilityReader = reader
-                return reader
-            }
+            accessibilityReader: AccessibilityReader(
+                notificationCenter: .init(),
+                accessibilityValues: initialMockValues
+            )
         )
 
         let scope = RUMViewScope(
@@ -3427,7 +3427,6 @@ class RUMViewScopeTests: XCTestCase {
 
         let readerInitExpectation = XCTestExpectation(description: "AccessibilityReader initialized")
         DispatchQueue.main.async {
-            accessibilityReader?.updateState()
             DispatchQueue.main.async {
                 readerInitExpectation.fulfill()
             }
@@ -3449,8 +3448,6 @@ class RUMViewScopeTests: XCTestCase {
         // Then
         let initialEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
 
-        print("DEBUG: Initial event context: \(initialEvent.context?.contextInfo ?? [:])")
-
         let initialAccessibilityData = try XCTUnwrap(
             initialEvent.context?.contextInfo["accessibility"] as? Accessibility
         )
@@ -3470,7 +3467,7 @@ class RUMViewScopeTests: XCTestCase {
         let testContext = context
 
         let dependencies = RUMScopeDependencies.mockWith(
-            accessibilityReaderFactory: { nil }
+            accessibilityReader: nil
         )
 
         let scope = RUMViewScope(

@@ -10,14 +10,18 @@ import UIKit
 
 internal final class AccessibilityReader {
     @ReadWriteLock
-    var state: Accessibility
+    private(set) var state: Accessibility
 
     private let notificationCenter: NotificationCenter
     private let accessibilityValues: AccessibilityValues
     private var observers: [NSObjectProtocol] = []
 
-    init(notificationCenter: NotificationCenter = .default, accessibilityValues: AccessibilityValues = LiveAccessibilityValues()) {
-        state = Accessibility()
+    @available(iOS 13.0, tvOS 13.0, *)
+    init(
+        notificationCenter: NotificationCenter,
+        accessibilityValues: AccessibilityValues = LiveAccessibilityValues()
+    ) {
+        self.state = Accessibility()
         self.notificationCenter = notificationCenter
         self.accessibilityValues = accessibilityValues
         startObserving()
@@ -28,45 +32,15 @@ internal final class AccessibilityReader {
         stopObserving()
     }
 
-    func updateState() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else {
-                return
-            }
-            state = currentState
+    @available(iOS 13.0, tvOS 13.0, *)
+    private func updateState() {
+        Task { @MainActor in
+            self.state = self.currentState
         }
     }
 
+    @available(iOS 13.0, tvOS 13.0, *)
     private func startObserving() {
-        if #available(iOS 13.0, tvOS 13.0, *) {
-            let videoAutoplayObserver = notificationCenter.addObserver(
-                forName: UIAccessibility.videoAutoplayStatusDidChangeNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                self?.updateState()
-            }
-            observers.append(videoAutoplayObserver)
-
-            let differentiateWithoutColorObserver = notificationCenter.addObserver(
-                forName: UIAccessibility.differentiateWithoutColorDidChangeNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                self?.updateState()
-            }
-            observers.append(differentiateWithoutColorObserver)
-
-            let onOffSwitchLabelsObserver = notificationCenter.addObserver(
-                forName: UIAccessibility.onOffSwitchLabelsDidChangeNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                self?.updateState()
-            }
-            observers.append(onOffSwitchLabelsObserver)
-        }
-
         if #available(iOS 14.0, tvOS 14.0, *) {
             let buttonShapesObserver = notificationCenter.addObserver(
                 forName: UIAccessibility.buttonShapesEnabledStatusDidChangeNotification,
@@ -86,6 +60,33 @@ internal final class AccessibilityReader {
             }
             observers.append(crossFadeTransitionsObserver)
         }
+
+        let videoAutoplayObserver = notificationCenter.addObserver(
+            forName: UIAccessibility.videoAutoplayStatusDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateState()
+        }
+        observers.append(videoAutoplayObserver)
+
+        let differentiateWithoutColorObserver = notificationCenter.addObserver(
+            forName: UIAccessibility.differentiateWithoutColorDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateState()
+        }
+        observers.append(differentiateWithoutColorObserver)
+
+        let onOffSwitchLabelsObserver = notificationCenter.addObserver(
+            forName: UIAccessibility.onOffSwitchLabelsDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateState()
+        }
+        observers.append(onOffSwitchLabelsObserver)
 
         let voiceOverObserver = notificationCenter.addObserver(
             forName: UIAccessibility.voiceOverStatusDidChangeNotification,
@@ -232,25 +233,11 @@ internal final class AccessibilityReader {
         var state = Accessibility()
 
         state.textSize = accessibilityValues.textSize
-
-        if #available(iOS 13.0, tvOS 13.0, *) {
-            state.videoAutoplayEnabled = accessibilityValues.isVideoAutoplayEnabled
-            state.shouldDifferentiateWithoutColor = accessibilityValues.shouldDifferentiateWithoutColor
-            state.onOffSwitchLabelsEnabled = accessibilityValues.isOnOffSwitchLabelsEnabled
-        } else {
-            state.videoAutoplayEnabled = nil
-            state.shouldDifferentiateWithoutColor = nil
-            state.onOffSwitchLabelsEnabled = nil
-        }
-
-        if #available(iOS 14.0, tvOS 14.0, *) {
-            state.buttonShapesEnabled = accessibilityValues.buttonShapesEnabled
-            state.reducedAnimationsEnabled = accessibilityValues.prefersCrossFadeTransitions
-        } else {
-            state.buttonShapesEnabled = nil
-            state.reducedAnimationsEnabled = nil
-        }
-
+        state.videoAutoplayEnabled = accessibilityValues.isVideoAutoplayEnabled
+        state.shouldDifferentiateWithoutColor = accessibilityValues.shouldDifferentiateWithoutColor
+        state.onOffSwitchLabelsEnabled = accessibilityValues.isOnOffSwitchLabelsEnabled
+        state.buttonShapesEnabled = accessibilityValues.buttonShapesEnabled
+        state.reducedAnimationsEnabled = accessibilityValues.prefersCrossFadeTransitions
         state.screenReaderEnabled = accessibilityValues.isVoiceOverRunning
         state.boldTextEnabled = accessibilityValues.isBoldTextEnabled
         state.reduceTransparencyEnabled = accessibilityValues.isReduceTransparencyEnabled

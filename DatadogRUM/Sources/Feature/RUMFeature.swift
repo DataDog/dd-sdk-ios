@@ -72,6 +72,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
             watchdogTermination = monitor
         }
 
+        var accessibilityReader: AccessibilityReader? = nil
+        if #available(iOS 13.0, tvOS 13.0, *), configuration.featureFlags[.collectAccessibilitySettings] {
+             accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenter)
+        }
+
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
@@ -115,11 +120,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     telemetry: core.telemetry
                 )
             },
-            accessibilityReaderFactory: {
-                configuration.featureFlags[.collectAccessibilitySettings]
-                ? AccessibilityReader()
-                : nil
-            },
+            accessibilityReader: accessibilityReader,
             onSessionStart: configuration.onSessionStart,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),

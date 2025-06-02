@@ -44,7 +44,7 @@ internal struct RUMScopeDependencies {
     let renderLoopObserver: RenderLoopObserver?
     let viewHitchesReaderFactory: () -> (RenderLoopReader & ViewHitchesModel)?
     let vitalsReaders: VitalsReaders?
-    let accessibilityReaderFactory: () -> AccessibilityReader?
+    let accessibilityReader: AccessibilityReader?
     let onSessionStart: RUM.SessionListener?
     let viewCache: ViewCache
     /// The RUM context necessary for tracking fatal errors like Crashes or fatal App Hangs.
@@ -83,7 +83,7 @@ internal struct RUMScopeDependencies {
         renderLoopObserver: RenderLoopObserver?,
         viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)?,
         vitalsReaders: VitalsReaders?,
-        accessibilityReaderFactory: @escaping () -> AccessibilityReader?,
+        accessibilityReader: AccessibilityReader?,
         onSessionStart: RUM.SessionListener?,
         viewCache: ViewCache,
         fatalErrorContext: FatalErrorContextNotifying,
@@ -108,7 +108,7 @@ internal struct RUMScopeDependencies {
         self.renderLoopObserver = renderLoopObserver
         self.viewHitchesReaderFactory = viewHitchesReaderFactory
         self.vitalsReaders = vitalsReaders
-        self.accessibilityReaderFactory = accessibilityReaderFactory
+        self.accessibilityReader = accessibilityReader
         self.onSessionStart = onSessionStart
         self.viewCache = viewCache
         self.fatalErrorContext = fatalErrorContext
