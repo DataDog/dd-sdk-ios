@@ -56,7 +56,7 @@ class RUMSessionTestsBase: XCTestCase {
     /// [FG:ApplicationLaunch]
     /// ```
     func userSession(rumSetup: AppRunner.RUMSetup? = nil) -> AppRun {
-        return .given(.appLaunch(type: .userLaunch(processLaunchDate: processLaunchDate)))
+        return .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
             .and(.enableRUM(after: timeToSDKInit, rumSetup: rumSetup))
             .and(.appBecomesActive(after: timeToAppBecomeActive))
     }

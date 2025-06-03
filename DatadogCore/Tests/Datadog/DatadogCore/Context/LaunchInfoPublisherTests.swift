@@ -1,0 +1,207 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
+import XCTest
+import TestUtilities
+import DatadogInternal
+@testable import DatadogCore
+
+class LaunchInfoPublisherTests: XCTestCase {
+    func testInitialValue() {
+        // Given
+        let handler = AppLaunchHandlerMock(timeToDidBecomeActive: nil)
+        let initialValue: LaunchInfo = .mockRandom()
+
+        // When
+        let publisher = LaunchInfoPublisher(handler: handler, initialValue: initialValue)
+
+        // Then
+        XCTAssertEqual(publisher.initialValue, initialValue)
+    }
+
+    func testUpdatingValue() {
+        let taskPolicyRole = Int(TASK_FOREGROUND_APPLICATION.rawValue)
+        let processLaunchDate: Date = .mockRandom()
+        let timeToDidBecomeActive: TimeInterval = .mockRandom(min: 1, max: 10)
+
+        // Given
+        let handler = AppLaunchHandlerMock(
+            taskPolicyRole: taskPolicyRole,
+            processLaunchDate: processLaunchDate,
+            timeToDidBecomeActive: nil // it will be lazy updated
+        )
+        let initialValue = handler.resolveLaunchInfo(using: ProcessInfoMock())
+        let contextUpdated = expectation(description: "Update context receiver")
+        let publisher = LaunchInfoPublisher(handler: handler, initialValue: initialValue)
+
+        publisher.publish { launchInfo in
+            XCTAssertEqual(launchInfo.launchReason, .userLaunch)
+            XCTAssertEqual(launchInfo.processLaunchDate, processLaunchDate)
+            XCTAssertEqual(launchInfo.timeToDidBecomeActive, timeToDidBecomeActive)
+            contextUpdated.fulfill()
+        }
+
+        // When
+        handler.simulateDidBecomeActive(timeInterval: timeToDidBecomeActive)
+
+        // Then
+        waitForExpectations(timeout: 1)
+    }
+}
+
+class AppLaunchHandlerLaunchInfoTests: XCTestCase {
+    /// The heuristic tested here is explained in https://datadoghq.atlassian.net/wiki/x/eQHZMAE
+    func testResolvingLaunchReason() {
+        // ProcessInfo env specific to "prewarmed" launch reason:
+        let prewarmedProcessInfo = ["ActivePrewarm": "1"]
+        // Task role specific to "user launch" reason:
+        let foregroundRole = Int(TASK_FOREGROUND_APPLICATION.rawValue)
+        // Task role specific to "uncertain" launch reason on tvOS:
+        let unavailableRole = __dd_private_TASK_POLICY_UNAVAILABLE
+        // Other known task roles:
+        let otherRoles: [Int] = [
+            Int(TASK_UNSPECIFIED.rawValue),
+            Int(TASK_BACKGROUND_APPLICATION.rawValue),
+            Int(TASK_CONTROL_APPLICATION.rawValue),
+            Int(TASK_GRAPHICS_SERVER.rawValue),
+            Int(TASK_THROTTLE_APPLICATION.rawValue),
+            Int(TASK_NONUI_APPLICATION.rawValue),
+            Int(TASK_DEFAULT_APPLICATION.rawValue),
+            Int(TASK_DARWINBG_APPLICATION.rawValue),
+            __dd_private_TASK_POLICY_KERN_FAILURE,
+            __dd_private_TASK_POLICY_DEFAULTED,
+        ]
+
+        func launchReason(for taskPolicyRole: Int, processInfo: [String: String]) -> LaunchReason {
+            let handler = AppLaunchHandlerMock(taskPolicyRole: taskPolicyRole)
+            let info = handler.resolveLaunchInfo(using: ProcessInfoMock(environment: processInfo))
+            return info.launchReason
+        }
+
+        // Unavailable role is always uncertain, regardless of ActivePrewarm:
+        XCTAssertEqual(launchReason(for: unavailableRole, processInfo: [:]), .uncertain)
+        XCTAssertEqual(launchReason(for: unavailableRole, processInfo: prewarmedProcessInfo), .uncertain)
+
+        // Foreground policy and no prewarm → user launch:
+        XCTAssertEqual(launchReason(for: foregroundRole, processInfo: [:]), .userLaunch)
+        // Foreground policy but ActivePrewarm=1 → prewarming overrides user:
+        XCTAssertEqual(launchReason(for: foregroundRole, processInfo: prewarmedProcessInfo), .prewarming)
+
+        for otherRole in otherRoles {
+            // Other roles + no prewarm → background:
+            XCTAssertEqual(launchReason(for: otherRole, processInfo: [:]), .backgroundLaunch)
+            // Other roles + prewarm → prewarming:
+            XCTAssertEqual(launchReason(for: otherRole, processInfo: prewarmedProcessInfo), .prewarming)
+        }
+    }
+
+    func testProcessLaunchDateForwarding() {
+        let expectedDate = Date()
+        let handler = AppLaunchHandlerMock(processLaunchDate: expectedDate)
+        let info = handler.resolveLaunchInfo(using: ProcessInfoMock())
+        XCTAssertEqual(info.processLaunchDate, expectedDate)
+    }
+
+    func testTimeToDidBecomeActiveForwarding() {
+        let expectedInterval: TimeInterval = 4.56
+        let handler = AppLaunchHandlerMock(timeToDidBecomeActive: expectedInterval)
+        let info = handler.resolveLaunchInfo(using: ProcessInfoMock())
+        XCTAssertEqual(info.timeToDidBecomeActive, expectedInterval)
+    }
+
+    func testTimeToDidBecomeActiveForwardingNil() {
+        let handler = AppLaunchHandlerMock(timeToDidBecomeActive: nil)
+        let info = handler.resolveLaunchInfo(using: ProcessInfoMock())
+        XCTAssertNil(info.timeToDidBecomeActive)
+    }
+}
+
+class AppLaunchHandlerTests: XCTestCase {
+    let notificationCenter = NotificationCenter()
+
+    func testTaskPolicyRole() {
+        let handler = AppLaunchHandler()
+        #if os(tvOS)
+        XCTAssertEqual(handler.taskPolicyRole, __dd_private_TASK_POLICY_UNAVAILABLE)
+        #else
+        XCTAssertEqual(handler.taskPolicyRole, Int(TASK_FOREGROUND_APPLICATION.rawValue))
+        #endif
+    }
+
+    func testProcessLaunchDate() {
+        // Given
+        let handler = AppLaunchHandler()
+
+        // When
+        let processLaunchDate = handler.processLaunchDate
+        let now = Date()
+        let uptime = now.timeIntervalSince(processLaunchDate)
+
+        // Then
+        // Sanity check: process launch date should be in the past, and not unreasonably far back.
+        XCTAssertGreaterThan(uptime, 0, "Process launch date should be in the past.")
+        XCTAssertLessThan(uptime, 3_600, "Process uptime should be less than 1 hour — test process likely launched recently.")
+    }
+
+    func testTimeToDidBecomeActive() {
+        // Given
+        let handler = AppLaunchHandler()
+        XCTAssertNil(handler.timeToDidBecomeActive)
+
+        // When
+        handler.observe(notificationCenter)
+        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+
+        // Then
+        XCTAssertNotNil(handler.timeToDidBecomeActive)
+    }
+
+    func testSetApplicationDidBecomeActiveCallback() {
+        // Given
+        let handler = AppLaunchHandler()
+        let callbackNotified = expectation(description: "Notify setApplicationDidBecomeActiveCallback()")
+        handler.setApplicationDidBecomeActiveCallback { _ in callbackNotified.fulfill() }
+
+        // When
+        handler.observe(notificationCenter)
+        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+
+        // Then
+        waitForExpectations(timeout: 1)
+    }
+
+    func testApplicationDidBecomeActiveCallbackIsOnlyCalledOnce() {
+        // Given
+        let handler = AppLaunchHandler()
+        let callbackNotified = expectation(description: "Notify setApplicationDidBecomeActiveCallback()")
+        handler.setApplicationDidBecomeActiveCallback { _ in callbackNotified.fulfill() }
+
+        // When
+        handler.observe(notificationCenter)
+        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+
+        // Then
+        waitForExpectations(timeout: 1)
+    }
+
+    func testThreadSafety() {
+        let handler = AppLaunchHandler()
+
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { _ = handler.taskPolicyRole },
+                { _ = handler.processLaunchDate },
+                { _ = handler.timeToDidBecomeActive },
+                { handler.setApplicationDidBecomeActiveCallback { _ in } }
+            ],
+            iterations: 1_000
+        )
+        // swiftlint:enable opening_brace
+    }
+}

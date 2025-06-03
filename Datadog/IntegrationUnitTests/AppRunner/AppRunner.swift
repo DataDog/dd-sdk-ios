@@ -15,36 +15,68 @@ import TestUtilities
 internal class AppRunner {
     /// Describes how the app process was launched.
     struct ProcessLaunchType {
+        /// The current process’s task policy role (`task_role_t`), indicating how the process was launched (e.g., by user or system prewarming).
+        /// See `__dd_private_AppLaunchHandler.taskPolicyRole` for context and resolution logic.
+        let taskPolicyRole: Int
+        let processInfoEnvironment: [String: String]
         let processLaunchDate: Date
-        let activePrewarm: Bool
         let initialAppState: AppState
         let description: String
 
-        /// Represents a user-initiated launch (cold start).
-        static func userLaunch(processLaunchDate: Date) -> ProcessLaunchType {
+        /// Represents a user-initiated launch (cold start) in a `UISceneDelegate`-based app.
+        /// In this setup, `application(_:didFinishLaunchingWithOptions:)` is called while the app is in the `BACKGROUND` state,
+        /// unlike app-delegate-only apps which start in `INACTIVE`.
+        ///
+        /// Sets `TASK_FOREGROUND_APPLICATION` as the task policy role — confirmed through local testing.
+        static func userLaunchInSceneDelegateBasedApp(processLaunchDate: Date) -> ProcessLaunchType {
             return .init(
+                taskPolicyRole: Int(TASK_FOREGROUND_APPLICATION.rawValue),
+                processInfoEnvironment: [:],
                 processLaunchDate: processLaunchDate,
-                activePrewarm: false,
-                initialAppState: .inactive,
-                description: "user launch"
+                initialAppState: .background,
+                description: "user launch (with scene-delegate)"
             )
         }
 
-        /// Represents a prewarmed process launch by the OS.
+        /// Represents a user-initiated launch (cold start) in an `UIApplicationDelegate`-only app (with no `UISceneDelegate`).
+        /// In this setup, `application(_:didFinishLaunchingWithOptions:)` is called in the `INACTIVE` state.
+        ///
+        /// Sets `TASK_FOREGROUND_APPLICATION` as the task policy role — confirmed through local testing.
+        static func userLaunchInAppDelegateBasedApp(processLaunchDate: Date) -> ProcessLaunchType {
+            return .init(
+                taskPolicyRole: Int(TASK_FOREGROUND_APPLICATION.rawValue),
+                processInfoEnvironment: [:],
+                processLaunchDate: processLaunchDate,
+                initialAppState: .inactive,
+                description: "user launch (with app-delegate)"
+            )
+        }
+
+        /// Represents a prewarmed app process launched by the OS.
+        ///
+        /// Sets `TASK_DARWINBG_APPLICATION` as the task policy role, though this has not been confirmed
+        /// in prewarming scenarios. This uncertainty is acceptable, as the `"ActivePrewarm"` flag in
+        /// `ProcessInfo.environment` takes precedence when classifying prewarming.
         static func osPrewarm(processLaunchDate: Date) -> ProcessLaunchType {
             return .init(
+                taskPolicyRole: Int(TASK_DARWINBG_APPLICATION.rawValue),
+                processInfoEnvironment: ["ActivePrewarm": "1"],
                 processLaunchDate: processLaunchDate,
-                activePrewarm: true,
                 initialAppState: .background,
                 description: "os prewarm"
             )
         }
 
-        /// Represents a launch in the background (e.g. silent push or background fetch).
+        /// Represents a background launch (e.g., due to a silent push or background fetch).
+        ///
+        /// Sets `TASK_NONUI_APPLICATION` as the task policy role, though this has not been
+        /// confirmed for background launch scenarios. This is acceptable, as the SDK determines
+        /// background launch based on a heuristic: "not user launch AND not prewarming" — which is reliably detectable.
         static func backgroundLaunch(processLaunchDate: Date) -> ProcessLaunchType {
             return .init(
+                taskPolicyRole: Int(TASK_NONUI_APPLICATION.rawValue),
+                processInfoEnvironment: [:],
                 processLaunchDate: processLaunchDate,
-                activePrewarm: false,
                 initialAppState: .background,
                 description: "background launch"
             )
@@ -64,6 +96,7 @@ internal class AppRunner {
         DeleteTemporaryDirectory()
 
         appDirectory = nil
+        processInfo = nil
         notificationCenter = nil
         dateProvider = nil
         appStateProvider = nil
@@ -73,6 +106,7 @@ internal class AppRunner {
 
     // swiftlint:disable implicitly_unwrapped_optional
     private var appDirectory: (() -> Directory)!
+    private var processInfo: ProcessInfoMock!
     private var notificationCenter: NotificationCenter!
     private var dateProvider: DateProviderMock!
     private var appStateProvider: AppStateProviderMock!
@@ -86,13 +120,14 @@ internal class AppRunner {
     /// Simulates app launch with the given process launch type.
     func launch(_ launchType: ProcessLaunchType) {
         appDirectory = { Directory(url: temporaryDirectory) }
+        processInfo = ProcessInfoMock(environment: launchType.processInfoEnvironment)
         notificationCenter = NotificationCenter()
         dateProvider = DateProviderMock(now: launchType.processLaunchDate)
         appStateProvider = AppStateProviderMock(state: launchType.initialAppState)
         appLaunchHandler = AppLaunchHandlerMock(
-            launchDate: launchType.processLaunchDate,
-            timeToDidBecomeActive: nil, // will wait for SimulationStep.changeAppState(_:)
-            isActivePrewarm: launchType.activePrewarm
+            taskPolicyRole: launchType.taskPolicyRole,
+            processLaunchDate: launchType.processLaunchDate,
+            timeToDidBecomeActive: nil // will wait for SimulationStep.changeAppState(_:)
         )
 
         appStateObservers = [
@@ -104,7 +139,7 @@ internal class AppRunner {
                 appStateProvider.current = .active
 
                 // Simulate the application becoming active in `appLaunchHandler`:
-                let launchTime = dateProvider.now.timeIntervalSince(appLaunchHandler.launchDate)
+                let launchTime = dateProvider.now.timeIntervalSince(appLaunchHandler.processLaunchDate)
                 appLaunchHandler.simulateDidBecomeActive(timeInterval: launchTime)
             },
             notificationCenter.addObserver(forName: ApplicationNotifications.willResignActive, object: nil, queue: nil) { [weak self] _ in
@@ -177,6 +212,7 @@ internal class AppRunner {
     func initializeSDK(_ sdkSetup: SDKSetup = { _ in }) {
         var config = Datadog.Configuration(clientToken: "mock-client-token", env: "env")
         config.systemDirectory = appDirectory
+        config.processInfo = processInfo
         config.dateProvider = dateProvider
         config.notificationCenter = notificationCenter
         config.appLaunchHandler = appLaunchHandler

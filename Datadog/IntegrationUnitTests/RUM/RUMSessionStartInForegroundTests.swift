@@ -27,16 +27,25 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     // MARK: - User Launch
 
-    private var userLaunch: AppRunner.ProcessLaunchType { .userLaunch(processLaunchDate: processLaunchDate) }
+    /// User launch in `UISceneDelegate`-based app.
+    private var userLaunchWithSceneDelegate: AppRunner.ProcessLaunchType { .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate) }
+    /// User launch in `UIApplicationDelegate`-based app.
+    private var userLaunchWithAppDelegate: AppRunner.ProcessLaunchType { .userLaunchInAppDelegateBasedApp(processLaunchDate: processLaunchDate) }
 
     func testGivenUserLaunch_whenNoEventIsTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(userLaunch)
-        let given2 = enableRUMBeforeAppBecomesActive(userLaunch) { rumConfig in
-            rumConfig.trackBackgroundEvents = true
-        }
+        let givens1 = [
+            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate),
+            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            },
+            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate),
+            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            }
+        ]
 
-        for given in [given1, given2] {
+        for given in givens1 {
             // When
             let when = given.when(.appEntersBackground(after: dt1))
 
@@ -53,12 +62,18 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
 
         // Given
-        let given3 = enableRUMAfterAppBecomesActive(userLaunch)
-        let given4 = enableRUMAfterAppBecomesActive(userLaunch) { rumConfig in
-            rumConfig.trackBackgroundEvents = true
-        }
+        let givens2 = [
+            enableRUMAfterAppBecomesActive(userLaunchWithSceneDelegate),
+            enableRUMAfterAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            },
+            enableRUMAfterAppBecomesActive(userLaunchWithAppDelegate),
+            enableRUMAfterAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            }
+        ]
 
-        for given in [given3, given4] {
+        for given in givens2 {
             // When
             let when = given.when(.appEntersBackground(after: dt1))
 
@@ -77,12 +92,18 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenUserLaunch_whenManualViewIsTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(userLaunch)
-        let given2 = enableRUMBeforeAppBecomesActive(userLaunch) { rumConfig in
-            rumConfig.trackBackgroundEvents = true
-        }
+        let givens1 = [
+            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate),
+            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            },
+            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate),
+            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            }
+        ]
 
-        for given in [given1, given2] {
+        for given in givens1 {
             // When
             let when1 = given
                 .when(.startManualView(after: dt1, viewName: manualViewName))
@@ -109,12 +130,18 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
 
         // Given
-        let given3 = enableRUMAfterAppBecomesActive(userLaunch)
-        let given4 = enableRUMAfterAppBecomesActive(userLaunch) { rumConfig in
-            rumConfig.trackBackgroundEvents = true
-        }
+        let givens2 = [
+            enableRUMAfterAppBecomesActive(userLaunchWithSceneDelegate),
+            enableRUMAfterAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            },
+            enableRUMAfterAppBecomesActive(userLaunchWithAppDelegate),
+            enableRUMAfterAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            }
+        ]
 
-        for given in [given3, given4] {
+        for given in givens2 {
             // When
             let when1 = given
                 .when(.startManualView(after: dt1, viewName: manualViewName))
@@ -143,15 +170,24 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenUserLaunch_whenAutomaticViewIsTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(userLaunch) { rumConfig in
-            rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-        }
-        let given2 = enableRUMBeforeAppBecomesActive(userLaunch) { rumConfig in
-            rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-            rumConfig.trackBackgroundEvents = true
-        }
+        let givens1 = [
+            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+                rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+            },
+            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+                rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+                rumConfig.trackBackgroundEvents = true
+            },
+            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+                rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+            },
+            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+                rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+                rumConfig.trackBackgroundEvents = true
+            }
+        ]
 
-        for given in [given1, given2] {
+        for given in givens1 {
             // When
             let when1 = given
                 .when(.startAutomaticView(after: dt1, viewController: automaticView))
@@ -177,15 +213,24 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
 
         // Given
-        let given3 = enableRUMAfterAppBecomesActive(userLaunch) { rumConfig in
-            rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-        }
-        let given4 = enableRUMAfterAppBecomesActive(userLaunch) { rumConfig in
-            rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-            rumConfig.trackBackgroundEvents = true
-        }
+        let givens2 = [
+            enableRUMAfterAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+                rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+            },
+            enableRUMAfterAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+                rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+                rumConfig.trackBackgroundEvents = true
+            },
+            enableRUMAfterAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+                rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+            },
+            enableRUMAfterAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+                rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+                rumConfig.trackBackgroundEvents = true
+            }
+        ]
 
-        for given in [given3, given4] {
+        for given in givens2 {
             // When
             let when1 = given
                 .when(.startAutomaticView(after: dt1, viewController: automaticView))
@@ -212,12 +257,18 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenUserLaunch_whenActionsAreTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(userLaunch)
-        let given2 = enableRUMBeforeAppBecomesActive(userLaunch) { rumConfig in
-            rumConfig.trackBackgroundEvents = true
-        }
+        let givens1 = [
+            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate),
+            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            },
+            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate),
+            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            }
+        ]
 
-        for given in [given1, given2] {
+        for given in givens1 {
             // When
             let when1 = given
                 .when(.trackTwoActions(after1: dt1, after2: dt2))
@@ -242,12 +293,18 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
 
         // Given
-        let given3 = enableRUMAfterAppBecomesActive(userLaunch)
-        let given4 = enableRUMAfterAppBecomesActive(userLaunch) { rumConfig in
-            rumConfig.trackBackgroundEvents = true
-        }
+        let givens2 = [
+            enableRUMAfterAppBecomesActive(userLaunchWithSceneDelegate),
+            enableRUMAfterAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            },
+            enableRUMAfterAppBecomesActive(userLaunchWithAppDelegate),
+            enableRUMAfterAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            }
+        ]
 
-        for given in [given3, given4] {
+        for given in givens2 {
             // When
             let when1 = given
                 .when(.trackTwoActions(after1: dt1, after2: dt2))
@@ -273,12 +330,18 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenUserLaunch_whenResourceIsTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(userLaunch)
-        let given2 = enableRUMBeforeAppBecomesActive(userLaunch) { rumConfig in
-            rumConfig.trackBackgroundEvents = true
-        }
+        let givens1 = [
+            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate),
+            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            },
+            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate),
+            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            }
+        ]
 
-        for given in [given1, given2] {
+        for given in givens1 {
             // When
             let when1 = given
                 .when(.trackResource(after: dt1, duration: dt2))
@@ -302,12 +365,18 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
 
         // Given
-        let given3 = enableRUMAfterAppBecomesActive(userLaunch)
-        let given4 = enableRUMAfterAppBecomesActive(userLaunch) { rumConfig in
-            rumConfig.trackBackgroundEvents = true
-        }
+        let givens2 = [
+            enableRUMAfterAppBecomesActive(userLaunchWithSceneDelegate),
+            enableRUMAfterAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            },
+            enableRUMAfterAppBecomesActive(userLaunchWithAppDelegate),
+            enableRUMAfterAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            }
+        ]
 
-        for given in [given3, given4] {
+        for given in givens2 {
             // When
             let when1 = given
                 .when(.trackResource(after: dt1, duration: dt2))
@@ -333,12 +402,18 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenUserLaunch_whenLongTasksAreTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(userLaunch)
-        let given2 = enableRUMBeforeAppBecomesActive(userLaunch) { rumConfig in
-            rumConfig.trackBackgroundEvents = true
-        }
+        let givens1 = [
+            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate),
+            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            },
+            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate),
+            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            }
+        ]
 
-        for given in [given1, given2] {
+        for given in givens1 {
             // When
             let when1 = given
                 .when(.trackTwoLongTasks(after1: dt1, after2: dt2))
@@ -362,12 +437,18 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
 
         // Given
-        let given3 = enableRUMAfterAppBecomesActive(userLaunch)
-        let given4 = enableRUMAfterAppBecomesActive(userLaunch) { rumConfig in
-            rumConfig.trackBackgroundEvents = true
-        }
+        let givens2 = [
+            enableRUMAfterAppBecomesActive(userLaunchWithSceneDelegate),
+            enableRUMAfterAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            },
+            enableRUMAfterAppBecomesActive(userLaunchWithAppDelegate),
+            enableRUMAfterAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+                rumConfig.trackBackgroundEvents = true
+            }
+        ]
 
-        for given in [given3, given4] {
+        for given in givens2 {
             // When
             let when1 = given
                 .when(.trackTwoLongTasks(after1: dt1, after2: dt2))

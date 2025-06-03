@@ -75,8 +75,10 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             // the initial state can be `.active`. Therefore, we consider both `.inactive` and `.active` as valid
             // initial states for starting the initial view.
             let appState = context.applicationStateHistory.currentState
+            let sdkInitInForeground = appState == .inactive || appState == .active
+            let isUserLaunch = context.launchInfo.launchReason == .userLaunch
 
-            if appState == .inactive || appState == .active {
+            if sdkInitInForeground || isUserLaunch {
                 // Start "ApplicationLaunch" view immediatelly:
                 startApplicationLaunchView(on: command, context: context, writer: writer)
             }
@@ -178,7 +180,13 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         var startPrecondition: RUMSessionPrecondition? = nil
 
         if context.applicationStateHistory.currentState == .background {
-            startPrecondition = context.launchTime.isActivePrewarm ? .prewarm : .backgroundLaunch
+            switch context.launchInfo.launchReason {
+            case .userLaunch:       startPrecondition = .userAppLaunch // UISceneDelegate-based apps always start in background
+            case .backgroundLaunch: startPrecondition = .backgroundLaunch
+            case .prewarming:       startPrecondition = .prewarm
+            default:
+                dependencies.telemetry.error("Creating initial session in background with unexpected launch reason: \(context.launchInfo.launchReason)")
+            }
         } else {
             startPrecondition = .userAppLaunch
         }
@@ -288,9 +296,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         applicationActive = true
 
-        let userLaunchWithNoPrewarming = context.applicationStateHistory.initialState != .background && !context.launchTime.isActivePrewarm
-        let prewarmedButLaunchedInForeground = context.launchTime.isActivePrewarm && command is RUMSDKInitCommand && context.applicationStateHistory.currentState != .background
-        guard userLaunchWithNoPrewarming || prewarmedButLaunchedInForeground else {
+        let isUserLaunch = context.launchInfo.launchReason == .userLaunch
+        let isPrewarmed = context.launchInfo.launchReason == .prewarming
+        let isBackgroundLaunch = context.launchInfo.launchReason == .backgroundLaunch
+        let isStartedInForeground = command is RUMSDKInitCommand && context.applicationStateHistory.currentState != .background
+        guard isUserLaunch || (isPrewarmed && isStartedInForeground) || (isBackgroundLaunch && isStartedInForeground) else {
             return
         }
 
