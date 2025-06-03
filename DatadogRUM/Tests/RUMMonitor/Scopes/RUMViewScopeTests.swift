@@ -3396,20 +3396,38 @@ class RUMViewScopeTests: XCTestCase {
     @MainActor
     func testAccessibilityAttributesInViewEvents() throws {
         // Given
-        let initialMockValues = AccessibilityValuesMock(
-            isVoiceOverRunning: false,
-            isBoldTextEnabled: true,
-            textSize: "medium"
+        let mockAccessibilityState = Accessibility(
+            textSize: "medium",
+            screenReaderEnabled: false,
+            boldTextEnabled: true,
+            reduceTransparencyEnabled: nil,
+            reduceMotionEnabled: nil,
+            buttonShapesEnabled: nil,
+            invertColorsEnabled: nil,
+            increaseContrastEnabled: nil,
+            assistiveSwitchEnabled: nil,
+            assistiveTouchEnabled: nil,
+            videoAutoplayEnabled: nil,
+            closedCaptioningEnabled: nil,
+            monoAudioEnabled: nil,
+            shakeToUndoEnabled: nil,
+            reducedAnimationsEnabled: nil,
+            shouldDifferentiateWithoutColor: nil,
+            grayscaleEnabled: nil,
+            singleAppModeEnabled: nil,
+            onOffSwitchLabelsEnabled: nil,
+            speakScreenEnabled: nil,
+            speakSelectionEnabled: nil,
+            rtlEnabled: nil
         )
+
+        let mockAccessibilityReader = AccessibilityReaderMock(state: mockAccessibilityState)
 
         let mockParent = RUMContextProviderMock()
         let testContext = context
 
         let dependencies = RUMScopeDependencies.mockWith(
-            accessibilityReader: AccessibilityReader(
-                notificationCenter: .init(),
-                accessibilityValues: initialMockValues
-            )
+            accessibilityReader: mockAccessibilityReader
         )
 
         let scope = RUMViewScope(
@@ -3424,14 +3442,6 @@ class RUMViewScopeTests: XCTestCase {
             serverTimeOffset: .zero,
             interactionToNextViewMetric: INVMetricMock()
         )
-
-        let readerInitExpectation = XCTestExpectation(description: "AccessibilityReader initialized")
-        DispatchQueue.main.async {
-            DispatchQueue.main.async {
-                readerInitExpectation.fulfill()
-            }
-        }
-        wait(for: [readerInitExpectation], timeout: 2.0)
 
         // When
         _ = scope.process(

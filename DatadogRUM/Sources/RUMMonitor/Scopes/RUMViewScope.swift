@@ -120,7 +120,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Tracks "View Hangs" for this view.
     private var totalAppHangDuration: Double = 0.0
 
-    private var accessibilityReader: AccessibilityReader?
+    private var accessibilityReader: AccessibilityReading?
 
     init(
         isInitialView: Bool,

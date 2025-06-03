@@ -8,22 +8,21 @@ import DatadogInternal
 import Foundation
 import UIKit
 
-internal final class AccessibilityReader {
+internal protocol AccessibilityReading {
+    var state: Accessibility { get }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+internal final class AccessibilityReader: AccessibilityReading {
     @ReadWriteLock
     private(set) var state: Accessibility
 
     private let notificationCenter: NotificationCenter
-    private let accessibilityValues: AccessibilityValues
     private var observers: [NSObjectProtocol] = []
 
-    @available(iOS 13.0, tvOS 13.0, *)
-    init(
-        notificationCenter: NotificationCenter,
-        accessibilityValues: AccessibilityValues = LiveAccessibilityValues()
-    ) {
+    init(notificationCenter: NotificationCenter) {
         self.state = Accessibility()
         self.notificationCenter = notificationCenter
-        self.accessibilityValues = accessibilityValues
         startObserving()
         updateState()
     }
@@ -32,14 +31,12 @@ internal final class AccessibilityReader {
         stopObserving()
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func updateState() {
         Task { @MainActor in
             self.state = self.currentState
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func startObserving() {
         if #available(iOS 14.0, tvOS 14.0, *) {
             let buttonShapesObserver = notificationCenter.addObserver(
@@ -232,28 +229,36 @@ internal final class AccessibilityReader {
     @MainActor private var currentState: Accessibility {
         var state = Accessibility()
 
-        state.textSize = accessibilityValues.textSize
-        state.videoAutoplayEnabled = accessibilityValues.isVideoAutoplayEnabled
-        state.shouldDifferentiateWithoutColor = accessibilityValues.shouldDifferentiateWithoutColor
-        state.onOffSwitchLabelsEnabled = accessibilityValues.isOnOffSwitchLabelsEnabled
-        state.buttonShapesEnabled = accessibilityValues.buttonShapesEnabled
-        state.reducedAnimationsEnabled = accessibilityValues.prefersCrossFadeTransitions
-        state.screenReaderEnabled = accessibilityValues.isVoiceOverRunning
-        state.boldTextEnabled = accessibilityValues.isBoldTextEnabled
-        state.reduceTransparencyEnabled = accessibilityValues.isReduceTransparencyEnabled
-        state.reduceMotionEnabled = accessibilityValues.isReduceMotionEnabled
-        state.invertColorsEnabled = accessibilityValues.isInvertColorsEnabled
-        state.increaseContrastEnabled = accessibilityValues.isDarkerSystemColorsEnabled
-        state.assistiveSwitchEnabled = accessibilityValues.isSwitchControlRunning
-        state.assistiveTouchEnabled = accessibilityValues.isAssistiveTouchRunning
-        state.closedCaptioningEnabled = accessibilityValues.isClosedCaptioningEnabled
-        state.monoAudioEnabled = accessibilityValues.isMonoAudioEnabled
-        state.shakeToUndoEnabled = accessibilityValues.isShakeToUndoEnabled
-        state.grayscaleEnabled = accessibilityValues.isGrayscaleEnabled
-        state.singleAppModeEnabled = accessibilityValues.isGuidedAccessEnabled
-        state.speakScreenEnabled = accessibilityValues.isSpeakScreenEnabled
-        state.speakSelectionEnabled = accessibilityValues.isSpeakSelectionEnabled
-        state.rtlEnabled = accessibilityValues.rtlEnabled
+        if let contentSize = UIApplication.dd.managedShared?.preferredContentSizeCategory.rawValue as String? {
+            state.textSize = contentSize
+        } else {
+            state.textSize = UIContentSizeCategory.unspecified.rawValue
+        }
+
+        state.videoAutoplayEnabled = UIAccessibility.isVideoAutoplayEnabled
+        state.shouldDifferentiateWithoutColor = UIAccessibility.shouldDifferentiateWithoutColor
+        state.onOffSwitchLabelsEnabled = UIAccessibility.isOnOffSwitchLabelsEnabled
+        state.screenReaderEnabled = UIAccessibility.isVoiceOverRunning
+        state.boldTextEnabled = UIAccessibility.isBoldTextEnabled
+        state.reduceTransparencyEnabled = UIAccessibility.isReduceTransparencyEnabled
+        state.reduceMotionEnabled = UIAccessibility.isReduceMotionEnabled
+        state.invertColorsEnabled = UIAccessibility.isInvertColorsEnabled
+        state.increaseContrastEnabled = UIAccessibility.isDarkerSystemColorsEnabled
+        state.assistiveSwitchEnabled = UIAccessibility.isSwitchControlRunning
+        state.assistiveTouchEnabled = UIAccessibility.isAssistiveTouchRunning
+        state.closedCaptioningEnabled = UIAccessibility.isClosedCaptioningEnabled
+        state.monoAudioEnabled = UIAccessibility.isMonoAudioEnabled
+        state.shakeToUndoEnabled = UIAccessibility.isShakeToUndoEnabled
+        state.grayscaleEnabled = UIAccessibility.isGrayscaleEnabled
+        state.singleAppModeEnabled = UIAccessibility.isGuidedAccessEnabled
+        state.speakScreenEnabled = UIAccessibility.isSpeakScreenEnabled
+        state.speakSelectionEnabled = UIAccessibility.isSpeakSelectionEnabled
+        state.rtlEnabled = UIApplication.dd.managedShared?.userInterfaceLayoutDirection == .rightToLeft
+
+        if #available(iOS 14.0, tvOS 14.0, *) {
+            state.buttonShapesEnabled = UIAccessibility.buttonShapesEnabled
+            state.reducedAnimationsEnabled = UIAccessibility.prefersCrossFadeTransitions
+        }
 
         return state
     }
