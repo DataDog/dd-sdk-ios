@@ -188,9 +188,9 @@ internal class RUMResourceScope: RUMScope {
             container: nil,
             context: .init(contextInfo: command.globalAttributes.merging(parent.attributes) { $1 }.merging(attributes) { $1 }),
             date: resourceStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context, telemetry: dependencies.telemetry),
+            device: context.device.rumDevice,
             display: nil,
-            os: .init(device: context.device),
+            os: context.os,
             resource: .init(
                 connect: resourceMetrics?.connect.map { metric in
                     .init(
@@ -299,7 +299,7 @@ internal class RUMResourceScope: RUMScope {
             container: nil,
             context: .init(contextInfo: command.globalAttributes.merging(parent.attributes) { $1 }.merging(attributes) { $1 }),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context, telemetry: dependencies.telemetry),
+            device: context.device.rumDevice,
             display: nil,
             error: .init(
                 binaryImages: nil,
@@ -327,7 +327,7 @@ internal class RUMResourceScope: RUMScope {
                 wasTruncated: nil
             ),
             freeze: nil,
-            os: .init(device: context.device),
+            os: context.os,
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,

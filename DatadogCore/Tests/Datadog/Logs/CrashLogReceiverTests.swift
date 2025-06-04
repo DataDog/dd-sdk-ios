@@ -94,11 +94,11 @@ class CrashLogReceiverTests: XCTestCase {
             env: .mockRandom(),
             version: .mockRandom(),
             buildNumber: .mockRandom(),
-            device: .mockWith(
-                osName: .mockRandom(),
-                osVersion: .mockRandom(),
-                osBuildNumber: .mockRandom(),
-                architecture: .mockRandom()
+            device: .mockWith(architecture: .mockRandom()),
+            os: .mockWith(
+                name: .mockRandom(),
+                version: .mockRandom(),
+                build: .mockRandom()
             ),
             sdkVersion: .mockRandom(),
             userInfo: Bool.random() ? .mockRandom() : .empty,
@@ -116,11 +116,11 @@ class CrashLogReceiverTests: XCTestCase {
             env: .mockRandom(),
             version: .mockRandom(),
             buildNumber: .mockRandom(),
-            device: .mockWith(
-                osName: .mockRandom(),
-                osVersion: .mockRandom(),
-                osBuildNumber: .mockRandom(),
-                architecture: .mockRandom()
+            device: .mockWith(architecture: .mockRandom()),
+            os: .mockWith(
+                name: .mockRandom(),
+                version: .mockRandom(),
+                build: .mockRandom()
             ),
             sdkVersion: .mockRandom(),
             userInfo: Bool.random() ? .mockRandom() : .empty,
@@ -168,19 +168,9 @@ class CrashLogReceiverTests: XCTestCase {
             applicationBuildNumber: crashContext.buildNumber,
             buildId: nil,
             variant: core.context.variant,
-            dd: .init(
-                device: .init(
-                    brand: crashContext.device.brand,
-                    name: crashContext.device.name,
-                    model: crashContext.device.model,
-                    architecture: crashContext.device.architecture
-                )
-            ),
-            os: .init(
-                name: crashContext.device.osName,
-                version: crashContext.device.osVersion,
-                build: crashContext.device.osBuildNumber
-            ),
+            dd: .init(device: .init(architecture: crashContext.device.architecture ?? "")),
+            device: crashContext.device,
+            os: crashContext.os,
             userInfo: .init(
                 id: user.id,
                 name: user.name,

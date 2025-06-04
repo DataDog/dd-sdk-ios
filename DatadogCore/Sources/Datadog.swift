@@ -425,6 +425,7 @@ extension DatadogCore {
                 applicationVersion: applicationVersion,
                 sdkInitDate: configuration.dateProvider.now,
                 device: DeviceInfo(processInfo: configuration.processInfo),
+                os: OperatingSystem(),
                 processInfo: configuration.processInfo,
                 dateProvider: configuration.dateProvider,
                 serverDateProvider: configuration.serverDateProvider,

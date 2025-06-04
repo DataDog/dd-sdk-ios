@@ -180,9 +180,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             container: nil,
             context: .init(contextInfo: (command?.globalAttributes ?? [:]).merging(parent.attributes) { $1 }.merging(attributes) { $1 }),
             date: actionStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context, telemetry: dependencies.telemetry),
+            device: context.device.rumDevice,
             display: nil,
-            os: .init(device: context.device),
+            os: context.os,
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,

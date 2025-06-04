@@ -15,10 +15,8 @@ class RUMResourceScopeTests: XCTestCase {
         version: "test-version",
         buildNumber: "test-build",
         buildId: .mockRandom(),
-        device: .mockWith(
-            name: "device-name",
-            osName: "device-os"
-        )
+        device: .mockWith(name: "device-name"),
+        os: .mockWith(name: "device-os")
     )
 
     private let dependencies: RUMScopeDependencies = .mockWith(

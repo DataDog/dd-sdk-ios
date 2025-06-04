@@ -78,6 +78,10 @@ public class objc_LogEvent: NSObject {
         .init(root: self)
     }
 
+    public var device: objc_LogEventDevice {
+        .init(root: self)
+    }
+
     public var os: objc_LogEventOperatingSystem {
         .init(root: self)
     }
@@ -303,15 +307,15 @@ public class objc_LogEventDd: NSObject {
         self.root = root
     }
 
-    public var device: objc_LogEventDeviceInfo {
+    public var device: objc_LogEventDevice {
         .init(root: root)
     }
 }
 
-@objc(DDLogEventDeviceInfo)
+@objc(DDLogEventDevice)
 @objcMembers
 @_spi(objc)
-public class objc_LogEventDeviceInfo: NSObject {
+public class objc_LogEventDevice: NSObject {
     internal let root: objc_LogEvent
 
     internal init(root: objc_LogEvent) {
@@ -319,15 +323,15 @@ public class objc_LogEventDeviceInfo: NSObject {
     }
 
     public var brand: String {
-        root.swiftModel.dd.device.brand
+        root.swiftModel.device.brand ?? ""
     }
 
     public var name: String {
-        root.swiftModel.dd.device.name
+        root.swiftModel.device.name ?? ""
     }
 
     public var model: String {
-        root.swiftModel.dd.device.model
+        root.swiftModel.device.model ?? ""
     }
 
     public var architecture: String {

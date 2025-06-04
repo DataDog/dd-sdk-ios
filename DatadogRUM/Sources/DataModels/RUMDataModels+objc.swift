@@ -66,16 +66,16 @@ public class objc_RUMActionEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
-    public var device: objc_RUMActionEventRUMDevice? {
-        root.swiftModel.device != nil ? objc_RUMActionEventRUMDevice(root: root) : nil
+    public var device: objc_RUMActionEventDevice? {
+        root.swiftModel.device != nil ? objc_RUMActionEventDevice(root: root) : nil
     }
 
     public var display: objc_RUMActionEventDisplay? {
         root.swiftModel.display != nil ? objc_RUMActionEventDisplay(root: root) : nil
     }
 
-    public var os: objc_RUMActionEventRUMOperatingSystem? {
-        root.swiftModel.os != nil ? objc_RUMActionEventRUMOperatingSystem(root: root) : nil
+    public var os: objc_RUMActionEventOperatingSystem? {
+        root.swiftModel.os != nil ? objc_RUMActionEventOperatingSystem(root: root) : nil
     }
 
     public var service: String? {
@@ -837,10 +837,10 @@ public class objc_RUMActionEventRUMEventAttributes: NSObject {
     }
 }
 
-@objc(DDRUMActionEventRUMDevice)
+@objc(DDRUMActionEventDevice)
 @objcMembers
 @_spi(objc)
-public class objc_RUMActionEventRUMDevice: NSObject {
+public class objc_RUMActionEventDevice: NSObject {
     internal let root: objc_RUMActionEvent
 
     internal init(root: objc_RUMActionEvent) {
@@ -863,15 +863,15 @@ public class objc_RUMActionEventRUMDevice: NSObject {
         root.swiftModel.device!.name
     }
 
-    public var type: objc_RUMActionEventRUMDeviceRUMDeviceType {
+    public var type: objc_RUMActionEventDeviceDeviceType {
         .init(swift: root.swiftModel.device!.type)
     }
 }
 
-@objc(DDRUMActionEventRUMDeviceRUMDeviceType)
+@objc(DDRUMActionEventDeviceDeviceType)
 @_spi(objc)
-public enum objc_RUMActionEventRUMDeviceRUMDeviceType: Int {
-    internal init(swift: RUMDevice.RUMDeviceType) {
+public enum objc_RUMActionEventDeviceDeviceType: Int {
+    internal init(swift: Device.DeviceType) {
         switch swift {
         case .mobile: self = .mobile
         case .desktop: self = .desktop
@@ -883,7 +883,7 @@ public enum objc_RUMActionEventRUMDeviceRUMDeviceType: Int {
         }
     }
 
-    internal var toSwift: RUMDevice.RUMDeviceType {
+    internal var toSwift: Device.DeviceType {
         switch self {
         case .mobile: return .mobile
         case .desktop: return .desktop
@@ -938,10 +938,10 @@ public class objc_RUMActionEventDisplayViewport: NSObject {
     }
 }
 
-@objc(DDRUMActionEventRUMOperatingSystem)
+@objc(DDRUMActionEventOperatingSystem)
 @objcMembers
 @_spi(objc)
-public class objc_RUMActionEventRUMOperatingSystem: NSObject {
+public class objc_RUMActionEventOperatingSystem: NSObject {
     internal let root: objc_RUMActionEvent
 
     internal init(root: objc_RUMActionEvent) {
@@ -1198,8 +1198,8 @@ public class objc_RUMErrorEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
-    public var device: objc_RUMErrorEventRUMDevice? {
-        root.swiftModel.device != nil ? objc_RUMErrorEventRUMDevice(root: root) : nil
+    public var device: objc_RUMErrorEventDevice? {
+        root.swiftModel.device != nil ? objc_RUMErrorEventDevice(root: root) : nil
     }
 
     public var display: objc_RUMErrorEventDisplay? {
@@ -1218,8 +1218,8 @@ public class objc_RUMErrorEvent: NSObject {
         root.swiftModel.freeze != nil ? objc_RUMErrorEventFreeze(root: root) : nil
     }
 
-    public var os: objc_RUMErrorEventRUMOperatingSystem? {
-        root.swiftModel.os != nil ? objc_RUMErrorEventRUMOperatingSystem(root: root) : nil
+    public var os: objc_RUMErrorEventOperatingSystem? {
+        root.swiftModel.os != nil ? objc_RUMErrorEventOperatingSystem(root: root) : nil
     }
 
     public var service: String? {
@@ -1711,10 +1711,10 @@ public class objc_RUMErrorEventRUMEventAttributes: NSObject {
     }
 }
 
-@objc(DDRUMErrorEventRUMDevice)
+@objc(DDRUMErrorEventDevice)
 @objcMembers
 @_spi(objc)
-public class objc_RUMErrorEventRUMDevice: NSObject {
+public class objc_RUMErrorEventDevice: NSObject {
     internal let root: objc_RUMErrorEvent
 
     internal init(root: objc_RUMErrorEvent) {
@@ -1737,15 +1737,15 @@ public class objc_RUMErrorEventRUMDevice: NSObject {
         root.swiftModel.device!.name
     }
 
-    public var type: objc_RUMErrorEventRUMDeviceRUMDeviceType {
+    public var type: objc_RUMErrorEventDeviceDeviceType {
         .init(swift: root.swiftModel.device!.type)
     }
 }
 
-@objc(DDRUMErrorEventRUMDeviceRUMDeviceType)
+@objc(DDRUMErrorEventDeviceDeviceType)
 @_spi(objc)
-public enum objc_RUMErrorEventRUMDeviceRUMDeviceType: Int {
-    internal init(swift: RUMDevice.RUMDeviceType) {
+public enum objc_RUMErrorEventDeviceDeviceType: Int {
+    internal init(swift: Device.DeviceType) {
         switch swift {
         case .mobile: self = .mobile
         case .desktop: self = .desktop
@@ -1757,7 +1757,7 @@ public enum objc_RUMErrorEventRUMDeviceRUMDeviceType: Int {
         }
     }
 
-    internal var toSwift: RUMDevice.RUMDeviceType {
+    internal var toSwift: Device.DeviceType {
         switch self {
         case .mobile: return .mobile
         case .desktop: return .desktop
@@ -2439,10 +2439,10 @@ public class objc_RUMErrorEventFreeze: NSObject {
     }
 }
 
-@objc(DDRUMErrorEventRUMOperatingSystem)
+@objc(DDRUMErrorEventOperatingSystem)
 @objcMembers
 @_spi(objc)
-public class objc_RUMErrorEventRUMOperatingSystem: NSObject {
+public class objc_RUMErrorEventOperatingSystem: NSObject {
     internal let root: objc_RUMErrorEvent
 
     internal init(root: objc_RUMErrorEvent) {
@@ -2699,8 +2699,8 @@ public class objc_RUMLongTaskEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
-    public var device: objc_RUMLongTaskEventRUMDevice? {
-        root.swiftModel.device != nil ? objc_RUMLongTaskEventRUMDevice(root: root) : nil
+    public var device: objc_RUMLongTaskEventDevice? {
+        root.swiftModel.device != nil ? objc_RUMLongTaskEventDevice(root: root) : nil
     }
 
     public var display: objc_RUMLongTaskEventDisplay? {
@@ -2711,8 +2711,8 @@ public class objc_RUMLongTaskEvent: NSObject {
         objc_RUMLongTaskEventLongTask(root: root)
     }
 
-    public var os: objc_RUMLongTaskEventRUMOperatingSystem? {
-        root.swiftModel.os != nil ? objc_RUMLongTaskEventRUMOperatingSystem(root: root) : nil
+    public var os: objc_RUMLongTaskEventOperatingSystem? {
+        root.swiftModel.os != nil ? objc_RUMLongTaskEventOperatingSystem(root: root) : nil
     }
 
     public var service: String? {
@@ -3208,10 +3208,10 @@ public class objc_RUMLongTaskEventRUMEventAttributes: NSObject {
     }
 }
 
-@objc(DDRUMLongTaskEventRUMDevice)
+@objc(DDRUMLongTaskEventDevice)
 @objcMembers
 @_spi(objc)
-public class objc_RUMLongTaskEventRUMDevice: NSObject {
+public class objc_RUMLongTaskEventDevice: NSObject {
     internal let root: objc_RUMLongTaskEvent
 
     internal init(root: objc_RUMLongTaskEvent) {
@@ -3234,15 +3234,15 @@ public class objc_RUMLongTaskEventRUMDevice: NSObject {
         root.swiftModel.device!.name
     }
 
-    public var type: objc_RUMLongTaskEventRUMDeviceRUMDeviceType {
+    public var type: objc_RUMLongTaskEventDeviceDeviceType {
         .init(swift: root.swiftModel.device!.type)
     }
 }
 
-@objc(DDRUMLongTaskEventRUMDeviceRUMDeviceType)
+@objc(DDRUMLongTaskEventDeviceDeviceType)
 @_spi(objc)
-public enum objc_RUMLongTaskEventRUMDeviceRUMDeviceType: Int {
-    internal init(swift: RUMDevice.RUMDeviceType) {
+public enum objc_RUMLongTaskEventDeviceDeviceType: Int {
+    internal init(swift: Device.DeviceType) {
         switch swift {
         case .mobile: self = .mobile
         case .desktop: self = .desktop
@@ -3254,7 +3254,7 @@ public enum objc_RUMLongTaskEventRUMDeviceRUMDeviceType: Int {
         }
     }
 
-    internal var toSwift: RUMDevice.RUMDeviceType {
+    internal var toSwift: Device.DeviceType {
         switch self {
         case .mobile: return .mobile
         case .desktop: return .desktop
@@ -3476,10 +3476,10 @@ public enum objc_RUMLongTaskEventLongTaskScriptsInvokerType: Int {
     case moduleScript
 }
 
-@objc(DDRUMLongTaskEventRUMOperatingSystem)
+@objc(DDRUMLongTaskEventOperatingSystem)
 @objcMembers
 @_spi(objc)
-public class objc_RUMLongTaskEventRUMOperatingSystem: NSObject {
+public class objc_RUMLongTaskEventOperatingSystem: NSObject {
     internal let root: objc_RUMLongTaskEvent
 
     internal init(root: objc_RUMLongTaskEvent) {
@@ -3732,16 +3732,16 @@ public class objc_RUMResourceEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
-    public var device: objc_RUMResourceEventRUMDevice? {
-        root.swiftModel.device != nil ? objc_RUMResourceEventRUMDevice(root: root) : nil
+    public var device: objc_RUMResourceEventDevice? {
+        root.swiftModel.device != nil ? objc_RUMResourceEventDevice(root: root) : nil
     }
 
     public var display: objc_RUMResourceEventDisplay? {
         root.swiftModel.display != nil ? objc_RUMResourceEventDisplay(root: root) : nil
     }
 
-    public var os: objc_RUMResourceEventRUMOperatingSystem? {
-        root.swiftModel.os != nil ? objc_RUMResourceEventRUMOperatingSystem(root: root) : nil
+    public var os: objc_RUMResourceEventOperatingSystem? {
+        root.swiftModel.os != nil ? objc_RUMResourceEventOperatingSystem(root: root) : nil
     }
 
     public var resource: objc_RUMResourceEventResource {
@@ -4253,10 +4253,10 @@ public class objc_RUMResourceEventRUMEventAttributes: NSObject {
     }
 }
 
-@objc(DDRUMResourceEventRUMDevice)
+@objc(DDRUMResourceEventDevice)
 @objcMembers
 @_spi(objc)
-public class objc_RUMResourceEventRUMDevice: NSObject {
+public class objc_RUMResourceEventDevice: NSObject {
     internal let root: objc_RUMResourceEvent
 
     internal init(root: objc_RUMResourceEvent) {
@@ -4279,15 +4279,15 @@ public class objc_RUMResourceEventRUMDevice: NSObject {
         root.swiftModel.device!.name
     }
 
-    public var type: objc_RUMResourceEventRUMDeviceRUMDeviceType {
+    public var type: objc_RUMResourceEventDeviceDeviceType {
         .init(swift: root.swiftModel.device!.type)
     }
 }
 
-@objc(DDRUMResourceEventRUMDeviceRUMDeviceType)
+@objc(DDRUMResourceEventDeviceDeviceType)
 @_spi(objc)
-public enum objc_RUMResourceEventRUMDeviceRUMDeviceType: Int {
-    internal init(swift: RUMDevice.RUMDeviceType) {
+public enum objc_RUMResourceEventDeviceDeviceType: Int {
+    internal init(swift: Device.DeviceType) {
         switch swift {
         case .mobile: self = .mobile
         case .desktop: self = .desktop
@@ -4299,7 +4299,7 @@ public enum objc_RUMResourceEventRUMDeviceRUMDeviceType: Int {
         }
     }
 
-    internal var toSwift: RUMDevice.RUMDeviceType {
+    internal var toSwift: Device.DeviceType {
         switch self {
         case .mobile: return .mobile
         case .desktop: return .desktop
@@ -4354,10 +4354,10 @@ public class objc_RUMResourceEventDisplayViewport: NSObject {
     }
 }
 
-@objc(DDRUMResourceEventRUMOperatingSystem)
+@objc(DDRUMResourceEventOperatingSystem)
 @objcMembers
 @_spi(objc)
-public class objc_RUMResourceEventRUMOperatingSystem: NSObject {
+public class objc_RUMResourceEventOperatingSystem: NSObject {
     internal let root: objc_RUMResourceEvent
 
     internal init(root: objc_RUMResourceEvent) {
@@ -5119,8 +5119,8 @@ public class objc_RUMViewEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
-    public var device: objc_RUMViewEventRUMDevice? {
-        root.swiftModel.device != nil ? objc_RUMViewEventRUMDevice(root: root) : nil
+    public var device: objc_RUMViewEventDevice? {
+        root.swiftModel.device != nil ? objc_RUMViewEventDevice(root: root) : nil
     }
 
     public var display: objc_RUMViewEventDisplay? {
@@ -5131,8 +5131,8 @@ public class objc_RUMViewEvent: NSObject {
         root.swiftModel.featureFlags != nil ? objc_RUMViewEventFeatureFlags(root: root) : nil
     }
 
-    public var os: objc_RUMViewEventRUMOperatingSystem? {
-        root.swiftModel.os != nil ? objc_RUMViewEventRUMOperatingSystem(root: root) : nil
+    public var os: objc_RUMViewEventOperatingSystem? {
+        root.swiftModel.os != nil ? objc_RUMViewEventOperatingSystem(root: root) : nil
     }
 
     public var privacy: objc_RUMViewEventPrivacy? {
@@ -5696,10 +5696,10 @@ public class objc_RUMViewEventRUMEventAttributes: NSObject {
     }
 }
 
-@objc(DDRUMViewEventRUMDevice)
+@objc(DDRUMViewEventDevice)
 @objcMembers
 @_spi(objc)
-public class objc_RUMViewEventRUMDevice: NSObject {
+public class objc_RUMViewEventDevice: NSObject {
     internal let root: objc_RUMViewEvent
 
     internal init(root: objc_RUMViewEvent) {
@@ -5722,15 +5722,15 @@ public class objc_RUMViewEventRUMDevice: NSObject {
         root.swiftModel.device!.name
     }
 
-    public var type: objc_RUMViewEventRUMDeviceRUMDeviceType {
+    public var type: objc_RUMViewEventDeviceDeviceType {
         .init(swift: root.swiftModel.device!.type)
     }
 }
 
-@objc(DDRUMViewEventRUMDeviceRUMDeviceType)
+@objc(DDRUMViewEventDeviceDeviceType)
 @_spi(objc)
-public enum objc_RUMViewEventRUMDeviceRUMDeviceType: Int {
-    internal init(swift: RUMDevice.RUMDeviceType) {
+public enum objc_RUMViewEventDeviceDeviceType: Int {
+    internal init(swift: Device.DeviceType) {
         switch swift {
         case .mobile: self = .mobile
         case .desktop: self = .desktop
@@ -5742,7 +5742,7 @@ public enum objc_RUMViewEventRUMDeviceRUMDeviceType: Int {
         }
     }
 
-    internal var toSwift: RUMDevice.RUMDeviceType {
+    internal var toSwift: Device.DeviceType {
         switch self {
         case .mobile: return .mobile
         case .desktop: return .desktop
@@ -5844,10 +5844,10 @@ public class objc_RUMViewEventFeatureFlags: NSObject {
     }
 }
 
-@objc(DDRUMViewEventRUMOperatingSystem)
+@objc(DDRUMViewEventOperatingSystem)
 @objcMembers
 @_spi(objc)
-public class objc_RUMViewEventRUMOperatingSystem: NSObject {
+public class objc_RUMViewEventOperatingSystem: NSObject {
     internal let root: objc_RUMViewEvent
 
     internal init(root: objc_RUMViewEvent) {
@@ -6815,16 +6815,16 @@ public class objc_RUMVitalEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
-    public var device: objc_RUMVitalEventRUMDevice? {
-        root.swiftModel.device != nil ? objc_RUMVitalEventRUMDevice(root: root) : nil
+    public var device: objc_RUMVitalEventDevice? {
+        root.swiftModel.device != nil ? objc_RUMVitalEventDevice(root: root) : nil
     }
 
     public var display: objc_RUMVitalEventDisplay? {
         root.swiftModel.display != nil ? objc_RUMVitalEventDisplay(root: root) : nil
     }
 
-    public var os: objc_RUMVitalEventRUMOperatingSystem? {
-        root.swiftModel.os != nil ? objc_RUMVitalEventRUMOperatingSystem(root: root) : nil
+    public var os: objc_RUMVitalEventOperatingSystem? {
+        root.swiftModel.os != nil ? objc_RUMVitalEventOperatingSystem(root: root) : nil
     }
 
     public var service: String? {
@@ -7299,10 +7299,10 @@ public class objc_RUMVitalEventRUMEventAttributes: NSObject {
     }
 }
 
-@objc(DDRUMVitalEventRUMDevice)
+@objc(DDRUMVitalEventDevice)
 @objcMembers
 @_spi(objc)
-public class objc_RUMVitalEventRUMDevice: NSObject {
+public class objc_RUMVitalEventDevice: NSObject {
     internal let root: objc_RUMVitalEvent
 
     internal init(root: objc_RUMVitalEvent) {
@@ -7325,15 +7325,15 @@ public class objc_RUMVitalEventRUMDevice: NSObject {
         root.swiftModel.device!.name
     }
 
-    public var type: objc_RUMVitalEventRUMDeviceRUMDeviceType {
+    public var type: objc_RUMVitalEventDeviceDeviceType {
         .init(swift: root.swiftModel.device!.type)
     }
 }
 
-@objc(DDRUMVitalEventRUMDeviceRUMDeviceType)
+@objc(DDRUMVitalEventDeviceDeviceType)
 @_spi(objc)
-public enum objc_RUMVitalEventRUMDeviceRUMDeviceType: Int {
-    internal init(swift: RUMDevice.RUMDeviceType) {
+public enum objc_RUMVitalEventDeviceDeviceType: Int {
+    internal init(swift: Device.DeviceType) {
         switch swift {
         case .mobile: self = .mobile
         case .desktop: self = .desktop
@@ -7345,7 +7345,7 @@ public enum objc_RUMVitalEventRUMDeviceRUMDeviceType: Int {
         }
     }
 
-    internal var toSwift: RUMDevice.RUMDeviceType {
+    internal var toSwift: Device.DeviceType {
         switch self {
         case .mobile: return .mobile
         case .desktop: return .desktop
@@ -7400,10 +7400,10 @@ public class objc_RUMVitalEventDisplayViewport: NSObject {
     }
 }
 
-@objc(DDRUMVitalEventRUMOperatingSystem)
+@objc(DDRUMVitalEventOperatingSystem)
 @objcMembers
 @_spi(objc)
-public class objc_RUMVitalEventRUMOperatingSystem: NSObject {
+public class objc_RUMVitalEventOperatingSystem: NSObject {
     internal let root: objc_RUMVitalEvent
 
     internal init(root: objc_RUMVitalEvent) {
@@ -9052,4 +9052,4 @@ public class objc_TelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/df69253e7a875963d2a9cf0abb97882a97ebf85e
+// Generated from https://github.com/DataDog/rum-events-format/tree/b20658edde2a3f7e7908432a1bee5099c9ad51a8

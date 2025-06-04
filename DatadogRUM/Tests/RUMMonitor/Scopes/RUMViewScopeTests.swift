@@ -16,11 +16,11 @@ class RUMViewScopeTests: XCTestCase {
         version: "test-version",
         buildNumber: "test-build",
         buildId: .mockRandom(),
-        device: .mockWith(
-            name: "device-name",
-            osName: "device-os",
-            osVersion: "os-version",
-            osBuildNumber: "os-build"
+        device: .mockWith(name: "device-name"),
+        os: .mockWith(
+            name: "device-os",
+            version: "os-version",
+            build: "os-build"
         ),
         networkConnectionInfo: nil,
         carrierInfo: nil

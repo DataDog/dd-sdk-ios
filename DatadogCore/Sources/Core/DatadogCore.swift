@@ -474,6 +474,7 @@ extension DatadogContextProvider {
         applicationVersion: String,
         sdkInitDate: Date,
         device: DeviceInfo,
+        os: OperatingSystem,
         processInfo: ProcessInfo,
         dateProvider: DateProvider,
         serverDateProvider: ServerDateProvider,
@@ -498,6 +499,7 @@ extension DatadogContextProvider {
             applicationBundleType: applicationBundleType,
             sdkInitDate: dateProvider.now,
             device: device,
+            os: os,
             nativeSourceOverride: nativeSourceOverride,
             launchTime: appLaunchHandler.currentValue,
             // this is a placeholder waiting for the `ApplicationStatePublisher`

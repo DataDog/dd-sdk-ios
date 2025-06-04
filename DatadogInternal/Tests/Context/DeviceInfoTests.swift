@@ -28,9 +28,6 @@ class DeviceInfoTests: XCTestCase {
         XCTAssertEqual(info.brand, "Apple")
         XCTAssertEqual(info.name, randomUIDeviceModel)
         XCTAssertEqual(info.model, "\(randomModel) Simulator")
-        XCTAssertEqual(info.osName, randomOSName)
-        XCTAssertEqual(info.osVersion, randomOSVersion)
-        XCTAssertNotNil(info.osBuildNumber)
     }
 
     func testDeviceType() {
@@ -57,21 +54,18 @@ class DeviceInfoTests: XCTestCase {
 
     func testOSVersionMajor() {
         // When
-        func when(systemVersion: String) -> DeviceInfo {
-            return DeviceInfo(
-                processInfo: ProcessInfoMock(),
-                device: UIDeviceMock(systemVersion: systemVersion)
-            )
+        func when(systemVersion: String) -> OperatingSystem {
+            OperatingSystem(device: UIDeviceMock(systemVersion: systemVersion))
         }
 
         // Then
-        XCTAssertEqual(when(systemVersion: "15.4.1").osVersion, "15.4.1")
-        XCTAssertEqual(when(systemVersion: "15.4.1").osVersionMajor, "15")
+        XCTAssertEqual(when(systemVersion: "15.4.1").version, "15.4.1")
+        XCTAssertEqual(when(systemVersion: "15.4.1").versionMajor, "15")
 
-        XCTAssertEqual(when(systemVersion: "17.0").osVersion, "17.0")
-        XCTAssertEqual(when(systemVersion: "17.0").osVersionMajor, "17")
+        XCTAssertEqual(when(systemVersion: "17.0").version, "17.0")
+        XCTAssertEqual(when(systemVersion: "17.0").versionMajor, "17")
 
-        XCTAssertEqual(when(systemVersion: "18").osVersion, "18")
-        XCTAssertEqual(when(systemVersion: "18").osVersionMajor, "18")
+        XCTAssertEqual(when(systemVersion: "18").version, "18")
+        XCTAssertEqual(when(systemVersion: "18").versionMajor, "18")
     }
 }

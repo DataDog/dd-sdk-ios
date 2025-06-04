@@ -515,9 +515,9 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: commandAttributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context, telemetry: dependencies.telemetry),
+            device: context.device.rumDevice,
             display: nil,
-            os: .init(device: context.device),
+            os: context.os,
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
@@ -637,10 +637,10 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: attributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context, telemetry: dependencies.telemetry),
+            device: context.device.rumDevice,
             display: nil,
             featureFlags: .init(featureFlagsInfo: featureFlags),
-            os: .init(device: context.device),
+            os: context.os,
             privacy: nil,
             service: context.service,
             session: .init(
@@ -783,7 +783,7 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: commandAttributes),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context, telemetry: dependencies.telemetry),
+            device: context.device.rumDevice,
             display: nil,
             error: .init(
                 binaryImages: binaryImages,
@@ -810,7 +810,7 @@ extension RUMViewScope {
             freeze: (command as? RUMAddCurrentViewAppHangCommand).map { appHangCommand in
                 .init(duration: appHangCommand.hangDuration.toInt64Nanoseconds)
             },
-            os: .init(device: context.device),
+            os: context.os,
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
@@ -870,7 +870,7 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: commandAttributes),
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context, telemetry: dependencies.telemetry),
+            device: context.device.rumDevice,
             display: nil,
             longTask: .init(
                 blockingDuration: nil,
@@ -884,7 +884,7 @@ extension RUMViewScope {
                 startTime: nil,
                 styleAndLayoutStart: nil
             ),
-            os: .init(device: context.device),
+            os: context.os,
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,

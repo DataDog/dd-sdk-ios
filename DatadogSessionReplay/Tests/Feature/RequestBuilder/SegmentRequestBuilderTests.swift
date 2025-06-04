@@ -105,10 +105,10 @@ class SegmentRequestBuilderTests: XCTestCase {
             source: randomSource,
             sdkVersion: randomSDKVersion,
             applicationName: randomApplicationName,
-            device: .mockWith(
-                name: randomDeviceName,
-                osName: randomDeviceOSName,
-                osVersion: randomDeviceOSVersion
+            device: .mockWith(name: randomDeviceName),
+            os: .mockWith(
+                name: randomDeviceOSName,
+                version: randomDeviceOSVersion
             )
         )
 
