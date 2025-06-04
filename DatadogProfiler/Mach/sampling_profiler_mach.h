@@ -12,7 +12,6 @@
 #include <mach/mach_time.h>
 #include <vector>
 #include <pthread.h>
-#include <unordered_map>
 
 namespace dd {
 namespace profiler {

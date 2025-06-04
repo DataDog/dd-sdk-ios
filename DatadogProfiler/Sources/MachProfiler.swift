@@ -70,7 +70,7 @@ internal class Profile {
         mapping.memoryStart = frame.image.load_address
         mapping.memoryLimit = .max
         mapping.fileOffset = 0 // For unsymbolized profiles, we don't need file offset
-        mapping.filename = addString(.empty)
+        mapping.filename = addString(frame.image.filename.map { String(cString: $0) } ?? .empty)
         mapping.buildID = addString(UUID(uuid: frame.image.uuid).uuidString)
         mapping.hasFunctions_p = false // No functions in unsymbolized profile
         mapping.hasFilenames_p = false
@@ -150,12 +150,14 @@ internal class MachProfiler {
         samplingIntervalMs: UInt32 = 1,
         currentThreadOnly: Bool = false,
         maxBufferSize: Int = 100,
+        maxStackDepth: UInt32 = 128,
         qos: DispatchQoS = .userInteractive
     ) {
         var config = sampling_config_t(
             sampling_interval_ms: samplingIntervalMs,
             profile_current_thread_only: currentThreadOnly ? 1: 0,
             max_buffer_size: maxBufferSize,
+            max_stack_depth: maxStackDepth,
             qos_class: qos.qosClass.rawValue
         )
         

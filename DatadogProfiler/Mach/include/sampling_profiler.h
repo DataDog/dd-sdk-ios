@@ -27,6 +27,7 @@ extern "C" {
 typedef struct {
     uint64_t load_address;  ///< Base address where the image is loaded
     uuid_t uuid;           ///< UUID of the binary
+    const char* filename;  ///< Filename of the binary
 } binary_image_t;
 
 /**
@@ -60,6 +61,7 @@ typedef struct stack_trace {
     .sampling_interval_ms = 1, \
     .profile_current_thread_only = 0, \
     .max_buffer_size = 1000, \
+    .max_stack_depth = 128, \
     .qos_class = QOS_CLASS_USER_INTERACTIVE \
 }
 
@@ -73,6 +75,8 @@ typedef struct sampling_config {
     uint8_t profile_current_thread_only;
     /** Maximum number of samples to buffer before calling the callback */
     size_t max_buffer_size;
+    /** Maximum number of stack frames to capture per trace */
+    uint32_t max_stack_depth;  // default: 128
     /** QoS class for the sampling thread */
     qos_class_t qos_class;
 } sampling_config_t;

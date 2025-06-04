@@ -4,6 +4,8 @@
 
 #include <dlfcn.h>
 #include <thread>
+#include <string.h>
+#include <stdlib.h>
 #include <mach/mach_time.h>
 #include <mach/thread_act.h>
 #include <mach/thread_status.h>
@@ -11,80 +13,155 @@
 #include <mach-o/loader.h>
 #include <mach-o/dyld.h>
 
+// Address validation constants and macros
+//
+// These values define the valid range for user-space addresses on 64-bit systems:
+//
+// MIN_USERSPACE_ADDR (0x1000):
+//   - Corresponds to the typical page size (4KB)
+//   - Helps avoid null pointer dereference regions (0x0 - 0xFFF)
+//   - Based on standard virtual memory layouts where the first page is unmapped
+//   - Reference: mach/vm_param.h, typical VM_MIN_ADDRESS values
+//
+// MAX_USERSPACE_ADDR (0x7FFFFFFFF000ULL):
+//   - Upper limit for user-space addresses on 64-bit ARM64/x86_64
+//   - On ARM64: user space typically occupies 0x0 - 0x7FFFFFFFF000
+//   - On x86_64: similar layout with kernel space starting around 0x8000000000000000
+//   - This leaves the upper address space for kernel/system use
+//   - Reference: ARM64 memory layout documentation, x86_64 canonical addressing
+//
+// FRAME_POINTER_ALIGNMENT (8 bytes):
+//   - 64-bit systems require 8-byte alignment for pointers
+//   - Stack frame pointers must be properly aligned to avoid bus errors
+//   - Reference: ARM64/x86_64 ABI specifications
+
+#define MIN_USERSPACE_ADDR    0x1000ULL              // 4KB - avoid null deref region
+#define MAX_USERSPACE_ADDR    0x7FFFFFFFF000ULL      // ~128TB - max user space on 64-bit
+#define FRAME_POINTER_ALIGN   0x7ULL                 // 8-byte alignment mask
+
+// Mach-O validation constants
+//
+// MAX_LOAD_COMMANDS (1000):
+//   - Reasonable upper bound for number of load commands in a Mach-O file
+//   - Typical executables have 20-50 load commands, complex ones may have ~100
+//   - 1000 is a generous safety limit to catch corrupted/malicious headers
+//   - Reference: Analysis of real-world Mach-O files, otool output observations
+//
+// MAX_LOAD_COMMAND_SIZE (0x10000 = 64KB):
+//   - Maximum size for a single load command
+//   - Most load commands are < 1KB, largest (like LC_CODE_SIGNATURE) rarely exceed 16KB
+//   - 64KB provides safety margin while preventing massive buffer overruns
+//   - Reference: mach-o/loader.h specifications, real-world observations
+
+#define MAX_LOAD_COMMANDS     1000                   // Generous upper bound for ncmds
+#define MAX_LOAD_COMMAND_SIZE 0x10000                // 64KB max per load command
+
+/**
+ * Validates if an address is within reasonable user-space bounds.
+ * Rejects null pointers, kernel addresses, and other invalid ranges.
+ */
+#define IS_VALID_USERSPACE_ADDR(addr) \
+    (((uintptr_t)(addr)) >= MIN_USERSPACE_ADDR && ((uintptr_t)(addr)) <= MAX_USERSPACE_ADDR)
+
+/**
+ * Validates if a frame pointer is valid: within user-space bounds and properly aligned.
+ * Frame pointers must be 8-byte aligned on 64-bit systems.
+ */
+#define IS_VALID_FRAME_POINTER(fp) \
+    (IS_VALID_USERSPACE_ADDR(fp) && (((uintptr_t)(fp)) & FRAME_POINTER_ALIGN) == 0)
+
+/**
+ * Validates if the number of load commands in a Mach-O header is reasonable.
+ * Rejects empty files and suspiciously large command counts.
+ */
+#define IS_VALID_LOAD_COMMAND_COUNT(ncmds) \
+    ((ncmds) > 0 && (ncmds) <= MAX_LOAD_COMMANDS)
+
+/**
+ * Validates if a load command size is within acceptable bounds.
+ * Prevents buffer overruns from malformed command sizes.
+ */
+#define IS_VALID_LOAD_COMMAND_SIZE(cmdsize) \
+    ((cmdsize) >= sizeof(struct load_command) && (cmdsize) <= MAX_LOAD_COMMAND_SIZE)
+
 namespace dd {
 namespace profiler {
 
 /**
- * Retrieves the current state of a thread.
+ * Initializes a binary image structure to safe defaults.
  *
- * @param thread The thread to get the state from
- * @param state Output parameter to store the thread state
- * @return true if successful, false if thread state could not be retrieved
+ * @param[out] info The binary image structure to initialize
+ * @return true if initialization succeeded, false on null pointer
  */
-bool get_thread_state(thread_t thread, thread_state_t& state) {
-    mach_msg_type_number_t count;
-
-#if defined (__i386__) || defined(__x86_64__)
-    count = x86_THREAD_STATE64_COUNT;
-    if (thread_get_state(thread, x86_THREAD_STATE64, (thread_state_t)&state, &count) != KERN_SUCCESS) {
-        return false;
-    }
-#elif defined (__arm__) || defined (__arm64__)
-    count = ARM_THREAD_STATE64_COUNT;
-    if (thread_get_state(thread, ARM_THREAD_STATE64, (thread_state_t)&state, &count) != KERN_SUCCESS) {
-        return false;
-    }
-#else
-    return false;
-#endif
+bool binary_image_init(binary_image_t* info) {
+    if (!info) return false;
+    memset(info->uuid, 0, sizeof(uuid_t));
+    info->load_address = 0;
+    info->filename = nullptr;
     return true;
 }
 
 /**
- * Extracts frame pointer and program counter from thread state.
+ * Destroys a binary image structure, freeing any allocated memory.
  *
- * @param state The thread state to extract from
- * @param fp Output parameter for frame pointer
- * @param pc Output parameter for program counter
+ * @param info The binary image structure to destroy
  */
-void get_frame_pointers(const thread_state_t& state, void** fp, void** pc) {
-#if defined (__i386__) || defined(__x86_64__)
-    x86_thread_state64_t* x86_state = (x86_thread_state64_t*)&state;
-    *fp = (void*)x86_state->__rbp;
-    *pc = (void*)x86_state->__rip;
-#elif defined (__arm__) || defined (__arm64__)
-    arm_thread_state64_t* arm_state = (arm_thread_state64_t*)&state;
-    *fp = (void*)arm_thread_state64_get_fp(*arm_state);
-    *pc = (void*)arm_thread_state64_get_pc(*arm_state);
-#endif
+void binary_image_destroy(binary_image_t* info) {
+    if (!info) return;
+    
+    if (info->filename) {
+        free((void*)info->filename);
+        info->filename = nullptr;
+    }
+    memset(info->uuid, 0, sizeof(uuid_t));
+    info->load_address = 0;
 }
 
 /**
- * Gets binary image information for a program counter address.
+ * Looks up binary image information for a program counter address.
  *
+ * @param[out] info The binary image structure to populate (must be initialized with binary_image_init)
  * @param pc The program counter address to get image info for
- * @param[out] info Where to store the binary image information
- * @return true if binary image was found, false otherwise
+ * @return true if binary image was found and info populated, false otherwise
  */
-bool get_image_info(void* pc, binary_image_t& info) {
+bool binary_image_lookup_pc(binary_image_t* info, void* pc) {
+    if (!info) return false;
+    
+    // Validate the PC address - it should be a reasonable user-space address
+    if (!IS_VALID_USERSPACE_ADDR(pc)) return false;
+    
     Dl_info dl_info;
-    if (dladdr(pc, &dl_info) == 0) {
-        return false;
+    if (dladdr(pc, &dl_info) == 0) return false;
+    if (!IS_VALID_USERSPACE_ADDR(dl_info.dli_fbase)) return false;
+
+    // Copy filename if available
+    if (dl_info.dli_fname) {
+        size_t fname_len = strlen(dl_info.dli_fname) + 1;
+        char* fname = (char*)malloc(fname_len);
+        if (fname) {
+            strcpy(fname, dl_info.dli_fname);
+            info->filename = fname;
+        }
     }
 
     // Get UUID from the image
     const struct mach_header_64* header = (const struct mach_header_64*)dl_info.dli_fbase;
-    if (!header || header->magic != MH_MAGIC_64) {
-        return false;
-    }
+    if (!header || header->magic != MH_MAGIC_64) return false;
+    // Validate ncmds to prevent reading too far
+    if (!IS_VALID_LOAD_COMMAND_COUNT(header->ncmds)) return false;
 
     const struct load_command* cmd = (const struct load_command*)(header + 1);
     for (uint32_t i = 0; i < header->ncmds; ++i) {
+        // Validate command size to prevent buffer overruns
+        if (!IS_VALID_LOAD_COMMAND_SIZE(cmd->cmdsize)) break;
+        
         if (cmd->cmd == LC_UUID) {
             const struct uuid_command* uuid_cmd = (const struct uuid_command*)cmd;
-            memcpy(info.uuid, uuid_cmd->uuid, sizeof(uuid_t));
-            info.load_address = (uintptr_t)dl_info.dli_fbase;
-            return true;
+            if (cmd->cmdsize >= sizeof(struct uuid_command)) {
+                memcpy(info->uuid, uuid_cmd->uuid, sizeof(uuid_t));
+                info->load_address = (uintptr_t)dl_info.dli_fbase;
+                return true;
+            }
         }
         cmd = (const struct load_command*)((char*)cmd + cmd->cmdsize);
     }
@@ -93,39 +170,100 @@ bool get_image_info(void* pc, binary_image_t& info) {
 }
 
 /**
- * Walks the stack of a thread to collect stack trace information.
- *
- * @param thread The thread to walk the stack of
- * @return A stack trace containing frame information
+ * Initializes a stack trace with allocated frames.
+ * 
+ * @param trace Pointer to stack trace to initialize
+ * @param max_depth Maximum number of frames to allocate
+ * @return true if initialization succeeded, false on allocation failure
  */
-stack_trace_t walk_stack(thread_t thread) {
-    stack_trace_t trace = {};
-    trace.tid = thread;
-    trace.timestamp = mach_absolute_time();
-    
-    stack_frame_t frames[MAX_STACK_DEPTH];
-    trace.frames = frames;
-    trace.frame_count = 0;
+bool stack_trace_init(stack_trace_t* trace, uint32_t max_depth) {
+    if (!trace) return false;
+    trace->tid = 0;
+    trace->timestamp = 0;
+    trace->frame_count = 0;
+    trace->frames = (stack_frame_t*)malloc(max_depth * sizeof(stack_frame_t));
+    return trace->frames != nullptr;
+}
 
-    thread_state_t state;
-    if (!get_thread_state(thread, state)) {
-        return trace;
+/**
+ * Destroys the frames of a stack trace (but not the trace struct itself).
+ * 
+ * @param trace Pointer to stack trace to clean up (can be nullptr)
+ */
+void stack_trace_destroy(stack_trace_t* trace) {
+    if (!trace) return;
+    if (!trace->frames) return;
+
+    // Clean up binary image data for each frame
+    for (uint32_t i = 0; i < trace->frame_count; i++) {
+        binary_image_destroy(&trace->frames[i].image);
     }
+    free(trace->frames);
+    trace->frames = nullptr;
+}
 
-    void* fp = nullptr;
-    void* pc = nullptr;
-    get_frame_pointers(state, &fp, &pc);
+/**
+ * Gets thread state and extracts frame pointer and program counter.
+ *
+ * @param thread The thread to get the state from
+ * @param fp Output parameter for frame pointer
+ * @param pc Output parameter for program counter
+ * @return true if successful, false if thread state could not be retrieved
+ */
+bool thread_get_frame_pointers(thread_t thread, void** fp, void** pc) {
+#if defined (__i386__) || defined(__x86_64__)
+    x86_thread_state64_t state;
+    mach_msg_type_number_t count = x86_THREAD_STATE64_COUNT;
+    if (thread_get_state(thread, x86_THREAD_STATE64, (thread_state_t)&state, &count) == KERN_SUCCESS) {
+        *fp = (void*)state.__rbp;
+        *pc = (void*)state.__rip;
+        return true;
+    }
+#elif defined (__arm__) || defined (__arm64__)
+    arm_thread_state64_t state;
+    mach_msg_type_number_t count = ARM_THREAD_STATE64_COUNT;
+    if (thread_get_state(thread, ARM_THREAD_STATE64, (thread_state_t)&state, &count) == KERN_SUCCESS) {
+        *fp = (void*)arm_thread_state64_get_fp(state);
+        *pc = (void*)arm_thread_state64_get_pc(state);
+        return true;
+    }
+#endif
+    return false;
+}
 
-    while (trace.frame_count < MAX_STACK_DEPTH && pc != nullptr) {
-        auto& frame = frames[trace.frame_count];
+/**
+ * Samples a thread's stack to collect stack trace information.
+ *
+ * @param trace Pre-allocated stack trace to fill
+ * @param thread The thread to sample
+ * @param max_depth Maximum number of frames to capture
+ */
+void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t max_depth) {
+    trace->tid = thread;
+    trace->timestamp = mach_absolute_time();
+    trace->frame_count = 0;
+
+    void *fp, *pc = nullptr;
+    if (!thread_get_frame_pointers(thread, &fp, &pc)) return;
+
+    while (trace->frame_count < max_depth && pc != nullptr) {
+        auto& frame = trace->frames[trace->frame_count];
         frame.instruction_ptr = (uint64_t)pc;
 
+        trace->frame_count++;
+        
         if (fp == nullptr) break;
-        pc = *(void**)fp;
-        fp = *(void**)fp;
-        trace.frame_count++;
+        // Validate frame pointer before dereferencing
+        if (!IS_VALID_FRAME_POINTER(fp)) break;
+        
+        // Read the next frame pointer and return address
+        void** frame_ptr = (void**)fp;
+        fp = frame_ptr[0];  // Next frame pointer
+        pc = frame_ptr[1];  // Return address
+        
+        // Validate the new PC
+        if (!IS_VALID_USERSPACE_ADDR(pc)) break;
     }
-    return trace;
 }
 
 /**
@@ -160,26 +298,30 @@ profiler::~profiler() {
  * @param thread The thread to sample
  */
 void profiler::sample_thread(thread_t thread) {
-    // ############################################
-    if (thread_suspend(thread) != KERN_SUCCESS) return;
-    // CRITICAL: Thread is suspended - avoid operations that could deadlock
-    //
-    // The suspended thread may be holding system locks (memory allocator, pthread, etc).
-    // If we try to acquire these same locks while the thread is suspended, we'll deadlock.
-    //
-    // Specifically avoid:
-    // - Memory allocations (new, malloc) - memory allocator locks
-    // - System calls that acquire locks - they may be held by suspended thread
-    // - pthread functions - they share locks with system APIs
-    auto trace = walk_stack(thread);
-    thread_resume(thread);
-    // ############################################
+    stack_trace_t trace;
+    if (!stack_trace_init(&trace, config.max_stack_depth)) return;
+
+    if (thread_suspend(thread) == KERN_SUCCESS) {
+        // CRITICAL: Thread is suspended - avoid operations that could deadlock
+        //
+        // The suspended thread may be holding system locks (memory allocator, pthread, etc).
+        // If we try to acquire these same locks while the thread is suspended, we'll deadlock.
+        //
+        // Specifically avoid:
+        // - Memory allocations (new, malloc) - memory allocator locks
+        // - System calls that acquire locks - they may be held by suspended thread
+        // - pthread functions - they share locks with system APIs
+        stack_trace_sample_thread(&trace, thread, config.max_stack_depth);
+        thread_resume(thread);
+    }
 
     if (trace.frame_count > 0) {
         sample_buffer.push_back(trace);
         if (sample_buffer.size() >= config.max_buffer_size) {
             flush_buffer();
         }
+    } else {
+        stack_trace_destroy(&trace);
     }
 }
 
@@ -193,11 +335,19 @@ void profiler::flush_buffer() {
     for (auto& trace : sample_buffer) {
         for (uint32_t i = 0; i < trace.frame_count; i++) {
             auto& frame = trace.frames[i];
-            get_image_info((void*)frame.instruction_ptr, frame.image);
+            // Initialize binary image and look up information
+            binary_image_init(&frame.image);
+            binary_image_lookup_pc(&frame.image, (void*)frame.instruction_ptr);
         }
     }
 
     callback(sample_buffer.data(), sample_buffer.size(), user_data);
+    
+    // Free allocated frame memory and binary image data
+    for (auto& trace : sample_buffer) {
+        stack_trace_destroy(&trace);
+    }
+    
     sample_buffer.clear();
 }
 
