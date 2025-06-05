@@ -29,8 +29,14 @@ internal class AppRunner {
         ///
         /// Sets `TASK_FOREGROUND_APPLICATION` as the task policy role — confirmed through local testing.
         static func userLaunchInSceneDelegateBasedApp(processLaunchDate: Date) -> ProcessLaunchType {
+            #if os(iOS)
+            let taskPolicyRole = Int(TASK_FOREGROUND_APPLICATION.rawValue)
+            #else
+            let taskPolicyRole = __dd_private_TASK_POLICY_UNAVAILABLE
+            #endif
+
             return .init(
-                taskPolicyRole: Int(TASK_FOREGROUND_APPLICATION.rawValue),
+                taskPolicyRole: taskPolicyRole,
                 processInfoEnvironment: [:],
                 processLaunchDate: processLaunchDate,
                 initialAppState: .background,
@@ -43,8 +49,14 @@ internal class AppRunner {
         ///
         /// Sets `TASK_FOREGROUND_APPLICATION` as the task policy role — confirmed through local testing.
         static func userLaunchInAppDelegateBasedApp(processLaunchDate: Date) -> ProcessLaunchType {
+            #if os(iOS)
+            let taskPolicyRole = Int(TASK_FOREGROUND_APPLICATION.rawValue)
+            #else
+            let taskPolicyRole = __dd_private_TASK_POLICY_UNAVAILABLE
+            #endif
+
             return .init(
-                taskPolicyRole: Int(TASK_FOREGROUND_APPLICATION.rawValue),
+                taskPolicyRole: taskPolicyRole,
                 processInfoEnvironment: [:],
                 processLaunchDate: processLaunchDate,
                 initialAppState: .inactive,
@@ -57,6 +69,7 @@ internal class AppRunner {
         /// Sets `TASK_DARWINBG_APPLICATION` as the task policy role, though this has not been confirmed
         /// in prewarming scenarios. This uncertainty is acceptable, as the `"ActivePrewarm"` flag in
         /// `ProcessInfo.environment` takes precedence when classifying prewarming.
+        @available(tvOS, unavailable)
         static func osPrewarm(processLaunchDate: Date) -> ProcessLaunchType {
             return .init(
                 taskPolicyRole: Int(TASK_DARWINBG_APPLICATION.rawValue),
@@ -73,8 +86,14 @@ internal class AppRunner {
         /// confirmed for background launch scenarios. This is acceptable, as the SDK determines
         /// background launch based on a heuristic: "not user launch AND not prewarming" — which is reliably detectable.
         static func backgroundLaunch(processLaunchDate: Date) -> ProcessLaunchType {
+            #if os(iOS)
+            let taskPolicyRole = Int(TASK_NONUI_APPLICATION.rawValue)
+            #else
+            let taskPolicyRole = __dd_private_TASK_POLICY_UNAVAILABLE
+            #endif
+
             return .init(
-                taskPolicyRole: Int(TASK_NONUI_APPLICATION.rawValue),
+                taskPolicyRole: taskPolicyRole,
                 processInfoEnvironment: [:],
                 processLaunchDate: processLaunchDate,
                 initialAppState: .background,
