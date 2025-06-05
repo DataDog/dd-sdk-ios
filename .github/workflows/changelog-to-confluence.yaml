@@ -1,6 +1,6 @@
 name: Publish Changelog to Confluence
 on:
-    pull_request:
+    push:
         branches:
             - develop
         paths:
