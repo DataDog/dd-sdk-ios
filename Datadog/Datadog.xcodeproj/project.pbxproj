@@ -880,6 +880,10 @@
 		962D72BD2CF6436700F86EF0 /* Image+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72BB2CF6436600F86EF0 /* Image+Reflection.swift */; };
 		962D72BF2CF7538800F86EF0 /* CGImage+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72BE2CF7538800F86EF0 /* CGImage+SessionReplay.swift */; };
 		962D72C52CF7806300F86EF0 /* GraphicsImageReflectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72C42CF7806300F86EF0 /* GraphicsImageReflectionTests.swift */; };
+		9632900B2DF1F01400E9199E /* ModernSwiftUIComponentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9632900A2DF1F01300E9199E /* ModernSwiftUIComponentDetector.swift */; };
+		9632900C2DF1F01400E9199E /* ModernSwiftUIComponentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9632900A2DF1F01300E9199E /* ModernSwiftUIComponentDetector.swift */; };
+		9632900E2DF1F04200E9199E /* LegacySwiftUIComponentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9632900D2DF1F04100E9199E /* LegacySwiftUIComponentDetector.swift */; };
+		9632900F2DF1F04200E9199E /* LegacySwiftUIComponentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9632900D2DF1F04100E9199E /* LegacySwiftUIComponentDetector.swift */; };
 		965496FF2D761E2B006428EE /* RUMView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 965496FE2D761E28006428EE /* RUMView.swift */; };
 		965497002D761E2B006428EE /* RUMView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 965496FE2D761E28006428EE /* RUMView.swift */; };
 		965497022D761EA3006428EE /* SwiftUIRUMViewsPredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 965497012D761E9E006428EE /* SwiftUIRUMViewsPredicate.swift */; };
@@ -2960,6 +2964,8 @@
 		962D72BB2CF6436600F86EF0 /* Image+Reflection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Image+Reflection.swift"; sourceTree = "<group>"; };
 		962D72BE2CF7538800F86EF0 /* CGImage+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGImage+SessionReplay.swift"; sourceTree = "<group>"; };
 		962D72C42CF7806300F86EF0 /* GraphicsImageReflectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphicsImageReflectionTests.swift; sourceTree = "<group>"; };
+		9632900A2DF1F01300E9199E /* ModernSwiftUIComponentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModernSwiftUIComponentDetector.swift; sourceTree = "<group>"; };
+		9632900D2DF1F04100E9199E /* LegacySwiftUIComponentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacySwiftUIComponentDetector.swift; sourceTree = "<group>"; };
 		965496FE2D761E28006428EE /* RUMView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMView.swift; sourceTree = "<group>"; };
 		965497012D761E9E006428EE /* SwiftUIRUMViewsPredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIRUMViewsPredicate.swift; sourceTree = "<group>"; };
 		965497042D761FC2006428EE /* SwiftUIViewNameExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewNameExtractor.swift; sourceTree = "<group>"; };
@@ -6545,6 +6551,8 @@
 				96F70D472DD79B3D00D3736B /* SwiftUIRUMActionsPredicate.swift */,
 				D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */,
 				96F70D502DDDBDA600D3736B /* SwiftUIComponentDetector.swift */,
+				9632900A2DF1F01300E9199E /* ModernSwiftUIComponentDetector.swift */,
+				9632900D2DF1F04100E9199E /* LegacySwiftUIComponentDetector.swift */,
 			);
 			path = SwiftUI;
 			sourceTree = "<group>";
@@ -9039,6 +9047,7 @@
 				D23F8E6629DDCD28001CFAE8 /* RUMDebugging.swift in Sources */,
 				3C4CF9912C47BE07006DE1C0 /* MemoryWarningMonitor.swift in Sources */,
 				864A707A2DDF742A00AC0619 /* Accessibility.swift in Sources */,
+				9632900C2DF1F01400E9199E /* ModernSwiftUIComponentDetector.swift in Sources */,
 				D23F8E6729DDCD28001CFAE8 /* RUMUUID.swift in Sources */,
 				D23F8E6829DDCD28001CFAE8 /* UIKitExtensions.swift in Sources */,
 				61C713A82A3B78F900FA735A /* RUMMonitorProtocol+Convenience.swift in Sources */,
@@ -9079,6 +9088,7 @@
 				615E2B962D425F5600D85243 /* ViewEndedMetric.swift in Sources */,
 				864A707C2DDF743900AC0619 /* AccessibilityReader.swift in Sources */,
 				D23F8E7A29DDCD28001CFAE8 /* SessionReplayDependency.swift in Sources */,
+				9632900E2DF1F04200E9199E /* LegacySwiftUIComponentDetector.swift in Sources */,
 				616F8C282BB1CD990061EA53 /* ProcessIdentifier.swift in Sources */,
 				D23F8E7B29DDCD28001CFAE8 /* RUMDeviceInfo.swift in Sources */,
 				D23F8E7C29DDCD28001CFAE8 /* RUMOffViewEventsHandlingRule.swift in Sources */,
@@ -9484,6 +9494,7 @@
 				D29A9F7729DD85BB005C54A4 /* RUMDebugging.swift in Sources */,
 				3C4CF9922C47BE07006DE1C0 /* MemoryWarningMonitor.swift in Sources */,
 				864A70792DDF742A00AC0619 /* Accessibility.swift in Sources */,
+				9632900B2DF1F01400E9199E /* ModernSwiftUIComponentDetector.swift in Sources */,
 				D29A9F6E29DD85BB005C54A4 /* RUMUUID.swift in Sources */,
 				D29A9F8D29DD8665005C54A4 /* UIKitExtensions.swift in Sources */,
 				61C713A72A3B78F900FA735A /* RUMMonitorProtocol+Convenience.swift in Sources */,
@@ -9524,6 +9535,7 @@
 				615E2B952D425F5600D85243 /* ViewEndedMetric.swift in Sources */,
 				864A707D2DDF743900AC0619 /* AccessibilityReader.swift in Sources */,
 				D29A9F8629DD85BB005C54A4 /* SessionReplayDependency.swift in Sources */,
+				9632900F2DF1F04200E9199E /* LegacySwiftUIComponentDetector.swift in Sources */,
 				616F8C272BB1CD990061EA53 /* ProcessIdentifier.swift in Sources */,
 				D29A9F7129DD85BB005C54A4 /* RUMDeviceInfo.swift in Sources */,
 				D29A9F5329DD85BB005C54A4 /* RUMOffViewEventsHandlingRule.swift in Sources */,

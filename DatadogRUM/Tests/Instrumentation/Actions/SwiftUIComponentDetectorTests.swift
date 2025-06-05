@@ -548,10 +548,10 @@ class SwiftUIComponentDetectorTests: XCTestCase {
 
     // MARK: - Default Predicate and iOS Flag
 
-    func testSwiftUIDetection_WithDefaultPredicateAndIOS17FlagEnabled() {
+    func testSwiftUIDetection_WithDefaultPredicateAndLegacyDetectorFlagEnabled() {
         // Given
         let detector = SwiftUIComponentFactory.createDetector()
-        let predicateWithIOS17Enabled = DefaultSwiftUIRUMActionsPredicate(isiOS17DetectionEnabled: true)
+        let predicateWithLegacyDetectorEnabled = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
         let mockTouch = MockUITouch(
             phase: .began,
             view: SwiftUIViewMock()
@@ -566,7 +566,7 @@ class SwiftUIComponentDetectorTests: XCTestCase {
         // When - Begin phase
         var command = detector.createActionCommand(
             from: mockTouch,
-            predicate: predicateWithIOS17Enabled,
+            predicate: predicateWithLegacyDetectorEnabled,
             dateProvider: dateProvider
         )
 
@@ -576,7 +576,7 @@ class SwiftUIComponentDetectorTests: XCTestCase {
 
         command = detector.createActionCommand(
             from: mockTouch,
-            predicate: predicateWithIOS17Enabled,
+            predicate: predicateWithLegacyDetectorEnabled,
             dateProvider: dateProvider
         )
 
@@ -592,10 +592,10 @@ class SwiftUIComponentDetectorTests: XCTestCase {
         }
     }
 
-    func testSwiftUIDetection_WithDefaultPredicateAndIOS17FlagDisabled() {
+    func testSwiftUIDetection_WithDefaultPredicateAndLegacyDetectorFlagDisabled() {
         // Given
         let detector = SwiftUIComponentFactory.createDetector()
-        let predicateWithIOS17Enabled = DefaultSwiftUIRUMActionsPredicate(isiOS17DetectionEnabled: false)
+        let predicateWithLegacyDetectorEnabled = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: false)
         let mockTouch = MockUITouch(
             phase: .began,
             view: SwiftUIViewMock()
@@ -610,7 +610,7 @@ class SwiftUIComponentDetectorTests: XCTestCase {
         // When - Begin phase
         var command = detector.createActionCommand(
             from: mockTouch,
-            predicate: predicateWithIOS17Enabled,
+            predicate: predicateWithLegacyDetectorEnabled,
             dateProvider: dateProvider
         )
 
@@ -620,7 +620,7 @@ class SwiftUIComponentDetectorTests: XCTestCase {
 
         command = detector.createActionCommand(
             from: mockTouch,
-            predicate: predicateWithIOS17Enabled,
+            predicate: predicateWithLegacyDetectorEnabled,
             dateProvider: dateProvider
         )
 

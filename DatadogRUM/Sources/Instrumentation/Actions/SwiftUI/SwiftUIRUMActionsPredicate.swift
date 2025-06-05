@@ -21,23 +21,22 @@ public struct DefaultSwiftUIRUMActionsPredicate {
     /// Whether to enable SwiftUI action detection on iOS 17 and below.
     /// When set to `false`, actions will only be detected on iOS 18+ where the detection is more reliable.
     /// Defaults to `true` for backward compatibility.
-    private let isiOS17DetectionEnabled: Bool
+    private let isLegacyDetectionEnabled: Bool
 
     /// Creates a default SwiftUI RUM actions predicate.
-    /// - Parameter isiOS17DetectionEnabled: Whether to enable SwiftUI action detection on iOS 17 and below.
+    /// - Parameter isLegacyDetectionEnabled: Whether to enable SwiftUI action detection on iOS 17 and below.
     ///                                     Set to `false` to only use the more reliable iOS 18+ detection.
-    ///                                     Defaults to `true` for backward compatibility.
-    public init(isiOS17DetectionEnabled: Bool = true) {
-        self.isiOS17DetectionEnabled = isiOS17DetectionEnabled
+    public init(isLegacyDetectionEnabled: Bool = true) {
+        self.isLegacyDetectionEnabled = isLegacyDetectionEnabled
     }
 }
 
-// MARK: SwiftUITouchRUMActionsPredicate
+// MARK: DefaultSwiftUIRUMActionsPredicate
 extension DefaultSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate {
     public func rumAction(with componentName: String) -> RUMAction? {
         if #available(iOS 18.0, *) {
             return RUMAction(name: componentName, attributes: [:])
-        } else if isiOS17DetectionEnabled {
+        } else if isLegacyDetectionEnabled {
             return RUMAction(name: componentName, attributes: [:])
         }
         return nil
