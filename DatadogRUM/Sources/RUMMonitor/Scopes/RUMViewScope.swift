@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
 import DatadogInternal
+import Foundation
 
 internal class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {
@@ -120,6 +120,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Tracks "View Hangs" for this view.
     private var totalAppHangDuration: Double = 0.0
 
+    private var accessibilityReader: AccessibilityReading?
+
     init(
         isInitialView: Bool,
         parent: RUMContextProvider,
@@ -144,6 +146,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewStartTime = startTime
         self.serverTimeOffset = serverTimeOffset
         self.interactionToNextViewMetric = interactionToNextViewMetric
+        self.accessibilityReader = dependencies.accessibilityReader
 
         self.vitalInfoSampler = dependencies.vitalsReaders.map {
             .init(
@@ -598,6 +601,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             performance = nil
         }
 
+        var localAttributes = attributes
+
+        if let accessibility = self.accessibilityReader?.state {
+            localAttributes["accessibility"] = accessibility
+        }
+
         let viewEvent = RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -626,7 +635,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: attributes),
+            context: .init(contextInfo: localAttributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,

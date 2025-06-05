@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
 import DatadogInternal
+import Foundation
 
 internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
@@ -35,6 +35,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     init(dependencies: RUMScopeDependencies) {
         self.dependencies = dependencies
+
         self.context = RUMContext(
             rumApplicationID: dependencies.rumApplicationID,
             sessionID: .nullUUID,
