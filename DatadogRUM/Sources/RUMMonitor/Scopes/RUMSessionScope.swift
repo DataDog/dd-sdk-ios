@@ -343,7 +343,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
-        let isActivePrewarm = context.launchTime.isActivePrewarm
+        let isActivePrewarm = context.launchInfo.launchReason == .prewarming
         let startTime: Date
 
         if command is RUMApplicationStartCommand {
@@ -358,7 +358,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 //
                 // RUM-8372: In practice, `isActivePrewarm == true` is never reached here because
                 // prewarmed apps start in the BACKGROUND state, and the ApplicationLaunch view is never created in that case.
-                startTime = isActivePrewarm ? sessionStartTime : context.launchTime.launchDate
+                startTime = isActivePrewarm ? sessionStartTime : context.launchInfo.processLaunchDate
             }
         } else {
             // Lazily starting the ApplicationLaunch view to capture events that would

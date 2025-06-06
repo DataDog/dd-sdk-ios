@@ -427,6 +427,7 @@ extension DatadogContextProvider {
 
         let initialAppState = appStateProvider.current
         let appStateHistory = AppStateHistory(initialState: initialAppState, date: dateProvider.now)
+        let launchInfo = appLaunchHandler.resolveLaunchInfo(using: processInfo)
 
         let context = DatadogContext(
             site: site,
@@ -446,7 +447,7 @@ extension DatadogContextProvider {
             sdkInitDate: dateProvider.now,
             device: device,
             nativeSourceOverride: nativeSourceOverride,
-            launchTime: appLaunchHandler.currentValue,
+            launchInfo: launchInfo,
             applicationStateHistory: appStateHistory
         )
 
@@ -455,7 +456,7 @@ extension DatadogContextProvider {
         subscribe(\.serverTimeOffset, to: ServerOffsetPublisher(provider: serverDateProvider))
 
         #if !os(macOS)
-        subscribe(\.launchTime, to: LaunchTimePublisher(handler: appLaunchHandler))
+        subscribe(\.launchInfo, to: LaunchInfoPublisher(handler: appLaunchHandler, initialValue: launchInfo))
         #endif
 
         subscribe(\.networkConnectionInfo, to: NWPathMonitorPublisher())

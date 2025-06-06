@@ -31,7 +31,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
         device: DeviceInfo = .mockAny(),
         userInfo: UserInfo = .mockAny(),
         trackingConsent: TrackingConsent = .pending,
-        launchTime: LaunchTime = .mockAny(),
+        launchInfo: LaunchInfo = .mockAny(),
         applicationStateHistory: AppStateHistory = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo? = .mockWith(reachability: .yes),
         carrierInfo: CarrierInfo? = .mockAny(),
@@ -60,7 +60,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             nativeSourceOverride: nativeSourceOverride,
             userInfo: userInfo,
             trackingConsent: trackingConsent,
-            launchTime: launchTime,
+            launchInfo: launchInfo,
             applicationStateHistory: applicationStateHistory,
             networkConnectionInfo: networkConnectionInfo,
             carrierInfo: carrierInfo,
@@ -91,7 +91,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             device: .mockRandom(),
             userInfo: .mockRandom(),
             trackingConsent: .mockRandom(),
-            launchTime: .mockRandom(),
+            launchInfo: .mockRandom(),
             applicationStateHistory: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
@@ -188,32 +188,40 @@ extension UserInfo: AnyMockable, RandomMockable {
     }
 }
 
-extension LaunchTime: AnyMockable, RandomMockable {
-    public static func mockAny() -> LaunchTime {
-        .init(
-            launchTime: .mockAny(),
-            launchDate: .mockAny(),
-            isActivePrewarm: .mockAny()
+extension LaunchReason: AnyMockable, RandomMockable {
+    public static func mockAny() -> LaunchReason { .userLaunch }
+
+    public static func mockRandom() -> LaunchReason {
+        return [.userLaunch, .backgroundLaunch, .prewarming, .uncertain].randomElement()!
+    }
+}
+
+extension LaunchInfo: AnyMockable, RandomMockable {
+    public static func mockAny() -> LaunchInfo {
+        return .init(
+            launchReason: .mockAny(),
+            processLaunchDate: .mockAny(),
+            timeToDidBecomeActive: .mockAny()
         )
     }
 
     public static func mockWith(
-        launchTime: TimeInterval? = 1,
-        launchDate: Date = Date(),
-        isActivePrewarm: Bool = false
-    ) -> LaunchTime {
-        .init(
-            launchTime: launchTime,
-            launchDate: launchDate,
-            isActivePrewarm: isActivePrewarm
+        launchReason: LaunchReason = .mockAny(),
+        processLaunchDate: Date = Date(),
+        timeToDidBecomeActive: TimeInterval? = 1
+    ) -> LaunchInfo {
+        return .init(
+            launchReason: launchReason,
+            processLaunchDate: processLaunchDate,
+            timeToDidBecomeActive: timeToDidBecomeActive
         )
     }
 
-    public static func mockRandom() -> LaunchTime {
+    public static func mockRandom() -> LaunchInfo {
         return .init(
-            launchTime: .mockRandom(),
-            launchDate: .mockRandom(),
-            isActivePrewarm: .mockRandom()
+            launchReason: .mockRandom(),
+            processLaunchDate: .mockRandom(),
+            timeToDidBecomeActive: .mockRandom()
         )
     }
 }

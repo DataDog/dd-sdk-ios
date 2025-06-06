@@ -19,7 +19,7 @@ class RUMViewEndedMetricIntegrationTests: XCTestCase {
         core = DatadogCoreProxy()
         core.context = .mockWith(
             sdkInitDate: dateProvider.now,
-            launchTime: .mockWith(launchDate: dateProvider.now),
+            launchInfo: .mockWith(processLaunchDate: dateProvider.now),
             applicationStateHistory: .mockAppInForeground(since: dateProvider.now)
         )
         rumConfig = RUM.Configuration(applicationID: .mockAny())

@@ -119,7 +119,7 @@ internal final class WatchdogTerminationMonitor {
     private func sendWatchTermination(state: WatchdogTerminationAppState, completion: @escaping () -> Void) {
         feature.context { [weak self] context in
             do {
-                let likelyCrashedAt = try self?.storage?.mostRecentModifiedFileAt(before: context.launchTime.launchDate)
+                let likelyCrashedAt = try self?.storage?.mostRecentModifiedFileAt(before: context.launchInfo.processLaunchDate)
                 self?.feature.rumDataStore.value(forKey: .watchdogRUMViewEvent) { [weak self] (viewEvent: RUMViewEvent?) in
                     guard let viewEvent = viewEvent else {
                         DD.logger.error(ErrorMessages.failedToReadViewEvent)

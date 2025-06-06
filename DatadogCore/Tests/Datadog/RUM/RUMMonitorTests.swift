@@ -977,10 +977,10 @@ class RUMMonitorTests: XCTestCase {
 
         core.context = .mockWith(
             sdkInitDate: sdkInitDate,
-            launchTime: LaunchTime(
-                launchTime: nil,
-                launchDate: launchDate,
-                isActivePrewarm: false
+            launchInfo: LaunchInfo(
+                launchReason: .userLaunch,
+                processLaunchDate: launchDate,
+                timeToDidBecomeActive: nil
             )
         )
 
@@ -1003,10 +1003,10 @@ class RUMMonitorTests: XCTestCase {
         let sdkInitDate = launchDate.addingTimeInterval(10)
         core.context = .mockWith(
             sdkInitDate: sdkInitDate,
-            launchTime: LaunchTime(
-                launchTime: nil,
-                launchDate: launchDate,
-                isActivePrewarm: true
+            launchInfo: LaunchInfo(
+                launchReason: .prewarming,
+                processLaunchDate: launchDate,
+                timeToDidBecomeActive: nil
             )
         )
         config.dateProvider = RelativeDateProvider(
@@ -1036,10 +1036,10 @@ class RUMMonitorTests: XCTestCase {
 
         core.context = .mockWith(
             sdkInitDate: sdkInitDate,
-            launchTime: LaunchTime(
-                launchTime: nil,
-                launchDate: launchDate,
-                isActivePrewarm: false
+            launchInfo: LaunchInfo(
+                launchReason: .userLaunch,
+                processLaunchDate: launchDate,
+                timeToDidBecomeActive: nil
             )
         )
         config.dateProvider = RelativeDateProvider(

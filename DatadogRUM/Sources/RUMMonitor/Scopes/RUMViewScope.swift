@@ -54,7 +54,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     let viewPath: String
     /// The name of this View, used as the `VIEW NAME` in RUM Explorer.
     let viewName: String
-    /// The start time of this View.
+    /// The start time of this View, based on device time without NTP correction.
     let viewStartTime: Date
     /// The load time of this View.
     private(set) var viewLoadingTime: TimeInterval?
@@ -206,10 +206,20 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         switch command {
         // Application Launch
         case let command as RUMApplicationStartCommand:
-            if context.applicationStateHistory.currentState == .inactive {
-                // If the SDK is initialized after the app became active, we can't determine
-                // whether the process was started by the user or resumed from background.
-                // In that case, we skip reporting the application start action.
+            let isUserLaunch = context.launchInfo.launchReason == .userLaunch
+            let viewStartsAtProcessLaunch = viewStartTime == context.launchInfo.processLaunchDate
+
+            if isUserLaunch && viewStartsAtProcessLaunch {
+                // Application start is only reported for user-initiated launches,
+                // and only if the "ApplicationLaunch" view starts exactly at process start.
+                //
+                // In some valid cases, the view may start later (e.g., if RUM.enable() is called
+                // while the app is already in ACTIVE state), in which case we don't assume
+                // it’s part of the launch sequence.
+                //
+                // This check ensures the "application_start" action spans a meaningful portion
+                // of the app startup (from process start to a point within the launch view).
+                // Otherwise, it could be reported as starting "before" the view exists.
                 sendApplicationStartAction(on: command, context: context, writer: writer)
             }
             if !isInitialView || viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
@@ -464,11 +474,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         var attributes = self.attributes
         var loadingTime: Int64?
 
-        if context.launchTime.isActivePrewarm {
+        if context.launchInfo.launchReason == .prewarming {
             // Set `active_pre_warm` attribute to true in case
             // of pre-warmed app.
             attributes[Constants.activePrewarm] = true
-        } else if let launchTime = context.launchTime.launchTime {
+        } else if let launchTime = context.launchInfo.timeToDidBecomeActive {
             // Report Application Launch Time only if not pre-warmed
             loadingTime = launchTime.toInt64Nanoseconds
         } else {
@@ -480,7 +490,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             // In that case, we consider the time between the application
             // launch and the sdkInitialization as the application loading
             // time.
-            let launchDate = context.launchTime.launchDate
+            let launchDate = context.launchInfo.processLaunchDate
             loadingTime = command.time.timeIntervalSince(launchDate).toInt64Nanoseconds
         }
 
@@ -752,7 +762,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         var commandAttributes = command.globalAttributes.merging(command.attributes) { $1 }
         let errorFingerprint: String? = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
-        let timeSinceAppStart = command.time.timeIntervalSince(context.launchTime.launchDate).toInt64Milliseconds
+        let timeSinceAppStart = command.time.timeIntervalSince(context.launchInfo.processLaunchDate).toInt64Milliseconds
 
         var binaryImages = command.binaryImages?.compactMap { $0.toRUMDataFormat }
         if commandAttributes.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages)?.dd.decode() == true {

@@ -321,9 +321,9 @@ class RUMApplicationScopeTests: XCTestCase {
     func testGivenAppLaunchInForegroundAndNoPrewarming_whenInitialSessionIsStarted() throws {
         // Given
         let sdkContext: DatadogContext = .mockWith(
-            launchTime: .mockWith(
-                launchDate: .mockDecember15th2019At10AMUTC(),
-                isActivePrewarm: false
+            launchInfo: .mockWith(
+                launchReason: .userLaunch,
+                processLaunchDate: .mockDecember15th2019At10AMUTC()
             ),
             applicationStateHistory: .mockAppInForeground(since: .mockDecember15th2019At10AMUTC())
         )
@@ -352,9 +352,9 @@ class RUMApplicationScopeTests: XCTestCase {
     func testGivenAppLaunchInBackgroundAndNoPrewarming_whenInitialSessionIsStarted() throws {
         // Given
         let sdkContext: DatadogContext = .mockWith(
-            launchTime: .mockWith(
-                launchDate: .mockDecember15th2019At10AMUTC(),
-                isActivePrewarm: false
+            launchInfo: .mockWith(
+                launchReason: .backgroundLaunch,
+                processLaunchDate: .mockDecember15th2019At10AMUTC()
             ),
             applicationStateHistory: .mockAppInBackground(since: .mockDecember15th2019At10AMUTC())
         )
@@ -381,9 +381,9 @@ class RUMApplicationScopeTests: XCTestCase {
     func testGivenLaunchWithPrewarming_whenInitialSessionIsStarted() throws {
         // Given
         let sdkContext: DatadogContext = .mockWith(
-            launchTime: .mockWith(
-                launchDate: .mockDecember15th2019At10AMUTC(),
-                isActivePrewarm: true
+            launchInfo: .mockWith(
+                launchReason: .prewarming,
+                processLaunchDate: .mockDecember15th2019At10AMUTC()
             ),
             applicationStateHistory: .mockWith(initialState: .background, date: .mockDecember15th2019At10AMUTC())
         )
