@@ -106,10 +106,14 @@ private extension DeviceInfo.DeviceType {
             self = .iPhone
         } else if lowercasedModelName.hasPrefix("ipod") {
             self = .iPod
-        } else if lowercasedModelName.hasPrefix("ipad") {
+        } else if lowercasedModelName.hasPrefix("ipad") || (lowercasedOSName == "ipados" && lowercasedModelName.hasPrefix("realitydevice") == false) {
             self = .iPad
-        } else if lowercasedModelName.hasPrefix("appletv") || lowercasedOSName == "tvos" {
+        } else if lowercasedModelName.hasPrefix("appletv") || lowercasedOSName == "tvos" || lowercasedOSName == "apple tvos" {
             self = .appleTV
+        } else if lowercasedModelName.hasPrefix("realitydevice") || lowercasedOSName == "visionos" {
+            self = .appleVision
+        } else if lowercasedModelName.hasPrefix("watch") || lowercasedOSName == "watchos" {
+            self = .appleWatch
         } else {
             self = .other(modelName: modelName, osName: osName)
         }
