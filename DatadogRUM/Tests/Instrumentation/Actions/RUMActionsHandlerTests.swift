@@ -16,16 +16,24 @@ class RUMActionsHandlerTests: XCTestCase {
 
     private func touchHandler(
         with uiKitPredicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate(),
-        swiftUIPredicate: SwiftUIRUMActionsPredicate = DefaultSwiftUIRUMActionsPredicate()
+        swiftUIPredicate: SwiftUIRUMActionsPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
     ) -> RUMActionsHandler {
         let handler =
-        RUMActionsHandler(dateProvider: dateProvider, uiKitPredicate: uiKitPredicate, swiftUIPredicate: swiftUIPredicate, swiftUIDetector: SwiftUIComponentFactory.createDetector())
+        RUMActionsHandler(
+            dateProvider: dateProvider,
+            uiKitPredicate: uiKitPredicate,
+            swiftUIPredicate: swiftUIPredicate,
+            swiftUIDetector: SwiftUIComponentFactory.createDetector()
+        )
         handler.publish(to: commandSubscriber)
         return handler
     }
 
     private func pressHandler(with predicate: UIPressRUMActionsPredicate = DefaultUIKitRUMActionsPredicate()) -> RUMActionsHandler {
-        let handler = RUMActionsHandler(dateProvider: dateProvider, uiKitPredicate: predicate, swiftUIPredicate: nil, swiftUIDetector: nil)
+        let handler = RUMActionsHandler(
+            dateProvider: dateProvider,
+            uiKitPredicate: predicate
+        )
         handler.publish(to: commandSubscriber)
         return handler
     }

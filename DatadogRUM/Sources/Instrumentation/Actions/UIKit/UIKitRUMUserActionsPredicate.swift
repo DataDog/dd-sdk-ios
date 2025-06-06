@@ -51,9 +51,8 @@ public struct DefaultUIKitRUMActionsPredicate {
         // Some SwiftUI components are UIKit under the hood,
         // but need to clean up tangled SwiftUI name
         // e.g., _TtCV7SwiftUIP33_D74FE142C3C5A6C2CEA4987A69AEBD7522SystemSegmentedControl18UISegmentedControl
-        } else if view.isSwiftUIView,
-                  let swiftUIViewName = view.swiftUIViewName {
-            return swiftUIViewName
+        } else if view.isSwiftUIView {
+            return view.swiftUIViewName
         } else {
             return className
         }
@@ -91,7 +90,7 @@ extension DefaultUIKitRUMActionsPredicate: UIPressRUMActionsPredicate {
 }
 
 private extension UIView {
-    var swiftUIViewName: String? {
+    var swiftUIViewName: String {
         if typeDescription.hasPrefix("ViewBasedUIButton") {
             return "SwiftUI_Menu"
         }

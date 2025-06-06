@@ -11,7 +11,6 @@ import DatadogInternal
 @available(iOS 18.0, tvOS 18.0, visionOS 18.0, *)
 internal final class ModernSwiftUIComponentDetector: SwiftUIComponentDetector {
     /// Storage for pending touches that began but haven't ended yet
-    @ReadWriteLock
     private var pendingSwiftUIActions = [ObjectIdentifier: PendingAction]()
     private static let stalePendingActionTimeout: TimeInterval = 5.0 // 5-sec timeout
 
@@ -50,7 +49,7 @@ internal final class ModernSwiftUIComponentDetector: SwiftUIComponentDetector {
                 return command
             }
 
-            /// Special detection for SwiftUI Toogle
+            // Special detection for SwiftUI Toogle
             return SwiftUIComponentHelpers.extractSwiftUIToggleAction(
                 from: touch,
                 predicate: predicate,
@@ -65,8 +64,7 @@ internal final class ModernSwiftUIComponentDetector: SwiftUIComponentDetector {
     /// which is when we can detect the Button gesture.
     private func handleTouchBegan(_ touch: UITouch, dateProvider: DateProvider) -> Bool {
         guard let view = touch.view,
-              view.isSwiftUIView,
-              view.isSafeForPrivacy else {
+              view.isSwiftUIView else {
             return false
         }
 

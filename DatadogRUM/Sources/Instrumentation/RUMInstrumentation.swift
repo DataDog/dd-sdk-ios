@@ -85,14 +85,24 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             return nil
         }()
 
-        // Always create actions handler (we can't know if it will be used by SwiftUI manual instrumentation)
-        // and only activate `UIApplicationSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured:
-        let actionsHandler = RUMActionsHandler(
-            dateProvider: dateProvider,
-            uiKitPredicate: uiKitRUMActionsPredicate,
-            swiftUIPredicate: swiftUIRUMActionsPredicate,
-            swiftUIDetector: SwiftUIComponentFactory.createDetector()
-        )
+        // Always create the actions handler (we can't know if it will be used by SwiftUI manual instrumentation)
+        // and only activate `UIApplicationSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured
+        let actionsHandler: RUMActionsHandling = {
+            #if os(tvOS)
+            return RUMActionsHandler(
+                dateProvider: dateProvider,
+                uiKitPredicate: uiKitRUMActionsPredicate
+            )
+            #else
+            return RUMActionsHandler(
+                dateProvider: dateProvider,
+                uiKitPredicate: uiKitRUMActionsPredicate,
+                swiftUIPredicate: swiftUIRUMActionsPredicate,
+                swiftUIDetector: SwiftUIComponentFactory.createDetector()
+            )
+            #endif
+        }()
+
         let uiApplicationSwizzler: UIApplicationSwizzler? = {
             do {
                 // Enable event interception if either UIKit or SwiftUI automatic action tracking is enabled

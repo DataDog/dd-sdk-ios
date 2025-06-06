@@ -25,8 +25,9 @@ public struct DefaultSwiftUIRUMActionsPredicate {
 
     /// Creates a default SwiftUI RUM actions predicate.
     /// - Parameter isLegacyDetectionEnabled: Whether to enable SwiftUI action detection on iOS 17 and below.
-    ///                                     Set to `false` to only use the more reliable iOS 18+ detection.
-    public init(isLegacyDetectionEnabled: Bool = true) {
+    ///     Set to `true` to enable legacy detection, which may capture more actions but with less reliability.
+    ///     Set to `false` to only use the more reliable iOS 18+ detection.
+    public init(isLegacyDetectionEnabled: Bool) {
         self.isLegacyDetectionEnabled = isLegacyDetectionEnabled
     }
 }

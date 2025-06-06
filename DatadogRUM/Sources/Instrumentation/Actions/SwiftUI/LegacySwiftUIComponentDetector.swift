@@ -14,14 +14,14 @@ internal final class LegacySwiftUIComponentDetector: SwiftUIComponentDetector {
         predicate: SwiftUIRUMActionsPredicate?,
         dateProvider: DateProvider
     ) -> RUMAddUserActionCommand? {
-        guard let predicate = predicate else {
+        guard let predicate,
+              touch.phase == .ended else {
             return nil
         }
 
         if touch.phase == .ended {
             if let view = touch.view,
                view.isSwiftUIView,
-               view.isSafeForPrivacy,
                // For iOS 17 and below, we can't reliably distinguish SwiftUI component types (e.g., Button vs Label).
                // We exclude hosting views and track other SwiftUI elements with a generic name.
                !SwiftUIContainerViews.shouldIgnore(view.typeDescription) {
@@ -41,7 +41,7 @@ internal final class LegacySwiftUIComponentDetector: SwiftUIComponentDetector {
                 }
             }
 
-            // Fallback
+            // Special detection for SwiftUI Toogle
             return SwiftUIComponentHelpers.extractSwiftUIToggleAction(
                 from: touch,
                 predicate: predicate,

@@ -144,18 +144,3 @@ internal struct UIPressCommandFactory: UIEventCommandFactory {
         )
     }
 }
-
-// MARK: Helpers
-private extension UIView {
-    /// Traverses the hierarchy of this view from bottom-up to find any parent view matching
-    /// the given predicate. It starts from `self`.
-    func findInParentHierarchy(viewMatching predicate: (UIView) -> Bool) -> UIView? {
-        if predicate(self) {
-            return self
-        } else if let superview = superview {
-            return superview.findInParentHierarchy(viewMatching: predicate)
-        } else {
-            return nil
-        }
-    }
-}

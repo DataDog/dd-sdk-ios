@@ -53,9 +53,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
     /// Therefore, only one predicate is needed to handle actions from both frameworks.
     convenience init(
         dateProvider: DateProvider,
-        uiKitPredicate: UIPressRUMActionsPredicate?,
-        swiftUIPredicate: SwiftUIRUMActionsPredicate?,
-        swiftUIDetector: SwiftUIComponentDetector?
+        uiKitPredicate: UIPressRUMActionsPredicate?
     ) {
         guard let uiKitPredicate else {
             self.init(dateProvider: dateProvider, eventCommandsFactory: nil)

@@ -102,23 +102,29 @@ internal class SwiftUIComponentHelpers {
         predicate: SwiftUIRUMActionsPredicate?,
         dateProvider: DateProvider
     ) -> RUMAddUserActionCommand? {
-        guard let predicate = predicate else {
+        guard let predicate = predicate,
+              let view = touch.view else {
             return nil
         }
 
-        if let grandSuperview = touch.view?.superview?.superview {
-            if grandSuperview.typeDescription.hasPrefix("UISwitch"),
-               touch.phase == .ended,
-               let rumAction = predicate.rumAction(with: SwiftUIComponentNames.toggle) {
-                return RUMAddUserActionCommand(
-                    time: dateProvider.now,
-                    attributes: rumAction.attributes,
-                    instrumentation: .swiftuiAutomatic,
-                    actionType: .tap,
-                    name: rumAction.name
-                )
-            }
+        #if !os(tvOS)
+        let uiSwitch = view.findInParentHierarchy { parent in
+            // Note: we might want to extend to `UIControl` in the future.
+            return parent is UISwitch
         }
+
+        if uiSwitch != nil,
+           touch.phase == .ended,
+           let rumAction = predicate.rumAction(with: SwiftUIComponentNames.toggle) {
+            return RUMAddUserActionCommand(
+                time: dateProvider.now,
+                attributes: rumAction.attributes,
+                instrumentation: .swiftuiAutomatic,
+                actionType: .tap,
+                name: rumAction.name
+            )
+        }
+        #endif
 
         return nil
     }

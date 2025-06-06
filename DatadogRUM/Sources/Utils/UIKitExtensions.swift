@@ -15,6 +15,18 @@ internal extension UIViewController {
 }
 
 internal extension UIView {
+    /// Traverses the hierarchy of this view from bottom-up to find any parent view matching
+    /// the given predicate. It starts from `self`.
+    func findInParentHierarchy(viewMatching predicate: (UIView) -> Bool) -> UIView? {
+        if predicate(self) {
+            return self
+        } else if let superview = superview {
+            return superview.findInParentHierarchy(viewMatching: predicate)
+        } else {
+            return nil
+        }
+    }
+
     /// Determines if capturing this view is safe for user privacy
     @objc var isSafeForPrivacy: Bool {
         guard let window = self.window else {
