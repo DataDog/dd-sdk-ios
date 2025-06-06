@@ -34,7 +34,7 @@ internal final class ModernSwiftUIComponentDetector: SwiftUIComponentDetector {
         /// Handle `.began` phase:
         /// store information for later use
         if touch.phase == .began,
-           handleTouchBegan(touch, dateProvider: dateProvider) {
+            handleTouchBegan(touch, dateProvider: dateProvider) {
             return nil
         }
 

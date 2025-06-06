@@ -114,7 +114,6 @@ internal class SwiftUIComponentHelpers {
         }
 
         if uiSwitch != nil,
-           touch.phase == .ended,
            let rumAction = predicate.rumAction(with: SwiftUIComponentNames.toggle) {
             return RUMAddUserActionCommand(
                 time: dateProvider.now,
