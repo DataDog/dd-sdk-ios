@@ -263,6 +263,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             telemetrySampleRate: Int64(withNoOverflow: configuration.debugSDK ? 100 : configuration.telemetrySampleRate),
             tnsTimeThresholdMs: (configuration.networkSettledResourcePredicate as? TimeBasedTNSResourcePredicate)?.threshold.toInt64Milliseconds,
             traceSampleRate: configuration.urlSessionTracking?.firstPartyHostsTracing.map { Int64(withNoOverflow: $0.sampleRate) },
+            swiftUIViewTrackingEnabled: configuration.swiftUIViewsPredicate != nil,
+            swiftUIActionTrackingEnabled: configuration.swiftUIActionsPredicate != nil,
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
             trackLongTask: configuration.longTaskThreshold != nil,

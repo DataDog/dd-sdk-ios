@@ -187,6 +187,9 @@ public struct RUMActionEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -195,6 +198,7 @@ public struct RUMActionEvent: RUMDataModel {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
             case formatVersion = "format_version"
+            case sdkName = "sdk_name"
             case session = "session"
         }
 
@@ -204,16 +208,19 @@ public struct RUMActionEvent: RUMDataModel {
         ///   - action: Action properties
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         public init(
             action: Action? = nil,
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
+            sdkName: String? = nil,
             session: Session? = nil
         ) {
             self.action = action
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
+            self.sdkName = sdkName
             self.session = session
         }
 
@@ -1014,6 +1021,9 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -1021,6 +1031,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
             case formatVersion = "format_version"
+            case sdkName = "sdk_name"
             case session = "session"
         }
 
@@ -1029,14 +1040,17 @@ public struct RUMErrorEvent: RUMDataModel {
         /// - Parameters:
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
+            sdkName: String? = nil,
             session: Session? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
+            self.sdkName = sdkName
             self.session = session
         }
 
@@ -2101,6 +2115,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -2109,6 +2126,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case configuration = "configuration"
             case discarded = "discarded"
             case formatVersion = "format_version"
+            case sdkName = "sdk_name"
             case session = "session"
         }
 
@@ -2118,16 +2136,19 @@ public struct RUMLongTaskEvent: RUMDataModel {
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
         ///   - discarded: Whether the long task should be discarded or indexed
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
             discarded: Bool? = nil,
+            sdkName: String? = nil,
             session: Session? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
             self.discarded = discarded
+            self.sdkName = sdkName
             self.session = session
         }
 
@@ -2800,13 +2821,16 @@ public struct RUMResourceEvent: RUMDataModel {
         /// trace sample rate in decimal format
         public let rulePsr: Double?
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
         /// span identifier in decimal format
         public let spanId: String?
 
-        /// trace identifier in decimal format
+        /// trace identifier, either a 64 bit decimal number or a 128 bit hexadecimal number padded with 0s
         public let traceId: String?
 
         public enum CodingKeys: String, CodingKey {
@@ -2815,6 +2839,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case discarded = "discarded"
             case formatVersion = "format_version"
             case rulePsr = "rule_psr"
+            case sdkName = "sdk_name"
             case session = "session"
             case spanId = "span_id"
             case traceId = "trace_id"
@@ -2827,14 +2852,16 @@ public struct RUMResourceEvent: RUMDataModel {
         ///   - configuration: Subset of the SDK configuration options in use during its execution
         ///   - discarded: Whether the resource should be discarded or indexed
         ///   - rulePsr: trace sample rate in decimal format
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         ///   - spanId: span identifier in decimal format
-        ///   - traceId: trace identifier in decimal format
+        ///   - traceId: trace identifier, either a 64 bit decimal number or a 128 bit hexadecimal number padded with 0s
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
             discarded: Bool? = nil,
             rulePsr: Double? = nil,
+            sdkName: String? = nil,
             session: Session? = nil,
             spanId: String? = nil,
             traceId: String? = nil
@@ -2843,6 +2870,7 @@ public struct RUMResourceEvent: RUMDataModel {
             self.configuration = configuration
             self.discarded = discarded
             self.rulePsr = rulePsr
+            self.sdkName = sdkName
             self.session = session
             self.spanId = spanId
             self.traceId = traceId
@@ -3820,6 +3848,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Debug metadata for Replay Sessions
         public let replayStats: ReplayStats?
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -3831,6 +3862,7 @@ public struct RUMViewEvent: RUMDataModel {
             case formatVersion = "format_version"
             case pageStates = "page_states"
             case replayStats = "replay_stats"
+            case sdkName = "sdk_name"
             case session = "session"
         }
 
@@ -3843,6 +3875,7 @@ public struct RUMViewEvent: RUMDataModel {
         ///   - documentVersion: Version of the update of the view event
         ///   - pageStates: List of the page states during the view
         ///   - replayStats: Debug metadata for Replay Sessions
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         public init(
             browserSdkVersion: String? = nil,
@@ -3851,6 +3884,7 @@ public struct RUMViewEvent: RUMDataModel {
             documentVersion: Int64,
             pageStates: [PageStates]? = nil,
             replayStats: ReplayStats? = nil,
+            sdkName: String? = nil,
             session: Session? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
@@ -3859,6 +3893,7 @@ public struct RUMViewEvent: RUMDataModel {
             self.documentVersion = documentVersion
             self.pageStates = pageStates
             self.replayStats = replayStats
+            self.sdkName = sdkName
             self.session = session
         }
 
@@ -5514,6 +5549,9 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -5524,6 +5562,7 @@ public struct RUMVitalEvent: RUMDataModel {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
             case formatVersion = "format_version"
+            case sdkName = "sdk_name"
             case session = "session"
             case vital = "vital"
         }
@@ -5533,16 +5572,19 @@ public struct RUMVitalEvent: RUMDataModel {
         /// - Parameters:
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         ///   - vital: Internal vital properties
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
+            sdkName: String? = nil,
             session: Session? = nil,
             vital: Vital? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
+            self.sdkName = sdkName
             self.session = session
             self.vital = vital
         }
@@ -6853,6 +6895,12 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether contexts are stored in local storage
             public let storeContextsAcrossPages: Bool?
 
+            /// Whether SwiftUI action instrumentation is enabled
+            public var swiftuiActionTrackingEnabled: Bool?
+
+            /// Whether SwiftUI view instrumentation is enabled
+            public var swiftuiViewTrackingEnabled: Bool?
+
             /// The percentage of telemetry configuration events sent after being sampled by telemetry_sample_rate
             public let telemetryConfigurationSampleRate: Int64?
 
@@ -7024,6 +7072,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case startRecordingImmediately = "start_recording_immediately"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
                 case storeContextsAcrossPages = "store_contexts_across_pages"
+                case swiftuiActionTrackingEnabled = "swiftui_action_tracking_enabled"
+                case swiftuiViewTrackingEnabled = "swiftui_view_tracking_enabled"
                 case telemetryConfigurationSampleRate = "telemetry_configuration_sample_rate"
                 case telemetrySampleRate = "telemetry_sample_rate"
                 case telemetryUsageSampleRate = "telemetry_usage_sample_rate"
@@ -7109,6 +7159,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - startRecordingImmediately: Whether Session Replay should automatically start a recording when enabled
             ///   - startSessionReplayRecordingManually: Whether the session replay start is handled manually
             ///   - storeContextsAcrossPages: Whether contexts are stored in local storage
+            ///   - swiftuiActionTrackingEnabled: Whether SwiftUI action instrumentation is enabled
+            ///   - swiftuiViewTrackingEnabled: Whether SwiftUI view instrumentation is enabled
             ///   - telemetryConfigurationSampleRate: The percentage of telemetry configuration events sent after being sampled by telemetry_sample_rate
             ///   - telemetrySampleRate: The percentage of telemetry events sent
             ///   - telemetryUsageSampleRate: The percentage of telemetry usage events sent after being sampled by telemetry_sample_rate
@@ -7190,6 +7242,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 startRecordingImmediately: Bool? = nil,
                 startSessionReplayRecordingManually: Bool? = nil,
                 storeContextsAcrossPages: Bool? = nil,
+                swiftuiActionTrackingEnabled: Bool? = nil,
+                swiftuiViewTrackingEnabled: Bool? = nil,
                 telemetryConfigurationSampleRate: Int64? = nil,
                 telemetrySampleRate: Int64? = nil,
                 telemetryUsageSampleRate: Int64? = nil,
@@ -7271,6 +7325,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.startRecordingImmediately = startRecordingImmediately
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
                 self.storeContextsAcrossPages = storeContextsAcrossPages
+                self.swiftuiActionTrackingEnabled = swiftuiActionTrackingEnabled
+                self.swiftuiViewTrackingEnabled = swiftuiViewTrackingEnabled
                 self.telemetryConfigurationSampleRate = telemetryConfigurationSampleRate
                 self.telemetrySampleRate = telemetrySampleRate
                 self.telemetryUsageSampleRate = telemetryUsageSampleRate
@@ -9034,4 +9090,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/df69253e7a875963d2a9cf0abb97882a97ebf85e
+// Generated from https://github.com/DataDog/rum-events-format/tree/b8d694987f0873dfafa9248ef40b9a5ba56f7101

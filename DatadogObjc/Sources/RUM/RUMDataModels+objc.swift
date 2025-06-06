@@ -133,6 +133,10 @@ public class DDRUMActionEventDD: NSObject {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
+    @objc public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
     @objc public var session: DDRUMActionEventDDSession? {
         root.swiftModel.dd.session != nil ? DDRUMActionEventDDSession(root: root) : nil
     }
@@ -1199,6 +1203,10 @@ public class DDRUMErrorEventDD: NSObject {
 
     @objc public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
+    }
+
+    @objc public var sdkName: String? {
+        root.swiftModel.dd.sdkName
     }
 
     @objc public var session: DDRUMErrorEventDDSession? {
@@ -2617,6 +2625,10 @@ public class DDRUMLongTaskEventDD: NSObject {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
+    @objc public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
     @objc public var session: DDRUMLongTaskEventDDSession? {
         root.swiftModel.dd.session != nil ? DDRUMLongTaskEventDDSession(root: root) : nil
     }
@@ -3593,6 +3605,10 @@ public class DDRUMResourceEventDD: NSObject {
 
     @objc public var rulePsr: NSNumber? {
         root.swiftModel.dd.rulePsr as NSNumber?
+    }
+
+    @objc public var sdkName: String? {
+        root.swiftModel.dd.sdkName
     }
 
     @objc public var session: DDRUMResourceEventDDSession? {
@@ -4913,6 +4929,10 @@ public class DDRUMViewEventDD: NSObject {
 
     @objc public var replayStats: DDRUMViewEventDDReplayStats? {
         root.swiftModel.dd.replayStats != nil ? DDRUMViewEventDDReplayStats(root: root) : nil
+    }
+
+    @objc public var sdkName: String? {
+        root.swiftModel.dd.sdkName
     }
 
     @objc public var session: DDRUMViewEventDDSession? {
@@ -6485,6 +6505,10 @@ public class DDRUMVitalEventDD: NSObject {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
+    @objc public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
     @objc public var session: DDRUMVitalEventDDSession? {
         root.swiftModel.dd.session != nil ? DDRUMVitalEventDDSession(root: root) : nil
     }
@@ -8040,6 +8064,16 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.storeContextsAcrossPages as NSNumber?
     }
 
+    @objc public var swiftuiActionTrackingEnabled: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.swiftuiActionTrackingEnabled = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.swiftuiActionTrackingEnabled as NSNumber? }
+    }
+
+    @objc public var swiftuiViewTrackingEnabled: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.swiftuiViewTrackingEnabled = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.swiftuiViewTrackingEnabled as NSNumber? }
+    }
+
     @objc public var telemetryConfigurationSampleRate: NSNumber? {
         root.swiftModel.telemetry.configuration.telemetryConfigurationSampleRate as NSNumber?
     }
@@ -8528,4 +8562,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/df69253e7a875963d2a9cf0abb97882a97ebf85e
+// Generated from https://github.com/DataDog/rum-events-format/tree/b8d694987f0873dfafa9248ef40b9a5ba56f7101

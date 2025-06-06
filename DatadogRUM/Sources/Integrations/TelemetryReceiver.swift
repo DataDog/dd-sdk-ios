@@ -400,6 +400,8 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             silentMultipleInit: nil,
             startRecordingImmediately: configuration.startRecordingImmediately,
             storeContextsAcrossPages: nil,
+            swiftuiActionTrackingEnabled: configuration.swiftUIActionTrackingEnabled,
+            swiftuiViewTrackingEnabled: configuration.swiftUIViewTrackingEnabled,
             telemetryConfigurationSampleRate: nil,
             telemetrySampleRate: configuration.telemetrySampleRate,
             telemetryUsageSampleRate: nil,
