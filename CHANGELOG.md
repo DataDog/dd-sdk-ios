@@ -6,7 +6,8 @@
 - [IMPROVEMENT] Remove `DatadogObjc` module. See [#2298][]
 - [IMPROVEMENT] Improve Memory vital collected using `phys_footprint`. See [#2310][] 
 - [IMPROVEMENT] Remove `DatadogObjc` module. See [#2298][] 
-- [IMPROVEMENT] Align attribute propagation mechanism. See [#2291][] [#2305][]  
+- [IMPROVEMENT] Align attribute propagation mechanism. See [#2291][] [#2305][]
+- [IMPROVEMENT] Stop reporting App hangs and Watchdog terminations for iOS widgets. See [#2326][]   
 
 # 2.24.1 / 31-04-2025
 # 2.28.0 / 26-05-2025
@@ -895,6 +896,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2295]: https://github.com/DataDog/dd-sdk-ios/pull/2295
 [#2298]: https://github.com/DataDog/dd-sdk-ios/pull/2298
 [#2305]: https://github.com/DataDog/dd-sdk-ios/pull/2305
+[#2326]: https://github.com/DataDog/dd-sdk-ios/pull/2326
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
