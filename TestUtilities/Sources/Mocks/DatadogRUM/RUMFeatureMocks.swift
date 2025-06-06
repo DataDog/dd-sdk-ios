@@ -1134,6 +1134,18 @@ public class UIPressRUMActionsPredicateMock: UIPressRUMActionsPredicate {
     }
 }
 
+public class MockSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate {
+    var returnAction: RUMAction?
+
+    public init(returnAction: RUMAction? = RUMAction(name: "custom_action", attributes: [:])) {
+        self.returnAction = returnAction
+    }
+
+    public func rumAction(with componentName: String) -> RUMAction? {
+        return returnAction
+    }
+}
+
 public class RUMActionsHandlerMock: RUMActionsHandling {
     public var onSubscribe: ((RUMCommandSubscriber) -> Void)?
     public var onSendEvent: ((UIApplication, UIEvent) -> Void)?
@@ -1537,5 +1549,18 @@ public class SwiftUIViewNameExtractorMock: SwiftUIViewNameExtractor {
 
     public func extractName(from viewController: UIViewController) -> String? {
         return resultByViewController[viewController] ?? defaultResult
+    }
+}
+
+public class SwiftUIRUMActionsPredicateMock: SwiftUIRUMActionsPredicate {
+    public var resultByName: [String: RUMAction] = [:]
+    public var result: RUMAction?
+
+    public init(result: RUMAction? = nil) {
+        self.result = result
+    }
+
+    public func rumAction(with componentName: String) -> DatadogRUM.RUMAction? {
+        return resultByName[componentName] ?? result
     }
 }
