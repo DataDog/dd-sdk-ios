@@ -7,8 +7,11 @@
 import Foundation
 
 internal struct ProfileEvent: Codable {
+    /// Profile start date
     let start: Date
+    /// Profile end date
     let end: Date
+    /// CPU profile data
     let cpuProf: Data
     /// The name of the service that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
     let service: String

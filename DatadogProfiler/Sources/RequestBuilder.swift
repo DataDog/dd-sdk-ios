@@ -51,12 +51,13 @@ internal struct RequestBuilder: FeatureRequestBuilder {
             "version:\(context.version)",
             "env:\(context.env)",
             "source:\(context.source)",
-            "runtime:swift",
-            "language:swift"
+            "runtime:ios",
+            "language:swift",
+            "format:pprof",
         ]
 
         var event: [String: Any] = [
-            "tags_profiler": "service:\(context.service),version:\(context.version)",
+            "tags_profiler": tags.joined(separator: ","),
             "family": "go",
             "version": "4",
             "attachments": ["cpu.pprof"],
@@ -66,7 +67,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
 
         event["application"] = ["id": profile.applicationID]
         event["session"] = ["id": profile.sessionID]
-//        event["view"] = profile.viewID
+        event["view"] = ["id": [profile.viewID]]
 
         try multipart.addFormData(
             name: "event",
