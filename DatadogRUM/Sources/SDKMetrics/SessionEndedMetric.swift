@@ -174,34 +174,24 @@ internal class SessionEndedMetric {
     /// - Parameters:
     ///   - action: the action event to track
     ///   - instrumentationType: the type of instrumentation used to start this action
-    func track(action: RUMActionEvent, instrumentationType: InstrumentationType?) {
+    func track(action: RUMActionEvent, instrumentationType: InstrumentationType) {
         guard action.session.id == sessionID.toRUMDataFormat else {
             return
         }
 
-        if let instrumentationType = instrumentationType {
-            trackedActions[instrumentationType.metricKey] = (trackedActions[instrumentationType.metricKey] ?? 0) + 1
-        }
+        trackedActions[instrumentationType.metricKey, default: 0] += 1
     }
 
     /// Tracks the kind of SDK error that occurred during the session.
     /// - Parameter sdkErrorKind: the kind of SDK error
     func track(sdkErrorKind: String) {
-        if let count = trackedSDKErrors[sdkErrorKind] {
-            trackedSDKErrors[sdkErrorKind] = count + 1
-        } else {
-            trackedSDKErrors[sdkErrorKind] = 1
-        }
+        trackedSDKErrors[sdkErrorKind, default: 0] += 1
     }
 
     /// Tracks an event missed due to absence of an active view.
     /// - Parameter missedEventType: the type of an event that was missed
     func track(missedEventType: MissedEventType) {
-        if let count = missedEvents[missedEventType] {
-            missedEvents[missedEventType] = count + 1
-        } else {
-            missedEvents[missedEventType] = 1
-        }
+        missedEvents[missedEventType, default: 0] += 1
     }
 
     /// Signals that the session was stopped with `stopSession()` API.
@@ -410,7 +400,7 @@ internal class SessionEndedMetric {
         var byInstrumentationViewsCount: [String: Int] = [:]
         trackedViews.values.forEach {
             if let instrumentationType = $0.instrumentationType {
-                byInstrumentationViewsCount[instrumentationType.metricKey] = (byInstrumentationViewsCount[instrumentationType.metricKey] ?? 0) + 1
+                byInstrumentationViewsCount[instrumentationType.metricKey, default: 0] += 1
             }
         }
         let totalActionsCount = trackedActions.values.reduce(0, +)

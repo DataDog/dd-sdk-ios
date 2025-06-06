@@ -11,7 +11,7 @@ import DatadogInternal
 class RUMEventSanitizerTests: XCTestCase {
     private let viewEvent: RUMViewEvent = .mockRandom()
     private let resourceEvent: RUMResourceEvent = .mockRandom()
-    private let actionEvent: RUMActionEvent = .mockRandom()
+    private let actionEvent: RUMActionEvent = .mockAny()
     private let errorEvent: RUMErrorEvent = .mockRandom()
     private let longTaskEvent: RUMLongTaskEvent = .mockRandom()
 

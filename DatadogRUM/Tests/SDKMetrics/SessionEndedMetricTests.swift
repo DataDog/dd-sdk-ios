@@ -419,7 +419,7 @@ class SessionEndedMetricTests: XCTestCase {
         // When
         (0..<actionCount).forEach { _ in
             metric.track(
-                action: .mockRandomWith(sessionID: sessionID.rawValue),
+                action: .mockWith(sessionID: sessionID.rawValue),
                 instrumentationType: .manual
             )
         }
@@ -442,25 +442,25 @@ class SessionEndedMetricTests: XCTestCase {
         // When
         (0..<manualActionsCount).forEach { _ in
             metric.track(
-                action: .mockRandomWith(sessionID: sessionID.rawValue),
+                action: .mockWith(sessionID: sessionID.rawValue),
                 instrumentationType: .manual
             )
         }
         (0..<swiftuiActionsCount).forEach { _ in
             metric.track(
-                action: .mockRandomWith(sessionID: sessionID.rawValue),
+                action: .mockWith(sessionID: sessionID.rawValue),
                 instrumentationType: .swiftui
             )
         }
         (0..<uikitPredicateActionsCount).forEach { _ in
             metric.track(
-                action: .mockRandomWith(sessionID: sessionID.rawValue),
+                action: .mockWith(sessionID: sessionID.rawValue),
                 instrumentationType: .uikit
             )
         }
         (0..<swiftuiAutomaticPredicateActionsCount).forEach { _ in
             metric.track(
-                action: .mockRandomWith(sessionID: sessionID.rawValue),
+                action: .mockWith(sessionID: sessionID.rawValue),
                 instrumentationType: .swiftuiAutomatic
             )
         }
@@ -488,8 +488,8 @@ class SessionEndedMetricTests: XCTestCase {
         let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
-        metric.track(action: .mockRandom(), instrumentationType: .manual)
-        metric.track(action: .mockRandom(), instrumentationType: .manual)
+        metric.track(action: .mockAny(), instrumentationType: .manual)
+        metric.track(action: .mockAny(), instrumentationType: .manual)
         let attributes = metric.asMetricAttributes()
 
         // Then
