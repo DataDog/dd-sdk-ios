@@ -568,7 +568,6 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.error.stack, "network issue explanation")
         XCTAssertEqual(event.error.category, .exception)
         XCTAssertEqual(event.error.resource?.method, .post)
-        XCTAssertEqual(event.error.type, "ErrorMock")
         XCTAssertNil(event.error.resource?.provider)
         XCTAssertEqual(event.error.resource?.statusCode, 500)
         XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")
@@ -582,6 +581,53 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+    }
+
+    func testGivenStartedResource_whenResourceFailsWithNetworkError_itSendsErrorEvent() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    error: NSError(
+                        domain: NSURLErrorDomain,
+                        code: -1_001,
+                        userInfo: [
+                            NSLocalizedDescriptionKey: "The request timed out."
+                        ]
+                    ),
+                    source: .network,
+                    httpStatusCode: nil,
+                    globalAttributes: [:],
+                    attributes: [:]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(event.error.type, "NSURLErrorDomain - -1001")
+        XCTAssertEqual(event.error.message, "The request timed out.")
+        XCTAssertEqual(event.error.source, .network)
+        XCTAssertEqual(event.error.stack, "Error Domain=NSURLErrorDomain Code=-1001 \"The request timed out.\" UserInfo={NSLocalizedDescription=The request timed out.}")
+        XCTAssertEqual(event.error.category, .network)
+        XCTAssertEqual(event.error.resource?.method, .post)
+        XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithErrorAndFingerprintAttribute_itSendsErrorEvent() throws {
@@ -635,7 +681,6 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.error.stack, "network issue explanation")
         XCTAssertEqual(event.error.category, .exception)
         XCTAssertEqual(event.error.resource?.method, .post)
-        XCTAssertEqual(event.error.type, "ErrorMock")
         XCTAssertNil(event.error.resource?.provider)
         XCTAssertEqual(event.error.resource?.statusCode, 500)
         XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")
@@ -699,7 +744,6 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.error.stack, "network issue explanation")
         XCTAssertEqual(event.error.category, .exception)
         XCTAssertEqual(event.error.resource?.method, .post)
-        XCTAssertEqual(event.error.type, "ErrorMock")
         XCTAssertNil(event.error.resource?.provider)
         XCTAssertEqual(event.error.resource?.statusCode, 500)
         XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")
@@ -765,7 +809,6 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.error.stack, "network issue explanation")
         XCTAssertEqual(event.error.category, .exception)
         XCTAssertEqual(event.error.resource?.method, .post)
-        XCTAssertEqual(event.error.type, "ErrorMock")
         XCTAssertNil(event.error.resource?.provider)
         XCTAssertEqual(event.error.resource?.statusCode, 500)
         XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")

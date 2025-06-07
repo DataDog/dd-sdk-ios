@@ -303,7 +303,7 @@ internal class RUMResourceScope: RUMScope {
             display: nil,
             error: .init(
                 binaryImages: nil,
-                category: .exception, // resource errors are categorised as "Exception"
+                category: command.isNetworkError ? .network : .exception,
                 csp: nil,
                 fingerprint: errorFingerprint,
                 handling: nil,

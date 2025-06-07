@@ -412,6 +412,8 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     let errorSource: RUMInternalErrorSource
     /// The platform type of the error (iOS, React Native, ...)
     let errorSourceType: RUMErrorEvent.Error.SourceType
+    /// If error is related with the network connection.
+    let isNetworkError: Bool
     /// Error stacktrace.
     let stack: String?
     /// HTTP status code of the Ressource error.
@@ -433,6 +435,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         self.errorMessage = message
         self.errorType = type
         self.errorSource = source
+        self.isNetworkError = false
         self.globalAttributes = globalAttributes
         self.attributes = attributes
         self.httpStatusCode = httpStatusCode
@@ -461,6 +464,8 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         let dderror = DDError(error: error)
         self.errorMessage = dderror.message
         self.errorType = dderror.type
+        let nsError = error as NSError
+        self.isNetworkError = nsError.domain == NSURLErrorDomain
         // The stack will give the networking error (`NSError`) description in most cases:
         self.stack = dderror.stack
 
