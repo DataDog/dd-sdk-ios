@@ -71,7 +71,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
             renderer: renderer.renderer,
             textObfuscator: textObfuscator(context, attributes),
             fontScalingEnabled: false,
-            imagePrivacyLevel: context.recorder.imagePrivacy,
+            imagePrivacyLevel: attributes.resolveImagePrivacyLevel(in: context),
             attributes: attributes
         )
 
