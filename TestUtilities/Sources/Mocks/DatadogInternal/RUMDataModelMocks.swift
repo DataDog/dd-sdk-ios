@@ -41,7 +41,7 @@ public func randomRUMEvent() -> RUMDataModel {
     // swiftlint:disable opening_brace
     return oneOf([
         { RUMViewEvent.mockRandom() },
-        { RUMActionEvent.mockRandom() },
+        { RUMActionEvent.mockAny() },
         { RUMResourceEvent.mockRandom() },
         { RUMErrorEvent.mockRandom() },
         { RUMLongTaskEvent.mockRandom() },
@@ -369,8 +369,14 @@ extension RUMActionEvent.DD.Configuration: RandomMockable {
     }
 }
 
-extension RUMActionEvent: RandomMockable {
-    public static func mockRandom() -> RUMActionEvent {
+extension RUMActionEvent: AnyMockable {
+    public static func mockAny() -> RUMActionEvent {
+        .mockWith()
+    }
+
+    public static func mockWith(
+        sessionID: UUID = .mockRandom()
+    ) -> RUMActionEvent {
         return RUMActionEvent(
             dd: .init(
                 action: .init(
@@ -414,7 +420,7 @@ extension RUMActionEvent: RandomMockable {
             service: .mockRandom(),
             session: .init(
                 hasReplay: nil,
-                id: .mockRandom(),
+                id: sessionID.uuidString.lowercased(),
                 type: .user
             ),
             source: .ios,

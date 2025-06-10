@@ -203,6 +203,14 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
         if let event = dependencies.eventBuilder.build(from: actionEvent) {
             writer.write(value: event)
+
+            // Track action in session ended metric
+            dependencies.sessionEndedMetric.track(
+                action: event,
+                instrumentationType: instrumentation,
+                in: self.context.sessionID
+            )
+
             onActionEventSent(event)
 
             if let activeViewID = self.context.activeViewID {

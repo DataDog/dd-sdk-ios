@@ -86,6 +86,9 @@ internal class SessionEndedMetric {
     /// Info about the last tracked view.
     private var lastTrackedView: TrackedViewInfo?
 
+    /// Stores information about tracked actions, referencing them by their instrumentation type.
+    private var trackedActions: [String: Int] = [:]
+
     /// Tracks the number of SDK errors by their kind.
     private var trackedSDKErrors: [String: Int] = [:]
 
@@ -167,24 +170,28 @@ internal class SessionEndedMetric {
         lastTrackedView = info
     }
 
+    /// Tracks information about an action that occurred during the session.
+    /// - Parameters:
+    ///   - action: the action event to track
+    ///   - instrumentationType: the type of instrumentation used to start this action
+    func track(action: RUMActionEvent, instrumentationType: InstrumentationType) {
+        guard action.session.id == sessionID.toRUMDataFormat else {
+            return
+        }
+
+        trackedActions[instrumentationType.metricKey, default: 0] += 1
+    }
+
     /// Tracks the kind of SDK error that occurred during the session.
     /// - Parameter sdkErrorKind: the kind of SDK error
     func track(sdkErrorKind: String) {
-        if let count = trackedSDKErrors[sdkErrorKind] {
-            trackedSDKErrors[sdkErrorKind] = count + 1
-        } else {
-            trackedSDKErrors[sdkErrorKind] = 1
-        }
+        trackedSDKErrors[sdkErrorKind, default: 0] += 1
     }
 
     /// Tracks an event missed due to absence of an active view.
     /// - Parameter missedEventType: the type of an event that was missed
     func track(missedEventType: MissedEventType) {
-        if let count = missedEvents[missedEventType] {
-            missedEvents[missedEventType] = count + 1
-        } else {
-            missedEvents[missedEventType] = 1
-        }
+        missedEvents[missedEventType, default: 0] += 1
     }
 
     /// Signals that the session was stopped with `stopSession()` API.
@@ -274,6 +281,20 @@ internal class SessionEndedMetric {
 
         let viewsCount: ViewsCount
 
+        struct ActionsCount: Encodable {
+            /// The number of distinct actions sent during this session.
+            let total: Int
+            /// The map of action instrumentation types to the number of actions tracked with each instrumentation.
+            let byInstrumentation: [String: Int]
+
+            enum CodingKeys: String, CodingKey {
+                case total
+                case byInstrumentation = "by_instrumentation"
+            }
+        }
+
+        let actionsCount: ActionsCount
+
         struct SDKErrorsCount: Encodable {
             /// The total number of SDK errors that occurred during the session, excluding any effects from telemetry limits
             /// such as duplicate filtering or maximum caps.
@@ -340,8 +361,8 @@ internal class SessionEndedMetric {
 
         /// Information about the upload quality during the session.
         /// The upload quality is splitting between upload track name.
-/// Tracks upload quality during the session, aggregating them by track name.
-/// Each track reports its own upload quality metrics.
+        /// Tracks upload quality during the session, aggregating them by track name.
+        /// Each track reports its own upload quality metrics.
         let uploadQuality: [String: UploadQuality]
 
         enum CodingKeys: String, CodingKey {
@@ -351,6 +372,7 @@ internal class SessionEndedMetric {
             case wasStopped = "was_stopped"
             case hasBackgroundEventsTrackingEnabled = "has_background_events_tracking_enabled"
             case viewsCount = "views_count"
+            case actionsCount = "actions_count"
             case sdkErrorsCount = "sdk_errors_count"
             case ntpOffset = "ntp_offset"
             case noViewEventsCount = "no_view_events_count"
@@ -378,9 +400,10 @@ internal class SessionEndedMetric {
         var byInstrumentationViewsCount: [String: Int] = [:]
         trackedViews.values.forEach {
             if let instrumentationType = $0.instrumentationType {
-                byInstrumentationViewsCount[instrumentationType.metricKey] = (byInstrumentationViewsCount[instrumentationType.metricKey] ?? 0) + 1
+                byInstrumentationViewsCount[instrumentationType.metricKey, default: 0] += 1
             }
         }
+        let totalActionsCount = trackedActions.values.reduce(0, +)
         let withHasReplayCount = trackedViews.values.reduce(0, { acc, next in acc + (next.hasReplay ? 1 : 0) })
 
         // Compute SDK errors count
@@ -407,6 +430,10 @@ internal class SessionEndedMetric {
                     applicationLaunch: appLaunchViewsCount,
                     byInstrumentation: byInstrumentationViewsCount,
                     withHasReplay: withHasReplayCount
+                ),
+                actionsCount: .init(
+                    total: totalActionsCount,
+                    byInstrumentation: trackedActions
                 ),
                 sdkErrorsCount: .init(
                     total: totalSDKErrors,
