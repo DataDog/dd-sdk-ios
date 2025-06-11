@@ -7,114 +7,116 @@
 import Foundation
 import DatadogInternal
 
-/// A helper that resolves the app launch reason (`LaunchReason`) for tvOS apps, using a timed window and
-/// observed lifecycle events. This is needed because tvOS does not expose kernel-level signals (like `task_role`)
-/// that are available on iOS to detect whether an app was launched by the user or in the background.
+/// Resolves the app's launch reason (`LaunchReason`) for platforms like tvOS, where
+/// it cannot be determined immediately at SDK initialization (e.g., no `task_role` kernel's API support).
 ///
-/// It buffers RUM commands along with their corresponding `DatadogContext` and `Writer`. Once the launch reason is resolved
-/// (either by receiving a `willEnterForeground` event or exceeding the launch window threshold),
-/// it replays all buffered items in FIFO order. The original commands and writers are preserved, but the
-/// `launchReason` field in each context is updated with the resolved value before forwarding.
+/// The resolver uses a short launch window and app state heuristics to infer whether the app
+/// was launched by the user or in the background. During this window, incoming RUM commands
+/// are buffered along with their context and writer.
+///
+/// Once the reason is resolved (based on app state, lifecycle events, or time), all buffered
+/// commands are forwarded in FIFO order with the resolved `launchReason` injected into their contexts.
 internal final class LaunchReasonResolver {
-    private let window: AppLaunchWindow
-
-    init(launchWindowThreshold: TimeInterval) {
-        self.window = AppLaunchWindow(launchWindowThreshold: launchWindowThreshold)
+    /// Launch window configuration constants.
+    enum Constants {
+        /// Time to wait before assuming a background launch.
+        static let launchWindowThreshold: TimeInterval = 10.0
     }
 
-    /// Buffers the given command and forwards it once the launch reason is resolved.
-    /// If resolution occurs as a result of this command, all previously buffered commands are forwarded in order,
-    /// with their `DatadogContext.launchInfo.launchReason` updated to match the resolved reason.
-    /// If the context already contains a known `launchReason`, the command is forwarded immediately without modification.
-    func forwardWithLaunchReason(
+    /// Launch window duration before resolving `.backgroundLaunch`.
+    private let threshold: TimeInterval
+    /// Buffer of commands received while the launch reason is unresolved.
+    private var buffer: [(command: RUMCommand, context: DatadogContext, writer: Writer)] = []
+    /// Resolved launch reason, updated once a conclusive condition is met.
+    private var resolvedReason: LaunchReason?
+
+    /// Initializes the resolver with a custom or default threshold.
+    ///
+    /// - Parameter launchWindowThreshold: Time window in seconds before resolving as background launch.
+    init(launchWindowThreshold: TimeInterval = Constants.launchWindowThreshold) {
+        self.threshold = launchWindowThreshold
+    }
+
+    /// Defers processing of a RUM command until `launchReason` is resolved.
+    ///
+    /// If the `launchReason` is known - either already set in the `context` or already resolved internally - the command
+    /// is immediately passed to `onReady` with the resolved reason injected into its `DatadogContext`.
+    ///
+    /// If the reason is still `.uncertain`, the command is buffered and forwarded later when resolution occurs.
+    /// All buffered commands are flushed in FIFO order with the resolved reason once available.
+    ///
+    /// - Parameters:
+    ///   - command: Incoming RUM command to buffer or forward.
+    ///   - context: The associated `DatadogContext` (typically with `launchReason = .uncertain`).
+    ///   - writer: The writer to be used when the command is ready.
+    ///   - onReady: Callback called once per command, with the resolved launch reason injected into context.
+    func deferUntilLaunchReasonResolved(
         command: RUMCommand,
         context: DatadogContext,
         writer: Writer,
-        forwardingBlock: ([(command: RUMCommand, context: DatadogContext, writer: Writer)]) -> Void
+        onReady: (RUMCommand, DatadogContext, Writer) -> Void
     ) {
+        // If the launch reason was already resolved externally (e.g., via iOS `task_role` or prewarm flag),
+        // forward the command immediately. This is a defensive check — callers should avoid deferring resolution
+        // when the reason is already known.
         guard context.launchInfo.launchReason == .uncertain else {
-            // Unexpected pre-set reason, forward as-is.
-            forwardingBlock([(command, context, writer)])
+            onReady(command, context, writer)
             return
         }
 
-        if window.resolvedReason != .uncertain {
-            // Launch reason already resolved, inject and forward immediately.
-            let resolvedCommand = (command, context.replacing(launchReason: window.resolvedReason), writer)
-            forwardingBlock([resolvedCommand])
-        } else {
-            // Buffer command and check if this one resolved the launch reason.
-            window.buffer(command: command, context: context, writer: writer)
-
-            if window.resolvedReason != .uncertain {
-                let resolvedCommands = window
-                    .flushBuffer()
-                    .map { oldCommand, oldContext, oldWriter in (oldCommand, oldContext.replacing(launchReason: window.resolvedReason), oldWriter) }
-                forwardingBlock(resolvedCommands)
-            }
+        // If already resolved internally, inject and forward immediately:
+        if let resolvedReason {
+            onReady(command, context.replacing(launchReason: resolvedReason), writer)
+            return
         }
+
+        // Otherwise, buffer the command for deferred resolution.
+        buffer.append((command, context, writer))
+
+        // Check whether this command leads to launch reason resolution.
+        guard let reason = evaluateLaunchReason(command: command, context: context) else {
+            return // not yet
+        }
+
+        // If resolved, forward all buffered commands in FIFO order,
+        // injecting the resolved reason into each context.
+        for (bufferedCommand, bufferedContext, bufferedWriter) in buffer {
+            let updatedContext = bufferedContext.replacing(launchReason: reason)
+            onReady(bufferedCommand, updatedContext, bufferedWriter)
+        }
+
+        // Store resolved reason and clear the buffer (no further buffering needed)
+        resolvedReason = reason
+        buffer.removeAll()
+    }
+
+    /// Attempts to resolve the launch reason based on current state, lifecycle events, or elapsed time.
+    ///
+    /// - Returns: A resolved `LaunchReason`, or `nil` if it remains uncertain.
+    private func evaluateLaunchReason(command: RUMCommand, context: DatadogContext) -> LaunchReason? {
+        if context.applicationStateHistory.initialState != .background {
+            return .userLaunch
+        }
+
+        if let lifecycleCommand = command as? RUMHandleAppLifecycleEventCommand,
+           lifecycleCommand.event == .willEnterForeground {
+            return .userLaunch
+        }
+
+        let elapsed = command.time.timeIntervalSince(context.launchInfo.processLaunchDate)
+        if elapsed >= threshold {
+            return .backgroundLaunch
+        }
+
+        return nil
     }
 }
 
 private extension DatadogContext {
-    func replacing(launchReason newLaunchReason: LaunchReason) -> DatadogContext {
-        var new = self
-        new.launchInfo.launchReason = newLaunchReason
-        return new
-    }
-}
-
-internal final class AppLaunchWindow {
-    internal enum Constants {
-        /// Default time to wait before classifying as background launch.
-        static let launchWindowThreshold: TimeInterval = 10.0
-    }
-
-    /// Time to wait before classifying as background launch.
-    private let threshold: TimeInterval
-
-    /// Commands buffered during launch window (with original context and writer).
-    private var buffer: [(command: RUMCommand, context: DatadogContext, writer: Writer)] = []
-
-    /// Launch reason, resolved once conditions are met.
-    private(set) var resolvedReason: LaunchReason = .uncertain
-
-    init(launchWindowThreshold: TimeInterval) {
-        self.threshold = launchWindowThreshold
-    }
-
-    /// Buffers the command if launch reason is not yet resolved.
-    /// Once resolved, this becomes a no-op.
-    func buffer(command: RUMCommand, context: DatadogContext, writer: Writer) {
-        guard resolvedReason == .uncertain else {
-            return
-        }
-
-        buffer.append((command, context, writer))
-
-        // Resolve immediately if app did not start in background.
-        if context.applicationStateHistory.initialState != .background {
-            resolvedReason = .userLaunch
-            return
-        }
-
-        // Resolve as background if command exceeds launch window.
-        let elapsed = command.time.timeIntervalSince(context.launchInfo.processLaunchDate)
-        if elapsed >= threshold {
-            resolvedReason = .backgroundLaunch
-            return
-        }
-
-        // Resolve as user launch if lifecycle indicates foreground entry.
-        if let lifecycleCommand = command as? RUMHandleAppLifecycleEventCommand,
-           lifecycleCommand.event == .willEnterForeground {
-            resolvedReason = .userLaunch
-        }
-    }
-
-    /// Returns and clears all buffered commands in FIFO order.
-    func flushBuffer() -> [(RUMCommand, DatadogContext, Writer)] {
-        defer { buffer.removeAll() }
-        return buffer
+    /// Returns a copy of this context with the updated `launchReason`.
+    func replacing(launchReason: LaunchReason) -> DatadogContext {
+        var copy = self
+        copy.launchInfo.launchReason = launchReason
+        return copy
     }
 }

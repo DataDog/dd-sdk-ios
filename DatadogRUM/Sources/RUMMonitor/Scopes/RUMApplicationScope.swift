@@ -39,7 +39,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     /// Handles resolution of `launchReason` during the app launch window (used primarily on tvOS and as a fallback on iOS).
     /// Buffers early RUM commands until the launch reason can be determined, then injects the resolved value and forwards them.
-    let launchReasonResolver = LaunchReasonResolver(launchWindowThreshold: AppLaunchWindow.Constants.launchWindowThreshold)
+    let launchReasonResolver = LaunchReasonResolver(launchWindowThreshold: LaunchReasonResolver.Constants.launchWindowThreshold)
     /// Ensures the fallback to `launchReasonResolver` is logged only once when `launchReason` is unexpectedly `.uncertain` on iOS.
     private var didLogFallbackToResolver = false
 
@@ -77,29 +77,19 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         guard context.launchInfo.launchReason != .uncertain else {
             if !didLogFallbackToResolver {
                 dependencies.telemetry.debug("Falling back unexpectedly to 'launchReasonResolver' due to 'uncertain' launch reason")
-                DD.logger.critical("Falling back unexpectedly to 'launchReasonResolver' due to 'uncertain' launch reason")
                 didLogFallbackToResolver = true
             }
-            deferUntilLaunchReasonResolved(command: command, context: context, writer: writer)
+            launchReasonResolver
+                .deferUntilLaunchReasonResolved(command: command, context: context, writer: writer, onReady: _process(command:context:writer:))
             return true
         }
         _process(command: command, context: context, writer: writer)
         #else
-        deferUntilLaunchReasonResolved(command: command, context: context, writer: writer)
+        launchReasonResolver
+            .deferUntilLaunchReasonResolved(command: command, context: context, writer: writer, onReady: _process(command:context:writer:))
         #endif
 
         return true
-    }
-
-    /// Resolves the app's launch reason using the `LaunchReasonResolver`, which buffers early commands
-    /// and injects the resolved `launchReason` once determined. All buffered commands are then forwarded
-    /// with updated context for standard processing.
-    private func deferUntilLaunchReasonResolved(command: RUMCommand, context: DatadogContext, writer: Writer) {
-        launchReasonResolver.forwardWithLaunchReason(command: command, context: context, writer: writer) { forwardedCommands in
-            for (command, context, writer) in forwardedCommands {
-                _process(command: command, context: context, writer: writer)
-            }
-        }
     }
 
     private func _process(command: RUMCommand, context: DatadogContext, writer: Writer) {

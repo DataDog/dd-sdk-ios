@@ -152,7 +152,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
 
         // Await tvOS launch window duration:
         run = run
-            .and(.init { $0.advanceTime(by: AppLaunchWindow.Constants.launchWindowThreshold) })
+            .and(.init { $0.advanceTime(by: LaunchReasonResolver.Constants.launchWindowThreshold) })
 
         // Track more background events:
         run = run
@@ -170,13 +170,13 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         XCTAssertNil(session.applicationStartAction)
         XCTAssertNil(session.applicationStartupTime)
         DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt, accuracy: accuracy)
-        DDAssertEqual(session.duration, 5 * dt + AppLaunchWindow.Constants.launchWindowThreshold + 6 * dt, accuracy: accuracy)
+        DDAssertEqual(session.duration, 5 * dt + LaunchReasonResolver.Constants.launchWindowThreshold + 6 * dt, accuracy: accuracy)
         XCTAssertEqual(session.sessionPrecondition, expectedSessionPrecondition)
         XCTAssertEqual(session.views.count, 1)
 
         let view = session.views[0]
         XCTAssertEqual(view.name, backgroundViewName)
-        DDAssertEqual(view.duration, 5 * dt + AppLaunchWindow.Constants.launchWindowThreshold + 6 * dt, accuracy: accuracy)
+        DDAssertEqual(view.duration, 5 * dt + LaunchReasonResolver.Constants.launchWindowThreshold + 6 * dt, accuracy: accuracy)
         XCTAssertEqual(view.actionEvents.count, 4)
         XCTAssertEqual(view.resourceEvents.count, 2)
         XCTAssertEqual(view.longTaskEvents.count, 4)
@@ -246,7 +246,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         var run = run
             .when(.trackResource(after: dt, duration: dt))
             .and(.trackTwoActions(after1: dt, after2: dt))
-            .and(.init { $0.advanceTime(by: AppLaunchWindow.Constants.launchWindowThreshold) })
+            .and(.init { $0.advanceTime(by: LaunchReasonResolver.Constants.launchWindowThreshold) })
             .and(.trackResource(after: dt, duration: dt))
 
         // Suspend for long time
@@ -270,13 +270,13 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         XCTAssertNil(session.applicationStartAction)
         XCTAssertNil(session.applicationStartupTime)
         DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt, accuracy: accuracy)
-        DDAssertEqual(session.duration, 3 * dt + AppLaunchWindow.Constants.launchWindowThreshold + 2 * dt, accuracy: accuracy)
+        DDAssertEqual(session.duration, 3 * dt + LaunchReasonResolver.Constants.launchWindowThreshold + 2 * dt, accuracy: accuracy)
         XCTAssertEqual(session.sessionPrecondition, expectedSessionPrecondition)
         XCTAssertEqual(session.views.count, 1)
 
         let view = session.views[0]
         XCTAssertEqual(view.name, backgroundViewName)
-        DDAssertEqual(view.duration, 3 * dt + AppLaunchWindow.Constants.launchWindowThreshold + 2 * dt, accuracy: accuracy)
+        DDAssertEqual(view.duration, 3 * dt + LaunchReasonResolver.Constants.launchWindowThreshold + 2 * dt, accuracy: accuracy)
         XCTAssertEqual(view.actionEvents.count, 2)
         XCTAssertEqual(view.resourceEvents.count, 2)
         XCTAssertEqual(view.longTaskEvents.count, 0)
@@ -288,7 +288,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
     ) {
         XCTAssertNil(session.applicationStartAction)
         XCTAssertNil(session.applicationStartupTime)
-        DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + 6 * dt + AppLaunchWindow.Constants.launchWindowThreshold + 2.hours, accuracy: accuracy)
+        DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + 6 * dt + LaunchReasonResolver.Constants.launchWindowThreshold + 2.hours, accuracy: accuracy)
         DDAssertEqual(session.duration, 4 * dt, accuracy: accuracy)
         XCTAssertEqual(session.sessionPrecondition, expectedSessionPrecondition)
         XCTAssertEqual(session.views.count, 1)
