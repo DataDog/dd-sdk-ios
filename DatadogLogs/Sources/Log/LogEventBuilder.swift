@@ -81,7 +81,7 @@ internal struct LogEventBuilder {
             dd: LogEvent.Dd(
                 device: .init(architecture: context.device.architecture)
             ),
-            device: context.device.rumDevice,
+            device: context.device.normalizedDevice,
             os: context.os,
             userInfo: context.userInfo ?? .empty,
             accountInfo: context.accountInfo,

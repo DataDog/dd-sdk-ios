@@ -30,10 +30,10 @@ final class DeviceInfoTests: XCTestCase {
         let appleTV: DeviceInfo = .mockWith(model: "AppleTV" + String.mockRandom(among: .alphanumerics, length: 2))
         let unknownDevice: DeviceInfo = .mockWith(model: .mockRandom())
 
-        XCTAssertEqual(iPhone.type.rumDeviceType, .mobile)
-        XCTAssertEqual(iPod.type.rumDeviceType, .mobile)
-        XCTAssertEqual(iPad.type.rumDeviceType, .tablet)
-        XCTAssertEqual(appleTV.type.rumDeviceType, .tv)
-        XCTAssertEqual(unknownDevice.type.rumDeviceType, .other)
+        XCTAssertEqual(iPhone.type.normalizedDeviceType, .mobile)
+        XCTAssertEqual(iPod.type.normalizedDeviceType, .mobile)
+        XCTAssertEqual(iPad.type.normalizedDeviceType, .tablet)
+        XCTAssertEqual(appleTV.type.normalizedDeviceType, .tv)
+        XCTAssertEqual(unknownDevice.type.normalizedDeviceType, .other)
     }
 }

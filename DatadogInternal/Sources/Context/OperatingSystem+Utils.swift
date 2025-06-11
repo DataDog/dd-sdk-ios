@@ -24,7 +24,7 @@ extension OperatingSystem {
         self.build = build
     }
 
-#if canImport(UIKit)
+#if !os(macOS)
     /// Creates operating system info based on device description.
     ///
     /// - Parameters:
@@ -42,7 +42,7 @@ extension OperatingSystem {
             build: build
         )
     }
-#elseif os(macOS)
+#else
     /// Creates operating system info based on process information.
     ///
     /// - Parameters:

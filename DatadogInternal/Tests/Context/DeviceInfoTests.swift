@@ -55,7 +55,7 @@ class DeviceInfoTests: XCTestCase {
         XCTAssertEqual(when(device: appleVision1).type, .appleVision)
         XCTAssertEqual(when(device: appleVision2).type, .appleVision)
         XCTAssertEqual(when(device: watch).type, .appleWatch)
-        XCTAssertEqual(when(device: other).type, .other(modelName: "Device Simulator", osName: "newOS"))
+        XCTAssertEqual(when(device: other).type, .other(model: "Device Simulator", os: "newOS"))
     }
 
     func testOSVersionMajor() {

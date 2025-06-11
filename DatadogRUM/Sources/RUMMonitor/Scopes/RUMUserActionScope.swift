@@ -180,7 +180,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             container: nil,
             context: .init(contextInfo: (command?.globalAttributes ?? [:]).merging(parent.attributes) { $1 }.merging(attributes) { $1 }),
             date: actionStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: context.device.rumDevice,
+            device: context.device.normalizedDevice,
             display: nil,
             os: context.os,
             service: context.service,

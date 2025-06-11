@@ -56,13 +56,13 @@ public struct DeviceInfo: Equatable {
         self.systemBootTime = systemBootTime
     }
 
-    public var rumDevice: Device {
+    public var normalizedDevice: Device {
         .init(
             architecture: architecture,
             brand: brand,
             model: model,
             name: name,
-            type: type.rumDeviceType
+            type: type.normalizedDeviceType
         )
     }
 }
@@ -76,9 +76,9 @@ extension DeviceInfo {
         case appleTV
         case appleVision
         case appleWatch
-        case other(modelName: String, osName: String)
+        case other(model: String, os: String)
 
-        public var rumDeviceType: Device.DeviceType {
+        public var normalizedDeviceType: Device.DeviceType {
             switch self {
             case .iPhone, .iPod:
                     .mobile
@@ -115,7 +115,7 @@ private extension DeviceInfo.DeviceType {
         } else if lowercasedModelName.hasPrefix("watch") || lowercasedOSName == "watchos" {
             self = .appleWatch
         } else {
-            self = .other(modelName: modelName, osName: osName)
+            self = .other(model: modelName, os: osName)
         }
     }
 }
