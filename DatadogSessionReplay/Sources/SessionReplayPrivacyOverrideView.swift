@@ -17,7 +17,7 @@ public struct SessionReplayPrivacyOverrideView<Content: View>: View {
 	private let touchPrivacy: TouchPrivacyLevel?
 	private let hide: Bool?
 	private let core: DatadogCoreProtocol
-	private let content: Content
+	private let content: () -> Content
 
 	public init(
 		isActive: Bool = true,
@@ -26,7 +26,7 @@ public struct SessionReplayPrivacyOverrideView<Content: View>: View {
 		touchPrivacy: TouchPrivacyLevel? = nil,
 		hide: Bool? = nil,
 		core: DatadogCoreProtocol = CoreRegistry.default,
-		@ViewBuilder content: () -> Content
+		@ViewBuilder content: @escaping () -> Content
 	) {
 		self.isActive = isActive
 		self.textAndInputPrivacy = textAndInputPrivacy
@@ -34,20 +34,20 @@ public struct SessionReplayPrivacyOverrideView<Content: View>: View {
 		self.touchPrivacy = touchPrivacy
 		self.hide = hide
 		self.core = core
-		self.content = content()
+		self.content = content
 	}
 
 	public var body: some View {
 		if isActive, isSessionReplayEnabled || isRunningForPreviews {
-			HostingControllerWrapper(sizingOptions: .intrinsicContentSize, content: content) { view, _ in
-				// Forward privacy overrides to the container `UIView`
-				view.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy = textAndInputPrivacy
-				view.dd.sessionReplayPrivacyOverrides.imagePrivacy = imagePrivacy
-				view.dd.sessionReplayPrivacyOverrides.touchPrivacy = touchPrivacy
-				view.dd.sessionReplayPrivacyOverrides.hide = hide
-			}
+			SessionReplayPrivacyOverrideHost(
+				textAndInputPrivacy: textAndInputPrivacy,
+				imagePrivacy: imagePrivacy,
+				touchPrivacy: touchPrivacy,
+				hide: hide,
+				content: content
+			)
 		} else {
-			content
+			content()
 		}
 	}
 
@@ -61,24 +61,19 @@ public struct SessionReplayPrivacyOverrideView<Content: View>: View {
 }
 
 @available(iOS 16, *)
-private struct HostingControllerWrapper<Content: View>: UIViewControllerRepresentable {
-	let sizingOptions: UIHostingControllerSizingOptions
-	let update: (_ view: UIView, _ context: Context) -> Void
-	let content: Content
+private struct SessionReplayPrivacyOverrideHost<Content: View>: UIViewControllerRepresentable {
+	typealias HostedContent = EnvironmentView<Content>
 
-	init(
-		sizingOptions: UIHostingControllerSizingOptions,
-		content: Content,
-		update: @escaping (_ view: UIView, _ context: Context) -> Void,
-	) {
-		self.sizingOptions = sizingOptions
-		self.content = content
-		self.update = update
-	}
+	let textAndInputPrivacy: TextAndInputPrivacyLevel?
+	let imagePrivacy: ImagePrivacyLevel?
+	let touchPrivacy: TouchPrivacyLevel?
+	let hide: Bool?
+	let content: () -> Content
 
-	func makeUIViewController(context: Context) -> UIHostingController<Content> {
-		let hostingController = UIHostingController(rootView: content)
-		hostingController.sizingOptions = sizingOptions
+	func makeUIViewController(context: Context) -> UIHostingController<HostedContent> {
+		// We need to forward the environment in iOS 16 / 17
+		let hostingController = UIHostingController(rootView: EnvironmentView(context.environment, content: content))
+		hostingController.sizingOptions = .intrinsicContentSize
 
 		hostingController.view.backgroundColor = .clear
 		hostingController.view.clipsToBounds = false
@@ -86,14 +81,40 @@ private struct HostingControllerWrapper<Content: View>: UIViewControllerRepresen
 		return hostingController
 	}
 
-	func updateUIViewController(_ hostingController: UIHostingController<Content>, context: Context) {
-		hostingController.rootView = content
-		update(hostingController.view, context)
+	func updateUIViewController(_ hostingController: UIHostingController<HostedContent>, context: Context) {
+		// We need to forward the environment in iOS 16 / 17
+		hostingController.rootView = EnvironmentView(context.environment, content: content)
+
+		// Forward privacy overrides to the host `UIView`
+		hostingController.view.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy = textAndInputPrivacy
+		hostingController.view.dd.sessionReplayPrivacyOverrides.imagePrivacy = imagePrivacy
+		hostingController.view.dd.sessionReplayPrivacyOverrides.touchPrivacy = touchPrivacy
+		hostingController.view.dd.sessionReplayPrivacyOverrides.hide = hide
 	}
 
-	func sizeThatFits(_ proposal: ProposedViewSize, uiViewController: UIHostingController<Content>, context: Context) -> CGSize? {
+	func sizeThatFits(_ proposal: ProposedViewSize, uiViewController: UIHostingController<HostedContent>, context: Context) -> CGSize? {
 		let proposedSize = proposal.replacingUnspecifiedDimensions(by: CGSize(width: CGFloat.infinity, height: .infinity))
 		return uiViewController.sizeThatFits(in: proposedSize)
+	}
+}
+
+@available(iOS 16, *)
+private struct EnvironmentView<Content: View>: View {
+	private let environment: EnvironmentValues
+	private let content: () -> Content
+
+	init(_ environment: EnvironmentValues, content: @escaping () -> Content) {
+		self.environment = environment
+		self.content = content
+	}
+
+	var body: some View {
+		if #available(iOS 18, *) {
+			// No need to forward the environment
+			content()
+		} else {
+			content().environment(\.self, environment)
+		}
 	}
 }
 
