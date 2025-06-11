@@ -621,6 +621,8 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     sessionSampleRate: .mockRandom(),
                     silentMultipleInit: nil,
                     storeContextsAcrossPages: nil,
+                    swiftuiActionTrackingEnabled: .mockRandom(),
+                    swiftuiViewTrackingEnabled: .mockRandom(),
                     telemetryConfigurationSampleRate: .mockRandom(),
                     telemetrySampleRate: .mockRandom(),
                     telemetryUsageSampleRate: nil,

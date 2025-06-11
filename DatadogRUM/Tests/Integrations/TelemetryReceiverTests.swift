@@ -304,6 +304,8 @@ class TelemetryReceiverTests: XCTestCase {
         let sessionSampleRate: Int64? = .mockRandom()
         let telemetrySampleRate: Int64? = .mockRandom()
         let traceSampleRate: Int64? = .mockRandom()
+        let swiftUIViewTrackingEnabled: Bool? = .mockRandom()
+        let swiftUIActionTrackingEnabled: Bool? = .mockRandom()
         let trackBackgroundEvents: Bool? = .mockRandom()
         let trackCrossPlatformLongTasks: Bool? = .mockRandom()
         let trackErrors: Bool? = .mockRandom()
@@ -332,6 +334,8 @@ class TelemetryReceiverTests: XCTestCase {
             sessionSampleRate: sessionSampleRate,
             telemetrySampleRate: telemetrySampleRate,
             traceSampleRate: traceSampleRate,
+            swiftUIViewTrackingEnabled: swiftUIViewTrackingEnabled,
+            swiftUIActionTrackingEnabled: swiftUIActionTrackingEnabled,
             trackBackgroundEvents: trackBackgroundEvents,
             trackCrossPlatformLongTasks: trackCrossPlatformLongTasks,
             trackErrors: trackErrors,
@@ -364,6 +368,8 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.telemetry.configuration.mobileVitalsUpdatePeriod, mobileVitalsUpdatePeriod)
         XCTAssertEqual(event?.telemetry.configuration.sessionSampleRate, sessionSampleRate)
         XCTAssertEqual(event?.telemetry.configuration.telemetrySampleRate, telemetrySampleRate)
+        XCTAssertEqual(event?.telemetry.configuration.swiftuiViewTrackingEnabled, swiftUIViewTrackingEnabled)
+        XCTAssertEqual(event?.telemetry.configuration.swiftuiActionTrackingEnabled, swiftUIActionTrackingEnabled)
         XCTAssertEqual(event?.telemetry.configuration.traceSampleRate, traceSampleRate)
         XCTAssertEqual(event?.telemetry.configuration.trackBackgroundEvents, trackBackgroundEvents)
         XCTAssertEqual(event?.telemetry.configuration.trackCrossPlatformLongTasks, trackCrossPlatformLongTasks)
