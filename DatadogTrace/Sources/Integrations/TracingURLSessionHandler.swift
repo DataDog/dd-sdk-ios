@@ -51,7 +51,9 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             parentSpanID: spanContext.parentSpanID,
             sampleRate: spanContext.sampleRate,
             isKept: spanContext.isKept,
-            rumSessionId: contextReceiver.context.rumContext?.sessionID
+            rumSessionId: contextReceiver.context.rumContext?.sessionID,
+            userId: contextReceiver.context.userInfo?.id,
+            accountId: contextReceiver.context.accountInfo?.id
         )
 
         var request = request
