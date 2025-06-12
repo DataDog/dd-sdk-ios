@@ -37,6 +37,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Container bundling dependencies for this scope.
     let dependencies: RUMScopeDependencies
 
+    /// Handles resolution of `launchReason` during the app launch window (used primarily on tvOS and as a fallback on iOS).
+    /// Buffers early RUM commands until the launch reason can be determined, then injects the resolved value and forwards them.
+    let launchReasonResolver = LaunchReasonResolver(launchWindowThreshold: LaunchReasonResolver.Constants.launchWindowThreshold)
+    /// Ensures the fallback to `launchReasonResolver` is logged only once when `launchReason` is unexpectedly `.uncertain` on iOS.
+    private var didLogFallbackToResolver = false
+
     init(dependencies: RUMScopeDependencies) {
         self.dependencies = dependencies
         self.context = RUMContext(
@@ -56,7 +62,37 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
+    /// Entry point for processing a RUM command in the Application Scope.
+    ///
+    /// On iOS, we expect the `launchReason` to be resolved at SDK initialization using `task_role` or the prewarm flag.
+    /// As a safeguard, we fall back to the `LaunchReasonResolver` if the `launchReason` is still `.uncertain`—
+    /// in case the iOS-side assumptions fail (e.g., unhandled platform edge case or kernel API failure).
+    ///
+    /// On tvOS and watchOS, we always use the `LaunchReasonResolver`, since those platforms do not support
+    /// `task_role` or prewarming signals.
+    ///
+    /// - Returns: `true` to indicate that the Application Scope should remain active.
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
+        #if !os(tvOS) && !os(watchOS)
+        guard context.launchInfo.launchReason != .uncertain else {
+            if !didLogFallbackToResolver {
+                dependencies.telemetry.debug("Falling back unexpectedly to 'launchReasonResolver' due to 'uncertain' launch reason")
+                didLogFallbackToResolver = true
+            }
+            launchReasonResolver
+                .deferUntilLaunchReasonResolved(command: command, context: context, writer: writer, onReady: _process(command:context:writer:))
+            return true
+        }
+        _process(command: command, context: context, writer: writer)
+        #else
+        launchReasonResolver
+            .deferUntilLaunchReasonResolved(command: command, context: context, writer: writer, onReady: _process(command:context:writer:))
+        #endif
+
+        return true
+    }
+
+    private func _process(command: RUMCommand, context: DatadogContext, writer: Writer) {
         // `RUMSDKInitCommand` forces the creation of the initial session
         // Added in https://github.com/DataDog/dd-sdk-ios/pull/1278 to ensure that logs and traces
         // can be correlated with valid RUM session id (even if occurring before any user interaction).
@@ -82,7 +118,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
                 // Start "ApplicationLaunch" view immediatelly:
                 startApplicationLaunchView(on: command, context: context, writer: writer)
             }
-            return true // always keep application scope
+            return
         }
 
         // If the application has not been yet activated and no sessions exist -> create the initial session
@@ -161,8 +197,6 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         if activeSessions.count > 1 {
             dependencies.telemetry.error("An application has \(activeSessions.count) active sessions")
         }
-
-        return true // always keep application scope
     }
 
     // MARK: - Private

@@ -120,6 +120,7 @@ class RUMSessionTestsBase: XCTestCase {
     /// ```
     /// [BG:(no view)]
     /// ```
+    @available(tvOS, unavailable)
     func prewarmedSession(rumSetup: AppRunner.RUMSetup? = nil) -> AppRun {
         return .given(.appLaunch(type: .osPrewarm(processLaunchDate: processLaunchDate)))
             .and(.enableRUM(after: timeToSDKInit, rumSetup: rumSetup))
@@ -129,6 +130,7 @@ class RUMSessionTestsBase: XCTestCase {
     /// ```
     /// [BG:Background]
     /// ```
+    @available(tvOS, unavailable)
     func prewarmedSessionWithResource(
         resourceStartAfter: TimeInterval,
         resourceDuration: TimeInterval,

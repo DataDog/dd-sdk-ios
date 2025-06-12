@@ -17,6 +17,12 @@ extension AppRunStep {
         })
     }
 
+    static func advanceTime(by duration: TimeInterval) -> AppRunStep {
+        return AppRunStep({ app in
+            app.advanceTime(by: duration)
+        })
+    }
+
     static func appBecomesActive(after dt: TimeInterval) -> AppRunStep {
         return AppRunStep({ app in
             app.advanceTime(by: dt)
@@ -114,6 +120,20 @@ extension AppRunStep {
             app.rum._internal?.addLongTask(at: app.currentTime, duration: duration1)
             app.advanceTime(by: dt2)
             app.rum._internal?.addLongTask(at: app.currentTime, duration: duration2)
+        })
+    }
+
+    static func startResource(after dt: TimeInterval, key: String, url: URL) -> AppRunStep {
+        return AppRunStep({ app in
+            app.advanceTime(by: dt)
+            app.rum.startResource(resourceKey: key, url: url)
+        })
+    }
+
+    static func stopResource(after dt: TimeInterval, key: String) -> AppRunStep {
+        return AppRunStep({ app in
+            app.advanceTime(by: dt)
+            app.rum.stopResource(resourceKey: key, response: .mockAny())
         })
     }
 }

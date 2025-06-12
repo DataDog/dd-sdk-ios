@@ -22,7 +22,11 @@ public enum LaunchReason: Codable {
 /// Info about app launch.
 public struct LaunchInfo: Codable, Equatable, PassthroughAnyCodable {
     /// The reason for app startup.
-    public let launchReason: LaunchReason
+    ///
+    /// While this property is typically set at SDK initialization, some products (e.g., RUM) may choose to resolve it lazily
+    /// using custom heuristics. This is necessary on platforms like tvOS, where the actual launch reason cannot be determined
+    /// immediately at launch time and must be inferred during a short observation window.
+    public var launchReason: LaunchReason
 
     /// The date when the application process was started.
     public let processLaunchDate: Date
