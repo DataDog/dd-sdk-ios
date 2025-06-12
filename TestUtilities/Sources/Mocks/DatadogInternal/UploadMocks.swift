@@ -13,19 +13,22 @@ public struct UploadPerformanceMock: UploadPerformancePreset {
     public var maxUploadDelay: TimeInterval
     public var uploadDelayChangeRate: Double
     public var maxBatchesPerUpload: Int
+    public var constrainedNetworkAccessEnabled: Bool
 
     public init(
         initialUploadDelay: TimeInterval,
         minUploadDelay: TimeInterval,
         maxUploadDelay: TimeInterval,
         uploadDelayChangeRate: Double,
-        maxBatchesPerUpload: Int = 1
+        maxBatchesPerUpload: Int = 1,
+        constrainedNetworkAccessEnabled: Bool = true
     ) {
         self.initialUploadDelay = initialUploadDelay
         self.minUploadDelay = minUploadDelay
         self.maxUploadDelay = maxUploadDelay
         self.uploadDelayChangeRate = uploadDelayChangeRate
         self.maxBatchesPerUpload = maxBatchesPerUpload
+        self.constrainedNetworkAccessEnabled = constrainedNetworkAccessEnabled
     }
 
     public static let noOp = UploadPerformanceMock(
@@ -33,7 +36,8 @@ public struct UploadPerformanceMock: UploadPerformancePreset {
         minUploadDelay: .distantFuture,
         maxUploadDelay: .distantFuture,
         uploadDelayChangeRate: 0,
-        maxBatchesPerUpload: 0
+        maxBatchesPerUpload: 0,
+        constrainedNetworkAccessEnabled: true
     )
 
     /// Optimized for performing very fast uploads in unit tests.
@@ -42,7 +46,8 @@ public struct UploadPerformanceMock: UploadPerformancePreset {
         minUploadDelay: 0.05,
         maxUploadDelay: 0.05,
         uploadDelayChangeRate: 0,
-        maxBatchesPerUpload: 10
+        maxBatchesPerUpload: 10,
+        constrainedNetworkAccessEnabled: true
     )
 
     /// Optimized for performing very fast first upload and then changing to unrealistically long intervals.
@@ -51,7 +56,8 @@ public struct UploadPerformanceMock: UploadPerformancePreset {
         minUploadDelay: 60,
         maxUploadDelay: 60,
         uploadDelayChangeRate: 60 / 0.05,
-        maxBatchesPerUpload: 10
+        maxBatchesPerUpload: 10,
+        constrainedNetworkAccessEnabled: true
     )
 }
 
@@ -62,6 +68,7 @@ extension UploadPerformanceMock {
         maxUploadDelay = other.maxUploadDelay
         uploadDelayChangeRate = other.uploadDelayChangeRate
         maxBatchesPerUpload = other.maxBatchesPerUpload
+        constrainedNetworkAccessEnabled = other.constrainedNetworkAccessEnabled
     }
 }
 

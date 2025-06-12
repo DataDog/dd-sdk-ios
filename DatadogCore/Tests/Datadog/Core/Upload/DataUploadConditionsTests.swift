@@ -19,6 +19,7 @@ class DataUploadConditionsTests: XCTestCase {
                     state: .mockRandom(), level: Constants.minBatteryLevel + 0.01
                 ),
                 isLowPowerModeEnabled: false,
+                allowsConstrainedNetworkAccess: true,
                 forNetwork: .mockWith(reachability: .mockRandom(within: [.yes, .maybe]))
             )
             assert(
@@ -27,12 +28,14 @@ class DataUploadConditionsTests: XCTestCase {
                     state: .mockRandom(within: [.charging, .full]), level: .random(in: 0...100)
                 ),
                 isLowPowerModeEnabled: false,
+                allowsConstrainedNetworkAccess: true,
                 forNetwork: .mockWith(reachability: .mockRandom(within: [.yes, .maybe]))
             )
             assert(
                 canPerformUploadReturns: true,
                 forBattery: nil,
                 isLowPowerModeEnabled: false,
+                allowsConstrainedNetworkAccess: true,
                 forNetwork: .mockWith(reachability: .mockRandom(within: [.yes, .maybe]))
             )
         }
@@ -46,6 +49,7 @@ class DataUploadConditionsTests: XCTestCase {
                     state: .mockRandom(within: [.unplugged, .charging, .full]), level: .random(in: 0...100)
                 ),
                 isLowPowerModeEnabled: .random(),
+                allowsConstrainedNetworkAccess: true,
                 forNetwork: .mockWith(reachability: .no)
             )
             assert(
@@ -54,6 +58,7 @@ class DataUploadConditionsTests: XCTestCase {
                     state: .mockRandom(within: [.unplugged, .charging, .full]), level: .random(in: 0...100)
                 ),
                 isLowPowerModeEnabled: true,
+                allowsConstrainedNetworkAccess: true,
                 forNetwork: .mockWith(reachability: .mockRandom())
             )
             assert(
@@ -62,12 +67,14 @@ class DataUploadConditionsTests: XCTestCase {
                     state: .unplugged, level: Constants.minBatteryLevel - 0.01
                 ),
                 isLowPowerModeEnabled: .random(),
+                allowsConstrainedNetworkAccess: true,
                 forNetwork: .mockWith(reachability: .mockRandom())
             )
             assert(
                 canPerformUploadReturns: false,
                 forBattery: nil,
                 isLowPowerModeEnabled: .random(),
+                allowsConstrainedNetworkAccess: true,
                 forNetwork: .mockWith(reachability: .no)
             )
         }
@@ -79,21 +86,61 @@ class DataUploadConditionsTests: XCTestCase {
                 canPerformUploadReturns: true,
                 forBattery: BatteryStatus(state: .unknown, level: .random(in: -100...100)),
                 isLowPowerModeEnabled: .random(),
+                allowsConstrainedNetworkAccess: true,
                 forNetwork: .mockWith(reachability: .mockRandom(within: [.yes, .maybe]))
             )
         }
+    }
+    
+    func testItSaysToUploadIfNetworkIsNotConstrained() {
+        assert(
+            canPerformUploadReturns: true,
+            forBattery: nil,
+            isLowPowerModeEnabled: false,
+            allowsConstrainedNetworkAccess: true,
+            forNetwork: .mockWith(reachability: .yes, isConstrained: false)
+        )
+        
+        assert(
+            canPerformUploadReturns: true,
+            forBattery: nil,
+            isLowPowerModeEnabled: false,
+            allowsConstrainedNetworkAccess: false,
+            forNetwork: .mockWith(reachability: .yes, isConstrained: false)
+        )
+    }
+    
+    func testItSaysToUploadIfNetworkIsConstrained() {
+        assert(
+            canPerformUploadReturns: true,
+            forBattery: nil,
+            isLowPowerModeEnabled: false,
+            allowsConstrainedNetworkAccess: true,
+            forNetwork: .mockWith(reachability: .yes, isConstrained: true)
+        )
+    }
+    
+    func testItSaysToNotUploadIfNetworkIsConstrained() {
+        assert(
+            canPerformUploadReturns: false,
+            forBattery: nil,
+            isLowPowerModeEnabled: false,
+            allowsConstrainedNetworkAccess: false,
+            forNetwork: .mockWith(reachability: .yes, isConstrained: true)
+        )
     }
 
     private func assert(
         canPerformUploadReturns value: Bool,
         forBattery battery: BatteryStatus?,
         isLowPowerModeEnabled: Bool,
+        allowsConstrainedNetworkAccess: Bool,
         forNetwork network: NetworkConnectionInfo,
         file: StaticString = #file,
         line: UInt = #line
     ) {
         let context: DatadogContext = .mockWith(networkConnectionInfo: network, batteryStatus: battery, isLowPowerModeEnabled: isLowPowerModeEnabled)
-        let conditions = DataUploadConditions()
+        let conditions = DataUploadConditions(allowsConstrainedNetworkAccess: allowsConstrainedNetworkAccess)
         let canPerformUpload = conditions.blockersForUpload(with: context).isEmpty
         XCTAssertEqual(
             value,
