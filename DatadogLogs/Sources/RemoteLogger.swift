@@ -137,29 +137,17 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
             var internalAttributes: [String: Encodable] = [:]
 
             // When bundle with RUM is enabled, link RUM context (if available):
-            if self.rumContextIntegration, let rum = context.baggages[RUMContext.key] {
-                do {
-                    let rum = try rum.decode(type: RUMContext.self)
-                    internalAttributes[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
-                    internalAttributes[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
-                    internalAttributes[LogEvent.Attributes.RUM.viewID] = rum.viewID
-                    internalAttributes[LogEvent.Attributes.RUM.actionID] = rum.userActionID
-                } catch {
-                    self.featureScope.telemetry
-                        .error("Fails to decode RUM context from Logs", error: error)
-                }
+            if self.rumContextIntegration, let rum = context.additionalContext(ofType: RUMCoreContext.self) {
+                internalAttributes[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
+                internalAttributes[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
+                internalAttributes[LogEvent.Attributes.RUM.viewID] = rum.viewID
+                internalAttributes[LogEvent.Attributes.RUM.actionID] = rum.userActionID
             }
 
             // When bundle with Trace is enabled, link RUM context (if available):
-            if self.activeSpanIntegration, let spanContext = context.baggages[SpanContext.key] {
-                do {
-                    let trace = try spanContext.decode(type: SpanContext.self)
-                    internalAttributes[LogEvent.Attributes.Trace.traceID] = trace.traceID?.toString(representation: .hexadecimal)
-                    internalAttributes[LogEvent.Attributes.Trace.spanID] = trace.spanID?.toString(representation: .decimal)
-                } catch {
-                    self.featureScope.telemetry
-                        .error("Fails to decode Span context from Logs", error: error)
-                }
+            if self.activeSpanIntegration, let spanContext = context.additionalContext(ofType: SpanCoreContext.self) {
+                internalAttributes[LogEvent.Attributes.Trace.traceID] = spanContext.traceID
+                internalAttributes[LogEvent.Attributes.Trace.spanID] = spanContext.spanID
             }
 
             // When binary images are requested, add them

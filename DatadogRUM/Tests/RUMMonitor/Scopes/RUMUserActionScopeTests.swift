@@ -51,7 +51,7 @@ class RUMUserActionScopeTests: XCTestCase {
     func testGivenActiveUserAction_whenViewIsStopped_itSendsUserActionEvent() throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
 
         let scope = RUMViewScope.mockWith(
             parent: parent,

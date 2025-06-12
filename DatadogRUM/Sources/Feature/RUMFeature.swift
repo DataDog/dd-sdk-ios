@@ -23,6 +23,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
     let anonymousIdentifierManager: AnonymousIdentifierManaging
 
+    let performanceOverride = PerformancePresetOverride(
+        maxFileAgeForRead: 24.hours // RUM intake can ingest events up to 24hrs old
+    )
+
     init(
         in core: DatadogCoreProtocol,
         configuration: RUM.Configuration
@@ -40,7 +44,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         let featureScope = core.scope(for: RUMFeature.self)
         let sessionEndedMetric = SessionEndedMetricController(
             telemetry: core.telemetry,
-            sampleRate: configuration.sessionEndedSampleRate
+            sampleRate: configuration.debugSDK ? 100 : configuration.sessionEndedSampleRate
         )
         let tnsPredicateType = configuration.networkSettledResourcePredicate.metricPredicateType
         let invPredicateType = configuration.nextViewActionPredicate?.metricPredicateType ?? .disabled
@@ -66,6 +70,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
             )
             watchdogTermination = monitor
+        }
+
+        var accessibilityReader: AccessibilityReading? = nil
+        if #available(iOS 13.0, tvOS 13.0, *), configuration.featureFlags[.collectAccessibilitySettings] {
+             accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenter)
         }
 
         let dependencies = RUMScopeDependencies(
@@ -111,6 +120,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     telemetry: core.telemetry
                 )
             },
+            accessibilityReader: accessibilityReader,
             onSessionStart: configuration.onSessionStart,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
@@ -118,7 +128,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             viewEndedMetricFactory: {
                 let viewEndedController = ViewEndedController(
                     telemetry: featureScope.telemetry,
-                    sampleRate: configuration.viewEndedSampleRate
+                    sampleRate: configuration.debugSDK ? 100 : configuration.viewEndedSampleRate
                 )
                 viewEndedController.add(metric: ViewEndedMetric(tnsConfigPredicate: tnsPredicateType, invConfigPredicate: invPredicateType))
 
@@ -174,6 +184,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
             uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
             swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
+            swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate,
             longTaskThreshold: configuration.longTaskThreshold,
             appHangThreshold: configuration.appHangThreshold,
             mainQueue: configuration.mainQueue,
@@ -248,10 +259,12 @@ internal final class RUMFeature: DatadogRemoteFeature {
             appHangThreshold: configuration.appHangThreshold?.toInt64Milliseconds,
             invTimeThresholdMs: (configuration.nextViewActionPredicate as? TimeBasedINVActionPredicate)?.maxTimeToNextView.toInt64Milliseconds,
             mobileVitalsUpdatePeriod: configuration.vitalsUpdateFrequency?.timeInterval.toInt64Milliseconds,
-            sessionSampleRate: Int64(withNoOverflow: configuration.sessionSampleRate),
-            telemetrySampleRate: Int64(withNoOverflow: configuration.telemetrySampleRate),
+            sessionSampleRate: Int64(withNoOverflow: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
+            telemetrySampleRate: Int64(withNoOverflow: configuration.debugSDK ? 100 : configuration.telemetrySampleRate),
             tnsTimeThresholdMs: (configuration.networkSettledResourcePredicate as? TimeBasedTNSResourcePredicate)?.threshold.toInt64Milliseconds,
             traceSampleRate: configuration.urlSessionTracking?.firstPartyHostsTracing.map { Int64(withNoOverflow: $0.sampleRate) },
+            swiftUIViewTrackingEnabled: configuration.swiftUIViewsPredicate != nil,
+            swiftUIActionTrackingEnabled: configuration.swiftUIActionsPredicate != nil,
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
             trackLongTask: configuration.longTaskThreshold != nil,

@@ -26,7 +26,6 @@ internal final class WatchdogTerminationMonitor {
         static let failedToReadViewEvent = "Failed to read the view event from the data store"
         static let rumViewEventUpdated = "RUM View event updated"
         static let failedToSendWatchdogTermination = "Failed to send Watchdog Termination event"
-        static let failedToDecodeLaunchReport = "Fails to decode LaunchReport in RUM"
     }
 
     let checker: WatchdogTerminationChecker
@@ -167,15 +166,11 @@ extension WatchdogTerminationMonitor: FeatureMessageReceiver {
         }
 
         if currentState == .stopped {
-            do {
-                guard let launchReport = try context.baggages[LaunchReport.baggageKey]?.decode(type: LaunchReport.self) else {
-                    return false
-                }
-                self.start(launchReport: launchReport)
-            } catch {
-                DD.logger.error(ErrorMessages.failedToDecodeLaunchReport, error: error)
-                self.feature.telemetry.error(ErrorMessages.failedToDecodeLaunchReport, error: error)
+            guard let launchReport = context.additionalContext(ofType: LaunchReport.self) else {
+                return false
             }
+
+            self.start(launchReport: launchReport)
         }
 
         // Once the monitor has started, ie watchdog termination check has been done

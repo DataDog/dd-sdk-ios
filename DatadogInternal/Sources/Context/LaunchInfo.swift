@@ -20,7 +20,7 @@ public enum LaunchReason: Codable {
 }
 
 /// Info about app launch.
-public struct LaunchInfo: Codable, Equatable, PassthroughAnyCodable {
+public struct LaunchInfo: Codable, Equatable {
     /// The reason for app startup.
     ///
     /// While this property is typically set at SDK initialization, some products (e.g., RUM) may choose to resolve it lazily

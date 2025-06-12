@@ -179,10 +179,8 @@ class RUMViewScopeTests: XCTestCase {
 
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.baggages = try .mockSessionReplayAttributes(
-            hasReplay: hasReplay,
-            recordsCountByViewID: [scope.viewUUID.toRUMDataFormat: 1]
-        )
+        context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
+        context.set(additionalContext: SessionReplayCoreContext.RecordsCount(value: [scope.viewUUID.toRUMDataFormat: 1]))
 
         _ = scope.process(
             command: RUMCommandMock(time: currentTime),
@@ -1421,7 +1419,7 @@ class RUMViewScopeTests: XCTestCase {
     func testWhenViewErrorIsAdded_itSendsErrorEventAndViewUpdateEvent() throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -1590,7 +1588,7 @@ class RUMViewScopeTests: XCTestCase {
     func testGivenStartedView_whenErrorWithAttributesIsAdded_itDoesNotUpdateViewAttributes() throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -1650,7 +1648,7 @@ class RUMViewScopeTests: XCTestCase {
         let hasReplay: Bool = .mockRandom()
         let fakeFingerprint: String = .mockRandom()
         var context = self.context
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         let scope = RUMViewScope(
@@ -1704,7 +1702,7 @@ class RUMViewScopeTests: XCTestCase {
         let mockBacktrace: BacktraceReport = .mockRandom()
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         let scope = RUMViewScope(
@@ -2198,7 +2196,7 @@ class RUMViewScopeTests: XCTestCase {
     func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
 
         let startViewDate: Date = .mockDecember15th2019At10AMUTC()
 
@@ -2267,7 +2265,7 @@ class RUMViewScopeTests: XCTestCase {
     func testGivenStartedView_whenLongTaskWithAttributesIsAdded_itDoesNotUpdateViewAttributes() throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -3311,7 +3309,7 @@ class RUMViewScopeTests: XCTestCase {
 
     func testViewUpdate_onceHasReplayIsTrueItRemainsTrue() throws {
         // Given
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: false)
+        context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: false))
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -3338,7 +3336,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertTrue(scope.isActiveView)
 
         // When
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: true)
+        context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: true))
         currentTime.addTimeInterval(0.5)
         XCTAssertTrue(
             scope.process(
@@ -3348,7 +3346,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        context.baggages = try .mockSessionReplayAttributes(hasReplay: false)
+        context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: false))
         currentTime.addTimeInterval(0.5)
         XCTAssertTrue(
             scope.process(
@@ -3364,5 +3362,119 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(events[0].session.hasReplay, false)
         XCTAssertEqual(events[1].session.hasReplay, true)
         XCTAssertEqual(events[2].session.hasReplay, true)
+    }
+
+    // MARK: - View Attributes
+    @available(iOS 13.0, tvOS 13.0, *)
+    @MainActor
+    func testAccessibilityAttributesInViewEvents() throws {
+        // Given
+        let mockAccessibilityState = Accessibility(
+            textSize: "medium",
+            screenReaderEnabled: false,
+            boldTextEnabled: true,
+            reduceTransparencyEnabled: nil,
+            reduceMotionEnabled: nil,
+            buttonShapesEnabled: nil,
+            invertColorsEnabled: nil,
+            increaseContrastEnabled: nil,
+            assistiveSwitchEnabled: nil,
+            assistiveTouchEnabled: nil,
+            videoAutoplayEnabled: nil,
+            closedCaptioningEnabled: nil,
+            monoAudioEnabled: nil,
+            shakeToUndoEnabled: nil,
+            reducedAnimationsEnabled: nil,
+            shouldDifferentiateWithoutColor: nil,
+            grayscaleEnabled: nil,
+            singleAppModeEnabled: nil,
+            onOffSwitchLabelsEnabled: nil,
+            speakScreenEnabled: nil,
+            speakSelectionEnabled: nil,
+            rtlEnabled: nil
+        )
+
+        let mockAccessibilityReader = AccessibilityReaderMock(state: mockAccessibilityState)
+
+        let mockParent = RUMContextProviderMock()
+        let testContext = context
+
+        let dependencies = RUMScopeDependencies.mockWith(
+            accessibilityReader: mockAccessibilityReader
+        )
+
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: mockParent,
+            dependencies: dependencies,
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "MyView",
+            customTimings: [:],
+            startTime: .mockDecember15th2019At10AMUTC(),
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock()
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(identity: scope.identity),
+            context: testContext,
+            writer: writer
+        )
+        let initialExpectation = XCTestExpectation(description: "Initial accessibility state set")
+        DispatchQueue.main.async {
+            initialExpectation.fulfill()
+        }
+        wait(for: [initialExpectation], timeout: 1.0)
+
+        // Then
+        let initialEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
+
+        let initialAccessibilityData = try XCTUnwrap(
+            initialEvent.context?.contextInfo["accessibility"] as? Accessibility
+        )
+        let finalExpectation = XCTestExpectation(description: "Initial accessibility state set")
+        DispatchQueue.main.async {
+            XCTAssertEqual(initialAccessibilityData.screenReaderEnabled, false)
+            XCTAssertEqual(initialAccessibilityData.textSize, "medium")
+            XCTAssertEqual(initialAccessibilityData.boldTextEnabled, true)
+            finalExpectation.fulfill()
+        }
+        wait(for: [finalExpectation], timeout: 1.0)
+    }
+
+    func testNoAccessibilityAttributesWhenNil() throws {
+        // Given
+        let mockParent = RUMContextProviderMock()
+        let testContext = context
+
+        let dependencies = RUMScopeDependencies.mockWith(
+            accessibilityReader: nil
+        )
+
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: mockParent,
+            dependencies: dependencies,
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "MyView",
+            customTimings: [:],
+            startTime: .mockDecember15th2019At10AMUTC(),
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock()
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(identity: scope.identity),
+            context: testContext,
+            writer: writer
+        )
+
+        // Then
+        let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
+        XCTAssertNil(viewEvent.context?.contextInfo["accessibility"])
     }
 }

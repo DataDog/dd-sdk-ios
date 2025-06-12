@@ -6,8 +6,9 @@
 
 import Foundation
 import UIKit
-import DatadogInternal
 import DatadogRUM
+
+import struct DatadogInternal.AnyEncodable
 
 internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
     let objcPredicate: DDUIKitRUMViewsPredicate

@@ -8,36 +8,72 @@ import UIKit
 import DatadogInternal
 
 internal protocol RUMActionsHandling: RUMCommandPublisher {
-    /// Tracks RUM actions in UIKit by responding to `UIApplication.sendEvent(applicatoin:event:)` being called.
+    /// Tracks RUM actions automatically for UIKit and SwiftUI by responding to `UIApplication.sendEvent(application:event:)` being called.
     func notify_sendEvent(application: UIApplication, event: UIEvent)
-    /// Tracks RUM actions in SwiftUI by being notified from `RUMTapActionModifier`.
+    /// Tracks RUM actions manually with SwiftUI view modifers by being notified from `RUMTapActionModifier`.
     func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable])
 }
 
 internal final class RUMActionsHandler: RUMActionsHandling {
-    /// Factory interface creating "add action" commands from UIEvent intercepted in UIKit.
-    /// It is `nil` when `UIKit` instrumentation is not enabled.
-    private let uiKitCommandsFactory: UIEventCommandFactory?
+    /// Factory that processes `UIEvents` and creates RUM action commands.
+    /// It is `nil` when both UIKit and SwiftUI automatic instrumentations are not enabled.
+    private let eventCommandsFactory: UIEventCommandFactory?
     private let dateProvider: DateProvider
 
     weak var subscriber: RUMCommandSubscriber?
 
-    convenience init(dateProvider: DateProvider, predicate: UITouchRUMActionsPredicate?) {
+    /// Convenience initializer for iOS
+    convenience init(
+        dateProvider: DateProvider,
+        uiKitPredicate: UITouchRUMActionsPredicate?,
+        swiftUIPredicate: SwiftUIRUMActionsPredicate?,
+        swiftUIDetector: SwiftUIComponentDetector?
+    ) {
+        guard uiKitPredicate != nil || swiftUIPredicate != nil else {
+            self.init(dateProvider: dateProvider, eventCommandsFactory: nil)
+            return
+        }
+
         self.init(
             dateProvider: dateProvider,
-            uiKitCommandsFactory: predicate.map { UITouchCommandFactory(dateProvider: dateProvider, predicate: $0) }
+            eventCommandsFactory: UITouchCommandFactory(
+                dateProvider: dateProvider,
+                uiKitPredicate: uiKitPredicate,
+                swiftUIPredicate: swiftUIPredicate,
+                swiftUIDetector: swiftUIDetector
+            )
         )
     }
 
-    convenience init(dateProvider: DateProvider, predicate: UIPressRUMActionsPredicate?) {
+    /// Convenience initializer for tvOS
+    ///
+    /// Note: On tvOS, user interactions come through the remote's physical buttons
+    /// as press events. These press events are processed at the system level
+    /// and delivered identically regardless of whether the UI is built with UIKit or SwiftUI.
+    /// Therefore, only one predicate is needed to handle actions from both frameworks.
+    convenience init(
+        dateProvider: DateProvider,
+        uiKitPredicate: UIPressRUMActionsPredicate?
+    ) {
+        guard let uiKitPredicate else {
+            self.init(dateProvider: dateProvider, eventCommandsFactory: nil)
+            return
+        }
+
         self.init(
             dateProvider: dateProvider,
-            uiKitCommandsFactory: predicate.map { UIPressCommandFactory(dateProvider: dateProvider, predicate: $0) }
+            eventCommandsFactory: UIPressCommandFactory(
+                dateProvider: dateProvider,
+                uiKitPredicate: uiKitPredicate
+            )
         )
     }
 
-    init(dateProvider: DateProvider, uiKitCommandsFactory: UIEventCommandFactory?) {
-        self.uiKitCommandsFactory = uiKitCommandsFactory
+    init(
+        dateProvider: DateProvider,
+        eventCommandsFactory: UIEventCommandFactory?
+    ) {
+        self.eventCommandsFactory = eventCommandsFactory
         self.dateProvider = dateProvider
     }
 
@@ -45,16 +81,16 @@ internal final class RUMActionsHandler: RUMActionsHandling {
         self.subscriber = subscriber
     }
 
-    /// Tracks UIKit RUM actions in response to `UIApplication.sendEvent(application:event:)` event.
+    /// Tracks RUM actions automatically for UIKit and SwiftUI in response to `UIApplication.sendEvent(application:event:)` event.
     func notify_sendEvent(application: UIApplication, event: UIEvent) {
-        guard let command = uiKitCommandsFactory?.command(from: event) else {
+        guard let command = eventCommandsFactory?.command(from: event) else {
             return // Not a "tap" event or doesn't have the view.
         }
 
         guard let subscriber = subscriber else {
             DD.logger.warn(
                 """
-                A RUM action was detected in UIKit, but RUM tracking appears to be disabled.
+                A RUM action was detected, but RUM tracking appears to be disabled.
                 Ensure `RUM.enable()` is called before any actions are triggered.
                 """
             )
@@ -64,7 +100,8 @@ internal final class RUMActionsHandler: RUMActionsHandling {
         subscriber.process(command: command)
     }
 
-    /// Tracks SwiftUI RUM actions in response to `SwiftUI.TapGesture.onEnded` event.
+    /// Tracks manually instrumented SwiftUI actions via `.trackRUMTapAction()` view modifier,
+    /// in response to `SwiftUI.TapGesture.onEnded` event.
     func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable]) {
         let command = RUMAddUserActionCommand(
             time: dateProvider.now,

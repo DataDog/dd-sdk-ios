@@ -10,11 +10,11 @@ import XCTest
 
 private extension ExampleApplication {
     func tapNoOpButton() {
-        buttons["No-op Button"].tap()
+        tapButton(titled: "No-op Button")
     }
 
     func tapShowUITableView() {
-        buttons["Show UITableView"].tap()
+        tapButton(titled: "Show UITableView")
     }
 
     func tapTableViewItem(atIndex index: Int) {
@@ -22,7 +22,7 @@ private extension ExampleApplication {
     }
 
     func tapShowUICollectionView() {
-        buttons["Show UICollectionView"].tap()
+        tapButton(titled: "Show UICollectionView")
     }
 
     func tapCollectionViewItem(atIndex index: Int) {
@@ -30,7 +30,7 @@ private extension ExampleApplication {
     }
 
     func tapShowVariousUIControls() {
-        buttons["Show various UIControls"].tap()
+        tapButton(titled: "Show various UIControls")
     }
 
     func tapTextField(_ text: String) {

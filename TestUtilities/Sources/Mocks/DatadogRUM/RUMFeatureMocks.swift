@@ -90,11 +90,13 @@ extension RUMResourceType {
 public struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent {
     let attribute: String
     public var usr: RUMUser?
+    public var account: RUMAccount?
     public var context: RUMEventAttributes?
 
-    public init(attribute: String, usr: RUMUser? = nil, context: RUMEventAttributes? = nil) {
+    public init(attribute: String, usr: RUMUser? = nil, account: RUMAccount? = nil, context: RUMEventAttributes? = nil) {
         self.attribute = attribute
         self.usr = usr
+        self.account = account
         self.context = context
     }
 }
@@ -737,7 +739,7 @@ extension RUMApplicationState: AnyMockable {
 }
 
 extension RUMContext {
-    public static func mockAny() -> RUMContext {
+    public static func mockAny() -> Self {
         return mockWith()
     }
 
@@ -749,7 +751,7 @@ extension RUMContext {
         activeViewPath: String? = nil,
         activeViewName: String? = nil,
         activeUserActionID: RUMUUID? = nil
-    ) -> RUMContext {
+    ) -> Self {
         return RUMContext(
             rumApplicationID: rumApplicationID,
             sessionID: sessionID,
@@ -797,6 +799,7 @@ extension RUMScopeDependencies {
         renderLoopObserver: RenderLoopObserver? = nil,
         viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)? = { ViewHitchesMock.mockAny() },
         vitalsReaders: VitalsReaders? = nil,
+        accessibilityReader: AccessibilityReading? = nil,
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
         viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
@@ -828,6 +831,7 @@ extension RUMScopeDependencies {
             renderLoopObserver: renderLoopObserver,
             viewHitchesReaderFactory: viewHitchesReaderFactory,
             vitalsReaders: vitalsReaders,
+            accessibilityReader: accessibilityReader,
             onSessionStart: onSessionStart,
             viewCache: viewCache,
             fatalErrorContext: fatalErrorContext,
@@ -855,6 +859,7 @@ extension RUMScopeDependencies {
         renderLoopObserver: RenderLoopObserver? = nil,
         viewHitchesReaderFactory: (() -> RenderLoopReader & ViewHitchesModel)? = nil,
         vitalsReaders: VitalsReaders? = nil,
+        accessibilityReader: AccessibilityReading? = nil,
         onSessionStart: RUM.SessionListener? = nil,
         viewCache: ViewCache? = nil,
         fatalErrorContext: FatalErrorContextNotifying? = nil,
@@ -880,6 +885,7 @@ extension RUMScopeDependencies {
             renderLoopObserver: renderLoopObserver ?? self.renderLoopObserver,
             viewHitchesReaderFactory: viewHitchesReaderFactory ?? self.viewHitchesReaderFactory,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
+            accessibilityReader: accessibilityReader,
             onSessionStart: onSessionStart ?? self.onSessionStart,
             viewCache: viewCache ?? self.viewCache,
             fatalErrorContext: fatalErrorContext ?? self.fatalErrorContext,
@@ -1148,6 +1154,18 @@ public class UIPressRUMActionsPredicateMock: UIPressRUMActionsPredicate {
     }
 }
 
+public class MockSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate {
+    var returnAction: RUMAction?
+
+    public init(returnAction: RUMAction? = RUMAction(name: "custom_action", attributes: [:])) {
+        self.returnAction = returnAction
+    }
+
+    public func rumAction(with componentName: String) -> RUMAction? {
+        return returnAction
+    }
+}
+
 public class RUMActionsHandlerMock: RUMActionsHandling {
     public var onSubscribe: ((RUMCommandSubscriber) -> Void)?
     public var onSendEvent: ((UIApplication, UIEvent) -> Void)?
@@ -1281,17 +1299,6 @@ public class ValueObserverMock<Value>: ValueObserver {
     public func onValueChanged(oldValue: Value, newValue: Value) {
         lastChange = (oldValue, newValue)
         onValueChange?(oldValue, newValue)
-    }
-}
-
-// MARK: - Dependency on Session Replay
-
-extension Dictionary where Key == String, Value == FeatureBaggage {
-    public static func mockSessionReplayAttributes(hasReplay: Bool?, recordsCountByViewID: [String: Int64]? = nil) throws -> Self {
-        return [
-            SessionReplayDependency.hasReplay: .init(hasReplay),
-            SessionReplayDependency.recordsCountByViewID: .init(recordsCountByViewID)
-        ]
     }
 }
 
@@ -1449,8 +1456,26 @@ extension RUMAddCurrentViewAppHangCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMCoreContext: RandomMockable {
-    public static func mockRandom() -> RUMCoreContext {
-        RUMCoreContext(
+    public static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    public static func mockWith(
+        applicationID: String = .mockAny(),
+        sessionID: String = .mockAny(),
+        viewID: String? = .mockAny(),
+        serverTimeOffset: TimeInterval = .mockAny()
+    ) -> Self {
+        .init(
+            applicationID: applicationID,
+            sessionID: sessionID,
+            viewID: viewID,
+            viewServerTimeOffset: serverTimeOffset
+        )
+    }
+
+    public static func mockRandom() -> Self {
+        .init(
             applicationID: .mockRandom(),
             sessionID: .mockRandom(),
             viewID: .mockRandom(),
@@ -1544,5 +1569,18 @@ public class SwiftUIViewNameExtractorMock: SwiftUIViewNameExtractor {
 
     public func extractName(from viewController: UIViewController) -> String? {
         return resultByViewController[viewController] ?? defaultResult
+    }
+}
+
+public class SwiftUIRUMActionsPredicateMock: SwiftUIRUMActionsPredicate {
+    public var resultByName: [String: RUMAction] = [:]
+    public var result: RUMAction?
+
+    public init(result: RUMAction? = nil) {
+        self.result = result
+    }
+
+    public func rumAction(with componentName: String) -> DatadogRUM.RUMAction? {
+        return resultByName[componentName] ?? result
     }
 }

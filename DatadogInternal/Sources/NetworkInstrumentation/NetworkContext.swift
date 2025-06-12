@@ -9,13 +9,6 @@ import Foundation
 /// Describes current Datadog SDK context, so the app state information can be attached to
 /// instrumented Network traces.
 public struct NetworkContext {
-    public struct RUMContext: Decodable {
-        enum CodingKeys: String, CodingKey {
-            case sessionID = "session.id"
-        }
-        public let sessionID: String
-    }
-
     /// Provides the current active RUM context, if any
-    public var rumContext: RUMContext?
+    public var rumContext: RUMCoreContext?
 }

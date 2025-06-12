@@ -51,7 +51,7 @@ public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
         return NOPFeatureScope()
     }
 
-    public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
+    public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
         // not supported - use different type of core mock if you need this
     }
 

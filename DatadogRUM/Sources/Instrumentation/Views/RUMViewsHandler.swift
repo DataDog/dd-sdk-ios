@@ -246,6 +246,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
                   let swiftUIViewNameExtractor,
                   let rumViewName = swiftUIViewNameExtractor.extractName(from: viewController),
                   let rumView = swiftUIPredicate.rumView(for: rumViewName) {
+            // TODO: RUM-9888 - Ignore views already tracked manually with view modifiers
             add(
                 view: .init(
                     identity: identity,

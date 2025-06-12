@@ -14,6 +14,10 @@ internal struct SpanSanitizer {
     func sanitize(span: SpanEvent) -> SpanEvent {
         // Sanitize attribute names
         var sanitizedUserExtraInfo = attributesSanitizer.sanitizeKeys(for: span.userInfo.extraInfo)
+        var sanitizedAccountExtraInfo: [String: String] = [:]
+        if let accountInfoExtraInfo = span.accountInfo?.extraInfo {
+            sanitizedAccountExtraInfo = attributesSanitizer.sanitizeKeys(for: accountInfoExtraInfo)
+        }
         var sanitizedTags = attributesSanitizer.sanitizeKeys(for: span.tags)
 
         // Limit to max number of attributes
@@ -23,13 +27,18 @@ internal struct SpanSanitizer {
             attributes: sanitizedUserExtraInfo,
             to: AttributesSanitizer.Constraints.maxNumberOfAttributes
         )
+        sanitizedAccountExtraInfo = attributesSanitizer.limitNumberOf(
+            attributes: sanitizedAccountExtraInfo,
+            to: AttributesSanitizer.Constraints.maxNumberOfAttributes - sanitizedUserExtraInfo.count
+        )
         sanitizedTags = attributesSanitizer.limitNumberOf(
             attributes: sanitizedTags,
-            to: AttributesSanitizer.Constraints.maxNumberOfAttributes - sanitizedUserExtraInfo.count
+            to: AttributesSanitizer.Constraints.maxNumberOfAttributes - sanitizedAccountExtraInfo.count - sanitizedUserExtraInfo.count
         )
 
         var sanitizedSpan = span
         sanitizedSpan.userInfo.extraInfo = sanitizedUserExtraInfo
+        sanitizedSpan.accountInfo?.extraInfo = sanitizedAccountExtraInfo
         sanitizedSpan.tags = sanitizedTags
         return sanitizedSpan
     }

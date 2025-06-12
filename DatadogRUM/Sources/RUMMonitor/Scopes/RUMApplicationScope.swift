@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
 import DatadogInternal
+import Foundation
 
 internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Tracks the overall application state since `RUM.enable()` was called.
@@ -45,6 +45,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     init(dependencies: RUMScopeDependencies) {
         self.dependencies = dependencies
+
         self.context = RUMContext(
             rumApplicationID: dependencies.rumApplicationID,
             sessionID: .nullUUID,
@@ -287,8 +288,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         }
 
         if didCreateInitialSessionCount > 0 { // Sanity check
-            // We assume this is not an initial session in the app (such is started with `RUMSDKInitCommand`:
-            dependencies.telemetry.error("Starting NEW session on due to \(type(of: command)), but initial sesison never existed")
+            // This is a non-initial session (initial sessions are created via `RUMSDKInitCommand`)
+            dependencies.telemetry.debug("Starting new session triggered by \(type(of: command)). Previous session was stopped for the following reason: \(startPrecondition?.rawValue ?? "unknown")")
         }
 
         let startingInForeground = context.applicationStateHistory.currentState == .active

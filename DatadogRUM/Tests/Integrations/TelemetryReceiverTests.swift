@@ -90,7 +90,7 @@ class TelemetryReceiverTests: XCTestCase {
     func testSendTelemetryDebug_withRUMContext() {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
-        featureScope.contextMock.baggages = [RUMFeature.name: FeatureBaggage(rumContext)]
+        featureScope.contextMock.set(additionalContext: rumContext)
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
 
         // When
@@ -110,7 +110,7 @@ class TelemetryReceiverTests: XCTestCase {
     func testSendTelemetryError_withRUMContext() throws {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
-        featureScope.contextMock.baggages = [RUMFeature.name: FeatureBaggage(rumContext)]
+        featureScope.contextMock.set(additionalContext: rumContext)
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
 
         // When
@@ -257,17 +257,21 @@ class TelemetryReceiverTests: XCTestCase {
         let telemetry = TelemetryMock(with: receiver)
         let applicationId: String = .mockRandom()
 
-        featureScope.contextMock.baggages[RUMFeature.name] = FeatureBaggage([
-            RUMContextAttributes.IDs.applicationID: applicationId,
-            RUMContextAttributes.IDs.sessionID: String.mockRandom()
-        ])
+        featureScope.contextMock.set(
+            additionalContext: RUMCoreContext(
+                applicationID: applicationId,
+                sessionID: .mockRandom()
+            )
+        )
         telemetry.debug(id: "0", message: "telemetry debug")
 
         // When
-        featureScope.contextMock.baggages[RUMFeature.name] = FeatureBaggage([
-            RUMContextAttributes.IDs.applicationID: applicationId,
-            RUMContextAttributes.IDs.sessionID: String.mockRandom()
-        ])
+        featureScope.contextMock.set(
+            additionalContext: RUMCoreContext(
+                applicationID: applicationId,
+                sessionID: .mockRandom()
+            )
+        )
         telemetry.debug(id: "0", message: "telemetry debug")
 
         // Then
@@ -300,6 +304,8 @@ class TelemetryReceiverTests: XCTestCase {
         let sessionSampleRate: Int64? = .mockRandom()
         let telemetrySampleRate: Int64? = .mockRandom()
         let traceSampleRate: Int64? = .mockRandom()
+        let swiftUIViewTrackingEnabled: Bool? = .mockRandom()
+        let swiftUIActionTrackingEnabled: Bool? = .mockRandom()
         let trackBackgroundEvents: Bool? = .mockRandom()
         let trackCrossPlatformLongTasks: Bool? = .mockRandom()
         let trackErrors: Bool? = .mockRandom()
@@ -328,6 +334,8 @@ class TelemetryReceiverTests: XCTestCase {
             sessionSampleRate: sessionSampleRate,
             telemetrySampleRate: telemetrySampleRate,
             traceSampleRate: traceSampleRate,
+            swiftUIViewTrackingEnabled: swiftUIViewTrackingEnabled,
+            swiftUIActionTrackingEnabled: swiftUIActionTrackingEnabled,
             trackBackgroundEvents: trackBackgroundEvents,
             trackCrossPlatformLongTasks: trackCrossPlatformLongTasks,
             trackErrors: trackErrors,
@@ -360,6 +368,8 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.telemetry.configuration.mobileVitalsUpdatePeriod, mobileVitalsUpdatePeriod)
         XCTAssertEqual(event?.telemetry.configuration.sessionSampleRate, sessionSampleRate)
         XCTAssertEqual(event?.telemetry.configuration.telemetrySampleRate, telemetrySampleRate)
+        XCTAssertEqual(event?.telemetry.configuration.swiftuiViewTrackingEnabled, swiftUIViewTrackingEnabled)
+        XCTAssertEqual(event?.telemetry.configuration.swiftuiActionTrackingEnabled, swiftUIActionTrackingEnabled)
         XCTAssertEqual(event?.telemetry.configuration.traceSampleRate, traceSampleRate)
         XCTAssertEqual(event?.telemetry.configuration.trackBackgroundEvents, trackBackgroundEvents)
         XCTAssertEqual(event?.telemetry.configuration.trackCrossPlatformLongTasks, trackCrossPlatformLongTasks)
@@ -429,7 +439,7 @@ class TelemetryReceiverTests: XCTestCase {
         let rumContext: RUMCoreContext = .mockRandom()
         let deviceMock: DeviceInfo = .mockRandom()
         featureScope.contextMock = .mockWith(device: deviceMock)
-        featureScope.contextMock.baggages = [RUMFeature.name: FeatureBaggage(rumContext)]
+        featureScope.contextMock.set(additionalContext: rumContext)
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
 
         // When
@@ -455,7 +465,7 @@ class TelemetryReceiverTests: XCTestCase {
     func testSendTelemetryMetricWithRUMContextAndSessionIDOverride() {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
-        featureScope.contextMock.baggages = [RUMFeature.name: FeatureBaggage(rumContext)]
+        featureScope.contextMock.set(additionalContext: rumContext)
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
         let sessionIDOverride = "session-id-override"
 

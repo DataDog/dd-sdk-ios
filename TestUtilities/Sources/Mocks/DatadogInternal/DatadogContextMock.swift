@@ -30,6 +30,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
         nativeSourceOverride: String? = nil,
         device: DeviceInfo = .mockAny(),
         userInfo: UserInfo = .mockAny(),
+        accountInfo: AccountInfo? = nil,
         trackingConsent: TrackingConsent = .pending,
         launchInfo: LaunchInfo = .mockAny(),
         applicationStateHistory: AppStateHistory = .mockAny(),
@@ -37,9 +38,9 @@ extension DatadogContext: AnyMockable, RandomMockable {
         carrierInfo: CarrierInfo? = .mockAny(),
         batteryStatus: BatteryStatus? = .mockAny(),
         isLowPowerModeEnabled: Bool = false,
-        baggages: [String: FeatureBaggage] = [:]
+        additionalContext: [AdditionalContext] = []
     ) -> DatadogContext {
-        .init(
+        var context = DatadogContext(
             site: site,
             clientToken: clientToken,
             service: service,
@@ -59,15 +60,18 @@ extension DatadogContext: AnyMockable, RandomMockable {
             device: device,
             nativeSourceOverride: nativeSourceOverride,
             userInfo: userInfo,
+            accountInfo: accountInfo,
             trackingConsent: trackingConsent,
             launchInfo: launchInfo,
             applicationStateHistory: applicationStateHistory,
             networkConnectionInfo: networkConnectionInfo,
             carrierInfo: carrierInfo,
             batteryStatus: batteryStatus,
-            isLowPowerModeEnabled: isLowPowerModeEnabled,
-            baggages: baggages
+            isLowPowerModeEnabled: isLowPowerModeEnabled
         )
+
+        additionalContext.forEach { context.set(additionalContext: $0) }
+        return context
     }
 
     public static func mockRandom() -> DatadogContext {
@@ -90,14 +94,14 @@ extension DatadogContext: AnyMockable, RandomMockable {
             sdkInitDate: .mockRandomInThePast(),
             device: .mockRandom(),
             userInfo: .mockRandom(),
+            accountInfo: .mockRandom(),
             trackingConsent: .mockRandom(),
             launchInfo: .mockRandom(),
             applicationStateHistory: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
             batteryStatus: nil,
-            isLowPowerModeEnabled: .mockRandom(),
-            baggages: .mockRandom()
+            isLowPowerModeEnabled: .mockRandom()
         )
     }
 }
@@ -222,6 +226,20 @@ extension LaunchInfo: AnyMockable, RandomMockable {
             launchReason: .mockRandom(),
             processLaunchDate: .mockRandom(),
             timeToDidBecomeActive: .mockRandom()
+        )
+    }
+}
+
+extension AccountInfo: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self {
+        return mockRandom()
+    }
+
+    public static func mockRandom() -> Self {
+        return .init(
+            id: .mockRandom(),
+            name: .mockRandom(),
+            extraInfo: mockRandomAttributes()
         )
     }
 }

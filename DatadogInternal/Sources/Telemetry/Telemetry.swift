@@ -37,6 +37,8 @@ public struct ConfigurationTelemetry: Equatable {
     public let tracerAPI: String?
     public let tracerAPIVersion: String?
     public let traceSampleRate: Int64?
+    public let swiftUIViewTrackingEnabled: Bool?
+    public let swiftUIActionTrackingEnabled: Bool?
     public let trackBackgroundEvents: Bool?
     public let trackCrossPlatformLongTasks: Bool?
     public let trackErrors: Bool?
@@ -108,6 +110,8 @@ public struct UsageTelemetry: SampledTelemetry {
         case setGlobalContext
         /// setUser, setUserProperty, setUserInfo APIs
         case setUser
+        /// setAccount, setAccountInfo APIs
+        case setAccount
         /// addFeatureFlagEvaluation API
         case addFeatureFlagEvaluation
         /// addFeatureFlagEvaluation API
@@ -389,6 +393,8 @@ extension Telemetry {
         tracerAPI: String? = nil,
         tracerAPIVersion: String? = nil,
         traceSampleRate: Int64? = nil,
+        swiftUIViewTrackingEnabled: Bool? = nil,
+        swiftUIActionTrackingEnabled: Bool? = nil,
         trackBackgroundEvents: Bool? = nil,
         trackCrossPlatformLongTasks: Bool? = nil,
         trackErrors: Bool? = nil,
@@ -444,6 +450,8 @@ extension Telemetry {
             tracerAPI: tracerAPI,
             tracerAPIVersion: tracerAPIVersion,
             traceSampleRate: traceSampleRate,
+            swiftUIViewTrackingEnabled: swiftUIViewTrackingEnabled,
+            swiftUIActionTrackingEnabled: swiftUIActionTrackingEnabled,
             trackBackgroundEvents: trackBackgroundEvents,
             trackCrossPlatformLongTasks: trackCrossPlatformLongTasks,
             trackErrors: trackErrors,
@@ -569,6 +577,8 @@ extension ConfigurationTelemetry {
             tracerAPI: other.tracerAPI ?? tracerAPI,
             tracerAPIVersion: other.tracerAPIVersion ?? tracerAPIVersion,
             traceSampleRate: other.traceSampleRate ?? traceSampleRate,
+            swiftUIViewTrackingEnabled: other.swiftUIViewTrackingEnabled ?? swiftUIViewTrackingEnabled,
+            swiftUIActionTrackingEnabled: other.swiftUIActionTrackingEnabled ?? swiftUIActionTrackingEnabled,
             trackBackgroundEvents: other.trackBackgroundEvents ?? trackBackgroundEvents,
             trackCrossPlatformLongTasks: other.trackCrossPlatformLongTasks ?? trackCrossPlatformLongTasks,
             trackErrors: other.trackErrors ?? trackErrors,

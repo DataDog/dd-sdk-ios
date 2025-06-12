@@ -101,6 +101,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
         errorAttributes[LogEvent.Attributes.RUM.viewID] = crashContext.lastRUMViewEvent?.view.id
 
         let user = crashContext.userInfo
+        let accountInfo = crashContext.accountInfo
         let deviceInfo = crashContext.device
 
         // Merge logs attributes with crash report attributes
@@ -149,6 +150,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
                     email: user?.email,
                     extraInfo: user?.extraInfo ?? [:]
                 ),
+                accountInfo: accountInfo,
                 networkConnectionInfo: crashContext.networkConnectionInfo,
                 mobileCarrierInfo: crashContext.carrierInfo,
                 attributes: .init(
@@ -197,16 +199,11 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
                 event[dateKey] = correctedTimestamp
             }
 
-            if let rum = context.baggages[RUMContext.key] {
-                do {
-                    let rum = try rum.decode(type: RUMContext.self)
-                    event[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
-                    event[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
-                    event[LogEvent.Attributes.RUM.viewID] = rum.viewID
-                    event[LogEvent.Attributes.RUM.actionID] = rum.userActionID
-                } catch {
-                    core.telemetry.error("Fails to decode RUM context from Logs in `WebViewLogReceiver`", error: error)
-                }
+            if let rum = context.additionalContext(ofType: RUMCoreContext.self) {
+                event[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
+                event[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
+                event[LogEvent.Attributes.RUM.viewID] = rum.viewID
+                event[LogEvent.Attributes.RUM.actionID] = rum.userActionID
             }
 
             writer.write(value: AnyEncodable(event))

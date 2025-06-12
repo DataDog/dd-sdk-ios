@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
 import DatadogInternal
+import Foundation
 
 internal struct VitalsReaders {
     let frequency: TimeInterval
@@ -44,6 +44,7 @@ internal struct RUMScopeDependencies {
     let renderLoopObserver: RenderLoopObserver?
     let viewHitchesReaderFactory: () -> (RenderLoopReader & ViewHitchesModel)?
     let vitalsReaders: VitalsReaders?
+    let accessibilityReader: AccessibilityReading?
     let onSessionStart: RUM.SessionListener?
     let viewCache: ViewCache
     /// The RUM context necessary for tracking fatal errors like Crashes or fatal App Hangs.
@@ -82,6 +83,7 @@ internal struct RUMScopeDependencies {
         renderLoopObserver: RenderLoopObserver?,
         viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)?,
         vitalsReaders: VitalsReaders?,
+        accessibilityReader: AccessibilityReading?,
         onSessionStart: RUM.SessionListener?,
         viewCache: ViewCache,
         fatalErrorContext: FatalErrorContextNotifying,
@@ -106,6 +108,7 @@ internal struct RUMScopeDependencies {
         self.renderLoopObserver = renderLoopObserver
         self.viewHitchesReaderFactory = viewHitchesReaderFactory
         self.vitalsReaders = vitalsReaders
+        self.accessibilityReader = accessibilityReader
         self.onSessionStart = onSessionStart
         self.viewCache = viewCache
         self.fatalErrorContext = fatalErrorContext
