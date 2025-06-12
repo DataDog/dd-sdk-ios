@@ -136,48 +136,56 @@ public enum Datadog {
         /// `false` by default.
         public var backgroundTasksEnabled: Bool
 
+        /// Allows uploads on networks with "Low Data Mode" enabled.
+        /// When set to `false`, uploads are deferred until the device is connected to an unconstrained network.
+        ///
+        /// Defaults to `true`.
+        public var constrainedNetworkAccessEnabled: Bool
+
         /// Creates a Datadog SDK Configuration object.
         ///
         /// - Parameters:
-        ///   - clientToken:                Either the RUM client token (which supports RUM, Logging and APM) or regular client token,
-        ///                                 only for Logging and APM.
+        ///   - clientToken:                            Either the RUM client token (which supports RUM, Logging and APM) or regular client token,
+        ///                                             only for Logging and APM.
         ///
-        ///   - env:                        The environment name which will be sent to Datadog. This can be used
-        ///                                 To filter events on different environments (e.g. "staging" or "production").
+        ///   - env:                                    The environment name which will be sent to Datadog. This can be used
+        ///                                             To filter events on different environments (e.g. "staging" or "production").
         ///
-        ///   - site:                       Datadog site endpoint, default value is `.us1`.
+        ///   - site:                                   Datadog site endpoint, default value is `.us1`.
         ///
-        ///   - service:                    The service name associated with data send to Datadog.
-        ///                                 Default value is set to application bundle identifier.
+        ///   - service:                                The service name associated with data send to Datadog.
+        ///                                             Default value is set to application bundle identifier.
         ///
-        ///   - bundle:                     The bundle object that contains the current executable.
+        ///   - bundle:                                 The bundle object that contains the current executable.
         ///
-        ///   - batchSize:                  The preferred size of batched data uploaded to Datadog servers.
-        ///                                 This value impacts the size and number of requests performed by the SDK.
-        ///                                 `.medium` by default.
+        ///   - batchSize:                              The preferred size of batched data uploaded to Datadog servers.
+        ///                                             This value impacts the size and number of requests performed by the SDK.
+        ///                                             `.medium` by default.
         ///
-        ///   - uploadFrequency:            The preferred frequency of uploading data to Datadog servers.
-        ///                                 This value impacts the frequency of performing network requests by the SDK.
-        ///                                 `.average` by default.
+        ///   - uploadFrequency:                        The preferred frequency of uploading data to Datadog servers.
+        ///                                             This value impacts the frequency of performing network requests by the SDK.
+        ///                                             `.average` by default.
         ///
-        ///   - proxyConfiguration:         A proxy configuration attributes.
-        ///                                 This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
+        ///   - proxyConfiguration:                     A proxy configuration attributes.
+        ///                                             This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
         ///
-        ///   - encryption:                 Data encryption to use for on-disk data persistency by providing an object
-        ///                                 complying with `DataEncryption` protocol.
+        ///   - encryption:                             Data encryption to use for on-disk data persistency by providing an object
+        ///                                             complying with `DataEncryption` protocol.
         ///
-        ///   - serverDateProvider:         A custom NTP synchronization interface.
-        ///                                 By default, the Datadog SDK synchronizes with dedicated NTP pools provided by the
-        ///                                 https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
-        ///                                 implementation will result in desynchronization of the SDK instance and the Datadog servers.
-        ///                                 This can lead to significant time shift in RUM sessions or distributed traces.
-        ///   - backgroundTasksEnabled:     A flag that determines if `UIApplication` methods
-        ///                                 `beginBackgroundTask(expirationHandler:)` and `endBackgroundTask:`
-        ///                                 are used to perform background uploads.
-        ///                                 It may extend the amount of time the app is operating in background by 30 seconds.
-        ///                                 Tasks are normally stopped when there's nothing to upload or when encountering
-        ///                                 any upload blocker such us no internet connection or low battery.
-        ///                                 By default it's set to `false`.
+        ///   - serverDateProvider:                     A custom NTP synchronization interface.
+        ///                                             By default, the Datadog SDK synchronizes with dedicated NTP pools provided by the
+        ///                                             https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
+        ///                                             implementation will result in desynchronization of the SDK instance and the Datadog servers.
+        ///                                             This can lead to significant time shift in RUM sessions or distributed traces.
+        ///   - backgroundTasksEnabled:                 A flag that determines if `UIApplication` methods
+        ///                                             `beginBackgroundTask(expirationHandler:)` and `endBackgroundTask:`
+        ///                                             are used to perform background uploads.
+        ///                                             It may extend the amount of time the app is operating in background by 30 seconds.
+        ///                                             Tasks are normally stopped when there's nothing to upload or when encountering
+        ///                                             any upload blocker such us no internet connection or low battery.
+        ///                                             By default it's set to `false`.
+        ///   - constrainedNetworkAccessEnabled:        A flag that determines if uploads should be enabled on networks with "Low Data Mode" enabled.
+        ///                                             By default it's set to `true`.
         public init(
             clientToken: String,
             env: String,
@@ -190,7 +198,8 @@ public enum Datadog {
             encryption: DataEncryption? = nil,
             serverDateProvider: ServerDateProvider? = nil,
             batchProcessingLevel: BatchProcessingLevel = .medium,
-            backgroundTasksEnabled: Bool = false
+            backgroundTasksEnabled: Bool = false,
+            constrainedNetworkAccessEnabled: Bool = true
         ) {
             self.clientToken = clientToken
             self.env = env
@@ -204,6 +213,7 @@ public enum Datadog {
             self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
             self.batchProcessingLevel = batchProcessingLevel
             self.backgroundTasksEnabled = backgroundTasksEnabled
+            self.constrainedNetworkAccessEnabled = constrainedNetworkAccessEnabled
         }
 
         // MARK: - Internal
@@ -596,7 +606,8 @@ extension DatadogCore {
             batchSize: debug ? .small : configuration.batchSize,
             uploadFrequency: debug ? .frequent : configuration.uploadFrequency,
             bundleType: bundleType,
-            batchProcessingLevel: configuration.batchProcessingLevel
+            batchProcessingLevel: configuration.batchProcessingLevel,
+            constrainedNetworkAccessEnabled: configuration.constrainedNetworkAccessEnabled
         )
         let isRunFromExtension = bundleType == .iOSAppExtension
 
