@@ -90,8 +90,10 @@
 		963F6B112DB79B5700F9425A /* ExampleApplication+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963F6B102DB79B5300F9425A /* ExampleApplication+Extensions.swift */; };
 		963F72412DB0FD4C00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963F72402DB0FD4B00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift */; };
 		964537F02DCBB7EF00C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 964537EF2DCBB7EF00C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard */; };
-		964537F42DCBBAC900C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964537F32DCBBAC800C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.swift */; };
+		964537F42DCBBAC900C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964537F32DCBBAC800C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootView.swift */; };
 		96E1E1B32DAFE4C700EF013F /* RUMSwiftUIAutoInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E1E1B22DAFE4C500EF013F /* RUMSwiftUIAutoInstrumentationTests.swift */; };
+		96F48F452DF97240000D6E56 /* RUMSwiftUIAutoInstrumentationActionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F48F442DF9723F000D6E56 /* RUMSwiftUIAutoInstrumentationActionView.swift */; };
+		96F48F472DF97318000D6E56 /* RUMSwiftUIAutoInstrumentationActionViewScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 96F48F462DF97318000D6E56 /* RUMSwiftUIAutoInstrumentationActionViewScenario.storyboard */; };
 		9EA95C1C2791C9BE00F6C1F3 /* WebViewTrackingFixtureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA95C192791C9BE00F6C1F3 /* WebViewTrackingFixtureViewController.swift */; };
 		9EA95C1D2791C9BE00F6C1F3 /* WebViewTrackingScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9EA95C1A2791C9BE00F6C1F3 /* WebViewTrackingScenario.storyboard */; };
 		9EA95C1E2791C9BE00F6C1F3 /* WebViewScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA95C1B2791C9BE00F6C1F3 /* WebViewScenarios.swift */; };
@@ -229,8 +231,10 @@
 		963F6B102DB79B5300F9425A /* ExampleApplication+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExampleApplication+Extensions.swift"; sourceTree = "<group>"; };
 		963F72402DB0FD4B00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIAutoInstrumentationTabbarRootView.swift; sourceTree = "<group>"; };
 		964537EF2DCBB7EF00C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard; sourceTree = "<group>"; };
-		964537F32DCBBAC800C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIAutoInstrumentationSingleRootViewScenario.swift; sourceTree = "<group>"; };
+		964537F32DCBBAC800C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIAutoInstrumentationSingleRootView.swift; sourceTree = "<group>"; };
 		96E1E1B22DAFE4C500EF013F /* RUMSwiftUIAutoInstrumentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIAutoInstrumentationTests.swift; sourceTree = "<group>"; };
+		96F48F442DF9723F000D6E56 /* RUMSwiftUIAutoInstrumentationActionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIAutoInstrumentationActionView.swift; sourceTree = "<group>"; };
+		96F48F462DF97318000D6E56 /* RUMSwiftUIAutoInstrumentationActionViewScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMSwiftUIAutoInstrumentationActionViewScenario.storyboard; sourceTree = "<group>"; };
 		9A2B176DAB4566F41D745DE6 /* Pods-Runner iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS.debug.xcconfig"; path = "Target Support Files/Pods-Runner iOS/Pods-Runner iOS.debug.xcconfig"; sourceTree = "<group>"; };
 		9EA95C192791C9BE00F6C1F3 /* WebViewTrackingFixtureViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewTrackingFixtureViewController.swift; sourceTree = "<group>"; };
 		9EA95C1A2791C9BE00F6C1F3 /* WebViewTrackingScenario.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = WebViewTrackingScenario.storyboard; sourceTree = "<group>"; };
@@ -683,7 +687,9 @@
 			isa = PBXGroup;
 			children = (
 				963F72402DB0FD4B00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift */,
-				964537F32DCBBAC800C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.swift */,
+				964537F32DCBBAC800C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootView.swift */,
+				96F48F442DF9723F000D6E56 /* RUMSwiftUIAutoInstrumentationActionView.swift */,
+				96F48F462DF97318000D6E56 /* RUMSwiftUIAutoInstrumentationActionViewScenario.storyboard */,
 				961611372DB147F100A429F9 /* RUMSwiftUIAutoInstrumentationRootTabbarScenario.storyboard */,
 				964537EF2DCBB7EF00C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard */,
 			);
@@ -909,6 +915,7 @@
 				61441C0E24616DEC003D8BB8 /* Assets.xcassets in Resources */,
 				612C13752A9DFEF70086B5D1 /* SRMultipleViewsRecordingScenario.storyboard in Resources */,
 				6137E649252DD88D00720485 /* RUMModalViewsAutoInstrumentationScenario.storyboard in Resources */,
+				96F48F472DF97318000D6E56 /* RUMSwiftUIAutoInstrumentationActionViewScenario.storyboard in Resources */,
 				615AAC36251E353700C89EE9 /* RUMTabBarAutoInstrumentationScenario.storyboard in Resources */,
 				9EC2835E26CFF57A00FACF1C /* RUMMobileVitalsScenario.storyboard in Resources */,
 				6167AD19251A27B80012B4D0 /* URLSessionScenario.storyboard in Resources */,
@@ -959,13 +966,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS/Pods-Runner iOS-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS/Pods-Runner iOS-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -980,13 +983,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1023,13 +1022,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1044,13 +1039,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS/Pods-Runner iOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner iOS/Pods-Runner iOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1090,7 +1081,8 @@
 				61C2C20B24C1045300C0321C /* SendRUMFixture1ViewController.swift in Sources */,
 				615C3155251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift in Sources */,
 				61441C9D2461A796003D8BB8 /* AppConfiguration.swift in Sources */,
-				964537F42DCBBAC900C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.swift in Sources */,
+				96F48F452DF97240000D6E56 /* RUMSwiftUIAutoInstrumentationActionView.swift in Sources */,
+				964537F42DCBBAC900C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootView.swift in Sources */,
 				9EC2836026CFF59400FACF1C /* RUMMobileVitalsViewController.swift in Sources */,
 				963F72412DB0FD4C00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift in Sources */,
 				6164AF06252C9004000D78C4 /* ObjcSendFirstPartyRequestsViewController.m in Sources */,
