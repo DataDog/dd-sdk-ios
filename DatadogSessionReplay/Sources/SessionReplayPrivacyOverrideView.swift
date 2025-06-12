@@ -9,6 +9,33 @@
 import SwiftUI
 import DatadogInternal
 
+/// A SwiftUI view that applies Session Replay privacy overrides to its content.
+///
+/// This view allows you to specify privacy settings for text and input, images, touch interactions,
+/// and whether the content should be hidden from Session Replay. When active, these overrides apply
+/// to the enclosed SwiftUI content, controlling how it is recorded in Session Replay.
+///
+/// The following example shows how to override text, input and image privacy options in a view
+/// containing user information:
+///
+/// ```swift
+/// VStack(spacing: 8) {
+///   Text("User Profile")
+///
+///   SessionReplayPrivacyOverrideView(
+/// 	textAndInputPrivacy: .maskAll,
+/// 	imagePrivacy: .maskAll
+///   ) {
+/// 	HStack {
+/// 	  AsyncImage(url: user.image)
+/// 		.frame(width: 50, height: 50)
+/// 	  Text(user.name)
+/// 	}
+///   }
+///
+///   Text("Last seen: 5 minutes ago")
+/// }
+/// ```
 @available(iOS 16, *)
 public struct SessionReplayPrivacyOverrideView<Content: View>: View {
 	private let isActive: Bool
@@ -19,6 +46,16 @@ public struct SessionReplayPrivacyOverrideView<Content: View>: View {
 	private let core: DatadogCoreProtocol
 	private let content: () -> Content
 
+	/// Creates a new `SessionReplayPrivacyOverrideView` with specified privacy settings.
+	///
+	/// - Parameters:
+	///   - isActive: A Boolean value that determines whether the privacy overrides are applied. The default value is `true`.
+	///   - textAndInputPrivacy: The privacy level for text and input content. The default value is `nil` (no override).
+	///   - imagePrivacy: The privacy level for images. The default value is `nil` (no override).
+	///   - touchPrivacy: The privacy level for touch interactions. The default value is `nil` (no override).
+	///   - hide: A Boolean value indicating whether the content should be hidden from Session Replay. The default value is `nil` (no override).
+	///   - core: The Datadog core instance to use for feature detection.
+	///   - content: A closure returning the SwiftUI content to which the privacy overrides will be applied.
 	public init(
 		isActive: Bool = true,
 		textAndInputPrivacy: TextAndInputPrivacyLevel? = nil,
