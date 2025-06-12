@@ -980,7 +980,8 @@ class RUMMonitorTests: XCTestCase {
             launchInfo: LaunchInfo(
                 launchReason: .userLaunch,
                 processLaunchDate: launchDate,
-                timeToDidBecomeActive: nil
+                timeToDidBecomeActive: nil,
+                raw: .mockAny()
             )
         )
 
@@ -1006,7 +1007,8 @@ class RUMMonitorTests: XCTestCase {
             launchInfo: LaunchInfo(
                 launchReason: .prewarming,
                 processLaunchDate: launchDate,
-                timeToDidBecomeActive: nil
+                timeToDidBecomeActive: nil,
+                raw: .mockAny()
             )
         )
         config.dateProvider = RelativeDateProvider(
@@ -1039,7 +1041,8 @@ class RUMMonitorTests: XCTestCase {
             launchInfo: LaunchInfo(
                 launchReason: .userLaunch,
                 processLaunchDate: launchDate,
-                timeToDidBecomeActive: nil
+                timeToDidBecomeActive: nil,
+                raw: .mockAny()
             )
         )
         config.dateProvider = RelativeDateProvider(

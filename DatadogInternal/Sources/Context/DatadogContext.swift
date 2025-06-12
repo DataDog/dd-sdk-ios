@@ -86,6 +86,11 @@ public struct DatadogContext {
     /// Provides the history of app foreground / background states.
     public var applicationStateHistory: AppStateHistory
 
+    /// If the app supports scenes and doesn’t use an app delegate object to manage transitions to and from the foreground or background.
+    /// It doesn't imply whether the app has an actual `UISceneDelegate` implementation or behavior - it only means that app declares `UIApplicationSceneManifest`
+    /// in its `Info.plist`. The presence of that key changes the initiali lifecycle of thea app (in case of user launch, apps with scene manifest start shortly in BACKGROUND before moving to INACTIVE).
+    public let isUsingSceneLifecycle: Bool
+
     // MARK: - Device Specific
 
     /// Network information.
@@ -130,6 +135,7 @@ public struct DatadogContext {
         applicationName: String,
         applicationBundleIdentifier: String,
         applicationBundleType: BundleType,
+        isUsingSceneLifecycle: Bool,
         sdkInitDate: Date,
         device: DeviceInfo,
         nativeSourceOverride: String? = nil,
@@ -159,6 +165,7 @@ public struct DatadogContext {
         self.applicationName = applicationName
         self.applicationBundleIdentifier = applicationBundleIdentifier
         self.applicationBundleType = applicationBundleType
+        self.isUsingSceneLifecycle = isUsingSceneLifecycle
         self.sdkInitDate = sdkInitDate
         self.device = device
         self.nativeSourceOverride = nativeSourceOverride

@@ -30,6 +30,7 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertEqual(rse.actionsCount.total, 0)
         XCTAssertEqual(rse.sdkErrorsCount.total, 0)
         XCTAssertEqual(rse.sdkErrorsCount.byKind, [:])
+        XCTAssertNil(rse.lifecycleInfo)
     }
 
     // MARK: - Metric Type
@@ -624,6 +625,97 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertEqual(try matcher.value("rse.upload_quality.feature.blocker_count.blocker2") as Int, 1)
     }
 
+    // MARK: - Launch Info
+
+    func testReportingLaunchInfo() throws {
+        let prewarmed: Bool = .mockRandom()
+        let isUsingSceneLifecycle: Bool = .mockRandom()
+        let launchInfo = LaunchInfo(
+            launchReason: .userLaunch,
+            processLaunchDate: Date(),
+            timeToDidBecomeActive: 1.84,
+            raw: .init(taskPolicyRole: "TASK_ROLE_MOCK", isPrewarmed: prewarmed)
+        )
+        let sdkInitDate = launchInfo.processLaunchDate + 0.42
+        let context: DatadogContext = .mockWith(
+            isUsingSceneLifecycle: isUsingSceneLifecycle,
+            sdkInitDate: sdkInitDate,
+            launchInfo: launchInfo,
+            applicationStateHistory: .mockWith(initialState: .inactive, date: sdkInitDate)
+        )
+
+        // Given
+        let metric = SessionEndedMetric.with(sessionID: sessionID, context: context)
+
+        // When
+        let attributes = metric.asMetricAttributes(with: context)
+
+        // Then
+        let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
+        XCTAssertEqual(rse.launchInfo.launchReason, "user launch")
+        XCTAssertEqual(rse.launchInfo.taskRole, "TASK_ROLE_MOCK")
+        XCTAssertEqual(rse.launchInfo.prewarmed, prewarmed)
+        XCTAssertEqual(rse.launchInfo.timeToSdkInit, sdkInitDate.timeIntervalSince(launchInfo.processLaunchDate).toInt64Milliseconds)
+        XCTAssertEqual(rse.launchInfo.timeToDidBecomeActive, 1.84.toInt64Milliseconds)
+        XCTAssertEqual(rse.launchInfo.hasScenesLifecycle, isUsingSceneLifecycle)
+        XCTAssertEqual(rse.launchInfo.appStateAtSdkInit, "inactive")
+    }
+
+    // MARK: - Lifecycle Info
+
+    func testReportingLifecycleInfo() throws {
+        let processLaunchDate = Date()
+        let view1Start = processLaunchDate + 1
+        let view1Stop = view1Start + 10 // view1 lasts for 10s
+        let view2Start = view1Stop + 4 // 4s in background, then view2 starts
+        let view2Stop = view2Start + 5 // view2 lasts for 5s
+        let validSessionCount: Int = .mockRandom()
+
+        let context: DatadogContext = .mockWith(
+            launchInfo: .mockWith(processLaunchDate: processLaunchDate),
+            applicationStateHistory: .mockWith(
+                initialState: .inactive,
+                date: processLaunchDate,
+                transitions: [
+                    (.background, view1Stop), // background on "view1 stop"
+                    (.active, view2Start), // foreground on "view2 start"
+                ]
+            )
+        )
+
+        // Given
+        let metric = SessionEndedMetric.with(sessionID: sessionID, validSessionCount: validSessionCount)
+
+        // When
+        try metric.track(
+            view: .mockRandomWith(
+                sessionID: sessionID.rawValue,
+                viewID: "view1",
+                date: view1Start.timeIntervalSince1970.toInt64Milliseconds,
+                viewTimeSpent: (view1Stop.timeIntervalSince(view1Start)).toInt64Nanoseconds
+            ),
+            instrumentationType: .manual
+        )
+        try metric.track(
+            view: .mockRandomWith(
+                sessionID: sessionID.rawValue,
+                viewID: "view2",
+                date: view2Start.timeIntervalSince1970.toInt64Milliseconds,
+                viewTimeSpent: (view2Stop.timeIntervalSince(view2Start)).toInt64Nanoseconds
+            ),
+            instrumentationType: .manual
+        )
+        let attributes = metric.asMetricAttributes(with: context)
+
+        // Then
+        let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
+        XCTAssertEqual(rse.lifecycleInfo?.timeToSessionStart, view1Start.timeIntervalSince(processLaunchDate).toInt64Milliseconds)
+        XCTAssertEqual(rse.lifecycleInfo?.sessionsCount, validSessionCount)
+        XCTAssertEqual(rse.lifecycleInfo?.appStateAtSessionStart, "inactive")
+        XCTAssertEqual(rse.lifecycleInfo?.appStateAtSessionEnd, "active")
+        DDAssertEqual(rse.lifecycleInfo?.foregroundCoverage, (10 + 5) / (10 + 4 + 5), accuracy: 0.001)
+    }
+
     // MARK: - Metric Spec
 
     func testEncodedMetricAttributesFollowTheSpec() throws {
@@ -680,9 +772,16 @@ private extension SessionEndedMetric {
         sessionID: RUMUUID,
         precondition: RUMSessionPrecondition? = .mockRandom(),
         context: DatadogContext = .mockRandom(),
-        tracksBackgroundEvents: Bool = .mockRandom()
+        tracksBackgroundEvents: Bool = .mockRandom(),
+        validSessionCount: Int = .mockRandom()
     ) -> SessionEndedMetric {
-        SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context, tracksBackgroundEvents: tracksBackgroundEvents)
+        SessionEndedMetric(
+            sessionID: sessionID,
+            precondition: precondition,
+            context: context,
+            tracksBackgroundEvents: tracksBackgroundEvents,
+            validSessionCount: validSessionCount
+        )
     }
 
     func asMetricAttributes() -> [String: Encodable] {

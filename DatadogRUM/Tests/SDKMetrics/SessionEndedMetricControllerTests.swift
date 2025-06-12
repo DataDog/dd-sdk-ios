@@ -70,6 +70,29 @@ class SessionEndedMetricControllerTests: XCTestCase {
         XCTAssertEqual(metric2.wasStopped, false)
     }
 
+    func testTrackingMultipleSequentialSessions() throws {
+        // Given
+        let controller = SessionEndedMetricController(telemetry: telemetry, sampleRate: 100)
+
+        // When
+        func track(sessionID: RUMUUID) -> SessionEndedMetric.Attributes? {
+            controller.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom())
+            controller.track(view: .mockRandomWith(sessionID: sessionID.rawValue, date: 1, viewTimeSpent: 1_000), instrumentationType: nil, in: nil)
+            controller.endMetric(sessionID: sessionID, with: .mockRandom())
+            return telemetry.messages.lastSessionEndedMetric
+        }
+
+        let metric1 = try XCTUnwrap(track(sessionID: .mockRandom()))
+        let metric2 = try XCTUnwrap(track(sessionID: .mockRandom()))
+        let metric3 = try XCTUnwrap(track(sessionID: .mockRandom()))
+
+        // Then
+        XCTAssertEqual(telemetry.messages.count, 3)
+        XCTAssertEqual(metric1.lifecycleInfo?.sessionsCount, 0)
+        XCTAssertEqual(metric2.lifecycleInfo?.sessionsCount, 1)
+        XCTAssertEqual(metric3.lifecycleInfo?.sessionsCount, 2)
+    }
+
     func testTrackingLatestSession() throws {
         let sessionID1: RUMUUID = .mockRandom()
         let sessionID2: RUMUUID = .mockRandom()

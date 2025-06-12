@@ -18,6 +18,10 @@ internal final class SessionEndedMetricController {
     /// Array to keep track of pending session IDs in their start order.
     private var pendingSessionIDs: [RUMUUID] = []
 
+    /// The number of sessions tracked in this SDK instance.
+    /// Only includes sessions that tracked at least one view.
+    private var validSessionCount = 0
+
     /// Telemetry endpoint for sending metrics.
     private let telemetry: Telemetry
 
@@ -46,7 +50,13 @@ internal final class SessionEndedMetricController {
             return // do not track metric when session is not sampled
         }
         _metricsBySessionID.mutate { metrics in
-            metrics[sessionID] = SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context, tracksBackgroundEvents: tracksBackgroundEvents)
+            metrics[sessionID] = SessionEndedMetric(
+                sessionID: sessionID,
+                precondition: precondition,
+                context: context,
+                tracksBackgroundEvents: tracksBackgroundEvents,
+                validSessionCount: validSessionCount
+            )
             pendingSessionIDs.append(sessionID)
         }
     }
@@ -107,12 +117,16 @@ internal final class SessionEndedMetricController {
             guard let metric = metrics[sessionID] else {
                 return
             }
+            let metricAttribtues = metric.asMetricAttributes(with: context)
             telemetry.metric(
                 name: SessionEndedMetric.Constants.name,
-                attributes: metric.asMetricAttributes(with: context),
+                attributes: metricAttribtues,
                 sampleRate: sampleRate
             )
             metrics[sessionID] = nil
+            if metric.hasTrackedAnyViews { // count only sessions that tracked any view
+                validSessionCount += 1
+            }
             pendingSessionIDs.removeAll(where: { $0 == sessionID }) // O(n), but "ending the metric" is very rare event
         }
     }

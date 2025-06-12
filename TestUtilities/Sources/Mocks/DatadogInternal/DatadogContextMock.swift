@@ -26,6 +26,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
         applicationName: String = .mockAny(),
         applicationBundleIdentifier: String = .mockAny(),
         applicationBundleType: BundleType = .mockAny(),
+        isUsingSceneLifecycle: Bool = .mockAny(),
         sdkInitDate: Date = Date(),
         nativeSourceOverride: String? = nil,
         device: DeviceInfo = .mockAny(),
@@ -56,6 +57,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             applicationName: applicationName,
             applicationBundleIdentifier: applicationBundleIdentifier,
             applicationBundleType: applicationBundleType,
+            isUsingSceneLifecycle: isUsingSceneLifecycle,
             sdkInitDate: sdkInitDate,
             device: device,
             nativeSourceOverride: nativeSourceOverride,
@@ -91,6 +93,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             applicationName: .mockRandom(),
             applicationBundleIdentifier: .mockRandom(),
             applicationBundleType: .mockRandom(),
+            isUsingSceneLifecycle: .mockRandom(),
             sdkInitDate: .mockRandomInThePast(),
             device: .mockRandom(),
             userInfo: .mockRandom(),
@@ -200,24 +203,37 @@ extension LaunchReason: AnyMockable, RandomMockable {
     }
 }
 
+extension LaunchInfo.Raw: AnyMockable, RandomMockable {
+    public static func mockAny() -> LaunchInfo.Raw {
+        return .init(taskPolicyRole: .mockAny(), isPrewarmed: false)
+    }
+
+    public static func mockRandom() -> LaunchInfo.Raw {
+        return .init(taskPolicyRole: .mockRandom(), isPrewarmed: .mockRandom())
+    }
+}
+
 extension LaunchInfo: AnyMockable, RandomMockable {
     public static func mockAny() -> LaunchInfo {
         return .init(
             launchReason: .mockAny(),
             processLaunchDate: .mockAny(),
-            timeToDidBecomeActive: .mockAny()
+            timeToDidBecomeActive: .mockAny(),
+            raw: .mockAny()
         )
     }
 
     public static func mockWith(
         launchReason: LaunchReason = .mockAny(),
         processLaunchDate: Date = Date(),
-        timeToDidBecomeActive: TimeInterval? = 1
+        timeToDidBecomeActive: TimeInterval? = 1,
+        raw: LaunchInfo.Raw = .mockAny()
     ) -> LaunchInfo {
         return .init(
             launchReason: launchReason,
             processLaunchDate: processLaunchDate,
-            timeToDidBecomeActive: timeToDidBecomeActive
+            timeToDidBecomeActive: timeToDidBecomeActive,
+            raw: raw
         )
     }
 
@@ -225,7 +241,8 @@ extension LaunchInfo: AnyMockable, RandomMockable {
         return .init(
             launchReason: .mockRandom(),
             processLaunchDate: .mockRandom(),
-            timeToDidBecomeActive: .mockRandom()
+            timeToDidBecomeActive: .mockRandom(),
+            raw: .mockRandom()
         )
     }
 }
