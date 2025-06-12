@@ -484,7 +484,15 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
 
     private func printComment(_ comment: String?) {
         comment.ifNotNil { comment in
-            writeLine("/// \(comment)")
+            // Split comment by newlines and prefix each line with "/// "
+            let lines = comment.components(separatedBy: .newlines)
+            for line in lines {
+                if line.isEmpty {
+                    writeLine("///")
+                } else {
+                    writeLine("/// \(line)")
+                }
+            }
         }
     }
 
