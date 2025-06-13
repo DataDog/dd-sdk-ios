@@ -48,13 +48,6 @@ internal final class ModernSwiftUIComponentDetector: SwiftUIComponentDetector {
             ) {
                 return command
             }
-
-            // Special detection for SwiftUI Toogle
-            return SwiftUIComponentHelpers.extractSwiftUIToggleAction(
-                from: touch,
-                predicate: predicate,
-                dateProvider: dateProvider
-            )
         }
 
         return nil
