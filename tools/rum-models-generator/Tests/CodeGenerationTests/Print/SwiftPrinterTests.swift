@@ -753,4 +753,95 @@ final class SwiftPrinterTests: XCTestCase {
 
         XCTAssertEqual(expected, actual)
     }
+
+    func testPrintingSwiftStructWithMultiLineComments() throws {
+        let `struct` = SwiftStruct(
+            name: "Foo",
+            comment: "This is a multi-line comment\nwith a newline in the middle\nand another line",
+            properties: [
+                SwiftStruct.Property(
+                    name: "property1",
+                    comment: "Property comment with newline\nat the end\n",
+                    type: SwiftPrimitive<String>(),
+                    isOptional: false,
+                    mutability: .immutable,
+                    defaultValue: nil,
+                    codingKey: .static(value: "property_1")
+                ),
+                SwiftStruct.Property(
+                    name: "property2",
+                    comment: "Single line comment",
+                    type: SwiftPrimitive<Int>(),
+                    isOptional: true,
+                    mutability: .mutable,
+                    defaultValue: nil,
+                    codingKey: .static(value: "property_2")
+                ),
+            ],
+            conformance: [codableProtocol]
+        )
+
+        let `enum` = SwiftEnum(
+            name: "TestEnum",
+            comment: "Enum comment\nwith multiple lines\nand trailing newline\n",
+            cases: [
+                SwiftEnum.Case(label: "case1", rawValue: .string(value: "case1")),
+                SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
+            ],
+            conformance: [codableProtocol]
+        )
+
+        let printer = SwiftPrinter()
+        let actual = try printer.print(swiftTypes: [`struct`, `enum`])
+
+        let expected = """
+
+        /// This is a multi-line comment
+        /// with a newline in the middle
+        /// and another line
+        public struct Foo: Codable {
+            /// Property comment with newline
+            /// at the end
+            ///
+            public let property1: String
+
+            /// Single line comment
+            public var property2: Int?
+
+            public enum CodingKeys: String, CodingKey {
+                case property1 = "property_1"
+                case property2 = "property_2"
+            }
+
+            /// This is a multi-line comment
+            /// with a newline in the middle
+            /// and another line
+            ///
+            /// - Parameters:
+            ///   - property1: Property comment with newline
+            /// at the end
+            ///
+            ///   - property2: Single line comment
+            public init(
+                property1: String,
+                property2: Int? = nil
+            ) {
+                self.property1 = property1
+                self.property2 = property2
+            }
+        }
+
+        /// Enum comment
+        /// with multiple lines
+        /// and trailing newline
+        ///
+        public enum TestEnum: String, Codable {
+            case case1 = "case1"
+            case case2 = "case2"
+        }
+
+        """
+
+        XCTAssertEqual(expected, actual)
+    }
 }
