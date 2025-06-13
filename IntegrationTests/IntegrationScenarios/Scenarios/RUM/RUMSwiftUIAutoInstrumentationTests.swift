@@ -215,7 +215,7 @@ class RUMSwiftUIAutoInstrumentationTests: IntegrationTests, RUMCommonAsserts {
         if #available(iOS 18.0, tvOS 18.0, visionOS 18.0, *) {
             XCTAssertEqual(mainView.actionEvents[0].action.target?.name, SwiftUIComponentNames.button)
             XCTAssertEqual(mainView.actionEvents[1].action.target?.name, SwiftUIComponentNames.navigationLink)
-            XCTAssertEqual(mainView.actionEvents[2].action.target?.name, "SwiftUI_Toggle")
+            XCTAssertEqual(mainView.actionEvents[2].action.target?.name, "UISwitch")
             XCTAssertEqual(mainView.actionEvents[3].action.target?.name, "UISlider(slider)")
             XCTAssertEqual(mainView.actionEvents[4].action.target?.name, "UIStepper(stepper)")
             XCTAssertEqual(mainView.actionEvents[5].action.target?.name, "UISegmentedControl")
@@ -225,7 +225,7 @@ class RUMSwiftUIAutoInstrumentationTests: IntegrationTests, RUMCommonAsserts {
         } else {
             XCTAssertEqual(mainView.actionEvents[0].action.target?.name, SwiftUIComponentNames.unidentified)
             XCTAssertEqual(mainView.actionEvents[1].action.target?.name, SwiftUIComponentNames.unidentified)
-            XCTAssertEqual(mainView.actionEvents[2].action.target?.name, "SwiftUI_Toggle")
+            XCTAssertEqual(mainView.actionEvents[2].action.target?.name, "UISwitch")
             XCTAssertEqual(mainView.actionEvents[3].action.target?.name, "UISlider(slider)")
             XCTAssertEqual(mainView.actionEvents[4].action.target?.name, "UIStepper(stepper)")
             XCTAssertEqual(mainView.actionEvents[5].action.target?.name, "UISegmentedControl")

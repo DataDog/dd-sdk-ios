@@ -40,12 +40,7 @@ internal final class LegacySwiftUIComponentDetector: SwiftUIComponentDetector {
             }
         }
 
-        // Special detection for SwiftUI Toogle
-        return SwiftUIComponentHelpers.extractSwiftUIToggleAction(
-            from: touch,
-            predicate: predicate,
-            dateProvider: dateProvider
-        )
+        return nil
     }
 }
 
