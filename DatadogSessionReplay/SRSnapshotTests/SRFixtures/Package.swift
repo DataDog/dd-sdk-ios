@@ -8,9 +8,15 @@ let package = Package(
     products: [
         .library(name: "SRFixtures", targets: ["SRFixtures"]),
     ],
+	dependencies: [
+		.package(path: "../../../")
+	],
     targets: [
         .target(
-            name: "SRFixtures"
+            name: "SRFixtures",
+			dependencies: [
+				.product(name: "DatadogSessionReplay", package: "dd-sdk-ios")
+			]
         ),
     ]
 )

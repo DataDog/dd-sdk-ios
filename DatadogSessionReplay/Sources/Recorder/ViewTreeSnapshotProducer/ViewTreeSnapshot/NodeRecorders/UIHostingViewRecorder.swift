@@ -25,7 +25,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
         identifier: UUID,
         semanticsOverride: @escaping (UIView, ViewAttributes) -> NodeSemantics? = { _, _ in nil },
         textObfuscator: @escaping (ViewTreeRecordingContext, ViewAttributes) -> TextObfuscating = { context, viewAttributes in
-			return viewAttributes.resolveTextAndInputPrivacyLevel(in: context).staticTextObfuscator
+            return viewAttributes.resolveTextAndInputPrivacyLevel(in: context).staticTextObfuscator
         }
     ) {
         self.identifier = identifier

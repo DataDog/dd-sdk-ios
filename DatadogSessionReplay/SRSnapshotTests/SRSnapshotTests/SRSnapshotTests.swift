@@ -7,6 +7,7 @@
 import XCTest
 import SRFixtures
 import TestUtilities
+import DatadogSessionReplay
 @testable import SRHost
 
 final class SRSnapshotTests: SnapshotTestCase {
@@ -203,6 +204,30 @@ final class SRSnapshotTests: SnapshotTestCase {
             fileNamePrefix: "maskNone_images"
         )
     }
+
+	func testSwiftUIWithPrivacyOverrides() throws {
+		let core = FeatureRegistrationCoreMock()
+		// SwiftUI privacy overrides only work when SessionReplay is enabled
+		SessionReplay.enable(
+			with: .init(
+				// Just to silence the deprecation warning (these are trumped by `takeSnapshotFor` parameters)
+				textAndInputPrivacyLevel: .maskSensitiveInputs,
+				imagePrivacyLevel: .maskNone,
+				touchPrivacyLevel: .show
+			),
+			in: core
+		)
+
+		// Mask none
+		try takeSnapshotFor(
+			.swiftUIWithPrivacyOverrides(core),
+			with: [.maskSensitiveInputs],
+			imagePrivacyLevel: .maskNone,
+			shouldRecord: shouldRecord,
+			folderPath: snapshotsFolderPath,
+			fileNamePrefix: "maskNone_images"
+		)
+	}
 
     func testNavigationBars() throws {
         // - Static Navigation Bars -
