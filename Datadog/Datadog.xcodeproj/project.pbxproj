@@ -867,6 +867,12 @@
 		96155A3E2D7F01250029034E /* CustomDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D382D6E2490004BB999 /* CustomDump.swift */; };
 		96155A3F2D7F013A0029034E /* ReflectionMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D392D6E2490004BB999 /* ReflectionMirror.swift */; };
 		96155A402D7F014D0029034E /* Reflector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D3A2D6E2490004BB999 /* Reflector.swift */; };
+		962223552DFC1C0E00D58EEC /* SwiftUIRUMPredicate+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962223542DFC1C0E00D58EEC /* SwiftUIRUMPredicate+objc.swift */; };
+		962223562DFC1C0E00D58EEC /* SwiftUIRUMPredicate+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962223542DFC1C0E00D58EEC /* SwiftUIRUMPredicate+objc.swift */; };
+		962223592DFC233000D58EEC /* DDSwiftUIRUMActionsPredicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962223572DFC233000D58EEC /* DDSwiftUIRUMActionsPredicateTests.swift */; };
+		9622235A2DFC233000D58EEC /* DDSwiftUIRUMViewsPredicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962223582DFC233000D58EEC /* DDSwiftUIRUMViewsPredicateTests.swift */; };
+		9622235B2DFC233000D58EEC /* DDSwiftUIRUMActionsPredicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962223572DFC233000D58EEC /* DDSwiftUIRUMActionsPredicateTests.swift */; };
+		9622235C2DFC233000D58EEC /* DDSwiftUIRUMViewsPredicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962223582DFC233000D58EEC /* DDSwiftUIRUMViewsPredicateTests.swift */; };
 		962900242D8351AB008DFE39 /* TopLevelReflector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962900232D8351A7008DFE39 /* TopLevelReflector.swift */; };
 		962900252D8351AB008DFE39 /* TopLevelReflector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962900232D8351A7008DFE39 /* TopLevelReflector.swift */; };
 		9629FFDE2D81C317008DFE39 /* SwiftUIViewPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9629FFDD2D81C315008DFE39 /* SwiftUIViewPath.swift */; };
@@ -2957,6 +2963,9 @@
 		960B26BF2D0360EE00D7196F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		960B26C22D075BD200D7196F /* DisplayListReflectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayListReflectionTests.swift; sourceTree = "<group>"; };
 		96155A282D79A4DF0029034E /* SwiftUIViewNameExtractorIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewNameExtractorIntegrationTests.swift; sourceTree = "<group>"; };
+		962223542DFC1C0E00D58EEC /* SwiftUIRUMPredicate+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwiftUIRUMPredicate+objc.swift"; sourceTree = "<group>"; };
+		962223572DFC233000D58EEC /* DDSwiftUIRUMActionsPredicateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSwiftUIRUMActionsPredicateTests.swift; sourceTree = "<group>"; };
+		962223582DFC233000D58EEC /* DDSwiftUIRUMViewsPredicateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSwiftUIRUMViewsPredicateTests.swift; sourceTree = "<group>"; };
 		962900232D8351A7008DFE39 /* TopLevelReflector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopLevelReflector.swift; sourceTree = "<group>"; };
 		9629FFDD2D81C315008DFE39 /* SwiftUIViewPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewPath.swift; sourceTree = "<group>"; };
 		9629FFE02D81C345008DFE39 /* SwiftUIControllerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIControllerType.swift; sourceTree = "<group>"; };
@@ -4558,6 +4567,7 @@
 			isa = PBXGroup;
 			children = (
 				9E55407B25812D1C00F6E3AD /* RUM+objc.swift */,
+				962223542DFC1C0E00D58EEC /* SwiftUIRUMPredicate+objc.swift */,
 				6111C58125C0081F00F5C4A2 /* RUMDataModels+objc.swift */,
 			);
 			path = RUM;
@@ -4788,6 +4798,8 @@
 				614798952A459AA80095CB02 /* DDTraceTests.swift */,
 				615A4A8824A34FD700233986 /* DDTracerTests.swift */,
 				616B668D259CC28E00968EE8 /* DDRUMMonitorTests.swift */,
+				962223572DFC233000D58EEC /* DDSwiftUIRUMActionsPredicateTests.swift */,
+				962223582DFC233000D58EEC /* DDSwiftUIRUMViewsPredicateTests.swift */,
 				61A2CC202A443D330000FF25 /* DDRUMConfigurationTests.swift */,
 				61A2CC232A44454D0000FF25 /* DDRUMTests.swift */,
 				A7DA18022AB0C8A700F76337 /* DDUIKitRUMViewsPredicateTests.swift */,
@@ -8455,6 +8467,8 @@
 				6136CB4A2A69C29C00AC265D /* FilesOrchestrator+MetricsTests.swift in Sources */,
 				266BFA5E2D6F4E31003041A5 /* AccountInfoPublisherTests.swift in Sources */,
 				D26C49AF2886DC7B00802B2D /* ApplicationStatePublisherTests.swift in Sources */,
+				9622235B2DFC233000D58EEC /* DDSwiftUIRUMActionsPredicateTests.swift in Sources */,
+				9622235C2DFC233000D58EEC /* DDSwiftUIRUMViewsPredicateTests.swift in Sources */,
 				6147989C2A459E2B0095CB02 /* DDTrace+apiTests.m in Sources */,
 				D22743EB29DEC9E6001A7EF9 /* Casting+RUM.swift in Sources */,
 				61DA8CB2286215DE0074A606 /* CryptographyTests.swift in Sources */,
@@ -8579,6 +8593,7 @@
 				616AAA6D2BDA674C00AB9DAD /* TraceSamplingStrategy+objc.swift in Sources */,
 				611720D52524D9FB00634D9E /* DDURLSessionDelegate+objc.swift in Sources */,
 				9E55407C25812D1C00F6E3AD /* RUM+objc.swift in Sources */,
+				962223552DFC1C0E00D58EEC /* SwiftUIRUMPredicate+objc.swift in Sources */,
 				615A4A8D24A356A000233986 /* OTSpanContext+objc.swift in Sources */,
 				F6E106542C75E0D000716DC6 /* LogsDataModels+objc.swift in Sources */,
 				61133C112423983800786299 /* DatadogConfiguration+objc.swift in Sources */,
@@ -9880,6 +9895,8 @@
 				A79B0F65292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m in Sources */,
 				D2CB6F4327C520D400A62B57 /* DDLogsTests.swift in Sources */,
 				D2CB6F4527C520D400A62B57 /* TracerTests.swift in Sources */,
+				962223592DFC233000D58EEC /* DDSwiftUIRUMActionsPredicateTests.swift in Sources */,
+				9622235A2DFC233000D58EEC /* DDSwiftUIRUMViewsPredicateTests.swift in Sources */,
 				D22743EC29DEC9E6001A7EF9 /* Casting+RUM.swift in Sources */,
 				D2CB6F4D27C520D400A62B57 /* DataUploadStatusTests.swift in Sources */,
 				D2CB6F4F27C520D400A62B57 /* RetryingTests.swift in Sources */,
@@ -9947,6 +9964,7 @@
 				3CA852652BF2148400B52CBA /* TraceContextInjection+objc.swift in Sources */,
 				D2CB6FA327C5217A00A62B57 /* OTSpan+objc.swift in Sources */,
 				D2CB6FA427C5217A00A62B57 /* DDURLSessionDelegate+objc.swift in Sources */,
+				962223562DFC1C0E00D58EEC /* SwiftUIRUMPredicate+objc.swift in Sources */,
 				D2CB6FA527C5217A00A62B57 /* RUM+objc.swift in Sources */,
 				D2CB6FA627C5217A00A62B57 /* OTSpanContext+objc.swift in Sources */,
 				D2CB6FA827C5217A00A62B57 /* DatadogConfiguration+objc.swift in Sources */,
