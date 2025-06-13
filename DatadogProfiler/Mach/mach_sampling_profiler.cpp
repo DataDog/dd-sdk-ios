@@ -1,4 +1,4 @@
-#include "sampling_profiler_mach.h"
+#include "mach_sampling_profiler.h"
 
 #ifdef __APPLE__
 
@@ -83,9 +83,6 @@
  */
 #define IS_VALID_LOAD_COMMAND_SIZE(cmdsize) \
     ((cmdsize) >= sizeof(struct load_command) && (cmdsize) <= MAX_LOAD_COMMAND_SIZE)
-
-namespace dd {
-namespace profiler {
 
 /**
  * Initializes a binary image structure to safe defaults.
@@ -266,6 +263,9 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
     }
 }
 
+namespace dd {
+namespace profiler {
+
 /**
  * Constructs a profiler instance.
  *
@@ -273,23 +273,65 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
  * @param callback Function to call with collected stack traces
  * @param user_data User data to pass to the callback
  */
-profiler::profiler(
+mach_sampling_profiler::mach_sampling_profiler(
     const sampling_config_t* config,
     stack_trace_callback_t callback,
     void* user_data)
-    : callback(callback)
-    , user_data(user_data)
-    , running(false)
-    , config(SAMPLING_CONFIG_DEFAULT) {
+    : running(false)
+    , config(SAMPLING_CONFIG_DEFAULT)
+    , callback(callback)
+    , user_data(user_data) {
     if (config) this->config = *config;
     sample_buffer.reserve(this->config.max_buffer_size);
 }
 
 /**
- * Destructor that ensures sampling is stopped.
+ * Virtual destructor that ensures sampling is stopped.
  */
-profiler::~profiler() {
+mach_sampling_profiler::~mach_sampling_profiler() {
     if (running) stop_sampling();
+}
+
+/**
+ * Static entry point for the sampling thread.
+ */
+void* mach_sampling_profiler::sampling_thread_entry(void* arg) {
+    pthread_setname_np("com.datadoghq.profiler.sampling");
+    static_cast<mach_sampling_profiler*>(arg)->main();
+    return nullptr;
+}
+
+/**
+ * Starts the sampling process.
+ *
+ * @return true if sampling was started successfully
+ */
+bool mach_sampling_profiler::start_sampling() {
+    if (running) return false;
+
+    if (config.profile_current_thread_only) {
+        target_thread = pthread_self();
+    }
+
+    running = true;
+
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_set_qos_class_np(&attr, config.qos_class, 0);
+
+    pthread_create(&sampling_thread, &attr, sampling_thread_entry, this);
+    
+    pthread_attr_destroy(&attr);
+    return running;
+}
+
+/**
+ * Stops the sampling process.
+ */
+void mach_sampling_profiler::stop_sampling() {
+    if (!running) return;
+    running = false;
+    pthread_join(sampling_thread, nullptr);
 }
 
 /**
@@ -297,7 +339,7 @@ profiler::~profiler() {
  *
  * @param thread The thread to sample
  */
-void profiler::sample_thread(thread_t thread) {
+void mach_sampling_profiler::sample_thread(thread_t thread) {
     stack_trace_t trace;
     if (!stack_trace_init(&trace, config.max_stack_depth)) return;
 
@@ -326,16 +368,60 @@ void profiler::sample_thread(thread_t thread) {
 }
 
 /**
+ * Main sampling loop that collects stack traces from threads.
+ */
+void mach_sampling_profiler::main() {
+    while (running) {
+        if (config.profile_current_thread_only) {
+            sample_thread(pthread_mach_thread_np(target_thread));
+        } else {
+            thread_act_array_t threads;
+            mach_msg_type_number_t count;
+            
+            if (task_threads(mach_task_self(), &threads, &count) != KERN_SUCCESS) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                continue;
+            }
+
+            // Sample threads based on subclass strategy
+            for (mach_msg_type_number_t i = 0; i < count; i++) {
+                if (!running) break;
+                
+                // Skip the sampling thread itself
+                if (threads[i] == pthread_mach_thread_np(pthread_self())) continue;
+                
+                // Virtual method determines sampling strategy (deterministic vs statistical)
+                if (should_sample_thread(threads[i])) {
+                    sample_thread(threads[i]);
+                }
+            }
+
+            // Clean up thread references
+            for (mach_msg_type_number_t i = 0; i < count; i++) {
+                mach_port_deallocate(mach_task_self(), threads[i]);
+            }
+
+            vm_deallocate(mach_task_self(), (vm_address_t)threads, count * sizeof(thread_t));
+        }
+
+        // Virtual method determines interval strategy (fixed vs jittered)
+        std::this_thread::sleep_for(std::chrono::milliseconds(get_sampling_interval()));
+    }
+    
+    // Flush any remaining samples
+    flush_buffer();
+}
+
+/**
  * Flushes the sample buffer by calling the callback with collected traces.
  */
-void profiler::flush_buffer() {
+void mach_sampling_profiler::flush_buffer() {
     if (sample_buffer.empty()) return;
 
     // Fill in binary image information for all frames
     for (auto& trace : sample_buffer) {
         for (uint32_t i = 0; i < trace.frame_count; i++) {
             auto& frame = trace.frames[i];
-            // Initialize binary image and look up information
             binary_image_init(&frame.image);
             binary_image_lookup_pc(&frame.image, (void*)frame.instruction_ptr);
         }
@@ -351,144 +437,7 @@ void profiler::flush_buffer() {
     sample_buffer.clear();
 }
 
-/**
- * Main sampling loop that collects stack traces from threads.
- */
-void profiler::sampling_loop() {
-    while (running) {
-        if (config.profile_current_thread_only) {
-            sample_thread(pthread_mach_thread_np(target_thread));
-            continue;
-        }
-
-        thread_act_array_t threads;
-        mach_msg_type_number_t count;
-        if (task_threads(mach_task_self(), &threads, &count) != KERN_SUCCESS) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            continue;
-        }
-
-        for (mach_msg_type_number_t i = 0; i < count; i++) {
-            if (!running) break;
-            if (threads[i] == pthread_mach_thread_np(pthread_self())) continue;
-            sample_thread(threads[i]);
-        }
-
-        for (mach_msg_type_number_t i = 0; i < count; i++) {
-            mach_port_deallocate(mach_task_self(), threads[i]);
-        }
-
-        vm_deallocate(mach_task_self(), (vm_address_t)threads, count * sizeof(thread_t));
-
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(config.sampling_interval_ms));
-    }
-    
-    flush_buffer();
-}
-
-/**
- * Starts the sampling process.
- *
- * @return true if sampling was started successfully
- */
-bool profiler::start_sampling() {
-    if (running) return false;
-
-    if (config.profile_current_thread_only) {
-        target_thread = pthread_self();
-    }
-
-    running = true;
-
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_set_qos_class_np(&attr, config.qos_class, 0);
-
-    pthread_create(&sampling_thread, &attr, [](void* arg) -> void* {
-        pthread_setname_np("com.datadoghq.profiler.sampling");
-        static_cast<profiler*>(arg)->sampling_loop();
-        return nullptr;
-    }, this);
-    
-    pthread_attr_destroy(&attr);
-    return running;
-}
-
-/**
- * Stops the sampling process.
- */
-void profiler::stop_sampling() {
-    if (!running) return;
-    running = false;
-    pthread_join(sampling_thread, nullptr);
-}
-
 } // namespace profiler
 } // namespace dd
-
-extern "C" {
-
-/**
- * Creates a new profiler instance.
- *
- * @param config The sampling configuration to use
- * @param callback Function to call with collected stack traces
- * @param user_data User data to pass to the callback
- * @return A new profiler instance or nullptr if creation failed
- */
-profiler_t* profiler_create(
-    const sampling_config_t* config,
-    stack_trace_callback_t callback,
-    void* user_data) {
-    if (!callback) return nullptr;
-    return new dd::profiler::profiler(config, callback, user_data);
-}
-
-/**
- * Destroys a profiler instance.
- * @param profiler The profiler instance to destroy
- */
-void profiler_destroy(profiler_t* profiler) {
-    if (!profiler) return;
-    delete static_cast<dd::profiler::profiler*>(profiler);
-}
-
-/**
- * Starts profiling.
- *
- * @param profiler The profiler instance to start
- * @return 1 if profiling was started successfully, 0 otherwise
- */
-int profiler_start(profiler_t* profiler) {
-    if (!profiler) return 0;
-    auto* prof = static_cast<dd::profiler::profiler*>(profiler);
-    return prof->start_sampling() ? 1 : 0;
-}
-
-/**
- * Stops profiling.
- *
- * @param profiler The profiler instance to stop
- */
-void profiler_stop(profiler_t* profiler) {
-    if (!profiler) return;
-    auto* prof = static_cast<dd::profiler::profiler*>(profiler);
-    prof->stop_sampling();
-}
-
-/**
- * Checks if profiling is currently running.
- * 
- * @param profiler The profiler instance to check
- * @return 1 if profiling is running, 0 otherwise
- */
-int profiler_is_running(const profiler_t* profiler) {
-    if (!profiler) return 0;
-    auto* prof = static_cast<const dd::profiler::profiler*>(profiler);
-    return prof->running ? 1 : 0;
-}
-
-} // extern "C"
 
 #endif // __APPLE__ 

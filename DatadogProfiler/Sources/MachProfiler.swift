@@ -162,7 +162,7 @@ internal class MachProfiler {
         )
         
         profile = Profile(samplingIntervalMs: samplingIntervalMs)
-        profiler = profiler_create(&config, stackTraceCallback, Unmanaged.passUnretained(profile).toOpaque())!
+        profiler = profiler_create_deterministic(&config, stackTraceCallback, Unmanaged.passUnretained(profile).toOpaque())!
     }
     
     deinit {
