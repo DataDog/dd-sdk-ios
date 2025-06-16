@@ -6444,24 +6444,24 @@
 		D29A9F3F29DD84AB005C54A4 /* DatadogRUMTests */ = {
 			isa = PBXGroup;
 			children = (
-				864A707F2DE092AD00AC0619 /* RUMContext */,
-				3C0D5DE62A543E9700446CF9 /* RUMViewEventsFilterTests.swift */,
-				61C713AC2A3B793E00FA735A /* RUMMonitorProtocolTests.swift */,
+				D29A9FCB29DDBCC5005C54A4 /* DDTAssertValidRUMUUID.swift */,
+				6188697B2A4376F700E8996B /* RUMConfigurationTests.swift */,
 				61C713B52A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift */,
 				61C713B22A3C3A0B00FA735A /* RUMMonitorProtocol+InternalTests.swift */,
-				D29A9FCB29DDBCC5005C54A4 /* DDTAssertValidRUMUUID.swift */,
-				61C713BE2A3C9D9D00FA735A /* Feature */,
+				61C713AC2A3B793E00FA735A /* RUMMonitorProtocolTests.swift */,
+				61C713C92A3DC22700FA735A /* RUMTests.swift */,
+				3C0D5DE62A543E9700446CF9 /* RUMViewEventsFilterTests.swift */,
 				618715FA24DC5EE700FC0F69 /* DataModels */,
-				617B953B24BF4D7300E6F443 /* RUMMonitor */,
-				61FF281F24B89807000B3D9B /* RUMEvent */,
-				613E81F525A743470084B751 /* Scrubbing */,
+				61C713BE2A3C9D9D00FA735A /* Feature */,
 				61F3CDA825121F8F00C816E5 /* Instrumentation */,
 				D236BE2A29521A7700676E67 /* Integrations */,
-				61411B0E24EC15940012EAB2 /* Utils */,
-				61C713C92A3DC22700FA735A /* RUMTests.swift */,
-				6188697B2A4376F700E8996B /* RUMConfigurationTests.swift */,
+				864A707F2DE092AD00AC0619 /* RUMContext */,
+				61FF281F24B89807000B3D9B /* RUMEvent */,
 				6105C4F82CEBD70300C4C5EE /* RUMMetrics */,
+				617B953B24BF4D7300E6F443 /* RUMMonitor */,
+				613E81F525A743470084B751 /* Scrubbing */,
 				6174D6182BFE447600EC7469 /* SDKMetrics */,
+				61411B0E24EC15940012EAB2 /* Utils */,
 			);
 			name = DatadogRUMTests;
 			path = ../DatadogRUM/Tests;
