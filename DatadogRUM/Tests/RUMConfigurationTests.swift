@@ -19,6 +19,7 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertNil(config.uiKitViewsPredicate)
         XCTAssertNil(config.uiKitActionsPredicate)
         XCTAssertNil(config.swiftUIViewsPredicate)
+        XCTAssertNil(config.swiftUIActionsPredicate)
         XCTAssertNil(config.urlSessionTracking)
         XCTAssertTrue(config.trackFrustrations)
         XCTAssertFalse(config.trackBackgroundEvents)

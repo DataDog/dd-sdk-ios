@@ -137,6 +137,10 @@ public class objc_RUMActionEventDD: NSObject {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
+    public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
     public var session: objc_RUMActionEventDDSession? {
         root.swiftModel.dd.session != nil ? objc_RUMActionEventDDSession(root: root) : nil
     }
@@ -252,6 +256,10 @@ public class objc_RUMActionEventDDConfiguration: NSObject {
 
     internal init(root: objc_RUMActionEvent) {
         self.root = root
+    }
+
+    public var profilingSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -855,12 +863,24 @@ public class objc_RUMActionEventDevice: NSObject {
         root.swiftModel.device!.brand
     }
 
+    public var locale: String? {
+        root.swiftModel.device!.locale
+    }
+
+    public var locales: [String]? {
+        root.swiftModel.device!.locales
+    }
+
     public var model: String? {
         root.swiftModel.device!.model
     }
 
     public var name: String? {
         root.swiftModel.device!.name
+    }
+
+    public var timeZone: String? {
+        root.swiftModel.device!.timeZone
     }
 
     public var type: objc_RUMActionEventDeviceDeviceType {
@@ -871,20 +891,22 @@ public class objc_RUMActionEventDevice: NSObject {
 @objc(DDRUMActionEventDeviceDeviceType)
 @_spi(objc)
 public enum objc_RUMActionEventDeviceDeviceType: Int {
-    internal init(swift: Device.DeviceType) {
+    internal init(swift: Device.DeviceType?) {
         switch swift {
-        case .mobile: self = .mobile
-        case .desktop: self = .desktop
-        case .tablet: self = .tablet
-        case .tv: self = .tv
-        case .gamingConsole: self = .gamingConsole
-        case .bot: self = .bot
-        case .other: self = .other
+        case nil: self = .none
+        case .mobile?: self = .mobile
+        case .desktop?: self = .desktop
+        case .tablet?: self = .tablet
+        case .tv?: self = .tv
+        case .gamingConsole?: self = .gamingConsole
+        case .bot?: self = .bot
+        case .other?: self = .other
         }
     }
 
-    internal var toSwift: Device.DeviceType {
+    internal var toSwift: Device.DeviceType? {
         switch self {
+        case .none: return nil
         case .mobile: return .mobile
         case .desktop: return .desktop
         case .tablet: return .tablet
@@ -895,6 +917,7 @@ public enum objc_RUMActionEventDeviceDeviceType: Int {
         }
     }
 
+    case none
     case mobile
     case desktop
     case tablet
@@ -1277,6 +1300,10 @@ public class objc_RUMErrorEventDD: NSObject {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
+    public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
     public var session: objc_RUMErrorEventDDSession? {
         root.swiftModel.dd.session != nil ? objc_RUMErrorEventDDSession(root: root) : nil
     }
@@ -1290,6 +1317,10 @@ public class objc_RUMErrorEventDDConfiguration: NSObject {
 
     internal init(root: objc_RUMErrorEvent) {
         self.root = root
+    }
+
+    public var profilingSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -1729,12 +1760,24 @@ public class objc_RUMErrorEventDevice: NSObject {
         root.swiftModel.device!.brand
     }
 
+    public var locale: String? {
+        root.swiftModel.device!.locale
+    }
+
+    public var locales: [String]? {
+        root.swiftModel.device!.locales
+    }
+
     public var model: String? {
         root.swiftModel.device!.model
     }
 
     public var name: String? {
         root.swiftModel.device!.name
+    }
+
+    public var timeZone: String? {
+        root.swiftModel.device!.timeZone
     }
 
     public var type: objc_RUMErrorEventDeviceDeviceType {
@@ -1745,20 +1788,22 @@ public class objc_RUMErrorEventDevice: NSObject {
 @objc(DDRUMErrorEventDeviceDeviceType)
 @_spi(objc)
 public enum objc_RUMErrorEventDeviceDeviceType: Int {
-    internal init(swift: Device.DeviceType) {
+    internal init(swift: Device.DeviceType?) {
         switch swift {
-        case .mobile: self = .mobile
-        case .desktop: self = .desktop
-        case .tablet: self = .tablet
-        case .tv: self = .tv
-        case .gamingConsole: self = .gamingConsole
-        case .bot: self = .bot
-        case .other: self = .other
+        case nil: self = .none
+        case .mobile?: self = .mobile
+        case .desktop?: self = .desktop
+        case .tablet?: self = .tablet
+        case .tv?: self = .tv
+        case .gamingConsole?: self = .gamingConsole
+        case .bot?: self = .bot
+        case .other?: self = .other
         }
     }
 
-    internal var toSwift: Device.DeviceType {
+    internal var toSwift: Device.DeviceType? {
         switch self {
+        case .none: return nil
         case .mobile: return .mobile
         case .desktop: return .desktop
         case .tablet: return .tablet
@@ -1769,6 +1814,7 @@ public enum objc_RUMErrorEventDeviceDeviceType: Int {
         }
     }
 
+    case none
     case mobile
     case desktop
     case tablet
@@ -1950,6 +1996,7 @@ public enum objc_RUMErrorEventErrorCategory: Int {
         case .exception?: self = .exception
         case .watchdogTermination?: self = .watchdogTermination
         case .memoryWarning?: self = .memoryWarning
+        case .network?: self = .network
         }
     }
 
@@ -1961,6 +2008,7 @@ public enum objc_RUMErrorEventErrorCategory: Int {
         case .exception: return .exception
         case .watchdogTermination: return .watchdogTermination
         case .memoryWarning: return .memoryWarning
+        case .network: return .network
         }
     }
 
@@ -1970,6 +2018,7 @@ public enum objc_RUMErrorEventErrorCategory: Int {
     case exception
     case watchdogTermination
     case memoryWarning
+    case network
 }
 
 @objc(DDRUMErrorEventErrorCauses)
@@ -2774,6 +2823,14 @@ public class objc_RUMLongTaskEventDD: NSObject {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
+    public var profiling: objc_RUMLongTaskEventDDProfiling? {
+        root.swiftModel.dd.profiling != nil ? objc_RUMLongTaskEventDDProfiling(root: root) : nil
+    }
+
+    public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
     public var session: objc_RUMLongTaskEventDDSession? {
         root.swiftModel.dd.session != nil ? objc_RUMLongTaskEventDDSession(root: root) : nil
     }
@@ -2789,6 +2846,10 @@ public class objc_RUMLongTaskEventDDConfiguration: NSObject {
         self.root = root
     }
 
+    public var profilingSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
     public var sessionReplaySampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
@@ -2796,6 +2857,85 @@ public class objc_RUMLongTaskEventDDConfiguration: NSObject {
     public var sessionSampleRate: NSNumber {
         root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
     }
+}
+
+@objc(DDRUMLongTaskEventDDProfiling)
+@objcMembers
+@_spi(objc)
+public class objc_RUMLongTaskEventDDProfiling: NSObject {
+    internal let root: objc_RUMLongTaskEvent
+
+    internal init(root: objc_RUMLongTaskEvent) {
+        self.root = root
+    }
+
+    public var errorReason: objc_RUMLongTaskEventDDProfilingErrorReason {
+        .init(swift: root.swiftModel.dd.profiling!.errorReason)
+    }
+
+    public var status: objc_RUMLongTaskEventDDProfilingStatus {
+        .init(swift: root.swiftModel.dd.profiling!.status)
+    }
+}
+
+@objc(DDRUMLongTaskEventDDProfilingErrorReason)
+@_spi(objc)
+public enum objc_RUMLongTaskEventDDProfilingErrorReason: Int {
+    internal init(swift: RUMLongTaskEvent.DD.Profiling.ErrorReason?) {
+        switch swift {
+        case nil: self = .none
+        case .notSupportedByBrowser?: self = .notSupportedByBrowser
+        case .failedToLazyLoad?: self = .failedToLazyLoad
+        case .missingDocumentPolicyHeader?: self = .missingDocumentPolicyHeader
+        case .unexpectedException?: self = .unexpectedException
+        }
+    }
+
+    internal var toSwift: RUMLongTaskEvent.DD.Profiling.ErrorReason? {
+        switch self {
+        case .none: return nil
+        case .notSupportedByBrowser: return .notSupportedByBrowser
+        case .failedToLazyLoad: return .failedToLazyLoad
+        case .missingDocumentPolicyHeader: return .missingDocumentPolicyHeader
+        case .unexpectedException: return .unexpectedException
+        }
+    }
+
+    case none
+    case notSupportedByBrowser
+    case failedToLazyLoad
+    case missingDocumentPolicyHeader
+    case unexpectedException
+}
+
+@objc(DDRUMLongTaskEventDDProfilingStatus)
+@_spi(objc)
+public enum objc_RUMLongTaskEventDDProfilingStatus: Int {
+    internal init(swift: RUMLongTaskEvent.DD.Profiling.Status?) {
+        switch swift {
+        case nil: self = .none
+        case .starting?: self = .starting
+        case .running?: self = .running
+        case .stopped?: self = .stopped
+        case .error?: self = .error
+        }
+    }
+
+    internal var toSwift: RUMLongTaskEvent.DD.Profiling.Status? {
+        switch self {
+        case .none: return nil
+        case .starting: return .starting
+        case .running: return .running
+        case .stopped: return .stopped
+        case .error: return .error
+        }
+    }
+
+    case none
+    case starting
+    case running
+    case stopped
+    case error
 }
 
 @objc(DDRUMLongTaskEventDDSession)
@@ -3226,12 +3366,24 @@ public class objc_RUMLongTaskEventDevice: NSObject {
         root.swiftModel.device!.brand
     }
 
+    public var locale: String? {
+        root.swiftModel.device!.locale
+    }
+
+    public var locales: [String]? {
+        root.swiftModel.device!.locales
+    }
+
     public var model: String? {
         root.swiftModel.device!.model
     }
 
     public var name: String? {
         root.swiftModel.device!.name
+    }
+
+    public var timeZone: String? {
+        root.swiftModel.device!.timeZone
     }
 
     public var type: objc_RUMLongTaskEventDeviceDeviceType {
@@ -3242,20 +3394,22 @@ public class objc_RUMLongTaskEventDevice: NSObject {
 @objc(DDRUMLongTaskEventDeviceDeviceType)
 @_spi(objc)
 public enum objc_RUMLongTaskEventDeviceDeviceType: Int {
-    internal init(swift: Device.DeviceType) {
+    internal init(swift: Device.DeviceType?) {
         switch swift {
-        case .mobile: self = .mobile
-        case .desktop: self = .desktop
-        case .tablet: self = .tablet
-        case .tv: self = .tv
-        case .gamingConsole: self = .gamingConsole
-        case .bot: self = .bot
-        case .other: self = .other
+        case nil: self = .none
+        case .mobile?: self = .mobile
+        case .desktop?: self = .desktop
+        case .tablet?: self = .tablet
+        case .tv?: self = .tv
+        case .gamingConsole?: self = .gamingConsole
+        case .bot?: self = .bot
+        case .other?: self = .other
         }
     }
 
-    internal var toSwift: Device.DeviceType {
+    internal var toSwift: Device.DeviceType? {
         switch self {
+        case .none: return nil
         case .mobile: return .mobile
         case .desktop: return .desktop
         case .tablet: return .tablet
@@ -3266,6 +3420,7 @@ public enum objc_RUMLongTaskEventDeviceDeviceType: Int {
         }
     }
 
+    case none
     case mobile
     case desktop
     case tablet
@@ -3811,6 +3966,10 @@ public class objc_RUMResourceEventDD: NSObject {
         root.swiftModel.dd.rulePsr as NSNumber?
     }
 
+    public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
     public var session: objc_RUMResourceEventDDSession? {
         root.swiftModel.dd.session != nil ? objc_RUMResourceEventDDSession(root: root) : nil
     }
@@ -3832,6 +3991,10 @@ public class objc_RUMResourceEventDDConfiguration: NSObject {
 
     internal init(root: objc_RUMResourceEvent) {
         self.root = root
+    }
+
+    public var profilingSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -4271,12 +4434,24 @@ public class objc_RUMResourceEventDevice: NSObject {
         root.swiftModel.device!.brand
     }
 
+    public var locale: String? {
+        root.swiftModel.device!.locale
+    }
+
+    public var locales: [String]? {
+        root.swiftModel.device!.locales
+    }
+
     public var model: String? {
         root.swiftModel.device!.model
     }
 
     public var name: String? {
         root.swiftModel.device!.name
+    }
+
+    public var timeZone: String? {
+        root.swiftModel.device!.timeZone
     }
 
     public var type: objc_RUMResourceEventDeviceDeviceType {
@@ -4287,20 +4462,22 @@ public class objc_RUMResourceEventDevice: NSObject {
 @objc(DDRUMResourceEventDeviceDeviceType)
 @_spi(objc)
 public enum objc_RUMResourceEventDeviceDeviceType: Int {
-    internal init(swift: Device.DeviceType) {
+    internal init(swift: Device.DeviceType?) {
         switch swift {
-        case .mobile: self = .mobile
-        case .desktop: self = .desktop
-        case .tablet: self = .tablet
-        case .tv: self = .tv
-        case .gamingConsole: self = .gamingConsole
-        case .bot: self = .bot
-        case .other: self = .other
+        case nil: self = .none
+        case .mobile?: self = .mobile
+        case .desktop?: self = .desktop
+        case .tablet?: self = .tablet
+        case .tv?: self = .tv
+        case .gamingConsole?: self = .gamingConsole
+        case .bot?: self = .bot
+        case .other?: self = .other
         }
     }
 
-    internal var toSwift: Device.DeviceType {
+    internal var toSwift: Device.DeviceType? {
         switch self {
+        case .none: return nil
         case .mobile: return .mobile
         case .desktop: return .desktop
         case .tablet: return .tablet
@@ -4311,6 +4488,7 @@ public enum objc_RUMResourceEventDeviceDeviceType: Int {
         }
     }
 
+    case none
     case mobile
     case desktop
     case tablet
@@ -5206,8 +5384,16 @@ public class objc_RUMViewEventDD: NSObject {
         root.swiftModel.dd.pageStates?.map { objc_RUMViewEventDDPageStates(swiftModel: $0) }
     }
 
+    public var profiling: objc_RUMViewEventDDProfiling? {
+        root.swiftModel.dd.profiling != nil ? objc_RUMViewEventDDProfiling(root: root) : nil
+    }
+
     public var replayStats: objc_RUMViewEventDDReplayStats? {
         root.swiftModel.dd.replayStats != nil ? objc_RUMViewEventDDReplayStats(root: root) : nil
+    }
+
+    public var sdkName: String? {
+        root.swiftModel.dd.sdkName
     }
 
     public var session: objc_RUMViewEventDDSession? {
@@ -5238,6 +5424,10 @@ public class objc_RUMViewEventDDConfiguration: NSObject {
 
     internal init(root: objc_RUMViewEvent) {
         self.root = root
+    }
+
+    public var profilingSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -5301,6 +5491,85 @@ public enum objc_RUMViewEventDDPageStatesState: Int {
     case hidden
     case frozen
     case terminated
+}
+
+@objc(DDRUMViewEventDDProfiling)
+@objcMembers
+@_spi(objc)
+public class objc_RUMViewEventDDProfiling: NSObject {
+    internal let root: objc_RUMViewEvent
+
+    internal init(root: objc_RUMViewEvent) {
+        self.root = root
+    }
+
+    public var errorReason: objc_RUMViewEventDDProfilingErrorReason {
+        .init(swift: root.swiftModel.dd.profiling!.errorReason)
+    }
+
+    public var status: objc_RUMViewEventDDProfilingStatus {
+        .init(swift: root.swiftModel.dd.profiling!.status)
+    }
+}
+
+@objc(DDRUMViewEventDDProfilingErrorReason)
+@_spi(objc)
+public enum objc_RUMViewEventDDProfilingErrorReason: Int {
+    internal init(swift: RUMViewEvent.DD.Profiling.ErrorReason?) {
+        switch swift {
+        case nil: self = .none
+        case .notSupportedByBrowser?: self = .notSupportedByBrowser
+        case .failedToLazyLoad?: self = .failedToLazyLoad
+        case .missingDocumentPolicyHeader?: self = .missingDocumentPolicyHeader
+        case .unexpectedException?: self = .unexpectedException
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.DD.Profiling.ErrorReason? {
+        switch self {
+        case .none: return nil
+        case .notSupportedByBrowser: return .notSupportedByBrowser
+        case .failedToLazyLoad: return .failedToLazyLoad
+        case .missingDocumentPolicyHeader: return .missingDocumentPolicyHeader
+        case .unexpectedException: return .unexpectedException
+        }
+    }
+
+    case none
+    case notSupportedByBrowser
+    case failedToLazyLoad
+    case missingDocumentPolicyHeader
+    case unexpectedException
+}
+
+@objc(DDRUMViewEventDDProfilingStatus)
+@_spi(objc)
+public enum objc_RUMViewEventDDProfilingStatus: Int {
+    internal init(swift: RUMViewEvent.DD.Profiling.Status?) {
+        switch swift {
+        case nil: self = .none
+        case .starting?: self = .starting
+        case .running?: self = .running
+        case .stopped?: self = .stopped
+        case .error?: self = .error
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.DD.Profiling.Status? {
+        switch self {
+        case .none: return nil
+        case .starting: return .starting
+        case .running: return .running
+        case .stopped: return .stopped
+        case .error: return .error
+        }
+    }
+
+    case none
+    case starting
+    case running
+    case stopped
+    case error
 }
 
 @objc(DDRUMViewEventDDReplayStats)
@@ -5714,12 +5983,24 @@ public class objc_RUMViewEventDevice: NSObject {
         root.swiftModel.device!.brand
     }
 
+    public var locale: String? {
+        root.swiftModel.device!.locale
+    }
+
+    public var locales: [String]? {
+        root.swiftModel.device!.locales
+    }
+
     public var model: String? {
         root.swiftModel.device!.model
     }
 
     public var name: String? {
         root.swiftModel.device!.name
+    }
+
+    public var timeZone: String? {
+        root.swiftModel.device!.timeZone
     }
 
     public var type: objc_RUMViewEventDeviceDeviceType {
@@ -5730,20 +6011,22 @@ public class objc_RUMViewEventDevice: NSObject {
 @objc(DDRUMViewEventDeviceDeviceType)
 @_spi(objc)
 public enum objc_RUMViewEventDeviceDeviceType: Int {
-    internal init(swift: Device.DeviceType) {
+    internal init(swift: Device.DeviceType?) {
         switch swift {
-        case .mobile: self = .mobile
-        case .desktop: self = .desktop
-        case .tablet: self = .tablet
-        case .tv: self = .tv
-        case .gamingConsole: self = .gamingConsole
-        case .bot: self = .bot
-        case .other: self = .other
+        case nil: self = .none
+        case .mobile?: self = .mobile
+        case .desktop?: self = .desktop
+        case .tablet?: self = .tablet
+        case .tv?: self = .tv
+        case .gamingConsole?: self = .gamingConsole
+        case .bot?: self = .bot
+        case .other?: self = .other
         }
     }
 
-    internal var toSwift: Device.DeviceType {
+    internal var toSwift: Device.DeviceType? {
         switch self {
+        case .none: return nil
         case .mobile: return .mobile
         case .desktop: return .desktop
         case .tablet: return .tablet
@@ -5754,6 +6037,7 @@ public enum objc_RUMViewEventDeviceDeviceType: Int {
         }
     }
 
+    case none
     case mobile
     case desktop
     case tablet
@@ -6886,6 +7170,10 @@ public class objc_RUMVitalEventDD: NSObject {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
+    public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
     public var session: objc_RUMVitalEventDDSession? {
         root.swiftModel.dd.session != nil ? objc_RUMVitalEventDDSession(root: root) : nil
     }
@@ -6903,6 +7191,10 @@ public class objc_RUMVitalEventDDConfiguration: NSObject {
 
     internal init(root: objc_RUMVitalEvent) {
         self.root = root
+    }
+
+    public var profilingSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -7317,12 +7609,24 @@ public class objc_RUMVitalEventDevice: NSObject {
         root.swiftModel.device!.brand
     }
 
+    public var locale: String? {
+        root.swiftModel.device!.locale
+    }
+
+    public var locales: [String]? {
+        root.swiftModel.device!.locales
+    }
+
     public var model: String? {
         root.swiftModel.device!.model
     }
 
     public var name: String? {
         root.swiftModel.device!.name
+    }
+
+    public var timeZone: String? {
+        root.swiftModel.device!.timeZone
     }
 
     public var type: objc_RUMVitalEventDeviceDeviceType {
@@ -7333,20 +7637,22 @@ public class objc_RUMVitalEventDevice: NSObject {
 @objc(DDRUMVitalEventDeviceDeviceType)
 @_spi(objc)
 public enum objc_RUMVitalEventDeviceDeviceType: Int {
-    internal init(swift: Device.DeviceType) {
+    internal init(swift: Device.DeviceType?) {
         switch swift {
-        case .mobile: self = .mobile
-        case .desktop: self = .desktop
-        case .tablet: self = .tablet
-        case .tv: self = .tv
-        case .gamingConsole: self = .gamingConsole
-        case .bot: self = .bot
-        case .other: self = .other
+        case nil: self = .none
+        case .mobile?: self = .mobile
+        case .desktop?: self = .desktop
+        case .tablet?: self = .tablet
+        case .tv?: self = .tv
+        case .gamingConsole?: self = .gamingConsole
+        case .bot?: self = .bot
+        case .other?: self = .other
         }
     }
 
-    internal var toSwift: Device.DeviceType {
+    internal var toSwift: Device.DeviceType? {
         switch self {
+        case .none: return nil
         case .mobile: return .mobile
         case .desktop: return .desktop
         case .tablet: return .tablet
@@ -7357,6 +7663,7 @@ public enum objc_RUMVitalEventDeviceDeviceType: Int {
         }
     }
 
+    case none
     case mobile
     case desktop
     case tablet
@@ -8546,6 +8853,16 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.storeContextsAcrossPages as NSNumber?
     }
 
+    public var swiftuiActionTrackingEnabled: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.swiftuiActionTrackingEnabled = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.swiftuiActionTrackingEnabled as NSNumber? }
+    }
+
+    public var swiftuiViewTrackingEnabled: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.swiftuiViewTrackingEnabled = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.swiftuiViewTrackingEnabled as NSNumber? }
+    }
+
     public var telemetryConfigurationSampleRate: NSNumber? {
         root.swiftModel.telemetry.configuration.telemetryConfigurationSampleRate as NSNumber?
     }
@@ -9052,4 +9369,4 @@ public class objc_TelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/b20658edde2a3f7e7908432a1bee5099c9ad51a8
+// Generated from https://github.com/DataDog/rum-events-format/tree/ee481e7c74290762219cbf507d61c75785349d88

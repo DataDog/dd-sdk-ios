@@ -8,6 +8,10 @@ import UIKit
 import Foundation
 import DatadogInternal
 
+// swiftlint:disable duplicate_imports
+@_exported import enum DatadogInternal.RUMMethod
+// swiftlint:enable duplicate_imports
+
 /// The type of RUM resource.
 public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
 

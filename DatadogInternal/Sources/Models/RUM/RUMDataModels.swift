@@ -187,6 +187,9 @@ public struct RUMActionEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -195,6 +198,7 @@ public struct RUMActionEvent: RUMDataModel {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
             case formatVersion = "format_version"
+            case sdkName = "sdk_name"
             case session = "session"
         }
 
@@ -204,16 +208,19 @@ public struct RUMActionEvent: RUMDataModel {
         ///   - action: Action properties
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         public init(
             action: Action? = nil,
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
+            sdkName: String? = nil,
             session: Session? = nil
         ) {
             self.action = action
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
+            self.sdkName = sdkName
             self.session = session
         }
 
@@ -324,6 +331,9 @@ public struct RUMActionEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
+            /// The percentage of views profiled
+            public let profilingSampleRate: Double?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -331,6 +341,7 @@ public struct RUMActionEvent: RUMDataModel {
             public let sessionSampleRate: Double
 
             public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
             }
@@ -338,12 +349,15 @@ public struct RUMActionEvent: RUMDataModel {
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             public init(
+                profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double
             ) {
+                self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
             }
@@ -1014,6 +1028,9 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -1021,6 +1038,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
             case formatVersion = "format_version"
+            case sdkName = "sdk_name"
             case session = "session"
         }
 
@@ -1029,19 +1047,25 @@ public struct RUMErrorEvent: RUMDataModel {
         /// - Parameters:
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
+            sdkName: String? = nil,
             session: Session? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
+            self.sdkName = sdkName
             self.session = session
         }
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
+            /// The percentage of views profiled
+            public let profilingSampleRate: Double?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -1049,6 +1073,7 @@ public struct RUMErrorEvent: RUMDataModel {
             public let sessionSampleRate: Double
 
             public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
             }
@@ -1056,12 +1081,15 @@ public struct RUMErrorEvent: RUMDataModel {
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             public init(
+                profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double
             ) {
+                self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
             }
@@ -1454,6 +1482,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case exception = "Exception"
             case watchdogTermination = "Watchdog Termination"
             case memoryWarning = "Memory Warning"
+            case network = "Network"
         }
 
         /// Properties for one of the error causes
@@ -2101,6 +2130,12 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// Profiling context
+        public let profiling: Profiling?
+
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -2109,6 +2144,8 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case configuration = "configuration"
             case discarded = "discarded"
             case formatVersion = "format_version"
+            case profiling = "profiling"
+            case sdkName = "sdk_name"
             case session = "session"
         }
 
@@ -2118,21 +2155,30 @@ public struct RUMLongTaskEvent: RUMDataModel {
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
         ///   - discarded: Whether the long task should be discarded or indexed
+        ///   - profiling: Profiling context
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
             discarded: Bool? = nil,
+            profiling: Profiling? = nil,
+            sdkName: String? = nil,
             session: Session? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
             self.discarded = discarded
+            self.profiling = profiling
+            self.sdkName = sdkName
             self.session = session
         }
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
+            /// The percentage of views profiled
+            public let profilingSampleRate: Double?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -2140,6 +2186,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
             public let sessionSampleRate: Double
 
             public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
             }
@@ -2147,14 +2194,99 @@ public struct RUMLongTaskEvent: RUMDataModel {
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             public init(
+                profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double
             ) {
+                self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
+            }
+        }
+
+        /// Profiling context
+        public struct Profiling: Codable {
+            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            public let errorReason: ErrorReason?
+
+            /// Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public let status: Status?
+
+            public enum CodingKeys: String, CodingKey {
+                case errorReason = "error_reason"
+                case status = "status"
+            }
+
+            /// Profiling context
+            ///
+            /// - Parameters:
+            ///   - errorReason: The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            ///   - status: Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public init(
+                errorReason: ErrorReason? = nil,
+                status: Status? = nil
+            ) {
+                self.errorReason = errorReason
+                self.status = status
+            }
+
+            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            public enum ErrorReason: String, Codable {
+                case notSupportedByBrowser = "not-supported-by-browser"
+                case failedToLazyLoad = "failed-to-lazy-load"
+                case missingDocumentPolicyHeader = "missing-document-policy-header"
+                case unexpectedException = "unexpected-exception"
+            }
+
+            /// Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public enum Status: String, Codable {
+                case starting = "starting"
+                case running = "running"
+                case stopped = "stopped"
+                case error = "error"
             }
         }
 
@@ -2800,6 +2932,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// trace sample rate in decimal format
         public let rulePsr: Double?
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -2815,6 +2950,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case discarded = "discarded"
             case formatVersion = "format_version"
             case rulePsr = "rule_psr"
+            case sdkName = "sdk_name"
             case session = "session"
             case spanId = "span_id"
             case traceId = "trace_id"
@@ -2827,6 +2963,7 @@ public struct RUMResourceEvent: RUMDataModel {
         ///   - configuration: Subset of the SDK configuration options in use during its execution
         ///   - discarded: Whether the resource should be discarded or indexed
         ///   - rulePsr: trace sample rate in decimal format
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         ///   - spanId: span identifier in decimal format
         ///   - traceId: trace identifier, either a 64 bit decimal number or a 128 bit hexadecimal number padded with 0s
@@ -2835,6 +2972,7 @@ public struct RUMResourceEvent: RUMDataModel {
             configuration: Configuration? = nil,
             discarded: Bool? = nil,
             rulePsr: Double? = nil,
+            sdkName: String? = nil,
             session: Session? = nil,
             spanId: String? = nil,
             traceId: String? = nil
@@ -2843,6 +2981,7 @@ public struct RUMResourceEvent: RUMDataModel {
             self.configuration = configuration
             self.discarded = discarded
             self.rulePsr = rulePsr
+            self.sdkName = sdkName
             self.session = session
             self.spanId = spanId
             self.traceId = traceId
@@ -2850,6 +2989,9 @@ public struct RUMResourceEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
+            /// The percentage of views profiled
+            public let profilingSampleRate: Double?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -2857,6 +2999,7 @@ public struct RUMResourceEvent: RUMDataModel {
             public let sessionSampleRate: Double
 
             public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
             }
@@ -2864,12 +3007,15 @@ public struct RUMResourceEvent: RUMDataModel {
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             public init(
+                profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double
             ) {
+                self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
             }
@@ -3817,8 +3963,14 @@ public struct RUMViewEvent: RUMDataModel {
         /// List of the page states during the view
         public let pageStates: [PageStates]?
 
+        /// Profiling context
+        public let profiling: Profiling?
+
         /// Debug metadata for Replay Sessions
         public let replayStats: ReplayStats?
+
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
 
         /// Session-related internal properties
         public let session: Session?
@@ -3830,7 +3982,9 @@ public struct RUMViewEvent: RUMDataModel {
             case documentVersion = "document_version"
             case formatVersion = "format_version"
             case pageStates = "page_states"
+            case profiling = "profiling"
             case replayStats = "replay_stats"
+            case sdkName = "sdk_name"
             case session = "session"
         }
 
@@ -3842,7 +3996,9 @@ public struct RUMViewEvent: RUMDataModel {
         ///   - configuration: Subset of the SDK configuration options in use during its execution
         ///   - documentVersion: Version of the update of the view event
         ///   - pageStates: List of the page states during the view
+        ///   - profiling: Profiling context
         ///   - replayStats: Debug metadata for Replay Sessions
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         public init(
             browserSdkVersion: String? = nil,
@@ -3850,7 +4006,9 @@ public struct RUMViewEvent: RUMDataModel {
             configuration: Configuration? = nil,
             documentVersion: Int64,
             pageStates: [PageStates]? = nil,
+            profiling: Profiling? = nil,
             replayStats: ReplayStats? = nil,
+            sdkName: String? = nil,
             session: Session? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
@@ -3858,7 +4016,9 @@ public struct RUMViewEvent: RUMDataModel {
             self.configuration = configuration
             self.documentVersion = documentVersion
             self.pageStates = pageStates
+            self.profiling = profiling
             self.replayStats = replayStats
+            self.sdkName = sdkName
             self.session = session
         }
 
@@ -3884,6 +4044,9 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
+            /// The percentage of views profiled
+            public let profilingSampleRate: Double?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -3894,6 +4057,7 @@ public struct RUMViewEvent: RUMDataModel {
             public let startSessionReplayRecordingManually: Bool?
 
             public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
@@ -3902,14 +4066,17 @@ public struct RUMViewEvent: RUMDataModel {
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - startSessionReplayRecordingManually: Whether session replay recording configured to start manually
             public init(
+                profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 startSessionReplayRecordingManually: Bool? = nil
             ) {
+                self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
@@ -3949,6 +4116,88 @@ public struct RUMViewEvent: RUMDataModel {
                 case hidden = "hidden"
                 case frozen = "frozen"
                 case terminated = "terminated"
+            }
+        }
+
+        /// Profiling context
+        public struct Profiling: Codable {
+            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            public let errorReason: ErrorReason?
+
+            /// Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public let status: Status?
+
+            public enum CodingKeys: String, CodingKey {
+                case errorReason = "error_reason"
+                case status = "status"
+            }
+
+            /// Profiling context
+            ///
+            /// - Parameters:
+            ///   - errorReason: The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            ///   - status: Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public init(
+                errorReason: ErrorReason? = nil,
+                status: Status? = nil
+            ) {
+                self.errorReason = errorReason
+                self.status = status
+            }
+
+            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            public enum ErrorReason: String, Codable {
+                case notSupportedByBrowser = "not-supported-by-browser"
+                case failedToLazyLoad = "failed-to-lazy-load"
+                case missingDocumentPolicyHeader = "missing-document-policy-header"
+                case unexpectedException = "unexpected-exception"
+            }
+
+            /// Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public enum Status: String, Codable {
+                case starting = "starting"
+                case running = "running"
+                case stopped = "stopped"
+                case error = "error"
             }
         }
 
@@ -5514,6 +5763,9 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -5524,6 +5776,7 @@ public struct RUMVitalEvent: RUMDataModel {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
             case formatVersion = "format_version"
+            case sdkName = "sdk_name"
             case session = "session"
             case vital = "vital"
         }
@@ -5533,22 +5786,28 @@ public struct RUMVitalEvent: RUMDataModel {
         /// - Parameters:
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         ///   - vital: Internal vital properties
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
+            sdkName: String? = nil,
             session: Session? = nil,
             vital: Vital? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
+            self.sdkName = sdkName
             self.session = session
             self.vital = vital
         }
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
+            /// The percentage of views profiled
+            public let profilingSampleRate: Double?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -5556,6 +5815,7 @@ public struct RUMVitalEvent: RUMDataModel {
             public let sessionSampleRate: Double
 
             public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
             }
@@ -5563,12 +5823,15 @@ public struct RUMVitalEvent: RUMDataModel {
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             public init(
+                profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double
             ) {
+                self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
             }
@@ -6853,6 +7116,12 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether contexts are stored in local storage
             public let storeContextsAcrossPages: Bool?
 
+            /// Whether SwiftUI action instrumentation is enabled
+            public var swiftuiActionTrackingEnabled: Bool?
+
+            /// Whether SwiftUI view instrumentation is enabled
+            public var swiftuiViewTrackingEnabled: Bool?
+
             /// The percentage of telemetry configuration events sent after being sampled by telemetry_sample_rate
             public let telemetryConfigurationSampleRate: Int64?
 
@@ -7024,6 +7293,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case startRecordingImmediately = "start_recording_immediately"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
                 case storeContextsAcrossPages = "store_contexts_across_pages"
+                case swiftuiActionTrackingEnabled = "swiftui_action_tracking_enabled"
+                case swiftuiViewTrackingEnabled = "swiftui_view_tracking_enabled"
                 case telemetryConfigurationSampleRate = "telemetry_configuration_sample_rate"
                 case telemetrySampleRate = "telemetry_sample_rate"
                 case telemetryUsageSampleRate = "telemetry_usage_sample_rate"
@@ -7109,6 +7380,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - startRecordingImmediately: Whether Session Replay should automatically start a recording when enabled
             ///   - startSessionReplayRecordingManually: Whether the session replay start is handled manually
             ///   - storeContextsAcrossPages: Whether contexts are stored in local storage
+            ///   - swiftuiActionTrackingEnabled: Whether SwiftUI action instrumentation is enabled
+            ///   - swiftuiViewTrackingEnabled: Whether SwiftUI view instrumentation is enabled
             ///   - telemetryConfigurationSampleRate: The percentage of telemetry configuration events sent after being sampled by telemetry_sample_rate
             ///   - telemetrySampleRate: The percentage of telemetry events sent
             ///   - telemetryUsageSampleRate: The percentage of telemetry usage events sent after being sampled by telemetry_sample_rate
@@ -7190,6 +7463,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 startRecordingImmediately: Bool? = nil,
                 startSessionReplayRecordingManually: Bool? = nil,
                 storeContextsAcrossPages: Bool? = nil,
+                swiftuiActionTrackingEnabled: Bool? = nil,
+                swiftuiViewTrackingEnabled: Bool? = nil,
                 telemetryConfigurationSampleRate: Int64? = nil,
                 telemetrySampleRate: Int64? = nil,
                 telemetryUsageSampleRate: Int64? = nil,
@@ -7271,6 +7546,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.startRecordingImmediately = startRecordingImmediately
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
                 self.storeContextsAcrossPages = storeContextsAcrossPages
+                self.swiftuiActionTrackingEnabled = swiftuiActionTrackingEnabled
+                self.swiftuiViewTrackingEnabled = swiftuiViewTrackingEnabled
                 self.telemetryConfigurationSampleRate = telemetryConfigurationSampleRate
                 self.telemetrySampleRate = telemetrySampleRate
                 self.telemetryUsageSampleRate = telemetryUsageSampleRate
@@ -8693,20 +8970,32 @@ public struct Device: Codable {
     /// Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
     public let brand: String?
 
+    /// The user’s locale as a language tag combining language and region, e.g. 'en-US'.
+    public let locale: String?
+
+    /// Ordered list of the user’s preferred system languages as IETF language tags.
+    public let locales: [String]?
+
     /// Device SKU model, e.g. Samsung SM-988GN, etc. Quite often name and model can be the same.
     public let model: String?
 
     /// Device marketing name, e.g. Xiaomi Redmi Note 8 Pro, Pixel 5, etc.
     public let name: String?
 
+    /// The device’s current time zone identifier, e.g. 'Europe/Berlin'.
+    public let timeZone: String?
+
     /// Device type info
-    public let type: DeviceType
+    public let type: DeviceType?
 
     public enum CodingKeys: String, CodingKey {
         case architecture = "architecture"
         case brand = "brand"
+        case locale = "locale"
+        case locales = "locales"
         case model = "model"
         case name = "name"
+        case timeZone = "time_zone"
         case type = "type"
     }
 
@@ -8715,20 +9004,29 @@ public struct Device: Codable {
     /// - Parameters:
     ///   - architecture: The CPU architecture of the device that is reporting the error
     ///   - brand: Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
+    ///   - locale: The user’s locale as a language tag combining language and region, e.g. 'en-US'.
+    ///   - locales: Ordered list of the user’s preferred system languages as IETF language tags.
     ///   - model: Device SKU model, e.g. Samsung SM-988GN, etc. Quite often name and model can be the same.
     ///   - name: Device marketing name, e.g. Xiaomi Redmi Note 8 Pro, Pixel 5, etc.
+    ///   - timeZone: The device’s current time zone identifier, e.g. 'Europe/Berlin'.
     ///   - type: Device type info
     public init(
         architecture: String? = nil,
         brand: String? = nil,
+        locale: String? = nil,
+        locales: [String]? = nil,
         model: String? = nil,
         name: String? = nil,
-        type: DeviceType
+        timeZone: String? = nil,
+        type: DeviceType? = nil
     ) {
         self.architecture = architecture
         self.brand = brand
+        self.locale = locale
+        self.locales = locales
         self.model = model
         self.name = name
+        self.timeZone = timeZone
         self.type = type
     }
 
@@ -9034,4 +9332,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/b20658edde2a3f7e7908432a1bee5099c9ad51a8
+// Generated from https://github.com/DataDog/rum-events-format/tree/ee481e7c74290762219cbf507d61c75785349d88

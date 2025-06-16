@@ -96,6 +96,44 @@ class DDRUMUserActionTypeTests: XCTestCase {
     }
 }
 
+class SwiftUIRUMViewsPredicateBridgeTests: XCTestCase {
+    func testItForwardsCallToObjcPredicate() {
+        class MockPredicate: objc_SwiftUIRUMViewsPredicate {
+            var didCallRUMView = false
+            func rumView(for extractedViewName: String) -> objc_RUMView? {
+                didCallRUMView = true
+                return nil
+            }
+        }
+
+        let objcPredicate = MockPredicate()
+
+        let predicateBridge = SwiftUIRUMViewsPredicateBridge(objcPredicate: objcPredicate)
+        _ = predicateBridge.rumView(for: "TestView")
+
+        XCTAssertTrue(objcPredicate.didCallRUMView)
+    }
+}
+
+class SwiftUIRUMActionsPredicateBridgeTests: XCTestCase {
+    func testItForwardsCallToObjcPredicate() {
+        class MockPredicate: objc_SwiftUIRUMActionsPredicate {
+            var didCallRUMAction = false
+            func rumAction(with componentName: String) -> objc_RUMAction? {
+                didCallRUMAction = true
+                return nil
+            }
+        }
+
+        let objcPredicate = MockPredicate()
+
+        let predicateBridge = SwiftUIRUMActionsPredicateBridge(objcPredicate: objcPredicate)
+        _ = predicateBridge.rumAction(with: "Button")
+
+        XCTAssertTrue(objcPredicate.didCallRUMAction)
+    }
+}
+
 class DDRUMErrorSourceTests: XCTestCase {
     func testMappingToSwiftRUMErrorSource() {
         XCTAssertEqual(objc_RUMErrorSource.source.swiftType, .source)

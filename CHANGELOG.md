@@ -9,6 +9,9 @@
 - [IMPROVEMENT] Align attribute propagation mechanism. See [#2291][] [#2305][]
 - [IMPROVEMENT] Stop reporting App hangs and Watchdog terminations for iOS widgets. See [#2326][]   
 - [IMPROVEMENT] Align `os` and `device` attributes across all product features. See [#2322][]
+# 2.28.1 / 29-05-2025
+
+- [FIX] Fix `RUMMethod` export from RUM. See [#2316][]
 
 # 2.28.0 / 26-05-2025
 
@@ -899,6 +902,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2326]: https://github.com/DataDog/dd-sdk-ios/pull/2326
 [#2322]: https://github.com/DataDog/dd-sdk-ios/pull/2322
 
+[#2316]: https://github.com/DataDog/dd-sdk-ios/pull/2316
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
