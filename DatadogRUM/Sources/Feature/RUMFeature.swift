@@ -174,12 +174,14 @@ internal final class RUMFeature: DatadogRemoteFeature {
             dependencies.renderLoopObserver?.register(refreshRateVital)
         }
 
-        let memoryWarningReporter = MemoryWarningReporter()
-        let memoryWarningMonitor = MemoryWarningMonitor(
-            backtraceReporter: core.backtraceReporter,
-            memoryWarningReporter: memoryWarningReporter,
-            notificationCenter: configuration.notificationCenter
-        )
+        var memoryWarningMonitor: MemoryWarningMonitor?
+        if configuration.trackMemoryWarnings {
+            let memoryWarningReporter = MemoryWarningReporter()
+            memoryWarningMonitor = MemoryWarningMonitor(
+                memoryWarningReporter: memoryWarningReporter,
+                notificationCenter: configuration.notificationCenter
+            )
+        }
 
         self.instrumentation = RUMInstrumentation(
             featureScope: featureScope,
