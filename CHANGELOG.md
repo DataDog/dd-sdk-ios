@@ -8,8 +8,8 @@
 - [IMPROVEMENT] Remove `DatadogObjc` module. See [#2298][] 
 - [IMPROVEMENT] Align attribute propagation mechanism. See [#2291][] [#2305][]
 - [IMPROVEMENT] Stop reporting App hangs and Watchdog terminations for iOS widgets. See [#2326][]   
+- [IMPROVEMENT] Align `os` and `device` attributes across all product features. See [#2322][]
 
-# 2.24.1 / 31-04-2025
 # 2.28.0 / 26-05-2025
 
 - [IMPROVEMENT] Increase RUM batch maximum age to 24hrs. See [#2302][]
@@ -897,6 +897,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2298]: https://github.com/DataDog/dd-sdk-ios/pull/2298
 [#2305]: https://github.com/DataDog/dd-sdk-ios/pull/2305
 [#2326]: https://github.com/DataDog/dd-sdk-ios/pull/2326
+[#2322]: https://github.com/DataDog/dd-sdk-ios/pull/2322
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

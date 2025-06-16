@@ -63,10 +63,10 @@ class RUMFeatureTests: XCTestCase {
                     sdkVersion: randomSDKVersion,
                     ciAppOrigin: randomOrigin,
                     applicationName: randomApplicationName,
-                    device: .mockWith(
-                        name: randomDeviceName,
-                        osName: randomDeviceOSName,
-                        osVersion: randomDeviceOSVersion
+                    device: .mockWith(name: randomDeviceName),
+                    os: .mockWith(
+                        name: randomDeviceOSName,
+                        version: randomDeviceOSVersion
                     )
                 )
             ),

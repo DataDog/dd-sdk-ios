@@ -46,13 +46,13 @@ public struct RUMActionEvent: RUMDataModel {
     public let date: Int64
 
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -139,9 +139,9 @@ public struct RUMActionEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
-        device: RUMDevice? = nil,
+        device: Device? = nil,
         display: Display? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
         source: Source? = nil,
@@ -855,7 +855,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let date: Int64
 
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
@@ -870,7 +870,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let freeze: Freeze?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -963,12 +963,12 @@ public struct RUMErrorEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
-        device: RUMDevice? = nil,
+        device: Device? = nil,
         display: Display? = nil,
         error: Error,
         featureFlags: FeatureFlags? = nil,
         freeze: Freeze? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
         source: Source? = nil,
@@ -1953,7 +1953,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let date: Int64
 
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
@@ -1962,7 +1962,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let longTask: LongTask
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -2051,10 +2051,10 @@ public struct RUMLongTaskEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
-        device: RUMDevice? = nil,
+        device: Device? = nil,
         display: Display? = nil,
         longTask: LongTask,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
         source: Source? = nil,
@@ -2649,13 +2649,13 @@ public struct RUMResourceEvent: RUMDataModel {
     public let date: Int64
 
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// Resource properties
     public var resource: Resource
@@ -2747,9 +2747,9 @@ public struct RUMResourceEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
-        device: RUMDevice? = nil,
+        device: Device? = nil,
         display: Display? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         resource: Resource,
         service: String? = nil,
         session: Session,
@@ -2806,7 +2806,7 @@ public struct RUMResourceEvent: RUMDataModel {
         /// span identifier in decimal format
         public let spanId: String?
 
-        /// trace identifier in decimal format
+        /// trace identifier, either a 64 bit decimal number or a 128 bit hexadecimal number padded with 0s
         public let traceId: String?
 
         public enum CodingKeys: String, CodingKey {
@@ -2829,7 +2829,7 @@ public struct RUMResourceEvent: RUMDataModel {
         ///   - rulePsr: trace sample rate in decimal format
         ///   - session: Session-related internal properties
         ///   - spanId: span identifier in decimal format
-        ///   - traceId: trace identifier in decimal format
+        ///   - traceId: trace identifier, either a 64 bit decimal number or a 128 bit hexadecimal number padded with 0s
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
@@ -3660,7 +3660,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let date: Int64
 
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
@@ -3669,7 +3669,7 @@ public struct RUMViewEvent: RUMDataModel {
     public var featureFlags: FeatureFlags?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// Privacy properties
     public let privacy: Privacy?
@@ -3760,10 +3760,10 @@ public struct RUMViewEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
-        device: RUMDevice? = nil,
+        device: Device? = nil,
         display: Display? = nil,
         featureFlags: FeatureFlags? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         privacy: Privacy? = nil,
         service: String? = nil,
         session: Session,
@@ -5373,13 +5373,13 @@ public struct RUMVitalEvent: RUMDataModel {
     public let date: Int64
 
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -5468,9 +5468,9 @@ public struct RUMVitalEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
-        device: RUMDevice? = nil,
+        device: Device? = nil,
         display: Display? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
         source: Source? = nil,
@@ -8686,7 +8686,7 @@ extension RUMEventAttributes {
 }
 
 /// Device properties
-public struct RUMDevice: Codable {
+public struct Device: Codable {
     /// The CPU architecture of the device that is reporting the error
     public let architecture: String?
 
@@ -8700,7 +8700,7 @@ public struct RUMDevice: Codable {
     public let name: String?
 
     /// Device type info
-    public let type: RUMDeviceType
+    public let type: DeviceType
 
     public enum CodingKeys: String, CodingKey {
         case architecture = "architecture"
@@ -8723,7 +8723,7 @@ public struct RUMDevice: Codable {
         brand: String? = nil,
         model: String? = nil,
         name: String? = nil,
-        type: RUMDeviceType
+        type: DeviceType
     ) {
         self.architecture = architecture
         self.brand = brand
@@ -8733,7 +8733,7 @@ public struct RUMDevice: Codable {
     }
 
     /// Device type info
-    public enum RUMDeviceType: String, Codable {
+    public enum DeviceType: String, Codable {
         case mobile = "mobile"
         case desktop = "desktop"
         case tablet = "tablet"
@@ -8745,7 +8745,7 @@ public struct RUMDevice: Codable {
 }
 
 /// Operating system properties
-public struct RUMOperatingSystem: Codable {
+public struct OperatingSystem: Codable {
     /// Operating system build number, e.g. 15D21
     public let build: String?
 
@@ -9034,4 +9034,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/df69253e7a875963d2a9cf0abb97882a97ebf85e
+// Generated from https://github.com/DataDog/rum-events-format/tree/b20658edde2a3f7e7908432a1bee5099c9ad51a8

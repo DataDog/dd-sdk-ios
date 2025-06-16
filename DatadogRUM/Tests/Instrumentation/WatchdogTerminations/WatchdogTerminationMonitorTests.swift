@@ -81,13 +81,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         didCrash: Bool,
         didSend: XCTestExpectation
     ) {
-        let deviceInfo: DeviceInfo = .init(
-            name: .mockAny(),
-            model: .mockAny(),
-            osName: .mockAny(),
-            osVersion: .mockAny(),
-            osBuildNumber: .mockAny(),
-            architecture: .mockAny(),
+        let deviceInfo: DeviceInfo = .mockWith(
             isSimulator: isSimulator,
             vendorId: vendorId,
             isDebugging: false,

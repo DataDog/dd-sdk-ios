@@ -55,7 +55,12 @@ public struct URLRequestBuilder {
         }
 
         /// Standard "User-Agent" header.
-        public static func userAgentHeader(appName: String, appVersion: String, device: DeviceInfo) -> HTTPHeader {
+        public static func userAgentHeader(
+            appName: String,
+            appVersion: String,
+            device: DeviceInfo,
+            os: OperatingSystem
+        ) -> HTTPHeader {
             var sanitizedAppName = appName
 
             if let regex = try? NSRegularExpression(pattern: "[^a-zA-Z0-9 -]+") {
@@ -67,7 +72,7 @@ public struct URLRequestBuilder {
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             }
 
-            let agent = "\(sanitizedAppName)/\(appVersion) CFNetwork (\(device.name); \(device.osName)/\(device.osVersion))"
+            let agent = "\(sanitizedAppName)/\(appVersion) CFNetwork (\(device.name); \(os.name)/\(os.version))"
             return HTTPHeader(field: userAgentHeaderField, value: { agent })
         }
 

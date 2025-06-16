@@ -42,10 +42,12 @@ class LoggerTests: XCTestCase {
             device: .mockWith(
                 name: "Device Name",
                 model: "Model Name",
-                osName: "testOS",
-                osVersion: "1.0",
-                osBuildNumber: "FFFFFF",
                 architecture: "testArch"
+            ),
+            os: .mockWith(
+                name: "testOS",
+                version: "1.0",
+                build: "FFFFFF"
             )
         )
 
@@ -58,14 +60,22 @@ class LoggerTests: XCTestCase {
         logger.debug("message")
 
         let logMatcher = try core.waitAndReturnLogMatchers()[0]
+
         try logMatcher.assertItFullyMatches(jsonString: """
         {
-          "status" : "debug",
-          "message" : "message",
-          "os": {
-            "build": "FFFFFF",
-            "name": "testOS",
-            "version": "1.0"
+          "status": "debug",
+          "message": "message",
+          "_dd": {
+            "device": {
+              "architecture": "testArch"
+            }
+          },
+          "device": {
+            "brand": "Apple",
+            "name": "Device Name",
+            "model": "Model Name",
+            "architecture": "testArch",
+            "type": "other"
           },
           "service" : "default-service-name",
           "logger.name" : "com.datadoghq.ios-sdk",
@@ -75,13 +85,11 @@ class LoggerTests: XCTestCase {
           "version": "1.0.0",
           "build_version": "1",
           "ddtags": "env:tests,version:1.0.0",
-          "_dd": {
-            "device": {
-              "brand": "Apple",
-              "name": "Device Name",
-              "model": "Model Name",
-              "architecture": "testArch"
-            }
+          "os": {
+            "build": "FFFFFF",
+            "name": "testOS",
+            "version": "1.0",
+            "version_major": "1"
           }
         }
         """)
