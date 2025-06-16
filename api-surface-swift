@@ -88,17 +88,10 @@ public struct LogEvent: Encodable
         public var sourceType: String = "ios"
         public var fingerprint: String?
         public var binaryImages: [BinaryImage]?
-    public struct DeviceInfo: Codable
-        public let brand: String
-        public let name: String
-        public let model: String
-        public let architecture: String
-    public struct OperatingSystem: Codable
-        public let name: String
-        public let version: String
-        public let build: String?
     public struct Dd: Codable
-        public let device: DeviceInfo
+        public struct Device: Codable
+            public let architecture: String
+        public let device: Device
     public let date: Date
     public let status: Status
     public var message: String
@@ -113,6 +106,7 @@ public struct LogEvent: Encodable
     public let buildId: String?
     public let variant: String?
     public let dd: Dd
+    public let device: Device
     public let os: OperatingSystem
     public var userInfo: UserInfo
     public var accountInfo: AccountInfo?
@@ -278,24 +272,8 @@ public struct SpanEvent: Encodable
     public let applicationVersion: String
     public let networkConnectionInfo: NetworkConnectionInfo?
     public let mobileCarrierInfo: CarrierInfo?
-    public struct DeviceInfo: Codable
-        public enum DeviceType: String, Codable
-            case mobile = "mobile"
-            case tablet = "tablet"
-            case tv = "tv"
-            case other = "other"
-        public let brand: String
-        public let name: String
-        public let model: String
-        public let architecture: String
-        public let type: DeviceType
-    public let deviceInfo: DeviceInfo
-    public struct OperatingSystemInfo: Codable
-        public let name: String
-        public let version: String
-        public let build: String?
-        public let versionMajor: String
-    public let osInfo: OperatingSystemInfo
+    public let device: Device
+    public let os: OperatingSystem
     public struct UserInfo
         public let id: String?
         public let name: String?
@@ -341,12 +319,18 @@ public class Tracer
 # API surface for DatadogRUM:
 # ----------------------------------
 
-public extension SwiftUI.View
-    func trackRUMTapAction(name: String,attributes: [String: Encodable] = [:],count: Int = 1,in core: DatadogCoreProtocol = CoreRegistry.default) -> some View
 public struct RUMAction
     public var name: String
     public var attributes: [AttributeKey: AttributeValue]
     public init(name: String, attributes: [AttributeKey: AttributeValue] = [:])
+public extension SwiftUI.View
+    func trackRUMTapAction(name: String,attributes: [String: Encodable] = [:],count: Int = 1,in core: DatadogCoreProtocol = CoreRegistry.default) -> some View
+public protocol SwiftUIRUMActionsPredicate
+    func rumAction(with componentName: String) -> RUMAction?
+public struct DefaultSwiftUIRUMActionsPredicate
+    public init(isLegacyDetectionEnabled: Bool)
+[?] extension DefaultSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate
+    public func rumAction(with componentName: String) -> RUMAction?
 public typealias UIKitRUMActionsPredicate = UITouchRUMActionsPredicate
 public protocol UITouchRUMActionsPredicate
     func rumAction(targetView: UIView) -> RUMAction?
@@ -399,6 +383,7 @@ public enum RUM
         public var uiKitViewsPredicate: UIKitRUMViewsPredicate?
         public var uiKitActionsPredicate: UIKitRUMActionsPredicate?
         public var swiftUIViewsPredicate: SwiftUIRUMViewsPredicate?
+        public var swiftUIActionsPredicate: SwiftUIRUMActionsPredicate?
         public var urlSessionTracking: URLSessionTracking?
         public var trackFrustrations: Bool
         public var trackBackgroundEvents: Bool
@@ -431,13 +416,14 @@ public enum RUM
         case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil)
 [?] extension RUM.Configuration
-    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,telemetrySampleRate: SampleRate = 20,featureFlags: FeatureFlags = .defaults)
+    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,telemetrySampleRate: SampleRate = 20,featureFlags: FeatureFlags = .defaults)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
     public var configurationTelemetrySampleRate: Float
 [?] extension RUM.Configuration
     public typealias FeatureFlags = [FeatureFlag: Bool]
     public enum FeatureFlag: String
         case viewHitches
+        case collectAccessibilitySettings
 [?] extension RUM.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
@@ -502,18 +488,13 @@ public enum RUMErrorSource
     case webview
     case console
     case custom
-public protocol RUMMonitorProtocol: AnyObject
+public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject
     func addAttribute(forKey key: AttributeKey, value: AttributeValue)
     func addAttributes(_ attributes: [AttributeKey: AttributeValue])
     func removeAttribute(forKey key: AttributeKey)
     func removeAttributes(forKeys keys: [AttributeKey])
     func currentSessionID(completion: @escaping (String?) -> Void)
     func stopSession()
-    func startView(viewController: UIViewController,name: String?,attributes: [AttributeKey: AttributeValue])
-    func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
-    func startView(key: String,name: String?,attributes: [AttributeKey: AttributeValue])
-    func stopView(key: String,attributes: [AttributeKey: AttributeValue])
-    func addViewLoadingTime(overwrite: Bool)
     func addTiming(name: String)
     func addError(message: String,type: String?,stack: String?,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
     func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue])
@@ -530,6 +511,16 @@ public protocol RUMMonitorProtocol: AnyObject
     func stopAction(type: RUMActionType,name: String?,attributes: [AttributeKey: AttributeValue])
     func addFeatureFlagEvaluation(name: String,value: Encodable)
     var debug: Bool
+public protocol RUMMonitorViewProtocol: AnyObject
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue)
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue])
+    func removeViewAttribute(forKey key: AttributeKey)
+    func removeViewAttributes(forKeys keys: [AttributeKey])
+    func startView(viewController: UIViewController,name: String?,attributes: [AttributeKey: AttributeValue])
+    func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
+    func startView(key: String,name: String?,attributes: [AttributeKey: AttributeValue])
+    func stopView(key: String,attributes: [AttributeKey: AttributeValue])
+    func addViewLoadingTime(overwrite: Bool)
 public enum PerformanceMetric
     case flutterBuildTime
     case flutterRasterTime

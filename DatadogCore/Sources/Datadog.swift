@@ -365,7 +365,7 @@ extension DatadogCore {
     ) throws {
         let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
         if debug {
-            consolePrint("⚠️ Overriding verbosity, and upload frequency due to \(LaunchArguments.Debug) launch argument", .warn)
+            consolePrint("⚠️ Overriding verbosity, upload frequency, and sample rates due to \(LaunchArguments.Debug) launch argument", .warn)
             Datadog.verbosityLevel = .debug
         }
 

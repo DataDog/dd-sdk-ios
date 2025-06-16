@@ -140,6 +140,7 @@ public class objc_LogEvent: NSObject
     public var buildId: String?
     public var variant: String?
     public var dd: objc_LogEventDd
+    public var device: objc_LogEventDevice
     public var os: objc_LogEventOperatingSystem
     public var userInfo: objc_LogEventUserInfo
     public var networkConnectionInfo: objc_LogEventNetworkConnectionInfo?
@@ -180,8 +181,8 @@ public class objc_LogEventOperatingSystem: NSObject
     public var version: String
     public var build: String?
 public class objc_LogEventDd: NSObject
-    public var device: objc_LogEventDeviceInfo
-public class objc_LogEventDeviceInfo: NSObject
+    public var device: objc_LogEventDevice
+public class objc_LogEventDevice: NSObject
     public var brand: String
     public var name: String
     public var model: String
@@ -308,7 +309,7 @@ public class objc_RUMActionEvent: NSObject
     public internal(set) var swiftModel: RUMActionEvent
     public init(swiftModel: RUMActionEvent)
     public var dd: objc_RUMActionEventDD
-    public var account: objc_RUMActionEventAccount?
+    public var account: objc_RUMActionEventRUMAccount?
     public var action: objc_RUMActionEventAction
     public var application: objc_RUMActionEventApplication
     public var buildId: String?
@@ -318,9 +319,9 @@ public class objc_RUMActionEvent: NSObject
     public var container: objc_RUMActionEventContainer?
     public var context: objc_RUMActionEventRUMEventAttributes?
     public var date: NSNumber
-    public var device: objc_RUMActionEventRUMDevice?
+    public var device: objc_RUMActionEventDevice?
     public var display: objc_RUMActionEventDisplay?
-    public var os: objc_RUMActionEventRUMOperatingSystem?
+    public var os: objc_RUMActionEventOperatingSystem?
     public var service: String?
     public var session: objc_RUMActionEventSession
     public var source: objc_RUMActionEventSource
@@ -334,6 +335,7 @@ public class objc_RUMActionEventDD: NSObject
     public var browserSdkVersion: String?
     public var configuration: objc_RUMActionEventDDConfiguration?
     public var formatVersion: NSNumber
+    public var sdkName: String?
     public var session: objc_RUMActionEventDDSession?
 public class objc_RUMActionEventDDAction: NSObject
     public var nameSource: objc_RUMActionEventDDActionNameSource
@@ -355,6 +357,7 @@ public class objc_RUMActionEventDDActionTarget: NSObject
     public var selector: String?
     public var width: NSNumber?
 public class objc_RUMActionEventDDConfiguration: NSObject
+    public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
 public class objc_RUMActionEventDDSession: NSObject
@@ -373,7 +376,7 @@ public enum objc_RUMActionEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
-public class objc_RUMActionEventAccount: NSObject
+public class objc_RUMActionEventRUMAccount: NSObject
     public var id: String
     public var name: String?
     public var accountInfo: [String: Any]
@@ -462,13 +465,17 @@ public class objc_RUMActionEventContainerView: NSObject
     public var id: String
 public class objc_RUMActionEventRUMEventAttributes: NSObject
     public var contextInfo: [String: Any]
-public class objc_RUMActionEventRUMDevice: NSObject
+public class objc_RUMActionEventDevice: NSObject
     public var architecture: String?
     public var brand: String?
+    public var locale: String?
+    public var locales: [String]?
     public var model: String?
     public var name: String?
-    public var type: objc_RUMActionEventRUMDeviceRUMDeviceType
-public enum objc_RUMActionEventRUMDeviceRUMDeviceType: Int
+    public var timeZone: String?
+    public var type: objc_RUMActionEventDeviceDeviceType
+public enum objc_RUMActionEventDeviceDeviceType: Int
+    case none
     case mobile
     case desktop
     case tablet
@@ -481,7 +488,7 @@ public class objc_RUMActionEventDisplay: NSObject
 public class objc_RUMActionEventDisplayViewport: NSObject
     public var height: NSNumber
     public var width: NSNumber
-public class objc_RUMActionEventRUMOperatingSystem: NSObject
+public class objc_RUMActionEventOperatingSystem: NSObject
     public var build: String?
     public var name: String
     public var version: String
@@ -524,7 +531,7 @@ public class objc_RUMErrorEvent: NSObject
     public internal(set) var swiftModel: RUMErrorEvent
     public init(swiftModel: RUMErrorEvent)
     public var dd: objc_RUMErrorEventDD
-    public var account: objc_RUMErrorEventAccount?
+    public var account: objc_RUMErrorEventRUMAccount?
     public var action: objc_RUMErrorEventAction?
     public var application: objc_RUMErrorEventApplication
     public var buildId: String?
@@ -534,12 +541,12 @@ public class objc_RUMErrorEvent: NSObject
     public var container: objc_RUMErrorEventContainer?
     public var context: objc_RUMErrorEventRUMEventAttributes?
     public var date: NSNumber
-    public var device: objc_RUMErrorEventRUMDevice?
+    public var device: objc_RUMErrorEventDevice?
     public var display: objc_RUMErrorEventDisplay?
     public var error: objc_RUMErrorEventError
     public var featureFlags: objc_RUMErrorEventFeatureFlags?
     public var freeze: objc_RUMErrorEventFreeze?
-    public var os: objc_RUMErrorEventRUMOperatingSystem?
+    public var os: objc_RUMErrorEventOperatingSystem?
     public var service: String?
     public var session: objc_RUMErrorEventSession
     public var source: objc_RUMErrorEventSource
@@ -552,8 +559,10 @@ public class objc_RUMErrorEventDD: NSObject
     public var browserSdkVersion: String?
     public var configuration: objc_RUMErrorEventDDConfiguration?
     public var formatVersion: NSNumber
+    public var sdkName: String?
     public var session: objc_RUMErrorEventDDSession?
 public class objc_RUMErrorEventDDConfiguration: NSObject
+    public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
 public class objc_RUMErrorEventDDSession: NSObject
@@ -572,7 +581,7 @@ public enum objc_RUMErrorEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
-public class objc_RUMErrorEventAccount: NSObject
+public class objc_RUMErrorEventRUMAccount: NSObject
     public var id: String
     public var name: String?
     public var accountInfo: [String: Any]
@@ -630,13 +639,17 @@ public class objc_RUMErrorEventContainerView: NSObject
     public var id: String
 public class objc_RUMErrorEventRUMEventAttributes: NSObject
     public var contextInfo: [String: Any]
-public class objc_RUMErrorEventRUMDevice: NSObject
+public class objc_RUMErrorEventDevice: NSObject
     public var architecture: String?
     public var brand: String?
+    public var locale: String?
+    public var locales: [String]?
     public var model: String?
     public var name: String?
-    public var type: objc_RUMErrorEventRUMDeviceRUMDeviceType
-public enum objc_RUMErrorEventRUMDeviceRUMDeviceType: Int
+    public var timeZone: String?
+    public var type: objc_RUMErrorEventDeviceDeviceType
+public enum objc_RUMErrorEventDeviceDeviceType: Int
+    case none
     case mobile
     case desktop
     case tablet
@@ -683,6 +696,7 @@ public enum objc_RUMErrorEventErrorCategory: Int
     case exception
     case watchdogTermination
     case memoryWarning
+    case network
 public class objc_RUMErrorEventErrorCauses: NSObject
     public var message: String
     public var source: objc_RUMErrorEventErrorCausesSource
@@ -779,7 +793,7 @@ public class objc_RUMErrorEventFeatureFlags: NSObject
     public var featureFlagsInfo: [String: Any]
 public class objc_RUMErrorEventFreeze: NSObject
     public var duration: NSNumber
-public class objc_RUMErrorEventRUMOperatingSystem: NSObject
+public class objc_RUMErrorEventOperatingSystem: NSObject
     public var build: String?
     public var name: String
     public var version: String
@@ -822,7 +836,7 @@ public class objc_RUMLongTaskEvent: NSObject
     public internal(set) var swiftModel: RUMLongTaskEvent
     public init(swiftModel: RUMLongTaskEvent)
     public var dd: objc_RUMLongTaskEventDD
-    public var account: objc_RUMLongTaskEventAccount?
+    public var account: objc_RUMLongTaskEventRUMAccount?
     public var action: objc_RUMLongTaskEventAction?
     public var application: objc_RUMLongTaskEventApplication
     public var buildId: String?
@@ -832,10 +846,10 @@ public class objc_RUMLongTaskEvent: NSObject
     public var container: objc_RUMLongTaskEventContainer?
     public var context: objc_RUMLongTaskEventRUMEventAttributes?
     public var date: NSNumber
-    public var device: objc_RUMLongTaskEventRUMDevice?
+    public var device: objc_RUMLongTaskEventDevice?
     public var display: objc_RUMLongTaskEventDisplay?
     public var longTask: objc_RUMLongTaskEventLongTask
-    public var os: objc_RUMLongTaskEventRUMOperatingSystem?
+    public var os: objc_RUMLongTaskEventOperatingSystem?
     public var service: String?
     public var session: objc_RUMLongTaskEventSession
     public var source: objc_RUMLongTaskEventSource
@@ -849,10 +863,28 @@ public class objc_RUMLongTaskEventDD: NSObject
     public var configuration: objc_RUMLongTaskEventDDConfiguration?
     public var discarded: NSNumber?
     public var formatVersion: NSNumber
+    public var profiling: objc_RUMLongTaskEventDDProfiling?
+    public var sdkName: String?
     public var session: objc_RUMLongTaskEventDDSession?
 public class objc_RUMLongTaskEventDDConfiguration: NSObject
+    public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
+public class objc_RUMLongTaskEventDDProfiling: NSObject
+    public var errorReason: objc_RUMLongTaskEventDDProfilingErrorReason
+    public var status: objc_RUMLongTaskEventDDProfilingStatus
+public enum objc_RUMLongTaskEventDDProfilingErrorReason: Int
+    case none
+    case notSupportedByBrowser
+    case failedToLazyLoad
+    case missingDocumentPolicyHeader
+    case unexpectedException
+public enum objc_RUMLongTaskEventDDProfilingStatus: Int
+    case none
+    case starting
+    case running
+    case stopped
+    case error
 public class objc_RUMLongTaskEventDDSession: NSObject
     public var plan: objc_RUMLongTaskEventDDSessionPlan
     public var sessionPrecondition: objc_RUMLongTaskEventDDSessionRUMSessionPrecondition
@@ -869,7 +901,7 @@ public enum objc_RUMLongTaskEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
-public class objc_RUMLongTaskEventAccount: NSObject
+public class objc_RUMLongTaskEventRUMAccount: NSObject
     public var id: String
     public var name: String?
     public var accountInfo: [String: Any]
@@ -927,13 +959,17 @@ public class objc_RUMLongTaskEventContainerView: NSObject
     public var id: String
 public class objc_RUMLongTaskEventRUMEventAttributes: NSObject
     public var contextInfo: [String: Any]
-public class objc_RUMLongTaskEventRUMDevice: NSObject
+public class objc_RUMLongTaskEventDevice: NSObject
     public var architecture: String?
     public var brand: String?
+    public var locale: String?
+    public var locales: [String]?
     public var model: String?
     public var name: String?
-    public var type: objc_RUMLongTaskEventRUMDeviceRUMDeviceType
-public enum objc_RUMLongTaskEventRUMDeviceRUMDeviceType: Int
+    public var timeZone: String?
+    public var type: objc_RUMLongTaskEventDeviceDeviceType
+public enum objc_RUMLongTaskEventDeviceDeviceType: Int
+    case none
     case mobile
     case desktop
     case tablet
@@ -981,7 +1017,7 @@ public enum objc_RUMLongTaskEventLongTaskScriptsInvokerType: Int
     case rejectPromise
     case classicScript
     case moduleScript
-public class objc_RUMLongTaskEventRUMOperatingSystem: NSObject
+public class objc_RUMLongTaskEventOperatingSystem: NSObject
     public var build: String?
     public var name: String
     public var version: String
@@ -1023,7 +1059,7 @@ public class objc_RUMResourceEvent: NSObject
     public internal(set) var swiftModel: RUMResourceEvent
     public init(swiftModel: RUMResourceEvent)
     public var dd: objc_RUMResourceEventDD
-    public var account: objc_RUMResourceEventAccount?
+    public var account: objc_RUMResourceEventRUMAccount?
     public var action: objc_RUMResourceEventAction?
     public var application: objc_RUMResourceEventApplication
     public var buildId: String?
@@ -1033,9 +1069,9 @@ public class objc_RUMResourceEvent: NSObject
     public var container: objc_RUMResourceEventContainer?
     public var context: objc_RUMResourceEventRUMEventAttributes?
     public var date: NSNumber
-    public var device: objc_RUMResourceEventRUMDevice?
+    public var device: objc_RUMResourceEventDevice?
     public var display: objc_RUMResourceEventDisplay?
-    public var os: objc_RUMResourceEventRUMOperatingSystem?
+    public var os: objc_RUMResourceEventOperatingSystem?
     public var resource: objc_RUMResourceEventResource
     public var service: String?
     public var session: objc_RUMResourceEventSession
@@ -1051,10 +1087,12 @@ public class objc_RUMResourceEventDD: NSObject
     public var discarded: NSNumber?
     public var formatVersion: NSNumber
     public var rulePsr: NSNumber?
+    public var sdkName: String?
     public var session: objc_RUMResourceEventDDSession?
     public var spanId: String?
     public var traceId: String?
 public class objc_RUMResourceEventDDConfiguration: NSObject
+    public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
 public class objc_RUMResourceEventDDSession: NSObject
@@ -1073,7 +1111,7 @@ public enum objc_RUMResourceEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
-public class objc_RUMResourceEventAccount: NSObject
+public class objc_RUMResourceEventRUMAccount: NSObject
     public var id: String
     public var name: String?
     public var accountInfo: [String: Any]
@@ -1131,13 +1169,17 @@ public class objc_RUMResourceEventContainerView: NSObject
     public var id: String
 public class objc_RUMResourceEventRUMEventAttributes: NSObject
     public var contextInfo: [String: Any]
-public class objc_RUMResourceEventRUMDevice: NSObject
+public class objc_RUMResourceEventDevice: NSObject
     public var architecture: String?
     public var brand: String?
+    public var locale: String?
+    public var locales: [String]?
     public var model: String?
     public var name: String?
-    public var type: objc_RUMResourceEventRUMDeviceRUMDeviceType
-public enum objc_RUMResourceEventRUMDeviceRUMDeviceType: Int
+    public var timeZone: String?
+    public var type: objc_RUMResourceEventDeviceDeviceType
+public enum objc_RUMResourceEventDeviceDeviceType: Int
+    case none
     case mobile
     case desktop
     case tablet
@@ -1150,7 +1192,7 @@ public class objc_RUMResourceEventDisplay: NSObject
 public class objc_RUMResourceEventDisplayViewport: NSObject
     public var height: NSNumber
     public var width: NSNumber
-public class objc_RUMResourceEventRUMOperatingSystem: NSObject
+public class objc_RUMResourceEventOperatingSystem: NSObject
     public var build: String?
     public var name: String
     public var version: String
@@ -1297,7 +1339,7 @@ public class objc_RUMViewEvent: NSObject
     public internal(set) var swiftModel: RUMViewEvent
     public init(swiftModel: RUMViewEvent)
     public var dd: objc_RUMViewEventDD
-    public var account: objc_RUMViewEventAccount?
+    public var account: objc_RUMViewEventRUMAccount?
     public var application: objc_RUMViewEventApplication
     public var buildId: String?
     public var buildVersion: String?
@@ -1306,10 +1348,10 @@ public class objc_RUMViewEvent: NSObject
     public var container: objc_RUMViewEventContainer?
     public var context: objc_RUMViewEventRUMEventAttributes?
     public var date: NSNumber
-    public var device: objc_RUMViewEventRUMDevice?
+    public var device: objc_RUMViewEventDevice?
     public var display: objc_RUMViewEventDisplay?
     public var featureFlags: objc_RUMViewEventFeatureFlags?
-    public var os: objc_RUMViewEventRUMOperatingSystem?
+    public var os: objc_RUMViewEventOperatingSystem?
     public var privacy: objc_RUMViewEventPrivacy?
     public var service: String?
     public var session: objc_RUMViewEventSession
@@ -1326,11 +1368,14 @@ public class objc_RUMViewEventDD: NSObject
     public var documentVersion: NSNumber
     public var formatVersion: NSNumber
     public var pageStates: [objc_RUMViewEventDDPageStates]?
+    public var profiling: objc_RUMViewEventDDProfiling?
     public var replayStats: objc_RUMViewEventDDReplayStats?
+    public var sdkName: String?
     public var session: objc_RUMViewEventDDSession?
 public class objc_RUMViewEventDDCLS: NSObject
     public var devicePixelRatio: NSNumber?
 public class objc_RUMViewEventDDConfiguration: NSObject
+    public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var startSessionReplayRecordingManually: NSNumber?
@@ -1343,6 +1388,21 @@ public enum objc_RUMViewEventDDPageStatesState: Int
     case hidden
     case frozen
     case terminated
+public class objc_RUMViewEventDDProfiling: NSObject
+    public var errorReason: objc_RUMViewEventDDProfilingErrorReason
+    public var status: objc_RUMViewEventDDProfilingStatus
+public enum objc_RUMViewEventDDProfilingErrorReason: Int
+    case none
+    case notSupportedByBrowser
+    case failedToLazyLoad
+    case missingDocumentPolicyHeader
+    case unexpectedException
+public enum objc_RUMViewEventDDProfilingStatus: Int
+    case none
+    case starting
+    case running
+    case stopped
+    case error
 public class objc_RUMViewEventDDReplayStats: NSObject
     public var recordsCount: NSNumber?
     public var segmentsCount: NSNumber?
@@ -1363,7 +1423,7 @@ public enum objc_RUMViewEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
-public class objc_RUMViewEventAccount: NSObject
+public class objc_RUMViewEventRUMAccount: NSObject
     public var id: String
     public var name: String?
     public var accountInfo: [String: Any]
@@ -1416,13 +1476,17 @@ public class objc_RUMViewEventContainerView: NSObject
     public var id: String
 public class objc_RUMViewEventRUMEventAttributes: NSObject
     public var contextInfo: [String: Any]
-public class objc_RUMViewEventRUMDevice: NSObject
+public class objc_RUMViewEventDevice: NSObject
     public var architecture: String?
     public var brand: String?
+    public var locale: String?
+    public var locales: [String]?
     public var model: String?
     public var name: String?
-    public var type: objc_RUMViewEventRUMDeviceRUMDeviceType
-public enum objc_RUMViewEventRUMDeviceRUMDeviceType: Int
+    public var timeZone: String?
+    public var type: objc_RUMViewEventDeviceDeviceType
+public enum objc_RUMViewEventDeviceDeviceType: Int
+    case none
     case mobile
     case desktop
     case tablet
@@ -1443,7 +1507,7 @@ public class objc_RUMViewEventDisplayViewport: NSObject
     public var width: NSNumber
 public class objc_RUMViewEventFeatureFlags: NSObject
     public var featureFlagsInfo: [String: Any]
-public class objc_RUMViewEventRUMOperatingSystem: NSObject
+public class objc_RUMViewEventOperatingSystem: NSObject
     public var build: String?
     public var name: String
     public var version: String
@@ -1623,7 +1687,7 @@ public class objc_RUMVitalEvent: NSObject
     public internal(set) var swiftModel: RUMVitalEvent
     public init(swiftModel: RUMVitalEvent)
     public var dd: objc_RUMVitalEventDD
-    public var account: objc_RUMVitalEventAccount?
+    public var account: objc_RUMVitalEventRUMAccount?
     public var application: objc_RUMVitalEventApplication
     public var buildId: String?
     public var buildVersion: String?
@@ -1632,9 +1696,9 @@ public class objc_RUMVitalEvent: NSObject
     public var container: objc_RUMVitalEventContainer?
     public var context: objc_RUMVitalEventRUMEventAttributes?
     public var date: NSNumber
-    public var device: objc_RUMVitalEventRUMDevice?
+    public var device: objc_RUMVitalEventDevice?
     public var display: objc_RUMVitalEventDisplay?
-    public var os: objc_RUMVitalEventRUMOperatingSystem?
+    public var os: objc_RUMVitalEventOperatingSystem?
     public var service: String?
     public var session: objc_RUMVitalEventSession
     public var source: objc_RUMVitalEventSource
@@ -1648,9 +1712,11 @@ public class objc_RUMVitalEventDD: NSObject
     public var browserSdkVersion: String?
     public var configuration: objc_RUMVitalEventDDConfiguration?
     public var formatVersion: NSNumber
+    public var sdkName: String?
     public var session: objc_RUMVitalEventDDSession?
     public var vital: objc_RUMVitalEventDDVital?
 public class objc_RUMVitalEventDDConfiguration: NSObject
+    public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
 public class objc_RUMVitalEventDDSession: NSObject
@@ -1671,7 +1737,7 @@ public enum objc_RUMVitalEventDDSessionRUMSessionPrecondition: Int
     case explicitStop
 public class objc_RUMVitalEventDDVital: NSObject
     public var computedValue: NSNumber?
-public class objc_RUMVitalEventAccount: NSObject
+public class objc_RUMVitalEventRUMAccount: NSObject
     public var id: String
     public var name: String?
     public var accountInfo: [String: Any]
@@ -1724,13 +1790,17 @@ public class objc_RUMVitalEventContainerView: NSObject
     public var id: String
 public class objc_RUMVitalEventRUMEventAttributes: NSObject
     public var contextInfo: [String: Any]
-public class objc_RUMVitalEventRUMDevice: NSObject
+public class objc_RUMVitalEventDevice: NSObject
     public var architecture: String?
     public var brand: String?
+    public var locale: String?
+    public var locales: [String]?
     public var model: String?
     public var name: String?
-    public var type: objc_RUMVitalEventRUMDeviceRUMDeviceType
-public enum objc_RUMVitalEventRUMDeviceRUMDeviceType: Int
+    public var timeZone: String?
+    public var type: objc_RUMVitalEventDeviceDeviceType
+public enum objc_RUMVitalEventDeviceDeviceType: Int
+    case none
     case mobile
     case desktop
     case tablet
@@ -1743,7 +1813,7 @@ public class objc_RUMVitalEventDisplay: NSObject
 public class objc_RUMVitalEventDisplayViewport: NSObject
     public var height: NSNumber
     public var width: NSNumber
-public class objc_RUMVitalEventRUMOperatingSystem: NSObject
+public class objc_RUMVitalEventOperatingSystem: NSObject
     public var build: String?
     public var name: String
     public var version: String
@@ -1966,6 +2036,8 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var startRecordingImmediately: NSNumber?
     public var startSessionReplayRecordingManually: NSNumber?
     public var storeContextsAcrossPages: NSNumber?
+    public var swiftuiActionTrackingEnabled: NSNumber?
+    public var swiftuiViewTrackingEnabled: NSNumber?
     public var telemetryConfigurationSampleRate: NSNumber?
     public var telemetrySampleRate: NSNumber?
     public var telemetryUsageSampleRate: NSNumber?
@@ -1978,6 +2050,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var tracerApiVersion: String?
     public var trackAnonymousUser: NSNumber?
     public var trackBackgroundEvents: NSNumber?
+    public var trackBfcacheViews: NSNumber?
     public var trackCrossPlatformLongTasks: NSNumber?
     public var trackErrors: NSNumber?
     public var trackFeatureFlagsForEvents: [Int]?
@@ -1997,6 +2070,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var unityVersion: String?
     public var useAllowedTracingOrigins: NSNumber?
     public var useAllowedTracingUrls: NSNumber?
+    public var useAllowedTrackingOrigins: NSNumber?
     public var useBeforeSend: NSNumber?
     public var useCrossSiteSessionCookie: NSNumber?
     public var useExcludedActivityUrls: NSNumber?
@@ -2059,6 +2133,16 @@ public class objc_TelemetryConfigurationEventTelemetryRUMTelemetryOperatingSyste
     public var version: String?
 public class objc_TelemetryConfigurationEventView: NSObject
     public var id: String
+public protocol objc_SwiftUIRUMViewsPredicate: AnyObject
+    func rumView(for extractedViewName: String) -> objc_RUMView?
+public class objc_DefaultSwiftUIRUMViewsPredicate: NSObject, objc_SwiftUIRUMViewsPredicate
+    public func rumView(for extractedViewName: String) -> objc_RUMView?
+public protocol objc_SwiftUIRUMActionsPredicate: AnyObject
+    func rumAction(with componentName: String) -> objc_RUMAction?
+public class objc_DefaultSwiftUIRUMActionsPredicate: NSObject, objc_SwiftUIRUMActionsPredicate
+    public init(isLegacyDetectionEnabled: Bool)
+    override public convenience init()
+    public func rumAction(with componentName: String) -> objc_RUMAction?
 public class objc_RUMView: NSObject
     public var name: String
     public var attributes: [String: Any]
@@ -2132,6 +2216,8 @@ public class objc_RUMConfiguration: NSObject
     public var telemetrySampleRate: Float
     public var uiKitViewsPredicate: objc_UIKitRUMViewsPredicate?
     public var uiKitActionsPredicate: objc_UIKitRUMActionsPredicate?
+    public var swiftUIViewsPredicate: objc_SwiftUIRUMViewsPredicate?
+    public var swiftUIActionsPredicate: objc_SwiftUIRUMActionsPredicate?
     public func setURLSessionTracking(_ tracking: objc_URLSessionTracking)
     public var trackFrustrations: Bool
     public var trackBackgroundEvents: Bool

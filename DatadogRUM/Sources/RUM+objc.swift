@@ -371,6 +371,16 @@ public class objc_RUMConfiguration: NSObject {
         get { (swiftConfig.uiKitActionsPredicate as? UIKitRUMActionsPredicateBridge)?.objcPredicate as? objc_UIKitRUMActionsPredicate  }
     }
 
+    public var swiftUIViewsPredicate: objc_SwiftUIRUMViewsPredicate? {
+        set { swiftConfig.swiftUIViewsPredicate = newValue.map { SwiftUIRUMViewsPredicateBridge(objcPredicate: $0) } }
+        get { (swiftConfig.swiftUIViewsPredicate as? SwiftUIRUMViewsPredicateBridge)?.objcPredicate }
+    }
+
+    public var swiftUIActionsPredicate: objc_SwiftUIRUMActionsPredicate? {
+        set { swiftConfig.swiftUIActionsPredicate = newValue.map { SwiftUIRUMActionsPredicateBridge(objcPredicate: $0) } }
+        get { (swiftConfig.swiftUIActionsPredicate as? SwiftUIRUMActionsPredicateBridge)?.objcPredicate }
+    }
+
     public func setURLSessionTracking(_ tracking: objc_URLSessionTracking) {
         swiftConfig.urlSessionTracking = tracking.swiftConfig
     }

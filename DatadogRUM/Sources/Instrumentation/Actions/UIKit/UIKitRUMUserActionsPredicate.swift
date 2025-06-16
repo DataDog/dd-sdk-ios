@@ -7,34 +7,16 @@
 import UIKit
 import DatadogInternal
 
-/// A description of the RUM Action returned from the `UIKitRUMActionsPredicate`.
-public struct RUMAction {
-    /// The RUM Action name, appearing as `ACTION NAME` in RUM Explorer. If no name is given, default one will be used.
-    public var name: String
-
-    /// Additional attributes to associate with the RUM Action.
-    public var attributes: [AttributeKey: AttributeValue]
-
-    /// Initializes the RUM Action description.
-    /// - Parameters:
-    ///   - name: the RUM Action name, appearing as `Action NAME` in RUM Explorer. If no name is given, default one will be used.
-    ///   - attributes: additional attributes to associate with the RUM Action.
-    public init(name: String, attributes: [AttributeKey: AttributeValue] = [:]) {
-        self.name = name
-        self.attributes = attributes
-    }
-}
-
 #if os(tvOS)
 public typealias UIKitRUMActionsPredicate = UIPressRUMActionsPredicate
 #else
 public typealias UIKitRUMActionsPredicate = UITouchRUMActionsPredicate
 #endif
 
-/// The predicate deciding if a given RUM Action should be recorded.
+/// The predicate for iOS interactions deciding if a given RUM Action should be recorded.
 ///
 /// When the app is running, the SDK will ask the implementation of `UITouchRUMActionsPredicate` if any noticed user action on the target view should
-/// be considered as the RUM Action. The predicate implementation should return RUM Action parameters if it should be recorded or `nil` otherwise.
+/// be considered as a RUM Action. The predicate implementation should return RUM Action parameters if it should be recorded or `nil` otherwise.
 public protocol UITouchRUMActionsPredicate {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameter targetView: an instance of the `UIView` which received the action.
@@ -42,10 +24,10 @@ public protocol UITouchRUMActionsPredicate {
     func rumAction(targetView: UIView) -> RUMAction?
 }
 
-/// The predicate deciding if a given RUM Action should be recorded.
+/// The predicate for tvOS interactions deciding if a given RUM Action should be recorded.
 ///
 /// When the app is running, the SDK will ask the implementation of `UIPressRUMActionsPredicate` if any noticed user action on the target view should
-/// be considered as the RUM Action. The predicate implementation should return RUM Action parameters if it should be recorded or `nil` otherwise.
+/// be considered as a RUM Action. The predicate implementation should return RUM Action parameters if it should be recorded or `nil` otherwise.
 public protocol UIPressRUMActionsPredicate {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameters:
@@ -66,12 +48,18 @@ public struct DefaultUIKitRUMActionsPredicate {
 
         if let accessibilityIdentifier = view.accessibilityIdentifier {
             return "\(className)(\(accessibilityIdentifier))"
+        // Some SwiftUI components are UIKit under the hood,
+        // but need to clean up tangled SwiftUI name
+        // e.g., _TtCV7SwiftUIP33_D74FE142C3C5A6C2CEA4987A69AEBD7522SystemSegmentedControl18UISegmentedControl
+        } else if view.isSwiftUIView {
+            return view.swiftUIViewName
         } else {
             return className
         }
     }
 }
 
+// MARK: iOS DefaultUIKitRUMActionsPredicate
 extension DefaultUIKitRUMActionsPredicate: UITouchRUMActionsPredicate {
     public func rumAction(targetView: UIView) -> RUMAction? {
         return RUMAction(
@@ -81,6 +69,7 @@ extension DefaultUIKitRUMActionsPredicate: UITouchRUMActionsPredicate {
     }
 }
 
+// MARK: tvOS DefaultUIKitRUMActionsPredicate
 extension DefaultUIKitRUMActionsPredicate: UIPressRUMActionsPredicate {
     public func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction? {
         var name: String
@@ -97,5 +86,15 @@ extension DefaultUIKitRUMActionsPredicate: UIPressRUMActionsPredicate {
         }
 
         return RUMAction(name: name, attributes: [:])
+    }
+}
+
+private extension UIView {
+    var swiftUIViewName: String {
+        if typeDescription.hasPrefix("ViewBasedUIButton") {
+            return "SwiftUI_Menu"
+        }
+
+        return typeDescription
     }
 }
