@@ -12,7 +12,7 @@ import UIKit
 internal protocol MemoryWarningReporting: RUMCommandPublisher {
     /// Reports the given memory warning.
     /// - Parameter warning: The memory warning to report.
-    func report(warning: MemoryWarning)
+    func reportMemoryWarning()
 }
 
 /// Receives memory warnings and reports them as RUM errors.
@@ -22,25 +22,22 @@ internal class MemoryWarningReporter: MemoryWarningReporting {
         static let memoryWarningErrorMessage = "Memory Warning"
         /// The standardized `error.type` for RUM errors describing a memory warning.
         static let memoryWarningErrorType = "MemoryWarning"
-        /// The standardized `error.stack` when backtrace generation was not available.
-        static let memoryWarningStackNotAvailableErrorMessage = "Stack trace was not generated because `DatadogCrashReporting` had not been enabled."
     }
 
     private(set) weak var subscriber: RUMCommandSubscriber?
 
     /// Reports the given memory warning as a RUM error.
-    /// - Parameter warning: The memory warning to report.
-    func report(warning: MemoryWarning) {
+    func reportMemoryWarning() {
         let command = RUMAddCurrentViewMemoryWarningCommand(
-            time: warning.date,
+            time: Date(),
             globalAttributes: [:],
             attributes: [:],
             message: Constants.memoryWarningErrorMessage,
             type: Constants.memoryWarningErrorType,
-            stack: warning.backtrace?.stack ?? Constants.memoryWarningStackNotAvailableErrorMessage,
-            threads: warning.backtrace?.threads,
-            binaryImages: warning.backtrace?.binaryImages,
-            isStackTraceTruncated: warning.backtrace?.wasTruncated
+            stack: nil,
+            threads: nil,
+            binaryImages: nil,
+            isStackTraceTruncated: nil
         )
         subscriber?.process(command: command)
     }

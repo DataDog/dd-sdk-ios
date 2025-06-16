@@ -11,16 +11,13 @@ import UIKit
 /// Tracks the memory warnings history and publishes it to the subscribers.
 internal final class MemoryWarningMonitor {
     let notificationCenter: NotificationCenter
-    let backtraceReporter: BacktraceReporting?
     let reporter: MemoryWarningReporting
 
     init(
-        backtraceReporter: BacktraceReporting?,
         memoryWarningReporter: MemoryWarningReporting,
         notificationCenter: NotificationCenter
     ) {
         self.notificationCenter = notificationCenter
-        self.backtraceReporter = backtraceReporter
         self.reporter = memoryWarningReporter
     }
 
@@ -31,16 +28,7 @@ internal final class MemoryWarningMonitor {
 
     @objc
     func didReceiveMemoryWarning() {
-        let date: Date = .init()
-        let backtrace: BacktraceReport?
-        do {
-            backtrace = try backtraceReporter?.generateBacktrace()
-        } catch {
-            backtrace = nil
-        }
-        let warning = MemoryWarning(date: date, backtrace: backtrace)
-
-        reporter.report(warning: warning)
+        reporter.reportMemoryWarning()
     }
 
     /// Stops monitoring memory warnings.
