@@ -11,6 +11,7 @@
 - [IMPROVEMENT] Align `os` and `device` attributes across all product features. See [#2322][]
 - [IMPROVEMENT] Remove fatal errors from Logs. See [#2359][]
 - [IMPROVEMENT] Add opt-out API to disable tracking memory warnings as RUM Errors. See [#2355][]
+- Support for AP2 Datacenter added. You can configure it setting `DatadogSite.ap2` on `Datadog.Configuration.site`.
 
 # 2.28.1 / 29-05-2025
 
