@@ -331,7 +331,13 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // See https://github.com/DataDog/dd-sdk-ios/pull/1834 for more context.
             context: context.lastRUMAttributes,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(device: context.device, telemetry: featureScope.telemetry),
+            device: .init(
+                device: context.device,
+                batteryLevel: Double(context.batteryStatus?.level ?? 0),
+                brightnessLevel: Double(context.brightnessStatus?.level ?? 0),
+                powerSavingMode: context.isLowPowerModeEnabled,
+                telemetry: featureScope.telemetry
+            ),
             display: nil,
             // RUMM-2197: In very rare cases, the OS info computed below might not be exactly the one
             // that the app crashed on. This would correspond to a scenario when the device OS was upgraded

@@ -15,8 +15,15 @@ class RUMDeviceInfoTests: XCTestCase {
         let randomName: String = .mockRandom()
         let randomArch: String = .mockRandom()
 
+        let batteryLevel: Double = .mockRandom()
+        let brightnessLevel: Double = .mockRandom()
+        let powerSavingMode: Bool = .mockRandom()
+
         let info = RUMDevice(
-            device: .mockWith(name: randomName, model: randomModel, architecture: randomArch)
+            device: .mockWith(name: randomName, model: randomModel, architecture: randomArch),
+            batteryLevel: batteryLevel,
+            brightnessLevel: brightnessLevel,
+            powerSavingMode: powerSavingMode
         )
 
         XCTAssertEqual(info.brand, "Apple")

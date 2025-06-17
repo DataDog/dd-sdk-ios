@@ -525,6 +525,10 @@ extension DatadogContextProvider {
         subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher(notificationCenter: notificationCenter, processInfo: processInfo))
         #endif
 
+        #if os(iOS)
+        subscribe(\.brightnessStatus, to: BrightnessStatusPublisher(notificationCenter: notificationCenter))
+        #endif
+
         #if os(iOS) || os(tvOS)
         DispatchQueue.main.async {
             // must be call on the main thread to read `UIApplication.State`
