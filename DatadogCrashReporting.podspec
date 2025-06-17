@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogCrashReporting"
-  s.version      = "2.28.1"
+  s.version      = "2.29.0"
   s.summary      = "Official Datadog Crash Reporting SDK for iOS."
 
   s.homepage     = "https://www.datadoghq.com"
