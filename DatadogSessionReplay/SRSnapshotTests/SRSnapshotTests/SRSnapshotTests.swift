@@ -205,29 +205,29 @@ final class SRSnapshotTests: SnapshotTestCase {
         )
     }
 
-	func testSwiftUIWithPrivacyOverrides() throws {
-		let core = FeatureRegistrationCoreMock()
-		// SwiftUI privacy overrides only work when SessionReplay is enabled
-		SessionReplay.enable(
-			with: .init(
-				// Just to silence the deprecation warning (these are trumped by `takeSnapshotFor` parameters)
-				textAndInputPrivacyLevel: .maskSensitiveInputs,
-				imagePrivacyLevel: .maskNone,
-				touchPrivacyLevel: .show
-			),
-			in: core
-		)
+    func testSwiftUIWithPrivacyOverrides() throws {
+        let core = FeatureRegistrationCoreMock()
+        // SwiftUI privacy overrides only work when SessionReplay is enabled
+        SessionReplay.enable(
+            with: .init(
+                // Just to silence the deprecation warning (these are trumped by `takeSnapshotFor` parameters)
+                textAndInputPrivacyLevel: .maskSensitiveInputs,
+                imagePrivacyLevel: .maskNone,
+                touchPrivacyLevel: .show
+            ),
+            in: core
+        )
 
-		// Mask none
-		try takeSnapshotFor(
-			.swiftUIWithPrivacyOverrides(core),
-			with: [.maskSensitiveInputs],
-			imagePrivacyLevel: .maskNone,
-			shouldRecord: shouldRecord,
-			folderPath: snapshotsFolderPath,
-			fileNamePrefix: "maskNone_images"
-		)
-	}
+        // Mask none
+        try takeSnapshotFor(
+            .swiftUIWithPrivacyOverrides(core),
+            with: [.maskSensitiveInputs],
+            imagePrivacyLevel: .maskNone,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "maskNone_images"
+        )
+    }
 
     func testNavigationBars() throws {
         // - Static Navigation Bars -
