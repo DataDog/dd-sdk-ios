@@ -1,5 +1,7 @@
 # Unreleased
 
+- Support for AP2 Datacenter added. You can configure it setting `DatadogSite.ap2` on `Datadog.Configuration.site`.
+
 # 2.28.1 / 29-05-2025
 
 - [FIX] Fix `RUMMethod` export from RUM. See [#2316][]
