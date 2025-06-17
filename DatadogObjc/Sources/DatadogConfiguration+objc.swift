@@ -34,6 +34,9 @@ public class DDSite: NSObject {
     public static func ap1() -> DDSite { .init(sdkSite: .ap1) }
 
     @objc
+    public static func ap2() -> DDSite { .init(sdkSite: .ap2) }
+
+    @objc
     public static func us1_fed() -> DDSite { .init(sdkSite: .us1_fed) }
 }
 

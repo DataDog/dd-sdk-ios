@@ -112,7 +112,7 @@ extension DatadogSite: AnyMockable, RandomMockable {
     }
 
     public static func mockRandom() -> Self {
-        return [.us1, .us3, .us5, .eu1, .ap1, .us1_fed].randomElement()!
+        return [.us1, .us3, .us5, .eu1, .ap1, .ap2, .us1_fed].randomElement()!
     }
 }
 
