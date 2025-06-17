@@ -27,6 +27,9 @@ DD_IOS_SECRET__E2E_S8S_APPLICATION_ID="e2e.s8s.app.id"
 DD_IOS_SECRET__BENCHMARK_PROVISIONING_PROFILE_BASE64="benchmark.provisioning.profile.base64"
 DD_IOS_SECRET__BENCHMARK_XCCONFIG_BASE64="benchmark.xcconfig.base64"
 DD_IOS_SECRET__BENCHMARK_S8S_APPLICATION_ID="benchmark.s8s.app.id"
+DD_IOS_SECRET__GITHUB_APP_CLIENT_ID="gh.app.client.id"
+DD_IOS_SECRET__GITHUB_APP_INSTALLATION_ID="gh.app.installation.id"
+DD_IOS_SECRET__GITHUB_APP_PRIVATE_KEY="gh.app.private.key"
 
 idx=0
 declare -A DD_IOS_SECRETS
@@ -46,3 +49,6 @@ DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__E2E_S8S_APPLICATION_ID | Synthetics 
 DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__BENCHMARK_PROVISIONING_PROFILE_BASE64 | Base64-encoded provisioning profile file for signing Benchmark app"
 DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__BENCHMARK_XCCONFIG_BASE64 | Base64-encoded xcconfig file for Benchmark app"
 DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__BENCHMARK_S8S_APPLICATION_ID | Synthetics app ID for Benchmark tests"
+DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__GITHUB_APP_CLIENT_ID | GitHub App (https://github.com/apps/dd-mobile-sdk-ci) client id"
+DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__GITHUB_APP_INSTALLATION_ID | GitHub App (https://github.com/apps/dd-mobile-sdk-ci) installation id"
+DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__GITHUB_APP_PRIVATE_KEY | GitHub App (https://github.com/apps/dd-mobile-sdk-ci) private key"
