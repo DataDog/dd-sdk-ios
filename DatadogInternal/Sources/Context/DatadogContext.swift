@@ -110,6 +110,9 @@ public struct DatadogContext {
     /// This value can be `nil` of the current device battery interface is not available.
     public var batteryStatus: BatteryStatus?
 
+    /// The current brightness status.
+    public var brightnessStatus: BrightnessStatus?
+
     /// `true` if the Low Power Mode is enabled.
     public var isLowPowerModeEnabled = false
 
@@ -145,6 +148,7 @@ public struct DatadogContext {
         networkConnectionInfo: NetworkConnectionInfo? = nil,
         carrierInfo: CarrierInfo? = nil,
         batteryStatus: BatteryStatus? = nil,
+        brightnessStatus: BrightnessStatus? = nil,
         isLowPowerModeEnabled: Bool = false,
         additionalContext: [String: AdditionalContext] = [:]
     ) {
@@ -175,6 +179,7 @@ public struct DatadogContext {
         self.networkConnectionInfo = networkConnectionInfo
         self.carrierInfo = carrierInfo
         self.batteryStatus = batteryStatus
+        self.brightnessStatus = brightnessStatus
         self.isLowPowerModeEnabled = isLowPowerModeEnabled
         self.additionalContext = additionalContext
     }
