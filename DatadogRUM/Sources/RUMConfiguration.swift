@@ -102,6 +102,23 @@ extension RUM {
         @available(*, message: "This API is experimental and may change in future releases")
         public var swiftUIViewsPredicate: SwiftUIRUMViewsPredicate?
 
+        /// The predicate for automatically tracking `UITouch` events as RUM actions.
+        ///
+        /// RUM will query this predicate for each view that the user interacts with. The predicate implementation
+        /// should return RUM action parameters if the given interaction should be accepted, or `nil` to ignore it.
+        /// Touch events on the keyboard are ignored for privacy reasons.
+        ///
+        /// You can use `DefaultSwiftUIRUMActionsPredicate` or create your own predicate by
+        /// implementing `SwiftUIRUMActionsPredicate`.
+        ///
+        /// Note: Automatic RUM action tracking involves swizzling the `UIApplication.sendEvent(_:)` method.
+        ///
+        /// Default: `nil` - which means automatic RUM action tracking is not enabled by default.
+
+        @available(*, message: "This API is experimental and may change in future releases")
+        @available(*, message: "This API has different behavior on iOS 18 vs iOS 17 and below - component detection is more precise on iOS 18+")
+        public var swiftUIActionsPredicate: SwiftUIRUMActionsPredicate?
+
         /// The configuration for automatic RUM resources tracking.
         ///
         /// RUM resources tracking requires enabling `URLSessionInstrumentation`. See
@@ -396,8 +413,9 @@ extension RUM.Configuration {
     ///   - applicationID: The RUM application identifier.
     ///   - sessionSampleRate: The sampling rate for RUM sessions. Must be a value between `0` and `100`. Default: `100`.
     ///   - uiKitViewsPredicate: The predicate for automatically tracking `UIViewControllers` in `UIKit` as RUM views. Default: `nil`.
-    ///   - uiKitActionsPredicate: The predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`.
+    ///   - uiKitActionsPredicate: The UIKit predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`.
     ///   - swiftUIViewsPredicate: The predicate for automatically tracking `UIViewControllers` in `SwiftUI` as RUM views. Default: `nil`.
+    ///   - swiftUIActionsPredicate: The SwiftUI predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`.
     ///   - urlSessionTracking: The configuration for automatic RUM resources tracking. Default: `nil`.
     ///   - trackFrustrations: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
     ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
@@ -424,6 +442,7 @@ extension RUM.Configuration {
         uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
+        swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = true,
         trackBackgroundEvents: Bool = false,
@@ -449,6 +468,7 @@ extension RUM.Configuration {
         self.uiKitViewsPredicate = uiKitViewsPredicate
         self.uiKitActionsPredicate = uiKitActionsPredicate
         self.swiftUIViewsPredicate = swiftUIViewsPredicate
+        self.swiftUIActionsPredicate = swiftUIActionsPredicate
         self.urlSessionTracking = urlSessionTracking
         self.trackFrustrations = trackFrustrations
         self.trackBackgroundEvents = trackBackgroundEvents
@@ -491,6 +511,8 @@ extension RUM.Configuration {
     public enum FeatureFlag: String {
         /// View Hitches
         case viewHitches
+        /// Accessibility attributes
+        case collectAccessibilitySettings
     }
 }
 
@@ -498,7 +520,8 @@ extension RUM.Configuration.FeatureFlags {
     /// The defaults Feature Flags applied to RUM Configuration
     public static var defaults: Self {
         [
-            .viewHitches: false
+            .viewHitches: false,
+            .collectAccessibilitySettings: false
         ]
     }
 

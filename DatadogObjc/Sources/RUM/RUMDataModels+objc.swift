@@ -24,8 +24,8 @@ public class DDRUMActionEvent: NSObject {
         DDRUMActionEventDD(root: root)
     }
 
-    @objc public var account: DDRUMActionEventAccount? {
-        root.swiftModel.account != nil ? DDRUMActionEventAccount(root: root) : nil
+    @objc public var account: DDRUMActionEventRUMAccount? {
+        root.swiftModel.account != nil ? DDRUMActionEventRUMAccount(root: root) : nil
     }
 
     @objc public var action: DDRUMActionEventAction {
@@ -131,6 +131,10 @@ public class DDRUMActionEventDD: NSObject {
 
     @objc public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
+    }
+
+    @objc public var sdkName: String? {
+        root.swiftModel.dd.sdkName
     }
 
     @objc public var session: DDRUMActionEventDDSession? {
@@ -329,7 +333,7 @@ public enum DDRUMActionEventDDSessionRUMSessionPrecondition: Int {
 }
 
 @objc
-public class DDRUMActionEventAccount: NSObject {
+public class DDRUMActionEventRUMAccount: NSObject {
     internal let root: DDRUMActionEvent
 
     internal init(root: DDRUMActionEvent) {
@@ -1084,8 +1088,8 @@ public class DDRUMErrorEvent: NSObject {
         DDRUMErrorEventDD(root: root)
     }
 
-    @objc public var account: DDRUMErrorEventAccount? {
-        root.swiftModel.account != nil ? DDRUMErrorEventAccount(root: root) : nil
+    @objc public var account: DDRUMErrorEventRUMAccount? {
+        root.swiftModel.account != nil ? DDRUMErrorEventRUMAccount(root: root) : nil
     }
 
     @objc public var action: DDRUMErrorEventAction? {
@@ -1201,6 +1205,10 @@ public class DDRUMErrorEventDD: NSObject {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
+    @objc public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
     @objc public var session: DDRUMErrorEventDDSession? {
         root.swiftModel.dd.session != nil ? DDRUMErrorEventDDSession(root: root) : nil
     }
@@ -1302,7 +1310,7 @@ public enum DDRUMErrorEventDDSessionRUMSessionPrecondition: Int {
 }
 
 @objc
-public class DDRUMErrorEventAccount: NSObject {
+public class DDRUMErrorEventRUMAccount: NSObject {
     internal let root: DDRUMErrorEvent
 
     internal init(root: DDRUMErrorEvent) {
@@ -2504,8 +2512,8 @@ public class DDRUMLongTaskEvent: NSObject {
         DDRUMLongTaskEventDD(root: root)
     }
 
-    @objc public var account: DDRUMLongTaskEventAccount? {
-        root.swiftModel.account != nil ? DDRUMLongTaskEventAccount(root: root) : nil
+    @objc public var account: DDRUMLongTaskEventRUMAccount? {
+        root.swiftModel.account != nil ? DDRUMLongTaskEventRUMAccount(root: root) : nil
     }
 
     @objc public var action: DDRUMLongTaskEventAction? {
@@ -2617,6 +2625,10 @@ public class DDRUMLongTaskEventDD: NSObject {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
+    @objc public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
     @objc public var session: DDRUMLongTaskEventDDSession? {
         root.swiftModel.dd.session != nil ? DDRUMLongTaskEventDDSession(root: root) : nil
     }
@@ -2718,7 +2730,7 @@ public enum DDRUMLongTaskEventDDSessionRUMSessionPrecondition: Int {
 }
 
 @objc
-public class DDRUMLongTaskEventAccount: NSObject {
+public class DDRUMLongTaskEventRUMAccount: NSObject {
     internal let root: DDRUMLongTaskEvent
 
     internal init(root: DDRUMLongTaskEvent) {
@@ -3478,8 +3490,8 @@ public class DDRUMResourceEvent: NSObject {
         DDRUMResourceEventDD(root: root)
     }
 
-    @objc public var account: DDRUMResourceEventAccount? {
-        root.swiftModel.account != nil ? DDRUMResourceEventAccount(root: root) : nil
+    @objc public var account: DDRUMResourceEventRUMAccount? {
+        root.swiftModel.account != nil ? DDRUMResourceEventRUMAccount(root: root) : nil
     }
 
     @objc public var action: DDRUMResourceEventAction? {
@@ -3595,6 +3607,10 @@ public class DDRUMResourceEventDD: NSObject {
         root.swiftModel.dd.rulePsr as NSNumber?
     }
 
+    @objc public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
     @objc public var session: DDRUMResourceEventDDSession? {
         root.swiftModel.dd.session != nil ? DDRUMResourceEventDDSession(root: root) : nil
     }
@@ -3704,7 +3720,7 @@ public enum DDRUMResourceEventDDSessionRUMSessionPrecondition: Int {
 }
 
 @objc
-public class DDRUMResourceEventAccount: NSObject {
+public class DDRUMResourceEventRUMAccount: NSObject {
     internal let root: DDRUMResourceEvent
 
     internal init(root: DDRUMResourceEvent) {
@@ -4790,8 +4806,8 @@ public class DDRUMViewEvent: NSObject {
         DDRUMViewEventDD(root: root)
     }
 
-    @objc public var account: DDRUMViewEventAccount? {
-        root.swiftModel.account != nil ? DDRUMViewEventAccount(root: root) : nil
+    @objc public var account: DDRUMViewEventRUMAccount? {
+        root.swiftModel.account != nil ? DDRUMViewEventRUMAccount(root: root) : nil
     }
 
     @objc public var application: DDRUMViewEventApplication {
@@ -4913,6 +4929,10 @@ public class DDRUMViewEventDD: NSObject {
 
     @objc public var replayStats: DDRUMViewEventDDReplayStats? {
         root.swiftModel.dd.replayStats != nil ? DDRUMViewEventDDReplayStats(root: root) : nil
+    }
+
+    @objc public var sdkName: String? {
+        root.swiftModel.dd.sdkName
     }
 
     @objc public var session: DDRUMViewEventDDSession? {
@@ -5101,7 +5121,7 @@ public enum DDRUMViewEventDDSessionRUMSessionPrecondition: Int {
 }
 
 @objc
-public class DDRUMViewEventAccount: NSObject {
+public class DDRUMViewEventRUMAccount: NSObject {
     internal let root: DDRUMViewEvent
 
     internal init(root: DDRUMViewEvent) {
@@ -6380,8 +6400,8 @@ public class DDRUMVitalEvent: NSObject {
         DDRUMVitalEventDD(root: root)
     }
 
-    @objc public var account: DDRUMVitalEventAccount? {
-        root.swiftModel.account != nil ? DDRUMVitalEventAccount(root: root) : nil
+    @objc public var account: DDRUMVitalEventRUMAccount? {
+        root.swiftModel.account != nil ? DDRUMVitalEventRUMAccount(root: root) : nil
     }
 
     @objc public var application: DDRUMVitalEventApplication {
@@ -6483,6 +6503,10 @@ public class DDRUMVitalEventDD: NSObject {
 
     @objc public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
+    }
+
+    @objc public var sdkName: String? {
+        root.swiftModel.dd.sdkName
     }
 
     @objc public var session: DDRUMVitalEventDDSession? {
@@ -6603,7 +6627,7 @@ public class DDRUMVitalEventDDVital: NSObject {
 }
 
 @objc
-public class DDRUMVitalEventAccount: NSObject {
+public class DDRUMVitalEventRUMAccount: NSObject {
     internal let root: DDRUMVitalEvent
 
     internal init(root: DDRUMVitalEvent) {
@@ -8040,6 +8064,16 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.storeContextsAcrossPages as NSNumber?
     }
 
+    @objc public var swiftuiActionTrackingEnabled: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.swiftuiActionTrackingEnabled = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.swiftuiActionTrackingEnabled as NSNumber? }
+    }
+
+    @objc public var swiftuiViewTrackingEnabled: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.swiftuiViewTrackingEnabled = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.swiftuiViewTrackingEnabled as NSNumber? }
+    }
+
     @objc public var telemetryConfigurationSampleRate: NSNumber? {
         root.swiftModel.telemetry.configuration.telemetryConfigurationSampleRate as NSNumber?
     }
@@ -8093,6 +8127,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
     @objc public var trackBackgroundEvents: NSNumber? {
         set { root.swiftModel.telemetry.configuration.trackBackgroundEvents = newValue?.boolValue }
         get { root.swiftModel.telemetry.configuration.trackBackgroundEvents as NSNumber? }
+    }
+
+    @objc public var trackBfcacheViews: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.trackBfcacheViews = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.trackBfcacheViews as NSNumber? }
     }
 
     @objc public var trackCrossPlatformLongTasks: NSNumber? {
@@ -8183,6 +8222,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     @objc public var useAllowedTracingUrls: NSNumber? {
         root.swiftModel.telemetry.configuration.useAllowedTracingUrls as NSNumber?
+    }
+
+    @objc public var useAllowedTrackingOrigins: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.useAllowedTrackingOrigins = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.useAllowedTrackingOrigins as NSNumber? }
     }
 
     @objc public var useBeforeSend: NSNumber? {
@@ -8518,4 +8562,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/2d2cd6aecf0ea4f1ffe61b7149dfdef75397fdbf
+// Generated from https://github.com/DataDog/rum-events-format/tree/b8d694987f0873dfafa9248ef40b9a5ba56f7101

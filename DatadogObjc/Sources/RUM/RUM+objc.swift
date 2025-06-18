@@ -358,6 +358,16 @@ public class DDRUMConfiguration: NSObject {
         get { (swiftConfig.uiKitActionsPredicate as? UIKitRUMActionsPredicateBridge)?.objcPredicate as? DDUIKitRUMActionsPredicate  }
     }
 
+    @objc public var swiftUIViewsPredicate: DDSwiftUIRUMViewsPredicate? {
+        set { swiftConfig.swiftUIViewsPredicate = newValue.map { SwiftUIRUMViewsPredicateBridge(objcPredicate: $0) } }
+        get { (swiftConfig.swiftUIViewsPredicate as? SwiftUIRUMViewsPredicateBridge)?.objcPredicate }
+    }
+
+    @objc public var swiftUIActionsPredicate: DDSwiftUIRUMActionsPredicate? {
+        set { swiftConfig.swiftUIActionsPredicate = newValue.map { SwiftUIRUMActionsPredicateBridge(objcPredicate: $0) } }
+        get { (swiftConfig.swiftUIActionsPredicate as? SwiftUIRUMActionsPredicateBridge)?.objcPredicate }
+    }
+
     @objc
     public func setURLSessionTracking(_ tracking: DDRUMURLSessionTracking) {
         swiftConfig.urlSessionTracking = tracking.swiftConfig

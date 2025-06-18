@@ -7,20 +7,33 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+import SwiftUI
 @testable import DatadogRUM
 
 class RUMActionsHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()
 
-    private func touchHandler(with predicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate()) -> RUMActionsHandler {
-        let handler = RUMActionsHandler(dateProvider: dateProvider, predicate: predicate)
+    private func touchHandler(
+        with uiKitPredicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate(),
+        swiftUIPredicate: SwiftUIRUMActionsPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
+    ) -> RUMActionsHandler {
+        let handler =
+        RUMActionsHandler(
+            dateProvider: dateProvider,
+            uiKitPredicate: uiKitPredicate,
+            swiftUIPredicate: swiftUIPredicate,
+            swiftUIDetector: SwiftUIComponentFactory.createDetector()
+        )
         handler.publish(to: commandSubscriber)
         return handler
     }
 
     private func pressHandler(with predicate: UIPressRUMActionsPredicate = DefaultUIKitRUMActionsPredicate()) -> RUMActionsHandler {
-        let handler = RUMActionsHandler(dateProvider: dateProvider, predicate: predicate)
+        let handler = RUMActionsHandler(
+            dateProvider: dateProvider,
+            uiKitPredicate: predicate
+        )
         handler.publish(to: commandSubscriber)
         return handler
     }
@@ -122,7 +135,7 @@ class RUMActionsHandlerTests: XCTestCase {
         }
     }
 
-    // MARK: - Scenarios For Ignoring Tap Events
+    // MARK: - UIKit Automatic Action Tracking (iOS, UITouch events)
 
     func testGivenAnyUIKitViewWithUnrecognizedHierarchy_whenTouchEnds_itGetsIgnored() {
         // Given
@@ -275,7 +288,7 @@ class RUMActionsHandlerTests: XCTestCase {
         XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
-    // MARK: - Scenarios For Accepting Click Events
+    // MARK: - UIKit Automatic Action Tracking (tvOS, UIPress events)
 
     func testGivenUIKitPressEvent_whenSinglePressEnds_itSendsRUMAction() {
         // Given
@@ -315,8 +328,6 @@ class RUMActionsHandlerTests: XCTestCase {
             XCTAssertEqual(command?.attributes.count, 0)
         }
     }
-
-    // MARK: - Scenarios For Ignoring Tap Events
 
     func testGivenAnyUIKitViewPresentedInKeyboardWindow_whenPressEnds_itGetsIgnoredForPrivacyReason() {
         let mockKeyboardWindow = MockUIRemoteKeyboardWindow(frame: .zero)
@@ -434,7 +445,7 @@ class RUMActionsHandlerTests: XCTestCase {
         XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
-    // MARK: - SwiftUI Actions
+    // MARK: - SwiftUI View Modifier Actions
 
     func testWhenSwiftUIViewModifierIsTapped_itSendsRUMAction() throws {
         // Given

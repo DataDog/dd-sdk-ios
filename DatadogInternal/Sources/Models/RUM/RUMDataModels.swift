@@ -16,7 +16,7 @@ public struct RUMActionEvent: RUMDataModel {
     public var dd: DD
 
     /// Account properties
-    public var account: Account?
+    public var account: RUMAccount?
 
     /// Action properties
     public var action: Action
@@ -129,7 +129,7 @@ public struct RUMActionEvent: RUMDataModel {
     ///   - view: View properties
     public init(
         dd: DD,
-        account: Account? = nil,
+        account: RUMAccount? = nil,
         action: Action,
         application: Application,
         buildId: String? = nil,
@@ -187,6 +187,9 @@ public struct RUMActionEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -195,6 +198,7 @@ public struct RUMActionEvent: RUMDataModel {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
             case formatVersion = "format_version"
+            case sdkName = "sdk_name"
             case session = "session"
         }
 
@@ -204,16 +208,19 @@ public struct RUMActionEvent: RUMDataModel {
         ///   - action: Action properties
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         public init(
             action: Action? = nil,
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
+            sdkName: String? = nil,
             session: Session? = nil
         ) {
             self.action = action
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
+            self.sdkName = sdkName
             self.session = session
         }
 
@@ -380,38 +387,6 @@ public struct RUMActionEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
-        }
-    }
-
-    /// Account properties
-    public struct Account: Codable {
-        /// Identifier of the account
-        public let id: String
-
-        /// Name of the account
-        public let name: String?
-
-        public var accountInfo: [String: Encodable]
-
-        public enum StaticCodingKeys: String, CodingKey {
-            case id = "id"
-            case name = "name"
-        }
-
-        /// Account properties
-        ///
-        /// - Parameters:
-        ///   - id: Identifier of the account
-        ///   - name: Name of the account
-        ///   - accountInfo:
-        public init(
-            id: String,
-            name: String? = nil,
-            accountInfo: [String: Encodable]
-        ) {
-            self.id = id
-            self.name = name
-            self.accountInfo = accountInfo
         }
     }
 
@@ -851,48 +826,13 @@ public struct RUMActionEvent: RUMDataModel {
     }
 }
 
-extension RUMActionEvent.Account {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(id, forKey: .id)
-        try staticContainer.encodeIfPresent(name, forKey: .name)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try accountInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.id = try staticContainer.decode(String.self, forKey: .id)
-        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
-
-        // Decode other properties into [String: Codable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
-        }
-
-        self.accountInfo = dictionary
-    }
-}
-
 /// Schema of all properties of an Error event
 public struct RUMErrorEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
 
     /// Account properties
-    public var account: Account?
+    public var account: RUMAccount?
 
     /// Action properties
     public let action: Action?
@@ -1020,7 +960,7 @@ public struct RUMErrorEvent: RUMDataModel {
     ///   - view: View properties
     public init(
         dd: DD,
-        account: Account? = nil,
+        account: RUMAccount? = nil,
         action: Action? = nil,
         application: Application,
         buildId: String? = nil,
@@ -1081,6 +1021,9 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -1088,6 +1031,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
             case formatVersion = "format_version"
+            case sdkName = "sdk_name"
             case session = "session"
         }
 
@@ -1096,14 +1040,17 @@ public struct RUMErrorEvent: RUMDataModel {
         /// - Parameters:
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
+            sdkName: String? = nil,
             session: Session? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
+            self.sdkName = sdkName
             self.session = session
         }
 
@@ -1165,38 +1112,6 @@ public struct RUMErrorEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
-        }
-    }
-
-    /// Account properties
-    public struct Account: Codable {
-        /// Identifier of the account
-        public let id: String
-
-        /// Name of the account
-        public let name: String?
-
-        public var accountInfo: [String: Encodable]
-
-        public enum StaticCodingKeys: String, CodingKey {
-            case id = "id"
-            case name = "name"
-        }
-
-        /// Account properties
-        ///
-        /// - Parameters:
-        ///   - id: Identifier of the account
-        ///   - name: Name of the account
-        ///   - accountInfo:
-        public init(
-            id: String,
-            name: String? = nil,
-            accountInfo: [String: Encodable]
-        ) {
-            self.id = id
-            self.name = name
-            self.accountInfo = accountInfo
         }
     }
 
@@ -1992,41 +1907,6 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 }
 
-extension RUMErrorEvent.Account {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(id, forKey: .id)
-        try staticContainer.encodeIfPresent(name, forKey: .name)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try accountInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.id = try staticContainer.decode(String.self, forKey: .id)
-        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
-
-        // Decode other properties into [String: Codable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
-        }
-
-        self.accountInfo = dictionary
-    }
-}
-
 extension RUMErrorEvent.FeatureFlags {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
@@ -2057,7 +1937,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let dd: DD
 
     /// Account properties
-    public var account: Account?
+    public var account: RUMAccount?
 
     /// Action properties
     public let action: Action?
@@ -2175,7 +2055,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     ///   - view: View properties
     public init(
         dd: DD,
-        account: Account? = nil,
+        account: RUMAccount? = nil,
         action: Action? = nil,
         application: Application,
         buildId: String? = nil,
@@ -2235,6 +2115,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -2243,6 +2126,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case configuration = "configuration"
             case discarded = "discarded"
             case formatVersion = "format_version"
+            case sdkName = "sdk_name"
             case session = "session"
         }
 
@@ -2252,16 +2136,19 @@ public struct RUMLongTaskEvent: RUMDataModel {
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
         ///   - discarded: Whether the long task should be discarded or indexed
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
             discarded: Bool? = nil,
+            sdkName: String? = nil,
             session: Session? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
             self.discarded = discarded
+            self.sdkName = sdkName
             self.session = session
         }
 
@@ -2323,38 +2210,6 @@ public struct RUMLongTaskEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
-        }
-    }
-
-    /// Account properties
-    public struct Account: Codable {
-        /// Identifier of the account
-        public let id: String
-
-        /// Name of the account
-        public let name: String?
-
-        public var accountInfo: [String: Encodable]
-
-        public enum StaticCodingKeys: String, CodingKey {
-            case id = "id"
-            case name = "name"
-        }
-
-        /// Account properties
-        ///
-        /// - Parameters:
-        ///   - id: Identifier of the account
-        ///   - name: Name of the account
-        ///   - accountInfo:
-        public init(
-            id: String,
-            name: String? = nil,
-            accountInfo: [String: Encodable]
-        ) {
-            self.id = id
-            self.name = name
-            self.accountInfo = accountInfo
         }
     }
 
@@ -2779,48 +2634,13 @@ public struct RUMLongTaskEvent: RUMDataModel {
     }
 }
 
-extension RUMLongTaskEvent.Account {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(id, forKey: .id)
-        try staticContainer.encodeIfPresent(name, forKey: .name)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try accountInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.id = try staticContainer.decode(String.self, forKey: .id)
-        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
-
-        // Decode other properties into [String: Codable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
-        }
-
-        self.accountInfo = dictionary
-    }
-}
-
 /// Schema of all properties of a Resource event
 public struct RUMResourceEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
 
     /// Account properties
-    public var account: Account?
+    public var account: RUMAccount?
 
     /// Action properties
     public let action: Action?
@@ -2938,7 +2758,7 @@ public struct RUMResourceEvent: RUMDataModel {
     ///   - view: View properties
     public init(
         dd: DD,
-        account: Account? = nil,
+        account: RUMAccount? = nil,
         action: Action? = nil,
         application: Application,
         buildId: String? = nil,
@@ -3001,13 +2821,16 @@ public struct RUMResourceEvent: RUMDataModel {
         /// trace sample rate in decimal format
         public let rulePsr: Double?
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
         /// span identifier in decimal format
         public let spanId: String?
 
-        /// trace identifier in decimal format
+        /// trace identifier, either a 64 bit decimal number or a 128 bit hexadecimal number padded with 0s
         public let traceId: String?
 
         public enum CodingKeys: String, CodingKey {
@@ -3016,6 +2839,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case discarded = "discarded"
             case formatVersion = "format_version"
             case rulePsr = "rule_psr"
+            case sdkName = "sdk_name"
             case session = "session"
             case spanId = "span_id"
             case traceId = "trace_id"
@@ -3028,14 +2852,16 @@ public struct RUMResourceEvent: RUMDataModel {
         ///   - configuration: Subset of the SDK configuration options in use during its execution
         ///   - discarded: Whether the resource should be discarded or indexed
         ///   - rulePsr: trace sample rate in decimal format
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         ///   - spanId: span identifier in decimal format
-        ///   - traceId: trace identifier in decimal format
+        ///   - traceId: trace identifier, either a 64 bit decimal number or a 128 bit hexadecimal number padded with 0s
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
             discarded: Bool? = nil,
             rulePsr: Double? = nil,
+            sdkName: String? = nil,
             session: Session? = nil,
             spanId: String? = nil,
             traceId: String? = nil
@@ -3044,6 +2870,7 @@ public struct RUMResourceEvent: RUMDataModel {
             self.configuration = configuration
             self.discarded = discarded
             self.rulePsr = rulePsr
+            self.sdkName = sdkName
             self.session = session
             self.spanId = spanId
             self.traceId = traceId
@@ -3107,38 +2934,6 @@ public struct RUMResourceEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
-        }
-    }
-
-    /// Account properties
-    public struct Account: Codable {
-        /// Identifier of the account
-        public let id: String
-
-        /// Name of the account
-        public let name: String?
-
-        public var accountInfo: [String: Encodable]
-
-        public enum StaticCodingKeys: String, CodingKey {
-            case id = "id"
-            case name = "name"
-        }
-
-        /// Account properties
-        ///
-        /// - Parameters:
-        ///   - id: Identifier of the account
-        ///   - name: Name of the account
-        ///   - accountInfo:
-        public init(
-            id: String,
-            name: String? = nil,
-            accountInfo: [String: Encodable]
-        ) {
-            self.id = id
-            self.name = name
-            self.accountInfo = accountInfo
         }
     }
 
@@ -3860,48 +3655,13 @@ public struct RUMResourceEvent: RUMDataModel {
     }
 }
 
-extension RUMResourceEvent.Account {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(id, forKey: .id)
-        try staticContainer.encodeIfPresent(name, forKey: .name)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try accountInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.id = try staticContainer.decode(String.self, forKey: .id)
-        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
-
-        // Decode other properties into [String: Codable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
-        }
-
-        self.accountInfo = dictionary
-    }
-}
-
 /// Schema of all properties of a View event
 public struct RUMViewEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
 
     /// Account properties
-    public var account: Account?
+    public var account: RUMAccount?
 
     /// Application properties
     public let application: Application
@@ -4019,7 +3779,7 @@ public struct RUMViewEvent: RUMDataModel {
     ///   - view: View properties
     public init(
         dd: DD,
-        account: Account? = nil,
+        account: RUMAccount? = nil,
         application: Application,
         buildId: String? = nil,
         buildVersion: String? = nil,
@@ -4088,6 +3848,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Debug metadata for Replay Sessions
         public let replayStats: ReplayStats?
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -4099,6 +3862,7 @@ public struct RUMViewEvent: RUMDataModel {
             case formatVersion = "format_version"
             case pageStates = "page_states"
             case replayStats = "replay_stats"
+            case sdkName = "sdk_name"
             case session = "session"
         }
 
@@ -4111,6 +3875,7 @@ public struct RUMViewEvent: RUMDataModel {
         ///   - documentVersion: Version of the update of the view event
         ///   - pageStates: List of the page states during the view
         ///   - replayStats: Debug metadata for Replay Sessions
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         public init(
             browserSdkVersion: String? = nil,
@@ -4119,6 +3884,7 @@ public struct RUMViewEvent: RUMDataModel {
             documentVersion: Int64,
             pageStates: [PageStates]? = nil,
             replayStats: ReplayStats? = nil,
+            sdkName: String? = nil,
             session: Session? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
@@ -4127,6 +3893,7 @@ public struct RUMViewEvent: RUMDataModel {
             self.documentVersion = documentVersion
             self.pageStates = pageStates
             self.replayStats = replayStats
+            self.sdkName = sdkName
             self.session = session
         }
 
@@ -4285,38 +4052,6 @@ public struct RUMViewEvent: RUMDataModel {
                 case plan1 = 1
                 case plan2 = 2
             }
-        }
-    }
-
-    /// Account properties
-    public struct Account: Codable {
-        /// Identifier of the account
-        public let id: String
-
-        /// Name of the account
-        public let name: String?
-
-        public var accountInfo: [String: Encodable]
-
-        public enum StaticCodingKeys: String, CodingKey {
-            case id = "id"
-            case name = "name"
-        }
-
-        /// Account properties
-        ///
-        /// - Parameters:
-        ///   - id: Identifier of the account
-        ///   - name: Name of the account
-        ///   - accountInfo:
-        public init(
-            id: String,
-            name: String? = nil,
-            accountInfo: [String: Encodable]
-        ) {
-            self.id = id
-            self.name = name
-            self.accountInfo = accountInfo
         }
     }
 
@@ -5616,41 +5351,6 @@ public struct RUMViewEvent: RUMDataModel {
     }
 }
 
-extension RUMViewEvent.Account {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(id, forKey: .id)
-        try staticContainer.encodeIfPresent(name, forKey: .name)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try accountInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.id = try staticContainer.decode(String.self, forKey: .id)
-        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
-
-        // Decode other properties into [String: Codable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
-        }
-
-        self.accountInfo = dictionary
-    }
-}
-
 extension RUMViewEvent.FeatureFlags {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
@@ -5681,7 +5381,7 @@ public struct RUMVitalEvent: RUMDataModel {
     public let dd: DD
 
     /// Account properties
-    public var account: Account?
+    public var account: RUMAccount?
 
     /// Application properties
     public let application: Application
@@ -5794,7 +5494,7 @@ public struct RUMVitalEvent: RUMDataModel {
     ///   - vital: Vital properties
     public init(
         dd: DD,
-        account: Account? = nil,
+        account: RUMAccount? = nil,
         application: Application,
         buildId: String? = nil,
         buildVersion: String? = nil,
@@ -5849,6 +5549,9 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -5859,6 +5562,7 @@ public struct RUMVitalEvent: RUMDataModel {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
             case formatVersion = "format_version"
+            case sdkName = "sdk_name"
             case session = "session"
             case vital = "vital"
         }
@@ -5868,16 +5572,19 @@ public struct RUMVitalEvent: RUMDataModel {
         /// - Parameters:
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         ///   - vital: Internal vital properties
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
+            sdkName: String? = nil,
             session: Session? = nil,
             vital: Vital? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
+            self.sdkName = sdkName
             self.session = session
             self.vital = vital
         }
@@ -5960,38 +5667,6 @@ public struct RUMVitalEvent: RUMDataModel {
             ) {
                 self.computedValue = computedValue
             }
-        }
-    }
-
-    /// Account properties
-    public struct Account: Codable {
-        /// Identifier of the account
-        public let id: String
-
-        /// Name of the account
-        public let name: String?
-
-        public var accountInfo: [String: Encodable]
-
-        public enum StaticCodingKeys: String, CodingKey {
-            case id = "id"
-            case name = "name"
-        }
-
-        /// Account properties
-        ///
-        /// - Parameters:
-        ///   - id: Identifier of the account
-        ///   - name: Name of the account
-        ///   - accountInfo:
-        public init(
-            id: String,
-            name: String? = nil,
-            accountInfo: [String: Encodable]
-        ) {
-            self.id = id
-            self.name = name
-            self.accountInfo = accountInfo
         }
     }
 
@@ -6266,41 +5941,6 @@ public struct RUMVitalEvent: RUMDataModel {
         public enum VitalType: String, Codable {
             case duration = "duration"
         }
-    }
-}
-
-extension RUMVitalEvent.Account {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(id, forKey: .id)
-        try staticContainer.encodeIfPresent(name, forKey: .name)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try accountInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.id = try staticContainer.decode(String.self, forKey: .id)
-        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
-
-        // Decode other properties into [String: Codable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
-        }
-
-        self.accountInfo = dictionary
     }
 }
 
@@ -7255,6 +6895,12 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether contexts are stored in local storage
             public let storeContextsAcrossPages: Bool?
 
+            /// Whether SwiftUI action instrumentation is enabled
+            public var swiftuiActionTrackingEnabled: Bool?
+
+            /// Whether SwiftUI view instrumentation is enabled
+            public var swiftuiViewTrackingEnabled: Bool?
+
             /// The percentage of telemetry configuration events sent after being sampled by telemetry_sample_rate
             public let telemetryConfigurationSampleRate: Int64?
 
@@ -7290,6 +6936,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether RUM events are tracked when the application is in Background
             public var trackBackgroundEvents: Bool?
+
+            /// Whether views loaded from the bfcache are tracked
+            public var trackBfcacheViews: Bool?
 
             /// Whether long task tracking is performed automatically for cross platform SDKs
             public var trackCrossPlatformLongTasks: Bool?
@@ -7347,6 +6996,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether the allowed tracing urls list is used
             public let useAllowedTracingUrls: Bool?
+
+            /// Whether a list of allowed origins is used to control SDK execution in browser extension contexts. When enabled, the SDK will check if the current origin matches the allowed origins list before running.
+            public var useAllowedTrackingOrigins: Bool?
 
             /// Whether beforeSend callback function is used
             public let useBeforeSend: Bool?
@@ -7420,6 +7072,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case startRecordingImmediately = "start_recording_immediately"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
                 case storeContextsAcrossPages = "store_contexts_across_pages"
+                case swiftuiActionTrackingEnabled = "swiftui_action_tracking_enabled"
+                case swiftuiViewTrackingEnabled = "swiftui_view_tracking_enabled"
                 case telemetryConfigurationSampleRate = "telemetry_configuration_sample_rate"
                 case telemetrySampleRate = "telemetry_sample_rate"
                 case telemetryUsageSampleRate = "telemetry_usage_sample_rate"
@@ -7432,6 +7086,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case tracerApiVersion = "tracer_api_version"
                 case trackAnonymousUser = "track_anonymous_user"
                 case trackBackgroundEvents = "track_background_events"
+                case trackBfcacheViews = "track_bfcache_views"
                 case trackCrossPlatformLongTasks = "track_cross_platform_long_tasks"
                 case trackErrors = "track_errors"
                 case trackFeatureFlagsForEvents = "track_feature_flags_for_events"
@@ -7451,6 +7106,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case unityVersion = "unity_version"
                 case useAllowedTracingOrigins = "use_allowed_tracing_origins"
                 case useAllowedTracingUrls = "use_allowed_tracing_urls"
+                case useAllowedTrackingOrigins = "use_allowed_tracking_origins"
                 case useBeforeSend = "use_before_send"
                 case useCrossSiteSessionCookie = "use_cross_site_session_cookie"
                 case useExcludedActivityUrls = "use_excluded_activity_urls"
@@ -7503,6 +7159,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - startRecordingImmediately: Whether Session Replay should automatically start a recording when enabled
             ///   - startSessionReplayRecordingManually: Whether the session replay start is handled manually
             ///   - storeContextsAcrossPages: Whether contexts are stored in local storage
+            ///   - swiftuiActionTrackingEnabled: Whether SwiftUI action instrumentation is enabled
+            ///   - swiftuiViewTrackingEnabled: Whether SwiftUI view instrumentation is enabled
             ///   - telemetryConfigurationSampleRate: The percentage of telemetry configuration events sent after being sampled by telemetry_sample_rate
             ///   - telemetrySampleRate: The percentage of telemetry events sent
             ///   - telemetryUsageSampleRate: The percentage of telemetry usage events sent after being sampled by telemetry_sample_rate
@@ -7515,6 +7173,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - tracerApiVersion: The version of the tracer API used by the SDK. Eg. '0.1.0'
             ///   - trackAnonymousUser: Whether the anonymous users are tracked
             ///   - trackBackgroundEvents: Whether RUM events are tracked when the application is in Background
+            ///   - trackBfcacheViews: Whether views loaded from the bfcache are tracked
             ///   - trackCrossPlatformLongTasks: Whether long task tracking is performed automatically for cross platform SDKs
             ///   - trackErrors: Whether error monitoring & crash reporting is enabled for the source platform
             ///   - trackFeatureFlagsForEvents: The list of events that include feature flags collection. The tracking is always enabled for views and errors.
@@ -7534,6 +7193,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - unityVersion: The version of Unity used in a Unity application
             ///   - useAllowedTracingOrigins: Whether the allowed tracing origins list is used (deprecated in favor of use_allowed_tracing_urls)
             ///   - useAllowedTracingUrls: Whether the allowed tracing urls list is used
+            ///   - useAllowedTrackingOrigins: Whether a list of allowed origins is used to control SDK execution in browser extension contexts. When enabled, the SDK will check if the current origin matches the allowed origins list before running.
             ///   - useBeforeSend: Whether beforeSend callback function is used
             ///   - useCrossSiteSessionCookie: Whether a secure cross-site session cookie is used (deprecated)
             ///   - useExcludedActivityUrls: Whether the request origins list to ignore when computing the page activity is used
@@ -7582,6 +7242,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 startRecordingImmediately: Bool? = nil,
                 startSessionReplayRecordingManually: Bool? = nil,
                 storeContextsAcrossPages: Bool? = nil,
+                swiftuiActionTrackingEnabled: Bool? = nil,
+                swiftuiViewTrackingEnabled: Bool? = nil,
                 telemetryConfigurationSampleRate: Int64? = nil,
                 telemetrySampleRate: Int64? = nil,
                 telemetryUsageSampleRate: Int64? = nil,
@@ -7594,6 +7256,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 tracerApiVersion: String? = nil,
                 trackAnonymousUser: Bool? = nil,
                 trackBackgroundEvents: Bool? = nil,
+                trackBfcacheViews: Bool? = nil,
                 trackCrossPlatformLongTasks: Bool? = nil,
                 trackErrors: Bool? = nil,
                 trackFeatureFlagsForEvents: [TrackFeatureFlagsForEvents]? = nil,
@@ -7613,6 +7276,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 unityVersion: String? = nil,
                 useAllowedTracingOrigins: Bool? = nil,
                 useAllowedTracingUrls: Bool? = nil,
+                useAllowedTrackingOrigins: Bool? = nil,
                 useBeforeSend: Bool? = nil,
                 useCrossSiteSessionCookie: Bool? = nil,
                 useExcludedActivityUrls: Bool? = nil,
@@ -7661,6 +7325,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.startRecordingImmediately = startRecordingImmediately
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
                 self.storeContextsAcrossPages = storeContextsAcrossPages
+                self.swiftuiActionTrackingEnabled = swiftuiActionTrackingEnabled
+                self.swiftuiViewTrackingEnabled = swiftuiViewTrackingEnabled
                 self.telemetryConfigurationSampleRate = telemetryConfigurationSampleRate
                 self.telemetrySampleRate = telemetrySampleRate
                 self.telemetryUsageSampleRate = telemetryUsageSampleRate
@@ -7673,6 +7339,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.tracerApiVersion = tracerApiVersion
                 self.trackAnonymousUser = trackAnonymousUser
                 self.trackBackgroundEvents = trackBackgroundEvents
+                self.trackBfcacheViews = trackBfcacheViews
                 self.trackCrossPlatformLongTasks = trackCrossPlatformLongTasks
                 self.trackErrors = trackErrors
                 self.trackFeatureFlagsForEvents = trackFeatureFlagsForEvents
@@ -7692,6 +7359,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.unityVersion = unityVersion
                 self.useAllowedTracingOrigins = useAllowedTracingOrigins
                 self.useAllowedTracingUrls = useAllowedTracingUrls
+                self.useAllowedTrackingOrigins = useAllowedTrackingOrigins
                 self.useBeforeSend = useBeforeSend
                 self.useCrossSiteSessionCookie = useCrossSiteSessionCookie
                 self.useExcludedActivityUrls = useExcludedActivityUrls
@@ -8852,6 +8520,73 @@ public enum RUMSessionPrecondition: String, Codable {
     case explicitStop = "explicit_stop"
 }
 
+/// Account properties
+public struct RUMAccount: Codable {
+    /// Identifier of the account
+    public let id: String
+
+    /// Name of the account
+    public let name: String?
+
+    public var accountInfo: [String: Encodable]
+
+    public enum StaticCodingKeys: String, CodingKey {
+        case id = "id"
+        case name = "name"
+    }
+
+    /// Account properties
+    ///
+    /// - Parameters:
+    ///   - id: Identifier of the account
+    ///   - name: Name of the account
+    ///   - accountInfo:
+    public init(
+        id: String,
+        name: String? = nil,
+        accountInfo: [String: Encodable]
+    ) {
+        self.id = id
+        self.name = name
+        self.accountInfo = accountInfo
+    }
+}
+
+extension RUMAccount {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(id, forKey: .id)
+        try staticContainer.encodeIfPresent(name, forKey: .name)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try accountInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.id = try staticContainer.decode(String.self, forKey: .id)
+        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
+
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        }
+
+        self.accountInfo = dictionary
+    }
+}
+
 /// CI Visibility properties
 public struct RUMCITest: Codable {
     /// The identifier of the current CI Visibility test execution
@@ -9355,4 +9090,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/2d2cd6aecf0ea4f1ffe61b7149dfdef75397fdbf
+// Generated from https://github.com/DataDog/rum-events-format/tree/b8d694987f0873dfafa9248ef40b9a5ba56f7101

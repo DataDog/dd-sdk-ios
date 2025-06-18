@@ -41,7 +41,7 @@ public func randomRUMEvent() -> RUMDataModel {
     // swiftlint:disable opening_brace
     return oneOf([
         { RUMViewEvent.mockRandom() },
-        { RUMActionEvent.mockRandom() },
+        { RUMActionEvent.mockAny() },
         { RUMResourceEvent.mockRandom() },
         { RUMErrorEvent.mockRandom() },
         { RUMLongTaskEvent.mockRandom() },
@@ -57,6 +57,16 @@ extension RUMUser: RandomMockable {
             id: .mockRandom(),
             name: .mockRandom(),
             usrInfo: mockRandomAttributes()
+        )
+    }
+}
+
+extension RUMAccount: RandomMockable {
+    public static func mockRandom() -> Self {
+        return .init(
+            id: .mockRandom(),
+            name: .mockRandom(),
+            accountInfo: mockRandomAttributes()
         )
     }
 }
@@ -188,6 +198,7 @@ extension RUMViewEvent: RandomMockable {
                     sessionPrecondition: .mockRandom()
                 )
             ),
+            account: .mockRandom(),
             application: .init(id: .mockRandom()),
             buildId: nil,
             buildVersion: .mockRandom(),
@@ -293,6 +304,7 @@ extension RUMResourceEvent: RandomMockable {
                 spanId: .mockRandom(),
                 traceId: .mockRandom()
             ),
+            account: .mockRandom(),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
             buildId: nil,
@@ -357,8 +369,14 @@ extension RUMActionEvent.DD.Configuration: RandomMockable {
     }
 }
 
-extension RUMActionEvent: RandomMockable {
-    public static func mockRandom() -> RUMActionEvent {
+extension RUMActionEvent: AnyMockable {
+    public static func mockAny() -> RUMActionEvent {
+        .mockWith()
+    }
+
+    public static func mockWith(
+        sessionID: UUID = .mockRandom()
+    ) -> RUMActionEvent {
         return RUMActionEvent(
             dd: .init(
                 action: .init(
@@ -376,6 +394,7 @@ extension RUMActionEvent: RandomMockable {
                     sessionPrecondition: .mockRandom()
                 )
             ),
+            account: .mockRandom(),
             action: .init(
                 crash: .init(count: .mockRandom()),
                 error: .init(count: .mockRandom()),
@@ -401,7 +420,7 @@ extension RUMActionEvent: RandomMockable {
             service: .mockRandom(),
             session: .init(
                 hasReplay: nil,
-                id: .mockRandom(),
+                id: sessionID.uuidString.lowercased(),
                 type: .user
             ),
             source: .ios,
@@ -441,6 +460,7 @@ extension RUMErrorEvent: RandomMockable {
                     sessionPrecondition: .mockRandom()
                 )
             ),
+            account: .mockRandom(),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
             buildId: nil,
@@ -520,6 +540,7 @@ extension RUMLongTaskEvent: RandomMockable {
                     sessionPrecondition: .mockRandom()
                 )
             ),
+            account: .mockRandom(),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
             buildId: nil,
@@ -600,6 +621,8 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     sessionSampleRate: .mockRandom(),
                     silentMultipleInit: nil,
                     storeContextsAcrossPages: nil,
+                    swiftuiActionTrackingEnabled: .mockRandom(),
+                    swiftuiViewTrackingEnabled: .mockRandom(),
                     telemetryConfigurationSampleRate: .mockRandom(),
                     telemetrySampleRate: .mockRandom(),
                     telemetryUsageSampleRate: nil,

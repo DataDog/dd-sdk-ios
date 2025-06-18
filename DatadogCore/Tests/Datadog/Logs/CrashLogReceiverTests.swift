@@ -102,6 +102,7 @@ class CrashLogReceiverTests: XCTestCase {
             ),
             sdkVersion: .mockRandom(),
             userInfo: Bool.random() ? .mockRandom() : .empty,
+            accountInfo: Bool.random() ? .mockRandom() : nil,
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
             lastRUMViewEvent: lastRUMViewEvent
@@ -123,6 +124,7 @@ class CrashLogReceiverTests: XCTestCase {
             ),
             sdkVersion: .mockRandom(),
             userInfo: Bool.random() ? .mockRandom() : .empty,
+            accountInfo: Bool.random() ? .mockRandom() : nil,
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
             lastLogAttributes: lastLogAttributes
@@ -185,6 +187,7 @@ class CrashLogReceiverTests: XCTestCase {
                 email: user.email,
                 extraInfo: user.extraInfo
             ),
+            accountInfo: crashContext.accountInfo,
             networkConnectionInfo: crashContext.networkConnectionInfo,
             mobileCarrierInfo: crashContext.carrierInfo,
             attributes: .init(

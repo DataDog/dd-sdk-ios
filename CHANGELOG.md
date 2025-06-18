@@ -1,5 +1,11 @@
 # Unreleased
 
+# 2.29.0 / 18-06-2025
+
+- [FEATURE] Add SwiftUI auto-tracking for views and actions. See [#2237][] [#2315][]
+- [FEATURE] Add support for AP2 Datacenter. You can configure it setting `DatadogSite.ap2` on `Datadog.Configuration.site`. See [#2343][]
+- [FEATURE] Add account information configuration. The account information propagates to Logs, RUM, Traces, Crash and Error Reporting. See [#2225][]
+
 # 2.28.1 / 29-05-2025
 
 - [FIX] Fix `RUMMethod` export from RUM. See [#2316][]
@@ -874,16 +880,21 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2200]: https://github.com/DataDog/dd-sdk-ios/pull/2200
 [#2201]: https://github.com/DataDog/dd-sdk-ios/pull/2201
 [#2195]: https://github.com/DataDog/dd-sdk-ios/pull/2195
-[#2251]: https://github.com/DataDog/dd-sdk-ios/pull/2251
-[#2240]: https://github.com/DataDog/dd-sdk-ios/pull/2240
 [#2223]: https://github.com/DataDog/dd-sdk-ios/pull/2223
+[#2225]: https://github.com/DataDog/dd-sdk-ios/pull/2225
 [#2234]: https://github.com/DataDog/dd-sdk-ios/pull/2234
 [#2236]: https://github.com/DataDog/dd-sdk-ios/pull/2236
+[#2237]: https://github.com/DataDog/dd-sdk-ios/pull/2237
+[#2240]: https://github.com/DataDog/dd-sdk-ios/pull/2240
+[#2251]: https://github.com/DataDog/dd-sdk-ios/pull/2251
 [#2260]: https://github.com/DataDog/dd-sdk-ios/pull/2260
 [#2268]: https://github.com/DataDog/dd-sdk-ios/pull/2268
 [#2302]: https://github.com/DataDog/dd-sdk-ios/pull/2302
 [#2304]: https://github.com/DataDog/dd-sdk-ios/pull/2304
+[#2315]: https://github.com/DataDog/dd-sdk-ios/pull/2315
 [#2316]: https://github.com/DataDog/dd-sdk-ios/pull/2316
+[#2343]: https://github.com/DataDog/dd-sdk-ios/pull/2343
+
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

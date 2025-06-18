@@ -20,8 +20,8 @@ class RUMEventsMapperTests: XCTestCase {
         let originalResourceEvent: RUMResourceEvent = .mockRandom()
         let modifiedResourceEvent: RUMResourceEvent = .mockRandom()
 
-        let originalActionEvent: RUMActionEvent = .mockRandom()
-        let modifiedActionEvent: RUMActionEvent = .mockRandom()
+        let originalActionEvent: RUMActionEvent = .mockAny()
+        let modifiedActionEvent: RUMActionEvent = .mockAny()
 
         let originalLongTaskEvent: RUMLongTaskEvent = .mockRandom()
         let modifiedLongTaskEvent: RUMLongTaskEvent = .mockRandom()
@@ -68,7 +68,7 @@ class RUMEventsMapperTests: XCTestCase {
     func testGivenMappersEnabled_whenDroppingEvents_itReturnsNil() {
         let originalErrorEvent: RUMErrorEvent = .mockRandom()
         let originalResourceEvent: RUMResourceEvent = .mockRandom()
-        let originalActionEvent: RUMActionEvent = .mockRandom()
+        let originalActionEvent: RUMActionEvent = .mockAny()
         let originalLongTaskEvent: RUMLongTaskEvent = .mockRandom()
 
         // Given
@@ -108,7 +108,7 @@ class RUMEventsMapperTests: XCTestCase {
         let originalViewEvent: RUMViewEvent = .mockRandom()
         let originalErrorEvent: RUMErrorEvent = .mockRandom()
         let originalResourceEvent: RUMResourceEvent = .mockRandom()
-        let originalActionEvent: RUMActionEvent = .mockRandom()
+        let originalActionEvent: RUMActionEvent = .mockAny()
         let originalLongTaskEvent: RUMLongTaskEvent = .mockRandom()
 
         // Given

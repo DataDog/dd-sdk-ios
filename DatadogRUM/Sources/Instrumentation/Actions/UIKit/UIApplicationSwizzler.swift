@@ -7,7 +7,7 @@
 import UIKit
 import DatadogInternal
 
-internal class UIApplicationSwizzler {
+internal final class UIApplicationSwizzler {
     let sendEvent: SendEvent
 
     init(handler: RUMActionsHandling) throws {

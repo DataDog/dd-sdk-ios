@@ -90,11 +90,13 @@ extension RUMResourceType {
 public struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent {
     let attribute: String
     public var usr: RUMUser?
+    public var account: RUMAccount?
     public var context: RUMEventAttributes?
 
-    public init(attribute: String, usr: RUMUser? = nil, context: RUMEventAttributes? = nil) {
+    public init(attribute: String, usr: RUMUser? = nil, account: RUMAccount? = nil, context: RUMEventAttributes? = nil) {
         self.attribute = attribute
         self.usr = usr
+        self.account = account
         self.context = context
     }
 }
@@ -779,6 +781,7 @@ extension RUMScopeDependencies {
         renderLoopObserver: RenderLoopObserver? = nil,
         viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)? = { ViewHitchesMock.mockAny() },
         vitalsReaders: VitalsReaders? = nil,
+        accessibilityReader: AccessibilityReading? = nil,
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
         viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
@@ -810,6 +813,7 @@ extension RUMScopeDependencies {
             renderLoopObserver: renderLoopObserver,
             viewHitchesReaderFactory: viewHitchesReaderFactory,
             vitalsReaders: vitalsReaders,
+            accessibilityReader: accessibilityReader,
             onSessionStart: onSessionStart,
             viewCache: viewCache,
             fatalErrorContext: fatalErrorContext,
@@ -837,6 +841,7 @@ extension RUMScopeDependencies {
         renderLoopObserver: RenderLoopObserver? = nil,
         viewHitchesReaderFactory: (() -> RenderLoopReader & ViewHitchesModel)? = nil,
         vitalsReaders: VitalsReaders? = nil,
+        accessibilityReader: AccessibilityReading? = nil,
         onSessionStart: RUM.SessionListener? = nil,
         viewCache: ViewCache? = nil,
         fatalErrorContext: FatalErrorContextNotifying? = nil,
@@ -862,6 +867,7 @@ extension RUMScopeDependencies {
             renderLoopObserver: renderLoopObserver ?? self.renderLoopObserver,
             viewHitchesReaderFactory: viewHitchesReaderFactory ?? self.viewHitchesReaderFactory,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
+            accessibilityReader: accessibilityReader,
             onSessionStart: onSessionStart ?? self.onSessionStart,
             viewCache: viewCache ?? self.viewCache,
             fatalErrorContext: fatalErrorContext ?? self.fatalErrorContext,
@@ -1125,6 +1131,18 @@ public class UIPressRUMActionsPredicateMock: UIPressRUMActionsPredicate {
 
     public func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction? {
         return resultByView[targetView] ?? result
+    }
+}
+
+public class MockSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate {
+    var returnAction: RUMAction?
+
+    public init(returnAction: RUMAction? = RUMAction(name: "custom_action", attributes: [:])) {
+        self.returnAction = returnAction
+    }
+
+    public func rumAction(with componentName: String) -> RUMAction? {
+        return returnAction
     }
 }
 
@@ -1531,5 +1549,18 @@ public class SwiftUIViewNameExtractorMock: SwiftUIViewNameExtractor {
 
     public func extractName(from viewController: UIViewController) -> String? {
         return resultByViewController[viewController] ?? defaultResult
+    }
+}
+
+public class SwiftUIRUMActionsPredicateMock: SwiftUIRUMActionsPredicate {
+    public var resultByName: [String: RUMAction] = [:]
+    public var result: RUMAction?
+
+    public init(result: RUMAction? = nil) {
+        self.result = result
+    }
+
+    public func rumAction(with componentName: String) -> DatadogRUM.RUMAction? {
+        return resultByName[componentName] ?? result
     }
 }
