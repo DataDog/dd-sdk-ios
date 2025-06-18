@@ -91,7 +91,7 @@ class DataUploadConditionsTests: XCTestCase {
             )
         }
     }
-    
+
     func testItSaysToUploadIfNetworkIsNotConstrained() {
         assert(
             canPerformUploadReturns: true,
@@ -100,7 +100,7 @@ class DataUploadConditionsTests: XCTestCase {
             allowsConstrainedNetworkAccess: true,
             forNetwork: .mockWith(reachability: .yes, isConstrained: false)
         )
-        
+
         assert(
             canPerformUploadReturns: true,
             forBattery: nil,
@@ -109,7 +109,7 @@ class DataUploadConditionsTests: XCTestCase {
             forNetwork: .mockWith(reachability: .yes, isConstrained: false)
         )
     }
-    
+
     func testItSaysToUploadIfNetworkIsConstrained() {
         assert(
             canPerformUploadReturns: true,
@@ -119,7 +119,7 @@ class DataUploadConditionsTests: XCTestCase {
             forNetwork: .mockWith(reachability: .yes, isConstrained: true)
         )
     }
-    
+
     func testItSaysToNotUploadIfNetworkIsConstrained() {
         assert(
             canPerformUploadReturns: false,

@@ -23,7 +23,7 @@ internal struct DataUploadConditions {
 
     /// Battery level above which data upload can be performed.
     let minBatteryLevel: Float
-    
+
     /// Blocks uploads on networks with "Low Data Mode" enabled when set to `false`. Defaults to `true`.
     let allowsConstrainedNetworkAccess: Bool
 

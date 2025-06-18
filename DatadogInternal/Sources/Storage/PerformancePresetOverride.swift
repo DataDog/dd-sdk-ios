@@ -45,7 +45,7 @@ public struct PerformancePresetOverride {
     /// Overrides the current interval is change on successful upload. Should be less or equal `1.0`.
     /// E.g: if rate is `0.1` then `delay` will be changed by `delay * 0.1`.
     public let uploadDelayChangeRate: Double?
-    
+
     /// Overrides the current upload behavior when connected to a network with "Low Data Mode" enabled.
     public let constrainedNetworkAccessEnabled: Bool?
 
@@ -90,7 +90,7 @@ public struct PerformancePresetOverride {
             self.maxUploadDelay = nil
             self.uploadDelayChangeRate = nil
         }
-        
+
         self.constrainedNetworkAccessEnabled = constrainedNetworkAccessEnabled
     }
 }

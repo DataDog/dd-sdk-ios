@@ -135,7 +135,7 @@ public enum Datadog {
         ///
         /// `false` by default.
         public var backgroundTasksEnabled: Bool
-        
+
         /// Allows uploads on networks with "Low Data Mode" enabled.
         /// When set to `false`, uploads are deferred until the device is connected to an unconstrained network.
         ///
