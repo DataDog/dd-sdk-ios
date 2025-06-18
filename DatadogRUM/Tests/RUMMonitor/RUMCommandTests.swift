@@ -120,4 +120,17 @@ class RUMCommandTests: XCTestCase {
         XCTAssertEqual(defaultCommand1.errorSourceType, .ios)
         XCTAssertEqual(defaultCommand2.errorSourceType, .ios)
     }
+
+    func testResourceWithErrorCommand_forDifferentErrorCategories() {
+        let command1: RUMStopResourceWithErrorCommand = .mockWithErrorObject(error: ErrorMock(), source: .network)
+
+        XCTAssertEqual(command1.isNetworkError, false)
+        XCTAssertEqual(command1.errorSource, .network)
+
+        let networkError = NSError(domain: NSURLErrorDomain, code: -1_001, userInfo: [:])
+        let command2: RUMStopResourceWithErrorCommand = .mockWithErrorObject(error: networkError, source: .network)
+
+        XCTAssertEqual(command2.isNetworkError, true)
+        XCTAssertEqual(command2.errorSource, .network)
+    }
 }
