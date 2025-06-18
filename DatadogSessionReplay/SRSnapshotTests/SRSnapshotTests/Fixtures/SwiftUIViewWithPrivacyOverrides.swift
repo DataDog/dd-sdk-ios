@@ -7,6 +7,7 @@
 import SwiftUI
 import DatadogSessionReplay
 import DatadogInternal
+import SRFixtures
 
 @available(iOS 16.0, *)
 struct SwiftUIViewWithPrivacyOverrides: View {
@@ -49,7 +50,7 @@ struct SwiftUIViewWithPrivacyOverrides: View {
                     .padding(.vertical, 6)
 
                 // "Bundled" image
-                Image("dd_logo", bundle: .module)
+                Image.datadogLogo
                     .resizable()
                     .scaledToFit()
                     .background(Color.purple)
@@ -57,7 +58,7 @@ struct SwiftUIViewWithPrivacyOverrides: View {
                     .clipped()
 
                 // "Content" image
-                Image("Flowers_1", bundle: .module)
+                Image.flowers
                     .resizable()
                     .scaledToFit()
                     .background(Color.purple)
