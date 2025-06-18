@@ -18,9 +18,9 @@ struct SwiftUIViewWithPrivacyOverrides: View {
     }
 
     var body: some View {
-        SessionReplayPrivacyOverrideView(imagePrivacy: .maskNonBundledOnly, core: core) {
+        SessionReplayPrivacyView(imagePrivacy: .maskNonBundledOnly, core: core) {
             VStack(spacing: 10) {
-                SessionReplayPrivacyOverrideView(textAndInputPrivacy: .maskAllInputs, core: core) {
+                SessionReplayPrivacyView(textAndInputPrivacy: .maskAllInputs, core: core) {
                     Text("Hello, SwiftUI!")
                         .font(.headline)
 
@@ -33,7 +33,7 @@ struct SwiftUIViewWithPrivacyOverrides: View {
                         .padding(8)
                 }
 
-                SessionReplayPrivacyOverrideView(hide: true, core: core) {
+                SessionReplayPrivacyView(hide: true, core: core) {
                     Button(action: {}) {
                         Text("SwiftUI Button")
                             .padding()
@@ -67,7 +67,7 @@ struct SwiftUIViewWithPrivacyOverrides: View {
 
                 List {
                     Text("Item 1")
-                    SessionReplayPrivacyOverrideView(textAndInputPrivacy: .maskAll, core: core) {
+                    SessionReplayPrivacyView(textAndInputPrivacy: .maskAll, core: core) {
                         Text("Item 2")
                     }
                 }.frame(height: 140)

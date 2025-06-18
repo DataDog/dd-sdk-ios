@@ -22,7 +22,7 @@ import DatadogInternal
 /// VStack(spacing: 8) {
 ///   Text("User Profile")
 ///
-///   SessionReplayPrivacyOverrideView(
+///   SessionReplayPrivacyView(
 /// 	textAndInputPrivacy: .maskAll,
 /// 	imagePrivacy: .maskAll
 ///   ) {
@@ -37,7 +37,7 @@ import DatadogInternal
 /// }
 /// ```
 @available(iOS 16, *)
-public struct SessionReplayPrivacyOverrideView<Content: View>: View {
+public struct SessionReplayPrivacyView<Content: View>: View {
     private let isActive: Bool
     private let textAndInputPrivacy: TextAndInputPrivacyLevel?
     private let imagePrivacy: ImagePrivacyLevel?
@@ -46,7 +46,7 @@ public struct SessionReplayPrivacyOverrideView<Content: View>: View {
     private let core: DatadogCoreProtocol
     private let content: () -> Content
 
-    /// Creates a new `SessionReplayPrivacyOverrideView` with specified privacy settings.
+    /// Creates a new `SessionReplayPrivacyView` with specified privacy settings.
     ///
     /// - Parameters:
     ///   - isActive: A Boolean value that determines whether the privacy overrides are applied. The default value is `true`.
@@ -76,7 +76,7 @@ public struct SessionReplayPrivacyOverrideView<Content: View>: View {
 
     public var body: some View {
         if isActive, isSessionReplayEnabled || isRunningForPreviews {
-            SessionReplayPrivacyOverrideHost(
+            SessionReplayPrivacyHost(
                 textAndInputPrivacy: textAndInputPrivacy,
                 imagePrivacy: imagePrivacy,
                 touchPrivacy: touchPrivacy,
@@ -98,7 +98,7 @@ public struct SessionReplayPrivacyOverrideView<Content: View>: View {
 }
 
 @available(iOS 16, *)
-private struct SessionReplayPrivacyOverrideHost<Content: View>: UIViewControllerRepresentable {
+private struct SessionReplayPrivacyHost<Content: View>: UIViewControllerRepresentable {
     typealias HostedContent = EnvironmentView<Content>
 
     let textAndInputPrivacy: TextAndInputPrivacyLevel?

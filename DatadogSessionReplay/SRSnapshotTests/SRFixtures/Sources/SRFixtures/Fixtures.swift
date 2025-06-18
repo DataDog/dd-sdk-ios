@@ -6,7 +6,6 @@
 
 import UIKit
 import SwiftUI
-import DatadogInternal
 
 public protocol FixtureProtocol {
     func instantiateViewController() -> UIViewController
