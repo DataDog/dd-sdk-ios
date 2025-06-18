@@ -8,7 +8,11 @@ import UIKit
 import SwiftUI
 import DatadogInternal
 
-public enum Fixture: CaseIterable {
+public protocol FixtureProtocol {
+    func instantiateViewController() -> UIViewController
+}
+
+public enum Fixture: FixtureProtocol, CaseIterable {
     case basicShapes
     case basicTexts
     case sliders
@@ -35,7 +39,6 @@ public enum Fixture: CaseIterable {
     /// Instantiated view controller is ``PopupsViewController``
     case popups
     case swiftUI
-    case swiftUIWithPrivacyOverrides(DatadogCoreProtocol = CoreRegistry.default)
     case navigationBars
     case navigationBarDefaultTranslucent
     case navigationBarDefaultNonTranslucent
@@ -93,12 +96,6 @@ public enum Fixture: CaseIterable {
             } else {
                 return ErrorViewController(message: "`.swiftUI` fixture is only available on iOS 15+")
             }
-        case .swiftUIWithPrivacyOverrides(let core):
-            if #available(iOS 16.0, *) {
-                return UIHostingController(rootView: SwiftUIViewWithPrivacyOverrides(core: core))
-            } else {
-                return ErrorViewController(message: "`.swiftUIWithPrivacyOverrides` fixture is only available on iOS 16+")
-            }
         //- Navigation Bars
         case .navigationBars:
             return UIStoryboard.navigationBars.instantiateViewController(withIdentifier: "NavigationBars")
@@ -130,41 +127,6 @@ public enum Fixture: CaseIterable {
             return UIStoryboard.tabbars.instantiateViewController(withIdentifier: "EmbeddedTabbarUnselectedTintColor")
         }
     }
-
-    public static let allCases: [Fixture] = [
-        .basicShapes,
-        .basicTexts,
-        .sliders,
-        .progressViews,
-        .activityIndicators,
-        .segments,
-        .pickers,
-        .switches,
-        .textFields,
-        .steppers,
-        .datePickersInline,
-        .datePickersCompact,
-        .datePickersWheels,
-        .timePickersCountDown,
-        .timePickersWheels,
-        .timePickersCompact,
-        .images,
-        .popups,
-        .swiftUI,
-        .swiftUIWithPrivacyOverrides(),
-        .navigationBars,
-        .navigationBarDefaultTranslucent,
-        .navigationBarDefaultNonTranslucent,
-        .navigationBarBlackTranslucent,
-        .navigationBarBlackNonTranslucent,
-        .navigationBarDefaultTranslucentBarTint,
-        .navigationBarDefaultNonTranslucentBarTint,
-        .navigationBarDefaultTranslucentBackground,
-        .navigationBarDefaultNonTranslucentBackground,
-        .tabbar,
-        .embeddedTabbar,
-        .embeddedTabbarUnselectedTintColor,
-    ]
 }
 
 internal extension UIStoryboard {
