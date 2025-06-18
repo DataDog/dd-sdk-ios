@@ -59,13 +59,10 @@ public protocol DDSwiftUIRUMActionsPredicate: AnyObject {
 public class DDDefaultSwiftUIRUMActionsPredicate: NSObject, DDSwiftUIRUMActionsPredicate {
     private let swiftPredicate: DefaultSwiftUIRUMActionsPredicate
 
+    @objc(initWithIsLegacyDetectionEnabled:)
     public init(isLegacyDetectionEnabled: Bool) {
         swiftPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: isLegacyDetectionEnabled)
         super.init()
-    }
-
-    override public convenience init() {
-        self.init(isLegacyDetectionEnabled: true)
     }
 
     public func rumAction(with componentName: String) -> DDRUMAction? {
