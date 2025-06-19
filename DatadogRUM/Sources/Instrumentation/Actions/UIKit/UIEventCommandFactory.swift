@@ -106,6 +106,7 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
             let bestParent = view.findInParentHierarchy { parent in
                 return parent is UITableViewCell
                 || parent is UICollectionViewCell
+                || parent is UIControl
             }
             return bestParent // best parent or `nil`
         }
