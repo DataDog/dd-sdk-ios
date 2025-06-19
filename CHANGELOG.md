@@ -12,13 +12,13 @@
 - [IMPROVEMENT] Remove fatal errors from Logs. See [#2359][]
 - [IMPROVEMENT] Add opt-out API to disable tracking memory warnings as RUM Errors. See [#2355][]
 - Support for AP2 Datacenter added. You can configure it setting `DatadogSite.ap2` on `Datadog.Configuration.site`.
+- [FEATURE] Add SwiftUI support for Session Replay privacy overrides. See [#2333][]
+
 # 2.29.0 / 18-06-2025
 
 - [FEATURE] Add SwiftUI auto-tracking for views and actions. See [#2237][] [#2315][]
 - [FEATURE] Add support for AP2 Datacenter. You can configure it setting `DatadogSite.ap2` on `Datadog.Configuration.site`. See [#2343][]
 - [FEATURE] Add account information configuration. The account information propagates to Logs, RUM, Traces, Crash and Error Reporting. See [#2225][]
-- Support for AP2 Datacenter added. You can configure it setting `DatadogSite.ap2` on `Datadog.Configuration.site`.
-- [FEATURE] Add SwiftUI support for Session Replay privacy overrides. See [#2333][]
 
 # 2.28.1 / 29-05-2025
 
