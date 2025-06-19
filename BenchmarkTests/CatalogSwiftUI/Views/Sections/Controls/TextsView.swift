@@ -61,6 +61,7 @@ struct TextsComponentsView: View, Comparable {
             textDates
                 .modifier(Divided())
             textControls
+                .privacyOverride(text: .maskAllInputs)
             
             ContributedByView(name: "Barbara Martina",
                               link: "https://github.com/barbaramartina")

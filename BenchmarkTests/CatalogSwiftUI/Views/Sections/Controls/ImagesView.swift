@@ -52,6 +52,7 @@ struct ImagesComponentView: View, Comparable {
                 .modifier(Divided())
             fixedFrameImages
                 .modifier(Divided())
+                .privacyOverride(image: .maskAll)
             
             ContributedByView(name: "Barbara Martina",
                               link: "https://github.com/barbaramartina")
