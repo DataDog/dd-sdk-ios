@@ -19,13 +19,13 @@ internal class UIHostingViewRecorder: NodeRecorder {
 
     /// An option for overriding default semantics from parent recorder.
     var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics?
-    var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating
+    var textObfuscator: (ViewTreeRecordingContext, ViewAttributes) -> TextObfuscating
 
     init(
         identifier: UUID,
         semanticsOverride: @escaping (UIView, ViewAttributes) -> NodeSemantics? = { _, _ in nil },
-        textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = { context in
-            return context.recorder.textAndInputPrivacy.staticTextObfuscator
+        textObfuscator: @escaping (ViewTreeRecordingContext, ViewAttributes) -> TextObfuscating = { context, viewAttributes in
+            return viewAttributes.resolveTextAndInputPrivacyLevel(in: context).staticTextObfuscator
         }
     ) {
         self.identifier = identifier
@@ -69,9 +69,9 @@ internal class UIHostingViewRecorder: NodeRecorder {
         let builder = SwiftUIWireframesBuilder(
             wireframeID: nodeID,
             renderer: renderer.renderer,
-            textObfuscator: textObfuscator(context),
+            textObfuscator: textObfuscator(context, attributes),
             fontScalingEnabled: false,
-            imagePrivacyLevel: context.recorder.imagePrivacy,
+            imagePrivacyLevel: attributes.resolveImagePrivacyLevel(in: context),
             attributes: attributes
         )
 

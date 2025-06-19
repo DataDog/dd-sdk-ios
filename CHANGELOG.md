@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Add SwiftUI support for Session Replay privacy overrides. See [#2333][]
+
 # 2.29.0 / 18-06-2025
 
 - [FEATURE] Add SwiftUI auto-tracking for views and actions. See [#2237][] [#2315][]
