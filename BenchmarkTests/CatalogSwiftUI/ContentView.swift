@@ -40,11 +40,7 @@ public struct ContentView: View {
                                               startRadiusFraction: 0.3,
                                               endRadiusFraction: 5)
 
-    private let monitor: DatadogMonitor
-
-    public init(monitor: DatadogMonitor) {
-        self.monitor = monitor
-
+    public init() {
         // change the background of all the tables
         UITableView.appearance().backgroundColor = .clear
     }
@@ -70,7 +66,7 @@ public struct ContentView: View {
                 }
                 .scrollContentBackground(.hidden)
                 .navigationTitle("SwiftUI Catalog")
-                .modifier(monitor.viewModifier(name: "SwiftUI Catalog"))
+                .trackView(name: "SwiftUI Catalog")
             }
             
         }
@@ -88,6 +84,7 @@ public struct ContentView: View {
                 .padding(.top, 24)
                 .padding(.bottom, 16)
                 .foregroundColor(.white)
+                .privacyOverride(text: .maskAll)
             
             HStack(alignment: .center, spacing: 2) {
                 Spacer()
@@ -114,31 +111,31 @@ public struct ContentView: View {
             .font(.title)
             .modifier(ListSectionFontModifier())) {
                 Group {
-                    Link(destination: ButtonsComponentsView().modifier(monitor.viewModifier(name: "Buttons")),
+                    Link(destination: ButtonsComponentsView().trackView(name: "Buttons"),
                          label: "Buttons")
-                    Link(destination: ImagesComponentView().modifier(monitor.viewModifier(name: "Images")),
+                    Link(destination: ImagesComponentView().trackView(name: "Images"),
                          label: "Images")
-                    Link(destination: TextsComponentsView().modifier(monitor.viewModifier(name: "Texts")),
+                    Link(destination: TextsComponentsView().trackView(name: "Texts"),
                          label: "Texts")
-                    Link(destination: LabelsView().modifier(monitor.viewModifier(name: "Labels")),
+                    Link(destination: LabelsView().trackView(name: "Labels"),
                          label: "Labels")
-                    Link(destination: MenusComponentView().modifier(monitor.viewModifier(name: "Menus")),
+                    Link(destination: MenusComponentView().trackView(name: "Menus"),
                          label: "Menus")
                 }
                 Group {
-                    Link(destination: TogglesView().modifier(monitor.viewModifier(name: "Toggles")),
+                    Link(destination: TogglesView().trackView(name: "Toggles"),
                          label: "Toggles")
-                    Link(destination: SlidersView().modifier(monitor.viewModifier(name: "Sliders")),
+                    Link(destination: SlidersView().trackView(name: "Sliders"),
                          label: "Sliders")
-                    Link(destination: SteppersView().modifier(monitor.viewModifier(name: "Steppers")),
+                    Link(destination: SteppersView().trackView(name: "Steppers"),
                          label: "Steppers")
-                    Link(destination: PickersView().modifier(monitor.viewModifier(name: "Pickers")),
+                    Link(destination: PickersView().trackView(name: "Pickers"),
                          label: "Pickers")
-                    Link(destination: DatePickersView().modifier(monitor.viewModifier(name: "Date Pickers")),
+                    Link(destination: DatePickersView().trackView(name: "Date Pickers"),
                          label: "Date Pickers")
-                    Link(destination: ColorPickersView().modifier(monitor.viewModifier(name: "Color Pickers")),
+                    Link(destination: ColorPickersView().trackView(name: "Color Pickers"),
                          label: "Color Pickers")
-                    Link(destination: ProgressViews().modifier(monitor.viewModifier(name: "Progress View")),
+                    Link(destination: ProgressViews().trackView(name: "Progress View"),
                          label: "Progress View")
                 }
             }
@@ -151,7 +148,7 @@ public struct ContentView: View {
             .modifier(ListSectionFontModifier())) {
                 Group {
                     Link(destination: ExampleProductView(productId: "product.consumable.example.1", productImageName: "giftcard.fill"),
-                         label: "Consumable Product View").modifier(monitor.viewModifier(name: "Consumable Product View"))
+                         label: "Consumable Product View").trackView(name: "Consumable Product View")
                 }
             }
             .listRowBackground(Color(sectionColor, bundle: .module))
@@ -162,17 +159,17 @@ public struct ContentView: View {
         Section(header: Text("Layouts")
             .font(.title)
             .modifier(ListSectionFontModifier())) {
-                Link(destination: ListsComponentView().modifier(monitor.viewModifier(name: "Lists")),
+                Link(destination: ListsComponentView().trackView(name: "Lists"),
                      label: "Lists")
-                Link(destination: StacksView().modifier(monitor.viewModifier(name: "Stacks")),
+                Link(destination: StacksView().trackView(name: "Stacks"),
                      label: "Stacks")
-                Link(destination: GridsView().modifier(monitor.viewModifier(name: "Grids")),
+                Link(destination: GridsView().trackView(name: "Grids"),
                      label: "Grids")
-                Link(destination: ContainersView().modifier(monitor.viewModifier(name: "Containers")),
+                Link(destination: ContainersView().trackView(name: "Containers"),
                      label: "Containers")
-                Link(destination: ScrollViewsView().modifier(monitor.viewModifier(name: "Scrollviews")),
+                Link(destination: ScrollViewsView().trackView(name: "Scrollviews"),
                      label: "Scrollviews")
-                Link(destination: TableViews().modifier(monitor.viewModifier(name: "Table Views")),
+                Link(destination: TableViews().trackView(name: "Table Views"),
                      label: "Table Views")
             }
             .listRowBackground(Color(sectionColor, bundle: .module))
@@ -181,13 +178,13 @@ public struct ContentView: View {
     var hierachicalViews: some View {
         Section(header: Text("Hierachical Views")               .font(.title)
             .modifier(ListSectionFontModifier())) {
-                Link(destination: NavigationBarsComponentView().modifier(monitor.viewModifier(name: "Navigation")),
+                Link(destination: NavigationBarsComponentView().trackView(name: "Navigation"),
                      label: "Navigation")
-                Link(destination: OutlinesGroupsView().modifier(monitor.viewModifier(name: "Outlines")),
+                Link(destination: OutlinesGroupsView().trackView(name: "Outlines"),
                      label: "Outlines")
-                Link(destination: DisclosureGroupsView().modifier(monitor.viewModifier(name: "Disclosures")),
+                Link(destination: DisclosureGroupsView().trackView(name: "Disclosures"),
                      label: "Disclosures")
-                Link(destination: TabsView().modifier(monitor.viewModifier(name: "Tabs")),
+                Link(destination: TabsView().trackView(name: "Tabs"),
                      label: "Tabs")
             }
             .listRowBackground(Color(sectionColor, bundle: .module))
@@ -198,15 +195,15 @@ public struct ContentView: View {
         Section(header: Text("Drawing and animations")
             .font(.title)
             .modifier(ListSectionFontModifier())) {
-                Link(destination: CanvasView().modifier(monitor.viewModifier(name: "Canvas")),
+                Link(destination: CanvasView().trackView(name: "Canvas"),
                      label: "Canvas")
-                Link(destination: GraphicContextsView().modifier(monitor.viewModifier(name: "Graphic Context")),
+                Link(destination: GraphicContextsView().trackView(name: "Graphic Context"),
                      label: "Graphic Context")
-                Link(destination: ShapesView().modifier(monitor.viewModifier(name: "Shapes")),
+                Link(destination: ShapesView().trackView(name: "Shapes"),
                      label: "Shapes")
-                Link(destination: AnimationsView().modifier(monitor.viewModifier(name: "Animations")),
+                Link(destination: AnimationsView().trackView(name: "Animations"),
                      label: "Animations")
-                Link(destination: GeometriesView().modifier(monitor.viewModifier(name: "Geometries")),
+                Link(destination: GeometriesView().trackView(name: "Geometries"),
                      label: "Geometries")
             }
             .listRowBackground(Color(sectionColor, bundle: .module))
@@ -218,7 +215,7 @@ public struct ContentView: View {
         Section(header: Text("Charts")
             .font(.title)
             .modifier(ListSectionFontModifier())) {
-                Link(destination: ChartsViews().modifier(monitor.viewModifier(name: "Swift Charts")),
+                Link(destination: ChartsViews().trackView(name: "Swift Charts"),
                      label: "Swift Charts")
             }
             .listRowBackground(Color(sectionColor, bundle: .module))
@@ -229,11 +226,11 @@ public struct ContentView: View {
         Section(header: Text("Gestures")
             .font(.title)
             .modifier(ListSectionFontModifier())) {
-                Link(destination: GesturesView().modifier(monitor.viewModifier(name: "Gestures")),
+                Link(destination: GesturesView().trackView(name: "Gestures"),
                      label: "Gestures")
-                Link(destination: ComposingGesturesView().modifier(monitor.viewModifier(name: "Composing Gestures")),
+                Link(destination: ComposingGesturesView().trackView(name: "Composing Gestures"),
                      label: "Composing Gestures")
-                Link(destination: SensoryFeedbackInViews().modifier(monitor.viewModifier(name: "Sensory Feedback")),
+                Link(destination: SensoryFeedbackInViews().trackView(name: "Sensory Feedback"),
                      label: "Sensory Feedback")
             }
             .listRowBackground(Color(sectionColor, bundle: .module))
@@ -244,11 +241,11 @@ public struct ContentView: View {
         Section(header: Text("View modifiers")
             .font(.title)
             .modifier(ListSectionFontModifier())) {
-                Link(destination: TextModifiersView().modifier(monitor.viewModifier(name: "Text modifiers")),
+                Link(destination: TextModifiersView().trackView(name: "Text modifiers"),
                      label: "Text modifiers")
-                Link(destination: EffectsModifiersView().modifier(monitor.viewModifier(name: "Effect modifiers")),
+                Link(destination: EffectsModifiersView().trackView(name: "Effect modifiers"),
                      label: "Effect modifiers")
-                Link(destination: LayoutModifiersView().modifier(monitor.viewModifier(name: "Layout modifiers")),
+                Link(destination: LayoutModifiersView().trackView(name: "Layout modifiers"),
                      label: "Layout modifiers")
                 
             }
@@ -261,7 +258,7 @@ public struct ContentView: View {
             .font(.title)
             .modifier(ListSectionFontModifier())) {
                 
-                Link(destination: AccesibilityView().modifier(monitor.viewModifier(name: "Accesibility")),
+                Link(destination: AccesibilityView().trackView(name: "Accesibility"),
                      label: "Accesibility")
             }
             .listRowBackground(Color(sectionColor, bundle: .module))
@@ -272,7 +269,7 @@ public struct ContentView: View {
         Section(header: Text("Status and tool bars")
             .font(.title)
             .modifier(ListSectionFontModifier())) {
-                Link(destination: ToolbarsComponentView().modifier(monitor.viewModifier(name: "Tool Bars")),
+                Link(destination: ToolbarsComponentView().trackView(name: "Tool Bars"),
                      label: "Tool Bars")
             }
             .listRowBackground(Color(sectionColor, bundle: .module))
@@ -284,7 +281,7 @@ public struct ContentView: View {
             .font(.title)
             .modifier(ListSectionFontModifier())) {
                 
-                Link(destination: StylesView().modifier(monitor.viewModifier(name: "Styles")),
+                Link(destination: StylesView().trackView(name: "Styles"),
                      label: "Styles")
             }
             .listRowBackground(Color(sectionColor, bundle: .module))
@@ -298,7 +295,7 @@ public struct ContentView: View {
                 
 //                Link(destination: PopoversComponentView(),
 //                     label: "Popovers")
-                Link(destination: SheetsView().modifier(monitor.viewModifier(name: "Sheets")),
+                Link(destination: SheetsView().trackView(name: "Sheets"),
                      label: "Sheets")
 //                Link(destination: AlertsComponentView(),
 //                     label: "Alerts")
@@ -315,13 +312,13 @@ public struct ContentView: View {
         Section(header: Text("Composed components to help speed up development")
             .font(.title)
             .modifier(ListSectionFontModifier())) {
-                Link(destination: CommonlyUsedViews().modifier(monitor.viewModifier(name: "Commonly used views")),
+                Link(destination: CommonlyUsedViews().trackView(name: "Commonly used views"),
                      label: "Commonly used views")
-                Link(destination: CollectionsViews().modifier(monitor.viewModifier(name: "Collections of components")),
+                Link(destination: CollectionsViews().trackView(name: "Collections of components"),
                        label: "Collections of components")
-                Link(destination: StackedCardsView<CardView>(elementsCount: 22).modifier(monitor.viewModifier(name: "Stacked cards with dragging")),
+                Link(destination: StackedCardsView<CardView>(elementsCount: 22).trackView(name: "Stacked cards with dragging"),
                      label: "Stacked cards with dragging")
-                Link(destination: InterfacingWithUIKitView(pages: ModelData().features.map { FeatureCardView(landmark: $0) }).modifier(monitor.viewModifier(name: "UIKit Interface")),
+                Link(destination: InterfacingWithUIKitView(pages: ModelData().features.map { FeatureCardView(landmark: $0) }).trackView(name: "UIKit Interface"),
                      label: "UIKit Interface")
             }
             .listRowBackground(Color(sectionColor, bundle: .module))
@@ -337,7 +334,7 @@ public struct ContentView: View {
 #Preview {
     
         Group {
-            ContentView(monitor: NOPDatadogMonitor())
+            ContentView()
                 .preferredColorScheme(.dark)
         }
 }

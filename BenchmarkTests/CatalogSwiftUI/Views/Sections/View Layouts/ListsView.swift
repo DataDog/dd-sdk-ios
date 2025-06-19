@@ -56,6 +56,7 @@ struct ListsComponentView: View, Comparable {
             
             list1
                 .modifier(Divided())
+                .privacyOverride(text: .maskAll)
             list2
                 .modifier(Divided())
             list3

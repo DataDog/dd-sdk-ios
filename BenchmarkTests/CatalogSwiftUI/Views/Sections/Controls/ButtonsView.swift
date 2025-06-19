@@ -109,6 +109,7 @@ struct ButtonsComponentsView: View, Comparable {
                     styledButtons
                         .modifier(Divided())
                 }
+                .privacyOverride(touch: .hide)
                 
                 ContributedByView(name: "Barbara Martina",
                                   link: "https://github.com/barbaramartina")
