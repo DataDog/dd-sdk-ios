@@ -46,6 +46,9 @@ public struct PerformancePresetOverride {
     /// E.g: if rate is `0.1` then `delay` will be changed by `delay * 0.1`.
     public let uploadDelayChangeRate: Double?
 
+    /// Overrides the current upload behavior when connected to a network with "Low Data Mode" enabled.
+    public let constrainedNetworkAccessEnabled: Bool?
+
     /// Initializes a new `PerformancePresetOverride` instance with the provided overrides.
     /// 
     /// - Parameters:
@@ -54,12 +57,14 @@ public struct PerformancePresetOverride {
     ///   - meanFileAge: The mean age qualifying a file for reuse, or `nil` to use the default value from `PerformancePreset`.
     ///   - maxFileAgeForRead: Maximum age qualifying given file for upload (in seconds). Files older than this are considered obsolete and get deleted without uploading.
     ///   - uploadDelay: The configuration of time interval for data uploads (initial, minimum, maximum and change rate). Set `nil` to use the default value from `PerformancePreset`.
+    ///   - constrainedNetworkUploadsEnabled: Allows uploads on networks with "Low Data Mode" enabled.
     public init(
         maxFileSize: UInt32? = nil,
         maxObjectSize: UInt32? = nil,
         meanFileAge: TimeInterval? = nil,
         maxFileAgeForRead: TimeInterval? = nil,
-        uploadDelay: (initial: TimeInterval, range: Range<TimeInterval>, changeRate: Double)? = nil
+        uploadDelay: (initial: TimeInterval, range: Range<TimeInterval>, changeRate: Double)? = nil,
+        constrainedNetworkAccessEnabled: Bool? = nil
     ) {
         self.maxFileSize = maxFileSize
         self.maxObjectSize = maxObjectSize
@@ -85,5 +90,7 @@ public struct PerformancePresetOverride {
             self.maxUploadDelay = nil
             self.uploadDelayChangeRate = nil
         }
+
+        self.constrainedNetworkAccessEnabled = constrainedNetworkAccessEnabled
     }
 }

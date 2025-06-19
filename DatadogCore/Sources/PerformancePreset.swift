@@ -66,6 +66,7 @@ internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPe
     let maxUploadDelay: TimeInterval
     let uploadDelayChangeRate: Double
     let maxBatchesPerUpload: Int
+    let constrainedNetworkAccessEnabled: Bool
 }
 
 internal extension PerformancePreset {
@@ -73,7 +74,8 @@ internal extension PerformancePreset {
         batchSize: Datadog.Configuration.BatchSize,
         uploadFrequency: Datadog.Configuration.UploadFrequency,
         bundleType: BundleType,
-        batchProcessingLevel: Datadog.Configuration.BatchProcessingLevel
+        batchProcessingLevel: Datadog.Configuration.BatchProcessingLevel,
+        constrainedNetworkAccessEnabled: Bool = true
     ) {
         let meanFileAgeInSeconds: TimeInterval = {
             switch (bundleType, batchSize) {
@@ -116,7 +118,8 @@ internal extension PerformancePreset {
             meanFileAge: meanFileAgeInSeconds,
             minUploadDelay: minUploadDelayInSeconds,
             uploadDelayFactors: uploadDelayFactors,
-            maxBatchesPerUpload: batchProcessingLevel.maxBatchesPerUpload
+            maxBatchesPerUpload: batchProcessingLevel.maxBatchesPerUpload,
+            constrainedNetworkAccessEnabled: constrainedNetworkAccessEnabled
         )
     }
 
@@ -124,7 +127,8 @@ internal extension PerformancePreset {
         meanFileAge: TimeInterval,
         minUploadDelay: TimeInterval,
         uploadDelayFactors: (initial: Double, min: Double, max: Double, changeRate: Double),
-        maxBatchesPerUpload: Int
+        maxBatchesPerUpload: Int,
+        constrainedNetworkAccessEnabled: Bool
     ) {
         self.maxFileSize = 4.MB.asUInt32()
         self.maxDirectorySize = 512.MB.asUInt32()
@@ -138,6 +142,7 @@ internal extension PerformancePreset {
         self.maxUploadDelay = minUploadDelay * uploadDelayFactors.max
         self.uploadDelayChangeRate = uploadDelayFactors.changeRate
         self.maxBatchesPerUpload = maxBatchesPerUpload
+        self.constrainedNetworkAccessEnabled = constrainedNetworkAccessEnabled
     }
 
     func updated(with override: PerformancePresetOverride) -> PerformancePreset {
@@ -153,7 +158,8 @@ internal extension PerformancePreset {
             minUploadDelay: override.minUploadDelay ?? minUploadDelay,
             maxUploadDelay: override.maxUploadDelay ?? maxUploadDelay,
             uploadDelayChangeRate: override.uploadDelayChangeRate ?? uploadDelayChangeRate,
-            maxBatchesPerUpload: maxBatchesPerUpload
+            maxBatchesPerUpload: maxBatchesPerUpload,
+            constrainedNetworkAccessEnabled: override.constrainedNetworkAccessEnabled ?? constrainedNetworkAccessEnabled
         )
     }
 }
