@@ -587,7 +587,6 @@ extension DatadogCore {
         let applicationBuildNumber = configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
             ?? "0"
 
-        let isUsingSceneLifecycle = configuration.bundle.object(forInfoDictionaryKey: "UIApplicationSceneManifest") != nil
         let bundleName = configuration.bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
         let bundleType = BundleType(bundle: configuration.bundle)
         let bundleIdentifier = configuration.bundle.bundleIdentifier ?? "unknown"
@@ -634,7 +633,6 @@ extension DatadogCore {
                 applicationBundleIdentifier: bundleIdentifier,
                 applicationBundleType: bundleType,
                 applicationVersion: applicationVersion,
-                isUsingSceneLifecycle: isUsingSceneLifecycle,
                 sdkInitDate: configuration.dateProvider.now,
                 device: DeviceInfo(processInfo: configuration.processInfo),
                 processInfo: configuration.processInfo,

@@ -28,14 +28,28 @@ internal final class SessionEndedMetricController {
     /// The sample rate for "RUM Session Ended" metric.
     internal var sampleRate: SampleRate
 
+    /// If background events tracking is enabled.
+    private let tracksBackgroundEvents: Bool
+
+    /// If the app declares `UIApplicationSceneManifest` in its `Info.plist`.
+    private let isUsingSceneLifecycle: Bool
+
     /// Initializes a new instance of the metric controller.
     /// - Parameters:
     ///    - telemetry: The telemetry endpoint used for sending metrics.
     ///    - sampleRate: The sample rate for "RUM Session Ended" metric.
-
-    init(telemetry: Telemetry, sampleRate: SampleRate) {
+    ///    - tracksBackgroundEvents: If background events tracking is enabled.
+    ///    - isUsingSceneLifecycle: If the app declares`UIApplicationSceneManifest` in its `Info.plist`.
+    init(
+        telemetry: Telemetry,
+        sampleRate: SampleRate,
+        tracksBackgroundEvents: Bool,
+        isUsingSceneLifecycle: Bool
+    ) {
         self.telemetry = telemetry
         self.sampleRate = sampleRate
+        self.tracksBackgroundEvents = tracksBackgroundEvents
+        self.isUsingSceneLifecycle = isUsingSceneLifecycle
     }
 
     /// Starts a new metric for a given session.
@@ -43,9 +57,8 @@ internal final class SessionEndedMetricController {
     ///   - sessionID: The ID of the session to track.
     ///   - precondition: The precondition that led to starting this session.
     ///   - context: The SDK context at the moment of starting this session.
-    ///   - tracksBackgroundEvents: If background events tracking is enabled for this session.
     /// - Returns: The newly created `SessionEndedMetric` instance.
-    func startMetric(sessionID: RUMUUID, precondition: RUMSessionPrecondition?, context: DatadogContext, tracksBackgroundEvents: Bool) {
+    func startMetric(sessionID: RUMUUID, precondition: RUMSessionPrecondition?, context: DatadogContext) {
         guard sessionID != RUMUUID.nullUUID else {
             return // do not track metric when session is not sampled
         }
@@ -55,6 +68,7 @@ internal final class SessionEndedMetricController {
                 precondition: precondition,
                 context: context,
                 tracksBackgroundEvents: tracksBackgroundEvents,
+                isUsingSceneLifecycle: isUsingSceneLifecycle,
                 validSessionCount: validSessionCount
             )
             pendingSessionIDs.append(sessionID)

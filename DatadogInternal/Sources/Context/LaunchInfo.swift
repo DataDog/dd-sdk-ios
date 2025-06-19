@@ -35,7 +35,7 @@ public struct LaunchInfo: Codable, Equatable {
     /// If the notification has not yet been received the value will be `nil`.
     public let timeToDidBecomeActive: TimeInterval?
 
-    public struct Raw: Codable, Equatable, PassthroughAnyCodable {
+    public struct Raw: Codable, Equatable {
         public let taskPolicyRole: String
         public let isPrewarmed: Bool
 

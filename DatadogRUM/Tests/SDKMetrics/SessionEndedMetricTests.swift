@@ -638,14 +638,17 @@ class SessionEndedMetricTests: XCTestCase {
         )
         let sdkInitDate = launchInfo.processLaunchDate + 0.42
         let context: DatadogContext = .mockWith(
-            isUsingSceneLifecycle: isUsingSceneLifecycle,
             sdkInitDate: sdkInitDate,
             launchInfo: launchInfo,
             applicationStateHistory: .mockWith(initialState: .inactive, date: sdkInitDate)
         )
 
         // Given
-        let metric = SessionEndedMetric.with(sessionID: sessionID, context: context)
+        let metric = SessionEndedMetric.with(
+            sessionID: sessionID,
+            context: context,
+            isUsingSceneLifecycle: isUsingSceneLifecycle
+        )
 
         // When
         let attributes = metric.asMetricAttributes(with: context)
@@ -773,6 +776,7 @@ private extension SessionEndedMetric {
         precondition: RUMSessionPrecondition? = .mockRandom(),
         context: DatadogContext = .mockRandom(),
         tracksBackgroundEvents: Bool = .mockRandom(),
+        isUsingSceneLifecycle: Bool = .mockRandom(),
         validSessionCount: Int = .mockRandom()
     ) -> SessionEndedMetric {
         SessionEndedMetric(
@@ -780,6 +784,7 @@ private extension SessionEndedMetric {
             precondition: precondition,
             context: context,
             tracksBackgroundEvents: tracksBackgroundEvents,
+            isUsingSceneLifecycle: isUsingSceneLifecycle,
             validSessionCount: validSessionCount
         )
     }

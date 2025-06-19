@@ -118,8 +118,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         dependencies.sessionEndedMetric.startMetric(
             sessionID: sessionUUID,
             precondition: startPrecondition,
-            context: context,
-            tracksBackgroundEvents: trackBackgroundEvents
+            context: context
         )
 
         if let viewScope = resumingViewScope {

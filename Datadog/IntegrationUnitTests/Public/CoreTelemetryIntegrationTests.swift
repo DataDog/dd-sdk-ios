@@ -48,7 +48,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
 
         let debug = debugEvents[0]
         XCTAssertEqual(debug.telemetry.message, "Debug Telemetry")
-        DDAssertReflectionEqual(debug.telemetry.telemetryInfo["debug.attribute"] as? Int, 42)
+        XCTAssertEqual(debug.telemetry.telemetryInfo["debug.attribute"] as? Int, 42)
 
         let error = errorEvents[0]
         XCTAssertEqual(error.telemetry.message, "Error Telemetry")

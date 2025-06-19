@@ -101,6 +101,11 @@ internal class SessionEndedMetric {
     /// If `RUM.Configuration.trackBackgroundEvents` was enabled for this session.
     private let tracksBackgroundEvents: Bool
 
+    /// If the app supports scenes and doesn’t use an app delegate object to manage transitions to and from the foreground or background.
+    /// It doesn't imply whether the app has an actual `UISceneDelegate` implementation or behavior - it only means that app declares `UIApplicationSceneManifest`
+    /// in its `Info.plist`. The presence of that key changes the initiali lifecycle of thea app (in case of user launch, apps with scene manifest start shortly in BACKGROUND before moving to INACTIVE).
+    private let isUsingSceneLifecycle: Bool
+
     /// The current value of NTP offset at session start.
     private let ntpOffsetAtStart: TimeInterval
 
@@ -138,12 +143,14 @@ internal class SessionEndedMetric {
         precondition: RUMSessionPrecondition?,
         context: DatadogContext,
         tracksBackgroundEvents: Bool,
+        isUsingSceneLifecycle: Bool,
         validSessionCount: Int
     ) {
         self.sessionID = sessionID
         self.bundleType = context.applicationBundleType
         self.precondition = precondition
         self.tracksBackgroundEvents = tracksBackgroundEvents
+        self.isUsingSceneLifecycle = isUsingSceneLifecycle
         self.ntpOffsetAtStart = context.serverTimeOffset
         self.validSessionCount = validSessionCount
     }
@@ -555,7 +562,7 @@ internal class SessionEndedMetric {
                     prewarmed: context.launchInfo.raw.isPrewarmed,
                     timeToSdkInit: context.sdkInitDate.timeIntervalSince(context.launchInfo.processLaunchDate).toInt64Milliseconds,
                     timeToDidBecomeActive: context.launchInfo.timeToDidBecomeActive?.toInt64Milliseconds,
-                    hasScenesLifecycle: context.isUsingSceneLifecycle,
+                    hasScenesLifecycle: isUsingSceneLifecycle,
                     appStateAtSdkInit: context.applicationStateHistory.initialState.toString
                 ),
                 lifecycleInfo: lifecycleInfo
