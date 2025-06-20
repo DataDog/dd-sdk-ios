@@ -65,6 +65,17 @@ public struct CrashContext: Codable, Equatable {
     /// not support telephony services.
     public let carrierInfo: CarrierInfo?
 
+    /// The current mobile device battery status.
+    ///
+    /// This value can be `nil` of the current device battery interface is not available.
+    public var batteryStatus: BatteryStatus?
+
+    /// The current brightness status.
+    public var brightnessStatus: BrightnessStatus?
+
+    /// `true` if the Low Power Mode is enabled.
+    public var isLowPowerModeEnabled = false
+
     /// The last _"Is app in foreground?"_ information from crashed app process.
     public let lastIsAppInForeground: Bool
 
@@ -96,6 +107,9 @@ public struct CrashContext: Codable, Equatable {
         accountInfo: AccountInfo?,
         networkConnectionInfo: NetworkConnectionInfo?,
         carrierInfo: CarrierInfo?,
+        batteryStatus: BatteryStatus?,
+        brightnessStatus: BrightnessStatus?,
+        isLowPowerModeEnabled: Bool,
         lastIsAppInForeground: Bool,
         appLaunchDate: Date?,
         lastRUMViewEvent: RUMViewEvent?,
@@ -116,6 +130,9 @@ public struct CrashContext: Codable, Equatable {
         self.accountInfo = accountInfo
         self.networkConnectionInfo = networkConnectionInfo
         self.carrierInfo = carrierInfo
+        self.batteryStatus = batteryStatus
+        self.brightnessStatus = brightnessStatus
+        self.isLowPowerModeEnabled = isLowPowerModeEnabled
         self.lastIsAppInForeground = lastIsAppInForeground
         self.appLaunchDate = appLaunchDate
         self.lastRUMViewEvent = lastRUMViewEvent
