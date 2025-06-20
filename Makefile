@@ -1,5 +1,5 @@
-all: env-check repo-setup templates
-.PHONY: env-check repo-setup clean templates \
+all: env-check repo-setup dependencies templates
+.PHONY: env-check repo-setup dependencies clean templates \
 		lint license-check \
 		test test-ios test-ios-all test-tvos test-tvos-all \
 		ui-test ui-test-all ui-test-podinstall \
@@ -29,6 +29,10 @@ repo-setup:
 	@:$(eval ENV ?= $(DEFAULT_ENV))
 	@$(ECHO_TITLE) "make repo-setup ENV='$(ENV)'"
 	./tools/repo-setup/repo-setup.sh --env "$(ENV)"
+
+dependencies:
+	@$(ECHO_TITLE) "make dependencies"
+	./tools/repo-setup/carthage-bootstrap.sh
 
 clean:
 	@$(ECHO_TITLE) "make clean"

@@ -78,6 +78,13 @@ default:
       when: delayed
       start_in: 40 minutes
 
+.carthage-cache:
+  cache:
+    - key: carthage-cache
+      paths:
+        - Carthage/Build
+      expire_in: 1 week
+
 ENV check:
   stage: pre
   rules: 
@@ -86,6 +93,17 @@ ENV check:
   script:
     - ./tools/runner-setup.sh --datadog-ci
     - make env-check
+
+Dependency Cache:
+  stage: pre
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  cache:
+    - !reference [.carthage-cache, cache]
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - make clean dependencies
 
 # ┌──────────────────────────┐
 # │ SDK changes integration: │
@@ -106,6 +124,8 @@ Unit Tests (iOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  cache:
+    - !reference [.carthage-cache, cache]
   variables:
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 16 Pro"
@@ -119,6 +139,8 @@ Unit Tests (tvOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  cache:
+    - !reference [.carthage-cache, cache]
   variables:
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
@@ -132,6 +154,8 @@ UI Tests:
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  cache:
+    - !reference [.carthage-cache, cache]
   variables:
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 16 Pro"
