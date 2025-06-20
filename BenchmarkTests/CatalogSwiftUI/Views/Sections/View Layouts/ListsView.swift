@@ -54,9 +54,10 @@ struct ListsComponentView: View, Comparable {
                 .fontWeight(.light)
                 .font(.title2)
             
-            list1
-                .modifier(Divided())
-                .privacyOverride(text: .maskAll)
+            PrivacyView(text: .maskAll) {
+                list1
+            }
+            .modifier(Divided())
             list2
                 .modifier(Divided())
             list3

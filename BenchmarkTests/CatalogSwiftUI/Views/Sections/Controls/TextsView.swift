@@ -60,9 +60,10 @@ struct TextsComponentsView: View, Comparable {
                 .modifier(Divided())
             textDates
                 .modifier(Divided())
-            textControls
-                .privacyOverride(text: .maskAllInputs)
-            
+            PrivacyView(text: .maskAllInputs) {
+                textControls
+            }
+
             ContributedByView(name: "Barbara Martina",
                               link: "https://github.com/barbaramartina")
             .padding(.top, 80)

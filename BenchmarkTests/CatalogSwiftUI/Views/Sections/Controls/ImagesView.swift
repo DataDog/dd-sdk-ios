@@ -50,9 +50,10 @@ struct ImagesComponentView: View, Comparable {
                 .modifier(Divided())
             imagesFromBundle
                 .modifier(Divided())
-            fixedFrameImages
-                .modifier(Divided())
-                .privacyOverride(image: .maskAll)
+            PrivacyView(image: .maskAll) {
+                fixedFrameImages
+            }
+            .modifier(Divided())
             
             ContributedByView(name: "Barbara Martina",
                               link: "https://github.com/barbaramartina")

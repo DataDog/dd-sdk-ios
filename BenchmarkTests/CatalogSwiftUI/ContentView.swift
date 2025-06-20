@@ -77,14 +77,15 @@ public struct ContentView: View {
     
     private var topHeaderRow: some View {
         Group {
-            Text("A catalog of components, controls, effects, styles and accessibility elements you can use to develop SwiftUI Interfaces in iOS and iPadOS.")
-                .font(.footnote)
-                .fontWeight(.light)
-                .font(.title2)
-                .padding(.top, 24)
-                .padding(.bottom, 16)
-                .foregroundColor(.white)
-                .privacyOverride(text: .maskAll)
+            PrivacyView(text: .maskAll) {
+                Text("A catalog of components, controls, effects, styles and accessibility elements you can use to develop SwiftUI Interfaces in iOS and iPadOS.")
+                    .font(.footnote)
+                    .fontWeight(.light)
+                    .font(.title2)
+                    .padding(.top, 24)
+                    .padding(.bottom, 16)
+                    .foregroundColor(.white)
+            }
             
             HStack(alignment: .center, spacing: 2) {
                 Spacer()

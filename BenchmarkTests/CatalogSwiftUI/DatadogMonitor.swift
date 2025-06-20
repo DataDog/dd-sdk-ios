@@ -26,24 +26,26 @@ import SwiftUI
 public protocol DatadogMonitor {
     func viewModifier(name: String) -> AnyViewModifier
     func actionModifier(name: String) -> AnyViewModifier
-    func privacyOverride(
+    func privacyView<Content: View>(
         text: TextPrivacyLevel?,
         image: ImagePrivacyLevel?,
         touch: TouchPrivacyLevel?,
-        hide: Bool?
-    ) -> AnyViewModifier
+        hide: Bool?,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> AnyView
 }
 
 struct NOPDatadogMonitor: DatadogMonitor {
     func viewModifier(name: String) -> AnyViewModifier { AnyViewModifier() }
     func actionModifier(name: String) -> AnyViewModifier { AnyViewModifier() }
-    func privacyOverride(
-        text _: TextPrivacyLevel?,
-        image _: ImagePrivacyLevel?,
-        touch _: TouchPrivacyLevel?,
-        hide _: Bool?
-    ) -> AnyViewModifier {
-        AnyViewModifier()
+    func privacyView<Content: View>(
+        text: TextPrivacyLevel?,
+        image: ImagePrivacyLevel?,
+        touch: TouchPrivacyLevel?,
+        hide: Bool?,
+        content: @escaping () -> Content
+    ) -> AnyView {
+        AnyView(content())
     }
 }
 
@@ -51,18 +53,43 @@ extension EnvironmentValues {
   @Entry public var datadogMonitor: any DatadogMonitor = NOPDatadogMonitor()
 }
 
-extension View {
-    func trackView(name: String) -> some View {
-        modifier(TrackViewModifier(name: name))
-    }
+struct PrivacyView<Content: View>: View {
+    @Environment(\.datadogMonitor) private var monitor
     
-    func privacyOverride(
+    private var text: TextPrivacyLevel?
+    private var image: ImagePrivacyLevel?
+    private var touch: TouchPrivacyLevel?
+    private var hide: Bool?
+    private let content: () -> Content
+    
+    init(
         text: TextPrivacyLevel? = nil,
         image: ImagePrivacyLevel? = nil,
         touch: TouchPrivacyLevel? = nil,
-        hide: Bool? = nil
-    ) -> some View {
-        modifier(PrivacyOverrideModifier(text: text, image: image, touch: touch, hide: hide))
+        hide: Bool? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.text = text
+        self.image = image
+        self.touch = touch
+        self.hide = hide
+        self.content = content
+    }
+    
+    var body: some View {
+        monitor.privacyView(
+            text: text,
+            image: image,
+            touch: touch,
+            hide: hide,
+            content: content
+        )
+    }
+}
+
+extension View {
+    func trackView(name: String) -> some View {
+        modifier(TrackViewModifier(name: name))
     }
 }
 
@@ -73,18 +100,5 @@ private struct TrackViewModifier: ViewModifier {
     
     func body(content: Content) -> some View {
         content.modifier(monitor.viewModifier(name: name))
-    }
-}
-
-private struct PrivacyOverrideModifier: ViewModifier {
-    @Environment(\.datadogMonitor) private var monitor
-    
-    var text: TextPrivacyLevel?
-    var image: ImagePrivacyLevel?
-    var touch: TouchPrivacyLevel?
-    var hide: Bool?
-    
-    func body(content: Content) -> some View {
-        content.modifier(monitor.privacyOverride(text: text, image: image, touch: touch, hide: hide))
     }
 }
