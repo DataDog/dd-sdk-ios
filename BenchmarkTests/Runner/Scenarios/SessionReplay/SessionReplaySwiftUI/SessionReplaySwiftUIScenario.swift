@@ -61,22 +61,22 @@ private struct DatadogMonitor: CatalogSwiftUI.DatadogMonitor {
         }
     }
 
-    func privacyOverride(
+    func privacyView<Content: View>(
         text: CatalogSwiftUI.TextPrivacyLevel?,
         image: CatalogSwiftUI.ImagePrivacyLevel?,
         touch: CatalogSwiftUI.TouchPrivacyLevel?,
-        hide: Bool?
-    ) -> AnyViewModifier {
-        AnyViewModifier { content in
+        hide: Bool?,
+        content: @escaping () -> Content
+    ) -> AnyView {
+        AnyView(
             SessionReplayPrivacyView(
                 textAndInputPrivacy: .init(text),
                 imagePrivacy: .init(image),
                 touchPrivacy: .init(touch),
-                hide: hide
-            ) {
-                content
-            }
-        }
+                hide: hide,
+                content: content
+            )
+        )
     }
 }
 
