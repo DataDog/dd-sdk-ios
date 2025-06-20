@@ -82,7 +82,10 @@ private struct DatadogMonitor: CatalogSwiftUI.DatadogMonitor {
 
 extension TextAndInputPrivacyLevel {
     fileprivate init?(_ text: CatalogSwiftUI.TextPrivacyLevel?) {
-        guard let text else { return nil }
+        guard let text else {
+            return nil
+        }
+
         switch text {
         case .maskSensitiveInputs:
             self = .maskSensitiveInputs
@@ -96,7 +99,10 @@ extension TextAndInputPrivacyLevel {
 
 extension ImagePrivacyLevel {
     fileprivate init?(_ image: CatalogSwiftUI.ImagePrivacyLevel?) {
-        guard let image else { return nil }
+        guard let image else {
+            return nil
+        }
+
         switch image {
         case .maskNonBundledOnly:
             self = .maskNonBundledOnly
@@ -110,7 +116,10 @@ extension ImagePrivacyLevel {
 
 extension TouchPrivacyLevel {
     fileprivate init?(_ touch: CatalogSwiftUI.TouchPrivacyLevel?) {
-        guard let touch else { return nil }
+        guard let touch else {
+            return nil
+        }
+
         switch touch {
         case .show:
             self = .show
