@@ -16,7 +16,8 @@ class RUMDeviceInfoTests: XCTestCase {
         let randomArch: String = .mockRandom()
 
         let info = RUMDevice(
-            device: .mockWith(name: randomName, model: randomModel, architecture: randomArch)
+            device: .mockWith(name: randomName, model: randomModel, architecture: randomArch),
+            localeInfo: .mockWith(locales: ["en"], currentLocale: "en")
         )
 
         XCTAssertEqual(info.brand, "Apple")
