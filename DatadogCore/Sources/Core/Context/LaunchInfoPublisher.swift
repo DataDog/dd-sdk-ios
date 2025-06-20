@@ -55,12 +55,15 @@ extension AppLaunchHandling {
         return LaunchInfo(
             launchReason: resolveLaunchReason(using: processInfo),
             processLaunchDate: processLaunchDate,
-            timeToDidBecomeActive: timeToDidBecomeActive?.doubleValue
+            timeToDidBecomeActive: timeToDidBecomeActive?.doubleValue,
+            raw: .init(
+                taskPolicyRole: rawTaskPolicyRole,
+                isPrewarmed: isPrewarmed(processInfo: processInfo)
+            )
         )
     }
 
     private func resolveLaunchReason(using processInfo: ProcessInfo) -> LaunchReason {
-        let isPrewarmed = processInfo.environment["ActivePrewarm"] == "1"
         let isUserLaunch = taskPolicyRole == TASK_FOREGROUND_APPLICATION.rawValue
         let isUnavailable = taskPolicyRole == __dd_private_TASK_POLICY_UNAVAILABLE
 
@@ -68,12 +71,36 @@ extension AppLaunchHandling {
             return .uncertain
         }
 
-        if isPrewarmed {
+        if isPrewarmed(processInfo: processInfo) {
             return .prewarming
         } else if isUserLaunch {
             return .userLaunch
         } else {
             return .backgroundLaunch
+        }
+    }
+
+    private func isPrewarmed(processInfo: ProcessInfo) -> Bool {
+        return processInfo.environment["ActivePrewarm"] == "1"
+    }
+
+    private var rawTaskPolicyRole: String {
+        switch taskPolicyRole {
+        case Int(TASK_BACKGROUND_APPLICATION.rawValue):     return "TASK_BACKGROUND_APPLICATION"
+        case Int(TASK_CONTROL_APPLICATION.rawValue):        return "TASK_CONTROL_APPLICATION"
+        case Int(TASK_DARWINBG_APPLICATION.rawValue):       return "TASK_DARWINBG_APPLICATION"
+        case Int(TASK_DEFAULT_APPLICATION.rawValue):        return "TASK_DEFAULT_APPLICATION"
+        case Int(TASK_FOREGROUND_APPLICATION.rawValue):     return "TASK_FOREGROUND_APPLICATION"
+        case Int(TASK_GRAPHICS_SERVER.rawValue):            return "TASK_GRAPHICS_SERVER"
+        case Int(TASK_NONUI_APPLICATION.rawValue):          return "TASK_NONUI_APPLICATION"
+        case Int(TASK_RENICED.rawValue):                    return "TASK_RENICED"
+        case Int(TASK_THROTTLE_APPLICATION.rawValue):       return "TASK_THROTTLE_APPLICATION"
+        case Int(TASK_UNSPECIFIED.rawValue):                return "TASK_UNSPECIFIED"
+        case __dd_private_TASK_POLICY_UNAVAILABLE:          return "__dd_private_TASK_POLICY_UNAVAILABLE"
+        case __dd_private_TASK_POLICY_DEFAULTED:            return "__dd_private_TASK_POLICY_DEFAULTED"
+        case __dd_private_TASK_POLICY_KERN_FAILURE:         return "__dd_private_TASK_POLICY_KERN_FAILURE"
+        default:
+            return "unknown (\(taskPolicyRole))"
         }
     }
 }
@@ -97,7 +124,8 @@ internal struct LaunchInfoPublisher: ContextValuePublisher {
             let value = LaunchInfo(
                 launchReason: initialValue.launchReason,
                 processLaunchDate: initialValue.processLaunchDate,
-                timeToDidBecomeActive: timeToDidBecomeActive
+                timeToDidBecomeActive: timeToDidBecomeActive,
+                raw: initialValue.raw
             )
             receiver(value)
         }

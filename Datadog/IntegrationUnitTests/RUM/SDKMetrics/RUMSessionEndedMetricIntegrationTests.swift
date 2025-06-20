@@ -27,7 +27,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         rumConfig.dateProvider = dateProvider
     }
 
-        override func tearDownWithError() throws {
+    override func tearDownWithError() throws {
         try core.flushAndTearDown()
         core = nil
         rumConfig = nil
@@ -105,6 +105,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
 
     func testReportingSessionInformation() throws {
         var currentSessionID: String?
+        rumConfig.trackBackgroundEvents = .mockRandom()
         RUM.enable(with: rumConfig, in: core)
 
         // Given
@@ -261,6 +262,76 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         XCTAssertEqual(metric.attributes?.noViewEventsCount.resources, expectedCount)
         XCTAssertEqual(metric.attributes?.noViewEventsCount.errors, expectedCount)
         XCTAssertEqual(metric.attributes?.noViewEventsCount.longTasks, expectedCount)
+    }
+
+    func testTrackingLaunchInfo() throws {
+        let launchDate = Date()
+        let sdkInitDate = launchDate + 0.6
+        core.context = .mockWith(
+            sdkInitDate: sdkInitDate,
+            launchInfo: .mockWith(
+                launchReason: .prewarming,
+                processLaunchDate: launchDate,
+                timeToDidBecomeActive: 1.2,
+                raw: .init(taskPolicyRole: "mock_task_policy", isPrewarmed: true)
+            ),
+            applicationStateHistory: .mockWith(initialState: .background, date: sdkInitDate)
+        )
+        rumConfig.bundle = .mockWith(UIApplicationSceneManifest: NSObject())
+
+        RUM.enable(with: rumConfig, in: core)
+
+        // Given
+        let monitor = RUMMonitor.shared(in: core)
+        monitor.startView(key: "key", name: "View")
+        monitor.stopView(key: "key")
+
+        // When
+        monitor.stopSession()
+
+        // Then
+        let metric = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent())
+        XCTAssertEqual(metric.attributes?.launchInfo.launchReason, "prewarming")
+        XCTAssertEqual(metric.attributes?.launchInfo.prewarmed, true)
+        XCTAssertEqual(metric.attributes?.launchInfo.appStateAtSdkInit, "background")
+        XCTAssertEqual(metric.attributes?.launchInfo.taskRole, "mock_task_policy")
+        XCTAssertEqual(metric.attributes?.launchInfo.timeToDidBecomeActive, 1_200)
+        XCTAssertEqual(metric.attributes?.launchInfo.timeToSdkInit, 600)
+        XCTAssertEqual(metric.attributes?.launchInfo.hasScenesLifecycle, true)
+    }
+
+    func testTrackingLifecycleInfo() throws {
+        let launchDate = dateProvider.now
+        let sdkInitDate = launchDate + 0.6
+        core.context = .mockWith(
+            sdkInitDate: sdkInitDate,
+            launchInfo: .mockWith(processLaunchDate: launchDate),
+            applicationStateHistory: .mockWith(
+                initialState: .background,
+                date: launchDate,
+                transitions: [(.active, sdkInitDate + 0.1)]
+            )
+        )
+
+        RUM.enable(with: rumConfig, in: core)
+
+        // Given
+        let monitor = RUMMonitor.shared(in: core)
+        dateProvider.now += 0.5
+        monitor.startView(key: "key", name: "View")
+        dateProvider.now += 0.5
+        monitor.stopView(key: "key")
+
+        // When
+        monitor.stopSession()
+
+        // Then
+        let metric = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent())
+        XCTAssertEqual(metric.attributes?.lifecycleInfo?.timeToSessionStart, 0)
+        XCTAssertEqual(metric.attributes?.lifecycleInfo?.sessionsCount, 0)
+        XCTAssertEqual(metric.attributes?.lifecycleInfo?.appStateAtSessionStart, "background")
+        XCTAssertEqual(metric.attributes?.lifecycleInfo?.appStateAtSessionEnd, "active")
+        XCTAssertEqual(metric.attributes?.lifecycleInfo?.foregroundCoverage, 0.3)
     }
 }
 

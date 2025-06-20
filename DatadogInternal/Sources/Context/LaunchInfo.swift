@@ -35,13 +35,28 @@ public struct LaunchInfo: Codable, Equatable {
     /// If the notification has not yet been received the value will be `nil`.
     public let timeToDidBecomeActive: TimeInterval?
 
+    public struct Raw: Codable, Equatable {
+        public let taskPolicyRole: String
+        public let isPrewarmed: Bool
+
+        public init(taskPolicyRole: String, isPrewarmed: Bool) {
+            self.taskPolicyRole = taskPolicyRole
+            self.isPrewarmed = isPrewarmed
+        }
+    }
+
+    /// Raw data collected for app launch, used for debug purposes.
+    public let raw: Raw
+
     public init(
         launchReason: LaunchReason,
         processLaunchDate: Date,
-        timeToDidBecomeActive: TimeInterval?
+        timeToDidBecomeActive: TimeInterval?,
+        raw: Raw
     ) {
         self.launchReason = launchReason
         self.processLaunchDate = processLaunchDate
         self.timeToDidBecomeActive = timeToDidBecomeActive
+        self.raw = raw
     }
 }
