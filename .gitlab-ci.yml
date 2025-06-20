@@ -83,7 +83,6 @@ default:
     - key: carthage-cache
       paths:
         - Carthage/Build
-      expire_in: 1 week
 
 ENV check:
   stage: pre
