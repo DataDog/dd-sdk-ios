@@ -42,7 +42,7 @@ internal final class FatalAppHangsHandler {
                 serverTimeOffset: context.serverTimeOffset,
                 lastRUMView: lastRUMView,
                 trackingConsent: context.trackingConsent,
-                appLaunchDate: context.launchTime.launchDate
+                appLaunchDate: context.launchInfo.processLaunchDate
             )
             dataStore.setValue(fatalHang, forKey: .fatalAppHangKey)
         }

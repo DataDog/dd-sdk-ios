@@ -355,6 +355,8 @@ extension RUM {
         internal var processID: UUID = currentProcessID
         /// The default notification center used for subscribing to app lifecycle events and system notifications.
         internal var notificationCenter: NotificationCenter = .default
+        /// The bundle object that contains the current executable.
+        internal var bundle: Bundle = .main
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
         internal var debugViews: Bool = ProcessInfo.processInfo.arguments.contains("DD_DEBUG_RUM")

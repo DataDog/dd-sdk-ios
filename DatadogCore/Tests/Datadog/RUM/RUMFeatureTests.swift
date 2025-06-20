@@ -157,7 +157,6 @@ class RUMFeatureTests: XCTestCase {
 
         let eventMatchers = try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(payload)
         XCTAssertFalse(eventMatchers.filterRUMEvents(ofType: RUMViewEvent.self).isEmpty, "It must include view event")
-        XCTAssertFalse(eventMatchers.filterRUMEvents(ofType: RUMActionEvent.self).isEmpty, "It must include action event")
     }
 
     func testItOnlyKeepsOneViewEventPerPayload() throws {

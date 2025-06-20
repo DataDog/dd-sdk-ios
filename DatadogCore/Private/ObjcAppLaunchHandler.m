@@ -6,6 +6,7 @@
 
 #import <pthread.h>
 #import <sys/sysctl.h>
+#import <mach/mach.h>
 
 #import "ObjcAppLaunchHandler.h"
 
@@ -15,32 +16,31 @@
 #import <AppKit/AppKit.h>
 #endif
 
-// A very long application launch time is most-likely the result of a pre-warmed process.
-// We consider 30s as a threshold for pre-warm detection.
-#define COLD_START_TIME_THRESHOLD 30
+/// Constants for special task policy results
+/// Returned when the kernel query fails (kernel_result != KERN_SUCCESS).
+const NSInteger __dd_private_TASK_POLICY_KERN_FAILURE   = -999;
+/// Returned when the policy falls back to the system default (get_default == TRUE).
+const NSInteger __dd_private_TASK_POLICY_DEFAULTED      = -99;
+/// Returned when task policy queries are unsupported on this platform (e.g., tvOS).
+const NSInteger __dd_private_TASK_POLICY_UNAVAILABLE    = -9;
 
-/// Get the process start time from kernel.
+/// Retrieves the process start timestamp relative to the 1 January 2001 reference date.
 ///
-/// The time interval is relative to the 1 January 2001 00:00:00 GMT reference date.
-///
-/// - Parameter timeInterval: Pointer to time interval to hold the process start time interval.
+/// @param timeInterval Pointer to an NSTimeInterval where the result will be stored.
+///                     On success, *timeInterval is set to the process start offset in seconds.
+/// @return 0 on success; non-zero errno value on failure.
 int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval);
 
-/// Tracks key timestamps in the app launch sequence
-/// ref. https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
 @implementation __dd_private_AppLaunchHandler {
-    NSTimeInterval _processStartTime;
-    NSTimeInterval _timeToApplicationDidBecomeActive;
-    BOOL _isActivePrewarm;
+    NSTimeInterval _processLaunchDate;
+    NSTimeInterval _timeToDidBecomeActive;
     UIApplicationDidBecomeActiveCallback _applicationDidBecomeActiveCallback;
 }
 
-/// Shared instance of the Application Launch Handler.
 static __dd_private_AppLaunchHandler *_shared;
 
 + (void)load {
-    // This is called at the `DatadogPrivate` load time, keep the work minimal
-    _shared = [[self alloc] initWithProcessInfo:NSProcessInfo.processInfo];
+    _shared = [[self alloc] init];
     [_shared observeNotificationCenter:NSNotificationCenter.defaultCenter];
 }
 
@@ -48,23 +48,15 @@ static __dd_private_AppLaunchHandler *_shared;
     return _shared;
 }
 
-- (instancetype)initWithProcessInfo:(NSProcessInfo *)processInfo {
+- (instancetype)init {
     NSTimeInterval startTime;
     if (processStartTimeIntervalSinceReferenceDate(&startTime) != 0) {
-        // Fall back to "now"
         startTime = CFAbsoluteTimeGetCurrent();
     }
-
-    // The ActivePrewarm variable indicates whether the app was launched via pre-warming.
-    BOOL isActivePrewarm = [processInfo.environment[@"ActivePrewarm"] isEqualToString:@"1"];
-    return [self initWithStartTime:startTime isActivePrewarm:isActivePrewarm];
-}
-
-- (instancetype)initWithStartTime:(NSTimeInterval)startTime isActivePrewarm:(BOOL)isActivePrewarm {
     self = [super init];
     if (!self) return nil;
-    _processStartTime = startTime;
-    _isActivePrewarm = isActivePrewarm;
+
+    _processLaunchDate = startTime;
     _applicationDidBecomeActiveCallback = ^(NSTimeInterval _) {};
     return self;
 }
@@ -87,8 +79,8 @@ static __dd_private_AppLaunchHandler *_shared;
                                                                  queue:NSOperationQueue.mainQueue
                                                             usingBlock:^(NSNotification *_){
         @synchronized(self) {
-            NSTimeInterval time = CFAbsoluteTimeGetCurrent() - self->_processStartTime;
-            self->_timeToApplicationDidBecomeActive = time;
+            NSTimeInterval time = CFAbsoluteTimeGetCurrent() - self->_processLaunchDate;
+            self->_timeToDidBecomeActive = time;
             self->_applicationDidBecomeActiveCallback(time);
         }
 
@@ -97,22 +89,39 @@ static __dd_private_AppLaunchHandler *_shared;
     }];
 }
 
-- (NSDate *)launchDate {
+/// Retrieves the current process’s task policy role (`task_role_t`).
+/// Returns the raw `policy.role` on success, or one of the special `__dd_private_TASK_POLICY_*` constants.
+- (NSInteger)taskPolicyRole {
+#if TARGET_OS_TV || TARGET_OS_WATCH
+    return __dd_private_TASK_POLICY_UNAVAILABLE;
+#else
+    task_category_policy_data_t policy;
+    mach_msg_type_number_t count = TASK_CATEGORY_POLICY_COUNT;
+    boolean_t get_default = FALSE;
+    kern_return_t kernel_result = task_policy_get(mach_task_self(),
+                                                  TASK_CATEGORY_POLICY,
+                                                  (task_policy_t)&policy,
+                                                  &count,
+                                                  &get_default);
+    if (kernel_result != KERN_SUCCESS) {
+        return __dd_private_TASK_POLICY_KERN_FAILURE;
+    }
+    if (get_default) {
+        return __dd_private_TASK_POLICY_DEFAULTED;
+    }
+    return policy.role;
+#endif
+}
+
+- (NSDate *)processLaunchDate {
     @synchronized(self) {
-        return [NSDate dateWithTimeIntervalSinceReferenceDate:_processStartTime];
+        return [NSDate dateWithTimeIntervalSinceReferenceDate:_processLaunchDate];
     }
 }
 
-- (NSNumber *)launchTime {
+- (NSNumber *)timeToDidBecomeActive {
     @synchronized(self) {
-        return _timeToApplicationDidBecomeActive > 0 ? @(_timeToApplicationDidBecomeActive) : nil;
-    }
-}
-
-- (BOOL)isActivePrewarm {
-    @synchronized(self) {
-        if (_isActivePrewarm) return _isActivePrewarm;
-        return _timeToApplicationDidBecomeActive > COLD_START_TIME_THRESHOLD;
+        return _timeToDidBecomeActive > 0 ? @(_timeToDidBecomeActive) : nil;
     }
 }
 

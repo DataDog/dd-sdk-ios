@@ -425,7 +425,7 @@ class AppHangsMonitorTests: XCTestCase {
 
         // Given (track hang in previous app session)
         featureScope.contextMock.trackingConsent = .granted
-        featureScope.contextMock.launchTime = .mockWith(launchDate: appLaunchDate)
+        featureScope.contextMock.launchInfo = .mockWith(processLaunchDate: appLaunchDate)
         featureScope.contextMock.serverTimeOffset = 0
         monitor.start()
         fatalErrorContext.view = .mockRandom()
@@ -434,7 +434,7 @@ class AppHangsMonitorTests: XCTestCase {
 
         // When (app is restarted)
         let appRestartDate = appLaunchDate.addingTimeInterval(.mockRandom(min: 10, max: 100))
-        featureScope.contextMock.launchTime = .mockWith(launchDate: appRestartDate)
+        featureScope.contextMock.launchInfo = .mockWith(processLaunchDate: appRestartDate)
         featureScope.contextMock.serverTimeOffset = .mockRandom(min: 0, max: 100)
         let monitor = AppHangsMonitor(
             featureScope: featureScope,

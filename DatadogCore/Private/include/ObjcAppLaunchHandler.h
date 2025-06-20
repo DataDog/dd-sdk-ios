@@ -8,32 +8,40 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// `AppLaunchHandler` tracks key timestamps in the app launch sequence,
-/// as described in Apple's documentation:
+/// Returned when `__dd_private_getTaskPolicy()` fails to query the kernel (return code != KERN_SUCCESS).
+FOUNDATION_EXPORT const NSInteger __dd_private_TASK_POLICY_KERN_FAILURE;
+
+/// Returned when `__dd_private_getTaskPolicy()` falls back to the system’s default policy (get_default == TRUE).
+FOUNDATION_EXPORT const NSInteger __dd_private_TASK_POLICY_DEFAULTED;
+
+/// Returned when `__dd_private_getTaskPolicy()` queries are unsupported on the current platform (e.g., tvOS).
+FOUNDATION_EXPORT const NSInteger __dd_private_TASK_POLICY_UNAVAILABLE;
+
+/// `AppLaunchHandler` tracks key timestamps in the app launch sequence, as described in Apple's documentation:
 /// https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
 @interface __dd_private_AppLaunchHandler : NSObject
 
-typedef void (^UIApplicationDidBecomeActiveCallback) (NSTimeInterval);
+/// Callback block invoked when the app transitions to an active state.
+///
+/// - Parameter timeInterval: The elapsed time, in seconds, from process launch to the delivery of the `didBecomeActive` notification.
+typedef void (^UIApplicationDidBecomeActiveCallback)(NSTimeInterval timeInterval);
 
-/// The singleton instance of `AppLaunchHandler`.
-@property (class, readonly) __dd_private_AppLaunchHandler *shared;
+/// Shared singleton instance.
+@property (class, nonatomic, readonly) __dd_private_AppLaunchHandler *shared;
+
+/// The current process’s task policy role (`task_role_t`), indicating how the process was started (e.g., user vs background launch).
+/// On success, the property contains the raw [`policy.role`](https://developer.apple.com/documentation/kernel/task_role_t) value;
+/// otherwise, it returns one of the special constants:
+/// - `__dd_private_TASK_POLICY_KERN_FAILURE`
+/// - `__dd_private_TASK_POLICY_DEFAULTED`
+/// - `__dd_private_TASK_POLICY_UNAVAILABLE`
+@property (nonatomic, readonly) NSInteger taskPolicyRole;
 
 /// The timestamp when the application process was launched.
-@property (atomic, readonly) NSDate* launchDate;
+@property (nonatomic, readonly) NSDate *processLaunchDate;
 
-/// The time interval (in seconds) between the app process launch and
-/// the `UIApplicationDidBecomeActiveNotification`. Returns `nil` if
-/// the notification has not yet been received.
-@property (atomic, readonly, nullable) NSNumber* launchTime;
-
-/// Indicates whether the application was prewarmed by the system.
-@property (atomic, readonly) BOOL isActivePrewarm;
-
-/// Initializes an instance of `AppLaunchHandler` with the given process information.
-///
-/// - Parameter processInfo: The `NSProcessInfo` instance used to retrieve environment variables,
-///   including information about whether the app was prewarmed.
-- (instancetype)initWithProcessInfo:(NSProcessInfo *)processInfo;
+/// The time interval (in seconds) between process launch and app activation (`didBecomeActive`), or nil if not yet activated.
+@property (nonatomic, readonly, nullable) NSNumber *timeToDidBecomeActive;
 
 /// Observes the given notification center for application lifecycle events.
 ///
@@ -44,13 +52,14 @@ typedef void (^UIApplicationDidBecomeActiveCallback) (NSTimeInterval);
 
 /// Sets a callback to be invoked when the application becomes active.
 ///
-/// The callback receives the time interval from launch to activation.
-/// If the application became active before setting the callback, it will not be triggered.
+/// The callback receives the time interval from process launch to app activation.
+/// The callback is triggered only once upon the next `UIApplicationDidBecomeActiveNotification`
+/// and is not retained for subsequent activations.
 ///
 /// - Parameter callback: A closure executed upon app activation.
 - (void)setApplicationDidBecomeActiveCallback:(UIApplicationDidBecomeActiveCallback)callback;
 
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)init;
 + (instancetype)new NS_UNAVAILABLE;
 
 @end

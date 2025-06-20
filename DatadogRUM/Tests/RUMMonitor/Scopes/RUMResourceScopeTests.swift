@@ -1169,11 +1169,9 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let appLauchToErrorTimeDiff = Int64.random(in: 10..<1_000_000)
-        let customContext: DatadogContext = .mockWith(launchTime: .mockWith(
-            launchTime: .mockAny(),
-            launchDate: currentTime,
-            isActivePrewarm: .mockAny()
-        ) )
+        let customContext: DatadogContext = .mockWith(
+            launchInfo: .mockWith(processLaunchDate: currentTime)
+        )
 
         let scope = RUMResourceScope.mockWith(
             context: rumContext,

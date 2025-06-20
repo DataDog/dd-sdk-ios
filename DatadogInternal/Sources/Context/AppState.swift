@@ -38,116 +38,112 @@ public enum AppState: Codable {
     }
 }
 
-/// A data structure to represent recorded app states in a given period of time
+/// Records app state transitions over time.
 public struct AppStateHistory: Codable, Equatable {
-    /// Snapshot of the app state at `date`
-    public struct Snapshot: Codable, Equatable {
-        /// The app state at this `date`.
-        public let state: AppState
-        /// Date of recording this snapshot.
-        public let date: Date
-
-        public init(state: AppState, date: Date) {
-            self.state = state
-            self.date = date
-        }
+    /// A snapshot representing the app state at a specific point in time.
+    private struct Snapshot: Codable, Equatable {
+        let state: AppState
+        let date: Date
     }
 
-    public private(set) var initialSnapshot: Snapshot
-    public private(set) var snapshots: [Snapshot]
+    /// The initial state of the app when this history instance was created.
+    public let initialState: AppState
+    /// A chronologically ordered list of app state snapshots. It includes the `initialState`.
+    private var snapshots: [Snapshot]
+    /// The most recent recorded app state.
+    public var currentState: AppState { snapshots.last?.state ?? initialState }
 
-    /// Date of the last update to `AppStateHistory`.
-    public private(set) var recentDate: Date
-
-    /// The most recent app state `Snapshot`.
-    public var currentSnapshot: Snapshot {
-        return Snapshot(
-            state: (snapshots.last ?? initialSnapshot).state,
-            date: recentDate
-        )
-    }
-
-    public init(
-        initialSnapshot: Snapshot,
-        recentDate: Date,
-        snapshots: [Snapshot] = []
-    ) {
-        self.initialSnapshot = initialSnapshot
-        self.snapshots = snapshots
-        self.recentDate = recentDate
-    }
-
-    public init(
-        initialState: AppState,
-        date: Date,
-        snapshots: [Snapshot] = []
-    ) {
-        self.init(
-            initialSnapshot: .init(state: initialState, date: date),
-            recentDate: date,
-            snapshots: snapshots
-        )
-    }
-
-    /// Limits or extrapolates app state history to the given range
-    /// This is useful when you record between 0...3t but you are concerned of t...2t only
-    /// - Parameter range: if outside of initial and final states, it extrapolates; otherwise it limits
-    /// - Returns: a history instance spanning the given range
-    public func take(between range: ClosedRange<Date>) -> AppStateHistory {
-        .init(
-            // move initial state to lowerBound
-            initialSnapshot: Snapshot(
-                state: state(at: range.lowerBound),
-                date: range.lowerBound
-            ),
-            // move final state to upperBound
-            recentDate: range.upperBound,
-            // filter changes outside of the range
-            snapshots: snapshots.filter { range.contains($0.date) }
-        )
-    }
-
-    public mutating func append(_ snapshot: Snapshot) {
-        snapshots.append(snapshot)
-    }
-
-    public var foregroundDuration: TimeInterval {
-        var duration: TimeInterval = 0.0
-        var lastActiveStartDate: Date?
-        let allEvents = [initialSnapshot] + snapshots + [currentSnapshot]
-        for event in allEvents {
-            if let startDate = lastActiveStartDate {
-                duration += event.date.timeIntervalSince(startDate)
-            }
-            if event.state.isRunningInForeground {
-                lastActiveStartDate = event.date
-            } else {
-                lastActiveStartDate = nil
-            }
-        }
-        return duration
-    }
-
-    private func state(at date: Date) -> AppState {
-        for snapshot in snapshots.reversed() {
-            if snapshot.date > date {
-                continue
-            }
-
-            return snapshot.state
-        }
-
-        // we assume there was no change before initial state
-        return initialSnapshot.state
-    }
-}
-
-extension AppStateHistory {
-    /// Return a history with an active initial state.
+    /// Creates a new `AppStateHistory` with an initial state.
     ///
-    /// - Parameter date: The date since the application is considred active.
-    public static func active(since date: Date) -> AppStateHistory {
-        .init(initialState: .active, date: date)
+    /// - Parameters:
+    ///   - initialState: The starting `AppState` of the app.
+    ///   - date: The timestamp when the initial state was recorded.
+    public init(initialState: AppState, date: Date) {
+        let initialSnapshot = Snapshot(state: initialState, date: date)
+        self.initialState = initialState
+        self.snapshots = [initialSnapshot]
+    }
+
+    /// Appends a new app state transition to the history.
+    ///
+    /// - Parameters:
+    ///   - state: The new `AppState` to be recorded.
+    ///   - date: The timestamp when the state transition occurred.
+    ///
+    /// It is optimised for monothonic dates. If the provided `date` is earlier than one for an existing state, then states are re-sorted to maintain chronological order.
+    public mutating func append(state: AppState, at date: Date) {
+        let lastSnapshotDate = snapshots.last?.date ?? .distantPast
+        let newSnapshot = Snapshot(state: state, date: date)
+        snapshots.append(newSnapshot)
+
+        if newSnapshot.date < lastSnapshotDate {
+            // Ensure snapshots remain chronologically ordered.
+            // Under normal conditions, this should never be needed, as app state
+            // transitions are tracked based on real-time system events.
+            snapshots.sort { $0.date < $1.date }
+        }
+    }
+
+    /// Returns the app state at a specific point in time, if available.
+    ///
+    /// - Parameter date: The timestamp for which to retrieve the app state.
+    /// - Returns: The `AppState` that was active at the given time, or `nil` if `date`
+    ///   is earlier than the date of initial state.
+    public func state(at date: Date) -> AppState? {
+        // Iterate in reverse order, as recent states are more likely to match.
+        let snapshot = snapshots.reversed().first { $0.date <= date }
+        return snapshot?.state
+    }
+
+    /// Checks whether the app was in a specific state within the given time range.
+    ///
+    /// - Parameters:
+    ///   - range: The time period to check.
+    ///   - predicate: A closure that evaluates whether a given `AppState` matches the desired condition.
+    /// - Returns: `true` if any state within `range` satisfies the predicate, otherwise `false`.
+    public func containsState(during range: ClosedRange<Date>, where predicate: (AppState) -> Bool) -> Bool {
+        var contains = false
+        iterateStates(in: range) { state, _ in
+            contains = contains || predicate(state)
+        }
+        return contains
+    }
+
+    /// Computes the total duration the app was running in the foreground within the given time range.
+    ///
+    /// - Parameter range: The time period to analyze.
+    /// - Returns: The total time (in seconds) spent in foreground states.
+    public func foregroundDuration(during range: ClosedRange<Date>) -> TimeInterval {
+        var total: TimeInterval = 0
+        iterateStates(in: range) { state, duration in
+            if state.isRunningInForeground {
+                total += duration
+            }
+        }
+        return total
+    }
+
+    /// Iterates through states and their intervals within a specified time range.
+    ///   - If a snapshot **falls entirely outside** the range, it is ignored.
+    ///   - If a snapshot **extends beyond `range.upperBound`**, it is clamped to `range.upperBound`.
+    ///   - If a snapshot **starts before `range.lowerBound`**, it is not clamped.
+    ///
+    /// - Parameters:
+    ///   - range: The time range to analyze states in.
+    ///   - iterator: A closure that receives each `AppState` and its associated duration, clamped to the provided `range`.
+    private func iterateStates(in range: ClosedRange<Date>, perform iterator: (AppState, TimeInterval) -> Void) {
+        let finalState = snapshots.last?.state ?? initialState
+        let finalSnapshot = Snapshot(state: finalState, date: .distantFuture)
+        let allSnapshots = snapshots + [finalSnapshot]
+
+        for (current, next) in zip(allSnapshots, allSnapshots.dropFirst()) {
+            let start = max(current.date, range.lowerBound)
+            let end = min(next.date, range.upperBound)
+            if end > start {
+                let duration = end.timeIntervalSince(start)
+                iterator(current.state, duration)
+            }
+        }
     }
 }
 

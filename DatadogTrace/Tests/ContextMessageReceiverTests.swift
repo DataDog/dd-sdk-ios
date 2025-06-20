@@ -19,12 +19,12 @@ class ContextMessageReceiverTests: XCTestCase {
             messageReceiver: receiver
         )
 
-        XCTAssertEqual(receiver.context.applicationStateHistory?.initialSnapshot.state, .background)
+        XCTAssertEqual(receiver.context.applicationStateHistory?.currentState, .background)
 
         // When
-        core.context.applicationStateHistory.append(.init(state: .active, date: Date()))
+        core.context.applicationStateHistory.append(state: .active, at: Date())
 
         // Then
-        XCTAssertEqual(receiver.context.applicationStateHistory?.currentSnapshot.state, .active)
+        XCTAssertEqual(receiver.context.applicationStateHistory?.currentState, .active)
     }
 }

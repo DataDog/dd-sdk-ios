@@ -152,7 +152,11 @@ public struct RUMCommandMock: RUMCommand {
     public var time: Date
     public var globalAttributes: [AttributeKey: AttributeValue]
     public var attributes: [AttributeKey: AttributeValue]
+    public var canStartApplicationLaunchView: Bool
     public var canStartBackgroundView: Bool
+    public var shouldRestartLastViewAfterSessionExpiration: Bool
+    public var shouldRestartLastViewAfterSessionStop: Bool
+    public var canStartBackgroundViewAfterSessionStop: Bool
     public var isUserInteraction: Bool
     public var missedEventType: SessionEndedMetric.MissedEventType? = nil
 
@@ -160,13 +164,21 @@ public struct RUMCommandMock: RUMCommand {
         time: Date = Date(),
         globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
+        canStartApplicationLaunchView: Bool = false,
         canStartBackgroundView: Bool = false,
+        shouldRestartLastViewAfterSessionExpiration: Bool = false,
+        shouldRestartLastViewAfterSessionStop: Bool = false,
+        canStartBackgroundViewAfterSessionStop: Bool = false,
         isUserInteraction: Bool = false
     ) {
         self.time = time
         self.globalAttributes = globalAttributes
         self.attributes = attributes
+        self.canStartApplicationLaunchView = canStartApplicationLaunchView
         self.canStartBackgroundView = canStartBackgroundView
+        self.shouldRestartLastViewAfterSessionExpiration = shouldRestartLastViewAfterSessionExpiration
+        self.shouldRestartLastViewAfterSessionStop = shouldRestartLastViewAfterSessionStop
+        self.canStartBackgroundViewAfterSessionStop = canStartBackgroundViewAfterSessionStop
         self.isUserInteraction = isUserInteraction
     }
 }
@@ -720,6 +732,12 @@ public class RUMUUIDGeneratorMock: RUMUUIDGenerator {
     }
 }
 
+extension RUMApplicationState: AnyMockable {
+    public static func mockAny() -> RUMApplicationState {
+        return RUMApplicationState()
+    }
+}
+
 extension RUMContext {
     public static func mockAny() -> Self {
         return mockWith()
@@ -785,7 +803,7 @@ extension RUMScopeDependencies {
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
         viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
-        sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0),
+        sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0, tracksBackgroundEvents: .mockAny(), isUsingSceneLifecycle: .mockAny()),
         viewEndedMetricFactory: @escaping () -> ViewEndedController = {
             ViewEndedController(telemetry: NOPTelemetry(), sampleRate: 0)
         },
@@ -899,6 +917,7 @@ extension RUMSessionScope {
         startPrecondition: RUMSessionPrecondition? = .userAppLaunch,
         context: DatadogContext = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
+        applicationState: RUMApplicationState = .mockAny(),
         hasReplay: Bool? = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
@@ -907,7 +926,8 @@ extension RUMSessionScope {
             startTime: startTime,
             startPrecondition: startPrecondition,
             context: context,
-            dependencies: dependencies
+            dependencies: dependencies,
+            applicationState: applicationState
         )
     }
     // swiftlint:enable function_default_parameter_at_end

@@ -16,11 +16,11 @@ class TelemetryInterceptorTests: XCTestCase {
         let sessionID: RUMUUID = .mockRandom()
 
         // Given
-        let metricController = SessionEndedMetricController(telemetry: telemetry, sampleRate: 100)
+        let metricController = SessionEndedMetricController(telemetry: telemetry, sampleRate: 100, tracksBackgroundEvents: .mockAny(), isUsingSceneLifecycle: .mockAny())
         let interceptor = TelemetryInterceptor(sessionEndedMetric: metricController)
 
         // When
-        metricController.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockAny(), tracksBackgroundEvents: .mockRandom())
+        metricController.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockAny())
         let errorTelemetry: TelemetryMessage = .error(id: .mockAny(), message: .mockAny(), kind: .mockAny(), stack: .mockAny())
         let result = interceptor.receive(message: .telemetry(errorTelemetry), from: NOPDatadogCore())
         XCTAssertFalse(result)
@@ -36,11 +36,11 @@ class TelemetryInterceptorTests: XCTestCase {
         let sessionID: RUMUUID = .mockRandom()
 
         // Given
-        let metricController = SessionEndedMetricController(telemetry: telemetry, sampleRate: 100)
+        let metricController = SessionEndedMetricController(telemetry: telemetry, sampleRate: 100, tracksBackgroundEvents: .mockAny(), isUsingSceneLifecycle: .mockAny())
         let interceptor = TelemetryInterceptor(sessionEndedMetric: metricController)
 
         // When
-        metricController.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockAny(), tracksBackgroundEvents: .mockRandom())
+        metricController.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockAny())
         let metricTelemetry: TelemetryMessage = .metric(MetricTelemetry(name: UploadQualityMetric.name, attributes: [UploadQualityMetric.track: "feature"], sampleRate: .mockRandom()))
         let result = interceptor.receive(message: .telemetry(metricTelemetry), from: NOPDatadogCore())
         XCTAssertTrue(result)
