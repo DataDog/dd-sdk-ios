@@ -10,16 +10,16 @@ import XCTest
 @testable import TestUtilities
 @testable import DatadogCore
 
-final class BrightnessStatusPublisherTests: XCTestCase {
+final class BrightnessLevelPublisherTests: XCTestCase {
     private let notificationCenter = MockNotificationCenter()
 
     func testInitialValue() throws {
         // Given
-        let publisher = BrightnessStatusPublisher(notificationCenter: notificationCenter)
+        let publisher = BrightnessLevelPublisher(notificationCenter: notificationCenter)
 
         // Then
         XCTAssertNotNil(publisher.initialValue)
-        XCTAssertEqual(publisher.initialValue?.level, Float(UIScreen.main.brightness))
+        XCTAssertEqual(publisher.initialValue, Float(UIScreen.main.brightness))
     }
 
     func testMultipleBrightnessChanges() throws {
@@ -28,11 +28,11 @@ final class BrightnessStatusPublisherTests: XCTestCase {
 
         // Given
         let mockScreen = UIScreenMock(brightness: 0.2)
-        let publisher = BrightnessStatusPublisher(notificationCenter: notificationCenter, screen: mockScreen)
+        let publisher = BrightnessLevelPublisher(notificationCenter: notificationCenter, screen: mockScreen)
         var receivedValues: [Float] = []
 
-        publisher.publish { status in
-            if let level = status?.level {
+        publisher.publish { level in
+            if let level = level {
                 receivedValues.append(level)
 
                 switch receivedValues.count {

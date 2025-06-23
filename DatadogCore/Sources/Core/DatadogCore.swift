@@ -528,7 +528,7 @@ extension DatadogContextProvider {
         #endif
 
         #if os(iOS)
-        subscribe(\.brightnessStatus, to: BrightnessStatusPublisher(notificationCenter: notificationCenter))
+        subscribe(\.brightnessLevel, to: BrightnessLevelPublisher(notificationCenter: notificationCenter))
         #endif
 
         #if os(iOS) || os(tvOS)
