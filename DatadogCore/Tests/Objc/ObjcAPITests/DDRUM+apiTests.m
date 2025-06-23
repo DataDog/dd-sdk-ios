@@ -139,6 +139,10 @@
     XCTAssertTrue(config.trackAnonymousUser);
     config.trackAnonymousUser = NO;
     XCTAssertFalse(config.trackAnonymousUser);
+
+    XCTAssertTrue(config.trackMemoryWarnings);
+    config.trackMemoryWarnings = NO;
+    XCTAssertFalse(config.trackMemoryWarnings);
 }
 
 #pragma clang diagnostic pop
