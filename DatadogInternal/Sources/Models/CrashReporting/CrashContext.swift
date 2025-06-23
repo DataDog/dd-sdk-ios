@@ -71,7 +71,7 @@ public struct CrashContext: Codable, Equatable {
     public var batteryStatus: BatteryStatus?
 
     /// The current brightness status.
-    public var brightnessStatus: BrightnessStatus?
+    public var brightnessLevel: BrightnessLevel?
 
     /// `true` if the Low Power Mode is enabled.
     public var isLowPowerModeEnabled = false
@@ -108,7 +108,7 @@ public struct CrashContext: Codable, Equatable {
         networkConnectionInfo: NetworkConnectionInfo?,
         carrierInfo: CarrierInfo?,
         batteryStatus: BatteryStatus?,
-        brightnessStatus: BrightnessStatus?,
+        brightnessLevel: BrightnessLevel?,
         isLowPowerModeEnabled: Bool,
         lastIsAppInForeground: Bool,
         appLaunchDate: Date?,
@@ -131,7 +131,7 @@ public struct CrashContext: Codable, Equatable {
         self.networkConnectionInfo = networkConnectionInfo
         self.carrierInfo = carrierInfo
         self.batteryStatus = batteryStatus
-        self.brightnessStatus = brightnessStatus
+        self.brightnessLevel = brightnessLevel
         self.isLowPowerModeEnabled = isLowPowerModeEnabled
         self.lastIsAppInForeground = lastIsAppInForeground
         self.appLaunchDate = appLaunchDate

@@ -11,9 +11,9 @@ import DatadogInternal
 import UIKit
 
 /// A publisher that publishes the screen brightness level from UIScreen.
-internal final class BrightnessStatusPublisher: ContextValuePublisher {
+internal final class BrightnessLevelPublisher: ContextValuePublisher {
     /// The initial brightness level.
-    let initialValue: BrightnessStatus?
+    let initialValue: BrightnessLevel?
 
     /// The notification center to observe brightness changes.
     private let notificationCenter: NotificationCenter
@@ -23,15 +23,15 @@ internal final class BrightnessStatusPublisher: ContextValuePublisher {
     init(notificationCenter: NotificationCenter = .default, screen: UIScreen = .main) {
         self.notificationCenter = notificationCenter
         self.screen = screen
-        self.initialValue = BrightnessStatus(level: Float(screen.brightness))
+        self.initialValue = Float(screen.brightness)
     }
 
     /// Publishes the brightness level to the given receiver.
     ///
     /// - Parameter receiver: The receiver to publish the brightness level to.
-    func publish(to receiver: @escaping ContextValueReceiver<BrightnessStatus?>) {
+    func publish(to receiver: @escaping ContextValueReceiver<BrightnessLevel?>) {
         let block = { (notification: Notification) in
-            receiver(BrightnessStatus(level: Float(self.screen.brightness)))
+            receiver(Float(self.screen.brightness))
         }
 
         observers = [

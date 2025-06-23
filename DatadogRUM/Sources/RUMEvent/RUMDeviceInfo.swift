@@ -15,7 +15,7 @@ extension RUMDevice {
         self.init(
             device: context.device,
             batteryLevel: Double(context.batteryStatus?.level ?? 0),
-            brightnessLevel: Double(context.brightnessStatus?.level ?? 0),
+            brightnessLevel: Double(context.brightnessLevel ?? 0),
             powerSavingMode: context.isLowPowerModeEnabled,
             telemetry: telemetry
         )

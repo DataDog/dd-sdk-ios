@@ -6,12 +6,5 @@
 
 import Foundation
 
-/// Describe the battery state for mobile devices.
-public struct BrightnessStatus: Codable, Equatable {
-    /// The brightness level
-    public let level: Float
-
-    public init(level: Float) {
-        self.level = level
-    }
-}
+/// Type alias for screen brightness level for mobile devices.
+public typealias BrightnessLevel = Float
