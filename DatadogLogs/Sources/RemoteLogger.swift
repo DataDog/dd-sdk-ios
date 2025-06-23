@@ -101,6 +101,9 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
     }
 
     func internalLog(level: LogLevel, message: String, error: DDError?, attributes: [String: Encodable]?) {
+        guard (attributes?[CrossPlatformAttributes.errorLogIsCrash]?.dd.decode() ?? false) == false else {
+            return
+        }
         guard configuration.sampler.sample() else {
             return
         }

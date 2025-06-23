@@ -67,21 +67,6 @@ extension LogMessageReceiver: AnyMockable {
     }
 }
 
-extension CrashLogReceiver: AnyMockable {
-    public static func mockAny() -> Self {
-        .mockWith()
-    }
-
-    public static func mockWith(
-        dateProvider: DateProvider = SystemDateProvider()
-    ) -> Self {
-        .init(
-            dateProvider: dateProvider,
-            logEventMapper: nil
-        )
-    }
-}
-
 // MARK: - Log Mocks
 
 extension LogLevel: AnyMockable, RandomMockable {
