@@ -464,6 +464,11 @@ public class objc_RUMConfiguration: NSObject {
         set { swiftConfig.trackAnonymousUser = newValue }
         get { swiftConfig.trackAnonymousUser }
     }
+
+    public var trackMemoryWarnings: Bool {
+        set { swiftConfig.trackMemoryWarnings = newValue }
+        get { swiftConfig.trackMemoryWarnings }
+    }
 }
 
 @objc(DDRUM)
