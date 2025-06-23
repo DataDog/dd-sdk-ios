@@ -21,6 +21,14 @@ internal class UIHostingViewRecorder: NodeRecorder {
     var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics?
     var textObfuscator: (ViewTreeRecordingContext, ViewAttributes) -> TextObfuscating
 
+    private static let rendererKeyPath: [String] = if #available(iOS 26, tvOS 26, *) {
+        ["_base", "viewGraph", "renderer"]
+    } else if #available(iOS 18.1, tvOS 18.1, *) {
+        ["_base", "renderer"]
+    } else {
+        ["renderer"]
+    }
+
     init(
         identifier: UUID,
         semanticsOverride: @escaping (UIView, ViewAttributes) -> NodeSemantics? = { _, _ in nil },
@@ -48,17 +56,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
     }
 
     func semantics(reflecting subject: AnyObject, nodeID: NodeID, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics? {
-        let rendererKeyPath: String
-
-        if #available(iOS 26, tvOS 26, *) {
-            rendererKeyPath = "_base.viewGraph.renderer"
-        } else if #available(iOS 18.1, tvOS 18.1, *) {
-            rendererKeyPath = "_base.renderer"
-        } else {
-            rendererKeyPath = "renderer"
-        }
-
-        guard let renderer = extractObject(from: subject, keyPath: rendererKeyPath) else {
+        guard let renderer = extractObject(from: subject, keyPath: Self.rendererKeyPath) else {
             return nil
         }
 
@@ -86,11 +84,11 @@ internal class UIHostingViewRecorder: NodeRecorder {
         return SpecificElement(subtreeStrategy: .record, nodes: [node])
     }
 
-    private func extractObject(from subject: AnyObject, keyPath: String) -> AnyObject? {
+    private func extractObject(from subject: AnyObject, keyPath: [String]) -> AnyObject? {
         var current = subject
-        for component in keyPath.split(separator: ".") {
+        for component in keyPath {
             guard
-                let ivar = class_getInstanceVariable(type(of: current), String(component)),
+                let ivar = class_getInstanceVariable(type(of: current), component),
                 let next = object_getIvar(current, ivar) as? AnyObject
             else {
                 return nil
