@@ -14,19 +14,28 @@ extension RUMDevice {
     ) {
         self.init(
             device: context.device,
+            batteryLevel: Double(context.batteryStatus?.level ?? 0),
+            brightnessLevel: Double(context.brightnessLevel ?? 0),
+            powerSavingMode: context.isLowPowerModeEnabled,
             telemetry: telemetry
         )
     }
 
     init(
         device: DeviceInfo,
+        batteryLevel: Double,
+        brightnessLevel: Double,
+        powerSavingMode: Bool,
         telemetry: Telemetry = NOPTelemetry()
     ) {
         self.init(
             architecture: device.architecture,
+            batteryLevel: batteryLevel,
             brand: device.brand,
+            brightnessLevel: brightnessLevel,
             model: device.model,
             name: device.name,
+            powerSavingMode: powerSavingMode,
             type: {
                 switch device.type {
                 case .iPhone, .iPod: return .mobile

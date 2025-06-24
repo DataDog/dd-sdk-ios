@@ -346,7 +346,7 @@ extension CarrierInfo.RadioAccessTechnology: RandomMockable {
     }
 }
 
-extension BatteryStatus {
+extension BatteryStatus: AnyMockable, RandomMockable {
     public static func mockAny() -> BatteryStatus {
         return mockWith()
     }
@@ -357,7 +357,30 @@ extension BatteryStatus {
     ) -> BatteryStatus {
         return BatteryStatus(state: state, level: level)
     }
+
+    public static func mockRandom() -> BatteryStatus {
+        return BatteryStatus(
+            state: [.unknown, .unplugged, .charging, .full].randomElement() ?? .unknown,
+            level: Float.random(in: 0.0...1.0)
+        )
+    }
 }
+
+//extension BrightnessLevel: AnyMockable, RandomMockable {
+//    public static func mockAny() -> BrightnessLevel {
+//        return mockWith()
+//    }
+//
+//    public static func mockWith(
+//        level: Float = 0.5
+//    ) -> BrightnessLevel {
+//        return level
+//    }
+//
+//    public static func mockRandom() -> BrightnessLevel {
+//        return Float.random(in: 0.0...1.0)
+//    }
+//}
 
 extension TrackingConsent {
     public static func mockRandom() -> TrackingConsent {

@@ -193,7 +193,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     }
 
     /// If the crash occurred before starting RUM session (after initializing SDK, but before starting the first view) we don't have any session UUID to associate the error with.
-    /// In that case, we consider sending this crash within a new, single-view session: either "ApplicationLaunch" view or "Background" view.
+    /// In that case, we consider sending this crash within a new, single-view session: either "ApplicationLaunch" view or "Background" view.
     private func sendCrashReportToNewSession(
         _ crashReport: DDCrashReport,
         crashContext: CrashContext,
@@ -331,7 +331,13 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // See https://github.com/DataDog/dd-sdk-ios/pull/1834 for more context.
             context: context.lastRUMAttributes,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(device: context.device, telemetry: featureScope.telemetry),
+            device: .init(
+                device: context.device,
+                batteryLevel: Double(context.batteryStatus?.level ?? 0),
+                brightnessLevel: Double(context.brightnessLevel ?? 0),
+                powerSavingMode: context.isLowPowerModeEnabled,
+                telemetry: featureScope.telemetry
+            ),
             display: nil,
             // RUMM-2197: In very rare cases, the OS info computed below might not be exactly the one
             // that the app crashed on. This would correspond to a scenario when the device OS was upgraded
