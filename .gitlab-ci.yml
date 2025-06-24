@@ -78,6 +78,10 @@ default:
       when: delayed
       start_in: 40 minutes
 
+.dd-octo-sts-id-token: &dd-octo-sts-id-token
+  DDOCTOSTS_ID_TOKEN:
+    aud: dd-octo-sts
+
 ENV check:
   stage: pre
   rules: 
@@ -101,9 +105,10 @@ Build Dependencies:
       - Carthage/Build
     expire_in: 4 hours
     when: on_success
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
-    - echo "Building dependencies..."
     - make clean dependencies
 
 # ┌──────────────────────────┐
