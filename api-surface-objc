@@ -2291,7 +2291,6 @@ public final class objc_SessionReplay: NSObject
     public static func stopRecording()
 public final class objc_SessionReplayConfiguration: NSObject
     @objc public var replaySampleRate: Float
-    @objc public var defaultPrivacyLevel: objc_SessionReplayConfigurationPrivacyLevel
     @objc public var textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel
     @objc public var imagePrivacyLevel: objc_ImagePrivacyLevel
     @objc public var touchPrivacyLevel: objc_TouchPrivacyLevel
@@ -2300,7 +2299,6 @@ public final class objc_SessionReplayConfiguration: NSObject
     @objc public var featureFlags: [String: Bool]
     public required init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel,featureFlags: [String: Bool]?)
     public convenience init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel)
-    public required init(replaySampleRate: Float)
 public enum objc_SessionReplayConfigurationPrivacyLevel: Int
     case allow
     case mask

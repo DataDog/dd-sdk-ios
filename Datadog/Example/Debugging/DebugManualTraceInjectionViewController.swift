@@ -47,7 +47,7 @@ internal struct DebugManualTraceInjectionView: View {
 
     private let session: URLSession = URLSession(
         configuration: .ephemeral,
-        delegate: DDURLSessionDelegate(),
+        delegate: DummySessionDataDelegate(),
         delegateQueue: nil
     )
 

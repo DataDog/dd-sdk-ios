@@ -12,7 +12,7 @@ extension Datadog {
     public struct Configuration {
         /// Defines the Datadog SDK policy when batching data together before uploading it to Datadog servers.
         /// Smaller batches mean smaller but more network requests, whereas larger batches mean fewer but larger network requests.
-        public enum BatchSize {
+        public enum BatchSize: CaseIterable {
             /// Prefer small sized data batches.
             case small
             /// Prefer medium sized data batches.
@@ -22,7 +22,7 @@ extension Datadog {
         }
 
         /// Defines the frequency at which Datadog SDK will try to upload data batches.
-        public enum UploadFrequency {
+        public enum UploadFrequency: CaseIterable {
             /// Try to upload batched data frequently.
             case frequent
             /// Try to upload batched data with a medium frequency.
@@ -32,7 +32,7 @@ extension Datadog {
         }
 
         /// Defines the maximum amount of batches processed sequentially without a delay within one reading/uploading cycle.
-        public enum BatchProcessingLevel {
+        public enum BatchProcessingLevel: CaseIterable {
             case low
             case medium
             case high

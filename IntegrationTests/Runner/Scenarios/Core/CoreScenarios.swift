@@ -37,10 +37,6 @@ internal class StopCoreScenario: TestScenario {
             )
         )
 
-        URLSessionInstrumentation.enable(
-            with: URLSessionInstrumentation.Configuration(delegateClass: CustomURLSessionDelegate.self)
-        )
-
         URLSessionInstrumentation.enable(with: .init(delegateClass: CustomURLSessionDelegate.self))
     }
 }
