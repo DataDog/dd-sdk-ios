@@ -10,6 +10,7 @@
 - [IMPROVEMENT] Stop reporting App hangs and Watchdog terminations for iOS widgets. See [#2326][]   
 - [IMPROVEMENT] Align `os` and `device` attributes across all product features. See [#2322][]
 - [IMPROVEMENT] Remove fatal errors from Logs. See [#2359][]
+- [IMPROVEMENT] Add opt-out API to disable tracking memory warnings as RUM Errors. See [#2355][]
 
 # 2.28.1 / 29-05-2025
 
@@ -904,6 +905,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2326]: https://github.com/DataDog/dd-sdk-ios/pull/2326
 [#2322]: https://github.com/DataDog/dd-sdk-ios/pull/2322
 [#2359]: https://github.com/DataDog/dd-sdk-ios/pull/2359
+[#2355]: https://github.com/DataDog/dd-sdk-ios/pull/2355
 
 [#2316]: https://github.com/DataDog/dd-sdk-ios/pull/2316
 [@00fa9a]: https://github.com/00FA9A
