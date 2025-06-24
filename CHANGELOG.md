@@ -13,6 +13,7 @@
 - [IMPROVEMENT] Add opt-out API to disable tracking memory warnings as RUM Errors. See [#2355][]
 - Support for AP2 Datacenter added. You can configure it setting `DatadogSite.ap2` on `Datadog.Configuration.site`.
 - [FEATURE] Add SwiftUI support for Session Replay privacy overrides. See [#2333][]
+- [IMPROVEMENT] Add `accountInfo` property to `DDLogEvent`. See [#2360][]
 
 # 2.29.0 / 18-06-2025
 
@@ -919,6 +920,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2315]: https://github.com/DataDog/dd-sdk-ios/pull/2315
 [#2316]: https://github.com/DataDog/dd-sdk-ios/pull/2316
 [#2343]: https://github.com/DataDog/dd-sdk-ios/pull/2343
+[#2360]: https://github.com/DataDog/dd-sdk-ios/pull/2360
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

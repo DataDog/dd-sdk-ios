@@ -239,6 +239,32 @@ public class objc_LogEventError: NSObject {
     }
 }
 
+@objc(DDLogEventAccountInfo)
+@objcMembers
+@_spi(objc)
+public class objc_LogEventAccountInfo: NSObject {
+    internal let root: DDLogEvent
+
+    internal init(root: DDLogEvent) {
+        self.root = root
+    }
+
+    // swiftlint:disable force_unwrapping
+    public var id: String {
+        root.swiftModel.accountInfo!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.accountInfo!.name
+    }
+
+    public var extraInfo: [String: Any] {
+        set { root.swiftModel.accountInfo!.extraInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.accountInfo!.extraInfo.dd.objCAttributes }
+    }
+    // swiftlint:enable force_unwrapping
+}
+
 @objc(DDLogEventBinaryImage)
 @objcMembers
 @_spi(objc)
