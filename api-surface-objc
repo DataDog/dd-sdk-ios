@@ -49,6 +49,7 @@ public class DDSite: NSObject
     public static func us5() -> DDSite
     public static func eu1() -> DDSite
     public static func ap1() -> DDSite
+    public static func ap2() -> DDSite
     public static func us1_fed() -> DDSite
 public enum DDBatchSize: Int
     case small
@@ -161,6 +162,7 @@ public class DDLogEvent: NSObject
     @objc public var dd: DDLogEventDd
     @objc public var os: DDLogEventOperatingSystem
     @objc public var userInfo: DDLogEventUserInfo
+    @objc public var accountInfo: DDLogEventAccountInfo
     @objc public var networkConnectionInfo: DDLogEventNetworkConnectionInfo?
     @objc public var mobileCarrierInfo: DDLogEventCarrierInfo?
     @objc public var attributes: DDLogEventAttributes
@@ -179,6 +181,10 @@ public class DDLogEventUserInfo: NSObject
     @objc public var id: String?
     @objc public var name: String?
     @objc public var email: String?
+    @objc public var extraInfo: [String: Any]
+public class DDLogEventAccountInfo: NSObject
+    @objc public var id: String
+    @objc public var name: String?
     @objc public var extraInfo: [String: Any]
 public class DDLogEventError: NSObject
     @objc public var kind: String?
@@ -341,6 +347,8 @@ public class DDRUMConfiguration: NSObject
     @objc public var telemetrySampleRate: Float
     @objc public var uiKitViewsPredicate: DDUIKitRUMViewsPredicate?
     @objc public var uiKitActionsPredicate: DDUIKitRUMActionsPredicate?
+    @objc public var swiftUIViewsPredicate: DDSwiftUIRUMViewsPredicate?
+    @objc public var swiftUIActionsPredicate: DDSwiftUIRUMActionsPredicate?
     public func setURLSessionTracking(_ tracking: DDRUMURLSessionTracking)
     @objc public var trackFrustrations: Bool
     @objc public var trackBackgroundEvents: Bool
@@ -414,6 +422,7 @@ public class DDRUMActionEventDD: NSObject
     @objc public var browserSdkVersion: String?
     @objc public var configuration: DDRUMActionEventDDConfiguration?
     @objc public var formatVersion: NSNumber
+    @objc public var sdkName: String?
     @objc public var session: DDRUMActionEventDDSession?
 public class DDRUMActionEventDDAction: NSObject
     @objc public var nameSource: DDRUMActionEventDDActionNameSource
@@ -630,6 +639,7 @@ public class DDRUMErrorEventDD: NSObject
     @objc public var browserSdkVersion: String?
     @objc public var configuration: DDRUMErrorEventDDConfiguration?
     @objc public var formatVersion: NSNumber
+    @objc public var sdkName: String?
     @objc public var session: DDRUMErrorEventDDSession?
 public class DDRUMErrorEventDDConfiguration: NSObject
     @objc public var sessionReplaySampleRate: NSNumber?
@@ -925,6 +935,7 @@ public class DDRUMLongTaskEventDD: NSObject
     @objc public var configuration: DDRUMLongTaskEventDDConfiguration?
     @objc public var discarded: NSNumber?
     @objc public var formatVersion: NSNumber
+    @objc public var sdkName: String?
     @objc public var session: DDRUMLongTaskEventDDSession?
 public class DDRUMLongTaskEventDDConfiguration: NSObject
     @objc public var sessionReplaySampleRate: NSNumber?
@@ -1125,6 +1136,7 @@ public class DDRUMResourceEventDD: NSObject
     @objc public var discarded: NSNumber?
     @objc public var formatVersion: NSNumber
     @objc public var rulePsr: NSNumber?
+    @objc public var sdkName: String?
     @objc public var session: DDRUMResourceEventDDSession?
     @objc public var spanId: String?
     @objc public var traceId: String?
@@ -1399,6 +1411,7 @@ public class DDRUMViewEventDD: NSObject
     @objc public var formatVersion: NSNumber
     @objc public var pageStates: [DDRUMViewEventDDPageStates]?
     @objc public var replayStats: DDRUMViewEventDDReplayStats?
+    @objc public var sdkName: String?
     @objc public var session: DDRUMViewEventDDSession?
 public class DDRUMViewEventDDCLS: NSObject
     @objc public var devicePixelRatio: NSNumber?
@@ -1718,6 +1731,7 @@ public class DDRUMVitalEventDD: NSObject
     @objc public var browserSdkVersion: String?
     @objc public var configuration: DDRUMVitalEventDDConfiguration?
     @objc public var formatVersion: NSNumber
+    @objc public var sdkName: String?
     @objc public var session: DDRUMVitalEventDDSession?
     @objc public var vital: DDRUMVitalEventDDVital?
 public class DDRUMVitalEventDDConfiguration: NSObject
@@ -2015,6 +2029,7 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var invTimeThresholdMs: NSNumber?
     @objc public var isMainProcess: NSNumber?
     @objc public var mobileVitalsUpdatePeriod: NSNumber?
+    @objc public var numberOfDisplays: NSNumber?
     @objc public var plugins: [DDTelemetryConfigurationEventTelemetryConfigurationPlugins]?
     @objc public var premiumSampleRate: NSNumber?
     @objc public var reactNativeVersion: String?
@@ -2029,6 +2044,8 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var startRecordingImmediately: NSNumber?
     @objc public var startSessionReplayRecordingManually: NSNumber?
     @objc public var storeContextsAcrossPages: NSNumber?
+    @objc public var swiftuiActionTrackingEnabled: NSNumber?
+    @objc public var swiftuiViewTrackingEnabled: NSNumber?
     @objc public var telemetryConfigurationSampleRate: NSNumber?
     @objc public var telemetrySampleRate: NSNumber?
     @objc public var telemetryUsageSampleRate: NSNumber?
@@ -2041,6 +2058,7 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var tracerApiVersion: String?
     @objc public var trackAnonymousUser: NSNumber?
     @objc public var trackBackgroundEvents: NSNumber?
+    @objc public var trackBfcacheViews: NSNumber?
     @objc public var trackCrossPlatformLongTasks: NSNumber?
     @objc public var trackErrors: NSNumber?
     @objc public var trackFeatureFlagsForEvents: [Int]?
@@ -2060,6 +2078,7 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var unityVersion: String?
     @objc public var useAllowedTracingOrigins: NSNumber?
     @objc public var useAllowedTracingUrls: NSNumber?
+    @objc public var useAllowedTrackingOrigins: NSNumber?
     @objc public var useBeforeSend: NSNumber?
     @objc public var useCrossSiteSessionCookie: NSNumber?
     @objc public var useExcludedActivityUrls: NSNumber?
@@ -2122,6 +2141,15 @@ public class DDTelemetryConfigurationEventTelemetryRUMTelemetryOperatingSystem: 
     @objc public var version: String?
 public class DDTelemetryConfigurationEventView: NSObject
     @objc public var id: String
+public protocol DDSwiftUIRUMViewsPredicate: AnyObject
+    func rumView(for extractedViewName: String) -> DDRUMView?
+public class DDDefaultSwiftUIRUMViewsPredicate: NSObject, DDSwiftUIRUMViewsPredicate
+    public func rumView(for extractedViewName: String) -> DDRUMView?
+public protocol DDSwiftUIRUMActionsPredicate: AnyObject
+    func rumAction(with componentName: String) -> DDRUMAction?
+public class DDDefaultSwiftUIRUMActionsPredicate: NSObject, DDSwiftUIRUMActionsPredicate
+    public init(isLegacyDetectionEnabled: Bool)
+    public func rumAction(with componentName: String) -> DDRUMAction?
 public enum DDInjectEncoding: Int
     case multiple = 0
     case single = 1
