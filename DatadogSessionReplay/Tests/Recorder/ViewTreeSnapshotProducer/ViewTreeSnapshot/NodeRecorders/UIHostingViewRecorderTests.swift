@@ -261,13 +261,7 @@ private func render<V>(
     with attributes: ViewAttributes = .mockAny(),
     in context: ViewTreeRecordingContext = .mockAny()
 ) throws -> [SRWireframe] where V: SwiftUI.View {
-    let recorder: UIHostingViewRecorder
-    if #available(iOS 18.1, tvOS 18.1, *) {
-        recorder = iOS18HostingViewRecorder(identifier: UUID())
-    } else {
-        recorder = UIHostingViewRecorder(identifier: UUID())
-    }
-
+    let recorder = UIHostingViewRecorder(identifier: UUID())
     let window = UIWindow(frame: CGRect(origin: .zero, size: size))
     let host = UIHostingController(rootView: view)
     window.rootViewController = host

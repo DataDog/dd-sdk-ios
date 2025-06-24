@@ -21,6 +21,14 @@ internal class UIHostingViewRecorder: NodeRecorder {
     var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics?
     var textObfuscator: (ViewTreeRecordingContext, ViewAttributes) -> TextObfuscating
 
+    private static let rendererKeyPath: [String] = if #available(iOS 26, tvOS 26, *) {
+        ["_base", "viewGraph", "renderer"]
+    } else if #available(iOS 18.1, tvOS 18.1, *) {
+        ["_base", "renderer"]
+    } else {
+        ["renderer"]
+    }
+
     init(
         identifier: UUID,
         semanticsOverride: @escaping (UIView, ViewAttributes) -> NodeSemantics? = { _, _ in nil },
@@ -48,10 +56,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
     }
 
     func semantics(reflecting subject: AnyObject, nodeID: NodeID, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics? {
-        guard
-            let ivar = class_getInstanceVariable(type(of: subject), "renderer"),
-            let renderer = object_getIvar(subject, ivar) as? AnyObject
-        else {
+        guard let renderer = extractObject(from: subject, keyPath: Self.rendererKeyPath) else {
             return nil
         }
 
@@ -78,19 +83,19 @@ internal class UIHostingViewRecorder: NodeRecorder {
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(subtreeStrategy: .record, nodes: [node])
     }
-}
 
-@available(iOS 18.1, tvOS 18.1, *)
-internal class iOS18HostingViewRecorder: UIHostingViewRecorder {
-    override func semantics(reflecting subject: AnyObject, nodeID: NodeID, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) throws -> NodeSemantics? {
-        guard
-            let ivar = class_getInstanceVariable(type(of: subject), "_base"),
-            let _base = object_getIvar(subject, ivar) as? AnyObject
-        else {
-            return nil
+    private func extractObject(from subject: AnyObject, keyPath: [String]) -> AnyObject? {
+        var current = subject
+        for component in keyPath {
+            guard
+                let ivar = class_getInstanceVariable(type(of: current), component),
+                let next = object_getIvar(current, ivar) as? AnyObject
+            else {
+                return nil
+            }
+            current = next
         }
-
-        return try super.semantics(reflecting: _base, nodeID: nodeID, with: attributes, in: context)
+        return current
     }
 }
 
