@@ -140,7 +140,7 @@ class TraceTests: XCTestCase {
             networkInstrumentation.handlers.firstElement(of: TracingURLSessionHandler.self),
             "It should register `TracingURLSessionHandler` to `NetworkInstrumentationFeature`"
         )
-        XCTAssertEqual(tracingHandler.distributedTraceSampler.samplingRate, 100)
+        XCTAssertEqual(tracingHandler.samplingRate, 100)
     }
 
     func testWhenEnabledWithURLSessionTrackingAndCustomSampleRate() throws {
@@ -169,7 +169,7 @@ class TraceTests: XCTestCase {
             networkInstrumentation.handlers.firstElement(of: TracingURLSessionHandler.self),
             "It should register `TracingURLSessionHandler` to `NetworkInstrumentationFeature`"
         )
-        XCTAssertEqual(tracingHandler.distributedTraceSampler.samplingRate, random, accuracy: 0.001)
+        XCTAssertEqual(tracingHandler.samplingRate, random, accuracy: 0.001)
     }
 
     func testWhenEnabledWithBundleWithRUM() throws {
@@ -246,7 +246,7 @@ class TraceTests: XCTestCase {
         let networkInstrumentation = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         let tracingHandler = try XCTUnwrap(networkInstrumentation.handlers.firstElement(of: TracingURLSessionHandler.self))
         XCTAssertEqual(tracer.localTraceSampler.samplingRate, 100)
-        XCTAssertEqual(tracingHandler.distributedTraceSampler.samplingRate, 100)
+        XCTAssertEqual(tracingHandler.samplingRate, 100)
     }
 
     func testWhenEnabledWithNoDebugSDKArgument() throws {
@@ -269,6 +269,6 @@ class TraceTests: XCTestCase {
         let networkInstrumentation = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         let tracingHandler = try XCTUnwrap(networkInstrumentation.handlers.firstElement(of: TracingURLSessionHandler.self))
         XCTAssertEqual(tracer.localTraceSampler.samplingRate, random)
-        XCTAssertEqual(tracingHandler.distributedTraceSampler.samplingRate, random)
+        XCTAssertEqual(tracingHandler.samplingRate, random)
     }
 }
