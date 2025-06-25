@@ -14,12 +14,6 @@
 @implementation DDSessionReplay_apiTests
 
 // MARK: Configuration
-- (void)testConfigurationDeprecatedApi __attribute__ ((deprecated)) {
-    DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100];
-    configuration.defaultPrivacyLevel = DDSessionReplayConfigurationPrivacyLevelAllow;
-
-    [DDSessionReplay enableWith:configuration];
-}
 
 - (void)testConfigurationWithNewApi {
     DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100

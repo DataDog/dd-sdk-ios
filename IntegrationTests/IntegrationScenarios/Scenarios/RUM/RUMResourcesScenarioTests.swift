@@ -21,62 +21,6 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         let expectedThirdPartyRequestsViewControllerName: String
     }
 
-    func testRUMURLSessionResourcesScenario_composition() throws {
-        try runTest(
-            for: "RUMURLSessionResourcesScenario",
-            expectations: Expectations(
-                expectedFirstPartyRequestsViewControllerName: "Runner.SendFirstPartyRequestsViewController",
-                expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
-            ),
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyComposition,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-    
-    func testRUMURLSessionResourcesScenario_legacyWithAdditionalFirstyPartyHosts() throws {
-        try runTest(
-            for: "RUMURLSessionResourcesScenario",
-            expectations: Expectations(
-                expectedFirstPartyRequestsViewControllerName: "Runner.SendFirstPartyRequestsViewController",
-                expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
-            ),
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyWithAdditionalFirstyPartyHosts,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-    
-    func testRUMURLSessionResourcesScenario_legacyWithFeatureFirstPartyHosts() throws {
-        try runTest(
-            for: "RUMURLSessionResourcesScenario",
-            expectations: Expectations(
-                expectedFirstPartyRequestsViewControllerName: "Runner.SendFirstPartyRequestsViewController",
-                expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
-            ),
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyWithFeatureFirstPartyHosts,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-    
-    func testRUMURLSessionResourcesScenario_inheritance() throws {
-        try runTest(
-            for: "RUMURLSessionResourcesScenario",
-            expectations: Expectations(
-                expectedFirstPartyRequestsViewControllerName: "Runner.SendFirstPartyRequestsViewController",
-                expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
-            ),
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyInheritance,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-
     func testRUMURLSessionResourcesScenario_delegateUsingFeatureFirstPartyHosts() throws {
         try runTest(
             for: "RUMURLSessionResourcesScenario",
@@ -99,63 +43,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .delegateWithAdditionalFirstyPartyHosts,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-
-    func testRUMNSURLSessionResourcesScenario_composition() throws {
-        try runTest(
-            for: "RUMNSURLSessionResourcesScenario",
-            expectations: Expectations(
-                expectedFirstPartyRequestsViewControllerName: "ObjcSendFirstPartyRequestsViewController",
-                expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
-            ),
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyComposition,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-    
-    func testRUMNSURLSessionResourcesScenario_legacyWithAdditionalFirstyPartyHosts() throws {
-        try runTest(
-            for: "RUMNSURLSessionResourcesScenario",
-            expectations: Expectations(
-                expectedFirstPartyRequestsViewControllerName: "ObjcSendFirstPartyRequestsViewController",
-                expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
-            ),
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyWithAdditionalFirstyPartyHosts,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-    
-    func testRUMNSURLSessionResourcesScenario_legacyWithFeatureFirstPartyHosts() throws {
-        try runTest(
-            for: "RUMNSURLSessionResourcesScenario",
-            expectations: Expectations(
-                expectedFirstPartyRequestsViewControllerName: "ObjcSendFirstPartyRequestsViewController",
-                expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
-            ),
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyWithFeatureFirstPartyHosts,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-    
-    func testRUMNSURLSessionResourcesScenario_inheritance() throws {
-        try runTest(
-            for: "RUMNSURLSessionResourcesScenario",
-            expectations: Expectations(
-                expectedFirstPartyRequestsViewControllerName: "ObjcSendFirstPartyRequestsViewController",
-                expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
-            ),
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyInheritance,
+                instrumentationMethod: .delegateWithAdditionalFirstPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -183,7 +71,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .delegateWithAdditionalFirstyPartyHosts,
+                instrumentationMethod: .delegateWithAdditionalFirstPartyHosts,
                 initializationMethod: .afterSDK
             )
         )

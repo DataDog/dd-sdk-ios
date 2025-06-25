@@ -25,18 +25,6 @@ public enum DatadogSite: String {
     /// US based servers, FedRAMP compatible.
     /// Sends data to [app.ddog-gov.com](https://app.ddog-gov.com/).
     case us1_fed
-    /// US based servers.
-    /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
-    @available(*, deprecated, message: "Renamed to us1")
-    public static let us: DatadogSite = .us1
-    /// Europe based servers.
-    /// Sends data to [app.datadoghq.eu](https://app.datadoghq.eu/).
-    @available(*, deprecated, message: "Renamed to eu1")
-    public static let eu: DatadogSite = .eu1
-    /// Gov servers.
-    /// Sends data to [app.ddog-gov.com](https://app.ddog-gov.com/).
-    @available(*, deprecated, message: "Renamed to us1_fed")
-    public static let gov: DatadogSite = .us1_fed
 }
 
 extension DatadogSite {

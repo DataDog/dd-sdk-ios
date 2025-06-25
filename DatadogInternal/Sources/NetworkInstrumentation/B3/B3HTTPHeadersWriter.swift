@@ -6,9 +6,6 @@
 
 import Foundation
 
-@available(*, deprecated, renamed: "B3HTTPHeadersWriter")
-public typealias OTelHTTPHeadersWriter = B3HTTPHeadersWriter
-
 /// The `B3HTTPHeadersWriter` class facilitates the injection of trace propagation headers into network requests
 /// targeted at a backend expecting [B3 propagation format](https://github.com/openzipkin/b3-propagation).
 ///

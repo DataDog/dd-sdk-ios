@@ -384,7 +384,7 @@ private func strictValidate(device: Device) throws {
     #if os(iOS)
     guard device.type == .mobile || device.type == .tablet else {
         throw RUMSessionConsistencyException(
-            description: "When running on iOS or iPadOS, the `device.type` must be `.mobile` or `.tablet` (got `\(device.type)` instead)"
+            description: "When running on iOS or iPadOS, the `device.type` must be `.mobile` or `.tablet` (got `\(device.type ?? .other)` instead)"
         )
     }
     let prefixes = ["iPhone", "iPod", "iPad"]
@@ -401,7 +401,7 @@ private func strictValidate(device: Device) throws {
     #else
     guard device.type != .tv else {
         throw RUMSessionConsistencyException(
-            description: "When running on tvOS, the `device.type` must be `.tv` (got `\(device.type)` instead)"
+            description: "When running on tvOS, the `device.type` must be `.tv` (got `\(device.type ?? .other)` instead)"
         )
     }
     guard device.name == "Apple TV" else {

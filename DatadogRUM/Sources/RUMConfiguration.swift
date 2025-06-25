@@ -7,11 +7,7 @@
 import Foundation
 import DatadogInternal
 
-// Export `DDURLSessionDelegate` elements to be available with `import DatadogRUM`:
 // swiftlint:disable duplicate_imports
-@_exported import class DatadogInternal.DatadogURLSessionDelegate
-@_exported import typealias DatadogInternal.DDURLSessionDelegate
-@_exported import protocol DatadogInternal.__URLSessionDelegateProviding
 @_exported import enum DatadogInternal.URLSessionInstrumentation
 @_exported import enum DatadogInternal.TraceContextInjection
 @_exported import struct DatadogInternal.RUMViewEvent

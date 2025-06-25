@@ -6,6 +6,7 @@
 
 import XCTest
 import DatadogInternal
+import TestUtilities
 @testable import DatadogCore
 
 class DDErrorTests: XCTestCase {
@@ -56,8 +57,6 @@ class DDErrorTests: XCTestCase {
     }
 
     func testFormattingNSErrorSubclass() {
-        class NSErrorSubclass: NSError {}
-
         let dderrorWithDescription = DDError(
             error: NSErrorSubclass(
                 domain: "custom-domain",

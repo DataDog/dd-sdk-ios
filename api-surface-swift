@@ -21,7 +21,6 @@ public enum Datadog
     public static func isInitialized(instanceName name: String = CoreRegistry.defaultInstanceName) -> Bool
     public static func sdkInstance(named name: String) -> DatadogCoreProtocol
     public static func setUserInfo(id: String,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func addUserExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func setAccountInfo(id: String,name: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func addAccountExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
@@ -347,7 +346,6 @@ public struct RUMView
     public var path: String?
     public var attributes: [AttributeKey: AttributeValue]
     public var isUntrackedModal: Bool
-    public init(path: String, attributes: [AttributeKey: AttributeValue] = [:])
     public init(name: String, attributes: [AttributeKey: AttributeValue] = [:], isUntrackedModal: Bool = false)
 public protocol SwiftUIRUMViewsPredicate
     func rumView(for extractedViewName: String) -> RUMView?
@@ -1200,15 +1198,13 @@ public enum SessionReplay
 [?] extension SessionReplay
     public struct Configuration
         public var replaySampleRate: Float
-        public var defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask
         public var textAndInputPrivacyLevel: TextAndInputPrivacyLevel
         public var imagePrivacyLevel: ImagePrivacyLevel
         public var touchPrivacyLevel: TouchPrivacyLevel
         public var startRecordingImmediately: Bool
         public var customEndpoint: URL?
         public var featureFlags: FeatureFlags
-        public init(replaySampleRate: SampleRate = .maxSampleRate,textAndInputPrivacyLevel: TextAndInputPrivacyLevel,imagePrivacyLevel: ImagePrivacyLevel,touchPrivacyLevel: TouchPrivacyLevel,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil,featureFlags: FeatureFlags = .defaults)
-        public init(replaySampleRate: SampleRate = .maxSampleRate,defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
+        public init(replaySampleRate: SampleRate = .maxSampleRate,textAndInputPrivacyLevel: TextAndInputPrivacyLevel = .maskAll,imagePrivacyLevel: ImagePrivacyLevel = .maskAll,touchPrivacyLevel: TouchPrivacyLevel = .hide,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil,featureFlags: FeatureFlags = .defaults)
         public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder])
 [?] extension SessionReplay.Configuration
     public typealias FeatureFlags = [FeatureFlag: Bool]

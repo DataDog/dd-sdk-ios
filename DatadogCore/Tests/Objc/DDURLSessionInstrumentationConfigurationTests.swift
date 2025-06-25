@@ -11,11 +11,11 @@ import DatadogInternal
 @testable import DatadogCore
 
 final class DDURLSessionInstrumentationConfigurationTests: XCTestCase {
-    private var objc = objc_URLSessionInstrumentationConfiguration(delegateClass: MockDelegate.self)
+    private var objc = objc_URLSessionInstrumentationConfiguration(delegateClass: SessionDataDelegateMock.self)
     private var swift: URLSessionInstrumentation.Configuration { objc.swiftConfig }
 
     func testDelegateClass() {
-        XCTAssertTrue(objc.delegateClass === MockDelegate.self)
+        XCTAssertTrue(objc.delegateClass === SessionDataDelegateMock.self)
     }
 
     func testFirstPartyHostsTracing() {
@@ -24,8 +24,5 @@ final class DDURLSessionInstrumentationConfigurationTests: XCTestCase {
 
         objc.setFirstPartyHostsTracing(.init(hostsWithHeaderTypes: ["example.com": [.b3, .datadog]]))
         DDAssertReflectionEqual(swift.firstPartyHostsTracing, .traceWithHeaders(hostsWithHeaders: ["example.com": [.b3, .datadog]]))
-    }
-
-    class MockDelegate: NSObject, URLSessionDataDelegate {
     }
 }

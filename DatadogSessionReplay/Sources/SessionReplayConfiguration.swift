@@ -28,20 +28,6 @@ extension SessionReplay {
         /// and within those sessions, only 20% will have replays.
         public var replaySampleRate: Float
 
-        /// Defines the way sensitive content (e.g. text) should be masked.
-        ///
-        /// Default: `.mask`.
-        @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use the new privacy levels instead.")
-        public var defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask {
-            /// Whenever a new `defaultPrivacyLevel` is set, it converts it to the new privacy levels.
-            didSet {
-                let newPrivacyLevels = Self.convertPrivacyLevel(from: defaultPrivacyLevel)
-                self.textAndInputPrivacyLevel = newPrivacyLevels.textAndInputPrivacy
-                self.imagePrivacyLevel = newPrivacyLevels.imagePrivacy
-                self.touchPrivacyLevel = newPrivacyLevels.touchPrivacy
-            }
-        }
-
         /// Defines the way text and input (e.g. textfields, checkboxes) should be masked.
         ///
         /// Default: `.maskAll`.
@@ -89,9 +75,9 @@ extension SessionReplay {
         ///   - featureFlags: Experimental feature flags.
         public init(
             replaySampleRate: SampleRate = .maxSampleRate,
-            textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
-            imagePrivacyLevel: ImagePrivacyLevel,
-            touchPrivacyLevel: TouchPrivacyLevel,
+            textAndInputPrivacyLevel: TextAndInputPrivacyLevel = .maskAll,
+            imagePrivacyLevel: ImagePrivacyLevel = .maskAll,
+            touchPrivacyLevel: TouchPrivacyLevel = .hide,
             startRecordingImmediately: Bool = true,
             customEndpoint: URL? = nil,
             featureFlags: FeatureFlags = .defaults
@@ -105,64 +91,11 @@ extension SessionReplay {
             self.featureFlags = featureFlags
         }
 
-        /// Creates Session Replay configuration.
-        /// - Parameters:
-        ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
-        ///   - defaultPrivacyLevel: The way sensitive content (e.g. text) should be masked. Default: `.mask`.
-        ///   - startRecordingImmediately: If the recording should start automatically. When `true`, the recording starts automatically; when `false` it doesn't, and the recording will need to be started manually. Default: `true`.
-        ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
-        @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(replaySampleRate:textAndInputPrivacyLevel:imagePrivacyLevel:touchPrivacyLevel:)` instead.")
-        public init(
-            replaySampleRate: SampleRate = .maxSampleRate,
-            defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,
-            startRecordingImmediately: Bool = true,
-            customEndpoint: URL? = nil
-        ) {
-            self.replaySampleRate = replaySampleRate
-            self.defaultPrivacyLevel = defaultPrivacyLevel
-            let newPrivacyLevels = Self.convertPrivacyLevel(from: defaultPrivacyLevel)
-            self.textAndInputPrivacyLevel = newPrivacyLevels.textAndInputPrivacy
-            self.imagePrivacyLevel = newPrivacyLevels.imagePrivacy
-            self.touchPrivacyLevel = newPrivacyLevels.touchPrivacy
-            self.startRecordingImmediately = startRecordingImmediately
-            self.customEndpoint = customEndpoint
-            self.featureFlags = .defaults
-        }
-
         // swiftlint:enable function_default_parameter_at_end
 
         @_spi(Internal)
         public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder]) {
             self._additionalNodeRecorders = additionalNodeRecorders
-        }
-
-        /// Method to convert deprecated `SessionReplayPrivacyLevel` to the new privacy levels.
-        internal static func convertPrivacyLevel(from oldPrivacyLevel: SessionReplayPrivacyLevel)
-        -> (
-            textAndInputPrivacy: TextAndInputPrivacyLevel,
-            imagePrivacy: ImagePrivacyLevel,
-            touchPrivacy: TouchPrivacyLevel
-        ) {
-            switch oldPrivacyLevel {
-            case .allow:
-                return (
-                    textAndInputPrivacy: .maskSensitiveInputs,
-                    imagePrivacy: .maskNone,
-                    touchPrivacy: .show
-                )
-            case .maskUserInput:
-                return (
-                    textAndInputPrivacy: .maskAllInputs,
-                    imagePrivacy: .maskNonBundledOnly,
-                    touchPrivacy: .hide
-                )
-            case .mask:
-                return (
-                    textAndInputPrivacy: .maskAll,
-                    imagePrivacy: .maskAll,
-                    touchPrivacy: .hide
-                )
-            }
         }
     }
 }
