@@ -93,25 +93,38 @@ extension DisplayList.ViewUpdater.ViewInfo: Reflection {
         // for building wireframe
 
         let layer = try reflector.descendant(type: CALayer.self, "layer")
-        // The view is the rendering context of an item
-        let view = try reflector.descendant(type: UIView.self, "view")
-        // The container view is where the item is actually rendered.
-        // The container is usually the same as the view, except when applying
-        // a `.platformGroup` effect. e.g: A `SwiftUI.ScrollView` will create a
-        // `.platformGroup` effect where the `Content` is rendered in a `UIScrollView`,
-        // in this case the container is the content of the `UIScrollView`.
-        let container = try reflector.descendant(type: UIView.self, "container")
 
-        // The frame is the container's frame in the view's coordinate space.
-        // This is useful for applying the offset in a scroll-view.
-        frame = container.convert(container.bounds, to: view)
+        if let view = reflector.descendantIfPresent(type: UIView.self, "view") {
+            // The view is the rendering context of an item
+
+            // The container view is where the item is actually rendered.
+            // The container is usually the same as the view, except when applying
+            // a `.platformGroup` effect. e.g: A `SwiftUI.ScrollView` will create a
+            // `.platformGroup` effect where the `Content` is rendered in a `UIScrollView`,
+            // in this case the container is the content of the `UIScrollView`.
+            let container = try reflector.descendant(type: UIView.self, "container")
+
+            // The frame is the container's frame in the view's coordinate space.
+            // This is useful for applying the offset in a scroll-view.
+            frame = container.convert(container.bounds, to: view)
+            alpha = view.alpha
+            intrinsicContentSize = container.intrinsicContentSize
+        } else {
+            // In this case 'view' and 'layer' are the same
+
+            // The container is another layer, usually the same as 'view'
+            let container = try reflector.descendant(type: CALayer.self, "container")
+
+            frame = container.convert(container.bounds, to: layer)
+            alpha = .init(layer.opacity)
+            intrinsicContentSize = container.preferredFrameSize()
+        }
+
         backgroundColor = layer.backgroundColor?.safeCast
         borderColor = layer.borderColor?.safeCast
         borderWidth = layer.borderWidth
         cornerRadius = layer.cornerRadius
-        alpha = view.alpha
         isHidden = layer.isHidden
-        intrinsicContentSize = container.intrinsicContentSize
     }
 }
 
