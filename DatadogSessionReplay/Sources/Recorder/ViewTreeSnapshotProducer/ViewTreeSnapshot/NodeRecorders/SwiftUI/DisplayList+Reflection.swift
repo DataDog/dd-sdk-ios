@@ -156,7 +156,11 @@ extension DisplayList.Content.Value: Reflection {
             self = .unknown
 
         case let (.enum("color"), color):
-            self = try .color(reflector.reflect(color))
+            if #available(iOS 26, tvOS 26, *) {
+                self = try .color(reflector.reflect(type: ColorView.self, color).color)
+            } else {
+                self = try .color(reflector.reflect(color))
+            }
 
         default:
             self = .unknown
