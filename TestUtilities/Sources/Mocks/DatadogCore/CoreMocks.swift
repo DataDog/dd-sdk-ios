@@ -363,24 +363,29 @@ class MockHostsSanitizer: HostsSanitizing {
 }
 
 public class AppLaunchHandlerMock: AppLaunchHandling {
-    /// Indicates whether the application was prewarmed by the system.
-    public let isActivePrewarm: Bool
+    /// The current process’s task policy role (`task_role_t`), indicating how the process was started (e.g., user vs background launch).
+    /// On success, the property contains the raw [`policy.role`](https://developer.apple.com/documentation/kernel/task_role_t) value
+    /// defined in `MachO`; otherwise, it returns one of the special constants defined in `ObjcAppLaunchHandler.h`:
+    /// - `__dd_private_TASK_POLICY_KERN_FAILURE`
+    /// - `__dd_private_TASK_POLICY_DEFAULTED`
+    /// - `__dd_private_TASK_POLICY_UNAVAILABLE`
+    public var taskPolicyRole: Int
     /// The timestamp when the application process was launched.
-    public let launchDate: Date
+    public let processLaunchDate: Date
     /// The time interval between the app process launch and the `UIApplication.didBecomeActiveNotification`.
     /// Returns `nil` if the notification has not yet been received.
-    public var timeToDidBecomeActive: TimeInterval?
+    public var timeToDidBecomeActive: NSNumber?
     /// Stores the callback to be invoked when the application becomes active.
     private var didBecomeActiveCallback: UIApplicationDidBecomeActiveCallback?
 
     public init(
-        launchDate: Date,
-        timeToDidBecomeActive: TimeInterval?,
-        isActivePrewarm: Bool
+        taskPolicyRole: Int = 1,
+        processLaunchDate: Date = .mockAny(),
+        timeToDidBecomeActive: TimeInterval? = nil
     ) {
-        self.launchDate = launchDate
-        self.timeToDidBecomeActive = timeToDidBecomeActive
-        self.isActivePrewarm = isActivePrewarm
+        self.taskPolicyRole = taskPolicyRole
+        self.processLaunchDate = processLaunchDate
+        self.timeToDidBecomeActive = timeToDidBecomeActive.map { NSNumber(value: $0) }
     }
 
     public func setApplicationDidBecomeActiveCallback(_ callback: @escaping UIApplicationDidBecomeActiveCallback) {
@@ -399,10 +404,12 @@ public class AppLaunchHandlerMock: AppLaunchHandling {
     /// - Parameter timeInterval: The time interval from launch to activation.
     public func simulateDidBecomeActive(timeInterval: TimeInterval) {
         guard timeToDidBecomeActive == nil else {
+            // Following the `AppLaunchHandling.setApplicationDidBecomeActiveCallback(_:)` requirement, do not
+            // notify the callback for subsequent activations.
             return
         }
 
-        timeToDidBecomeActive = timeInterval
+        timeToDidBecomeActive = NSNumber(value: timeInterval)
         didBecomeActiveCallback?(timeInterval)
     }
 }

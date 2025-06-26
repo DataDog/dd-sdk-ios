@@ -53,7 +53,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.service, "dd-sdk-ios")
         XCTAssertEqual(event?.source, .flutter)
         XCTAssertEqual(event?.telemetry.message, "Hello world!")
-        XCTAssertEqual(event?.telemetry.telemetryInfo as? [String: Int], ["foo": 42])
+        XCTAssertEqual(event?.telemetry.telemetryInfo["foo"] as? Int, 42)
         XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
@@ -103,7 +103,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.session?.id, rumContext.sessionID)
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
         XCTAssertEqual(event?.action?.id, rumContext.userActionID)
-        XCTAssertEqual(event?.telemetry.telemetryInfo as? [String: Int], ["foo": 42])
+        XCTAssertEqual(event?.telemetry.telemetryInfo["foo"] as? Int, 42)
         XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
@@ -125,6 +125,38 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.action?.id, rumContext.userActionID)
         XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
+
+    func testAddingUptimeAttribute() throws {
+        let processLaunchDate = Date()
+        let dateProvider = DateProviderMock(now: processLaunchDate + 1.42)
+        featureScope.contextMock = .mockWith(launchInfo: .mockWith(processLaunchDate: processLaunchDate))
+
+        // Given
+        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope, dateProvider: dateProvider)
+
+        // When
+        let telemetry = TelemetryMock(with: receiver)
+        telemetry.debug("Debug", attributes: ["foo": 1])
+        telemetry.error("Error")
+        telemetry.metric(name: "Metric", attributes: ["bar": 2], sampleRate: 100)
+
+        // Then
+        let debugEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first)
+        let errorEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: TelemetryErrorEvent.self).first)
+        let metricEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).last)
+        XCTAssertEqual(debugEvent.telemetry.message, "Debug")
+        XCTAssertEqual(debugEvent.telemetry.telemetryInfo[TelemetryReceiver.uptimeAttributeName] as? Int64, 1_420)
+        XCTAssertEqual(debugEvent.telemetry.telemetryInfo["foo"] as? Int, 1)
+
+        XCTAssertEqual(errorEvent.telemetry.message, "Error")
+        XCTAssertEqual(errorEvent.telemetry.telemetryInfo[TelemetryReceiver.uptimeAttributeName] as? Int64, 1_420)
+
+        XCTAssertEqual(metricEvent.telemetry.message, "[Mobile Metric] Metric")
+        XCTAssertEqual(metricEvent.telemetry.telemetryInfo[TelemetryReceiver.uptimeAttributeName] as? Int64, 1_420)
+        XCTAssertEqual(metricEvent.telemetry.telemetryInfo["bar"] as? Int, 2)
+    }
+
+    // MARK: - Filtering & Limiting
 
     func testSendTelemetry_discardDuplicates() throws {
         // Given
@@ -182,6 +214,8 @@ class TelemetryReceiverTests: XCTestCase {
         let errorEvents = featureScope.eventsWritten(ofType: TelemetryErrorEvent.self)
         XCTAssertEqual(debugEvents.count + errorEvents.count, 100)
     }
+
+    // MARK: - Sampling
 
     func testSampledTelemetry_rejectAll() throws {
         // Given

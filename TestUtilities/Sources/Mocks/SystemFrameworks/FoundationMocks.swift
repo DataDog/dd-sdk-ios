@@ -487,6 +487,7 @@ public class BundleMock: Bundle, @unchecked Sendable {
     fileprivate var _CFBundleVersion: String? = nil
     fileprivate var _CFBundleShortVersionString: String? = nil
     fileprivate var _CFBundleExecutable: String? = nil
+    fileprivate var _UIApplicationSceneManifest: Any? = nil
     // swiftlint:enable identifier_name
 
     override public var bundlePath: String { _bundlePath }
@@ -496,6 +497,7 @@ public class BundleMock: Bundle, @unchecked Sendable {
         case "CFBundleVersion": return _CFBundleVersion
         case "CFBundleShortVersionString": return _CFBundleShortVersionString
         case "CFBundleExecutable": return _CFBundleExecutable
+        case "UIApplicationSceneManifest": return _UIApplicationSceneManifest
         default: return super.object(forInfoDictionaryKey: key)
         }
     }
@@ -511,7 +513,8 @@ extension Bundle {
         bundleIdentifier: String? = .mockAny(),
         CFBundleVersion: String? = .mockAny(),
         CFBundleShortVersionString: String? = .mockAny(),
-        CFBundleExecutable: String? = .mockAny()
+        CFBundleExecutable: String? = .mockAny(),
+        UIApplicationSceneManifest: Any? = nil
     ) -> Bundle {
         let mock = BundleMock()
         mock._bundlePath = bundlePath
@@ -519,6 +522,7 @@ extension Bundle {
         mock._CFBundleVersion = CFBundleVersion
         mock._CFBundleShortVersionString = CFBundleShortVersionString
         mock._CFBundleExecutable = CFBundleExecutable
+        mock._UIApplicationSceneManifest = UIApplicationSceneManifest
         return mock
     }
 }

@@ -79,7 +79,7 @@ class StopCoreScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingComm
 
         try assertLoggingDataWasCollected(by: loggingServerSession)
         try assertTracingDataWasCollected(by: tracingServerSession)
-        try assertRUMSessionWasCollected(by: rumServerSession)
+        try assertInitialRUMSessionWasCollected(by: rumServerSession)
         server.clearAllRequests()
 
         // Stop the core and replay the scenario
@@ -101,7 +101,7 @@ class StopCoreScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingComm
 
         try assertLoggingDataWasCollected(by: loggingServerSession)
         try assertTracingDataWasCollected(by: tracingServerSession)
-        try assertRUMSessionWasCollected(by: rumServerSession)
+        try assertRUMSessionWasCollectedAfterSDKRestart(by: rumServerSession)
     }
 
     /// Plays following scenario for started application:
@@ -149,8 +149,8 @@ class StopCoreScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingComm
         XCTAssertEqual(try spanMatcher.operationName(), "test span")
     }
 
-    private func assertRUMSessionWasCollected(by serverSession: ServerSession) throws {
-        // Get RUM Sessions with expected number of View visits
+    private func assertInitialRUMSessionWasCollected(by serverSession: ServerSession) throws {
+        // Get RUM Sessions with expected number of Action events:
         let recordedRequests = try serverSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
             try RUMSessionMatcher.singleSession(from: requests)?.actionEventMatchers.count == 8
         }
@@ -161,15 +161,42 @@ class StopCoreScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingComm
         sendCIAppLog(session)
 
         XCTAssertTrue(session.views[0].isApplicationLaunchView())
+        XCTAssertEqual(session.views[0].actionEvents.count, 2)
         XCTAssertEqual(session.views[0].actionEvents[0].action.type, .applicationStart)
 
         XCTAssertEqual(session.views[1].name, "Home")
-        XCTAssertGreaterThan(session.views[1].actionEvents.count, 0)
+        XCTAssertEqual(session.views[1].actionEvents.count, 3)
 
         XCTAssertEqual(session.views[2].name, "Picture")
+        XCTAssertEqual(session.views[2].actionEvents.count, 2)
         XCTAssertEqual(session.views[2].resourceEvents.count, 1)
-        XCTAssertGreaterThan(session.views[2].actionEvents.count, 0)
 
         XCTAssertEqual(session.views[3].name, "Home")
+        XCTAssertEqual(session.views[3].actionEvents.count, 1)
+    }
+
+    private func assertRUMSessionWasCollectedAfterSDKRestart(by serverSession: ServerSession) throws {
+        // Get RUM Sessions with expected number of Action events:
+        let recordedRequests = try serverSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            try RUMSessionMatcher.singleSession(from: requests)?.actionEventMatchers.count == 7
+        }
+
+        assertRUM(requests: recordedRequests)
+
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRequests))
+        sendCIAppLog(session)
+
+        XCTAssertTrue(session.views[0].isApplicationLaunchView())
+        XCTAssertEqual(session.views[0].actionEvents.count, 1)
+
+        XCTAssertEqual(session.views[1].name, "Home")
+        XCTAssertEqual(session.views[1].actionEvents.count, 3)
+
+        XCTAssertEqual(session.views[2].name, "Picture")
+        XCTAssertEqual(session.views[2].actionEvents.count, 2)
+        XCTAssertEqual(session.views[2].resourceEvents.count, 1)
+
+        XCTAssertEqual(session.views[3].name, "Home")
+        XCTAssertEqual(session.views[3].actionEvents.count, 1)
     }
 }

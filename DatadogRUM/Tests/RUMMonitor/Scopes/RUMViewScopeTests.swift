@@ -95,7 +95,11 @@ class RUMViewScopeTests: XCTestCase {
         // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
-        let customContext: DatadogContext = .mockWith(source: source)
+        let customContext: DatadogContext = .mockWith(
+            source: source,
+            launchInfo: .mockWith(processLaunchDate: currentTime),
+            applicationStateHistory: .mockWith(initialState: .inactive, date: .distantPast)
+        )
 
         let scope = RUMViewScope(
             isInitialView: true,
@@ -122,15 +126,17 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.source, .init(rawValue: source))
     }
 
-    func testWhenNoLoadingTime_itSendsApplicationStartAction_basedOnLoadingDate() throws {
+    func testWhenTimeToDidBecomeActiveTime_itSendsApplicationStartAction_basedOnLoadingDate() throws {
         // Given
         var context = self.context
         let date = context.sdkInitDate
-        context.launchTime = .init(
-            launchTime: nil,
-            launchDate: date.addingTimeInterval(-2),
-            isActivePrewarm: false
+        let processLaunchDate = date.addingTimeInterval(-2)
+        context.launchInfo = .mockWith(
+            launchReason: .userLaunch,
+            processLaunchDate: processLaunchDate,
+            timeToDidBecomeActive: nil
         )
+        context.applicationStateHistory = .mockWith(initialState: .inactive, date: .distantPast)
 
         let scope: RUMViewScope = .mockWith(
             isInitialView: true,
@@ -139,7 +145,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: .mockViewIdentifier(),
             path: "com/datadog/application-launch/view",
             name: "ApplicationLaunch",
-            startTime: date
+            startTime: processLaunchDate
         )
 
         // When
@@ -152,40 +158,6 @@ class RUMViewScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.action.loadingTime, 3_000_000_000) // 2e+9 ns
-    }
-
-    func testWhenActivePrewarm_itSendsApplicationStartAction_withoutLoadingTime() throws {
-        // Given
-        var context = self.context
-        let date = Date()
-        context.launchTime = .init(
-            launchTime: 2,
-            launchDate: .distantPast,
-            isActivePrewarm: true
-        )
-
-        let scope: RUMViewScope = .mockWith(
-            isInitialView: true,
-            parent: parent,
-            dependencies: .mockAny(),
-            identity: .mockViewIdentifier(),
-            path: "com/datadog/application-launch/view",
-            name: "ApplicationLaunch"
-        )
-
-        // When
-        _ = scope.process(
-            command: RUMApplicationStartCommand(time: date, attributes: [:]),
-            context: context,
-            writer: writer
-        )
-
-        // Then
-        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
-        let isActivePrewarm = try XCTUnwrap(event.context?.contextInfo[RUMViewScope.Constants.activePrewarm] as? Bool)
-        XCTAssertEqual(event.action.type, .applicationStart)
-        XCTAssertNil(event.action.loadingTime)
-        XCTAssertTrue(isActivePrewarm)
     }
 
     func testWhenInitialViewReceivesAnyCommand_itSendsViewUpdateEvent() throws {
@@ -756,10 +728,13 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     func testWhenEventsAreSent_theyIncludeSessionPrecondition() throws {
+        let processLaunchDate: Date = .mockDecember15th2019At10AMUTC()
+        var currentTime = processLaunchDate
+        context.applicationStateHistory = .mockWith(initialState: .inactive, date: .distantPast)
+        context.launchInfo = .mockWith(processLaunchDate: processLaunchDate)
         let randomPrecondition: RUMSessionPrecondition = .mockRandom()
         parent.context.sessionPrecondition = randomPrecondition
 
-        var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
@@ -768,7 +743,7 @@ class RUMViewScopeTests: XCTestCase {
             path: .mockAny(),
             name: .mockAny(),
             customTimings: [:],
-            startTime: currentTime,
+            startTime: processLaunchDate,
             serverTimeOffset: .zero,
             interactionToNextViewMetric: INVMetricMock()
         )
@@ -2435,10 +2410,8 @@ class RUMViewScopeTests: XCTestCase {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let appLauchToErrorTimeDiff = Int64.random(in: 10..<1_000_000)
 
-        context.launchTime = .mockWith(
-            launchTime: .mockAny(),
-            launchDate: currentTime,
-            isActivePrewarm: .mockAny()
+        context.launchInfo = .mockWith(
+            processLaunchDate: currentTime
         )
 
         let scope = RUMViewScope(

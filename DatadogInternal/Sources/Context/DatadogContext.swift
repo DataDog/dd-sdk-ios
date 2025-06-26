@@ -83,8 +83,8 @@ public struct DatadogContext {
     /// The user's consent to data collection
     public var trackingConsent: TrackingConsent = .pending
 
-    /// Application launch time info.
-    public var launchTime: LaunchTime
+    /// Application launch info.
+    public var launchInfo: LaunchInfo
 
     /// Provides the history of app foreground / background states.
     public var applicationStateHistory: AppStateHistory
@@ -140,7 +140,7 @@ public struct DatadogContext {
         userInfo: UserInfo? = nil,
         accountInfo: AccountInfo? = nil,
         trackingConsent: TrackingConsent = .pending,
-        launchTime: LaunchTime,
+        launchInfo: LaunchInfo,
         applicationStateHistory: AppStateHistory,
         networkConnectionInfo: NetworkConnectionInfo? = nil,
         carrierInfo: CarrierInfo? = nil,
@@ -170,7 +170,7 @@ public struct DatadogContext {
         self.userInfo = userInfo
         self.accountInfo = accountInfo
         self.trackingConsent = trackingConsent
-        self.launchTime = launchTime
+        self.launchInfo = launchInfo
         self.applicationStateHistory = applicationStateHistory
         self.networkConnectionInfo = networkConnectionInfo
         self.carrierInfo = carrierInfo

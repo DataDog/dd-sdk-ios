@@ -302,7 +302,7 @@ class CrashContextProviderTests: XCTestCase {
     // MARK: - Helpers
 
     private func DDAssert(crashContext: CrashContext, includes sdkContext: DatadogContext, file: StaticString = #filePath, line: UInt = #line) {
-        XCTAssertEqual(crashContext.appLaunchDate, sdkContext.launchTime.launchDate, file: file, line: line)
+        XCTAssertEqual(crashContext.appLaunchDate, sdkContext.launchInfo.processLaunchDate, file: file, line: line)
         XCTAssertEqual(crashContext.serverTimeOffset, sdkContext.serverTimeOffset, file: file, line: line)
         XCTAssertEqual(crashContext.service, sdkContext.service, file: file, line: line)
         XCTAssertEqual(crashContext.env, sdkContext.env, file: file, line: line)
@@ -317,6 +317,6 @@ class CrashContextProviderTests: XCTestCase {
         DDAssertReflectionEqual(crashContext.accountInfo, sdkContext.accountInfo, file: file, line: line)
         XCTAssertEqual(crashContext.networkConnectionInfo, sdkContext.networkConnectionInfo, file: file, line: line)
         XCTAssertEqual(crashContext.carrierInfo, sdkContext.carrierInfo, file: file, line: line)
-        XCTAssertEqual(crashContext.lastIsAppInForeground, sdkContext.applicationStateHistory.currentSnapshot.state.isRunningInForeground, file: file, line: line)
+        XCTAssertEqual(crashContext.lastIsAppInForeground, sdkContext.applicationStateHistory.currentState.isRunningInForeground, file: file, line: line)
     }
 }

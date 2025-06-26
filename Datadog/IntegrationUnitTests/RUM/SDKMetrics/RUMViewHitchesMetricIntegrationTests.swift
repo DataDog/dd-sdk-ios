@@ -17,7 +17,8 @@ final class RUMViewHitchesMetricIntegrationTests: XCTestCase {
     override func setUp() {
         core = DatadogCoreProxy()
         core.context = .mockWith(
-            launchTime: .mockWith(launchDate: dateProvider.now),
+            sdkInitDate: dateProvider.now,
+            launchInfo: .mockWith(processLaunchDate: dateProvider.now),
             applicationStateHistory: .mockAppInForeground(since: dateProvider.now)
         )
         rumConfig = RUM.Configuration(applicationID: .mockAny())

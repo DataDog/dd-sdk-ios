@@ -5,115 +5,172 @@
  */
 
 import XCTest
+import DatadogInternal
+import TestUtilities
 @testable import DatadogRUM
 
 class RUMOffViewEventsHandlingRuleTests: XCTestCase {
-    // MARK: - When There Is No RUM Session
+    func testOffViewHandlingRules() {
+        struct Case {
+            let description: String
+            let applicationState: RUMApplicationState?
+            let sessionState: RUMSessionState?
+            let isAppInForeground: Bool
+            let isBETEnabled: Bool
+            let canStartBackgroundViewAfterSessionStop: Bool
+            let expected: RUMOffViewEventsHandlingRule
+        }
 
-    func testWhenThereIsNoRUMSessionAndAppIsInForeground_itShouldHandleEventsInApplicationLaunchView() {
-        let rule = RUMOffViewEventsHandlingRule(
-            sessionState: nil,
-            isAppInForeground: true,
-            isBETEnabled: .mockRandom()
+        let notSampledSession = RUMSessionState(
+            sessionUUID: .nullUUID,
+            isInitialSession: true,
+            hasTrackedAnyView: false,
+            didStartWithReplay: nil
         )
-        XCTAssertEqual(rule, .handleInApplicationLaunchView, "It must start ApplicationLaunch view, because app is in foreground")
-    }
 
-    func testWhenThereIsNoRUMSessionAndAppIsInBackground_itShouldHandleEventsInBackgroundView_onlyWhenBETIsEnabled() {
-        let rule1 = RUMOffViewEventsHandlingRule(
-            sessionState: nil,
-            isAppInForeground: false,
-            isBETEnabled: true
+        let initialNoViews = RUMSessionState(
+            sessionUUID: UUID(),
+            isInitialSession: true,
+            hasTrackedAnyView: false,
+            didStartWithReplay: nil
         )
-        XCTAssertEqual(rule1, .handleInBackgroundView, "It must start Background view")
 
-        let rule2 = RUMOffViewEventsHandlingRule(
-            sessionState: nil,
-            isAppInForeground: false,
-            isBETEnabled: false
+        let hasViews = RUMSessionState(
+            sessionUUID: UUID(),
+            isInitialSession: false,
+            hasTrackedAnyView: true,
+            didStartWithReplay: nil
         )
-        XCTAssertEqual(rule2, .doNotHandle, "It must drop the event, because BET is disabled")
-    }
 
-    // MARK: - When There Is RUM Session
-
-    func testWhenThereIsRUMSessionAndAppIsInForeground_itShouldHandleEventsInApplicationLaunchView_onlyWhenInitialSessionWithNoViewsHistory() {
-        let rule1 = RUMOffViewEventsHandlingRule(
-            sessionState: .init(
-                sessionUUID: .mockRandom(),
-                isInitialSession: true,
-                hasTrackedAnyView: false,
-                didStartWithReplay: .mockAny()
+        let cases: [Case] = [
+            .init(
+                description: "session not sampled (nullUUID)",
+                applicationState: nil,
+                sessionState: notSampledSession,
+                isAppInForeground: true,
+                isBETEnabled: true,
+                canStartBackgroundViewAfterSessionStop: true,
+                expected: .doNotHandle
             ),
-            isAppInForeground: true,
-            isBETEnabled: .mockRandom()
-        )
-        XCTAssertEqual(rule1, .handleInApplicationLaunchView, "It must start ApplicationLaunch view")
-
-        let rule2 = RUMOffViewEventsHandlingRule(
-            sessionState: .init(
-                sessionUUID: .mockRandom(),
-                isInitialSession: .mockRandom(),
-                hasTrackedAnyView: true,
-                didStartWithReplay: .mockAny()
+            .init(
+                description: "initial session without views in foreground",
+                applicationState: nil,
+                sessionState: initialNoViews,
+                isAppInForeground: true,
+                isBETEnabled: false,
+                canStartBackgroundViewAfterSessionStop: true,
+                expected: .handleInApplicationLaunchView
             ),
-            isAppInForeground: true,
-            isBETEnabled: .mockRandom()
-        )
-        XCTAssertEqual(rule2, .doNotHandle, "It must drop the event, because this session already tracked some views")
-
-        let rule3 = RUMOffViewEventsHandlingRule(
-            sessionState: .init(
-                sessionUUID: .mockRandom(),
-                isInitialSession: false,
-                hasTrackedAnyView: .mockRandom(),
-                didStartWithReplay: .mockAny()
+            .init(
+                description: "initial session without views in background when BET disabled",
+                applicationState: nil,
+                sessionState: initialNoViews,
+                isAppInForeground: false,
+                isBETEnabled: false,
+                canStartBackgroundViewAfterSessionStop: true,
+                expected: .doNotHandle
             ),
-            isAppInForeground: true,
-            isBETEnabled: .mockRandom()
-        )
-        XCTAssertEqual(rule3, .doNotHandle, "It must drop the event, because this is not initial session")
-    }
-
-    func testWhenThereIsRUMSessionAndAppIsInBackground_itShouldHandleEventsInBackgroundView_onlyWhenBETIsEnabled() {
-        let rule1 = RUMOffViewEventsHandlingRule(
-            sessionState: .init(
-                sessionUUID: .mockRandom(),
-                isInitialSession: .mockRandom(),
-                hasTrackedAnyView: .mockRandom(),
-                didStartWithReplay: .mockAny()
+            .init(
+                description: "initial session without views in background when BET enabled",
+                applicationState: nil,
+                sessionState: initialNoViews,
+                isAppInForeground: false,
+                isBETEnabled: true,
+                canStartBackgroundViewAfterSessionStop: true,
+                expected: .handleInBackgroundView
             ),
-            isAppInForeground: false,
-            isBETEnabled: true
-        )
-        XCTAssertEqual(rule1, .handleInBackgroundView, "It must start Background view")
-
-        let rule2 = RUMOffViewEventsHandlingRule(
-            sessionState: .init(
-                sessionUUID: .mockRandom(),
-                isInitialSession: .mockRandom(),
-                hasTrackedAnyView: .mockRandom(),
-                didStartWithReplay: .mockAny()
+            .init(
+                description: "initial session resumes in background after previous session stopped",
+                applicationState: RUMApplicationState(wasPreviousSessionStopped: true),
+                sessionState: initialNoViews,
+                isAppInForeground: false,
+                isBETEnabled: true,
+                canStartBackgroundViewAfterSessionStop: false,
+                expected: .doNotHandle
             ),
-            isAppInForeground: false,
-            isBETEnabled: false
-        )
-        XCTAssertEqual(rule2, .doNotHandle, "It must drop the event, because BET is disabled")
-    }
-
-    // MARK: - When There Is RUM Session But It Is Rejected By Sampler
-
-    func testWhenThereIsRUMSessionButItIsRejectedBySampler_itShouldDropAllEvents() {
-        let rule = RUMOffViewEventsHandlingRule(
-            sessionState: .init(
-                sessionUUID: .nullUUID, // session is not sampled
-                isInitialSession: .mockRandom(),
-                hasTrackedAnyView: .mockRandom(),
-                didStartWithReplay: .mockAny()
+            .init(
+                description: "existing views present in foreground",
+                applicationState: RUMApplicationState(numberOfNonApplicationLaunchViewsCreated: 1),
+                sessionState: hasViews,
+                isAppInForeground: true,
+                isBETEnabled: true,
+                canStartBackgroundViewAfterSessionStop: true,
+                expected: .doNotHandle
             ),
-            isAppInForeground: .mockRandom(),
-            isBETEnabled: .mockRandom()
-        )
-        XCTAssertEqual(rule, .doNotHandle, "It must drop the event, because session is not sampled")
+            .init(
+                description: "existing views present in background when BET enabled",
+                applicationState: RUMApplicationState(numberOfNonApplicationLaunchViewsCreated: 1),
+                sessionState: hasViews,
+                isAppInForeground: false,
+                isBETEnabled: true,
+                canStartBackgroundViewAfterSessionStop: true,
+                expected: .handleInBackgroundView
+            ),
+            .init(
+                description: "existing views in background after session stopped cannot start new background view",
+                applicationState: RUMApplicationState(numberOfNonApplicationLaunchViewsCreated: 1, wasPreviousSessionStopped: true),
+                sessionState: hasViews,
+                isAppInForeground: false,
+                isBETEnabled: true,
+                canStartBackgroundViewAfterSessionStop: false,
+                expected: .doNotHandle
+            ),
+            .init(
+                description: "no session state in foreground after any session stopped",
+                applicationState: RUMApplicationState(wasAnySessionStopped: true),
+                sessionState: nil,
+                isAppInForeground: true,
+                isBETEnabled: true,
+                canStartBackgroundViewAfterSessionStop: true,
+                expected: .doNotHandle
+            ),
+            .init(
+                description: "no session state in foreground on fresh launch",
+                applicationState: RUMApplicationState(wasAnySessionStopped: false),
+                sessionState: nil,
+                isAppInForeground: true,
+                isBETEnabled: false,
+                canStartBackgroundViewAfterSessionStop: true,
+                expected: .handleInApplicationLaunchView
+            ),
+            .init(
+                description: "no session state in background when BET enabled",
+                applicationState: RUMApplicationState(wasPreviousSessionStopped: false),
+                sessionState: nil,
+                isAppInForeground: false,
+                isBETEnabled: true,
+                canStartBackgroundViewAfterSessionStop: true,
+                expected: .handleInBackgroundView
+            ),
+            .init(
+                description: "no session state in background after previous session stopped",
+                applicationState: RUMApplicationState(wasPreviousSessionStopped: true),
+                sessionState: nil,
+                isAppInForeground: false,
+                isBETEnabled: true,
+                canStartBackgroundViewAfterSessionStop: false,
+                expected: .doNotHandle
+            ),
+            .init(
+                description: "no session state in background when BET disabled",
+                applicationState: RUMApplicationState(wasPreviousSessionStopped: false),
+                sessionState: nil,
+                isAppInForeground: false,
+                isBETEnabled: false,
+                canStartBackgroundViewAfterSessionStop: true,
+                expected: .doNotHandle
+            )
+        ]
+
+        for testCase in cases {
+            let result = RUMOffViewEventsHandlingRule(
+                applicationState: testCase.applicationState,
+                sessionState: testCase.sessionState,
+                isAppInForeground: testCase.isAppInForeground,
+                isBETEnabled: testCase.isBETEnabled,
+                command: RUMCommandMock(canStartBackgroundViewAfterSessionStop: testCase.canStartBackgroundViewAfterSessionStop)
+            )
+            XCTAssertEqual(result, testCase.expected, "Failed: \(testCase.description) -> got \(result)")
+        }
     }
 }
