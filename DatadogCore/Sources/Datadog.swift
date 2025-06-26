@@ -320,6 +320,26 @@ public enum Datadog {
         core?.addUserExtraInfo(extraInfo)
     }
 
+    /// Clear the current user information
+    ///
+    /// User information will be `nil`
+    /// Following Logs, Traces, RUM Events will not include the user information anymore
+    ///
+    /// Any active RUM Session, active RUM View at the time of call will have their `user` attribute emptied
+    ///
+    /// If you want to retain the current `user` on the active RUM session,
+    /// you need to stop the session first by using `RUMMonitor.stopSession()`
+    ///
+    /// If you want to retain the current `user` on the active RUM views,
+    /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
+    ///
+    public static func clearUserInfo(
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) {
+        let core = core as? DatadogCore
+        core?.clearUserInfo()
+    }
+
     /// Sets current account information.
     ///
     /// Those will be added to logs, traces and RUM events automatically.
