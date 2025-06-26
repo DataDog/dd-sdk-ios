@@ -357,7 +357,7 @@ private func validate(rumLongTaskEvents: [RUMLongTaskEvent]) throws {
     }
 }
 
-private func validate(device: RUMDevice?) throws {
+private func validate(device: Device?) throws {
     guard let device = device else {
         throw RUMSessionConsistencyException(
             description: "All RUM events must include device information"
@@ -368,7 +368,7 @@ private func validate(device: RUMDevice?) throws {
     #endif
 }
 
-private func validate(os: RUMOperatingSystem?) throws {
+private func validate(os: OperatingSystem?) throws {
     guard let os = os else {
         throw RUMSessionConsistencyException(
             description: "All RUM events must include OS information"
@@ -383,14 +383,14 @@ private func validate(os: RUMOperatingSystem?) throws {
 
 /// Performs strict validation of `RUMDevice` for integration tests.
 /// It asserts that all values make sense for current environment.
-private func strictValidate(device: RUMDevice) throws {
+private func strictValidate(device: Device) throws {
     guard device.brand == "Apple" else {
         throw RUMSessionConsistencyException(description: "All RUM events must use `device.brand = Apple` (got `\(device.brand ?? "nil")` instead)")
     }
     #if os(iOS)
     guard device.type == .mobile || device.type == .tablet else {
         throw RUMSessionConsistencyException(
-            description: "When running on iOS or iPadOS, the `device.type` must be `.mobile` or `.tablet` (got `\(device.type)` instead)"
+            description: "When running on iOS or iPadOS, the `device.type` must be `.mobile` or `.tablet` (got `\(device.type ?? .other)` instead)"
         )
     }
     let prefixes = ["iPhone", "iPod", "iPad"]
@@ -407,7 +407,7 @@ private func strictValidate(device: RUMDevice) throws {
     #else
     guard device.type != .tv else {
         throw RUMSessionConsistencyException(
-            description: "When running on tvOS, the `device.type` must be `.tv` (got `\(device.type)` instead)"
+            description: "When running on tvOS, the `device.type` must be `.tv` (got `\(device.type ?? .other)` instead)"
         )
     }
     guard device.name == "Apple TV" else {
@@ -425,7 +425,7 @@ private func strictValidate(device: RUMDevice) throws {
 
 /// Performs strict validation of `RUMOperatingSystem` for integration tests.
 /// It asserts that all values make sense for current environment.
-private func strictValidate(os: RUMOperatingSystem) throws {
+private func strictValidate(os: OperatingSystem) throws {
     #if os(iOS)
     guard os.name == "iOS" || os.name == "iPadOS" else {
         throw RUMSessionConsistencyException(

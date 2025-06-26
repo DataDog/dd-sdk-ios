@@ -9,11 +9,8 @@ import DatadogCore
 import DatadogLogs
 import DatadogTrace
 import DatadogRUM
-import DatadogAlamofireExtension
 import DatadogCrashReporting
 import DatadogSessionReplay  // it should compile for iOS and tvOS, but APIs are only available on iOS
-import DatadogObjc
-import Alamofire
 import OpenTelemetryApi
 
 internal class ViewController: UIViewController {
@@ -67,16 +64,7 @@ internal class ViewController: UIViewController {
         SessionReplay.enable(with: .init(replaySampleRate: 0))
         #endif
 
-        createInstrumentedAlamofireSession()
-
         addLabel()
-    }
-
-    private func createInstrumentedAlamofireSession() {
-        _ = Session(
-            interceptor: DDRequestInterceptor(),
-            eventMonitors: [DDEventMonitor()]
-        )
     }
 
     private func addLabel() {

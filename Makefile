@@ -12,7 +12,7 @@ all: env-check repo-setup templates
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
 		dogfood-shopist dogfood-datadog-app \
 		release-build release-validate release-publish-github \
-		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs release-publish-legacy-podspecs \
+		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs \
 		set-ci-secret
 
 REPO_ROOT := $(PWD)
@@ -302,12 +302,13 @@ sr-snapshot-tests-open:
 	@$(ECHO_TITLE) "make sr-snapshot-tests-open"
 	./tools/sr-snapshot-test.sh --open-project
 
-# Generate api-surface files for Datadog and DatadogObjc.
+# Generate api-surface files for Datadog.
 api-surface:
 		@echo "Generating api-surface-swift"
 		@cd tools/api-surface && \
 			swift run api-surface spm \
 			--path ../../ \
+			--language swift \
 			--library-name DatadogCore \
 			--library-name DatadogLogs \
 			--library-name DatadogTrace \
@@ -322,7 +323,14 @@ api-surface:
 		@cd tools/api-surface && \
 			swift run api-surface spm \
 			--path ../../ \
-			--library-name DatadogObjc \
+			--language objc \
+			--library-name DatadogCore \
+			--library-name DatadogLogs \
+			--library-name DatadogTrace \
+			--library-name DatadogRUM \
+			--library-name DatadogCrashReporting \
+			--library-name DatadogWebViewTracking \
+			--library-name DatadogSessionReplay \
 			> ../../api-surface-objc && \
 			cd -
 
@@ -387,11 +395,6 @@ release-publish-dependent-podspecs:
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSessionReplay.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogCrashReporting.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogWebViewTracking.podspec"
-
-# Publish legacy podspecs
-release-publish-legacy-podspecs:
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogObjc.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogAlamofireExtension.podspec"
 
 # Set ot update CI secrets
 set-ci-secret:

@@ -468,6 +468,8 @@ public struct FailingEncodableMock: Encodable {
     }
 }
 
+public class NSErrorSubclass: NSError, @unchecked Sendable {}
+
 extension NSError: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
         .init(domain: .mockAny(), code: .mockAny())

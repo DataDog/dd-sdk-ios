@@ -13,7 +13,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     // MARK: - Child Scopes
 
-    // Whether the applciation is already active. Set to true
+    // Whether the application is already active. Set to true
     // when the first session starts.
     private(set) var applicationActive = false
 
@@ -60,6 +60,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - RUMContextProvider
 
     let context: RUMContext
+    var attributes: [AttributeKey: AttributeValue] { [:] }
 
     // MARK: - RUMScope
 
@@ -193,7 +194,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             }
         })
 
-        // Sanity telemety, only end up with one active session
+        // Sanity telemetry, only end up with one active session
         let activeSessions = sessionScopes.filter { $0.isActive }
         if activeSessions.count > 1 {
             dependencies.telemetry.error("An application has \(activeSessions.count) active sessions")

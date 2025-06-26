@@ -33,7 +33,10 @@ public struct CrashContext: Codable, Equatable {
     public let buildNumber: String
 
     /// Current device information.
-    public let device: DeviceInfo
+    public let device: Device
+
+    /// Operating System information.
+    public let os: OperatingSystem
 
     /// The version of Datadog iOS SDK.
     public let sdkVersion: String
@@ -88,7 +91,8 @@ public struct CrashContext: Codable, Equatable {
         env: String,
         version: String,
         buildNumber: String,
-        device: DeviceInfo,
+        device: Device,
+        os: OperatingSystem,
         sdkVersion: String,
         source: String,
         trackingConsent: TrackingConsent,
@@ -109,6 +113,7 @@ public struct CrashContext: Codable, Equatable {
         self.version = version
         self.buildNumber = buildNumber
         self.device = device
+        self.os = os
         self.sdkVersion = service
         self.source = source
         self.trackingConsent = trackingConsent
@@ -136,7 +141,8 @@ public struct CrashContext: Codable, Equatable {
         self.env = context.env
         self.version = context.version
         self.buildNumber = context.buildNumber
-        self.device = context.device
+        self.device = context.device.normalizedDevice
+        self.os = context.os
         self.sdkVersion = context.sdkVersion
         self.source = context.source
         self.trackingConsent = context.trackingConsent

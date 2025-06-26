@@ -216,7 +216,6 @@ class TracingURLSessionHandlerTests: XCTestCase {
     func testGivenAllTracingHeaderTypes_itUsesTheSameIds() throws {
         let request: URLRequest = .mockWith(httpMethod: "GET")
         let fakeSessionId = "8b723a25-e941-47ea-9173-910c866ccf19"
-        let fakeRumContext: [String: String] = ["session.id": fakeSessionId]
         let fakeContext: DatadogContext = .mockWith(
             additionalContext: [
                 RUMCoreContext(
@@ -226,7 +225,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
             ]
         )
         let message = FeatureMessage.context(fakeContext)
-        handler.contextReceiver.receive(message: message, from: core)
+        _ = handler.contextReceiver.receive(message: message, from: core)
         let (modifiedRequest, _) = handler.modify(
             request: request,
             headerTypes: [.datadog, .tracecontext, .b3, .b3multi],

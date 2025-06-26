@@ -25,18 +25,6 @@ public struct RUMView {
 
     /// Initializes the RUM View description.
     /// - Parameters:
-    ///   - path: the RUM View path, appearing as `PATH` in RUM Explorer.
-    ///   - attributes: additional attributes to associate with the RUM View.
-    @available(*, deprecated, message: "This initializer is renamed to `init(name:attributes:)`.")
-    public init(path: String, attributes: [AttributeKey: AttributeValue] = [:]) {
-        self.name = path
-        self.path = path
-        self.attributes = attributes
-        self.isUntrackedModal = false
-    }
-
-    /// Initializes the RUM View description.
-    /// - Parameters:
     ///   - name: the RUM View name, appearing as `VIEW NAME` in RUM Explorer.
     ///   - attributes: additional attributes to associate with the RUM View.
     ///   - isUntrackedModal: true if this view is modal, but should not call startView / stopView.

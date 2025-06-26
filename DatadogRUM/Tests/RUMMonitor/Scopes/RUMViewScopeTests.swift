@@ -16,11 +16,11 @@ class RUMViewScopeTests: XCTestCase {
         version: "test-version",
         buildNumber: "test-build",
         buildId: .mockRandom(),
-        device: .mockWith(
-            name: "device-name",
-            osName: "device-os",
-            osVersion: "os-version",
-            osBuildNumber: "os-build"
+        device: .mockWith(name: "device-name"),
+        os: .mockWith(
+            name: "device-os",
+            version: "os-version",
+            build: "os-build"
         ),
         networkConnectionInfo: nil,
         carrierInfo: nil
@@ -788,6 +788,603 @@ class RUMViewScopeTests: XCTestCase {
         resourceEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
     }
 
+    // MARK: - View Attributes
+
+    func testWhenViewAttributesAreSet_nextEventsHaveThem() throws {
+        let scope: RUMViewScope = .mockWith(parent: parent)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(
+                    attributes: ["viewKey": "viewValue"],
+                    identity: .mockViewIdentifier()
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["viewKey": "viewValue"])
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddViewAttributesCommand.mockWith(
+                    attributes: ["newViewKey": "newViewValue"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(
+                    attributes: ["anotherKey": "anotherValue"],
+                    identity: .mockViewIdentifier()
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue", "newViewKey": "newViewValue", "anotherKey": "anotherValue"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["viewKey": "viewValue", "newViewKey": "newViewValue", "anotherKey": "anotherValue"])
+    }
+
+    func testWhenViewAttributesAreRemoved_eventsDoNotIncludeThem() throws {
+        let scope: RUMViewScope = .mockWith(parent: parent)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(
+                    attributes: ["viewKey": "viewValue"],
+                    identity: .mockViewIdentifier()
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["viewKey": "viewValue"])
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMRemoveViewAttributesCommand.mockWith(
+                    keysToRemove: ["viewKey"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, [:])
+        DDAssertDictionariesEqual(event.context!.contextInfo, [:])
+    }
+
+    func testWhenInternalViewAttributesAreSet_eventsAreNotAffected() throws {
+        let scope: RUMViewScope = .mockWith(parent: parent)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(
+                    attributes: ["viewKey": "viewValue"],
+                    identity: .mockViewIdentifier()
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddViewAttributesCommand.mockWith(
+                    attributes: ["internalKey": "internalValue"],
+                    areInternalAttributes: true
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
+        DDAssertDictionariesEqual(scope.internalAttributes, ["internalKey": "internalValue"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["viewKey": "viewValue"])
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(
+                    attributes: ["viewKey": "newViewValue"],
+                    identity: .mockViewIdentifier()
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        // Then
+        event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["viewKey": "newViewValue"])
+        DDAssertDictionariesEqual(scope.internalAttributes, ["internalKey": "internalValue"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["viewKey": "newViewValue"])
+    }
+
+    // Attributes on views are immediately propagated to their child events after they are added.
+    func testWhenViewAttributesAreSet_childEventsHaveThem() throws {
+        let scope: RUMViewScope = .mockWith(parent: parent)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(
+                    globalAttributes: [:],
+                    attributes: ["viewKey": "viewValue"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        var viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
+        DDAssertDictionariesEqual(viewEvent.context!.contextInfo, ["viewKey": "viewValue"])
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddUserActionCommand.mockWith(
+                    globalAttributes: ["globalKey": "globalValue"],
+                    attributes: ["localKey": "localValue"],
+                    actionType: .custom
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        let actionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertNil(scope.userActionScope, "It should not count custom action as pending")
+        DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
+        DDAssertDictionariesEqual(viewEvent.context!.contextInfo, ["viewKey": "viewValue", "globalKey": "globalValue"])
+        DDAssertDictionariesEqual(actionEvent.context!.contextInfo, ["viewKey": "viewValue", "globalKey": "globalValue", "localKey": "localValue"])
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddViewAttributesCommand.mockWith(
+                    attributes: ["newViewKey": "newViewValue"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartResourceCommand.mockAny(),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStopResourceCommand.mockWith(
+                    globalAttributes: ["globalKey": "globalValue"],
+                    attributes: ["resourceKey": "resourceValue"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        let resourceEvent = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue", "newViewKey": "newViewValue"])
+        DDAssertDictionariesEqual(viewEvent.context!.contextInfo, ["viewKey": "viewValue", "newViewKey": "newViewValue", "globalKey": "globalValue"])
+        DDAssertDictionariesEqual(
+            resourceEvent.context!.contextInfo,
+            [
+                "resourceKey": "resourceValue",
+                "viewKey": "viewValue",
+                "newViewKey": "newViewValue",
+                "globalKey": "globalValue"
+            ]
+        )
+    }
+
+    // Attributes are overwritten in events as they become more specific, so the precedence order is “Local, View, Global”.
+    func testWhenViewAttributesCollide_thePrecedenceIsRespected() throws {
+        let scope: RUMViewScope = .mockWith(parent: parent)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(
+                    globalAttributes: ["key": "globalValue"],
+                    attributes: ["key": "viewValue"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        var viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
+        DDAssertDictionariesEqual(viewEvent.context!.contextInfo, ["key": "viewValue"])
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddUserActionCommand.mockWith(
+                    globalAttributes: ["key": "globalValue"],
+                    attributes: ["key": "localValue"],
+                    actionType: .custom
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        let actionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
+        DDAssertDictionariesEqual(viewEvent.context!.contextInfo, ["key": "viewValue"])
+        DDAssertDictionariesEqual(actionEvent.context!.contextInfo, ["key": "localValue"])
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartResourceCommand.mockAny(),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStopResourceCommand.mockWith(
+                    globalAttributes: ["key": "globalValue"],
+                    attributes: ["key": "resourceValue"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        let resourceEvent = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
+        DDAssertDictionariesEqual(viewEvent.context!.contextInfo, ["key": "viewValue"])
+        DDAssertDictionariesEqual(resourceEvent.context!.contextInfo, ["key": "resourceValue"])
+    }
+
+    // View attributes are not added or overwritten after a view has “stopped”, even if that view is still active because of Resource or Action events.
+    // Changes to global attributes also do not affect “stopped” views, but should be transferred to other active events when they are stopped.
+    func testWhenViewAttributesChangeOnStoppedViewWithActiveResources() throws {
+        let view1 = "view1"
+        let view2 = "view2"
+        let firstViewScope: RUMViewScope = .mockWith(parent: parent, identity: ViewIdentifier(view1), name: view1)
+
+        // When
+        XCTAssertTrue(
+            firstViewScope.process(
+                command: RUMStartViewCommand.mockWith(
+                    globalAttributes: ["globalKey": "globalValue"],
+                    attributes: ["viewKey": "viewValue"],
+                    identity: ViewIdentifier(view1),
+                    name: "view1"
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        var view1Event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(firstViewScope.attributes, ["viewKey": "viewValue"])
+        DDAssertDictionariesEqual(view1Event.context!.contextInfo, ["viewKey": "viewValue", "globalKey": "globalValue"])
+
+        // When
+        XCTAssertTrue(
+            firstViewScope.process(
+                command: RUMStartResourceCommand.mockWith(
+                    globalAttributes: ["globalKey": "globalValue"],
+                    attributes: ["resourceKey": "resourceValue"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertTrue(
+            firstViewScope.process(
+                command: RUMAddViewAttributesCommand.mockWith(
+                    attributes: ["newViewKey": "newViewValue"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let startView2Command = RUMStartViewCommand.mockWith(
+            globalAttributes: ["globalKey": "globalValue"],
+            attributes: ["view2Key": "view2Value"],
+            identity: ViewIdentifier(view2),
+            name: view2
+        )
+        XCTAssertTrue(firstViewScope.process(command: startView2Command, context: context, writer: writer))
+        let secondViewScope: RUMViewScope = .mockWith(parent: parent, identity: ViewIdentifier(view2), name: view2)
+        XCTAssertTrue(secondViewScope.process(command: startView2Command, context: context, writer: writer))
+
+        // Then
+        view1Event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last(where: { $0.view.name == "view1" }))
+        let view2Event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last(where: { $0.view.name == "view2" }))
+        // First view scope is inactive with the final snapshot of attributes
+        DDAssertDictionariesEqual(firstViewScope.attributes, ["viewKey": "viewValue", "newViewKey": "newViewValue", "globalKey": "globalValue"])
+        DDAssertDictionariesEqual(secondViewScope.attributes, ["view2Key": "view2Value"])
+        DDAssertDictionariesEqual(view1Event.context!.contextInfo, ["viewKey": "viewValue", "newViewKey": "newViewValue", "globalKey": "globalValue"])
+        DDAssertDictionariesEqual(view2Event.context!.contextInfo, ["view2Key": "view2Value", "globalKey": "globalValue"])
+
+        // When
+        XCTAssertTrue(
+            secondViewScope.process(
+                command: RUMAddViewAttributesCommand.mockWith(
+                    attributes: ["newView2Key": "newView2Value"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        XCTAssertFalse(
+            firstViewScope.process(
+                command: RUMStopResourceCommand.mockWith(
+                    globalAttributes: ["globalKey": "globalValue", "newGlobalKey": "newGlobalValue"],
+                    attributes: [:]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        view1Event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        let resourceEvent = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
+        // First view scope is inactive with the final snapshot of attributes
+        DDAssertDictionariesEqual(firstViewScope.attributes, ["viewKey": "viewValue", "newViewKey": "newViewValue", "globalKey": "globalValue"])
+        DDAssertDictionariesEqual(secondViewScope.attributes, ["view2Key": "view2Value", "newView2Key": "newView2Value"])
+        DDAssertDictionariesEqual(
+            view1Event.context!.contextInfo,
+            [
+                "viewKey": "viewValue",
+                "newViewKey": "newViewValue",
+                "globalKey": "globalValue"
+            ]
+        )
+        DDAssertDictionariesEqual(
+            resourceEvent.context!.contextInfo,
+            [
+                "resourceKey": "resourceValue",
+                "viewKey": "viewValue",
+                "newViewKey": "newViewValue",
+                "globalKey": "globalValue",
+                "newGlobalKey": "newGlobalValue",
+            ]
+        )
+    }
+
+    // MARK: - Global Attributes
+
+    func testWhenGlobalAttributesAreUpdated_eventsHaveTheUpdate() throws {
+        let scope: RUMViewScope = .mockWith(parent: parent)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(
+                    globalAttributes: ["globalKey": "globalValue"],
+                    attributes: ["viewKey": "viewValue"],
+                    identity: .mockViewIdentifier()
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["globalKey": "globalValue", "viewKey": "viewValue"])
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(
+                    globalAttributes: ["globalKey": "newGlobalValue"],
+                    attributes: ["viewKey": "newViewValue"],
+                    identity: .mockViewIdentifier()
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        // View scope is stopped with the final snapshot of attributes
+        DDAssertDictionariesEqual(scope.attributes, ["viewKey": "newViewValue", "globalKey": "newGlobalValue"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["globalKey": "newGlobalValue", "viewKey": "newViewValue"])
+    }
+
+    func testViewAttributesTakePrecedenceOverGlobalAttributes() throws {
+        let scope: RUMViewScope = .mockWith(parent: parent)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(
+                    globalAttributes: ["key": "globalValue"],
+                    attributes: ["key": "viewValue"],
+                    identity: .mockViewIdentifier()
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        // Then
+        var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "viewValue"])
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(
+                    globalAttributes: ["key": "newGlobalValue"],
+                    attributes: ["key": "newViewValue"],
+                    identity: .mockViewIdentifier()
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        // Then
+        event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["key": "newViewValue"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "newViewValue"])
+    }
+
+    func testCommandAttributesTakePrecendenceOverViewAttributesAndGlobalAttributes() throws {
+        let scope: RUMViewScope = .mockWith(parent: parent)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(
+                    globalAttributes: ["key": "globalValue"],
+                    attributes: ["key": "viewValue"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        // Then
+        var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "viewValue"])
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddLongTaskCommand.mockWith(
+                    globalAttributes: ["key": "globalValue"],
+                    attributes: ["key": "localValue"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        // Then
+        let longTaskEvent = try XCTUnwrap(writer.events(ofType: RUMLongTaskEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
+        DDAssertDictionariesEqual(longTaskEvent.context!.contextInfo, ["key": "localValue"])
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(
+                    globalAttributes: ["key": "newGlobalValue"],
+                    attributes: ["key": "newViewValue"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        // Then
+        event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["key": "newViewValue"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "newViewValue"])
+    }
+
+    // Removing global attributes is immediately reflected in attributes sent on View Update events and on child events.
+    func testWhenRemovingGlobalAttributes_eventsDoNotIncludeThem() throws {
+        let scope: RUMViewScope = .mockWith(parent: parent)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(
+                    globalAttributes: ["globalKey": "globalValue"],
+                    attributes: ["key": "viewValue"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        // Then
+        var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "viewValue", "globalKey": "globalValue"])
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddViewTimingCommand.mockWith(
+                    globalAttributes: [:],
+                    attributes: ["anotherViewKey": "anotherViewValue"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        // Then
+        event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue", "anotherViewKey": "anotherViewValue"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "viewValue", "anotherViewKey": "anotherViewValue"])
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(
+                    globalAttributes: [:],
+                    attributes: ["key": "newViewValue"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        // Then
+        event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        DDAssertDictionariesEqual(scope.attributes, ["key": "newViewValue", "anotherViewKey": "anotherViewValue"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "newViewValue", "anotherViewKey": "anotherViewValue"])
+    }
+
     // MARK: - Resources Tracking
 
     func testItManagesResourceScopesLifecycle() throws {
@@ -1473,7 +2070,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertTrue(error.error.isCrash == false)
         XCTAssertNil(error.error.resource)
         XCTAssertNil(error.action)
-        XCTAssertEqual(error.context?.contextInfo as? [String: String], [:])
+        XCTAssertEqual(error.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(error.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(error.source, .ios)
         XCTAssertEqual(error.service, "test-service")
@@ -1636,7 +2233,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
-        DDAssertDictionariesEqual(error.context!.contextInfo, ["other_attribute": "overwritten", "foo": "bar"])
+        DDAssertDictionariesEqual(error.context!.contextInfo, ["test_attribute": "abc", "other_attribute": "overwritten", "foo": "bar"])
 
         XCTAssertEqual(scope.attributes["test_attribute"] as? String, "abc")
         XCTAssertEqual(scope.attributes["other_attribute"] as? String, "my attribute")
@@ -2312,7 +2909,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let event = try XCTUnwrap(writer.events(ofType: RUMLongTaskEvent.self).last)
-        DDAssertDictionariesEqual(event.context!.contextInfo, ["foo": "bar", "test_attribute": "overwritten"])
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["foo": "bar", "test_attribute": "overwritten", "other_attribute": "my attribute"])
         DDAssertDictionariesEqual(scope.attributes, ["test_attribute": "abc", "other_attribute": "my attribute"])
     }
 
@@ -3113,10 +3710,10 @@ class RUMViewScopeTests: XCTestCase {
         let mockKey: String = .mockRandom()
         let mockValue: String = .mockRandom()
         _ = scope.process(
-            command: RUMSetInternalViewAttributeCommand(
+            command: RUMAddViewAttributesCommand(
                 time: .mockAny(),
-                key: mockKey,
-                value: mockValue
+                attributes: [mockKey: mockValue],
+                areInternalAttributes: true
             ),
             context: context,
             writer: writer
@@ -3147,10 +3744,10 @@ class RUMViewScopeTests: XCTestCase {
         let mockKey: String = .mockRandom()
         let mockValue: String = .mockRandom()
         _ = scope.process(
-            command: RUMSetInternalViewAttributeCommand(
+            command: RUMAddViewAttributesCommand(
                 time: .mockAny(),
-                key: mockKey,
-                value: mockValue
+                attributes: [mockKey: mockValue],
+                areInternalAttributes: true
             ),
             context: context,
             writer: writer
@@ -3159,10 +3756,10 @@ class RUMViewScopeTests: XCTestCase {
         // When
         let updatedValue: String = .mockRandom()
         _ = scope.process(
-            command: RUMSetInternalViewAttributeCommand(
+            command: RUMAddViewAttributesCommand(
                 time: .mockAny(),
-                key: mockKey,
-                value: updatedValue
+                attributes: [mockKey: updatedValue],
+                areInternalAttributes: true
             ),
             context: context,
             writer: writer
@@ -3202,10 +3799,10 @@ class RUMViewScopeTests: XCTestCase {
         let mockKey: String = .mockRandom()
         let mockValue: String = .mockRandom()
         _ = scope.process(
-            command: RUMSetInternalViewAttributeCommand(
+            command: RUMAddViewAttributesCommand(
                 time: .mockAny(),
-                key: mockKey,
-                value: mockValue
+                attributes: [mockKey: mockValue],
+                areInternalAttributes: true
             ),
             context: context,
             writer: writer
@@ -3237,10 +3834,10 @@ class RUMViewScopeTests: XCTestCase {
         )
         let fbcValue = Int64.mockRandom(min: 0)
         _ = scope.process(
-            command: RUMSetInternalViewAttributeCommand(
+            command: RUMAddViewAttributesCommand(
                 time: .mockAny(),
-                key: CrossPlatformAttributes.flutterFirstBuildComplete,
-                value: fbcValue
+                attributes: [CrossPlatformAttributes.flutterFirstBuildComplete: fbcValue],
+                areInternalAttributes: true
             ),
             context: context,
             writer: writer
@@ -3262,7 +3859,7 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     // Custom INV Values
-    func testGivenCustomINVValuess_itSetsTheValueOnTheViewEvent() throws {
+    func testGivenCustomINVValues_itSetsTheValueOnTheViewEvent() throws {
         // Given
         let viewStartDate = Date()
         let viewID: RUMUUID = .mockRandom()
@@ -3280,22 +3877,21 @@ class RUMViewScopeTests: XCTestCase {
             serverTimeOffset: .mockRandom(),
             interactionToNextViewMetric: nil
         )
+
+        // When
         let invValue = Int64.mockRandom(min: 0, max: 100_000_000)
         _ = scope.process(
-            command: RUMSetInternalViewAttributeCommand(
+            command: RUMAddViewAttributesCommand(
                 time: .mockAny(),
-                key: CrossPlatformAttributes.customINVValue,
-                value: invValue
+                attributes: [CrossPlatformAttributes.customINVValue: invValue],
+                areInternalAttributes: true
             ),
             context: context,
             writer: writer
         )
 
-        // When
-        // Though this property would be unlikely to be set during StartView, processing
-        // the StartViewCommand will give us a view update, which is what we want.
         _ = scope.process(
-            command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
+            command: RUMStopViewCommand.mockAny(),
             context: context,
             writer: writer
         )

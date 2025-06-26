@@ -24,6 +24,8 @@ var otelTracer: OpenTelemetryApi.Tracer {
         .get(instrumentationName: "", instrumentationVersion: nil)
 }
 
+final class DummySessionDataDelegate: NSObject, URLSessionDataDelegate {}
+
 @UIApplicationMain
 class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
@@ -88,6 +90,8 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             )
         )
         RUMMonitor.shared().debug = true
+
+        URLSessionInstrumentation.enable(with: .init(delegateClass: DummySessionDataDelegate.self))
 
         // Register Trace Provider
         OpenTelemetry.registerTracerProvider(

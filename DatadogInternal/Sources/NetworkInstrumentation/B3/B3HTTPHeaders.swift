@@ -6,9 +6,6 @@
 
 import Foundation
 
-@available(*, deprecated, renamed: "B3HTTPHeaders")
-public typealias OTelHTTPHeaders = B3HTTPHeaders
-
 /// B3 propagation headers as explained in
 /// https://github.com/openzipkin/b3-propagation/blob/master/RATIONALE.md
 public enum B3HTTPHeaders {

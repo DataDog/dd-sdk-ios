@@ -429,11 +429,13 @@ class TelemetryReceiverTests: XCTestCase {
 
     func testSendTelemetryMetric() throws {
         let deviceMock: DeviceInfo = .mockRandom()
+        let osMock: OperatingSystem = .mockRandom()
         featureScope.contextMock = .mockWith(
             version: "app-version",
             source: "react-native",
             sdkVersion: "sdk-version",
-            device: deviceMock
+            device: deviceMock,
+            os: osMock
         )
 
         // Given
@@ -463,16 +465,17 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(device.brand, deviceMock.brand)
         XCTAssertEqual(device.architecture, deviceMock.architecture)
         let os = try XCTUnwrap(event?.telemetry.os)
-        XCTAssertEqual(os.version, deviceMock.osVersion)
-        XCTAssertEqual(os.name, deviceMock.osName)
-        XCTAssertEqual(os.build, deviceMock.osBuildNumber)
+        XCTAssertEqual(os.version, osMock.version)
+        XCTAssertEqual(os.name, osMock.name)
+        XCTAssertEqual(os.build, osMock.build)
     }
 
     func testSendTelemetryMetricWithRUMContext() throws {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
         let deviceMock: DeviceInfo = .mockRandom()
-        featureScope.contextMock = .mockWith(device: deviceMock)
+        let osMock: OperatingSystem = .mockRandom()
+        featureScope.contextMock = .mockWith(device: deviceMock, os: osMock)
         featureScope.contextMock.set(additionalContext: rumContext)
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
 
@@ -491,9 +494,9 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(device.brand, deviceMock.brand)
         XCTAssertEqual(device.architecture, deviceMock.architecture)
         let os = try XCTUnwrap(event?.telemetry.os)
-        XCTAssertEqual(os.version, deviceMock.osVersion)
-        XCTAssertEqual(os.name, deviceMock.osName)
-        XCTAssertEqual(os.build, deviceMock.osBuildNumber)
+        XCTAssertEqual(os.version, osMock.version)
+        XCTAssertEqual(os.name, osMock.name)
+        XCTAssertEqual(os.build, osMock.build)
     }
 
     func testSendTelemetryMetricWithRUMContextAndSessionIDOverride() {
@@ -520,7 +523,8 @@ class TelemetryReceiverTests: XCTestCase {
     func testMethodCallTelemetryPropagatesAllData() throws {
         // Given
         let deviceMock: DeviceInfo = .mockRandom()
-        featureScope.contextMock = .mockWith(device: deviceMock)
+        let osMock: OperatingSystem = .mockRandom()
+        featureScope.contextMock = .mockWith(device: deviceMock, os: osMock)
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
         let telemetry = TelemetryMock(with: receiver)
 
@@ -545,9 +549,9 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(device.brand, deviceMock.brand)
         XCTAssertEqual(device.architecture, deviceMock.architecture)
         let os = try XCTUnwrap(event?.telemetry.os)
-        XCTAssertEqual(os.version, deviceMock.osVersion)
-        XCTAssertEqual(os.name, deviceMock.osName)
-        XCTAssertEqual(os.build, deviceMock.osBuildNumber)
+        XCTAssertEqual(os.version, osMock.version)
+        XCTAssertEqual(os.name, osMock.name)
+        XCTAssertEqual(os.build, osMock.build)
     }
 
     func testMethodCallTelemetryDroppedWhenSampledOut() {

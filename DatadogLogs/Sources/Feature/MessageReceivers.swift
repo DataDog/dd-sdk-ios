@@ -102,7 +102,6 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
 
         let user = crashContext.userInfo
         let accountInfo = crashContext.accountInfo
-        let deviceInfo = crashContext.device
 
         // Merge logs attributes with crash report attributes
         let lastLogAttributes = crashContext.lastLogAttributes?.attributes ?? [:]
@@ -131,19 +130,9 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
                 applicationBuildNumber: crashContext.buildNumber,
                 buildId: nil,
                 variant: context.variant,
-                dd: .init(
-                    device: .init(
-                        brand: deviceInfo.brand,
-                        name: deviceInfo.name,
-                        model: deviceInfo.model,
-                        architecture: deviceInfo.architecture
-                    )
-                ),
-                os: .init(
-                    name: crashContext.device.osName,
-                    version: crashContext.device.osVersion,
-                    build: crashContext.device.osBuildNumber
-                ),
+                dd: .init(device: .init(architecture: crashContext.device.architecture ?? "")),
+                device: crashContext.device,
+                os: crashContext.os,
                 userInfo: .init(
                     id: user?.id,
                     name: user?.name,

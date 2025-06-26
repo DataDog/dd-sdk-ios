@@ -42,7 +42,8 @@ internal struct RequestBuilder: FeatureRequestBuilder {
                 .userAgentHeader(
                     appName: context.applicationName,
                     appVersion: context.version,
-                    device: context.device
+                    device: context.device,
+                    os: context.os
                 ),
                 .ddAPIKeyHeader(clientToken: context.clientToken),
                 .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),

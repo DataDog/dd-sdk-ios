@@ -13,7 +13,6 @@
 		D2A6109B2BE11A74000AA6AB /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = D2A6109A2BE11A74000AA6AB /* DatadogCore */; };
 		D2A6109D2BE11A74000AA6AB /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = D2A6109C2BE11A74000AA6AB /* DatadogCrashReporting */; };
 		D2A6109F2BE11A74000AA6AB /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = D2A6109E2BE11A74000AA6AB /* DatadogLogs */; };
-		D2A610A12BE11A74000AA6AB /* DatadogObjc in Frameworks */ = {isa = PBXBuildFile; productRef = D2A610A02BE11A74000AA6AB /* DatadogObjc */; };
 		D2A610A32BE11A74000AA6AB /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = D2A610A22BE11A74000AA6AB /* DatadogRUM */; };
 		D2A610A52BE11A74000AA6AB /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = D2A610A42BE11A74000AA6AB /* DatadogSessionReplay */; };
 		D2A610A72BE11A74000AA6AB /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = D2A610A62BE11A74000AA6AB /* DatadogTrace */; };
@@ -53,7 +52,6 @@
 				D2A6109D2BE11A74000AA6AB /* DatadogCrashReporting in Frameworks */,
 				D2A610A52BE11A74000AA6AB /* DatadogSessionReplay in Frameworks */,
 				D2A610A32BE11A74000AA6AB /* DatadogRUM in Frameworks */,
-				D2A610A12BE11A74000AA6AB /* DatadogObjc in Frameworks */,
 				D2A6109F2BE11A74000AA6AB /* DatadogLogs in Frameworks */,
 				D2A6109B2BE11A74000AA6AB /* DatadogCore in Frameworks */,
 				D2A610A92BE11A74000AA6AB /* DatadogWebViewTracking in Frameworks */,
@@ -162,7 +160,6 @@
 				D2A6109A2BE11A74000AA6AB /* DatadogCore */,
 				D2A6109C2BE11A74000AA6AB /* DatadogCrashReporting */,
 				D2A6109E2BE11A74000AA6AB /* DatadogLogs */,
-				D2A610A02BE11A74000AA6AB /* DatadogObjc */,
 				D2A610A22BE11A74000AA6AB /* DatadogRUM */,
 				D2A610A42BE11A74000AA6AB /* DatadogSessionReplay */,
 				D2A610A62BE11A74000AA6AB /* DatadogTrace */,
@@ -541,10 +538,6 @@
 		D2A6109E2BE11A74000AA6AB /* DatadogLogs */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DatadogLogs;
-		};
-		D2A610A02BE11A74000AA6AB /* DatadogObjc */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = DatadogObjc;
 		};
 		D2A610A22BE11A74000AA6AB /* DatadogRUM */ = {
 			isa = XCSwiftPackageProductDependency;

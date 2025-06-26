@@ -134,7 +134,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 telemetry: .init(
                     device: .init(context.device),
                     message: message,
-                    os: .init(context.device),
+                    os: .init(osInfo: context.os),
                     telemetryInfo: attributes
                 ),
                 version: context.sdkVersion,
@@ -181,7 +181,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                     device: .init(context.device),
                     error: .init(kind: kind, stack: stack),
                     message: message,
-                    os: .init(context.device),
+                    os: .init(osInfo: context.os),
                     telemetryInfo: attributes
                 ),
                 version: context.sdkVersion,
@@ -210,7 +210,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(
                     device: .init(context.device),
-                    os: .init(context.device),
+                    os: .init(osInfo: context.os),
                     usage: .init(usage),
                     telemetryInfo: [:]
                 ),
@@ -251,7 +251,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 telemetry: .init(
                     configuration: .init(configuration),
                     device: .init(context.device),
-                    os: .init(context.device),
+                    os: .init(osInfo: context.os),
                     telemetryInfo: [:]
                 ),
                 version: context.sdkVersion,
@@ -295,7 +295,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 telemetry: .init(
                     device: .init(context.device),
                     message: "[Mobile Metric] \(metric.name)",
-                    os: .init(context.device),
+                    os: .init(osInfo: context.os),
                     telemetryInfo: attributes
                 ),
                 version: context.sdkVersion,
@@ -476,11 +476,11 @@ fileprivate extension RUMTelemetryDevice {
 }
 
 fileprivate extension RUMTelemetryOperatingSystem {
-    init(_ device: DeviceInfo) {
+    init(osInfo: OperatingSystem) {
         self.init(
-            build: device.osBuildNumber,
-            name: device.osName,
-            version: device.osVersion
+            build: osInfo.build,
+            name: osInfo.name,
+            version: osInfo.version
         )
     }
 }

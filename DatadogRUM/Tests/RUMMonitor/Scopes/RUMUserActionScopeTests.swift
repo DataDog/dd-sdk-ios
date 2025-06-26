@@ -15,10 +15,8 @@ class RUMUserActionScopeTests: XCTestCase {
         version: "test-version",
         buildNumber: "test-build",
         buildId: .mockRandom(),
-        device: .mockWith(
-            name: "device-name",
-            osName: "device-os"
-        )
+        device: .mockWith(name: "device-name"),
+        os: .mockWith(name: "device-os")
     )
 
     let writer = FileWriterMock()
@@ -198,6 +196,7 @@ class RUMUserActionScopeTests: XCTestCase {
             scope.process(
                 command: RUMStopUserActionCommand(
                     time: currentTime,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"],
                     actionType: .swipe,
                     name: nil
@@ -247,6 +246,7 @@ class RUMUserActionScopeTests: XCTestCase {
             scope.process(
                 command: RUMStopUserActionCommand(
                     time: currentTime,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"],
                     actionType: .swipe,
                     name: nil
@@ -298,6 +298,7 @@ class RUMUserActionScopeTests: XCTestCase {
             scope.process(
                 command: RUMStopUserActionCommand(
                     time: currentTime,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"],
                     actionType: .swipe,
                     name: nil
@@ -683,6 +684,7 @@ class RUMUserActionScopeTests: XCTestCase {
             scope.process(
                 command: RUMStopUserActionCommand(
                     time: currentTime,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"],
                     actionType: .tap,
                     name: nil
@@ -726,6 +728,7 @@ class RUMUserActionScopeTests: XCTestCase {
             scope.process(
                 command: RUMStopUserActionCommand(
                     time: currentTime,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"],
                     actionType: .tap,
                     name: nil
