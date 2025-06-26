@@ -67,26 +67,26 @@ public final class objc_Datadog: NSObject {
         Datadog.setUserInfo(id: userId, name: name, email: email, extraInfo: extraInfo.dd.swiftAttributes)
     }
 
+    public static func clearUserInfo() {
+        Datadog.clearUserInfo()
+    }
+
     public static func addUserExtraInfo(_ extraInfo: [String: Any]) {
         Datadog.addUserExtraInfo(extraInfo.dd.swiftAttributes)
     }
 
-    @objc
     public static func setAccountInfo(accountId: String, name: String? = nil, extraInfo: [String: Any] = [:]) {
         Datadog.setAccountInfo(id: accountId, name: name, extraInfo: extraInfo.dd.swiftAttributes)
     }
 
-    @objc
     public static func addAccountExtraInfo(_ extraInfo: [String: Any]) {
         Datadog.addAccountExtraInfo(extraInfo.dd.swiftAttributes)
     }
 
-    @objc
     public static func clearAccountInfo() {
         Datadog.clearAccountInfo()
     }
 
-    @objc
     public static func setTrackingConsent(consent: objc_TrackingConsent) {
         Datadog.set(trackingConsent: consent.sdkConsent)
     }
