@@ -47,6 +47,7 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
         onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = .mockAny(),
         trackAnonymousUser: Bool = .mockAny(),
+        trackMemoryWarnings: Bool = .mockAny(),
         telemetrySampleRate: SampleRate = 0,
         featureFlags: FeatureFlags = .defaults
     ) -> RUM.Configuration {
@@ -73,6 +74,7 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             onSessionStart: onSessionStart,
             customEndpoint: customEndpoint,
             trackAnonymousUser: trackAnonymousUser,
+            trackMemoryWarnings: trackMemoryWarnings,
             telemetrySampleRate: telemetrySampleRate,
             featureFlags: featureFlags
         )
@@ -90,6 +92,7 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             vitalsUpdateFrequency: [VitalsFrequency.frequent, .average, .rare].randomElement(),
             customEndpoint: .mockRandom(),
             trackAnonymousUser: .mockRandom(),
+            trackMemoryWarnings: .mockRandom(),
             telemetrySampleRate: .mockRandom(min: 0, max: 100)
         )
     }

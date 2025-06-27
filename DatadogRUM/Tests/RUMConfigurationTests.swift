@@ -34,5 +34,6 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertNil(config.onSessionStart)
         XCTAssertNil(config.customEndpoint)
         XCTAssertTrue(config.trackAnonymousUser)
+        XCTAssertTrue(config.trackMemoryWarnings)
     }
 }
