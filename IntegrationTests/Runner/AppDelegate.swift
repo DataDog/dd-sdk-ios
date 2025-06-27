@@ -5,18 +5,12 @@
 */
 
 import UIKit
-import DatadogCore
-import DatadogLogs
-import DatadogTrace
-import DatadogRUM
 
 var serviceName = "integration-scenarios-service-name"
 var appConfiguration: AppConfiguration!
 
-@UIApplicationMain
+@main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    var window: UIWindow?
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         if Environment.isRunningUnitTests() {
             return false
@@ -27,24 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Initialize Datadog SDK
         appConfiguration.initializeSDK()
 
-        // Launch initial screen depending on the launch configuration
-        if let storyboard = appConfiguration.initialStoryboard() {
-            launch(storyboard: storyboard)
-        }
-
         return true
-    }
-
-    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        return true
-    }
-
-    func launch(storyboard: UIStoryboard) {
-        if window == nil {
-            window = UIWindow(frame: UIScreen.main.bounds)
-            window?.makeKeyAndVisible()
-        }
-        window?.rootViewController = storyboard.instantiateInitialViewController()!
     }
 }
 

@@ -18,14 +18,14 @@ internal func markRUMSessionAsEnded() {
     rumMonitor.startView(key: Environment.Constants.rumSessionEndViewName)
     rumMonitor.stopView(key: Environment.Constants.rumSessionEndViewName)
 
-    if #available(iOS 13, tvOS 13, *) {
-        // Show utility view to indicate  in UI that current RUM session
-        // was marked as ended (`UIHostingController` is excluded from instrumentation by default):
-        UIApplication.shared.keyWindow?.rootViewController = UIHostingController(rootView: RUMSessionEndView())
+    // Show utility view to indicate  in UI that current RUM session
+    // was marked as ended (`UIHostingController` is excluded from instrumentation by default):
+    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+       let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
+        window.rootViewController = UIHostingController(rootView: RUMSessionEndView())
     }
 }
 
-@available(iOS 13, tvOS 13, *)
 private struct RUMSessionEndView: View {
     var body: some View {
         VStack(alignment: .center) {

@@ -12,7 +12,6 @@ import DatadogCore
 ///
 /// This definition only exist to allow instantiation from `RUMSwiftUIManualInstrumentationScenario`
 /// storyboard and should be ignored from RUM instrumentation.
-@available(iOS 13, *)
 class SwiftUIRootViewController: UIHostingController<RootView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: RootView())
@@ -23,7 +22,6 @@ class SwiftUIRootViewController: UIHostingController<RootView> {
 ///
 /// This view creates a  `SwiftUI.TabView` to present
 /// navigation contexts..
-@available(iOS 13, *)
 struct RootView: View {
     var body: some View {
         TabView {
@@ -84,7 +82,6 @@ struct RootView: View {
 ///
 /// This view presents a button to push a new view onto the
 /// navigation stack, and a button to present a modal page sheet.
-@available(iOS 13, *)
 struct ScreenView: View {
 
     /// The view index in the stack.
@@ -128,7 +125,6 @@ struct ScreenView: View {
 
 /// The `UIScreenView` is a `UIScreenViewController` respresentable
 /// for SwiftUI.
-@available(iOS 13, *)
 struct UIScreenView: UIViewControllerRepresentable {
 
     /// The screen index in the stack
@@ -145,7 +141,6 @@ struct UIScreenView: UIViewControllerRepresentable {
 ///
 /// This view controller present a single button to push a
 /// `ScreenView` onto the stack.
-@available(iOS 13, *)
 class UIScreenViewController: UIViewController {
 
     var index: Int = 0
@@ -192,7 +187,6 @@ class UIScreenViewController: UIViewController {
     }
 }
 
-@available(iOS 13, *)
 extension View {
     func dd_interactiveDismissDisabled(_ isDisabled: Bool = true) -> some View {
         if #available(iOS 15.0, *) {
