@@ -7,43 +7,51 @@
 import Foundation
 import DatadogInternal
 
-internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
+internal class TracingURLSessionHandler: DatadogURLSessionHandler {
     /// Integration with Core Context.
     let contextReceiver: ContextMessageReceiver
-    /// Distributed trace sampler. Used for spans created through network instrumentation.
-    let distributedTraceSampler: Sampler
     /// First party hosts defined by the user.
     let firstPartyHosts: FirstPartyHosts
+    /// Value between `0.0` and `100.0`, where `0.0` means NO trace will be sent and `100.0` means ALL trace and spans will be sent.
+    let samplingRate: SampleRate
     /// Trace context injection configuration to determine whether the trace context should be injected or not.
     let traceContextInjection: TraceContextInjection
+
+    /// Distributed trace sampler. Used for spans created through network instrumentation.
+    private var distributedTraceSampler: Sampling?
 
     weak var tracer: DatadogTracer?
 
     init(
         tracer: DatadogTracer,
         contextReceiver: ContextMessageReceiver,
-        distributedTraceSampler: Sampler,
+        samplingRate: SampleRate,
         firstPartyHosts: FirstPartyHosts,
         traceContextInjection: TraceContextInjection
     ) {
         self.tracer = tracer
         self.contextReceiver = contextReceiver
-        self.distributedTraceSampler = distributedTraceSampler
+        self.samplingRate = samplingRate
         self.firstPartyHosts = firstPartyHosts
         self.traceContextInjection = traceContextInjection
     }
 
-    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?) {
+    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?) {
         guard let tracer = tracer else {
             return (request, nil)
         }
 
-        // Use the current active span as parent if the propagation
-        // headers support it.
+        // Use the current active span as parent if the propagation headers support it.
         let parentSpanContext = tracer.activeSpan?.context as? DDSpanContext
+        let traceID = parentSpanContext?.traceID ?? tracer.traceIDGenerator.generate()
+
+        let sampler = samplerBySessionID(defaultID: traceID.idLo)
+        distributedTraceSampler = sampler
+
         let spanContext = tracer.createSpanContext(
             parentSpanContext: parentSpanContext,
-            using: distributedTraceSampler
+            traceID: traceID,
+            using: sampler
         )
         let injectedSpanContext = TraceContext(
             traceID: spanContext.traceID,
@@ -124,15 +132,23 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 operationName: "urlsession.request",
                 startTime: resourceMetrics.fetch.start
             )
-        } else if distributedTraceSampler.sample() {
-            // Span context may not be injected on iOS13+ if `URLSession.dataTask(...)` for `URL`
-            // was used to create the session task.
-            span = tracer.startSpan(
-                operationName: "urlsession.request",
-                startTime: resourceMetrics.fetch.start
-            )
         } else {
-            return
+            let defaultTraceID = tracer.traceIDGenerator.generate()
+            if distributedTraceSampler == nil {
+                distributedTraceSampler = samplerBySessionID(defaultID: defaultTraceID.idLo)
+            }
+
+            if distributedTraceSampler?.sample() ?? false {
+                // Span context may not be injected on iOS13+ if `URLSession.dataTask(...)` for `URL`
+                // was used to create the session task.
+                span = tracer.startSpan(
+                    operationName: "urlsession.request",
+                    defaultTraceID: defaultTraceID,
+                    startTime: resourceMetrics.fetch.start
+                )
+            } else {
+                return
+            }
         }
 
         span.setTag(key: SpanTags.kind, value: "client")
@@ -175,6 +191,17 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         }
 
         span.finish(at: resourceMetrics.fetch.end)
+    }
+
+    private func samplerBySessionID(defaultID: UInt64) -> Sampling {
+        // for a UUID with value aaaaaaaa-bbbb-Mccc-Nddd-1234567890ab
+        // we use as the base id the last part : 0x1234567890ab
+        let baseId = contextReceiver.context.rumContext?.sessionID
+            .split(separator: "-")
+            .last
+            .flatMap { UInt64($0, radix: 16) }
+        ?? defaultID
+        return DeterministicSampler(baseId: baseId, samplingRate: samplingRate)
     }
 }
 
