@@ -79,23 +79,19 @@ extension TracingCommonAsserts {
                 line: line
             )
 
-            if #available(iOS 12.0, *) { // The `iOS11NetworkConnectionInfoProvider` doesn't provide those info
-                try matcher.meta.networkAvailableInterfaces().split(separator: "+").forEach { interface in
-                    XCTAssertTrue(
-                        SpanMatcher.allowedNetworkAvailableInterfacesValues.contains(String(interface)),
-                        file: file,
-                        line: line
-                    )
-                }
-
-                XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionSupportsIPv4()), file: file, line: line)
-                XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionSupportsIPv6()), file: file, line: line)
-                XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionIsExpensive()), file: file, line: line)
+            try matcher.meta.networkAvailableInterfaces().split(separator: "+").forEach { interface in
+                XCTAssertTrue(
+                    SpanMatcher.allowedNetworkAvailableInterfacesValues.contains(String(interface)),
+                    file: file,
+                    line: line
+                )
             }
 
-            if #available(iOS 13.0, *) {
-                XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionIsConstrained()), file: file, line: line)
-            }
+            XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionSupportsIPv4()), file: file, line: line)
+            XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionSupportsIPv6()), file: file, line: line)
+            XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionIsExpensive()), file: file, line: line)
+
+            XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionIsConstrained()), file: file, line: line)
 
             #if targetEnvironment(simulator)
                 // When running on iOS Simulator
