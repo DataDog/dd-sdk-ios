@@ -456,4 +456,43 @@ class WebViewEventReceiverTests: XCTestCase {
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
     }
+
+    func testWhenReceivingWebEvent_itAlwaysInjectsContainerSource() throws {
+        // Given
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock = .mockWith(
+            source: "ios",
+            additionalContext: [rumContext]
+        )
+
+        let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: RelativeDateProvider()) // Empty cache - no replay views
+        )
+
+        let date = Date().timeIntervalSince1970.toInt64Milliseconds
+        let webEventMock: JSON = [
+            "application": ["id": String.mockRandom()],
+            "session": ["id": String.mockRandom()],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": Int(date),
+            "type": "action"
+        ]
+
+        // When
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+
+        // Then
+        XCTAssertTrue(result, "It must accept the message")
+        XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must write web event to core")
+
+        let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first as? JSON)
+        let container = try XCTUnwrap(actualWebEventWritten["container"] as? JSON)
+        let source = try XCTUnwrap(container["source"] as? String)
+
+        XCTAssertEqual(source, "ios", "Container source must always be set to 'ios' for webview events")
+        XCTAssertNil(container["view"], "Container view should be nil when no replay session is active")
+    }
 }

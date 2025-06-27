@@ -80,13 +80,21 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 let correctedDate = Int64(date) + self.offset(forView: id, context: context)
                 event["date"] = correctedDate
 
-                // Inject the container source and view id
+                // Always inject the container source for webview events
+                var container = RUMViewEvent.Container(
+                    source: RUMViewEvent.Container.Source(rawValue: context.source) ?? .ios,
+                    view: nil
+                )
+
+                // Add view ID if there's an active replay session
                 if let viewID = self.viewCache.lastView(before: correctedDate, hasReplay: true) {
-                    event[RUMViewEvent.CodingKeys.container.rawValue] = RUMViewEvent.Container(
+                    container = RUMViewEvent.Container(
                         source: RUMViewEvent.Container.Source(rawValue: context.source) ?? .ios,
                         view: RUMViewEvent.Container.View(id: viewID)
                     )
                 }
+
+                event[RUMViewEvent.CodingKeys.container.rawValue] = container
             }
 
             if var application = event["application"] as? JSON {

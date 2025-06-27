@@ -39,11 +39,6 @@ internal struct WebViewRecordReceiver: FeatureMessageReceiver {
                 event["timestamp"] = Int64(timestamp) + offset.toInt64Milliseconds
             }
 
-            // Inject container.source:ios for webview events to match browser SDK behavior
-            event["container"] = [
-                "source": "ios"
-            ]
-
             let record = WebRecord(
                 applicationID: rumContext.applicationID,
                 sessionID: rumContext.sessionID,
