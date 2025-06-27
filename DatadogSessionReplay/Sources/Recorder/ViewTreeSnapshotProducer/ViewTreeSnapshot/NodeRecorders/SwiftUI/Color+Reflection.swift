@@ -21,6 +21,13 @@ extension SwiftUI.Color._Resolved: Reflection {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
+extension ColorView: Reflection {
+    init(from reflector: Reflector) throws {
+        color = try reflector.descendant("color", "base")
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
 extension ResolvedPaint: Reflection {
     init(from reflector: Reflector) throws {
         paint = reflector.descendantIfPresent("paint")

@@ -20,6 +20,11 @@ extension SwiftUI.Color {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
+internal struct ColorView {
+    let color: SwiftUI.Color._Resolved
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
 internal struct ResolvedPaint {
     let paint: SwiftUI.Color._Resolved?
 }
