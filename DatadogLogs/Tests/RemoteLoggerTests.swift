@@ -68,25 +68,6 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(errorMessage.message, "Error message")
     }
 
-    func testWhenCrossPlatformCrashErrorLogged_itDoesNotPostToMessageBus() throws {
-        // Given
-        let logger = RemoteLogger(
-            featureScope: featureScope,
-            globalAttributes: .mockAny(),
-            configuration: .mockAny(),
-            dateProvider: RelativeDateProvider(),
-            rumContextIntegration: false,
-            activeSpanIntegration: false,
-            backtraceReporter: BacktraceReporterMock()
-        )
-
-        // When
-        logger.error("Error message", error: nil, attributes: [CrossPlatformAttributes.errorLogIsCrash: true])
-
-        // Then
-        XCTAssertEqual(featureScope.messagesSent().count, 0)
-    }
-
     func testWhenAttributesContainIncludeBinaryImages_itPostsBinaryImagesToMessageBus() throws {
         let stubBacktrace: BacktraceReport = .mockRandom()
         let logger = RemoteLogger(

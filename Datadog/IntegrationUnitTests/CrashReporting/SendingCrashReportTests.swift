@@ -46,7 +46,7 @@ class SendingCrashReportTests: XCTestCase {
         super.tearDown()
     }
 
-    func testWhenSDKStartsWithPendingCrashReport_itSendsItAsLogAndRUMEvent() throws {
+    func testWhenSDKStartsWithPendingCrashReport_itSendsItAsRUMEvent() throws {
         // Given
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted, // CR from the app session that has enabled data collection
@@ -58,23 +58,8 @@ class SendingCrashReportTests: XCTestCase {
         let crashReportAttributes: [String: Encodable] = try XCTUnwrap(crashReport.additionalAttributes.dd.decode())
 
         // When
-        Logs.enable(with: .init(), in: core)
         RUM.enable(with: .init(applicationID: "rum-app-id"), in: core)
         CrashReporting.enable(with: CrashReporterMock(pendingCrashReport: crashReport), in: core)
-
-        // Then (an emergency log is sent)
-        let log = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: LogsFeature.name, ofType: LogEvent.self).first)
-        XCTAssertEqual(log.status, .emergency)
-        XCTAssertEqual(log.message, crashReport.message)
-        XCTAssertEqual(log.error?.message, crashReport.message)
-        XCTAssertEqual(log.error?.kind, crashReport.type)
-        XCTAssertEqual(log.error?.stack, crashReport.stack)
-        let lastLogAttributes = try XCTUnwrap(crashContext.lastLogAttributes?.attributes)
-        DDAssertJSONEqual(log.attributes.userAttributes, lastLogAttributes.merging(crashReportAttributes) { $1 })
-        XCTAssertNotNil(log.attributes.internalAttributes?[DDError.threads])
-        XCTAssertNotNil(log.attributes.internalAttributes?[DDError.binaryImages])
-        XCTAssertNotNil(log.attributes.internalAttributes?[DDError.meta])
-        XCTAssertNotNil(log.attributes.internalAttributes?[DDError.wasTruncated])
 
         // Then (RUMError is sent)
         let rumEvent = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self).first)
@@ -88,41 +73,5 @@ class SendingCrashReportTests: XCTestCase {
         let contextAttributes = try XCTUnwrap(rumEvent.context?.contextInfo)
         let lastRUMAttributes = try XCTUnwrap(crashContext.lastRUMAttributes?.contextInfo)
         DDAssertJSONEqual(contextAttributes, lastRUMAttributes.merging(crashReportAttributes) { $1 })
-    }
-
-    func testWhenSendingCrashReportAsLog_itIsLinkedToTheRUMSessionThatHasCrashed() throws {
-        let crashReporter = CrashReporterMock()
-
-        // Given (RUM session)
-        Logs.enable(with: .init(), in: core)
-        RUM.enable(with: .init(applicationID: "rum-app-id"), in: core)
-        CrashReporting.enable(with: crashReporter, in: core)
-        RUMMonitor.shared(in: core).startView(key: "view-1", name: "FirstView")
-
-        let rumEvent = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMViewEvent.self).last)
-
-        // Flush async tasks in Crash Reporting feature (this is yet not a part of `core.flushAndTearDown()` today)
-        // TODO: RUM-2766 Stop core instance with completion
-        (core.get(feature: CrashReportingFeature.self)!.crashContextProvider as! CrashContextCoreProvider).flush()
-        try core.flushAndTearDown()
-
-        // When (starting an SDK with pending crash report)
-        core = DatadogCoreProxy()
-
-        let crashReport: DDCrashReport = .mockRandomWith( // mock a CR with context injected from previous instance of the SDK
-            contextData: crashReporter.injectedContext!
-        )
-
-        Logs.enable(with: .init(), in: core)
-        RUM.enable(with: .init(applicationID: "rum-app-id"), in: core)
-        CrashReporting.enable(with: CrashReporterMock(pendingCrashReport: crashReport), in: core)
-
-        // Then (an emergency log is sent)
-        let log = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: LogsFeature.name, ofType: LogEvent.self).first)
-        XCTAssertEqual(log.status, .emergency)
-        XCTAssertEqual(log.message, crashReport.message)
-        XCTAssertEqual(log.attributes.internalAttributes?["application_id"] as? String, rumEvent.application.id)
-        XCTAssertEqual(log.attributes.internalAttributes?["session_id"] as? String, rumEvent.session.id)
-        XCTAssertEqual(log.attributes.internalAttributes?["view.id"] as? String, rumEvent.view.id)
     }
 }
