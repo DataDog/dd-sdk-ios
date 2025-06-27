@@ -87,6 +87,25 @@ ENV check:
     - ./tools/runner-setup.sh --datadog-ci
     - make env-check
 
+# ┌──────────────┐
+# │ Local Cache: │
+# └──────────────┘
+
+Build Dependencies:
+  stage: pre
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  artifacts:
+    paths:
+      - Carthage/Build
+    expire_in: 4 hours
+    when: on_success
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - echo "Building dependencies..."
+    - make clean dependencies
+
 # ┌──────────────────────────┐
 # │ SDK changes integration: │
 # └──────────────────────────┘
@@ -106,6 +125,8 @@ Unit Tests (iOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  dependencies:
+    - "Build Dependencies"
   variables:
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 16 Pro"
@@ -119,6 +140,8 @@ Unit Tests (tvOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  dependencies:
+    - "Build Dependencies"
   variables:
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
@@ -132,6 +155,8 @@ UI Tests:
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  dependencies:
+    - "Build Dependencies"
   variables:
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 16 Pro"
