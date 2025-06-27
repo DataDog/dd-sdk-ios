@@ -554,6 +554,10 @@ public class DDRUMActionEventApplication: NSObject {
         self.root = root
     }
 
+    @objc public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
+    }
+
     @objc public var id: String {
         root.swiftModel.application.id
     }
@@ -1408,6 +1412,10 @@ public class DDRUMErrorEventApplication: NSObject {
 
     internal init(root: DDRUMErrorEvent) {
         self.root = root
+    }
+
+    @objc public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
     }
 
     @objc public var id: String {
@@ -2943,6 +2951,10 @@ public class DDRUMLongTaskEventApplication: NSObject {
         self.root = root
     }
 
+    @objc public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
+    }
+
     @objc public var id: String {
         root.swiftModel.application.id
     }
@@ -3962,6 +3974,10 @@ public class DDRUMResourceEventApplication: NSObject {
 
     internal init(root: DDRUMResourceEvent) {
         self.root = root
+    }
+
+    @objc public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
     }
 
     @objc public var id: String {
@@ -5437,6 +5453,10 @@ public class DDRUMViewEventApplication: NSObject {
 
     internal init(root: DDRUMViewEvent) {
         self.root = root
+    }
+
+    @objc public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
     }
 
     @objc public var id: String {
@@ -6974,6 +6994,10 @@ public class DDRUMVitalEventApplication: NSObject {
 
     internal init(root: DDRUMVitalEvent) {
         self.root = root
+    }
+
+    @objc public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
     }
 
     @objc public var id: String {
@@ -8909,4 +8933,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/fc1a8bd02785f5a108f5afa64c0e7a61aa89c203
+// Generated from https://github.com/DataDog/rum-events-format/tree/ca4ca9c6ce21f634f41cda2fdd95cacc4b5246b0

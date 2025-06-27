@@ -17,6 +17,7 @@ extension RUMDevice {
             batteryLevel: Double(context.batteryStatus?.level ?? 0),
             brightnessLevel: Double(context.brightnessLevel ?? 0),
             powerSavingMode: context.isLowPowerModeEnabled,
+            localeInfo: context.localeInfo,
             telemetry: telemetry
         )
     }
@@ -26,6 +27,7 @@ extension RUMDevice {
         batteryLevel: Double,
         brightnessLevel: Double,
         powerSavingMode: Bool,
+        localeInfo: LocaleInfo,
         telemetry: Telemetry = NOPTelemetry()
     ) {
         self.init(
@@ -33,9 +35,11 @@ extension RUMDevice {
             batteryLevel: batteryLevel,
             brand: device.brand,
             brightnessLevel: brightnessLevel,
+            locales: localeInfo.locales,
             model: device.model,
             name: device.name,
             powerSavingMode: powerSavingMode,
+            timeZone: localeInfo.timeZoneIdentifier,
             type: {
                 switch device.type {
                 case .iPhone, .iPod: return .mobile

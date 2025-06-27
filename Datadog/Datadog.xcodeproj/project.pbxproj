@@ -848,6 +848,10 @@
 		61FDBA1726974CA9001D9D43 /* DDCrashReportBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1626974CA9001D9D43 /* DDCrashReportBuilderTests.swift */; };
 		86092FDD2DEDC6830075D63B /* AccessibilityValuesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86092FDC2DEDC6830075D63B /* AccessibilityValuesMock.swift */; };
 		86092FDE2DEDC6830075D63B /* AccessibilityValuesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86092FDC2DEDC6830075D63B /* AccessibilityValuesMock.swift */; };
+		861FD6852DF2EAED00F59823 /* LocaleInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861FD6842DF2EAED00F59823 /* LocaleInfoPublisherTests.swift */; };
+		861FD6862DF2EAED00F59823 /* LocaleInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861FD6842DF2EAED00F59823 /* LocaleInfoPublisherTests.swift */; };
+		861FD6882DF3366400F59823 /* LocaleInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861FD6872DF3366400F59823 /* LocaleInfo.swift */; };
+		861FD6892DF3366400F59823 /* LocaleInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861FD6872DF3366400F59823 /* LocaleInfo.swift */; };
 		862B0B272DEF2D8000F61E73 /* MockNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 862B0B262DEF2D8000F61E73 /* MockNotificationCenter.swift */; };
 		862B0B282DEF2D8000F61E73 /* MockNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 862B0B262DEF2D8000F61E73 /* MockNotificationCenter.swift */; };
 		8648D0782E01A389002F226B /* BrightnessLevelPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8648D0772E01A389002F226B /* BrightnessLevelPublisher.swift */; };
@@ -862,6 +866,8 @@
 		864A70812DE092AD00AC0619 /* AccessibilityReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864A707E2DE092AD00AC0619 /* AccessibilityReaderTests.swift */; };
 		866CA4A82E02EE0100E0CD03 /* BrightnessLevelPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866CA4A72E02EE0100E0CD03 /* BrightnessLevelPublisherTests.swift */; };
 		866CA4A92E02EE0100E0CD03 /* BrightnessLevelPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866CA4A72E02EE0100E0CD03 /* BrightnessLevelPublisherTests.swift */; };
+		86B43EC72DE464ED00FDDD29 /* LocaleInfoPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B43EC62DE464ED00FDDD29 /* LocaleInfoPublisher.swift */; };
+		86B43EC82DE464ED00FDDD29 /* LocaleInfoPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B43EC62DE464ED00FDDD29 /* LocaleInfoPublisher.swift */; };
 		960A0D3B2D6E2490004BB999 /* Reflector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D3A2D6E2490004BB999 /* Reflector.swift */; };
 		960A0D3C2D6E2490004BB999 /* CustomDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D382D6E2490004BB999 /* CustomDump.swift */; };
 		960A0D3D2D6E2490004BB999 /* ReflectionMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D392D6E2490004BB999 /* ReflectionMirror.swift */; };
@@ -2959,6 +2965,8 @@
 		61FF416125EE5FF400CE35EC /* CrashLogReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashLogReceiverTests.swift; sourceTree = "<group>"; };
 		61FF9A4425AC5DEA001058CC /* ViewIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewIdentifier.swift; sourceTree = "<group>"; };
 		86092FDC2DEDC6830075D63B /* AccessibilityValuesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityValuesMock.swift; sourceTree = "<group>"; };
+		861FD6842DF2EAED00F59823 /* LocaleInfoPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleInfoPublisherTests.swift; sourceTree = "<group>"; };
+		861FD6872DF3366400F59823 /* LocaleInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleInfo.swift; sourceTree = "<group>"; };
 		862B0B262DEF2D8000F61E73 /* MockNotificationCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockNotificationCenter.swift; sourceTree = "<group>"; };
 		8648D0772E01A389002F226B /* BrightnessLevelPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrightnessLevelPublisher.swift; sourceTree = "<group>"; };
 		8648D07A2E01ABB0002F226B /* BrightnessLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrightnessLevel.swift; sourceTree = "<group>"; };
@@ -2966,6 +2974,7 @@
 		864A707B2DDF743900AC0619 /* AccessibilityReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityReader.swift; sourceTree = "<group>"; };
 		864A707E2DE092AD00AC0619 /* AccessibilityReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityReaderTests.swift; sourceTree = "<group>"; };
 		866CA4A72E02EE0100E0CD03 /* BrightnessLevelPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrightnessLevelPublisherTests.swift; sourceTree = "<group>"; };
+		86B43EC62DE464ED00FDDD29 /* LocaleInfoPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleInfoPublisher.swift; sourceTree = "<group>"; };
 		960A0D382D6E2490004BB999 /* CustomDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomDump.swift; sourceTree = "<group>"; };
 		960A0D392D6E2490004BB999 /* ReflectionMirror.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionMirror.swift; sourceTree = "<group>"; };
 		960A0D3A2D6E2490004BB999 /* Reflector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reflector.swift; sourceTree = "<group>"; };
@@ -5434,6 +5443,7 @@
 		617699162A8608C20030022B /* Context */ = {
 			isa = PBXGroup;
 			children = (
+				861FD6842DF2EAED00F59823 /* LocaleInfoPublisherTests.swift */,
 				266BFA5D2D6F4E2A003041A5 /* AccountInfoPublisherTests.swift */,
 				614B78EC296D7B63009C6B92 /* LowPowerModePublisherTests.swift */,
 				D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */,
@@ -6243,6 +6253,7 @@
 				D2F8235229915E12003C7E99 /* DatadogSite.swift */,
 				6174D6122BFDF16C00EC7469 /* BundleType.swift */,
 				8648D07A2E01ABB0002F226B /* BrightnessLevel.swift */,
+				861FD6872DF3366400F59823 /* LocaleInfo.swift */,
 			);
 			path = Context;
 			sourceTree = "<group>";
@@ -6814,6 +6825,7 @@
 				D2553828288F0B2300727FAD /* LowPowerModePublisher.swift */,
 				D29294DF291D5ECD00F8EFF9 /* ApplicationVersionPublisher.swift */,
 				D2FB1253292E0E92005B13F8 /* TrackingConsentPublisher.swift */,
+				86B43EC62DE464ED00FDDD29 /* LocaleInfoPublisher.swift */,
 			);
 			path = Context;
 			sourceTree = "<group>";
@@ -8430,6 +8442,7 @@
 				D29294E0291D5ED100F8EFF9 /* ApplicationVersionPublisher.swift in Sources */,
 				61D3E0D9277B23F1008BE766 /* KronosNTPProtocol.swift in Sources */,
 				61D3E0DA277B23F1008BE766 /* KronosTimeFreeze.swift in Sources */,
+				86B43EC82DE464ED00FDDD29 /* LocaleInfoPublisher.swift in Sources */,
 				61ED39D426C2A36B002C0F26 /* DataUploadStatus.swift in Sources */,
 				61133BD72423979B00786299 /* DataUploadWorker.swift in Sources */,
 				61D3E0D4277B23F1008BE766 /* KronosTimeStorage.swift in Sources */,
@@ -8555,6 +8568,7 @@
 				6134CDB12A691E850061CCD9 /* BatchMetricsTests.swift in Sources */,
 				D24C9C6029A7CB0A002057CF /* DatadogLogsFeatureTests.swift in Sources */,
 				617B953D24BF4D8F00E6F443 /* RUMMonitorTests.swift in Sources */,
+				861FD6862DF2EAED00F59823 /* LocaleInfoPublisherTests.swift in Sources */,
 				D244B3A3271EDACD003E1B29 /* SwiftUIExtensionsTests.swift in Sources */,
 				D24C9C6429A7CB7B002057CF /* CrashLogReceiverTests.swift in Sources */,
 				61B5E42126DF85C7000B0A5F /* DDRUMMonitor+apiTests.m in Sources */,
@@ -9025,6 +9039,7 @@
 				D295A16529F299C9007C0E9A /* URLSessionInterceptor.swift in Sources */,
 				3C08F9D02C2D652D002B0FF2 /* Storage.swift in Sources */,
 				D23039E5298D5236001A1FA3 /* DateProvider.swift in Sources */,
+				861FD6892DF3366400F59823 /* LocaleInfo.swift in Sources */,
 				D23039E0298D5235001A1FA3 /* DatadogCoreProtocol.swift in Sources */,
 				D23039FD298D5236001A1FA3 /* DataCompression.swift in Sources */,
 				D2C179E12DD2388800556F68 /* SpanCoreContext.swift in Sources */,
@@ -9808,6 +9823,7 @@
 				D2CB6E8127C50EAE00A62B57 /* DataUploader.swift in Sources */,
 				D2CB6E8827C50EAE00A62B57 /* FileReader.swift in Sources */,
 				D2CB6E8D27C50EAE00A62B57 /* KronosNTPProtocol.swift in Sources */,
+				86B43EC72DE464ED00FDDD29 /* LocaleInfoPublisher.swift in Sources */,
 				D2CB6E9127C50EAE00A62B57 /* KronosTimeFreeze.swift in Sources */,
 				D2FB125E292FBB56005B13F8 /* Datadog+Internal.swift in Sources */,
 				61DA8CAA28609C5B0074A606 /* Directories.swift in Sources */,
@@ -9921,6 +9937,7 @@
 				D22743EC29DEC9E6001A7EF9 /* Casting+RUM.swift in Sources */,
 				D2CB6F4D27C520D400A62B57 /* DataUploadStatusTests.swift in Sources */,
 				D2CB6F4F27C520D400A62B57 /* RetryingTests.swift in Sources */,
+				861FD6852DF2EAED00F59823 /* LocaleInfoPublisherTests.swift in Sources */,
 				A7CA21812BEBB1E800732571 /* AppBackgroundTaskCoordinatorTests.swift in Sources */,
 				D2CB6F5027C520D400A62B57 /* DDDatadogTests.swift in Sources */,
 				D2B3F0452823EE8400C2B5EE /* TLVBlockTests.swift in Sources */,
@@ -10133,6 +10150,7 @@
 				3C08F9D12C2D652D002B0FF2 /* Storage.swift in Sources */,
 				D2DA237B298D57AA00C6C7E6 /* DateProvider.swift in Sources */,
 				D2DA237C298D57AA00C6C7E6 /* DatadogCoreProtocol.swift in Sources */,
+				861FD6882DF3366400F59823 /* LocaleInfo.swift in Sources */,
 				D2DA237D298D57AA00C6C7E6 /* DataCompression.swift in Sources */,
 				D2C9A26A2C0F3F5A007526F5 /* SessionReplayConfiguration.swift in Sources */,
 				D2C179E22DD2388800556F68 /* SpanCoreContext.swift in Sources */,
