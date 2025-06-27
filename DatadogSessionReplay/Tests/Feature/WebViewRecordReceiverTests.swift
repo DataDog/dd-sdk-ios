@@ -53,7 +53,10 @@ class WebViewRecordReceiverTests: XCTestCase {
             "records": [
                 [
                     "timestamp": 100_000 + serverTimeOffset.toInt64Milliseconds,
-                    "type": 2
+                    "type": 2,
+                    "container": [
+                        "source": "ios"
+                    ]
                 ].merging(random, uniquingKeysWith: { old, _ in old })
             ]
         ]
@@ -93,6 +96,40 @@ class WebViewRecordReceiverTests: XCTestCase {
 
         // Then
         XCTAssertFalse(result, "It must reject messages addressed to other receivers")
+    }
+
+    func testWhenReceivingWebRecord_itInjectsContainerSource() throws {
+        let rumContext: RUMCoreContext = .mockRandom()
+        let scope = FeatureScopeMock(
+            context: .mockWith(
+                additionalContext: [rumContext]
+            )
+        )
+
+        // Given
+        let receiver = WebViewRecordReceiver(scope: scope)
+        let webRecordMock: [String: Any] = [
+            "timestamp": 200_000,
+            "type": 3,
+            "data": ["some": "data"]
+        ]
+        let browserViewID: String = .mockRandom()
+
+        // When
+        let message = WebViewMessage.record(webRecordMock, WebViewMessage.View(id: browserViewID))
+        let result = receiver.receive(message: .webview(message), from: NOPDatadogCore())
+
+        // Then
+        XCTAssertTrue(result, "It must accept the message")
+        XCTAssertEqual(scope.eventsWritten.count, 1, "It must write web segment to core")
+        
+        let actualWebEventWritten = try XCTUnwrap(scope.eventsWritten.first)
+        let webRecord = try XCTUnwrap(actualWebEventWritten as? [String: Any])
+        let records = try XCTUnwrap(webRecord["records"] as? [[String: Any]])
+        let firstRecord = try XCTUnwrap(records.first)
+        let container = try XCTUnwrap(firstRecord["container"] as? [String: String])
+        
+        XCTAssertEqual(container["source"], "ios", "WebView events must include container.source set to 'ios'")
     }
 }
 

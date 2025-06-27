@@ -2,6 +2,7 @@
 
 - [FEATURE] Add SwiftUI support for Session Replay privacy overrides. See [#2333][]
 - [IMPROVEMENT] Add `accountInfo` property to `DDLogEvent`. See [#2360][]
+- [IMPROVEMENT] Set `container.source:ios` on Session Replay webview events for consistency with RUM events. See [#XXXX][]
 
 # 2.29.0 / 18-06-2025
 
