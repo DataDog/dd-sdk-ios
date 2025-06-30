@@ -101,14 +101,6 @@ create_pr() {
     local changelog="$2"
     local target_branch="$3"
     echo_subtitle "Create PR in '$REPO_NAME' repo"
-    echo_info "▸ Exporting 'GITHUB_TOKEN' for CI"
-    export GITHUB_TOKEN=$(get_secret $DD_IOS_SECRET__GH_CLI_TOKEN)
-    echo_info "▸ gh auth status"
-    gh auth status
-    if [[ $? -ne 0 ]]; then
-        echo_err "Error:" "GitHub CLI is not authenticated."
-        exit 1
-    fi
 
     PR_TITLE="[Dogfooding] Upgrade dd-sdk-ios to \`$DOGFOODED_SDK_VERSION\`"
     PR_DESCRIPTION="$(cat <<EOF
@@ -224,6 +216,15 @@ update_dependant_sdk_version() {
     echo_info "<<< '$version_file' after"
 }
 
+verify_gh_auth() {
+    echo_info "▸ gh auth status"
+    gh auth status
+    if [[ $? -ne 0 ]]; then
+        echo_err "Error:" "GitHub CLI is not authenticated."
+        exit 1
+    fi
+}
+
 prepare
 trap "cleanup" EXIT INT
 
@@ -245,10 +246,16 @@ if [ "$shopist" = "true" ]; then
     update_dependant_package_resolved "$CLONE_PATH/Shopist/Shopist.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
     update_dependant_sdk_version "$CLONE_PATH/Shopist/Shopist/DogfoodingConfig.swift"
 
+    echo_info "▸ Exporting 'GITHUB_TOKEN' for CI"
+    export GITHUB_TOKEN=$(dd-octo-sts --disable-tracing token --scope DataDog/shopist-ios --policy dd-sdk-ios.gitlab.pr)
+    verify_gh_auth
+
     # Push & create PR:
     commit_repo $CLONE_PATH
     push_repo $CLONE_PATH
     create_pr $CLONE_PATH $CHANGELOG $DEFAULT_BRANCH
+
+    dd-octo-sts --disable-tracing revoke
 fi
 
 if [ "$datadog_app" = "true" ]; then
@@ -265,6 +272,10 @@ if [ "$datadog_app" = "true" ]; then
     # Update dd-sdk-ios version:
     update_dependant_package_resolved "$CLONE_PATH/Tuist/Package.resolved"
     update_dependant_sdk_version "$CLONE_PATH/Targets/Platform/DatadogObservability/DogfoodingConfig.swift"
+
+    echo_info "▸ Exporting 'GITHUB_TOKEN' for CI"
+    export GITHUB_TOKEN=$(get_secret $DD_IOS_SECRET__GH_CLI_TOKEN)
+    verify_gh_auth
 
     # Push & create PR:
     commit_repo $CLONE_PATH
