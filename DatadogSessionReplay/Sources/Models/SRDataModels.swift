@@ -270,8 +270,8 @@ public struct SRShapeStyle: Codable, Hashable {
         opacity: Double? = nil
     ) {
         self.backgroundColor = backgroundColor
-        self.cornerRadius = cornerRadius.flatMap { $0.isNaN ? nil : $0 }
-        self.opacity = opacity.flatMap { $0.isNaN ? nil : $0 }
+        self.cornerRadius = cornerRadius
+        self.opacity = opacity
     }
 }
 
