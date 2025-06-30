@@ -1,6 +1,178 @@
-# Migration from 1.x to 2.0
+# Migration Guide
 
-This document describes the main changes introduced in SDK `2.0` compared to `1.x`.
+This document outlines breaking changes and migration steps between major versions of the project.
+
+## Migration from 2.x to 3.0
+
+This section describes the main changes introduced in SDK `3.0` compared to `2.x`.
+
+### Product Modules 
+
+All SDK products (RUM, Trace, Logs, SessionReplay, etc) remain modular and separated into distinct libraries. The only notable change is the removal of the `DatadogObjc` module, whose contents have been integrated into their respective product modules.
+
+The available `Datadog` libraries in 3.0 are:
+- `DatadogCore`
+- `DatadogCrashReporting`
+- `DatadogLogs`
+- `DatadogRUM`
+- `DatadogSessionReplay`
+- `DatadogTrace`
+- `DatadogWebViewTracking`
+
+<details>
+  <summary>SPM</summary>
+
+  ```swift
+let package = Package(
+    ...
+    dependencies: [
+        .package(url: "https://github.com/DataDog/dd-sdk-ios", from: "3.0.0")
+    ],
+    targets: [
+        .target(
+            ...
+            dependencies: [
+                .product(name: "DatadogCore", package: "dd-sdk-ios"),
+                .product(name: "DatadogCrashReporting", package: "dd-sdk-ios"),
+                .product(name: "DatadogLogs", package: "dd-sdk-ios"),
+                .product(name: "DatadogRUM", package: "dd-sdk-ios"),
+                .product(name: "DatadogSessionReplay", package: "dd-sdk-ios"),
+                .product(name: "DatadogTrace", package: "dd-sdk-ios"),
+                .product(name: "DatadogWebViewTracking", package: "dd-sdk-ios"),
+            ]
+        ),
+    ]
+)
+  ```
+</details>
+
+<details>
+  <summary>CocoaPods</summary>
+
+  ```ruby
+  pod 'DatadogCore'
+  pod 'DatadogCrashReporting'
+  pod 'DatadogLogs'
+  pod 'DatadogRUM'
+  pod 'DatadogSessionReplay'
+  pod 'DatadogTrace'
+  pod 'DatadogWebViewTracking'
+  ```
+</details>
+
+<details>
+  <summary>Carthage</summary>
+
+  The `Cartfile` remains the same: 
+  ```
+  github "DataDog/dd-sdk-ios"
+  ```
+
+  In Xcode, you **must** link the following frameworks:
+  ```
+  DatadogCore.xcframework
+  DatadogInternal.xcframework
+  ```
+
+  Then select the product modules you intend to use:
+  ```
+  DatadogCrashReporting.xcframework + CrashReporter.xcframework
+  DatadogLogs.xcframework
+  DatadogRUM.xcframework
+  DatadogSessionReplay.xcframework
+  DatadogTrace.xcframework
+  DatadogWebViewTracking.xcframework
+  ```
+</details>
+
+### SDK Configuration
+
+The SDK should be initialized as early as possible in the app lifecycle, specifically in the `AppDelegate`'s `application(_:didFinishLaunchingWithOptions:)` callback. This ensures all measurements, including application startup duration, are captured correctly. For apps built with SwiftUI, you can use `@UIApplicationDelegateAdaptor` to hook into the `AppDelegate`.
+
+```swift
+import DatadogCore
+
+Datadog.initialize(
+    with: Datadog.Configuration(
+        clientToken: "<client token>",
+        env: "<environment>",
+        service: "<service name>"
+    ), 
+    trackingConsent: .granted
+)
+```
+
+**Note**: Initializing the SDK elsewhere (for example later during view loading) may result in inaccurate or missing telemetry, especially around app startup performance.
+
+### RUM Product Changes
+
+RUM View level attributes are now automatically propagated to all related child events, including resources, user actions, errors, and long tasks. This ensures consistent metadata across events for better filtering and correlation in Datadog dashboards.
+
+To manage View level attributes more effectively, new APIs were added:
+- `Monitor.addViewAttribute(forKey:value:)`
+- `Monitor.addViewAttributes(_:)`
+- `Monitor.removeViewAttribute(forKey:)`
+- `Monitor.removeViewAttributes(forKeys:)`
+
+Other notable changes:
+- All Objective-C RUM APIs are now included in `DatadogRUM`. The separate `DatadogObjc` module is no longer available.
+- App Hangs and Watchdog terminations are no longer reported from app extensions or widgets.
+- A new property `trackMemoryWarnings` was added to `RUM.Configuration` to report memory warnings as RUM Errors.
+
+API changes:
+
+|`2.x`|`3.0`|
+|---|---|
+|-|`RUM.Configuration.trackMemoryWarnings`|
+|`RUMView(path:attributes:)`|`RUMView(name:attributes:isUntrackedModal:)`|
+|-|`Monitor.addViewAttribute(forKey:value:)`|
+|-|`Monitor.addViewAttributes(:)`|
+|-|`Monitor.removeViewAttribute(forKey:)`|
+|-|`Monitor.removeViewAttributes(forKeys:)`|
+
+### Logs Product Changes
+
+The Logs product no longer reports fatal errors. To enable Error Tracking for crashes, Crash Reporting must be enabled in conjunction with RUM.
+
+Additionally all Objective-C Logs APIs are now included in `DatadogLogs`. The separate `DatadogObjc` module is no longer available.
+
+### APM Trace Product Changes
+
+Trace sampling is now deterministic when used alongside RUM. It uses the RUM `session.id` for consistent sampling.
+
+Also:
+- The `Trace.Configuration.URLSessionTracking.FirstPartyHostsTracing` configuration sets sampling for all requests  by default and the trace context is injected only into sampled requests.
+- All Objective-C Trace APIs are now included in `DatadogTrace`. The separate `DatadogObjc` module is no longer available.
+
+**Note**: A similar configuration exists in `RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing`.
+
+### Session Replay Product Changes
+
+Privacy settings are now more granular. The previous `defaultPrivacyLevel` parameter has been replaced by:
+- `textAndInputPrivacyLevel`
+- `imagePrivacyLevel`
+- `touchPrivacyLevel`
+
+API changes:
+
+|`2.x`|`3.0`|
+|---|---|
+|`SessionReplay.Configuration(replaySampleRate:defaultPrivacyLevel:startRecordingImmediately:customEndpoint:)`|`SessionReplay.Configuration(replaySampleRate:textAndInputPrivacyLevel:imagePrivacyLevel:touchPrivacyLevel:startRecordingImmediately:customEndpoint:featureFlags:)`|
+|`SessionReplay.Configuration(replaySampleRate:defaultPrivacyLevel:startRecordingImmediately:customEndpoint:)`|`SessionReplay.Configuration(replaySampleRate:textAndInputPrivacyLevel:imagePrivacyLevel:touchPrivacyLevel:startRecordingImmediately:customEndpoint:featureFlags:)`|
+
+### URLSession Instrumentation Changes
+
+The legacy delegate types have been replaced by a unified instrumentation API:
+
+|`2.x`|`3.0`|
+|---|---|
+|`DatadogURLSessionDelegate()`|`URLSessionInstrumentation.enable(with:)`|
+|`DDURLSessionDelegate()`|`URLSessionInstrumentation.enable(with:)`|
+|`DDNSURLSessionDelegate()`|`URLSessionInstrumentation.enable(with:)`|
+
+## Migration from 1.x to 2.0
+
+This section describes the main changes introduced in SDK `2.0` compared to `1.x`.
 
 ### Product Modules 
 
@@ -85,7 +257,7 @@ let package = Package(
 
 The `2.0` version of the iOS SDK also exposes unified API layouts and naming between iOS and Android SDKs and with other Datadog products.
 
-## SDK Configuration Changes
+### SDK Configuration Changes
 
 Better SDK granularity is achieved with the extraction of different products into independent modules, therefore all product-specific configurations have been moved to their dedicated modules.
 
@@ -134,7 +306,7 @@ API changes:
 |`Datadog.Configuration.Builder.set(serverDateProvider:)`|`Datadog.Configuration.serverDateProvider`|
 |`Datadog.AppContext(mainBundle:)`|`Datadog.Configuration.bundle`|
 
-## Logs Product Changes
+### Logs Product Changes
 
 All the classes related to Logs are now strictly in the `DatadogLogs` module. You first need to enable the product:
 
@@ -169,7 +341,7 @@ API changes:
 |`Logger.Builder.set(datadogReportingThreshold:)`|`Logger.Configuration.remoteLogThreshold`|
 |`Logger.Builder.printLogsToConsole(_:, usingFormat)`|`Logger.Configuration.consoleLogFormat`|
 
-## APM Trace Product Changes
+### APM Trace Product Changes
 
 All the classes related to Trace are now strictly in the `DatadogTrace` module. You first need to enable the product:
 
@@ -202,7 +374,7 @@ API changes:
 |`Tracer.Configuration.bundleWithRUM`|`Trace.Configuration.bundleWithRumEnabled`|
 |`Tracer.Configuration.samplingRate`|`Trace.Configuration.sampleRate`|
 
-## RUM Product Changes
+### RUM Product Changes
 
 All the classes related to RUM are now strictly in the `DatadogRUM` module. You will first need to enable the product:
 
@@ -243,7 +415,7 @@ API changes:
 |`Datadog.Configuration.Builder.set(mobileVitalsFrequency:)`|`RUM.Configuration.vitalsUpdateFrequency`|
 |`Datadog.Configuration.Builder.set(sampleTelemetry:)`|`RUM.Configuration.telemetrySampleRate`|
 
-## Crash Reporting Changes
+### Crash Reporting Changes
 
 To enable Crash Reporting, make sure to also enable RUM and/or Logs.
 
@@ -257,7 +429,7 @@ CrashReporting.enable()
 |---|---|
 |`Datadog.Configuration.Builder.enableCrashReporting()`|`CrashReporting.enable()`|
 
-## WebView Tracking Changes
+### WebView Tracking Changes
 
 To enable WebViewTracking, make sure to also enable RUM and/or Logs.
 
@@ -273,7 +445,7 @@ WebViewTracking.enable(webView: webView)
 |---|---|
 |`WKUserContentController.startTrackingDatadogEvents`|`WebViewTracking.enable(webView:)`|
 
-## Using a Secondary Instance of the SDK
+### Using a Secondary Instance of the SDK
 
 Previously Datadog SDK implemented a singleton and only one SDK instance could exist in the application process. This created obstacles for use-cases like the usage of the SDK by 3rd party libraries.
 
@@ -316,21 +488,21 @@ import DatadogCore
 let core = Datadog.sdkInstance(named: "my-instance")
 ```
 
-### Logs
+#### Logs
 ```swift
 import DatadogLogs
 
 let logger = Logger.create(in: core)
 ```
 
-### Trace
+#### Trace
 ```swift
 import DatadogRUM
 
 let monitor = RUMMonitor.shared(in: core)
 ```
 
-### RUM
+#### RUM
 ```swift
 import DatadogRUM
 
