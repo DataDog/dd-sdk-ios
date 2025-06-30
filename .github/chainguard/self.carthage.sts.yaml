@@ -1,9 +1,11 @@
 issuer: https://gitlab.ddbuild.io
 
+subject_pattern: "project_path:DataDog/dd-sdk-ios:ref_type:(branch|tag):.*"
+
 claim_pattern:
   project_path: "DataDog/dd-sdk-ios"
   ref_type: "(branch|tag)"
-  ci_config_ref_uri: "gitlab.ddbuild.io/DataDog/dd-sdk-ios//.gitlab-ci.yml@*"
+  ci_config_ref_uri: "gitlab.ddbuild.io/DataDog/dd-sdk-ios//.gitlab-ci.yml@.*"
 
 permissions:
   metadata: read
