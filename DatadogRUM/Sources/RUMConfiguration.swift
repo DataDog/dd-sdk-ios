@@ -275,6 +275,13 @@ extension RUM {
         /// Default: `true`.
         public var trackAnonymousUser: Bool
 
+        /// Enables the collection of memory warnings.
+        ///
+        /// When enabled, all the memory warnings are reported as RUM Errors.
+        ///
+        /// Default: `true`.
+        public var trackMemoryWarnings: Bool
+
         /// The sampling rate for SDK internal telemetry utilized by Datadog.
         /// This telemetry is used to monitor the internal workings of the entire Datadog iOS SDK.
         ///
@@ -432,6 +439,8 @@ extension RUM.Configuration {
     ///   - longTaskEventMapper: Custom mapper for RUM long task events. Default: `nil`.
     ///   - onSessionStart: RUM session start callback. Default: `nil`.
     ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
+    ///   - trackAnonymousUser: Enables the collection of anonymous user id across sessions. Default: `true`.
+    ///   - trackMemoryWarnings: Enables the collection of memory warnings. Default: `true`.
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     ///   - featureFlags: Experimental feature flags.
     public init(
@@ -458,6 +467,7 @@ extension RUM.Configuration {
         onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = nil,
         trackAnonymousUser: Bool = true,
+        trackMemoryWarnings: Bool = true,
         telemetrySampleRate: SampleRate = 20,
         featureFlags: FeatureFlags = .defaults
     ) {
@@ -485,6 +495,7 @@ extension RUM.Configuration {
         self.trackAnonymousUser = trackAnonymousUser
         self.telemetrySampleRate = telemetrySampleRate
         self.trackWatchdogTerminations = trackWatchdogTerminations
+        self.trackMemoryWarnings = trackMemoryWarnings
         self.featureFlags = featureFlags
     }
 }
