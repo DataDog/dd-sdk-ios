@@ -274,11 +274,12 @@ if [ "$datadog_app" = "true" ]; then
     update_dependant_sdk_version "$CLONE_PATH/Targets/Platform/DatadogObservability/DogfoodingConfig.swift"
 
     echo_info "▸ Exporting 'GITHUB_TOKEN' for CI"
-    export GITHUB_TOKEN=$(get_secret $DD_IOS_SECRET__GH_CLI_TOKEN)
+    export GITHUB_TOKEN=$(dd-octo-sts --disable-tracing token --scope DataDog/datadog-ios --policy dd-sdk-ios.gitlab.pr)
     verify_gh_auth
 
     # Push & create PR:
     commit_repo $CLONE_PATH
     push_repo $CLONE_PATH
     create_pr $CLONE_PATH $CHANGELOG $DEFAULT_BRANCH
+    dd-octo-sts --disable-tracing revoke
 fi
