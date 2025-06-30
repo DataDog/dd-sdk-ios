@@ -369,6 +369,8 @@ Publish GH Asset:
   stage: release-publish
   rules: 
     - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   before_script:
     - *export_MAKE_release_params
   script:
