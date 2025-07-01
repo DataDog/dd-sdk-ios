@@ -267,10 +267,10 @@ extension SessionReplayWireframesBuilder {
             return nil
         }
 
-        return .init(
+        return SRShapeStyle(
             backgroundColor: hexString(from: backgroundColor) ?? Fallback.color,
-            cornerRadius: cornerRadius.map { Double($0) },
-            opacity: opacity.map { Double($0) }
+            cornerRadius: cornerRadius.flatMap { $0.isNaN ? nil : Double($0) },
+            opacity: opacity.flatMap { $0.isNaN ? nil : Double($0) }
         )
     }
 }
