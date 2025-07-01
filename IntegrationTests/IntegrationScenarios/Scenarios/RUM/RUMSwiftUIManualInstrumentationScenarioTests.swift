@@ -25,10 +25,6 @@ private extension ExampleApplication {
 
 class RUMSwiftUIManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts {
     func testSwiftUIManualScenario() throws {
-        guard #available(iOS 13, *) else {
-            return
-        }
-
         // Server session recording RUM events send to `HTTPServerMock`.
         let recording = server.obtainUniqueRecordingSession()
 
