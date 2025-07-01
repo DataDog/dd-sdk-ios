@@ -176,7 +176,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    func testGivenURLSessionWithCustomDelegate_whenUsingCombineDataFromURL_itNotifiesInterceptor() async throws {
+    func testGivenURLSessionWithCustomDelegate_whenUsingCombineDataFromURL_itNotifiesInterceptor() throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
             return
@@ -198,13 +198,14 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
-        _ = session.dataTaskPublisher(for: URL.mockAny())
+        let cancellable = session.dataTaskPublisher(for: URL.mockAny())
             .sink(
                 receiveCompletion: { _ in },
                 receiveValue: { _ in }
             )
+
         // Then
-        await dd_fulfillment(
+        wait(
             for: [
                 notifyInterceptionDidStart,
                 notifyInterceptionDidComplete
@@ -214,6 +215,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         )
 
         _ = server.waitAndReturnRequests(count: 1)
+        _ = cancellable // extend lifetime of Combine subscription
     }
 
     func testGivenURLSessionWithCustomDelegate_whenUsingCompletionHandlerDataFromURL_itNotifiesInterceptor() throws {
@@ -238,7 +240,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
-       let task = session.dataTask(with: URL.mockAny()) { _, _, _ in }
+        let task = session.dataTask(with: URL.mockAny()) { _, _, _ in }
         task.resume()
 
         // Then
