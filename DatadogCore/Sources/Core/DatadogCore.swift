@@ -174,7 +174,7 @@ internal final class DatadogCore {
     /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
     ///
     func clearUserInfo() {
-        userInfoPublisher.current = .empty
+        userInfoPublisher.current = UserInfo(anonymousId: userInfoPublisher.current.anonymousId)
     }
 
     /// Sets current account information.
