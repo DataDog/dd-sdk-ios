@@ -12,35 +12,22 @@ import TestUtilities
 class LocaleInfoPublisherTests: XCTestCase {
     private let notificationCenter = NotificationCenter()
 
-    func testPublishLocaleInfo() throws {
-        let expectation = self.expectation(description: "Locale info published")
-
+    func testInitialValueFormatting() throws {
         // Given
         let initialLocale = LocaleInfo(
             locales: ["en-US"],
-            currentLocale: Locale(identifier: "en-US"),
-            timeZone: TimeZone(identifier: "UTC")!
+            currentLocale: Locale(identifier: "en_US"),
+            timeZone: TimeZone(identifier: "GMT")!
         )
-        let publisher = LocaleInfoPublisher(initialLocale: initialLocale, notificationCenter: notificationCenter)
 
-        // When
-        publisher.publish { locale in
-            // Then
-            XCTAssertEqual(locale.locales, Locale.preferredLanguages)
-            XCTAssertEqual(locale.currentLocale, Locale.current.identifier.replacingOccurrences(of: "_", with: "-"))
-            XCTAssertEqual(locale.timeZoneIdentifier, TimeZone.current.identifier)
-
-            expectation.fulfill()
-        }
-
-        notificationCenter.post(name: NSLocale.currentLocaleDidChangeNotification, object: nil)
-
-        waitForExpectations(timeout: 1.0)
-        publisher.cancel()
+        // Then
+        XCTAssertEqual(initialLocale.locales, ["en-US"])
+        XCTAssertEqual(initialLocale.currentLocale, "en-US")
+        XCTAssertEqual(initialLocale.timeZoneIdentifier, "GMT")
     }
 
-    func testUpdatesLocaleInfoWhenLocaleChanges() throws {
-        let expectation = self.expectation(description: "Locale info updated on locale change")
+    func testPublishLocaleInfoOnNotification() throws {
+        let expectation = self.expectation(description: "Locale info published")
         expectation.expectedFulfillmentCount = 2
 
         // Given
