@@ -650,6 +650,7 @@ extension DatadogCore {
                 applicationVersion: applicationVersion,
                 sdkInitDate: configuration.dateProvider.now,
                 device: DeviceInfo(processInfo: configuration.processInfo),
+                locale: LocaleInfo(),
                 processInfo: configuration.processInfo,
                 dateProvider: configuration.dateProvider,
                 serverDateProvider: configuration.serverDateProvider,

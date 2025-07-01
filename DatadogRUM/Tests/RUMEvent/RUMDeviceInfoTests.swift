@@ -23,7 +23,8 @@ class RUMDeviceInfoTests: XCTestCase {
             device: .mockWith(name: randomName, model: randomModel, architecture: randomArch),
             batteryLevel: batteryLevel,
             brightnessLevel: brightnessLevel,
-            powerSavingMode: powerSavingMode
+            powerSavingMode: powerSavingMode,
+            localeInfo: .mockWith(locales: ["en"], currentLocale: Locale(identifier: "en"))
         )
 
         XCTAssertEqual(info.brand, "Apple")

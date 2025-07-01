@@ -317,7 +317,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             ),
             account: context.accountInfo.map { RUMAccount(accountInfo: $0) },
             application: .init(
-                id: applicationID
+                currentLocale: context.localeInfo?.currentLocale, id: applicationID
             ),
             buildVersion: context.buildNumber,
             ciTest: ciTest,
@@ -336,6 +336,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 batteryLevel: Double(context.batteryStatus?.level ?? 0),
                 brightnessLevel: Double(context.brightnessLevel ?? 0),
                 powerSavingMode: context.isLowPowerModeEnabled,
+                localeInfo: context.localeInfo ?? LocaleInfo(),
                 telemetry: featureScope.telemetry
             ),
             display: nil,
