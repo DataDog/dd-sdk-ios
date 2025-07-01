@@ -90,6 +90,10 @@ public class objc_LogEvent: NSObject {
         .init(root: self)
     }
 
+    public var accountInfo: objc_LogEventAccountInfo {
+        .init(root: self)
+    }
+
     public var networkConnectionInfo: objc_LogEventNetworkConnectionInfo? {
         if swiftModel.networkConnectionInfo != nil {
             .init(root: self)
@@ -194,6 +198,32 @@ public class objc_LogEventUserInfo: NSObject {
         set { root.swiftModel.userInfo.extraInfo = newValue.dd.swiftAttributes }
         get { root.swiftModel.userInfo.extraInfo.dd.objCAttributes }
     }
+}
+
+@objc(DDLogEventAccountInfo)
+@objcMembers
+@_spi(objc)
+public class objc_LogEventAccountInfo: NSObject {
+    internal let root: objc_LogEvent
+
+    internal init(root: objc_LogEvent) {
+        self.root = root
+    }
+
+    // swiftlint:disable force_unwrapping
+    public var id: String {
+        root.swiftModel.accountInfo!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.accountInfo!.name
+    }
+
+    public var extraInfo: [String: Any] {
+        set { root.swiftModel.accountInfo!.extraInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.accountInfo!.extraInfo.dd.objCAttributes }
+    }
+    // swiftlint:enable force_unwrapping
 }
 
 @objc(DDLogEventError)

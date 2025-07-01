@@ -23,7 +23,7 @@ internal class SnapshotTestCase: XCTestCase {
 
     /// Shows view controller for given fixture in full screen.
     @discardableResult
-    func show(fixture: Fixture, with privacyTags: [PrivacyTag] = []) -> UIViewController? {
+    func show(fixture: any FixtureProtocol, with privacyTags: [PrivacyTag] = []) -> UIViewController? {
         let expectation = self.expectation(description: "Wait for view controller being shown")
 
         var viewController: UIViewController?
@@ -48,7 +48,7 @@ internal class SnapshotTestCase: XCTestCase {
     // swiftlint:disable function_default_parameter_at_end
     /// Helper method for most snapshot tests
     func takeSnapshotFor(
-        _ fixture: Fixture,
+        _ fixture: any FixtureProtocol,
         with textAndInputPrivacyLevels: [TextAndInputPrivacyLevel] = [defaultTextAndInputPrivacyLevel],
         imagePrivacyLevel: ImagePrivacyLevel = defaultImagePrivacyLevel,
         privacyTags: [PrivacyTag] = [],

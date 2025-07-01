@@ -35,6 +35,9 @@ class DDConfigurationTests: XCTestCase {
         objcConfig.site = .ap1()
         XCTAssertEqual(objcConfig.sdkConfiguration.site, .ap1)
 
+        objcConfig.site = .ap2()
+        XCTAssertEqual(objcConfig.sdkConfiguration.site, .ap2)
+
         objcConfig.site = .us1()
         XCTAssertEqual(objcConfig.sdkConfiguration.site, .us1)
 

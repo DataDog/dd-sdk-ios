@@ -39,7 +39,7 @@ internal class SessionEndedMetric {
         static let rseKey = "rse"
     }
 
-   /// An ID of the session being tracked through this metric object.
+    /// An ID of the session being tracked through this metric object.
     let sessionID: RUMUUID
 
     /// The type of OS component where the session was tracked.

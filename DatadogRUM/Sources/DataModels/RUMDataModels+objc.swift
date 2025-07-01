@@ -591,6 +591,10 @@ public class objc_RUMActionEventApplication: NSObject {
         self.root = root
     }
 
+    public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
+    }
+
     public var id: String {
         root.swiftModel.application.id
     }
@@ -859,8 +863,16 @@ public class objc_RUMActionEventDevice: NSObject {
         root.swiftModel.device!.architecture
     }
 
+    public var batteryLevel: NSNumber? {
+        root.swiftModel.device!.batteryLevel as NSNumber?
+    }
+
     public var brand: String? {
         root.swiftModel.device!.brand
+    }
+
+    public var brightnessLevel: NSNumber? {
+        root.swiftModel.device!.brightnessLevel as NSNumber?
     }
 
     public var locale: String? {
@@ -877,6 +889,10 @@ public class objc_RUMActionEventDevice: NSObject {
 
     public var name: String? {
         root.swiftModel.device!.name
+    }
+
+    public var powerSavingMode: NSNumber? {
+        root.swiftModel.device!.powerSavingMode as NSNumber?
     }
 
     public var timeZone: String? {
@@ -1488,6 +1504,10 @@ public class objc_RUMErrorEventApplication: NSObject {
         self.root = root
     }
 
+    public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
+    }
+
     public var id: String {
         root.swiftModel.application.id
     }
@@ -1756,8 +1776,16 @@ public class objc_RUMErrorEventDevice: NSObject {
         root.swiftModel.device!.architecture
     }
 
+    public var batteryLevel: NSNumber? {
+        root.swiftModel.device!.batteryLevel as NSNumber?
+    }
+
     public var brand: String? {
         root.swiftModel.device!.brand
+    }
+
+    public var brightnessLevel: NSNumber? {
+        root.swiftModel.device!.brightnessLevel as NSNumber?
     }
 
     public var locale: String? {
@@ -1774,6 +1802,10 @@ public class objc_RUMErrorEventDevice: NSObject {
 
     public var name: String? {
         root.swiftModel.device!.name
+    }
+
+    public var powerSavingMode: NSNumber? {
+        root.swiftModel.device!.powerSavingMode as NSNumber?
     }
 
     public var timeZone: String? {
@@ -3094,6 +3126,10 @@ public class objc_RUMLongTaskEventApplication: NSObject {
         self.root = root
     }
 
+    public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
+    }
+
     public var id: String {
         root.swiftModel.application.id
     }
@@ -3362,8 +3398,16 @@ public class objc_RUMLongTaskEventDevice: NSObject {
         root.swiftModel.device!.architecture
     }
 
+    public var batteryLevel: NSNumber? {
+        root.swiftModel.device!.batteryLevel as NSNumber?
+    }
+
     public var brand: String? {
         root.swiftModel.device!.brand
+    }
+
+    public var brightnessLevel: NSNumber? {
+        root.swiftModel.device!.brightnessLevel as NSNumber?
     }
 
     public var locale: String? {
@@ -3380,6 +3424,10 @@ public class objc_RUMLongTaskEventDevice: NSObject {
 
     public var name: String? {
         root.swiftModel.device!.name
+    }
+
+    public var powerSavingMode: NSNumber? {
+        root.swiftModel.device!.powerSavingMode as NSNumber?
     }
 
     public var timeZone: String? {
@@ -4162,6 +4210,10 @@ public class objc_RUMResourceEventApplication: NSObject {
         self.root = root
     }
 
+    public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
+    }
+
     public var id: String {
         root.swiftModel.application.id
     }
@@ -4430,8 +4482,16 @@ public class objc_RUMResourceEventDevice: NSObject {
         root.swiftModel.device!.architecture
     }
 
+    public var batteryLevel: NSNumber? {
+        root.swiftModel.device!.batteryLevel as NSNumber?
+    }
+
     public var brand: String? {
         root.swiftModel.device!.brand
+    }
+
+    public var brightnessLevel: NSNumber? {
+        root.swiftModel.device!.brightnessLevel as NSNumber?
     }
 
     public var locale: String? {
@@ -4448,6 +4508,10 @@ public class objc_RUMResourceEventDevice: NSObject {
 
     public var name: String? {
         root.swiftModel.device!.name
+    }
+
+    public var powerSavingMode: NSNumber? {
+        root.swiftModel.device!.powerSavingMode as NSNumber?
     }
 
     public var timeZone: String? {
@@ -5711,6 +5775,10 @@ public class objc_RUMViewEventApplication: NSObject {
         self.root = root
     }
 
+    public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
+    }
+
     public var id: String {
         root.swiftModel.application.id
     }
@@ -5979,8 +6047,16 @@ public class objc_RUMViewEventDevice: NSObject {
         root.swiftModel.device!.architecture
     }
 
+    public var batteryLevel: NSNumber? {
+        root.swiftModel.device!.batteryLevel as NSNumber?
+    }
+
     public var brand: String? {
         root.swiftModel.device!.brand
+    }
+
+    public var brightnessLevel: NSNumber? {
+        root.swiftModel.device!.brightnessLevel as NSNumber?
     }
 
     public var locale: String? {
@@ -5997,6 +6073,10 @@ public class objc_RUMViewEventDevice: NSObject {
 
     public var name: String? {
         root.swiftModel.device!.name
+    }
+
+    public var powerSavingMode: NSNumber? {
+        root.swiftModel.device!.powerSavingMode as NSNumber?
     }
 
     public var timeZone: String? {
@@ -7337,6 +7417,10 @@ public class objc_RUMVitalEventApplication: NSObject {
         self.root = root
     }
 
+    public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
+    }
+
     public var id: String {
         root.swiftModel.application.id
     }
@@ -7605,8 +7689,16 @@ public class objc_RUMVitalEventDevice: NSObject {
         root.swiftModel.device!.architecture
     }
 
+    public var batteryLevel: NSNumber? {
+        root.swiftModel.device!.batteryLevel as NSNumber?
+    }
+
     public var brand: String? {
         root.swiftModel.device!.brand
+    }
+
+    public var brightnessLevel: NSNumber? {
+        root.swiftModel.device!.brightnessLevel as NSNumber?
     }
 
     public var locale: String? {
@@ -7623,6 +7715,10 @@ public class objc_RUMVitalEventDevice: NSObject {
 
     public var name: String? {
         root.swiftModel.device!.name
+    }
+
+    public var powerSavingMode: NSNumber? {
+        root.swiftModel.device!.powerSavingMode as NSNumber?
     }
 
     public var timeZone: String? {
@@ -9369,4 +9465,4 @@ public class objc_TelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ee481e7c74290762219cbf507d61c75785349d88
+// Generated from https://github.com/DataDog/rum-events-format/tree/ca4ca9c6ce21f634f41cda2fdd95cacc4b5246b0

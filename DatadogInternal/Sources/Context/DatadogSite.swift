@@ -22,6 +22,9 @@ public enum DatadogSite: String {
     /// Asia based servers.
     /// Sends data to [ap1.datadoghq.com](https://ap1.datadoghq.com/).
     case ap1
+    /// Asia based servers.
+    /// Sends data to [ap2.datadoghq.com](https://ap2.datadoghq.com/).
+    case ap2
     /// US based servers, FedRAMP compatible.
     /// Sends data to [app.ddog-gov.com](https://app.ddog-gov.com/).
     case us1_fed
@@ -36,6 +39,7 @@ extension DatadogSite {
         case .us5: return URL(string: "https://browser-intake-us5-datadoghq.com/")!
         case .eu1: return URL(string: "https://browser-intake-datadoghq.eu/")!
         case .ap1: return URL(string: "https://browser-intake-ap1-datadoghq.com/")!
+        case .ap2: return URL(string: "https://browser-intake-ap2-datadoghq.com/")!
         case .us1_fed: return URL(string: "https://browser-intake-ddog-gov.com/")!
         // swiftlint:enable force_unwrapping
         }

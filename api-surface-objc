@@ -11,6 +11,7 @@ public final class objc_Datadog: NSObject
     public static func setVerbosityLevel(_ verbosityLevel: objc_CoreLoggerLevel)
     public static func verbosityLevel() -> objc_CoreLoggerLevel
     public static func setUserInfo(userId: String, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
+    public static func clearUserInfo()
     public static func addUserExtraInfo(_ extraInfo: [String: Any])
     public static func setAccountInfo(accountId: String, name: String? = nil, extraInfo: [String: Any] = [:])
     public static func addAccountExtraInfo(_ extraInfo: [String: Any])
@@ -25,6 +26,7 @@ public final class objc_DatadogSite: NSObject
     public static func us5() -> objc_DatadogSite
     public static func eu1() -> objc_DatadogSite
     public static func ap1() -> objc_DatadogSite
+    public static func ap2() -> objc_DatadogSite
     public static func us1_fed() -> objc_DatadogSite
 public enum objc_BatchSize: Int
     case small
@@ -143,6 +145,7 @@ public class objc_LogEvent: NSObject
     public var device: objc_LogEventDevice
     public var os: objc_LogEventOperatingSystem
     public var userInfo: objc_LogEventUserInfo
+    public var accountInfo: objc_LogEventAccountInfo
     public var networkConnectionInfo: objc_LogEventNetworkConnectionInfo?
     public var mobileCarrierInfo: objc_LogEventCarrierInfo?
     public var attributes: objc_LogEventAttributes
@@ -161,6 +164,10 @@ public class objc_LogEventUserInfo: NSObject
     public var id: String?
     public var name: String?
     public var email: String?
+    public var extraInfo: [String: Any]
+public class objc_LogEventAccountInfo: NSObject
+    public var id: String
+    public var name: String?
     public var extraInfo: [String: Any]
 public class objc_LogEventError: NSObject
     public var kind: String?
@@ -417,6 +424,7 @@ public enum objc_RUMActionEventActionActionType: Int
     case applicationStart
     case back
 public class objc_RUMActionEventApplication: NSObject
+    public var currentLocale: String?
     public var id: String
 public class objc_RUMActionEventRUMCITest: NSObject
     public var testExecutionId: String
@@ -467,11 +475,14 @@ public class objc_RUMActionEventRUMEventAttributes: NSObject
     public var contextInfo: [String: Any]
 public class objc_RUMActionEventDevice: NSObject
     public var architecture: String?
+    public var batteryLevel: NSNumber?
     public var brand: String?
+    public var brightnessLevel: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
+    public var powerSavingMode: NSNumber?
     public var timeZone: String?
     public var type: objc_RUMActionEventDeviceDeviceType
 public enum objc_RUMActionEventDeviceDeviceType: Int
@@ -591,6 +602,7 @@ public class objc_RUMErrorEventActionRUMActionID: NSObject
     public var string: String?
     public var stringsArray: [String]?
 public class objc_RUMErrorEventApplication: NSObject
+    public var currentLocale: String?
     public var id: String
 public class objc_RUMErrorEventRUMCITest: NSObject
     public var testExecutionId: String
@@ -641,11 +653,14 @@ public class objc_RUMErrorEventRUMEventAttributes: NSObject
     public var contextInfo: [String: Any]
 public class objc_RUMErrorEventDevice: NSObject
     public var architecture: String?
+    public var batteryLevel: NSNumber?
     public var brand: String?
+    public var brightnessLevel: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
+    public var powerSavingMode: NSNumber?
     public var timeZone: String?
     public var type: objc_RUMErrorEventDeviceDeviceType
 public enum objc_RUMErrorEventDeviceDeviceType: Int
@@ -911,6 +926,7 @@ public class objc_RUMLongTaskEventActionRUMActionID: NSObject
     public var string: String?
     public var stringsArray: [String]?
 public class objc_RUMLongTaskEventApplication: NSObject
+    public var currentLocale: String?
     public var id: String
 public class objc_RUMLongTaskEventRUMCITest: NSObject
     public var testExecutionId: String
@@ -961,11 +977,14 @@ public class objc_RUMLongTaskEventRUMEventAttributes: NSObject
     public var contextInfo: [String: Any]
 public class objc_RUMLongTaskEventDevice: NSObject
     public var architecture: String?
+    public var batteryLevel: NSNumber?
     public var brand: String?
+    public var brightnessLevel: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
+    public var powerSavingMode: NSNumber?
     public var timeZone: String?
     public var type: objc_RUMLongTaskEventDeviceDeviceType
 public enum objc_RUMLongTaskEventDeviceDeviceType: Int
@@ -1121,6 +1140,7 @@ public class objc_RUMResourceEventActionRUMActionID: NSObject
     public var string: String?
     public var stringsArray: [String]?
 public class objc_RUMResourceEventApplication: NSObject
+    public var currentLocale: String?
     public var id: String
 public class objc_RUMResourceEventRUMCITest: NSObject
     public var testExecutionId: String
@@ -1171,11 +1191,14 @@ public class objc_RUMResourceEventRUMEventAttributes: NSObject
     public var contextInfo: [String: Any]
 public class objc_RUMResourceEventDevice: NSObject
     public var architecture: String?
+    public var batteryLevel: NSNumber?
     public var brand: String?
+    public var brightnessLevel: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
+    public var powerSavingMode: NSNumber?
     public var timeZone: String?
     public var type: objc_RUMResourceEventDeviceDeviceType
 public enum objc_RUMResourceEventDeviceDeviceType: Int
@@ -1428,6 +1451,7 @@ public class objc_RUMViewEventRUMAccount: NSObject
     public var name: String?
     public var accountInfo: [String: Any]
 public class objc_RUMViewEventApplication: NSObject
+    public var currentLocale: String?
     public var id: String
 public class objc_RUMViewEventRUMCITest: NSObject
     public var testExecutionId: String
@@ -1478,11 +1502,14 @@ public class objc_RUMViewEventRUMEventAttributes: NSObject
     public var contextInfo: [String: Any]
 public class objc_RUMViewEventDevice: NSObject
     public var architecture: String?
+    public var batteryLevel: NSNumber?
     public var brand: String?
+    public var brightnessLevel: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
+    public var powerSavingMode: NSNumber?
     public var timeZone: String?
     public var type: objc_RUMViewEventDeviceDeviceType
 public enum objc_RUMViewEventDeviceDeviceType: Int
@@ -1742,6 +1769,7 @@ public class objc_RUMVitalEventRUMAccount: NSObject
     public var name: String?
     public var accountInfo: [String: Any]
 public class objc_RUMVitalEventApplication: NSObject
+    public var currentLocale: String?
     public var id: String
 public class objc_RUMVitalEventRUMCITest: NSObject
     public var testExecutionId: String
@@ -1792,11 +1820,14 @@ public class objc_RUMVitalEventRUMEventAttributes: NSObject
     public var contextInfo: [String: Any]
 public class objc_RUMVitalEventDevice: NSObject
     public var architecture: String?
+    public var batteryLevel: NSNumber?
     public var brand: String?
+    public var brightnessLevel: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
+    public var powerSavingMode: NSNumber?
     public var timeZone: String?
     public var type: objc_RUMVitalEventDeviceDeviceType
 public enum objc_RUMVitalEventDeviceDeviceType: Int
@@ -2141,7 +2172,6 @@ public protocol objc_SwiftUIRUMActionsPredicate: AnyObject
     func rumAction(with componentName: String) -> objc_RUMAction?
 public class objc_DefaultSwiftUIRUMActionsPredicate: NSObject, objc_SwiftUIRUMActionsPredicate
     public init(isLegacyDetectionEnabled: Bool)
-    override public convenience init()
     public func rumAction(with componentName: String) -> objc_RUMAction?
 public class objc_RUMView: NSObject
     public var name: String
@@ -2233,6 +2263,7 @@ public class objc_RUMConfiguration: NSObject
     public var onSessionStart: ((String, Bool) -> Void)?
     public var customEndpoint: URL?
     public var trackAnonymousUser: Bool
+    public var trackMemoryWarnings: Bool
 public class objc_RUM: NSObject
     public static func enable(with configuration: objc_RUMConfiguration)
 public class objc_RUMMonitor: NSObject

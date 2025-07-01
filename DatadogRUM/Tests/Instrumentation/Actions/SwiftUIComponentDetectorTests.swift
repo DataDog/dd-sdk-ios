@@ -116,40 +116,6 @@ class SwiftUIComponentDetectorTests: XCTestCase {
         XCTAssertNil(command)
     }
 
-#if !os(tvOS)
-    @available(iOS 18.0, tvOS 18.0, *)
-    func testModernDetector_DetectsToggle() {
-        // Given
-        let detector = ModernSwiftUIComponentDetector()
-
-        // Create a view hierarchy simulating a toggle
-        let switchView = UIView()
-        let parentView = UIView()
-        let grandparentView = UISwitch()
-        parentView.addSubview(switchView)
-        grandparentView.addSubview(parentView)
-
-        let mockTouch = MockUITouch(
-            phase: .ended,
-            view: switchView
-        )
-
-        // When
-        let command = detector.createActionCommand(
-            from: mockTouch,
-            predicate: defaultPredicate,
-            dateProvider: dateProvider
-        )
-
-        // Then
-        XCTAssertNotNil(command)
-        XCTAssertEqual(command?.name, "SwiftUI_Toggle")
-        XCTAssertEqual(command?.actionType, .tap)
-        XCTAssertEqual(command?.instrumentation, .swiftuiAutomatic)
-        XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
-    }
-#endif
-
     @available(iOS 18.0, tvOS 18.0, *)
     func testModernDetector_IgnoresNonSwiftUIViews() {
         // Given
@@ -343,40 +309,6 @@ class SwiftUIComponentDetectorTests: XCTestCase {
         XCTAssertEqual(command?.instrumentation, .swiftuiAutomatic)
         XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
     }
-
-#if !os(tvOS)
-    func testLegacyDetector_DetectsToggle() {
-        // Given
-        let detector = LegacySwiftUIComponentDetector()
-        let defaultPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
-
-        // Create a view hierarchy simulating a toggle
-        let switchView = UIView()
-        let parentView = UIView()
-        let grandparentView = UISwitch()
-        parentView.addSubview(switchView)
-        grandparentView.addSubview(parentView)
-
-        let mockTouch = MockUITouch(
-            phase: .ended,
-            view: switchView
-        )
-
-        // When
-        let command = detector.createActionCommand(
-            from: mockTouch,
-            predicate: defaultPredicate,
-            dateProvider: dateProvider
-        )
-
-        // Then
-        XCTAssertNotNil(command)
-        XCTAssertEqual(command?.name, "SwiftUI_Toggle")
-        XCTAssertEqual(command?.actionType, .tap)
-        XCTAssertEqual(command?.instrumentation, .swiftuiAutomatic)
-        XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
-    }
-#endif
 
     func testLegacyDetector_IgnoresContainerViews() {
         // Given
@@ -676,25 +608,6 @@ private class MockGestureRecognizer: UIGestureRecognizer {
     override var name: String? {
         get { return mockName }
         set { mockName = newValue }
-    }
-}
-
-private class MockToggleView: UIView {
-    var overrideIsSafeForPrivacy: Bool?
-    var mockTypeDescription: String?
-    var overrideIsSwiftUIView: Bool?
-
-    override var typeDescription: String {
-        return mockTypeDescription ?? "ToggleView"
-    }
-
-    // Override extension properties
-    @objc override var isSafeForPrivacy: Bool {
-        return overrideIsSafeForPrivacy ?? true
-    }
-
-    @objc override var isSwiftUIView: Bool {
-        return false
     }
 }
 

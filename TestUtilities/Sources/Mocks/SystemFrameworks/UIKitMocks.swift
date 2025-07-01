@@ -64,6 +64,21 @@ public class UIDeviceMock: UIDevice {
     #endif
 }
 
+#if os(iOS)
+public class UIScreenMock: UIScreen {
+    private var _brightness: CGFloat
+
+    public init(brightness: CGFloat = 0.5) {
+        self._brightness = brightness
+    }
+
+    override public var brightness: CGFloat {
+        get { _brightness }
+        set { _brightness = newValue }
+    }
+}
+#endif
+
 #if !os(tvOS)
 extension UIDevice.BatteryState: AnyMockable {
     public static func mockAny() -> UIDevice.BatteryState {

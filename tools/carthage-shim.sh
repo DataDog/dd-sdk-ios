@@ -15,7 +15,9 @@ source "${REPO_ROOT:-.}/tools/secrets/get-secret.sh"
 # a higher rate limit."
 # Ref.: https://github.com/Carthage/Carthage/pull/605
 if [ "$CI" = "true" ]; then
-    export GITHUB_ACCESS_TOKEN=$(get_secret $DD_IOS_SECRET__CARTHAGE_GH_TOKEN)
+    export GITHUB_ACCESS_TOKEN=$(dd-octo-sts --disable-tracing token --scope DataDog/dd-sdk-ios --policy self.carthage)
+    # Set up trap to always revoke token on script exit (success, failure, or interruption)
+    trap 'dd-octo-sts --disable-tracing revoke --token $GITHUB_ACCESS_TOKEN' EXIT
 fi
 
 carthage "$@"

@@ -173,6 +173,7 @@ extension DeviceInfo {
         #endif
     }
 }
+
 #elseif os(macOS)
 /// Creates device info based on Host description.
 ///
@@ -209,6 +210,7 @@ extension DeviceInfo {
         )
     }
 }
+
 #endif
 
 #if canImport(WatchKit)
