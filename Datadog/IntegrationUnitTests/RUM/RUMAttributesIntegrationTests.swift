@@ -790,7 +790,7 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
             .takeSingle()
 
-        // It should have the `ApplicationLaunchView` and `MyView` views
+        // It should have the `ApplicationLaunchView`
         XCTAssertEqual(session.views.count, 1)
 
         let applicationView = try XCTUnwrap(session.views.first(where: { $0.isApplicationLaunchView() }))
@@ -804,6 +804,74 @@ final class RUMAttributesIntegrationTests: XCTestCase {
         XCTAssertEqual(lastActionEvent.numberOfAttributes, 2)
         XCTAssertEqual(lastActionEvent.attribute(forKey: "sameKey"), "value3")
         XCTAssertEqual(lastActionEvent.attribute(forKey: "key2"), "value2")
+    }
+
+    func testGlobalAttributes_areAddedToExpiredDiscreteUserAction() throws {
+        // Given
+        let rumTime = DateProviderMock()
+        rumConfig.dateProvider = rumTime
+
+        RUM.enable(with: rumConfig, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+
+        // When
+        monitor.addAttribute(forKey: "globalKey", value: "globalValue")
+        monitor.addAction(type: .scroll, name: "tap", attributes: ["actionKey": "actionValue"])
+
+        // Add extra time to trigger the action timeout
+        rumTime.now += 0.2.seconds // The discrete action timeout duration is 0.1 seconds
+        monitor.startResource(resourceKey: "resource1", url: .mockRandom()) // This new resource will trigger the stop action
+
+        // Then
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+
+        // It should have the `ApplicationLaunchView`
+        XCTAssertEqual(session.views.count, 1)
+
+        let applicationView = try XCTUnwrap(session.views.first(where: { $0.isApplicationLaunchView() }))
+        XCTAssertEqual(applicationView.actionEvents.count, 1)
+
+        let firstActionEvent = applicationView.actionEvents[0]
+        XCTAssertEqual(firstActionEvent.numberOfAttributes, 2)
+        XCTAssertEqual(firstActionEvent.attribute(forKey: "actionKey"), "actionValue")
+        XCTAssertEqual(firstActionEvent.attribute(forKey: "globalKey"), "globalValue")
+    }
+
+    func testGlobalAttributes_areAddedToExpiredContinuousUserAction() throws {
+        // Given
+        let rumTime = DateProviderMock()
+        rumConfig.dateProvider = rumTime
+
+        RUM.enable(with: rumConfig, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+
+        // When
+        monitor.addAttribute(forKey: "globalKey", value: "globalValue")
+        monitor.startAction(type: .scroll, name: "tap", attributes: ["actionKey": "actionValue"])
+
+        // Add extra time to trigger the action timeout
+        rumTime.now += 11.seconds // The continuous action timeout duration is 10 seconds
+        monitor.startResource(resourceKey: "resource1", url: .mockRandom()) // This new resource will trigger the stop action
+
+        // Then
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+
+        // It should have the `ApplicationLaunchView`
+        XCTAssertEqual(session.views.count, 1)
+
+        let applicationView = try XCTUnwrap(session.views.first(where: { $0.isApplicationLaunchView() }))
+        XCTAssertEqual(applicationView.actionEvents.count, 1)
+
+        let firstActionEvent = applicationView.actionEvents[0]
+        XCTAssertEqual(firstActionEvent.numberOfAttributes, 2)
+        XCTAssertEqual(firstActionEvent.attribute(forKey: "actionKey"), "actionValue")
+        XCTAssertEqual(firstActionEvent.attribute(forKey: "globalKey"), "globalValue")
     }
 
     func testWhenViewReceivesActions_theViewAttributesAreNotUpdated_withActionAttributes() throws {
@@ -888,7 +956,7 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
             .takeSingle()
 
-        // It should have the `ApplicationLaunchView` and `MyView` views
+        // It should have the `ApplicationLaunchView`
         XCTAssertEqual(session.views.count, 1)
 
         let applicationView = try XCTUnwrap(session.views.first(where: { $0.isApplicationLaunchView() }))
@@ -973,7 +1041,7 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
             .takeSingle()
 
-        // It should have the `ApplicationLaunchView` and `MyView` views
+        // It should have the `ApplicationLaunchView`
         XCTAssertEqual(session.views.count, 1)
 
         let applicationView = try XCTUnwrap(session.views.first(where: { $0.isApplicationLaunchView() }))
