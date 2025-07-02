@@ -20,4 +20,7 @@ public protocol UploadPerformancePreset {
     var uploadDelayChangeRate: Double { get }
     /// Number of batches to process during one upload cycle.
     var maxBatchesPerUpload: Int { get }
+    /// Maximum jitter (in seconds) applied to upload delays to avoid concurrent execution.
+    /// Actual jitter will be randomly selected from 0...maxUploadJitter range.
+    var maxUploadJitter: TimeInterval { get }
 }
