@@ -7,7 +7,11 @@
 import UIKit
 import SwiftUI
 
-public enum Fixture: CaseIterable {
+public protocol FixtureProtocol {
+    func instantiateViewController() -> UIViewController
+}
+
+public enum Fixture: FixtureProtocol, CaseIterable {
     case basicShapes
     case basicTexts
     case sliders

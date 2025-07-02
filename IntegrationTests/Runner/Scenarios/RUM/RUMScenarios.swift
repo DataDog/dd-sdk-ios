@@ -320,22 +320,12 @@ final class RUMSwiftUIManualInstrumentationScenario: TestScenario {
 final class RUMSwiftUIAutoInstrumentationSingleRootViewScenario: TestScenario {
     static var storyboardName: String = "RUMSwiftUIAutoInstrumentationSingleRootViewScenario"
 
-    private class SwiftUIPredicate: SwiftUIRUMViewsPredicate {
-        let `default` = DefaultSwiftUIRUMViewsPredicate()
-
-        func rumView(for extractedViewName: String) -> DatadogRUM.RUMView? {
-            if extractedViewName == "RUMSessionEndView" {
-                return nil
-            }
-
-            return RUMView(name: extractedViewName)
-        }
-    }
-
     func configureFeatures() {
         var config = RUM.Configuration(applicationID: "rum-application-id")
         config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
         config.swiftUIViewsPredicate = SwiftUIPredicate()
+        config.swiftUIActionsPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
+        config.uiKitActionsPredicate = DefaultUIKitRUMActionsPredicate()
         RUM.enable(with: config)
     }
 }
@@ -344,22 +334,27 @@ final class RUMSwiftUIAutoInstrumentationSingleRootViewScenario: TestScenario {
 final class RUMSwiftUIAutoInstrumentationRootTabbarScenario: TestScenario {
     static var storyboardName: String = "RUMSwiftUIAutoInstrumentationRootTabbarScenario"
 
-    private class SwiftUIPredicate: SwiftUIRUMViewsPredicate {
-        let `default` = DefaultSwiftUIRUMViewsPredicate()
-
-        func rumView(for extractedViewName: String) -> DatadogRUM.RUMView? {
-            if extractedViewName == "RUMSessionEndView" {
-                return nil
-            }
-
-            return RUMView(name: extractedViewName)
-        }
-    }
-
     func configureFeatures() {
         var config = RUM.Configuration(applicationID: "rum-application-id")
         config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
         config.swiftUIViewsPredicate = SwiftUIPredicate()
+        config.swiftUIActionsPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
+        RUM.enable(with: config)
+    }
+}
+
+/// 3. Single view with multiple action targets.
+@available(iOS 13, *)
+final class RUMSwiftUIAutoInstrumentationActionViewScenario: TestScenario {
+    static var storyboardName: String = "RUMSwiftUIAutoInstrumentationActionViewScenario"
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        config.uiKitActionsPredicate = DefaultUIKitRUMActionsPredicate()
+        config.swiftUIViewsPredicate = SwiftUIPredicate()
+        config.swiftUIActionsPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
         RUM.enable(with: config)
     }
 }
@@ -367,6 +362,18 @@ final class RUMSwiftUIAutoInstrumentationRootTabbarScenario: TestScenario {
 // TODO: RUM-9888 - Manual + Auto instrumentation scenario
 
 // MARK: - Helpers
+
+private class SwiftUIPredicate: SwiftUIRUMViewsPredicate {
+    let `default` = DefaultSwiftUIRUMViewsPredicate()
+
+    func rumView(for extractedViewName: String) -> DatadogRUM.RUMView? {
+        if extractedViewName == "RUMSessionEndView" {
+            return nil
+        }
+
+        return RUMView(name: extractedViewName)
+    }
+}
 
 private func rumResourceAttributesProvider(
     request: URLRequest,

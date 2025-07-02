@@ -138,6 +138,317 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    func testGivenURLSessionWithCustomDelegate_whenUsingAsyncDataFromURLWithoutDelegate_itNotifiesInterceptor() async throws {
+        /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
+        guard #available(iOS 16, tvOS 16, *) else {
+            return
+        }
+
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        // Given
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        // When
+        _ = try await session.data(from: URL.mockAny())
+
+        // Then
+        await dd_fulfillment(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
+
+        _ = server.waitAndReturnRequests(count: 1)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    func testGivenURLSessionWithCustomDelegate_whenUsingCombineDataFromURL_itNotifiesInterceptor() throws {
+        /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
+        guard #available(iOS 16, tvOS 16, *) else {
+            return
+        }
+
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        // Given
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        // When
+        let cancellable = session.dataTaskPublisher(for: URL.mockAny())
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { _ in }
+            )
+
+        // Then
+        wait(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
+
+        _ = server.waitAndReturnRequests(count: 1)
+        _ = cancellable // extend lifetime of Combine subscription
+    }
+
+    func testGivenURLSessionWithCustomDelegate_whenUsingCompletionHandlerDataFromURL_itNotifiesInterceptor() throws {
+        /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
+        guard #available(iOS 16, tvOS 16, *) else {
+            return
+        }
+
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        // Given
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        // When
+        let task = session.dataTask(with: URL.mockAny()) { _, _, _ in }
+        task.resume()
+
+        // Then
+        wait(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
+        _ = server.waitAndReturnRequests(count: 1)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    func testGivenURLSessionWithoutDelegate_whenUsingAsyncDataFromURLWithDelegate_itNotifiesInterceptor() async throws {
+        /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
+        guard #available(iOS 16, tvOS 16, *) else {
+            return
+        }
+
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        // Given
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: nil)
+
+        // When
+        _ = try await session.data(from: URL.mockAny(), delegate: delegate)
+
+        // Then
+        await dd_fulfillment(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
+
+        _ = server.waitAndReturnRequests(count: 1)
+    }
+
+    func testGivenURLSessionWithDelegate_whenUsingCompletionHandlerUploadTask_itNotifiesInterceptor() throws {
+        /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
+        guard #available(iOS 16, tvOS 16, *) else {
+            return
+        }
+
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        // Given
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        // When
+        let task = session.uploadTask(
+            with: URLRequest(url: URL.mockAny()),
+            from: Data.mockRandom(ofSize: 20)
+        ) { _, _, _ in }
+        task.resume()
+
+        // Then
+        wait(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
+
+        _ = server.waitAndReturnRequests(count: 1)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    func testGivenURLSessionWithoutDelegate_whenUsingAsyncUploadDataWithDelegate_itNotifiesInterceptor() async throws {
+        /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
+        guard #available(iOS 16, tvOS 16, *) else {
+            return
+        }
+
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        // Given
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: nil)
+
+        // When
+        _ = try await session.upload(for: URLRequest(url: URL.mockAny()), from: Data.mockRandom(ofSize: 20), delegate: delegate)
+
+        // Then
+        await dd_fulfillment(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
+
+        _ = server.waitAndReturnRequests(count: 1)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    func testGivenURLSessionWithDelegate_whenUsingAsyncUploadDataWithoutDelegate_itNotifiesInterceptor() async throws {
+        /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
+        guard #available(iOS 16, tvOS 16, *) else {
+            return
+        }
+
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        // Given
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        // When
+        _ = try await session.upload(for: URLRequest(url: URL.mockAny()), from: Data.mockRandom(ofSize: 20))
+
+        // Then
+        await dd_fulfillment(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
+
+        _ = server.waitAndReturnRequests(count: 1)
+    }
+
+    func testGivenURLSessionWithDelegate_whenUsingUploadTask_itNotifiesInterceptor() throws {
+        /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
+        guard #available(iOS 16, tvOS 16, *) else {
+            return
+        }
+
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        // Given
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        // When
+        let task = session.uploadTask(with: URLRequest(url: URL.mockAny()), from: Data.mockRandom(ofSize: 20))
+        task.resume()
+
+        // Then
+        wait(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
+
+        _ = server.waitAndReturnRequests(count: 1)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     func testGivenURLSessionWithCustomDelegate_whenUsingAsyncDataForURLRequest_itNotifiesInterceptor() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {

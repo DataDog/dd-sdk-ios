@@ -614,20 +614,27 @@ public struct RUMActionEvent: RUMDataModel {
 
     /// Application properties
     public struct Application: Codable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
         }
     }
@@ -1151,20 +1158,27 @@ public struct RUMErrorEvent: RUMDataModel {
 
     /// Application properties
     public struct Application: Codable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
         }
     }
@@ -2346,20 +2360,27 @@ public struct RUMLongTaskEvent: RUMDataModel {
 
     /// Application properties
     public struct Application: Codable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
         }
     }
@@ -3077,20 +3098,27 @@ public struct RUMResourceEvent: RUMDataModel {
 
     /// Application properties
     public struct Application: Codable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
         }
     }
@@ -4271,20 +4299,27 @@ public struct RUMViewEvent: RUMDataModel {
 
     /// Application properties
     public struct Application: Codable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
         }
     }
@@ -5893,20 +5928,27 @@ public struct RUMVitalEvent: RUMDataModel {
 
     /// Application properties
     public struct Application: Codable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
         }
     }
@@ -8967,8 +9009,14 @@ public struct Device: Codable {
     /// The CPU architecture of the device that is reporting the error
     public let architecture: String?
 
+    /// Current battery level of the device (0.0 to 1.0).
+    public let batteryLevel: Double?
+
     /// Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
     public let brand: String?
+
+    /// Current screen brightness level (0.0 to 1.0).
+    public let brightnessLevel: Double?
 
     /// The user’s locale as a language tag combining language and region, e.g. 'en-US'.
     public let locale: String?
@@ -8982,6 +9030,9 @@ public struct Device: Codable {
     /// Device marketing name, e.g. Xiaomi Redmi Note 8 Pro, Pixel 5, etc.
     public let name: String?
 
+    /// Whether the device is in power saving mode.
+    public let powerSavingMode: Bool?
+
     /// The device’s current time zone identifier, e.g. 'Europe/Berlin'.
     public let timeZone: String?
 
@@ -8990,11 +9041,14 @@ public struct Device: Codable {
 
     public enum CodingKeys: String, CodingKey {
         case architecture = "architecture"
+        case batteryLevel = "battery_level"
         case brand = "brand"
+        case brightnessLevel = "brightness_level"
         case locale = "locale"
         case locales = "locales"
         case model = "model"
         case name = "name"
+        case powerSavingMode = "power_saving_mode"
         case timeZone = "time_zone"
         case type = "type"
     }
@@ -9003,29 +9057,38 @@ public struct Device: Codable {
     ///
     /// - Parameters:
     ///   - architecture: The CPU architecture of the device that is reporting the error
+    ///   - batteryLevel: Current battery level of the device (0.0 to 1.0).
     ///   - brand: Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
+    ///   - brightnessLevel: Current screen brightness level (0.0 to 1.0).
     ///   - locale: The user’s locale as a language tag combining language and region, e.g. 'en-US'.
     ///   - locales: Ordered list of the user’s preferred system languages as IETF language tags.
     ///   - model: Device SKU model, e.g. Samsung SM-988GN, etc. Quite often name and model can be the same.
     ///   - name: Device marketing name, e.g. Xiaomi Redmi Note 8 Pro, Pixel 5, etc.
+    ///   - powerSavingMode: Whether the device is in power saving mode.
     ///   - timeZone: The device’s current time zone identifier, e.g. 'Europe/Berlin'.
     ///   - type: Device type info
     public init(
         architecture: String? = nil,
+        batteryLevel: Double? = nil,
         brand: String? = nil,
+        brightnessLevel: Double? = nil,
         locale: String? = nil,
         locales: [String]? = nil,
         model: String? = nil,
         name: String? = nil,
+        powerSavingMode: Bool? = nil,
         timeZone: String? = nil,
         type: DeviceType? = nil
     ) {
         self.architecture = architecture
+        self.batteryLevel = batteryLevel
         self.brand = brand
+        self.brightnessLevel = brightnessLevel
         self.locale = locale
         self.locales = locales
         self.model = model
         self.name = name
+        self.powerSavingMode = powerSavingMode
         self.timeZone = timeZone
         self.type = type
     }
@@ -9332,4 +9395,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ee481e7c74290762219cbf507d61c75785349d88
+// Generated from https://github.com/DataDog/rum-events-format/tree/ca4ca9c6ce21f634f41cda2fdd95cacc4b5246b0

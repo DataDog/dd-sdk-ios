@@ -478,6 +478,37 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertNil(accountAfterUpdate)
     }
 
+    func testItClearUserInfo() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        let userBefore = core.userInfoPublisher.current
+        XCTAssertNil(userBefore.id)
+        XCTAssertNil(userBefore.name)
+        XCTAssertNil(userBefore.email)
+
+        core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
+        let userAfterInitialSet = core.userInfoPublisher.current
+        XCTAssertEqual(userAfterInitialSet.id, "user-id")
+        XCTAssertEqual(userAfterInitialSet.name, "user-name")
+        XCTAssertEqual(userAfterInitialSet.email, "user-email")
+
+        core.clearUserInfo()
+        let userAfterUpdate = core.userInfoPublisher.current
+        XCTAssertNil(userAfterUpdate.id)
+        XCTAssertNil(userAfterUpdate.name)
+        XCTAssertNil(userAfterUpdate.email)
+    }
+
     func testItClearsAnonymousIdentifier() {
         let core = DatadogCore(
             directory: temporaryCoreDirectory,

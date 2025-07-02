@@ -87,27 +87,29 @@ struct ButtonsComponentsView: View, Comparable {
                     .font(.title2)
                     .padding(.bottom)
                 // MARK: - basics of buttons
-                Group {
-                    customizableButton
-                        .modifier(Divided())
-                    roundedButtons
-                        .modifier(Divided())
-                    customShapeButtons
-                        .modifier(Divided())
-                    labelStyledButton
-                        .modifier(Divided())
-                    strokedBorderButtons
-                        .modifier(Divided())
-                    plainBackgroundButtons
-                        .modifier(Divided())
-                    imagesInButtons
-                        .modifier(Divided())
-                    buttonsWithIcons
-                        .modifier(Divided())
-                    buttonWithLabels
-                        .modifier(Divided())
-                    styledButtons
-                        .modifier(Divided())
+                PrivacyView(touch: .hide) {
+                    Group {
+                        customizableButton
+                            .modifier(Divided())
+                        roundedButtons
+                            .modifier(Divided())
+                        customShapeButtons
+                            .modifier(Divided())
+                        labelStyledButton
+                            .modifier(Divided())
+                        strokedBorderButtons
+                            .modifier(Divided())
+                        plainBackgroundButtons
+                            .modifier(Divided())
+                        imagesInButtons
+                            .modifier(Divided())
+                        buttonsWithIcons
+                            .modifier(Divided())
+                        buttonWithLabels
+                            .modifier(Divided())
+                        styledButtons
+                            .modifier(Divided())
+                    }
                 }
                 
                 ContributedByView(name: "Barbara Martina",

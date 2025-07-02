@@ -8,10 +8,10 @@
 import Foundation
 import SwiftUI
 
-// MARK: - SwiftUIAutoInstrumentationSingleRootViewScenario
+// MARK: - SwiftUIAutoInstrumentationSingleRootView
 
 @available(iOS 16.0, *)
-class SwiftUIAutoInstrumentationSingleRootViewScenario: UIHostingController<NavigationStackExample> {
+class SwiftUIAutoInstrumentationSingleRootView: UIHostingController<NavigationStackExample> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: NavigationStackExample())
     }

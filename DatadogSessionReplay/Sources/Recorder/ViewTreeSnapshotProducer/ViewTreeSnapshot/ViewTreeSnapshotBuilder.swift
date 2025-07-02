@@ -86,9 +86,7 @@ internal func createDefaultNodeRecorders(featureFlags: SessionReplay.Configurati
         UIActivityIndicatorRecorder(identifier: UUID()),
     ]
 
-    if #available(iOS 18.1, tvOS 18.1, *) {
-        recorders.append(iOS18HostingViewRecorder(identifier: UUID()))
-    } else if #available(iOS 13, tvOS 13, *) {
+    if #available(iOS 13, tvOS 13, *) {
         recorders.append(UIHostingViewRecorder(identifier: UUID()))
     }
 

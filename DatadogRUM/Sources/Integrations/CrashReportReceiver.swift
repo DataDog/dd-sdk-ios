@@ -195,7 +195,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     }
 
     /// If the crash occurred before starting RUM session (after initializing SDK, but before starting the first view) we don't have any session UUID to associate the error with.
-    /// In that case, we consider sending this crash within a new, single-view session: either "ApplicationLaunch" view or "Background" view.
+    /// In that case, we consider sending this crash within a new, single-view session: either "ApplicationLaunch" view or "Background" view.
     private func sendCrashReportToNewSession(
         _ crashReport: DDCrashReport,
         crashContext: CrashContext,
@@ -321,7 +321,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             ),
             account: context.accountInfo.map { RUMAccount(accountInfo: $0) },
             application: .init(
-                id: applicationID
+                currentLocale: context.localeInfo?.currentLocale, id: applicationID
             ),
             buildVersion: context.buildNumber,
             ciTest: ciTest,

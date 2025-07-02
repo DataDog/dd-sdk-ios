@@ -110,16 +110,28 @@ extension Device: AnyMockable, RandomMockable {
 
     public static func mockWith(
         architecture: String = "arm64e",
+        batteryLevel: Double? = nil,
         brand: String = "Apple",
+        brightnessLevel: Double? = nil,
+        locale: String? = nil,
+        locales: [String]? = nil,
         model: String = "iPhone10,1",
         name: String = "iPhone",
+        powerSavingMode: Bool? = nil,
+        timeZone: String? = nil,
         type: DeviceType = .mobile
     ) -> Device {
         .init(
             architecture: architecture,
+            batteryLevel: batteryLevel,
             brand: brand,
+            brightnessLevel: brightnessLevel,
+            locale: locale,
+            locales: locales,
             model: model,
             name: name,
+            powerSavingMode: powerSavingMode,
+            timeZone: timeZone,
             type: type
         )
     }
@@ -127,9 +139,15 @@ extension Device: AnyMockable, RandomMockable {
     public static func mockRandom() -> Device {
         .init(
             architecture: .mockRandom(),
+            batteryLevel: .mockRandom(),
             brand: .mockRandom(),
+            brightnessLevel: .mockRandom(),
+            locale: .mockRandom(),
+            locales: .mockRandom(),
             model: .mockRandom(),
             name: .mockRandom(),
+            powerSavingMode: .mockRandom(),
+            timeZone: .mockRandom(),
             type: .mockRandom()
         )
     }
@@ -232,7 +250,7 @@ extension RUMViewEvent: RandomMockable {
                 )
             ),
             account: .mockRandom(),
-            application: .init(id: .mockRandom()),
+            application: .init(currentLocale: .mockRandom(), id: .mockRandom()),
             buildId: nil,
             buildVersion: .mockRandom(),
             ciTest: nil,

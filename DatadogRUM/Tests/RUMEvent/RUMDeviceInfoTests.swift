@@ -15,12 +15,30 @@ final class DeviceInfoTests: XCTestCase {
         let randomName: String = .mockRandom()
         let randomArch: String = .mockRandom()
 
-        let info: Device = .mockWith(architecture: randomArch, model: randomModel, name: randomName)
+        let batteryLevel: Double = .mockRandom()
+        let brightnessLevel: Double = .mockRandom()
+        let powerSavingMode: Bool = .mockRandom()
+
+        let info: Device = .mockWith(
+            architecture: randomArch,
+            batteryLevel: batteryLevel,
+            brightnessLevel: brightnessLevel,
+            locale: "en",
+            locales: ["en"],
+            model: randomModel,
+            name: randomName,
+            powerSavingMode: powerSavingMode
+        )
 
         XCTAssertEqual(info.brand, "Apple")
         XCTAssertEqual(info.name, randomName)
         XCTAssertEqual(info.model, randomModel)
         XCTAssertEqual(info.architecture, randomArch)
+        XCTAssertEqual(info.batteryLevel, batteryLevel)
+        XCTAssertEqual(info.brightnessLevel, brightnessLevel)
+        XCTAssertEqual(info.powerSavingMode, powerSavingMode)
+        XCTAssertEqual(info.locale, "en")
+        XCTAssertEqual(info.locales, ["en"])
     }
 
     func testItInfersDeviceTypeFromDeviceModel() {

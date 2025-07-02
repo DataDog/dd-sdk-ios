@@ -223,11 +223,21 @@ class DatadogTests: XCTestCase {
             email: "foo@bar.com",
             extraInfo: ["abc": 123]
         )
+        core?.set(anonymousId: "anonymous-id")
 
+        XCTAssertEqual(core?.userInfoPublisher.current.anonymousId, "anonymous-id")
         XCTAssertEqual(core?.userInfoPublisher.current.id, "foo")
         XCTAssertEqual(core?.userInfoPublisher.current.name, "bar")
         XCTAssertEqual(core?.userInfoPublisher.current.email, "foo@bar.com")
         XCTAssertEqual(core?.userInfoPublisher.current.extraInfo as? [String: Int], ["abc": 123])
+
+        Datadog.clearUserInfo()
+
+        XCTAssertEqual(core?.userInfoPublisher.current.anonymousId, "anonymous-id")
+        XCTAssertNil(core?.userInfoPublisher.current.id)
+        XCTAssertNil(core?.userInfoPublisher.current.email)
+        XCTAssertNil(core?.userInfoPublisher.current.name)
+        XCTAssertEqual(core?.userInfoPublisher.current.extraInfo as? [String: Int], [:])
 
         Datadog.flushAndDeinitialize()
     }

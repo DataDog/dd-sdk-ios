@@ -21,7 +21,9 @@ public enum Datadog
     public static func isInitialized(instanceName name: String = CoreRegistry.defaultInstanceName) -> Bool
     public static func sdkInstance(named name: String) -> DatadogCoreProtocol
     public static func setUserInfo(id: String,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func addUserExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func clearUserInfo(in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func setAccountInfo(id: String,name: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func addAccountExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func clearAccountInfo(in core: DatadogCoreProtocol = CoreRegistry.default)
@@ -31,15 +33,15 @@ public enum Datadog
     public static func initialize(with configuration: Configuration,trackingConsent: TrackingConsent,instanceName: String = CoreRegistry.defaultInstanceName) -> DatadogCoreProtocol
 [?] extension Datadog
     public struct Configuration
-        public enum BatchSize
+        public enum BatchSize: CaseIterable
             case small
             case medium
             case large
-        public enum UploadFrequency
+        public enum UploadFrequency: CaseIterable
             case frequent
             case average
             case rare
-        public enum BatchProcessingLevel
+        public enum BatchProcessingLevel: CaseIterable
             case low
             case medium
             case high
@@ -165,7 +167,7 @@ public enum Logs
         public var eventMapper: EventMapper?
         public var customEndpoint: URL?
         public init(eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
-    public static func enable(with configuration: Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func enable(with configuration: Logs.Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func addAttribute(forKey key: AttributeKey, value: AttributeValue, in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func removeAttribute(forKey key: AttributeKey, in core: DatadogCoreProtocol = CoreRegistry.default)
 [?] extension Logs
@@ -399,6 +401,7 @@ public enum RUM
         public var onSessionStart: RUM.SessionListener?
         public var customEndpoint: URL?
         public var trackAnonymousUser: Bool
+        public var trackMemoryWarnings: Bool
         public var telemetrySampleRate: SampleRate
         public var featureFlags: FeatureFlags
         public struct URLSessionTracking
@@ -414,7 +417,7 @@ public enum RUM
         case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil)
 [?] extension RUM.Configuration
-    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,telemetrySampleRate: SampleRate = 20,featureFlags: FeatureFlags = .defaults)
+    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,telemetrySampleRate: SampleRate = 20,featureFlags: FeatureFlags = .defaults)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
     public var configurationTelemetrySampleRate: Float
 [?] extension RUM.Configuration
@@ -1222,3 +1225,6 @@ public final class SessionReplayPrivacyOverrides
     public var hide: Bool?
 [?] extension PrivacyOverrides: Equatable
     public static func == (lhs: SessionReplayPrivacyOverrides, rhs: SessionReplayPrivacyOverrides) -> Bool
+public struct SessionReplayPrivacyView<Content: View>: View
+    public init(isActive: Bool = true,textAndInputPrivacy: TextAndInputPrivacyLevel? = nil,imagePrivacy: ImagePrivacyLevel? = nil,touchPrivacy: TouchPrivacyLevel? = nil,hide: Bool? = nil,core: DatadogCoreProtocol = CoreRegistry.default,@ViewBuilder content: @escaping () -> Content)
+    public var body: some View

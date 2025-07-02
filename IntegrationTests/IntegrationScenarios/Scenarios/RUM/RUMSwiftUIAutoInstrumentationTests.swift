@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@testable import DatadogRUM
 
 private extension ExampleApplication {
     func tapBackButton(_ buttonTitle: String) {
@@ -14,6 +15,7 @@ private extension ExampleApplication {
 }
 
 class RUMSwiftUIAutoInstrumentationTests: IntegrationTests, RUMCommonAsserts {
+    // MARK: - View Tracking
     @available(iOS 16.0, *)
     func testSingleViewRoot() throws {
         let serverSession = server.obtainUniqueRecordingSession()
@@ -44,6 +46,7 @@ class RUMSwiftUIAutoInstrumentationTests: IntegrationTests, RUMCommonAsserts {
 
         let initialView = session.views[0]
         XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
+        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
 
         XCTAssertEqual(session.views[1].name, "NavigationStackHostingController<AnyView>")
         RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[1])
@@ -117,6 +120,7 @@ class RUMSwiftUIAutoInstrumentationTests: IntegrationTests, RUMCommonAsserts {
 
         let initialView = session.views[0]
         XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
+        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
 
         // Tab 0: Navigation View
         XCTAssertEqual(session.views[1].name, "AutoTracked_HostingController_Fallback")
@@ -168,6 +172,68 @@ class RUMSwiftUIAutoInstrumentationTests: IntegrationTests, RUMCommonAsserts {
         RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[20])
         XCTAssertEqual(session.views[21].name, "ModalSheet")
         RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[21])
+    }
+
+    // MARK: - Action Tracking
+    func testActions() throws {
+        let serverSession = server.obtainUniqueRecordingSession()
+        let app = ExampleApplication()
+        app.launchWith(
+          testScenarioClassName: "RUMSwiftUIAutoInstrumentationActionViewScenario",
+          serverConfiguration: .init(rumEndpoint: serverSession.recordingURL)
+        )
+
+        app.buttons["main_button"].tap() // Button
+        app.buttons["navigation-link"].tap() // Navigation Link
+        app.switches["toggle"].tap() // Toggle
+        app.sliders["slider"].tap() // Slider
+        app.steppers["stepper"].tap() // Stepper
+        app.buttons["Option 1"].tap() // Picker
+        
+        app.buttons["menu"].tap() // Menu
+        app.buttons["menu_item_1"].tap() // Menu Item
+        app.textFields["Enter text"].tap() // TextField
+
+        try app.endRUMSession()
+
+        let requests = try serverSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            return try RUMSessionMatcher.singleSession(from: requests)?.hasEnded() ?? false
+        }
+
+        assertRUM(requests: requests)
+
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: requests))
+        sendCIAppLog(session)
+
+        let initialView = session.views[0]
+        XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
+        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[0])
+
+        let mainView = session.views[1]
+        XCTAssertEqual(mainView.name, "Runner.SwiftUIAutoInstrumentationActionView")
+        if #available(iOS 18.0, tvOS 18.0, visionOS 18.0, *) {
+            XCTAssertEqual(mainView.actionEvents[0].action.target?.name, SwiftUIComponentNames.button)
+            XCTAssertEqual(mainView.actionEvents[1].action.target?.name, SwiftUIComponentNames.navigationLink)
+            XCTAssertEqual(mainView.actionEvents[2].action.target?.name, "UISwitch")
+            XCTAssertEqual(mainView.actionEvents[3].action.target?.name, "UISlider(slider)")
+            XCTAssertEqual(mainView.actionEvents[4].action.target?.name, "UIStepper(stepper)")
+            XCTAssertEqual(mainView.actionEvents[5].action.target?.name, "UISegmentedControl")
+            XCTAssertEqual(mainView.actionEvents[6].action.target?.name, "SwiftUI_Menu")
+            XCTAssertEqual(mainView.actionEvents[7].action.target?.name, "_UIContextMenuCell")
+            XCTAssertEqual(mainView.actionEvents[8].action.target?.name, "UITextField")
+        } else {
+            XCTAssertEqual(mainView.actionEvents[0].action.target?.name, SwiftUIComponentNames.unidentified)
+            XCTAssertEqual(mainView.actionEvents[1].action.target?.name, SwiftUIComponentNames.unidentified)
+            XCTAssertEqual(mainView.actionEvents[2].action.target?.name, "UISwitch")
+            XCTAssertEqual(mainView.actionEvents[3].action.target?.name, "UISlider(slider)")
+            XCTAssertEqual(mainView.actionEvents[4].action.target?.name, "UIStepper(stepper)")
+            XCTAssertEqual(mainView.actionEvents[5].action.target?.name, "UISegmentedControl")
+            XCTAssertEqual(mainView.actionEvents[6].action.target?.name, "SwiftUI_Menu")
+            XCTAssertEqual(mainView.actionEvents[7].action.target?.name, "_UIContextMenuCell")
+            XCTAssertEqual(mainView.actionEvents[8].action.target?.name, "UITextField")
+        }
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[1])
     }
 
     // TODO: RUM-9888 - Manual + Auto instrumentation scenario
