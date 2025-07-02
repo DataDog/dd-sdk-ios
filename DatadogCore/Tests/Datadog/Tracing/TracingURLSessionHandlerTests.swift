@@ -36,7 +36,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: receiver,
-            distributedTraceSampler: .mockKeepAll(),
+            samplingRate: .maxSampleRate,
             firstPartyHosts: .init([
                 "www.example.com": [.datadog]
             ]),

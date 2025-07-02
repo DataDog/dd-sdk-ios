@@ -48,7 +48,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         )
     }
 
-        override func tearDownWithError() throws {
+    override func tearDownWithError() throws {
         try core.flushAndTearDown()
         core = nil
     }
