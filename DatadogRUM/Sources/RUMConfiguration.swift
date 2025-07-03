@@ -367,7 +367,7 @@ extension RUM {
         internal var syntheticsTestId: String? = ProcessInfo.processInfo.environment["_dd.synthetics.test_id"]
         internal var syntheticsResultId: String? = ProcessInfo.processInfo.environment["_dd.synthetics.result_id"]
         internal var syntheticsEnvironment: Bool { syntheticsTestId != nil || syntheticsResultId != nil }
-        internal var sessionType: String? = ProcessInfo.processInfo.environment["SESSION_TYPE"]
+        internal var sessionTypeOverride: String? = ProcessInfo.processInfo.environment["DD_SESSION_TYPE"]
     }
 }
 
