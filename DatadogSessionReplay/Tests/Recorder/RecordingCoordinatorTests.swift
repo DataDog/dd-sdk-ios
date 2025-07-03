@@ -170,7 +170,7 @@ class RecordingCoordinatorTests: XCTestCase {
         rumContextObserver.notify(rumContext: .mockRandom())
 
         // Then
-        let metric = try XCTUnwrap(telemetry.messages.last?.asMetric)
+        let metric = try XCTUnwrap(telemetry.messages.last?.asMetricReport)
         XCTAssertEqual(metric.name, "Method Called")
     }
 

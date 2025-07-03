@@ -95,9 +95,6 @@ internal class SessionEndedMetric {
     /// Indicates if the session was stopped through `stopSession()` API.
     private var wasStopped = false
 
-    /// Information about the upload quality during the session.
-    private var uploadQuality: [String: Attributes.UploadQuality] = [:]
-
     /// If `RUM.Configuration.trackBackgroundEvents` was enabled for this session.
     private let tracksBackgroundEvents: Bool
 
@@ -197,43 +194,6 @@ internal class SessionEndedMetric {
     /// Signals that the session was stopped with `stopSession()` API.
     func trackWasStopped() {
         wasStopped = true
-    }
-
-    /// Tracks the upload quality metric for aggregation.
-    ///
-    /// - Parameters:
-    ///   - attributes: The upload quality attributes
-    func track(uploadQuality attributes: [String: Encodable]) {
-        guard let track = attributes[UploadQualityMetric.track] as? String else {
-            return
-        }
-
-        let uploadQuality = self.uploadQuality[track] ?? Attributes.UploadQuality(
-            cycleCount: 0,
-            failureCount: [:],
-            blockerCount: [:]
-        )
-
-        var failureCount = uploadQuality.failureCount
-        var blockerCount = uploadQuality.blockerCount
-
-        if let failure = attributes[UploadQualityMetric.failure] as? String {
-            // Merge by incrementing values
-            failureCount.merge([failure: 1], uniquingKeysWith: +)
-        }
-
-        if let blockers = attributes[UploadQualityMetric.blockers] as? [String] {
-            // Merge by incrementing values
-            blockerCount = blockers.reduce(into: blockerCount) { count, blocker in
-                count[blocker, default: 0] += 1
-            }
-        }
-
-        self.uploadQuality[track] = Attributes.UploadQuality(
-            cycleCount: uploadQuality.cycleCount + 1,
-            failureCount: failureCount,
-            blockerCount: blockerCount
-        )
     }
 
     // MARK: - Exporting Attributes
@@ -347,24 +307,6 @@ internal class SessionEndedMetric {
         /// Information on number of events missed due to absence of an active view.
         let noViewEventsCount: NoViewEventsCount
 
-        struct UploadQuality: Encodable {
-            let cycleCount: Int
-            let failureCount: [String: Int]
-            let blockerCount: [String: Int]
-
-            enum CodingKeys: String, CodingKey {
-                case cycleCount = "cycle_count"
-                case failureCount = "failure_count"
-                case blockerCount = "blocker_count"
-            }
-        }
-
-        /// Information about the upload quality during the session.
-        /// The upload quality is splitting between upload track name.
-        /// Tracks upload quality during the session, aggregating them by track name.
-        /// Each track reports its own upload quality metrics.
-        let uploadQuality: [String: UploadQuality]
-
         enum CodingKeys: String, CodingKey {
             case processType = "process_type"
             case precondition
@@ -376,7 +318,6 @@ internal class SessionEndedMetric {
             case sdkErrorsCount = "sdk_errors_count"
             case ntpOffset = "ntp_offset"
             case noViewEventsCount = "no_view_events_count"
-            case uploadQuality = "upload_quality"
         }
     }
 
@@ -448,8 +389,7 @@ internal class SessionEndedMetric {
                     resources: missedEvents[.resource] ?? 0,
                     errors: missedEvents[.error] ?? 0,
                     longTasks: missedEvents[.longTask] ?? 0
-                ),
-                uploadQuality: uploadQuality
+                )
             )
         ]
     }
