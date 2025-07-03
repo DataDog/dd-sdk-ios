@@ -28,10 +28,7 @@ parse_args "$@"
 GH_ASSET_PATH="$artifacts_path/Datadog.xcframework.zip"
 REPO_NAME="DataDog/dd-sdk-ios"
 
-authenticate() {
-    echo_subtitle "Authenticate 'gh' CLI"
-    echo_info "Exporting 'GITHUB_TOKEN' for CI"
-    export GITHUB_TOKEN=$(get_secret $DD_IOS_SECRET__GH_CLI_TOKEN)
+verify_gh_auth() {
     echo_info "▸ gh auth status"
     gh auth status
     if [[ $? -ne 0 ]]; then
@@ -59,5 +56,7 @@ echo_info "Publishing '$GH_ASSET_PATH' to '$tag' release in '$REPO_NAME'"
 echo_info "▸ Using DRY_RUN = $DRY_RUN"
 echo_info "▸ Using OVERWRITE_EXISTING = $OVERWRITE_EXISTING"
 
-authenticate
+export GITHUB_TOKEN=$(dd-octo-sts --disable-tracing token --scope DataDog/dd-sdk-ios --policy self.release)
+verify_gh_auth
 upload
+dd-octo-sts --disable-tracing revoke
