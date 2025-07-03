@@ -931,7 +931,8 @@ extension RUMScopeDependencies {
         },
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking = {
             INVMetric(predicate: TimeBasedINVActionPredicate())
-        }
+        },
+        sessionType: RUMSessionType? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -957,7 +958,8 @@ extension RUMScopeDependencies {
             viewEndedMetricFactory: viewEndedMetricFactory,
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory,
-            interactionToNextViewMetricFactory: interactionToNextViewMetricFactory
+            interactionToNextViewMetricFactory: interactionToNextViewMetricFactory,
+            sessionType: sessionType
         )
     }
 
@@ -985,7 +987,8 @@ extension RUMScopeDependencies {
         viewEndedMetricFactory: (() -> ViewEndedController)? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
-        interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil
+        interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil,
+        sessionType: RUMSessionType? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -1011,7 +1014,8 @@ extension RUMScopeDependencies {
             viewEndedMetricFactory: viewEndedMetricFactory ?? self.viewEndedMetricFactory,
             watchdogTermination: watchdogTermination ?? self.watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
-            interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory
+            interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory,
+            sessionType: sessionType
         )
     }
 }
