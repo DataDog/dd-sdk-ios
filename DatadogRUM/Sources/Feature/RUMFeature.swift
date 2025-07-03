@@ -160,7 +160,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 return INVMetric(
                     predicate: nextViewActionPredicate
                 )
-            }
+            },
+            sessionType: configuration.sessionType.flatMap { RUMSessionType(rawValue: $0) }
         )
 
         self.monitor = Monitor(
