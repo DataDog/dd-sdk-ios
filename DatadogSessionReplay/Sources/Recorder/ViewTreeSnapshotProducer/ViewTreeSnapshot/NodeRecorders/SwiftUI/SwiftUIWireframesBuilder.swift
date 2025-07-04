@@ -174,6 +174,17 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
 
         case .platformView:
             return nil // Should be recorder by UIKit recorder
+        case let .toolbarItem(text):
+            return context.builder.createTextWireframe(
+                id: id,
+                frame: context.convert(frame: item.frame),
+                clip: context.clip,
+                text: textObfuscator.mask(text: text),
+                textAlignment: .init(systemTextAlignment: .center),
+                textColor: SystemColors.label,
+                font: .systemFont(ofSize: 17),
+                fontScalingEnabled: fontScalingEnabled
+            )
         case .unknown:
             return context.builder.createPlaceholderWireframe(
                 id: id,

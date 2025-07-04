@@ -152,8 +152,23 @@ extension DisplayList.Content.Value: Reflection {
         case let (.enum("image"), image):
             self = try .image(reflector.reflect(image))
 
-        case (.enum("drawing"), _):
-            self = .unknown
+        case let (.enum("drawing"), drawing):
+            // In iOS 26, toolbar items are now rendered as drawings which are not currently supported.
+            // As a temporary fix, we extract the text from the drawing and display it as text content.
+            if #available(iOS 26, tvOS 26, *) {
+                do {
+                    guard let drawingContent = drawing else {
+                        self = .unknown
+                        return
+                    }
+                    let extractedText = try Self.extractTextFromGlyphs(drawingContent)
+                    self = .toolbarItem(extractedText)
+                } catch {
+                    self = .unknown
+                }
+            } else {
+                self = .unknown
+            }
 
         case let (.enum("color"), color):
             if #available(iOS 26, tvOS 26, *) {
@@ -165,6 +180,42 @@ extension DisplayList.Content.Value: Reflection {
         default:
             self = .unknown
         }
+    }
+
+    private static func extractTextFromGlyphs(_ displayListContents: Any) throws -> String {
+        let contentString = String(reflecting: displayListContents)
+
+        // 1. Extract glyphs content using regex
+        guard let regex = try? NSRegularExpression(pattern: #"\(glyphs \"([^\"]+)\"\)"#),
+              let match = regex.firstMatch(in: contentString, range: NSRange(contentString.startIndex..., in: contentString)),
+              let glyphsRange = Range(match.range(at: 1), in: contentString)
+        else {
+            throw InternalError(description: "Failed to extract glyphs from display list contents")
+        }
+
+        let glyphs = String(contentString[glyphsRange])
+
+        // 2. Convert escape sequences like \C into actual characters
+        // Split by backslash and space, then take the first character of each part
+        let components = glyphs.components(separatedBy: "\\").filter { !$0.isEmpty }
+        let reconstructed = components.compactMap { part -> String? in
+            let trimmed = part.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty else {
+                return nil
+            }
+
+            if trimmed == "space" {
+                return " "
+            }
+
+            guard let first = trimmed.first else {
+                return nil
+            }
+            return String(first)
+        }
+        .joined()
+
+        return reconstructed
     }
 }
 
@@ -195,4 +246,5 @@ extension DisplayList.Item.Value: Reflection {
         }
     }
 }
+
 #endif

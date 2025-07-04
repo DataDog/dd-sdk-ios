@@ -58,7 +58,7 @@ class DisplayListReflectionTests: XCTestCase {
     func testDisplayList_withShapeContent() throws {
         let color = Color._Resolved.mockRandom()
         let path: SwiftUI.Path = [
-            SwiftUI.Path { $0.move(to: .zero); $0.addLine(to: CGPoint(x: 10, y: 10)) },
+            SwiftUI.Path { $0.move(to: CGPoint.zero); $0.addLine(to: CGPoint(x: 10, y: 10)) },
             SwiftUI.Path(),
             SwiftUI.Path { $0.addRect(CGRect(x: 0, y: 0, width: 50, height: 50)) }
         ].randomElement()!
