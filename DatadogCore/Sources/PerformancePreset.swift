@@ -66,6 +66,7 @@ internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPe
     let maxUploadDelay: TimeInterval
     let uploadDelayChangeRate: Double
     let maxBatchesPerUpload: Int
+    let maxUploadJitter: TimeInterval
 }
 
 internal extension PerformancePreset {
@@ -138,6 +139,7 @@ internal extension PerformancePreset {
         self.maxUploadDelay = minUploadDelay * uploadDelayFactors.max
         self.uploadDelayChangeRate = uploadDelayFactors.changeRate
         self.maxBatchesPerUpload = maxBatchesPerUpload
+        self.maxUploadJitter = 1.0 // 1 second max jitter to avoid concurrent execution
     }
 
     func updated(with override: PerformancePresetOverride) -> PerformancePreset {
@@ -153,7 +155,8 @@ internal extension PerformancePreset {
             minUploadDelay: override.minUploadDelay ?? minUploadDelay,
             maxUploadDelay: override.maxUploadDelay ?? maxUploadDelay,
             uploadDelayChangeRate: override.uploadDelayChangeRate ?? uploadDelayChangeRate,
-            maxBatchesPerUpload: maxBatchesPerUpload
+            maxBatchesPerUpload: maxBatchesPerUpload,
+            maxUploadJitter: maxUploadJitter
         )
     }
 }

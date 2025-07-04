@@ -14,11 +14,13 @@ internal class DataUploadDelay {
     private let changeRate: Double
 
     private(set) var current: TimeInterval
+    let maxJitter: TimeInterval
 
     init(performance: UploadPerformancePreset) {
         self.minDelay = performance.minUploadDelay
         self.maxDelay = performance.maxUploadDelay
         self.changeRate = performance.uploadDelayChangeRate
+        self.maxJitter = performance.maxUploadJitter
         self.current = performance.initialUploadDelay
     }
 

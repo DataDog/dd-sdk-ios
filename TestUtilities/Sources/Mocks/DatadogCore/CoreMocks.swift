@@ -201,7 +201,8 @@ extension PerformancePreset: AnyMockable, RandomMockable {
             minUploadDelay: upload.minUploadDelay,
             maxUploadDelay: upload.maxUploadDelay,
             uploadDelayChangeRate: upload.uploadDelayChangeRate,
-            maxBatchesPerUpload: upload.maxBatchesPerUpload
+            maxBatchesPerUpload: upload.maxBatchesPerUpload,
+            maxUploadJitter: upload.maxUploadJitter
         )
     }
 }

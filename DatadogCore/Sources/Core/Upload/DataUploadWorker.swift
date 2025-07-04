@@ -89,8 +89,9 @@ internal class DataUploadWorker: DataUploadWorkerType {
         }
         self.readWork = readWorkItem
 
-        // Start sending batches immediately after initialization:
-        queue.async(execute: readWorkItem)
+        // Start sending batches with jitter to avoid concurrent execution during app launch:
+        let jitter: TimeInterval = .random(in: 0...delay.maxJitter)
+        queue.asyncAfter(deadline: .now() + jitter, execute: readWorkItem)
     }
 
     private func scheduleNextCycle() {
