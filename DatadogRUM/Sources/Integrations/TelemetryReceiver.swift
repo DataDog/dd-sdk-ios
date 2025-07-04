@@ -259,6 +259,10 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             let sessionIDOverride: String? = attributes.removeValue(forKey: SDKMetricFields.sessionIDOverrideKey)?.dd.decode()
             let sessionID = sessionIDOverride ?? rum?.sessionID
 
+            // Override applicationID using standard `SDKMetricFields`, otherwise use current RUM application ID:
+            let applicationIDOverride: String? = attributes.removeValue(forKey: SDKMetricFields.applicationIDOverrideKey)?.dd.decode()
+            let applicationID = applicationIDOverride ?? rum?.applicationID
+
             // Calculates the composition of sample rates. The metric can have up to 3 layers of sampling.
             var effectiveSampleRate = metric.sampleRate.composed(with: self.sampler.samplingRate)
             if let headSampleRate = attributes.removeValue(forKey: SDKMetricFields.headSampleRate) as? SampleRate {
@@ -268,7 +272,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             let event = TelemetryDebugEvent(
                 dd: .init(),
                 action: rum?.userActionID.map { .init(id: $0) },
-                application: rum.map { .init(id: $0.applicationID) },
+                application: applicationID.map { .init(id: $0) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
                 effectiveSampleRate: Double(effectiveSampleRate),
                 experimentalFeatures: nil,

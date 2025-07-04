@@ -17,4 +17,9 @@ public enum SDKMetricFields {
     /// When attached to metric attributes, the value of this key (session ID) will be used to replace
     /// the ID of session that the metric was collected in. The key itself is dropped before the metric is sent.
     public static let sessionIDOverrideKey = "session_id_override"
+    /// Key referencing the application ID (`String`) that the metric should be sent with. It expects `String` value.
+    ///
+    /// When attached to metric attributes, the value of this key (application ID) will be used to replace
+    /// the ID of application that the metric was collected in. The key itself is dropped before the metric is sent.
+    public static let applicationIDOverrideKey = "application_id_override"
 }
