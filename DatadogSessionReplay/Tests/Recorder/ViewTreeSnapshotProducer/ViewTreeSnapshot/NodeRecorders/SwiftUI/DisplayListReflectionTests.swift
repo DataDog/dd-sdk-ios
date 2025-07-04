@@ -58,7 +58,7 @@ class DisplayListReflectionTests: XCTestCase {
     func testDisplayList_withShapeContent() throws {
         let color = Color._Resolved.mockRandom()
         let path: SwiftUI.Path = [
-            SwiftUI.Path { $0.move(to: .zero); $0.addLine(to: CGPoint(x: 10, y: 10)) },
+            SwiftUI.Path { $0.move(to: CGPoint.zero); $0.addLine(to: CGPoint(x: 10, y: 10)) },
             SwiftUI.Path(),
             SwiftUI.Path { $0.addRect(CGRect(x: 0, y: 0, width: 50, height: 50)) }
         ].randomElement()!
@@ -162,6 +162,39 @@ class DisplayListReflectionTests: XCTestCase {
             XCTAssertTrue(true)
         } else {
             XCTFail("DisplayList should contain a content value.")
+        }
+    }
+
+    // MARK: Drawing Content (iOS 26+ Toolbar Items)
+    func testDisplayList_withDrawingContent_itHandlesToolbarItemsOniOS26() throws {
+        guard #available(iOS 26, tvOS 26, *) else {
+            return
+        }
+
+        // Given
+        let toolbarContent = DisplayList.Content(
+            seed: .init(value: .mockRandom()),
+            value: .toolbarItem("Save & Continue")
+        )
+        let toolbarDisplayList = DisplayList(items: [
+            DisplayList.Item(
+                identity: .init(value: .mockRandom()),
+                frame: .mockRandom(),
+                value: .content(toolbarContent)
+            )
+        ])
+
+        // When
+        let toolbarReflector = Reflector(subject: toolbarDisplayList, telemetry: NOPTelemetry())
+        let toolbarReflectedList = try DisplayList(from: toolbarReflector)
+
+        // Then
+        XCTAssertEqual(toolbarReflectedList.items.count, 1)
+        if case let .content(content) = toolbarReflectedList.items[0].value,
+           case let .toolbarItem(extractedText) = content.value {
+            XCTAssertEqual(extractedText, "Save & Continue 📱")
+        } else {
+            XCTFail("Toolbar items should extract text correctly")
         }
     }
 }
