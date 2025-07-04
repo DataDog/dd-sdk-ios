@@ -91,7 +91,8 @@ internal struct RUMScopeDependencies {
         viewEndedMetricFactory: @escaping () -> ViewEndedController,
         watchdogTermination: WatchdogTerminationMonitor?,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking,
-        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?
+        interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?,
+        sessionType: RUMSessionType?
     ) {
         self.featureScope = featureScope
         self.rumApplicationID = rumApplicationID
@@ -119,7 +120,9 @@ internal struct RUMScopeDependencies {
         self.networkSettledMetricFactory = networkSettledMetricFactory
         self.interactionToNextViewMetricFactory = interactionToNextViewMetricFactory
 
-        if ciTest != nil {
+        if let sessionType = sessionType {
+            self.sessionType = sessionType
+        } else if ciTest != nil {
             self.sessionType = .ciTest
         } else if syntheticsTest != nil {
             self.sessionType = .synthetics
