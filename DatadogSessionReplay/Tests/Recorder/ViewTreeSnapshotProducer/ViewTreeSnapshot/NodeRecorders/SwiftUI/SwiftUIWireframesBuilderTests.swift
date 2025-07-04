@@ -52,5 +52,45 @@ class SwiftUIWireframesBuilderTests: XCTestCase {
         let wireframe = try XCTUnwrap(wireframes.last?.placeholderWireframe)
         XCTAssertEqual(wireframe.label, "Unsupported SwiftUI component")
     }
+
+    // MARK: Drawing Content (iOS 26+ Toolbar Items)
+    func testDisplayListWithToolbarItem_itCreatesTextWireframeOniOS26() throws {
+        guard #available(iOS 26, tvOS 26, *) else {
+            return
+        }
+
+        // Given
+        let renderer = DisplayList.ViewUpdater(
+            viewCache: DisplayList.ViewUpdater.ViewCache(map: [:]),
+            lastList: DisplayList.Lazy(
+                DisplayList(items: [
+                    DisplayList.Item(
+                        identity: DisplayList.Identity(value: .mockRandom()),
+                        frame: CGRect(x: 0, y: 0, width: 100, height: 44),
+                        value: .content(DisplayList.Content(
+                            seed: DisplayList.Seed(value: .mockRandom()),
+                            value: .toolbarItem("Cancel")
+                        ))
+                    )
+                ])
+            )
+        )
+
+        // When
+        let builder = SwiftUIWireframesBuilder(
+            wireframeID: .mockRandom(),
+            renderer: renderer,
+            textObfuscator: TextObfuscatorMock(),
+            fontScalingEnabled: true,
+            imagePrivacyLevel: .maskNone,
+            attributes: .mockRandom()
+        )
+
+        // Then
+        let wireframes = builder.buildWireframes(with: WireframesBuilder())
+        XCTAssertEqual(wireframes.count, 2)
+        let textWireframe = try XCTUnwrap(wireframes.last?.textWireframe)
+        XCTAssertEqual(textWireframe.text, "Cancel")
+    }
 }
 #endif
