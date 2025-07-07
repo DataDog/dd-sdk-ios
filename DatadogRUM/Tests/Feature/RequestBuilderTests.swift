@@ -20,7 +20,7 @@ class RequestBuilderTests: XCTestCase {
         // Given
         let builder = RequestBuilder(
             customIntakeURL: nil,
-            eventsFilter: .init(),
+            eventsFilter: .init(telemetry: TelemetryMock()),
             telemetry: NOPTelemetry()
         )
 
@@ -35,7 +35,7 @@ class RequestBuilderTests: XCTestCase {
         // Given
         let builder = RequestBuilder(
             customIntakeURL: nil,
-            eventsFilter: .init(),
+            eventsFilter: .init(telemetry: TelemetryMock()),
             telemetry: NOPTelemetry()
         )
 
@@ -60,7 +60,7 @@ class RequestBuilderTests: XCTestCase {
         let randomURL: URL = .mockRandom()
         let builder = RequestBuilder(
             customIntakeURL: randomURL,
-            eventsFilter: .init(),
+            eventsFilter: .init(telemetry: TelemetryMock()),
             telemetry: NOPTelemetry()
         )
 
@@ -93,7 +93,7 @@ class RequestBuilderTests: XCTestCase {
         // Given
         let builder = RequestBuilder(
             customIntakeURL: nil,
-            eventsFilter: .init(),
+            eventsFilter: .init(telemetry: TelemetryMock()),
             telemetry: NOPTelemetry()
         )
         let context: DatadogContext = .mockWith(
@@ -119,7 +119,7 @@ class RequestBuilderTests: XCTestCase {
         // Given
         let builder = RequestBuilder(
             customIntakeURL: nil,
-            eventsFilter: .init(),
+            eventsFilter: .init(telemetry: TelemetryMock()),
             telemetry: NOPTelemetry()
         )
         let context: DatadogContext = .mockWith(variant: randomVariant)
@@ -148,7 +148,7 @@ class RequestBuilderTests: XCTestCase {
         // Given
         let builder = RequestBuilder(
             customIntakeURL: nil,
-            eventsFilter: .init(),
+            eventsFilter: .init(telemetry: TelemetryMock()),
             telemetry: NOPTelemetry()
         )
         let context: DatadogContext = .mockWith(
@@ -189,7 +189,7 @@ class RequestBuilderTests: XCTestCase {
         // Given
         let builder = RequestBuilder(
             customIntakeURL: nil,
-            eventsFilter: .init(),
+            eventsFilter: .init(telemetry: TelemetryMock()),
             telemetry: NOPTelemetry()
         )
 
