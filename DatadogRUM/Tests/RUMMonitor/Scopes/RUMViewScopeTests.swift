@@ -590,6 +590,68 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.synthetics?.resultId, fakeSyntheticsResultId)
     }
 
+    func testWhenViewStartWithSessionTypeOverride() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let isInitialView: Bool = .mockRandom()
+        let fakeSyntheticsTestId: String = .mockRandom()
+        let fakeSyntheticsResultId: String = .mockRandom()
+        let scope = RUMViewScope(
+            isInitialView: isInitialView,
+            parent: parent,
+            dependencies: .mockWith(
+                syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId),
+                sessionType: .user
+            ),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock()
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(
+                    time: currentTime,
+                    attributes: ["foo": "bar"],
+                    identity: .mockViewIdentifier()
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+        XCTAssertEqual(viewEvents.count, 1)
+
+        let event = try XCTUnwrap(viewEvents.first)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.session.type, .user)
+        DDTAssertValidRUMUUID(event.view.id)
+        XCTAssertEqual(event.view.url, "UIViewController")
+        XCTAssertEqual(event.view.name, "ViewName")
+        XCTAssertEqual(event.view.action.count, 0)
+        XCTAssertEqual(event.view.error.count, 0)
+        XCTAssertEqual(event.view.resource.count, 0)
+        XCTAssertEqual(event.dd.documentVersion, 1)
+        XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.version, "test-version")
+        XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertEqual(event.os?.version, "os-version")
+        XCTAssertEqual(event.os?.build, "os-build")
+        XCTAssertEqual(event.synthetics?.testId, fakeSyntheticsTestId)
+        XCTAssertEqual(event.synthetics?.resultId, fakeSyntheticsResultId)
+    }
+
     func testWhenAnotherViewIsStarted_itEndsTheScope() throws {
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
@@ -694,7 +756,7 @@ class RUMViewScopeTests: XCTestCase {
                 customTimings: [:],
                 startTime: .mockAny(),
                 serverTimeOffset: .zero,
-            interactionToNextViewMetric: INVMetricMock()
+                interactionToNextViewMetric: INVMetricMock()
             )
         }
 
