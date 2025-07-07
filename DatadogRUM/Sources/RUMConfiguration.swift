@@ -91,8 +91,8 @@ extension RUM {
 
         /// The predicate for automatically tracking SwiftUI views as RUM views.
         ///
-        /// RUM will query this predicate for each SwiftUI view detected in the app. The SDK uses reflection to extract
-        /// view names from the SwiftUI view hierarchy, then passes those names to this predicate to determine which
+        /// RUM will query this predicate for each SwiftUI view detected through hosting controllers. The SDK extracts
+        /// view names from the SwiftUI view hierarchy within those controllers, then passes those names to this predicate to determine which
         /// views should be tracked. The predicate implementation should return RUM view parameters if the given view
         /// should be tracked, or `nil` to ignore it.
         ///
