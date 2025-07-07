@@ -354,6 +354,7 @@ class RUMUserActionScopeTests: XCTestCase {
             scope.process(
                 command: RUMStopUserActionCommand(
                     time: currentTime,
+                    globalAttributes: [:],
                     attributes: ["foo": "bar"],
                     actionType: .swipe,
                     name: nil
