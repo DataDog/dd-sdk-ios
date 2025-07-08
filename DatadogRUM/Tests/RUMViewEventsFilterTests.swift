@@ -216,7 +216,7 @@ extension Event {
     }
 }
 
-extension Event: @retroactive CustomDebugStringConvertible {
+extension Event: CustomDebugStringConvertible {
     public var debugDescription: String {
         let dataString = String(data: data, encoding: .utf8) ?? "<Not a string>"
         let metadataString = metadata.map { String(data: $0, encoding: .utf8) ?? "<Not a string>" }
