@@ -12,6 +12,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         static let frozenFrameThresholdInNs = (0.7).toInt64Nanoseconds // 700ms
         static let slowRenderingThresholdFPS = 55.0
         static let minimumTimeSpentForRates = 1.0 // 1s
+        /// Minimum duration of a view (1ns). Prevents negative durations and serves as placeholder value assigned when view starts.
+        static let minimumTimeSpent: TimeInterval = 1e-9 // 1ns
         /// The pre-warming detection attribute key
         static let activePrewarm = "active_pre_warm"
     }
@@ -595,7 +597,7 @@ extension RUMViewScope {
         // RUMM-1779 Keep view active as long as we have ongoing resources
         let isActive = isActiveView || !resourceScopes.isEmpty
         // RUMM-2079 `time_spent` can't be lower than 1ns
-        let timeSpent = max(1e-9, command.time.timeIntervalSince(viewStartTime))
+        let timeSpent = max(Constants.minimumTimeSpent, command.time.timeIntervalSince(viewStartTime))
         let cpuInfo = vitalInfoSampler?.cpu
         let memoryInfo = vitalInfoSampler?.memory
         let refreshRateInfo = vitalInfoSampler?.refreshRate

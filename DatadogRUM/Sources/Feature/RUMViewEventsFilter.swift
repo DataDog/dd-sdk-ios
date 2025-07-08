@@ -8,8 +8,9 @@ import Foundation
 import DatadogInternal
 
 internal struct RUMViewEventsFilter {
-    /// Duration threshold for filtering out 1ns views that represent failed eventual consistency scenarios
-    private static let oneNanosecondDuration: Int64 = 1
+    /// The initial `time_spent` value (1ns) assigned to a view when it starts. This is a placeholder meant to be updated as events are tracked (eventual consistency).
+    /// If the value isn’t updated, the view would report a `1ns` duration, so we filter it out to avoid that (see RUM-10723).
+    private let oneNanosecondDuration = RUMViewScope.Constants.minimumTimeSpent.toInt64Nanoseconds
 
     let decoder: JSONDecoder
     let telemetry: Telemetry
@@ -68,7 +69,7 @@ internal struct RUMViewEventsFilter {
 
         let viewMetadata = try decoder.decode(RUMViewEvent.Metadata.self, from: metadata)
 
-        if let duration = viewMetadata.duration, duration == RUMViewEventsFilter.oneNanosecondDuration {
+        if let duration = viewMetadata.duration, duration == oneNanosecondDuration {
             // Filter out 1ns views to prevent low-quality 1ns sessions.
             // Views start with a 1ns "placeholder" duration that gets updated as events arrive.
             // When eventual consistency fails (e.g., app crashes immediately or has sparse instrumentation),
