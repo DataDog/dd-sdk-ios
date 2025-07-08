@@ -210,7 +210,16 @@ final class RUMViewEventsFilterTests: XCTestCase {
 
 extension Event {
     init(data: String, viewMetadata: RUMViewEvent.Metadata?) throws {
-        let encoder: JSONEncoder = .dd.default()
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
         self.init(data: data.utf8Data, metadata: try encoder.encode(viewMetadata))
+    }
+}
+
+extension Event: @retroactive CustomDebugStringConvertible {
+    public var debugDescription: String {
+        let dataString = String(data: data, encoding: .utf8) ?? "<Not a string>"
+        let metadataString = metadata.map { String(data: $0, encoding: .utf8) ?? "<Not a string>" }
+        return dataString + "." + (metadataString ?? "nil")
     }
 }
