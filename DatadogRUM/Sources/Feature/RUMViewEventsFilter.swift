@@ -8,8 +8,9 @@ import Foundation
 import DatadogInternal
 
 internal struct RUMViewEventsFilter {
-    /// The initial `time_spent` value (1ns) assigned to a view when it starts. This is a placeholder meant to be updated as events are tracked (eventual consistency).
-    /// If the value isn’t updated, the view would report a `1ns` duration, so we filter it out to avoid that (see RUM-10723).
+    /// The initial `time_spent` value (1ns) is a placeholder set when a view starts.
+    /// If not updated (e.g., due to app interruption), the view may remain at 1ns duration.
+    /// This is especially problematic for sessions with only the initial view, so we filter out such cases (see RUM-10723).
     private let oneNanosecondDuration = RUMViewScope.Constants.minimumTimeSpent.toInt64Nanoseconds
 
     let decoder: JSONDecoder
@@ -21,18 +22,24 @@ internal struct RUMViewEventsFilter {
     }
 
     private enum FilterResult {
+        /// Keep the view event in the batch.
         case keep
+        /// Skip redundant view updates for the same view ID (RUMM-3151).
+        /// When multiple updates for the same view exist, we only keep the latest one
+        /// to optimize payload size.
         case skipRedundant
-        case skipOneNs
+        /// Skip initial view (indexInSession == 0) with 1ns duration (RUM-10723).
+        /// Initial views start with a 1ns placeholder duration that gets updated as events arrive.
+        /// If the app is interrupted before any events are tracked, the initial view
+        /// would create a problematic 1ns session, so we filter it out.
+        case skipInitialOneNs
     }
 
-    /// Filters RUM view events to improve data quality and optimize payload size by removing:
-    /// - Redundant view events (duplicate view IDs)
-    /// - 1ns view events that represent failed eventual consistency scenarios
+    /// Filters RUM view events to improve data quality and optimize payload size.
     func filter(events: [Event]) -> [Event] {
         var seen = Set<String>()
         var redundantEventsCount = 0
-        var oneNsEventsCount = 0
+        var initialOneNsEventsCount = 0
 
         // reversed is O(1) and no copy because it is view on the original array
         let filtered: [Event] = events.reversed().compactMap { event in
@@ -44,8 +51,8 @@ internal struct RUMViewEventsFilter {
                 case .skipRedundant:
                     redundantEventsCount += 1
                     return nil
-                case .skipOneNs:
-                    oneNsEventsCount += 1
+                case .skipInitialOneNs:
+                    initialOneNsEventsCount += 1
                     return nil
                 }
             } catch {
@@ -54,8 +61,8 @@ internal struct RUMViewEventsFilter {
             }
         }
 
-        if redundantEventsCount > 0 || oneNsEventsCount > 0 {
-            DD.logger.debug("RUMViewEventsFilter: skipped \(redundantEventsCount) redundant view updates, \(oneNsEventsCount) 1ns views")
+        if redundantEventsCount > 0 || initialOneNsEventsCount > 0 {
+            DD.logger.debug("RUMViewEventsFilter: skipped \(redundantEventsCount) redundant view updates, \(initialOneNsEventsCount) initial 1ns views")
         }
 
         return filtered.reversed()
@@ -69,12 +76,9 @@ internal struct RUMViewEventsFilter {
 
         let viewMetadata = try decoder.decode(RUMViewEvent.Metadata.self, from: metadata)
 
-        if let duration = viewMetadata.duration, duration == oneNanosecondDuration {
-            // Filter out 1ns views to prevent low-quality 1ns sessions.
-            // Views start with a 1ns "placeholder" duration that gets updated as events arrive.
-            // When eventual consistency fails (e.g., app crashes immediately or has sparse instrumentation),
-            // views keep their 1ns duration, which can create problematic 1ns sessions.
-            return .skipOneNs
+        if viewMetadata.duration == oneNanosecondDuration, viewMetadata.indexInSession == 0 {
+            // Filter out initial 1ns views.
+            return .skipInitialOneNs
         }
 
         guard seen.contains(viewMetadata.id) == false else {

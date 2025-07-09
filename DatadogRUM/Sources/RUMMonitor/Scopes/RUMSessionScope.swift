@@ -83,6 +83,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// The reason why this session has ended or `nil` if it is still active.
     private(set) var endReason: EndReason?
 
+    /// Counter to track the index of views in this session. Starts at 0 for the first view.
+    private var nextViewIndex: Int = 0
+
     private let interactionToNextViewMetric: INVMetricTracking?
 
     init(
@@ -173,9 +176,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                         customTimings: lastActiveView.customTimings,
                         startTime: startTime,
                         serverTimeOffset: context.serverTimeOffset,
-                        interactionToNextViewMetric: interactionToNextViewMetric
+                        interactionToNextViewMetric: interactionToNextViewMetric,
+                        viewIndexInSession: nextViewIndex
                     )
                 ]
+                nextViewIndex += 1
             } else {
                 self.viewScopes = []
             }
@@ -324,8 +329,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             customTimings: customTimings,
             startTime: startTime,
             serverTimeOffset: serverTimeOffset,
-            interactionToNextViewMetric: interactionToNextViewMetric
+            interactionToNextViewMetric: interactionToNextViewMetric,
+            viewIndexInSession: nextViewIndex
         )
+        nextViewIndex += 1
 
         if path != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
             applicationState.numberOfNonApplicationLaunchViewsCreated += 1

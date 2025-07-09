@@ -35,6 +35,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// If this is the very first view created in the current app process.
     private let isInitialView: Bool
 
+    /// The index of this view within its session (0 for the first view).
+    private let viewIndexInSession: Int
+
     /// If this view ever had session replay
     private var hasReplay: Bool
 
@@ -134,7 +137,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         customTimings: [String: Int64],
         startTime: Date,
         serverTimeOffset: TimeInterval,
-        interactionToNextViewMetric: INVMetricTracking?
+        interactionToNextViewMetric: INVMetricTracking?,
+        viewIndexInSession: Int
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -148,6 +152,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewStartTime = startTime
         self.serverTimeOffset = serverTimeOffset
         self.interactionToNextViewMetric = interactionToNextViewMetric
+        self.viewIndexInSession = viewIndexInSession
         self.accessibilityReader = dependencies.accessibilityReader
 
         self.vitalInfoSampler = dependencies.vitalsReaders.map {
@@ -748,7 +753,7 @@ extension RUMViewScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            writer.write(value: event, metadata: event.metadata())
+            writer.write(value: event, metadata: event.metadata(viewIndexInSession: viewIndexInSession))
 
             // Update fatal error context with recent RUM view:
             dependencies.fatalErrorContext.view = event

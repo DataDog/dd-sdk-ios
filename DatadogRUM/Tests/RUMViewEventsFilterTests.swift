@@ -51,10 +51,10 @@ final class RUMViewEventsFilterTests: XCTestCase {
         let events = [
             try Event(data: "A.1", viewMetadata: nil),
             try Event(data: "A.2", viewMetadata: nil),
-            try Event(data: "B.1", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 1, duration: nil)),
-            try Event(data: "B.2", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 2, duration: nil)),
+            try Event(data: "B.1", viewMetadata: .mock(id: "B", documentVersion: 1)),
+            try Event(data: "B.2", viewMetadata: .mock(id: "B", documentVersion: 2)),
             try Event(data: "C.1", viewMetadata: nil),
-            try Event(data: "B.3", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 3, duration: nil)),
+            try Event(data: "B.3", viewMetadata: .mock(id: "B", documentVersion: 3)),
             try Event(data: "A.3", viewMetadata: nil)
         ]
 
@@ -63,7 +63,7 @@ final class RUMViewEventsFilterTests: XCTestCase {
             try Event(data: "A.1", viewMetadata: nil),
             try Event(data: "A.2", viewMetadata: nil),
             try Event(data: "C.1", viewMetadata: nil),
-            try Event(data: "B.3", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 3, duration: nil)),
+            try Event(data: "B.3", viewMetadata: .mock(id: "B", documentVersion: 3)),
             try Event(data: "A.3", viewMetadata: nil)
         ]
 
@@ -74,15 +74,15 @@ final class RUMViewEventsFilterTests: XCTestCase {
 
     func testFilterWhenSameEvent() throws {
          let events = [
-            try Event(data: "A.1", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 1, duration: nil)),
-            try Event(data: "A.2", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 2, duration: nil)),
-            try Event(data: "A.3", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 3, duration: nil)),
-            try Event(data: "A.4", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 4, duration: nil))
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1)),
+            try Event(data: "A.2", viewMetadata: .mock(id: "A", documentVersion: 2)),
+            try Event(data: "A.3", viewMetadata: .mock(id: "A", documentVersion: 3)),
+            try Event(data: "A.4", viewMetadata: .mock(id: "A", documentVersion: 4))
          ]
 
         let actual = sut.filter(events: events)
         let expected = [
-            try Event(data: "A.4", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 4, duration: nil))
+            try Event(data: "A.4", viewMetadata: .mock(id: "A", documentVersion: 4))
         ]
 
         XCTAssertEqual(actual, expected)
@@ -90,15 +90,15 @@ final class RUMViewEventsFilterTests: XCTestCase {
 
     func testFilterWhenMixedEvents() throws {
           let events = [
-            try Event(data: "B.1", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 1, duration: nil)),
-            try Event(data: "A.5", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 5, duration: nil)),
-            try Event(data: "B.2", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 2, duration: nil)),
+            try Event(data: "B.1", viewMetadata: .mock(id: "B", documentVersion: 1)),
+            try Event(data: "A.5", viewMetadata: .mock(id: "A", documentVersion: 5)),
+            try Event(data: "B.2", viewMetadata: .mock(id: "B", documentVersion: 2)),
           ]
 
         let actual = sut.filter(events: events)
         let expected = [
-            try Event(data: "A.5", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 5, duration: nil)),
-            try Event(data: "B.2", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 2, duration: nil)),
+            try Event(data: "A.5", viewMetadata: .mock(id: "A", documentVersion: 5)),
+            try Event(data: "B.2", viewMetadata: .mock(id: "B", documentVersion: 2)),
         ]
 
         XCTAssertEqual(actual, expected)
@@ -106,62 +106,63 @@ final class RUMViewEventsFilterTests: XCTestCase {
 
     func testFilterWhenSingleEvent() throws {
         let events = [
-            try Event(data: "B.3", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 3, duration: nil)),
+            try Event(data: "B.3", viewMetadata: .mock(id: "B", documentVersion: 3)),
         ]
 
         let actual = sut.filter(events: events)
         let expected = [
-            try Event(data: "B.3", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 3, duration: nil)),
+            try Event(data: "B.3", viewMetadata: .mock(id: "B", documentVersion: 3)),
         ]
 
         XCTAssertEqual(actual, expected)
     }
 
-    // MARK: - 1ns duration filtering
+    // MARK: - Initial 1ns view filtering
 
-    func testFilterWhenOneNsDuration() throws {
+    func testFilterWhenInitialOneNsDuration() throws {
         let events = [
-            try Event(data: "A.1", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 1, duration: 1)),
-            try Event(data: "B.1", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 1, duration: 100)),
-            try Event(data: "C.1", viewMetadata: RUMViewEvent.Metadata(id: "C", documentVersion: 1, duration: 1))
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1, duration: 1, indexInSession: 0)),
+            try Event(data: "B.1", viewMetadata: .mock(id: "B", documentVersion: 1, duration: 100, indexInSession: 1)),
+            try Event(data: "C.1", viewMetadata: .mock(id: "C", documentVersion: 1, duration: 1, indexInSession: 2))
         ]
 
         let actual = sut.filter(events: events)
         let expected = [
-            try Event(data: "B.1", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 1, duration: 100))
+            try Event(data: "B.1", viewMetadata: .mock(id: "B", documentVersion: 1, duration: 100, indexInSession: 1)),
+            try Event(data: "C.1", viewMetadata: .mock(id: "C", documentVersion: 1, duration: 1, indexInSession: 2))
         ]
 
         XCTAssertEqual(actual, expected)
     }
 
-    func testFilterWhenMixedOneNsAndRedundant() throws {
+    func testFilterWhenMixedInitialOneNsAndRedundant() throws {
         let events = [
-            try Event(data: "A.1", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 1, duration: 1)),
-            try Event(data: "A.2", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 2, duration: 100)),
-            try Event(data: "B.1", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 1, duration: 1)),
-            try Event(data: "B.2", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 2, duration: 200))
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1, duration: 1, indexInSession: 0)),
+            try Event(data: "A.2", viewMetadata: .mock(id: "A", documentVersion: 2, duration: 100, indexInSession: 0)),
+            try Event(data: "B.1", viewMetadata: .mock(id: "B", documentVersion: 1, duration: 1, indexInSession: 1)),
+            try Event(data: "B.2", viewMetadata: .mock(id: "B", documentVersion: 2, duration: 200, indexInSession: 1))
         ]
 
         let actual = sut.filter(events: events)
         let expected = [
-            try Event(data: "A.2", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 2, duration: 100)),
-            try Event(data: "B.2", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 2, duration: 200))
+            try Event(data: "A.2", viewMetadata: .mock(id: "A", documentVersion: 2, duration: 100, indexInSession: 0)),
+            try Event(data: "B.2", viewMetadata: .mock(id: "B", documentVersion: 2, duration: 200, indexInSession: 1))
         ]
 
         XCTAssertEqual(actual, expected)
     }
 
-    func testFilterWhenOneNsDurationWithNilDuration() throws {
+    func testFilterWhenInitialOneNsDurationWithNilDuration() throws {
         let events = [
-            try Event(data: "A.1", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 1, duration: nil)),
-            try Event(data: "B.1", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 1, duration: 1)),
-            try Event(data: "C.1", viewMetadata: RUMViewEvent.Metadata(id: "C", documentVersion: 1, duration: 2))
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1, indexInSession: 0)),
+            try Event(data: "B.1", viewMetadata: .mock(id: "B", documentVersion: 1, duration: 1, indexInSession: 0)),
+            try Event(data: "C.1", viewMetadata: .mock(id: "C", documentVersion: 1, duration: 2, indexInSession: 1))
         ]
 
         let actual = sut.filter(events: events)
         let expected = [
-            try Event(data: "A.1", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 1, duration: nil)),
-            try Event(data: "C.1", viewMetadata: RUMViewEvent.Metadata(id: "C", documentVersion: 1, duration: 2))
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1, indexInSession: 0)),
+            try Event(data: "C.1", viewMetadata: .mock(id: "C", documentVersion: 1, duration: 2, indexInSession: 1))
         ]
 
         XCTAssertEqual(actual, expected)
@@ -173,13 +174,13 @@ final class RUMViewEventsFilterTests: XCTestCase {
         let invalidMetadata = "invalid json".utf8Data
         let events = [
             Event(data: "A.1".utf8Data, metadata: invalidMetadata),
-            try Event(data: "B.1", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 1, duration: nil))
+            try Event(data: "B.1", viewMetadata: .mock(id: "B", documentVersion: 1))
         ]
 
         let actual = sut.filter(events: events)
         let expected = [
             Event(data: "A.1".utf8Data, metadata: invalidMetadata),
-            try Event(data: "B.1", viewMetadata: RUMViewEvent.Metadata(id: "B", documentVersion: 1, duration: nil))
+            try Event(data: "B.1", viewMetadata: .mock(id: "B", documentVersion: 1))
         ]
 
         XCTAssertEqual(actual, expected)
@@ -190,15 +191,15 @@ final class RUMViewEventsFilterTests: XCTestCase {
     func testFilterWhenMixedValidAndInvalidMetadata() throws {
         let invalidMetadata = "invalid json".utf8Data
         let events = [
-            try Event(data: "A.1", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 1, duration: nil)),
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1)),
             Event(data: "B.1".utf8Data, metadata: invalidMetadata),
-            try Event(data: "C.1", viewMetadata: RUMViewEvent.Metadata(id: "C", documentVersion: 1, duration: 1)),
+            try Event(data: "C.1", viewMetadata: .mock(id: "C", documentVersion: 1, duration: 1, indexInSession: 0)),
             Event(data: "D.1".utf8Data, metadata: invalidMetadata)
         ]
 
         let actual = sut.filter(events: events)
         let expected = [
-            try Event(data: "A.1", viewMetadata: RUMViewEvent.Metadata(id: "A", documentVersion: 1, duration: nil)),
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1)),
             Event(data: "B.1".utf8Data, metadata: invalidMetadata),
             Event(data: "D.1".utf8Data, metadata: invalidMetadata)
         ]
@@ -213,6 +214,17 @@ extension Event {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .sortedKeys
         self.init(data: data.utf8Data, metadata: try encoder.encode(viewMetadata))
+    }
+}
+
+extension RUMViewEvent.Metadata {
+    static func mock(
+        id: String = .mockAny(),
+        documentVersion: Int64 = .mockAny(),
+        duration: Int64? = nil,
+        indexInSession: Int? = nil
+    ) -> RUMViewEvent.Metadata {
+        return RUMViewEvent.Metadata(id: id, documentVersion: documentVersion, duration: duration, indexInSession: indexInSession)
     }
 }
 

@@ -69,11 +69,14 @@ internal extension RUMViewEvent {
         let documentVersion: Int64
         /// Duration of the view in nanoseconds.
         let duration: Int64?
+        /// Index of the view within its session (0 for the first view).
+        let indexInSession: Int?
 
         private enum CodingKeys: String, CodingKey {
             case id = "id"
             case documentVersion = "document_version"
             case duration = "duration"
+            case indexInSession = "index"
         }
     }
 
@@ -83,11 +86,12 @@ internal extension RUMViewEvent {
 
     /// Creates `Metadata` from the given `RUMViewEvent`.
     /// - Returns: The `Metadata` for the given `RUMViewEvent`.
-    func metadata() -> Metadata {
+    func metadata(viewIndexInSession: Int) -> Metadata {
         return Metadata(
             id: view.id,
             documentVersion: dd.documentVersion,
-            duration: view.timeSpent
+            duration: view.timeSpent,
+            indexInSession: viewIndexInSession
         )
     }
 }
