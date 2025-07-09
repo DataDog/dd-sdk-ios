@@ -13,19 +13,22 @@ public struct UploadPerformanceMock: UploadPerformancePreset {
     public var maxUploadDelay: TimeInterval
     public var uploadDelayChangeRate: Double
     public var maxBatchesPerUpload: Int
+    public var maxUploadJitter: TimeInterval
 
     public init(
         initialUploadDelay: TimeInterval,
         minUploadDelay: TimeInterval,
         maxUploadDelay: TimeInterval,
         uploadDelayChangeRate: Double,
-        maxBatchesPerUpload: Int = 1
+        maxBatchesPerUpload: Int = 1,
+        maxUploadJitter: TimeInterval = 0.0
     ) {
         self.initialUploadDelay = initialUploadDelay
         self.minUploadDelay = minUploadDelay
         self.maxUploadDelay = maxUploadDelay
         self.uploadDelayChangeRate = uploadDelayChangeRate
         self.maxBatchesPerUpload = maxBatchesPerUpload
+        self.maxUploadJitter = maxUploadJitter
     }
 
     public static let noOp = UploadPerformanceMock(
@@ -62,6 +65,7 @@ extension UploadPerformanceMock {
         maxUploadDelay = other.maxUploadDelay
         uploadDelayChangeRate = other.uploadDelayChangeRate
         maxBatchesPerUpload = other.maxBatchesPerUpload
+        maxUploadJitter = other.maxUploadJitter
     }
 }
 
