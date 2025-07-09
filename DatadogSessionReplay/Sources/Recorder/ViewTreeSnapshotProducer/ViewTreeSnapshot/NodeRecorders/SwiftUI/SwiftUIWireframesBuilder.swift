@@ -174,7 +174,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
 
         case .platformView:
             return nil // Should be recorder by UIKit recorder
-        case let .toolbarItem(text):
+        case let .drawingWithText(text):
             return context.builder.createTextWireframe(
                 id: id,
                 frame: context.convert(frame: item.frame),

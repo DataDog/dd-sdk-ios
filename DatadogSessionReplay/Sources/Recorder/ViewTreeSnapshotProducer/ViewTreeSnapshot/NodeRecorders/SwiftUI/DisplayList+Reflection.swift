@@ -153,7 +153,7 @@ extension DisplayList.Content.Value: Reflection {
             self = try .image(reflector.reflect(image))
 
         case let (.enum("drawing"), drawing):
-            // In iOS 26, toolbar items are now rendered as drawings which are not currently supported.
+            // In iOS 26, some UI elements (including toolbar items) are now rendered as drawings which are not currently supported.
             // As a temporary fix, we extract the text from the drawing and display it as text content.
             if #available(iOS 26, tvOS 26, *) {
                 do {
@@ -162,7 +162,7 @@ extension DisplayList.Content.Value: Reflection {
                         return
                     }
                     let extractedText = try Self.extractTextFromGlyphs(drawingContent)
-                    self = .toolbarItem(extractedText)
+                    self = .drawingWithText(extractedText)
                 } catch {
                     self = .unknown
                 }

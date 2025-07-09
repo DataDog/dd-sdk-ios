@@ -84,7 +84,7 @@ internal struct DisplayList {
             case platformView
             case color(Color._Resolved)
             case image(GraphicsImage)
-            case toolbarItem(String)
+            case drawingWithText(String)
             case unknown
         }
 
