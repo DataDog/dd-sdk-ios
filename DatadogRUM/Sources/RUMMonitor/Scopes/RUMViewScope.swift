@@ -12,6 +12,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         static let frozenFrameThresholdInNs = (0.7).toInt64Nanoseconds // 700ms
         static let slowRenderingThresholdFPS = 55.0
         static let minimumTimeSpentForRates = 1.0 // 1s
+        /// Minimum duration of a view (1ns). Prevents negative durations and serves as placeholder value assigned when view starts.
+        static let minimumTimeSpent: TimeInterval = 1e-9 // 1ns
         /// The pre-warming detection attribute key
         static let activePrewarm = "active_pre_warm"
     }
@@ -32,6 +34,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     /// If this is the very first view created in the current app process.
     private let isInitialView: Bool
+
+    /// The index of this view within its session (0 for the first view).
+    private let viewIndexInSession: Int
 
     /// If this view ever had session replay
     private var hasReplay: Bool
@@ -132,7 +137,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         customTimings: [String: Int64],
         startTime: Date,
         serverTimeOffset: TimeInterval,
-        interactionToNextViewMetric: INVMetricTracking?
+        interactionToNextViewMetric: INVMetricTracking?,
+        viewIndexInSession: Int
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -146,6 +152,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewStartTime = startTime
         self.serverTimeOffset = serverTimeOffset
         self.interactionToNextViewMetric = interactionToNextViewMetric
+        self.viewIndexInSession = viewIndexInSession
         self.accessibilityReader = dependencies.accessibilityReader
 
         self.vitalInfoSampler = dependencies.vitalsReaders.map {
@@ -595,7 +602,7 @@ extension RUMViewScope {
         // RUMM-1779 Keep view active as long as we have ongoing resources
         let isActive = isActiveView || !resourceScopes.isEmpty
         // RUMM-2079 `time_spent` can't be lower than 1ns
-        let timeSpent = max(1e-9, command.time.timeIntervalSince(viewStartTime))
+        let timeSpent = max(Constants.minimumTimeSpent, command.time.timeIntervalSince(viewStartTime))
         let cpuInfo = vitalInfoSampler?.cpu
         let memoryInfo = vitalInfoSampler?.memory
         let refreshRateInfo = vitalInfoSampler?.refreshRate
@@ -746,7 +753,7 @@ extension RUMViewScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            writer.write(value: event, metadata: event.metadata())
+            writer.write(value: event, metadata: event.metadata(viewIndexInSession: viewIndexInSession))
 
             // Update fatal error context with recent RUM view:
             dependencies.fatalErrorContext.view = event
