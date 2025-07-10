@@ -153,7 +153,7 @@ extension DisplayList.Content.Value: Reflection {
             self = try .image(reflector.reflect(image))
 
         case let (.enum("drawing"), (contents, origin, _) as (NSObject, CGPoint, Any)):
-            if let image = GraphicsImage(drawingContents: contents, origin: origin) {
+            if let image = GraphicsImage(rasterizing: contents, origin: origin) {
                 self = .image(image)
             } else {
                 self = .unknown

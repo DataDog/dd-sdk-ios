@@ -12,7 +12,60 @@ import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension GraphicsImage {
-    init?(drawingContents: NSObject, origin: CGPoint) {
+    init?(rasterizing drawingContents: NSObject, origin: CGPoint) {
+        let rasterizationScale = UIScreen.main.scale
+
+        guard let cgImage = Self.drawingRasterizer.image(
+            rasterizing: drawingContents,
+            origin: origin,
+            scale: rasterizationScale
+        ) else {
+            return nil
+        }
+
+        self.init(contents: .cgImage(cgImage), scale: rasterizationScale, orientation: .up)
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension GraphicsImage {
+    fileprivate class DrawingRasterizer: @unchecked Sendable {
+        private let cache = NSCache<NSNumber, CGImage>()
+        private let lock = NSRecursiveLock()
+
+        init() {
+            cache.countLimit = 20
+        }
+
+        func image(rasterizing drawingContents: NSObject, origin: CGPoint, scale: CGFloat) -> CGImage? {
+            lock.lock()
+            defer { lock.unlock() }
+
+            let imageKey = drawingContents.hashValue as NSNumber
+
+            if let image = cache.object(forKey: imageKey) {
+                return image
+            }
+
+            guard let image = CGImage.image(
+                rasterizing: drawingContents,
+                origin: origin,
+                scale: scale
+            ) else {
+                return nil
+            }
+
+            cache.setObject(image, forKey: imageKey)
+            return image
+        }
+    }
+
+    fileprivate static let drawingRasterizer = DrawingRasterizer()
+}
+
+extension CGImage {
+    @available(iOS 13.0, tvOS 13.0, *)
+    fileprivate static func image(rasterizing drawingContents: NSObject, origin: CGPoint, scale: CGFloat) -> CGImage? {
         guard
             let cls = DrawingContents.cls,
             type(of: drawingContents).isSubclass(of: cls),
@@ -24,7 +77,6 @@ extension GraphicsImage {
 
         // Compute image size
 
-        let scale = UIScreen.main.scale
         let width = Int((bounds.width + 1.5) * scale)
         let height = Int((bounds.height + 1.5) * scale)
 
@@ -61,13 +113,7 @@ extension GraphicsImage {
             with: [DrawingContents.rasterizationScale: scale]
         )
 
-        // Create an image
-
-        guard let cgImage = bitmapContext.makeImage() else {
-            return nil
-        }
-
-        self.init(contents: .cgImage(cgImage), scale: scale, orientation: .up)
+        return bitmapContext.makeImage()
     }
 }
 
@@ -78,4 +124,5 @@ private enum DrawingContents {
     static let bounds = "boundingRect"
     static let rasterizationScale = "rasterizationscale"
 }
+
 #endif
