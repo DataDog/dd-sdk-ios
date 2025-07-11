@@ -41,7 +41,7 @@ extension GraphicsImage {
             lock.lock()
             defer { lock.unlock() }
 
-            let imageKey = drawingContents.hashValue as NSNumber
+            let imageKey = drawingContents.hash as NSNumber
 
             if let image = cache.object(forKey: imageKey) {
                 return image
