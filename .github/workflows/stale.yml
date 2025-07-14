@@ -1,7 +1,10 @@
 name: 'Automatically close stale issues'
 
 on:
-  workflow_dispatch: # Allows manual triggering
+  schedule:
+    # Runs every day at 8:00 AM CET
+    - cron: '0 7 * * *'
+  workflow_dispatch:
 
 jobs:
   stale:
@@ -18,7 +21,7 @@ jobs:
           # The label that will be added to the issues when automatically marked as stale
           stale-issue-label: 'stale'
           # The label that will be added to the issues when automatically marked as stale
-          close-issue-label: 'automatically-closed'
+          close-issue-label: 'automatically closed'
           # Only target issues with 'awaiting-response' label
           only-labels: 'awaiting-response'
           # Mark issues as stale after 14 days
@@ -30,4 +33,4 @@ jobs:
           # Run the stale workflow as dry-run.
           # No GitHub API calls that can alter the issues and pull requests will happen.
           # Useful to debug or when you want to configure the stale workflow safely. 
-          debug-only: true
+          debug-only: false
