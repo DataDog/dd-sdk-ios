@@ -23,7 +23,7 @@ jobs:
           # The label that will be added to the issues when automatically marked as stale
           close-issue-label: 'automatically closed'
           # Only target issues with 'awaiting-response' label
-          only-labels: 'awaiting-response'
+          only-labels: 'awaiting response'
           # Mark issues as stale after 14 days
           days-before-issue-stale: 14
           # Close issues after 3 days of being marked stale
