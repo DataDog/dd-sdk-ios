@@ -60,6 +60,7 @@
     [monitor stopViewWithViewController:anyVC attributes:@{}];
     [monitor startViewWithKey:@"" name:nil attributes:@{}];
     [monitor stopViewWithKey:@"" attributes:@{}];
+    [monitor addViewLoadingTimeWithOverwrite:YES];
     [monitor addErrorWithMessage:@"" stack:nil source:DDRUMErrorSourceCustom attributes:@{}];
     [monitor addErrorWithError:[NSError errorWithDomain:NSCocoaErrorDomain code:-100 userInfo:nil]
                         source:DDRUMErrorSourceNetwork attributes:@{}];
