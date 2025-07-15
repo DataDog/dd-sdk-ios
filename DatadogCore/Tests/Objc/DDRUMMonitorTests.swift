@@ -255,6 +255,7 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.startView(viewController: mockView, name: "FirstView", attributes: ["event-attribute1": "foo1"])
         objcRUMMonitor.stopView(viewController: mockView, attributes: ["event-attribute2": "foo2"])
         objcRUMMonitor.startView(key: "view2", name: "SecondView", attributes: ["event-attribute1": "bar1"])
+        objcRUMMonitor.addViewLoadingTime(overwrite: true)
         objcRUMMonitor.stopView(key: "view2", attributes: ["event-attribute2": "bar2"])
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
@@ -262,12 +263,13 @@ class DDRUMMonitorTests: XCTestCase {
         let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
             return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
         }
-        XCTAssertEqual(viewEvents.count, 4)
+        XCTAssertEqual(viewEvents.count, 5)
 
         let event1: RUMViewEvent = try viewEvents[0].model()
         let event2: RUMViewEvent = try viewEvents[1].model()
         let event3: RUMViewEvent = try viewEvents[2].model()
         let event4: RUMViewEvent = try viewEvents[3].model()
+        let event5: RUMViewEvent = try viewEvents[4].model()
         XCTAssertEqual(event1.view.name, "FirstView")
         XCTAssertEqual(event1.view.url, "FirstViewController")
         XCTAssertEqual(event2.view.name, "FirstView")
@@ -276,10 +278,13 @@ class DDRUMMonitorTests: XCTestCase {
         XCTAssertEqual(event3.view.url, "view2")
         XCTAssertEqual(event4.view.name, "SecondView")
         XCTAssertEqual(event4.view.url, "view2")
+        XCTAssertNotNil(event4.view.loadingTime)
+        XCTAssertEqual(event5.view.name, "SecondView")
+        XCTAssertEqual(event5.view.url, "view2")
         XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.event-attribute1"), "foo1")
         XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.event-attribute2"), "foo2")
-        XCTAssertEqual(try viewEvents[3].attribute(forKeyPath: "context.event-attribute1"), "bar1")
-        XCTAssertEqual(try viewEvents[3].attribute(forKeyPath: "context.event-attribute2"), "bar2")
+        XCTAssertEqual(try viewEvents[4].attribute(forKeyPath: "context.event-attribute1"), "bar1")
+        XCTAssertEqual(try viewEvents[4].attribute(forKeyPath: "context.event-attribute2"), "bar2")
     }
 
     func testSendingViewEventsWithTiming() throws {
