@@ -20,6 +20,8 @@ public struct RUMCoreContext: AdditionalContext, Equatable {
     public let userActionID: String?
     /// Current view related server time offset
     public let viewServerTimeOffset: TimeInterval?
+    /// Latest web view server time offsets
+    private var webViewServerTimeOffsets: [String: TimeInterval] = [:]
 
     /// Creates a RUM context.
     ///
@@ -41,5 +43,13 @@ public struct RUMCoreContext: AdditionalContext, Equatable {
         self.viewID = viewID
         self.userActionID = userActionID
         self.viewServerTimeOffset = viewServerTimeOffset
+    }
+
+    public func serverTimeOffset(forWebView id: String) -> TimeInterval? {
+        webViewServerTimeOffsets[id]
+    }
+
+    public mutating func setServerTimeOffset(_ offset: TimeInterval, forWebView id: String) {
+        webViewServerTimeOffsets[id] = offset
     }
 }

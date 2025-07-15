@@ -68,7 +68,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         )
 
         featureScope.eventWriteContext { context, writer in
-            guard let rum = context.additionalContext(ofType: RUMCoreContext.self) else {
+            guard var rum = context.additionalContext(ofType: RUMCoreContext.self) else {
                 return // Drop event if RUM is not enabled or RUM session is not sampled
             }
 
@@ -77,7 +77,19 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             if let date = event["date"] as? Int,
                let view = event["view"] as? JSON,
                let id = view["id"] as? String {
-                let correctedDate = Int64(date) + self.offset(forView: id, context: context)
+                let offsetMilliseconds: Int64
+
+                if let offset = rum.serverTimeOffset(forWebView: id) {
+                    offsetMilliseconds = offset.toInt64Milliseconds
+                } else {
+                    let offset = context.serverTimeOffset
+                    rum.setServerTimeOffset(offset, forWebView: id)
+                    self.featureScope.set(context: rum)
+
+                    offsetMilliseconds = offset.toInt64Milliseconds
+                }
+
+                let correctedDate = Int64(date) + offsetMilliseconds
                 event["date"] = correctedDate
 
                 // Inject the container source and view id
@@ -139,22 +151,5 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
 
             writer.write(value: AnyEncodable(event))
         }
-    }
-
-    // MARK: - Time offsets
-
-    private var offsets: [(id: String, value: Int64)] = []
-
-    private func offset(forView id: String, context: DatadogContext) -> Int64 {
-        if let found = offsets.first(where: { $0.id == id }) {
-            return found.value
-        }
-
-        let offset = context.serverTimeOffset.toInt64Milliseconds
-        offsets.insert((id, offset), at: 0)
-        // only retain 3 offsets
-        offsets = Array(offsets.prefix(3))
-
-        return offset
     }
 }
