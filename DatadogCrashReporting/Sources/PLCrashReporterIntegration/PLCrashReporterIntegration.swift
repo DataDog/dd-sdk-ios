@@ -40,6 +40,14 @@ internal extension PLCrashReporterConfig {
             maxReportBytes: maxReportBytes
         )
     }
+
+    static var liveReportConfiguration = PLCrashReporterConfig(
+        signalHandlerType: .BSD, // no effect on Live Report
+        symbolicationStrategy: [],
+        shouldRegisterUncaughtExceptionHandler: false, // no effect on Live Report
+        basePath: nil, // Live Report uses /tmp folder always
+        maxReportBytes: Constants.maxReportBytes
+    )
 }
 
 internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
@@ -48,8 +56,7 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
     private let builder = DDCrashReportBuilder()
 
     init() throws {
-        let configuration: PLCrashReporterConfig = try .ddConfiguration()
-        self.crashReporter = PLCrashReporter(configuration: configuration)
+        self.crashReporter = try PLCrashReporter(configuration: .ddConfiguration())
         try crashReporter.enableAndReturnError()
 
         // Secondary instance for collecting Live Report for backtraces to prevent
@@ -58,7 +65,7 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
         //
         // This secondary instance doesn't need to and should not be enabled as it
         // will conflict with the primary one.
-        self.backtraceReporter = PLCrashReporter(configuration: configuration)
+        self.backtraceReporter = PLCrashReporter(configuration: .liveReportConfiguration)
     }
 
     func hasPendingCrashReport() -> Bool {
