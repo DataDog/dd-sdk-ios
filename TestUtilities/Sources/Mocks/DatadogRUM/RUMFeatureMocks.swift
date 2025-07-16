@@ -1448,13 +1448,15 @@ extension RUMCoreContext: RandomMockable {
         applicationID: String = .mockAny(),
         sessionID: String = .mockAny(),
         viewID: String? = .mockAny(),
-        serverTimeOffset: TimeInterval = .mockAny()
+        serverTimeOffset: TimeInterval = .mockAny(),
+        webViewServerTimeOffsets: [String: TimeInterval] = .mockAny()
     ) -> Self {
         .init(
             applicationID: applicationID,
             sessionID: sessionID,
             viewID: viewID,
-            viewServerTimeOffset: serverTimeOffset
+            viewServerTimeOffset: serverTimeOffset,
+            webViewServerTimeOffsets: webViewServerTimeOffsets
         )
     }
 
@@ -1464,7 +1466,8 @@ extension RUMCoreContext: RandomMockable {
             sessionID: .mockRandom(),
             viewID: .mockRandom(),
             userActionID: .mockRandom(),
-            viewServerTimeOffset: .mockRandom()
+            viewServerTimeOffset: .mockRandom(),
+            webViewServerTimeOffsets: .mockRandom()
         )
     }
 }
