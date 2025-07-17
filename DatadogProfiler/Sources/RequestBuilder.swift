@@ -58,9 +58,9 @@ internal struct RequestBuilder: FeatureRequestBuilder {
 
         var event: [String: Any] = [
             "tags_profiler": tags.joined(separator: ","),
-            "family": "go",
+            "family": "ios",
             "version": "4",
-            "attachments": ["cpu.pprof"],
+            "attachments": ["wall.pprof"],
             "start": iso8601DateFormatter.string(from: profile.start),
             "end": iso8601DateFormatter.string(from: profile.end)
         ]
@@ -77,8 +77,8 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         )
 
         multipart.addFormData(
-            name: "cpu.pprof",
-            filename: "cpu.pprof",
+            name: "wall.pprof",
+            filename: "wall.pprof",
             data: profile.cpuProf,
             mimeType: "application/octet-stream"
         )

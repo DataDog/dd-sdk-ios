@@ -34,7 +34,7 @@ internal class Profile {
         
         // Initialize sample types
         var sampleType = Perftools_Profiles_ValueType()
-        sampleType.type = addString("cpu")
+        sampleType.type = addString("wall-time")
         sampleType.unit = addString("nanoseconds")
         profile.sampleType.append(sampleType)
         
