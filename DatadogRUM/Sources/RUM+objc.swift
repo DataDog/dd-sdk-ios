@@ -536,6 +536,11 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.stopView(key: key, attributes: attributes.dd.swiftAttributes)
     }
 
+    @available(*, message: "This API is experimental and may change in future releases")
+    public func addViewLoadingTime(overwrite: Bool) {
+        swiftRUMMonitor.addViewLoadingTime(overwrite: overwrite)
+    }
+
     public func addTiming(name: String) {
         swiftRUMMonitor.addTiming(name: name)
     }
