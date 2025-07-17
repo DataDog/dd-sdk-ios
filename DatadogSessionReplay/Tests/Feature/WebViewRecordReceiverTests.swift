@@ -17,14 +17,15 @@ class WebViewRecordReceiverTests: XCTestCase {
         let browserViewID: String = .mockRandom()
         let serverTimeOffset: TimeInterval = .mockRandom(min: -10, max: 10).rounded()
 
-        let rumContext: RUMCoreContext = .mockWith(
-            webViewServerTimeOffsets: [browserViewID: serverTimeOffset]
+        let rumContext: RUMCoreContext = .mockAny()
+        let webViewContext: RUMWebViewContext = .mockWith(
+            serverTimeOffsets: [browserViewID: serverTimeOffset]
         )
 
         let scope = FeatureScopeMock(
             context: .mockWith(
                 source: "react-native",
-                additionalContext: [rumContext]
+                additionalContext: [rumContext, webViewContext]
             )
         )
 

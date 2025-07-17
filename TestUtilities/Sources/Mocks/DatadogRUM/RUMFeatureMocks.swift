@@ -1448,15 +1448,13 @@ extension RUMCoreContext: RandomMockable {
         applicationID: String = .mockAny(),
         sessionID: String = .mockAny(),
         viewID: String? = .mockAny(),
-        serverTimeOffset: TimeInterval = .mockAny(),
-        webViewServerTimeOffsets: [String: TimeInterval] = .mockAny()
+        serverTimeOffset: TimeInterval = .mockAny()
     ) -> Self {
         .init(
             applicationID: applicationID,
             sessionID: sessionID,
             viewID: viewID,
-            viewServerTimeOffset: serverTimeOffset,
-            webViewServerTimeOffsets: webViewServerTimeOffsets
+            viewServerTimeOffset: serverTimeOffset
         )
     }
 
@@ -1466,9 +1464,24 @@ extension RUMCoreContext: RandomMockable {
             sessionID: .mockRandom(),
             viewID: .mockRandom(),
             userActionID: .mockRandom(),
-            viewServerTimeOffset: .mockRandom(),
-            webViewServerTimeOffsets: .mockRandom()
+            viewServerTimeOffset: .mockRandom()
         )
+    }
+}
+
+extension RUMWebViewContext: RandomMockable {
+    public static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    public static func mockWith(
+        serverTimeOffsets: [String: TimeInterval] = [:]
+    ) -> Self {
+        .init(serverTimeOffsets: serverTimeOffsets)
+    }
+
+    public static func mockRandom() -> Self {
+        .init(serverTimeOffsets: .mockRandom())
     }
 }
 

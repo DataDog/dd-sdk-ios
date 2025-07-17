@@ -68,10 +68,11 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         )
 
         featureScope.eventWriteContext { context, writer in
-            guard var rum = context.additionalContext(ofType: RUMCoreContext.self) else {
+            guard let rum = context.additionalContext(ofType: RUMCoreContext.self) else {
                 return // Drop event if RUM is not enabled or RUM session is not sampled
             }
 
+            var webViewContext = context.additionalContext(ofType: RUMWebViewContext.self) ?? .init()
             var event = event
 
             if let date = event["date"] as? Int,
@@ -79,13 +80,13 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                let id = view["id"] as? String {
                 let offsetMilliseconds: Int64
 
-                if let offset = rum.serverTimeOffset(forWebView: id) {
+                if let offset = webViewContext.serverTimeOffset(forView: id) {
                     offsetMilliseconds = offset.toInt64Milliseconds
                 } else {
                     let offset = context.serverTimeOffset
-                    rum.setServerTimeOffset(offset, forWebView: id)
-                    self.featureScope.set(context: rum)
+                    webViewContext.setServerTimeOffset(offset, forView: id)
 
+                    self.featureScope.set(context: webViewContext)
                     offsetMilliseconds = offset.toInt64Milliseconds
                 }
 
