@@ -14,9 +14,9 @@ internal final class AppHangsMonitor {
         /// The standardized `error.type` for RUM errors describing an app hang.
         static let appHangErrorType = "AppHang"
         /// The standardized `error.stack` when backtrace generation was not available.
-        static let appHangStackNotAvailableErrorMessage = "Stack trace was not generated because `DatadogCrashReporting` had not been enabled."
+        static let appHangStackNotAvailableErrorMessage = "Stack trace was not collected because `DatadogCrashReporting` had not been enabled."
         /// The standardized `error.stack` when backtrace generation failed due to an internal error.
-        static let appHangStackGenerationFailedErrorMessage = "Failed to generate stack trace. This is a known issue and we work on it."
+        static let appHangStackGenerationFailedErrorMessage = "Failed to collect the stack trace."
     }
 
     /// Watchdog thread that monitors the main queue for App Hangs.
