@@ -1469,6 +1469,22 @@ extension RUMCoreContext: RandomMockable {
     }
 }
 
+extension RUMWebViewContext: RandomMockable {
+    public static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    public static func mockWith(
+        serverTimeOffsets: [String: TimeInterval] = [:]
+    ) -> Self {
+        .init(serverTimeOffsets: serverTimeOffsets)
+    }
+
+    public static func mockRandom() -> Self {
+        .init(serverTimeOffsets: .mockRandom())
+    }
+}
+
 extension RUMResourceScope {
     static func mockWith(
         context: RUMContext,
