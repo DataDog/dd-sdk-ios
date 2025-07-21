@@ -67,7 +67,7 @@ internal class Profile {
         if let mappingId = mappingTable[frame.image.load_address] {
             return mappingId
         }
-        
+
         var mapping = Perftools_Profiles_Mapping()
         mapping.id = UInt64(profile.mapping.count + 1)
         mapping.memoryStart = frame.image.load_address
@@ -174,7 +174,7 @@ internal class MachProfiler {
         )
         
         profile = Profile(samplingIntervalMs: samplingIntervalMs)
-        profiler = profiler_create_deterministic(&config, stackTraceCallback, Unmanaged.passUnretained(profile).toOpaque())!
+        profiler = profiler_create_statistical(&config, nil, stackTraceCallback, Unmanaged.passUnretained(profile).toOpaque())!
     }
     
     deinit {
