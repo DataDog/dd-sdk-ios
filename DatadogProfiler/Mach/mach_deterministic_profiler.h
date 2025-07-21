@@ -44,9 +44,9 @@ protected:
     /**
      * @brief Returns fixed sampling interval
      * 
-     * @return Fixed sampling interval from configuration
+     * @return Fixed sampling interval from configuration in nanoseconds
      */
-    uint32_t get_sampling_interval() const override;
+    uint64_t get_sampling_interval() const override;
 
     /**
      * @brief Always returns true to sample all threads

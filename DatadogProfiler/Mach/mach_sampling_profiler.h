@@ -67,9 +67,9 @@ public:
     /**
      * @brief Virtual method to get the current sampling interval
      * 
-     * @return Current sampling interval in milliseconds
+     * @return Current sampling interval in nanoseconds
      */
-    virtual uint32_t get_sampling_interval() const = 0;
+    virtual uint64_t get_sampling_interval() const = 0;
 
 protected:
     /**
@@ -122,8 +122,9 @@ protected:
      * @brief Samples a single thread's stack (common implementation)
      * 
      * @param thread The thread to sample
+     * @param interval_nanos The actual sampling interval in nanoseconds for this sample
      */
-    void sample_thread(thread_t thread);
+    void sample_thread(thread_t thread, uint64_t interval_nanos);
 
     /**
      * @brief Flushes the sample buffer (common implementation)

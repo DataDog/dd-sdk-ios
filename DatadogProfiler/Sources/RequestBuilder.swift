@@ -51,15 +51,16 @@ internal struct RequestBuilder: FeatureRequestBuilder {
             "version:\(context.version)",
             "env:\(context.env)",
             "source:\(context.source)",
-            "runtime:ios",
             "language:swift",
             "format:pprof",
+            "remote_symbols:yes",
         ]
 
         var event: [String: Any] = [
             "tags_profiler": tags.joined(separator: ","),
             "family": "ios",
             "version": "4",
+            "runtime": "ios",
             "attachments": ["wall.pprof"],
             "start": iso8601DateFormatter.string(from: profile.start),
             "end": iso8601DateFormatter.string(from: profile.end)

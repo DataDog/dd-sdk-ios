@@ -54,6 +54,8 @@ typedef struct stack_trace {
     mach_port_t tid;
     /** Timestamp in nanoseconds since system boot */
     uint64_t timestamp;
+    /** Actual sampling interval in nanoseconds for this sample */
+    uint64_t sampling_interval_nanos;
     /** The stack frames array */
     stack_frame_t* frames;
     /** Number of frames in the trace */
@@ -65,8 +67,8 @@ typedef struct stack_trace {
  * Contains common settings shared by all profiler types.
  */
 typedef struct sampling_config {
-    /** Sampling interval in milliseconds */
-    uint32_t sampling_interval_ms;  // default: 1ms
+    /** Sampling interval in nanoseconds */
+    uint64_t sampling_interval_nanos;  // default: 1000000 (1ms)
     /** Whether to profile only the current thread */
     uint8_t profile_current_thread_only;
     /** Maximum number of samples to buffer before calling the callback */
@@ -93,7 +95,7 @@ typedef struct statistical_sampling_config {
  * Default base configuration values
  */
 #define SAMPLING_CONFIG_DEFAULT { \
-    .sampling_interval_ms = 1, \
+    .sampling_interval_nanos = 1000000, \
     .profile_current_thread_only = 0, \
     .max_buffer_size = 1000, \
     .max_stack_depth = 128, \

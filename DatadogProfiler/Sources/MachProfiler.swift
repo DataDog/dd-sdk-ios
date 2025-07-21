@@ -16,14 +16,17 @@ internal import DatadogMachProfiler
 private extension String {
     static let empty = ""
     static let hexFormat = "0x%llx"
+
+    static let nanoseconds = "nanoseconds"
+    static let endTimestampNs = "end_timestamp_ns"
 }
 
 internal class Profile {
     private var profile: Perftools_Profiles_Profile
-    private var stringTable: [String: Int] = [:]
+    private var stringTable: [String: Int64] = [:]
     private var locationTable: [UInt64: UInt64] = [:]
     private var sampleTable: [[UInt64]: Int] = [:]
-    private var mappingTable: [UInt64: UInt64] = [:] 
+    private var mappingTable: [UInt64: UInt64] = [:]
     
     init(samplingIntervalMs: UInt32) {
         profile = Perftools_Profiles_Profile()
@@ -35,7 +38,7 @@ internal class Profile {
         // Initialize sample types
         var sampleType = Perftools_Profiles_ValueType()
         sampleType.type = addString("wall-time")
-        sampleType.unit = addString("nanoseconds")
+        sampleType.unit = addString(.nanoseconds)
         profile.sampleType.append(sampleType)
         
         // Set sampling period
@@ -51,12 +54,12 @@ internal class Profile {
     
     private func addString(_ str: String) -> Int64 {
         if let index = stringTable[str] {
-            return Int64(index)
+            return index
         }
-        let index = profile.stringTable.count
+        let index = Int64(profile.stringTable.count)
         profile.stringTable.append(str)
         stringTable[str] = index
-        return Int64(index)
+        return index
     }
 
     private func addMapping(_ frame: stack_frame_t) -> UInt64 {
@@ -126,11 +129,20 @@ internal class Profile {
             
             // Add sample
             if let existingIndex = sampleTable[locationIds] {
-                profile.sample[existingIndex].value[0] += 1
+                profile.sample[existingIndex].value[0] += Int64(trace.sampling_interval_nanos)
+                profile.sample[existingIndex].label[0].num = Int64(trace.timestamp)
             } else {
                 var sample = Perftools_Profiles_Sample()
                 sample.locationID = locationIds
-                sample.value = [1]
+                sample.value = [Int64(trace.sampling_interval_nanos)]
+                
+                // Add end_timestamp_ns label
+                var label = Perftools_Profiles_Label()
+                label.key = addString(.endTimestampNs)
+                label.num = Int64(trace.timestamp)
+                label.numUnit = addString(.nanoseconds)
+                sample.label = [label]
+                
                 profile.sample.append(sample)
                 sampleTable[locationIds] = profile.sample.count - 1
             }
@@ -154,7 +166,7 @@ internal class MachProfiler {
         qos: DispatchQoS = .userInteractive
     ) {
         var config = sampling_config_t(
-            sampling_interval_ms: samplingIntervalMs,
+            sampling_interval_nanos: UInt64(samplingIntervalMs) * 1_000_000,
             profile_current_thread_only: currentThreadOnly ? 1: 0,
             max_buffer_size: maxBufferSize,
             max_stack_depth: maxStackDepth,

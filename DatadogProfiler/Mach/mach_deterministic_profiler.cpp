@@ -28,10 +28,10 @@ mach_deterministic_profiler::mach_deterministic_profiler(
 /**
  * Returns fixed sampling interval.
  *
- * @return Fixed sampling interval from configuration
+ * @return Fixed sampling interval from configuration in nanoseconds
  */
-uint32_t mach_deterministic_profiler::get_sampling_interval() const {
-    return config.sampling_interval_ms;
+uint64_t mach_deterministic_profiler::get_sampling_interval() const {
+    return config.sampling_interval_nanos;
 }
 
 /**

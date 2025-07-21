@@ -48,9 +48,9 @@ protected:
     /**
      * @brief Returns jittered sampling interval
      * 
-     * @return Sampling interval with statistical jitter applied
+     * @return Sampling interval with statistical jitter applied in nanoseconds
      */
-    uint32_t get_sampling_interval() const override;
+    uint64_t get_sampling_interval() const override;
 
     /**
      * @brief Probabilistically determines if thread should be sampled

@@ -171,12 +171,14 @@ bool binary_image_lookup_pc(binary_image_t* info, void* pc) {
  * 
  * @param trace Pointer to stack trace to initialize
  * @param max_depth Maximum number of frames to allocate
+ * @param interval_nanos The actual sampling interval in nanoseconds for this sample
  * @return true if initialization succeeded, false on allocation failure
  */
-bool stack_trace_init(stack_trace_t* trace, uint32_t max_depth) {
+bool stack_trace_init(stack_trace_t* trace, uint32_t max_depth, uint64_t interval_nanos) {
     if (!trace) return false;
     trace->tid = 0;
     trace->timestamp = 0;
+    trace->sampling_interval_nanos = interval_nanos;
     trace->frame_count = 0;
     trace->frames = (stack_frame_t*)malloc(max_depth * sizeof(stack_frame_t));
     return trace->frames != nullptr;
@@ -338,10 +340,11 @@ void mach_sampling_profiler::stop_sampling() {
  * Samples a single thread's stack.
  *
  * @param thread The thread to sample
+ * @param interval_nanos The actual sampling interval in nanoseconds for this sample
  */
-void mach_sampling_profiler::sample_thread(thread_t thread) {
+void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_nanos) {
     stack_trace_t trace;
-    if (!stack_trace_init(&trace, config.max_stack_depth)) return;
+    if (!stack_trace_init(&trace, config.max_stack_depth, interval_nanos)) return;
 
     if (thread_suspend(thread) == KERN_SUCCESS) {
         // CRITICAL: Thread is suspended - avoid operations that could deadlock
@@ -372,8 +375,11 @@ void mach_sampling_profiler::sample_thread(thread_t thread) {
  */
 void mach_sampling_profiler::main() {
     while (running) {
+        // Get the actual sampling interval for this iteration in nanoseconds
+        uint64_t interval_nanos = get_sampling_interval();
+
         if (config.profile_current_thread_only) {
-            sample_thread(pthread_mach_thread_np(target_thread));
+            sample_thread(pthread_mach_thread_np(target_thread), interval_nanos);
         } else {
             thread_act_array_t threads;
             mach_msg_type_number_t count;
@@ -392,7 +398,7 @@ void mach_sampling_profiler::main() {
                 
                 // Virtual method determines sampling strategy (deterministic vs statistical)
                 if (should_sample_thread(threads[i])) {
-                    sample_thread(threads[i]);
+                    sample_thread(threads[i], interval_nanos);
                 }
             }
 
@@ -404,8 +410,8 @@ void mach_sampling_profiler::main() {
             vm_deallocate(mach_task_self(), (vm_address_t)threads, count * sizeof(thread_t));
         }
 
-        // Virtual method determines interval strategy (fixed vs jittered)
-        std::this_thread::sleep_for(std::chrono::milliseconds(get_sampling_interval()));
+        // Sleep for the same interval we recorded
+        std::this_thread::sleep_for(std::chrono::nanoseconds(interval_nanos));
     }
     
     // Flush any remaining samples
