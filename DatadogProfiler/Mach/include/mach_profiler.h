@@ -75,6 +75,8 @@ typedef struct sampling_config {
     size_t max_buffer_size;
     /** Maximum number of stack frames to capture per trace */
     uint32_t max_stack_depth;  // default: 128
+    /** Maximum number of threads to sample per cycle (0 = no limit) */
+    uint32_t max_thread_count;  // default: 100
     /** QoS class for the sampling thread */
     qos_class_t qos_class;
 } sampling_config_t;
@@ -99,6 +101,7 @@ typedef struct statistical_sampling_config {
     .profile_current_thread_only = 0, \
     .max_buffer_size = 1000, \
     .max_stack_depth = 128, \
+    .max_thread_count = 100, \
     .qos_class = QOS_CLASS_USER_INTERACTIVE \
 }
 

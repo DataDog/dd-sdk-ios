@@ -2,7 +2,6 @@
 
 #ifdef __APPLE__
 
-#include <thread>
 #include <chrono>
 #include <mach/mach.h>
 #include <mach/thread_act.h>

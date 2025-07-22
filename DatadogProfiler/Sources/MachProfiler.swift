@@ -163,6 +163,7 @@ internal class MachProfiler {
         currentThreadOnly: Bool = false,
         maxBufferSize: Int = 100,
         maxStackDepth: UInt32 = 128,
+        maxThreadCount: UInt32 = 128,
         qos: DispatchQoS = .userInteractive
     ) {
         var config = sampling_config_t(
@@ -170,6 +171,7 @@ internal class MachProfiler {
             profile_current_thread_only: currentThreadOnly ? 1: 0,
             max_buffer_size: maxBufferSize,
             max_stack_depth: maxStackDepth,
+            max_thread_count: maxThreadCount,
             qos_class: qos.qosClass.rawValue
         )
         

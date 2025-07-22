@@ -291,7 +291,7 @@ mach_sampling_profiler::mach_sampling_profiler(
  * Virtual destructor that ensures sampling is stopped.
  */
 mach_sampling_profiler::~mach_sampling_profiler() {
-    if (running) stop_sampling();
+    stop_sampling();
 }
 
 /**
@@ -389,9 +389,13 @@ void mach_sampling_profiler::main() {
                 continue;
             }
 
-            // Sample threads based on subclass strategy
-            for (mach_msg_type_number_t i = 0; i < count; i++) {
+            mach_msg_type_number_t i = 0;
+            uint32_t sample_count = 0;
+            for (; i < count; i++) {
                 if (!running) break;
+
+                // Stop sampling if we've reached the configured thread limit
+                if (config.max_thread_count != 0 && sample_count >= config.max_thread_count) break;
                 
                 // Skip the sampling thread itself
                 if (threads[i] == pthread_mach_thread_np(pthread_self())) continue;
@@ -399,6 +403,7 @@ void mach_sampling_profiler::main() {
                 // Virtual method determines sampling strategy (deterministic vs statistical)
                 if (should_sample_thread(threads[i])) {
                     sample_thread(threads[i], interval_nanos);
+                    sample_count++;
                 }
             }
 

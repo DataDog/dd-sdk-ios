@@ -9,7 +9,6 @@
 
 #include "mach_sampling_profiler.h"
 #include <random>
-#include <chrono>
 
 #ifdef __APPLE__
 
