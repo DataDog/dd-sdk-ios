@@ -96,7 +96,7 @@ final class AccessibilityReaderTests: XCTestCase {
     @MainActor
     func testStateUpdatesWhenNotificationIsSent() {
         // Given
-        let expectedState = Accessibility(
+        let expectedState = AccessibilityInfo(
             textSize: "large",
             screenReaderEnabled: true,
             boldTextEnabled: false,
@@ -167,7 +167,7 @@ final class AccessibilityReaderTests: XCTestCase {
 
     func testAccessibilityReaderMock() {
         // Given
-        let mockState = Accessibility.mockRandom()
+        let mockState = AccessibilityInfo.mockRandom()
         let mockReader = AccessibilityReaderMock(state: mockState)
 
         // When
@@ -179,13 +179,168 @@ final class AccessibilityReaderTests: XCTestCase {
         XCTAssertEqual(state.boldTextEnabled, mockState.boldTextEnabled)
     }
 
-    func testAccessibilityMockAny() {
-        let mock = AccessibilityReaderMock.mockAny()
-        XCTAssertNotNil(mock.state)
+    func testHasValidAccessibilityData() {
+        // Given
+        let mockReader = AccessibilityReaderMock(state: .mockAny())
+
+        // Then - Should return true for valid state
+        XCTAssertTrue(mockReader.hasValidAccessibilityData)
+
+        // Given - Empty state
+        let emptyReader = AccessibilityReaderMock(state: AccessibilityInfo())
+
+        // Then - Should return false for empty state
+        XCTAssertFalse(emptyReader.hasValidAccessibilityData)
     }
 
-    func testAccessibilityMockRandom() {
-        let mock = AccessibilityReaderMock.mockRandom()
-        XCTAssertNotNil(mock.state)
+    func testNoAccessibilityDataWhenStateIsEmpty() {
+        // Given
+        let mockReader = AccessibilityReaderMock(state: AccessibilityInfo()) // Empty state
+
+        // When
+        let accessibility = mockReader.rumAccessibility
+
+        // Then - Should return nil when no valid data
+        XCTAssertNil(accessibility)
+    }
+
+    func testChangedAttributesTracking() {
+        // Given
+        let mockReader = AccessibilityReaderMock(state: AccessibilityInfo(
+            textSize: "large",
+            screenReaderEnabled: true,
+            boldTextEnabled: false,
+            reduceTransparencyEnabled: false,
+            reduceMotionEnabled: false,
+            buttonShapesEnabled: false,
+            invertColorsEnabled: false,
+            increaseContrastEnabled: false,
+            assistiveSwitchEnabled: false,
+            assistiveTouchEnabled: false,
+            videoAutoplayEnabled: false,
+            closedCaptioningEnabled: false,
+            monoAudioEnabled: false,
+            shakeToUndoEnabled: false,
+            reducedAnimationsEnabled: false,
+            shouldDifferentiateWithoutColor: false,
+            grayscaleEnabled: false,
+            singleAppModeEnabled: false,
+            onOffSwitchLabelsEnabled: false,
+            speakScreenEnabled: false,
+            speakSelectionEnabled: false,
+            rtlEnabled: false
+        ))
+
+        // Then - Should return all attributes
+        let accessibility1 = mockReader.rumAccessibility
+        XCTAssertNotNil(accessibility1)
+        XCTAssertEqual(accessibility1?.screenReaderEnabled, true)
+        XCTAssertEqual(accessibility1?.textSize, "large")
+        XCTAssertEqual(accessibility1?.boldTextEnabled, false)
+        XCTAssertEqual(accessibility1?.reduceTransparencyEnabled, false)
+        XCTAssertEqual(accessibility1?.reduceMotionEnabled, false)
+        XCTAssertEqual(accessibility1?.buttonShapesEnabled, false)
+        XCTAssertEqual(accessibility1?.invertColorsEnabled, false)
+        XCTAssertEqual(accessibility1?.increaseContrastEnabled, false)
+        XCTAssertEqual(accessibility1?.assistiveSwitchEnabled, false)
+        XCTAssertEqual(accessibility1?.assistiveTouchEnabled, false)
+        XCTAssertEqual(accessibility1?.videoAutoplayEnabled, false)
+        XCTAssertEqual(accessibility1?.closedCaptioningEnabled, false)
+        XCTAssertEqual(accessibility1?.monoAudioEnabled, false)
+        XCTAssertEqual(accessibility1?.shakeToUndoEnabled, false)
+        XCTAssertEqual(accessibility1?.reducedAnimationsEnabled, false)
+        XCTAssertEqual(accessibility1?.shouldDifferentiateWithoutColor, false)
+        XCTAssertEqual(accessibility1?.grayscaleEnabled, false)
+        XCTAssertEqual(accessibility1?.singleAppModeEnabled, false)
+        XCTAssertEqual(accessibility1?.onOffSwitchLabelsEnabled, false)
+        XCTAssertEqual(accessibility1?.speakScreenEnabled, false)
+        XCTAssertEqual(accessibility1?.speakSelectionEnabled, false)
+        XCTAssertEqual(accessibility1?.rtlEnabled, false)
+
+        // We clear the attributes to simulate a view update
+        mockReader.clearChangedAttributes()
+
+        // When - Simulate a change
+        let newState = AccessibilityInfo(
+            textSize: "large", // Same
+            screenReaderEnabled: true, // Same
+            boldTextEnabled: true, // Changed
+            reduceTransparencyEnabled: false,
+            reduceMotionEnabled: false,
+            buttonShapesEnabled: false,
+            invertColorsEnabled: false,
+            increaseContrastEnabled: false,
+            assistiveSwitchEnabled: false,
+            assistiveTouchEnabled: false,
+            videoAutoplayEnabled: false,
+            closedCaptioningEnabled: false,
+            monoAudioEnabled: false,
+            shakeToUndoEnabled: false,
+            reducedAnimationsEnabled: false,
+            shouldDifferentiateWithoutColor: false,
+            grayscaleEnabled: false,
+            singleAppModeEnabled: false,
+            onOffSwitchLabelsEnabled: false,
+            speakScreenEnabled: false,
+            speakSelectionEnabled: false,
+            rtlEnabled: false
+        )
+
+        mockReader.simulateAccessibilityChange(newState: newState)
+
+        // Then - Should only return newly changed attributes
+        let accessibility2 = mockReader.rumAccessibility
+        XCTAssertNotNil(accessibility2)
+        XCTAssertEqual(accessibility2?.boldTextEnabled, true) // Only newly changed
+        XCTAssertNil(accessibility2?.textSize)
+        XCTAssertNil(accessibility2?.reduceTransparencyEnabled)
+        XCTAssertNil(accessibility2?.screenReaderEnabled)
+        XCTAssertNil(accessibility2?.reduceMotionEnabled)
+        XCTAssertNil(accessibility2?.buttonShapesEnabled)
+        XCTAssertNil(accessibility2?.invertColorsEnabled)
+        XCTAssertNil(accessibility2?.increaseContrastEnabled)
+        XCTAssertNil(accessibility2?.assistiveSwitchEnabled)
+        XCTAssertNil(accessibility2?.assistiveTouchEnabled)
+        XCTAssertNil(accessibility2?.videoAutoplayEnabled)
+        XCTAssertNil(accessibility2?.closedCaptioningEnabled)
+        XCTAssertNil(accessibility2?.monoAudioEnabled)
+        XCTAssertNil(accessibility2?.shakeToUndoEnabled)
+        XCTAssertNil(accessibility2?.reducedAnimationsEnabled)
+        XCTAssertNil(accessibility2?.shouldDifferentiateWithoutColor)
+        XCTAssertNil(accessibility2?.grayscaleEnabled)
+        XCTAssertNil(accessibility2?.singleAppModeEnabled)
+        XCTAssertNil(accessibility2?.onOffSwitchLabelsEnabled)
+        XCTAssertNil(accessibility2?.speakScreenEnabled)
+        XCTAssertNil(accessibility2?.speakSelectionEnabled)
+        XCTAssertNil(accessibility2?.rtlEnabled)
+
+        // Reset for new view
+        mockReader.resetForNewView()
+
+        // Then - Should return all attributes
+        let accessibility3 = mockReader.rumAccessibility
+        XCTAssertNotNil(accessibility3)
+        XCTAssertEqual(accessibility3?.boldTextEnabled, true)
+        XCTAssertEqual(accessibility3?.textSize, "large")
+        XCTAssertEqual(accessibility3?.screenReaderEnabled, true)
+        XCTAssertEqual(accessibility3?.reduceTransparencyEnabled, false)
+        XCTAssertEqual(accessibility3?.reduceMotionEnabled, false)
+        XCTAssertEqual(accessibility3?.buttonShapesEnabled, false)
+        XCTAssertEqual(accessibility3?.invertColorsEnabled, false)
+        XCTAssertEqual(accessibility3?.increaseContrastEnabled, false)
+        XCTAssertEqual(accessibility3?.assistiveSwitchEnabled, false)
+        XCTAssertEqual(accessibility3?.assistiveTouchEnabled, false)
+        XCTAssertEqual(accessibility3?.videoAutoplayEnabled, false)
+        XCTAssertEqual(accessibility3?.closedCaptioningEnabled, false)
+        XCTAssertEqual(accessibility3?.monoAudioEnabled, false)
+        XCTAssertEqual(accessibility3?.shakeToUndoEnabled, false)
+        XCTAssertEqual(accessibility3?.reducedAnimationsEnabled, false)
+        XCTAssertEqual(accessibility3?.shouldDifferentiateWithoutColor, false)
+        XCTAssertEqual(accessibility3?.grayscaleEnabled, false)
+        XCTAssertEqual(accessibility3?.singleAppModeEnabled, false)
+        XCTAssertEqual(accessibility3?.onOffSwitchLabelsEnabled, false)
+        XCTAssertEqual(accessibility3?.speakScreenEnabled, false)
+        XCTAssertEqual(accessibility3?.speakSelectionEnabled, false)
+        XCTAssertEqual(accessibility3?.rtlEnabled, false)
     }
 }

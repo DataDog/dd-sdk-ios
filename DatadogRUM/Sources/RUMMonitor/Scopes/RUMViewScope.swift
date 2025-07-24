@@ -277,6 +277,9 @@ extension RUMViewScope {
                 // This is the case of duplicated "start" command. We know that the Session scope has created another instance of
                 // the `RUMViewScope` for tracking this View, so we mark this one as inactive.
                 isActiveView = false
+            } else {
+                // Reset accessibility reader for a new view
+                accessibilityReader?.resetForNewView()
             }
             attributes.merge(command.attributes) { $1 }
             didReceiveStartCommand = true
@@ -643,12 +646,6 @@ extension RUMViewScope {
             performance = nil
         }
 
-        var localAttributes = attributes
-
-        if let accessibility = self.accessibilityReader?.state {
-            localAttributes["accessibility"] = accessibility
-        }
-
         let viewEvent = RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -677,7 +674,7 @@ extension RUMViewScope {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: localAttributes),
+            context: .init(contextInfo: attributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: context.normalizedDevice(),
             display: nil,
@@ -697,6 +694,7 @@ extension RUMViewScope {
             usr: .init(context: context),
             version: context.version,
             view: .init(
+                accessibility: self.accessibilityReader?.rumAccessibility,
                 action: .init(count: actionsCount.toInt64),
                 cpuTicksCount: cpuInfo?.greatestDiff,
                 cpuTicksPerSecond: timeSpent > 1.0 ? cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)) : nil,
@@ -778,6 +776,12 @@ extension RUMViewScope {
             // if a watchdog termination occurs in this session, in the next session
             // a watchdog termination event will be sent using saved view event.
             dependencies.watchdogTermination?.update(viewEvent: event)
+
+            // Clear changed attributes after sending the view update
+            if let accessibilityReader = accessibilityReader,
+               accessibilityReader.hasValidAccessibilityData {
+                accessibilityReader.clearChangedAttributes()
+            }
         } else { // if event was dropped by mapper
             version -= 1
         }
