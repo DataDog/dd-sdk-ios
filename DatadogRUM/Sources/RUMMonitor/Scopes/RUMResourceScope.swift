@@ -108,6 +108,7 @@ internal class RUMResourceScope: RUMScope {
             return false
         case let command as RUMAddResourceMetricsCommand where command.resourceKey == resourceKey:
             resourceMetrics = command.metrics
+            networkSettledMetric.updateResource(with: command.metrics, resourceID: resourceUUID, resourceURL: resourceURL)
         default:
             break
         }
@@ -268,7 +269,11 @@ internal class RUMResourceScope: RUMScope {
         if let event = dependencies.eventBuilder.build(from: resourceEvent) {
             writer.write(value: event)
             onResourceEvent(true)
-            networkSettledMetric.trackResourceEnd(at: command.time, resourceID: resourceUUID, resourceDuration: resourceDuration)
+            networkSettledMetric.trackResourceEnd(
+                at: resourceMetrics?.fetch.end ?? command.time,
+                resourceID: resourceUUID,
+                resourceDuration: resourceDuration
+            )
         } else {
             onResourceEvent(false)
             networkSettledMetric.trackResourceDropped(resourceID: resourceUUID)
@@ -352,7 +357,11 @@ internal class RUMResourceScope: RUMScope {
         if let event = dependencies.eventBuilder.build(from: errorEvent) {
             writer.write(value: event)
             onErrorEvent(true)
-            networkSettledMetric.trackResourceEnd(at: command.time, resourceID: resourceUUID, resourceDuration: nil)
+            networkSettledMetric.trackResourceEnd(
+                at: resourceMetrics?.fetch.end ?? command.time,
+                resourceID: resourceUUID,
+                resourceDuration: nil
+            )
         } else {
             onErrorEvent(false)
             networkSettledMetric.trackResourceDropped(resourceID: resourceUUID)
