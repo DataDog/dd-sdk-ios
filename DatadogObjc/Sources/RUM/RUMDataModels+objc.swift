@@ -64,6 +64,10 @@ public class DDRUMActionEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
+    @objc public var ddtags: String? {
+        root.swiftModel.ddtags
+    }
+
     @objc public var device: DDRUMActionEventRUMDevice? {
         root.swiftModel.device != nil ? DDRUMActionEventRUMDevice(root: root) : nil
     }
@@ -1161,6 +1165,10 @@ public class DDRUMErrorEvent: NSObject {
 
     @objc public var date: NSNumber {
         root.swiftModel.date as NSNumber
+    }
+
+    @objc public var ddtags: String? {
+        root.swiftModel.ddtags
     }
 
     @objc public var device: DDRUMErrorEventRUMDevice? {
@@ -2625,6 +2633,10 @@ public class DDRUMLongTaskEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
+    @objc public var ddtags: String? {
+        root.swiftModel.ddtags
+    }
+
     @objc public var device: DDRUMLongTaskEventRUMDevice? {
         root.swiftModel.device != nil ? DDRUMLongTaskEventRUMDevice(root: root) : nil
     }
@@ -3717,6 +3729,10 @@ public class DDRUMResourceEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
+    @objc public var ddtags: String? {
+        root.swiftModel.ddtags
+    }
+
     @objc public var device: DDRUMResourceEventRUMDevice? {
         root.swiftModel.device != nil ? DDRUMResourceEventRUMDevice(root: root) : nil
     }
@@ -3788,6 +3804,10 @@ public class DDRUMResourceEventDD: NSObject {
 
     @objc public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
+    }
+
+    @objc public var parentSpanId: String? {
+        root.swiftModel.dd.parentSpanId
     }
 
     @objc public var rulePsr: NSNumber? {
@@ -5064,6 +5084,10 @@ public class DDRUMViewEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
+    @objc public var ddtags: String? {
+        root.swiftModel.ddtags
+    }
+
     @objc public var device: DDRUMViewEventRUMDevice? {
         root.swiftModel.device != nil ? DDRUMViewEventRUMDevice(root: root) : nil
     }
@@ -6074,6 +6098,10 @@ public class DDRUMViewEventView: NSObject {
         self.root = root
     }
 
+    @objc public var accessibility: DDRUMViewEventViewAccessibility? {
+        root.swiftModel.view.accessibility != nil ? DDRUMViewEventViewAccessibility(root: root) : nil
+    }
+
     @objc public var action: DDRUMViewEventViewAction {
         DDRUMViewEventViewAction(root: root)
     }
@@ -6275,6 +6303,99 @@ public class DDRUMViewEventView: NSObject {
     @objc public var url: String {
         set { root.swiftModel.view.url = newValue }
         get { root.swiftModel.view.url }
+    }
+}
+
+@objc
+public class DDRUMViewEventViewAccessibility: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var assistiveSwitchEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.assistiveSwitchEnabled as NSNumber?
+    }
+
+    @objc public var assistiveTouchEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.assistiveTouchEnabled as NSNumber?
+    }
+
+    @objc public var boldTextEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.boldTextEnabled as NSNumber?
+    }
+
+    @objc public var buttonShapesEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.buttonShapesEnabled as NSNumber?
+    }
+
+    @objc public var closedCaptioningEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.closedCaptioningEnabled as NSNumber?
+    }
+
+    @objc public var grayscaleEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.grayscaleEnabled as NSNumber?
+    }
+
+    @objc public var increaseContrastEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.increaseContrastEnabled as NSNumber?
+    }
+
+    @objc public var invertColorsEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.invertColorsEnabled as NSNumber?
+    }
+
+    @objc public var monoAudioEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.monoAudioEnabled as NSNumber?
+    }
+
+    @objc public var onOffSwitchLabelsEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.onOffSwitchLabelsEnabled as NSNumber?
+    }
+
+    @objc public var reduceMotionEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.reduceMotionEnabled as NSNumber?
+    }
+
+    @objc public var reduceTransparencyEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.reduceTransparencyEnabled as NSNumber?
+    }
+
+    @objc public var reducedAnimationsEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.reducedAnimationsEnabled as NSNumber?
+    }
+
+    @objc public var screenReaderEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.screenReaderEnabled as NSNumber?
+    }
+
+    @objc public var shakeToUndoEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.shakeToUndoEnabled as NSNumber?
+    }
+
+    @objc public var shouldDifferentiateWithoutColor: NSNumber? {
+        root.swiftModel.view.accessibility!.shouldDifferentiateWithoutColor as NSNumber?
+    }
+
+    @objc public var singleAppModeEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.singleAppModeEnabled as NSNumber?
+    }
+
+    @objc public var speakScreenEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.speakScreenEnabled as NSNumber?
+    }
+
+    @objc public var speakSelectionEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.speakSelectionEnabled as NSNumber?
+    }
+
+    @objc public var textSize: String? {
+        root.swiftModel.view.accessibility!.textSize
+    }
+
+    @objc public var videoAutoplayEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.videoAutoplayEnabled as NSNumber?
     }
 }
 
@@ -6770,6 +6891,10 @@ public class DDRUMVitalEvent: NSObject {
 
     @objc public var date: NSNumber {
         root.swiftModel.date as NSNumber
+    }
+
+    @objc public var ddtags: String? {
+        root.swiftModel.ddtags
     }
 
     @objc public var device: DDRUMVitalEventRUMDevice? {
@@ -7568,6 +7693,10 @@ public class DDRUMVitalEventVital: NSObject {
         root.swiftModel.vital.duration as NSNumber?
     }
 
+    @objc public var failureReason: DDRUMVitalEventVitalFailureReason {
+        .init(swift: root.swiftModel.vital.failureReason)
+    }
+
     @objc public var id: String {
         root.swiftModel.vital.id
     }
@@ -7576,9 +7705,72 @@ public class DDRUMVitalEventVital: NSObject {
         root.swiftModel.vital.name
     }
 
+    @objc public var parentId: String? {
+        root.swiftModel.vital.parentId
+    }
+
+    @objc public var stepType: DDRUMVitalEventVitalStepType {
+        .init(swift: root.swiftModel.vital.stepType)
+    }
+
     @objc public var type: DDRUMVitalEventVitalVitalType {
         .init(swift: root.swiftModel.vital.type)
     }
+}
+
+@objc
+public enum DDRUMVitalEventVitalFailureReason: Int {
+    internal init(swift: RUMVitalEvent.Vital.FailureReason?) {
+        switch swift {
+        case nil: self = .none
+        case .error?: self = .error
+        case .abandoned?: self = .abandoned
+        case .other?: self = .other
+        }
+    }
+
+    internal var toSwift: RUMVitalEvent.Vital.FailureReason? {
+        switch self {
+        case .none: return nil
+        case .error: return .error
+        case .abandoned: return .abandoned
+        case .other: return .other
+        }
+    }
+
+    case none
+    case error
+    case abandoned
+    case other
+}
+
+@objc
+public enum DDRUMVitalEventVitalStepType: Int {
+    internal init(swift: RUMVitalEvent.Vital.StepType?) {
+        switch swift {
+        case nil: self = .none
+        case .start?: self = .start
+        case .update?: self = .update
+        case .retry?: self = .retry
+        case .end?: self = .end
+        }
+    }
+
+    internal var toSwift: RUMVitalEvent.Vital.StepType? {
+        switch self {
+        case .none: return nil
+        case .start: return .start
+        case .update: return .update
+        case .retry: return .retry
+        case .end: return .end
+        }
+    }
+
+    case none
+    case start
+    case update
+    case retry
+    case end
 }
 
 @objc
@@ -7586,16 +7778,19 @@ public enum DDRUMVitalEventVitalVitalType: Int {
     internal init(swift: RUMVitalEvent.Vital.VitalType) {
         switch swift {
         case .duration: self = .duration
+        case .step: self = .step
         }
     }
 
     internal var toSwift: RUMVitalEvent.Vital.VitalType {
         switch self {
         case .duration: return .duration
+        case .step: return .step
         }
     }
 
     case duration
+    case step
 }
 
 @objc
@@ -8933,4 +9128,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ca4ca9c6ce21f634f41cda2fdd95cacc4b5246b0
+// Generated from https://github.com/DataDog/rum-events-format/tree/4c3e63b404a37dc5dfe9450f7f7ad0b8a87f6450
