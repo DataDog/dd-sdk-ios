@@ -45,14 +45,17 @@ public struct RUMActionEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -90,6 +93,7 @@ public struct RUMActionEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case os = "os"
@@ -117,6 +121,7 @@ public struct RUMActionEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - os: Operating system properties
@@ -139,9 +144,10 @@ public struct RUMActionEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
-        device: RUMDevice? = nil,
+        ddtags: String? = nil,
+        device: Device? = nil,
         display: Display? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
         source: Source? = nil,
@@ -161,6 +167,7 @@ public struct RUMActionEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.os = os
@@ -875,8 +882,11 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
@@ -891,7 +901,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let freeze: Freeze?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -929,6 +939,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case error = "error"
@@ -959,6 +970,7 @@ public struct RUMErrorEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - error: Error properties
@@ -984,12 +996,13 @@ public struct RUMErrorEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
-        device: RUMDevice? = nil,
+        ddtags: String? = nil,
+        device: Device? = nil,
         display: Display? = nil,
         error: Error,
         featureFlags: FeatureFlags? = nil,
         freeze: Freeze? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
         source: Source? = nil,
@@ -1009,6 +1022,7 @@ public struct RUMErrorEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.error = error
@@ -1995,8 +2009,11 @@ public struct RUMLongTaskEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
@@ -2005,7 +2022,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let longTask: LongTask
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -2043,6 +2060,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case longTask = "long_task"
@@ -2071,6 +2089,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - longTask: Long Task properties
@@ -2094,10 +2113,11 @@ public struct RUMLongTaskEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
-        device: RUMDevice? = nil,
+        ddtags: String? = nil,
+        device: Device? = nil,
         display: Display? = nil,
         longTask: LongTask,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
         source: Source? = nil,
@@ -2117,6 +2137,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.longTask = longTask
@@ -2801,14 +2822,17 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// Resource properties
     public var resource: Resource
@@ -2849,6 +2873,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case os = "os"
@@ -2877,6 +2902,7 @@ public struct RUMResourceEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - os: Operating system properties
@@ -2900,9 +2926,10 @@ public struct RUMResourceEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
-        device: RUMDevice? = nil,
+        ddtags: String? = nil,
+        device: Device? = nil,
         display: Display? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         resource: Resource,
         service: String? = nil,
         session: Session,
@@ -2923,6 +2950,7 @@ public struct RUMResourceEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.os = os
@@ -2950,6 +2978,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// parent span identifier in decimal format
+        public let parentSpanId: String?
+
         /// trace sample rate in decimal format
         public let rulePsr: Double?
 
@@ -2970,6 +3001,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case configuration = "configuration"
             case discarded = "discarded"
             case formatVersion = "format_version"
+            case parentSpanId = "parent_span_id"
             case rulePsr = "rule_psr"
             case sdkName = "sdk_name"
             case session = "session"
@@ -2983,6 +3015,7 @@ public struct RUMResourceEvent: RUMDataModel {
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
         ///   - discarded: Whether the resource should be discarded or indexed
+        ///   - parentSpanId: parent span identifier in decimal format
         ///   - rulePsr: trace sample rate in decimal format
         ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
@@ -2992,6 +3025,7 @@ public struct RUMResourceEvent: RUMDataModel {
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
             discarded: Bool? = nil,
+            parentSpanId: String? = nil,
             rulePsr: Double? = nil,
             sdkName: String? = nil,
             session: Session? = nil,
@@ -3001,6 +3035,7 @@ public struct RUMResourceEvent: RUMDataModel {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
             self.discarded = discarded
+            self.parentSpanId = parentSpanId
             self.rulePsr = rulePsr
             self.sdkName = sdkName
             self.session = session
@@ -3833,8 +3868,11 @@ public struct RUMViewEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
@@ -3843,7 +3881,7 @@ public struct RUMViewEvent: RUMDataModel {
     public var featureFlags: FeatureFlags?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// Privacy properties
     public let privacy: Privacy?
@@ -3883,6 +3921,7 @@ public struct RUMViewEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case featureFlags = "feature_flags"
@@ -3911,6 +3950,7 @@ public struct RUMViewEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - featureFlags: Feature flags properties
@@ -3934,10 +3974,11 @@ public struct RUMViewEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
-        device: RUMDevice? = nil,
+        ddtags: String? = nil,
+        device: Device? = nil,
         display: Display? = nil,
         featureFlags: FeatureFlags? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         privacy: Privacy? = nil,
         service: String? = nil,
         session: Session,
@@ -3957,6 +3998,7 @@ public struct RUMViewEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.featureFlags = featureFlags
@@ -4582,6 +4624,9 @@ public struct RUMViewEvent: RUMDataModel {
 
     /// View properties
     public struct View: Codable {
+        /// Accessibility properties of the view
+        public let accessibility: Accessibility?
+
         /// Properties of the actions of the view
         public let action: Action
 
@@ -4733,6 +4778,7 @@ public struct RUMViewEvent: RUMDataModel {
         public var url: String
 
         public enum CodingKeys: String, CodingKey {
+            case accessibility = "accessibility"
             case action = "action"
             case cpuTicksCount = "cpu_ticks_count"
             case cpuTicksPerSecond = "cpu_ticks_per_second"
@@ -4788,6 +4834,7 @@ public struct RUMViewEvent: RUMDataModel {
         /// View properties
         ///
         /// - Parameters:
+        ///   - accessibility: Accessibility properties of the view
         ///   - action: Properties of the actions of the view
         ///   - cpuTicksCount: Total number of cpu ticks during the view’s lifetime
         ///   - cpuTicksPerSecond: Average number of cpu ticks per second during the view’s lifetime
@@ -4839,6 +4886,7 @@ public struct RUMViewEvent: RUMDataModel {
         ///   - timeSpent: Time spent on the view in ns
         ///   - url: URL of the view
         public init(
+            accessibility: Accessibility? = nil,
             action: Action,
             cpuTicksCount: Double? = nil,
             cpuTicksPerSecond: Double? = nil,
@@ -4890,6 +4938,7 @@ public struct RUMViewEvent: RUMDataModel {
             timeSpent: Int64,
             url: String
         ) {
+            self.accessibility = accessibility
             self.action = action
             self.cpuTicksCount = cpuTicksCount
             self.cpuTicksPerSecond = cpuTicksPerSecond
@@ -4940,6 +4989,166 @@ public struct RUMViewEvent: RUMDataModel {
             self.slowFramesRate = slowFramesRate
             self.timeSpent = timeSpent
             self.url = url
+        }
+
+        /// Accessibility properties of the view
+        public struct Accessibility: Codable {
+            /// Indicates whether an alternative input method like Switch Control or Switch Access is currently enabled.
+            public let assistiveSwitchEnabled: Bool?
+
+            /// Indicates whether the system-wide AssistiveTouch feature is currently enabled.
+            public let assistiveTouchEnabled: Bool?
+
+            /// Indicates whether the system-wide bold text accessibility setting is enabled.
+            public let boldTextEnabled: Bool?
+
+            /// Indicates whether the system-wide button shapes setting is enabled.
+            public let buttonShapesEnabled: Bool?
+
+            /// Indicates whether closed captioning is enabled for media playback.
+            public let closedCaptioningEnabled: Bool?
+
+            /// Indicates whether the device display is currently using grayscale mode.
+            public let grayscaleEnabled: Bool?
+
+            /// Indicates whether the system-wide increase contrast setting is enabled.
+            public let increaseContrastEnabled: Bool?
+
+            /// Indicates whether the system-wide color inversion setting is enabled.
+            public let invertColorsEnabled: Bool?
+
+            /// Indicates whether the system-wide mono audio setting is enabled.
+            public let monoAudioEnabled: Bool?
+
+            /// Indicates whether on/off switch labels are enabled in the system settings.
+            public let onOffSwitchLabelsEnabled: Bool?
+
+            /// Indicates whether the system-wide reduce motion setting is enabled.
+            public let reduceMotionEnabled: Bool?
+
+            /// Indicates whether the system-wide reduce transparency setting is enabled.
+            public let reduceTransparencyEnabled: Bool?
+
+            /// Indicates whether the user prefers reduced animations or cross-fade transitions.
+            public let reducedAnimationsEnabled: Bool?
+
+            /// Indicates whether a screen reader is currently active.
+            public let screenReaderEnabled: Bool?
+
+            /// Indicates whether the Shake to Undo feature is enabled.
+            public let shakeToUndoEnabled: Bool?
+
+            /// Indicates whether the system should differentiate interface elements without relying solely on color.
+            public let shouldDifferentiateWithoutColor: Bool?
+
+            /// Indicates whether the device is currently locked to a single app through Guided Access or Screen Pinning.
+            public let singleAppModeEnabled: Bool?
+
+            /// Indicates whether the Speak Screen feature is enabled.
+            public let speakScreenEnabled: Bool?
+
+            /// Indicates whether the text-to-speech selection feature is enabled.
+            public let speakSelectionEnabled: Bool?
+
+            /// User’s preferred text scale relative to the default system size.
+            public let textSize: String?
+
+            /// Indicates whether the video autoplay setting is enabled in the system or application.
+            public let videoAutoplayEnabled: Bool?
+
+            public enum CodingKeys: String, CodingKey {
+                case assistiveSwitchEnabled = "assistive_switch_enabled"
+                case assistiveTouchEnabled = "assistive_touch_enabled"
+                case boldTextEnabled = "bold_text_enabled"
+                case buttonShapesEnabled = "button_shapes_enabled"
+                case closedCaptioningEnabled = "closed_captioning_enabled"
+                case grayscaleEnabled = "grayscale_enabled"
+                case increaseContrastEnabled = "increase_contrast_enabled"
+                case invertColorsEnabled = "invert_colors_enabled"
+                case monoAudioEnabled = "mono_audio_enabled"
+                case onOffSwitchLabelsEnabled = "on_off_switch_labels_enabled"
+                case reduceMotionEnabled = "reduce_motion_enabled"
+                case reduceTransparencyEnabled = "reduce_transparency_enabled"
+                case reducedAnimationsEnabled = "reduced_animations_enabled"
+                case screenReaderEnabled = "screen_reader_enabled"
+                case shakeToUndoEnabled = "shake_to_undo_enabled"
+                case shouldDifferentiateWithoutColor = "should_differentiate_without_color"
+                case singleAppModeEnabled = "single_app_mode_enabled"
+                case speakScreenEnabled = "speak_screen_enabled"
+                case speakSelectionEnabled = "speak_selection_enabled"
+                case textSize = "text_size"
+                case videoAutoplayEnabled = "video_autoplay_enabled"
+            }
+
+            /// Accessibility properties of the view
+            ///
+            /// - Parameters:
+            ///   - assistiveSwitchEnabled: Indicates whether an alternative input method like Switch Control or Switch Access is currently enabled.
+            ///   - assistiveTouchEnabled: Indicates whether the system-wide AssistiveTouch feature is currently enabled.
+            ///   - boldTextEnabled: Indicates whether the system-wide bold text accessibility setting is enabled.
+            ///   - buttonShapesEnabled: Indicates whether the system-wide button shapes setting is enabled.
+            ///   - closedCaptioningEnabled: Indicates whether closed captioning is enabled for media playback.
+            ///   - grayscaleEnabled: Indicates whether the device display is currently using grayscale mode.
+            ///   - increaseContrastEnabled: Indicates whether the system-wide increase contrast setting is enabled.
+            ///   - invertColorsEnabled: Indicates whether the system-wide color inversion setting is enabled.
+            ///   - monoAudioEnabled: Indicates whether the system-wide mono audio setting is enabled.
+            ///   - onOffSwitchLabelsEnabled: Indicates whether on/off switch labels are enabled in the system settings.
+            ///   - reduceMotionEnabled: Indicates whether the system-wide reduce motion setting is enabled.
+            ///   - reduceTransparencyEnabled: Indicates whether the system-wide reduce transparency setting is enabled.
+            ///   - reducedAnimationsEnabled: Indicates whether the user prefers reduced animations or cross-fade transitions.
+            ///   - screenReaderEnabled: Indicates whether a screen reader is currently active.
+            ///   - shakeToUndoEnabled: Indicates whether the Shake to Undo feature is enabled.
+            ///   - shouldDifferentiateWithoutColor: Indicates whether the system should differentiate interface elements without relying solely on color.
+            ///   - singleAppModeEnabled: Indicates whether the device is currently locked to a single app through Guided Access or Screen Pinning.
+            ///   - speakScreenEnabled: Indicates whether the Speak Screen feature is enabled.
+            ///   - speakSelectionEnabled: Indicates whether the text-to-speech selection feature is enabled.
+            ///   - textSize: User’s preferred text scale relative to the default system size.
+            ///   - videoAutoplayEnabled: Indicates whether the video autoplay setting is enabled in the system or application.
+            public init(
+                assistiveSwitchEnabled: Bool? = nil,
+                assistiveTouchEnabled: Bool? = nil,
+                boldTextEnabled: Bool? = nil,
+                buttonShapesEnabled: Bool? = nil,
+                closedCaptioningEnabled: Bool? = nil,
+                grayscaleEnabled: Bool? = nil,
+                increaseContrastEnabled: Bool? = nil,
+                invertColorsEnabled: Bool? = nil,
+                monoAudioEnabled: Bool? = nil,
+                onOffSwitchLabelsEnabled: Bool? = nil,
+                reduceMotionEnabled: Bool? = nil,
+                reduceTransparencyEnabled: Bool? = nil,
+                reducedAnimationsEnabled: Bool? = nil,
+                screenReaderEnabled: Bool? = nil,
+                shakeToUndoEnabled: Bool? = nil,
+                shouldDifferentiateWithoutColor: Bool? = nil,
+                singleAppModeEnabled: Bool? = nil,
+                speakScreenEnabled: Bool? = nil,
+                speakSelectionEnabled: Bool? = nil,
+                textSize: String? = nil,
+                videoAutoplayEnabled: Bool? = nil
+            ) {
+                self.assistiveSwitchEnabled = assistiveSwitchEnabled
+                self.assistiveTouchEnabled = assistiveTouchEnabled
+                self.boldTextEnabled = boldTextEnabled
+                self.buttonShapesEnabled = buttonShapesEnabled
+                self.closedCaptioningEnabled = closedCaptioningEnabled
+                self.grayscaleEnabled = grayscaleEnabled
+                self.increaseContrastEnabled = increaseContrastEnabled
+                self.invertColorsEnabled = invertColorsEnabled
+                self.monoAudioEnabled = monoAudioEnabled
+                self.onOffSwitchLabelsEnabled = onOffSwitchLabelsEnabled
+                self.reduceMotionEnabled = reduceMotionEnabled
+                self.reduceTransparencyEnabled = reduceTransparencyEnabled
+                self.reducedAnimationsEnabled = reducedAnimationsEnabled
+                self.screenReaderEnabled = screenReaderEnabled
+                self.shakeToUndoEnabled = shakeToUndoEnabled
+                self.shouldDifferentiateWithoutColor = shouldDifferentiateWithoutColor
+                self.singleAppModeEnabled = singleAppModeEnabled
+                self.speakScreenEnabled = speakScreenEnabled
+                self.speakSelectionEnabled = speakSelectionEnabled
+                self.textSize = textSize
+                self.videoAutoplayEnabled = videoAutoplayEnabled
+            }
         }
 
         /// Properties of the actions of the view
@@ -5656,14 +5865,17 @@ public struct RUMVitalEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -5703,6 +5915,7 @@ public struct RUMVitalEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case os = "os"
@@ -5730,6 +5943,7 @@ public struct RUMVitalEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - os: Operating system properties
@@ -5752,9 +5966,10 @@ public struct RUMVitalEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
-        device: RUMDevice? = nil,
+        ddtags: String? = nil,
+        device: Device? = nil,
         display: Display? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
         source: Source? = nil,
@@ -5774,6 +5989,7 @@ public struct RUMVitalEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.os = os
@@ -6157,11 +6373,20 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Duration of the vital in nanoseconds
         public let duration: Double?
 
+        /// Reason for the failure of the step, if applicable
+        public let failureReason: FailureReason?
+
         /// UUID of the vital
         public let id: String
 
         /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
         public let name: String?
+
+        /// UUID for linking the step vital to the parent event, if applicable
+        public let parentId: String?
+
+        /// Type of the step that triggered the vital, if applicable
+        public let stepType: StepType?
 
         /// Type of the vital
         public let type: VitalType
@@ -6170,8 +6395,11 @@ public struct RUMVitalEvent: RUMDataModel {
             case custom = "custom"
             case vitalDescription = "description"
             case duration = "duration"
+            case failureReason = "failure_reason"
             case id = "id"
             case name = "name"
+            case parentId = "parent_id"
+            case stepType = "step_type"
             case type = "type"
         }
 
@@ -6181,28 +6409,53 @@ public struct RUMVitalEvent: RUMDataModel {
         ///   - custom: User custom vital.
         ///   - vitalDescription: Description of the vital. It can be used as a secondary identifier (URL, React component name...)
         ///   - duration: Duration of the vital in nanoseconds
+        ///   - failureReason: Reason for the failure of the step, if applicable
         ///   - id: UUID of the vital
         ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+        ///   - parentId: UUID for linking the step vital to the parent event, if applicable
+        ///   - stepType: Type of the step that triggered the vital, if applicable
         ///   - type: Type of the vital
         public init(
             custom: [String: Double]? = nil,
             vitalDescription: String? = nil,
             duration: Double? = nil,
+            failureReason: FailureReason? = nil,
             id: String,
             name: String? = nil,
+            parentId: String? = nil,
+            stepType: StepType? = nil,
             type: VitalType
         ) {
             self.custom = custom
             self.vitalDescription = vitalDescription
             self.duration = duration
+            self.failureReason = failureReason
             self.id = id
             self.name = name
+            self.parentId = parentId
+            self.stepType = stepType
             self.type = type
+        }
+
+        /// Reason for the failure of the step, if applicable
+        public enum FailureReason: String, Codable {
+            case error = "error"
+            case abandoned = "abandoned"
+            case other = "other"
+        }
+
+        /// Type of the step that triggered the vital, if applicable
+        public enum StepType: String, Codable {
+            case start = "start"
+            case update = "update"
+            case retry = "retry"
+            case end = "end"
         }
 
         /// Type of the vital
         public enum VitalType: String, Codable {
             case duration = "duration"
+            case step = "step"
         }
     }
 }
@@ -9005,7 +9258,7 @@ extension RUMEventAttributes {
 }
 
 /// Device properties
-public struct RUMDevice: Codable {
+public struct Device: Codable {
     /// The CPU architecture of the device that is reporting the error
     public let architecture: String?
 
@@ -9037,7 +9290,7 @@ public struct RUMDevice: Codable {
     public let timeZone: String?
 
     /// Device type info
-    public let type: RUMDeviceType?
+    public let type: DeviceType?
 
     public enum CodingKeys: String, CodingKey {
         case architecture = "architecture"
@@ -9078,7 +9331,7 @@ public struct RUMDevice: Codable {
         name: String? = nil,
         powerSavingMode: Bool? = nil,
         timeZone: String? = nil,
-        type: RUMDeviceType? = nil
+        type: DeviceType? = nil
     ) {
         self.architecture = architecture
         self.batteryLevel = batteryLevel
@@ -9094,7 +9347,7 @@ public struct RUMDevice: Codable {
     }
 
     /// Device type info
-    public enum RUMDeviceType: String, Codable {
+    public enum DeviceType: String, Codable {
         case mobile = "mobile"
         case desktop = "desktop"
         case tablet = "tablet"
@@ -9106,7 +9359,7 @@ public struct RUMDevice: Codable {
 }
 
 /// Operating system properties
-public struct RUMOperatingSystem: Codable {
+public struct OperatingSystem: Codable {
     /// Operating system build number, e.g. 15D21
     public let build: String?
 
@@ -9395,4 +9648,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ca4ca9c6ce21f634f41cda2fdd95cacc4b5246b0
+// Generated from https://github.com/DataDog/rum-events-format/tree/4c3e63b404a37dc5dfe9450f7f7ad0b8a87f6450

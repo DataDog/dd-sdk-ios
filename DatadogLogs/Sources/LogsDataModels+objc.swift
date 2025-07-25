@@ -243,9 +243,9 @@ public class objc_LogEventError: NSObject {
 @objcMembers
 @_spi(objc)
 public class objc_LogEventAccountInfo: NSObject {
-    internal let root: DDLogEvent
+    internal let root: objc_LogEvent
 
-    internal init(root: DDLogEvent) {
+    internal init(root: objc_LogEvent) {
         self.root = root
     }
 

@@ -29,8 +29,8 @@ public final class objc_DatadogSite: NSObject {
 
     public static func ap1() -> objc_DatadogSite { .init(sdkSite: .ap1) }
 
-    public static func ap2() -> DDSite { .init(sdkSite: .ap2) }
-    
+    public static func ap2() -> objc_DatadogSite { .init(sdkSite: .ap2) }
+
     public static func us1_fed() -> objc_DatadogSite { .init(sdkSite: .us1_fed) }
 }
 

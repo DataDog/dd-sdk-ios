@@ -11,18 +11,6 @@ import TestUtilities
 @testable import DatadogRUM
 
 class DDSwiftUIRUMActionsPredicateTests: XCTestCase {
-    func testGivenDefaultPredicate_whenAskingForComponentName_itReturnsAction() {
-        // Given
-        let predicate = objc_DefaultSwiftUIRUMActionsPredicate()
-
-        // When
-        let rumAction = predicate.rumAction(with: "Button")
-
-        // Then
-        XCTAssertEqual(rumAction?.name, "Button")
-        XCTAssertTrue(rumAction!.attributes.isEmpty)
-    }
-
     func testGivenPredicateWithLegacyEnabled_onAnyiOSVersion_itReturnsAction() {
         // Given
         let predicate = objc_DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)

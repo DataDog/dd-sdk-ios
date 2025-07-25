@@ -155,8 +155,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -193,8 +193,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -235,8 +235,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -273,8 +273,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: nil)
 
         // When
@@ -310,8 +310,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -352,8 +352,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: nil)
 
         // When
@@ -390,8 +390,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -427,8 +427,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When

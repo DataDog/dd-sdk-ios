@@ -2113,4 +2113,4 @@ public enum SRRecord: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/ee481e7c74290762219cbf507d61c75785349d88
+// Generated from https://github.com/DataDog/rum-events-format/tree/4c3e63b404a37dc5dfe9450f7f7ad0b8a87f6450
