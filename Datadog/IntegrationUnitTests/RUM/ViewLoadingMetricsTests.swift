@@ -63,6 +63,48 @@ class ViewLoadingMetricsTests: XCTestCase {
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the last completed initial resource.")
     }
 
+    @available(iOS 13, *)
+    func testWhenResourcesHaveMetrics_thenTheyAreIncludedInTNSMetricCalculation() throws {
+        let rumTime = DateProviderMock()
+        rumConfig.dateProvider = rumTime
+
+        // Given (default TNS resource predicate)
+        RUM.enable(with: rumConfig, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+        let viewStartTime = rumTime.now
+
+        // When (start view and initial resources)
+        monitor.startView(key: "view", name: "ViewName")
+        monitor.startResource(resourceKey: "resource1", url: .mockRandom())
+        monitor.startResource(resourceKey: "resource2", url: .mockRandom())
+        rumTime.now.addTimeInterval(TimeBasedTNSResourcePredicate.defaultThreshold * 0.99) // Wait no more than threshold, so next resource is still counted
+
+        // When (end resources during the same view)
+        rumTime.now.addTimeInterval(1)
+        let resource1RealDuration: TimeInterval = 5
+        let resource1TaskInterval: DateInterval = .init(start: viewStartTime, duration: resource1RealDuration)
+        monitor.addResourceMetrics(
+            resourceKey: "resource1",
+            metrics: .mockWith(taskInterval: resource1TaskInterval),
+            attributes: [:]
+        )
+        monitor.stopResource(resourceKey: "resource1", response: .mockAny())
+        rumTime.now.addTimeInterval(1)
+        monitor.stopResource(resourceKey: "resource2", response: .mockAny())
+
+        // Then
+        let lastResourceTime = max(resource1TaskInterval.end, rumTime.now)
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+
+        let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
+        let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
+        let expectedTNS = lastResourceTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+        XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the last completed initial resource (resource1 with correct metrics).")
+    }
+
     func testWhenAnotherResourceStartsAfterThreshold_thenItIsNotIncludedInTNSMetric() throws {
         let rumTime = DateProviderMock()
         rumConfig.dateProvider = rumTime

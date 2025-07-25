@@ -1347,6 +1347,10 @@ public class TNSMetricMock: TNSMetricTracking {
         resourceStartDates[resourceID] = startDate
     }
 
+    public func updateResource(with metrics: ResourceMetrics, resourceID: RUMUUID, resourceURL: String) {
+        resourceStartDates[resourceID] = metrics.fetch.start
+    }
+
     public func trackResourceEnd(at endDate: Date, resourceID: RUMUUID, resourceDuration: TimeInterval?) {
         resourceEndDates[resourceID] = (endDate, resourceDuration)
     }

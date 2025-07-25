@@ -105,6 +105,26 @@ class TNSMetricTests: XCTestCase {
         XCTAssertEqual(ttns, resourceDuration, accuracy: 0.01, "Metric value should be calculated from resource duration.")
     }
 
+    func testWhenResourceHasMetrics_thenMetricValueIsCalculatedFromResourceMetrics() throws {
+        // Given
+        let resourceURL: String = .mockAny()
+        let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: mockAllInitialResourcesPredicate)
+        metric.trackResourceStart(at: viewStartDate, resourceID: .resource1, resourceURL: resourceURL)
+
+        // When
+        let resourceStartDate = viewStartDate + 1
+        let resourceEndDate = resourceStartDate.addingTimeInterval(.mockRandom(min: 0, max: 100))
+        let metrics: ResourceMetrics = .mockWith(fetch: .init(start: resourceStartDate, end: resourceEndDate))
+        metric.updateResource(with: metrics, resourceID: .resource1, resourceURL: resourceURL)
+
+        let resourceDuration = metrics.fetch.end.timeIntervalSince(viewStartDate)
+        metric.trackResourceEnd(at: metrics.fetch.end, resourceID: .resource1, resourceDuration: nil)
+
+        // Then
+        let ttns = try metric.value(with: .mockAppInForeground(since: viewStartDate)).get()
+        XCTAssertEqual(ttns, resourceDuration, accuracy: 0.01, "Metric value should be calculated from metrics fetch duration.")
+    }
+
     func testMetricValueIsOnlyAvailableAfterAllInitialResourcesComplete() {
         // Given
         let initialResourceURL: String = .mockRandom()
@@ -311,6 +331,29 @@ class TNSMetricTests: XCTestCase {
         XCTAssertEqual(ttns, 5, accuracy: 0.01, "Metric value should be available if app remains active during view loading.")
     }
 
+    func testWhenAppIsInactiveDuringViewLoading_thenMetricValueIsAvailable() throws {
+        // Given
+        let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: mockAllInitialResourcesPredicate)
+        let resourceStart = viewStartDate
+        let resourceEnd = resourceStart + 5
+        metric.trackResourceStart(at: resourceStart, resourceID: .resource1, resourceURL: .mockAny())
+        metric.trackResourceEnd(at: resourceEnd, resourceID: .resource1, resourceDuration: nil)
+
+        // When
+        let appStateHistory = AppStateHistory(
+            initialSnapshot: .init(state: .active, date: .distantPast),
+            recentDate: .distantFuture,
+            snapshots: [
+                .init(state: .inactive, date: resourceStart + 0.1),
+                .init(state: .active, date: .distantFuture)
+            ]
+        )
+
+        // Then
+        let ttns = try metric.value(with: appStateHistory).get()
+        XCTAssertEqual(ttns, 5, accuracy: 0.01, "Metric value should be available if app is inactive during view loading.")
+    }
+
     func testWhenAppDoesNotStayActiveDuringViewLoading_thenMetricValueIsNotAvailable() {
         // Given
         let metric = createMetric(viewStartDate: viewStartDate, resourcePredicate: mockAllInitialResourcesPredicate)
@@ -325,7 +368,7 @@ class TNSMetricTests: XCTestCase {
             initialSnapshot: .init(state: .active, date: .distantPast),
             recentDate: .distantFuture,
             snapshots: [
-                .init(state: [.inactive, .background].randomElement()!, date: resourceStart + resourceDuration * 0.25),
+                .init(state: .background, date: resourceStart + resourceDuration * 0.25),
                 .init(state: .active, date: resourceStart + resourceDuration * 0.5),
             ]
         )
