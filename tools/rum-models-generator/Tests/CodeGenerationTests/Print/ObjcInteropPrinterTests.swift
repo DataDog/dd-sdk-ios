@@ -1477,12 +1477,12 @@ final class ObjcInteropPrinterTests: XCTestCase {
             }
 
             public var mutableInt64s: [String: NSNumber] {
-                set { root.swiftModel.mutableInt64s = newValue.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value }
+                set { root.swiftModel.mutableInt64s = newValue.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value } }
                 get { root.swiftModel.mutableInt64s as [String: NSNumber] }
             }
 
             public var optionalMutableInt64s: [String: NSNumber]? {
-                set { root.swiftModel.optionalMutableInt64s = newValue?.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value }
+                set { root.swiftModel.optionalMutableInt64s = newValue?.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value } }
                 get { root.swiftModel.optionalMutableInt64s as [String: NSNumber]? }
             }
         }

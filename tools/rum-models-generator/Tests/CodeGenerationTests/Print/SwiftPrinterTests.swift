@@ -356,22 +356,18 @@ final class SwiftPrinterTests: XCTestCase {
                 // Encode dynamic properties:
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
                 try context.forEach {
-                    let key = DynamicCodingKey($0)
-                    try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+                    try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
                 }
             }
 
             public init(from decoder: Decoder) throws {
-                // Decode other properties into [String: Codable] dictionary:
+                // Decode other properties into [String: AnyCodable] dictionary:
                 let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-                let dynamicKeys = dynamicContainer.allKeys
-                var dictionary: [String: Codable] = [:]
+                self.context = [:]
 
-                try dynamicKeys.forEach { codingKey in
-                    dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+                try dynamicContainer.allKeys.forEach {
+                    self.context[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
                 }
-
-                self.context = dictionary
             }
         }
 
@@ -474,8 +470,7 @@ final class SwiftPrinterTests: XCTestCase {
                 // Encode dynamic properties:
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
                 try context.forEach {
-                    let key = DynamicCodingKey($0)
-                    try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+                    try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
                 }
             }
 
@@ -485,17 +480,14 @@ final class SwiftPrinterTests: XCTestCase {
                 self.property1 = try staticContainer.decode(Int.self, forKey: .property1)
                 self.property2 = try staticContainer.decodeIfPresent(Bool.self, forKey: .property2)
 
-                // Decode other properties into [String: Codable] dictionary:
+                // Decode other properties into [String: AnyCodable] dictionary:
                 let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+                self.context = [:]
+
                 let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-                let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-                var dictionary: [String: Codable] = [:]
-
-                try dynamicKeys.forEach { codingKey in
-                    dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+                try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+                    self.context[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
                 }
-
-                self.context = dictionary
             }
         }
 
@@ -722,22 +714,18 @@ final class SwiftPrinterTests: XCTestCase {
                 // Encode dynamic properties:
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
                 try context.forEach {
-                    let key = DynamicCodingKey($0)
-                    try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+                    try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
                 }
             }
 
             public init(from decoder: Decoder) throws {
-                // Decode other properties into [String: Codable] dictionary:
+                // Decode other properties into [String: AnyCodable] dictionary:
                 let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-                let dynamicKeys = dynamicContainer.allKeys
-                var dictionary: [String: Codable] = [:]
+                self.context = [:]
 
-                try dynamicKeys.forEach { codingKey in
-                    dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+                try dynamicContainer.allKeys.forEach {
+                    self.context[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
                 }
-
-                self.context = dictionary
             }
         }
 

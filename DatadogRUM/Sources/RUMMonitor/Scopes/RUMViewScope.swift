@@ -671,9 +671,9 @@ extension RUMViewScope {
                 cumulativeLayoutShift: nil,
                 cumulativeLayoutShiftTargetSelector: nil,
                 cumulativeLayoutShiftTime: nil,
-                customTimings: customTimings.reduce(into: [:]) { acc, element in
+                customTimings: .init(customTimingsInfo: customTimings.reduce(into: [:]) { acc, element in
                     acc[sanitizeCustomTimingName(customTiming: element.key)] = element.value
-                },
+                }),
                 domComplete: nil,
                 domContentLoaded: nil,
                 domInteractive: nil,

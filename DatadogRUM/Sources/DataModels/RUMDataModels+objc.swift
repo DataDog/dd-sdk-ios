@@ -6492,8 +6492,8 @@ public class objc_RUMViewEventView: NSObject {
         root.swiftModel.view.cumulativeLayoutShiftTime as NSNumber?
     }
 
-    public var customTimings: [String: NSNumber]? {
-        root.swiftModel.view.customTimings as [String: NSNumber]?
+    public var customTimings: objc_RUMViewEventViewCustomTimings? {
+        root.swiftModel.view.customTimings != nil ? objc_RUMViewEventViewCustomTimings(root: root) : nil
     }
 
     public var domComplete: NSNumber? {
@@ -6794,6 +6794,22 @@ public class objc_RUMViewEventViewCrash: NSObject {
 
     public var count: NSNumber {
         root.swiftModel.view.crash!.count as NSNumber
+    }
+}
+
+@objc(DDRUMViewEventViewCustomTimings)
+@objcMembers
+@_spi(objc)
+public class objc_RUMViewEventViewCustomTimings: NSObject {
+    internal let root: objc_RUMViewEvent
+
+    internal init(root: objc_RUMViewEvent) {
+        self.root = root
+    }
+
+    public var customTimingsInfo: [String: NSNumber] {
+        set { root.swiftModel.view.customTimings!.customTimingsInfo = newValue.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value } }
+        get { root.swiftModel.view.customTimings!.customTimingsInfo as [String: NSNumber] }
     }
 }
 
@@ -8165,8 +8181,8 @@ public class objc_RUMVitalEventVital: NSObject {
         root.swiftModel.vital.name
     }
 
-    public var parentId: String? {
-        root.swiftModel.vital.parentId
+    public var operationKey: String? {
+        root.swiftModel.vital.operationKey
     }
 
     public var stepType: objc_RUMVitalEventVitalStepType {
@@ -8241,19 +8257,19 @@ public enum objc_RUMVitalEventVitalVitalType: Int {
     internal init(swift: RUMVitalEvent.Vital.VitalType) {
         switch swift {
         case .duration: self = .duration
-        case .step: self = .step
+        case .operationStep: self = .operationStep
         }
     }
 
     internal var toSwift: RUMVitalEvent.Vital.VitalType {
         switch self {
         case .duration: return .duration
-        case .step: return .step
+        case .operationStep: return .operationStep
         }
     }
 
     case duration
-    case step
+    case operationStep
 }
 
 @objc(DDTelemetryErrorEvent)
@@ -9679,4 +9695,4 @@ public class objc_TelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/fd61fb5b16ccd0cbf24e59050ebe4d42c4bd593e
+// Generated from https://github.com/DataDog/rum-events-format/tree/364afe383024cfbdc0a57253c1961cf938b19cf0

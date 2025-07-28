@@ -1955,22 +1955,18 @@ extension RUMErrorEvent.FeatureFlags {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try featureFlagsInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
     public init(from decoder: Decoder) throws {
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let dynamicKeys = dynamicContainer.allKeys
-        var dictionary: [String: Codable] = [:]
+        self.featureFlagsInfo = [:]
 
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.forEach {
+            self.featureFlagsInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.featureFlagsInfo = dictionary
     }
 }
 
@@ -4649,7 +4645,7 @@ public struct RUMViewEvent: RUMDataModel {
         public let cumulativeLayoutShiftTime: Int64?
 
         /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
-        public let customTimings: [String: Int64]?
+        public var customTimings: CustomTimings?
 
         /// Duration in ns to the complete parsing and loading of the document and its sub resources
         public let domComplete: Int64?
@@ -4894,7 +4890,7 @@ public struct RUMViewEvent: RUMDataModel {
             cumulativeLayoutShift: Double? = nil,
             cumulativeLayoutShiftTargetSelector: String? = nil,
             cumulativeLayoutShiftTime: Int64? = nil,
-            customTimings: [String: Int64]? = nil,
+            customTimings: CustomTimings? = nil,
             domComplete: Int64? = nil,
             domContentLoaded: Int64? = nil,
             domInteractive: Int64? = nil,
@@ -5195,6 +5191,21 @@ public struct RUMViewEvent: RUMDataModel {
                 count: Int64
             ) {
                 self.count = count
+            }
+        }
+
+        /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
+        public struct CustomTimings: Codable {
+            public var customTimingsInfo: [String: Int64]
+
+            /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
+            ///
+            /// - Parameters:
+            ///   - customTimingsInfo:
+            public init(
+                customTimingsInfo: [String: Int64]
+            ) {
+                self.customTimingsInfo = customTimingsInfo
             }
         }
 
@@ -5821,22 +5832,38 @@ extension RUMViewEvent.FeatureFlags {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try featureFlagsInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
     public init(from decoder: Decoder) throws {
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let dynamicKeys = dynamicContainer.allKeys
-        var dictionary: [String: Codable] = [:]
+        self.featureFlagsInfo = [:]
 
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.forEach {
+            self.featureFlagsInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
+    }
+}
 
-        self.featureFlagsInfo = dictionary
+extension RUMViewEvent.View.CustomTimings {
+    public func encode(to encoder: Encoder) throws {
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try customTimingsInfo.forEach {
+            try dynamicContainer.encode($1, forKey: DynamicCodingKey($0))
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode other properties into [String: Int64] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.customTimingsInfo = [:]
+
+        try dynamicContainer.allKeys.forEach {
+            self.customTimingsInfo[$0.stringValue] = try dynamicContainer.decode(Int64.self, forKey: $0)
+        }
     }
 }
 
@@ -6386,8 +6413,8 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
         public let name: String?
 
-        /// UUID for linking the step vital to the parent event, if applicable
-        public let parentId: String?
+        /// UUID for distinguishing the active operations in parallel, if applicable
+        public let operationKey: String?
 
         /// Type of the step that triggered the vital, if applicable
         public let stepType: StepType?
@@ -6401,7 +6428,7 @@ public struct RUMVitalEvent: RUMDataModel {
             case failureReason = "failure_reason"
             case id = "id"
             case name = "name"
-            case parentId = "parent_id"
+            case operationKey = "operation_key"
             case stepType = "step_type"
             case type = "type"
         }
@@ -6414,7 +6441,7 @@ public struct RUMVitalEvent: RUMDataModel {
         ///   - failureReason: Reason for the failure of the step, if applicable
         ///   - id: UUID of the vital
         ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
-        ///   - parentId: UUID for linking the step vital to the parent event, if applicable
+        ///   - operationKey: UUID for distinguishing the active operations in parallel, if applicable
         ///   - stepType: Type of the step that triggered the vital, if applicable
         ///   - type: Type of the vital
         public init(
@@ -6423,7 +6450,7 @@ public struct RUMVitalEvent: RUMDataModel {
             failureReason: FailureReason? = nil,
             id: String,
             name: String? = nil,
-            parentId: String? = nil,
+            operationKey: String? = nil,
             stepType: StepType? = nil,
             type: VitalType
         ) {
@@ -6432,7 +6459,7 @@ public struct RUMVitalEvent: RUMDataModel {
             self.failureReason = failureReason
             self.id = id
             self.name = name
-            self.parentId = parentId
+            self.operationKey = operationKey
             self.stepType = stepType
             self.type = type
         }
@@ -6455,7 +6482,7 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Type of the vital
         public enum VitalType: String, Codable {
             case duration = "duration"
-            case step = "step"
+            case operationStep = "operation_step"
         }
     }
 }
@@ -6760,8 +6787,7 @@ extension TelemetryErrorEvent.Telemetry {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try telemetryInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
@@ -6773,17 +6799,14 @@ extension TelemetryErrorEvent.Telemetry {
         self.message = try staticContainer.decode(String.self, forKey: .message)
         self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
 
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.telemetryInfo = [:]
+
         let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.telemetryInfo = dictionary
     }
 }
 
@@ -7052,8 +7075,7 @@ extension TelemetryDebugEvent.Telemetry {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try telemetryInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
@@ -7064,17 +7086,14 @@ extension TelemetryDebugEvent.Telemetry {
         self.message = try staticContainer.decode(String.self, forKey: .message)
         self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
 
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.telemetryInfo = [:]
+
         let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.telemetryInfo = dictionary
     }
 }
 
@@ -8094,8 +8113,7 @@ extension TelemetryConfigurationEvent.Telemetry {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try telemetryInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
@@ -8106,17 +8124,14 @@ extension TelemetryConfigurationEvent.Telemetry {
         self.device = try staticContainer.decodeIfPresent(RUMTelemetryDevice.self, forKey: .device)
         self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
 
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.telemetryInfo = [:]
+
         let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.telemetryInfo = dictionary
     }
 }
 
@@ -8129,8 +8144,7 @@ extension TelemetryConfigurationEvent.Telemetry.Configuration.Plugins {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try pluginsInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
@@ -8139,17 +8153,14 @@ extension TelemetryConfigurationEvent.Telemetry.Configuration.Plugins {
         let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
         self.name = try staticContainer.decode(String.self, forKey: .name)
 
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.pluginsInfo = [:]
+
         let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.pluginsInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.pluginsInfo = dictionary
     }
 }
 
@@ -9020,8 +9031,7 @@ extension TelemetryUsageEvent.Telemetry {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try telemetryInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
@@ -9032,17 +9042,14 @@ extension TelemetryUsageEvent.Telemetry {
         self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
         self.usage = try staticContainer.decode(Usage.self, forKey: .usage)
 
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.telemetryInfo = [:]
+
         let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.telemetryInfo = dictionary
     }
 }
 
@@ -9099,8 +9106,7 @@ extension RUMAccount {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try accountInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
@@ -9110,17 +9116,14 @@ extension RUMAccount {
         self.id = try staticContainer.decode(String.self, forKey: .id)
         self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
 
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.accountInfo = [:]
+
         let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.accountInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.accountInfo = dictionary
     }
 }
 
@@ -9259,22 +9262,18 @@ extension RUMEventAttributes {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try contextInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
     public init(from decoder: Decoder) throws {
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let dynamicKeys = dynamicContainer.allKeys
-        var dictionary: [String: Codable] = [:]
+        self.contextInfo = [:]
 
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.forEach {
+            self.contextInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.contextInfo = dictionary
     }
 }
 
@@ -9519,8 +9518,7 @@ extension RUMUser {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try usrInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
@@ -9532,17 +9530,14 @@ extension RUMUser {
         self.id = try staticContainer.decodeIfPresent(String.self, forKey: .id)
         self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
 
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.usrInfo = [:]
+
         let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.usrInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.usrInfo = dictionary
     }
 }
 
@@ -9669,4 +9664,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/fd61fb5b16ccd0cbf24e59050ebe4d42c4bd593e
+// Generated from https://github.com/DataDog/rum-events-format/tree/364afe383024cfbdc0a57253c1961cf938b19cf0

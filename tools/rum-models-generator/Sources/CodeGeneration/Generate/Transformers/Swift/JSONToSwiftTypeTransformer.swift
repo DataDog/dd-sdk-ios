@@ -117,44 +117,36 @@ internal class JSONToSwiftTypeTransformer {
     }
 
     private func transformJSONObject(_ jsonObject: JSONObject) throws -> SwiftType {
-        if let additionalProperties = jsonObject.additionalProperties {
-            if additionalProperties.type == .any {
-                // RUMM-1401: if schema declares `additionalProperties: true` or `additionalProperties: {type: object, ...}`
-                // we model it as a `struct` with nested `<public|public internal(set)><var> <structName>Info: [String: Codable]`
-                // dictionary. In generated encoding code, this dictionary is erased but its keys and values are used as dynamic
-                // properties encoded in JSON.
-                let additionalPropertyName = jsonObject.name + "Info"
-                // RUMM-1420: we noticed that `additionalProperties` is used for custom user attributes which need to be
-                // sanitized by the SDK, hence it's very practical for us to generate `.mutableInternally` modifier for those.
+        var `struct` = try transformJSONObjectToStruct(jsonObject)
 
-                // RUM-5992: we noticed that `additionalProperties` is used for custom user attributes which needs to be
-                // sanitized by the SDK or by user-defined mappers, hence we apply `.mutable` modifier for those.
-                let mutability: SwiftStruct.Property.Mutability = .mutable
-                var `struct` = try transformJSONObjectToStruct(jsonObject)
-                `struct`.properties.append(
-                    SwiftStruct.Property(
-                        name: additionalPropertyName,
-                        comment: additionalProperties.comment,
-                        type: SwiftDictionary(
-                            value: SwiftEncodable()
-                        ),
-                        isOptional: false,
-                        mutability: mutability,
-                        defaultValue: nil,
-                        codingKey: .dynamic
-                    )
+        if let additionalProperties = jsonObject.additionalProperties {
+            // RUMM-1401: if schema declares `additionalProperties: true` or `additionalProperties: {type: object, ...}`
+            // we model it as a `struct` with nested `<public|public internal(set)><var> <structName>Info: [String: Codable]`
+            // dictionary. In generated encoding code, this dictionary is erased but its keys and values are used as dynamic
+            // properties encoded in JSON.
+            let additionalPropertyName = jsonObject.name + "Info"
+            // RUM-5992: we noticed that `additionalProperties` is used for custom user attributes which needs to be
+            // sanitized by the SDK or by user-defined mappers, hence we apply `.mutable` modifier for those.
+            let mutability: SwiftStruct.Property.Mutability = .mutable
+
+            let value: SwiftPrimitiveType = additionalProperties.type != .any
+                ? try transformJSONtoPrimitive(additionalProperties.type)
+                : SwiftEncodable()
+
+            `struct`.properties.append(
+                SwiftStruct.Property(
+                    name: additionalPropertyName,
+                    comment: additionalProperties.comment,
+                    type: SwiftDictionary(value: value),
+                    isOptional: false,
+                    mutability: mutability,
+                    defaultValue: nil,
+                    codingKey: .dynamic
                 )
-                return `struct`
-            } else {
-                // RUMM-1401: if schema declares `additionalProperties: {type: string | bool | integer | double, ...}}`
-                // we model it as dictionary property.
-                return SwiftDictionary(
-                    value: try transformJSONtoPrimitive(additionalProperties.type)
-                )
-            }
-        } else {
-            return try transformJSONObjectToStruct(jsonObject)
+            )
         }
+
+        return `struct`
     }
 
     private func transformJSONObjectToStruct(_ jsonObject: JSONObject) throws -> SwiftStruct {
