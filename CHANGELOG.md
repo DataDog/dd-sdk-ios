@@ -10,7 +10,7 @@
 - [IMPROVEMENT] Expand Action Tracking to other UI components [#2348][]
 - [IMPROVEMENT] Improve backtrace collection and error messages [#2395][]
 - [IMPROVEMENT] Fix SwiftUI Auto-tracking ObjC APIs [#2344][]
-- [IMPROVEMENT] Improve support of Session Replay on iOS 26 for apps built with iOS 26 [#2354][] [#2370][] [#2355][]
+- [IMPROVEMENT] Improve support of Session Replay on iOS 26 for apps built with Xcode 26 [#2354][] [#2370][] [#2355][]
 
 # 2.29.0 / 18-06-2025
 
