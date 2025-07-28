@@ -72,7 +72,7 @@ extension RUM {
         ///
         /// Note: Automatic RUM views tracking involves swizzling the `UIViewController` lifecycle methods.
         ///
-        /// Default: `nil` - which means automatic RUM view tracking is not enabled by default.
+        /// Default: `nil` - which means automatic RUM view tracking for UIKit is not enabled by default.
         public var uiKitViewsPredicate: UIKitRUMViewsPredicate?
 
         /// The predicate for automatically tracking `UITouch` events as RUM actions.
@@ -86,19 +86,21 @@ extension RUM {
         ///
         /// Note: Automatic RUM action tracking involves swizzling the `UIApplication.sendEvent(_:)` method.
         ///
-        /// Default: `nil` - which means automatic RUM action tracking is not enabled by default.
+        /// Default: `nil` - which means automatic RUM action tracking for UIKit is not enabled by default.
         public var uiKitActionsPredicate: UIKitRUMActionsPredicate?
 
-        /// The predicate for automatically tracking `UIViewControllers` as RUM views.
+        /// The predicate for automatically tracking SwiftUI views as RUM views.
         ///
-        /// RUM will query this predicate for each `UIViewController` presented in the app. The predicate implementation
-        /// should return RUM view parameters if the given controller should start a view, or `nil` to ignore it.
+        /// RUM will query this predicate for each SwiftUI view detected through hosting controllers. The SDK extracts
+        /// view names from the SwiftUI view hierarchy within those controllers, then passes those names to this predicate to determine which
+        /// views should be tracked. The predicate implementation should return RUM view parameters if the given view
+        /// should be tracked, or `nil` to ignore it.
         ///
         /// You can use `DefaultSwiftUIRUMViewsPredicate` or create your own predicate by implementing `SwiftUIRUMViewsPredicate`.
         ///
-        /// Note: Automatic RUM views tracking involves swizzling the `UIViewController` lifecycle methods.
+        /// Note: Automatic SwiftUI view tracking involves swizzling the `UIViewController` lifecycle methods of hosting controllers.
         ///
-        /// Default: `nil` - which means automatic RUM view tracking is not enabled by default.
+        /// Default: `nil` - which means automatic RUM view tracking for SwiftUI is not enabled by default.
         @available(*, message: "This API is experimental and may change in future releases")
         public var swiftUIViewsPredicate: SwiftUIRUMViewsPredicate?
 
@@ -113,7 +115,7 @@ extension RUM {
         ///
         /// Note: Automatic RUM action tracking involves swizzling the `UIApplication.sendEvent(_:)` method.
         ///
-        /// Default: `nil` - which means automatic RUM action tracking is not enabled by default.
+        /// Default: `nil` - which means automatic RUM action tracking for SwiftUI is not enabled by default.
 
         @available(*, message: "This API is experimental and may change in future releases")
         @available(*, message: "This API has different behavior on iOS 18 vs iOS 17 and below - component detection is more precise on iOS 18+")
@@ -361,9 +363,8 @@ extension RUM {
         internal var ciTestExecutionID: String? = ProcessInfo.processInfo.environment["CI_VISIBILITY_TEST_EXECUTION_ID"]
         internal var syntheticsTestId: String? = ProcessInfo.processInfo.environment["_dd.synthetics.test_id"]
         internal var syntheticsResultId: String? = ProcessInfo.processInfo.environment["_dd.synthetics.result_id"]
-        internal var syntheticsEnvironment: Bool {
-            syntheticsTestId != nil || syntheticsResultId != nil
-        }
+        internal var syntheticsEnvironment: Bool { syntheticsTestId != nil || syntheticsResultId != nil }
+        internal var sessionTypeOverride: String? = ProcessInfo.processInfo.environment["DD_SESSION_TYPE"]
     }
 }
 

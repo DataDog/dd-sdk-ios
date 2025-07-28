@@ -64,6 +64,19 @@ class WebRecordIntegrationTests: XCTestCase {
             $0.uuidGenerator = RUMUUIDGeneratorMock(uuid: randomUUID)
         }, in: core)
 
+        let rumBody = """
+        {
+            "eventType": "rum",
+                "event": {
+                    "date": \(1_635_932_927_012),
+                    "type": "view",
+                    "application": { "id": "\(randomApplicationID)" },
+                    "session": { "id": "\(randomUUID.toRUMDataFormat)" },
+                    "view": { "id": "\(randomBrowserViewID.uuidString.lowercased())" }
+            }
+        }
+        """
+
         let body = """
         {
             "eventType": "record",
@@ -77,6 +90,9 @@ class WebRecordIntegrationTests: XCTestCase {
 
         // When
         RUMMonitor.shared(in: core).startView(key: "web-view")
+        controller.send(body: rumBody, from: webView)
+        controller.flush()
+        _ = core.waitAndReturnEventsData(ofFeature: RUMFeature.name) // Wait for context propagation
         controller.send(body: body, from: webView)
         controller.flush()
 
@@ -116,6 +132,19 @@ class WebRecordIntegrationTests: XCTestCase {
             $0.uuidGenerator = RUMUUIDGeneratorMock(uuid: randomUUID)
         }, in: core)
 
+        let rumBody = """
+        {
+            "eventType": "rum",
+                "event": {
+                    "date": \(1_635_932_927_012),
+                    "type": "view",
+                    "application": { "id": "\(randomApplicationID)" },
+                    "session": { "id": "\(randomUUID.toRUMDataFormat)" },
+                    "view": { "id": "\(randomBrowserViewID.uuidString.lowercased())" }
+            }
+        }
+        """
+
         let body = """
         {
             "eventType": "record",
@@ -129,6 +158,9 @@ class WebRecordIntegrationTests: XCTestCase {
 
         // When
         RUMMonitor.shared(in: core).startView(key: "web-view")
+        controller.send(body: rumBody, from: webView)
+        controller.flush()
+        _ = core.waitAndReturnEventsData(ofFeature: RUMFeature.name) // Wait for context propagation
         controller.send(body: body, from: webView)
         controller.flush()
 

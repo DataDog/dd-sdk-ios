@@ -1,0 +1,39 @@
+name: 'Automatically close stale issues'
+
+on:
+  schedule:
+    # Runs every day at 8:00 AM CET
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-issue-message: |
+            This issue has been automatically marked as stale because it has not had recent activity and has the `awaiting-response` label.
+            
+            It will be closed if no further activity occurs within 3 days.
+        
+          # The label that will be added to the issues when automatically marked as stale
+          stale-issue-label: 'stale'
+          # The label that will be added to the issues when automatically marked as stale
+          close-issue-label: 'automatically closed'
+          # Only target issues with 'awaiting-response' label
+          only-labels: 'awaiting response'
+          # Mark issues as stale after 14 days
+          days-before-issue-stale: 14
+          # Close issues after 3 days of being marked stale
+          days-before-issue-close: 3
+          # Automatically remove the stale label when the issues or the pull requests are updated
+          remove-stale-when-updated: true
+          # Run the stale workflow as dry-run.
+          # No GitHub API calls that can alter the issues and pull requests will happen.
+          # Useful to debug or when you want to configure the stale workflow safely. 
+          debug-only: false

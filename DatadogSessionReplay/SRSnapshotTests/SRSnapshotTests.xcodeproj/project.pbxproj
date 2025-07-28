@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5BB746152E02ABB900B568F1 /* SwiftUIFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB746142E02ABB500B568F1 /* SwiftUIFixture.swift */; };
+		5BB746182E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */; };
 		614396642A5E8C0600197326 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614396632A5E8C0600197326 /* Environment.swift */; };
 		614396652A5E8C0600197326 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614396632A5E8C0600197326 /* Environment.swift */; };
 		619C49B429952E12006B66A6 /* SnapshotTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619C49B329952E12006B66A6 /* SnapshotTestCase.swift */; };
@@ -38,6 +40,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5BB746142E02ABB500B568F1 /* SwiftUIFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIFixture.swift; sourceTree = "<group>"; };
+		5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewWithPrivacyOverrides.swift; sourceTree = "<group>"; };
 		614396632A5E8C0600197326 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Environment.swift; path = SRHost/Environment.swift; sourceTree = "<group>"; };
 		619C49B329952E12006B66A6 /* SnapshotTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotTestCase.swift; sourceTree = "<group>"; };
 		619C49B62995512A006B66A6 /* ImageComparison.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComparison.swift; sourceTree = "<group>"; };
@@ -86,9 +90,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5BB746162E02B34600B568F1 /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */,
+			);
+			path = Fixtures;
+			sourceTree = "<group>";
+		};
 		619C49B529955106006B66A6 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				5BB746142E02ABB500B568F1 /* SwiftUIFixture.swift */,
 				619C49B329952E12006B66A6 /* SnapshotTestCase.swift */,
 				96363B2B2CD26AF3006FEC9D /* PrivacyOverrides.swift */,
 				61BB975E2A5D675400AFFF86 /* ImageComposition.swift */,
@@ -137,6 +150,7 @@
 			isa = PBXGroup;
 			children = (
 				61B3BC642993BEAF0032C78A /* SRSnapshotTests.swift */,
+				5BB746162E02B34600B568F1 /* Fixtures */,
 				619C49B529955106006B66A6 /* Utils */,
 				619C49B8299551F5006B66A6 /* _snapshots_ */,
 			);
@@ -293,8 +307,10 @@
 				61B3BC652993BEAF0032C78A /* SRSnapshotTests.swift in Sources */,
 				96363B2C2CD26AF3006FEC9D /* PrivacyOverrides.swift in Sources */,
 				61BB975F2A5D675400AFFF86 /* ImageComposition.swift in Sources */,
+				5BB746182E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift in Sources */,
 				619C49B72995512A006B66A6 /* ImageComparison.swift in Sources */,
 				619C49B429952E12006B66A6 /* SnapshotTestCase.swift in Sources */,
+				5BB746152E02ABB900B568F1 /* SwiftUIFixture.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

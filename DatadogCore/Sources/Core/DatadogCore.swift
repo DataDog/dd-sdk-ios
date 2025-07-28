@@ -160,6 +160,23 @@ internal final class DatadogCore {
         userInfoPublisher.current.extraInfo = extraInfo
     }
 
+    /// Clear the current user information
+    ///
+    /// User information will be `nil`
+    /// Following Logs, Traces, RUM Events will not include the user information anymore
+    ///
+    /// Any active RUM Session, active RUM View at the time of call will have their `user` attribute emptied
+    ///
+    /// If you want to retain the current `user` on the active RUM session,
+    /// you need to stop the session first by using `RUMMonitor.stopSession()`
+    ///
+    /// If you want to retain the current `user` on the active RUM views,
+    /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
+    ///
+    func clearUserInfo() {
+        userInfoPublisher.current = UserInfo(anonymousId: userInfoPublisher.current.anonymousId)
+    }
+
     /// Sets current account information.
     ///
     /// Those will be added to logs, traces and RUM events automatically.
@@ -474,6 +491,7 @@ extension DatadogContextProvider {
         applicationVersion: String,
         sdkInitDate: Date,
         device: DeviceInfo,
+        locale: LocaleInfo,
         processInfo: ProcessInfo,
         dateProvider: DateProvider,
         serverDateProvider: ServerDateProvider,
@@ -498,6 +516,7 @@ extension DatadogContextProvider {
             applicationBundleType: applicationBundleType,
             sdkInitDate: dateProvider.now,
             device: device,
+            localeInfo: locale,
             nativeSourceOverride: nativeSourceOverride,
             launchTime: appLaunchHandler.currentValue,
             // this is a placeholder waiting for the `ApplicationStatePublisher`
@@ -524,6 +543,12 @@ extension DatadogContextProvider {
         subscribe(\.batteryStatus, to: BatteryStatusPublisher(notificationCenter: notificationCenter, device: .current))
         subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher(notificationCenter: notificationCenter, processInfo: processInfo))
         #endif
+
+        #if os(iOS)
+        subscribe(\.brightnessLevel, to: BrightnessLevelPublisher(notificationCenter: notificationCenter))
+        #endif
+
+        subscribe(\.localeInfo, to: LocaleInfoPublisher(initialLocale: locale, notificationCenter: notificationCenter))
 
         #if os(iOS) || os(tvOS)
         DispatchQueue.main.async {

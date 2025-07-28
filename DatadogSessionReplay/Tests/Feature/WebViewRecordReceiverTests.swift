@@ -14,16 +14,18 @@ import TestUtilities
 
 class WebViewRecordReceiverTests: XCTestCase {
     func testGivenRUMContextAvailable_whenReceivingWebRecord_itCreatesSegment() throws {
+        let browserViewID: String = .mockRandom()
         let serverTimeOffset: TimeInterval = .mockRandom(min: -10, max: 10).rounded()
 
-        let rumContext: RUMCoreContext = .mockWith(
-            serverTimeOffset: serverTimeOffset
+        let rumContext: RUMCoreContext = .mockAny()
+        let webViewContext: RUMWebViewContext = .mockWith(
+            serverTimeOffsets: [browserViewID: serverTimeOffset]
         )
 
         let scope = FeatureScopeMock(
             context: .mockWith(
                 source: "react-native",
-                additionalContext: [rumContext]
+                additionalContext: [rumContext, webViewContext]
             )
         )
 
@@ -37,8 +39,6 @@ class WebViewRecordReceiverTests: XCTestCase {
             "timestamp": 100_000,
             "type": 2
         ].merging(random, uniquingKeysWith: { old, _ in old })
-
-        let browserViewID: String = .mockRandom()
 
         // When
 

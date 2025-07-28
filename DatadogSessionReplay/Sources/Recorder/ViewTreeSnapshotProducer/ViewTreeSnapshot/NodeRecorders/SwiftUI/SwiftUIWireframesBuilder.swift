@@ -139,7 +139,6 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
         case let .image(resolvedImage):
             switch resolvedImage.contents {
             case .cgImage(let cgImage):
-                // TODO: RUM-7370 - Apply FGM overrides
                 let shouldRecordImage = self.imagePrivacyLevel.shouldRecordGraphicsImagePredicate(resolvedImage)
                 if shouldRecordImage {
                     let imageResource = UIImageResource(

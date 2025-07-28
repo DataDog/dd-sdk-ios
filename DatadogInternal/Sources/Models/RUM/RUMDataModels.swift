@@ -45,6 +45,9 @@ public struct RUMActionEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
     public let device: RUMDevice?
 
@@ -90,6 +93,7 @@ public struct RUMActionEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case os = "os"
@@ -117,6 +121,7 @@ public struct RUMActionEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - os: Operating system properties
@@ -139,6 +144,7 @@ public struct RUMActionEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
+        ddtags: String? = nil,
         device: RUMDevice? = nil,
         display: Display? = nil,
         os: RUMOperatingSystem? = nil,
@@ -161,6 +167,7 @@ public struct RUMActionEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.os = os
@@ -331,6 +338,9 @@ public struct RUMActionEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
+            /// The percentage of views profiled
+            public let profilingSampleRate: Double?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -338,6 +348,7 @@ public struct RUMActionEvent: RUMDataModel {
             public let sessionSampleRate: Double
 
             public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
             }
@@ -345,12 +356,15 @@ public struct RUMActionEvent: RUMDataModel {
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             public init(
+                profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double
             ) {
+                self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
             }
@@ -607,20 +621,27 @@ public struct RUMActionEvent: RUMDataModel {
 
     /// Application properties
     public struct Application: Codable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
         }
     }
@@ -861,6 +882,9 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
     public let device: RUMDevice?
 
@@ -915,6 +939,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case error = "error"
@@ -945,6 +970,7 @@ public struct RUMErrorEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - error: Error properties
@@ -970,6 +996,7 @@ public struct RUMErrorEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
+        ddtags: String? = nil,
         device: RUMDevice? = nil,
         display: Display? = nil,
         error: Error,
@@ -995,6 +1022,7 @@ public struct RUMErrorEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.error = error
@@ -1056,6 +1084,9 @@ public struct RUMErrorEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
+            /// The percentage of views profiled
+            public let profilingSampleRate: Double?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -1063,6 +1094,7 @@ public struct RUMErrorEvent: RUMDataModel {
             public let sessionSampleRate: Double
 
             public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
             }
@@ -1070,12 +1102,15 @@ public struct RUMErrorEvent: RUMDataModel {
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             public init(
+                profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double
             ) {
+                self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
             }
@@ -1137,20 +1172,27 @@ public struct RUMErrorEvent: RUMDataModel {
 
     /// Application properties
     public struct Application: Codable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
         }
     }
@@ -1468,6 +1510,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case exception = "Exception"
             case watchdogTermination = "Watchdog Termination"
             case memoryWarning = "Memory Warning"
+            case network = "Network"
         }
 
         /// Properties for one of the error causes
@@ -1966,6 +2009,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
     public let device: RUMDevice?
 
@@ -2014,6 +2060,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case longTask = "long_task"
@@ -2042,6 +2089,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - longTask: Long Task properties
@@ -2065,6 +2113,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
+        ddtags: String? = nil,
         device: RUMDevice? = nil,
         display: Display? = nil,
         longTask: LongTask,
@@ -2088,6 +2137,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.longTask = longTask
@@ -2115,6 +2165,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// Profiling context
+        public let profiling: Profiling?
+
         /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         public let sdkName: String?
 
@@ -2126,6 +2179,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case configuration = "configuration"
             case discarded = "discarded"
             case formatVersion = "format_version"
+            case profiling = "profiling"
             case sdkName = "sdk_name"
             case session = "session"
         }
@@ -2136,24 +2190,30 @@ public struct RUMLongTaskEvent: RUMDataModel {
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
         ///   - discarded: Whether the long task should be discarded or indexed
+        ///   - profiling: Profiling context
         ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
             discarded: Bool? = nil,
+            profiling: Profiling? = nil,
             sdkName: String? = nil,
             session: Session? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
             self.discarded = discarded
+            self.profiling = profiling
             self.sdkName = sdkName
             self.session = session
         }
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
+            /// The percentage of views profiled
+            public let profilingSampleRate: Double?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -2161,6 +2221,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
             public let sessionSampleRate: Double
 
             public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
             }
@@ -2168,14 +2229,99 @@ public struct RUMLongTaskEvent: RUMDataModel {
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             public init(
+                profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double
             ) {
+                self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
+            }
+        }
+
+        /// Profiling context
+        public struct Profiling: Codable {
+            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            public let errorReason: ErrorReason?
+
+            /// Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public let status: Status?
+
+            public enum CodingKeys: String, CodingKey {
+                case errorReason = "error_reason"
+                case status = "status"
+            }
+
+            /// Profiling context
+            ///
+            /// - Parameters:
+            ///   - errorReason: The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            ///   - status: Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public init(
+                errorReason: ErrorReason? = nil,
+                status: Status? = nil
+            ) {
+                self.errorReason = errorReason
+                self.status = status
+            }
+
+            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            public enum ErrorReason: String, Codable {
+                case notSupportedByBrowser = "not-supported-by-browser"
+                case failedToLazyLoad = "failed-to-lazy-load"
+                case missingDocumentPolicyHeader = "missing-document-policy-header"
+                case unexpectedException = "unexpected-exception"
+            }
+
+            /// Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public enum Status: String, Codable {
+                case starting = "starting"
+                case running = "running"
+                case stopped = "stopped"
+                case error = "error"
             }
         }
 
@@ -2235,20 +2381,27 @@ public struct RUMLongTaskEvent: RUMDataModel {
 
     /// Application properties
     public struct Application: Codable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
         }
     }
@@ -2669,6 +2822,9 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
     public let device: RUMDevice?
 
@@ -2717,6 +2873,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case os = "os"
@@ -2745,6 +2902,7 @@ public struct RUMResourceEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - os: Operating system properties
@@ -2768,6 +2926,7 @@ public struct RUMResourceEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
+        ddtags: String? = nil,
         device: RUMDevice? = nil,
         display: Display? = nil,
         os: RUMOperatingSystem? = nil,
@@ -2791,6 +2950,7 @@ public struct RUMResourceEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.os = os
@@ -2818,6 +2978,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// parent span identifier in decimal format
+        public let parentSpanId: String?
+
         /// trace sample rate in decimal format
         public let rulePsr: Double?
 
@@ -2838,6 +3001,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case configuration = "configuration"
             case discarded = "discarded"
             case formatVersion = "format_version"
+            case parentSpanId = "parent_span_id"
             case rulePsr = "rule_psr"
             case sdkName = "sdk_name"
             case session = "session"
@@ -2851,6 +3015,7 @@ public struct RUMResourceEvent: RUMDataModel {
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
         ///   - discarded: Whether the resource should be discarded or indexed
+        ///   - parentSpanId: parent span identifier in decimal format
         ///   - rulePsr: trace sample rate in decimal format
         ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
@@ -2860,6 +3025,7 @@ public struct RUMResourceEvent: RUMDataModel {
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
             discarded: Bool? = nil,
+            parentSpanId: String? = nil,
             rulePsr: Double? = nil,
             sdkName: String? = nil,
             session: Session? = nil,
@@ -2869,6 +3035,7 @@ public struct RUMResourceEvent: RUMDataModel {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
             self.discarded = discarded
+            self.parentSpanId = parentSpanId
             self.rulePsr = rulePsr
             self.sdkName = sdkName
             self.session = session
@@ -2878,6 +3045,9 @@ public struct RUMResourceEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
+            /// The percentage of views profiled
+            public let profilingSampleRate: Double?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -2885,6 +3055,7 @@ public struct RUMResourceEvent: RUMDataModel {
             public let sessionSampleRate: Double
 
             public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
             }
@@ -2892,12 +3063,15 @@ public struct RUMResourceEvent: RUMDataModel {
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             public init(
+                profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double
             ) {
+                self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
             }
@@ -2959,20 +3133,27 @@ public struct RUMResourceEvent: RUMDataModel {
 
     /// Application properties
     public struct Application: Codable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
         }
     }
@@ -3687,6 +3868,9 @@ public struct RUMViewEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
     public let device: RUMDevice?
 
@@ -3737,6 +3921,7 @@ public struct RUMViewEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case featureFlags = "feature_flags"
@@ -3765,6 +3950,7 @@ public struct RUMViewEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - featureFlags: Feature flags properties
@@ -3788,6 +3974,7 @@ public struct RUMViewEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
+        ddtags: String? = nil,
         device: RUMDevice? = nil,
         display: Display? = nil,
         featureFlags: FeatureFlags? = nil,
@@ -3811,6 +3998,7 @@ public struct RUMViewEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.featureFlags = featureFlags
@@ -3845,6 +4033,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// List of the page states during the view
         public let pageStates: [PageStates]?
 
+        /// Profiling context
+        public let profiling: Profiling?
+
         /// Debug metadata for Replay Sessions
         public let replayStats: ReplayStats?
 
@@ -3861,6 +4052,7 @@ public struct RUMViewEvent: RUMDataModel {
             case documentVersion = "document_version"
             case formatVersion = "format_version"
             case pageStates = "page_states"
+            case profiling = "profiling"
             case replayStats = "replay_stats"
             case sdkName = "sdk_name"
             case session = "session"
@@ -3874,6 +4066,7 @@ public struct RUMViewEvent: RUMDataModel {
         ///   - configuration: Subset of the SDK configuration options in use during its execution
         ///   - documentVersion: Version of the update of the view event
         ///   - pageStates: List of the page states during the view
+        ///   - profiling: Profiling context
         ///   - replayStats: Debug metadata for Replay Sessions
         ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
@@ -3883,6 +4076,7 @@ public struct RUMViewEvent: RUMDataModel {
             configuration: Configuration? = nil,
             documentVersion: Int64,
             pageStates: [PageStates]? = nil,
+            profiling: Profiling? = nil,
             replayStats: ReplayStats? = nil,
             sdkName: String? = nil,
             session: Session? = nil
@@ -3892,6 +4086,7 @@ public struct RUMViewEvent: RUMDataModel {
             self.configuration = configuration
             self.documentVersion = documentVersion
             self.pageStates = pageStates
+            self.profiling = profiling
             self.replayStats = replayStats
             self.sdkName = sdkName
             self.session = session
@@ -3919,6 +4114,9 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
+            /// The percentage of views profiled
+            public let profilingSampleRate: Double?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -3929,6 +4127,7 @@ public struct RUMViewEvent: RUMDataModel {
             public let startSessionReplayRecordingManually: Bool?
 
             public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
@@ -3937,14 +4136,17 @@ public struct RUMViewEvent: RUMDataModel {
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - startSessionReplayRecordingManually: Whether session replay recording configured to start manually
             public init(
+                profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 startSessionReplayRecordingManually: Bool? = nil
             ) {
+                self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
@@ -3984,6 +4186,88 @@ public struct RUMViewEvent: RUMDataModel {
                 case hidden = "hidden"
                 case frozen = "frozen"
                 case terminated = "terminated"
+            }
+        }
+
+        /// Profiling context
+        public struct Profiling: Codable {
+            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            public let errorReason: ErrorReason?
+
+            /// Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public let status: Status?
+
+            public enum CodingKeys: String, CodingKey {
+                case errorReason = "error_reason"
+                case status = "status"
+            }
+
+            /// Profiling context
+            ///
+            /// - Parameters:
+            ///   - errorReason: The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            ///   - status: Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public init(
+                errorReason: ErrorReason? = nil,
+                status: Status? = nil
+            ) {
+                self.errorReason = errorReason
+                self.status = status
+            }
+
+            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            public enum ErrorReason: String, Codable {
+                case notSupportedByBrowser = "not-supported-by-browser"
+                case failedToLazyLoad = "failed-to-lazy-load"
+                case missingDocumentPolicyHeader = "missing-document-policy-header"
+                case unexpectedException = "unexpected-exception"
+            }
+
+            /// Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public enum Status: String, Codable {
+                case starting = "starting"
+                case running = "running"
+                case stopped = "stopped"
+                case error = "error"
             }
         }
 
@@ -4057,20 +4341,27 @@ public struct RUMViewEvent: RUMDataModel {
 
     /// Application properties
     public struct Application: Codable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
         }
     }
@@ -4333,6 +4624,9 @@ public struct RUMViewEvent: RUMDataModel {
 
     /// View properties
     public struct View: Codable {
+        /// Accessibility properties of the view
+        public let accessibility: Accessibility?
+
         /// Properties of the actions of the view
         public let action: Action
 
@@ -4484,6 +4778,7 @@ public struct RUMViewEvent: RUMDataModel {
         public var url: String
 
         public enum CodingKeys: String, CodingKey {
+            case accessibility = "accessibility"
             case action = "action"
             case cpuTicksCount = "cpu_ticks_count"
             case cpuTicksPerSecond = "cpu_ticks_per_second"
@@ -4539,6 +4834,7 @@ public struct RUMViewEvent: RUMDataModel {
         /// View properties
         ///
         /// - Parameters:
+        ///   - accessibility: Accessibility properties of the view
         ///   - action: Properties of the actions of the view
         ///   - cpuTicksCount: Total number of cpu ticks during the view’s lifetime
         ///   - cpuTicksPerSecond: Average number of cpu ticks per second during the view’s lifetime
@@ -4590,6 +4886,7 @@ public struct RUMViewEvent: RUMDataModel {
         ///   - timeSpent: Time spent on the view in ns
         ///   - url: URL of the view
         public init(
+            accessibility: Accessibility? = nil,
             action: Action,
             cpuTicksCount: Double? = nil,
             cpuTicksPerSecond: Double? = nil,
@@ -4641,6 +4938,7 @@ public struct RUMViewEvent: RUMDataModel {
             timeSpent: Int64,
             url: String
         ) {
+            self.accessibility = accessibility
             self.action = action
             self.cpuTicksCount = cpuTicksCount
             self.cpuTicksPerSecond = cpuTicksPerSecond
@@ -4691,6 +4989,166 @@ public struct RUMViewEvent: RUMDataModel {
             self.slowFramesRate = slowFramesRate
             self.timeSpent = timeSpent
             self.url = url
+        }
+
+        /// Accessibility properties of the view
+        public struct Accessibility: Codable {
+            /// Indicates whether an alternative input method like Switch Control or Switch Access is currently enabled.
+            public let assistiveSwitchEnabled: Bool?
+
+            /// Indicates whether the system-wide AssistiveTouch feature is currently enabled.
+            public let assistiveTouchEnabled: Bool?
+
+            /// Indicates whether the system-wide bold text accessibility setting is enabled.
+            public let boldTextEnabled: Bool?
+
+            /// Indicates whether the system-wide button shapes setting is enabled.
+            public let buttonShapesEnabled: Bool?
+
+            /// Indicates whether closed captioning is enabled for media playback.
+            public let closedCaptioningEnabled: Bool?
+
+            /// Indicates whether the device display is currently using grayscale mode.
+            public let grayscaleEnabled: Bool?
+
+            /// Indicates whether the system-wide increase contrast setting is enabled.
+            public let increaseContrastEnabled: Bool?
+
+            /// Indicates whether the system-wide color inversion setting is enabled.
+            public let invertColorsEnabled: Bool?
+
+            /// Indicates whether the system-wide mono audio setting is enabled.
+            public let monoAudioEnabled: Bool?
+
+            /// Indicates whether on/off switch labels are enabled in the system settings.
+            public let onOffSwitchLabelsEnabled: Bool?
+
+            /// Indicates whether the system-wide reduce motion setting is enabled.
+            public let reduceMotionEnabled: Bool?
+
+            /// Indicates whether the system-wide reduce transparency setting is enabled.
+            public let reduceTransparencyEnabled: Bool?
+
+            /// Indicates whether the user prefers reduced animations or cross-fade transitions.
+            public let reducedAnimationsEnabled: Bool?
+
+            /// Indicates whether a screen reader is currently active.
+            public let screenReaderEnabled: Bool?
+
+            /// Indicates whether the Shake to Undo feature is enabled.
+            public let shakeToUndoEnabled: Bool?
+
+            /// Indicates whether the system should differentiate interface elements without relying solely on color.
+            public let shouldDifferentiateWithoutColor: Bool?
+
+            /// Indicates whether the device is currently locked to a single app through Guided Access or Screen Pinning.
+            public let singleAppModeEnabled: Bool?
+
+            /// Indicates whether the Speak Screen feature is enabled.
+            public let speakScreenEnabled: Bool?
+
+            /// Indicates whether the text-to-speech selection feature is enabled.
+            public let speakSelectionEnabled: Bool?
+
+            /// User’s preferred text scale relative to the default system size.
+            public let textSize: String?
+
+            /// Indicates whether the video autoplay setting is enabled in the system or application.
+            public let videoAutoplayEnabled: Bool?
+
+            public enum CodingKeys: String, CodingKey {
+                case assistiveSwitchEnabled = "assistive_switch_enabled"
+                case assistiveTouchEnabled = "assistive_touch_enabled"
+                case boldTextEnabled = "bold_text_enabled"
+                case buttonShapesEnabled = "button_shapes_enabled"
+                case closedCaptioningEnabled = "closed_captioning_enabled"
+                case grayscaleEnabled = "grayscale_enabled"
+                case increaseContrastEnabled = "increase_contrast_enabled"
+                case invertColorsEnabled = "invert_colors_enabled"
+                case monoAudioEnabled = "mono_audio_enabled"
+                case onOffSwitchLabelsEnabled = "on_off_switch_labels_enabled"
+                case reduceMotionEnabled = "reduce_motion_enabled"
+                case reduceTransparencyEnabled = "reduce_transparency_enabled"
+                case reducedAnimationsEnabled = "reduced_animations_enabled"
+                case screenReaderEnabled = "screen_reader_enabled"
+                case shakeToUndoEnabled = "shake_to_undo_enabled"
+                case shouldDifferentiateWithoutColor = "should_differentiate_without_color"
+                case singleAppModeEnabled = "single_app_mode_enabled"
+                case speakScreenEnabled = "speak_screen_enabled"
+                case speakSelectionEnabled = "speak_selection_enabled"
+                case textSize = "text_size"
+                case videoAutoplayEnabled = "video_autoplay_enabled"
+            }
+
+            /// Accessibility properties of the view
+            ///
+            /// - Parameters:
+            ///   - assistiveSwitchEnabled: Indicates whether an alternative input method like Switch Control or Switch Access is currently enabled.
+            ///   - assistiveTouchEnabled: Indicates whether the system-wide AssistiveTouch feature is currently enabled.
+            ///   - boldTextEnabled: Indicates whether the system-wide bold text accessibility setting is enabled.
+            ///   - buttonShapesEnabled: Indicates whether the system-wide button shapes setting is enabled.
+            ///   - closedCaptioningEnabled: Indicates whether closed captioning is enabled for media playback.
+            ///   - grayscaleEnabled: Indicates whether the device display is currently using grayscale mode.
+            ///   - increaseContrastEnabled: Indicates whether the system-wide increase contrast setting is enabled.
+            ///   - invertColorsEnabled: Indicates whether the system-wide color inversion setting is enabled.
+            ///   - monoAudioEnabled: Indicates whether the system-wide mono audio setting is enabled.
+            ///   - onOffSwitchLabelsEnabled: Indicates whether on/off switch labels are enabled in the system settings.
+            ///   - reduceMotionEnabled: Indicates whether the system-wide reduce motion setting is enabled.
+            ///   - reduceTransparencyEnabled: Indicates whether the system-wide reduce transparency setting is enabled.
+            ///   - reducedAnimationsEnabled: Indicates whether the user prefers reduced animations or cross-fade transitions.
+            ///   - screenReaderEnabled: Indicates whether a screen reader is currently active.
+            ///   - shakeToUndoEnabled: Indicates whether the Shake to Undo feature is enabled.
+            ///   - shouldDifferentiateWithoutColor: Indicates whether the system should differentiate interface elements without relying solely on color.
+            ///   - singleAppModeEnabled: Indicates whether the device is currently locked to a single app through Guided Access or Screen Pinning.
+            ///   - speakScreenEnabled: Indicates whether the Speak Screen feature is enabled.
+            ///   - speakSelectionEnabled: Indicates whether the text-to-speech selection feature is enabled.
+            ///   - textSize: User’s preferred text scale relative to the default system size.
+            ///   - videoAutoplayEnabled: Indicates whether the video autoplay setting is enabled in the system or application.
+            public init(
+                assistiveSwitchEnabled: Bool? = nil,
+                assistiveTouchEnabled: Bool? = nil,
+                boldTextEnabled: Bool? = nil,
+                buttonShapesEnabled: Bool? = nil,
+                closedCaptioningEnabled: Bool? = nil,
+                grayscaleEnabled: Bool? = nil,
+                increaseContrastEnabled: Bool? = nil,
+                invertColorsEnabled: Bool? = nil,
+                monoAudioEnabled: Bool? = nil,
+                onOffSwitchLabelsEnabled: Bool? = nil,
+                reduceMotionEnabled: Bool? = nil,
+                reduceTransparencyEnabled: Bool? = nil,
+                reducedAnimationsEnabled: Bool? = nil,
+                screenReaderEnabled: Bool? = nil,
+                shakeToUndoEnabled: Bool? = nil,
+                shouldDifferentiateWithoutColor: Bool? = nil,
+                singleAppModeEnabled: Bool? = nil,
+                speakScreenEnabled: Bool? = nil,
+                speakSelectionEnabled: Bool? = nil,
+                textSize: String? = nil,
+                videoAutoplayEnabled: Bool? = nil
+            ) {
+                self.assistiveSwitchEnabled = assistiveSwitchEnabled
+                self.assistiveTouchEnabled = assistiveTouchEnabled
+                self.boldTextEnabled = boldTextEnabled
+                self.buttonShapesEnabled = buttonShapesEnabled
+                self.closedCaptioningEnabled = closedCaptioningEnabled
+                self.grayscaleEnabled = grayscaleEnabled
+                self.increaseContrastEnabled = increaseContrastEnabled
+                self.invertColorsEnabled = invertColorsEnabled
+                self.monoAudioEnabled = monoAudioEnabled
+                self.onOffSwitchLabelsEnabled = onOffSwitchLabelsEnabled
+                self.reduceMotionEnabled = reduceMotionEnabled
+                self.reduceTransparencyEnabled = reduceTransparencyEnabled
+                self.reducedAnimationsEnabled = reducedAnimationsEnabled
+                self.screenReaderEnabled = screenReaderEnabled
+                self.shakeToUndoEnabled = shakeToUndoEnabled
+                self.shouldDifferentiateWithoutColor = shouldDifferentiateWithoutColor
+                self.singleAppModeEnabled = singleAppModeEnabled
+                self.speakScreenEnabled = speakScreenEnabled
+                self.speakSelectionEnabled = speakSelectionEnabled
+                self.textSize = textSize
+                self.videoAutoplayEnabled = videoAutoplayEnabled
+            }
         }
 
         /// Properties of the actions of the view
@@ -5407,6 +5865,9 @@ public struct RUMVitalEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
     public let device: RUMDevice?
 
@@ -5454,6 +5915,7 @@ public struct RUMVitalEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case os = "os"
@@ -5481,6 +5943,7 @@ public struct RUMVitalEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - os: Operating system properties
@@ -5503,6 +5966,7 @@ public struct RUMVitalEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
+        ddtags: String? = nil,
         device: RUMDevice? = nil,
         display: Display? = nil,
         os: RUMOperatingSystem? = nil,
@@ -5525,6 +5989,7 @@ public struct RUMVitalEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.os = os
@@ -5591,6 +6056,9 @@ public struct RUMVitalEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
+            /// The percentage of views profiled
+            public let profilingSampleRate: Double?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -5598,6 +6066,7 @@ public struct RUMVitalEvent: RUMDataModel {
             public let sessionSampleRate: Double
 
             public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
             }
@@ -5605,12 +6074,15 @@ public struct RUMVitalEvent: RUMDataModel {
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             public init(
+                profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double
             ) {
+                self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
             }
@@ -5672,20 +6144,27 @@ public struct RUMVitalEvent: RUMDataModel {
 
     /// Application properties
     public struct Application: Codable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
         }
     }
@@ -5894,11 +6373,20 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Duration of the vital in nanoseconds
         public let duration: Double?
 
+        /// Reason for the failure of the step, if applicable
+        public let failureReason: FailureReason?
+
         /// UUID of the vital
         public let id: String
 
         /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
         public let name: String?
+
+        /// UUID for linking the step vital to the parent event, if applicable
+        public let parentId: String?
+
+        /// Type of the step that triggered the vital, if applicable
+        public let stepType: StepType?
 
         /// Type of the vital
         public let type: VitalType
@@ -5907,8 +6395,11 @@ public struct RUMVitalEvent: RUMDataModel {
             case custom = "custom"
             case vitalDescription = "description"
             case duration = "duration"
+            case failureReason = "failure_reason"
             case id = "id"
             case name = "name"
+            case parentId = "parent_id"
+            case stepType = "step_type"
             case type = "type"
         }
 
@@ -5918,28 +6409,53 @@ public struct RUMVitalEvent: RUMDataModel {
         ///   - custom: User custom vital.
         ///   - vitalDescription: Description of the vital. It can be used as a secondary identifier (URL, React component name...)
         ///   - duration: Duration of the vital in nanoseconds
+        ///   - failureReason: Reason for the failure of the step, if applicable
         ///   - id: UUID of the vital
         ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+        ///   - parentId: UUID for linking the step vital to the parent event, if applicable
+        ///   - stepType: Type of the step that triggered the vital, if applicable
         ///   - type: Type of the vital
         public init(
             custom: [String: Double]? = nil,
             vitalDescription: String? = nil,
             duration: Double? = nil,
+            failureReason: FailureReason? = nil,
             id: String,
             name: String? = nil,
+            parentId: String? = nil,
+            stepType: StepType? = nil,
             type: VitalType
         ) {
             self.custom = custom
             self.vitalDescription = vitalDescription
             self.duration = duration
+            self.failureReason = failureReason
             self.id = id
             self.name = name
+            self.parentId = parentId
+            self.stepType = stepType
             self.type = type
+        }
+
+        /// Reason for the failure of the step, if applicable
+        public enum FailureReason: String, Codable {
+            case error = "error"
+            case abandoned = "abandoned"
+            case other = "other"
+        }
+
+        /// Type of the step that triggered the vital, if applicable
+        public enum StepType: String, Codable {
+            case start = "start"
+            case update = "update"
+            case retry = "retry"
+            case end = "end"
         }
 
         /// Type of the vital
         public enum VitalType: String, Codable {
             case duration = "duration"
+            case step = "step"
         }
     }
 }
@@ -8746,8 +9262,20 @@ public struct RUMDevice: Codable {
     /// The CPU architecture of the device that is reporting the error
     public let architecture: String?
 
+    /// Current battery level of the device (0.0 to 1.0).
+    public let batteryLevel: Double?
+
     /// Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
     public let brand: String?
+
+    /// Current screen brightness level (0.0 to 1.0).
+    public let brightnessLevel: Double?
+
+    /// The user’s locale as a language tag combining language and region, e.g. 'en-US'.
+    public let locale: String?
+
+    /// Ordered list of the user’s preferred system languages as IETF language tags.
+    public let locales: [String]?
 
     /// Device SKU model, e.g. Samsung SM-988GN, etc. Quite often name and model can be the same.
     public let model: String?
@@ -8755,14 +9283,26 @@ public struct RUMDevice: Codable {
     /// Device marketing name, e.g. Xiaomi Redmi Note 8 Pro, Pixel 5, etc.
     public let name: String?
 
+    /// Whether the device is in power saving mode.
+    public let powerSavingMode: Bool?
+
+    /// The device’s current time zone identifier, e.g. 'Europe/Berlin'.
+    public let timeZone: String?
+
     /// Device type info
-    public let type: RUMDeviceType
+    public let type: RUMDeviceType?
 
     public enum CodingKeys: String, CodingKey {
         case architecture = "architecture"
+        case batteryLevel = "battery_level"
         case brand = "brand"
+        case brightnessLevel = "brightness_level"
+        case locale = "locale"
+        case locales = "locales"
         case model = "model"
         case name = "name"
+        case powerSavingMode = "power_saving_mode"
+        case timeZone = "time_zone"
         case type = "type"
     }
 
@@ -8770,21 +9310,39 @@ public struct RUMDevice: Codable {
     ///
     /// - Parameters:
     ///   - architecture: The CPU architecture of the device that is reporting the error
+    ///   - batteryLevel: Current battery level of the device (0.0 to 1.0).
     ///   - brand: Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
+    ///   - brightnessLevel: Current screen brightness level (0.0 to 1.0).
+    ///   - locale: The user’s locale as a language tag combining language and region, e.g. 'en-US'.
+    ///   - locales: Ordered list of the user’s preferred system languages as IETF language tags.
     ///   - model: Device SKU model, e.g. Samsung SM-988GN, etc. Quite often name and model can be the same.
     ///   - name: Device marketing name, e.g. Xiaomi Redmi Note 8 Pro, Pixel 5, etc.
+    ///   - powerSavingMode: Whether the device is in power saving mode.
+    ///   - timeZone: The device’s current time zone identifier, e.g. 'Europe/Berlin'.
     ///   - type: Device type info
     public init(
         architecture: String? = nil,
+        batteryLevel: Double? = nil,
         brand: String? = nil,
+        brightnessLevel: Double? = nil,
+        locale: String? = nil,
+        locales: [String]? = nil,
         model: String? = nil,
         name: String? = nil,
-        type: RUMDeviceType
+        powerSavingMode: Bool? = nil,
+        timeZone: String? = nil,
+        type: RUMDeviceType? = nil
     ) {
         self.architecture = architecture
+        self.batteryLevel = batteryLevel
         self.brand = brand
+        self.brightnessLevel = brightnessLevel
+        self.locale = locale
+        self.locales = locales
         self.model = model
         self.name = name
+        self.powerSavingMode = powerSavingMode
+        self.timeZone = timeZone
         self.type = type
     }
 
@@ -9090,4 +9648,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/b8d694987f0873dfafa9248ef40b9a5ba56f7101
+// Generated from https://github.com/DataDog/rum-events-format/tree/4c3e63b404a37dc5dfe9450f7f7ad0b8a87f6450

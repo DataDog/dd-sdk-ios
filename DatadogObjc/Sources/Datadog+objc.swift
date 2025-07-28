@@ -71,6 +71,11 @@ public class DDDatadog: NSObject {
     }
 
     @objc
+    public static func clearUserInfo() {
+        Datadog.clearUserInfo()
+    }
+
+    @objc
     @available(*, deprecated, message: "UserInfo id property is now mandatory.")
     public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:]) {
         Datadog.setUserInfo(id: id, name: name, email: email, extraInfo: extraInfo.dd.swiftAttributes)

@@ -199,7 +199,7 @@ extension RUMViewEvent: RandomMockable {
                 )
             ),
             account: .mockRandom(),
-            application: .init(id: .mockRandom()),
+            application: .init(currentLocale: .mockRandom(), id: .mockRandom()),
             buildId: nil,
             buildVersion: .mockRandom(),
             ciTest: nil,

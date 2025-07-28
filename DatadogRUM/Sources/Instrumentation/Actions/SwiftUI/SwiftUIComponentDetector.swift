@@ -11,7 +11,6 @@ import DatadogInternal
 internal enum SwiftUIComponentNames {
     static let button = "SwiftUI_Button"
     static let navigationLink = "SwiftUI_NavigationLink"
-    static let toggle = "SwiftUI_Toggle"
     static let unidentified = "SwiftUI_Unidentified_Element"
 }
 
@@ -89,43 +88,6 @@ internal class SwiftUIComponentHelpers {
         }
 
         return defaultName
-    }
-
-    /// Extracts a SwiftUI Toggle action from a touch if applicable
-    /// - Parameters:
-    ///   - touch: The `UITouch` to analyze
-    ///   - predicate: The predicate to use for determining if an action should be created
-    ///   - dateProvider: Provider for current time
-    /// - Returns: A RUM action command if a toggle was detected, `nil` otherwise
-    static func extractSwiftUIToggleAction(
-        from touch: UITouch,
-        predicate: SwiftUIRUMActionsPredicate?,
-        dateProvider: DateProvider
-    ) -> RUMAddUserActionCommand? {
-        guard let predicate = predicate,
-              let view = touch.view else {
-            return nil
-        }
-
-        #if !os(tvOS)
-        let uiSwitch = view.findInParentHierarchy { parent in
-            // Note: we might want to extend to `UIControl` in the future.
-            return parent is UISwitch
-        }
-
-        if uiSwitch != nil,
-           let rumAction = predicate.rumAction(with: SwiftUIComponentNames.toggle) {
-            return RUMAddUserActionCommand(
-                time: dateProvider.now,
-                attributes: rumAction.attributes,
-                instrumentation: .swiftuiAutomatic,
-                actionType: .tap,
-                name: rumAction.name
-            )
-        }
-        #endif
-
-        return nil
     }
 }
 

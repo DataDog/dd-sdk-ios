@@ -78,6 +78,10 @@ default:
       when: delayed
       start_in: 40 minutes
 
+.dd-octo-sts-id-token: &dd-octo-sts-id-token
+  DDOCTOSTS_ID_TOKEN:
+    aud: dd-octo-sts
+
 ENV check:
   stage: pre
   rules: 
@@ -86,6 +90,26 @@ ENV check:
   script:
     - ./tools/runner-setup.sh --datadog-ci
     - make env-check
+
+# ┌──────────────┐
+# │ Local Cache: │
+# └──────────────┘
+
+Build Dependencies:
+  stage: pre
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  artifacts:
+    paths:
+      - Carthage/Build
+    expire_in: 4 hours
+    when: on_success
+  id_tokens:
+    <<: *dd-octo-sts-id-token
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - make clean dependencies
 
 # ┌──────────────────────────┐
 # │ SDK changes integration: │
@@ -106,6 +130,8 @@ Unit Tests (iOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  dependencies:
+    - "Build Dependencies"
   variables:
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 16 Pro"
@@ -119,6 +145,8 @@ Unit Tests (tvOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  dependencies:
+    - "Build Dependencies"
   variables:
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
@@ -132,6 +160,8 @@ UI Tests:
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  dependencies:
+    - "Build Dependencies"
   variables:
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 16 Pro"
@@ -294,6 +324,8 @@ Dogfood (Shopist):
     - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
       when: manual
       allow_failure: true
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   script:
     - ./tools/runner-setup.sh --ssh
     - DRY_RUN=0 make dogfood-shopist
@@ -304,6 +336,8 @@ Dogfood (Datadog app):
     - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
       when: manual
       allow_failure: true
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   script:
     - ./tools/runner-setup.sh --ssh
     - DRY_RUN=0 make dogfood-datadog-app
@@ -339,6 +373,8 @@ Publish GH Asset:
   stage: release-publish
   rules: 
     - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   before_script:
     - *export_MAKE_release_params
   script:

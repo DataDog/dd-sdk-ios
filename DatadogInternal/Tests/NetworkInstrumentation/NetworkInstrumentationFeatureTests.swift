@@ -175,6 +175,49 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
     }
 
+    @available(iOS 13.0, tvOS 13.0, *)
+    func testGivenURLSessionWithCustomDelegate_whenUsingCombineDataFromURL_itNotifiesInterceptor() throws {
+        /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
+        guard #available(iOS 16, tvOS 16, *) else {
+            return
+        }
+
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        // Given
+        let delegate = MockDelegate()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        // When
+        let cancellable = session.dataTaskPublisher(for: URL.mockAny())
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { _ in }
+            )
+
+        // Then
+        wait(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
+
+        _ = server.waitAndReturnRequests(count: 1)
+        _ = cancellable // extend lifetime of Combine subscription
+    }
+
     func testGivenURLSessionWithCustomDelegate_whenUsingCompletionHandlerDataFromURL_itNotifiesInterceptor() throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
@@ -197,7 +240,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
-       let task = session.dataTask(with: URL.mockAny()) { _, _, _ in }
+        let task = session.dataTask(with: URL.mockAny()) { _, _, _ in }
         task.resume()
 
         // Then

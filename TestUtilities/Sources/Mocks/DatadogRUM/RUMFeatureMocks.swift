@@ -795,7 +795,8 @@ extension RUMScopeDependencies {
         },
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking = {
             INVMetric(predicate: TimeBasedINVActionPredicate())
-        }
+        },
+        sessionType: RUMSessionType? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -821,7 +822,8 @@ extension RUMScopeDependencies {
             viewEndedMetricFactory: viewEndedMetricFactory,
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory,
-            interactionToNextViewMetricFactory: interactionToNextViewMetricFactory
+            interactionToNextViewMetricFactory: interactionToNextViewMetricFactory,
+            sessionType: sessionType
         )
     }
 
@@ -849,7 +851,8 @@ extension RUMScopeDependencies {
         viewEndedMetricFactory: (() -> ViewEndedController)? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
-        interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil
+        interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil,
+        sessionType: RUMSessionType? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -875,7 +878,8 @@ extension RUMScopeDependencies {
             viewEndedMetricFactory: viewEndedMetricFactory ?? self.viewEndedMetricFactory,
             watchdogTermination: watchdogTermination ?? self.watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
-            interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory
+            interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory,
+            sessionType: sessionType
         )
     }
 }
@@ -1343,6 +1347,10 @@ public class TNSMetricMock: TNSMetricTracking {
         resourceStartDates[resourceID] = startDate
     }
 
+    public func updateResource(with metrics: ResourceMetrics, resourceID: RUMUUID, resourceURL: String) {
+        resourceStartDates[resourceID] = metrics.fetch.start
+    }
+
     public func trackResourceEnd(at endDate: Date, resourceID: RUMUUID, resourceDuration: TimeInterval?) {
         resourceEndDates[resourceID] = (endDate, resourceDuration)
     }
@@ -1462,6 +1470,22 @@ extension RUMCoreContext: RandomMockable {
             userActionID: .mockRandom(),
             viewServerTimeOffset: .mockRandom()
         )
+    }
+}
+
+extension RUMWebViewContext: RandomMockable {
+    public static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    public static func mockWith(
+        serverTimeOffsets: [String: TimeInterval] = [:]
+    ) -> Self {
+        .init(serverTimeOffsets: serverTimeOffsets)
+    }
+
+    public static func mockRandom() -> Self {
+        .init(serverTimeOffsets: .mockRandom())
     }
 }
 

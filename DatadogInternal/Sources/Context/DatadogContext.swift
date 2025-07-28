@@ -71,6 +71,9 @@ public struct DatadogContext {
     /// Current device information.
     public var device: DeviceInfo
 
+    /// Current locale information.
+    public var localeInfo: LocaleInfo
+
     /// Current user information.
     public var userInfo: UserInfo?
 
@@ -107,6 +110,9 @@ public struct DatadogContext {
     /// This value can be `nil` of the current device battery interface is not available.
     public var batteryStatus: BatteryStatus?
 
+    /// The current brightness status.
+    public var brightnessLevel: BrightnessLevel?
+
     /// `true` if the Low Power Mode is enabled.
     public var isLowPowerModeEnabled = false
 
@@ -132,6 +138,7 @@ public struct DatadogContext {
         applicationBundleType: BundleType,
         sdkInitDate: Date,
         device: DeviceInfo,
+        localeInfo: LocaleInfo,
         nativeSourceOverride: String? = nil,
         userInfo: UserInfo? = nil,
         accountInfo: AccountInfo? = nil,
@@ -141,6 +148,7 @@ public struct DatadogContext {
         networkConnectionInfo: NetworkConnectionInfo? = nil,
         carrierInfo: CarrierInfo? = nil,
         batteryStatus: BatteryStatus? = nil,
+        brightnessLevel: BrightnessLevel? = nil,
         isLowPowerModeEnabled: Bool = false,
         additionalContext: [String: AdditionalContext] = [:]
     ) {
@@ -161,6 +169,7 @@ public struct DatadogContext {
         self.applicationBundleType = applicationBundleType
         self.sdkInitDate = sdkInitDate
         self.device = device
+        self.localeInfo = localeInfo
         self.nativeSourceOverride = nativeSourceOverride
         self.userInfo = userInfo
         self.accountInfo = accountInfo
@@ -170,6 +179,7 @@ public struct DatadogContext {
         self.networkConnectionInfo = networkConnectionInfo
         self.carrierInfo = carrierInfo
         self.batteryStatus = batteryStatus
+        self.brightnessLevel = brightnessLevel
         self.isLowPowerModeEnabled = isLowPowerModeEnabled
         self.additionalContext = additionalContext
     }

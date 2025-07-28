@@ -24,7 +24,8 @@ struct RUMAutoScenario: Scenario {
                 applicationID: info.applicationID,
                 uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
                 uiKitActionsPredicate: DefaultUIKitRUMActionsPredicate(),
-                swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate()
+                swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
+                swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
             )
         )
 
