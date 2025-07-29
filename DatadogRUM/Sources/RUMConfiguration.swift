@@ -521,8 +521,6 @@ extension RUM.Configuration {
     public enum FeatureFlag: String {
         /// View Hitches
         case viewHitches
-        /// Accessibility attributes
-        case collectAccessibilitySettings
     }
 }
 
@@ -530,8 +528,7 @@ extension RUM.Configuration.FeatureFlags {
     /// The defaults Feature Flags applied to RUM Configuration
     public static var defaults: Self {
         [
-            .viewHitches: false,
-            .collectAccessibilitySettings: false
+            .viewHitches: false
         ]
     }
 
