@@ -1,8 +1,16 @@
 # Unreleased
 
+# 2.30.0 / 28-07-2025
+
 - [FEATURE] Add SwiftUI support for Session Replay privacy overrides. See [#2333][]
-- [IMPROVEMENT] Add `accountInfo` property to `DDLogEvent`. See [#2360][]
 - [FEATURE] Add Clear User Info API. See [#2369][]
+- [FEATURE] Collect battery and locale attributes. See [#2351][] [#2327][]
+- [IMPROVEMENT] Add `accountInfo` property to `DDLogEvent`. See [#2360][]
+- [IMPROVEMENT] Improve Time To Network Settled calculation when `URLSessionTaskMetrics` is available. See [#2405][]
+- [IMPROVEMENT] Expand Action Tracking to other UI components [#2348][]
+- [IMPROVEMENT] Improve backtrace collection and error messages [#2395][]
+- [IMPROVEMENT] Fix SwiftUI Auto-tracking ObjC APIs [#2344][]
+- [IMPROVEMENT] Improve support of Session Replay on iOS 26 for apps built with Xcode 26 [#2354][] [#2370][] [#2355][]
 
 # 2.29.0 / 18-06-2025
 
@@ -897,9 +905,19 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2304]: https://github.com/DataDog/dd-sdk-ios/pull/2304
 [#2315]: https://github.com/DataDog/dd-sdk-ios/pull/2315
 [#2316]: https://github.com/DataDog/dd-sdk-ios/pull/2316
+[#2327]: https://github.com/DataDog/dd-sdk-ios/pull/2327
+[#2333]: https://github.com/DataDog/dd-sdk-ios/pull/2333
 [#2343]: https://github.com/DataDog/dd-sdk-ios/pull/2343
+[#2344]: https://github.com/DataDog/dd-sdk-ios/pull/2344
+[#2348]: https://github.com/DataDog/dd-sdk-ios/pull/2348
+[#2351]: https://github.com/DataDog/dd-sdk-ios/pull/2351
+[#2354]: https://github.com/DataDog/dd-sdk-ios/pull/2354
+[#2355]: https://github.com/DataDog/dd-sdk-ios/pull/2355
 [#2360]: https://github.com/DataDog/dd-sdk-ios/pull/2360
 [#2369]: https://github.com/DataDog/dd-sdk-ios/pull/2369
+[#2370]: https://github.com/DataDog/dd-sdk-ios/pull/2370
+[#2395]: https://github.com/DataDog/dd-sdk-ios/pull/2395
+[#2405]: https://github.com/DataDog/dd-sdk-ios/pull/2405
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
