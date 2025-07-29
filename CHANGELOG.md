@@ -1,4 +1,5 @@
 # Unreleased
+- [FEATURE] Send Accessibility attributes in View Updates. See [#2410][]
 
 - [IMPROVEMENT] Add missing `versionMajor` property to the `DDLogEventOperatingSystem` definition in Objective-C. See [#2463][]
 
@@ -25,7 +26,6 @@ Release `3.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 - [IMPROVEMENT] Improve SwiftUI system image and SF symbol capture in Session Replay through shape SVG recording, image maskColor support, and drawing rasterization. See [#2432][] [#2428][] [#2391][]
 
 # 2.30.0 / 28-07-2025
-
 - [FEATURE] Add SwiftUI support for Session Replay privacy overrides. See [#2333][]
 - [FEATURE] Add Clear User Info API. See [#2369][]
 - [FEATURE] Collect battery and locale attributes. See [#2351][] [#2327][]
@@ -956,6 +956,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2442]: https://github.com/DataDog/dd-sdk-ios/pull/2442
 [#2455]: https://github.com/DataDog/dd-sdk-ios/pull/2455
 [#2463]: https://github.com/DataDog/dd-sdk-ios/pull/2463
+[#2410]: https://github.com/DataDog/dd-sdk-ios/pull/2410
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
