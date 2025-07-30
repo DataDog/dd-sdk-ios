@@ -168,6 +168,53 @@ final class RUMViewEventsFilterTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testFilterAlwaysKeepsEventsWithAccessibility() throws {
+        // Test that events with accessibility are always kept, even if they would normally be filtered out
+        let events = [
+            try Event(data: "A.1", metadata: RUMViewEvent.Metadata(id: "A", documentVersion: 1, hasAccessibility: false)),
+            try Event(data: "A.2", metadata: RUMViewEvent.Metadata(id: "A", documentVersion: 2, hasAccessibility: true)), // This should be kept
+            try Event(data: "A.3", metadata: RUMViewEvent.Metadata(id: "A", documentVersion: 3, hasAccessibility: false)),
+            try Event(data: "A.4", metadata: RUMViewEvent.Metadata(id: "A", documentVersion: 4, hasAccessibility: false)),
+            try Event(data: "B.1", metadata: RUMViewEvent.Metadata(id: "B", documentVersion: 1, hasAccessibility: false)),
+            try Event(data: "B.2", metadata: RUMViewEvent.Metadata(id: "B", documentVersion: 2, hasAccessibility: true)), // This should be kept
+            try Event(data: "B.3", metadata: RUMViewEvent.Metadata(id: "B", documentVersion: 3, hasAccessibility: false)),
+        ]
+
+        let actual = sut.filter(events: events)
+
+        // Verify that accessibility events are kept
+        let accessibilityEvents = actual.filter { event in
+            guard let metadata = event.metadata,
+                  let viewMetadata = try? JSONDecoder().decode(RUMViewEvent.Metadata.self, from: metadata) else {
+                return false
+            }
+            return viewMetadata.hasAccessibility == true
+        }
+
+        // Should have 2 accessibility events (A.2 and B.2)
+        XCTAssertEqual(accessibilityEvents.count, 2, "Accessibility events should always be kept")
+
+        // Verify the specific accessibility events are present
+        let hasA2 = actual.contains { event in
+            guard let metadata = event.metadata,
+                  let viewMetadata = try? JSONDecoder().decode(RUMViewEvent.Metadata.self, from: metadata) else {
+                return false
+            }
+            return viewMetadata.id == "A" && viewMetadata.documentVersion == 2 && viewMetadata.hasAccessibility
+        }
+
+        let hasB2 = actual.contains { event in
+            guard let metadata = event.metadata,
+                  let viewMetadata = try? JSONDecoder().decode(RUMViewEvent.Metadata.self, from: metadata) else {
+                return false
+            }
+            return viewMetadata.id == "B" && viewMetadata.documentVersion == 2 && viewMetadata.hasAccessibility
+        }
+
+        XCTAssertTrue(hasA2, "Event A.2 with accessibility should be kept")
+        XCTAssertTrue(hasB2, "Event B.2 with accessibility should be kept")
+    }
+
     // MARK: - Error handling and telemetry
 
     func testFilterWhenInvalidMetadata() throws {

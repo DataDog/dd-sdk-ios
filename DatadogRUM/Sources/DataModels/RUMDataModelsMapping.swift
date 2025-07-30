@@ -67,6 +67,7 @@ internal extension RUMViewEvent {
     struct Metadata: Codable {
         let id: String
         let documentVersion: Int64
+        let hasAccessibility: Bool
         /// Duration of the view in nanoseconds.
         let duration: Int64?
         /// Index of the view within its session (0 for the first view).
@@ -75,13 +76,51 @@ internal extension RUMViewEvent {
         private enum CodingKeys: String, CodingKey {
             case id = "id"
             case documentVersion = "document_version"
+            case hasAccessibility = "has_accessibility"
             case duration = "duration"
             case indexInSession = "index"
+        }
+
+        init(id: String, documentVersion: Int64, hasAccessibility: Bool = false) {
+            self.id = id
+            self.documentVersion = documentVersion
+            self.hasAccessibility = hasAccessibility ?? false
         }
     }
 
     enum EventType: String, Codable {
         case view
+    }
+
+    /// Checks if the accessibility object has any meaningful data
+    private func hasValidAccessibilityData() -> Bool {
+        guard let accessibility = view.accessibility else {
+            return false
+        }
+
+        // Check if any accessibility property has a non-nil value
+        return accessibility.assistiveSwitchEnabled != nil ||
+               accessibility.assistiveTouchEnabled != nil ||
+               accessibility.boldTextEnabled != nil ||
+               accessibility.buttonShapesEnabled != nil ||
+               accessibility.closedCaptioningEnabled != nil ||
+               accessibility.grayscaleEnabled != nil ||
+               accessibility.increaseContrastEnabled != nil ||
+               accessibility.invertColorsEnabled != nil ||
+               accessibility.monoAudioEnabled != nil ||
+               accessibility.onOffSwitchLabelsEnabled != nil ||
+               accessibility.reduceMotionEnabled != nil ||
+               accessibility.reduceTransparencyEnabled != nil ||
+               accessibility.reducedAnimationsEnabled != nil ||
+               accessibility.rtlEnabled != nil ||
+               accessibility.screenReaderEnabled != nil ||
+               accessibility.shakeToUndoEnabled != nil ||
+               accessibility.shouldDifferentiateWithoutColor != nil ||
+               accessibility.singleAppModeEnabled != nil ||
+               accessibility.speakScreenEnabled != nil ||
+               accessibility.speakSelectionEnabled != nil ||
+               accessibility.textSize != nil ||
+               accessibility.videoAutoplayEnabled != nil
     }
 
     /// Creates `Metadata` from the given `RUMViewEvent`.
@@ -90,6 +129,7 @@ internal extension RUMViewEvent {
         return Metadata(
             id: view.id,
             documentVersion: dd.documentVersion,
+            hasAccessibility: hasValidAccessibilityData(),
             duration: view.timeSpent,
             indexInSession: viewIndexInSession
         )
