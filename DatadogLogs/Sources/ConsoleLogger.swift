@@ -89,15 +89,32 @@ internal final class ConsoleLogger: LoggerProtocol {
 }
 
 extension ConsoleLogger: InternalLoggerProtocol {
-    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String: Encodable]?) {
+    func log(
+        level: LogLevel,
+        message: String,
+        errorKind: String?,
+        errorMessage: String?,
+        stackTrace: String?,
+        attributes: [String: Encodable]?
+    ) {
         var errorString: String? = nil
         if errorKind != nil || errorMessage != nil || stackTrace != nil {
-            // Cross platform frameworks don't necessarilly send all values for errors. Send empty strings
+            // Cross platform frameworks don't necessarily send all values for errors. Send empty strings
             // for any values that are empty.
             let ddError = DDError(type: errorKind ?? "", message: errorMessage ?? "", stack: stackTrace ?? "")
             errorString = buildErrorString(error: ddError)
         }
 
         internalLog(level: level, message: message, errorString: errorString)
+    }
+
+    func critical(
+        message: String,
+        error: Error?,
+        attributes: [String: Encodable]?,
+        completionHandler: @escaping CompletionHandler
+    ) {
+        self.critical(message, error: error, attributes: attributes)
+        completionHandler()
     }
 }
