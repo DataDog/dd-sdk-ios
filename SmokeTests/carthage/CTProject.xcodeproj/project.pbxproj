@@ -36,6 +36,8 @@
 		D20D6FEB29F6C2F200D2886E /* DatadogRUM.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D20D6FE329F6C2D600D2886E /* DatadogRUM.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D22919292B76525C00C38A18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D22919282B76525C00C38A18 /* PrivacyInfo.xcprivacy */; };
 		D229192A2B76525C00C38A18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D22919282B76525C00C38A18 /* PrivacyInfo.xcprivacy */; };
+		D229FF6A2E3BC257009CCD62 /* DatadogProfiler.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D229FF692E3BC257009CCD62 /* DatadogProfiler.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D229FF6B2E3BC261009CCD62 /* DatadogProfiler.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D229FF692E3BC257009CCD62 /* DatadogProfiler.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D2675BF32A019CF500190669 /* DatadogCrashReporting.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */; };
 		D2675BF42A019CF500190669 /* DatadogCrashReporting.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D2675BF52A019CF600190669 /* DatadogInternal.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D240FC8B2995183D00D9F099 /* DatadogInternal.xcframework */; };
@@ -99,6 +101,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				D229FF6A2E3BC257009CCD62 /* DatadogProfiler.xcframework in Embed Frameworks */,
 				D2966C2729CA1C5B00FC6B3C /* DatadogTrace.xcframework in Embed Frameworks */,
 				3CB135E829F6B90F0000234F /* DatadogWebViewTracking.xcframework in Embed Frameworks */,
 				617803D32A6FF2EA005FE258 /* DatadogSessionReplay.xcframework in Embed Frameworks */,
@@ -120,6 +123,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				D229FF6B2E3BC261009CCD62 /* DatadogProfiler.xcframework in Embed Frameworks */,
 				D290BA2627CD09740019936D /* CrashReporter.xcframework in Embed Frameworks */,
 				3C0F8E252B768A17004948CD /* OpenTelemetryApi.xcframework in Embed Frameworks */,
 				D20D6FE729F6C2EB00D2886E /* DatadogRUM.xcframework in Embed Frameworks */,
@@ -158,6 +162,7 @@
 		9E9D5E8725F90FC6002F12A0 /* DatadogCore.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogCore.xcframework; path = Carthage/Build/DatadogCore.xcframework; sourceTree = "<group>"; };
 		D20D6FE329F6C2D600D2886E /* DatadogRUM.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogRUM.xcframework; path = Carthage/Build/DatadogRUM.xcframework; sourceTree = "<group>"; };
 		D22919282B76525C00C38A18 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		D229FF692E3BC257009CCD62 /* DatadogProfiler.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogProfiler.xcframework; path = Carthage/Build/DatadogProfiler.xcframework; sourceTree = "<group>"; };
 		D240FC8B2995183D00D9F099 /* DatadogInternal.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogInternal.xcframework; path = Carthage/Build/DatadogInternal.xcframework; sourceTree = "<group>"; };
 		D26F741729ACC61E00D25622 /* DatadogLogs.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogLogs.xcframework; path = Carthage/Build/DatadogLogs.xcframework; sourceTree = "<group>"; };
 		D290BA2D27CD09740019936D /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -301,6 +306,7 @@
 			isa = PBXGroup;
 			children = (
 				5B828D5B2E7972B10088E11D /* DatadogFlags.xcframework */,
+				D229FF692E3BC257009CCD62 /* DatadogProfiler.xcframework */,
 				3C0F8E212B768A05004948CD /* OpenTelemetryApi.xcframework */,
 				617803D12A6FF2EA005FE258 /* DatadogSessionReplay.xcframework */,
 				D20D6FE329F6C2D600D2886E /* DatadogRUM.xcframework */,

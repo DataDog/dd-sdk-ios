@@ -103,6 +103,7 @@ test-ios-all:
 	@$(MAKE) test-ios SCHEME="DatadogCrashReporting iOS"
 	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking iOS"
 	@$(MAKE) test-ios SCHEME="DatadogFlags iOS"
+	@$(MAKE) test-ios SCHEME="DatadogProfiler iOS"
 	@$(MAKE) test-ios SCHEME="DatadogIntegrationTests iOS"
 
 # Run unit tests for specified SCHEME using tvOS Simulator
@@ -122,6 +123,7 @@ test-tvos-all:
 	@$(MAKE) test-tvos SCHEME="DatadogTrace tvOS"
 	@$(MAKE) test-tvos SCHEME="DatadogCrashReporting tvOS"
 	@$(MAKE) test-tvos SCHEME="DatadogFlags tvOS"
+	@$(MAKE) test-tvos SCHEME="DatadogProfiler tvOS"
 	@$(MAKE) test-tvos SCHEME="DatadogIntegrationTests tvOS"
 
 # Run UI tests for specified TEST_PLAN
@@ -323,8 +325,6 @@ sr-snapshot-tests-open:
 	@$(ECHO_TITLE) "make sr-snapshot-tests-open"
 	./tools/sr-snapshot-test.sh --open-project
 
-### API-SURFACE
-
 # Define default paths for API output files
 SWIFT_OUTPUT_PATH ?= api-surface-swift
 OBJC_OUTPUT_PATH ?= api-surface-objc
@@ -336,7 +336,7 @@ ifeq ($(ENV),ci)
 endif
 
 # Define the list of Datadog modules for API surface generation
-DATADOG_MODULES := DatadogCore DatadogLogs DatadogTrace DatadogRUM DatadogCrashReporting DatadogWebViewTracking DatadogSessionReplay DatadogFlags
+DATADOG_MODULES := DatadogCore DatadogLogs DatadogTrace DatadogRUM DatadogCrashReporting DatadogWebViewTracking DatadogSessionReplay DatadogFlags DatadogProfiler
 
 # Generate api-surface files for Datadog APIs
 api-surface:
@@ -445,6 +445,7 @@ release-publish-dependent-podspecs:
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogCrashReporting.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogWebViewTracking.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogFlags.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogProfiler.podspec"
 
 # Set ot update CI secrets
 set-ci-secret:
