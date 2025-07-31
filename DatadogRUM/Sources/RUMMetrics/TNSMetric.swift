@@ -16,6 +16,14 @@ internal protocol TNSMetricTracking {
     ///   - resourceURL: The URL of this resource.
     func trackResourceStart(at startDate: Date, resourceID: RUMUUID, resourceURL: String)
 
+    /// Updates the resource identified by its `resourceID`.
+    ///
+    /// - Parameters:
+    ///   - metrics: Performance metrics collected during the resource’s lifecycle, including DNS lookup, redirection, fetch, and other phases.
+    ///   - resourceID: The unique identifier for the resource.
+    ///   - resourceURL: The URL associated with the resource.
+    func updateResource(with metrics: ResourceMetrics, resourceID: RUMUUID, resourceURL: String)
+
     /// Tracks the completion of a resource identified by its `resourceID`.
     ///
     /// - Parameters:
@@ -137,6 +145,43 @@ internal final class TNSMetric: TNSMetricTracking {
         pendingInitialResources[resourceID] = startDate
     }
 
+    func updateResource(with metrics: ResourceMetrics, resourceID: RUMUUID, resourceURL: String) {
+        guard !isViewStopped else {
+            return
+        }
+
+        let resourceParams = TNSResourceParams(
+            url: resourceURL,
+            timeSinceViewStart: metrics.fetch.start.timeIntervalSince(viewStartDate),
+            viewName: viewName
+        )
+
+        guard resourcePredicate.isInitialResource(from: resourceParams) else {
+            // Not an initial resource.
+            pendingInitialResources.removeValue(forKey: resourceID)
+            return
+        }
+
+        if metrics.fetch.start < viewStartDate {
+            if pendingInitialResources.removeValue(forKey: resourceID) != nil {
+                invalidInitialResourcesCount += 1
+            }
+            return
+        }
+
+        if pendingInitialResources[resourceID] == nil {
+            initialResourcesCount += 1
+        }
+
+        // If we previously completed a wave, but new initial resources are starting, we begin a new wave:
+        if pendingInitialResources.isEmpty, latestCompletedTNSValue != nil {
+            // Reset the `accumulatedEndTime` for the new wave.
+            maxResourceEndTime = nil
+        }
+
+        pendingInitialResources[resourceID] = metrics.fetch.start
+    }
+
     func trackResourceEnd(at endDate: Date, resourceID: RUMUUID, resourceDuration: TimeInterval?) {
         guard !isViewStopped else {
             return
@@ -229,7 +274,7 @@ internal final class TNSMetric: TNSMetricTracking {
         // Check if the app stayed foregrounded through the resource load time.
         let loadingEndDate = viewStartDate.addingTimeInterval(tnsValue)
         let loadingStates = appStateHistory.take(between: viewStartDate...loadingEndDate)
-        let wasAlwaysForeground = !loadingStates.snapshots.contains { $0.state != .active }
+        let wasAlwaysForeground = !loadingStates.snapshots.contains { $0.state != .active && $0.state != .inactive }
 
         guard wasAlwaysForeground else {
             return .failure(.appNotInForeground)
