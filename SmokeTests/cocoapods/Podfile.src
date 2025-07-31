@@ -9,6 +9,7 @@ abstract_target 'Common' do
   pod 'DatadogSessionReplay', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
   pod 'DatadogAlamofireExtension', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
   pod 'DatadogCrashReporting', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+  pod 'DatadogProfiler', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
   pod 'DatadogObjc', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
   pod 'Alamofire'
 

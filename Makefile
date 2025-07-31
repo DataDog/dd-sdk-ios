@@ -101,6 +101,7 @@ test-ios-all:
 	@$(MAKE) test-ios SCHEME="DatadogTrace iOS"
 	@$(MAKE) test-ios SCHEME="DatadogCrashReporting iOS"
 	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking iOS"
+	@$(MAKE) test-ios SCHEME="DatadogProfiler iOS"
 	@$(MAKE) test-ios SCHEME="DatadogIntegrationTests iOS"
 
 # Run unit tests for specified SCHEME using tvOS Simulator
@@ -119,6 +120,7 @@ test-tvos-all:
 	@$(MAKE) test-tvos SCHEME="DatadogLogs tvOS"
 	@$(MAKE) test-tvos SCHEME="DatadogTrace tvOS"
 	@$(MAKE) test-tvos SCHEME="DatadogCrashReporting tvOS"
+	@$(MAKE) test-tvos SCHEME="DatadogProfiler tvOS"
 	@$(MAKE) test-tvos SCHEME="DatadogIntegrationTests tvOS"
 
 # Run UI tests for specified TEST_PLAN
@@ -323,6 +325,7 @@ api-surface:
 			--library-name DatadogCrashReporting \
 			--library-name DatadogWebViewTracking \
 			--library-name DatadogSessionReplay \
+			--library-name DatadogProfiler \
 			> ../../api-surface-swift && \
 			cd -
 
@@ -395,6 +398,7 @@ release-publish-dependent-podspecs:
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSessionReplay.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogCrashReporting.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogWebViewTracking.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogProfiler.podspec"
 
 # Publish legacy podspecs
 release-publish-legacy-podspecs:

@@ -64,6 +64,10 @@ let package = Package(
             name: "DatadogWebViewTracking",
             targets: ["DatadogWebViewTracking"]
         ),
+        .library(
+            name: "DatadogProfiler",
+            targets: ["DatadogProfiler"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/microsoft/plcrashreporter.git", from: "1.12.0"),
@@ -217,6 +221,28 @@ let package = Package(
             resources: [
                 .process("Resources/Assets.xcassets")
             ]
+        ),
+        
+        .target(
+            name: "DatadogProfiler",
+            dependencies: [
+                .target(name: "DatadogInternal"),
+                .target(name: "DatadogMachProfiler")
+            ],
+            path: "DatadogProfiler/Sources",
+            swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
+        ),
+        .target(
+            name: "DatadogMachProfiler",
+            path: "DatadogProfiler/Mach"
+        ),
+        .testTarget(
+            name: "DatadogProfilerTests",
+            dependencies: [
+                .target(name: "DatadogProfiler"),
+                .target(name: "TestUtilities"),
+            ],
+            path: "DatadogProfiler/Tests"
         ),
 
         .target(
