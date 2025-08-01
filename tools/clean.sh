@@ -26,7 +26,7 @@ clean_dir() {
 check_for_help "$@"
 parse_args "$@"
 
-if [[ "$derived-data" == "true" ]]; then
+if [[ "$derived_data" == "true" ]]; then
     echo_subtitle "Cleaning Xcode derived data"
     clean_dir ~/Library/Developer/Xcode/DerivedData
     clean_dir ~/Library/org.swift.swiftpm
