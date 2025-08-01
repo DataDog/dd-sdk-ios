@@ -12,6 +12,8 @@ public class FileWriterMock: Writer {
 
     /// Recorded events.
     public private(set) var events: [Encodable] = []
+    /// Recorded metadata.
+    public private(set) var metadata: [Encodable] = []
 
     /// Adds an `Encodable` event to the events stack.
     ///
@@ -27,5 +29,13 @@ public class FileWriterMock: Writer {
     /// - Returns: A list of event of the give type.
     public func events<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
         events.compactMap { $0 as? T }
+    }
+
+    /// Returns all metadata of the given type.
+    ///
+    /// - Parameter type: The metadata type to retrieve.
+    /// - Returns: A list of metadata of the give type.
+    public func metadata<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
+        metadata.compactMap { $0 as? T }
     }
 }

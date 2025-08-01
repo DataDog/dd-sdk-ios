@@ -4,10 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if os(iOS)
 import Foundation
 
-internal protocol MultipartFormDataBuilder {
+public protocol MultipartFormDataBuilder {
     /// The boundary  of this multipart form.
     var boundary: String { get }
     /// Adds a field.
@@ -19,17 +18,17 @@ internal protocol MultipartFormDataBuilder {
 }
 
 /// A helper facilitating creation of `multipart/form-data` body.
-internal struct MultipartFormData: MultipartFormDataBuilder {
+public struct MultipartFormData: MultipartFormDataBuilder {
     private var body: Data
 
-    private(set) var boundary: String
+    public private(set) var boundary: String
 
-    init(boundary: UUID = UUID()) {
+    public init(boundary: UUID = UUID()) {
         self.body = Data()
         self.boundary = boundary.uuidString
     }
 
-    mutating func addFormField(name: String, value: String) {
+    public mutating func addFormField(name: String, value: String) {
         body.append(string: "--\(boundary)\r\n")
         body.append(string: "Content-Disposition: form-data; name=\"\(name)\"\r\n")
         body.append(string: "\r\n")
@@ -37,7 +36,7 @@ internal struct MultipartFormData: MultipartFormDataBuilder {
         body.append(string: "\r\n")
     }
 
-    mutating func addFormData(name: String, filename: String, data: Data, mimeType: String) {
+    public mutating func addFormData(name: String, filename: String, data: Data, mimeType: String) {
         body.append(string: "--\(boundary)\r\n")
         body.append(string: "Content-Disposition: form-data; name=\"\(name)\"; filename=\"\(filename)\"\r\n")
         body.append(string: "Content-Type: \(mimeType)\r\n")
@@ -46,7 +45,7 @@ internal struct MultipartFormData: MultipartFormDataBuilder {
         body.append(string: "\r\n")
     }
 
-    mutating func build() -> Data {
+    public mutating func build() -> Data {
         defer {
             // reset builder
             body = Data()
@@ -66,4 +65,3 @@ private extension Data {
         self.append(data)
     }
 }
-#endif
