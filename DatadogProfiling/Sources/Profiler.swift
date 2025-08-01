@@ -5,3 +5,13 @@
  */
 
 import Foundation
+
+// swiftlint:disable duplicate_imports
+#if SPM_BUILD
+#if swift(>=6.0)
+internal import DatadogMachProfiler
+#else
+@_implementationOnly import DatadogMachProfiler
+#endif
+#endif
+// swiftlint:enable duplicate_imports

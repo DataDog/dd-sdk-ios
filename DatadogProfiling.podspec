@@ -17,7 +17,15 @@ Pod::Spec.new do |s|
   
   s.source_files = ["DatadogProfiling/Sources/**/*.swift",
                     "DatadogProfiling/Mach/**/*.{h,c,cpp}"]
+  
+  s.private_header_files = ["DatadogProfiling/Mach/*.h"]
+  s.public_header_files = ["DatadogProfiling/Mach/include/*.h"]
 
   s.dependency 'DatadogInternal', s.version.to_s
+
+  # Configure C++ compilation
+  s.pod_target_xcconfig = {
+    'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
+  }
 
 end

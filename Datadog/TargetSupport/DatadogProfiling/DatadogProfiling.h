@@ -4,8 +4,5 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import XCTest
-
-@testable import DatadogProfiling
-
-final class ProfilerTests: XCTestCase { }
+// DatadogProfiling C API
+#import "mach_profiler.h"
