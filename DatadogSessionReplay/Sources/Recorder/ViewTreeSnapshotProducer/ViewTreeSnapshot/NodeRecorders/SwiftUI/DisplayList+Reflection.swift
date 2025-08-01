@@ -56,6 +56,9 @@ extension DisplayList.Effect: Reflection {
         case let (.enum("clip"), tuple as (SwiftUI.Path, SwiftUI.FillStyle, Any)):
             self = .clip(tuple.0, tuple.1)
 
+        case let(.enum("filter"), filter):
+            self = try .filter(reflector.reflect(filter))
+
         case (.enum("platformGroup"), _):
             self = .platformGroup
 
@@ -153,15 +156,15 @@ extension DisplayList.Content.Value: Reflection {
             self = try .image(reflector.reflect(image))
 
         case let (.enum("drawing"), (contents, origin, _) as (NSObject, CGPoint, Any)):
-            if let image = GraphicsImage(rasterizing: contents, origin: origin) {
-                self = .image(image)
+            if let displayListContents = DisplayListContents(contents) {
+                self = .drawing(displayListContents, origin)
             } else {
                 self = .unknown
             }
 
         case let (.enum("color"), color):
             if #available(iOS 26, tvOS 26, *) {
-                self = try .color(reflector.reflect(type: ColorView.self, color).color)
+                self = try .color(reflector.reflect(type: ColorView.self, color).color.base)
             } else {
                 self = try .color(reflector.reflect(color))
             }

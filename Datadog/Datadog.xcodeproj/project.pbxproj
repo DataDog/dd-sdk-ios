@@ -392,9 +392,13 @@
 		49D8C0B82AC5D2160075E427 /* RUM+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B62AC5D2160075E427 /* RUM+Internal.swift */; };
 		49D8C0BD2AC5F2BB0075E427 /* Logs+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */; };
 		49D8C0BE2AC5F2BC0075E427 /* Logs+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */; };
+		5B0A9B892E3B74FB00A8131C /* DisplayListContents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0A9B882E3B74EA00A8131C /* DisplayListContents.swift */; };
+		5B0A9B8B2E3BB98E00A8131C /* GraphicsFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0A9B8A2E3BB98500A8131C /* GraphicsFilter.swift */; };
+		5B0A9B8D2E3BBB4500A8131C /* GraphicsFilter+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */; };
 		5BCBC0CD2DF85B6A0094DCC2 /* SessionReplayPrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */; };
 		5BFDD7A92E28FDD3009A2CEE /* RUMWebViewContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */; };
 		5BFDD7AA2E28FDD3009A2CEE /* RUMWebViewContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */; };
+		5BFE7B7B2E3CFCDE00B8FAA8 /* ImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BFE7B7A2E3CFCDA00B8FAA8 /* ImageRenderer.swift */; };
 		61020C2A2757AD91005EEAEA /* BackgroundLocationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */; };
 		61020C2C2758E853005EEAEA /* DebugBackgroundEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61020C2B2758E853005EEAEA /* DebugBackgroundEventsViewController.swift */; };
 		61054E612A6EE10A00AAA894 /* SRCompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E082A6EE10A00AAA894 /* SRCompression.swift */; };
@@ -2484,8 +2488,12 @@
 		49274908288048F400ECD49B /* RUMInternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMInternalProxyTests.swift; sourceTree = "<group>"; };
 		49D8C0B62AC5D2160075E427 /* RUM+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUM+Internal.swift"; sourceTree = "<group>"; };
 		49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logs+Internal.swift"; sourceTree = "<group>"; };
+		5B0A9B882E3B74EA00A8131C /* DisplayListContents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayListContents.swift; sourceTree = "<group>"; };
+		5B0A9B8A2E3BB98500A8131C /* GraphicsFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphicsFilter.swift; sourceTree = "<group>"; };
+		5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphicsFilter+Reflection.swift"; sourceTree = "<group>"; };
 		5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayPrivacyView.swift; sourceTree = "<group>"; };
 		5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMWebViewContext.swift; sourceTree = "<group>"; };
+		5BFE7B7A2E3CFCDA00B8FAA8 /* ImageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRenderer.swift; sourceTree = "<group>"; };
 		61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundLocationMonitor.swift; sourceTree = "<group>"; };
 		61020C2B2758E853005EEAEA /* DebugBackgroundEventsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugBackgroundEventsViewController.swift; sourceTree = "<group>"; };
 		61054E082A6EE10A00AAA894 /* SRCompression.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRCompression.swift; sourceTree = "<group>"; };
@@ -6665,10 +6673,14 @@
 		D2AD1CC12CE4AE6600106C74 /* SwiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				5BFE7B7A2E3CFCDA00B8FAA8 /* ImageRenderer.swift */,
 				D2AD1CB92CE4AE6600106C74 /* Color.swift */,
 				D2AD1CBA2CE4AE6600106C74 /* Color+Reflection.swift */,
 				D2AD1CBC2CE4AE6600106C74 /* DisplayList.swift */,
 				D2AD1CBD2CE4AE6600106C74 /* DisplayList+Reflection.swift */,
+				5B0A9B882E3B74EA00A8131C /* DisplayListContents.swift */,
+				5B0A9B8A2E3BB98500A8131C /* GraphicsFilter.swift */,
+				5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */,
 				D2AD1CBE2CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift */,
 				D2AD1CBF2CE4AE6600106C74 /* Text.swift */,
 				D2AD1CC02CE4AE6600106C74 /* Text+Reflection.swift */,
@@ -8655,6 +8667,7 @@
 				A7B932FD2B1F6A0A00AE6477 /* EnrichedResource.swift in Sources */,
 				61054E622A6EE10A00AAA894 /* RecordWriter.swift in Sources */,
 				61054E692A6EE10A00AAA894 /* UIImage+SessionReplay.swift in Sources */,
+				5B0A9B8B2E3BB98E00A8131C /* GraphicsFilter.swift in Sources */,
 				D218B0462D072C8400E3F82C /* SessionReplayTelemetry.swift in Sources */,
 				61054E782A6EE10A00AAA894 /* UIDatePickerRecorder.swift in Sources */,
 				61054E822A6EE10A00AAA894 /* UILabelRecorder.swift in Sources */,
@@ -8691,6 +8704,7 @@
 				96F25A832CC7EA4400459567 /* UIView+SessionReplayPrivacyOverrides+objc.swift in Sources */,
 				61054E7D2A6EE10A00AAA894 /* UITextFieldRecorder.swift in Sources */,
 				61054E832A6EE10A00AAA894 /* UISwitchRecorder.swift in Sources */,
+				5B0A9B892E3B74FB00A8131C /* DisplayListContents.swift in Sources */,
 				61054E9A2A6EE10A00AAA894 /* NodesFlattener.swift in Sources */,
 				61054E662A6EE10A00AAA894 /* KeyWindowObserver.swift in Sources */,
 				61054E972A6EE10A00AAA894 /* Diff.swift in Sources */,
@@ -8711,6 +8725,7 @@
 				61054E942A6EE10A00AAA894 /* TextObfuscator.swift in Sources */,
 				A7B932FE2B1F6A0A00AE6477 /* SRDataModels+UIKit.swift in Sources */,
 				61054E862A6EE10A00AAA894 /* UnsupportedViewRecorder.swift in Sources */,
+				5B0A9B8D2E3BBB4500A8131C /* GraphicsFilter+Reflection.swift in Sources */,
 				61054E882A6EE10A00AAA894 /* ViewTreeRecordingContext.swift in Sources */,
 				D2AD1CCC2CE4AE9800106C74 /* UIHostingViewRecorder.swift in Sources */,
 				61054E932A6EE10A00AAA894 /* MultipartFormData.swift in Sources */,
@@ -8732,6 +8747,7 @@
 				96F25A822CC7EA4400459567 /* SessionReplayPrivacyOverrides+objc.swift in Sources */,
 				A70ADCD22B583B1300321BC9 /* UIImageResource.swift in Sources */,
 				61054E792A6EE10A00AAA894 /* UITextViewRecorder.swift in Sources */,
+				5BFE7B7B2E3CFCDE00B8FAA8 /* ImageRenderer.swift in Sources */,
 				61054E9B2A6EE10B00AAA894 /* CGRectExtensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
