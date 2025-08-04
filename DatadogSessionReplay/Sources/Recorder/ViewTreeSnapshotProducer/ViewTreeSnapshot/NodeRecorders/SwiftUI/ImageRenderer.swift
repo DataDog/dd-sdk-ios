@@ -8,6 +8,7 @@
 
 import CoreGraphics
 import Foundation
+import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 internal final class ImageRenderer {
@@ -15,13 +16,12 @@ internal final class ImageRenderer {
         private struct Wrapped: Hashable {
             let contents: DisplayListContents
             let origin: CGPoint
-            let scale: CGFloat
         }
 
         private let wrappedValue: Wrapped
 
-        init(contents: DisplayListContents, origin: CGPoint, scale: CGFloat) {
-            self.wrappedValue = .init(contents: contents, origin: origin, scale: scale)
+        init(contents: DisplayListContents, origin: CGPoint) {
+            self.wrappedValue = .init(contents: contents, origin: origin)
         }
 
         override var hash: Int {
@@ -36,20 +36,22 @@ internal final class ImageRenderer {
         }
     }
 
-    private let cache = NSCache<Key, CGImage>()
+    private let cache = NSCache<Key, UIImage>()
+    private let scale: CGFloat
 
-    init() {
+    init(scale: CGFloat = UIScreen.main.scale) {
         cache.countLimit = 20
+        self.scale = scale
     }
 
-    func image(with contents: DisplayListContents, origin: CGPoint, scale: CGFloat) -> CGImage? {
-        let key = Key(contents: contents, origin: origin, scale: scale)
+    func image(with contents: DisplayListContents, origin: CGPoint) -> UIImage? {
+        let key = Key(contents: contents, origin: origin)
 
         if let image = cache.object(forKey: key) {
             return image
         }
 
-        guard let image = makeImage(with: contents, origin: origin, scale: scale) else {
+        guard let image = makeImage(with: contents, origin: origin) else {
             return nil
         }
 
@@ -58,12 +60,15 @@ internal final class ImageRenderer {
         return image
     }
 
-    private func makeImage(with contents: DisplayListContents, origin: CGPoint, scale: CGFloat) -> CGImage? {
+    private func makeImage(with contents: DisplayListContents, origin: CGPoint) -> UIImage? {
         guard let bounds = contents.bounds else {
             return nil
         }
 
         // Compute image size
+        //   - Add 0.5 pixel padding (0.5 + 0.5)
+        //   - Add 0.5 pixel round-half-up
+        //   - Scale
 
         let width = Int((bounds.width + 1.5) * scale)
         let height = Int((bounds.height + 1.5) * scale)
@@ -97,7 +102,9 @@ internal final class ImageRenderer {
 
         contents.render(in: bitmapContext, scale: scale)
 
-        return bitmapContext.makeImage()
+        return bitmapContext.makeImage().map {
+            UIImage(cgImage: $0, scale: scale, orientation: .up)
+        }
     }
 }
 

@@ -74,17 +74,16 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
         case let .clip(path, _):
             let clip = context.convert(frame: path.boundingRect)
             context.clip = context.clip.intersection(clip)
-        case let .filter(filter):
-            if case .colorMultiply(let color) = filter {
-                context.tintColor = color
-            }
+
+        case let .filter(.colorMultiply(color)):
+            context.tintColor = color
 
         case .platformGroup:
             if let viewInfo = renderer.viewCache.map[.init(id: .init(identity: item.identity))] {
                 context.convert(to: viewInfo.frame)
             }
 
-        case .identify, .unknown:
+        case .identify, .filter, .unknown:
             break
         }
 
@@ -180,6 +179,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                 )
             }
         case let .drawing(contents, origin):
+            // We treat `drawing` as bundled images
             if case .maskAll = self.imagePrivacyLevel {
                 return context.builder.createPlaceholderWireframe(
                     id: id,
@@ -188,10 +188,9 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                     label: "Image"
                 )
             } else {
-                let scale = UIScreen.main.scale
-                if let image = imageRenderer.image(with: contents, origin: origin, scale: scale) {
+                if let image = imageRenderer.image(with: contents, origin: origin) {
                     let imageResource = UIImageResource(
-                        image: UIImage(cgImage: image, scale: scale, orientation: .up),
+                        image: image,
                         tintColor: context.tintColor?.uiColor
                     )
                     return context.builder.createImageWireframe(

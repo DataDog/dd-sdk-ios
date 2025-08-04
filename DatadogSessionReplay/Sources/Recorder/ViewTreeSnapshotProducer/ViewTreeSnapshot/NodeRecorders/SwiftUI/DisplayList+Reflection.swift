@@ -56,7 +56,7 @@ extension DisplayList.Effect: Reflection {
         case let (.enum("clip"), tuple as (SwiftUI.Path, SwiftUI.FillStyle, Any)):
             self = .clip(tuple.0, tuple.1)
 
-        case let(.enum("filter"), filter):
+        case let (.enum("filter"), filter):
             self = try .filter(reflector.reflect(filter))
 
         case (.enum("platformGroup"), _):
