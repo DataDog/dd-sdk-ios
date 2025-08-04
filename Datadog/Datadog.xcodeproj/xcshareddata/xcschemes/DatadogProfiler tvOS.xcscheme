@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1420"
+   LastUpgradeVersion = "1640"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -188,9 +188,9 @@
       <CodeCoverageTargets>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D20731A429A5279D00ECBF94"
-            BuildableName = "DatadogLogs.framework"
-            BlueprintName = "DatadogLogs tvOS"
+            BlueprintIdentifier = "D229FF6E2E3BC5B8009CCD62"
+            BuildableName = "DatadogProfiler.framework"
+            BlueprintName = "DatadogProfiler tvOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>
