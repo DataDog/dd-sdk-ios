@@ -13,26 +13,27 @@ import UIKit
 @available(iOS 13.0, tvOS 13.0, *)
 internal final class ImageRenderer {
     private class Key: NSObject {
-        private struct Wrapped: Hashable {
-            let contents: DisplayListContents
-            let origin: CGPoint
-        }
-
-        private let wrappedValue: Wrapped
+        private let contents: DisplayListContents
+        private let origin: CGPoint
 
         init(contents: DisplayListContents, origin: CGPoint) {
-            self.wrappedValue = .init(contents: contents, origin: origin)
+            self.contents = contents
+            self.origin = origin
         }
 
         override var hash: Int {
-            wrappedValue.hashValue
+            var hasher = Hasher()
+            hasher.combine(contents)
+            hasher.combine(origin.x)
+            hasher.combine(origin.y)
+            return hasher.finalize()
         }
 
         override func isEqual(_ object: Any?) -> Bool {
             guard let other = object as? Key else {
                 return false
             }
-            return wrappedValue == other.wrappedValue
+            return contents == other.contents && origin == other.origin
         }
     }
 
