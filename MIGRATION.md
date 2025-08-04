@@ -8,7 +8,7 @@ This section describes the main changes introduced in SDK `3.0` compared to `2.x
 
 ### Product Modules 
 
-All SDK products (RUM, Trace, Logs, SessionReplay, etc) remain modular and separated into distinct libraries. The only notable change is the removal of the `DatadogObjc` module, whose contents have been integrated into their respective product modules.
+All SDK products (RUM, Trace, Logs, SessionReplay, and so on) remain modular and separated into distinct libraries. The main change is that the `DatadogObjc` module has been removed, with its contents integrated into the corresponding product modules.
 
 The available `Datadog` libraries in 3.0 are:
 - `DatadogCore`
@@ -87,7 +87,7 @@ let package = Package(
 
 ### SDK Configuration
 
-The SDK should be initialized as early as possible in the app lifecycle, specifically in the `AppDelegate`'s `application(_:didFinishLaunchingWithOptions:)` callback. This ensures all measurements, including application startup duration, are captured correctly. For apps built with SwiftUI, you can use `@UIApplicationDelegateAdaptor` to hook into the `AppDelegate`.
+The SDK should be initialized as early as possible in the app lifecycle, specifically in the `AppDelegate`'s `application(_:didFinishLaunchingWithOptions:)` callback. This ensures accurate measurement of all metrics, including application startup duration. For apps built with SwiftUI, use `@UIApplicationDelegateAdaptor` to access the `AppDelegate`.
 
 ```swift
 import DatadogCore
@@ -106,7 +106,7 @@ Datadog.initialize(
 
 ### RUM Product Changes
 
-RUM View level attributes are now automatically propagated to all related child events, including resources, user actions, errors, and long tasks. This ensures consistent metadata across events for better filtering and correlation in Datadog dashboards.
+RUM View-level attributes are now automatically propagated to all related child events, including resources, user actions, errors, and long tasks. This ensures consistent metadata across events, making it easier to filter and correlate data on Datadog dashboards.
 
 To manage View level attributes more effectively, new APIs were added:
 - `Monitor.addViewAttribute(forKey:value:)`
@@ -134,24 +134,26 @@ API changes:
 
 The Logs product no longer reports fatal errors. To enable Error Tracking for crashes, Crash Reporting must be enabled in conjunction with RUM.
 
-Additionally all Objective-C Logs APIs are now included in `DatadogLogs`. The separate `DatadogObjc` module is no longer available.
+Additionally, all Objective-C Logs APIs are now included in `DatadogLogs`. The separate `DatadogObjc` module is no longer available.
 
 ### APM Trace Product Changes
 
-Trace sampling is now deterministic when used alongside RUM. It uses the RUM `session.id` for consistent sampling.
+Trace sampling is now deterministic when used alongside RUM. It uses the RUM `session.id` to ensure consistent sampling.
 
 Also:
-- The `Trace.Configuration.URLSessionTracking.FirstPartyHostsTracing` configuration sets sampling for all requests  by default and the trace context is injected only into sampled requests.
+- The `Trace.Configuration.URLSessionTracking.FirstPartyHostsTracing` configuration sets sampling for all requests by default and the trace context is injected only into sampled requests.
 - All Objective-C Trace APIs are now included in `DatadogTrace`. The separate `DatadogObjc` module is no longer available.
 
 **Note**: A similar configuration exists in `RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing`.
 
 ### Session Replay Product Changes
 
-Privacy settings are now more granular. The previous `defaultPrivacyLevel` parameter has been replaced by:
+Privacy settings are now more granular. The previous `defaultPrivacyLevel` parameter has been replaced with:
 - `textAndInputPrivacyLevel`
 - `imagePrivacyLevel`
 - `touchPrivacyLevel`
+
+Learn more about [privacy levels][1].
 
 API changes:
 
@@ -162,7 +164,7 @@ API changes:
 
 ### URLSession Instrumentation Changes
 
-The legacy delegate types have been replaced by a unified instrumentation API:
+Legacy delegate types have been replaced by a unified instrumentation API:
 
 |`2.x`|`3.0`|
 |---|---|
@@ -508,3 +510,5 @@ import DatadogRUM
 
 let monitor = RUMMonitor.shared(in: core)
 ```
+
+[1]: /real_user_monitoring/session_replay/mobile/privacy_options?platform=ios
