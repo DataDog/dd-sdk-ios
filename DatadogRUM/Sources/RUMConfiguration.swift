@@ -291,6 +291,13 @@ extension RUM {
         /// and 100 means all telemetry will be uploaded. The default value is 20.0.
         public var telemetrySampleRate: SampleRate
 
+        /// Determines whether accessibility data should be collected and included in RUM view events.
+        ///
+        /// When enabled, the SDK will collect accessibility settings and include them in view events.
+        ///
+        /// Default: `false`.
+        public var collectAccessibility: Bool
+
         /// Feature flags to preview features in RUM.
         public var featureFlags: FeatureFlags
 
@@ -443,6 +450,7 @@ extension RUM.Configuration {
     ///   - trackAnonymousUser: Enables the collection of anonymous user id across sessions. Default: `true`.
     ///   - trackMemoryWarnings: Enables the collection of memory warnings. Default: `true`.
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
+    ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
     ///   - featureFlags: Experimental feature flags.
     public init(
         applicationID: String,
@@ -470,6 +478,7 @@ extension RUM.Configuration {
         trackAnonymousUser: Bool = true,
         trackMemoryWarnings: Bool = true,
         telemetrySampleRate: SampleRate = 20,
+        collectAccessibility: Bool = false,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -495,6 +504,7 @@ extension RUM.Configuration {
         self.customEndpoint = customEndpoint
         self.trackAnonymousUser = trackAnonymousUser
         self.telemetrySampleRate = telemetrySampleRate
+        self.collectAccessibility = collectAccessibility
         self.trackWatchdogTerminations = trackWatchdogTerminations
         self.trackMemoryWarnings = trackMemoryWarnings
         self.featureFlags = featureFlags
