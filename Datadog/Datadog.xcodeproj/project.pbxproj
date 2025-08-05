@@ -902,8 +902,8 @@
 		962C41A72CA431370050B747 /* SessionReplayPrivacyOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966253B52C98807400B90B63 /* SessionReplayPrivacyOverrides.swift */; };
 		962C41A82CA431AA0050B747 /* DDSessionReplayOverridesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E863752C9C7E800023BF78 /* DDSessionReplayOverridesTests.swift */; };
 		962C41A92CB00FD60050B747 /* DDSessionReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A434AD2A8E426C0028E329 /* DDSessionReplayTests.swift */; };
-		962D72BC2CF6436700F86EF0 /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72BA2CF6436600F86EF0 /* Image.swift */; };
-		962D72BD2CF6436700F86EF0 /* Image+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72BB2CF6436600F86EF0 /* Image+Reflection.swift */; };
+		962D72BC2CF6436700F86EF0 /* GraphicsImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72BA2CF6436600F86EF0 /* GraphicsImage.swift */; };
+		962D72BD2CF6436700F86EF0 /* GraphicsImage+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72BB2CF6436600F86EF0 /* GraphicsImage+Reflection.swift */; };
 		962D72BF2CF7538800F86EF0 /* CGImage+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72BE2CF7538800F86EF0 /* CGImage+SessionReplay.swift */; };
 		962D72C52CF7806300F86EF0 /* GraphicsImageReflectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962D72C42CF7806300F86EF0 /* GraphicsImageReflectionTests.swift */; };
 		9632900B2DF1F01400E9199E /* ModernSwiftUIComponentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9632900A2DF1F01300E9199E /* ModernSwiftUIComponentDetector.swift */; };
@@ -3002,8 +3002,8 @@
 		962900232D8351A7008DFE39 /* TopLevelReflector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopLevelReflector.swift; sourceTree = "<group>"; };
 		9629FFDD2D81C315008DFE39 /* SwiftUIViewPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewPath.swift; sourceTree = "<group>"; };
 		9629FFE02D81C345008DFE39 /* SwiftUIControllerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIControllerType.swift; sourceTree = "<group>"; };
-		962D72BA2CF6436600F86EF0 /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
-		962D72BB2CF6436600F86EF0 /* Image+Reflection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Image+Reflection.swift"; sourceTree = "<group>"; };
+		962D72BA2CF6436600F86EF0 /* GraphicsImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GraphicsImage.swift; sourceTree = "<group>"; };
+		962D72BB2CF6436600F86EF0 /* GraphicsImage+Reflection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GraphicsImage+Reflection.swift"; sourceTree = "<group>"; };
 		962D72BE2CF7538800F86EF0 /* CGImage+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGImage+SessionReplay.swift"; sourceTree = "<group>"; };
 		962D72C42CF7806300F86EF0 /* GraphicsImageReflectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphicsImageReflectionTests.swift; sourceTree = "<group>"; };
 		9632900A2DF1F01300E9199E /* ModernSwiftUIComponentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModernSwiftUIComponentDetector.swift; sourceTree = "<group>"; };
@@ -6682,13 +6682,13 @@
 				5B9CB9E42E41FD5C005485E6 /* Drawing.swift */,
 				5B0A9B8A2E3BB98500A8131C /* GraphicsFilter.swift */,
 				5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */,
+				962D72BA2CF6436600F86EF0 /* GraphicsImage.swift */,
+				962D72BB2CF6436600F86EF0 /* GraphicsImage+Reflection.swift */,
 				5B9CB9E22E41F6F6005485E6 /* ImageRepresentable.swift */,
 				5BFE7B7A2E3CFCDA00B8FAA8 /* ImageRenderer.swift */,
 				D2AD1CBE2CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift */,
 				D2AD1CBF2CE4AE6600106C74 /* Text.swift */,
 				D2AD1CC02CE4AE6600106C74 /* Text+Reflection.swift */,
-				962D72BA2CF6436600F86EF0 /* Image.swift */,
-				962D72BB2CF6436600F86EF0 /* Image+Reflection.swift */,
 			);
 			path = SwiftUI;
 			sourceTree = "<group>";
@@ -8719,10 +8719,10 @@
 				61054E952A6EE10A00AAA894 /* SnapshotProcessor.swift in Sources */,
 				61054E722A6EE10A00AAA894 /* TouchIdentifierGenerator.swift in Sources */,
 				A7B932F52B1F694000AE6477 /* ResourcesProcessor.swift in Sources */,
-				962D72BD2CF6436700F86EF0 /* Image+Reflection.swift in Sources */,
+				962D72BD2CF6436700F86EF0 /* GraphicsImage+Reflection.swift in Sources */,
 				61054E742A6EE10A00AAA894 /* ViewTreeSnapshotProducer.swift in Sources */,
 				61054E7E2A6EE10A00AAA894 /* NodeRecorder.swift in Sources */,
-				962D72BC2CF6436700F86EF0 /* Image.swift in Sources */,
+				962D72BC2CF6436700F86EF0 /* GraphicsImage.swift in Sources */,
 				61054E6F2A6EE10A00AAA894 /* UIApplicationSwizzler.swift in Sources */,
 				61054E6D2A6EE10A00AAA894 /* CGRect+SessionReplay.swift in Sources */,
 				D274FD1C2CBFEF6D005270B5 /* CGSize+SessionReplay.swift in Sources */,
