@@ -6,26 +6,21 @@
 
 #if os(iOS)
 
-import CoreGraphics
 import Foundation
 import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 internal final class ImageRenderer {
     private class Key: NSObject {
-        private let contents: DisplayListContents
-        private let origin: CGPoint
+        private let contents: AnyImageRepresentable
 
-        init(contents: DisplayListContents, origin: CGPoint) {
-            self.contents = contents
-            self.origin = origin
+        init(_ contents: some ImageRepresentable) {
+            self.contents = AnyImageRepresentable(contents)
         }
 
         override var hash: Int {
             var hasher = Hasher()
             hasher.combine(contents)
-            hasher.combine(origin.x)
-            hasher.combine(origin.y)
             return hasher.finalize()
         }
 
@@ -33,90 +28,30 @@ internal final class ImageRenderer {
             guard let other = object as? Key else {
                 return false
             }
-            return contents == other.contents && origin == other.origin
+            return contents == other.contents
         }
     }
 
-    private enum Constants {
-        static let maxSize = 1_024
-    }
-
     private let cache = NSCache<Key, UIImage>()
-    private let scale: CGFloat
 
-    init(scale: CGFloat = UIScreen.main.scale) {
+    init() {
         cache.countLimit = 20
-        self.scale = scale
     }
 
-    func image(with contents: DisplayListContents, origin: CGPoint) -> UIImage? {
-        let key = Key(contents: contents, origin: origin)
+    func image(for contents: some ImageRepresentable) -> UIImage? {
+        let key = Key(contents)
 
         if let image = cache.object(forKey: key) {
             return image
         }
 
-        guard let image = makeImage(with: contents, origin: origin) else {
+        guard let image = contents.makeImage() else {
             return nil
         }
 
         cache.setObject(image, forKey: key)
 
         return image
-    }
-
-    private func makeImage(with contents: DisplayListContents, origin: CGPoint) -> UIImage? {
-        guard let bounds = contents.bounds else {
-            return nil
-        }
-
-        // Compute image size
-        //   - Add 0.5 pixel padding (0.5 + 0.5)
-        //   - Add 0.5 pixel round-half-up
-        //   - Scale
-
-        let width = Int((bounds.width + 1.5) * scale)
-        let height = Int((bounds.height + 1.5) * scale)
-
-        guard
-            width > 0, height > 0,
-            width <= Constants.maxSize, height <= Constants.maxSize
-        else {
-            return nil
-        }
-
-        // Create a bitmap context
-
-        guard let bitmapContext = CGContext(
-            data: nil,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: 0,
-            space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else {
-            return nil
-        }
-
-        // Flip the coordinate system:
-        //   - translateBy(x: 0, y: height)
-        //   - scaleBy(x: 1, y: -1)
-        // Apply y-origin
-        //   - translateBy(x: 0, y: origin.y)
-        // Apply rasterization scale:
-        //   - scaleBy(x: scale, y: scale)
-
-        bitmapContext.translateBy(x: 0, y: CGFloat(height) + origin.y)
-        bitmapContext.scaleBy(x: scale, y: -scale)
-
-        // Render the contents
-
-        contents.render(in: bitmapContext, scale: scale)
-
-        return bitmapContext.makeImage().map {
-            UIImage(cgImage: $0, scale: scale, orientation: .up)
-        }
     }
 }
 

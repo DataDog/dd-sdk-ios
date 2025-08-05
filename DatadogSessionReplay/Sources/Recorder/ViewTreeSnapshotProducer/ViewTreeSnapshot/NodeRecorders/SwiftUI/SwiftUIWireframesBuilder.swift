@@ -178,7 +178,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                     label: "Unsupported image type"
                 )
             }
-        case let .drawing(contents, origin):
+        case let .drawing(drawing):
             // We treat `drawing` as bundled images
             if case .maskAll = self.imagePrivacyLevel {
                 return context.builder.createPlaceholderWireframe(
@@ -188,7 +188,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                     label: "Image"
                 )
             } else {
-                if let image = imageRenderer.image(with: contents, origin: origin) {
+                if let image = imageRenderer.image(for: drawing) {
                     let imageResource = UIImageResource(
                         image: image,
                         tintColor: context.tintColor?.uiColor
