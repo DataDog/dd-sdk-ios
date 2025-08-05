@@ -183,32 +183,34 @@ final class RUMViewEventsFilterTests: XCTestCase {
         let actual = sut.filter(events: events)
 
         // Verify that accessibility events are kept
-        let accessibilityEvents = actual.filter { event in
-            guard let metadata = event.metadata,
-                  let viewMetadata = try? JSONDecoder().decode(RUMViewEvent.Metadata.self, from: metadata) else {
-                return false
+        let decoder = JSONDecoder()
+
+        let accessibilityEvents = try actual.filter { event in
+            if let metadata = event.metadata {
+                let viewMetadata = try decoder.decode(RUMViewEvent.Metadata.self, from: metadata)
+                return viewMetadata.hasAccessibility == true
             }
-            return viewMetadata.hasAccessibility == true
+            return false
         }
 
         // Should have 2 accessibility events (A.2 and B.2)
         XCTAssertEqual(accessibilityEvents.count, 2, "Accessibility events should always be kept")
 
         // Verify the specific accessibility events are present
-        let hasA2 = actual.contains { event in
-            guard let metadata = event.metadata,
-                  let viewMetadata = try? JSONDecoder().decode(RUMViewEvent.Metadata.self, from: metadata) else {
-                return false
+        let hasA2 = try actual.contains { event in
+            if let metadata = event.metadata {
+               let viewMetadata = try decoder.decode(RUMViewEvent.Metadata.self, from: metadata)
+                return viewMetadata.id == "A" && viewMetadata.documentVersion == 2 && viewMetadata.hasAccessibility == true
             }
-            return viewMetadata.id == "A" && viewMetadata.documentVersion == 2 && viewMetadata.hasAccessibility
+            return false
         }
 
-        let hasB2 = actual.contains { event in
-            guard let metadata = event.metadata,
-                  let viewMetadata = try? JSONDecoder().decode(RUMViewEvent.Metadata.self, from: metadata) else {
-                return false
+        let hasB2 = try actual.contains { event in
+            if let metadata = event.metadata {
+               let viewMetadata = try decoder.decode(RUMViewEvent.Metadata.self, from: metadata)
+                return viewMetadata.id == "B" && viewMetadata.documentVersion == 2 && viewMetadata.hasAccessibility == true
             }
-            return viewMetadata.id == "B" && viewMetadata.documentVersion == 2 && viewMetadata.hasAccessibility
+            return false
         }
 
         XCTAssertTrue(hasA2, "Event A.2 with accessibility should be kept")

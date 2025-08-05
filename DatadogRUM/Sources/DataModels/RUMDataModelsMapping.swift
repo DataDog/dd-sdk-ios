@@ -67,6 +67,7 @@ internal extension RUMViewEvent {
     struct Metadata: Codable {
         let id: String
         let documentVersion: Int64
+        
         let hasAccessibility: Bool
         /// Duration of the view in nanoseconds.
         let duration: Int64?
@@ -81,10 +82,10 @@ internal extension RUMViewEvent {
             case indexInSession = "index"
         }
 
-        init(id: String, documentVersion: Int64, hasAccessibility: Bool = false) {
+        init(id: String, documentVersion: Int64, hasAccessibility: Bool? = false) {
             self.id = id
             self.documentVersion = documentVersion
-            self.hasAccessibility = hasAccessibility ?? false
+            self.hasAccessibility = hasAccessibility
         }
     }
 

@@ -785,8 +785,7 @@ extension RUMViewScope {
             dependencies.watchdogTermination?.update(viewEvent: event)
 
             // Clear changed attributes after sending the view update
-            if let accessibilityReader = accessibilityReader,
-               accessibilityReader.hasValidAccessibilityData {
+            if let accessibilityReader = accessibilityReader {
                 accessibilityReader.clearChangedAttributes()
             }
         } else { // if event was dropped by mapper
