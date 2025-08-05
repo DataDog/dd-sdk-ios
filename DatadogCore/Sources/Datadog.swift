@@ -84,23 +84,6 @@ public enum Datadog {
         )
     }
 
-    @available(*, deprecated, message: "UserInfo id property is now mandatory.")
-    public static func setUserInfo(
-        id: String? = nil,
-        name: String? = nil,
-        email: String? = nil,
-        extraInfo: [AttributeKey: AttributeValue] = [:],
-        in core: DatadogCoreProtocol = CoreRegistry.default
-    ) {
-        let core = core as? DatadogCore
-        core?.setUserInfo(
-            id: id,
-            name: name,
-            email: email,
-            extraInfo: extraInfo
-        )
-    }
-
     /// Add custom attributes to the current user information
     ///
     /// This extra info will be added to already existing extra info that is added
