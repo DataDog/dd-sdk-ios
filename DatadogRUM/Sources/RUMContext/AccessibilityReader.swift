@@ -40,12 +40,10 @@ internal final class AccessibilityReader: AccessibilityReading {
     private let notificationCenter: NotificationCenter
     private var observers: [NSObjectProtocol] = []
 
-    /// Track the initial accessibility state for comparison
-    private var initialState: AccessibilityInfo?
     /// Track if this is the first view update
     private var isFirstViewUpdate = true
     /// Track changed accessibility attributes
-    private var changedAttributes: [String: Any] = [:]
+    private var changedAttributes: RUMViewEvent.View.Accessibility?
 
     init(notificationCenter: NotificationCenter) {
         self.state = AccessibilityInfo()
@@ -62,13 +60,8 @@ internal final class AccessibilityReader: AccessibilityReading {
         Task { @MainActor in
             let newState = self.currentState
 
-            // If this is the first update, store the initial state
-            if self.initialState == nil {
-                self.initialState = newState
-            } else {
-                // Track changes by comparing with the previous state
-                self.trackChanges(from: self.state, to: newState)
-            }
+            // Track changes by comparing with the previous state
+            self.trackChanges(from: self.state, to: newState)
 
             self.state = newState
         }
@@ -342,7 +335,7 @@ internal final class AccessibilityReader: AccessibilityReading {
 
     /// Called after a view update event has been sent to clear the changed attributes
     func clearChangedAttributes() {
-        changedAttributes.removeAll()
+        changedAttributes = nil
 
         if isFirstViewUpdate {
             isFirstViewUpdate = false
@@ -352,7 +345,7 @@ internal final class AccessibilityReader: AccessibilityReading {
     /// Called when a new view starts to reset the tracking state
     func resetForNewView() {
         isFirstViewUpdate = true
-        changedAttributes.removeAll()
+        changedAttributes = nil
     }
 
     /// Check if we have valid accessibility data to send
@@ -383,103 +376,65 @@ internal final class AccessibilityReader: AccessibilityReading {
 
     /// Track changes between two accessibility states
     private func trackChanges(from oldState: AccessibilityInfo, to newState: AccessibilityInfo) {
-        if oldState.assistiveSwitchEnabled != newState.assistiveSwitchEnabled {
-            changedAttributes["assistiveSwitchEnabled"] = newState.assistiveSwitchEnabled
+        // Only track changes if there are actual differences
+        if hasChanges(between: oldState, and: newState) {
+            self.changedAttributes = RUMViewEvent.View.Accessibility(
+                assistiveSwitchEnabled: oldState.assistiveSwitchEnabled != newState.assistiveSwitchEnabled ? newState.assistiveSwitchEnabled : nil,
+                assistiveTouchEnabled: oldState.assistiveTouchEnabled != newState.assistiveTouchEnabled ? newState.assistiveTouchEnabled : nil,
+                boldTextEnabled: oldState.boldTextEnabled != newState.boldTextEnabled ? newState.boldTextEnabled : nil,
+                buttonShapesEnabled: oldState.buttonShapesEnabled != newState.buttonShapesEnabled ? newState.buttonShapesEnabled : nil,
+                closedCaptioningEnabled: oldState.closedCaptioningEnabled != newState.closedCaptioningEnabled ? newState.closedCaptioningEnabled : nil,
+                grayscaleEnabled: oldState.grayscaleEnabled != newState.grayscaleEnabled ? newState.grayscaleEnabled : nil,
+                increaseContrastEnabled: oldState.increaseContrastEnabled != newState.increaseContrastEnabled ? newState.increaseContrastEnabled : nil,
+                invertColorsEnabled: oldState.invertColorsEnabled != newState.invertColorsEnabled ? newState.invertColorsEnabled : nil,
+                monoAudioEnabled: oldState.monoAudioEnabled != newState.monoAudioEnabled ? newState.monoAudioEnabled : nil,
+                onOffSwitchLabelsEnabled: oldState.onOffSwitchLabelsEnabled != newState.onOffSwitchLabelsEnabled ? newState.onOffSwitchLabelsEnabled : nil,
+                reduceMotionEnabled: oldState.reduceMotionEnabled != newState.reduceMotionEnabled ? newState.reduceMotionEnabled : nil,
+                reduceTransparencyEnabled: oldState.reduceTransparencyEnabled != newState.reduceTransparencyEnabled ? newState.reduceTransparencyEnabled : nil,
+                reducedAnimationsEnabled: oldState.reducedAnimationsEnabled != newState.reducedAnimationsEnabled ? newState.reducedAnimationsEnabled : nil,
+                rtlEnabled: oldState.rtlEnabled != newState.rtlEnabled ? newState.rtlEnabled : nil,
+                screenReaderEnabled: oldState.screenReaderEnabled != newState.screenReaderEnabled ? newState.screenReaderEnabled : nil,
+                shakeToUndoEnabled: oldState.shakeToUndoEnabled != newState.shakeToUndoEnabled ? newState.shakeToUndoEnabled : nil,
+                shouldDifferentiateWithoutColor: oldState.shouldDifferentiateWithoutColor != newState.shouldDifferentiateWithoutColor ? newState.shouldDifferentiateWithoutColor : nil,
+                singleAppModeEnabled: oldState.singleAppModeEnabled != newState.singleAppModeEnabled ? newState.singleAppModeEnabled : nil,
+                speakScreenEnabled: oldState.speakScreenEnabled != newState.speakScreenEnabled ? newState.speakScreenEnabled : nil,
+                speakSelectionEnabled: oldState.speakSelectionEnabled != newState.speakSelectionEnabled ? newState.speakSelectionEnabled : nil,
+                textSize: oldState.textSize != newState.textSize ? newState.textSize : nil,
+                videoAutoplayEnabled: oldState.videoAutoplayEnabled != newState.videoAutoplayEnabled ? newState.videoAutoplayEnabled : nil
+            )
+        } else {
+            self.changedAttributes = nil
         }
-        if oldState.assistiveTouchEnabled != newState.assistiveTouchEnabled {
-            changedAttributes["assistiveTouchEnabled"] = newState.assistiveTouchEnabled
-        }
-        if oldState.boldTextEnabled != newState.boldTextEnabled {
-            changedAttributes["boldTextEnabled"] = newState.boldTextEnabled
-        }
-        if oldState.buttonShapesEnabled != newState.buttonShapesEnabled {
-            changedAttributes["buttonShapesEnabled"] = newState.buttonShapesEnabled
-        }
-        if oldState.closedCaptioningEnabled != newState.closedCaptioningEnabled {
-            changedAttributes["closedCaptioningEnabled"] = newState.closedCaptioningEnabled
-        }
-        if oldState.grayscaleEnabled != newState.grayscaleEnabled {
-            changedAttributes["grayscaleEnabled"] = newState.grayscaleEnabled
-        }
-        if oldState.increaseContrastEnabled != newState.increaseContrastEnabled {
-            changedAttributes["increaseContrastEnabled"] = newState.increaseContrastEnabled
-        }
-        if oldState.invertColorsEnabled != newState.invertColorsEnabled {
-            changedAttributes["invertColorsEnabled"] = newState.invertColorsEnabled
-        }
-        if oldState.monoAudioEnabled != newState.monoAudioEnabled {
-            changedAttributes["monoAudioEnabled"] = newState.monoAudioEnabled
-        }
-        if oldState.onOffSwitchLabelsEnabled != newState.onOffSwitchLabelsEnabled {
-            changedAttributes["onOffSwitchLabelsEnabled"] = newState.onOffSwitchLabelsEnabled
-        }
-        if oldState.reduceMotionEnabled != newState.reduceMotionEnabled {
-            changedAttributes["reduceMotionEnabled"] = newState.reduceMotionEnabled
-        }
-        if oldState.reduceTransparencyEnabled != newState.reduceTransparencyEnabled {
-            changedAttributes["reduceTransparencyEnabled"] = newState.reduceTransparencyEnabled
-        }
-        if oldState.reducedAnimationsEnabled != newState.reducedAnimationsEnabled {
-            changedAttributes["reducedAnimationsEnabled"] = newState.reducedAnimationsEnabled
-        }
-        if oldState.screenReaderEnabled != newState.screenReaderEnabled {
-            changedAttributes["screenReaderEnabled"] = newState.screenReaderEnabled
-        }
-        if oldState.shakeToUndoEnabled != newState.shakeToUndoEnabled {
-            changedAttributes["shakeToUndoEnabled"] = newState.shakeToUndoEnabled
-        }
-        if oldState.shouldDifferentiateWithoutColor != newState.shouldDifferentiateWithoutColor {
-            changedAttributes["shouldDifferentiateWithoutColor"] = newState.shouldDifferentiateWithoutColor
-        }
-        if oldState.singleAppModeEnabled != newState.singleAppModeEnabled {
-            changedAttributes["singleAppModeEnabled"] = newState.singleAppModeEnabled
-        }
-        if oldState.speakScreenEnabled != newState.speakScreenEnabled {
-            changedAttributes["speakScreenEnabled"] = newState.speakScreenEnabled
-        }
-        if oldState.speakSelectionEnabled != newState.speakSelectionEnabled {
-            changedAttributes["speakSelectionEnabled"] = newState.speakSelectionEnabled
-        }
-        if oldState.textSize != newState.textSize {
-            changedAttributes["textSize"] = newState.textSize
-        }
-        if oldState.videoAutoplayEnabled != newState.videoAutoplayEnabled {
-            changedAttributes["videoAutoplayEnabled"] = newState.videoAutoplayEnabled
-        }
-        if oldState.rtlEnabled != newState.rtlEnabled {
-            changedAttributes["rtlEnabled"] = newState.rtlEnabled
-        }
+    }
+
+    /// Check if there are any differences between two accessibility states
+    private func hasChanges(between oldState: AccessibilityInfo, and newState: AccessibilityInfo) -> Bool {
+        return oldState.assistiveSwitchEnabled != newState.assistiveSwitchEnabled ||
+               oldState.assistiveTouchEnabled != newState.assistiveTouchEnabled ||
+               oldState.boldTextEnabled != newState.boldTextEnabled ||
+               oldState.buttonShapesEnabled != newState.buttonShapesEnabled ||
+               oldState.closedCaptioningEnabled != newState.closedCaptioningEnabled ||
+               oldState.grayscaleEnabled != newState.grayscaleEnabled ||
+               oldState.increaseContrastEnabled != newState.increaseContrastEnabled ||
+               oldState.invertColorsEnabled != newState.invertColorsEnabled ||
+               oldState.monoAudioEnabled != newState.monoAudioEnabled ||
+               oldState.onOffSwitchLabelsEnabled != newState.onOffSwitchLabelsEnabled ||
+               oldState.reduceMotionEnabled != newState.reduceMotionEnabled ||
+               oldState.reduceTransparencyEnabled != newState.reduceTransparencyEnabled ||
+               oldState.reducedAnimationsEnabled != newState.reducedAnimationsEnabled ||
+               oldState.screenReaderEnabled != newState.screenReaderEnabled ||
+               oldState.shakeToUndoEnabled != newState.shakeToUndoEnabled ||
+               oldState.shouldDifferentiateWithoutColor != newState.shouldDifferentiateWithoutColor ||
+               oldState.singleAppModeEnabled != newState.singleAppModeEnabled ||
+               oldState.speakScreenEnabled != newState.speakScreenEnabled ||
+               oldState.speakSelectionEnabled != newState.speakSelectionEnabled ||
+               oldState.textSize != newState.textSize ||
+               oldState.videoAutoplayEnabled != newState.videoAutoplayEnabled ||
+               oldState.rtlEnabled != newState.rtlEnabled
     }
 
     /// Create accessibility object from changed attributes only
     private func createAccessibilityFromChangedAttributes() -> RUMViewEvent.View.Accessibility? {
-        guard !changedAttributes.isEmpty else {
-            return nil
-        }
-
-        return RUMViewEvent.View.Accessibility(
-            assistiveSwitchEnabled: changedAttributes["assistiveSwitchEnabled"] as? Bool,
-            assistiveTouchEnabled: changedAttributes["assistiveTouchEnabled"] as? Bool,
-            boldTextEnabled: changedAttributes["boldTextEnabled"] as? Bool,
-            buttonShapesEnabled: changedAttributes["buttonShapesEnabled"] as? Bool,
-            closedCaptioningEnabled: changedAttributes["closedCaptioningEnabled"] as? Bool,
-            grayscaleEnabled: changedAttributes["grayscaleEnabled"] as? Bool,
-            increaseContrastEnabled: changedAttributes["increaseContrastEnabled"] as? Bool,
-            invertColorsEnabled: changedAttributes["invertColorsEnabled"] as? Bool,
-            monoAudioEnabled: changedAttributes["monoAudioEnabled"] as? Bool,
-            onOffSwitchLabelsEnabled: changedAttributes["onOffSwitchLabelsEnabled"] as? Bool,
-            reduceMotionEnabled: changedAttributes["reduceMotionEnabled"] as? Bool,
-            reduceTransparencyEnabled: changedAttributes["reduceTransparencyEnabled"] as? Bool,
-            reducedAnimationsEnabled: changedAttributes["reducedAnimationsEnabled"] as? Bool,
-            rtlEnabled: changedAttributes["rtlEnabled"] as? Bool,
-            screenReaderEnabled: changedAttributes["screenReaderEnabled"] as? Bool,
-            shakeToUndoEnabled: changedAttributes["shakeToUndoEnabled"] as? Bool,
-            shouldDifferentiateWithoutColor: changedAttributes["shouldDifferentiateWithoutColor"] as? Bool,
-            singleAppModeEnabled: changedAttributes["singleAppModeEnabled"] as? Bool,
-            speakScreenEnabled: changedAttributes["speakScreenEnabled"] as? Bool,
-            speakSelectionEnabled: changedAttributes["speakSelectionEnabled"] as? Bool,
-            textSize: changedAttributes["textSize"] as? String,
-            videoAutoplayEnabled: changedAttributes["videoAutoplayEnabled"] as? Bool
-        )
+        return changedAttributes
     }
 }
