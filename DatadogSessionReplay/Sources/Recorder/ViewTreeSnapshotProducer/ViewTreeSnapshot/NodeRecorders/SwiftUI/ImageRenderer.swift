@@ -37,6 +37,10 @@ internal final class ImageRenderer {
         }
     }
 
+    private enum Constants {
+        static let maxSize = 1_024
+    }
+
     private let cache = NSCache<Key, UIImage>()
     private let scale: CGFloat
 
@@ -73,6 +77,13 @@ internal final class ImageRenderer {
 
         let width = Int((bounds.width + 1.5) * scale)
         let height = Int((bounds.height + 1.5) * scale)
+
+        guard
+            width > 0, height > 0,
+            width <= Constants.maxSize, height <= Constants.maxSize
+        else {
+            return nil
+        }
 
         // Create a bitmap context
 
