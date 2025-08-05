@@ -205,6 +205,28 @@ final class SRSnapshotTests: SnapshotTestCase {
         )
     }
 
+    func testSymbols() throws {
+        // Mask all
+        try takeSnapshotFor(
+            Fixture.symbols,
+            with: [.maskAll],
+            imagePrivacyLevel: .maskAll,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "maskAll_images"
+        )
+
+        // Mask none
+        try takeSnapshotFor(
+            Fixture.symbols,
+            with: [.maskSensitiveInputs],
+            imagePrivacyLevel: .maskNone,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "maskNone_images"
+        )
+    }
+
     @available(iOS 16.0, *)
     func testSwiftUIWithPrivacyOverrides() throws {
         let core = FeatureRegistrationCoreMock()
