@@ -79,14 +79,14 @@ class TracerTests: XCTestCase {
               "type": "custom",
               "meta.tracer.version": "1.2.3",
               "meta.version": "1.0.0",
-              "device": {
+              "meta.device": {
                 "architecture": "arm64",
                 "brand": "Apple",
                 "model": "iPhone10,1",
                 "name": "iPhone",
                 "type": "mobile"
               },
-              "os": {
+              "meta.os": {
                 "build": "13D20",
                 "name": "iOS",
                 "version": "15.4.1",
