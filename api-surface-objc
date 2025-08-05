@@ -145,6 +145,7 @@ public class objc_LogEvent: NSObject
     public var device: objc_LogEventDevice
     public var os: objc_LogEventOperatingSystem
     public var userInfo: objc_LogEventUserInfo
+    public var accountInfo: objc_LogEventAccountInfo
     public var networkConnectionInfo: objc_LogEventNetworkConnectionInfo?
     public var mobileCarrierInfo: objc_LogEventCarrierInfo?
     public var attributes: objc_LogEventAttributes
@@ -164,6 +165,10 @@ public class objc_LogEventUserInfo: NSObject
     public var name: String?
     public var email: String?
     public var extraInfo: [String: Any]
+public class objc_LogEventAccountInfo: NSObject
+    public var id: String
+    public var name: String?
+    public var extraInfo: [String: Any]
 public class objc_LogEventError: NSObject
     public var kind: String?
     public var message: String?
@@ -171,10 +176,6 @@ public class objc_LogEventError: NSObject
     public var sourceType: String
     public var fingerprint: String?
     public var binaryImages: [objc_LogEventBinaryImage]?
-public class objc_LogEventAccountInfo: NSObject
-    public var id: String
-    public var name: String?
-    public var extraInfo: [String: Any]
 public class objc_LogEventBinaryImage: NSObject
     public var arch: String?
     public var isSystem: Bool
@@ -1646,6 +1647,7 @@ public class objc_RUMViewEventViewAccessibility: NSObject
     public var reduceMotionEnabled: NSNumber?
     public var reduceTransparencyEnabled: NSNumber?
     public var reducedAnimationsEnabled: NSNumber?
+    public var rtlEnabled: NSNumber?
     public var screenReaderEnabled: NSNumber?
     public var shakeToUndoEnabled: NSNumber?
     public var shouldDifferentiateWithoutColor: NSNumber?
@@ -1912,7 +1914,6 @@ public class objc_RUMVitalEventView: NSObject
     public var referrer: String?
     public var url: String
 public class objc_RUMVitalEventVital: NSObject
-    public var custom: [String: NSNumber]?
     public var vitalDescription: String?
     public var duration: NSNumber?
     public var failureReason: objc_RUMVitalEventVitalFailureReason
@@ -2102,12 +2103,14 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var reactNativeVersion: String?
     public var reactVersion: String?
     public var replaySampleRate: NSNumber?
+    public var sdkVersion: String?
     public var selectedTracingPropagators: [Int]?
     public var sendLogsAfterSessionExpiration: NSNumber?
     public var sessionPersistence: objc_TelemetryConfigurationEventTelemetryConfigurationSessionPersistence
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber?
     public var silentMultipleInit: NSNumber?
+    public var source: String?
     public var startRecordingImmediately: NSNumber?
     public var startSessionReplayRecordingManually: NSNumber?
     public var storeContextsAcrossPages: NSNumber?
@@ -2157,6 +2160,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var useSecureSessionCookie: NSNumber?
     public var useTracing: NSNumber?
     public var useWorkerUrl: NSNumber?
+    public var variant: String?
     public var viewTrackingStrategy: objc_TelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy
 public class objc_TelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs: NSObject
     public var stringsArray: [String]?

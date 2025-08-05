@@ -72,12 +72,25 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 return // Drop event if RUM is not enabled or RUM session is not sampled
             }
 
+            var webViewContext = context.additionalContext(ofType: RUMWebViewContext.self) ?? .init()
             var event = event
 
             if let date = event["date"] as? Int,
                let view = event["view"] as? JSON,
                let id = view["id"] as? String {
-                let correctedDate = Int64(date) + self.offset(forView: id, context: context)
+                let offsetMilliseconds: Int64
+
+                if let offset = webViewContext.serverTimeOffset(forView: id) {
+                    offsetMilliseconds = offset.toInt64Milliseconds
+                } else {
+                    let offset = context.serverTimeOffset
+                    webViewContext.setServerTimeOffset(offset, forView: id)
+
+                    self.featureScope.set(context: webViewContext)
+                    offsetMilliseconds = offset.toInt64Milliseconds
+                }
+
+                let correctedDate = Int64(date) + offsetMilliseconds
                 event["date"] = correctedDate
 
                 // Inject the container source and view id
@@ -139,22 +152,5 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
 
             writer.write(value: AnyEncodable(event))
         }
-    }
-
-    // MARK: - Time offsets
-
-    private var offsets: [(id: String, value: Int64)] = []
-
-    private func offset(forView id: String, context: DatadogContext) -> Int64 {
-        if let found = offsets.first(where: { $0.id == id }) {
-            return found.value
-        }
-
-        let offset = context.serverTimeOffset.toInt64Milliseconds
-        offsets.insert((id, offset), at: 0)
-        // only retain 3 offsets
-        offsets = Array(offsets.prefix(3))
-
-        return offset
     }
 }

@@ -35,7 +35,9 @@ internal struct WebViewRecordReceiver: FeatureMessageReceiver {
 
             var event = event
 
-            if let timestamp = event["timestamp"] as? Int, let offset = rumContext.viewServerTimeOffset {
+            if let timestamp = event["timestamp"] as? Int,
+               let webViewContext = context.additionalContext(ofType: RUMWebViewContext.self),
+               let offset = webViewContext.serverTimeOffset(forView: view.id) {
                 event["timestamp"] = Int64(timestamp) + offset.toInt64Milliseconds
             }
 

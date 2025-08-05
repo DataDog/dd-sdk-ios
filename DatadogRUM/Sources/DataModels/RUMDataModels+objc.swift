@@ -6730,6 +6730,10 @@ public class objc_RUMViewEventViewAccessibility: NSObject {
         root.swiftModel.view.accessibility!.reducedAnimationsEnabled as NSNumber?
     }
 
+    public var rtlEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.rtlEnabled as NSNumber?
+    }
+
     public var screenReaderEnabled: NSNumber? {
         root.swiftModel.view.accessibility!.screenReaderEnabled as NSNumber?
     }
@@ -8141,10 +8145,6 @@ public class objc_RUMVitalEventVital: NSObject {
         self.root = root
     }
 
-    public var custom: [String: NSNumber]? {
-        root.swiftModel.vital.custom as [String: NSNumber]?
-    }
-
     public var vitalDescription: String? {
         root.swiftModel.vital.vitalDescription
     }
@@ -9108,6 +9108,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.replaySampleRate as NSNumber?
     }
 
+    public var sdkVersion: String? {
+        set { root.swiftModel.telemetry.configuration.sdkVersion = newValue }
+        get { root.swiftModel.telemetry.configuration.sdkVersion }
+    }
+
     public var selectedTracingPropagators: [Int]? {
         root.swiftModel.telemetry.configuration.selectedTracingPropagators?.map { objc_TelemetryConfigurationEventTelemetryConfigurationSelectedTracingPropagators(swift: $0).rawValue }
     }
@@ -9132,6 +9137,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     public var silentMultipleInit: NSNumber? {
         root.swiftModel.telemetry.configuration.silentMultipleInit as NSNumber?
+    }
+
+    public var source: String? {
+        set { root.swiftModel.telemetry.configuration.source = newValue }
+        get { root.swiftModel.telemetry.configuration.source }
     }
 
     public var startRecordingImmediately: NSNumber? {
@@ -9358,6 +9368,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     public var useWorkerUrl: NSNumber? {
         root.swiftModel.telemetry.configuration.useWorkerUrl as NSNumber?
+    }
+
+    public var variant: String? {
+        set { root.swiftModel.telemetry.configuration.variant = newValue }
+        get { root.swiftModel.telemetry.configuration.variant }
     }
 
     public var viewTrackingStrategy: objc_TelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy {
@@ -9664,4 +9679,4 @@ public class objc_TelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/4c3e63b404a37dc5dfe9450f7f7ad0b8a87f6450
+// Generated from https://github.com/DataDog/rum-events-format/tree/fd61fb5b16ccd0cbf24e59050ebe4d42c4bd593e

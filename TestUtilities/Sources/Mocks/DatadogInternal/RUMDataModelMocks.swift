@@ -109,17 +109,25 @@ extension Device: AnyMockable, RandomMockable {
     }
 
     public static func mockWith(
-        architecture: String = "arm64e",
-        brand: String = "Apple",
-        model: String = "iPhone10,1",
-        name: String = "iPhone",
-        type: DeviceType = .mobile
+    architecture: String = "arm64e",
+    batteryLevel: Double = 1.0,
+    brand: String = "Apple",
+    brightnessLevel: Double = 1.0,
+    locale: String = "en-US",
+    model: String = "iPhone10,1",
+    name: String = "iPhone",
+    powerSavingMode: Bool = false,
+    type: DeviceType = .mobile
     ) -> Device {
         .init(
             architecture: architecture,
+            batteryLevel: batteryLevel,
             brand: brand,
+            brightnessLevel: brightnessLevel,
+            locale: locale,
             model: model,
             name: name,
+            powerSavingMode: powerSavingMode,
             type: type
         )
     }
