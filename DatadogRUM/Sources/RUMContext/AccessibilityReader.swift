@@ -377,7 +377,7 @@ internal final class AccessibilityReader: AccessibilityReading {
     /// Track changes between two accessibility states
     private func trackChanges(from oldState: AccessibilityInfo, to newState: AccessibilityInfo) {
         // Only track changes if there are actual differences
-        if hasChanges(between: oldState, and: newState) {
+        if oldState != newState {
             self.changedAttributes = RUMViewEvent.View.Accessibility(
                 assistiveSwitchEnabled: oldState.assistiveSwitchEnabled != newState.assistiveSwitchEnabled ? newState.assistiveSwitchEnabled : nil,
                 assistiveTouchEnabled: oldState.assistiveTouchEnabled != newState.assistiveTouchEnabled ? newState.assistiveTouchEnabled : nil,
@@ -405,32 +405,6 @@ internal final class AccessibilityReader: AccessibilityReading {
         } else {
             self.changedAttributes = nil
         }
-    }
-
-    /// Check if there are any differences between two accessibility states
-    private func hasChanges(between oldState: AccessibilityInfo, and newState: AccessibilityInfo) -> Bool {
-        return oldState.assistiveSwitchEnabled != newState.assistiveSwitchEnabled ||
-               oldState.assistiveTouchEnabled != newState.assistiveTouchEnabled ||
-               oldState.boldTextEnabled != newState.boldTextEnabled ||
-               oldState.buttonShapesEnabled != newState.buttonShapesEnabled ||
-               oldState.closedCaptioningEnabled != newState.closedCaptioningEnabled ||
-               oldState.grayscaleEnabled != newState.grayscaleEnabled ||
-               oldState.increaseContrastEnabled != newState.increaseContrastEnabled ||
-               oldState.invertColorsEnabled != newState.invertColorsEnabled ||
-               oldState.monoAudioEnabled != newState.monoAudioEnabled ||
-               oldState.onOffSwitchLabelsEnabled != newState.onOffSwitchLabelsEnabled ||
-               oldState.reduceMotionEnabled != newState.reduceMotionEnabled ||
-               oldState.reduceTransparencyEnabled != newState.reduceTransparencyEnabled ||
-               oldState.reducedAnimationsEnabled != newState.reducedAnimationsEnabled ||
-               oldState.screenReaderEnabled != newState.screenReaderEnabled ||
-               oldState.shakeToUndoEnabled != newState.shakeToUndoEnabled ||
-               oldState.shouldDifferentiateWithoutColor != newState.shouldDifferentiateWithoutColor ||
-               oldState.singleAppModeEnabled != newState.singleAppModeEnabled ||
-               oldState.speakScreenEnabled != newState.speakScreenEnabled ||
-               oldState.speakSelectionEnabled != newState.speakSelectionEnabled ||
-               oldState.textSize != newState.textSize ||
-               oldState.videoAutoplayEnabled != newState.videoAutoplayEnabled ||
-               oldState.rtlEnabled != newState.rtlEnabled
     }
 
     /// Create accessibility object from changed attributes only
