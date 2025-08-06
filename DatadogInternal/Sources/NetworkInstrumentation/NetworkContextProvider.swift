@@ -25,8 +25,20 @@ extension NetworkContextCoreProvider: FeatureMessageReceiver {
             return false
         }
 
+        let userConfigurationContext: UserConfigurationContext? = {
+            guard let userInfo = context.userInfo else { return nil }
+            return UserConfigurationContext(from: userInfo)
+        }()
+
+        let accountConfigurationContext: AccountConfigurationContext? = {
+            guard let accountInfo = context.accountInfo else { return nil }
+            return AccountConfigurationContext(from: accountInfo)
+        }()
+
         currentNetworkContext = NetworkContext(
-            rumContext: context.additionalContext(ofType: RUMCoreContext.self)
+            rumContext: context.additionalContext(ofType: RUMCoreContext.self),
+            userConfigurationContext: userConfigurationContext,
+            accountConfigurationContext: accountConfigurationContext
         )
         return true
     }
