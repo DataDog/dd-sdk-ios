@@ -63,5 +63,7 @@ public enum W3CHTTPHeaders {
         public static let tracestateKeyValueSeparator = ":"
         public static let tracestatePairSeparator = ";"
         public static let rumSessionBaggageKey = "session.id"
+        public static let accountBaggageKey = "account.id"
+        public static let userBaggageKey = "user.id"
     }
 }
