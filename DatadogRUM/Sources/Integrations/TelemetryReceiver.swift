@@ -20,6 +20,9 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     /// Additional sampler for configuration telemetry events, applied in addition to the `sampler`.
     let configurationExtraSampler: Sampler
 
+    // Metric telemetry aggregator
+    let metricAggregator: MetricTelemetryAggregator
+
     /// Keeps track of current session
     @ReadWriteLock
     private var currentSessionID: String?
@@ -33,22 +36,35 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     private var eventsCount: Int = 0
 
     /// Creates a RUM Telemetry instance.
-    ///
+    /// 
     /// - Parameters:
     ///   - featureScope: RUM feature scope.
     ///   - dateProvider: Current device time provider.
     ///   - sampler: Telemetry events sampler.
     ///   - configurationExtraSampler: Extra sampler for configuration events (applied on top of `sampler`).
+    ///   - metricAggregator: The aggregation used for metrics telemetry
+    ///   - notificationCenter: The Notification center to observe.
     init(
         featureScope: FeatureScope,
         dateProvider: DateProvider,
         sampler: Sampler,
-        configurationExtraSampler: Sampler
+        configurationExtraSampler: Sampler,
+        metricAggregator: MetricTelemetryAggregator = MetricTelemetryAggregator(),
+        notificationCenter: NotificationCenter = .default
     ) {
         self.featureScope = featureScope
         self.dateProvider = dateProvider
         self.sampler = sampler
         self.configurationExtraSampler = configurationExtraSampler
+        self.metricAggregator = metricAggregator
+
+        // observe application entering background
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(applicationDidEnterBackground),
+            name: ApplicationNotifications.didEnterBackground,
+            object: nil
+        )
     }
 
     /// Receives a message from the bus.
@@ -79,21 +95,21 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             error(id: id, message: message, kind: kind, stack: stack)
         case .configuration(let configuration):
             send(configuration: configuration)
-        case let .metric(metric):
-            if sampled(event: metric) {
+        case let .metric(.report(metric)):
+            if Sampler(samplingRate: metric.sampleRate).sample() {
                 send(metric: metric)
             }
         case .usage(let usage):
-            if sampled(event: usage) {
+            if Sampler(samplingRate: usage.sampleRate).sample() {
                 send(usage: usage)
             }
+        case let .metric(.increment(metric, by: value, cardinalities)):
+            metricAggregator.increment(metric, by: value, cardinalities: cardinalities)
+        case let .metric(.record(metric, value, cardinalities)):
+            metricAggregator.record(metric, value: value, cardinalities: cardinalities)
         }
 
         return true
-    }
-
-    private func sampled(event: SampledTelemetry) -> Bool {
-        return Sampler(samplingRate: event.sampleRate).sample()
     }
 
     /// Sends a `TelemetryDebugEvent` event.
@@ -248,7 +264,48 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         }
     }
 
-    private func send(metric: MetricTelemetry) {
+    private func send(metric: String, attributes: [String: Encodable], sampleRate: SampleRate) {
+        let date = dateProvider.now
+
+        record(event: nil) { context, writer in
+            let rum = context.additionalContext(ofType: RUMCoreContext.self)
+
+            // Override sessionID using standard `SDKMetricFields`, otherwise use current RUM session ID:
+            var attributes = attributes
+            let sessionIDOverride: String? = attributes.removeValue(forKey: SDKMetricFields.sessionIDOverrideKey)?.dd.decode()
+            let sessionID = sessionIDOverride ?? rum?.sessionID
+
+            // Calculates the composition of sample rates. The metric can have up to 3 layers of sampling.
+            var effectiveSampleRate = sampleRate.composed(with: self.sampler.samplingRate)
+            if let headSampleRate = attributes.removeValue(forKey: SDKMetricFields.headSampleRate) as? SampleRate {
+                effectiveSampleRate = effectiveSampleRate.composed(with: headSampleRate)
+            }
+
+            let event = TelemetryDebugEvent(
+                dd: .init(),
+                action: rum?.userActionID.map { .init(id: $0) },
+                application: rum.map { .init(id: $0.applicationID) },
+                date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+                effectiveSampleRate: Double(effectiveSampleRate),
+                experimentalFeatures: nil,
+                service: "dd-sdk-ios",
+                session: sessionID.map { .init(id: $0) },
+                source: .init(rawValue: context.source) ?? .ios,
+                telemetry: .init(
+                    device: .init(context.device),
+                    message: "[Mobile Metric] \(metric)",
+                    os: .init(context.device),
+                    telemetryInfo: attributes
+                ),
+                version: context.sdkVersion,
+                view: rum?.viewID.map { .init(id: $0) }
+            )
+
+            writer.write(value: event)
+        }
+    }
+
+    private func send(metric: MetricTelemetry.Event) {
         let date = dateProvider.now
 
         record(event: nil) { context, writer in
@@ -315,6 +372,15 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                     operation(context, writer)
                 }
             }
+        }
+    }
+
+    @objc
+    private func applicationDidEnterBackground() {
+        // Report aggregated telemetry metrics when
+        // the application enters background.
+        for metric in metricAggregator.flush() {
+            send(metric: metric)
         }
     }
 }

@@ -125,7 +125,7 @@ class TelemetryTests: XCTestCase {
         telemetry.metric(name: "metric name", attributes: ["attribute": "value"], sampleRate: 4.21)
 
         // Then
-        let metric = try XCTUnwrap(telemetry.messages.compactMap({ $0.asMetric }).first)
+        let metric = try XCTUnwrap(telemetry.messages.compactMap({ $0.asMetricReport }).first)
         XCTAssertEqual(metric.name, "metric name")
         XCTAssertEqual(metric.attributes as? [String: String], ["attribute": "value"])
         XCTAssertEqual(metric.sampleRate, 4.21)
@@ -136,7 +136,7 @@ class TelemetryTests: XCTestCase {
         telemetry.metric(name: "metric name", attributes: [:])
 
         // Then
-        let metric = try XCTUnwrap(telemetry.messages.compactMap({ $0.asMetric }).first)
+        let metric = try XCTUnwrap(telemetry.messages.compactMap({ $0.asMetricReport }).first)
         XCTAssertEqual(metric.sampleRate, MetricTelemetry.defaultSampleRate)
     }
 
@@ -149,7 +149,7 @@ class TelemetryTests: XCTestCase {
         let metricTrace = telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100)
         telemetry.stopMethodCalled(metricTrace, isSuccessful: .mockAny())
 
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: MethodCalledMetric.name))
+        let metric = try XCTUnwrap(telemetry.messages.firstMetricReport(named: MethodCalledMetric.name))
         XCTAssertEqual(metric.sampleRate, MetricTelemetry.defaultSampleRate)
     }
 
@@ -157,7 +157,7 @@ class TelemetryTests: XCTestCase {
         let metricTrace = telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100)
         telemetry.stopMethodCalled(metricTrace, isSuccessful: .mockAny(), tailSampleRate: 42.5)
 
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: MethodCalledMetric.name))
+        let metric = try XCTUnwrap(telemetry.messages.firstMetricReport(named: MethodCalledMetric.name))
         XCTAssertEqual(metric.sampleRate, 42.5)
     }
 
@@ -172,7 +172,7 @@ class TelemetryTests: XCTestCase {
         telemetry.stopMethodCalled(metricTrace, isSuccessful: isSuccessful)
 
         // Then
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: MethodCalledMetric.name))
+        let metric = try XCTUnwrap(telemetry.messages.firstMetricReport(named: MethodCalledMetric.name))
         XCTAssertEqual(metric.attributes[SDKMetricFields.typeKey] as? String, MethodCalledMetric.typeValue)
         XCTAssertEqual(metric.attributes[SDKMetricFields.headSampleRate] as? SampleRate, 100)
         XCTAssertEqual(metric.attributes[MethodCalledMetric.operationName] as? String, operationName)
@@ -200,10 +200,10 @@ class TelemetryTests: XCTestCase {
         XCTAssertEqual(receiver.messages.lastTelemetry?.asConfiguration?.batchSize, 123)
 
         core.telemetry.metric(name: "metric name", attributes: [:], sampleRate: 15)
-        XCTAssertEqual(receiver.messages.lastTelemetry?.asMetric?.name, "metric name")
+        XCTAssertEqual(receiver.messages.lastTelemetry?.asMetricReport?.name, "metric name")
 
         let metricTrace = core.telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100)
         core.telemetry.stopMethodCalled(metricTrace)
-        XCTAssertEqual(receiver.messages.lastTelemetry?.asMetric?.name, MethodCalledMetric.name)
+        XCTAssertEqual(receiver.messages.lastTelemetry?.asMetricReport?.name, MethodCalledMetric.name)
     }
 }

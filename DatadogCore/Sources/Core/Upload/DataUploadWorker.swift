@@ -65,6 +65,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.delay = delay
         self.featureName = featureName
         self.telemetry = telemetry
+
         let readWorkItem = DispatchWorkItem { [weak self] in
             guard let self = self else {
                 return
@@ -73,20 +74,23 @@ internal class DataUploadWorker: DataUploadWorkerType {
             let context = contextProvider.read()
             let blockersForUpload = uploadConditions.blockersForUpload(with: context)
             let isSystemReady = blockersForUpload.isEmpty
-            let files = isSystemReady ? fileReader.readFiles(limit: maxBatchesPerUpload) : nil
-            if let files = files, !files.isEmpty {
+            let files = fileReader.readFiles(limit: maxBatchesPerUpload)
+
+            if !files.isEmpty && isSystemReady {
                 DD.logger.debug("⏳ (\(self.featureName)) Uploading batches...")
                 self.backgroundTaskCoordinator?.beginBackgroundTask()
                 self.uploadFile(from: files.reversed(), context: context)
+                sendUploadCycleMetric()
             } else {
-                let batchLabel = files?.isEmpty == false ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
+                let batchLabel = files.isEmpty ? "NO" : "YES"
                 DD.logger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
                 self.delay.increase()
                 self.backgroundTaskCoordinator?.endBackgroundTask()
                 self.scheduleNextCycle()
-                sendUploadQualityMetric(blockers: blockersForUpload)
+                sendBatchBlockedMetric(blockers: blockersForUpload, batchCount: files.count)
             }
         }
+
         self.readWork = readWorkItem
 
         // Start sending batches with jitter to avoid concurrent execution during app launch:
@@ -107,6 +111,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 return
             }
 
+            let filesCount = files.count
             var files = files
             guard let file = files.popLast() else {
                 self.scheduleNextCycle()
@@ -122,12 +127,12 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     )
 
                     previousUploadStatus = uploadStatus
-                    sendUploadQualityMetric(status: uploadStatus)
 
                     if uploadStatus.needsRetry {
                         DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
                         self.delay.increase()
                         self.scheduleNextCycle()
+                        sendBatchBlockedMetric(status: uploadStatus, batchCount: filesCount)
                         return
                     }
 
@@ -148,8 +153,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     previousUploadStatus = nil
 
                     if let error = uploadStatus.error {
-                        // Throw to report the request error accordingly
-                        throw error
+                        throw error // Throw to report the request error accordingly
                     }
                 } catch DataUploadError.httpError(statusCode: .unauthorized), DataUploadError.httpError(statusCode: .forbidden) {
                     DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
@@ -167,7 +171,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     self.fileReader.markBatchAsRead(batch, reason: .invalid)
                     previousUploadStatus = nil
                     self.telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
-                    sendUploadQualityMetric(failure: "invalid")
                 }
             }
 
@@ -236,54 +239,50 @@ internal class DataUploadWorker: DataUploadWorkerType {
         }
     }
 
-    private func sendUploadQualityMetric(blockers: [DataUploadConditions.Blocker]) {
-        guard !blockers.isEmpty else {
-            return sendUploadQualityMetric()
-        }
-
-        sendUploadQualityMetric(
-            failure: "blocker",
-            blockers: blockers.map {
-                switch $0 {
-                case .battery: return "low_battery"
-                case .lowPowerModeOn: return "lpm"
-                case .networkReachability: return "offline"
-                }
-            }
+    private func sendUploadCycleMetric() {
+        telemetry.increment(
+            metric: UploadCycleMetric.name,
+            cardinalities: [UploadCycleMetric.track: .string(featureName)]
         )
     }
 
-    private func sendUploadQualityMetric(status: DataUploadStatus) {
-        guard let error = status.error else {
-            return sendUploadQualityMetric()
+    private func sendBatchBlockedMetric(blockers: [DataUploadConditions.Blocker], batchCount: Int) {
+        guard batchCount > 0, !blockers.isEmpty else {
+            return
         }
 
-        sendUploadQualityMetric(
-            failure: {
-                switch error {
-                case let .httpError(code): return "\(code)"
-                case let .networkError(error): return "\(error.code)"
-                }
-            }()
-        )
-    }
-
-    private func sendUploadQualityMetric() {
-        telemetry.metric(
-            name: UploadQualityMetric.name,
-            attributes: [
-                UploadQualityMetric.track: featureName
+        telemetry.increment(
+            metric: BatchBlockedMetric.typeValue,
+            by: batchCount,
+            cardinalities: [
+                BatchMetric.trackKey: .string(featureName),
+                BatchBlockedMetric.blockers: .array(blockers.map {
+                    switch $0 {
+                    case .battery: return .string("low_battery")
+                    case .lowPowerModeOn: return .string("lpm")
+                    case .networkReachability: return .string("offline")
+                    }
+                })
             ]
         )
     }
 
-    private func sendUploadQualityMetric(failure: String, blockers: [String] = []) {
-        telemetry.metric(
-            name: UploadQualityMetric.name,
-            attributes: [
-                UploadQualityMetric.track: featureName,
-                UploadQualityMetric.failure: failure,
-                UploadQualityMetric.blockers: blockers
+    private func sendBatchBlockedMetric(status: DataUploadStatus, batchCount: Int) {
+        guard let error = status.error else {
+            return
+        }
+
+        telemetry.increment(
+            metric: BatchBlockedMetric.typeValue,
+            by: batchCount,
+            cardinalities: [
+                BatchMetric.trackKey: .string(featureName),
+                BatchBlockedMetric.failure: .string({
+                    switch error {
+                    case let .httpError(code): return "intake-code-\(code.rawValue)"
+                    case let .networkError(error): return "network-code-\(error.code)"
+                    }
+                }())
             ]
         )
     }

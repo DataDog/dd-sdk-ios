@@ -86,6 +86,9 @@ internal final class DatadogCore {
     ///   - encryption: The on-disk data encryption.
     ///   - contextProvider: The core context provider.
     ///   - applicationVersion: The application version.
+    ///   - maxBatchesPerUpload: Number of batch to process during an upload cycle.
+    ///   - backgroundTasksEnabled: Enables upload background task.
+    ///   - isRunFromExtension: Set `true` when the SDK is initialised from an extension.
     init(
         directory: CoreDirectory,
         dateProvider: DateProvider,

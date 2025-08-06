@@ -14,6 +14,12 @@ public protocol Storage {
     func mostRecentModifiedFileAt(before: Date) throws -> Date?
 }
 
+extension DatadogCoreProtocol {
+    /// Provides access to the `Storage` associated with the core.
+    /// - Returns: The `Storage` instance.
+    public var storage: Storage { CoreStorage(core: self) }
+}
+
 internal struct CoreStorage: Storage {
     /// A weak core reference.
     private weak var core: DatadogCoreProtocol?
