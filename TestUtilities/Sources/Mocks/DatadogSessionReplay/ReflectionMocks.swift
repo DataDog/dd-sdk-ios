@@ -141,7 +141,8 @@ extension GraphicsImage: AnyMockable, RandomMockable {
         return GraphicsImage(
             contents: .cgImage(MockCGImage.mockRandom().cgImage),
             scale: 1.0,
-            orientation: .up
+            orientation: .up,
+            maskColor: SwiftUI.Color._Resolved.mockAny()
         )
     }
 
@@ -149,7 +150,8 @@ extension GraphicsImage: AnyMockable, RandomMockable {
         return GraphicsImage(
             contents: .cgImage(MockCGImage.mockRandom().cgImage),
             scale: CGFloat.random(in: 0.5...3.0),
-            orientation: .allCases.randomElement()!
+            orientation: .allCases.randomElement()!,
+            maskColor: SwiftUI.Color._Resolved.mockRandom()
         )
     }
 }

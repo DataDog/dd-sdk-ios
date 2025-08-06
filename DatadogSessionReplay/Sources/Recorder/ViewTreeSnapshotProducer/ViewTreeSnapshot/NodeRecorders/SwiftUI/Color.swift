@@ -11,7 +11,7 @@ import SwiftUI
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension SwiftUI.Color {
-    struct _Resolved {
+    struct _Resolved: Equatable {
         let linearRed: Float
         let linearGreen: Float
         let linearBlue: Float

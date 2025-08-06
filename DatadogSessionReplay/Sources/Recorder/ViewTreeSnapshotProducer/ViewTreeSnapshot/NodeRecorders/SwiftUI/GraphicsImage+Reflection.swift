@@ -16,6 +16,11 @@ extension GraphicsImage: Reflection {
         scale = try reflector.descendant("scale")
         orientation = try reflector.descendant("orientation")
         contents = try reflector.descendant("contents")
+        if #available(iOS 26, tvOS 26, *) {
+            maskColor = reflector.descendantIfPresent(type: Color._ResolvedHDR.self, "maskColor")?.base
+        } else {
+            maskColor = reflector.descendantIfPresent("maskColor")
+        }
     }
 }
 

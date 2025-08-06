@@ -15,7 +15,7 @@ class ImagePrivacyTests: XCTestCase {
     func testShouldRecordImagePredicate() {
         // Given
         let smallImage = MockCGImage.mockWith(width: 20)
-        let smallGraphicsImage = GraphicsImage(contents: .cgImage(smallImage), scale: 1.0, orientation: .up)
+        let smallGraphicsImage = GraphicsImage(contents: .cgImage(smallImage), scale: 1.0, orientation: .up, maskColor: nil)
 
         // Then
         XCTAssertTrue(ImagePrivacyLevel.maskNone.shouldRecordGraphicsImagePredicate(smallGraphicsImage))
@@ -24,7 +24,7 @@ class ImagePrivacyTests: XCTestCase {
 
         // Given
         let largeImage = MockCGImage.mockWith(width: 150)
-        let largeGraphicsImage = GraphicsImage(contents: .cgImage(largeImage), scale: 1.0, orientation: .up)
+        let largeGraphicsImage = GraphicsImage(contents: .cgImage(largeImage), scale: 1.0, orientation: .up, maskColor: nil)
 
         // Then
         XCTAssertTrue(ImagePrivacyLevel.maskNone.shouldRecordGraphicsImagePredicate(largeGraphicsImage))
