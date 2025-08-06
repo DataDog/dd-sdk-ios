@@ -153,6 +153,7 @@ private class DebugRUMSessionViewModel: ObservableObject {
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.setValue("example_key=example_value", forHTTPHeaderField: "baggage")
         let task = session.dataTask(with: request) { _, _, error in
             if let error = error {
                 print("🌍🔥 POST \(url) completed with network error: \(error)")

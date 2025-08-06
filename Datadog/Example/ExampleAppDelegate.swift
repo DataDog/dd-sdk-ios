@@ -50,6 +50,9 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Set user information
         Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
 
+        // Set account information
+        Datadog.setAccountInfo(id: "account-1234", name: "account-US")
+
         // Enable Logs
         Logs.enable(
             with: Logs.Configuration(
