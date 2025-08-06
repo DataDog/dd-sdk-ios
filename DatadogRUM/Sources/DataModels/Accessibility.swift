@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal struct AccessibilityInfo: Codable {
+internal struct AccessibilityInfo: Codable, Equatable {
     var textSize: String?
     var screenReaderEnabled: Bool?
     var boldTextEnabled: Bool?
