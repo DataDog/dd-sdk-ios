@@ -29,7 +29,9 @@ struct SessionReplayWebViewScenario: Scenario {
         SessionReplay.enable(
             with: SessionReplay.Configuration(
                 replaySampleRate: 100,
-                defaultPrivacyLevel: .allow
+                textAndInputPrivacyLevel: .maskSensitiveInputs,
+                imagePrivacyLevel: .maskNone,
+                touchPrivacyLevel: .show,
             )
         )
 
