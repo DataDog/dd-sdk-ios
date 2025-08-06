@@ -29,6 +29,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
         sdkInitDate: Date = Date(),
         nativeSourceOverride: String? = nil,
         device: DeviceInfo = .mockAny(),
+        os: OperatingSystem = .mockAny(),
         localeInfo: LocaleInfo = .mockAny(),
         userInfo: UserInfo = .mockAny(),
         accountInfo: AccountInfo? = nil,
@@ -59,6 +60,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             applicationBundleType: applicationBundleType,
             sdkInitDate: sdkInitDate,
             device: device,
+            os: os,
             localeInfo: localeInfo,
             nativeSourceOverride: nativeSourceOverride,
             userInfo: userInfo,
@@ -95,6 +97,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             applicationBundleType: .mockRandom(),
             sdkInitDate: .mockRandomInThePast(),
             device: .mockRandom(),
+            os: .mockRandom(),
             localeInfo: .mockRandom(),
             userInfo: .mockRandom(),
             accountInfo: .mockRandom(),
@@ -164,20 +167,16 @@ extension DeviceInfo {
         name: String = "iPhone",
         model: String = "iPhone10,1",
         osName: String = "iOS",
-        osVersion: String = "15.4.1",
-        osBuildNumber: String = "13D20",
         architecture: String = "arm64e",
         isSimulator: Bool = true,
         vendorId: String? = "xyz",
         isDebugging: Bool = false,
         systemBootTime: TimeInterval = Date.timeIntervalSinceReferenceDate
     ) -> DeviceInfo {
-        return .init(
+        .init(
             name: name,
             model: model,
             osName: osName,
-            osVersion: osVersion,
-            osBuildNumber: osBuildNumber,
             architecture: architecture,
             isSimulator: isSimulator,
             vendorId: vendorId,
@@ -187,18 +186,24 @@ extension DeviceInfo {
     }
 
     public static func mockRandom() -> DeviceInfo {
-        return .init(
+        .init(
             name: .mockRandom(),
             model: .mockRandom(),
             osName: .mockRandom(),
-            osVersion: .mockRandom(),
-            osBuildNumber: .mockRandom(),
             architecture: .mockRandom(),
             isSimulator: .mockRandom(),
             vendorId: .mockRandom(),
             isDebugging: .mockRandom(),
             systemBootTime: .mockRandom()
         )
+    }
+}
+
+extension DeviceInfo.DeviceType: AnyMockable, RandomMockable {
+    public static func mockAny() -> DeviceInfo.DeviceType { .iPhone }
+
+    public static func mockRandom() -> DeviceInfo.DeviceType {
+        [.iPhone, .iPod, .iPad, .appleTV, .appleVision, .appleWatch].randomElement()!
     }
 }
 

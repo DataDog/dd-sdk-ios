@@ -176,6 +176,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         return context
     }
 
+    var attributes: [AttributeKey: AttributeValue] { [:] }
+
     // MARK: - RUMScope
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {

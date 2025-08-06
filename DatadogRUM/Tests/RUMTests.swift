@@ -116,6 +116,7 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(monitor, (rum.instrumentation.actionsHandler as? RUMActionsHandler)?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.longTasks?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.appHangs?.nonFatalHangsHandler.subscriber)
+        XCTAssertIdentical(monitor, (rum.instrumentation.memoryWarningMonitor?.reporter as? MemoryWarningReporter)?.subscriber)
     }
 
     func testWhenEnabledWithNoInstrumentations() throws {
@@ -126,6 +127,7 @@ class RUMTests: XCTestCase {
         config.swiftUIActionsPredicate = nil
         config.longTaskThreshold = nil
         config.appHangThreshold = nil
+        config.trackMemoryWarnings = false
 
         // When
         RUM.enable(with: config, in: core)
@@ -145,6 +147,7 @@ class RUMTests: XCTestCase {
         )
         XCTAssertNil(rum.instrumentation.longTasks)
         XCTAssertNil(rum.instrumentation.appHangs)
+        XCTAssertNil(rum.instrumentation.memoryWarningMonitor)
     }
 
     func testWhenEnabledWithInvalidLongTasksThreshold() throws {

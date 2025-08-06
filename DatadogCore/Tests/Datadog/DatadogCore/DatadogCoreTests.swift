@@ -216,7 +216,6 @@ class DatadogCoreTests: XCTestCase {
             static let key = "key"
             let value: String
         }
-        let key = "key"
         let expectation1 = self.expectation(description: "retrieve context")
         let expectation2 = self.expectation(description: "retrieve context and event writer")
         expectation1.expectedFulfillmentCount = 2

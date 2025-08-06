@@ -100,7 +100,7 @@ internal final class WatchdogTerminationAppStateManager {
         featureScope.context { context in
             let state: WatchdogTerminationAppState = .init(
                 appVersion: context.version,
-                osVersion: context.device.osVersion,
+                osVersion: context.os.version,
                 systemBootTime: context.device.systemBootTime,
                 isDebugging: context.device.isDebugging,
                 wasTerminated: false,

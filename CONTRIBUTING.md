@@ -48,7 +48,7 @@ The workspace for SDK development and integration (tests, benchmarks, example ap
 
 #### Sources
 
-`Datadog` and `DatadogObjC` source files
+`Datadog` source files
 
 #### Tests
 

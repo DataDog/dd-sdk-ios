@@ -15,11 +15,10 @@ final class MemoryWarningMonitorTests: XCTestCase {
 
     func testStart_memoryWarningReported() throws {
         let didReport = expectation(description: "Memory warning reported")
-        let memoryWarningMock = MemoryWarningReporterMock { _ in
+        let memoryWarningMock = MemoryWarningReporterMock {
             didReport.fulfill()
         }
         sut = .init(
-            backtraceReporter: nil,
             memoryWarningReporter: memoryWarningMock,
             notificationCenter: notificationCenter
         )
@@ -29,11 +28,10 @@ final class MemoryWarningMonitorTests: XCTestCase {
     }
 
     func testStop_memoryWarningNotReported() {
-        let memoryWarningMock = MemoryWarningReporterMock { _ in
+        let memoryWarningMock = MemoryWarningReporterMock {
             XCTFail("Memory warning should not be reported after `stop()`")
         }
         sut = .init(
-            backtraceReporter: nil,
             memoryWarningReporter: memoryWarningMock,
             notificationCenter: notificationCenter
         )

@@ -42,8 +42,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -77,8 +77,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.firstPartyHosts = .init(
             hostsWithTracingHeaderTypes: [url.host!: [.datadog]]
         )
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -117,8 +117,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -155,8 +155,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -193,8 +193,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -235,8 +235,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -273,8 +273,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: nil)
 
         // When
@@ -310,8 +310,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -352,8 +352,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: nil)
 
         // When
@@ -390,8 +390,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -427,8 +427,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -472,8 +472,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.firstPartyHosts = .init(
             hostsWithTracingHeaderTypes: [url.host!: [.datadog]]
         )
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -509,8 +509,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let dateBeforeAnyRequests = Date()
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -546,7 +546,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: Data()))
 
         // Given
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession() // no custom delegate
 
         // When
@@ -580,8 +580,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let dateBeforeAnyRequests = Date()
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -636,8 +636,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let dateBeforeAnyRequests = Date()
 
         // Given
-        let delegate = MockDelegate()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         let session = server.getInterceptedURLSession()
 
         // When
@@ -685,9 +685,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         )
 
         // Given
-        let delegate1 = MockDelegate()
-        let delegate2 = MockDelegate2()
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let delegate1 = SessionDataDelegateMock()
+        let delegate2 = SessionTaskDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
         let session = server.getInterceptedURLSession()
 
@@ -712,65 +712,18 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     // MARK: - Usage
 
-    @available(*, deprecated)
-    func testItCanBeInitializedBeforeInitializingDefaultSDKCore() throws {
-        // Given
-        let delegate1 = DatadogURLSessionDelegate()
-        let delegate2 = DatadogURLSessionDelegate(additionalFirstPartyHosts: [])
-        let delegate3 = DatadogURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [:])
-
-        // When
-        CoreRegistry.register(default: core)
-        defer { CoreRegistry.unregisterDefault() }
-
-        // Then
-        XCTAssertNotNil(delegate1.feature)
-        XCTAssertNotNil(delegate2.feature)
-        XCTAssertNotNil(delegate3.feature)
-    }
-
-    @available(*, deprecated)
-    func testItCanBeInitializedAfterInitializingDefaultSDKCore() throws {
-        // Given
-        CoreRegistry.register(default: core)
-        defer { CoreRegistry.unregisterDefault() }
-
-        // When
-        let delegate1 = DatadogURLSessionDelegate()
-        let delegate2 = DatadogURLSessionDelegate(additionalFirstPartyHosts: [])
-        let delegate3 = DatadogURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [:])
-
-        // Then
-        XCTAssertNotNil(delegate1.feature)
-        XCTAssertNotNil(delegate2.feature)
-        XCTAssertNotNil(delegate3.feature)
-    }
-
-    @available(*, deprecated)
-    func testItOnlyKeepsInstrumentationWhileSDKCoreIsAvailableInMemory() throws {
-        // Given
-        let delegate = DatadogURLSessionDelegate(in: core)
-        // Then
-        XCTAssertNotNil(delegate.feature)
-
-        // When (deinitialize core)
-        core = nil
-        // Then
-        XCTAssertNil(delegate.feature)
-    }
-
     func testWhenEnableInstrumentationOnTheSameDelegate_thenItPrintsAWarning() {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        URLSessionInstrumentation.enable(with: .init(delegateClass: MockDelegate.self), in: core)
-        URLSessionInstrumentation.enable(with: .init(delegateClass: MockDelegate.self), in: core)
+        URLSessionInstrumentation.enable(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        URLSessionInstrumentation.enable(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
         // Then
         XCTAssertEqual(
             dd.logger.warnLog?.message,
             """
-            The delegate class MockDelegate is already instrumented.
+            The delegate class SessionDataDelegateMock is already instrumented.
             The previous instrumentation will be disabled in favor of the new one.
             """
         )
@@ -802,9 +755,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
         // Given
-        let delegate = MockDelegate()
+        let delegate = SessionDataDelegateMock()
         let firstPartyHosts: URLSessionInstrumentation.FirstPartyHostsTracing = .traceWithHeaders(hostsWithHeaders: ["test.com": [.datadog]])
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self, firstPartyHostsTracing: firstPartyHosts), in: core)
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self, firstPartyHostsTracing: firstPartyHosts), in: core)
 
         let session = server.getInterceptedURLSession(delegate: delegate)
         let request: URLRequest = .mockWith(url: "https://test.com")
@@ -823,96 +776,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
-    }
-
-    @available(*, deprecated)
-    func testGivenDelegateSubclass_whenInterceptingRequests_itDetectFirstPartyHost() throws {
-        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        notifyInterceptionDidStart.expectedFulfillmentCount = 2
-
-        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
-
-        // Given
-
-        let delegate = DatadogURLSessionDelegate(
-            in: core,
-            additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog]]
-        )
-
-        let session = server.getInterceptedURLSession(delegate: delegate)
-        let request: URLRequest = .mockWith(url: "https://test.com")
-
-        handler.onInterceptionDidStart = {
-            // Then
-            XCTAssertTrue($0.isFirstPartyRequest)
-            notifyInterceptionDidStart.fulfill()
-        }
-
-        // When
-        session
-            .dataTask(with: request)
-            .resume()
-
-        session
-            .dataTask(with: request) { _,_,_ in }
-            .resume()
-
-        // Then
-        waitForExpectations(timeout: 5, handler: nil)
-        _ = server.waitAndReturnRequests(count: 2)
-
-        // release the delegate to unswizzle
-        session.finishTasksAndInvalidate()
-    }
-
-    @available(*, deprecated)
-    func testGivenCompositeDelegate_whenInterceptingRequests_itDetectFirstPartyHost() throws {
-        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        notifyInterceptionDidStart.expectedFulfillmentCount = 2
-
-        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
-
-        // Given
-        class CompositeDelegate: NSObject, URLSessionDataDelegate, __URLSessionDelegateProviding {
-            let ddURLSessionDelegate: DatadogURLSessionDelegate
-
-            required init(in core: DatadogCoreProtocol) {
-                ddURLSessionDelegate = DatadogURLSessionDelegate(
-                    in: core,
-                    additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog, .tracecontext]]
-                )
-
-                super.init()
-            }
-        }
-
-        let delegate = CompositeDelegate(in: core)
-        let session = server.getInterceptedURLSession(delegate: delegate)
-        let request: URLRequest = .mockWith(url: "https://test.com")
-
-        handler.onInterceptionDidStart = {
-            // Then
-            XCTAssertTrue($0.isFirstPartyRequest)
-            notifyInterceptionDidStart.fulfill()
-        }
-
-        // When
-        session
-            .dataTask(with: request)
-            .resume()
-
-        session
-            .dataTask(with: request) { _,_,_ in }
-            .resume()
-
-        // Then
-        waitForExpectations(timeout: 5, handler: nil)
-        _ = server.waitAndReturnRequests(count: 2)
-
-        // release the delegate to unswizzle
-        session.finishTasksAndInvalidate()
     }
 
     // MARK: - Thread Safety
@@ -936,17 +799,11 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
                 { feature.task(tasks.randomElement()!, didReceive: .mockRandom()) },
                 { feature.task(tasks.randomElement()!, didFinishCollecting: .mockAny()) },
                 { feature.task(tasks.randomElement()!, didCompleteWithError: nil) },
-                { try? feature.bind(configuration: .init(delegateClass: MockDelegate.self)) },
-                { feature.unbind(delegateClass: MockDelegate.self) }
+                { try? feature.bind(configuration: .init(delegateClass: SessionDataDelegateMock.self)) },
+                { feature.unbind(delegateClass: SessionDataDelegateMock.self) }
             ],
             iterations: 50
         )
         // swiftlint:enable opening_brace trailing_closure
-    }
-
-    class MockDelegate: NSObject, URLSessionDataDelegate {
-    }
-
-    class MockDelegate2: NSObject, URLSessionDataDelegate {
     }
 }

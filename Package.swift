@@ -37,10 +37,6 @@ let package = Package(
             targets: ["DatadogCore"]
         ),
         .library(
-            name: "DatadogObjc",
-            targets: ["DatadogObjc"]
-        ),
-        .library(
             name: "DatadogLogs",
             targets: ["DatadogLogs"]
         ),
@@ -82,16 +78,6 @@ let package = Package(
                 .copy("Resources/PrivacyInfo.xcprivacy")
             ],
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
-        ),
-        .target(
-            name: "DatadogObjc",
-            dependencies: [
-                .target(name: "DatadogCore"),
-                .target(name: "DatadogLogs"),
-                .target(name: "DatadogTrace"),
-                .target(name: "DatadogRUM"),
-            ],
-            path: "DatadogObjc/Sources"
         ),
         .target(
             name: "DatadogPrivate",

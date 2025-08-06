@@ -34,10 +34,10 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// Instruments RUM Long Tasks. It is `nil` if long tasks tracking is not enabled.
     let longTasks: LongTaskObserver?
 
-    /// Instruments App Hangs. It is `nil` if hangs monitoring is not enabled.
+    /// Instruments App Hangs. It is `nil` if hangs monitoring is not enabled or when running in an iOS widget.
     let appHangs: AppHangsMonitor?
 
-    /// Instruments Watchdog Terminations.
+    /// Instruments Watchdog Terminations. It is `nil` when running in an iOS widget.
     let watchdogTermination: WatchdogTerminationMonitor?
 
     let memoryWarningMonitor: MemoryWarningMonitor?
@@ -58,8 +58,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID,
         notificationCenter: NotificationCenter,
+        bundleType: BundleType,
         watchdogTermination: WatchdogTerminationMonitor?,
-        memoryWarningMonitor: MemoryWarningMonitor
+        memoryWarningMonitor: MemoryWarningMonitor?
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI manual instrumentation)
         // and only activate `UIViewControllerSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured:
@@ -130,7 +131,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             }
         }
 
-        if var appHangThreshold = appHangThreshold {
+        if bundleType == .iOSApp,
+           var appHangThreshold = appHangThreshold {
             if appHangThreshold < Constants.minAppHangThreshold {
                 appHangThreshold = Constants.minAppHangThreshold
                 DD.logger.warn("`RUM.Configuration.appHangThreshold` cannot be less than \(Constants.minAppHangThreshold)s. A value of \(Constants.minAppHangThreshold)s will be used.")

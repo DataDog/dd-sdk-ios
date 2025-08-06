@@ -118,7 +118,6 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
         let loggerAttributes = loggerAttributes.getAttributes()
         var logAttributes = attributes
 
-        let isCrash = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorLogIsCrash)?.dd.decode() ?? false
         let errorFingerprint: String? = logAttributes?.removeValue(forKey: Logs.Attributes.errorFingerprint)?.dd.decode()
         let addBinaryImages = logAttributes?.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages)?.dd.decode() ?? false
         let userAttributes = loggerAttributes
@@ -181,7 +180,7 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
             ) { log in
                 writer.write(value: log)
 
-                guard (log.status == .error || log.status == .critical) && !isCrash else {
+                guard log.status == .error || log.status == .critical else {
                     return
                 }
 

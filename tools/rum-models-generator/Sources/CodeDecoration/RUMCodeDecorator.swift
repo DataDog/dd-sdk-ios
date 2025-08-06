@@ -22,8 +22,8 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
                 "RUMCITest",
                 "RUMSessionType",
                 "RUMSyntheticsTest",
-                "RUMDevice",
-                "RUMOperatingSystem",
+                "Device",
+                "OperatingSystem",
                 "RUMActionID",
                 "RUMSessionPrecondition",
                 "RUMTelemetryDevice",
@@ -121,8 +121,6 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
                 // than `*.device` in common schema: https://github.com/DataDog/rum-events-format/blob/dcd62e58566b9d158c404f3588edc62c041262dd/schemas/rum/_common-schema.json#L264-L295
                 // For that reason, we generate it under different name, so the `RUMTelemetryDevice` can be shared between telemetry events.
                 fixedName = "RUMTelemetryDevice"
-            } else {
-                fixedName = "RUMDevice"
             }
         }
 
@@ -133,7 +131,7 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
                 // For that reason, we generate it under different name, so the `RUMTelemetryOperatingSystem` can be shared between telemetry events.
                 fixedName = "RUMTelemetryOperatingSystem"
             } else {
-                fixedName = "RUMOperatingSystem"
+                fixedName = "OperatingSystem"
             }
         }
 
