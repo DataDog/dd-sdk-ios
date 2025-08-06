@@ -54,7 +54,7 @@ internal enum SwiftUIComponentFactory {
     /// Factory that creates the appropriate SwiftUI detector based on platform and version.
     /// Modern detection is only available on iOS 18+ and tvOS 18+.
     static func createDetector() -> SwiftUIComponentDetector {
-        if #available(iOS 18.0, tvOS 18.0, visionOS 18.0, *) {
+        if #available(iOS 18.0, tvOS 18.0, visionOS 2.0, *) {
             return ModernSwiftUIComponentDetector()
         }
         return LegacySwiftUIComponentDetector()
