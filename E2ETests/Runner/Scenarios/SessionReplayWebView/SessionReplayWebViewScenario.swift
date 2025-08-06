@@ -31,7 +31,7 @@ struct SessionReplayWebViewScenario: Scenario {
                 replaySampleRate: 100,
                 textAndInputPrivacyLevel: .maskSensitiveInputs,
                 imagePrivacyLevel: .maskNone,
-                touchPrivacyLevel: .show,
+                touchPrivacyLevel: .show
             )
         )
 

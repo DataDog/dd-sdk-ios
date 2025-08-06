@@ -71,10 +71,16 @@ class LoggerTests: XCTestCase {
             }
           },
           "device": {
+            "architecture": "testArch",
+            "battery_level": 0.5,
             "brand": "Apple",
+            "brightness_level": 0,
+            "locale": "en-US",
+            "locales": ["en"],
             "name": "Device Name",
             "model": "Model Name",
-            "architecture": "testArch",
+            "power_saving_mode": 0,
+            "time_zone": "Europe/Paris",
             "type": "other"
           },
           "service" : "default-service-name",
