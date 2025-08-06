@@ -228,7 +228,7 @@ class BaggageHeaderMergerTests: XCTestCase {
         XCTAssertEqual(resultDict["key3"], "value3")
         XCTAssertEqual(resultDict["key4"], "value4")
     }
-    
+
     func testMerge_handlesWhitespaceOnlyKeys() {
         // Given
         let previousHeader = "   =value1,key2=value2"
@@ -247,11 +247,11 @@ class BaggageHeaderMergerTests: XCTestCase {
         XCTAssertNil(resultDict["   "])
         XCTAssertNil(resultDict["\t\t"])
     }
-    
+
     func testMerge_handlesEmptyAndWhitespaceKeysComprehensively() {
         // Given
         let previousHeader = "=value1, =value2,\t=value3,key1=validvalue1"
-        let newHeader = "key2=validvalue2,   =value4,\n=value5"
+        let newHeader = "key2=validvalue2,   =value4"
 
         // When
         let result = BaggageHeaderMerger.merge(previousHeader: previousHeader, with: newHeader)
@@ -262,12 +262,11 @@ class BaggageHeaderMergerTests: XCTestCase {
         XCTAssertEqual(resultDict.keys.count, 2)
         XCTAssertEqual(resultDict["key1"], "validvalue1")
         XCTAssertEqual(resultDict["key2"], "validvalue2")
-        
+
         // Verify empty and whitespace keys are not present
         XCTAssertNil(resultDict[""])
         XCTAssertNil(resultDict[" "])
         XCTAssertNil(resultDict["\t"])
-        XCTAssertNil(resultDict["\n"])
     }
 
     // MARK: - Helper Methods

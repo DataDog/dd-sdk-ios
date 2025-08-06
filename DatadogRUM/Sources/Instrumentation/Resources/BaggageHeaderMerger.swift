@@ -61,7 +61,9 @@ internal struct BaggageHeaderMerger {
         }
 
         let key = field[..<equalIndex].trimmingCharacters(in: .whitespaces)
-        guard !key.isEmpty else { return nil }
+        guard !key.isEmpty else {
+            return nil
+        }
 
         let value = field[field.index(after: equalIndex)...].trimmingCharacters(in: .whitespaces)
 

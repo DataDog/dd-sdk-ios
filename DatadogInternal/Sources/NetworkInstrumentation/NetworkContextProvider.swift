@@ -26,12 +26,16 @@ extension NetworkContextCoreProvider: FeatureMessageReceiver {
         }
 
         let userConfigurationContext: UserConfigurationContext? = {
-            guard let userInfo = context.userInfo else { return nil }
+            guard let userInfo = context.userInfo else {
+                return nil
+            }
             return UserConfigurationContext(from: userInfo)
         }()
 
         let accountConfigurationContext: AccountConfigurationContext? = {
-            guard let accountInfo = context.accountInfo else { return nil }
+            guard let accountInfo = context.accountInfo else {
+                return nil
+            }
             return AccountConfigurationContext(from: accountInfo)
         }()
 
