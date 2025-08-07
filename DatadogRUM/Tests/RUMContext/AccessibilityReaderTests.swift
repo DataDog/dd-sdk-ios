@@ -198,7 +198,7 @@ final class AccessibilityReaderTests: XCTestCase {
         let mockReader = AccessibilityReaderMock(state: AccessibilityInfo()) // Empty state
 
         // When
-        let accessibility = mockReader.rumAccessibility
+        let accessibility = mockReader.allAccessibilityAttributes
 
         // Then - Should return nil when no valid data
         XCTAssertNil(accessibility)
@@ -232,7 +232,7 @@ final class AccessibilityReaderTests: XCTestCase {
         ))
 
         // Then - Should return all attributes
-        let accessibility1 = mockReader.rumAccessibility
+        let accessibility1 = mockReader.allAccessibilityAttributes
         XCTAssertNotNil(accessibility1)
         XCTAssertEqual(accessibility1?.screenReaderEnabled, true)
         XCTAssertEqual(accessibility1?.textSize, "large")
@@ -289,7 +289,7 @@ final class AccessibilityReaderTests: XCTestCase {
         mockReader.simulateAccessibilityChange(newState: newState)
 
         // Then - Should only return newly changed attributes
-        let accessibility2 = mockReader.rumAccessibility
+        let accessibility2 = mockReader.changedAccessibilityAttributes
         XCTAssertNotNil(accessibility2)
         XCTAssertEqual(accessibility2?.boldTextEnabled, true) // Only newly changed
         XCTAssertNil(accessibility2?.textSize)
@@ -315,10 +315,10 @@ final class AccessibilityReaderTests: XCTestCase {
         XCTAssertNil(accessibility2?.rtlEnabled)
 
         // Reset for new view
-        mockReader.resetForNewView()
+        mockReader.clearChangedAttributes()
 
         // Then - Should return all attributes
-        let accessibility3 = mockReader.rumAccessibility
+        let accessibility3 = mockReader.allAccessibilityAttributes
         XCTAssertNotNil(accessibility3)
         XCTAssertEqual(accessibility3?.boldTextEnabled, true)
         XCTAssertEqual(accessibility3?.textSize, "large")
