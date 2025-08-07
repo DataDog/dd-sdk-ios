@@ -262,6 +262,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     writer: writer,
                     activeView: activeView
                 )
+
             default:
                 if !hasActiveView {
                     handleOffViewCommand(command: command, context: context, writer: writer)
@@ -464,5 +465,39 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private func hasExpired(currentTime: Date) -> Bool {
         let sessionDuration = currentTime.timeIntervalSince(sessionStartTime)
         return sessionDuration >= Constants.sessionMaxDuration
+    }
+
+    // MARK: - Feature Operation Step Vital Event Processing
+
+    private func sendFeatureOperationStepVitalEvent(on command: RUMFeatureOperationStepVitalCommand, context: DatadogContext, writer: Writer) {
+        let vital = RUMVitalEvent.Vital(
+            vitalDescription: nil,
+            duration: nil,
+            failureReason: command.failureReason,
+            id: command.vitalId,
+            name: command.name,
+            operationKey: command.operationKey, // Maps to parentId in RUM model
+            stepType: command.stepType,
+            type: .operationStep
+        )
+
+        let vitalEvent = RUMVitalEvent(
+            dd: .init(),
+            application: .init(id: parent.context.rumApplicationID),
+            context: .init(contextInfo: command.globalAttributes.merging(command.attributes) { $1 }),
+            date: command.time.timeIntervalSince1970.toInt64Milliseconds,
+            session: .init(
+                hasReplay: context.hasReplay,
+                id: self.context.sessionID.toRUMDataFormat,
+                type: dependencies.sessionType
+            ),
+            view: .init(
+                id: parent.context.activeViewID.orNull.toRUMDataFormat,
+                url: parent.context.activeViewPath ?? ""
+            ),
+            vital: vital
+        )
+
+        writer.write(value: vitalEvent)
     }
 }
