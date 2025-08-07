@@ -210,6 +210,12 @@ extension RUMViewEvent.View.SlowFrames: RandomMockable {
     }
 }
 
+extension RUMViewEvent.View.CustomTimings: AnyMockable {
+    public static func mockAny() -> RUMViewEvent.View.CustomTimings {
+        return .init(customTimingsInfo: .mockAny())
+    }
+}
+
 extension RUMViewEvent: RandomMockable {
     public static func mockRandom() -> RUMViewEvent {
         return mockRandomWith()

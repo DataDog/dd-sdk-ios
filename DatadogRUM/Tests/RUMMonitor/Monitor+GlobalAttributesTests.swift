@@ -552,8 +552,8 @@ class Monitor_GlobalAttributesTests: XCTestCase {
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self).filter { $0.view.name == "ActiveView" }
-        let viewAfterFirstTiming = try XCTUnwrap(viewEvents.last(where: { $0.view.customTimings?.count == 1 }))
-        let viewAfterSecondTiming = try XCTUnwrap(viewEvents.last(where: { $0.view.customTimings?.count == 2 }))
+        let viewAfterFirstTiming = try XCTUnwrap(viewEvents.last(where: { $0.view.customTimings?.customTimingsInfo.count == 1 }))
+        let viewAfterSecondTiming = try XCTUnwrap(viewEvents.last(where: { $0.view.customTimings?.customTimingsInfo.count == 2 }))
 
         XCTAssertEqual(viewAfterFirstTiming.attribute(forKey: "attribute1"), "value1")
         XCTAssertEqual(viewAfterFirstTiming.attribute(forKey: "attribute2"), "value2")

@@ -530,7 +530,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             let keyCast = try objcToSwiftCast(for: swiftDictionary.key) ?? ""
             let valueCast = try objcToSwiftCast(for: swiftDictionary.value)
                 .unwrapOrThrow(.illegal("Cannot print `objcToSwiftCast()` for `SwiftDictionary` with values of type: \(type(of: swiftDictionary.value))"))
-            return ".reduce(into: [:]) { $0[$1.0\(keyCast)] = $1.1\(valueCast)"
+            return ".reduce(into: [:]) { $0[$1.0\(keyCast)] = $1.1\(valueCast) }"
         case is SwiftPrimitive<String>:
             return nil // `String` <> `NSString` interoperability doesn't require casting
         default:
