@@ -105,7 +105,9 @@ class BaggageHeaderMergerTests: XCTestCase {
         // Verify no duplicates
         let parts = result.split(separator: ",")
         let keys = parts.compactMap { part -> String? in
-            guard let idx = part.firstIndex(of: "=") else { return nil }
+            guard let idx = part.firstIndex(of: "=") else {
+                return nil
+            }
             return String(part[..<idx]).trimmingCharacters(in: .whitespaces)
         }
         XCTAssertEqual(Set(keys).count, keys.count)
