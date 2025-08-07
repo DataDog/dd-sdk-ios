@@ -300,6 +300,49 @@ public extension RUMMonitorProtocol {
     ) {
         stopAction(type: type, name: name, attributes: attributes)
     }
+
+    // MARK: - Feature Operations
+
+    /// Starts a Feature Operation.
+    /// - Parameters:
+    ///   - name: the name of the Feature Operation (e.g., "login_flow")
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
+    ///   - attributes: custom attributes to attach to this Operation
+    func startFeatureOperation(
+        name: String,
+        operationKey: String? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        startFeatureOperation(name: name, operationKey: operationKey, attributes: attributes)
+    }
+
+    /// Completes a Feature Operation successfully.
+    /// - Parameters:
+    ///   - name: the name of the Feature Operation
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
+    ///   - attributes: custom attributes to attach to this Operation
+    func succeedFeatureOperation(
+        name: String,
+        operationKey: String? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        succeedFeatureOperation(name: name, operationKey: operationKey, attributes: attributes)
+    }
+
+    /// Fails a Feature Operation with a specific reason.
+    /// - Parameters:
+    ///   - name: the name of the Feature Operation
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
+    ///   - reason: the reason for the failure
+    ///   - attributes: custom attributes to attach to this Operation
+    func failFeatureOperation(
+        name: String,
+        operationKey: String? = nil,
+        reason: RUMFeatureOperationFailureReason,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        failFeatureOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
+    }
 }
 
 // swiftlint:enable function_default_parameter_at_end
