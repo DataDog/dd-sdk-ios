@@ -108,6 +108,7 @@ internal class Monitor: RUMCommandSubscriber {
     private var attributes: [AttributeKey: AttributeValue] = [:]
 
     private let fatalErrorContext: FatalErrorContextNotifying
+    private let rumUUIDGenerator: RUMUUIDGenerator
 
     init(
         dependencies: RUMScopeDependencies,
@@ -117,6 +118,7 @@ internal class Monitor: RUMCommandSubscriber {
         self.scopes = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
         self.fatalErrorContext = dependencies.fatalErrorContext
+        self.rumUUIDGenerator = dependencies.rumUUIDGenerator
     }
 
     func process(command: RUMCommand) {
@@ -464,6 +466,58 @@ extension Monitor: RUMMonitorProtocol {
                 value: value
             )
         )
+    }
+
+    // MARK: - Feature Operations
+
+    // swiftlint:disable function_default_parameter_at_end
+    func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
+        DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) was started")
+        process(
+            command: RUMStartStepVitalCommand(
+                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                name: name,
+                operationKey: operationKey,
+                time: dateProvider.now,
+                attributes: attributes
+            )
+        )
+    }
+
+    // swiftlint:disable function_default_parameter_at_end
+    func succeedFeatureOperation(name: String, operationKey: String? = nil, attributes: [AttributeKey: AttributeValue]) {
+        DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) was successfully ended")
+        process(
+            command: RUMEndSuccessfullyStepVitalCommand(
+                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                name: name,
+                operationKey: operationKey,
+                time: dateProvider.now,
+                attributes: attributes
+            )
+        )
+    }
+
+    // swiftlint:disable function_default_parameter_at_end
+    func failFeatureOperation(name: String, operationKey: String? = nil, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
+        DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) was unsuccessfully ended with the following failure reason: \(reason.rawValue)")
+        process(
+            command: RUMEndWithFailureStepVitalCommand(
+                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                name: name,
+                operationKey: operationKey,
+                failureReason: reason,
+                time: dateProvider.now,
+                attributes: attributes
+            )
+        )
+    }
+
+    private func instanceSuffix(_ operationKey: String?) -> String {
+        guard let operationKey = operationKey else {
+            return ""
+        }
+        return " (instance `\(operationKey)`)"
     }
 
     // MARK: - debugging
