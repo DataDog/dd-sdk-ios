@@ -68,7 +68,6 @@
 		6193DCCE251B6201009B8011 /* RUMTASScreen1ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCCD251B6201009B8011 /* RUMTASScreen1ViewController.swift */; };
 		6193DCE1251B692C009B8011 /* RUMTASTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCE0251B692C009B8011 /* RUMTASTableViewController.swift */; };
 		6193DCE8251B9AB1009B8011 /* RUMTASCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6193DCE7251B9AB1009B8011 /* RUMTASCollectionViewController.swift */; };
-		61B6811F25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B6811E25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift */; };
 		61B6815E25F135890015B4AF /* CrashReportingWithRUMScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B6815D25F135890015B4AF /* CrashReportingWithRUMScenarioTests.swift */; };
 		61B9ED1C2461E12000C0DCFF /* SendLogsFixtureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B9ED1A2461E12000C0DCFF /* SendLogsFixtureViewController.swift */; };
 		61B9ED1D2461E12000C0DCFF /* SendTracesFixtureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B9ED1B2461E12000C0DCFF /* SendTracesFixtureViewController.swift */; };
@@ -211,7 +210,6 @@
 		6193DCE7251B9AB1009B8011 /* RUMTASCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTASCollectionViewController.swift; sourceTree = "<group>"; };
 		61A6F7792C208700005B74D5 /* RUM.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = RUM.xctestplan; sourceTree = "<group>"; };
 		61A6F77A2C20891C005B74D5 /* NetworkInstrumentation.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = NetworkInstrumentation.xctestplan; sourceTree = "<group>"; };
-		61B6811E25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingWithLoggingScenarioTests.swift; sourceTree = "<group>"; };
 		61B6815D25F135890015B4AF /* CrashReportingWithRUMScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingWithRUMScenarioTests.swift; sourceTree = "<group>"; };
 		61B9ED1A2461E12000C0DCFF /* SendLogsFixtureViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendLogsFixtureViewController.swift; sourceTree = "<group>"; };
 		61B9ED1B2461E12000C0DCFF /* SendTracesFixtureViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendTracesFixtureViewController.swift; sourceTree = "<group>"; };
@@ -606,7 +604,6 @@
 		61B6811D25F0E8480015B4AF /* CrashReporting */ = {
 			isa = PBXGroup;
 			children = (
-				61B6811E25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift */,
 				61B6815D25F135890015B4AF /* CrashReportingWithRUMScenarioTests.swift */,
 			);
 			path = CrashReporting;
@@ -1121,7 +1118,6 @@
 				D2791EF927170A760046E07A /* RUMSwiftUIManualInstrumentationScenarioTests.swift in Sources */,
 				61163C4A252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift in Sources */,
 				61B9ED212462089600C0DCFF /* TracingManualInstrumentationScenarioTests.swift in Sources */,
-				61B6811F25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift in Sources */,
 				61C2C20D24C1831700C0321C /* RUMManualInstrumentationScenarioTests.swift in Sources */,
 				61098D2D27FEE4130021237A /* MessagePortChannel.swift in Sources */,
 				9EC2835A26CFEE0B00FACF1C /* RUMMobileVitalsScenarioTests.swift in Sources */,

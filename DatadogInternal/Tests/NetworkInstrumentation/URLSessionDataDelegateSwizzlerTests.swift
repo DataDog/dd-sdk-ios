@@ -6,17 +6,12 @@
 
 import XCTest
 
+import TestUtilities
 @testable import DatadogInternal
 
 class URLSessionDataDelegateSwizzlerTests: XCTestCase {
     func testSwizzling_implementedMethods() throws {
-        class MockDelegate: NSObject, URLSessionDataDelegate {
-            func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) { }
-            func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) { }
-            func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) { }
-        }
-
-        let delegate = MockDelegate()
+        let delegate = SessionDataDelegateMock()
         let didReceiveData = expectation(description: "didReceiveData")
         didReceiveData.assertForOverFulfill = false
 
@@ -24,7 +19,7 @@ class URLSessionDataDelegateSwizzlerTests: XCTestCase {
         let swizzler = URLSessionDataDelegateSwizzler()
 
         try swizzler.swizzle(
-            delegateClass: MockDelegate.self,
+            delegateClass: SessionDataDelegateMock.self,
             interceptDidReceive: { _, _, _ in
                 didReceiveData.fulfill()
             }
@@ -41,10 +36,7 @@ class URLSessionDataDelegateSwizzlerTests: XCTestCase {
     }
 
     func testSwizzling_whenMethodsNotImplemented() throws {
-        class MockDelegate: NSObject, URLSessionDataDelegate {
-        }
-
-        let delegate = MockDelegate()
+        let delegate = SessionDataDelegateMock()
         let didReceiveData = expectation(description: "didReceiveData")
         didReceiveData.assertForOverFulfill = false
 
@@ -52,7 +44,7 @@ class URLSessionDataDelegateSwizzlerTests: XCTestCase {
         let swizzler = URLSessionDataDelegateSwizzler()
 
         try swizzler.swizzle(
-            delegateClass: MockDelegate.self,
+            delegateClass: SessionDataDelegateMock.self,
             interceptDidReceive: { _, _, _ in
                 didReceiveData.fulfill()
             }
@@ -69,10 +61,7 @@ class URLSessionDataDelegateSwizzlerTests: XCTestCase {
     }
 
     func testUnSwizzling() throws {
-        class MockDelegate: NSObject, URLSessionDataDelegate {
-        }
-
-        let delegate = MockDelegate()
+        let delegate = SessionDataDelegateMock()
         let expectation = self.expectation(description: "not expected")
         expectation.isInverted = true
 
@@ -80,7 +69,7 @@ class URLSessionDataDelegateSwizzlerTests: XCTestCase {
         let swizzler = URLSessionDataDelegateSwizzler()
 
         try swizzler.swizzle(
-            delegateClass: MockDelegate.self,
+            delegateClass: SessionDataDelegateMock.self,
             interceptDidReceive: { _, _, _ in
                 expectation.fulfill()
             }

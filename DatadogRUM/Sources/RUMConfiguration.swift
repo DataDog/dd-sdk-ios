@@ -7,11 +7,7 @@
 import Foundation
 import DatadogInternal
 
-// Export `DDURLSessionDelegate` elements to be available with `import DatadogRUM`:
 // swiftlint:disable duplicate_imports
-@_exported import class DatadogInternal.DatadogURLSessionDelegate
-@_exported import typealias DatadogInternal.DDURLSessionDelegate
-@_exported import protocol DatadogInternal.__URLSessionDelegateProviding
 @_exported import enum DatadogInternal.URLSessionInstrumentation
 @_exported import enum DatadogInternal.TraceContextInjection
 @_exported import struct DatadogInternal.RUMViewEvent
@@ -281,6 +277,13 @@ extension RUM {
         /// Default: `true`.
         public var trackAnonymousUser: Bool
 
+        /// Enables the collection of memory warnings.
+        ///
+        /// When enabled, all the memory warnings are reported as RUM Errors.
+        ///
+        /// Default: `true`.
+        public var trackMemoryWarnings: Bool
+
         /// The sampling rate for SDK internal telemetry utilized by Datadog.
         /// This telemetry is used to monitor the internal workings of the entire Datadog iOS SDK.
         ///
@@ -357,6 +360,8 @@ extension RUM {
         internal var processID: UUID = currentProcessID
         /// The default notification center used for subscribing to app lifecycle events and system notifications.
         internal var notificationCenter: NotificationCenter = .default
+        /// The bundle object that contains the current executable.
+        internal var bundle: Bundle = .main
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
         internal var debugViews: Bool = ProcessInfo.processInfo.arguments.contains("DD_DEBUG_RUM")
@@ -375,23 +380,23 @@ extension RUM.Configuration.URLSessionTracking {
         ///
         /// - Parameters:
         ///   - hosts: The set of hosts to inject tracing headers. Note: Hosts must not include the "http(s)://" prefix.
-        ///   - sampleRate: The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `20`.
-        ///   - traceControlInjection: The strategy for injecting trace context into requests. Default: `.all`.
+        ///   - sampleRate: The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `100`.
+        ///   - traceControlInjection: The strategy for injecting trace context into requests. Default: `.sampled`.
         case trace(
             hosts: Set<String>,
-            sampleRate: Float = 20,
-            traceControlInjection: TraceContextInjection = .all
+            sampleRate: Float = .maxSampleRate,
+            traceControlInjection: TraceContextInjection = .sampled
         )
 
         /// Trace given hosts with using custom tracing headers.
         ///
         /// - `hostsWithHeaders` - Dictionary of hosts and tracing header types to use. Note: Hosts must not include "http(s)://" prefix.
-        /// - `sampleRate` - The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `20`.
-        /// - `traceControlInjection` - The strategy for injecting trace context into requests. Default: `.all`.
+        /// - `sampleRate` - The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `100`.
+        /// - `traceControlInjection` - The strategy for injecting trace context into requests. Default: `.sampled`.
         case traceWithHeaders(
             hostsWithHeaders: [String: Set<TracingHeaderType>],
-            sampleRate: Float = 20,
-            traceControlInjection: TraceContextInjection = .all
+            sampleRate: Float = .maxSampleRate,
+            traceControlInjection: TraceContextInjection = .sampled
         )
     }
 
@@ -435,6 +440,8 @@ extension RUM.Configuration {
     ///   - longTaskEventMapper: Custom mapper for RUM long task events. Default: `nil`.
     ///   - onSessionStart: RUM session start callback. Default: `nil`.
     ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
+    ///   - trackAnonymousUser: Enables the collection of anonymous user id across sessions. Default: `true`.
+    ///   - trackMemoryWarnings: Enables the collection of memory warnings. Default: `true`.
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     ///   - featureFlags: Experimental feature flags.
     public init(
@@ -461,6 +468,7 @@ extension RUM.Configuration {
         onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = nil,
         trackAnonymousUser: Bool = true,
+        trackMemoryWarnings: Bool = true,
         telemetrySampleRate: SampleRate = 20,
         featureFlags: FeatureFlags = .defaults
     ) {
@@ -488,6 +496,7 @@ extension RUM.Configuration {
         self.trackAnonymousUser = trackAnonymousUser
         self.telemetrySampleRate = telemetrySampleRate
         self.trackWatchdogTerminations = trackWatchdogTerminations
+        self.trackMemoryWarnings = trackMemoryWarnings
         self.featureFlags = featureFlags
     }
 }

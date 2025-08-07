@@ -103,9 +103,37 @@ extension RUMEventAttributes: RandomMockable {
     }
 }
 
-extension RUMDevice: RandomMockable {
-    public static func mockRandom() -> RUMDevice {
-        return .init(
+extension Device: AnyMockable, RandomMockable {
+    public static func mockAny() -> Device {
+        return .mockWith()
+    }
+
+    public static func mockWith(
+    architecture: String = "arm64e",
+    batteryLevel: Double = 1.0,
+    brand: String = "Apple",
+    brightnessLevel: Double = 1.0,
+    locale: String = "en-US",
+    model: String = "iPhone10,1",
+    name: String = "iPhone",
+    powerSavingMode: Bool = false,
+    type: DeviceType = .mobile
+    ) -> Device {
+        .init(
+            architecture: architecture,
+            batteryLevel: batteryLevel,
+            brand: brand,
+            brightnessLevel: brightnessLevel,
+            locale: locale,
+            model: model,
+            name: name,
+            powerSavingMode: powerSavingMode,
+            type: type
+        )
+    }
+
+    public static func mockRandom() -> Device {
+        .init(
             architecture: .mockRandom(),
             brand: .mockRandom(),
             model: .mockRandom(),
@@ -136,19 +164,32 @@ extension RUMActionID {
     }
 }
 
-extension RUMDevice.RUMDeviceType: RandomMockable {
-    public static func mockRandom() -> RUMDevice.RUMDeviceType {
-        return [.mobile, .desktop, .tablet, .tv, .gamingConsole, .bot, .other].randomElement()!
+extension Device.DeviceType: AnyMockable, RandomMockable {
+    public static func mockAny() -> Device.DeviceType { .mobile }
+
+    public static func mockRandom() -> Device.DeviceType {
+        [.mobile, .desktop, .tablet, .tv, .gamingConsole, .bot, .other].randomElement()!
     }
 }
 
-extension RUMOperatingSystem: RandomMockable {
-    public static func mockRandom() -> RUMOperatingSystem {
+extension OperatingSystem: AnyMockable, RandomMockable {
+    public static func mockAny() -> OperatingSystem {
+        return .mockWith()
+    }
+
+    public static func mockWith(
+        name: String = "iOS",
+        version: String = "18.2.1",
+        build: String = "4SDM23"
+    ) -> OperatingSystem {
+        return .init(name: name, version: version, build: build)
+    }
+
+    public static func mockRandom() -> OperatingSystem {
         return .init(
-            build: nil,
             name: .mockRandom(length: 5),
             version: .mockRandom(among: .decimalDigits, length: 2),
-            versionMajor: .mockRandom(among: .decimalDigits, length: 1)
+            build: .mockRandom()
         )
     }
 }

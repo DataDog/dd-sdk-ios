@@ -49,13 +49,13 @@ public struct RUMActionEvent: RUMDataModel {
     public let ddtags: String?
 
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -145,9 +145,9 @@ public struct RUMActionEvent: RUMDataModel {
         context: RUMEventAttributes? = nil,
         date: Int64,
         ddtags: String? = nil,
-        device: RUMDevice? = nil,
+        device: Device? = nil,
         display: Display? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
         source: Source? = nil,
@@ -886,7 +886,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let ddtags: String?
 
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
@@ -901,7 +901,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let freeze: Freeze?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -997,12 +997,12 @@ public struct RUMErrorEvent: RUMDataModel {
         context: RUMEventAttributes? = nil,
         date: Int64,
         ddtags: String? = nil,
-        device: RUMDevice? = nil,
+        device: Device? = nil,
         display: Display? = nil,
         error: Error,
         featureFlags: FeatureFlags? = nil,
         freeze: Freeze? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
         source: Source? = nil,
@@ -2013,7 +2013,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let ddtags: String?
 
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
@@ -2022,7 +2022,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let longTask: LongTask
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -2114,10 +2114,10 @@ public struct RUMLongTaskEvent: RUMDataModel {
         context: RUMEventAttributes? = nil,
         date: Int64,
         ddtags: String? = nil,
-        device: RUMDevice? = nil,
+        device: Device? = nil,
         display: Display? = nil,
         longTask: LongTask,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
         source: Source? = nil,
@@ -2826,13 +2826,13 @@ public struct RUMResourceEvent: RUMDataModel {
     public let ddtags: String?
 
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// Resource properties
     public var resource: Resource
@@ -2927,9 +2927,9 @@ public struct RUMResourceEvent: RUMDataModel {
         context: RUMEventAttributes? = nil,
         date: Int64,
         ddtags: String? = nil,
-        device: RUMDevice? = nil,
+        device: Device? = nil,
         display: Display? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         resource: Resource,
         service: String? = nil,
         session: Session,
@@ -3872,7 +3872,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let ddtags: String?
 
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
@@ -3881,7 +3881,7 @@ public struct RUMViewEvent: RUMDataModel {
     public var featureFlags: FeatureFlags?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// Privacy properties
     public let privacy: Privacy?
@@ -3975,10 +3975,10 @@ public struct RUMViewEvent: RUMDataModel {
         context: RUMEventAttributes? = nil,
         date: Int64,
         ddtags: String? = nil,
-        device: RUMDevice? = nil,
+        device: Device? = nil,
         display: Display? = nil,
         featureFlags: FeatureFlags? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         privacy: Privacy? = nil,
         service: String? = nil,
         session: Session,
@@ -5032,6 +5032,9 @@ public struct RUMViewEvent: RUMDataModel {
             /// Indicates whether the user prefers reduced animations or cross-fade transitions.
             public let reducedAnimationsEnabled: Bool?
 
+            /// Indicates whether the right-to-left support is enabled.
+            public let rtlEnabled: Bool?
+
             /// Indicates whether a screen reader is currently active.
             public let screenReaderEnabled: Bool?
 
@@ -5070,6 +5073,7 @@ public struct RUMViewEvent: RUMDataModel {
                 case reduceMotionEnabled = "reduce_motion_enabled"
                 case reduceTransparencyEnabled = "reduce_transparency_enabled"
                 case reducedAnimationsEnabled = "reduced_animations_enabled"
+                case rtlEnabled = "rtl_enabled"
                 case screenReaderEnabled = "screen_reader_enabled"
                 case shakeToUndoEnabled = "shake_to_undo_enabled"
                 case shouldDifferentiateWithoutColor = "should_differentiate_without_color"
@@ -5096,6 +5100,7 @@ public struct RUMViewEvent: RUMDataModel {
             ///   - reduceMotionEnabled: Indicates whether the system-wide reduce motion setting is enabled.
             ///   - reduceTransparencyEnabled: Indicates whether the system-wide reduce transparency setting is enabled.
             ///   - reducedAnimationsEnabled: Indicates whether the user prefers reduced animations or cross-fade transitions.
+            ///   - rtlEnabled: Indicates whether the right-to-left support is enabled.
             ///   - screenReaderEnabled: Indicates whether a screen reader is currently active.
             ///   - shakeToUndoEnabled: Indicates whether the Shake to Undo feature is enabled.
             ///   - shouldDifferentiateWithoutColor: Indicates whether the system should differentiate interface elements without relying solely on color.
@@ -5118,6 +5123,7 @@ public struct RUMViewEvent: RUMDataModel {
                 reduceMotionEnabled: Bool? = nil,
                 reduceTransparencyEnabled: Bool? = nil,
                 reducedAnimationsEnabled: Bool? = nil,
+                rtlEnabled: Bool? = nil,
                 screenReaderEnabled: Bool? = nil,
                 shakeToUndoEnabled: Bool? = nil,
                 shouldDifferentiateWithoutColor: Bool? = nil,
@@ -5140,6 +5146,7 @@ public struct RUMViewEvent: RUMDataModel {
                 self.reduceMotionEnabled = reduceMotionEnabled
                 self.reduceTransparencyEnabled = reduceTransparencyEnabled
                 self.reducedAnimationsEnabled = reducedAnimationsEnabled
+                self.rtlEnabled = rtlEnabled
                 self.screenReaderEnabled = screenReaderEnabled
                 self.shakeToUndoEnabled = shakeToUndoEnabled
                 self.shouldDifferentiateWithoutColor = shouldDifferentiateWithoutColor
@@ -5869,13 +5876,13 @@ public struct RUMVitalEvent: RUMDataModel {
     public let ddtags: String?
 
     /// Device properties
-    public let device: RUMDevice?
+    public let device: Device?
 
     /// Display properties
     public let display: Display?
 
     /// Operating system properties
-    public let os: RUMOperatingSystem?
+    public let os: OperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -5967,9 +5974,9 @@ public struct RUMVitalEvent: RUMDataModel {
         context: RUMEventAttributes? = nil,
         date: Int64,
         ddtags: String? = nil,
-        device: RUMDevice? = nil,
+        device: Device? = nil,
         display: Display? = nil,
-        os: RUMOperatingSystem? = nil,
+        os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
         source: Source? = nil,
@@ -6364,9 +6371,6 @@ public struct RUMVitalEvent: RUMDataModel {
 
     /// Vital properties
     public struct Vital: Codable {
-        /// User custom vital.
-        public let custom: [String: Double]?
-
         /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
         public let vitalDescription: String?
 
@@ -6392,7 +6396,6 @@ public struct RUMVitalEvent: RUMDataModel {
         public let type: VitalType
 
         public enum CodingKeys: String, CodingKey {
-            case custom = "custom"
             case vitalDescription = "description"
             case duration = "duration"
             case failureReason = "failure_reason"
@@ -6406,7 +6409,6 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Vital properties
         ///
         /// - Parameters:
-        ///   - custom: User custom vital.
         ///   - vitalDescription: Description of the vital. It can be used as a secondary identifier (URL, React component name...)
         ///   - duration: Duration of the vital in nanoseconds
         ///   - failureReason: Reason for the failure of the step, if applicable
@@ -6416,7 +6418,6 @@ public struct RUMVitalEvent: RUMDataModel {
         ///   - stepType: Type of the step that triggered the vital, if applicable
         ///   - type: Type of the vital
         public init(
-            custom: [String: Double]? = nil,
             vitalDescription: String? = nil,
             duration: Double? = nil,
             failureReason: FailureReason? = nil,
@@ -6426,7 +6427,6 @@ public struct RUMVitalEvent: RUMDataModel {
             stepType: StepType? = nil,
             type: VitalType
         ) {
-            self.custom = custom
             self.vitalDescription = vitalDescription
             self.duration = duration
             self.failureReason = failureReason
@@ -7384,6 +7384,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
             public let replaySampleRate: Int64?
 
+            /// The version of the SDK that is running.
+            public var sdkVersion: String?
+
             /// A list of selected tracing propagators
             public let selectedTracingPropagators: [SelectedTracingPropagators]?
 
@@ -7401,6 +7404,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether initialization fails silently if the SDK is already initialized
             public let silentMultipleInit: Bool?
+
+            /// The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform'.
+            public var source: String?
 
             /// Whether Session Replay should automatically start a recording when enabled
             public var startRecordingImmediately: Bool?
@@ -7549,6 +7555,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether the Worker is loaded from an external URL
             public let useWorkerUrl: Bool?
 
+            /// The variant of the SDK build (e.g., standard, lite, etc.).
+            public var variant: String?
+
             /// View tracking strategy
             public let viewTrackingStrategy: ViewTrackingStrategy?
 
@@ -7579,12 +7588,14 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case reactNativeVersion = "react_native_version"
                 case reactVersion = "react_version"
                 case replaySampleRate = "replay_sample_rate"
+                case sdkVersion = "sdk_version"
                 case selectedTracingPropagators = "selected_tracing_propagators"
                 case sendLogsAfterSessionExpiration = "send_logs_after_session_expiration"
                 case sessionPersistence = "session_persistence"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case silentMultipleInit = "silent_multiple_init"
+                case source = "source"
                 case startRecordingImmediately = "start_recording_immediately"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
                 case storeContextsAcrossPages = "store_contexts_across_pages"
@@ -7634,6 +7645,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case useSecureSessionCookie = "use_secure_session_cookie"
                 case useTracing = "use_tracing"
                 case useWorkerUrl = "use_worker_url"
+                case variant = "variant"
                 case viewTrackingStrategy = "view_tracking_strategy"
             }
 
@@ -7666,12 +7678,14 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - reactNativeVersion: The version of ReactNative used in a ReactNative application
             ///   - reactVersion: The version of React used in a ReactNative application
             ///   - replaySampleRate: The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
+            ///   - sdkVersion: The version of the SDK that is running.
             ///   - selectedTracingPropagators: A list of selected tracing propagators
             ///   - sendLogsAfterSessionExpiration: Whether logs are sent after the session expiration
             ///   - sessionPersistence: Configure the storage strategy for persisting sessions
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - silentMultipleInit: Whether initialization fails silently if the SDK is already initialized
+            ///   - source: The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform'.
             ///   - startRecordingImmediately: Whether Session Replay should automatically start a recording when enabled
             ///   - startSessionReplayRecordingManually: Whether the session replay start is handled manually
             ///   - storeContextsAcrossPages: Whether contexts are stored in local storage
@@ -7721,6 +7735,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - useSecureSessionCookie: Whether a secure session cookie is used
             ///   - useTracing: Whether tracing features are enabled
             ///   - useWorkerUrl: Whether the Worker is loaded from an external URL
+            ///   - variant: The variant of the SDK build (e.g., standard, lite, etc.).
             ///   - viewTrackingStrategy: View tracking strategy
             public init(
                 actionNameAttribute: String? = nil,
@@ -7749,12 +7764,14 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 reactNativeVersion: String? = nil,
                 reactVersion: String? = nil,
                 replaySampleRate: Int64? = nil,
+                sdkVersion: String? = nil,
                 selectedTracingPropagators: [SelectedTracingPropagators]? = nil,
                 sendLogsAfterSessionExpiration: Bool? = nil,
                 sessionPersistence: SessionPersistence? = nil,
                 sessionReplaySampleRate: Int64? = nil,
                 sessionSampleRate: Int64? = nil,
                 silentMultipleInit: Bool? = nil,
+                source: String? = nil,
                 startRecordingImmediately: Bool? = nil,
                 startSessionReplayRecordingManually: Bool? = nil,
                 storeContextsAcrossPages: Bool? = nil,
@@ -7804,6 +7821,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 useSecureSessionCookie: Bool? = nil,
                 useTracing: Bool? = nil,
                 useWorkerUrl: Bool? = nil,
+                variant: String? = nil,
                 viewTrackingStrategy: ViewTrackingStrategy? = nil
             ) {
                 self.actionNameAttribute = actionNameAttribute
@@ -7832,12 +7850,14 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.reactNativeVersion = reactNativeVersion
                 self.reactVersion = reactVersion
                 self.replaySampleRate = replaySampleRate
+                self.sdkVersion = sdkVersion
                 self.selectedTracingPropagators = selectedTracingPropagators
                 self.sendLogsAfterSessionExpiration = sendLogsAfterSessionExpiration
                 self.sessionPersistence = sessionPersistence
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.silentMultipleInit = silentMultipleInit
+                self.source = source
                 self.startRecordingImmediately = startRecordingImmediately
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
                 self.storeContextsAcrossPages = storeContextsAcrossPages
@@ -7887,6 +7907,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.useSecureSessionCookie = useSecureSessionCookie
                 self.useTracing = useTracing
                 self.useWorkerUrl = useWorkerUrl
+                self.variant = variant
                 self.viewTrackingStrategy = viewTrackingStrategy
             }
 
@@ -9258,7 +9279,7 @@ extension RUMEventAttributes {
 }
 
 /// Device properties
-public struct RUMDevice: Codable {
+public struct Device: Codable {
     /// The CPU architecture of the device that is reporting the error
     public let architecture: String?
 
@@ -9290,7 +9311,7 @@ public struct RUMDevice: Codable {
     public let timeZone: String?
 
     /// Device type info
-    public let type: RUMDeviceType?
+    public let type: DeviceType?
 
     public enum CodingKeys: String, CodingKey {
         case architecture = "architecture"
@@ -9331,7 +9352,7 @@ public struct RUMDevice: Codable {
         name: String? = nil,
         powerSavingMode: Bool? = nil,
         timeZone: String? = nil,
-        type: RUMDeviceType? = nil
+        type: DeviceType? = nil
     ) {
         self.architecture = architecture
         self.batteryLevel = batteryLevel
@@ -9347,7 +9368,7 @@ public struct RUMDevice: Codable {
     }
 
     /// Device type info
-    public enum RUMDeviceType: String, Codable {
+    public enum DeviceType: String, Codable {
         case mobile = "mobile"
         case desktop = "desktop"
         case tablet = "tablet"
@@ -9359,7 +9380,7 @@ public struct RUMDevice: Codable {
 }
 
 /// Operating system properties
-public struct RUMOperatingSystem: Codable {
+public struct OperatingSystem: Codable {
     /// Operating system build number, e.g. 15D21
     public let build: String?
 
@@ -9648,4 +9669,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/4c3e63b404a37dc5dfe9450f7f7ad0b8a87f6450
+// Generated from https://github.com/DataDog/rum-events-format/tree/fd61fb5b16ccd0cbf24e59050ebe4d42c4bd593e

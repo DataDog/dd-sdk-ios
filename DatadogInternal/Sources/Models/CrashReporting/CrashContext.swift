@@ -33,7 +33,10 @@ public struct CrashContext: Codable, Equatable {
     public let buildNumber: String
 
     /// Current device information.
-    public let device: DeviceInfo
+    public let device: Device
+
+    /// Operating System information.
+    public let os: OperatingSystem
 
     /// Current locale information.
     public let localeInfo: LocaleInfo?
@@ -102,7 +105,8 @@ public struct CrashContext: Codable, Equatable {
         env: String,
         version: String,
         buildNumber: String,
-        device: DeviceInfo,
+        device: Device,
+        os: OperatingSystem,
         localeInfo: LocaleInfo?,
         sdkVersion: String,
         source: String,
@@ -127,6 +131,7 @@ public struct CrashContext: Codable, Equatable {
         self.version = version
         self.buildNumber = buildNumber
         self.device = device
+        self.os = os
         self.localeInfo = localeInfo
         self.sdkVersion = service
         self.source = source
@@ -158,7 +163,8 @@ public struct CrashContext: Codable, Equatable {
         self.env = context.env
         self.version = context.version
         self.buildNumber = context.buildNumber
-        self.device = context.device
+        self.device = context.device.normalizedDevice
+        self.os = context.os
         self.localeInfo = context.localeInfo
         self.sdkVersion = context.sdkVersion
         self.source = context.source

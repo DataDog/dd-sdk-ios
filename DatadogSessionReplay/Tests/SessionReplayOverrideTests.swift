@@ -231,7 +231,7 @@ class SessionReplayPrivacyOverridesTests: XCTestCase {
         weak var weakView: UIView?
         let randomValues: PrivacyOverrides = .mockRandom()
 
-        try autoreleasepool {
+        autoreleasepool {
             // Strong reference to the view
             let view = UIView()
             // Weak reference to the view

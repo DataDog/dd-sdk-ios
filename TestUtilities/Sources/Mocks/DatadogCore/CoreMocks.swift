@@ -47,9 +47,7 @@ extension Datadog.Configuration: AnyMockable {
 
 typealias BatchSize = Datadog.Configuration.BatchSize
 
-extension BatchSize: CaseIterable, RandomMockable {
-    public static var allCases: [Self] { [.small, .medium, .large] }
-
+extension BatchSize: RandomMockable {
     public static func mockRandom() -> Self {
         allCases.randomElement()!
     }
@@ -57,24 +55,16 @@ extension BatchSize: CaseIterable, RandomMockable {
 
 typealias UploadFrequency = Datadog.Configuration.UploadFrequency
 
-extension UploadFrequency: CaseIterable, RandomMockable {
-    public static var allCases: [Self] { [.frequent, .average, .rare] }
-
+extension UploadFrequency: RandomMockable {
     public static func mockRandom() -> Self {
         allCases.randomElement()!
     }
 }
 
-extension Datadog.Configuration.BatchProcessingLevel: CaseIterable, RandomMockable {
-    public static var allCases: [Self] { [.low, .medium, .high] }
-
+extension Datadog.Configuration.BatchProcessingLevel: RandomMockable {
     public static func mockRandom() -> Self {
         allCases.randomElement()!
     }
-}
-
-extension BundleType: CaseIterable {
-    public static var allCases: [Self] { [.iOSApp, iOSAppExtension] }
 }
 
 public struct DataEncryptionMock: DataEncryption {

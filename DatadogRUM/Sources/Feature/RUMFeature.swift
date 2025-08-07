@@ -49,8 +49,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
         let tnsPredicateType = configuration.networkSettledResourcePredicate.metricPredicateType
         let invPredicateType = configuration.nextViewActionPredicate?.metricPredicateType ?? .disabled
 
+        let bundleType = BundleType(bundle: configuration.bundle)
         var watchdogTermination: WatchdogTerminationMonitor?
-        if configuration.trackWatchdogTerminations {
+        if bundleType == .iOSApp,
+            configuration.trackWatchdogTerminations {
             let appStateManager = WatchdogTerminationAppStateManager(
                 featureScope: featureScope,
                 processId: configuration.processID,
@@ -173,12 +175,14 @@ internal final class RUMFeature: DatadogRemoteFeature {
             dependencies.renderLoopObserver?.register(refreshRateVital)
         }
 
-        let memoryWarningReporter = MemoryWarningReporter()
-        let memoryWarningMonitor = MemoryWarningMonitor(
-            backtraceReporter: core.backtraceReporter,
-            memoryWarningReporter: memoryWarningReporter,
-            notificationCenter: configuration.notificationCenter
-        )
+        var memoryWarningMonitor: MemoryWarningMonitor?
+        if configuration.trackMemoryWarnings {
+            let memoryWarningReporter = MemoryWarningReporter()
+            memoryWarningMonitor = MemoryWarningMonitor(
+                memoryWarningReporter: memoryWarningReporter,
+                notificationCenter: configuration.notificationCenter
+            )
+        }
 
         self.instrumentation = RUMInstrumentation(
             featureScope: featureScope,
@@ -194,6 +198,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             fatalErrorContext: dependencies.fatalErrorContext,
             processID: configuration.processID,
             notificationCenter: configuration.notificationCenter,
+            bundleType: bundleType,
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: memoryWarningMonitor
         )

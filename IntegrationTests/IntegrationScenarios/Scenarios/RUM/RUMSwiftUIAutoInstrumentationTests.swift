@@ -212,7 +212,7 @@ class RUMSwiftUIAutoInstrumentationTests: IntegrationTests, RUMCommonAsserts {
 
         let mainView = session.views[1]
         XCTAssertEqual(mainView.name, "Runner.SwiftUIAutoInstrumentationActionView")
-        if #available(iOS 18.0, tvOS 18.0, visionOS 18.0, *) {
+        if #available(iOS 18.0, tvOS 18.0, visionOS 2.0, *) {
             XCTAssertEqual(mainView.actionEvents[0].action.target?.name, SwiftUIComponentNames.button)
             XCTAssertEqual(mainView.actionEvents[1].action.target?.name, SwiftUIComponentNames.navigationLink)
             XCTAssertEqual(mainView.actionEvents[2].action.target?.name, "UISwitch")

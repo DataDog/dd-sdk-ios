@@ -31,7 +31,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: receiver,
-            distributedTraceSampler: .mockKeepAll(),
+            samplingRate: .maxSampleRate,
             firstPartyHosts: .init([
                 "www.example.com": [.datadog]
             ]),
@@ -49,7 +49,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(),
-            distributedTraceSampler: .mockKeepAll(),
+            samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
             traceContextInjection: .all
         )
@@ -96,7 +96,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(),
-            distributedTraceSampler: .mockKeepAll(),
+            samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
             traceContextInjection: .all
         )
@@ -151,7 +151,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(),
-            distributedTraceSampler: .mockRejectAll(),
+            samplingRate: 0,
             firstPartyHosts: .init(),
             traceContextInjection: .sampled
         )
@@ -191,7 +191,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(),
-            distributedTraceSampler: .mockKeepAll(),
+            samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
             traceContextInjection: .all
         )
@@ -420,7 +420,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let handler = TracingURLSessionHandler(
             tracer: .mockWith(core: core),
             contextReceiver: receiver,
-            distributedTraceSampler: .mockKeepAll(),
+            samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
             traceContextInjection: .all
         )

@@ -7,7 +7,7 @@
 import UIKit
 
 internal class TSPictureViewController: UIViewController {
-    let sessionDelegate = DDURLSessionDelegate()
+    let sessionDelegate = CustomURLSessionDelegate()
     private lazy var session = URLSession(
         configuration: .default,
         delegate: sessionDelegate,

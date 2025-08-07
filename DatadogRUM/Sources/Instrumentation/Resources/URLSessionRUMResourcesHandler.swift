@@ -140,6 +140,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
                     error: error,
                     source: .network,
                     httpStatusCode: interception.completion?.httpResponse?.statusCode,
+                    globalAttributes: [:],
                     attributes: userAttributes
                 )
             )
@@ -166,27 +167,21 @@ extension DistributedTracing {
             let writer: TracePropagationHeadersWriter
             switch $0 {
             case .datadog:
-                writer = HTTPHeadersWriter(
-                    samplingStrategy: .headBased,
-                    traceContextInjection: traceContextInjection
-                )
+                writer = HTTPHeadersWriter(traceContextInjection: traceContextInjection)
                 // To make sure the generated traces from RUM don’t affect APM Index Spans counts.
                 request.setValue("rum", forHTTPHeaderField: TracingHTTPHeaders.originField)
             case .b3:
                 writer = B3HTTPHeadersWriter(
-                    samplingStrategy: .headBased,
                     injectEncoding: .single,
                     traceContextInjection: traceContextInjection
                 )
             case .b3multi:
                 writer = B3HTTPHeadersWriter(
-                    samplingStrategy: .headBased,
                     injectEncoding: .multiple,
                     traceContextInjection: traceContextInjection
                 )
             case .tracecontext:
                 writer = W3CHTTPHeadersWriter(
-                    samplingStrategy: .headBased,
                     tracestate: [
                         W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
                     ],

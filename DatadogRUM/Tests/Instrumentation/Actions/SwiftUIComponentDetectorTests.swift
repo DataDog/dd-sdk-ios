@@ -553,7 +553,7 @@ class SwiftUIComponentDetectorTests: XCTestCase {
         // Test will always use the correct detector based on iOS version
         let detector = SwiftUIComponentFactory.createDetector()
 
-        if #available(iOS 18.0, tvOS 18.0, visionOS 18.0, *) {
+        if #available(iOS 18.0, tvOS 18.0, visionOS 2.0, *) {
             XCTAssertTrue(detector is ModernSwiftUIComponentDetector)
         } else {
             XCTAssertTrue(detector is LegacySwiftUIComponentDetector)

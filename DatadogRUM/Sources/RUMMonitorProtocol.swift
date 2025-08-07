@@ -39,7 +39,7 @@ public enum RUMErrorSource {
 }
 
 /// Public interface of RUM monitor for manual interaction with RUM feature.
-public protocol RUMMonitorProtocol: AnyObject {
+public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     // MARK: - attributes
 
     /// Adds a custom attribute to the next RUM events.
@@ -79,56 +79,6 @@ public protocol RUMMonitorProtocol: AnyObject {
     /// A new session will start in response to a call to `startView` or `addAction`.
     /// If the session is started because of a call to `addAction`, the last known view is restarted in the new session.
     func stopSession()
-
-    // MARK: - views
-
-    /// Starts RUM view.
-    /// - Parameters:
-    ///   - viewController: the instance of `UIViewController` representing this view.
-    ///   - name: the name of the view. If not provided, the `viewController` class name will be used.
-    ///   - attributes: custom attributes to attach to this view.
-    func startView(
-        viewController: UIViewController,
-        name: String?,
-        attributes: [AttributeKey: AttributeValue]
-    )
-
-    /// Stops RUM view.
-    /// - Parameters:
-    ///   - viewController: the instance of `UIViewController` representing this view.
-    ///   - attributes: custom attributes to attach to this view.
-    func stopView(
-        viewController: UIViewController,
-        attributes: [AttributeKey: AttributeValue]
-    )
-
-    /// Starts RUM view.
-    /// - Parameters:
-    ///   - key: a `String` value identifying this view. It must match the `key` passed later to `stopView(key:attributes:)`.
-    ///   - name: the name of the view. If not provided, the `key` name will be used.
-    ///   - attributes: custom attributes to attach to this  view.
-    func startView(
-        key: String,
-        name: String?,
-        attributes: [AttributeKey: AttributeValue]
-    )
-
-    /// Stops RUM view.
-    /// - Parameters:
-    ///   - key: a `String` value identifying this view. It must match the `key` passed earlier to `startView(key:name:attributes:)`.
-    ///   - attributes: custom attributes to attach to this view.
-    func stopView(
-        key: String,
-        attributes: [AttributeKey: AttributeValue]
-    )
-
-    /// Adds view loading time to current RUM view based on the time elapsed since the view was started.
-    /// This method should be called only once per view.
-    /// If the view is not started, this method does nothing.
-    /// If the view is not active, this method does nothing.
-    /// - Parameter overwrite: if true, overwrites the previosuly calculated view loading time.
-    @_spi(Experimental)
-    func addViewLoadingTime(overwrite: Bool)
 
     // MARK: - custom timings
 
@@ -339,7 +289,83 @@ public protocol RUMMonitorProtocol: AnyObject {
     var debug: Bool { set get }
 }
 
-extension RUMMonitorProtocol {
+// MARK: - View Interface
+
+/// Public interface of RUM monitor for manual interaction with the active RUM View.
+public protocol RUMMonitorViewProtocol: AnyObject {
+    /// Adds a custom attribute to the active RUM View. It will be propagated to all future RUM events associated with the active View.
+    /// - Parameters:
+    ///   - key: key for this view attribute. See `AttributeKey`  documentation for more information.
+    ///   - value: any value that conforms to `Encodable`. See `AttributeValue` documentation
+    ///   for information about nested encoding containers limitation.
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue)
+
+    /// Adds multiple attributes to the active RUM View. They will be propagated to all future RUM events associated with the active View.
+    /// - Parameter attributes: dictionary with view attributes. Each attribute is defined by a key `AttributeKey` and a value that conforms to `Encodable`.
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue])
+
+    /// Removes an attribute from the active RUM View.
+    /// Future RUM events associated with the active View won't have this attribute.
+    /// Events created prior to this call will not lose this attribute.
+    /// - Parameter key: key for the view attribute that will be removed.
+    func removeViewAttribute(forKey key: AttributeKey)
+
+    /// Removes multiple attributes from the active RUM View.
+    /// Future RUM events associated with the active View won't have these attributes.
+    /// Events created prior to this call will not lose these attributes.
+    /// - Parameter keys: array of attribute keys that will be removed.
+    func removeViewAttributes(forKeys keys: [AttributeKey])
+
+    /// Starts RUM view.
+    /// - Parameters:
+    ///   - viewController: the instance of `UIViewController` representing this view.
+    ///   - name: the name of the view. If not provided, the `viewController` class name will be used.
+    ///   - attributes: custom attributes to attach to this view.
+    func startView(
+        viewController: UIViewController,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue]
+    )
+
+    /// Stops RUM view.
+    /// - Parameters:
+    ///   - viewController: the instance of `UIViewController` representing this view.
+    ///   - attributes: custom attributes to attach to this view.
+    func stopView(
+        viewController: UIViewController,
+        attributes: [AttributeKey: AttributeValue]
+    )
+
+    /// Starts RUM view.
+    /// - Parameters:
+    ///   - key: a `String` value identifying this view. It must match the `key` passed later to `stopView(key:attributes:)`.
+    ///   - name: the name of the view. If not provided, the `key` name will be used.
+    ///   - attributes: custom attributes to attach to this  view.
+    func startView(
+        key: String,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue]
+    )
+
+    /// Stops RUM view.
+    /// - Parameters:
+    ///   - key: a `String` value identifying this view. It must match the `key` passed earlier to `startView(key:name:attributes:)`.
+    ///   - attributes: custom attributes to attach to this view.
+    func stopView(
+        key: String,
+        attributes: [AttributeKey: AttributeValue]
+    )
+
+    /// Adds view loading time to current RUM view based on the time elapsed since the view was started.
+    /// This method should be called only once per view.
+    /// If the view is not started, this method does nothing.
+    /// If the view is not active, this method does nothing.
+    /// - Parameter overwrite: if true, overwrites the previously calculated view loading time.
+    @_spi(Experimental)
+    func addViewLoadingTime(overwrite: Bool)
+}
+
+extension RUMMonitorViewProtocol {
     /// It cannot be declared '@_spi' without a default implementation in a protocol extension
     func addViewLoadingTime(overwrite: Bool) {
         // no-op
@@ -364,11 +390,6 @@ internal class NOPMonitor: RUMMonitorProtocol {
     func removeAttribute(forKey key: AttributeKey) { warn() }
     func removeAttributes(forKeys keys: [AttributeKey]) {warn() }
     func stopSession() { warn() }
-    func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
-    func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) { warn() }
-    func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
-    func stopView(key: String, attributes: [AttributeKey: AttributeValue]) { warn() }
-    func addViewLoadingTime(overwrite: Bool) { warn() }
     func addTiming(name: String) { warn() }
     func addError(message: String, type: String?, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], file: StaticString?, line: UInt?) { warn() }
     func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) { warn() }
@@ -391,4 +412,18 @@ internal class NOPMonitor: RUMMonitorProtocol {
             return false
         }
     }
+}
+
+extension NOPMonitor: RUMMonitorViewProtocol {
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue) { warn() }
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue]) { warn() }
+    func removeViewAttribute(forKey key: AttributeKey) { warn() }
+    func removeViewAttributes(forKeys keys: [AttributeKey]) { warn() }
+
+    func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func stopView(key: String, attributes: [AttributeKey: AttributeValue]) { warn() }
+
+    func addViewLoadingTime(overwrite: Bool) { warn() }
 }
