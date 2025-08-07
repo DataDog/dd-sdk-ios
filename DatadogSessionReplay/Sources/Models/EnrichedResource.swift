@@ -23,15 +23,18 @@ internal struct EnrichedResource: Codable, Equatable {
     }
     internal var identifier: String
     internal var data: Data
+    internal var mimeType: String?
     internal var context: Context
 
     internal init(
         identifier: String,
         data: Data,
+        mimeType: String?,
         context: Context
     ) {
         self.identifier = identifier
         self.data = data
+        self.mimeType = mimeType
         self.context = context
     }
 }
