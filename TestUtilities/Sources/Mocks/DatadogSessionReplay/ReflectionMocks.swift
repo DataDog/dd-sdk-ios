@@ -175,4 +175,27 @@ extension SwiftUI.Image.Orientation: AnyMockable, RandomMockable {
         return SwiftUI.Image.Orientation.allCases.randomElement()!
     }
 }
+
+// MARK: ImageRepresentable
+@available(iOS 13.0, tvOS 13.0, *)
+struct MockImageRepresentable: ImageRepresentable, AnyMockable, RandomMockable {
+    private let cgImage: CGImage?
+
+    init(cgImage: CGImage? = nil) {
+        self.cgImage = cgImage
+    }
+
+    func makeImage() -> UIImage? {
+        cgImage.map(UIImage.init(cgImage:))
+    }
+
+    static func mockAny() -> MockImageRepresentable {
+        MockImageRepresentable(cgImage: MockCGImage.mockWith(width: 100))
+    }
+
+    static func mockRandom() -> MockImageRepresentable {
+        MockImageRepresentable(cgImage: MockCGImage.mockRandom().cgImage)
+    }
+}
+
 #endif

@@ -16,12 +16,26 @@ extension SwiftUI.Color {
         let linearGreen: Float
         let linearBlue: Float
         let opacity: Float
+
+        var uiColor: UIColor {
+            UIColor(
+                red: CGFloat(linearRed),
+                green: CGFloat(linearGreen),
+                blue: CGFloat(linearBlue),
+                alpha: CGFloat(opacity)
+            )
+        }
+    }
+
+    struct _ResolvedHDR {
+        let base: _Resolved
+        let _headroom: Float
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 internal struct ColorView {
-    let color: SwiftUI.Color._Resolved
+    let color: SwiftUI.Color._ResolvedHDR
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
