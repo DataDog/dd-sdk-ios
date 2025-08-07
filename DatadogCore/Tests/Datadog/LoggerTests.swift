@@ -48,7 +48,8 @@ class LoggerTests: XCTestCase {
                 name: "testOS",
                 version: "1.0",
                 build: "FFFFFF"
-            )
+            ),
+            brightnessLevel: 0.5
         )
 
         let feature: LogsFeature = .mockWith(
@@ -74,7 +75,7 @@ class LoggerTests: XCTestCase {
             "architecture": "testArch",
             "battery_level": 0.5,
             "brand": "Apple",
-            "brightness_level": 0,
+            "brightness_level": 0.5,
             "locale": "en-US",
             "locales": ["en"],
             "name": "Device Name",

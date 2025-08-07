@@ -228,11 +228,21 @@ extension DatadogExtension where ExtendedType == _UIDevice {
 extension DatadogContext {
     /// Current device information to send in the events.
     public var normalizedDevice: Device {
-        .init(
+        var battery: Double?
+        if let batteryLevel = batteryStatus?.level {
+            battery = Double(batteryLevel)
+        }
+
+        var brightness: Double? = nil
+        if let brightnessLevel = brightnessLevel {
+            brightness = Double(brightnessLevel)
+        }
+
+        return .init(
             architecture: device.architecture,
-            batteryLevel: Double(batteryStatus?.level ?? 0),
+            batteryLevel: battery,
             brand: device.brand,
-            brightnessLevel: Double(brightnessLevel ?? 0),
+            brightnessLevel: brightness,
             locale: localeInfo.currentLocale,
             locales: localeInfo.locales,
             model: device.model,
