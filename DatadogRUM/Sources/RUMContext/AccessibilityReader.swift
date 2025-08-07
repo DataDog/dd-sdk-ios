@@ -12,10 +12,13 @@ internal protocol AccessibilityReading {
     /// The current accessibility state containing all accessibility settings
     var state: AccessibilityInfo { get }
 
-    /// Converts the current accessibility state to RUM View Event accessibility format.
-    /// Returns all accessibility attributes on the first view update, or only changed attributes on subsequent updates.
+    /// Returns all accessibility attributes in RUM View Event format.
     /// Returns nil if no valid accessibility data is available.
-    var rumAccessibility: RUMViewEvent.View.Accessibility? { get }
+    var allAccessibilityAttributes: RUMViewEvent.View.Accessibility? { get }
+
+    /// Returns only changed accessibility attributes in RUM View Event format.
+    /// Returns nil if no changes have been detected or no valid accessibility data is available.
+    var changedAccessibilityAttributes: RUMViewEvent.View.Accessibility? { get }
 
     /// Indicates whether the current accessibility state contains valid data to send.
     /// Returns true if at least one accessibility property has a non-nil value.
@@ -23,13 +26,7 @@ internal protocol AccessibilityReading {
 
     /// Called after a view update event has been sent to clear the changed attributes.
     /// This ensures that only new changes are tracked for the next view update.
-    /// Also transitions from first view update to subsequent updates.
     func clearChangedAttributes()
-
-    /// Called when a new view starts to reset the tracking state.
-    /// Resets the first view update flag and clears any accumulated changed attributes.
-    /// This ensures the new view starts with a clean state and sends all accessibility attributes on its first update.
-    func resetForNewView()
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
@@ -40,8 +37,6 @@ internal final class AccessibilityReader: AccessibilityReading {
     private let notificationCenter: NotificationCenter
     private var observers: [NSObjectProtocol] = []
 
-    /// Track if this is the first view update
-    private var isFirstViewUpdate = true
     /// Track changed accessibility attributes
     private var changedAttributes: RUMViewEvent.View.Accessibility?
 
@@ -293,58 +288,52 @@ internal final class AccessibilityReader: AccessibilityReading {
         return state
     }
 
-    /// Converts the current accessibility state to RUM View Event accessibility format
-    var rumAccessibility: RUMViewEvent.View.Accessibility? {
+    /// Returns all accessibility attributes in RUM View Event format.
+    var allAccessibilityAttributes: RUMViewEvent.View.Accessibility? {
         // Only proceed if we have a valid state (at least one non-nil value)
         guard hasValidAccessibilityData else {
             return nil
         }
 
-        if isFirstViewUpdate {
-            // First view update: return all accessibility attributes
-            let accessibility = RUMViewEvent.View.Accessibility(
-                assistiveSwitchEnabled: state.assistiveSwitchEnabled,
-                assistiveTouchEnabled: state.assistiveTouchEnabled,
-                boldTextEnabled: state.boldTextEnabled,
-                buttonShapesEnabled: state.buttonShapesEnabled,
-                closedCaptioningEnabled: state.closedCaptioningEnabled,
-                grayscaleEnabled: state.grayscaleEnabled,
-                increaseContrastEnabled: state.increaseContrastEnabled,
-                invertColorsEnabled: state.invertColorsEnabled,
-                monoAudioEnabled: state.monoAudioEnabled,
-                onOffSwitchLabelsEnabled: state.onOffSwitchLabelsEnabled,
-                reduceMotionEnabled: state.reduceMotionEnabled,
-                reduceTransparencyEnabled: state.reduceTransparencyEnabled,
-                reducedAnimationsEnabled: state.reducedAnimationsEnabled,
-                rtlEnabled: state.rtlEnabled,
-                screenReaderEnabled: state.screenReaderEnabled,
-                shakeToUndoEnabled: state.shakeToUndoEnabled,
-                shouldDifferentiateWithoutColor: state.shouldDifferentiateWithoutColor,
-                singleAppModeEnabled: state.singleAppModeEnabled,
-                speakScreenEnabled: state.speakScreenEnabled,
-                speakSelectionEnabled: state.speakSelectionEnabled,
-                textSize: state.textSize,
-                videoAutoplayEnabled: state.videoAutoplayEnabled
-            )
-            return accessibility
-        } else {
-            // Subsequent updates: only return changed attributes
-            return createAccessibilityFromChangedAttributes()
+        let accessibility = RUMViewEvent.View.Accessibility(
+            assistiveSwitchEnabled: state.assistiveSwitchEnabled,
+            assistiveTouchEnabled: state.assistiveTouchEnabled,
+            boldTextEnabled: state.boldTextEnabled,
+            buttonShapesEnabled: state.buttonShapesEnabled,
+            closedCaptioningEnabled: state.closedCaptioningEnabled,
+            grayscaleEnabled: state.grayscaleEnabled,
+            increaseContrastEnabled: state.increaseContrastEnabled,
+            invertColorsEnabled: state.invertColorsEnabled,
+            monoAudioEnabled: state.monoAudioEnabled,
+            onOffSwitchLabelsEnabled: state.onOffSwitchLabelsEnabled,
+            reduceMotionEnabled: state.reduceMotionEnabled,
+            reduceTransparencyEnabled: state.reduceTransparencyEnabled,
+            reducedAnimationsEnabled: state.reducedAnimationsEnabled,
+            rtlEnabled: state.rtlEnabled,
+            screenReaderEnabled: state.screenReaderEnabled,
+            shakeToUndoEnabled: state.shakeToUndoEnabled,
+            shouldDifferentiateWithoutColor: state.shouldDifferentiateWithoutColor,
+            singleAppModeEnabled: state.singleAppModeEnabled,
+            speakScreenEnabled: state.speakScreenEnabled,
+            speakSelectionEnabled: state.speakSelectionEnabled,
+            textSize: state.textSize,
+            videoAutoplayEnabled: state.videoAutoplayEnabled
+        )
+        return accessibility
+    }
+
+    /// Returns only changed accessibility attributes in RUM View Event format.
+    var changedAccessibilityAttributes: RUMViewEvent.View.Accessibility? {
+        // Only proceed if we have a valid state (at least one non-nil value)
+        guard hasValidAccessibilityData else {
+            return nil
         }
+
+        return changedAttributes
     }
 
     /// Called after a view update event has been sent to clear the changed attributes
     func clearChangedAttributes() {
-        changedAttributes = nil
-
-        if isFirstViewUpdate {
-            isFirstViewUpdate = false
-        }
-    }
-
-    /// Called when a new view starts to reset the tracking state
-    func resetForNewView() {
-        isFirstViewUpdate = true
         changedAttributes = nil
     }
 
@@ -405,10 +394,5 @@ internal final class AccessibilityReader: AccessibilityReading {
         } else {
             self.changedAttributes = nil
         }
-    }
-
-    /// Create accessibility object from changed attributes only
-    private func createAccessibilityFromChangedAttributes() -> RUMViewEvent.View.Accessibility? {
-        return changedAttributes
     }
 }
