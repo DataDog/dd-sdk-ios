@@ -243,7 +243,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             case let startViewCommand as RUMStartViewCommand:
                 // Start view scope explicitly on receiving "start view" command
                 startView(on: startViewCommand, context: context)
-
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
                 hadApplicationLaunchViewWhenEnteringBackground = activeViewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
 
@@ -469,14 +468,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     // MARK: - Feature Operation Step Vital Event Processing
 
-    private func sendFeatureOperationStepVitalEvent(on command: RUMFeatureOperationStepVitalCommand, context: DatadogContext, writer: Writer) {
+    private func sendFeatureOperationStepVitalEvent(on command: RUMOperationStepVitalCommand, context: DatadogContext, writer: Writer) {
         let vital = RUMVitalEvent.Vital(
             vitalDescription: nil,
             duration: nil,
             failureReason: command.failureReason,
             id: command.vitalId,
             name: command.name,
-            operationKey: command.operationKey, // Maps to parentId in RUM model
+            operationKey: command.operationKey,
             stepType: command.stepType,
             type: .operationStep
         )
