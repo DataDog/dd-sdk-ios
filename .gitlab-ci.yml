@@ -277,6 +277,16 @@ SPM Build (Swift 5.9):
     - make spm-build-macos
     - make spm-build-watchos
 
+SPI Docs Build:
+  stage: lint
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS
+    - make clean repo-setup ENV=ci
+    - make spi-docs-build
+
 # ┌──────────────────────┐
 # │ E2E Test app upload: │
 # └──────────────────────┘
