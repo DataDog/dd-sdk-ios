@@ -285,7 +285,7 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
 
     /// Starts a Feature Operation
     /// - Parameters:
-    ///   - name: the name of the Feature (e.g., "login_flow")
+    ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - attributes: custom attributes to attach to this Feature
     func startFeatureOperation(
@@ -296,7 +296,7 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
 
     /// Completes a Feature successfully.
     /// - Parameters:
-    ///   - name: the name of the Feature
+    ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - attributes: custom attributes to attach to this completion
     func succeedFeatureOperation(
@@ -307,7 +307,7 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
 
     /// Fails a Feature with a specific reason.
     /// - Parameters:
-    ///   - name: the name of the Feature
+    ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - reason: the reason for the failure
     ///   - attributes: custom attributes to attach to this failure

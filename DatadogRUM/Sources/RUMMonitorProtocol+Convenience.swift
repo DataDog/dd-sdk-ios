@@ -305,7 +305,7 @@ public extension RUMMonitorProtocol {
 
     /// Starts a Feature Operation.
     /// - Parameters:
-    ///   - name: the name of the Feature Operation (e.g., "login_flow")
+    ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - attributes: custom attributes to attach to this Operation
     func startFeatureOperation(
@@ -318,7 +318,7 @@ public extension RUMMonitorProtocol {
 
     /// Completes a Feature Operation successfully.
     /// - Parameters:
-    ///   - name: the name of the Feature Operation
+    ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - attributes: custom attributes to attach to this Operation
     func succeedFeatureOperation(
@@ -331,7 +331,7 @@ public extension RUMMonitorProtocol {
 
     /// Fails a Feature Operation with a specific reason.
     /// - Parameters:
-    ///   - name: the name of the Feature Operation
+    ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - reason: the reason for the failure
     ///   - attributes: custom attributes to attach to this Operation
