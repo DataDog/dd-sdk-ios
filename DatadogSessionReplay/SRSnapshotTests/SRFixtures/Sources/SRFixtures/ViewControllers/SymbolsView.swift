@@ -11,26 +11,27 @@ struct SymbolsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Label {
-                Text("Monochrome drawing")
+                Text("Monochrome symbol")
             } icon: {
                 Image(systemName: "timer")
+                    .foregroundStyle(.pink)
             }
             Label {
-                Text("Hierarchical drawing")
+                Text("Hierarchical symbol")
             } icon: {
                 Image(systemName: "timer")
                     .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(.purple)
             }
             Label {
-                Text("Palette drawing")
+                Text("Palette symbol")
             } icon: {
                 Image(systemName: "timer")
                     .symbolRenderingMode(.palette)
                     .foregroundStyle(.indigo, .purple)
             }
             Label {
-                Text("Multicolor drawing")
+                Text("Multicolor symbol")
             } icon: {
                 Image(systemName: "timer")
                     .renderingMode(.original)

@@ -14,6 +14,7 @@ internal struct GraphicsImage {
     let contents: Contents
     let scale: CGFloat
     let orientation: SwiftUI.Image.Orientation
+    let maskColor: SwiftUI.Color._Resolved?
 
     enum Contents {
         case cgImage(CGImage)

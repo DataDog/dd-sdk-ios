@@ -154,7 +154,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                             scale: resolvedImage.scale,
                             orientation: .init(resolvedImage.orientation)
                         ),
-                        tintColor: nil
+                        tintColor: resolvedImage.maskColor?.uiColor
                     )
                     return context.builder.createImageWireframe(
                         id: id,

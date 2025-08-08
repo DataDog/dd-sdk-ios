@@ -109,7 +109,8 @@ class DisplayListReflectionTests: XCTestCase {
         let graphicsImage = GraphicsImage(
             contents: .cgImage(cgImage),
             scale: [1, 2, 3].randomElement()!,
-            orientation: .mockRandom()
+            orientation: .mockRandom(),
+            maskColor: .mockRandom()
         )
         let imageContent = DisplayList.Content(
             seed: .init(value: .mockRandom()),
