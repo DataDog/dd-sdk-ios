@@ -81,9 +81,15 @@ class TracerTests: XCTestCase {
               "meta.version": "1.0.0",
               "meta.device": {
                 "architecture": "arm64",
+                "battery_level": 0.5,
                 "brand": "Apple",
+                "brightness_level": 0,
+                "locale": "en-US",
+                "locales": ["en"],
                 "model": "iPhone10,1",
                 "name": "iPhone",
+                "power_saving_mode": 0,
+                "time_zone": "Europe/Paris",
                 "type": "mobile"
               },
               "meta.os": {

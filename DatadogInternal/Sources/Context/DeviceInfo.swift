@@ -55,16 +55,6 @@ public struct DeviceInfo: Equatable {
         self.isDebugging = isDebugging
         self.systemBootTime = systemBootTime
     }
-
-    public var normalizedDevice: Device {
-        .init(
-            architecture: architecture,
-            brand: brand,
-            model: model,
-            name: name,
-            type: type.normalizedDeviceType
-        )
-    }
 }
 
 extension DeviceInfo {
@@ -234,3 +224,32 @@ extension DatadogExtension where ExtendedType == _UIDevice {
     public static var current: ExtendedType { .current }
 }
 #endif
+
+extension DatadogContext {
+    /// Current device information to send in the events.
+    public var normalizedDevice: Device {
+        var battery: Double?
+        if let batteryLevel = batteryStatus?.level {
+            battery = Double(batteryLevel)
+        }
+
+        var brightness: Double? = nil
+        if let brightnessLevel = brightnessLevel {
+            brightness = Double(brightnessLevel)
+        }
+
+        return .init(
+            architecture: device.architecture,
+            batteryLevel: battery,
+            brand: device.brand,
+            brightnessLevel: brightness,
+            locale: localeInfo.currentLocale,
+            locales: localeInfo.locales,
+            model: device.model,
+            name: device.name,
+            powerSavingMode: isLowPowerModeEnabled,
+            timeZone: localeInfo.timeZoneIdentifier,
+            type: device.type.normalizedDeviceType
+        )
+    }
+}
