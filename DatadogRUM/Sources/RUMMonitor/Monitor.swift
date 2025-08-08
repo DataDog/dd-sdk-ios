@@ -472,10 +472,12 @@ extension Monitor: RUMMonitorProtocol {
     func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) was started")
         process(
-            command: RUMStartStepVitalCommand(
+            command: RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 name: name,
                 operationKey: operationKey,
+                stepType: .start,
+                failureReason: nil,
                 time: dateProvider.now,
                 attributes: attributes
             )
@@ -486,10 +488,12 @@ extension Monitor: RUMMonitorProtocol {
     func succeedFeatureOperation(name: String, operationKey: String? = nil, attributes: [AttributeKey: AttributeValue]) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) was successfully ended")
         process(
-            command: RUMEndSuccessfullyStepVitalCommand(
+            command: RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 name: name,
                 operationKey: operationKey,
+                stepType: .end,
+                failureReason: nil,
                 time: dateProvider.now,
                 attributes: attributes
             )
@@ -500,10 +504,11 @@ extension Monitor: RUMMonitorProtocol {
     func failFeatureOperation(name: String, operationKey: String? = nil, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) was unsuccessfully ended with the following failure reason: \(reason.rawValue)")
         process(
-            command: RUMEndWithFailureStepVitalCommand(
+            command: RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 name: name,
                 operationKey: operationKey,
+                stepType: .end,
                 failureReason: reason,
                 time: dateProvider.now,
                 attributes: attributes

@@ -59,8 +59,8 @@ extension ViewHitchesMock: AnyMockable, RandomMockable {
     }
 }
 
-extension RUMFeatureOperationFailureReason: AnyMockable, RandomMockable {
-    private static var allCases: [RUMFeatureOperationFailureReason]
+extension RUMFeatureOperationFailureReason: AnyMockable, RandomMockable, CaseIterable {
+    public static var allCases: [RUMFeatureOperationFailureReason]
         = [.error, .abandoned, .other]
 
     public static func mockAny() -> Self {
