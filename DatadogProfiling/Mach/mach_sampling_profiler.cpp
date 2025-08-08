@@ -216,7 +216,7 @@ void stack_trace_destroy(stack_trace_t* trace) {
  * @return true if successful, false if thread state could not be retrieved
  */
 bool thread_get_frame_pointers(thread_t thread, void** fp, void** pc) {
-#if defined (__i386__) || defined(__x86_64__)
+#if defined(__x86_64__)
     x86_thread_state64_t state;
     mach_msg_type_number_t count = x86_THREAD_STATE64_COUNT;
     if (thread_get_state(thread, x86_THREAD_STATE64, (thread_state_t)&state, &count) == KERN_SUCCESS) {
@@ -224,12 +224,29 @@ bool thread_get_frame_pointers(thread_t thread, void** fp, void** pc) {
         *pc = (void*)state.__rip;
         return true;
     }
-#elif defined (__arm__) || defined (__arm64__)
+#elif defined(__i386__)
+    x86_thread_state32_t state;
+    mach_msg_type_number_t count = x86_THREAD_STATE32_COUNT;
+    if (thread_get_state(thread, x86_THREAD_STATE32, (thread_state_t)&state, &count) == KERN_SUCCESS) {
+        *fp = (void*)state.__ebp;
+        *pc = (void*)state.__eip;
+        return true;
+    }
+#elif defined(__arm64__)
     arm_thread_state64_t state;
     mach_msg_type_number_t count = ARM_THREAD_STATE64_COUNT;
     if (thread_get_state(thread, ARM_THREAD_STATE64, (thread_state_t)&state, &count) == KERN_SUCCESS) {
         *fp = (void*)arm_thread_state64_get_fp(state);
         *pc = (void*)arm_thread_state64_get_pc(state);
+        return true;
+    }
+#elif defined(__arm__)
+    arm_thread_state32_t state;
+    mach_msg_type_number_t count = ARM_THREAD_STATE32_COUNT;
+    if (thread_get_state(thread, ARM_THREAD_STATE32, (thread_state_t)&state, &count) == KERN_SUCCESS) {
+        // https://developer.apple.com/documentation/xcode/writing-armv6-code-for-ios#//apple_ref/doc/uid/TP40009021-SW1
+        *fp = (void*)state.__r[7];  // R7 is commonly used as frame pointer on iOS
+        *pc = (void*)state.__pc;
         return true;
     }
 #endif
