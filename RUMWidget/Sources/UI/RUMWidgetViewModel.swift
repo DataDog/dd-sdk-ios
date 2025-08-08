@@ -11,7 +11,7 @@ import Foundation
 
 @available(iOS 15.0, *)
 public final class RUMWidgetViewModel: ObservableObject {
-    @Published var isExpanded: Bool = false
+    @Published var isExpanded: Bool = true
     @Published var isHighlighted = false
 
     let feature: RUMWidgetFeature

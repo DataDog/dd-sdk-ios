@@ -153,6 +153,7 @@ public class RUMViewScope: RUMScope, RUMContextProvider {
     public var hitchesDuration: Double { self.viewHitchesReader?.dataModel.hitchesDuration ?? 0 }
 
     public var timeSpent: Double { Date().timeIntervalSince(viewStartTime) }
+    public var ttfd: Double?
 
     private var accessibilityReader: AccessibilityReading?
 
@@ -325,6 +326,7 @@ extension RUMViewScope {
             attributes = command.globalAttributes.merging(self.attributes) { $1 }.merging(command.attributes) { $1 }
         case let command as RUMAddViewLoadingTime where isActiveView:
             attributes.merge(command.attributes) { $1 }
+            ttfd = command.time.timeIntervalSince(context.launchInfo.processLaunchDate)
             addViewLoadingTime(on: command)
         case let command as RUMAddViewTimingCommand where isActiveView:
             attributes.merge(command.attributes) { $1 }

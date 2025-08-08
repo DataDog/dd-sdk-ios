@@ -603,7 +603,8 @@ extension Monitor: RUMMonitorViewProtocol {
                 time: dateProvider.now,
                 globalAttributes: self.attributes,
                 attributes: [:],
-                overwrite: overwrite
+                overwrite: overwrite,
+                isFirstView: true
             )
         )
     }

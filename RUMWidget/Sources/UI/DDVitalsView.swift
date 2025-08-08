@@ -117,11 +117,25 @@ extension DDVitalsView {
                     level: viewModel.levelFor(memory: viewModel.memoryValue)
                 )
 
+//                vitalView(
+//                    title: "Stack",
+//                    value: viewModel.threadsCount,
+//                    metric: "threads",
+//                    level: viewModel.levelFor(threads: viewModel.threadsCount)
+//                )
+
                 vitalView(
-                    title: "Stack",
-                    value: viewModel.threadsCount,
-                    metric: "threads",
-                    level: viewModel.levelFor(threads: viewModel.threadsCount)
+                    title: "TTID",
+                    value: viewModel.ttid,
+                    metric: "s",
+                    level: viewModel.levelFor(startup: viewModel.ttid)
+                )
+
+                vitalView(
+                    title: "TTFD",
+                    value: viewModel.ttfd,
+                    metric: "s",
+                    level: viewModel.levelFor(startup: viewModel.ttfd)
                 )
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -166,7 +180,28 @@ extension DDVitalsView {
                     .fill(level.color)
                     .frame(width: 10, height: 10)
                 Text("\(value < 10 ? "0" : "")\(value) \(metric)")
-                    .font(.system(size: 12, design: .monospaced)).bold()
+                    .font(.system(size: 10, design: .monospaced)).bold()
+                    .foregroundStyle(.white)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Self.padding)
+        .background(Color.black.opacity(0.3))
+        .cornerRadius(5)
+    }
+
+    @ViewBuilder
+    func vitalView(title: String, value: Double, metric: String, level: WarningLevel) -> some View {
+        VStack(alignment: .leading) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.white)
+            HStack(spacing: 5) {
+                Circle()
+                    .fill(level.color)
+                    .frame(width: 10, height: 10)
+                Text(String(format: "%.2f \(metric)", value))
+                    .font(.system(size: 10, design: .monospaced)).bold()
                     .foregroundStyle(.white)
             }
         }

@@ -19,6 +19,10 @@ public final class RUMFeature: DatadogRemoteFeature {
         self.monitor.scopes.activeSession?.viewScopes.first(where: { $0.isActiveView })
     }
 
+    public var activeSession: RUMSessionScope? {
+        self.monitor.scopes.activeSession
+    }
+
     let monitor: Monitor
 
     let instrumentation: RUMInstrumentation

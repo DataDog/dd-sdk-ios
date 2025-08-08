@@ -420,6 +420,7 @@ internal struct RUMAddViewLoadingTime: RUMCommand {
 
     let missedEventType: SessionEndedMetric.MissedEventType? = .viewLoadingTime
     let overwrite: Bool
+    let isFirstView: Bool
 }
 
 internal struct RUMAddViewTimingCommand: RUMCommand {

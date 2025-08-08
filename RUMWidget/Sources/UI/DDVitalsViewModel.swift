@@ -20,6 +20,8 @@ public final class DDVitalsViewModel: ObservableObject {
     @Published var cpuValue: Int = 0
     @Published var memoryValue: Int = 0
     @Published var threadsCount: Int = 0
+    @Published var ttid: Double = 0.0 //ms
+    @Published var ttfd: Double = 0.0 //ms
 
     var hitchesRatio: CGFloat {
 //        lastHitchValue = hitchesDuration / currentDuration * Double(1.toMilliseconds)
@@ -58,6 +60,9 @@ public final class DDVitalsViewModel: ObservableObject {
 
         updateTimeline(viewScope: viewScope)
         updateVitals(viewScope: viewScope)
+
+        guard let sessionScope = rumFeature?.activeSession else { return }
+        ttid = sessionScope.startUpTime ?? 0.0
     }
 
     func updateTimeline(viewScope: RUMViewScope) {
@@ -104,6 +109,7 @@ public final class DDVitalsViewModel: ObservableObject {
         cpuValue = Int(Vitals.cpuUsage())
         memoryValue = Int((viewScope.memoryValue ?? 0).MB)
         threadsCount = Vitals.countThreads()
+        ttfd = viewScope.ttfd ?? 0.0
     }
 
     var hitchesDuration: Double {
@@ -152,6 +158,17 @@ extension DDVitalsViewModel {
         case ...ProcessInfo.processInfo.processorCount:
             .low
         case ...(ProcessInfo.processInfo.processorCount * 2):
+            .medium
+        default:
+            .high
+        }
+    }
+
+    func levelFor(startup: Double) -> WarningLevel {
+        switch startup {
+        case ...1.0:
+            .low
+        case ...5.0:
             .medium
         default:
             .high

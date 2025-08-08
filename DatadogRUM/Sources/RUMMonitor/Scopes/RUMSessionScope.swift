@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-internal class RUMSessionScope: RUMScope, RUMContextProvider {
+public class RUMSessionScope: RUMScope, RUMContextProvider {
     struct Constants {
         /// If no interaction is registered within this period, a new session is started.
         static let sessionTimeoutDuration: TimeInterval = 15 * 60 // 15 minutes
@@ -29,16 +29,41 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     // MARK: - Child Scopes
 
+    public var startUpTime: Double?
+
     /// Active View scopes. Scopes are added / removed when the View starts / stops displaying.
     private(set) var viewScopes: [RUMViewScope] = [] {
         didSet {
             if !state.hasTrackedAnyView && !viewScopes.isEmpty {
+
+                print("very beginning of session")
+                viewScopes.forEach {
+                    print($0.viewName)
+                }
                 state = RUMSessionState(
                     sessionUUID: state.sessionUUID,
                     isInitialSession: state.isInitialSession,
                     hasTrackedAnyView: true,
                     didStartWithReplay: state.didStartWithReplay
                 )
+            }
+
+            if startUpTime == nil && !viewScopes.isEmpty{
+
+                if (viewScopes.count == 1 && viewScopes[0].viewName == "ApplicationLaunch") == false {
+
+                    viewScopes.forEach { viewscope in
+                        if viewscope.viewName != "ApplicationLaunch" {
+
+                            print("initialview: \(viewscope.viewName)")
+
+                            self.startUpTime = viewscope.viewStartTime.timeIntervalSince(self.processStartTime)
+
+                            print("startup: \(self.startUpTime)")
+                        }
+
+                    }
+                }
             }
         }
     }
@@ -75,6 +100,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// If this is the very first session created in the current app process (`false` for session created upon expiration of a previous one).
     let isInitialSession: Bool
     /// The start time of this Session, measured in device date. In initial session this is the time of SDK init.
+    private let processStartTime: Date
+    /// The start time of this Session, measured in device date. In initial session this is the time of SDK init.
     private let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
     private var lastInteractionTime: Date
@@ -105,6 +132,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.startPrecondition = startPrecondition
         self.sessionUUID = isSampled ? dependencies.rumUUIDGenerator.generateUnique() : .nullUUID
         self.isInitialSession = isInitialSession
+        self.processStartTime = context.launchInfo.processLaunchDate
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
         self.trackBackgroundEvents = dependencies.trackBackgroundEvents

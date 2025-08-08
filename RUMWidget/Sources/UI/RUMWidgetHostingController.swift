@@ -10,7 +10,7 @@ import TipKit
 
 @available(iOS 15.0, *)
 final class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
-    private var isExpanded: Bool = false
+    private var isExpanded: Bool = true
 
     private let padding: CGFloat = 10
     private let topPadding: CGFloat = 80
@@ -25,10 +25,10 @@ final class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
             self?.updateFrame(isExpanded: isExpanded)
         }
 
-        if #available(iOS 17.0, *) {
-            try? Tips.resetDatastore()
-            try? Tips.configure()
-        }
+//        if #available(iOS 17.0, *) {
+//            try? Tips.resetDatastore()
+//            try? Tips.configure()
+//        }
     }
 
     @available(*, unavailable)
@@ -47,7 +47,7 @@ final class RUMWidgetHostingController: UIHostingController<RUMWidgetView> {
 
         superView.addSubview(view)
 
-        updateFrame(isExpanded: false, isAnimated: false)
+        updateFrame(isExpanded: isExpanded, isAnimated: false)
     }
 
     func updateFrame(isExpanded: Bool, isAnimated: Bool = true) {
