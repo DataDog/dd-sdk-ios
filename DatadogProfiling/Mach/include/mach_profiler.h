@@ -24,7 +24,7 @@ extern "C" {
 /**
  * Structure representing a binary image loaded in memory.
  */
-typedef struct {
+typedef struct binary_image {
     uint64_t load_address;  ///< Base address where the image is loaded
     uuid_t uuid;           ///< UUID of the binary
     const char* filename;  ///< Filename of the binary
@@ -75,16 +75,16 @@ typedef struct sampling_config {
 } sampling_config_t;
 
 /**
- * Default base configuration values
+ * Default sampling configuration with safe default values
  */
-#define SAMPLING_CONFIG_DEFAULT { \
-    .sampling_interval_nanos = 1000000, \
-    .profile_current_thread_only = 0, \
-    .max_buffer_size = 1000, \
-    .max_stack_depth = 128, \
-    .max_thread_count = 100, \
-    .qos_class = QOS_CLASS_USER_INTERACTIVE \
-}
+static const sampling_config_t SAMPLING_CONFIG_DEFAULT = {
+    1000000,                    // sampling_interval_nanos (1ms)
+    0,                          // profile_current_thread_only
+    1000,                       // max_buffer_size
+    128,                        // max_stack_depth
+    100,                        // max_thread_count
+    QOS_CLASS_USER_INTERACTIVE  // qos_class
+};
 
 /**
  * Opaque handle to a profiler instance
