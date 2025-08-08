@@ -248,7 +248,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 }
                 hadApplicationLaunchViewWhenEnteringBackground = nil
 
-            case let operationStepVitalCommand as RUMFeatureOperationStepVitalCommand:
+            case let operationStepVitalCommand as RUMOperationStepVitalCommand:
                 sendFeatureOperationStepVitalEvent(on: operationStepVitalCommand, context: context, writer: writer)
 
             default:
@@ -457,14 +457,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     // MARK: - Feature Operation Step Vital Event Processing
 
-    private func sendFeatureOperationStepVitalEvent(on command: RUMFeatureOperationStepVitalCommand, context: DatadogContext, writer: Writer) {
+    private func sendFeatureOperationStepVitalEvent(on command: RUMOperationStepVitalCommand, context: DatadogContext, writer: Writer) {
         let vital = RUMVitalEvent.Vital(
             vitalDescription: nil,
             duration: nil,
             failureReason: command.failureReason,
             id: command.vitalId,
             name: command.name,
-            operationKey: command.operationKey, // Maps to parentId in RUM model
+            operationKey: command.operationKey,
             stepType: command.stepType,
             type: .operationStep
         )

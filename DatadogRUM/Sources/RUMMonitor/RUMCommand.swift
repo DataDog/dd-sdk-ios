@@ -705,59 +705,28 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
 
 // MARK: - Feature Operation Steps (Vital) commands
 /// Vital is the model used under the hood to track Feature Operations in RUM. Each step in a Feature Operation is sent as a Vital.
-internal protocol RUMFeatureOperationStepVitalCommand: RUMCommand {
+internal struct RUMOperationStepVitalCommand: RUMCommand {
     /// The vital ID for this operation step
-    var vitalId: String { get }
-    /// The name of the feature operation (e.g., "login_flow")
-    var name: String { get }
+    var vitalId: String
+    /// The name of the operation (e.g., `login_flow`)
+    var name: String
     /// The key of the operation for this operation step (when running several instances of the same operation)
-    var operationKey: String? { get }
+    var operationKey: String?
     /// The step type (start, end, retry, etc.)
-    var stepType: RUMVitalEvent.Vital.StepType { get }
+    var stepType: RUMVitalEvent.Vital.StepType
     /// The reason for failure, if applicable
-    var failureReason: RUMVitalEvent.Vital.FailureReason? { get }
-}
-
-internal struct RUMStartStepVitalCommand: RUMFeatureOperationStepVitalCommand {
-    let vitalId: String
-    let name: String
-    let operationKey: String?
-    let stepType: RUMVitalEvent.Vital.StepType = .start
-    let failureReason: RUMVitalEvent.Vital.FailureReason? = nil
+    var failureReason: RUMVitalEvent.Vital.FailureReason?
+    // Common properties
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false
     let isUserInteraction = false
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
-}
-
-internal struct RUMEndSuccessfullyStepVitalCommand: RUMFeatureOperationStepVitalCommand {
-    let vitalId: String
-    let name: String
-    let operationKey: String?
-    let stepType: RUMVitalEvent.Vital.StepType = .end
-    let failureReason: RUMVitalEvent.Vital.FailureReason? = nil
-    var time: Date
-    var globalAttributes: [AttributeKey: AttributeValue] = [:]
-    var attributes: [AttributeKey: AttributeValue]
-    let canStartBackgroundView = false
-    let isUserInteraction = false
-    let missedEventType: SessionEndedMetric.MissedEventType? = nil
-}
-
-internal struct RUMEndWithFailureStepVitalCommand: RUMFeatureOperationStepVitalCommand {
-    let vitalId: String
-    let name: String
-    let operationKey: String?
-    let stepType: RUMVitalEvent.Vital.StepType = .end
-    let failureReason: RUMVitalEvent.Vital.FailureReason?
-    var time: Date
-    var globalAttributes: [AttributeKey: AttributeValue] = [:]
-    var attributes: [AttributeKey: AttributeValue]
-    let canStartBackgroundView = false
-    let isUserInteraction = false
-    let missedEventType: SessionEndedMetric.MissedEventType? = nil
+    let canStartApplicationLaunchView = true
+    let shouldRestartLastViewAfterSessionExpiration = true
+    let shouldRestartLastViewAfterSessionStop = false
+    let canStartBackgroundViewAfterSessionStop = false
 }
 
 // MARK: - Cross-platform attributes
