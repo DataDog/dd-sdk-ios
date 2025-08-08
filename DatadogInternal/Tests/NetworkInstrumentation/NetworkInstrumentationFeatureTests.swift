@@ -849,7 +849,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let rumContext = RUMCoreContext(applicationID: "app123", sessionID: "session789")
 
         let context = DatadogContext.mockWith(
-            userInfo: nil,
+            userInfo: .mockEmpty(),
             accountInfo: nil,
             additionalContext: [rumContext]
         )
@@ -866,7 +866,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(networkContext.rumContext?.sessionID, "session789")
 
         // Verify User and Account configuration contexts are nil
-        XCTAssertNil(networkContext.userConfigurationContext)
+        XCTAssertNil(networkContext.userConfigurationContext?.id)
         XCTAssertNil(networkContext.accountConfigurationContext)
     }
 
