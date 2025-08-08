@@ -30,14 +30,14 @@
 //   - This leaves the upper address space for kernel/system use
 //   - Reference: ARM64 memory layout documentation, x86_64 canonical addressing
 //
-// FRAME_POINTER_ALIGNMENT (8 bytes):
+// FRAME_POINTER_ALIGN (8 bytes):
 //   - 64-bit systems require 8-byte alignment for pointers
 //   - Stack frame pointers must be properly aligned to avoid bus errors
 //   - Reference: ARM64/x86_64 ABI specifications
 
-#define MIN_USERSPACE_ADDR    0x1000ULL              // 4KB - avoid null deref region
-#define MAX_USERSPACE_ADDR    0x7FFFFFFFF000ULL      // ~128TB - max user space on 64-bit
-#define FRAME_POINTER_ALIGN   0x7ULL                 // 8-byte alignment mask
+static constexpr uintptr_t MIN_USERSPACE_ADDR = 0x1000ULL;          // 4KB - avoid null deref region
+static constexpr uintptr_t MAX_USERSPACE_ADDR = 0x7FFFFFFFF000ULL;  // ~128TB - max user space on 64-bit
+static constexpr uintptr_t FRAME_POINTER_ALIGN = 0x7ULL;            // 8-byte alignment mask
 
 // Mach-O validation constants
 //
@@ -53,36 +53,40 @@
 //   - 64KB provides safety margin while preventing massive buffer overruns
 //   - Reference: mach-o/loader.h specifications, real-world observations
 
-#define MAX_LOAD_COMMANDS     1000                   // Generous upper bound for ncmds
-#define MAX_LOAD_COMMAND_SIZE 0x10000                // 64KB max per load command
+static constexpr uint32_t MAX_LOAD_COMMANDS = 1000;         // Generous upper bound for ncmds
+static constexpr uint32_t MAX_LOAD_COMMAND_SIZE = 0x10000;  // 64KB max per load command
 
 /**
  * Validates if an address is within reasonable user-space bounds.
  * Rejects null pointers, kernel addresses, and other invalid ranges.
  */
-#define IS_VALID_USERSPACE_ADDR(addr) \
-    (((uintptr_t)(addr)) >= MIN_USERSPACE_ADDR && ((uintptr_t)(addr)) <= MAX_USERSPACE_ADDR)
+static constexpr bool is_valid_userspace_addr(uintptr_t addr) {
+    return addr >= MIN_USERSPACE_ADDR && addr <= MAX_USERSPACE_ADDR;
+}
 
 /**
  * Validates if a frame pointer is valid: within user-space bounds and properly aligned.
  * Frame pointers must be 8-byte aligned on 64-bit systems.
  */
-#define IS_VALID_FRAME_POINTER(fp) \
-    (IS_VALID_USERSPACE_ADDR(fp) && (((uintptr_t)(fp)) & FRAME_POINTER_ALIGN) == 0)
+static constexpr bool is_valid_frame_pointer(uintptr_t fp) {
+    return is_valid_userspace_addr(fp) && (fp & FRAME_POINTER_ALIGN) == 0;
+}
 
 /**
  * Validates if the number of load commands in a Mach-O header is reasonable.
  * Rejects empty files and suspiciously large command counts.
  */
-#define IS_VALID_LOAD_COMMAND_COUNT(ncmds) \
-    ((ncmds) > 0 && (ncmds) <= MAX_LOAD_COMMANDS)
+static constexpr bool is_valid_load_command_count(uint32_t ncmds) {
+    return ncmds > 0 && ncmds <= MAX_LOAD_COMMANDS;
+}
 
 /**
  * Validates if a load command size is within acceptable bounds.
  * Prevents buffer overruns from malformed command sizes.
  */
-#define IS_VALID_LOAD_COMMAND_SIZE(cmdsize) \
-    ((cmdsize) >= sizeof(struct load_command) && (cmdsize) <= MAX_LOAD_COMMAND_SIZE)
+static constexpr bool is_valid_load_command_size(uint32_t cmdsize) {
+    return cmdsize >= sizeof(struct load_command) && cmdsize <= MAX_LOAD_COMMAND_SIZE;
+}
 
 /**
  * Initializes a binary image structure to safe defaults.
@@ -99,7 +103,8 @@ bool binary_image_init(binary_image_t* info) {
 }
 
 /**
- * Destroys a binary image structure, freeing any allocated memory.
+ * Destroys a binary image structure, freeing any memory allocated by that struct
+ * but not the image struct itself.
  *
  * @param info The binary image structure to destroy
  */
@@ -125,11 +130,11 @@ bool binary_image_lookup_pc(binary_image_t* info, void* pc) {
     if (!info) return false;
     
     // Validate the PC address - it should be a reasonable user-space address
-    if (!IS_VALID_USERSPACE_ADDR(pc)) return false;
+    if (!is_valid_userspace_addr((uintptr_t)pc)) return false;
     
     Dl_info dl_info;
     if (dladdr(pc, &dl_info) == 0) return false;
-    if (!IS_VALID_USERSPACE_ADDR(dl_info.dli_fbase)) return false;
+    if (!is_valid_userspace_addr((uintptr_t)dl_info.dli_fbase)) return false;
 
     // Copy filename if available
     if (dl_info.dli_fname) {
@@ -145,12 +150,12 @@ bool binary_image_lookup_pc(binary_image_t* info, void* pc) {
     const struct mach_header_64* header = (const struct mach_header_64*)dl_info.dli_fbase;
     if (!header || header->magic != MH_MAGIC_64) return false;
     // Validate ncmds to prevent reading too far
-    if (!IS_VALID_LOAD_COMMAND_COUNT(header->ncmds)) return false;
+    if (!is_valid_load_command_count(header->ncmds)) return false;
 
     const struct load_command* cmd = (const struct load_command*)(header + 1);
     for (uint32_t i = 0; i < header->ncmds; ++i) {
         // Validate command size to prevent buffer overruns
-        if (!IS_VALID_LOAD_COMMAND_SIZE(cmd->cmdsize)) break;
+        if (!is_valid_load_command_size(cmd->cmdsize)) break;
         
         if (cmd->cmd == LC_UUID) {
             const struct uuid_command* uuid_cmd = (const struct uuid_command*)cmd;
@@ -185,7 +190,8 @@ bool stack_trace_init(stack_trace_t* trace, uint32_t max_depth, uint64_t interva
 }
 
 /**
- * Destroys the frames of a stack trace (but not the trace struct itself).
+ * Destroys the frames of a stack trace, freeing any memory allocated by that struct
+ * but not the image struct itself.
  * 
  * @param trace Pointer to stack trace to clean up (can be nullptr)
  */
@@ -253,7 +259,7 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
         
         if (fp == nullptr) break;
         // Validate frame pointer before dereferencing
-        if (!IS_VALID_FRAME_POINTER(fp)) break;
+        if (!is_valid_frame_pointer((uintptr_t)fp)) break;
         
         // Read the next frame pointer and return address
         void** frame_ptr = (void**)fp;
@@ -261,7 +267,7 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
         pc = frame_ptr[1];  // Return address
         
         // Validate the new PC
-        if (!IS_VALID_USERSPACE_ADDR(pc)) break;
+        if (!is_valid_userspace_addr((uintptr_t)pc)) break;
     }
 }
 
