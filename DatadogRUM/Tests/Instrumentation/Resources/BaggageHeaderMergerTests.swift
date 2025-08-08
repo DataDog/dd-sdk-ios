@@ -87,6 +87,33 @@ class BaggageHeaderMergerTests: XCTestCase {
         XCTAssertTrue(resultKeys.contains("key4"))
     }
 
+    func testMerge_ddKeysOverrideAndNoDuplicates() {
+        // Given
+        let previousHeader = "session.id=1,user.id=2,account.id=3"
+        let newHeader = "session.id=10,user.id=20,account.id=30"
+
+        // When
+        let result = BaggageHeaderMerger.merge(previousHeader: previousHeader, with: newHeader)
+
+        // Then
+        // Verify override for SDK-managed keys
+        let resultDict = extractKeyValuePairs(from: result)
+        XCTAssertEqual(resultDict["session.id"], "10")
+        XCTAssertEqual(resultDict["user.id"], "20")
+        XCTAssertEqual(resultDict["account.id"], "30")
+
+        // Verify no duplicates
+        let parts = result.split(separator: ",")
+        let keys = parts.compactMap { part -> String? in
+            guard let idx = part.firstIndex(of: "=") else { return nil }
+            return String(part[..<idx]).trimmingCharacters(in: .whitespaces)
+        }
+        XCTAssertEqual(Set(keys).count, keys.count)
+        XCTAssertEqual(keys.filter { $0 == "session.id" }.count, 1)
+        XCTAssertEqual(keys.filter { $0 == "user.id" }.count, 1)
+        XCTAssertEqual(keys.filter { $0 == "account.id" }.count, 1)
+    }
+
     func testMerge_whenKeysOverlap_newValuesOverridePreviousValues() {
         // Given
         let previousHeader = "session.id=123,user.id=456"
@@ -100,6 +127,21 @@ class BaggageHeaderMergerTests: XCTestCase {
         XCTAssertEqual(resultDict["session.id"], "789") // New value should override
         XCTAssertEqual(resultDict["user.id"], "456") // Previous value should be preserved
         XCTAssertEqual(resultDict["account.id"], "101") // New value should be added
+    }
+
+    // MARK: - Deterministic Formatting
+
+    func testFormat_isDeterministic_sortedByKey() {
+        // Given
+        let previousHeader = "b=2,a=1,c=3"
+        let newHeader = "d=4"
+
+        // When
+        let result = BaggageHeaderMerger.merge(previousHeader: previousHeader, with: newHeader)
+
+        // Then
+        // Expect lexicographic order of keys
+        XCTAssertEqual(result, "a=1,b=2,c=3,d=4")
     }
 
     // MARK: - Complex Scenario Test (from user requirements)

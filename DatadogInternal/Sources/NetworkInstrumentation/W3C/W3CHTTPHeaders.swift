@@ -65,5 +65,12 @@ public enum W3CHTTPHeaders {
         public static let rumSessionBaggageKey = "session.id"
         public static let accountBaggageKey = "account.id"
         public static let userBaggageKey = "user.id"
+
+        /// Documentation:
+        /// The SDK will set and may override the following baggage keys during header injection and merging:
+        /// - "session.id": current RUM session identifier
+        /// - "user.id": current user identifier
+        /// - "account.id": current account identifier
+        /// When merging with user-provided baggage, SDK values take precedence for these keys.
     }
 }

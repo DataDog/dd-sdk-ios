@@ -8,6 +8,12 @@ import Foundation
 
 /// Utility class for merging baggage headers according to the W3C Baggage specification.
 /// See: https://www.w3.org/TR/baggage/#header-name
+///
+/// Notes on precedence and determinism:
+/// - When merging, values from the new header always override values from the previous header for identical keys.
+///   This includes the SDK-managed keys: "session.id", "user.id" and "account.id".
+/// - The formatted output is deterministic: keys are sorted lexicographically to stabilize header ordering
+///   (useful for debugging).
 internal struct BaggageHeaderMerger {
     /// Merges two baggage header values, with new values taking precedence over existing ones.
     /// - Parameters:
@@ -47,9 +53,12 @@ internal struct BaggageHeaderMerger {
 
     /// Formats a dictionary of key-value pairs into a baggage header string.
     /// - Parameter dict: The dictionary to format
-    /// - Returns: A formatted baggage header string
+    /// - Returns: A formatted baggage header string with keys sorted lexicographically for determinism
     private static func formatBaggageHeader(from dict: [String: String]) -> String {
-        return dict.map { "\($0.key)=\($0.value)" }.joined(separator: ",")
+        return dict
+            .sorted { lhs, rhs in lhs.key < rhs.key }
+            .map { "\($0.key)=\($0.value)" }
+            .joined(separator: ",")
     }
 
     /// Extracts a key-value pair from a baggage field string.
