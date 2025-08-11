@@ -468,7 +468,6 @@ extension Monitor: RUMMonitorProtocol {
 
     // MARK: - Feature Operations
 
-    // swiftlint:disable function_default_parameter_at_end
     func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) was started")
         process(
@@ -484,8 +483,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    // swiftlint:disable function_default_parameter_at_end
-    func succeedFeatureOperation(name: String, operationKey: String? = nil, attributes: [AttributeKey: AttributeValue]) {
+    func succeedFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) was successfully ended")
         process(
             command: RUMOperationStepVitalCommand(
@@ -500,8 +498,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    // swiftlint:disable function_default_parameter_at_end
-    func failFeatureOperation(name: String, operationKey: String? = nil, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
+    func failFeatureOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) was unsuccessfully ended with the following failure reason: \(reason.rawValue)")
         process(
             command: RUMOperationStepVitalCommand(
