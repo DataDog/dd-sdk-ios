@@ -2,6 +2,7 @@ version: 1
 builder:
   configs:
     - platform: ios
+      scheme: DatadogCore iOS
       documentation_targets: 
         - DatadogCore iOS
         - DatadogLogs iOS
