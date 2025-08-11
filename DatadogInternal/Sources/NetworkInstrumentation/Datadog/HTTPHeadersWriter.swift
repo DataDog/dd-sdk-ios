@@ -57,8 +57,18 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
             traceHeaderFields[TracingHTTPHeaders.traceIDField] = String(traceContext.traceID.idLo)
             traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(traceContext.spanID, representation: .decimal)
             traceHeaderFields[TracingHTTPHeaders.tagsField] = "_dd.p.tid=\(traceContext.traceID.idHiHex)"
+            var baggageItems: [String] = []
             if let sessionId = traceContext.rumSessionId {
-                traceHeaderFields[W3CHTTPHeaders.baggage] = "\(W3CHTTPHeaders.Constants.rumSessionBaggageKey)=\(sessionId)"
+                baggageItems.append("\(W3CHTTPHeaders.Constants.rumSessionBaggageKey)=\(sessionId)")
+            }
+            if let userId = traceContext.userId {
+                baggageItems.append("\(W3CHTTPHeaders.Constants.userBaggageKey)=\(userId)")
+            }
+            if let accountId = traceContext.accountId {
+                baggageItems.append("\(W3CHTTPHeaders.Constants.accountBaggageKey)=\(accountId)")
+            }
+            if baggageItems.isEmpty == false {
+                traceHeaderFields[W3CHTTPHeaders.baggage] = baggageItems.joined(separator: ",")
             }
         case (.sampled, false):
             break

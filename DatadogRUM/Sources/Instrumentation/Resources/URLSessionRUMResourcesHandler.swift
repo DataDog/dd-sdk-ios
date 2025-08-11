@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -70,7 +70,13 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
     // MARK: - DatadogURLSessionHandler
 
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?) {
-        distributedTracing?.modify(request: request, headerTypes: headerTypes, rumSessionId: networkContext?.rumContext?.sessionID) ?? (request, nil)
+        distributedTracing?.modify(
+            request: request,
+            headerTypes: headerTypes,
+            rumSessionId: networkContext?.rumContext?.sessionID,
+            userId: networkContext?.userConfigurationContext?.id,
+            accountId: networkContext?.accountConfigurationContext?.id
+        ) ?? (request, nil)
     }
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
@@ -149,7 +155,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 }
 
 extension DistributedTracing {
-    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?) -> (URLRequest, TraceContext?) {
+    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?) -> (URLRequest, TraceContext?) {
         let traceID = traceIDGenerator.generate()
         let spanID = spanIDGenerator.generate()
         let injectedSpanContext = TraceContext(
@@ -158,7 +164,9 @@ extension DistributedTracing {
             parentSpanID: nil,
             sampleRate: sampler.samplingRate,
             isKept: sampler.sample(),
-            rumSessionId: rumSessionId
+            rumSessionId: rumSessionId,
+            userId: userId,
+            accountId: accountId
         )
 
         var request = request
@@ -192,10 +200,21 @@ extension DistributedTracing {
             writer.write(traceContext: injectedSpanContext)
 
             writer.traceHeaderFields.forEach { field, value in
-                // do not overwrite existing header
-                if request.value(forHTTPHeaderField: field) == nil {
+                if field.lowercased() == W3CHTTPHeaders.baggage.lowercased() {
+                    // Handle baggage header merging
+                    if let existingValue = request.value(forHTTPHeaderField: field) {
+                        let mergedValue = BaggageHeaderMerger.merge(previousHeader: existingValue, with: value)
+                        request.setValue(mergedValue, forHTTPHeaderField: field)
+                    } else {
+                        request.setValue(value, forHTTPHeaderField: field)
+                    }
                     hasSetAnyHeader = true
-                    request.setValue(value, forHTTPHeaderField: field)
+                } else {
+                    // do not overwrite existing header
+                    if request.value(forHTTPHeaderField: field) == nil {
+                        hasSetAnyHeader = true
+                        request.setValue(value, forHTTPHeaderField: field)
+                    }
                 }
             }
         }
