@@ -27,7 +27,7 @@ SLACK_WEBHOOK_URL=
 SLACK_CHANNEL_ID=
 
 # Optional: Override the default repository
-# GITHUB_REPOSITORY=DataDog/dd-sdk-ios
+GITHUB_REPOSITORY=DataDog/dd-sdk-ios
 EOL
 
 echo "✨ Created .env file"
