@@ -12,7 +12,7 @@ import SwiftUI
 import CryptoKit
 #endif
 
-@available(iOS 13.0, tvOS 13.0, *)
+@available(iOS 13.0, *)
 internal struct ShapeResource {
     let svgString: String
 
@@ -22,14 +22,14 @@ internal struct ShapeResource {
         let fillRule = fillStyle.isEOFilled ? "evenodd" : "nonzero"
 
         self.svgString = """
-          <svg width="\(String(format: "%.3f", size.width))" height="\(String(format: "%.3f", size.height))" xmlns="http://www.w3.org/2000/svg">
+          <svg width="\(size.width.dd.svgString)" height="\(size.height.dd.svgString)" xmlns="http://www.w3.org/2000/svg">
             <path d="\(pathData)" fill="\(fillColor)" fill-rule="\(fillRule)"/>
           </svg>
           """
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
+@available(iOS 13.0, *)
 extension ShapeResource: Resource {
     var mimeType: String {
         "image/svg+xml"

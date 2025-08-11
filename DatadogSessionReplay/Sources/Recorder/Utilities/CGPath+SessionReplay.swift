@@ -49,8 +49,20 @@ extension CGPoint: DatadogExtended {}
 #endif
 
 extension DatadogExtension where ExtendedType == CGPoint {
-    fileprivate var svgString: String {
-        String(format: "%.3f %.3f", type.x, type.y)
+    internal var svgString: String {
+        "\(type.x.dd.svgString) \(type.y.dd.svgString)"
+    }
+}
+
+#if $RetroactiveAttribute
+extension CGFloat: @retroactive DatadogExtended {}
+#else
+extension CGFloat: DatadogExtended {}
+#endif
+
+extension DatadogExtension where ExtendedType == CGFloat {
+    internal var svgString: String {
+        String(format: "%.3f", locale: .init(identifier: "en_US_POSIX"), type)
     }
 }
 
