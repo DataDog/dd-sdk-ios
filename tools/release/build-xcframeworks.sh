@@ -117,7 +117,7 @@ build_xcframework DatadogTrace "$PLATFORMS"
 build_xcframework DatadogRUM "$PLATFORMS"
 build_xcframework DatadogObjc "$PLATFORMS"
 build_xcframework DatadogCrashReporting "$PLATFORMS"
-build_xcframework DatadogProfiler "$PLATFORMS"
+build_xcframework DatadogProfiling "$PLATFORMS"
 
 # Build iOS-only Datadog XCFrameworks
 if [[ "$ios" == "true" ]]; then

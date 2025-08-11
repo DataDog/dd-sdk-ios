@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name         = "DatadogProfiler"
+  s.name         = "DatadogProfiling"
   s.version      = "2.30.0"
   s.summary      = "Official Datadog Profiling module of the Swift SDK."
   
@@ -15,8 +15,8 @@ Pod::Spec.new do |s|
 
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
   
-  s.source_files = ["DatadogProfiler/Sources/**/*.swift",
-                    "DatadogProfiler/Mach/**/*.{h,c,cpp}"]
+  s.source_files = ["DatadogProfiling/Sources/**/*.swift",
+                    "DatadogProfiling/Mach/**/*.{h,c,cpp}"]
 
   s.dependency 'DatadogInternal', s.version.to_s
 

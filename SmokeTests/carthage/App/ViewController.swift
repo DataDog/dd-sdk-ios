@@ -11,7 +11,7 @@ import DatadogTrace
 import DatadogRUM
 import DatadogObjc
 import DatadogCrashReporting
-import DatadogProfiler
+import DatadogProfiling
 
 #if os(iOS)
 import DatadogSessionReplay

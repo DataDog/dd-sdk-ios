@@ -13,5 +13,5 @@ builder:
           "DatadogSessionReplay",
           "DatadogCrashReporting",
           "DatadogWebViewTracking",
-          "DatadogProfiler"
+          "DatadogProfiling"
         ]

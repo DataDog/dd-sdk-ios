@@ -65,8 +65,8 @@ let package = Package(
             targets: ["DatadogWebViewTracking"]
         ),
         .library(
-            name: "DatadogProfiler",
-            targets: ["DatadogProfiler"]
+            name: "DatadogProfiling",
+            targets: ["DatadogProfiling"]
         ),
     ],
     dependencies: [
@@ -224,25 +224,25 @@ let package = Package(
         ),
         
         .target(
-            name: "DatadogProfiler",
+            name: "DatadogProfiling",
             dependencies: [
                 .target(name: "DatadogInternal"),
                 .target(name: "DatadogMachProfiler")
             ],
-            path: "DatadogProfiler/Sources",
+            path: "DatadogProfiling/Sources",
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
         ),
         .target(
             name: "DatadogMachProfiler",
-            path: "DatadogProfiler/Mach"
+            path: "DatadogProfiling/Mach"
         ),
         .testTarget(
-            name: "DatadogProfilerTests",
+            name: "DatadogProfilingTests",
             dependencies: [
-                .target(name: "DatadogProfiler"),
+                .target(name: "DatadogProfiling"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogProfiler/Tests"
+            path: "DatadogProfiling/Tests"
         ),
 
         .target(

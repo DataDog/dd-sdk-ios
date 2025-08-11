@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1640"
+   LastUpgradeVersion = "1420"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D229FF6E2E3BC5B8009CCD62"
-               BuildableName = "DatadogProfiler.framework"
-               BlueprintName = "DatadogProfiler tvOS"
+               BlueprintIdentifier = "D229FF8B2E3BC6D4009CCD62"
+               BuildableName = "DatadogProfiling.framework"
+               BlueprintName = "DatadogProfiling iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -28,9 +28,9 @@
             buildForAnalyzing = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2C9F2CF2E3B8B7C008397FD"
-               BuildableName = "DatadogProfilerTests tvOS.xctest"
-               BlueprintName = "DatadogProfilerTests tvOS"
+               BlueprintIdentifier = "D2C9F0382E3B89D7008397FD"
+               BuildableName = "DatadogProfilingTests iOS.xctest"
+               BlueprintName = "DatadogProfilingTests iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -188,9 +188,9 @@
       <CodeCoverageTargets>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D229FF6E2E3BC5B8009CCD62"
-            BuildableName = "DatadogProfiler.framework"
-            BlueprintName = "DatadogProfiler tvOS"
+            BlueprintIdentifier = "D229FF8B2E3BC6D4009CCD62"
+            BuildableName = "DatadogProfiling.framework"
+            BlueprintName = "DatadogProfiling iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>
@@ -199,9 +199,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2C9F2CF2E3B8B7C008397FD"
-               BuildableName = "DatadogProfilerTests tvOS.xctest"
-               BlueprintName = "DatadogProfilerTests tvOS"
+               BlueprintIdentifier = "D2C9F0382E3B89D7008397FD"
+               BuildableName = "DatadogProfilingTests iOS.xctest"
+               BlueprintName = "DatadogProfilingTests iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -224,15 +224,6 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D229FF6E2E3BC5B8009CCD62"
-            BuildableName = "DatadogProfiler.framework"
-            BlueprintName = "DatadogProfiler tvOS"
-            ReferencedContainer = "container:Datadog.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
