@@ -59,7 +59,7 @@ extension ViewHitchesMock: AnyMockable, RandomMockable {
     }
 }
 
-extension RUMFeatureOperationFailureReason: AnyMockable, RandomMockable, CaseIterable {
+extension RUMFeatureOperationFailureReason: AnyMockable, RandomMockable, @retroactive CaseIterable {
     public static var allCases: [RUMFeatureOperationFailureReason]
         = [.error, .abandoned, .other]
 
