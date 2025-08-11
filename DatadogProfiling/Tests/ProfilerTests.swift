@@ -6,6 +6,6 @@
 
 import XCTest
 
-@testable import DatadogProfiler
+@testable import DatadogProfiling
 
 final class ProfilerTests: XCTestCase { }

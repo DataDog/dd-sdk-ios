@@ -94,7 +94,7 @@ included:
   - ../../DatadogCrashReporting/Tests
   - ../../DatadogWebViewTracking/Tests
   - ../../DatadogFlags/Tests
-  - ../../DatadogProfiler/Tests
+  - ../../DatadogProfiling/Tests
   - ../../Datadog/IntegrationUnitTests
   - ../../E2ETests
   - ../../BenchmarkTests/Runner

@@ -1635,8 +1635,8 @@
 		D2AD1CC82CE4AE6600106C74 /* Text.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CBF2CE4AE6600106C74 /* Text.swift */; };
 		D2AD1CC92CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CBE2CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift */; };
 		D2AD1CCC2CE4AE9800106C74 /* UIHostingViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AD1CCB2CE4AE9800106C74 /* UIHostingViewRecorder.swift */; };
-		D2B151BE2E3BD4B2008879F0 /* DatadogProfiler.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D229FF8A2E3BC5B8009CCD62 /* DatadogProfiler.framework */; platformFilters = (tvos, ); };
-		D2B151BF2E3BD4C2008879F0 /* DatadogProfiler.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D229FFA72E3BC6D4009CCD62 /* DatadogProfiler.framework */; platformFilter = ios; };
+		D2B151BE2E3BD4B2008879F0 /* DatadogProfiling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D229FF8A2E3BC5B8009CCD62 /* DatadogProfiling.framework */; platformFilters = (tvos, ); };
+		D2B151BF2E3BD4C2008879F0 /* DatadogProfiling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D229FFA72E3BC6D4009CCD62 /* DatadogProfiling.framework */; platformFilter = ios; };
 		D2B249942A4598FE00DD4F9F /* LoggerProtocol+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */; };
 		D2B249952A4598FE00DD4F9F /* LoggerProtocol+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */; };
 		D2B249972A45E10500DD4F9F /* LoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B249962A45E10500DD4F9F /* LoggerTests.swift */; };
@@ -2382,14 +2382,14 @@
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = D229FF8B2E3BC6D4009CCD62;
-			remoteInfo = "DatadogProfiler iOS";
+			remoteInfo = "DatadogProfiling iOS";
 		};
 		D2B151BC2E3BD496008879F0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = D229FF6E2E3BC5B8009CCD62;
-			remoteInfo = "DatadogProfiler tvOS";
+			remoteInfo = "DatadogProfiling tvOS";
 		};
 		D2C1A51029C4C4EF00946C31 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -3344,8 +3344,8 @@
 		D229FF502E3BA184009CCD62 /* Profiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profiler.swift; sourceTree = "<group>"; };
 		D229FF532E3BA1CD009CCD62 /* ProfilerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilerTests.swift; sourceTree = "<group>"; };
 		D229FF592E3BA298009CCD62 /* mach_profiler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mach_profiler.h; sourceTree = "<group>"; };
-		D229FF8A2E3BC5B8009CCD62 /* DatadogProfiler.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogProfiler.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D229FFA72E3BC6D4009CCD62 /* DatadogProfiler.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogProfiler.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D229FF8A2E3BC5B8009CCD62 /* DatadogProfiling.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogProfiling.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D229FFA72E3BC6D4009CCD62 /* DatadogProfiling.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogProfiling.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D22C1F5B271484B400922024 /* LogEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventMapper.swift; sourceTree = "<group>"; };
 		D22F06D529DAFD500026CC3C /* FixedWidthInteger+Convenience.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "FixedWidthInteger+Convenience.swift"; sourceTree = "<group>"; };
 		D22F06D629DAFD500026CC3C /* TimeInterval+Convenience.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TimeInterval+Convenience.swift"; sourceTree = "<group>"; };
@@ -3505,8 +3505,8 @@
 		D2C7E3AA28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryStatusPublisherTests.swift; sourceTree = "<group>"; };
 		D2C7E3AD28FEBDA10023B2CC /* LaunchInfoPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchInfoPublisher.swift; sourceTree = "<group>"; };
 		D2C7E3AD28FEBDA10023B2CC /* LaunchTimePublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchTimePublisher.swift; sourceTree = "<group>"; };
-		D2C9F0392E3B89D7008397FD /* DatadogProfilerTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogProfilerTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		D2C9F30F2E3B8B7C008397FD /* DatadogProfilerTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogProfilerTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2C9F0392E3B89D7008397FD /* DatadogProfilingTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogProfilingTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2C9F30F2E3B8B7C008397FD /* DatadogProfilingTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogProfilingTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2CB6ED127C50EAE00A62B57 /* DatadogCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2CB6F8F27C520D400A62B57 /* DatadogCoreTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogCoreTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogCrashReporting.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3901,7 +3901,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D2B151BF2E3BD4C2008879F0 /* DatadogProfiler.framework in Frameworks */,
+				D2B151BF2E3BD4C2008879F0 /* DatadogProfiling.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3909,7 +3909,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D2B151BE2E3BD4B2008879F0 /* DatadogProfiler.framework in Frameworks */,
+				D2B151BE2E3BD4B2008879F0 /* DatadogProfiling.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5044,8 +5044,8 @@
 				3CE11A3C29F7BEF300202522 /* DatadogWebViewTrackingTests */,
 				5BA8C30E2E7859EC00B1DA80 /* DatadogFlags */,
 				5BA8C3112E785A2D00B1DA80 /* DatadogFlagsTests */,
-				D2C9F1BE2E3B8A6D008397FD /* DatadogProfiler */,
-				D2C9F2522E3B8A88008397FD /* DatadogProfilerTests */,
+				D2C9F1BE2E3B8A6D008397FD /* DatadogProfiling */,
+				D2C9F2522E3B8A88008397FD /* DatadogProfilingTests */,
 				610ABD492A69309900AFEA34 /* IntegrationUnitTests */,
 				1182FA1F2DA2F827007FE71A /* TestUtilities */,
 				61133C07242397F200786299 /* TargetSupport */,
@@ -5096,10 +5096,10 @@
 				5BA8C3192E785B6F00B1DA80 /* DatadogFlags.framework */,
 				5BA8C3212E785B6F00B1DA80 /* DatadogFlagsTests tvOS.xctest */,
 				5BF2286A2E795D6500D79E8A /* DatadogFlagsTests iOS.xctest */,
-				D2C9F0392E3B89D7008397FD /* DatadogProfilerTests iOS.xctest */,
-				D2C9F30F2E3B8B7C008397FD /* DatadogProfilerTests tvOS.xctest */,
-				D229FF8A2E3BC5B8009CCD62 /* DatadogProfiler.framework */,
-				D229FFA72E3BC6D4009CCD62 /* DatadogProfiler.framework */,
+				D2C9F0392E3B89D7008397FD /* DatadogProfilingTests iOS.xctest */,
+				D2C9F30F2E3B8B7C008397FD /* DatadogProfilingTests tvOS.xctest */,
+				D229FF8A2E3BC5B8009CCD62 /* DatadogProfiling.framework */,
+				D229FFA72E3BC6D4009CCD62 /* DatadogProfiling.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -7122,23 +7122,23 @@
 			path = SessionReplay;
 			sourceTree = "<group>";
 		};
-		D2C9F1BE2E3B8A6D008397FD /* DatadogProfiler */ = {
+		D2C9F1BE2E3B8A6D008397FD /* DatadogProfiling */ = {
 			isa = PBXGroup;
 			children = (
 				D229FF5B2E3BA298009CCD62 /* Mach */,
 				D229FF502E3BA184009CCD62 /* Profiler.swift */,
 			);
-			name = DatadogProfiler;
-			path = ../DatadogProfiler/Sources;
+			name = DatadogProfiling;
+			path = ../DatadogProfiling/Sources;
 			sourceTree = "<group>";
 		};
-		D2C9F2522E3B8A88008397FD /* DatadogProfilerTests */ = {
+		D2C9F2522E3B8A88008397FD /* DatadogProfilingTests */ = {
 			isa = PBXGroup;
 			children = (
 				D229FF532E3BA1CD009CCD62 /* ProfilerTests.swift */,
 			);
-			name = DatadogProfilerTests;
-			path = ../DatadogProfiler/Tests;
+			name = DatadogProfilingTests;
+			path = ../DatadogProfiling/Tests;
 			sourceTree = "<group>";
 		};
 		D2D748282DC1210A00C61353 /* Logs */ = {
@@ -7817,9 +7817,9 @@
 			productReference = D20731B429A5279D00ECBF94 /* DatadogLogs.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		D229FF6E2E3BC5B8009CCD62 /* DatadogProfiler tvOS */ = {
+		D229FF6E2E3BC5B8009CCD62 /* DatadogProfiling tvOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D229FF862E3BC5B8009CCD62 /* Build configuration list for PBXNativeTarget "DatadogProfiler tvOS" */;
+			buildConfigurationList = D229FF862E3BC5B8009CCD62 /* Build configuration list for PBXNativeTarget "DatadogProfiling tvOS" */;
 			buildPhases = (
 				D229FF712E3BC5B8009CCD62 /* Headers */,
 				D229FF722E3BC5B8009CCD62 /* Sources */,
@@ -7831,14 +7831,14 @@
 			dependencies = (
 				D229FF6F2E3BC5B8009CCD62 /* PBXTargetDependency */,
 			);
-			name = "DatadogProfiler tvOS";
+			name = "DatadogProfiling tvOS";
 			productName = DatadogLogs;
-			productReference = D229FF8A2E3BC5B8009CCD62 /* DatadogProfiler.framework */;
+			productReference = D229FF8A2E3BC5B8009CCD62 /* DatadogProfiling.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		D229FF8B2E3BC6D4009CCD62 /* DatadogProfiler iOS */ = {
+		D229FF8B2E3BC6D4009CCD62 /* DatadogProfiling iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D229FFA32E3BC6D4009CCD62 /* Build configuration list for PBXNativeTarget "DatadogProfiler iOS" */;
+			buildConfigurationList = D229FFA32E3BC6D4009CCD62 /* Build configuration list for PBXNativeTarget "DatadogProfiling iOS" */;
 			buildPhases = (
 				D229FF8E2E3BC6D4009CCD62 /* Headers */,
 				D229FF8F2E3BC6D4009CCD62 /* Sources */,
@@ -7850,9 +7850,9 @@
 			dependencies = (
 				D229FF8C2E3BC6D4009CCD62 /* PBXTargetDependency */,
 			);
-			name = "DatadogProfiler iOS";
+			name = "DatadogProfiling iOS";
 			productName = DatadogLogs;
-			productReference = D229FFA72E3BC6D4009CCD62 /* DatadogProfiler.framework */;
+			productReference = D229FFA72E3BC6D4009CCD62 /* DatadogProfiling.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		D23039A4298D513C001A1FA3 /* DatadogInternal iOS */ = {
@@ -8120,9 +8120,9 @@
 			productReference = D2C1A57329C4F2E800946C31 /* DatadogTraceTests tvOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		D2C9F0382E3B89D7008397FD /* DatadogProfilerTests iOS */ = {
+		D2C9F0382E3B89D7008397FD /* DatadogProfilingTests iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D2C9F0472E3B89D7008397FD /* Build configuration list for PBXNativeTarget "DatadogProfilerTests iOS" */;
+			buildConfigurationList = D2C9F0472E3B89D7008397FD /* Build configuration list for PBXNativeTarget "DatadogProfilingTests iOS" */;
 			buildPhases = (
 				D2C9F0352E3B89D7008397FD /* Sources */,
 				D2C9F0362E3B89D7008397FD /* Frameworks */,
@@ -8133,16 +8133,16 @@
 			dependencies = (
 				D2B151BB2E3BD48C008879F0 /* PBXTargetDependency */,
 			);
-			name = "DatadogProfilerTests iOS";
+			name = "DatadogProfilingTests iOS";
 			packageProductDependencies = (
 			);
-			productName = DatadogProfilerTests;
-			productReference = D2C9F0392E3B89D7008397FD /* DatadogProfilerTests iOS.xctest */;
+			productName = DatadogProfilingTests;
+			productReference = D2C9F0392E3B89D7008397FD /* DatadogProfilingTests iOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		D2C9F2CF2E3B8B7C008397FD /* DatadogProfilerTests tvOS */ = {
+		D2C9F2CF2E3B8B7C008397FD /* DatadogProfilingTests tvOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D2C9F30B2E3B8B7C008397FD /* Build configuration list for PBXNativeTarget "DatadogProfilerTests tvOS" */;
+			buildConfigurationList = D2C9F30B2E3B8B7C008397FD /* Build configuration list for PBXNativeTarget "DatadogProfilingTests tvOS" */;
 			buildPhases = (
 				D2C9F2D22E3B8B7C008397FD /* Sources */,
 				D2C9F2FB2E3B8B7C008397FD /* Frameworks */,
@@ -8153,11 +8153,11 @@
 			dependencies = (
 				D2B151BD2E3BD496008879F0 /* PBXTargetDependency */,
 			);
-			name = "DatadogProfilerTests tvOS";
+			name = "DatadogProfilingTests tvOS";
 			packageProductDependencies = (
 			);
-			productName = DatadogProfilerTests;
-			productReference = D2C9F30F2E3B8B7C008397FD /* DatadogProfilerTests tvOS.xctest */;
+			productName = DatadogProfilingTests;
+			productReference = D2C9F30F2E3B8B7C008397FD /* DatadogProfilingTests tvOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		D2CB6E0A27C50EAE00A62B57 /* DatadogCore tvOS */ = {
@@ -8439,10 +8439,10 @@
 				3CE11A0429F7BE0300202522 /* DatadogWebViewTrackingTests iOS */,
 				6133D1E52A6ED9E100384BEF /* DatadogSessionReplay iOS */,
 				6133D1F62A6EDB7700384BEF /* DatadogSessionReplayTests iOS */,
-				D229FF8B2E3BC6D4009CCD62 /* DatadogProfiler iOS */,
-				D2C9F0382E3B89D7008397FD /* DatadogProfilerTests iOS */,
-				D229FF6E2E3BC5B8009CCD62 /* DatadogProfiler tvOS */,
-				D2C9F2CF2E3B8B7C008397FD /* DatadogProfilerTests tvOS */,
+				D229FF8B2E3BC6D4009CCD62 /* DatadogProfiling iOS */,
+				D2C9F0382E3B89D7008397FD /* DatadogProfilingTests iOS */,
+				D229FF6E2E3BC5B8009CCD62 /* DatadogProfiling tvOS */,
+				D2C9F2CF2E3B8B7C008397FD /* DatadogProfilingTests tvOS */,
 				61133BEF242397DA00786299 /* DatadogObjc iOS */,
 				D2CB6F9227C5217A00A62B57 /* DatadogObjc tvOS */,
 				61441C0124616DE9003D8BB8 /* Example iOS */,
@@ -11376,12 +11376,12 @@
 		};
 		D2B151BB2E3BD48C008879F0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D229FF8B2E3BC6D4009CCD62 /* DatadogProfiler iOS */;
+			target = D229FF8B2E3BC6D4009CCD62 /* DatadogProfiling iOS */;
 			targetProxy = D2B151BA2E3BD48C008879F0 /* PBXContainerItemProxy */;
 		};
 		D2B151BD2E3BD496008879F0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D229FF6E2E3BC5B8009CCD62 /* DatadogProfiler tvOS */;
+			target = D229FF6E2E3BC5B8009CCD62 /* DatadogProfiling tvOS */;
 			targetProxy = D2B151BC2E3BD496008879F0 /* PBXContainerItemProxy */;
 		};
 		D2C1A51129C4C4EF00946C31 /* PBXTargetDependency */ = {
@@ -13070,8 +13070,8 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiler;
-				PRODUCT_NAME = DatadogProfiler;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiling;
+				PRODUCT_NAME = DatadogProfiling;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -13101,8 +13101,8 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiler;
-				PRODUCT_NAME = DatadogProfiler;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiling;
+				PRODUCT_NAME = DatadogProfiling;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -13132,8 +13132,8 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiler;
-				PRODUCT_NAME = DatadogProfiler;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiling;
+				PRODUCT_NAME = DatadogProfiling;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -13163,9 +13163,9 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiler;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiling;
 				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
-				PRODUCT_NAME = DatadogProfiler;
+				PRODUCT_NAME = DatadogProfiling;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -13198,9 +13198,9 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiler;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiling;
 				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
-				PRODUCT_NAME = DatadogProfiler;
+				PRODUCT_NAME = DatadogProfiling;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -13233,9 +13233,9 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiler;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiling;
 				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
-				PRODUCT_NAME = DatadogProfiler;
+				PRODUCT_NAME = DatadogProfiling;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -14341,7 +14341,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilingTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -14366,7 +14366,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilingTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -14389,7 +14389,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilingTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -14412,7 +14412,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilingTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -14438,7 +14438,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilingTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -14462,7 +14462,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilingTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -15220,7 +15220,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D229FF862E3BC5B8009CCD62 /* Build configuration list for PBXNativeTarget "DatadogProfiler tvOS" */ = {
+		D229FF862E3BC5B8009CCD62 /* Build configuration list for PBXNativeTarget "DatadogProfiling tvOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D229FF872E3BC5B8009CCD62 /* Debug */,
@@ -15230,7 +15230,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D229FFA32E3BC6D4009CCD62 /* Build configuration list for PBXNativeTarget "DatadogProfiler iOS" */ = {
+		D229FFA32E3BC6D4009CCD62 /* Build configuration list for PBXNativeTarget "DatadogProfiling iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D229FFA42E3BC6D4009CCD62 /* Debug */,
@@ -15370,7 +15370,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D2C9F0472E3B89D7008397FD /* Build configuration list for PBXNativeTarget "DatadogProfilerTests iOS" */ = {
+		D2C9F0472E3B89D7008397FD /* Build configuration list for PBXNativeTarget "DatadogProfilingTests iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D2C9F0432E3B89D7008397FD /* Debug */,
@@ -15380,7 +15380,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D2C9F30B2E3B8B7C008397FD /* Build configuration list for PBXNativeTarget "DatadogProfilerTests tvOS" */ = {
+		D2C9F30B2E3B8B7C008397FD /* Build configuration list for PBXNativeTarget "DatadogProfilingTests tvOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D2C9F30C2E3B8B7C008397FD /* Debug */,
