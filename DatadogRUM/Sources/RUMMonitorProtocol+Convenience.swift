@@ -307,7 +307,7 @@ public extension RUMMonitorProtocol {
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
-    ///   - attributes: custom attributes to attach to this Operation
+    ///   - attributes: custom attributes to attach to this operation
     func startFeatureOperation(
         name: String,
         operationKey: String? = nil,
@@ -319,8 +319,8 @@ public extension RUMMonitorProtocol {
     /// Completes a Feature Operation successfully.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
-    ///   - attributes: custom attributes to attach to this Operation
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startFeatureOperation`
+    ///   - attributes: custom attributes to attach to this operation
     func succeedFeatureOperation(
         name: String,
         operationKey: String? = nil,
@@ -329,12 +329,12 @@ public extension RUMMonitorProtocol {
         succeedFeatureOperation(name: name, operationKey: operationKey, attributes: attributes)
     }
 
-    /// Fails a Feature Operation with a specific reason.
+    /// Fails a Feature Operation.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startFeatureOperation`
     ///   - reason: the reason for the failure
-    ///   - attributes: custom attributes to attach to this Operation
+    ///   - attributes: custom attributes to attach to this operation
     func failFeatureOperation(
         name: String,
         operationKey: String? = nil,
