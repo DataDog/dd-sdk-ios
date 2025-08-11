@@ -13,7 +13,9 @@ import UIKit
 
 extension UIImage {
     convenience init?(svgData: Data, scale: CGFloat) {
-        guard let document = SVGShapeDocument(svgData: svgData) else { return nil }
+        guard let document = SVGShapeDocument(svgData: svgData) else {
+            return nil
+        }
 
         let format = UIGraphicsImageRendererFormat()
         format.scale = scale
@@ -49,11 +51,15 @@ private struct SVGShapeDocument {
         ) {
             switch elementName.lowercased() {
             case "svg":
-                guard !didParseSVG else { return }
+                guard !didParseSVG else {
+                    return
+                }
                 svgAttributes = attributeDict
                 didParseSVG = true
             case "path":
-                guard !didParsePath else { return }
+                guard !didParsePath else {
+                    return
+                }
                 pathAttributes = attributeDict
                 didParsePath = true
             default:
@@ -74,7 +80,9 @@ private struct SVGShapeDocument {
         parser.delegate = delegate
         parser.shouldResolveExternalEntities = false
 
-        guard parser.parse() else { return nil }
+        guard parser.parse() else {
+            return nil
+        }
 
         let numberFormatter = NumberFormatter()
         numberFormatter.locale = Locale(identifier: "en_US_POSIX")
@@ -126,24 +134,40 @@ extension CGPath {
             // Absolute M/L/Q/C only
             switch command {
             case "M":
-                guard let x = scan(), let y = scan() else { return nil }
+                guard let x = scan(), let y = scan() else {
+                    return nil
+                }
                 path.move(to: CGPoint(x: x, y: y)); hasSubpath = true
             case "L":
-                guard let x = scan(), let y = scan() else { return nil }
+                guard let x = scan(), let y = scan() else {
+                    return nil
+                }
                 path.addLine(to: CGPoint(x: x, y: y))
             case "Q":
-                guard let cx = scan(), let cy = scan(),
-                      let x = scan(), let y = scan() else { return nil }
+                guard
+                    let cx = scan(), let cy = scan(),
+                    let x = scan(), let y = scan()
+                else {
+                    return nil
+                }
                 path.addQuadCurve(to: CGPoint(x: x, y: y), control: CGPoint(x: cx, y: cy))
             case "C":
-                guard let c1x = scan(), let c1y = scan(),
-                      let c2x = scan(), let c2y = scan(),
-                      let x = scan(), let y = scan() else { return nil }
-                path.addCurve(to: CGPoint(x: x, y: y),
-                              control1: CGPoint(x: c1x, y: c1y),
-                              control2: CGPoint(x: c2x, y: c2y))
+                guard
+                    let c1x = scan(), let c1y = scan(),
+                    let c2x = scan(), let c2y = scan(),
+                    let x = scan(), let y = scan()
+                else {
+                    return nil
+                }
+                path.addCurve(
+                    to: CGPoint(x: x, y: y),
+                    control1: CGPoint(x: c1x, y: c1y),
+                    control2: CGPoint(x: c2x, y: c2y)
+                )
             case "Z", "z":
-                if hasSubpath { path.closeSubpath(); hasSubpath = false }
+                if hasSubpath {
+                    path.closeSubpath(); hasSubpath = false
+                }
             default:
                 return nil // unsupported command
             }
