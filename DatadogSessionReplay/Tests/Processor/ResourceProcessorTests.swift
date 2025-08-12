@@ -41,11 +41,13 @@ class ResourceProcessorTests: XCTestCase {
                 EnrichedResource(
                     identifier: resource1.calculateIdentifier(),
                     data: resource1.calculateData(),
+                    mimeType: resource1.mimeType,
                     context: context
                 ),
                 EnrichedResource(
                     identifier: resource2.calculateIdentifier(),
                     data: resource2.calculateData(),
+                    mimeType: resource2.mimeType,
                     context: context
                 ),
             ]
@@ -85,11 +87,13 @@ class ResourceProcessorTests: XCTestCase {
                 EnrichedResource(
                     identifier: resource1.calculateIdentifier(),
                     data: resource1.calculateData(),
+                    mimeType: resource1.mimeType,
                     context: context
                 ),
                 EnrichedResource(
                     identifier: resource2.calculateIdentifier(),
                     data: resource2.calculateData(),
+                    mimeType: resource2.mimeType,
                     context: context
                 ),
             ]

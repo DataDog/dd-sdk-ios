@@ -13,6 +13,7 @@ extension EnrichedResource: RandomMockable, AnyMockable {
         return .init(
             identifier: .mockAny(),
             data: .mockAny(),
+            mimeType: .mockAny(),
             context: .mockAny()
         )
     }
@@ -20,11 +21,13 @@ extension EnrichedResource: RandomMockable, AnyMockable {
     public static func mockWith(
         identifier: String = .mockAny(),
         data: Data = .mockAny(),
+        mimeType: String = .mockAny(),
         context: Context = .mockAny()
     ) -> EnrichedResource {
         return .init(
             identifier: identifier,
             data: data,
+            mimeType: mimeType,
             context: context
         )
     }
@@ -33,6 +36,7 @@ extension EnrichedResource: RandomMockable, AnyMockable {
         return .init(
             identifier: .mockRandom(),
             data: .mockRandom(),
+            mimeType: .mockRandom(),
             context: .mockRandom()
         )
     }

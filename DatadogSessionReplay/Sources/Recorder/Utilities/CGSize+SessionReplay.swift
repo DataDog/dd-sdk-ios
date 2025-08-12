@@ -8,7 +8,11 @@
 import UIKit
 import DatadogInternal
 
+#if $RetroactiveAttribute
+extension CGSize: @retroactive DatadogExtended {}
+#else
 extension CGSize: DatadogExtended {}
+#endif
 
 internal extension DatadogExtension where ExtendedType == CGSize {
     var aspectRatio: CGFloat {
