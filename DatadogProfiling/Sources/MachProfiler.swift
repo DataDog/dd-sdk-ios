@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 // swiftlint:disable duplicate_imports
 #if swift(>=6.0)
@@ -15,9 +16,71 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 internal final class MachProfiler: Profiler {
-    func start() { }
+    private var profiler: OpaquePointer?
+    private var profile: OpaquePointer?
+    private var startTime: Date?
+    private let samplingIntervalNs: UInt64
+
+    init(samplingFrequencyHz: Double = 101) {
+        self.samplingIntervalNs = UInt64(1_000_000_000 / samplingFrequencyHz) // Convert Hz to nanoseconds
+    }
+
+    deinit {
+        profiler_stop(profiler)
+        profiler_destroy(profiler)
+        dd_pprof_destroy(profile)
+    }
+
+    func start(currentThreadOnly: Bool) {
+        guard profile == nil else {
+            return
+        }
+        profile = dd_pprof_create(samplingIntervalNs)
+
+        var config = sampling_config_t(
+            sampling_interval_nanos: samplingIntervalNs,
+            profile_current_thread_only: currentThreadOnly ? 1 : 0,
+            max_buffer_size: 1_000,
+            max_stack_depth: 128,
+            max_thread_count: 100,
+            qos_class: QOS_CLASS_USER_INTERACTIVE
+        )
+
+        profiler = profiler_create(&config, dd_pprof_callback, UnsafeMutableRawPointer(profile))
+
+        startTime = Date()
+        profiler_start(profiler)
+    }
 
     func stop() throws -> Profile? {
-        return nil
+        guard let start = startTime else {
+            return nil
+        }
+
+        defer { startTime = nil }
+
+        profiler_stop(profiler)
+        let end = Date()
+        profiler_destroy(profiler)
+        profiler = nil
+
+        var data: UnsafeMutablePointer<UInt8>?
+        let size = dd_pprof_serialize(profile, &data)
+
+        dd_pprof_destroy(profile)
+        profile = nil
+
+        guard let data = data else {
+            throw ProgrammerError(description: "Failed to serialise pprof data")
+        }
+
+        let pprof = Data(bytes: data, count: size)
+        dd_pprof_free_serialized_data(data)
+
+        return Profile(
+            start: start,
+            end: end,
+            pprof: pprof
+        )
     }
 }
