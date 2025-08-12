@@ -40,6 +40,12 @@ internal extension OpenTelemetryApi.Status {
 }
 
 internal class OTelSpan: OpenTelemetryApi.Span {
+    func setAttributes(_ attributes: [String : OpenTelemetryApi.AttributeValue]) {
+        attributes.forEach{
+            setAttribute(key: $0, value: $1)
+        }
+    }
+    
     @ReadWriteLock
     private var _status: OpenTelemetryApi.Status
 
