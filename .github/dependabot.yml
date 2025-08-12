@@ -1,5 +1,5 @@
-# Dependabot configuration for GitHub Actions
-# This will automatically create PRs to update GitHub Actions to their latest versions
+# Dependabot configuration for GitHub Actions and Python dependencies
+# This will automatically create PRs to update GitHub Actions and Python packages to their latest versions
 
 version: 2
 updates:
@@ -9,5 +9,14 @@ updates:
       interval: "monthly"
     groups:
       gh-actions-packages:
+        patterns:
+          - "*"
+  
+  - package-ecosystem: "pip"
+    directory: "/tools/issue_handler"
+    schedule:
+      interval: "monthly"
+    groups:
+      python-packages:
         patterns:
           - "*"

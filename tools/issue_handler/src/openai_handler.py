@@ -3,6 +3,7 @@ Manages OpenAI API calls for issue analysis.
 """
 import os
 import json
+import re
 from typing import Dict, Optional
 from dataclasses import dataclass
 import openai
@@ -17,6 +18,10 @@ class AnalysisResult:
 
 class OpenAIHandler:
     """Handles interactions with OpenAI API."""
+    
+    # Content limits to prevent abuse
+    MAX_CONTENT_LENGTH = 4000
+    MAX_RESPONSE_TOKENS = 500
     
     def __init__(self, api_key: str):
         """
@@ -46,17 +51,25 @@ class OpenAIHandler:
             OpenAIError: If there's an error calling the OpenAI API
         """
         try:
+            # Sanitize and truncate input content
+            sanitized_content = self._sanitize_input(issue.body)
+            truncated_content = self._truncate_content(sanitized_content)
+            
+            # Log content processing for debugging
+            print(f"Content processing - Original: {len(issue.body)}, Sanitized: {len(sanitized_content)}, Truncated: {len(truncated_content)}")
+            
             # Prepare the messages
             messages = [
                 {"role": "system", "content": self.system_prompt},
-                {"role": "user", "content": self._format_issue_content(issue)}
+                {"role": "user", "content": self._format_issue_content(issue, truncated_content)}
             ]
             
-            # Call OpenAI API
+            # Call OpenAI API with token limits
             response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=messages,
                 temperature=0.7,
+                max_tokens=self.MAX_RESPONSE_TOKENS,
                 response_format={"type": "json_object"}
             )
             
@@ -74,7 +87,33 @@ class OpenAIHandler:
         except Exception as e:
             raise OpenAIError(f"Failed to analyze issue: {str(e)}") from e
 
-    def _format_issue_content(self, issue: GithubIssue) -> str:
+    def _sanitize_input(self, content: str) -> str:
+        """Sanitize input to prevent prompt injection attacks."""
+        if not content:
+            return ""
+        
+        # Remove HTML comments that could contain prompt injection
+        content = re.sub(r'<!--.*?-->', '', content, flags=re.DOTALL)
+        
+        # Remove any content that looks like system instructions
+        content = re.sub(r'(?i)(instructions|prompt|system|openai|gpt|ai).*?{.*?}', '', content, flags=re.DOTALL)
+        
+        # Remove any suspicious patterns that might be used for injection
+        content = re.sub(r'(?i)(ignore previous|forget all|new instructions|system prompt)', '', content)
+        
+        return content.strip()
+
+    def _truncate_content(self, content: str) -> str:
+        """Truncate content to prevent excessive token usage."""
+        if len(content) <= self.MAX_CONTENT_LENGTH:
+            return content
+        
+        # Truncate and add indicator
+        truncated = content[:self.MAX_CONTENT_LENGTH]
+        truncated += f"\n\n[Content truncated at {self.MAX_CONTENT_LENGTH} characters]"
+        return truncated
+
+    def _format_issue_content(self, issue: GithubIssue, content: str) -> str:
         """Format the issue content for the OpenAI prompt."""
         return f"""
 Issue Title: {issue.title}
@@ -83,7 +122,7 @@ Created By: {issue.user}
 Issue Number: {issue.number}
 
 Content:
-{issue.body}
+{content}
 """
 
 class OpenAIError(Exception):

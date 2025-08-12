@@ -45,4 +45,5 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           cd tools/issue_handler
-          python -m src.analyze_issue $GITHUB_EVENT_NUMBER
+          # Add timeout to prevent hanging processes (5 minutes)
+          timeout 300 python -m src.analyze_issue $GITHUB_EVENT_NUMBER

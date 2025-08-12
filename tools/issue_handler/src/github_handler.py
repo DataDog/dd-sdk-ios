@@ -8,12 +8,11 @@ import os
 
 @dataclass
 class GithubIssue:
-    """Represents a GitHub issue with essential information."""
+    """Represents a GitHub issue."""
     title: str
     body: str
     html_url: str
     number: int
-    created_at: str
     user: str
 
 class GithubAPIError(Exception):
@@ -22,6 +21,10 @@ class GithubAPIError(Exception):
 
 class GithubHandler:
     """Handles GitHub API interactions."""
+    
+    # Reasonable limits to prevent abuse
+    MIN_ISSUE_NUMBER = 1
+    MAX_ISSUE_NUMBER = 10000
     
     def __init__(self, token: str, repository: str):
         """
@@ -34,13 +37,23 @@ class GithubHandler:
         self.token = token
         self.repository = repository
         self.base_url = "https://api.github.com"
-        self.session = requests.Session()
-        self.session.headers.update({
-            "Authorization": f"token {token}",
-            "Accept": "application/vnd.github.v3+json",
-            "User-Agent": "DatadogSDK-IssueHandler"
-        })
-
+        
+    def _validate_issue_number(self, issue_number: int) -> None:
+        """
+        Validate issue number format and range.
+        
+        Args:
+            issue_number: The issue number to validate
+            
+        Raises:
+            ValueError: If issue number is invalid
+        """
+        if not isinstance(issue_number, int):
+            raise ValueError("Issue number must be an integer")
+        
+        if issue_number < self.MIN_ISSUE_NUMBER or issue_number > self.MAX_ISSUE_NUMBER:
+            raise ValueError(f"Issue number must be between {self.MIN_ISSUE_NUMBER} and {self.MAX_ISSUE_NUMBER}")
+    
     def get_issue(self, issue_number: int) -> Optional[GithubIssue]:
         """
         Fetch issue details from GitHub.
@@ -49,14 +62,23 @@ class GithubHandler:
             issue_number: The issue number to fetch
             
         Returns:
-            GithubIssue object if successful, None if issue not found
+            GithubIssue object if found, None otherwise
             
         Raises:
+            ValueError: If issue number is invalid
             GithubAPIError: If there's an error accessing the GitHub API
         """
+        # Validate issue number
+        self._validate_issue_number(issue_number)
+        
         try:
             url = f"{self.base_url}/repos/{self.repository}/issues/{issue_number}"
-            response = self.session.get(url)
+            headers = {
+                "Authorization": f"token {self.token}",
+                "Accept": "application/vnd.github.v3+json"
+            }
+            
+            response = requests.get(url, headers=headers)
             
             if response.status_code == 404:
                 return None
@@ -69,34 +91,30 @@ class GithubHandler:
                 body=data["body"] or "",
                 html_url=data["html_url"],
                 number=data["number"],
-                created_at=data["created_at"],
                 user=data["user"]["login"]
             )
             
-        except (requests.exceptions.RequestException, Exception) as e:
+        except requests.exceptions.RequestException as e:
             raise GithubAPIError(f"Failed to fetch issue: {str(e)}") from e
         except KeyError as e:
             raise GithubAPIError(f"Invalid response format: {str(e)}") from e
 
-def create_github_handler(owner: str = "DataDog", repo: str = "dd-sdk-ios") -> GithubHandler:
+def create_github_handler() -> GithubHandler:
     """
-    Factory function to create a GithubHandler from parameters or environment variables.
+    Factory function to create a GithubHandler from environment variables.
     
-    Args:
-        owner: Repository owner (default: DataDog)
-        repo: Repository name (default: dd-sdk-ios)
-        
     Returns:
         Configured GithubHandler instance
         
     Raises:
-        EnvironmentError: If GITHUB_TOKEN environment variable is not set
+        EnvironmentError: If required environment variables are not set
     """
-    # Get token from environment
-    github_token = os.environ.get("GITHUB_TOKEN")
-    if not github_token:
-        raise EnvironmentError(
-            "GITHUB_TOKEN environment variable must be set"
-        )
+    token = os.environ.get("GITHUB_TOKEN")
+    repository = os.environ.get("GITHUB_REPOSITORY")
+    
+    if not token:
+        raise EnvironmentError("GITHUB_TOKEN environment variable must be set")
+    if not repository:
+        raise EnvironmentError("GITHUB_REPOSITORY environment variable must be set")
         
-    return GithubHandler(github_token, f"{owner}/{repo}") 
+    return GithubHandler(token, repository) 
