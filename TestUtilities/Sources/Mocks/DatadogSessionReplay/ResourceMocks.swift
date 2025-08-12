@@ -21,7 +21,7 @@ extension EnrichedResource: RandomMockable, AnyMockable {
     public static func mockWith(
         identifier: String = .mockAny(),
         data: Data = .mockAny(),
-        mimeType: String? = .mockAny(),
+        mimeType: String = .mockAny(),
         context: Context = .mockAny()
     ) -> EnrichedResource {
         return .init(
