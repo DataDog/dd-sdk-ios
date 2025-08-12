@@ -34,7 +34,7 @@ public:
      * 
      * @param config Configuration for the profiler
      * @param callback Function to call with collected stack traces
-     * @param ctx Contextto pass to the callback
+     * @param ctx Context to pass to the callback
      */
     mach_sampling_profiler(
         const sampling_config_t* config,
