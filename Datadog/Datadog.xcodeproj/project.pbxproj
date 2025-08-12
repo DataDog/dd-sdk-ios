@@ -1322,6 +1322,10 @@
 		D233E7E22E4A10E100E7CFDE /* MockProfiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7E02E4A10E100E7CFDE /* MockProfiler.swift */; };
 		D233E7E42E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7E32E4A2AFE00E7CFDE /* RequestBuilderTests.swift */; };
 		D233E7E52E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7E32E4A2AFE00E7CFDE /* RequestBuilderTests.swift */; };
+		D233E7EE2E4B588000E7CFDE /* profile.pb-c.c in Sources */ = {isa = PBXBuildFile; fileRef = D233E7EB2E4B588000E7CFDE /* profile.pb-c.c */; };
+		D233E7F12E4B588000E7CFDE /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = D233E7ED2E4B588000E7CFDE /* protobuf-c.c */; };
+		D233E7F62E4B588000E7CFDE /* profile.pb-c.c in Sources */ = {isa = PBXBuildFile; fileRef = D233E7EB2E4B588000E7CFDE /* profile.pb-c.c */; };
+		D233E7F92E4B588000E7CFDE /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = D233E7ED2E4B588000E7CFDE /* protobuf-c.c */; };
 		D234613128B7713000055D4C /* FeatureContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D234613028B7712F00055D4C /* FeatureContextTests.swift */; };
 		D234613228B7713000055D4C /* FeatureContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D234613028B7712F00055D4C /* FeatureContextTests.swift */; };
 		D23F8E5229DDCD28001CFAE8 /* UIViewControllerHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA2251118FB00C816E5 /* UIViewControllerHandler.swift */; };
@@ -1958,6 +1962,10 @@
 		D2E8A8E82DCBBA5100CF7C63 /* RUMCoreContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E8A8E62DCBBA5100CF7C63 /* RUMCoreContext.swift */; };
 		D2E9371A2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */; };
 		D2E9371B2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */; };
+		D2E9372B2E53325200FECA76 /* profile.pb-c.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E9372A2E53325200FECA76 /* profile.pb-c.h */; };
+		D2E9372C2E53325200FECA76 /* profile.pb-c.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E9372A2E53325200FECA76 /* profile.pb-c.h */; };
+		D2E9372E2E53325900FECA76 /* protobuf-c.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E9372D2E53325900FECA76 /* protobuf-c.h */; };
+		D2E9372F2E53325900FECA76 /* protobuf-c.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E9372D2E53325900FECA76 /* protobuf-c.h */; };
 		D2EA0F462C0E1AE300CB20F8 /* SessionReplayConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EA0F452C0E1AE200CB20F8 /* SessionReplayConfiguration.swift */; };
 		D2EBEE1F29BA160F00B15732 /* HTTPHeadersReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618E13A92524B8700098C6B0 /* HTTPHeadersReader.swift */; };
 		D2EBEE2029BA160F00B15732 /* TracePropagationHeadersWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EBEDCF29B8A02100B15732 /* TracePropagationHeadersWriter.swift */; };
@@ -3448,6 +3456,8 @@
 		D233E7DD2E4A109100E7CFDE /* ProfilingTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingTest.swift; sourceTree = "<group>"; };
 		D233E7E02E4A10E100E7CFDE /* MockProfiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockProfiler.swift; sourceTree = "<group>"; };
 		D233E7E32E4A2AFE00E7CFDE /* RequestBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestBuilderTests.swift; sourceTree = "<group>"; };
+		D233E7EB2E4B588000E7CFDE /* profile.pb-c.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "profile.pb-c.c"; sourceTree = "<group>"; };
+		D233E7ED2E4B588000E7CFDE /* protobuf-c.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "protobuf-c.c"; sourceTree = "<group>"; };
 		D234613028B7712F00055D4C /* FeatureContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureContextTests.swift; sourceTree = "<group>"; };
 		D2355B262E4E05CE000DDF5F /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		D236BE2729520FED00676E67 /* CrashReportReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportReceiver.swift; sourceTree = "<group>"; };
@@ -3607,6 +3617,8 @@
 		D2E8A8E62DCBBA5100CF7C63 /* RUMCoreContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMCoreContext.swift; sourceTree = "<group>"; };
 		D2E8D59728C7AB90007E5DE1 /* ContextMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mach_sampling_profiler.h; sourceTree = "<group>"; };
+		D2E9372A2E53325200FECA76 /* profile.pb-c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "profile.pb-c.h"; sourceTree = "<group>"; };
+		D2E9372D2E53325900FECA76 /* protobuf-c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "protobuf-c.h"; sourceTree = "<group>"; };
 		D2EA0F452C0E1AE200CB20F8 /* SessionReplayConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayConfiguration.swift; sourceTree = "<group>"; };
 		D2EBEDCF29B8A02100B15732 /* TracePropagationHeadersWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracePropagationHeadersWriter.swift; sourceTree = "<group>"; };
 		D2EBEDD229B8A58E00B15732 /* TracePropagationHeadersReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracePropagationHeadersReader.swift; sourceTree = "<group>"; };
@@ -6636,6 +6648,8 @@
 				D2355B262E4E05CE000DDF5F /* module.modulemap */,
 				D229FF592E3BA298009CCD62 /* mach_profiler.h */,
 				D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */,
+				D2E9372A2E53325200FECA76 /* profile.pb-c.h */,
+				D2E9372D2E53325900FECA76 /* protobuf-c.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -6646,6 +6660,8 @@
 				D229FF5A2E3BA298009CCD62 /* include */,
 				D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */,
 				D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */,
+				D233E7EB2E4B588000E7CFDE /* profile.pb-c.c */,
+				D233E7ED2E4B588000E7CFDE /* protobuf-c.c */,
 			);
 			name = Mach;
 			path = ../Mach;
@@ -7421,6 +7437,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2E9372E2E53325900FECA76 /* protobuf-c.h in Headers */,
+				D2E9372C2E53325200FECA76 /* profile.pb-c.h in Headers */,
 				D229FFAC2E3BCAAE009CCD62 /* mach_profiler.h in Headers */,
 				D2E9371B2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */,
 			);
@@ -7430,6 +7448,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2E9372F2E53325900FECA76 /* protobuf-c.h in Headers */,
+				D2E9372B2E53325200FECA76 /* profile.pb-c.h in Headers */,
 				D229FFA92E3BCA9B009CCD62 /* mach_profiler.h in Headers */,
 				D2E9371A2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */,
 			);
@@ -9767,6 +9787,8 @@
 				D233E7C82E4625D400E7CFDE /* ProfileEvent.swift in Sources */,
 				D233E7C92E4625D400E7CFDE /* DatadogProfiling.swift in Sources */,
 				D2D0E1F32E3CE59700BA4113 /* mach_profiler.cpp in Sources */,
+				D233E7F62E4B588000E7CFDE /* profile.pb-c.c in Sources */,
+				D233E7F92E4B588000E7CFDE /* protobuf-c.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9782,6 +9804,8 @@
 				D233E7C52E4625D400E7CFDE /* ProfileEvent.swift in Sources */,
 				D233E7C62E4625D400E7CFDE /* DatadogProfiling.swift in Sources */,
 				D2D0E1F22E3CE59700BA4113 /* mach_profiler.cpp in Sources */,
+				D233E7EE2E4B588000E7CFDE /* profile.pb-c.c in Sources */,
+				D233E7F12E4B588000E7CFDE /* protobuf-c.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -11674,7 +11698,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -11707,7 +11730,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -11740,7 +11762,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -11773,7 +11794,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -11800,7 +11820,6 @@
 		3CE11A1729F7BE0B00202522 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -11826,7 +11845,6 @@
 		3CE11A1829F7BE0B00202522 /* Integration */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -12166,7 +12184,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -12228,7 +12245,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -12384,7 +12400,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -12418,7 +12433,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -12451,7 +12465,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -12484,7 +12497,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -12512,7 +12524,6 @@
 		6133D2062A6EDB7700384BEF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -12539,7 +12550,6 @@
 		6133D2072A6EDB7700384BEF /* Integration */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -12794,7 +12804,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -12899,7 +12908,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -12934,7 +12942,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -12969,7 +12976,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13004,7 +13010,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13025,7 +13030,6 @@
 		D207318F29A5226B00ECBF94 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13046,7 +13050,6 @@
 		D207319029A5226B00ECBF94 /* Integration */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13068,7 +13071,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13099,7 +13101,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13130,7 +13131,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13161,7 +13161,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13171,6 +13171,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -13193,7 +13194,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13203,6 +13204,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -13225,7 +13227,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13235,6 +13237,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -13257,7 +13260,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13267,6 +13270,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -13292,7 +13296,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13302,6 +13306,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -13327,7 +13332,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13337,6 +13342,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -13362,7 +13368,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13396,7 +13401,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13429,7 +13433,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13462,7 +13465,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13495,7 +13497,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13528,7 +13529,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13561,7 +13561,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13581,7 +13580,6 @@
 		D23F8ECB29DDCD38001CFAE8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13601,7 +13599,6 @@
 		D23F8ECC29DDCD38001CFAE8 /* Integration */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13683,7 +13680,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13720,7 +13716,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13757,7 +13752,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13794,7 +13788,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13831,7 +13824,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13868,7 +13860,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13905,7 +13896,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13938,7 +13928,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -13971,7 +13960,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14004,7 +13992,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14024,7 +14011,6 @@
 		D25EE94729C4C3C400CE3839 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14044,7 +14030,6 @@
 		D25EE94829C4C3C400CE3839 /* Integration */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14065,7 +14050,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14098,7 +14082,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14131,7 +14114,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14164,7 +14146,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14184,7 +14165,6 @@
 		D29A9F4729DD84AB005C54A4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14204,7 +14184,6 @@
 		D29A9F4829DD84AB005C54A4 /* Integration */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14225,7 +14204,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14244,7 +14222,6 @@
 		D2A783FF29A534F9003B03BB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14263,7 +14240,6 @@
 		D2A7840029A534F9003B03BB /* Integration */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14283,7 +14259,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14316,7 +14291,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14349,7 +14323,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14382,7 +14355,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14402,7 +14374,6 @@
 		D2C1A57129C4F2E800946C31 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14422,7 +14393,6 @@
 		D2C1A57229C4F2E800946C31 /* Integration */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14443,14 +14413,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
@@ -14460,7 +14429,6 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -14469,14 +14437,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
@@ -14484,7 +14451,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -14493,14 +14459,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
@@ -14508,7 +14473,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Integration;
@@ -14517,14 +14481,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
@@ -14535,7 +14498,6 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 			};
 			name = Debug;
@@ -14544,14 +14506,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
@@ -14560,7 +14521,6 @@
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 			};
 			name = Release;
@@ -14569,14 +14529,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
@@ -14585,7 +14544,6 @@
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 			};
 			name = Integration;
@@ -14884,7 +14842,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14919,7 +14876,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14953,7 +14909,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -14987,7 +14942,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -15014,7 +14968,6 @@
 		D2DA2393298D588A00C6C7E6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -15040,7 +14993,6 @@
 		D2DA2394298D588A00C6C7E6 /* Integration */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -15067,7 +15019,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -15095,7 +15046,6 @@
 		D2DA23C1298D59DC00C6C7E6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -15122,7 +15072,6 @@
 		D2DA23C2298D59DC00C6C7E6 /* Integration */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
