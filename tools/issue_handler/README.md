@@ -36,7 +36,7 @@ First, create your local environment file:
 ./setup_env.sh
 ```
 
-This creates a `.env` file that you'll need to fill with the required tokens. The file looks like this:
+This creates a `.env` file that you'll need to fill with the required tokens. The file looks like the following:
 ```bash
 # GitHub token with repo access
 GITHUB_TOKEN=
@@ -59,7 +59,7 @@ GITHUB_REPOSITORY=
 
 ### 4. Required Tokens
 
-You'll need these tokens to use the tool locally. Here's how to get each one:
+You need several tokens to use the tool locally. See the instructions below to get each token:
 
 #### GitHub Token
 1. Go to [GitHub Settings > Developer Settings > Personal Access Tokens](https://github.com/settings/tokens)
@@ -73,20 +73,20 @@ You'll need these tokens to use the tool locally. Here's how to get each one:
 
 #### OpenAI System Prompt
 1. Create your AI prompt for analyzing GitHub issues
-2. This prompt will be used to guide the AI's analysis and response generation
+2. This prompt is used to guide the AI's analysis and response generation
 
 #### Slack Access
-The iOS SDK team already has a Slack app configured for this tool. You'll need:
+The iOS SDK team already has a Slack app configured for this tool. You need:
 
 1. **Slack Webhook URL**:
    - Create a webhook in your Slack workspace: https://api.slack.com/apps
-   - Go to "Incoming Webhooks" and create a new webhook
+   - Go to "Incoming Webhooks", and create a new webhook
    - Copy the webhook URL (starts with `https://hooks.slack.com/services/`)
-   - Store it securely and never commit it
+   - Store it securely, and never commit it
 
 2. **Slack Channel Setup**:
-   - Get the channel ID by clicking the channel's details in Slack and copy the ID at the bottom
-   - The ID starts with "C" (e.g., "C12345678")
+   - Get the channel ID by clicking the channel's details in Slack, and copy the ID at the bottom
+   - The ID starts with "C" (for example, "C12345678")
    - Invite the bot to your channel: `/invite @bot-name`
 
 Note: If you need to post to a new channel, make sure to:
@@ -123,7 +123,7 @@ The GitHub Action uses repository secrets for authentication. These are already 
 
 ## Output
 
-For each issue, the tool will:
+For each issue, the tool does the following:
 1. Analyze the issue using OpenAI
 2. Post a message to Slack containing:
    - GitHub issue notification
