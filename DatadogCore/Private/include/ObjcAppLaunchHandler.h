@@ -58,6 +58,7 @@ typedef void (^UIApplicationDidBecomeActiveCallback)(NSTimeInterval timeInterval
 ///
 /// - Parameter callback: A closure executed upon app activation.
 - (void)setApplicationDidBecomeActiveCallback:(UIApplicationDidBecomeActiveCallback)callback;
+- (void)setPreMainDate:(CFAbsoluteTime) preMainDate;
 
 - (instancetype)init;
 + (instancetype)new NS_UNAVAILABLE;

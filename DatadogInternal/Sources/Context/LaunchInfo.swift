@@ -7,7 +7,7 @@
 import Foundation
 
 /// The reason for app startup.
-public enum LaunchReason: Codable {
+public enum LaunchReason: String, Codable {
     /// The app was launched by direct user interaction (e.g., tapping the app icon).
     case userLaunch
     /// The app was launched in the background by the system (e.g., background fetch or silent push).

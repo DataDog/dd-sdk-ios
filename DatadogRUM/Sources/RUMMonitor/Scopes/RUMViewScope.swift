@@ -155,6 +155,8 @@ public class RUMViewScope: RUMScope, RUMContextProvider {
     public var timeSpent: Double { Date().timeIntervalSince(viewStartTime) }
     public var ttfd: Double?
 
+    public var launchReason: String?
+
     private var accessibilityReader: AccessibilityReading?
 
     init(
@@ -232,9 +234,83 @@ public class RUMViewScope: RUMScope, RUMContextProvider {
 // MARK: - RUMCommands Processing
 
 extension RUMViewScope {
+
+    private func sendTTIDEvent(context: DatadogContext, writer: Writer) {
+        let vital = RUMVitalEvent.Vital(
+            vitalDescription: "Time to initial display",
+            duration: Double(1),
+//            duration: Double(viewStartTime.timeIntervalSince(context.launchInfo.processLaunchDate).toInt64Nanoseconds),
+            failureReason: nil,
+            id:  dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+            name: "TTID",
+            operationKey: nil,
+            stepType: nil,
+            type: .duration
+        )
+
+        let vitalEvent = RUMVitalEvent(
+            dd: .init(),
+            application: .init(id: parent.context.rumApplicationID),
+            context: .init(contextInfo: [:]),
+            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+//            date: context.launchInfo.processLaunchDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            session: .init(
+                hasReplay: context.hasReplay,
+                id: self.context.sessionID.toRUMDataFormat,
+                type: dependencies.sessionType
+            ),
+            view: .init(
+                id: viewUUID.toRUMDataFormat,
+                name: viewName,
+                referrer: nil,
+                url: viewPath
+            ),
+            vital: vital
+        )
+
+        writer.write(value: vitalEvent)
+    }
+
+    private func sendTTFDEvent(time: Double, context: DatadogContext, writer: Writer) {
+        let vital = RUMVitalEvent.Vital(
+            vitalDescription: "Time to full display",
+            duration: Double(time.toInt64Nanoseconds),
+//            duration: Double((viewStartTime.timeIntervalSince(context.launchInfo.processLaunchDate) + time).toInt64Nanoseconds),
+            failureReason: nil,
+            id:  dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+            name: "TTFD",
+            operationKey: nil,
+            stepType: nil,
+            type: .duration
+        )
+
+        let vitalEvent = RUMVitalEvent(
+            dd: .init(),
+            application: .init(id: parent.context.rumApplicationID),
+            context: .init(contextInfo: [:]),
+            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+//            date: context.launchInfo.processLaunchDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            session: .init(
+                hasReplay: context.hasReplay,
+                id: self.context.sessionID.toRUMDataFormat,
+                type: dependencies.sessionType
+            ),
+            view: .init(
+                id: viewUUID.toRUMDataFormat,
+                name: viewName,
+                referrer: nil,
+                url: viewPath
+            ),
+            vital: vital
+        )
+
+        writer.write(value: vitalEvent)
+    }
+
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         // Tells if the View did change and an update event should be send.
         needsViewUpdate = false
+        launchReason = context.launchInfo.launchReason.rawValue
 
         // Propagate to User Action scope
         userActionScope = userActionScope?.scope(
@@ -311,6 +387,7 @@ extension RUMViewScope {
             attributes.merge(command.attributes) { $1 }
             didReceiveStartCommand = true
             needsViewUpdate = true
+            sendTTIDEvent(context: context, writer: writer)
         case let command as RUMStartViewCommand where identity != command.identity && isActiveView:
             // This gets effective in case when the user didn't end the view explicitly.
             // If the view is flagged as "active" but another view is started, we know it needs to be
@@ -328,6 +405,7 @@ extension RUMViewScope {
             attributes.merge(command.attributes) { $1 }
             ttfd = command.time.timeIntervalSince(context.launchInfo.processLaunchDate)
             addViewLoadingTime(on: command)
+            sendTTFDEvent(time: viewLoadingTime!, context: context, writer: writer)
         case let command as RUMAddViewTimingCommand where isActiveView:
             attributes.merge(command.attributes) { $1 }
             customTimings[command.timingName] = command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds

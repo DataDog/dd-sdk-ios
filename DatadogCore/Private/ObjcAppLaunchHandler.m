@@ -16,6 +16,48 @@
 #import <AppKit/AppKit.h>
 #endif
 
+@interface PreMainHelper : NSObject
++ (void)recordLoadExecution;
++ (void)recordFirstAttribute;
++ (void)recordSecondAttribute;
++ (void)recordMainExecution;
+@end
+
+/**
+ * Constructor priority must be bounded between 101 and 65535 inclusive, see
+ * https://gcc.gnu.org/onlinedocs/gcc-4.7.0/gcc/Function-Attributes.html and
+ * https://gcc.gnu.org/onlinedocs/gcc-4.7.0/gcc/C_002b_002b-Attributes.html#C_002b_002b-Attributes
+ * The constructor attribute causes the function to be called automatically before execution enters
+ * @c main() . The lower the priority number, the sooner the constructor runs, which means 100 runs
+ * before 101. As we want to be as close to @c main() as possible, we choose a high number.
+ */
+
+// Constructor priority must be between 101 and 65535 inclusive
+enum { DDConstructorPriority = 65535 };
+
+// The constructor attribute causes the function to be called automatically before execution enters main().
+// The higher the priority, the closest to the main() call.
+// More information at https://gcc.gnu.org/onlinedocs/gcc-4.7.0/gcc/C_002b_002b-Attributes.html#C_002b_002b-Attributes
+__used __attribute__((constructor(DDConstructorPriority)))
+static void recordPreMainInitialization(void) {
+    [PreMainHelper recordSecondAttribute];
+    [__dd_private_AppLaunchHandler.shared setPreMainDate: CFAbsoluteTimeGetCurrent()];
+    NSLog(@"hello1");
+}
+
+__used __attribute__((constructor(65535)))
+static void recordPreMainInitialization2(void) {
+    NSLog(@"hello2");
+}
+
+// Runs before main()
+__used __attribute__((constructor(101)))
+static void recordPrePreMainInitialization(void) {
+    [PreMainHelper recordFirstAttribute];
+    [__dd_private_AppLaunchHandler.shared setPreMainDate: CFAbsoluteTimeGetCurrent()];
+    NSLog(@"hello0");
+}
+
 /// Constants for special task policy results
 /// Returned when the kernel query fails (kernel_result != KERN_SUCCESS).
 const NSInteger __dd_private_TASK_POLICY_KERN_FAILURE   = -999;
@@ -34,12 +76,14 @@ int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval);
 @implementation __dd_private_AppLaunchHandler {
     NSTimeInterval _processLaunchDate;
     NSTimeInterval _timeToDidBecomeActive;
+    NSTimeInterval _preMainDate;
     UIApplicationDidBecomeActiveCallback _applicationDidBecomeActiveCallback;
 }
 
 static __dd_private_AppLaunchHandler *_shared;
 
 + (void)load {
+    [PreMainHelper recordLoadExecution];
     _shared = [[self alloc] init];
     [_shared observeNotificationCenter:NSNotificationCenter.defaultCenter];
 }
@@ -122,6 +166,12 @@ static __dd_private_AppLaunchHandler *_shared;
 - (NSNumber *)timeToDidBecomeActive {
     @synchronized(self) {
         return _timeToDidBecomeActive > 0 ? @(_timeToDidBecomeActive) : nil;
+    }
+}
+
+- (void)setPreMainDate:(CFAbsoluteTime) preMainDate {
+    @synchronized(self) {
+        _preMainDate = preMainDate;
     }
 }
 

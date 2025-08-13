@@ -23,6 +23,8 @@ public final class DDVitalsViewModel: ObservableObject {
     @Published var ttid: Double = 0.0 //ms
     @Published var ttfd: Double = 0.0 //ms
 
+    @Published var launchReason: String = ""
+
     var hitchesRatio: CGFloat {
 //        lastHitchValue = hitchesDuration / currentDuration * Double(1.toMilliseconds)
         return hitchesDuration / currentDuration * Double(1.toMilliseconds)
@@ -60,6 +62,7 @@ public final class DDVitalsViewModel: ObservableObject {
 
         updateTimeline(viewScope: viewScope)
         updateVitals(viewScope: viewScope)
+        launchReason = viewScope.launchReason ?? ""
 
         guard let sessionScope = rumFeature?.activeSession else { return }
         ttid = sessionScope.startUpTime ?? 0.0

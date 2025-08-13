@@ -9,7 +9,7 @@ import TipKit
 
 @available(iOS 15.0, *)
 public struct DDVitalsView: View {
-    public static let height: CGFloat = 270
+    public static let height: CGFloat = 220
     private static let padding: CGFloat = 10
 
     @StateObject var viewModel: DDVitalsViewModel
@@ -93,29 +93,29 @@ extension DDVitalsView {
         VStack(spacing: 10) {
             // Vitals
             HStack(spacing: 10) {
-                if #available(iOS 18.3, *) {
-                    vitalView(
-                        title: "CPU",
-                        value: viewModel.cpuValue,
-                        metric: "%",
-                        level: viewModel.levelFor(cpu: viewModel.cpuValue)
-                    )
-                    .popoverTip(showTip ? RUMCpuSuggestionTip() : nil)
-                    .onChange(of: self.viewModel.cpuValue) {
-
-                        if self.viewModel.cpuValue > 80 {
-
-                            showTip = true
-                        }
-                    }
-                }
-
-                vitalView(
-                    title: "Memory",
-                    value: viewModel.memoryValue,
-                    metric: "MB",
-                    level: viewModel.levelFor(memory: viewModel.memoryValue)
-                )
+//                if #available(iOS 18.3, *) {
+//                    vitalView(
+//                        title: "CPU",
+//                        value: viewModel.cpuValue,
+//                        metric: "%",
+//                        level: viewModel.levelFor(cpu: viewModel.cpuValue)
+//                    )
+//                    .popoverTip(showTip ? RUMCpuSuggestionTip() : nil)
+//                    .onChange(of: self.viewModel.cpuValue) {
+//
+//                        if self.viewModel.cpuValue > 80 {
+//
+//                            showTip = true
+//                        }
+//                    }
+//                }
+//
+//                vitalView(
+//                    title: "Memory",
+//                    value: viewModel.memoryValue,
+//                    metric: "MB",
+//                    level: viewModel.levelFor(memory: viewModel.memoryValue)
+//                )
 
 //                vitalView(
 //                    title: "Stack",
@@ -125,14 +125,14 @@ extension DDVitalsView {
 //                )
 
                 vitalView(
-                    title: "TTID",
+                    title: "Time to Initial Display",
                     value: viewModel.ttid,
                     metric: "s",
                     level: viewModel.levelFor(startup: viewModel.ttid)
                 )
 
                 vitalView(
-                    title: "TTFD",
+                    title: "Time to Full Display",
                     value: viewModel.ttfd,
                     metric: "s",
                     level: viewModel.levelFor(startup: viewModel.ttfd)
@@ -140,32 +140,38 @@ extension DDVitalsView {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
+            Text("Launch reason: \(self.viewModel.launchReason)")
+                .font(.system(size: 12))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .lineLimit(1)
+                .foregroundStyle(.white)
+
             Divider()
                 .background(.gray)
 
             // Timeline
             timelineView(title: "RUM Timeline", progress: self.viewModel.progress, events: self.viewModel.rumEvents)
 
-            Divider()
-                .background(.gray)
-
-            HStack {
-                rateView(
-                    title: "SlowFrame Rate",
-                    value: viewModel.hitchesRatio > 1 ? viewModel.hitchesRatio : 0,
-                    metric: "ms/s",
-                    level: viewModel.hitchesRatio > 10 ? .high : .low
-                )
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                rateView(
-                    title: "Freeze Rate",
-                    value: viewModel.hangsRatio > 1 ? viewModel.hangsRatio : 0,
-                    metric: "s/h",
-                    level: viewModel.hangsRatio > 100 ? .high : .low
-                )
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
+//            Divider()
+//                .background(.gray)
+//
+//            HStack {
+//                rateView(
+//                    title: "SlowFrame Rate",
+//                    value: viewModel.hitchesRatio > 1 ? viewModel.hitchesRatio : 0,
+//                    metric: "ms/s",
+//                    level: viewModel.hitchesRatio > 10 ? .high : .low
+//                )
+//                .frame(maxWidth: .infinity, alignment: .leading)
+//
+//                rateView(
+//                    title: "Freeze Rate",
+//                    value: viewModel.hangsRatio > 1 ? viewModel.hangsRatio : 0,
+//                    metric: "s/h",
+//                    level: viewModel.hangsRatio > 100 ? .high : .low
+//                )
+//                .frame(maxWidth: .infinity, alignment: .leading)
+//            }
         }
     }
 
