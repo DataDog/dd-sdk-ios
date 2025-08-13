@@ -331,6 +331,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // See https://github.com/DataDog/dd-sdk-ios/pull/1834 for more context.
             context: context.lastRUMAttributes,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: .init(
                 device: context.device,
                 batteryLevel: Double(context.batteryStatus?.level ?? 0),

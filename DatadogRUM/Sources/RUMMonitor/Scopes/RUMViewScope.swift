@@ -501,6 +501,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             container: nil,
             context: .init(contextInfo: attributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             os: .init(device: context.device),
@@ -637,6 +638,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             container: nil,
             context: .init(contextInfo: localAttributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             featureFlags: .init(featureFlagsInfo: featureFlags),
@@ -779,6 +781,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             container: nil,
             context: .init(contextInfo: commandAttributes),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             error: .init(
@@ -860,6 +863,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             container: nil,
             context: .init(contextInfo: command.globalAttributes.merging(command.attributes) { $1 }),
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             longTask: .init(

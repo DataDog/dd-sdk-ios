@@ -122,13 +122,13 @@ public struct CrashContext: Codable, Equatable {
         lastLogAttributes: LogEventAttributes?
     ) {
         self.serverTimeOffset = serverTimeOffset
-        self.service = service
-        self.env = env
-        self.version = version
+        self.service = service.sanitizedToDDTags()
+        self.env = env.sanitizedToDDTags()
+        self.version = version.sanitizedToDDTags()
         self.buildNumber = buildNumber
         self.device = device
         self.localeInfo = localeInfo
-        self.sdkVersion = service
+        self.sdkVersion = service.sanitizedToDDTags()
         self.source = source
         self.trackingConsent = trackingConsent
         self.userInfo = userInfo
@@ -194,5 +194,20 @@ public struct CrashContext: Codable, Equatable {
         lhs.accountInfo?.id == rhs.accountInfo?.id &&
         lhs.accountInfo?.name == rhs.accountInfo?.name &&
         lhs.appLaunchDate == rhs.appLaunchDate
+    }
+}
+
+extension CrashContext {
+    /// Datadog tags to send in the error events.
+    public var ddTags: String {
+        let tags = [
+            "service": service,
+            "version": version,
+            "sdk_version": sdkVersion,
+            "env": env
+        ]
+
+        return tags.map { "\($0.key):\($0.value)" }
+            .joined(separator: ",")
     }
 }

@@ -179,6 +179,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             container: nil,
             context: .init(contextInfo: attributes),
             date: actionStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             os: .init(device: context.device),
