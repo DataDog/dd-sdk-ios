@@ -96,6 +96,14 @@ class DDRUMUserActionTypeTests: XCTestCase {
     }
 }
 
+class DDRUMFeatureOperationFailureReasonTests: XCTestCase {
+    func testMappingToSwiftRUMFeatureOperationFailureReason() {
+        XCTAssertEqual(objc_RUMFeatureOperationFailureReason.error.swiftType, .error)
+        XCTAssertEqual(objc_RUMFeatureOperationFailureReason.abandoned.swiftType, .abandoned)
+        XCTAssertEqual(objc_RUMFeatureOperationFailureReason.other.swiftType, .other)
+    }
+}
+
 class SwiftUIRUMViewsPredicateBridgeTests: XCTestCase {
     func testItForwardsCallToObjcPredicate() {
         class MockPredicate: objc_SwiftUIRUMViewsPredicate {
