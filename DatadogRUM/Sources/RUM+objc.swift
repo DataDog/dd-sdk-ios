@@ -290,6 +290,22 @@ public enum objc_VitalsFrequency: Int {
     }
 }
 
+@objc(DDRUMFeatureOperationFailureReason)
+@_spi(objc)
+public enum objc_RUMFeatureOperationFailureReason: Int {
+    case error
+    case abandoned
+    case other
+
+    internal var swiftType: RUMFeatureOperationFailureReason {
+        switch self {
+        case .error: return .error
+        case .abandoned: return .abandoned
+        case .other: return .other
+        }
+    }
+}
+
 @objc(DDRUMFirstPartyHostsTracing)
 @objcMembers
 @_spi(objc)
@@ -683,6 +699,36 @@ public class objc_RUMMonitor: NSObject {
 
     public func addFeatureFlagEvaluation(name: String, value: Any) {
         swiftRUMMonitor.addFeatureFlagEvaluation(name: name, value: AnyEncodable(value))
+    }
+
+    public func startFeatureOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.startFeatureOperation(name: name, operationKey: operationKey, attributes: attributes.dd.swiftAttributes)
+    }
+
+    public func succeedFeatureOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.succeedFeatureOperation(name: name, operationKey: operationKey, attributes: attributes.dd.swiftAttributes)
+    }
+
+    public func failFeatureOperation(
+        name: String,
+        operationKey: String?,
+        reason: objc_RUMFeatureOperationFailureReason,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.failFeatureOperation(
+            name: name,
+            operationKey: operationKey,
+            reason: reason.swiftType,
+            attributes: attributes.dd.swiftAttributes
+        )
     }
 
     public var debug: Bool {
