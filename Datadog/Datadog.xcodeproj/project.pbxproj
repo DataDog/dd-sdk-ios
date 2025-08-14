@@ -1104,9 +1104,9 @@
 		D229FF842E3BC5B8009CCD62 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; };
 		D229FFA12E3BC6D4009CCD62 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
 		D229FFA82E3BCA96009CCD62 /* Profiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D229FF502E3BA184009CCD62 /* Profiler.swift */; };
-		D229FFA92E3BCA9B009CCD62 /* mach_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = D229FF592E3BA298009CCD62 /* mach_profiler.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D229FFA92E3BCA9B009CCD62 /* mach_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = D229FF592E3BA298009CCD62 /* mach_profiler.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D229FFAB2E3BCAAC009CCD62 /* Profiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D229FF502E3BA184009CCD62 /* Profiler.swift */; };
-		D229FFAC2E3BCAAE009CCD62 /* mach_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = D229FF592E3BA298009CCD62 /* mach_profiler.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D229FFAC2E3BCAAE009CCD62 /* mach_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = D229FF592E3BA298009CCD62 /* mach_profiler.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D22F06D729DAFD500026CC3C /* FixedWidthInteger+Convenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F06D529DAFD500026CC3C /* FixedWidthInteger+Convenience.swift */; };
 		D22F06D829DAFD500026CC3C /* FixedWidthInteger+Convenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F06D529DAFD500026CC3C /* FixedWidthInteger+Convenience.swift */; };
 		D22F06D929DAFD500026CC3C /* TimeInterval+Convenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F06D629DAFD500026CC3C /* TimeInterval+Convenience.swift */; };
@@ -1729,15 +1729,11 @@
 		D2D0E1F22E3CE59700BA4113 /* mach_profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */; };
 		D2D0E1F32E3CE59700BA4113 /* mach_profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */; };
 		D2D0E1F82E3CE73700BA4113 /* mach_sampling_profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */; };
-		D2D0E1FA2E3CE73700BA4113 /* mach_sampling_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = D2D0E1F62E3CE73700BA4113 /* mach_sampling_profiler.h */; };
-		D2D0E1FC2E3CE73700BA4113 /* mach_sampling_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = D2D0E1F62E3CE73700BA4113 /* mach_sampling_profiler.h */; };
 		D2D0E1FE2E3CE73700BA4113 /* mach_sampling_profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */; };
 		D2D0E2042E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E2022E3CEF1200BA4113 /* MachSamplingProfilerTests.swift */; };
 		D2D0E2052E3CEF1200BA4113 /* MachProfilerCAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E2012E3CEF1200BA4113 /* MachProfilerCAPITests.swift */; };
 		D2D0E2072E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E2022E3CEF1200BA4113 /* MachSamplingProfilerTests.swift */; };
 		D2D0E2082E3CEF1200BA4113 /* MachProfilerCAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E2012E3CEF1200BA4113 /* MachProfilerCAPITests.swift */; };
-		D2D0E20B2E3CF51E00BA4113 /* DatadogProfiling.h in Headers */ = {isa = PBXBuildFile; fileRef = D2D0E2092E3CF3F300BA4113 /* DatadogProfiling.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D2D0E20C2E3CF52400BA4113 /* DatadogProfiling.h in Headers */ = {isa = PBXBuildFile; fileRef = D2D0E2092E3CF3F300BA4113 /* DatadogProfiling.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D2D0E20E2E3CFA6500BA4113 /* CCallbackContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E20D2E3CFA6500BA4113 /* CCallbackContext.swift */; };
 		D2D0E20F2E3CFA6500BA4113 /* CCallbackContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E20D2E3CFA6500BA4113 /* CCallbackContext.swift */; };
 		D2D0E2102E3D0B3B00BA4113 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257953E298ABA65008A1BE5 /* TestUtilities.framework */; platformFilter = ios; };
@@ -1828,6 +1824,8 @@
 		D2E6E8FC2D8039BB00FF1398 /* BenchmarkURLSessionTaskDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E6E8FA2D8039B200FF1398 /* BenchmarkURLSessionTaskDelegate.swift */; };
 		D2E8A8E72DCBBA5100CF7C63 /* RUMCoreContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E8A8E62DCBBA5100CF7C63 /* RUMCoreContext.swift */; };
 		D2E8A8E82DCBBA5100CF7C63 /* RUMCoreContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E8A8E62DCBBA5100CF7C63 /* RUMCoreContext.swift */; };
+		D2E9371A2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */; };
+		D2E9371B2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */; };
 		D2EA0F462C0E1AE300CB20F8 /* SessionReplayConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EA0F452C0E1AE200CB20F8 /* SessionReplayConfiguration.swift */; };
 		D2EBEE1F29BA160F00B15732 /* HTTPHeadersReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618E13A92524B8700098C6B0 /* HTTPHeadersReader.swift */; };
 		D2EBEE2029BA160F00B15732 /* TracePropagationHeadersWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EBEDCF29B8A02100B15732 /* TracePropagationHeadersWriter.swift */; };
@@ -3236,6 +3234,7 @@
 		D2303A09298D5412001A1FA3 /* AsyncWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncWriter.swift; sourceTree = "<group>"; };
 		D23354FB2A42E32000AFCAE2 /* InternalExtended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalExtended.swift; sourceTree = "<group>"; };
 		D234613028B7712F00055D4C /* FeatureContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureContextTests.swift; sourceTree = "<group>"; };
+		D2355B262E4E05CE000DDF5F /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		D236BE2729520FED00676E67 /* CrashReportReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportReceiver.swift; sourceTree = "<group>"; };
 		D23F8E9929DDCD28001CFAE8 /* DatadogRUM.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogRUM.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D23F8ECD29DDCD38001CFAE8 /* DatadogRUMTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogRUMTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3364,11 +3363,9 @@
 		D2CBC26A294383F200134409 /* WebViewEventReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewEventReceiver.swift; sourceTree = "<group>"; };
 		D2CBC26D294395A300134409 /* RUMContextAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContextAttributes.swift; sourceTree = "<group>"; };
 		D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mach_profiler.cpp; sourceTree = "<group>"; };
-		D2D0E1F62E3CE73700BA4113 /* mach_sampling_profiler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mach_sampling_profiler.h; sourceTree = "<group>"; };
 		D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mach_sampling_profiler.cpp; sourceTree = "<group>"; };
 		D2D0E2012E3CEF1200BA4113 /* MachProfilerCAPITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MachProfilerCAPITests.swift; sourceTree = "<group>"; };
 		D2D0E2022E3CEF1200BA4113 /* MachSamplingProfilerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MachSamplingProfilerTests.swift; sourceTree = "<group>"; };
-		D2D0E2092E3CF3F300BA4113 /* DatadogProfiling.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DatadogProfiling.h; sourceTree = "<group>"; };
 		D2D0E20D2E3CFA6500BA4113 /* CCallbackContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CCallbackContext.swift; sourceTree = "<group>"; };
 		D2D0E2182E40E34A00BA4113 /* MockThread.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockThread.swift; sourceTree = "<group>"; };
 		D2D30E5A2A40BF540020C553 /* Logs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logs.swift; sourceTree = "<group>"; };
@@ -3397,6 +3394,7 @@
 		D2E6E8FA2D8039B200FF1398 /* BenchmarkURLSessionTaskDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkURLSessionTaskDelegate.swift; sourceTree = "<group>"; };
 		D2E8A8E62DCBBA5100CF7C63 /* RUMCoreContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMCoreContext.swift; sourceTree = "<group>"; };
 		D2E8D59728C7AB90007E5DE1 /* ContextMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextMessageReceiverTests.swift; sourceTree = "<group>"; };
+		D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mach_sampling_profiler.h; sourceTree = "<group>"; };
 		D2EA0F452C0E1AE200CB20F8 /* SessionReplayConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayConfiguration.swift; sourceTree = "<group>"; };
 		D2EBEDCF29B8A02100B15732 /* TracePropagationHeadersWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracePropagationHeadersWriter.swift; sourceTree = "<group>"; };
 		D2EBEDD229B8A58E00B15732 /* TracePropagationHeadersReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracePropagationHeadersReader.swift; sourceTree = "<group>"; };
@@ -4898,7 +4896,6 @@
 				6170DC0525C184FA003AED5C /* DatadogCrashReporting */,
 				61133B8F242393DE00786299 /* DatadogTests */,
 				6170DC0625C184FA003AED5C /* DatadogCrashReportingTests */,
-				D2D0E20A2E3CF3F300BA4113 /* DatadogProfiling */,
 				61441C9E2461AF4D003D8BB8 /* Example */,
 			);
 			path = TargetSupport;
@@ -6317,7 +6314,9 @@
 		D229FF5A2E3BA298009CCD62 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				D2355B262E4E05CE000DDF5F /* module.modulemap */,
 				D229FF592E3BA298009CCD62 /* mach_profiler.h */,
+				D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -6327,7 +6326,6 @@
 			children = (
 				D229FF5A2E3BA298009CCD62 /* include */,
 				D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */,
-				D2D0E1F62E3CE73700BA4113 /* mach_sampling_profiler.h */,
 				D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */,
 			);
 			name = Mach;
@@ -6859,14 +6857,6 @@
 			path = ../DatadogProfiling/Tests;
 			sourceTree = "<group>";
 		};
-		D2D0E20A2E3CF3F300BA4113 /* DatadogProfiling */ = {
-			isa = PBXGroup;
-			children = (
-				D2D0E2092E3CF3F300BA4113 /* DatadogProfiling.h */,
-			);
-			path = DatadogProfiling;
-			sourceTree = "<group>";
-		};
 		D2D748282DC1210A00C61353 /* Logs */ = {
 			isa = PBXGroup;
 			children = (
@@ -7089,9 +7079,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D2D0E20C2E3CF52400BA4113 /* DatadogProfiling.h in Headers */,
 				D229FFAC2E3BCAAE009CCD62 /* mach_profiler.h in Headers */,
-				D2D0E1FC2E3CE73700BA4113 /* mach_sampling_profiler.h in Headers */,
+				D2E9371B2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7099,9 +7088,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D2D0E20B2E3CF51E00BA4113 /* DatadogProfiling.h in Headers */,
 				D229FFA92E3BCA9B009CCD62 /* mach_profiler.h in Headers */,
-				D2D0E1FA2E3CE73700BA4113 /* mach_sampling_profiler.h in Headers */,
+				D2E9371A2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -12408,6 +12396,7 @@
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 			};
 			name = Debug;
 		};
@@ -12439,6 +12428,7 @@
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 			};
 			name = Release;
 		};
@@ -12470,6 +12460,7 @@
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 			};
 			name = Integration;
 		};
@@ -12497,13 +12488,13 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiling;
-				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
 				PRODUCT_NAME = DatadogProfiling;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -12532,13 +12523,13 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiling;
-				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
 				PRODUCT_NAME = DatadogProfiling;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -12567,13 +12558,13 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfiling;
-				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
 				PRODUCT_NAME = DatadogProfiling;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Integration;
@@ -13678,6 +13669,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -13702,6 +13694,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilingTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -13725,6 +13718,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilingTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -13750,6 +13744,7 @@
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
@@ -13775,6 +13770,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 			};
@@ -13799,6 +13795,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 			};

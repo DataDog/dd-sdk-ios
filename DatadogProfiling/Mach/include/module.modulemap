@@ -1,0 +1,4 @@
+module DatadogMachProfiler {
+  header "mach_profiler.h"
+  export *
+}

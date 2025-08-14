@@ -5,12 +5,7 @@
  */
 
 import XCTest
-
-#if SPM_BUILD
 import DatadogMachProfiler
-#else
-@testable import DatadogProfiling
-#endif
 
 final class MachProfilerCAPITests: XCTestCase {
     private var receivedTraces: [UnsafePointer<stack_trace_t>?] = []
