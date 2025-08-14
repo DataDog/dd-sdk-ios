@@ -8,11 +8,7 @@ import Foundation
 import Darwin.Mach
 import XCTest
 
-#if SPM_BUILD
 import DatadogMachProfiler
-#else
-@testable import DatadogProfiling
-#endif
 
 final class MachSamplingProfilerTests: XCTestCase {
     private var callbackInvocations: [(traces: [stack_trace_t], userData: String?)] = []

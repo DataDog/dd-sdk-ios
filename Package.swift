@@ -220,23 +220,22 @@ let package = Package(
                 .target(name: "DatadogMachProfiler")
             ],
             path: "DatadogProfiling/Sources",
-            swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
+            swiftSettings: internalSwiftSettings
         ),
         .target(
             name: "DatadogMachProfiler",
             path: "DatadogProfiling/Mach",
-            cxxSettings: [
-                .unsafeFlags(["-std=c++17"])
-            ]
+            cxxSettings: [.unsafeFlags(["-std=c++17"])]
         ),
         .testTarget(
             name: "DatadogProfilingTests",
             dependencies: [
+                .target(name: "DatadogMachProfiler"),
                 .target(name: "DatadogProfiling"),
                 .target(name: "TestUtilities"),
             ],
             path: "DatadogProfiling/Tests",
-            swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
+            swiftSettings: [.interoperabilityMode(.Cxx)] + internalSwiftSettings
         ),
 
         .target(
