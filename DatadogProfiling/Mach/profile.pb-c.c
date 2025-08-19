@@ -17,21 +17,21 @@ size_t perftools__profiles__profile__get_packed_size
                      (const Perftools__Profiles__Profile *message)
 {
   assert(message->base.descriptor == &perftools__profiles__profile__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+  return PROTOBUF_C_SYMBOL(message_get_packed_size) ((const ProtobufCMessage*)(message));
 }
 size_t perftools__profiles__profile__pack
                      (const Perftools__Profiles__Profile *message,
                       uint8_t       *out)
 {
   assert(message->base.descriptor == &perftools__profiles__profile__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+  return PROTOBUF_C_SYMBOL(message_pack) ((const ProtobufCMessage*)message, out);
 }
 size_t perftools__profiles__profile__pack_to_buffer
                      (const Perftools__Profiles__Profile *message,
                       ProtobufCBuffer *buffer)
 {
   assert(message->base.descriptor == &perftools__profiles__profile__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+  return PROTOBUF_C_SYMBOL(message_pack_to_buffer) ((const ProtobufCMessage*)message, buffer);
 }
 Perftools__Profiles__Profile *
        perftools__profiles__profile__unpack
@@ -40,7 +40,7 @@ Perftools__Profiles__Profile *
                       const uint8_t       *data)
 {
   return (Perftools__Profiles__Profile *)
-     protobuf_c_message_unpack (&perftools__profiles__profile__descriptor,
+     PROTOBUF_C_SYMBOL(message_unpack) (&perftools__profiles__profile__descriptor,
                                 allocator, len, data);
 }
 void   perftools__profiles__profile__free_unpacked
@@ -50,7 +50,7 @@ void   perftools__profiles__profile__free_unpacked
   if(!message)
     return;
   assert(message->base.descriptor == &perftools__profiles__profile__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+  PROTOBUF_C_SYMBOL(message_free_unpacked) ((ProtobufCMessage*)message, allocator);
 }
 void   perftools__profiles__value_type__init
                      (Perftools__Profiles__ValueType         *message)
@@ -62,21 +62,21 @@ size_t perftools__profiles__value_type__get_packed_size
                      (const Perftools__Profiles__ValueType *message)
 {
   assert(message->base.descriptor == &perftools__profiles__value_type__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+  return PROTOBUF_C_SYMBOL(message_get_packed_size) ((const ProtobufCMessage*)(message));
 }
 size_t perftools__profiles__value_type__pack
                      (const Perftools__Profiles__ValueType *message,
                       uint8_t       *out)
 {
   assert(message->base.descriptor == &perftools__profiles__value_type__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+  return PROTOBUF_C_SYMBOL(message_pack) ((const ProtobufCMessage*)message, out);
 }
 size_t perftools__profiles__value_type__pack_to_buffer
                      (const Perftools__Profiles__ValueType *message,
                       ProtobufCBuffer *buffer)
 {
   assert(message->base.descriptor == &perftools__profiles__value_type__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+  return PROTOBUF_C_SYMBOL(message_pack_to_buffer) ((const ProtobufCMessage*)message, buffer);
 }
 Perftools__Profiles__ValueType *
        perftools__profiles__value_type__unpack
@@ -85,7 +85,7 @@ Perftools__Profiles__ValueType *
                       const uint8_t       *data)
 {
   return (Perftools__Profiles__ValueType *)
-     protobuf_c_message_unpack (&perftools__profiles__value_type__descriptor,
+     PROTOBUF_C_SYMBOL(message_unpack) (&perftools__profiles__value_type__descriptor,
                                 allocator, len, data);
 }
 void   perftools__profiles__value_type__free_unpacked
@@ -95,7 +95,7 @@ void   perftools__profiles__value_type__free_unpacked
   if(!message)
     return;
   assert(message->base.descriptor == &perftools__profiles__value_type__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+  PROTOBUF_C_SYMBOL(message_free_unpacked) ((ProtobufCMessage*)message, allocator);
 }
 void   perftools__profiles__sample__init
                      (Perftools__Profiles__Sample         *message)
@@ -107,21 +107,21 @@ size_t perftools__profiles__sample__get_packed_size
                      (const Perftools__Profiles__Sample *message)
 {
   assert(message->base.descriptor == &perftools__profiles__sample__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+  return PROTOBUF_C_SYMBOL(message_get_packed_size) ((const ProtobufCMessage*)(message));
 }
 size_t perftools__profiles__sample__pack
                      (const Perftools__Profiles__Sample *message,
                       uint8_t       *out)
 {
   assert(message->base.descriptor == &perftools__profiles__sample__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+  return PROTOBUF_C_SYMBOL(message_pack) ((const ProtobufCMessage*)message, out);
 }
 size_t perftools__profiles__sample__pack_to_buffer
                      (const Perftools__Profiles__Sample *message,
                       ProtobufCBuffer *buffer)
 {
   assert(message->base.descriptor == &perftools__profiles__sample__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+  return PROTOBUF_C_SYMBOL(message_pack_to_buffer) ((const ProtobufCMessage*)message, buffer);
 }
 Perftools__Profiles__Sample *
        perftools__profiles__sample__unpack
@@ -130,7 +130,7 @@ Perftools__Profiles__Sample *
                       const uint8_t       *data)
 {
   return (Perftools__Profiles__Sample *)
-     protobuf_c_message_unpack (&perftools__profiles__sample__descriptor,
+     PROTOBUF_C_SYMBOL(message_unpack) (&perftools__profiles__sample__descriptor,
                                 allocator, len, data);
 }
 void   perftools__profiles__sample__free_unpacked
@@ -140,7 +140,7 @@ void   perftools__profiles__sample__free_unpacked
   if(!message)
     return;
   assert(message->base.descriptor == &perftools__profiles__sample__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+  PROTOBUF_C_SYMBOL(message_free_unpacked) ((ProtobufCMessage*)message, allocator);
 }
 void   perftools__profiles__label__init
                      (Perftools__Profiles__Label         *message)
@@ -152,21 +152,21 @@ size_t perftools__profiles__label__get_packed_size
                      (const Perftools__Profiles__Label *message)
 {
   assert(message->base.descriptor == &perftools__profiles__label__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+  return PROTOBUF_C_SYMBOL(message_get_packed_size) ((const ProtobufCMessage*)(message));
 }
 size_t perftools__profiles__label__pack
                      (const Perftools__Profiles__Label *message,
                       uint8_t       *out)
 {
   assert(message->base.descriptor == &perftools__profiles__label__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+  return PROTOBUF_C_SYMBOL(message_pack) ((const ProtobufCMessage*)message, out);
 }
 size_t perftools__profiles__label__pack_to_buffer
                      (const Perftools__Profiles__Label *message,
                       ProtobufCBuffer *buffer)
 {
   assert(message->base.descriptor == &perftools__profiles__label__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+  return PROTOBUF_C_SYMBOL(message_pack_to_buffer) ((const ProtobufCMessage*)message, buffer);
 }
 Perftools__Profiles__Label *
        perftools__profiles__label__unpack
@@ -175,7 +175,7 @@ Perftools__Profiles__Label *
                       const uint8_t       *data)
 {
   return (Perftools__Profiles__Label *)
-     protobuf_c_message_unpack (&perftools__profiles__label__descriptor,
+     PROTOBUF_C_SYMBOL(message_unpack) (&perftools__profiles__label__descriptor,
                                 allocator, len, data);
 }
 void   perftools__profiles__label__free_unpacked
@@ -185,7 +185,7 @@ void   perftools__profiles__label__free_unpacked
   if(!message)
     return;
   assert(message->base.descriptor == &perftools__profiles__label__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+  PROTOBUF_C_SYMBOL(message_free_unpacked) ((ProtobufCMessage*)message, allocator);
 }
 void   perftools__profiles__mapping__init
                      (Perftools__Profiles__Mapping         *message)
@@ -197,21 +197,21 @@ size_t perftools__profiles__mapping__get_packed_size
                      (const Perftools__Profiles__Mapping *message)
 {
   assert(message->base.descriptor == &perftools__profiles__mapping__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+  return PROTOBUF_C_SYMBOL(message_get_packed_size) ((const ProtobufCMessage*)(message));
 }
 size_t perftools__profiles__mapping__pack
                      (const Perftools__Profiles__Mapping *message,
                       uint8_t       *out)
 {
   assert(message->base.descriptor == &perftools__profiles__mapping__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+  return PROTOBUF_C_SYMBOL(message_pack) ((const ProtobufCMessage*)message, out);
 }
 size_t perftools__profiles__mapping__pack_to_buffer
                      (const Perftools__Profiles__Mapping *message,
                       ProtobufCBuffer *buffer)
 {
   assert(message->base.descriptor == &perftools__profiles__mapping__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+  return PROTOBUF_C_SYMBOL(message_pack_to_buffer) ((const ProtobufCMessage*)message, buffer);
 }
 Perftools__Profiles__Mapping *
        perftools__profiles__mapping__unpack
@@ -220,7 +220,7 @@ Perftools__Profiles__Mapping *
                       const uint8_t       *data)
 {
   return (Perftools__Profiles__Mapping *)
-     protobuf_c_message_unpack (&perftools__profiles__mapping__descriptor,
+     PROTOBUF_C_SYMBOL(message_unpack) (&perftools__profiles__mapping__descriptor,
                                 allocator, len, data);
 }
 void   perftools__profiles__mapping__free_unpacked
@@ -230,7 +230,7 @@ void   perftools__profiles__mapping__free_unpacked
   if(!message)
     return;
   assert(message->base.descriptor == &perftools__profiles__mapping__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+  PROTOBUF_C_SYMBOL(message_free_unpacked) ((ProtobufCMessage*)message, allocator);
 }
 void   perftools__profiles__location__init
                      (Perftools__Profiles__Location         *message)
@@ -242,21 +242,21 @@ size_t perftools__profiles__location__get_packed_size
                      (const Perftools__Profiles__Location *message)
 {
   assert(message->base.descriptor == &perftools__profiles__location__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+  return PROTOBUF_C_SYMBOL(message_get_packed_size) ((const ProtobufCMessage*)(message));
 }
 size_t perftools__profiles__location__pack
                      (const Perftools__Profiles__Location *message,
                       uint8_t       *out)
 {
   assert(message->base.descriptor == &perftools__profiles__location__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+  return PROTOBUF_C_SYMBOL(message_pack) ((const ProtobufCMessage*)message, out);
 }
 size_t perftools__profiles__location__pack_to_buffer
                      (const Perftools__Profiles__Location *message,
                       ProtobufCBuffer *buffer)
 {
   assert(message->base.descriptor == &perftools__profiles__location__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+  return PROTOBUF_C_SYMBOL(message_pack_to_buffer) ((const ProtobufCMessage*)message, buffer);
 }
 Perftools__Profiles__Location *
        perftools__profiles__location__unpack
@@ -265,7 +265,7 @@ Perftools__Profiles__Location *
                       const uint8_t       *data)
 {
   return (Perftools__Profiles__Location *)
-     protobuf_c_message_unpack (&perftools__profiles__location__descriptor,
+     PROTOBUF_C_SYMBOL(message_unpack) (&perftools__profiles__location__descriptor,
                                 allocator, len, data);
 }
 void   perftools__profiles__location__free_unpacked
@@ -275,7 +275,7 @@ void   perftools__profiles__location__free_unpacked
   if(!message)
     return;
   assert(message->base.descriptor == &perftools__profiles__location__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+  PROTOBUF_C_SYMBOL(message_free_unpacked) ((ProtobufCMessage*)message, allocator);
 }
 void   perftools__profiles__line__init
                      (Perftools__Profiles__Line         *message)
@@ -287,21 +287,21 @@ size_t perftools__profiles__line__get_packed_size
                      (const Perftools__Profiles__Line *message)
 {
   assert(message->base.descriptor == &perftools__profiles__line__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+  return PROTOBUF_C_SYMBOL(message_get_packed_size) ((const ProtobufCMessage*)(message));
 }
 size_t perftools__profiles__line__pack
                      (const Perftools__Profiles__Line *message,
                       uint8_t       *out)
 {
   assert(message->base.descriptor == &perftools__profiles__line__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+  return PROTOBUF_C_SYMBOL(message_pack) ((const ProtobufCMessage*)message, out);
 }
 size_t perftools__profiles__line__pack_to_buffer
                      (const Perftools__Profiles__Line *message,
                       ProtobufCBuffer *buffer)
 {
   assert(message->base.descriptor == &perftools__profiles__line__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+  return PROTOBUF_C_SYMBOL(message_pack_to_buffer) ((const ProtobufCMessage*)message, buffer);
 }
 Perftools__Profiles__Line *
        perftools__profiles__line__unpack
@@ -310,7 +310,7 @@ Perftools__Profiles__Line *
                       const uint8_t       *data)
 {
   return (Perftools__Profiles__Line *)
-     protobuf_c_message_unpack (&perftools__profiles__line__descriptor,
+     PROTOBUF_C_SYMBOL(message_unpack) (&perftools__profiles__line__descriptor,
                                 allocator, len, data);
 }
 void   perftools__profiles__line__free_unpacked
@@ -320,7 +320,7 @@ void   perftools__profiles__line__free_unpacked
   if(!message)
     return;
   assert(message->base.descriptor == &perftools__profiles__line__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+  PROTOBUF_C_SYMBOL(message_free_unpacked) ((ProtobufCMessage*)message, allocator);
 }
 void   perftools__profiles__function__init
                      (Perftools__Profiles__Function         *message)
@@ -332,21 +332,21 @@ size_t perftools__profiles__function__get_packed_size
                      (const Perftools__Profiles__Function *message)
 {
   assert(message->base.descriptor == &perftools__profiles__function__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+  return PROTOBUF_C_SYMBOL(message_get_packed_size) ((const ProtobufCMessage*)(message));
 }
 size_t perftools__profiles__function__pack
                      (const Perftools__Profiles__Function *message,
                       uint8_t       *out)
 {
   assert(message->base.descriptor == &perftools__profiles__function__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+  return PROTOBUF_C_SYMBOL(message_pack) ((const ProtobufCMessage*)message, out);
 }
 size_t perftools__profiles__function__pack_to_buffer
                      (const Perftools__Profiles__Function *message,
                       ProtobufCBuffer *buffer)
 {
   assert(message->base.descriptor == &perftools__profiles__function__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+  return PROTOBUF_C_SYMBOL(message_pack_to_buffer) ((const ProtobufCMessage*)message, buffer);
 }
 Perftools__Profiles__Function *
        perftools__profiles__function__unpack
@@ -355,7 +355,7 @@ Perftools__Profiles__Function *
                       const uint8_t       *data)
 {
   return (Perftools__Profiles__Function *)
-     protobuf_c_message_unpack (&perftools__profiles__function__descriptor,
+     PROTOBUF_C_SYMBOL(message_unpack) (&perftools__profiles__function__descriptor,
                                 allocator, len, data);
 }
 void   perftools__profiles__function__free_unpacked
@@ -365,7 +365,7 @@ void   perftools__profiles__function__free_unpacked
   if(!message)
     return;
   assert(message->base.descriptor == &perftools__profiles__function__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+  PROTOBUF_C_SYMBOL(message_free_unpacked) ((ProtobufCMessage*)message, allocator);
 }
 static const ProtobufCFieldDescriptor perftools__profiles__profile__field_descriptors[14] =
 {
@@ -437,7 +437,7 @@ static const ProtobufCFieldDescriptor perftools__profiles__profile__field_descri
     offsetof(Perftools__Profiles__Profile, n_string_table),
     offsetof(Perftools__Profiles__Profile, string_table),
     NULL,
-    &protobuf_c_empty_string,
+    &PROTOBUF_C_SYMBOL(empty_string),
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },

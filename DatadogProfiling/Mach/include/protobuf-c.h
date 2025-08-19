@@ -194,8 +194,26 @@ size_t foo__bar__baz_bah__pack_to_buffer
  * protobuf_c_message_free_unpacked().
  */
 
+/**
+ * \note Symbol Prefixing System
+ *
+ * This protobuf-c implementation supports compile-time symbol prefixing to 
+ * prevent symbol conflicts when statically linking with other libraries that
+ * embed protobuf-c. Define PROTOBUF_C_SYMBOL_PREFIX to change symbols
+ * prefix.
+ *
+ * \authors Datadog Inc.
+ */
+
 #ifndef PROTOBUF_C_H
 #define PROTOBUF_C_H
+
+/* Symbol prefixing */
+#define PROTOBUF_C_SYMBOL_PREFIX pprof_pb_
+
+#define PROTOBUF_C_CONCAT_INNER(a, b) a##b
+#define PROTOBUF_C_CONCAT(a, b) PROTOBUF_C_CONCAT_INNER(a, b)
+#define PROTOBUF_C_SYMBOL(name) PROTOBUF_C_CONCAT(PROTOBUF_C_SYMBOL_PREFIX, name)
 
 #include <assert.h>
 #include <limits.h>
@@ -240,9 +258,9 @@ PROTOBUF_C__BEGIN_DECLS
 
 /* Empty string used for initializers */
 #if defined(_WIN32) && defined(PROTOBUF_C_USE_SHARED_LIB)
-static const char protobuf_c_empty_string[] = "";
+static const char PROTOBUF_C_SYMBOL(empty_string)[] = "";
 #else
-extern const char protobuf_c_empty_string[];
+extern const char PROTOBUF_C_SYMBOL(empty_string)[];
 #endif
 
 /**
@@ -377,7 +395,7 @@ typedef struct ProtobufCService ProtobufCService;
 typedef struct ProtobufCServiceDescriptor ProtobufCServiceDescriptor;
 
 /** Boolean type. */
-typedef int protobuf_c_boolean;
+typedef int PROTOBUF_C_SYMBOL(boolean);
 
 typedef void (*ProtobufCClosure)(const ProtobufCMessage *, void *closure_data);
 typedef void (*ProtobufCMessageInit)(ProtobufCMessage *);
@@ -411,7 +429,7 @@ struct ProtobufCBinaryData {
 
 /**
  * Structure for defining a virtual append-only buffer. Used by
- * protobuf_c_message_pack_to_buffer() to abstract the consumption of serialized
+ * PROTOBUF_C_SYMBOL(message_pack_to_buffer)() to abstract the consumption of serialized
  * bytes.
  *
  * `ProtobufCBuffer` "subclasses" may be defined on the stack. For example, to
@@ -440,7 +458,7 @@ my_buffer_file_append(ProtobufCBuffer *buffer,
 BufferAppendToFile tmp = {0};
 tmp.base.append = my_buffer_file_append;
 tmp.fp = fp;
-protobuf_c_message_pack_to_buffer(&message, &tmp);
+PROTOBUF_C_SYMBOL(message_pack_to_buffer)(&message, &tmp);
 ...
 ~~~
  */
@@ -465,7 +483,7 @@ ProtobufCBufferSimple simple = PROTOBUF_C_BUFFER_SIMPLE_INIT(pad);
 ProtobufCBuffer *buffer = (ProtobufCBuffer *) &simple;
 ~~~
  *
- * `buffer` can now be used with `protobuf_c_message_pack_to_buffer()`. Once a
+ * `buffer` can now be used with `PROTOBUF_C_SYMBOL(message_pack_to_buffer)()`. Once a
  * message has been serialized to a `ProtobufCBufferSimple` object, the
  * serialized data bytes can be accessed from the `.data` field.
  *
@@ -489,7 +507,7 @@ struct ProtobufCBufferSimple {
 	/** Data bytes. */
 	uint8_t			*data;
 	/** Whether `data` must be freed. */
-	protobuf_c_boolean	must_free_data;
+	PROTOBUF_C_SYMBOL(boolean)	must_free_data;
 	/** Allocator to use. May be NULL to indicate the system allocator. */
 	ProtobufCAllocator	*allocator;
 };
@@ -647,9 +665,9 @@ struct ProtobufCIntRange {
  * If the object is allocated from the stack, you can't really have a memory
  * leak.
  *
- * This means that calls to functions like protobuf_c_message_unpack() which
+ * This means that calls to functions like PROTOBUF_C_SYMBOL(message_unpack)() which
  * return a `ProtobufCMessage` must be paired with a call to a free function,
- * like protobuf_c_message_free_unpacked().
+ * like PROTOBUF_C_SYMBOL(message_free_unpacked)().
  */
 struct ProtobufCMessage {
 	/** The descriptor for this message type. */
@@ -778,7 +796,7 @@ struct ProtobufCServiceDescriptor {
  */
 PROTOBUF_C__API
 const char *
-protobuf_c_version(void);
+PROTOBUF_C_SYMBOL(version)(void);
 
 /**
  * Get the version of the protobuf-c library. Note that this is the version of
@@ -789,17 +807,17 @@ protobuf_c_version(void);
  */
 PROTOBUF_C__API
 uint32_t
-protobuf_c_version_number(void);
+PROTOBUF_C_SYMBOL(version_number)(void);
 
 /**
  * The version of the protobuf-c headers, represented as a string using the same
- * format as protobuf_c_version().
+ * format as PROTOBUF_C_SYMBOL(version)().
  */
 #define PROTOBUF_C_VERSION		"1.5.2"
 
 /**
  * The version of the protobuf-c headers, represented as an integer using the
- * same format as protobuf_c_version_number().
+ * same format as PROTOBUF_C_SYMBOL(version_number)().
  */
 #define PROTOBUF_C_VERSION_NUMBER	1005002
 
@@ -824,7 +842,7 @@ protobuf_c_version_number(void);
  */
 PROTOBUF_C__API
 const ProtobufCEnumValue *
-protobuf_c_enum_descriptor_get_value_by_name(
+PROTOBUF_C_SYMBOL(enum_descriptor_get_value_by_name)(
 	const ProtobufCEnumDescriptor *desc,
 	const char *name);
 
@@ -845,7 +863,7 @@ protobuf_c_enum_descriptor_get_value_by_name(
  */
 PROTOBUF_C__API
 const ProtobufCEnumValue *
-protobuf_c_enum_descriptor_get_value(
+PROTOBUF_C_SYMBOL(enum_descriptor_get_value)(
 	const ProtobufCEnumDescriptor *desc,
 	int value);
 
@@ -864,7 +882,7 @@ protobuf_c_enum_descriptor_get_value(
  */
 PROTOBUF_C__API
 const ProtobufCFieldDescriptor *
-protobuf_c_message_descriptor_get_field_by_name(
+PROTOBUF_C_SYMBOL(message_descriptor_get_field_by_name)(
 	const ProtobufCMessageDescriptor *desc,
 	const char *name);
 
@@ -883,7 +901,7 @@ protobuf_c_message_descriptor_get_field_by_name(
  */
 PROTOBUF_C__API
 const ProtobufCFieldDescriptor *
-protobuf_c_message_descriptor_get_field(
+PROTOBUF_C_SYMBOL(message_descriptor_get_field)(
 	const ProtobufCMessageDescriptor *desc,
 	unsigned value);
 
@@ -897,7 +915,7 @@ protobuf_c_message_descriptor_get_field(
  */
 PROTOBUF_C__API
 size_t
-protobuf_c_message_get_packed_size(const ProtobufCMessage *message);
+PROTOBUF_C_SYMBOL(message_get_packed_size)(const ProtobufCMessage *message);
 
 /**
  * Serialise a message from its in-memory representation.
@@ -910,14 +928,14 @@ protobuf_c_message_get_packed_size(const ProtobufCMessage *message);
  * \param[out] out
  *      Buffer to store the bytes of the serialised message. This buffer must
  *      have enough space to store the packed message. Use
- *      protobuf_c_message_get_packed_size() to determine the number of bytes
+ *      PROTOBUF_C_SYMBOL(message_get_packed_size)() to determine the number of bytes
  *      required.
  * \return
  *      Number of bytes stored in `out`.
  */
 PROTOBUF_C__API
 size_t
-protobuf_c_message_pack(const ProtobufCMessage *message, uint8_t *out);
+PROTOBUF_C_SYMBOL(message_pack)(const ProtobufCMessage *message, uint8_t *out);
 
 /**
  * Serialise a message from its in-memory representation to a virtual buffer.
@@ -934,7 +952,7 @@ protobuf_c_message_pack(const ProtobufCMessage *message, uint8_t *out);
  */
 PROTOBUF_C__API
 size_t
-protobuf_c_message_pack_to_buffer(
+PROTOBUF_C_SYMBOL(message_pack_to_buffer)(
 	const ProtobufCMessage *message,
 	ProtobufCBuffer *buffer);
 
@@ -957,7 +975,7 @@ protobuf_c_message_pack_to_buffer(
  */
 PROTOBUF_C__API
 ProtobufCMessage *
-protobuf_c_message_unpack(
+PROTOBUF_C_SYMBOL(message_unpack)(
 	const ProtobufCMessageDescriptor *descriptor,
 	ProtobufCAllocator *allocator,
 	size_t len,
@@ -967,7 +985,7 @@ protobuf_c_message_unpack(
  * Free an unpacked message object.
  *
  * This function should be used to deallocate the memory used by a call to
- * protobuf_c_message_unpack().
+ * PROTOBUF_C_SYMBOL(message_unpack)().
  *
  * \param message
  *      The message object to free. May be NULL.
@@ -977,7 +995,7 @@ protobuf_c_message_unpack(
  */
 PROTOBUF_C__API
 void
-protobuf_c_message_free_unpacked(
+PROTOBUF_C_SYMBOL(message_free_unpacked)(
 	ProtobufCMessage *message,
 	ProtobufCAllocator *allocator);
 
@@ -993,8 +1011,8 @@ protobuf_c_message_free_unpacked(
  *      Message is invalid.
  */
 PROTOBUF_C__API
-protobuf_c_boolean
-protobuf_c_message_check(const ProtobufCMessage *);
+PROTOBUF_C_SYMBOL(boolean)
+PROTOBUF_C_SYMBOL(message_check)(const ProtobufCMessage *);
 
 /** Message initialiser. */
 #define PROTOBUF_C_MESSAGE_INIT(descriptor) { descriptor, 0, NULL }
@@ -1009,7 +1027,7 @@ protobuf_c_message_check(const ProtobufCMessage *);
  */
 PROTOBUF_C__API
 void
-protobuf_c_message_init(
+PROTOBUF_C_SYMBOL(message_init)(
 	const ProtobufCMessageDescriptor *descriptor,
 	void *message);
 
@@ -1021,7 +1039,7 @@ protobuf_c_message_init(
  */
 PROTOBUF_C__API
 void
-protobuf_c_service_destroy(ProtobufCService *service);
+PROTOBUF_C_SYMBOL(service_destroy)(ProtobufCService *service);
 
 /**
  * Look up a `ProtobufCMethodDescriptor` by name.
@@ -1038,7 +1056,7 @@ protobuf_c_service_destroy(ProtobufCService *service);
  */
 PROTOBUF_C__API
 const ProtobufCMethodDescriptor *
-protobuf_c_service_descriptor_get_method_by_name(
+PROTOBUF_C_SYMBOL(service_descriptor_get_method_by_name)(
 	const ProtobufCServiceDescriptor *desc,
 	const char *name);
 
@@ -1047,7 +1065,7 @@ protobuf_c_service_descriptor_get_method_by_name(
  */
 #define PROTOBUF_C_BUFFER_SIMPLE_INIT(array_of_bytes)                   \
 {                                                                       \
-	{ protobuf_c_buffer_simple_append },                            \
+	{ PROTOBUF_C_SYMBOL(buffer_simple_append) },                            \
 	sizeof(array_of_bytes),                                         \
 	0,                                                              \
 	(array_of_bytes),                                               \
@@ -1083,21 +1101,21 @@ do {                                                                    \
  */
 PROTOBUF_C__API
 void
-protobuf_c_buffer_simple_append(
+PROTOBUF_C_SYMBOL(buffer_simple_append)(
 	ProtobufCBuffer *buffer,
 	size_t len,
 	const unsigned char *data);
 
 PROTOBUF_C__API
 void
-protobuf_c_service_generated_init(
+PROTOBUF_C_SYMBOL(service_generated_init)(
 	ProtobufCService *service,
 	const ProtobufCServiceDescriptor *descriptor,
 	ProtobufCServiceDestroy destroy);
 
 PROTOBUF_C__API
 void
-protobuf_c_service_invoke_internal(
+PROTOBUF_C_SYMBOL(service_invoke_internal)(
 	ProtobufCService *service,
 	unsigned method_index,
 	const ProtobufCMessage *input,

@@ -282,10 +282,10 @@ struct  Perftools__Profiles__Mapping
   /*
    * The following fields indicate the resolution of symbolic info.
    */
-  protobuf_c_boolean has_functions;
-  protobuf_c_boolean has_filenames;
-  protobuf_c_boolean has_line_numbers;
-  protobuf_c_boolean has_inline_frames;
+  PROTOBUF_C_SYMBOL(boolean) has_functions;
+  PROTOBUF_C_SYMBOL(boolean) has_filenames;
+  PROTOBUF_C_SYMBOL(boolean) has_line_numbers;
+  PROTOBUF_C_SYMBOL(boolean) has_inline_frames;
 };
 #define PERFTOOLS__PROFILES__MAPPING__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&perftools__profiles__mapping__descriptor) \
@@ -334,7 +334,7 @@ struct  Perftools__Profiles__Location
    * symbols. This field must be recomputed when the symbolization state of the
    * profile changes.
    */
-  protobuf_c_boolean is_folded;
+  PROTOBUF_C_SYMBOL(boolean) is_folded;
 };
 #define PERFTOOLS__PROFILES__LOCATION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&perftools__profiles__location__descriptor) \
