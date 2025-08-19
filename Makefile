@@ -11,6 +11,7 @@ all: env-check repo-setup dependencies templates
 		benchmark-build benchmark-upload \
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
 		api-surface spi-docs-build \
+		profiling-protoc \
 		dogfood-shopist dogfood-datadog-app \
 		release-build release-validate release-publish-github \
 		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs \
@@ -299,6 +300,11 @@ sr-models-generate:
 # Validate SR data models
 sr-models-verify:
 	@$(MAKE) models-verify PRODUCT="sr"
+
+# Generate profiling protobuf-c files from pprof proto
+protoc-pprof:
+	@$(ECHO_TITLE) "make profiling-protoc"
+	./tools/protoc-pprof.sh --proto-path DatadogProfiling/Protos/profile.proto --output-dir DatadogProfiling/Mach
 
 # Pushes current SR snapshots to snapshots repo
 sr-snapshots-push:

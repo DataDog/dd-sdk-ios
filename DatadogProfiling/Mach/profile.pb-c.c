@@ -367,7 +367,7 @@ void   perftools__profiles__function__free_unpacked
   assert(message->base.descriptor == &perftools__profiles__function__descriptor);
   PROTOBUF_C_SYMBOL(message_free_unpacked) ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor perftools__profiles__profile__field_descriptors[14] =
+static const ProtobufCFieldDescriptor perftools__profiles__profile__field_descriptors[15] =
 {
   {
     "sample_type",
@@ -537,10 +537,23 @@ static const ProtobufCFieldDescriptor perftools__profiles__profile__field_descri
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "doc_url",
+    15,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT64,
+    0,   /* quantifier_offset */
+    offsetof(Perftools__Profiles__Profile, doc_url),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned perftools__profiles__profile__field_indices_by_name[] = {
   12,   /* field[12] = comment */
   13,   /* field[13] = default_sample_type */
+  14,   /* field[14] = doc_url */
   6,   /* field[6] = drop_frames */
   9,   /* field[9] = duration_nanos */
   4,   /* field[4] = function */
@@ -557,7 +570,7 @@ static const unsigned perftools__profiles__profile__field_indices_by_name[] = {
 static const ProtobufCIntRange perftools__profiles__profile__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 14 }
+  { 0, 15 }
 };
 const ProtobufCMessageDescriptor perftools__profiles__profile__descriptor =
 {
@@ -567,7 +580,7 @@ const ProtobufCMessageDescriptor perftools__profiles__profile__descriptor =
   "Perftools__Profiles__Profile",
   "perftools.profiles",
   sizeof(Perftools__Profiles__Profile),
-  14,
+  15,
   perftools__profiles__profile__field_descriptors,
   perftools__profiles__profile__field_indices_by_name,
   1,  perftools__profiles__profile__number_ranges,
@@ -1011,7 +1024,7 @@ const ProtobufCMessageDescriptor perftools__profiles__location__descriptor =
   (ProtobufCMessageInit) perftools__profiles__location__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor perftools__profiles__line__field_descriptors[2] =
+static const ProtobufCFieldDescriptor perftools__profiles__line__field_descriptors[3] =
 {
   {
     "function_id",
@@ -1037,15 +1050,28 @@ static const ProtobufCFieldDescriptor perftools__profiles__line__field_descripto
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "column",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT64,
+    0,   /* quantifier_offset */
+    offsetof(Perftools__Profiles__Line, column),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned perftools__profiles__line__field_indices_by_name[] = {
+  2,   /* field[2] = column */
   0,   /* field[0] = function_id */
   1,   /* field[1] = line */
 };
 static const ProtobufCIntRange perftools__profiles__line__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 2 }
+  { 0, 3 }
 };
 const ProtobufCMessageDescriptor perftools__profiles__line__descriptor =
 {
@@ -1055,7 +1081,7 @@ const ProtobufCMessageDescriptor perftools__profiles__line__descriptor =
   "Perftools__Profiles__Line",
   "perftools.profiles",
   sizeof(Perftools__Profiles__Line),
-  2,
+  3,
   perftools__profiles__line__field_descriptors,
   perftools__profiles__line__field_indices_by_name,
   1,  perftools__profiles__line__number_ranges,
