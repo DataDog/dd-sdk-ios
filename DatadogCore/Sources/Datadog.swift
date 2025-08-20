@@ -186,7 +186,8 @@ public enum Datadog {
         ///                                             Tasks are normally stopped when there's nothing to upload or when encountering
         ///                                             any upload blocker such us no internet connection or low battery.
         ///                                             By default it's set to `false`.
-        ///   - constrainedNetworkAccessEnabled:        A flag that determines if uploads should be enabled on networks with "Low Data Mode" enabled.
+        ///   - isNetworkAccessConstrained: A flag that determines if uploads should be constrained on networks with "Low Data Mode" enabled.
+       /// By default it's set to `false`.
         ///                                             By default it's set to `true`.
         public init(
             clientToken: String,
