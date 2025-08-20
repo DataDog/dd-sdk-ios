@@ -138,7 +138,9 @@ public enum Datadog {
 
         /// Allows uploads on networks with "Low Data Mode" enabled.
         /// When set to `false`, uploads are deferred until the device is connected to an unconstrained network.
+        /// This can lead to data loss if "Low Data Mode" remains enabled and the batches become obsolete.
         ///
+        /// Defaults to `false`.
         /// Defaults to `true`.
         public var constrainedNetworkAccessEnabled: Bool
 
