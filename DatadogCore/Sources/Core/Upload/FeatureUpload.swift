@@ -58,7 +58,7 @@ internal struct FeatureUpload {
                 fileReader: fileReader,
                 dataUploader: dataUploader,
                 contextProvider: contextProvider,
-                uploadConditions: DataUploadConditions(),
+                uploadConditions: DataUploadConditions(isNetworkAccessConstrained: performance.constrainedNetworkAccessEnabled),
                 delay: DataUploadDelay(performance: performance),
                 featureName: featureName,
                 telemetry: telemetry,
