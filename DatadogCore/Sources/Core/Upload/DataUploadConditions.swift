@@ -43,7 +43,7 @@ internal struct DataUploadConditions {
         if !networkIsReachable {
             blockers = [.networkReachability(description: reachability.rawValue)]
         }
-        if context.networkConnectionInfo?.isConstrained == true, !isNetworkAccessConstrained {
+        if context.networkConnectionInfo?.isConstrained == true, isNetworkAccessConstrained {
             return [.constrainedNetworkAccess]
         }
         #endif
