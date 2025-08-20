@@ -10,7 +10,7 @@ import DatadogInternal
 /// Tells if data upload can be performed based on given system conditions.
 internal struct DataUploadConditions {
     enum Blocker {
-        case allowsConstrainedNetworkAccessFalse
+        case constrainedNetworkAccess
         case battery(level: Int, state: BatteryStatus.State)
         case lowPowerModeOn
         case networkReachability(description: String)
