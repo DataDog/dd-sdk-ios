@@ -36,7 +36,7 @@ First, create your local environment file:
 ./setup_env.sh
 ```
 
-This creates a `.env` file that you'll need to fill with the required tokens. The file looks like the following:
+This creates a `.env` file that you will need to fill with the required tokens. The file looks like the following:
 ```bash
 # GitHub token with repo access
 GITHUB_TOKEN=
@@ -167,6 +167,46 @@ Make sure your virtual environment is activated, then run all tests:
 ```bash
 pytest tests/
 ```
+
+### CI Integration
+
+The issue handler tests are automatically run in the CI pipeline:
+
+**GitLab CI**: Tests run as part of the `tools-test` target when changes are made to the `tools/` directory. The CI environment automatically sets up Python 3 and runs the tests as part of the existing tools testing pipeline.
+
+#### Running Tests Locally
+
+You can run tests locally using this command:
+
+```bash
+make issue-handler-test
+```
+
+### Integration Tests (manual execution)
+
+These integration tests verify the tool works with real APIs and should be run manually when needed. They require proper environment variables and API tokens:
+
+```bash
+cd tools/issue_handler
+source venv/bin/activate  # if not already active
+
+# Test full workflow: fetch real GitHub issue + analyze with OpenAI
+PYTHONPATH=. python integration_tests/test_analysis.py --issue 1234
+
+# Test GitHub API connectivity with real issues
+PYTHONPATH=. python integration_tests/test_real_issue.py --issue 1
+
+# Slack webhook quick checks (requires env vars: SLACK_WEBHOOK_URL and GITHUB_REPOSITORY)
+PYTHONPATH=. python test_local.py
+PYTHONPATH=. python test_slack_webhook.py
+```
+
+**Quick integration test**: You can also use the make command:
+```bash
+make issue-handler-integration-test
+```
+
+**Note**: These are integration tests. They make real API calls and should only be run when you want to verify the tool works with actual services.
 
 ## Development Notes
 

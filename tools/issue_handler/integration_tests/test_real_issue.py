@@ -3,14 +3,22 @@ Integration test for processing actual GitHub issues.
 """
 import argparse
 import os
+import sys
+from pathlib import Path
+from dotenv import load_dotenv
 from src.github_handler import create_github_handler
+
+# Try to load environment variables from .env file
+env_path = Path(__file__).parent.parent / '.env'
+if env_path.exists():
+    load_dotenv(env_path)
+
+# Add src directory to Python path
+src_dir = Path(__file__).parent.parent / "src"
+sys.path.append(str(src_dir))
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Test GitHub issue fetching')
-    parser.add_argument('--owner', default='DataDog',
-                      help='Repository owner (default: DataDog)')
-    parser.add_argument('--repo', default='dd-sdk-ios',
-                      help='Repository name (default: dd-sdk-ios)')
     parser.add_argument('--issue', type=int, default=1,
                       help='Issue number to fetch (default: 1)')
     return parser.parse_args()
@@ -24,13 +32,10 @@ def main():
             print("  export GITHUB_TOKEN='your-token'")
             return
 
-        # Create handler with specified repository
-        handler = create_github_handler(
-            owner=args.owner,
-            repo=args.repo
-        )
+        # Create handler using environment variables (GITHUB_REPOSITORY should be set in .env)
+        handler = create_github_handler()
         
-        print(f"\nFetching issue #{args.issue} from {args.owner}/{args.repo}...")
+        print(f"\nFetching issue #{args.issue} from {os.environ.get('GITHUB_REPOSITORY', 'unknown')}...")
         
         issue = handler.get_issue(args.issue)
         if issue:
@@ -44,6 +49,8 @@ def main():
             
     except Exception as e:
         print(f"\nError: {str(e)}")
+        if "GITHUB_REPOSITORY" in str(e):
+            print("\nMake sure GITHUB_REPOSITORY is set in your .env file (e.g., 'DataDog/dd-sdk-ios')")
 
 if __name__ == "__main__":
     main() 

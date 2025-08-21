@@ -51,7 +51,6 @@ def test_slack_webhook():
             body="This is a test issue body",
             html_url="https://github.com/test/repo/issues/123",
             number=123,
-            created_at="2024-01-01T00:00:00Z",
             user="testuser"
         )
         

@@ -5,6 +5,12 @@ import os
 import argparse
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Try to load environment variables from .env file
+env_path = Path(__file__).parent.parent / '.env'
+if env_path.exists():
+    load_dotenv(env_path)
 
 # Add src directory to Python path
 src_dir = Path(__file__).parent.parent / "src"

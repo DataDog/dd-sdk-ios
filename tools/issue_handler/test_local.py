@@ -31,7 +31,6 @@ def test_slack_webhook():
             body="I'm having trouble integrating the Datadog iOS SDK into my project. I followed the documentation but I'm getting build errors. Can someone help me?",
             html_url="https://github.com/DataDog/dd-sdk-ios/issues/1234",
             number=1234,
-            created_at="2024-01-15T10:30:00Z",
             user="testuser"
         )
         
