@@ -843,6 +843,45 @@ extension RUMStopSessionCommand: AnyMockable {
     }
 }
 
+extension RUMOperationStepVitalCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMOperationStepVitalCommand { mockWith() }
+
+    public static func mockRandom() -> RUMOperationStepVitalCommand {
+        return mockWith(
+            vitalId: .mockRandom(),
+            name: .mockRandom(),
+            operationKey: .mockRandom(),
+            stepType: .mockRandom(),
+            failureReason: .mockRandom(),
+            time: .mockRandomInThePast(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes()
+        )
+    }
+
+    public static func mockWith(
+        vitalId: String = .mockAny(),
+        name: String = .mockAny(),
+        operationKey: String? = .mockAny(),
+        stepType: RUMVitalEvent.Vital.StepType = .mockAny(),
+        failureReason: RUMFeatureOperationFailureReason = .mockAny(),
+        time: Date = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) -> RUMOperationStepVitalCommand {
+        return RUMOperationStepVitalCommand(
+            vitalId: vitalId,
+            name: name,
+            operationKey: operationKey,
+            stepType: stepType,
+            failureReason: failureReason,
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes
+        )
+    }
+}
+
 // MARK: - RUMCommand Property Mocks
 
 extension RUMInternalErrorSource: RandomMockable {
