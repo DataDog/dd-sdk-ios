@@ -50,6 +50,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         RUMFeatureOperationManager(parent: self, dependencies: dependencies)
     }()
 
+    /// Feature Operation manager for processing Feature Operation commands.
+    private lazy var featureOperationManager: RUMFeatureOperationManager = {
+        RUMFeatureOperationManager(parent: self, dependencies: dependencies)
+    }()
+
     /// Information about this session state, shared with `CrashContext`.
     private var state: RUMSessionState {
         didSet {
@@ -236,22 +241,23 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 dependencies.sessionEndedMetric.trackWasStopped(sessionID: self.context.sessionID)
                 endReason = .stopAPI
                 deactivating = true
-
+                
             case let startApplicationCommand as RUMApplicationStartCommand:
                 startApplicationLaunchView(on: startApplicationCommand, context: context, writer: writer)
-
+                
             case let startViewCommand as RUMStartViewCommand:
                 // Start view scope explicitly on receiving "start view" command
                 startView(on: startViewCommand, context: context)
+                
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
                 hadApplicationLaunchViewWhenEnteringBackground = activeViewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
-
+                
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .willEnterForeground:
                 if hadApplicationLaunchViewWhenEnteringBackground == true {
                     startApplicationLaunchView(on: appLifecycleCommand, context: context, writer: writer)
                 }
                 hadApplicationLaunchViewWhenEnteringBackground = nil
-
+                
             case let operationStepVitalCommand as RUMOperationStepVitalCommand:
                 let activeView = viewScopes.first { $0.isActiveView }
                 // Forward command to the feature operation manager
@@ -464,39 +470,5 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private func hasExpired(currentTime: Date) -> Bool {
         let sessionDuration = currentTime.timeIntervalSince(sessionStartTime)
         return sessionDuration >= Constants.sessionMaxDuration
-    }
-
-    // MARK: - Feature Operation Step Vital Event Processing
-
-    private func sendFeatureOperationStepVitalEvent(on command: RUMOperationStepVitalCommand, context: DatadogContext, writer: Writer) {
-        let vital = RUMVitalEvent.Vital(
-            vitalDescription: nil,
-            duration: nil,
-            failureReason: command.failureReason,
-            id: command.vitalId,
-            name: command.name,
-            operationKey: command.operationKey,
-            stepType: command.stepType,
-            type: .operationStep
-        )
-
-        let vitalEvent = RUMVitalEvent(
-            dd: .init(),
-            application: .init(id: parent.context.rumApplicationID),
-            context: .init(contextInfo: command.globalAttributes.merging(command.attributes) { $1 }),
-            date: command.time.timeIntervalSince1970.toInt64Milliseconds,
-            session: .init(
-                hasReplay: context.hasReplay,
-                id: self.context.sessionID.toRUMDataFormat,
-                type: dependencies.sessionType
-            ),
-            view: .init(
-                id: parent.context.activeViewID.orNull.toRUMDataFormat,
-                url: parent.context.activeViewPath ?? ""
-            ),
-            vital: vital
-        )
-
-        writer.write(value: vitalEvent)
     }
 }
