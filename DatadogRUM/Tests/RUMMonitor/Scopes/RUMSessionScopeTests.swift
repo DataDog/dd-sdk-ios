@@ -660,4 +660,18 @@ class RUMSessionScopeTests: XCTestCase {
             XCTAssertNil(log, "It shouldn't log warning when receiving silent command: \(command)")
         }
     }
+
+    // MARK: - Feature Operation Integration Tests
+
+    func testProcessesFeatureOperationCommand_DelegatesToManager() {
+        // Given
+        let command: RUMOperationStepVitalCommand = .mockAny()
+        let scope: RUMSessionScope = .mockWith(parent: parent)
+
+        // When
+        let result = scope.process(command: command, context: context, writer: writer)
+
+        // Then
+        XCTAssertTrue(result)
+    }
 }

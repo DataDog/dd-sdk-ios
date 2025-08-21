@@ -45,6 +45,7 @@ public func randomRUMEvent() -> RUMDataModel {
         { RUMResourceEvent.mockRandom() },
         { RUMErrorEvent.mockRandom() },
         { RUMLongTaskEvent.mockRandom() },
+        { RUMVitalEvent.mockRandom() }
     ])
     // swiftlint:enable opening_brace
 }
@@ -732,5 +733,46 @@ extension RUMTelemetryOperatingSystem: RandomMockable {
             name: .mockRandom(),
             version: .mockRandom()
         )
+    }
+}
+
+extension RUMVitalEvent: RandomMockable {
+    public static func mockRandom() -> RUMVitalEvent {
+        return RUMVitalEvent(
+            dd: .init(),
+            application: .init(id: .mockRandom()),
+            date: .mockRandom(),
+            session: .init(id: .mockRandom(), type: .user),
+            view: .init(id: .mockRandom(), url: .mockRandom()),
+            vital: .mockRandom()
+        )
+    }
+}
+
+extension RUMVitalEvent.Vital: RandomMockable {
+    public static func mockRandom() -> RUMVitalEvent.Vital {
+        return RUMVitalEvent.Vital(
+            id: .mockRandom(),
+            type: .mockRandom()
+        )
+    }
+}
+
+extension RUMVitalEvent.Vital.VitalType: RandomMockable {
+    public static func mockRandom() -> RUMVitalEvent.Vital.VitalType {
+        return [.duration, .operationStep].randomElement()!
+    }
+}
+
+extension RUMVitalEvent.Vital.StepType: AnyMockable, RandomMockable, CaseIterable {
+    public static var allCases: [RUMVitalEvent.Vital.StepType]
+    = [.start, .end, .retry, .update]
+
+    public static func mockAny() -> Self {
+        return .start
+    }
+
+    public static func mockRandom() -> Self {
+        return RUMVitalEvent.Vital.StepType.allCases.randomElement()!
     }
 }
