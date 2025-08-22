@@ -25,18 +25,18 @@ test_python_package() {
         exit 1
     fi
     
-    # Check if virtual environment exists and use it
+    # Check if virtual environment exists and use it, or create one if needed
     if [ -d "venv" ]; then
         echo "📦 Using existing virtual environment..."
         source venv/bin/activate
-        python -m pytest tests/ -v
     else
-        echo_err "Virtual environment not found in $package_path. Python tests cannot run."
-        echo_err "Please ensure the virtual environment is set up before running tests."
-        cd -
-        exit 1
+        echo "📦 Creating virtual environment and installing dependencies..."
+        python3 -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
     fi
     
+    python -m pytest tests/ -v
     cd -
 }
 
