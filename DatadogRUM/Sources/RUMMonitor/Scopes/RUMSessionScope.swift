@@ -260,8 +260,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     operationStepVitalCommand,
                     context: context,
                     writer: writer,
-                    activeViewID: (activeView?.viewUUID).orNull.toRUMDataFormat,
-                    activeViewPath: activeView?.viewPath ?? ""
+                    activeView: activeView
                 )
             default:
                 if !hasActiveView {
