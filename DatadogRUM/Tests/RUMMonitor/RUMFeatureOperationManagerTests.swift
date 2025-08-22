@@ -43,16 +43,14 @@ class RUMFeatureOperationManagerTests: XCTestCase {
     func testFeatureOperationCommand_CreatesVitalEvent() throws {
         // Given
         let command = RUMOperationStepVitalCommand.mockRandom()
-        let viewID: String = .mockRandom()
-        let viewPath: String = .mockRandom()
+        let view: RUMViewScope = .mockAny()
 
         // When
         manager.process(
             command,
             context: mockContext,
             writer: mockWriter,
-            activeViewID: viewID,
-            activeViewPath: viewPath
+            activeView: view
         )
 
         // Then
@@ -67,8 +65,8 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertEqual(event.vital.operationKey, command.operationKey)
         XCTAssertEqual(event.vital.stepType, command.stepType)
         XCTAssertEqual(event.vital.failureReason, command.failureReason)
-        XCTAssertEqual(event.view.id, viewID)
-        XCTAssertEqual(event.view.url, viewPath)
+        XCTAssertEqual(event.view.id, view.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, view.viewPath)
         XCTAssertNil(event.vital.vitalDescription)
         XCTAssertNil(event.vital.duration)
     }
@@ -77,16 +75,14 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         // Given
         let commandCount = Int.random(in: 1...10)
         let commands = Array(repeating: RUMOperationStepVitalCommand.mockRandom(), count: commandCount)
-        let viewID: String = .mockRandom()
-        let viewPath: String = .mockRandom()
+        let view: RUMViewScope = .mockAny()
 
         commands.forEach { command in
             manager.process(
                 command,
                 context: mockContext,
                 writer: mockWriter,
-                activeViewID: viewID,
-                activeViewPath: viewPath
+                activeView: view
             )
         }
 
@@ -102,8 +98,8 @@ class RUMFeatureOperationManagerTests: XCTestCase {
             XCTAssertEqual(event.vital.operationKey, operation.operationKey)
             XCTAssertEqual(event.vital.stepType, operation.stepType)
             XCTAssertEqual(event.vital.failureReason, operation.failureReason)
-            XCTAssertEqual(event.view.id, viewID)
-            XCTAssertEqual(event.view.url, viewPath)
+            XCTAssertEqual(event.view.id, view.viewUUID.toRUMDataFormat)
+            XCTAssertEqual(event.view.url, view.viewPath)
             XCTAssertNil(event.vital.vitalDescription)
             XCTAssertNil(event.vital.duration)
         }
@@ -111,18 +107,39 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
     // MARK: - Edge Cases Tests
 
-    func testProcess_OperationWithEmptyName_DoesNotCreateVitalEvent() {
+    private let invalidNames = ["", " ", "\n", "\t", "   \n\t  "]
+    func testProcess_OperationWithInvalidName_DoesNotCreateVitalEvent() {
         // Given
-        let command = RUMOperationStepVitalCommand.mockWith(name: "")
+        for invalidName in invalidNames {
+            let command = RUMOperationStepVitalCommand.mockWith(name: invalidName)
 
-        // When
-        manager.process(
-            command,
-            context: mockContext,
-            writer: mockWriter,
-            activeViewID: .mockAny(),
-            activeViewPath: .mockAny()
-        )
+            // When
+            manager.process(
+                command,
+                context: mockContext,
+                writer: mockWriter,
+                activeView: .mockAny()
+            )
+        }
+
+        // Then
+        let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)
+        XCTAssertEqual(vitalEvents.count, 0)
+    }
+
+    func testProcess_OperationWithInvalidOperationKey_DoesNotCreateVitalEvent() {
+        // Given
+        for invalidOpKey in invalidNames {
+            let command = RUMOperationStepVitalCommand.mockWith(name: .mockAny(), operationKey: invalidOpKey)
+
+            // When
+            manager.process(
+                command,
+                context: mockContext,
+                writer: mockWriter,
+                activeView: .mockAny()
+            )
+        }
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)
@@ -148,7 +165,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         )
 
         // When
-        manager.process(command, context: mockContext, writer: mockWriter, activeViewID: .mockAny(), activeViewPath: .mockAny())
+        manager.process(command, context: mockContext, writer: mockWriter, activeView: .mockAny())
 
         // Then
         let logMessage = try XCTUnwrap(dd.logger.warnLog?.message)
@@ -173,8 +190,8 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         )
 
         // When
-        manager.process(startCommand1, context: mockContext, writer: mockWriter, activeViewID: .mockAny(), activeViewPath: .mockAny())
-        manager.process(startCommand2, context: mockContext, writer: mockWriter, activeViewID: .mockAny(), activeViewPath: .mockAny())
+        manager.process(startCommand1, context: mockContext, writer: mockWriter, activeView: .mockAny())
+        manager.process(startCommand2, context: mockContext, writer: mockWriter, activeView: .mockAny())
 
         // Then
         let logMessage = try XCTUnwrap(dd.logger.warnLog?.message)
@@ -189,8 +206,8 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         let endCommand = RUMOperationStepVitalCommand.mockWith(stepType: .end)
 
         // When
-        manager.process(startCommand, context: mockContext, writer: mockWriter, activeViewID: .mockAny(), activeViewPath: .mockAny())
-        manager.process(endCommand, context: mockContext, writer: mockWriter, activeViewID: .mockAny(), activeViewPath: .mockAny())
+        manager.process(startCommand, context: mockContext, writer: mockWriter, activeView: .mockAny())
+        manager.process(endCommand, context: mockContext, writer: mockWriter, activeView: .mockAny())
 
         // Then
         XCTAssertNil(dd.logger.warnLog)

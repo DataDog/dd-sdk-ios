@@ -29,6 +29,7 @@ internal class RUMFeatureOperationManager {
     /// Set of active operation lookup keys for tracking and warning purposes
     /// Key format: "operationName" + "operationKey" (if any)
     private var activeOperations: Set<String> = []
+    private let maxActiveOperations = 500
 
     // MARK: - Dependencies
 
@@ -44,11 +45,25 @@ internal class RUMFeatureOperationManager {
 
     // MARK: - Public Interface
 
-    func process(_ command: RUMOperationStepVitalCommand, context: DatadogContext, writer: Writer, activeViewID: String, activeViewPath: String) {
-        let lookupKey = "\(command.name)\(command.operationKey ?? "")"
+    func process(_ command: RUMOperationStepVitalCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope?) {
+        // Validate command parameters
+        guard validateCommand(command) else {
+            return
+        }
+
+        if activeView == nil {
+            DD.logger.warn("RUM operation step command received without an active view. This may result in incomplete context information.")
+        }
 
         // Always create and send the vital event - this is the SDK's core responsibility
-        writeVitalEvent(from: command, context: context, writer: writer, activeViewID: activeViewID, activeViewPath: activeViewPath)
+        writeVitalEvent(
+            from: command,
+            context: context,
+            writer: writer,
+            activeView: activeView
+        )
+
+        let lookupKey = "\(command.name)\(command.operationKey ?? "")"
 
         // Track operation state for troubleshooting warnings
         switch command.stepType {
@@ -62,12 +77,7 @@ internal class RUMFeatureOperationManager {
 
     // MARK: - Private Methods
 
-    private func writeVitalEvent(from command: RUMOperationStepVitalCommand, context: DatadogContext, writer: Writer, activeViewID: String, activeViewPath: String) {
-        guard !command.name.isEmpty else {
-            DD.logger.error("Operations must have a non-empty name. \(command) call will be ignored.")
-            return
-        }
-
+    private func writeVitalEvent(from command: RUMOperationStepVitalCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope?) {
         let vital = RUMVitalEvent.Vital(
             vitalDescription: nil,
             duration: nil,
@@ -79,19 +89,24 @@ internal class RUMFeatureOperationManager {
             type: .operationStep
         )
 
+        let mergedAttributes = command.globalAttributes
+            .merging(parent.attributes) { $1 }
+            .merging(activeView?.attributes ?? [:]) { $1 }
+            .merging(command.attributes) { $1 }
+
         let vitalEvent = RUMVitalEvent(
             dd: .init(),
             application: .init(id: parent.context.rumApplicationID),
-            context: .init(contextInfo: command.globalAttributes.merging(command.attributes) { $1 }),
-            date: command.time.timeIntervalSince1970.toInt64Milliseconds,
+            context: .init(contextInfo: mergedAttributes),
+            date: command.time.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             session: .init(
                 hasReplay: context.hasReplay,
                 id: parent.context.sessionID.toRUMDataFormat,
                 type: dependencies.sessionType
             ),
             view: .init(
-                id: activeViewID,
-                url: activeViewPath
+                id: (activeView?.viewUUID).orNull.toRUMDataFormat,
+                url: activeView?.viewPath ?? ""
             ),
             vital: vital
         )
@@ -105,6 +120,8 @@ internal class RUMFeatureOperationManager {
             // Warning: Operation appears to be started multiple times
             DD.logger.warn("Operation \(formatOperationName(name, operationKey: operationKey)) has already been started. This may result in the backend terminating the previous instance with an `auto_restart` failure. Note that the SDK only tracks operations locally and not across sessions.")
         }
+
+        cleanUpActiveOperations()
 
         // Add operation to local tracking for future reference
         activeOperations.insert(lookupKey)
@@ -124,6 +141,43 @@ internal class RUMFeatureOperationManager {
     }
 
     // MARK: Utility Methods
+
+    /// Validates the `name` and `operationKey` of the command
+    private func validateCommand(_ command: RUMOperationStepVitalCommand) -> Bool {
+        // Validate name (required)
+        guard validateString(command.name, stepType: command.stepType) else {
+            return false
+        }
+
+        // Validate operationKey if present (optional)
+        if let operationKey = command.operationKey,
+           !validateString(operationKey, stepType: command.stepType) {
+            return false
+        }
+
+        return true
+    }
+
+    /// Validates the string is not empty
+    // or contains only whitespace/line breaks
+    private func validateString(_ value: String, stepType: RUMVitalEvent.Vital.StepType) -> Bool {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !trimmed.isEmpty else {
+            DD.logger.error("Operation `name` and `operationKey` cannot be empty or contain only whitespace/line breaks. \(stepType) command will be ignored.")
+            return false
+        }
+
+        // Backend takes care of sanitizing user inputs
+        return true
+    }
+
+    /// Keeps the number of active operations below the maximum allowed
+    private func cleanUpActiveOperations() {
+        if activeOperations.count > maxActiveOperations {
+            activeOperations.removeFirst()
+        }
+    }
 
     /// Formats operation name and key for consistent warning message display
     private func formatOperationName(_ name: String, operationKey: String?) -> String {
