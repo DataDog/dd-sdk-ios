@@ -9742,4 +9742,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/7dbaaa9c5dcc56ab9f31a90e847e909039ce24f5
+// Generated from https://github.com/DataDog/rum-events-format/tree/df49bc14c81031af64b4eeb6994e4310a9b26f8b
