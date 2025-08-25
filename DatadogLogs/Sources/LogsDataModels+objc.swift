@@ -90,8 +90,12 @@ public class objc_LogEvent: NSObject {
         .init(root: self)
     }
 
-    public var accountInfo: objc_LogEventAccountInfo {
-        .init(root: self)
+    public var accountInfo: objc_LogEventAccountInfo? {
+        if swiftModel.accountInfo != nil {
+            .init(root: self)
+        } else {
+            nil
+        }
     }
 
     public var networkConnectionInfo: objc_LogEventNetworkConnectionInfo? {
