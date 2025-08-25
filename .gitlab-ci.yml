@@ -209,6 +209,7 @@ Tools Tests:
         compare_to: 'develop'
   script:
     - make clean repo-setup ENV=ci
+    - ./tools/runner-setup.sh --python
     - make tools-test
 
 Benchmark Build:

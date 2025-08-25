@@ -148,6 +148,16 @@ tools-test:
 	@$(ECHO_TITLE) "make tools-test"
 	./tools/tools-test.sh
 
+# Run tests for issue handler tool
+issue-handler-test:
+	@$(ECHO_TITLE) "make issue-handler-test"
+	cd tools/issue_handler && ./run_tests.sh
+
+# Run integration tests for issue handler tool
+issue-handler-integration-test:
+	@$(ECHO_TITLE) "make issue-handler-integration-test"
+	cd tools/issue_handler && source venv/bin/activate && PYTHONPATH=. python integration_tests/test_analysis.py --issue 1
+
 # Run smoke tests
 smoke-test:
 	@$(call require_param,TEST_DIRECTORY)
