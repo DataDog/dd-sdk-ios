@@ -9120,6 +9120,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.reactVersion }
     }
 
+    public var remoteConfigurationId: String? {
+        set { root.swiftModel.telemetry.configuration.remoteConfigurationId = newValue }
+        get { root.swiftModel.telemetry.configuration.remoteConfigurationId }
+    }
+
     public var replaySampleRate: NSNumber? {
         root.swiftModel.telemetry.configuration.replaySampleRate as NSNumber?
     }
@@ -9695,4 +9700,4 @@ public class objc_TelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/364afe383024cfbdc0a57253c1961cf938b19cf0
+// Generated from https://github.com/DataDog/rum-events-format/tree/df49bc14c81031af64b4eeb6994e4310a9b26f8b

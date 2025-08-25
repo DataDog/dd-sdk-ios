@@ -6413,7 +6413,7 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
         public let name: String?
 
-        /// UUID for distinguishing the active operations in parallel, if applicable
+        /// Optional key to distinguish between multiple operations of the same name running in parallel (e.g., 'photo_upload' with keys 'profile_pic' vs 'cover')
         public let operationKey: String?
 
         /// Type of the step that triggered the vital, if applicable
@@ -6441,7 +6441,7 @@ public struct RUMVitalEvent: RUMDataModel {
         ///   - failureReason: Reason for the failure of the step, if applicable
         ///   - id: UUID of the vital
         ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
-        ///   - operationKey: UUID for distinguishing the active operations in parallel, if applicable
+        ///   - operationKey: Optional key to distinguish between multiple operations of the same name running in parallel (e.g., 'photo_upload' with keys 'profile_pic' vs 'cover')
         ///   - stepType: Type of the step that triggered the vital, if applicable
         ///   - type: Type of the vital
         public init(
@@ -7400,6 +7400,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The version of React used in a ReactNative application
             public var reactVersion: String?
 
+            /// The id of the remote configuration
+            public var remoteConfigurationId: String?
+
             /// The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
             public let replaySampleRate: Int64?
 
@@ -7606,6 +7609,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case premiumSampleRate = "premium_sample_rate"
                 case reactNativeVersion = "react_native_version"
                 case reactVersion = "react_version"
+                case remoteConfigurationId = "remote_configuration_id"
                 case replaySampleRate = "replay_sample_rate"
                 case sdkVersion = "sdk_version"
                 case selectedTracingPropagators = "selected_tracing_propagators"
@@ -7696,6 +7700,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - premiumSampleRate: The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
             ///   - reactNativeVersion: The version of ReactNative used in a ReactNative application
             ///   - reactVersion: The version of React used in a ReactNative application
+            ///   - remoteConfigurationId: The id of the remote configuration
             ///   - replaySampleRate: The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
             ///   - sdkVersion: The version of the SDK that is running.
             ///   - selectedTracingPropagators: A list of selected tracing propagators
@@ -7782,6 +7787,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 premiumSampleRate: Int64? = nil,
                 reactNativeVersion: String? = nil,
                 reactVersion: String? = nil,
+                remoteConfigurationId: String? = nil,
                 replaySampleRate: Int64? = nil,
                 sdkVersion: String? = nil,
                 selectedTracingPropagators: [SelectedTracingPropagators]? = nil,
@@ -7868,6 +7874,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.premiumSampleRate = premiumSampleRate
                 self.reactNativeVersion = reactNativeVersion
                 self.reactVersion = reactVersion
+                self.remoteConfigurationId = remoteConfigurationId
                 self.replaySampleRate = replaySampleRate
                 self.sdkVersion = sdkVersion
                 self.selectedTracingPropagators = selectedTracingPropagators
@@ -8456,6 +8463,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                 case removeAccountProperty(value: RemoveAccountProperty)
                 case clearAccount(value: ClearAccount)
                 case addFeatureFlagEvaluation(value: AddFeatureFlagEvaluation)
+                case addOperationStepVital(value: AddOperationStepVital)
 
                 // MARK: - Codable
 
@@ -8513,6 +8521,8 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     case .clearAccount(let value):
                         try container.encode(value)
                     case .addFeatureFlagEvaluation(let value):
+                        try container.encode(value)
+                    case .addOperationStepVital(let value):
                         try container.encode(value)
                     }
                 }
@@ -8619,6 +8629,10 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     }
                     if let value = try? container.decode(AddFeatureFlagEvaluation.self) {
                         self = .addFeatureFlagEvaluation(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(AddOperationStepVital.self) {
+                        self = .addOperationStepVital(value: value)
                         return
                     }
                     let error = DecodingError.Context(
@@ -8922,6 +8936,35 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     }
 
                     public init() { }
+                }
+
+                public struct AddOperationStepVital: Codable {
+                    /// Feature operations action type
+                    public let actionType: ActionType
+
+                    /// addOperationStepVital API
+                    public let feature: String = "add-operation-step-vital"
+
+                    public enum CodingKeys: String, CodingKey {
+                        case actionType = "action_type"
+                        case feature = "feature"
+                    }
+
+                    ///
+                    /// - Parameters:
+                    ///   - actionType: Feature operations action type
+                    public init(
+                        actionType: ActionType
+                    ) {
+                        self.actionType = actionType
+                    }
+
+                    /// Feature operations action type
+                    public enum ActionType: String, Codable {
+                        case start = "start"
+                        case succeed = "succeed"
+                        case fail = "fail"
+                    }
                 }
             }
 
@@ -9664,4 +9707,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/364afe383024cfbdc0a57253c1961cf938b19cf0
+// Generated from https://github.com/DataDog/rum-events-format/tree/df49bc14c81031af64b4eeb6994e4310a9b26f8b
