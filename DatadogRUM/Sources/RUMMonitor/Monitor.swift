@@ -109,6 +109,7 @@ internal class Monitor: RUMCommandSubscriber {
 
     private let fatalErrorContext: FatalErrorContextNotifying
     private let rumUUIDGenerator: RUMUUIDGenerator
+    private let telemetry: Telemetry
 
     init(
         dependencies: RUMScopeDependencies,
@@ -119,6 +120,7 @@ internal class Monitor: RUMCommandSubscriber {
         self.dateProvider = dateProvider
         self.fatalErrorContext = dependencies.fatalErrorContext
         self.rumUUIDGenerator = dependencies.rumUUIDGenerator
+        self.telemetry = dependencies.telemetry
     }
 
     func process(command: RUMCommand) {
@@ -472,6 +474,9 @@ extension Monitor: RUMMonitorProtocol {
 
     func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) was started")
+
+        telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .start)))))
+
         process(
             command: RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
@@ -487,6 +492,9 @@ extension Monitor: RUMMonitorProtocol {
 
     func succeedFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) was successfully ended")
+
+        telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .succeed)))))
+
         process(
             command: RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
@@ -502,6 +510,9 @@ extension Monitor: RUMMonitorProtocol {
 
     func failFeatureOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) was unsuccessfully ended with the following failure reason: \(reason.rawValue)")
+
+        telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .fail)))))
+
         process(
             command: RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
@@ -653,6 +664,7 @@ extension Monitor: RUMMonitorViewProtocol {
         )
     }
 
+    // check other methods and DD debug or telemetry 
     func addViewLoadingTime(overwrite: Bool) {
         process(
             command: RUMAddViewLoadingTime(
