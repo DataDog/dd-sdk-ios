@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_TOKEN: ${{ secrets.OPENAI_TOKEN }}
-          OPENAI_SYSTEM_PROMPT: ${{ secrets.OPENAI_SYSTEM_PROMPT }}
+          OPENAI_SYSTEM_PROMPT: ${{ vars.OPENAI_SYSTEM_PROMPT }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           GITHUB_REPOSITORY: ${{ github.repository }}
