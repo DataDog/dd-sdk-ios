@@ -308,7 +308,7 @@ class CrashContextProviderTests: XCTestCase {
         XCTAssertEqual(crashContext.env, sdkContext.env, file: file, line: line)
         XCTAssertEqual(crashContext.version, sdkContext.version, file: file, line: line)
         XCTAssertEqual(crashContext.buildNumber, sdkContext.buildNumber, file: file, line: line)
-        DDAssertReflectionEqual(crashContext.device, sdkContext.normalizedDevice, file: file, line: line)
+        DDAssertReflectionEqual(crashContext.device, sdkContext.normalizedDevice(), file: file, line: line)
         DDAssertReflectionEqual(crashContext.os, sdkContext.os, file: file, line: line)
         XCTAssertEqual(crashContext.sdkVersion, sdkContext.sdkVersion, file: file, line: line)
         XCTAssertEqual(crashContext.source, sdkContext.source, file: file, line: line)

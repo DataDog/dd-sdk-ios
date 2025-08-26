@@ -141,7 +141,7 @@ public struct CrashContext: Codable, Equatable {
         self.env = context.env
         self.version = context.version
         self.buildNumber = context.buildNumber
-        self.device = context.normalizedDevice
+        self.device = context.normalizedDevice()
         self.os = context.os
         self.sdkVersion = context.sdkVersion
         self.source = context.source

@@ -227,15 +227,23 @@ extension DatadogExtension where ExtendedType == _UIDevice {
 
 extension DatadogContext {
     /// Current device information to send in the events.
-    public var normalizedDevice: Device {
+    ///
+    /// - Parameter addLocales: Temporary boolean to remove locales from events that don't support array parameters.
+    /// - Returns: The device model for the events.
+    public func normalizedDevice(addLocales: Bool = true) -> Device {
         var battery: Double?
         if let batteryLevel = batteryStatus?.level {
             battery = Double(batteryLevel)
         }
 
-        var brightness: Double? = nil
+        var brightness: Double?
         if let brightnessLevel = brightnessLevel {
             brightness = Double(brightnessLevel)
+        }
+
+        var locales: [String]?
+        if addLocales {
+            locales = localeInfo.locales
         }
 
         return .init(
@@ -244,7 +252,7 @@ extension DatadogContext {
             brand: device.brand,
             brightnessLevel: brightness,
             locale: localeInfo.currentLocale,
-            locales: localeInfo.locales,
+            locales: locales,
             model: device.model,
             name: device.name,
             powerSavingMode: isLowPowerModeEnabled,
