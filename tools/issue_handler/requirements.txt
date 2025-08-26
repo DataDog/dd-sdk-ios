@@ -1,5 +1,5 @@
 # List of Python dependencies with exact versions
-openai==1.99.0
-pytest==7.4.3
-requests==2.31.0
-python-dotenv==1.0.0
+openai==1.101.0
+pytest==8.4.1
+requests==2.32.5
+python-dotenv==1.1.1
