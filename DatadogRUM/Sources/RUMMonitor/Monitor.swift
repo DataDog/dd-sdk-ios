@@ -642,7 +642,6 @@ extension Monitor: RUMMonitorViewProtocol {
         )
     }
 
-    // check other methods and DD debug or telemetry 
     func addViewLoadingTime(overwrite: Bool) {
         process(
             command: RUMAddViewLoadingTime(
