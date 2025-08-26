@@ -1,6 +1,6 @@
 # Unreleased
 
-- [BUGFIX] Fix `DDLogEvent.accountInfo` property initialization in case of missing account info. See [#2442][]
+- [FIX] Fix `DDLogEvent.accountInfo` property initialization in case of missing account info. See [#2442][]
 - [IMPROVEMENT] Update the default tracing sampling rate to 100%. See [#2253][] 
 - [IMPROVEMENT] Update the default TraceContextInjection to `.sampled`. See [#2253][]
 - [IMPROVEMENT] Enforce head-based sampling on Trace by default. See [#2288][]
