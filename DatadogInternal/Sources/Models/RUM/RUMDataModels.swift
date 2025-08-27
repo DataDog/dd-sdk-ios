@@ -45,6 +45,9 @@ public struct RUMActionEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
     public let device: Device?
 
@@ -90,6 +93,7 @@ public struct RUMActionEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case os = "os"
@@ -117,6 +121,7 @@ public struct RUMActionEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - os: Operating system properties
@@ -139,6 +144,7 @@ public struct RUMActionEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
+        ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
         os: OperatingSystem? = nil,
@@ -161,6 +167,7 @@ public struct RUMActionEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.os = os
@@ -875,6 +882,9 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
     public let device: Device?
 
@@ -929,6 +939,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case error = "error"
@@ -959,6 +970,7 @@ public struct RUMErrorEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - error: Error properties
@@ -984,6 +996,7 @@ public struct RUMErrorEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
+        ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
         error: Error,
@@ -1009,6 +1022,7 @@ public struct RUMErrorEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.error = error
@@ -1941,22 +1955,18 @@ extension RUMErrorEvent.FeatureFlags {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try featureFlagsInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
     public init(from decoder: Decoder) throws {
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let dynamicKeys = dynamicContainer.allKeys
-        var dictionary: [String: Codable] = [:]
+        self.featureFlagsInfo = [:]
 
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.forEach {
+            self.featureFlagsInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.featureFlagsInfo = dictionary
     }
 }
 
@@ -1994,6 +2004,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
 
     /// Start of the event in ms from epoch
     public let date: Int64
+
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
 
     /// Device properties
     public let device: Device?
@@ -2043,6 +2056,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case longTask = "long_task"
@@ -2071,6 +2085,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - longTask: Long Task properties
@@ -2094,6 +2109,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
+        ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
         longTask: LongTask,
@@ -2117,6 +2133,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.longTask = longTask
@@ -2801,6 +2818,9 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
     public let device: Device?
 
@@ -2849,6 +2869,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case os = "os"
@@ -2877,6 +2898,7 @@ public struct RUMResourceEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - os: Operating system properties
@@ -2900,6 +2922,7 @@ public struct RUMResourceEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
+        ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
         os: OperatingSystem? = nil,
@@ -2923,6 +2946,7 @@ public struct RUMResourceEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.os = os
@@ -2950,6 +2974,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// parent span identifier in decimal format
+        public let parentSpanId: String?
+
         /// trace sample rate in decimal format
         public let rulePsr: Double?
 
@@ -2970,6 +2997,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case configuration = "configuration"
             case discarded = "discarded"
             case formatVersion = "format_version"
+            case parentSpanId = "parent_span_id"
             case rulePsr = "rule_psr"
             case sdkName = "sdk_name"
             case session = "session"
@@ -2983,6 +3011,7 @@ public struct RUMResourceEvent: RUMDataModel {
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
         ///   - discarded: Whether the resource should be discarded or indexed
+        ///   - parentSpanId: parent span identifier in decimal format
         ///   - rulePsr: trace sample rate in decimal format
         ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
@@ -2992,6 +3021,7 @@ public struct RUMResourceEvent: RUMDataModel {
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
             discarded: Bool? = nil,
+            parentSpanId: String? = nil,
             rulePsr: Double? = nil,
             sdkName: String? = nil,
             session: Session? = nil,
@@ -3001,6 +3031,7 @@ public struct RUMResourceEvent: RUMDataModel {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
             self.discarded = discarded
+            self.parentSpanId = parentSpanId
             self.rulePsr = rulePsr
             self.sdkName = sdkName
             self.session = session
@@ -3833,6 +3864,9 @@ public struct RUMViewEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
     /// Device properties
     public let device: Device?
 
@@ -3883,6 +3917,7 @@ public struct RUMViewEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case featureFlags = "feature_flags"
@@ -3911,6 +3946,7 @@ public struct RUMViewEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - featureFlags: Feature flags properties
@@ -3934,6 +3970,7 @@ public struct RUMViewEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
+        ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
         featureFlags: FeatureFlags? = nil,
@@ -3957,6 +3994,7 @@ public struct RUMViewEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.featureFlags = featureFlags
@@ -4582,6 +4620,9 @@ public struct RUMViewEvent: RUMDataModel {
 
     /// View properties
     public struct View: Codable {
+        /// Accessibility properties of the view
+        public let accessibility: Accessibility?
+
         /// Properties of the actions of the view
         public let action: Action
 
@@ -4604,7 +4645,7 @@ public struct RUMViewEvent: RUMDataModel {
         public let cumulativeLayoutShiftTime: Int64?
 
         /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
-        public let customTimings: [String: Int64]?
+        public var customTimings: CustomTimings?
 
         /// Duration in ns to the complete parsing and loading of the document and its sub resources
         public let domComplete: Int64?
@@ -4733,6 +4774,7 @@ public struct RUMViewEvent: RUMDataModel {
         public var url: String
 
         public enum CodingKeys: String, CodingKey {
+            case accessibility = "accessibility"
             case action = "action"
             case cpuTicksCount = "cpu_ticks_count"
             case cpuTicksPerSecond = "cpu_ticks_per_second"
@@ -4788,6 +4830,7 @@ public struct RUMViewEvent: RUMDataModel {
         /// View properties
         ///
         /// - Parameters:
+        ///   - accessibility: Accessibility properties of the view
         ///   - action: Properties of the actions of the view
         ///   - cpuTicksCount: Total number of cpu ticks during the view’s lifetime
         ///   - cpuTicksPerSecond: Average number of cpu ticks per second during the view’s lifetime
@@ -4839,6 +4882,7 @@ public struct RUMViewEvent: RUMDataModel {
         ///   - timeSpent: Time spent on the view in ns
         ///   - url: URL of the view
         public init(
+            accessibility: Accessibility? = nil,
             action: Action,
             cpuTicksCount: Double? = nil,
             cpuTicksPerSecond: Double? = nil,
@@ -4846,7 +4890,7 @@ public struct RUMViewEvent: RUMDataModel {
             cumulativeLayoutShift: Double? = nil,
             cumulativeLayoutShiftTargetSelector: String? = nil,
             cumulativeLayoutShiftTime: Int64? = nil,
-            customTimings: [String: Int64]? = nil,
+            customTimings: CustomTimings? = nil,
             domComplete: Int64? = nil,
             domContentLoaded: Int64? = nil,
             domInteractive: Int64? = nil,
@@ -4890,6 +4934,7 @@ public struct RUMViewEvent: RUMDataModel {
             timeSpent: Int64,
             url: String
         ) {
+            self.accessibility = accessibility
             self.action = action
             self.cpuTicksCount = cpuTicksCount
             self.cpuTicksPerSecond = cpuTicksPerSecond
@@ -4942,6 +4987,173 @@ public struct RUMViewEvent: RUMDataModel {
             self.url = url
         }
 
+        /// Accessibility properties of the view
+        public struct Accessibility: Codable {
+            /// Indicates whether an alternative input method like Switch Control or Switch Access is currently enabled.
+            public let assistiveSwitchEnabled: Bool?
+
+            /// Indicates whether the system-wide AssistiveTouch feature is currently enabled.
+            public let assistiveTouchEnabled: Bool?
+
+            /// Indicates whether the system-wide bold text accessibility setting is enabled.
+            public let boldTextEnabled: Bool?
+
+            /// Indicates whether the system-wide button shapes setting is enabled.
+            public let buttonShapesEnabled: Bool?
+
+            /// Indicates whether closed captioning is enabled for media playback.
+            public let closedCaptioningEnabled: Bool?
+
+            /// Indicates whether the device display is currently using grayscale mode.
+            public let grayscaleEnabled: Bool?
+
+            /// Indicates whether the system-wide increase contrast setting is enabled.
+            public let increaseContrastEnabled: Bool?
+
+            /// Indicates whether the system-wide color inversion setting is enabled.
+            public let invertColorsEnabled: Bool?
+
+            /// Indicates whether the system-wide mono audio setting is enabled.
+            public let monoAudioEnabled: Bool?
+
+            /// Indicates whether on/off switch labels are enabled in the system settings.
+            public let onOffSwitchLabelsEnabled: Bool?
+
+            /// Indicates whether the system-wide reduce motion setting is enabled.
+            public let reduceMotionEnabled: Bool?
+
+            /// Indicates whether the system-wide reduce transparency setting is enabled.
+            public let reduceTransparencyEnabled: Bool?
+
+            /// Indicates whether the user prefers reduced animations or cross-fade transitions.
+            public let reducedAnimationsEnabled: Bool?
+
+            /// Indicates whether the right-to-left support is enabled.
+            public let rtlEnabled: Bool?
+
+            /// Indicates whether a screen reader is currently active.
+            public let screenReaderEnabled: Bool?
+
+            /// Indicates whether the Shake to Undo feature is enabled.
+            public let shakeToUndoEnabled: Bool?
+
+            /// Indicates whether the system should differentiate interface elements without relying solely on color.
+            public let shouldDifferentiateWithoutColor: Bool?
+
+            /// Indicates whether the device is currently locked to a single app through Guided Access or Screen Pinning.
+            public let singleAppModeEnabled: Bool?
+
+            /// Indicates whether the Speak Screen feature is enabled.
+            public let speakScreenEnabled: Bool?
+
+            /// Indicates whether the text-to-speech selection feature is enabled.
+            public let speakSelectionEnabled: Bool?
+
+            /// User’s preferred text scale relative to the default system size.
+            public let textSize: String?
+
+            /// Indicates whether the video autoplay setting is enabled in the system or application.
+            public let videoAutoplayEnabled: Bool?
+
+            public enum CodingKeys: String, CodingKey {
+                case assistiveSwitchEnabled = "assistive_switch_enabled"
+                case assistiveTouchEnabled = "assistive_touch_enabled"
+                case boldTextEnabled = "bold_text_enabled"
+                case buttonShapesEnabled = "button_shapes_enabled"
+                case closedCaptioningEnabled = "closed_captioning_enabled"
+                case grayscaleEnabled = "grayscale_enabled"
+                case increaseContrastEnabled = "increase_contrast_enabled"
+                case invertColorsEnabled = "invert_colors_enabled"
+                case monoAudioEnabled = "mono_audio_enabled"
+                case onOffSwitchLabelsEnabled = "on_off_switch_labels_enabled"
+                case reduceMotionEnabled = "reduce_motion_enabled"
+                case reduceTransparencyEnabled = "reduce_transparency_enabled"
+                case reducedAnimationsEnabled = "reduced_animations_enabled"
+                case rtlEnabled = "rtl_enabled"
+                case screenReaderEnabled = "screen_reader_enabled"
+                case shakeToUndoEnabled = "shake_to_undo_enabled"
+                case shouldDifferentiateWithoutColor = "should_differentiate_without_color"
+                case singleAppModeEnabled = "single_app_mode_enabled"
+                case speakScreenEnabled = "speak_screen_enabled"
+                case speakSelectionEnabled = "speak_selection_enabled"
+                case textSize = "text_size"
+                case videoAutoplayEnabled = "video_autoplay_enabled"
+            }
+
+            /// Accessibility properties of the view
+            ///
+            /// - Parameters:
+            ///   - assistiveSwitchEnabled: Indicates whether an alternative input method like Switch Control or Switch Access is currently enabled.
+            ///   - assistiveTouchEnabled: Indicates whether the system-wide AssistiveTouch feature is currently enabled.
+            ///   - boldTextEnabled: Indicates whether the system-wide bold text accessibility setting is enabled.
+            ///   - buttonShapesEnabled: Indicates whether the system-wide button shapes setting is enabled.
+            ///   - closedCaptioningEnabled: Indicates whether closed captioning is enabled for media playback.
+            ///   - grayscaleEnabled: Indicates whether the device display is currently using grayscale mode.
+            ///   - increaseContrastEnabled: Indicates whether the system-wide increase contrast setting is enabled.
+            ///   - invertColorsEnabled: Indicates whether the system-wide color inversion setting is enabled.
+            ///   - monoAudioEnabled: Indicates whether the system-wide mono audio setting is enabled.
+            ///   - onOffSwitchLabelsEnabled: Indicates whether on/off switch labels are enabled in the system settings.
+            ///   - reduceMotionEnabled: Indicates whether the system-wide reduce motion setting is enabled.
+            ///   - reduceTransparencyEnabled: Indicates whether the system-wide reduce transparency setting is enabled.
+            ///   - reducedAnimationsEnabled: Indicates whether the user prefers reduced animations or cross-fade transitions.
+            ///   - rtlEnabled: Indicates whether the right-to-left support is enabled.
+            ///   - screenReaderEnabled: Indicates whether a screen reader is currently active.
+            ///   - shakeToUndoEnabled: Indicates whether the Shake to Undo feature is enabled.
+            ///   - shouldDifferentiateWithoutColor: Indicates whether the system should differentiate interface elements without relying solely on color.
+            ///   - singleAppModeEnabled: Indicates whether the device is currently locked to a single app through Guided Access or Screen Pinning.
+            ///   - speakScreenEnabled: Indicates whether the Speak Screen feature is enabled.
+            ///   - speakSelectionEnabled: Indicates whether the text-to-speech selection feature is enabled.
+            ///   - textSize: User’s preferred text scale relative to the default system size.
+            ///   - videoAutoplayEnabled: Indicates whether the video autoplay setting is enabled in the system or application.
+            public init(
+                assistiveSwitchEnabled: Bool? = nil,
+                assistiveTouchEnabled: Bool? = nil,
+                boldTextEnabled: Bool? = nil,
+                buttonShapesEnabled: Bool? = nil,
+                closedCaptioningEnabled: Bool? = nil,
+                grayscaleEnabled: Bool? = nil,
+                increaseContrastEnabled: Bool? = nil,
+                invertColorsEnabled: Bool? = nil,
+                monoAudioEnabled: Bool? = nil,
+                onOffSwitchLabelsEnabled: Bool? = nil,
+                reduceMotionEnabled: Bool? = nil,
+                reduceTransparencyEnabled: Bool? = nil,
+                reducedAnimationsEnabled: Bool? = nil,
+                rtlEnabled: Bool? = nil,
+                screenReaderEnabled: Bool? = nil,
+                shakeToUndoEnabled: Bool? = nil,
+                shouldDifferentiateWithoutColor: Bool? = nil,
+                singleAppModeEnabled: Bool? = nil,
+                speakScreenEnabled: Bool? = nil,
+                speakSelectionEnabled: Bool? = nil,
+                textSize: String? = nil,
+                videoAutoplayEnabled: Bool? = nil
+            ) {
+                self.assistiveSwitchEnabled = assistiveSwitchEnabled
+                self.assistiveTouchEnabled = assistiveTouchEnabled
+                self.boldTextEnabled = boldTextEnabled
+                self.buttonShapesEnabled = buttonShapesEnabled
+                self.closedCaptioningEnabled = closedCaptioningEnabled
+                self.grayscaleEnabled = grayscaleEnabled
+                self.increaseContrastEnabled = increaseContrastEnabled
+                self.invertColorsEnabled = invertColorsEnabled
+                self.monoAudioEnabled = monoAudioEnabled
+                self.onOffSwitchLabelsEnabled = onOffSwitchLabelsEnabled
+                self.reduceMotionEnabled = reduceMotionEnabled
+                self.reduceTransparencyEnabled = reduceTransparencyEnabled
+                self.reducedAnimationsEnabled = reducedAnimationsEnabled
+                self.rtlEnabled = rtlEnabled
+                self.screenReaderEnabled = screenReaderEnabled
+                self.shakeToUndoEnabled = shakeToUndoEnabled
+                self.shouldDifferentiateWithoutColor = shouldDifferentiateWithoutColor
+                self.singleAppModeEnabled = singleAppModeEnabled
+                self.speakScreenEnabled = speakScreenEnabled
+                self.speakSelectionEnabled = speakSelectionEnabled
+                self.textSize = textSize
+                self.videoAutoplayEnabled = videoAutoplayEnabled
+            }
+        }
+
         /// Properties of the actions of the view
         public struct Action: Codable {
             /// Number of actions that occurred on the view
@@ -4979,6 +5191,21 @@ public struct RUMViewEvent: RUMDataModel {
                 count: Int64
             ) {
                 self.count = count
+            }
+        }
+
+        /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
+        public struct CustomTimings: Codable {
+            public var customTimingsInfo: [String: Int64]
+
+            /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
+            ///
+            /// - Parameters:
+            ///   - customTimingsInfo:
+            public init(
+                customTimingsInfo: [String: Int64]
+            ) {
+                self.customTimingsInfo = customTimingsInfo
             }
         }
 
@@ -5605,22 +5832,38 @@ extension RUMViewEvent.FeatureFlags {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try featureFlagsInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
     public init(from decoder: Decoder) throws {
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let dynamicKeys = dynamicContainer.allKeys
-        var dictionary: [String: Codable] = [:]
+        self.featureFlagsInfo = [:]
 
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.forEach {
+            self.featureFlagsInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
+    }
+}
 
-        self.featureFlagsInfo = dictionary
+extension RUMViewEvent.View.CustomTimings {
+    public func encode(to encoder: Encoder) throws {
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try customTimingsInfo.forEach {
+            try dynamicContainer.encode($1, forKey: DynamicCodingKey($0))
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode other properties into [String: Int64] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.customTimingsInfo = [:]
+
+        try dynamicContainer.allKeys.forEach {
+            self.customTimingsInfo[$0.stringValue] = try dynamicContainer.decode(Int64.self, forKey: $0)
+        }
     }
 }
 
@@ -5655,6 +5898,9 @@ public struct RUMVitalEvent: RUMDataModel {
 
     /// Start of the event in ms from epoch
     public let date: Int64
+
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
 
     /// Device properties
     public let device: Device?
@@ -5703,6 +5949,7 @@ public struct RUMVitalEvent: RUMDataModel {
         case container = "container"
         case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
         case device = "device"
         case display = "display"
         case os = "os"
@@ -5730,6 +5977,7 @@ public struct RUMVitalEvent: RUMDataModel {
     ///   - container: View Container properties (view wrapping the current view)
     ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - os: Operating system properties
@@ -5752,6 +6000,7 @@ public struct RUMVitalEvent: RUMDataModel {
         container: Container? = nil,
         context: RUMEventAttributes? = nil,
         date: Int64,
+        ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
         os: OperatingSystem? = nil,
@@ -5774,6 +6023,7 @@ public struct RUMVitalEvent: RUMDataModel {
         self.container = container
         self.context = context
         self.date = date
+        self.ddtags = ddtags
         self.device = device
         self.display = display
         self.os = os
@@ -6148,14 +6398,14 @@ public struct RUMVitalEvent: RUMDataModel {
 
     /// Vital properties
     public struct Vital: Codable {
-        /// User custom vital.
-        public let custom: [String: Double]?
-
         /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
         public let vitalDescription: String?
 
         /// Duration of the vital in nanoseconds
         public let duration: Double?
+
+        /// Reason for the failure of the step, if applicable
+        public let failureReason: FailureReason?
 
         /// UUID of the vital
         public let id: String
@@ -6163,46 +6413,76 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
         public let name: String?
 
+        /// UUID for distinguishing the active operations in parallel, if applicable
+        public let operationKey: String?
+
+        /// Type of the step that triggered the vital, if applicable
+        public let stepType: StepType?
+
         /// Type of the vital
         public let type: VitalType
 
         public enum CodingKeys: String, CodingKey {
-            case custom = "custom"
             case vitalDescription = "description"
             case duration = "duration"
+            case failureReason = "failure_reason"
             case id = "id"
             case name = "name"
+            case operationKey = "operation_key"
+            case stepType = "step_type"
             case type = "type"
         }
 
         /// Vital properties
         ///
         /// - Parameters:
-        ///   - custom: User custom vital.
         ///   - vitalDescription: Description of the vital. It can be used as a secondary identifier (URL, React component name...)
         ///   - duration: Duration of the vital in nanoseconds
+        ///   - failureReason: Reason for the failure of the step, if applicable
         ///   - id: UUID of the vital
         ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+        ///   - operationKey: UUID for distinguishing the active operations in parallel, if applicable
+        ///   - stepType: Type of the step that triggered the vital, if applicable
         ///   - type: Type of the vital
         public init(
-            custom: [String: Double]? = nil,
             vitalDescription: String? = nil,
             duration: Double? = nil,
+            failureReason: FailureReason? = nil,
             id: String,
             name: String? = nil,
+            operationKey: String? = nil,
+            stepType: StepType? = nil,
             type: VitalType
         ) {
-            self.custom = custom
             self.vitalDescription = vitalDescription
             self.duration = duration
+            self.failureReason = failureReason
             self.id = id
             self.name = name
+            self.operationKey = operationKey
+            self.stepType = stepType
             self.type = type
+        }
+
+        /// Reason for the failure of the step, if applicable
+        public enum FailureReason: String, Codable {
+            case error = "error"
+            case abandoned = "abandoned"
+            case other = "other"
+        }
+
+        /// Type of the step that triggered the vital, if applicable
+        public enum StepType: String, Codable {
+            case start = "start"
+            case update = "update"
+            case retry = "retry"
+            case end = "end"
         }
 
         /// Type of the vital
         public enum VitalType: String, Codable {
             case duration = "duration"
+            case operationStep = "operation_step"
         }
     }
 }
@@ -6507,8 +6787,7 @@ extension TelemetryErrorEvent.Telemetry {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try telemetryInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
@@ -6520,17 +6799,14 @@ extension TelemetryErrorEvent.Telemetry {
         self.message = try staticContainer.decode(String.self, forKey: .message)
         self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
 
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.telemetryInfo = [:]
+
         let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.telemetryInfo = dictionary
     }
 }
 
@@ -6799,8 +7075,7 @@ extension TelemetryDebugEvent.Telemetry {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try telemetryInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
@@ -6811,17 +7086,14 @@ extension TelemetryDebugEvent.Telemetry {
         self.message = try staticContainer.decode(String.self, forKey: .message)
         self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
 
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.telemetryInfo = [:]
+
         let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.telemetryInfo = dictionary
     }
 }
 
@@ -7131,6 +7403,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
             public let replaySampleRate: Int64?
 
+            /// The version of the SDK that is running.
+            public var sdkVersion: String?
+
             /// A list of selected tracing propagators
             public let selectedTracingPropagators: [SelectedTracingPropagators]?
 
@@ -7148,6 +7423,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether initialization fails silently if the SDK is already initialized
             public let silentMultipleInit: Bool?
+
+            /// The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform'.
+            public var source: String?
 
             /// Whether Session Replay should automatically start a recording when enabled
             public var startRecordingImmediately: Bool?
@@ -7296,6 +7574,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether the Worker is loaded from an external URL
             public let useWorkerUrl: Bool?
 
+            /// The variant of the SDK build (e.g., standard, lite, etc.).
+            public var variant: String?
+
             /// View tracking strategy
             public let viewTrackingStrategy: ViewTrackingStrategy?
 
@@ -7326,12 +7607,14 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case reactNativeVersion = "react_native_version"
                 case reactVersion = "react_version"
                 case replaySampleRate = "replay_sample_rate"
+                case sdkVersion = "sdk_version"
                 case selectedTracingPropagators = "selected_tracing_propagators"
                 case sendLogsAfterSessionExpiration = "send_logs_after_session_expiration"
                 case sessionPersistence = "session_persistence"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case silentMultipleInit = "silent_multiple_init"
+                case source = "source"
                 case startRecordingImmediately = "start_recording_immediately"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
                 case storeContextsAcrossPages = "store_contexts_across_pages"
@@ -7381,6 +7664,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case useSecureSessionCookie = "use_secure_session_cookie"
                 case useTracing = "use_tracing"
                 case useWorkerUrl = "use_worker_url"
+                case variant = "variant"
                 case viewTrackingStrategy = "view_tracking_strategy"
             }
 
@@ -7413,12 +7697,14 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - reactNativeVersion: The version of ReactNative used in a ReactNative application
             ///   - reactVersion: The version of React used in a ReactNative application
             ///   - replaySampleRate: The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
+            ///   - sdkVersion: The version of the SDK that is running.
             ///   - selectedTracingPropagators: A list of selected tracing propagators
             ///   - sendLogsAfterSessionExpiration: Whether logs are sent after the session expiration
             ///   - sessionPersistence: Configure the storage strategy for persisting sessions
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - silentMultipleInit: Whether initialization fails silently if the SDK is already initialized
+            ///   - source: The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform'.
             ///   - startRecordingImmediately: Whether Session Replay should automatically start a recording when enabled
             ///   - startSessionReplayRecordingManually: Whether the session replay start is handled manually
             ///   - storeContextsAcrossPages: Whether contexts are stored in local storage
@@ -7468,6 +7754,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - useSecureSessionCookie: Whether a secure session cookie is used
             ///   - useTracing: Whether tracing features are enabled
             ///   - useWorkerUrl: Whether the Worker is loaded from an external URL
+            ///   - variant: The variant of the SDK build (e.g., standard, lite, etc.).
             ///   - viewTrackingStrategy: View tracking strategy
             public init(
                 actionNameAttribute: String? = nil,
@@ -7496,12 +7783,14 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 reactNativeVersion: String? = nil,
                 reactVersion: String? = nil,
                 replaySampleRate: Int64? = nil,
+                sdkVersion: String? = nil,
                 selectedTracingPropagators: [SelectedTracingPropagators]? = nil,
                 sendLogsAfterSessionExpiration: Bool? = nil,
                 sessionPersistence: SessionPersistence? = nil,
                 sessionReplaySampleRate: Int64? = nil,
                 sessionSampleRate: Int64? = nil,
                 silentMultipleInit: Bool? = nil,
+                source: String? = nil,
                 startRecordingImmediately: Bool? = nil,
                 startSessionReplayRecordingManually: Bool? = nil,
                 storeContextsAcrossPages: Bool? = nil,
@@ -7551,6 +7840,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 useSecureSessionCookie: Bool? = nil,
                 useTracing: Bool? = nil,
                 useWorkerUrl: Bool? = nil,
+                variant: String? = nil,
                 viewTrackingStrategy: ViewTrackingStrategy? = nil
             ) {
                 self.actionNameAttribute = actionNameAttribute
@@ -7579,12 +7869,14 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.reactNativeVersion = reactNativeVersion
                 self.reactVersion = reactVersion
                 self.replaySampleRate = replaySampleRate
+                self.sdkVersion = sdkVersion
                 self.selectedTracingPropagators = selectedTracingPropagators
                 self.sendLogsAfterSessionExpiration = sendLogsAfterSessionExpiration
                 self.sessionPersistence = sessionPersistence
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.silentMultipleInit = silentMultipleInit
+                self.source = source
                 self.startRecordingImmediately = startRecordingImmediately
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
                 self.storeContextsAcrossPages = storeContextsAcrossPages
@@ -7634,6 +7926,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.useSecureSessionCookie = useSecureSessionCookie
                 self.useTracing = useTracing
                 self.useWorkerUrl = useWorkerUrl
+                self.variant = variant
                 self.viewTrackingStrategy = viewTrackingStrategy
             }
 
@@ -7820,8 +8113,7 @@ extension TelemetryConfigurationEvent.Telemetry {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try telemetryInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
@@ -7832,17 +8124,14 @@ extension TelemetryConfigurationEvent.Telemetry {
         self.device = try staticContainer.decodeIfPresent(RUMTelemetryDevice.self, forKey: .device)
         self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
 
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.telemetryInfo = [:]
+
         let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.telemetryInfo = dictionary
     }
 }
 
@@ -7855,8 +8144,7 @@ extension TelemetryConfigurationEvent.Telemetry.Configuration.Plugins {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try pluginsInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
@@ -7865,17 +8153,14 @@ extension TelemetryConfigurationEvent.Telemetry.Configuration.Plugins {
         let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
         self.name = try staticContainer.decode(String.self, forKey: .name)
 
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.pluginsInfo = [:]
+
         let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.pluginsInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.pluginsInfo = dictionary
     }
 }
 
@@ -8746,8 +9031,7 @@ extension TelemetryUsageEvent.Telemetry {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try telemetryInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
@@ -8758,17 +9042,14 @@ extension TelemetryUsageEvent.Telemetry {
         self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
         self.usage = try staticContainer.decode(Usage.self, forKey: .usage)
 
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.telemetryInfo = [:]
+
         let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.telemetryInfo = dictionary
     }
 }
 
@@ -8825,8 +9106,7 @@ extension RUMAccount {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try accountInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
@@ -8836,17 +9116,14 @@ extension RUMAccount {
         self.id = try staticContainer.decode(String.self, forKey: .id)
         self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
 
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.accountInfo = [:]
+
         let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.accountInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.accountInfo = dictionary
     }
 }
 
@@ -8985,22 +9262,18 @@ extension RUMEventAttributes {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try contextInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
     public init(from decoder: Decoder) throws {
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        let dynamicKeys = dynamicContainer.allKeys
-        var dictionary: [String: Codable] = [:]
+        self.contextInfo = [:]
 
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.forEach {
+            self.contextInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.contextInfo = dictionary
     }
 }
 
@@ -9245,8 +9518,7 @@ extension RUMUser {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try usrInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
         }
     }
 
@@ -9258,17 +9530,14 @@ extension RUMUser {
         self.id = try staticContainer.decodeIfPresent(String.self, forKey: .id)
         self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
 
-        // Decode other properties into [String: Codable] dictionary:
+        // Decode other properties into [String: AnyCodable] dictionary:
         let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.usrInfo = [:]
+
         let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-        var dictionary: [String: Codable] = [:]
-
-        try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.usrInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
-
-        self.usrInfo = dictionary
     }
 }
 
@@ -9395,4 +9664,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ca4ca9c6ce21f634f41cda2fdd95cacc4b5246b0
+// Generated from https://github.com/DataDog/rum-events-format/tree/364afe383024cfbdc0a57253c1961cf938b19cf0

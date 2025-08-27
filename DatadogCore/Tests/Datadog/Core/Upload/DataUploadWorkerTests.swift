@@ -925,6 +925,83 @@ class DataUploadWorkerTests: XCTestCase {
             wait(for: [expectTaskEnded], timeout: 0.5)
         }
     }
+
+    // MARK: - Jitter Tests
+
+    func testJitterDelaysInitialUpload() {
+        let expectUploadDelayed = expectation(description: "upload should be delayed by jitter")
+
+        // Given
+        var mockPerformance = UploadPerformanceMock.veryQuick
+        mockPerformance.maxUploadJitter = .mockRandom(min: 0.1, max: 0.5)
+
+        let uploadStartTime = Date()
+        let dataUploader = DataUploaderMock(uploadStatus: .mockWith()) { _ in
+            let elapsedTime = Date().timeIntervalSince(uploadStartTime)
+            // Verify that some jitter delay was applied (should be > 0 and <= jitterValue)
+            XCTAssertGreaterThan(elapsedTime, 0.0, "Upload should be delayed by jitter")
+            XCTAssertLessThanOrEqual(elapsedTime, mockPerformance.maxUploadJitter + 0.1, "Upload delay should not exceed jitter + small buffer")
+            expectUploadDelayed.fulfill()
+        }
+
+        // Create data to upload
+        writer.write(value: ["key": "value"])
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            contextProvider: .mockAny(),
+            uploadConditions: .alwaysUpload(),
+            delay: DataUploadDelay(performance: mockPerformance),
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: 1
+        )
+
+        // Then
+        withExtendedLifetime(worker) {
+            wait(for: [expectUploadDelayed], timeout: 1.0)
+        }
+    }
+
+    func testZeroJitterAllowsImmediateUpload() {
+        let expectImmediateUpload = expectation(description: "upload should happen immediately")
+
+        // Given
+        var mockPerformance = UploadPerformanceMock.veryQuick
+        mockPerformance.maxUploadJitter = 0
+
+        let uploadStartTime = Date()
+        let dataUploader = DataUploaderMock(uploadStatus: .mockWith()) { _ in
+            let elapsedTime = Date().timeIntervalSince(uploadStartTime)
+            // With zero jitter and zero initial delay, upload should be fast
+            XCTAssertLessThan(elapsedTime, 0.1, "Upload should happen almost immediately with zero jitter")
+            expectImmediateUpload.fulfill()
+        }
+
+        // Create data to upload
+        writer.write(value: ["key": "value"])
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            contextProvider: .mockAny(),
+            uploadConditions: .alwaysUpload(),
+            delay: DataUploadDelay(performance: mockPerformance),
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: 1
+        )
+
+        // Then
+        withExtendedLifetime(worker) {
+            wait(for: [expectImmediateUpload], timeout: 0.5)
+        }
+    }
 }
 
 private extension DataUploadConditions {

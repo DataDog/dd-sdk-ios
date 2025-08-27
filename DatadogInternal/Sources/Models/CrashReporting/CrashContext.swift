@@ -38,9 +38,6 @@ public struct CrashContext: Codable, Equatable {
     /// Operating System information.
     public let os: OperatingSystem
 
-    /// Current locale information.
-    public let localeInfo: LocaleInfo?
-
     /// The version of Datadog iOS SDK.
     public let sdkVersion: String
 
@@ -71,17 +68,6 @@ public struct CrashContext: Codable, Equatable {
     /// not support telephony services.
     public let carrierInfo: CarrierInfo?
 
-    /// The current mobile device battery status.
-    ///
-    /// This value can be `nil` of the current device battery interface is not available.
-    public var batteryStatus: BatteryStatus?
-
-    /// The current brightness status.
-    public var brightnessLevel: BrightnessLevel?
-
-    /// `true` if the Low Power Mode is enabled.
-    public var isLowPowerModeEnabled = false
-
     /// The last _"Is app in foreground?"_ information from crashed app process.
     public let lastIsAppInForeground: Bool
 
@@ -106,7 +92,6 @@ public struct CrashContext: Codable, Equatable {
         version: String,
         buildNumber: String,
         device: Device,
-        localeInfo: LocaleInfo?,
         os: OperatingSystem,
         sdkVersion: String,
         source: String,
@@ -115,9 +100,6 @@ public struct CrashContext: Codable, Equatable {
         accountInfo: AccountInfo?,
         networkConnectionInfo: NetworkConnectionInfo?,
         carrierInfo: CarrierInfo?,
-        batteryStatus: BatteryStatus?,
-        brightnessLevel: BrightnessLevel?,
-        isLowPowerModeEnabled: Bool,
         lastIsAppInForeground: Bool,
         appLaunchDate: Date?,
         lastRUMViewEvent: RUMViewEvent?,
@@ -131,7 +113,6 @@ public struct CrashContext: Codable, Equatable {
         self.version = version
         self.buildNumber = buildNumber
         self.device = device
-        self.localeInfo = localeInfo
         self.os = os
         self.sdkVersion = service
         self.source = source
@@ -140,9 +121,6 @@ public struct CrashContext: Codable, Equatable {
         self.accountInfo = accountInfo
         self.networkConnectionInfo = networkConnectionInfo
         self.carrierInfo = carrierInfo
-        self.batteryStatus = batteryStatus
-        self.brightnessLevel = brightnessLevel
-        self.isLowPowerModeEnabled = isLowPowerModeEnabled
         self.lastIsAppInForeground = lastIsAppInForeground
         self.appLaunchDate = appLaunchDate
         self.lastRUMViewEvent = lastRUMViewEvent
@@ -163,8 +141,7 @@ public struct CrashContext: Codable, Equatable {
         self.env = context.env
         self.version = context.version
         self.buildNumber = context.buildNumber
-        self.device = context.device.normalizedDevice
-        self.localeInfo = context.localeInfo
+        self.device = context.normalizedDevice
         self.os = context.os
         self.sdkVersion = context.sdkVersion
         self.source = context.source

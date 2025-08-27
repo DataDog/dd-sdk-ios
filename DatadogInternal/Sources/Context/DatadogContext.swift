@@ -71,11 +71,11 @@ public struct DatadogContext {
     /// Current device information.
     public var device: DeviceInfo
 
-    /// Current locale information.
-    public var localeInfo: LocaleInfo
-
     /// Operating System information.
     public let os: OperatingSystem
+
+    /// Current locale information.
+    public var localeInfo: LocaleInfo
 
     /// Current user information.
     public var userInfo: UserInfo?
@@ -141,8 +141,8 @@ public struct DatadogContext {
         applicationBundleType: BundleType,
         sdkInitDate: Date,
         device: DeviceInfo,
-        localeInfo: LocaleInfo,
         os: OperatingSystem,
+        localeInfo: LocaleInfo,
         nativeSourceOverride: String? = nil,
         userInfo: UserInfo? = nil,
         accountInfo: AccountInfo? = nil,
@@ -173,8 +173,8 @@ public struct DatadogContext {
         self.applicationBundleType = applicationBundleType
         self.sdkInitDate = sdkInitDate
         self.device = device
-        self.localeInfo = localeInfo
         self.os = os
+        self.localeInfo = localeInfo
         self.nativeSourceOverride = nativeSourceOverride
         self.userInfo = userInfo
         self.accountInfo = accountInfo

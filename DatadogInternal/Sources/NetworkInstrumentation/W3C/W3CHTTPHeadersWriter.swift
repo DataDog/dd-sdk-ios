@@ -88,8 +88,18 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
 
             traceHeaderFields[W3CHTTPHeaders.tracestate] = "\(Constants.dd)=\(ddtracestate)"
 
+            var baggageItems: [String] = []
             if let sessionId = traceContext.rumSessionId {
-                traceHeaderFields[W3CHTTPHeaders.baggage] = "\(Constants.rumSessionBaggageKey)=\(sessionId)"
+                baggageItems.append("\(Constants.rumSessionBaggageKey)=\(sessionId)")
+            }
+            if let userId = traceContext.userId {
+                baggageItems.append("\(Constants.userBaggageKey)=\(userId)")
+            }
+            if let accountId = traceContext.accountId {
+                baggageItems.append("\(Constants.accountBaggageKey)=\(accountId)")
+            }
+            if !baggageItems.isEmpty {
+                traceHeaderFields[W3CHTTPHeaders.baggage] = baggageItems.joined(separator: ",")
             }
         case (.sampled, false):
             break

@@ -551,7 +551,7 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: commandAttributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: context.device.normalizedDevice,
+            device: context.normalizedDevice,
             display: nil,
             os: context.os,
             service: context.service,
@@ -679,7 +679,7 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: localAttributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: context.device.normalizedDevice,
+            device: context.normalizedDevice,
             display: nil,
             featureFlags: .init(featureFlagsInfo: featureFlags),
             os: context.os,
@@ -704,9 +704,9 @@ extension RUMViewScope {
                 cumulativeLayoutShift: nil,
                 cumulativeLayoutShiftTargetSelector: nil,
                 cumulativeLayoutShiftTime: nil,
-                customTimings: customTimings.reduce(into: [:]) { acc, element in
+                customTimings: .init(customTimingsInfo: customTimings.reduce(into: [:]) { acc, element in
                     acc[sanitizeCustomTimingName(customTiming: element.key)] = element.value
-                },
+                }),
                 domComplete: nil,
                 domContentLoaded: nil,
                 domInteractive: nil,
@@ -825,7 +825,7 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: commandAttributes),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: context.device.normalizedDevice,
+            device: context.normalizedDevice,
             display: nil,
             error: .init(
                 binaryImages: binaryImages,
@@ -912,7 +912,7 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: commandAttributes),
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: context.device.normalizedDevice,
+            device: context.normalizedDevice,
             display: nil,
             longTask: .init(
                 blockingDuration: nil,

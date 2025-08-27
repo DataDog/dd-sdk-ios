@@ -66,6 +66,10 @@ public class objc_RUMActionEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
+    public var ddtags: String? {
+        root.swiftModel.ddtags
+    }
+
     public var device: objc_RUMActionEventDevice? {
         root.swiftModel.device != nil ? objc_RUMActionEventDevice(root: root) : nil
     }
@@ -1235,6 +1239,10 @@ public class objc_RUMErrorEvent: NSObject {
 
     public var date: NSNumber {
         root.swiftModel.date as NSNumber
+    }
+
+    public var ddtags: String? {
+        root.swiftModel.ddtags
     }
 
     public var device: objc_RUMErrorEventDevice? {
@@ -2780,6 +2788,10 @@ public class objc_RUMLongTaskEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
+    public var ddtags: String? {
+        root.swiftModel.ddtags
+    }
+
     public var device: objc_RUMLongTaskEventDevice? {
         root.swiftModel.device != nil ? objc_RUMLongTaskEventDevice(root: root) : nil
     }
@@ -3935,6 +3947,10 @@ public class objc_RUMResourceEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
+    public var ddtags: String? {
+        root.swiftModel.ddtags
+    }
+
     public var device: objc_RUMResourceEventDevice? {
         root.swiftModel.device != nil ? objc_RUMResourceEventDevice(root: root) : nil
     }
@@ -4008,6 +4024,10 @@ public class objc_RUMResourceEventDD: NSObject {
 
     public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
+    }
+
+    public var parentSpanId: String? {
+        root.swiftModel.dd.parentSpanId
     }
 
     public var rulePsr: NSNumber? {
@@ -5361,6 +5381,10 @@ public class objc_RUMViewEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
+    public var ddtags: String? {
+        root.swiftModel.ddtags
+    }
+
     public var device: objc_RUMViewEventDevice? {
         root.swiftModel.device != nil ? objc_RUMViewEventDevice(root: root) : nil
     }
@@ -6436,6 +6460,10 @@ public class objc_RUMViewEventView: NSObject {
         self.root = root
     }
 
+    public var accessibility: objc_RUMViewEventViewAccessibility? {
+        root.swiftModel.view.accessibility != nil ? objc_RUMViewEventViewAccessibility(root: root) : nil
+    }
+
     public var action: objc_RUMViewEventViewAction {
         objc_RUMViewEventViewAction(root: root)
     }
@@ -6464,8 +6492,8 @@ public class objc_RUMViewEventView: NSObject {
         root.swiftModel.view.cumulativeLayoutShiftTime as NSNumber?
     }
 
-    public var customTimings: [String: NSNumber]? {
-        root.swiftModel.view.customTimings as [String: NSNumber]?
+    public var customTimings: objc_RUMViewEventViewCustomTimings? {
+        root.swiftModel.view.customTimings != nil ? objc_RUMViewEventViewCustomTimings(root: root) : nil
     }
 
     public var domComplete: NSNumber? {
@@ -6640,6 +6668,105 @@ public class objc_RUMViewEventView: NSObject {
     }
 }
 
+@objc(DDRUMViewEventViewAccessibility)
+@objcMembers
+@_spi(objc)
+public class objc_RUMViewEventViewAccessibility: NSObject {
+    internal let root: objc_RUMViewEvent
+
+    internal init(root: objc_RUMViewEvent) {
+        self.root = root
+    }
+
+    public var assistiveSwitchEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.assistiveSwitchEnabled as NSNumber?
+    }
+
+    public var assistiveTouchEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.assistiveTouchEnabled as NSNumber?
+    }
+
+    public var boldTextEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.boldTextEnabled as NSNumber?
+    }
+
+    public var buttonShapesEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.buttonShapesEnabled as NSNumber?
+    }
+
+    public var closedCaptioningEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.closedCaptioningEnabled as NSNumber?
+    }
+
+    public var grayscaleEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.grayscaleEnabled as NSNumber?
+    }
+
+    public var increaseContrastEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.increaseContrastEnabled as NSNumber?
+    }
+
+    public var invertColorsEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.invertColorsEnabled as NSNumber?
+    }
+
+    public var monoAudioEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.monoAudioEnabled as NSNumber?
+    }
+
+    public var onOffSwitchLabelsEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.onOffSwitchLabelsEnabled as NSNumber?
+    }
+
+    public var reduceMotionEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.reduceMotionEnabled as NSNumber?
+    }
+
+    public var reduceTransparencyEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.reduceTransparencyEnabled as NSNumber?
+    }
+
+    public var reducedAnimationsEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.reducedAnimationsEnabled as NSNumber?
+    }
+
+    public var rtlEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.rtlEnabled as NSNumber?
+    }
+
+    public var screenReaderEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.screenReaderEnabled as NSNumber?
+    }
+
+    public var shakeToUndoEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.shakeToUndoEnabled as NSNumber?
+    }
+
+    public var shouldDifferentiateWithoutColor: NSNumber? {
+        root.swiftModel.view.accessibility!.shouldDifferentiateWithoutColor as NSNumber?
+    }
+
+    public var singleAppModeEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.singleAppModeEnabled as NSNumber?
+    }
+
+    public var speakScreenEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.speakScreenEnabled as NSNumber?
+    }
+
+    public var speakSelectionEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.speakSelectionEnabled as NSNumber?
+    }
+
+    public var textSize: String? {
+        root.swiftModel.view.accessibility!.textSize
+    }
+
+    public var videoAutoplayEnabled: NSNumber? {
+        root.swiftModel.view.accessibility!.videoAutoplayEnabled as NSNumber?
+    }
+}
+
 @objc(DDRUMViewEventViewAction)
 @objcMembers
 @_spi(objc)
@@ -6667,6 +6794,22 @@ public class objc_RUMViewEventViewCrash: NSObject {
 
     public var count: NSNumber {
         root.swiftModel.view.crash!.count as NSNumber
+    }
+}
+
+@objc(DDRUMViewEventViewCustomTimings)
+@objcMembers
+@_spi(objc)
+public class objc_RUMViewEventViewCustomTimings: NSObject {
+    internal let root: objc_RUMViewEvent
+
+    internal init(root: objc_RUMViewEvent) {
+        self.root = root
+    }
+
+    public var customTimingsInfo: [String: NSNumber] {
+        set { root.swiftModel.view.customTimings!.customTimingsInfo = newValue.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value } }
+        get { root.swiftModel.view.customTimings!.customTimingsInfo as [String: NSNumber] }
     }
 }
 
@@ -7177,6 +7320,10 @@ public class objc_RUMVitalEvent: NSObject {
 
     public var date: NSNumber {
         root.swiftModel.date as NSNumber
+    }
+
+    public var ddtags: String? {
+        root.swiftModel.ddtags
     }
 
     public var device: objc_RUMVitalEventDevice? {
@@ -8014,16 +8161,16 @@ public class objc_RUMVitalEventVital: NSObject {
         self.root = root
     }
 
-    public var custom: [String: NSNumber]? {
-        root.swiftModel.vital.custom as [String: NSNumber]?
-    }
-
     public var vitalDescription: String? {
         root.swiftModel.vital.vitalDescription
     }
 
     public var duration: NSNumber? {
         root.swiftModel.vital.duration as NSNumber?
+    }
+
+    public var failureReason: objc_RUMVitalEventVitalFailureReason {
+        .init(swift: root.swiftModel.vital.failureReason)
     }
 
     public var id: String {
@@ -8034,9 +8181,74 @@ public class objc_RUMVitalEventVital: NSObject {
         root.swiftModel.vital.name
     }
 
+    public var operationKey: String? {
+        root.swiftModel.vital.operationKey
+    }
+
+    public var stepType: objc_RUMVitalEventVitalStepType {
+        .init(swift: root.swiftModel.vital.stepType)
+    }
+
     public var type: objc_RUMVitalEventVitalVitalType {
         .init(swift: root.swiftModel.vital.type)
     }
+}
+
+@objc(DDRUMVitalEventVitalFailureReason)
+@_spi(objc)
+public enum objc_RUMVitalEventVitalFailureReason: Int {
+    internal init(swift: RUMVitalEvent.Vital.FailureReason?) {
+        switch swift {
+        case nil: self = .none
+        case .error?: self = .error
+        case .abandoned?: self = .abandoned
+        case .other?: self = .other
+        }
+    }
+
+    internal var toSwift: RUMVitalEvent.Vital.FailureReason? {
+        switch self {
+        case .none: return nil
+        case .error: return .error
+        case .abandoned: return .abandoned
+        case .other: return .other
+        }
+    }
+
+    case none
+    case error
+    case abandoned
+    case other
+}
+
+@objc(DDRUMVitalEventVitalStepType)
+@_spi(objc)
+public enum objc_RUMVitalEventVitalStepType: Int {
+    internal init(swift: RUMVitalEvent.Vital.StepType?) {
+        switch swift {
+        case nil: self = .none
+        case .start?: self = .start
+        case .update?: self = .update
+        case .retry?: self = .retry
+        case .end?: self = .end
+        }
+    }
+
+    internal var toSwift: RUMVitalEvent.Vital.StepType? {
+        switch self {
+        case .none: return nil
+        case .start: return .start
+        case .update: return .update
+        case .retry: return .retry
+        case .end: return .end
+        }
+    }
+
+    case none
+    case start
+    case update
+    case retry
+    case end
 }
 
 @objc(DDRUMVitalEventVitalVitalType)
@@ -8045,16 +8257,19 @@ public enum objc_RUMVitalEventVitalVitalType: Int {
     internal init(swift: RUMVitalEvent.Vital.VitalType) {
         switch swift {
         case .duration: self = .duration
+        case .operationStep: self = .operationStep
         }
     }
 
     internal var toSwift: RUMVitalEvent.Vital.VitalType {
         switch self {
         case .duration: return .duration
+        case .operationStep: return .operationStep
         }
     }
 
     case duration
+    case operationStep
 }
 
 @objc(DDTelemetryErrorEvent)
@@ -8909,6 +9124,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.replaySampleRate as NSNumber?
     }
 
+    public var sdkVersion: String? {
+        set { root.swiftModel.telemetry.configuration.sdkVersion = newValue }
+        get { root.swiftModel.telemetry.configuration.sdkVersion }
+    }
+
     public var selectedTracingPropagators: [Int]? {
         root.swiftModel.telemetry.configuration.selectedTracingPropagators?.map { objc_TelemetryConfigurationEventTelemetryConfigurationSelectedTracingPropagators(swift: $0).rawValue }
     }
@@ -8933,6 +9153,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     public var silentMultipleInit: NSNumber? {
         root.swiftModel.telemetry.configuration.silentMultipleInit as NSNumber?
+    }
+
+    public var source: String? {
+        set { root.swiftModel.telemetry.configuration.source = newValue }
+        get { root.swiftModel.telemetry.configuration.source }
     }
 
     public var startRecordingImmediately: NSNumber? {
@@ -9159,6 +9384,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     public var useWorkerUrl: NSNumber? {
         root.swiftModel.telemetry.configuration.useWorkerUrl as NSNumber?
+    }
+
+    public var variant: String? {
+        set { root.swiftModel.telemetry.configuration.variant = newValue }
+        get { root.swiftModel.telemetry.configuration.variant }
     }
 
     public var viewTrackingStrategy: objc_TelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy {
@@ -9465,4 +9695,4 @@ public class objc_TelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ca4ca9c6ce21f634f41cda2fdd95cacc4b5246b0
+// Generated from https://github.com/DataDog/rum-events-format/tree/364afe383024cfbdc0a57253c1961cf938b19cf0

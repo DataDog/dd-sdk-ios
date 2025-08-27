@@ -12,6 +12,7 @@
 #   --watchOS: Install the watchOS platform with the latest simulator if not already installed. Default: disabled.
 #   --ssh: Configure SSH for GitHub repository access. Default: disabled.
 #   --datadog-ci: Install 'datadog-ci' on the runner. Default: disabled.
+#   --python: Ensure Python 3 and pip are available. Default: disabled.
 
 set -eo pipefail
 source ./tools/utils/echo-color.sh
@@ -26,6 +27,7 @@ define_arg "visionOS" "false" "Install the visionOS platform with the latest sim
 define_arg "watchOS" "false" "Install the watchOS platform with the latest simulator if not already installed. Default: disabled." "store_true"
 define_arg "ssh" "false" "Configure SSH for GitHub repository access. Default: disabled." "store_true"
 define_arg "datadog-ci" "false" "Install 'datadog-ci' on the runner. Default: disabled." "store_true"
+define_arg "python" "false" "Ensure Python 3 and pip are available. Default: disabled." "store_true"
 
 check_for_help "$@"
 parse_args "$@"
@@ -134,5 +136,36 @@ if [ "$datadog_ci" = "true" ]; then
         echo_succ "'datadog-ci' already installed. Skipping..."
         echo "datadog-ci version:"
         datadog-ci version
+    fi
+fi
+
+if [ "$python" = "true" ]; then
+    echo_subtitle "Ensure Python 3 and pip are available"
+    echo "Check current runner for Python 3 installation:"
+    
+    # Check if Python 3 is available
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo_warn "Python 3 not found. Checking for Homebrew..."
+        if command -v brew >/dev/null 2>&1; then
+            echo "Installing Python 3 via Homebrew..."
+            brew install python@3.11
+        else
+            echo_warn "Homebrew not found. Python 3 may not be available."
+            echo "Please ensure Python 3 is installed on the runner."
+        fi
+    else
+        echo_succ "Python 3 already installed. Version:"
+        python3 --version
+    fi
+    
+    # Check if pip is available
+    if ! command -v pip3 >/dev/null 2>&1; then
+        echo_warn "pip3 not found. Installing pip..."
+        if command -v python3 >/dev/null 2>&1; then
+            python3 -m ensurepip --upgrade
+        fi
+    else
+        echo_succ "pip3 already installed. Version:"
+        pip3 --version
     fi
 fi

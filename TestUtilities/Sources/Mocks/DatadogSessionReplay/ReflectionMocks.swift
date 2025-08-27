@@ -141,7 +141,8 @@ extension GraphicsImage: AnyMockable, RandomMockable {
         return GraphicsImage(
             contents: .cgImage(MockCGImage.mockRandom().cgImage),
             scale: 1.0,
-            orientation: .up
+            orientation: .up,
+            maskColor: SwiftUI.Color._Resolved.mockAny()
         )
     }
 
@@ -149,7 +150,8 @@ extension GraphicsImage: AnyMockable, RandomMockable {
         return GraphicsImage(
             contents: .cgImage(MockCGImage.mockRandom().cgImage),
             scale: CGFloat.random(in: 0.5...3.0),
-            orientation: .allCases.randomElement()!
+            orientation: .allCases.randomElement()!,
+            maskColor: SwiftUI.Color._Resolved.mockRandom()
         )
     }
 }
@@ -175,4 +177,27 @@ extension SwiftUI.Image.Orientation: AnyMockable, RandomMockable {
         return SwiftUI.Image.Orientation.allCases.randomElement()!
     }
 }
+
+// MARK: ImageRepresentable
+@available(iOS 13.0, tvOS 13.0, *)
+struct MockImageRepresentable: ImageRepresentable, AnyMockable, RandomMockable {
+    private let cgImage: CGImage?
+
+    init(cgImage: CGImage? = nil) {
+        self.cgImage = cgImage
+    }
+
+    func makeImage() -> UIImage? {
+        cgImage.map(UIImage.init(cgImage:))
+    }
+
+    static func mockAny() -> MockImageRepresentable {
+        MockImageRepresentable(cgImage: MockCGImage.mockWith(width: 100))
+    }
+
+    static func mockRandom() -> MockImageRepresentable {
+        MockImageRepresentable(cgImage: MockCGImage.mockRandom().cgImage)
+    }
+}
+
 #endif

@@ -209,6 +209,7 @@ Tools Tests:
         compare_to: 'develop'
   script:
     - make clean repo-setup ENV=ci
+    - ./tools/runner-setup.sh --python
     - make tools-test
 
 Benchmark Build:
@@ -276,6 +277,16 @@ SPM Build (Swift 5.9):
     - make spm-build-visionos
     - make spm-build-macos
     - make spm-build-watchos
+
+SPI Docs Build:
+  stage: lint
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS
+    - make clean repo-setup ENV=ci
+    - make spi-docs-build
 
 # ┌──────────────────────┐
 # │ E2E Test app upload: │
@@ -373,6 +384,8 @@ Publish GH Asset:
   stage: release-publish
   rules: 
     - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   before_script:
     - *export_MAKE_release_params
   script:

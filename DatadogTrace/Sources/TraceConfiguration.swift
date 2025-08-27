@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-// Export `DDURLSessionDelegate` elements to be available with `import DatadogTrace`:
+// Export `URLSessionInstrumentation` elements to be available with `import DatadogTrace`:
 // swiftlint:disable duplicate_imports
 @_exported import enum DatadogInternal.URLSessionInstrumentation
 

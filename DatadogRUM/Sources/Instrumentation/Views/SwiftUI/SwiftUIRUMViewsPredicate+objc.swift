@@ -69,7 +69,7 @@ public class objc_DefaultSwiftUIRUMActionsPredicate: NSObject, objc_SwiftUIRUMAc
     }
 
     public func rumAction(with componentName: String) -> objc_RUMAction? {
-        return swiftPredicate.rumAction(with: componentName).map {
+        swiftPredicate.rumAction(with: componentName).map {
             objc_RUMAction(name: $0.name, attributes: $0.attributes.dd.objCAttributes)
         }
     }

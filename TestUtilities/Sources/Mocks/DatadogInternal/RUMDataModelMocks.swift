@@ -110,15 +110,13 @@ extension Device: AnyMockable, RandomMockable {
 
     public static func mockWith(
         architecture: String = "arm64e",
-        batteryLevel: Double? = nil,
+        batteryLevel: Double = 1.0,
         brand: String = "Apple",
-        brightnessLevel: Double? = nil,
-        locale: String? = nil,
-        locales: [String]? = nil,
+        brightnessLevel: Double = 1.0,
+        locale: String = "en-US",
         model: String = "iPhone10,1",
         name: String = "iPhone",
-        powerSavingMode: Bool? = nil,
-        timeZone: String? = nil,
+        powerSavingMode: Bool = false,
         type: DeviceType = .mobile
     ) -> Device {
         .init(
@@ -127,11 +125,9 @@ extension Device: AnyMockable, RandomMockable {
             brand: brand,
             brightnessLevel: brightnessLevel,
             locale: locale,
-            locales: locales,
             model: model,
             name: name,
             powerSavingMode: powerSavingMode,
-            timeZone: timeZone,
             type: type
         )
     }
@@ -217,6 +213,12 @@ extension RUMViewEvent.DD.Configuration: RandomMockable {
 extension RUMViewEvent.View.SlowFrames: RandomMockable {
     public static func mockRandom() -> RUMViewEvent.View.SlowFrames {
         .init(duration: .mockRandom(), start: .mockRandom())
+    }
+}
+
+extension RUMViewEvent.View.CustomTimings: AnyMockable {
+    public static func mockAny() -> RUMViewEvent.View.CustomTimings {
+        return .init(customTimingsInfo: .mockAny())
     }
 }
 

@@ -8,7 +8,11 @@
 import UIKit
 import DatadogInternal
 
+#if $RetroactiveAttribute
+extension CGRect: @retroactive DatadogExtended {}
+#else
 extension CGRect: DatadogExtended {}
+#endif
 
 internal extension DatadogExtension where ExtendedType == CGRect {
     func contentFrame(

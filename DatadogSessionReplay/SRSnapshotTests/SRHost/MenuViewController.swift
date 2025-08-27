@@ -48,6 +48,8 @@ internal extension Fixture {
             return "Popups"
         case .swiftUI:
             return "SwiftUI"
+        case .symbols:
+            return "Symbols"
         case .navigationBars:
             return "Navigation Bars"
         case .navigationBarDefaultTranslucent:

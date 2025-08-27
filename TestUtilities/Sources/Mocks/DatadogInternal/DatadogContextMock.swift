@@ -39,6 +39,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
         networkConnectionInfo: NetworkConnectionInfo? = .mockWith(reachability: .yes),
         carrierInfo: CarrierInfo? = .mockAny(),
         batteryStatus: BatteryStatus? = .mockAny(),
+        brightnessLevel: BrightnessLevel? = .mockAny(),
         isLowPowerModeEnabled: Bool = false,
         additionalContext: [AdditionalContext] = []
     ) -> DatadogContext {
@@ -60,8 +61,8 @@ extension DatadogContext: AnyMockable, RandomMockable {
             applicationBundleType: applicationBundleType,
             sdkInitDate: sdkInitDate,
             device: device,
-            localeInfo: localeInfo,
             os: os,
+            localeInfo: localeInfo,
             nativeSourceOverride: nativeSourceOverride,
             userInfo: userInfo,
             accountInfo: accountInfo,
@@ -71,6 +72,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
             networkConnectionInfo: networkConnectionInfo,
             carrierInfo: carrierInfo,
             batteryStatus: batteryStatus,
+            brightnessLevel: brightnessLevel,
             isLowPowerModeEnabled: isLowPowerModeEnabled
         )
 
@@ -97,8 +99,8 @@ extension DatadogContext: AnyMockable, RandomMockable {
             applicationBundleType: .mockRandom(),
             sdkInitDate: .mockRandomInThePast(),
             device: .mockRandom(),
-            localeInfo: .mockRandom(),
             os: .mockRandom(),
+            localeInfo: .mockRandom(),
             userInfo: .mockRandom(),
             accountInfo: .mockRandom(),
             trackingConsent: .mockRandom(),
@@ -158,7 +160,7 @@ extension LocaleInfo: AnyMockable, RandomMockable {
     }
 }
 
-extension DeviceInfo: AnyMockable, RandomMockable {
+extension DeviceInfo {
     public static func mockAny() -> DeviceInfo {
         return .mockWith()
     }
@@ -427,22 +429,6 @@ extension BatteryStatus: AnyMockable, RandomMockable {
         )
     }
 }
-
-//extension BrightnessLevel: AnyMockable, RandomMockable {
-//    public static func mockAny() -> BrightnessLevel {
-//        return mockWith()
-//    }
-//
-//    public static func mockWith(
-//        level: Float = 0.5
-//    ) -> BrightnessLevel {
-//        return level
-//    }
-//
-//    public static func mockRandom() -> BrightnessLevel {
-//        return Float.random(in: 0.0...1.0)
-//    }
-//}
 
 extension TrackingConsent {
     public static func mockRandom() -> TrackingConsent {

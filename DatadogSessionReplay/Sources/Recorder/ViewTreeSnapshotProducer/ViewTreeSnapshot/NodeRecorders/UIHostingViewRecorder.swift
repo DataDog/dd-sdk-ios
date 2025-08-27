@@ -21,6 +21,8 @@ internal class UIHostingViewRecorder: NodeRecorder {
     var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics?
     var textObfuscator: (ViewTreeRecordingContext, ViewAttributes) -> TextObfuscating
 
+    private let imageRenderer = ImageRenderer()
+
     private static let rendererKeyPath: [String] = if #available(iOS 26, tvOS 26, *) {
         ["_base", "viewGraph", "renderer"]
     } else if #available(iOS 18.1, tvOS 18.1, *) {
@@ -74,6 +76,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
         let builder = SwiftUIWireframesBuilder(
             wireframeID: nodeID,
             renderer: renderer.renderer,
+            imageRenderer: imageRenderer,
             textObfuscator: textObfuscator(context, attributes),
             fontScalingEnabled: false,
             imagePrivacyLevel: attributes.resolveImagePrivacyLevel(in: context),

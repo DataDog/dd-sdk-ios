@@ -527,8 +527,8 @@ extension DatadogContextProvider {
             applicationBundleType: applicationBundleType,
             sdkInitDate: dateProvider.now,
             device: device,
-            localeInfo: locale,
             os: os,
+            localeInfo: locale,
             nativeSourceOverride: nativeSourceOverride,
             launchInfo: launchInfo,
             applicationStateHistory: appStateHistory

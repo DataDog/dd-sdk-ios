@@ -304,7 +304,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertNil(traceContext, "It must return no trace context")
     }
 
-    func testGivenFirstPartyInterception_withSampledTrace_itDoesNotOverwriteTraceHeaders() throws {
+    func testGivenFirstPartyInterceptionAndShouldSetBaggageHeaderAndBaggageHeaderValuesToSet_withSampledTrace_itDoesNotOverwriteTraceHeadersExceptBaggage() throws {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
@@ -329,9 +329,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         orgRequest.setValue("custom", forHTTPHeaderField: B3HTTPHeaders.Single.b3Field)
         orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.traceparent)
         orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.tracestate)
-        orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        let initialBaggageHeaderValue = "custom=12"
+        orgRequest.setValue(initialBaggageHeaderValue, forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
-        let (request, traceContext) = handler.modify(
+        let (request, _) = handler.modify(
             request: orgRequest,
             headerTypes: [
                 .datadog,
@@ -343,7 +344,9 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 rumContext: .init(
                     applicationID: .mockRandom(),
                     sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
-                )
+                ),
+                userConfigurationContext: .mockWith(id: "some_user_id"),
+                accountConfigurationContext: .mockRandom()
             )
         )
 
@@ -358,7 +361,120 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "custom")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "custom")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.tracestate), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), "custom")
+        XCTAssertNotEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), initialBaggageHeaderValue)
+    }
+
+    func testGivenFirstPartyInterceptionAndShouldNotSetBaggageHeaderAndBaggageHeaderValuesToSet_withSampledTrace_itDoesNotOverwriteTraceHeaders() throws {
+        // Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockKeepAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
+            )
+        )
+
+        // When
+        var orgRequest: URLRequest = .mockWith(url: "https://www.example.com")
+        orgRequest.setValue("custom", forHTTPHeaderField: TracingHTTPHeaders.traceIDField)
+        orgRequest.setValue("custom", forHTTPHeaderField: TracingHTTPHeaders.tagsField)
+        orgRequest.setValue("custom", forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField)
+        orgRequest.setValue("custom", forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField)
+        orgRequest.setValue("custom", forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField)
+        orgRequest.setValue("custom", forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField)
+        orgRequest.setValue("custom", forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField)
+        orgRequest.setValue("custom", forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField)
+        orgRequest.setValue("custom", forHTTPHeaderField: B3HTTPHeaders.Single.b3Field)
+        orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.traceparent)
+        orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.tracestate)
+        orgRequest.setValue("custom=12", forHTTPHeaderField: W3CHTTPHeaders.baggage)
+
+        let (request, traceContext) = handler.modify(
+            request: orgRequest,
+            headerTypes: [
+                .b3,
+                .b3multi,
+            ],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                ),
+                userConfigurationContext: .mockWith(id: "some_user_id"),
+                accountConfigurationContext: .mockRandom()
+            )
+        )
+
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.tracestate), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), "custom=12")
+
+        XCTAssertNil(traceContext, "It must return no trace context")
+    }
+
+    func testGivenFirstPartyInterceptionAndShouldSetBaggageHeaderAndBaggageHeaderValuesEmpty_withSampledTrace_itDoesNotOverwriteTraceHeaders() throws {
+        // Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockKeepAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
+            )
+        )
+
+        // When
+        var orgRequest: URLRequest = .mockWith(url: "https://www.example.com")
+        orgRequest.setValue("custom", forHTTPHeaderField: TracingHTTPHeaders.traceIDField)
+        orgRequest.setValue("custom", forHTTPHeaderField: TracingHTTPHeaders.tagsField)
+        orgRequest.setValue("custom", forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField)
+        orgRequest.setValue("custom", forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField)
+        orgRequest.setValue("custom", forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField)
+        orgRequest.setValue("custom", forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField)
+        orgRequest.setValue("custom", forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField)
+        orgRequest.setValue("custom", forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField)
+        orgRequest.setValue("custom", forHTTPHeaderField: B3HTTPHeaders.Single.b3Field)
+        orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.traceparent)
+        orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.tracestate)
+        orgRequest.setValue("custom=12", forHTTPHeaderField: W3CHTTPHeaders.baggage)
+
+        let (request, traceContext) = handler.modify(
+            request: orgRequest,
+            headerTypes: [
+                .b3,
+                .b3multi,
+            ],
+            networkContext: NetworkContext(
+                rumContext: nil,
+                userConfigurationContext: nil,
+                accountConfigurationContext: nil
+            )
+        )
+
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.tracestate), "custom")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), "custom=12")
 
         XCTAssertNil(traceContext, "It must return no trace context")
     }
@@ -620,5 +736,227 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 "baggage": "session.id=abcdef01-2345-6789-abcd-ef0123456789",
             ]
         )
+    }
+
+    // MARK: - Baggage Header Merging Tests
+
+    func testGivenRequestWithExistingBaggageHeader_whenTraceContextIsInjected_itMergesBaggageHeaders() throws {
+        // Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockKeepAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
+            )
+        )
+
+        var request = URLRequest.mockWith(url: "https://www.example.com")
+        request.setValue("custom.key=custom.value,another.key=another.value", forHTTPHeaderField: W3CHTTPHeaders.baggage)
+
+        // When
+        let (modifiedRequest, _) = handler.modify(
+            request: request,
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        // Then
+        let baggageHeader = modifiedRequest.value(forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        XCTAssertNotNil(baggageHeader)
+
+        // Verify that both existing and new baggage values are present
+        XCTAssertTrue(baggageHeader?.contains("custom.key=custom.value") == true)
+        XCTAssertTrue(baggageHeader?.contains("another.key=another.value") == true)
+        XCTAssertTrue(baggageHeader?.contains("session.id=abcdef01-2345-6789-abcd-ef0123456789") == true)
+    }
+
+    func testGivenRequestWithExistingBaggageHeader_whenTraceContextIsInjectedWithW3C_itMergesBaggageHeaders() throws {
+        // Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockKeepAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
+            )
+        )
+
+        var request = URLRequest.mockWith(url: "https://www.example.com")
+        request.setValue("custom.key=custom.value,session.id=old.session.id", forHTTPHeaderField: W3CHTTPHeaders.baggage)
+
+        // When
+        let (modifiedRequest, _) = handler.modify(
+            request: request,
+            headerTypes: [.tracecontext],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        // Then
+        let baggageHeader = modifiedRequest.value(forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        XCTAssertNotNil(baggageHeader)
+
+        // Verify that existing custom key is preserved
+        XCTAssertTrue(baggageHeader?.contains("custom.key=custom.value") == true)
+        // Verify that session.id is overridden with new value
+        XCTAssertTrue(baggageHeader?.contains("session.id=abcdef01-2345-6789-abcd-ef0123456789") == true)
+        XCTAssertFalse(baggageHeader?.contains("session.id=old.session.id") == true)
+    }
+
+    func testGivenRequestWithComplexBaggageHeader_whenTraceContextIsInjected_itMergesBaggageHeadersCorrectly() throws {
+        // Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockKeepAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
+            )
+        )
+
+        var request = URLRequest.mockWith(url: "https://www.example.com")
+        // This is the complex scenario from the user's requirement
+        request.setValue(" toto=1,car= Dacia Sandero ,session.id = 2,testProp=1; testProp2=4;prop3 ", forHTTPHeaderField: W3CHTTPHeaders.baggage)
+
+        // When
+        let (modifiedRequest, _) = handler.modify(
+            request: request,
+            headerTypes: [.tracecontext],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                ),
+                userConfigurationContext: .init(id: "user123"),
+                accountConfigurationContext: .init(id: "account456")
+            )
+        )
+
+        // Then
+        let baggageHeader = modifiedRequest.value(forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        XCTAssertNotNil(baggageHeader)
+
+        // Parse the result to verify merging behavior
+        let baggageDict = extractBaggageKeyValuePairs(from: baggageHeader!)
+
+        // Verify that new values override previous ones
+        XCTAssertEqual(baggageDict["session.id"], "abcdef01-2345-6789-abcd-ef0123456789")
+
+        // Verify that previous values are preserved when not overridden
+        XCTAssertEqual(baggageDict["toto"], "1")
+        XCTAssertEqual(baggageDict["car"], "Dacia Sandero")
+        XCTAssertEqual(baggageDict["testProp"], "1; testProp2=4;prop3")
+
+        // Verify that new values are added
+        XCTAssertEqual(baggageDict["user.id"], "user123")
+        XCTAssertEqual(baggageDict["account.id"], "account456")
+
+        // Verify all expected keys are present
+        XCTAssertEqual(baggageDict.keys.count, 6)
+    }
+
+    func testGivenRequestWithoutBaggageHeader_whenTraceContextIsInjected_itAddsBaggageHeader() throws {
+        // Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockKeepAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
+            )
+        )
+
+        let request = URLRequest.mockWith(url: "https://www.example.com")
+
+        // When
+        let (modifiedRequest, _) = handler.modify(
+            request: request,
+            headerTypes: [.tracecontext],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        // Then
+        let baggageHeader = modifiedRequest.value(forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        XCTAssertNotNil(baggageHeader)
+        XCTAssertEqual(baggageHeader, "session.id=abcdef01-2345-6789-abcd-ef0123456789")
+    }
+
+    func testGivenRequestWithBaggageHeader_whenMultipleHeaderTypesAreInjected_itMergesBaggageOnlyOnce() throws {
+        // Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockKeepAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
+            )
+        )
+
+        var request = URLRequest.mockWith(url: "https://www.example.com")
+        request.setValue("custom.key=custom.value", forHTTPHeaderField: W3CHTTPHeaders.baggage)
+
+        // When
+        let (modifiedRequest, _) = handler.modify(
+            request: request,
+            headerTypes: [.datadog, .tracecontext], // Both inject baggage headers
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        // Then
+        let baggageHeader = modifiedRequest.value(forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        XCTAssertNotNil(baggageHeader)
+
+        // Verify that session.id appears only once (not duplicated)
+        let sessionIdMatches = baggageHeader?.components(separatedBy: "session.id=").count ?? 0
+        XCTAssertEqual(sessionIdMatches, 2) // Original string + 1 occurrence = 2
+
+        // Verify that both custom and session values are present
+        XCTAssertTrue(baggageHeader?.contains("custom.key=custom.value") == true)
+        XCTAssertTrue(baggageHeader?.contains("session.id=abcdef01-2345-6789-abcd-ef0123456789") == true)
+    }
+
+    // MARK: - Helper Methods
+
+    private func extractBaggageKeyValuePairs(from header: String) -> [String: String] {
+        var dict: [String: String] = [:]
+        let fields = header.split(separator: ",")
+
+        for field in fields {
+            let fieldString = String(field)
+            if let equalIndex = fieldString.firstIndex(of: "=") {
+                let key = fieldString[..<equalIndex].trimmingCharacters(in: .whitespaces)
+                let value = fieldString[fieldString.index(after: equalIndex)...].trimmingCharacters(in: .whitespaces)
+                if !key.isEmpty {
+                    dict[key] = value
+                }
+            }
+        }
+
+        return dict
     }
 }

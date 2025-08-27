@@ -127,8 +127,8 @@ internal struct SpanEventEncoder {
         case startTime = "start"
         case duration
         case isError = "error"
-        case device = "device"
-        case os = "os"
+        case device = "meta.device" // Should be under `meta` to comply with the span schema
+        case os = "meta.os" // Should be under `meta` to comply with the span schema
 
         // MARK: - Metrics
 

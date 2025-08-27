@@ -321,7 +321,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             ),
             account: context.accountInfo.map { RUMAccount(accountInfo: $0) },
             application: .init(
-                currentLocale: context.localeInfo?.currentLocale, id: applicationID
+                currentLocale: context.device.locale, id: applicationID
             ),
             buildVersion: context.buildNumber,
             ciTest: ciTest,

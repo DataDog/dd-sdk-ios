@@ -3111,13 +3111,13 @@ class RUMViewScopeTests: XCTestCase {
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
 
         XCTAssertEqual(events.count, 3, "There should be 3 View updates sent")
-        XCTAssertEqual(events[0].view.customTimings, [:])
+        XCTAssertEqual(events[0].view.customTimings?.customTimingsInfo, [:])
         XCTAssertEqual(
-            events[1].view.customTimings,
+            events[1].view.customTimings?.customTimingsInfo,
             ["timing-after-500000000ns": 500_000_000]
         )
         XCTAssertEqual(
-            events[2].view.customTimings,
+            events[2].view.customTimings?.customTimingsInfo,
             ["timing-after-500000000ns": 500_000_000, "timing-after-1000000000ns": 1_000_000_000]
         )
     }
@@ -3166,7 +3166,7 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         let lastEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
-        XCTAssertEqual(lastEvent.view.customTimings, [:])
+        XCTAssertEqual(lastEvent.view.customTimings?.customTimingsInfo, [:])
     }
 
     func testGivenActiveView_whenCustomTimingIsRegistered_itSanitizesCustomTiming() throws {
@@ -3216,9 +3216,9 @@ class RUMViewScopeTests: XCTestCase {
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
 
         XCTAssertEqual(events.count, 2, "There should be 2 View updates sent")
-        XCTAssertEqual(events[0].view.customTimings, [:])
+        XCTAssertEqual(events[0].view.customTimings?.customTimingsInfo, [:])
         XCTAssertEqual(
-            events[1].view.customTimings,
+            events[1].view.customTimings?.customTimingsInfo,
             [sanitizedTimingName: 500_000_000]
         )
         XCTAssertEqual(

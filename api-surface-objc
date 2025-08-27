@@ -326,6 +326,7 @@ public class objc_RUMActionEvent: NSObject
     public var container: objc_RUMActionEventContainer?
     public var context: objc_RUMActionEventRUMEventAttributes?
     public var date: NSNumber
+    public var ddtags: String?
     public var device: objc_RUMActionEventDevice?
     public var display: objc_RUMActionEventDisplay?
     public var os: objc_RUMActionEventOperatingSystem?
@@ -552,6 +553,7 @@ public class objc_RUMErrorEvent: NSObject
     public var container: objc_RUMErrorEventContainer?
     public var context: objc_RUMErrorEventRUMEventAttributes?
     public var date: NSNumber
+    public var ddtags: String?
     public var device: objc_RUMErrorEventDevice?
     public var display: objc_RUMErrorEventDisplay?
     public var error: objc_RUMErrorEventError
@@ -861,6 +863,7 @@ public class objc_RUMLongTaskEvent: NSObject
     public var container: objc_RUMLongTaskEventContainer?
     public var context: objc_RUMLongTaskEventRUMEventAttributes?
     public var date: NSNumber
+    public var ddtags: String?
     public var device: objc_RUMLongTaskEventDevice?
     public var display: objc_RUMLongTaskEventDisplay?
     public var longTask: objc_RUMLongTaskEventLongTask
@@ -1088,6 +1091,7 @@ public class objc_RUMResourceEvent: NSObject
     public var container: objc_RUMResourceEventContainer?
     public var context: objc_RUMResourceEventRUMEventAttributes?
     public var date: NSNumber
+    public var ddtags: String?
     public var device: objc_RUMResourceEventDevice?
     public var display: objc_RUMResourceEventDisplay?
     public var os: objc_RUMResourceEventOperatingSystem?
@@ -1105,6 +1109,7 @@ public class objc_RUMResourceEventDD: NSObject
     public var configuration: objc_RUMResourceEventDDConfiguration?
     public var discarded: NSNumber?
     public var formatVersion: NSNumber
+    public var parentSpanId: String?
     public var rulePsr: NSNumber?
     public var sdkName: String?
     public var session: objc_RUMResourceEventDDSession?
@@ -1371,6 +1376,7 @@ public class objc_RUMViewEvent: NSObject
     public var container: objc_RUMViewEventContainer?
     public var context: objc_RUMViewEventRUMEventAttributes?
     public var date: NSNumber
+    public var ddtags: String?
     public var device: objc_RUMViewEventDevice?
     public var display: objc_RUMViewEventDisplay?
     public var featureFlags: objc_RUMViewEventFeatureFlags?
@@ -1576,6 +1582,7 @@ public class objc_RUMViewEventRUMUser: NSObject
     public var name: String?
     public var usrInfo: [String: Any]
 public class objc_RUMViewEventView: NSObject
+    public var accessibility: objc_RUMViewEventViewAccessibility?
     public var action: objc_RUMViewEventViewAction
     public var cpuTicksCount: NSNumber?
     public var cpuTicksPerSecond: NSNumber?
@@ -1626,6 +1633,29 @@ public class objc_RUMViewEventView: NSObject
     public var slowFramesRate: NSNumber?
     public var timeSpent: NSNumber
     public var url: String
+public class objc_RUMViewEventViewAccessibility: NSObject
+    public var assistiveSwitchEnabled: NSNumber?
+    public var assistiveTouchEnabled: NSNumber?
+    public var boldTextEnabled: NSNumber?
+    public var buttonShapesEnabled: NSNumber?
+    public var closedCaptioningEnabled: NSNumber?
+    public var grayscaleEnabled: NSNumber?
+    public var increaseContrastEnabled: NSNumber?
+    public var invertColorsEnabled: NSNumber?
+    public var monoAudioEnabled: NSNumber?
+    public var onOffSwitchLabelsEnabled: NSNumber?
+    public var reduceMotionEnabled: NSNumber?
+    public var reduceTransparencyEnabled: NSNumber?
+    public var reducedAnimationsEnabled: NSNumber?
+    public var rtlEnabled: NSNumber?
+    public var screenReaderEnabled: NSNumber?
+    public var shakeToUndoEnabled: NSNumber?
+    public var shouldDifferentiateWithoutColor: NSNumber?
+    public var singleAppModeEnabled: NSNumber?
+    public var speakScreenEnabled: NSNumber?
+    public var speakSelectionEnabled: NSNumber?
+    public var textSize: String?
+    public var videoAutoplayEnabled: NSNumber?
 public class objc_RUMViewEventViewAction: NSObject
     public var count: NSNumber
 public class objc_RUMViewEventViewCrash: NSObject
@@ -1723,6 +1753,7 @@ public class objc_RUMVitalEvent: NSObject
     public var container: objc_RUMVitalEventContainer?
     public var context: objc_RUMVitalEventRUMEventAttributes?
     public var date: NSNumber
+    public var ddtags: String?
     public var device: objc_RUMVitalEventDevice?
     public var display: objc_RUMVitalEventDisplay?
     public var os: objc_RUMVitalEventOperatingSystem?
@@ -1883,14 +1914,28 @@ public class objc_RUMVitalEventView: NSObject
     public var referrer: String?
     public var url: String
 public class objc_RUMVitalEventVital: NSObject
-    public var custom: [String: NSNumber]?
     public var vitalDescription: String?
     public var duration: NSNumber?
+    public var failureReason: objc_RUMVitalEventVitalFailureReason
     public var id: String
     public var name: String?
+    public var parentId: String?
+    public var stepType: objc_RUMVitalEventVitalStepType
     public var type: objc_RUMVitalEventVitalVitalType
+public enum objc_RUMVitalEventVitalFailureReason: Int
+    case none
+    case error
+    case abandoned
+    case other
+public enum objc_RUMVitalEventVitalStepType: Int
+    case none
+    case start
+    case update
+    case retry
+    case end
 public enum objc_RUMVitalEventVitalVitalType: Int
     case duration
+    case step
 public class objc_TelemetryErrorEvent: NSObject
     public internal(set) var swiftModel: TelemetryErrorEvent
     public init(swiftModel: TelemetryErrorEvent)
@@ -2058,12 +2103,14 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var reactNativeVersion: String?
     public var reactVersion: String?
     public var replaySampleRate: NSNumber?
+    public var sdkVersion: String?
     public var selectedTracingPropagators: [Int]?
     public var sendLogsAfterSessionExpiration: NSNumber?
     public var sessionPersistence: objc_TelemetryConfigurationEventTelemetryConfigurationSessionPersistence
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber?
     public var silentMultipleInit: NSNumber?
+    public var source: String?
     public var startRecordingImmediately: NSNumber?
     public var startSessionReplayRecordingManually: NSNumber?
     public var storeContextsAcrossPages: NSNumber?
@@ -2113,6 +2160,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var useSecureSessionCookie: NSNumber?
     public var useTracing: NSNumber?
     public var useWorkerUrl: NSNumber?
+    public var variant: String?
     public var viewTrackingStrategy: objc_TelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy
 public class objc_TelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs: NSObject
     public var stringsArray: [String]?
@@ -2274,6 +2322,7 @@ public class objc_RUMMonitor: NSObject
     public func stopView(viewController: UIViewController,attributes: [String: Any])
     public func startView(key: String,name: String?,attributes: [String: Any])
     public func stopView(key: String,attributes: [String: Any])
+    public func addViewLoadingTime(overwrite: Bool)
     public func addTiming(name: String)
     public func addError(message: String,stack: String?,source: objc_RUMErrorSource,attributes: [String: Any])
     public func addError(error: Error,source: objc_RUMErrorSource,attributes: [String: Any])

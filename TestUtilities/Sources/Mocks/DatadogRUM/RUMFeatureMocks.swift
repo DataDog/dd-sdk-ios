@@ -1507,6 +1507,10 @@ public class TNSMetricMock: TNSMetricTracking {
         resourceStartDates[resourceID] = startDate
     }
 
+    public func updateResource(with metrics: ResourceMetrics, resourceID: RUMUUID, resourceURL: String) {
+        resourceStartDates[resourceID] = metrics.fetch.start
+    }
+
     public func trackResourceEnd(at endDate: Date, resourceID: RUMUUID, resourceDuration: TimeInterval?) {
         resourceEndDates[resourceID] = (endDate, resourceDuration)
     }
@@ -1626,6 +1630,22 @@ extension RUMCoreContext: RandomMockable {
             userActionID: .mockRandom(),
             viewServerTimeOffset: .mockRandom()
         )
+    }
+}
+
+extension RUMWebViewContext: RandomMockable {
+    public static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    public static func mockWith(
+        serverTimeOffsets: [String: TimeInterval] = [:]
+    ) -> Self {
+        .init(serverTimeOffsets: serverTimeOffsets)
+    }
+
+    public static func mockRandom() -> Self {
+        .init(serverTimeOffsets: .mockRandom())
     }
 }
 

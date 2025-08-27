@@ -62,7 +62,8 @@ class GraphicsImageReflectionTests: XCTestCase {
         let graphicsImage = GraphicsImage(
             contents: .cgImage(cgImage),
             scale: 2.0,
-            orientation: .up
+            orientation: .up,
+            maskColor: .mockRandom()
         )
 
         let reflector = Reflector(subject: graphicsImage, telemetry: NOPTelemetry())
@@ -71,6 +72,7 @@ class GraphicsImageReflectionTests: XCTestCase {
         XCTAssertEqual(reflectedImage.scale, graphicsImage.scale)
         XCTAssertEqual(reflectedImage.orientation, graphicsImage.orientation)
         XCTAssertEqual(reflectedImage.contents, graphicsImage.contents)
+        XCTAssertEqual(reflectedImage.maskColor, graphicsImage.maskColor)
     }
 
     func testGraphicsImageContentsReflection_withCGImage() throws {

@@ -13,7 +13,11 @@ import CommonCrypto
 private let bitsPerComponent = 8
 private var identifierKey: UInt8 = 0
 
+#if $RetroactiveAttribute
+extension UIImage: @retroactive DatadogExtended {}
+#else
 extension UIImage: DatadogExtended {}
+#endif
 
 extension DatadogExtension where ExtendedType: UIImage {
     var identifier: String {
