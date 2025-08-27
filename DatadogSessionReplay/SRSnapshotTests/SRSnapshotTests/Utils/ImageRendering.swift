@@ -59,15 +59,11 @@ private extension SRWireframe {
         case .textWireframe(let text):
             return text.toFrame()
         case .imageWireframe(value: let image):
-            let resource = resources.first {
-                $0.calculateIdentifier() == image.resourceId
-            }
-            switch resource?.mimeType {
-            case .some("image/svg+xml"):
-                return image.toFrame(svgData: resource?.calculateData())
-            default:
-                return image.toFrame(imageData: resource?.calculateData())
-            }
+            return image.toFrame(
+                imageData: resources
+                    .first { $0.calculateIdentifier() == image.resourceId }?
+                    .calculateData()
+            )
         case .placeholderWireframe(value: let placeholder):
             return placeholder.toFrame()
         case .webviewWireframe(value: let webview):
@@ -117,19 +113,6 @@ private extension SRImageWireframe {
             style: shapeStyle,
             clip: clip,
             content: .init(imageData: imageData)
-        )
-    }
-
-    func toFrame(svgData: Data?) -> BlueprintFrame {
-        BlueprintFrame(
-            x: x,
-            y: y,
-            width: width,
-            height: height,
-            border: border,
-            style: shapeStyle,
-            clip: clip,
-            content: .init(svgData: svgData)
         )
     }
 }
@@ -284,10 +267,23 @@ extension BlueprintFrame.Content {
         let contentType: BlueprintFrame.Content.ContentType = .image(image: image)
         self.init(contentType: contentType)
     }
+}
 
-    init(svgData: Data?) {
-        let image = svgData.flatMap { UIImage(svgData: $0, scale: UIScreen.main.scale) } ?? UIImage()
-        let contentType: BlueprintFrame.Content.ContentType = .image(image: image)
-        self.init(contentType: contentType)
+private extension UIColor {
+    convenience init(hexString: String) {
+        precondition(hexString.count == 9, "Invalid `hexString` - expected 9 characters, got '\(hexString)'")
+        precondition(hexString.hasPrefix("#"), "Invalid `hexString` - expected # prefix, got '\(hexString)'")
+
+        guard let hex8 = UInt64(hexString.dropFirst(), radix: 16) else {
+            preconditionFailure("Invalid `hexString`` - expected hexadecimal value, got '\(hexString)'")
+        }
+
+        let mask: UInt64 = 0x00000000FF
+        self.init(
+            red: CGFloat((hex8 >> 24) & mask) / CGFloat(255),
+            green: CGFloat((hex8 >> 16) & mask) / CGFloat(255),
+            blue: CGFloat((hex8 >> 8) & mask) / CGFloat(255),
+            alpha: CGFloat(hex8 & mask) / CGFloat(255)
+        )
     }
 }

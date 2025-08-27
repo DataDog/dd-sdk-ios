@@ -93,6 +93,7 @@ extension SessionReplayWireframesBuilder {
         resource: SessionReplayResource,
         frame: CGRect,
         clip: CGRect,
+        mimeType: String = "png",
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
         backgroundColor: CGColor? = nil,
@@ -109,7 +110,7 @@ extension SessionReplayWireframesBuilder {
             height: Int64(withNoOverflow: frame.height),
             id: id,
             isEmpty: false, // field deprecated - we should use placeholder wireframe instead
-            mimeType: resource.mimeType,
+            mimeType: mimeType,
             resourceId: resource.calculateIdentifier(),
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             width: Int64(withNoOverflow: frame.width),

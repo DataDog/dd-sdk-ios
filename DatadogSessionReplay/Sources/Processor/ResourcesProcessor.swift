@@ -35,7 +35,6 @@ internal class ResourceProcessor: ResourceProcessing {
                     return !isProcessed ? EnrichedResource(
                         identifier: identifier,
                         data: $0.calculateData(),
-                        mimeType: $0.mimeType,
                         context: context
                     ) : nil
                 }

@@ -25,7 +25,7 @@ private struct MockSemantics: NodeSemantics {
             Node(viewAttributes: .mockAny(), wireframesBuilder: MockWireframesBuilder(nodeName: $0))
         }
         self.resources = resourcesIdentifiers.map {
-            MockResource(identifier: $0, data: .mockRandom(), mimeType: .mockRandom())
+            MockResource(identifier: $0, data: .mockRandom())
         }
     }
 }

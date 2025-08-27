@@ -19,12 +19,8 @@ internal struct UIImageResource {
 }
 
 extension UIImageResource: Resource {
-    var mimeType: String {
-        "image/png"
-    }
-
     func calculateIdentifier() -> String {
-        tintColor.map { image.dd.identifier + $0.dd.identifier } ?? image.dd.identifier
+        tintColor.map { image.dd.identifier + $0 .dd.identifier } ?? image.dd.identifier
     }
 
     func calculateData() -> Data {
