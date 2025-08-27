@@ -12,6 +12,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         static let frozenFrameThresholdInNs = (0.7).toInt64Nanoseconds // 700ms
         static let slowRenderingThresholdFPS = 55.0
         static let minimumTimeSpentForRates = 1.0 // 1s
+        /// Minimum duration of a view (1ns). Prevents negative durations and serves as placeholder value assigned when view starts.
+        static let minimumTimeSpent: TimeInterval = 1e-9 // 1ns
         /// The pre-warming detection attribute key
         static let activePrewarm = "active_pre_warm"
     }
@@ -32,6 +34,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     /// If this is the very first view created in the current app process.
     private let isInitialView: Bool
+
+    /// The index of this view within its session (0 for the first view).
+    private let viewIndexInSession: Int
 
     /// If this view ever had session replay
     private var hasReplay: Bool
@@ -54,7 +59,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     let viewPath: String
     /// The name of this View, used as the `VIEW NAME` in RUM Explorer.
     let viewName: String
-    /// The start time of this View.
+    /// The start time of this View, based on device time without NTP correction.
     let viewStartTime: Date
     /// The load time of this View.
     private(set) var viewLoadingTime: TimeInterval?
@@ -132,7 +137,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         customTimings: [String: Int64],
         startTime: Date,
         serverTimeOffset: TimeInterval,
-        interactionToNextViewMetric: INVMetricTracking?
+        interactionToNextViewMetric: INVMetricTracking?,
+        viewIndexInSession: Int
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -146,6 +152,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewStartTime = startTime
         self.serverTimeOffset = serverTimeOffset
         self.interactionToNextViewMetric = interactionToNextViewMetric
+        self.viewIndexInSession = viewIndexInSession
         self.accessibilityReader = dependencies.accessibilityReader
 
         self.vitalInfoSampler = dependencies.vitalsReaders.map {
@@ -215,7 +222,22 @@ extension RUMViewScope {
         switch command {
         // Application Launch
         case let command as RUMApplicationStartCommand:
-            sendApplicationStartAction(on: command, context: context, writer: writer)
+            let isUserLaunch = context.launchInfo.launchReason == .userLaunch
+            let viewStartsAtProcessLaunch = viewStartTime == context.launchInfo.processLaunchDate
+
+            if isUserLaunch && viewStartsAtProcessLaunch {
+                // Application start is only reported for user-initiated launches,
+                // and only if the "ApplicationLaunch" view starts exactly at process start.
+                //
+                // In some valid cases, the view may start later (e.g., if RUM.enable() is called
+                // while the app is already in ACTIVE state), in which case we don't assume
+                // it’s part of the launch sequence.
+                //
+                // This check ensures the "application_start" action spans a meaningful portion
+                // of the app startup (from process start to a point within the launch view).
+                // Otherwise, it could be reported as starting "before" the view exists.
+                sendApplicationStartAction(on: command, context: context, writer: writer)
+            }
             if !isInitialView || viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
                 dependencies.telemetry.error(
                     "A RUMApplicationStartCommand got sent to a View other than the ApplicationLaunch view."
@@ -224,6 +246,17 @@ extension RUMViewScope {
             // Application Launch also serves as a StartView command for this view
             didReceiveStartCommand = true
             needsViewUpdate = true
+
+        case let command as RUMHandleAppLifecycleEventCommand:
+            if command.event == .didEnterBackground && viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
+                // Stop 'ApplicationLaunch' view on transition to background
+                isActiveView = false
+                needsViewUpdate = true // yes, to update duration
+            } else if command.event == .willEnterForeground && viewPath == RUMOffViewEventsHandlingRule.Constants.backgroundViewURL {
+                // Stop 'Background' view on transition to foreground
+                isActiveView = false
+                needsViewUpdate = false // no, to not update the duration
+            }
 
         // Session stop
         case is RUMStopSessionCommand:
@@ -468,11 +501,11 @@ extension RUMViewScope {
 
         var loadingTime: Int64?
 
-        if context.launchTime.isActivePrewarm {
+        if context.launchInfo.launchReason == .prewarming {
             // Set `active_pre_warm` attribute to true in case
             // of pre-warmed app.
             commandAttributes[Constants.activePrewarm] = true
-        } else if let launchTime = context.launchTime.launchTime {
+        } else if let launchTime = context.launchInfo.timeToDidBecomeActive {
             // Report Application Launch Time only if not pre-warmed
             loadingTime = launchTime.toInt64Nanoseconds
         } else {
@@ -484,7 +517,7 @@ extension RUMViewScope {
             // In that case, we consider the time between the application
             // launch and the sdkInitialization as the application loading
             // time.
-            let launchDate = context.launchTime.launchDate
+            let launchDate = context.launchInfo.processLaunchDate
             loadingTime = command.time.timeIntervalSince(launchDate).toInt64Nanoseconds
         }
 
@@ -569,7 +602,7 @@ extension RUMViewScope {
         // RUMM-1779 Keep view active as long as we have ongoing resources
         let isActive = isActiveView || !resourceScopes.isEmpty
         // RUMM-2079 `time_spent` can't be lower than 1ns
-        let timeSpent = max(1e-9, command.time.timeIntervalSince(viewStartTime))
+        let timeSpent = max(Constants.minimumTimeSpent, command.time.timeIntervalSince(viewStartTime))
         let cpuInfo = vitalInfoSampler?.cpu
         let memoryInfo = vitalInfoSampler?.memory
         let refreshRateInfo = vitalInfoSampler?.refreshRate
@@ -720,7 +753,7 @@ extension RUMViewScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            writer.write(value: event, metadata: event.metadata())
+            writer.write(value: event, metadata: event.metadata(viewIndexInSession: viewIndexInSession))
 
             // Update fatal error context with recent RUM view:
             dependencies.fatalErrorContext.view = event
@@ -760,7 +793,7 @@ extension RUMViewScope {
             .merging(attributes) { $1 }
             .merging(command.attributes) { $1 }
         let errorFingerprint: String? = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
-        let timeSinceAppStart = command.time.timeIntervalSince(context.launchTime.launchDate).toInt64Milliseconds
+        let timeSinceAppStart = command.time.timeIntervalSince(context.launchInfo.processLaunchDate).toInt64Milliseconds
 
         var binaryImages = command.binaryImages?.compactMap { $0.toRUMDataFormat }
         if commandAttributes.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages)?.dd.decode() == true {

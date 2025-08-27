@@ -150,14 +150,14 @@ public struct CrashContext: Codable, Equatable {
         self.accountInfo = context.accountInfo
         self.networkConnectionInfo = context.networkConnectionInfo
         self.carrierInfo = context.carrierInfo
-        self.lastIsAppInForeground = context.applicationStateHistory.currentSnapshot.state.isRunningInForeground
+        self.lastIsAppInForeground = context.applicationStateHistory.currentState.isRunningInForeground
 
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState
         self.lastRUMAttributes = lastRUMAttributes
         self.lastLogAttributes = lastLogAttributes
 
-        self.appLaunchDate = context.launchTime.launchDate
+        self.appLaunchDate = context.launchInfo.processLaunchDate
     }
 
     public static func == (lhs: CrashContext, rhs: CrashContext) -> Bool {

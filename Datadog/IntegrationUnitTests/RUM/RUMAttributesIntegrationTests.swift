@@ -794,13 +794,13 @@ final class RUMAttributesIntegrationTests: XCTestCase {
         XCTAssertEqual(session.views.count, 1)
 
         let applicationView = try XCTUnwrap(session.views.first(where: { $0.isApplicationLaunchView() }))
-        XCTAssertEqual(applicationView.actionEvents.count, 3)
+        XCTAssertEqual(applicationView.actionEvents.count, 2)
 
-        let firstActionEvent = applicationView.actionEvents[1]
+        let firstActionEvent = applicationView.actionEvents[0]
         XCTAssertEqual(firstActionEvent.numberOfAttributes, 1)
         XCTAssertEqual(firstActionEvent.attribute(forKey: "sameKey"), "value1")
 
-        let lastActionEvent = applicationView.actionEvents[2]
+        let lastActionEvent = applicationView.actionEvents[1]
         XCTAssertEqual(lastActionEvent.numberOfAttributes, 2)
         XCTAssertEqual(lastActionEvent.attribute(forKey: "sameKey"), "value3")
         XCTAssertEqual(lastActionEvent.attribute(forKey: "key2"), "value2")
@@ -832,9 +832,9 @@ final class RUMAttributesIntegrationTests: XCTestCase {
         XCTAssertEqual(session.views.count, 1)
 
         let applicationView = try XCTUnwrap(session.views.first(where: { $0.isApplicationLaunchView() }))
-        XCTAssertEqual(applicationView.actionEvents.count, 2)
+        XCTAssertEqual(applicationView.actionEvents.count, 1)
 
-        let firstActionEvent = applicationView.actionEvents[1]
+        let firstActionEvent = applicationView.actionEvents[0]
         XCTAssertEqual(firstActionEvent.numberOfAttributes, 2)
         XCTAssertEqual(firstActionEvent.attribute(forKey: "actionKey"), "actionValue")
         XCTAssertEqual(firstActionEvent.attribute(forKey: "globalKey"), "globalValue")
@@ -866,9 +866,9 @@ final class RUMAttributesIntegrationTests: XCTestCase {
         XCTAssertEqual(session.views.count, 1)
 
         let applicationView = try XCTUnwrap(session.views.first(where: { $0.isApplicationLaunchView() }))
-        XCTAssertEqual(applicationView.actionEvents.count, 2) // It has the `ApplicationStartAction` and the `scroll` user action
+        XCTAssertEqual(applicationView.actionEvents.count, 1)
 
-        let firstActionEvent = applicationView.actionEvents[1]
+        let firstActionEvent = applicationView.actionEvents[0]
         XCTAssertEqual(firstActionEvent.numberOfAttributes, 2)
         XCTAssertEqual(firstActionEvent.attribute(forKey: "actionKey"), "actionValue")
         XCTAssertEqual(firstActionEvent.attribute(forKey: "globalKey"), "globalValue")

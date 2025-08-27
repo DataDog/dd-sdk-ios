@@ -166,7 +166,7 @@ public enum Logs
         public var eventMapper: EventMapper?
         public var customEndpoint: URL?
         public init(eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
-    public static func enable(with configuration: Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func enable(with configuration: Logs.Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func addAttribute(forKey key: AttributeKey, value: AttributeValue, in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func removeAttribute(forKey key: AttributeKey, in core: DatadogCoreProtocol = CoreRegistry.default)
 [?] extension Logs

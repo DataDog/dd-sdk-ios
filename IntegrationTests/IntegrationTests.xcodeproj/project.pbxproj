@@ -75,6 +75,7 @@
 		61B9ED212462089600C0DCFF /* TracingManualInstrumentationScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B9ED202462089600C0DCFF /* TracingManualInstrumentationScenarioTests.swift */; };
 		61C2C20B24C1045300C0321C /* SendRUMFixture1ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C2C20A24C1045300C0321C /* SendRUMFixture1ViewController.swift */; };
 		61C2C20D24C1831700C0321C /* RUMManualInstrumentationScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C2C20C24C1831700C0321C /* RUMManualInstrumentationScenarioTests.swift */; };
+		61D1C2E42E0EB55700BB0656 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D1C2E32E0EB55700BB0656 /* SceneDelegate.swift */; };
 		61D50C3C2580EEF8006038A3 /* LoggingScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D50C3B2580EEF8006038A3 /* LoggingScenarios.swift */; };
 		61D50C462580EF19006038A3 /* TracingScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D50C452580EF19006038A3 /* TracingScenarios.swift */; };
 		61D50C542580EF41006038A3 /* RUMScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D50C532580EF41006038A3 /* RUMScenarios.swift */; };
@@ -217,6 +218,7 @@
 		61B9ED202462089600C0DCFF /* TracingManualInstrumentationScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingManualInstrumentationScenarioTests.swift; sourceTree = "<group>"; };
 		61C2C20A24C1045300C0321C /* SendRUMFixture1ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRUMFixture1ViewController.swift; sourceTree = "<group>"; };
 		61C2C20C24C1831700C0321C /* RUMManualInstrumentationScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMManualInstrumentationScenarioTests.swift; sourceTree = "<group>"; };
+		61D1C2E32E0EB55700BB0656 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		61D50C3B2580EEF8006038A3 /* LoggingScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingScenarios.swift; sourceTree = "<group>"; };
 		61D50C452580EF19006038A3 /* TracingScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingScenarios.swift; sourceTree = "<group>"; };
 		61D50C532580EF41006038A3 /* RUMScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScenarios.swift; sourceTree = "<group>"; };
@@ -504,6 +506,7 @@
 			isa = PBXGroup;
 			children = (
 				61441C0424616DE9003D8BB8 /* AppDelegate.swift */,
+				61D1C2E32E0EB55700BB0656 /* SceneDelegate.swift */,
 				61441C9C2461A796003D8BB8 /* AppConfiguration.swift */,
 				614CADD62510BAC000B93D2D /* Environment.swift */,
 				6133702F250F829000236D58 /* Scenarios */,
@@ -1063,6 +1066,7 @@
 				611EA14225810E1900BC0E56 /* TSHomeViewController.swift in Sources */,
 				D2FCA7582B4DA8720014DC87 /* CSRootViewController.swift in Sources */,
 				612D8F6F25AEE6A7000E2E09 /* RUMScrubbingViewController.swift in Sources */,
+				61D1C2E42E0EB55700BB0656 /* SceneDelegate.swift in Sources */,
 				61163C37252DDD60007DD5BF /* RUMMVSViewController.swift in Sources */,
 				61D50C5A2580EFF3006038A3 /* URLSessionScenarios.swift in Sources */,
 				614CADCE250FCA0200B93D2D /* TestScenarios.swift in Sources */,

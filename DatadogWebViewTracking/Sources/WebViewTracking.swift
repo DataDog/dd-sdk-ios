@@ -42,13 +42,21 @@ public enum WebViewTracking {
         logsSampleRate: SampleRate = .maxSampleRate,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
-        enable(
-            tracking: webView.configuration.userContentController,
-            hosts: hosts,
-            hostsSanitizer: HostsSanitizer(),
-            logsSampleRate: logsSampleRate,
-            in: core
-        )
+        do {
+            // To ensure the correct registration order between Core and Features,
+            // the entire initialization flow is synchronized on the main thread.
+            try runOnMainThreadSync {
+                try enableOrThrow(
+                    tracking: webView.configuration.userContentController,
+                    hosts: hosts,
+                    hostsSanitizer: HostsSanitizer(),
+                    logsSampleRate: logsSampleRate,
+                    in: core
+                )
+            }
+        } catch let error {
+            consolePrint("\(error)", .error)
+        }
     }
 
     /// Disables Datadog iOS SDK and Datadog Browser SDK integration.
@@ -69,13 +77,19 @@ public enum WebViewTracking {
 
     static let jsCodePrefix = "/* DatadogEventBridge */"
 
-    static func enable(
+    static func enableOrThrow(
         tracking controller: WKUserContentController,
         hosts: Set<String>,
         hostsSanitizer: HostsSanitizing,
         logsSampleRate: Float,
         in core: DatadogCoreProtocol
-    ) {
+    ) throws {
+        guard !(core is NOPDatadogCore) else {
+            throw ProgrammerError(
+                description: "Datadog SDK must be initialized before calling `WebViewTracking.enable(webView:)`."
+            )
+        }
+
         let isTracking = controller.userScripts.contains { $0.source.starts(with: Self.jsCodePrefix) }
         guard !isTracking else {
             DD.logger.warn("`startTrackingDatadogEvents(core:hosts:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")

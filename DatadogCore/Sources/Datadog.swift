@@ -262,11 +262,16 @@ public enum Datadog {
         #endif
 
         do {
-            return try initializeOrThrow(
-                with: configuration,
-                trackingConsent: trackingConsent,
-                instanceName: instanceName
-            )
+            // To safely instrument the application lifecycle observer and other providers,
+            // SDK initialization must occur on the main thread. This enforcement is also present
+            // in all Features, ensuring a proper registration order.
+            return try runOnMainThreadSync {
+                return try initializeOrThrow(
+                    with: configuration,
+                    trackingConsent: trackingConsent,
+                    instanceName: instanceName
+                )
+            }
         } catch {
             consolePrint("\(error)", .error)
             return NOPDatadogCore()

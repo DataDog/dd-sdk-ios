@@ -109,15 +109,15 @@ extension Device: AnyMockable, RandomMockable {
     }
 
     public static func mockWith(
-    architecture: String = "arm64e",
-    batteryLevel: Double = 1.0,
-    brand: String = "Apple",
-    brightnessLevel: Double = 1.0,
-    locale: String = "en-US",
-    model: String = "iPhone10,1",
-    name: String = "iPhone",
-    powerSavingMode: Bool = false,
-    type: DeviceType = .mobile
+        architecture: String = "arm64e",
+        batteryLevel: Double = 1.0,
+        brand: String = "Apple",
+        brightnessLevel: Double = 1.0,
+        locale: String = "en-US",
+        model: String = "iPhone10,1",
+        name: String = "iPhone",
+        powerSavingMode: Bool = false,
+        type: DeviceType = .mobile
     ) -> Device {
         .init(
             architecture: architecture,
@@ -135,9 +135,15 @@ extension Device: AnyMockable, RandomMockable {
     public static func mockRandom() -> Device {
         .init(
             architecture: .mockRandom(),
+            batteryLevel: .mockRandom(),
             brand: .mockRandom(),
+            brightnessLevel: .mockRandom(),
+            locale: .mockRandom(),
+            locales: .mockRandom(),
             model: .mockRandom(),
             name: .mockRandom(),
+            powerSavingMode: .mockRandom(),
+            timeZone: .mockRandom(),
             type: .mockRandom()
         )
     }

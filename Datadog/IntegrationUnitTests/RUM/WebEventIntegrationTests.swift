@@ -18,7 +18,7 @@ class WebEventIntegrationTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     private var controller: WKUserContentControllerMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
-    override func setUp() {
+    override func setUpWithError() throws {
         core = DatadogCoreProxy(
             context: .mockWith(
                 env: "test",
@@ -29,7 +29,7 @@ class WebEventIntegrationTests: XCTestCase {
 
         controller = WKUserContentControllerMock()
 
-        WebViewTracking.enable(
+        try WebViewTracking.enableOrThrow(
             tracking: controller,
             hosts: [],
             hostsSanitizer: HostsSanitizer(),

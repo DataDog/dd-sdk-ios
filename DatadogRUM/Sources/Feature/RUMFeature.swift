@@ -44,7 +44,9 @@ internal final class RUMFeature: DatadogRemoteFeature {
         let featureScope = core.scope(for: RUMFeature.self)
         let sessionEndedMetric = SessionEndedMetricController(
             telemetry: core.telemetry,
-            sampleRate: configuration.debugSDK ? 100 : configuration.sessionEndedSampleRate
+            sampleRate: configuration.debugSDK ? 100 : configuration.sessionEndedSampleRate,
+            tracksBackgroundEvents: configuration.trackBackgroundEvents,
+            isUsingSceneLifecycle: configuration.bundle.object(forInfoDictionaryKey: "UIApplicationSceneManifest") != nil
         )
         let tnsPredicateType = configuration.networkSettledResourcePredicate.metricPredicateType
         let invPredicateType = configuration.nextViewActionPredicate?.metricPredicateType ?? .disabled
@@ -204,7 +206,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,
-            eventsFilter: RUMViewEventsFilter(),
+            eventsFilter: RUMViewEventsFilter(telemetry: core.telemetry),
             telemetry: core.telemetry
         )
         var messageReceivers: [FeatureMessageReceiver] = [

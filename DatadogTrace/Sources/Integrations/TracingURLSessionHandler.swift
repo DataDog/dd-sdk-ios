@@ -165,14 +165,12 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         }
 
         if let history = contextReceiver.context.applicationStateHistory {
-            let appStateHistory = history.take(
-                between: resourceMetrics.fetch.start...resourceMetrics.fetch.end
-            )
+            let fetchDuration = resourceMetrics.fetch.start...resourceMetrics.fetch.end
+            let foregroundDuration = history.foregroundDuration(during: fetchDuration)
+            span.setTag(key: SpanTags.foregroundDuration, value: foregroundDuration.toNanoseconds)
 
-            span.setTag(key: SpanTags.foregroundDuration, value: appStateHistory.foregroundDuration.toNanoseconds)
-
-            let didStartInBackground = appStateHistory.initialSnapshot.state == .background
-            let doesEndInBackground = appStateHistory.currentSnapshot.state == .background
+            let didStartInBackground = history.state(at: resourceMetrics.fetch.start) == .background
+            let doesEndInBackground = history.state(at: resourceMetrics.fetch.end) == .background
             span.setTag(key: SpanTags.isBackground, value: didStartInBackground || doesEndInBackground)
         }
 
