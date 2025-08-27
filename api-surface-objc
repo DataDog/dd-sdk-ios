@@ -145,7 +145,7 @@ public class objc_LogEvent: NSObject
     public var device: objc_LogEventDevice
     public var os: objc_LogEventOperatingSystem
     public var userInfo: objc_LogEventUserInfo
-    public var accountInfo: objc_LogEventAccountInfo
+    public var accountInfo: objc_LogEventAccountInfo?
     public var networkConnectionInfo: objc_LogEventNetworkConnectionInfo?
     public var mobileCarrierInfo: objc_LogEventCarrierInfo?
     public var attributes: objc_LogEventAttributes
@@ -1590,7 +1590,7 @@ public class objc_RUMViewEventView: NSObject
     public var cumulativeLayoutShift: NSNumber?
     public var cumulativeLayoutShiftTargetSelector: String?
     public var cumulativeLayoutShiftTime: NSNumber?
-    public var customTimings: [String: NSNumber]?
+    public var customTimings: objc_RUMViewEventViewCustomTimings?
     public var domComplete: NSNumber?
     public var domContentLoaded: NSNumber?
     public var domInteractive: NSNumber?
@@ -1660,6 +1660,8 @@ public class objc_RUMViewEventViewAction: NSObject
     public var count: NSNumber
 public class objc_RUMViewEventViewCrash: NSObject
     public var count: NSNumber
+public class objc_RUMViewEventViewCustomTimings: NSObject
+    public var customTimingsInfo: [String: NSNumber]
 public class objc_RUMViewEventViewError: NSObject
     public var count: NSNumber
 public class objc_RUMViewEventViewFlutterBuildTime: NSObject
@@ -1919,7 +1921,7 @@ public class objc_RUMVitalEventVital: NSObject
     public var failureReason: objc_RUMVitalEventVitalFailureReason
     public var id: String
     public var name: String?
-    public var parentId: String?
+    public var operationKey: String?
     public var stepType: objc_RUMVitalEventVitalStepType
     public var type: objc_RUMVitalEventVitalVitalType
 public enum objc_RUMVitalEventVitalFailureReason: Int
@@ -1935,7 +1937,7 @@ public enum objc_RUMVitalEventVitalStepType: Int
     case end
 public enum objc_RUMVitalEventVitalVitalType: Int
     case duration
-    case step
+    case operationStep
 public class objc_TelemetryErrorEvent: NSObject
     public internal(set) var swiftModel: TelemetryErrorEvent
     public init(swiftModel: TelemetryErrorEvent)

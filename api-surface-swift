@@ -1121,7 +1121,7 @@ public class SessionReplayWireframesBuilder
     public struct FontOverride
         public init(size: CGFloat?)
     public func createShapeWireframe(id: WireframeID,frame: CGRect,clip: CGRect,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
-    public func createImageWireframe(id: WireframeID,resource: SessionReplayResource,frame: CGRect,clip: CGRect,mimeType: String = "png",borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
+    public func createImageWireframe(id: WireframeID,resource: SessionReplayResource,frame: CGRect,clip: CGRect,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
     public func createTextWireframe(id: WireframeID,frame: CGRect,clip: CGRect,text: String,textFrame: CGRect? = nil,textAlignment: SRTextPosition.Alignment? = nil,textColor: CGColor? = nil,font: UIFont? = nil,fontOverride: FontOverride? = nil,fontScalingEnabled: Bool = false,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
     public func createPlaceholderWireframe(id: Int64,frame: CGRect,clip: CGRect,label: String) -> SRWireframe
     public func visibleWebViewWireframe(id: Int,frame: CGRect,clip: CGRect,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
@@ -1163,6 +1163,7 @@ public struct SessionReplayNode
     public let wireframesBuilder: SessionReplayNodeWireframesBuilder
     public init(viewAttributes: SessionReplayViewAttributes, wireframesBuilder: SessionReplayNodeWireframesBuilder)
 public protocol SessionReplayResource
+    var mimeType: String
     func calculateIdentifier() -> String
     func calculateData() -> Data
 public struct SessionReplayViewAttributes: Equatable
