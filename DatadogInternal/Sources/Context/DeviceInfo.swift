@@ -229,6 +229,8 @@ extension DatadogContext {
     /// Current device information to send in the events.
     ///
     /// - Parameter addLocales: Temporary boolean to remove locales from events that don't support array parameters.
+    /// NOTE: RUM-9494 only basic types (boolean, string, number) are supported for `meta.*` attributes.
+    ///
     /// - Returns: The device model for the events.
     public func normalizedDevice(addLocales: Bool = true) -> Device {
         var battery: Double?
