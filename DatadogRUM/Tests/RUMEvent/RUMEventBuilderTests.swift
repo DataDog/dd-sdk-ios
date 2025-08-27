@@ -13,12 +13,12 @@ class RUMEventBuilderTests: XCTestCase {
     func testGivenEventBuilderWithEventMapper_whenEventIsModified_itBuildsModifiedEvent() throws {
         let builder = RUMEventBuilder(
             eventsMapper: .mockWith(
-                viewEventMapper: { _ in.mockRandom() }
+                viewEventMapper: { _ in .mockRandom() }
             )
         )
         let originalEventModel = RUMViewEvent.mockRandom()
         let event = try XCTUnwrap(
-            builder.build(from: RUMViewEvent.mockRandom())
+            builder.build(from: originalEventModel)
         )
 
         DDAssertReflectionNotEqual(event, originalEventModel)

@@ -518,6 +518,7 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: commandAttributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: context.normalizedDevice,
             display: nil,
             os: context.os,
@@ -646,6 +647,7 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: localAttributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: context.normalizedDevice,
             display: nil,
             featureFlags: .init(featureFlagsInfo: featureFlags),
@@ -792,6 +794,7 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: commandAttributes),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: context.normalizedDevice,
             display: nil,
             error: .init(
@@ -879,6 +882,7 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: commandAttributes),
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: context.normalizedDevice,
             display: nil,
             longTask: .init(
