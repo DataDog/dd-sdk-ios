@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FIX] Fix `DDLogEvent.accountInfo` property initialization in case of missing account info. See [#2442][]
+- [IMPROVEMENT] Update Session Replay batch maximum age to 5hrs. See[#2455][]
 - [IMPROVEMENT] Update the default tracing sampling rate to 100%. See [#2253][] 
 - [IMPROVEMENT] Update the default TraceContextInjection to `.sampled`. See [#2253][]
 - [IMPROVEMENT] Enforce head-based sampling on Trace by default. See [#2288][]
@@ -947,6 +948,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2395]: https://github.com/DataDog/dd-sdk-ios/pull/2395
 [#2405]: https://github.com/DataDog/dd-sdk-ios/pull/2405
 [#2442]: https://github.com/DataDog/dd-sdk-ios/pull/2442
+[#2455]: https://github.com/DataDog/dd-sdk-ios/pull/2455
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
