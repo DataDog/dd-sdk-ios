@@ -213,7 +213,7 @@ internal struct SpanEventEncoder {
 
     /// Encodes default `meta.*` attributes
     private func encodeDefaultMeta(_ span: SpanEvent, to container: inout KeyedEncodingContainer<StaticCodingKeys>) throws {
-        // NOTE: RUMM-299 only string values are supported for `meta.*` attributes
+        // NOTE: RUM-9494 only basic types (boolean, string, number) are supported for `meta.*` attributes
         try container.encode(span.source, forKey: .source)
         try container.encode(span.tracerVersion, forKey: .tracerVersion)
         try container.encode(span.applicationVersion, forKey: .applicationVersion)
@@ -270,7 +270,7 @@ internal struct SpanEventEncoder {
 
     /// Encodes `meta.*` attributes coming from user
     private func encodeCustomMeta(_ span: SpanEvent, to container: inout KeyedEncodingContainer<DynamicCodingKey>) throws {
-        // NOTE: RUMM-299 only string values are supported for `meta.*` attributes
+        // NOTE: RUM-9494 only basic types (boolean, string, number) are supported for `meta.*` attributes
         try span.userInfo.extraInfo.forEach {
             let metaKey = "meta.usr.\($0.key)"
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))

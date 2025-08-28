@@ -97,7 +97,7 @@ internal struct SpanEventBuilder {
             applicationVersion: context.version,
             networkConnectionInfo: networkInfoEnabled ? context.networkConnectionInfo : nil,
             mobileCarrierInfo: networkInfoEnabled ? context.carrierInfo : nil,
-            device: context.normalizedDevice,
+            device: context.normalizedDevice(addLocales: false),
             os: context.os,
             userInfo: spanUserInfo,
             accountInfo: spanEventAccountInfo,

@@ -85,7 +85,6 @@ class TracerTests: XCTestCase {
                 "brand": "Apple",
                 "brightness_level": 0,
                 "locale": "en-US",
-                "locales": ["en"],
                 "model": "iPhone10,1",
                 "name": "iPhone",
                 "power_saving_mode": 0,
