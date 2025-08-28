@@ -94,11 +94,12 @@ class UIHostingViewRecorderTests: XCTestCase {
 
         let wireframes = try render(MockView())
         XCTAssertEqual(wireframes.count, 1)
-        let wireframe = try XCTUnwrap(wireframes.first?.imageWireframe)
+        let wireframe = try XCTUnwrap(wireframes.first?.shapeWireframe)
         XCTAssertEqual(wireframe.x, 100, accuracy: 5)
         XCTAssertEqual(wireframe.y, 130, accuracy: 5)
         XCTAssertEqual(wireframe.width, 100, accuracy: 5)
         XCTAssertEqual(wireframe.height, 100, accuracy: 5)
+        XCTAssertEqual(wireframe.shapeStyle?.backgroundColor, "#1022A00FF")
     }
 
     // MARK: Image
@@ -140,7 +141,7 @@ class UIHostingViewRecorderTests: XCTestCase {
         }
     }
 
-    func testImage_withShape_itDoesRecordSVGImage() throws {
+    func testImage_withUnsupportedType_itDoesNotRecordImage() throws {
         struct MockView: View {
             var body: some View {
                 Image(systemName: "star.fill")
@@ -159,7 +160,7 @@ class UIHostingViewRecorderTests: XCTestCase {
         )
 
         XCTAssertEqual(wireframes.count, 1)
-        let wireframe = try XCTUnwrap(wireframes.first?.imageWireframe)
+        let wireframe = try XCTUnwrap(wireframes.first?.shapeWireframe)
         XCTAssertEqual(wireframe.x, 125, accuracy: 5)
         XCTAssertEqual(wireframe.y, 155, accuracy: 5)
         XCTAssertEqual(wireframe.width, 50, accuracy: 5)

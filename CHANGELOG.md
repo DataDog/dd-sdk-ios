@@ -15,7 +15,6 @@
 - [IMPROVEMENT] Remove fatal errors from Logs. See [#2359][]
 - [IMPROVEMENT] Introduce new category for network errors. See [#2341][]
 - [IMPROVEMENT] Add opt-out API to disable tracking memory warnings as RUM Errors. See [#2355][]
-- [IMPROVEMENT] Improve SwiftUI system image and SF symbol capture in Session Replay through shape SVG recording, image maskColor support, and drawing rasterization. See [#2432][] [#2428][] [#2391][]
 
 # 2.30.0 / 28-07-2025
 

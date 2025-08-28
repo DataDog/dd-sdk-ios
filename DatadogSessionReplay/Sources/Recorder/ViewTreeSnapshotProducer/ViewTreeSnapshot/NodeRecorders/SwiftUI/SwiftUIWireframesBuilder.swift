@@ -101,27 +101,20 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
         let id: Int64 = .positiveRandom(using: &generator)
 
         switch content.value {
-        case let .shape(path, color, fillStyle):
-            // We treat shapes as bundled images
-            if case .maskAll = self.imagePrivacyLevel {
-                return context.builder.createPlaceholderWireframe(
+        case let .shape(_, paint, _):
+            return paint.paint.map { paint in
+                context.builder.createShapeWireframe(
                     id: id,
                     frame: context.convert(frame: item.frame),
                     clip: context.clip,
-                    label: "Image"
-                )
-            } else {
-                let shapeResource = ShapeResource(
-                    path: path,
-                    color: color,
-                    fillStyle: fillStyle,
-                    size: item.frame.size
-                )
-                return context.builder.createImageWireframe(
-                    id: id,
-                    resource: shapeResource,
-                    frame: context.convert(frame: item.frame),
-                    clip: context.clip
+                    backgroundColor: CGColor(
+                        red: CGFloat(paint.linearRed),
+                        green: CGFloat(paint.linearGreen),
+                        blue: CGFloat(paint.linearBlue),
+                        alpha: CGFloat(paint.opacity)
+                    ),
+                    cornerRadius: viewInfo?.cornerRadius,
+                    opacity: CGFloat(paint.opacity)
                 )
             }
         case let .text(view, _):
