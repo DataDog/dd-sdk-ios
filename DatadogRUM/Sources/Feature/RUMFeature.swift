@@ -81,6 +81,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
              accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenter)
         }
 
+        let firstFrameReader = FirstFrameReader()
+
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
@@ -113,6 +115,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 }
             }(),
             renderLoopObserver: DisplayLinker(notificationCenter: configuration.notificationCenter),
+            firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: {
                 configuration.featureFlags[.viewHitches]
                 ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
@@ -176,6 +179,9 @@ internal final class RUMFeature: DatadogRemoteFeature {
         if let refreshRateVital = dependencies.vitalsReaders?.refreshRate as? RenderLoopReader {
             dependencies.renderLoopObserver?.register(refreshRateVital)
         }
+
+        firstFrameReader.publish(to: monitor)
+        dependencies.renderLoopObserver?.register(firstFrameReader)
 
         var memoryWarningMonitor: MemoryWarningMonitor?
         if configuration.trackMemoryWarnings {
