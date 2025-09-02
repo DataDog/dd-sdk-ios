@@ -7,12 +7,13 @@
 #if os(iOS)
 
 import XCTest
-import CoreGraphics
+import SwiftUI
 @testable import DatadogSessionReplay
 
-final class CGPathSessionReplayTests: XCTestCase {
+@available(iOS 13.0, tvOS 13.0, *)
+final class PathSessionReplayTests: XCTestCase {
     func testEmptyPath() {
-        let path = CGMutablePath()
+        let path = Path()
 
         let svgString = path.dd.svgString
 
@@ -20,7 +21,7 @@ final class CGPathSessionReplayTests: XCTestCase {
     }
 
     func testMoveToPoint() {
-        let path = CGMutablePath()
+        var path = Path()
         path.move(to: CGPoint(x: 10.5, y: 20.25))
 
         let svgString = path.dd.svgString
@@ -29,7 +30,7 @@ final class CGPathSessionReplayTests: XCTestCase {
     }
 
     func testLineToPoint() {
-        let path = CGMutablePath()
+        var path = Path()
         path.move(to: CGPoint(x: 0, y: 0))
         path.addLine(to: CGPoint(x: 100, y: 50))
 
@@ -39,7 +40,7 @@ final class CGPathSessionReplayTests: XCTestCase {
     }
 
     func testQuadCurveToPoint() {
-        let path = CGMutablePath()
+        var path = Path()
         path.move(to: CGPoint(x: 0, y: 0))
         path.addQuadCurve(to: CGPoint(x: 100, y: 100), control: CGPoint(x: 50, y: 0))
 
@@ -49,7 +50,7 @@ final class CGPathSessionReplayTests: XCTestCase {
     }
 
     func testCubicCurveToPoint() {
-        let path = CGMutablePath()
+        var path = Path()
         path.move(to: CGPoint(x: 0, y: 0))
         path.addCurve(to: CGPoint(x: 100, y: 100), control1: CGPoint(x: 25, y: 0), control2: CGPoint(x: 75, y: 100))
 
@@ -59,7 +60,7 @@ final class CGPathSessionReplayTests: XCTestCase {
     }
 
     func testCloseSubpath() {
-        let path = CGMutablePath()
+        var path = Path()
         path.move(to: CGPoint(x: 0, y: 0))
         path.addLine(to: CGPoint(x: 100, y: 0))
         path.addLine(to: CGPoint(x: 100, y: 100))
@@ -71,7 +72,7 @@ final class CGPathSessionReplayTests: XCTestCase {
     }
 
     func testMultipleSubpaths() {
-        let path = CGMutablePath()
+        var path = Path()
 
         // First subpath - triangle
         path.move(to: CGPoint(x: 0, y: 0))
@@ -91,7 +92,7 @@ final class CGPathSessionReplayTests: XCTestCase {
     }
 
     func testCoordinatePrecision() {
-        let path = CGMutablePath()
+        var path = Path()
         path.move(to: CGPoint(x: 1.23456, y: 7.89123))
         path.addLine(to: CGPoint(x: 45.6789, y: 12.3456))
 
@@ -102,7 +103,7 @@ final class CGPathSessionReplayTests: XCTestCase {
     }
 
     func testNegativeCoordinates() {
-        let path = CGMutablePath()
+        var path = Path()
         path.move(to: CGPoint(x: -10.5, y: -20.75))
         path.addLine(to: CGPoint(x: -50, y: 30))
 
@@ -111,5 +112,4 @@ final class CGPathSessionReplayTests: XCTestCase {
         XCTAssertEqual(svgString, "M -10.500 -20.750 L -50.000 30.000")
     }
 }
-
 #endif

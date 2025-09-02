@@ -13,19 +13,28 @@ import CryptoKit
 #endif
 
 @available(iOS 13.0, *)
-internal struct ShapeResource {
+internal final class ShapeResource: NSObject {
     let svgString: String
 
-    init(path: SwiftUI.Path, color: ResolvedPaint, fillStyle: SwiftUI.FillStyle, size: CGSize) {
-        let pathData = path.cgPath.dd.svgString
-        let fillColor = color.paint.map(\.uiColor.dd.hexString) ?? "#000000FF"
-        let fillRule = fillStyle.isEOFilled ? "evenodd" : "nonzero"
+    private lazy var identifier = makeIdentifier()
+    private lazy var data = makeData()
 
-        self.svgString = """
-          <svg width="\(size.width.dd.svgString)" height="\(size.height.dd.svgString)" xmlns="http://www.w3.org/2000/svg">
-            <path d="\(pathData)" fill="\(fillColor)" fill-rule="\(fillRule)"/>
-          </svg>
-          """
+    init(svgString: String) {
+        self.svgString = svgString
+    }
+
+    private func makeIdentifier() -> String {
+#if canImport(CryptoKit)
+        let hash = Insecure.MD5.hash(data: self.data)
+        return hash.map { String(format: "%02hhx", $0) }.joined()
+#else
+        // Should never execute since CryptoKit is available iOS 13
+        fatalError("CryptoKit not available")
+#endif
+    }
+
+    private func makeData() -> Data {
+        Data(svgString.utf8)
     }
 }
 
@@ -36,18 +45,11 @@ extension ShapeResource: Resource {
     }
 
     func calculateIdentifier() -> String {
-        #if canImport(CryptoKit)
-            let data = Data(svgString.utf8)
-            let hash = Insecure.MD5.hash(data: data)
-            return hash.map { String(format: "%02hhx", $0) }.joined()
-        #else
-            // Should never execute since CryptoKit is available iOS 13
-            fatalError("CryptoKit not available")
-        #endif
+        self.identifier
     }
 
     func calculateData() -> Data {
-        Data(svgString.utf8)
+        self.data
     }
 }
 

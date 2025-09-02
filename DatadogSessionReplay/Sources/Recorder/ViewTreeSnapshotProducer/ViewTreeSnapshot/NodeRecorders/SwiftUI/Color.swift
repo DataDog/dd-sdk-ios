@@ -11,7 +11,7 @@ import SwiftUI
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension SwiftUI.Color {
-    struct _Resolved: Equatable {
+    struct _Resolved: Hashable {
         let linearRed: Float
         let linearGreen: Float
         let linearBlue: Float
@@ -39,7 +39,7 @@ internal struct ColorView {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-internal struct ResolvedPaint {
+internal struct ResolvedPaint: Hashable {
     let paint: SwiftUI.Color._Resolved?
 }
 

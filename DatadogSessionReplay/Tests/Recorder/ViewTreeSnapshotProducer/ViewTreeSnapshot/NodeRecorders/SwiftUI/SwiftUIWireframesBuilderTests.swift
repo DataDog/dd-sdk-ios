@@ -40,6 +40,7 @@ class SwiftUIWireframesBuilderTests: XCTestCase {
             wireframeID: .mockRandom(),
             renderer: renderer,
             imageRenderer: .init(),
+            shapeResourceBuilder: .init(),
             textObfuscator: TextObfuscatorMock(),
             fontScalingEnabled: true,
             imagePrivacyLevel: .maskNone,

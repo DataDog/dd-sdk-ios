@@ -24,6 +24,8 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     let renderer: DisplayList.ViewUpdater
     /// Image renderer for drawings.
     let imageRenderer: ImageRenderer
+    /// Resource builder for captured shapes.
+    let shapeResourceBuilder: ShapeResourceBuilder
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
     /// Flag that determines if font should be scaled.
@@ -111,8 +113,8 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                     label: "Image"
                 )
             } else {
-                let shapeResource = ShapeResource(
-                    path: path,
+                let shapeResource = shapeResourceBuilder.shapeResource(
+                    for: path,
                     color: color,
                     fillStyle: fillStyle,
                     size: item.frame.size

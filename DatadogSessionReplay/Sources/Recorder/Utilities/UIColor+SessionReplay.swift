@@ -10,11 +10,7 @@ import Foundation
 import UIKit
 import DatadogInternal
 
-#if $RetroactiveAttribute
-extension UIColor: @retroactive DatadogExtended {}
-#else
 extension UIColor: DatadogExtended {}
-#endif
 
 private var identifierKey: UInt8 = 0
 

@@ -8,11 +8,7 @@
 import UIKit
 import DatadogInternal
 
-#if $RetroactiveAttribute
-extension UIView: @retroactive DatadogExtended { }
-#else
 extension UIView: DatadogExtended { }
-#endif
 
 /// Sensitive text content types as defined in Session Replay.
 private let UITextContentSensitiveTypes: Set<UITextContentType> = [
