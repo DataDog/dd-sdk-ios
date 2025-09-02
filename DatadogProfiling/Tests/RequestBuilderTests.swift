@@ -12,17 +12,33 @@ import TestUtilities
 
 class RequestBuilderTests: XCTestCase {
     private let rumContext: RUMCoreContext = .mockRandom()
-    private var event: Event = .mockWith(
-        data: .mockRandom(),
-        metadata: .mockRandom()
+
+    let profileEvent = ProfileEvent(
+        family: .mockRandom(),
+        runtime: .mockRandom(),
+        version: .mockRandom(),
+        start: .mockRandomInThePast(),
+        end: Date(),
+        attachments: [],
+        tags: .mockAny()
     )
+
+    let profileData: Data = .mockRandom()
+
+    private func mockEvent() throws -> Event {
+        let encoder = JSONEncoder.dd.default()
+        return try Event(
+            data: encoder.encode(profileData),
+            metadata: encoder.encode(profileEvent)
+        )
+    }
 
     func testItCreatesPOSTRequest() throws {
         // Given
         let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When
-        let request = try builder.request(for: [event], with: .mockAny(), execution: .mockAny())
+        let request = try builder.request(for: [mockEvent()], with: .mockAny(), execution: .mockAny())
 
         // Then
         XCTAssertEqual(request.httpMethod, "POST")
@@ -34,7 +50,7 @@ class RequestBuilderTests: XCTestCase {
 
         // When
         func url(for site: DatadogSite) throws -> String {
-            let request = try builder.request(for: [event], with: .mockWith(site: site), execution: .mockAny())
+            let request = try builder.request(for: [mockEvent()], with: .mockWith(site: site), execution: .mockAny())
             return request.url!.absoluteStringWithoutQuery!
         }
 
@@ -55,7 +71,7 @@ class RequestBuilderTests: XCTestCase {
 
         // When
         func url(for site: DatadogSite) throws -> String {
-            let request = try builder.request(for: [event], with: .mockWith(site: site), execution: .mockAny())
+            let request = try builder.request(for: [mockEvent()], with: .mockWith(site: site), execution: .mockAny())
             return request.url!.absoluteStringWithoutQuery!
         }
 
@@ -76,7 +92,7 @@ class RequestBuilderTests: XCTestCase {
         let context: DatadogContext = .mockRandom()
 
         // When
-        let request = try builder.request(for: [event], with: context, execution: .mockWith(previousResponseCode: nil, attempt: 0))
+        let request = try builder.request(for: [mockEvent()], with: context, execution: .mockWith(previousResponseCode: nil, attempt: 0))
 
         // Then
         XCTAssertEqual(request.url!.query, "ddtags=retry_count:1")
@@ -108,7 +124,7 @@ class RequestBuilderTests: XCTestCase {
         )
 
         // When
-        let request = try builder.request(for: [event], with: context, execution: .mockAny())
+        let request = try builder.request(for: [mockEvent()], with: context, execution: .mockAny())
 
         // Then
         let contentType = try XCTUnwrap(request.allHTTPHeaderFields?["Content-Type"])
@@ -128,6 +144,7 @@ class RequestBuilderTests: XCTestCase {
 
     func testItSetsHTTPBodyInExpectedFormat() throws {
         // Given
+        let event = try mockEvent()
         let multipartSpy = MultipartBuilderSpy()
         let builder = RequestBuilder(multipartBuilder: multipartSpy, customUploadURL: nil, telemetry: TelemetryMock())
 
@@ -147,7 +164,7 @@ class RequestBuilderTests: XCTestCase {
         let pprofFile = multipartSpy.formFiles[1]
         XCTAssertEqual(pprofFile.filename, "wall.pprof")
         XCTAssertEqual(pprofFile.mimeType, "application/octet-stream")
-        XCTAssertEqual(pprofFile.data, event.data)
+        XCTAssertEqual(pprofFile.data, profileData)
     }
 
     func testWhenBatchDataHasMoreThanOneProfile() {
