@@ -124,12 +124,6 @@ public struct CrossPlatformAttributes {
     /// Expects `Double` value between `0.0` and `1.0`.
     public static let rulePSR = "_dd.rule_psr"
 
-    /// Custom attribute of the log passed from CP SDK. Used in error logs reported by cross platform SDK.
-    /// It flags the error has being fatal for the host application, so we can prevent creating a duplicate RUM error.
-    /// The goal of RUMM-3289 is to create an RFC to get rid of this mechanism.
-    /// Expects `Bool` value.
-    public static let errorLogIsCrash = "_dd.error_log.is_crash"
-
     /// Custom attribute passed when starting GraphQL RUM resources from a cross platform SDK.
     /// It sets the GraphQL operation name if it was defined by the developer.
     /// Expects `String` value.

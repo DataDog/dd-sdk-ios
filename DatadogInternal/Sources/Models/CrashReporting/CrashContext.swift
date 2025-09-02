@@ -33,10 +33,10 @@ public struct CrashContext: Codable, Equatable {
     public let buildNumber: String
 
     /// Current device information.
-    public let device: DeviceInfo
+    public let device: Device
 
-    /// Current locale information.
-    public let localeInfo: LocaleInfo?
+    /// Operating System information.
+    public let os: OperatingSystem
 
     /// The version of Datadog iOS SDK.
     public let sdkVersion: String
@@ -68,17 +68,6 @@ public struct CrashContext: Codable, Equatable {
     /// not support telephony services.
     public let carrierInfo: CarrierInfo?
 
-    /// The current mobile device battery status.
-    ///
-    /// This value can be `nil` of the current device battery interface is not available.
-    public var batteryStatus: BatteryStatus?
-
-    /// The current brightness status.
-    public var brightnessLevel: BrightnessLevel?
-
-    /// `true` if the Low Power Mode is enabled.
-    public var isLowPowerModeEnabled = false
-
     /// The last _"Is app in foreground?"_ information from crashed app process.
     public let lastIsAppInForeground: Bool
 
@@ -102,8 +91,8 @@ public struct CrashContext: Codable, Equatable {
         env: String,
         version: String,
         buildNumber: String,
-        device: DeviceInfo,
-        localeInfo: LocaleInfo?,
+        device: Device,
+        os: OperatingSystem,
         sdkVersion: String,
         source: String,
         trackingConsent: TrackingConsent,
@@ -111,9 +100,6 @@ public struct CrashContext: Codable, Equatable {
         accountInfo: AccountInfo?,
         networkConnectionInfo: NetworkConnectionInfo?,
         carrierInfo: CarrierInfo?,
-        batteryStatus: BatteryStatus?,
-        brightnessLevel: BrightnessLevel?,
-        isLowPowerModeEnabled: Bool,
         lastIsAppInForeground: Bool,
         appLaunchDate: Date?,
         lastRUMViewEvent: RUMViewEvent?,
@@ -127,7 +113,7 @@ public struct CrashContext: Codable, Equatable {
         self.version = version
         self.buildNumber = buildNumber
         self.device = device
-        self.localeInfo = localeInfo
+        self.os = os
         self.sdkVersion = service
         self.source = source
         self.trackingConsent = trackingConsent
@@ -135,9 +121,6 @@ public struct CrashContext: Codable, Equatable {
         self.accountInfo = accountInfo
         self.networkConnectionInfo = networkConnectionInfo
         self.carrierInfo = carrierInfo
-        self.batteryStatus = batteryStatus
-        self.brightnessLevel = brightnessLevel
-        self.isLowPowerModeEnabled = isLowPowerModeEnabled
         self.lastIsAppInForeground = lastIsAppInForeground
         self.appLaunchDate = appLaunchDate
         self.lastRUMViewEvent = lastRUMViewEvent
@@ -158,8 +141,8 @@ public struct CrashContext: Codable, Equatable {
         self.env = context.env
         self.version = context.version
         self.buildNumber = context.buildNumber
-        self.device = context.device
-        self.localeInfo = context.localeInfo
+        self.device = context.normalizedDevice()
+        self.os = context.os
         self.sdkVersion = context.sdkVersion
         self.source = context.source
         self.trackingConsent = context.trackingConsent
@@ -167,14 +150,14 @@ public struct CrashContext: Codable, Equatable {
         self.accountInfo = context.accountInfo
         self.networkConnectionInfo = context.networkConnectionInfo
         self.carrierInfo = context.carrierInfo
-        self.lastIsAppInForeground = context.applicationStateHistory.currentSnapshot.state.isRunningInForeground
+        self.lastIsAppInForeground = context.applicationStateHistory.currentState.isRunningInForeground
 
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState
         self.lastRUMAttributes = lastRUMAttributes
         self.lastLogAttributes = lastLogAttributes
 
-        self.appLaunchDate = context.launchTime.launchDate
+        self.appLaunchDate = context.launchInfo.processLaunchDate
     }
 
     public static func == (lhs: CrashContext, rhs: CrashContext) -> Bool {

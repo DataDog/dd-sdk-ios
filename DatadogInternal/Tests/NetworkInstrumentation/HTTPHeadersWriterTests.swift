@@ -10,7 +10,7 @@ import DatadogInternal
 
 class HTTPHeadersWriterTests: XCTestCase {
     func testWritingSampledTraceContext_withHeadBasedSamplingStrategy() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
+        let writer = HTTPHeadersWriter(traceContextInjection: .all)
 
         writer.write(
             traceContext: .mockWith(
@@ -30,7 +30,7 @@ class HTTPHeadersWriterTests: XCTestCase {
     }
 
     func testWritingDroppedTraceContext_withHeadBasedSamplingStrategy() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .sampled)
+        let writer = HTTPHeadersWriter(traceContextInjection: .sampled)
 
         writer.write(
             traceContext: .mockWith(
@@ -48,13 +48,13 @@ class HTTPHeadersWriterTests: XCTestCase {
     }
 
     func testWritingSampledTraceContext_withCustomSamplingStrategy() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 100), traceContextInjection: .all)
+        let writer = HTTPHeadersWriter(traceContextInjection: .all)
 
         writer.write(
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: .random(),
+                isKept: true,
                 rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
             )
         )
@@ -67,14 +67,36 @@ class HTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[W3CHTTPHeaders.baggage], "session.id=abcdef01-2345-6789-abcd-ef0123456789")
     }
 
-    func testWritingDroppedTraceContext_withCustomSamplingStrategy() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 0), traceContextInjection: .sampled)
+    // The sampling based on session ID should pass at 18% sampling rate and fail at 17% 
+    func testWritingSampledTraceContext_withCustomSamplingStrategy_18percent() {
+        let writer = HTTPHeadersWriter(traceContextInjection: .sampled)
 
         writer.write(
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: .random()
+                isKept: true,
+                rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
+            )
+        )
+
+        let headers = writer.traceHeaderFields
+        XCTAssertEqual(headers[TracingHTTPHeaders.samplingPriorityField], "1")
+        XCTAssertEqual(headers[TracingHTTPHeaders.traceIDField], "1234")
+        XCTAssertEqual(headers[TracingHTTPHeaders.parentSpanIDField], "2345")
+        XCTAssertEqual(headers[TracingHTTPHeaders.tagsField], "_dd.p.tid=4d2")
+        XCTAssertEqual(headers[W3CHTTPHeaders.baggage], "session.id=abcdef01-2345-6789-abcd-ef0123456789")
+    }
+
+    func testWritingDroppedTraceContext_withCustomSamplingStrategy_17percent() {
+        let writer = HTTPHeadersWriter(traceContextInjection: .sampled)
+
+        writer.write(
+            traceContext: .mockWith(
+                traceID: .init(idHi: 1_234, idLo: 1_234),
+                spanID: 2_345,
+                isKept: false,
+                rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
             )
         )
 
@@ -83,5 +105,25 @@ class HTTPHeadersWriterTests: XCTestCase {
         XCTAssertNil(headers[TracingHTTPHeaders.traceIDField])
         XCTAssertNil(headers[TracingHTTPHeaders.parentSpanIDField])
         XCTAssertNil(headers[TracingHTTPHeaders.tagsField])
+        XCTAssertNil(headers[W3CHTTPHeaders.baggage])
+    }
+
+    func testWritingDroppedTraceContext_withCustomSamplingStrategy() {
+        let writer = HTTPHeadersWriter(traceContextInjection: .sampled)
+
+        writer.write(
+            traceContext: .mockWith(
+                traceID: .init(idHi: 1_234, idLo: 1_234),
+                spanID: 2_345,
+                isKept: false
+            )
+        )
+
+        let headers = writer.traceHeaderFields
+        XCTAssertNil(headers[TracingHTTPHeaders.samplingPriorityField])
+        XCTAssertNil(headers[TracingHTTPHeaders.traceIDField])
+        XCTAssertNil(headers[TracingHTTPHeaders.parentSpanIDField])
+        XCTAssertNil(headers[TracingHTTPHeaders.tagsField])
+        XCTAssertNil(headers[W3CHTTPHeaders.baggage])
     }
 }

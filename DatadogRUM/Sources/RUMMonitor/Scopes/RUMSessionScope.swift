@@ -43,6 +43,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
     }
 
+    /// Information about the application state since `RUM.enable()` was called.
+    private let applicationState: RUMApplicationState
+
     /// Information about this session state, shared with `CrashContext`.
     private var state: RUMSessionState {
         didSet {
@@ -75,8 +78,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
     private var lastInteractionTime: Date
+    /// Indicates whether the "ApplicationLaunch" view was active when the app entered the background.
+    private var hadApplicationLaunchViewWhenEnteringBackground: Bool? = nil
     /// The reason why this session has ended or `nil` if it is still active.
     private(set) var endReason: EndReason?
+
+    /// Counter to track the index of views in this session. Starts at 0 for the first view.
+    private var nextViewIndex: Int = 0
 
     private let interactionToNextViewMetric: INVMetricTracking?
 
@@ -87,10 +95,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         startPrecondition: RUMSessionPrecondition?,
         context: DatadogContext,
         dependencies: RUMScopeDependencies,
+        applicationState: RUMApplicationState,
         resumingViewScope: RUMViewScope? = nil
     ) {
         self.parent = parent
         self.dependencies = dependencies
+        self.applicationState = applicationState
         self.isSampled = dependencies.sessionSampler.sample()
         self.startPrecondition = startPrecondition
         self.sessionUUID = isSampled ? dependencies.rumUUIDGenerator.generateUnique() : .nullUUID
@@ -111,8 +121,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         dependencies.sessionEndedMetric.startMetric(
             sessionID: sessionUUID,
             precondition: startPrecondition,
-            context: context,
-            tracksBackgroundEvents: trackBackgroundEvents
+            context: context
         )
 
         if let viewScope = resumingViewScope {
@@ -138,31 +147,43 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         from expiredSession: RUMSessionScope,
         startTime: Date,
         startPrecondition: RUMSessionPrecondition?,
-        context: DatadogContext
+        context: DatadogContext,
+        transferActiveView: Bool,
+        applicationState: RUMApplicationState
     ) {
         self.init(
-            isInitialSession: false,
+            // If the expired session was marked as "initial" but didn’t track any views, mark this new session as the new "initial".
+            isInitialSession: expiredSession.state.isInitialSession && !expiredSession.state.hasTrackedAnyView,
             parent: expiredSession.parent,
             startTime: startTime,
             startPrecondition: startPrecondition,
             context: context,
-            dependencies: expiredSession.dependencies
+            dependencies: expiredSession.dependencies,
+            applicationState: applicationState
         )
 
-        // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
-        self.viewScopes = expiredSession.viewScopes.map { expiredView in
-            return RUMViewScope(
-                isInitialView: false,
-                parent: self,
-                dependencies: dependencies,
-                identity: expiredView.identity,
-                path: expiredView.viewPath,
-                name: expiredView.viewName,
-                customTimings: expiredView.customTimings,
-                startTime: startTime,
-                serverTimeOffset: context.serverTimeOffset,
-                interactionToNextViewMetric: interactionToNextViewMetric
-            )
+        // Transfer active View to new `RUMViewScope`:
+        if transferActiveView {
+            if let lastActiveView = expiredSession.viewScopes.last(where: { $0.isActiveView }) {
+                self.viewScopes = [
+                    RUMViewScope(
+                        isInitialView: false,
+                        parent: self,
+                        dependencies: dependencies,
+                        identity: lastActiveView.identity,
+                        path: lastActiveView.viewPath,
+                        name: lastActiveView.viewName,
+                        customTimings: lastActiveView.customTimings,
+                        startTime: startTime,
+                        serverTimeOffset: context.serverTimeOffset,
+                        interactionToNextViewMetric: interactionToNextViewMetric,
+                        viewIndexInSession: nextViewIndex
+                    )
+                ]
+                nextViewIndex += 1
+            } else {
+                self.viewScopes = []
+            }
         }
     }
 
@@ -175,6 +196,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         context.sessionPrecondition = startPrecondition
         return context
     }
+
+    var attributes: [AttributeKey: AttributeValue] { [:] }
 
     // MARK: - RUMScope
 
@@ -204,17 +227,32 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         var deactivating = false
         if isActive {
-            if command is RUMStopSessionCommand {
+            switch command {
+            case _ as RUMStopSessionCommand:
                 dependencies.sessionEndedMetric.trackWasStopped(sessionID: self.context.sessionID)
                 endReason = .stopAPI
                 deactivating = true
-            } else if let startApplicationCommand = command as? RUMApplicationStartCommand {
+
+            case let startApplicationCommand as RUMApplicationStartCommand:
                 startApplicationLaunchView(on: startApplicationCommand, context: context, writer: writer)
-            } else if let startViewCommand = command as? RUMStartViewCommand {
+
+            case let startViewCommand as RUMStartViewCommand:
                 // Start view scope explicitly on receiving "start view" command
                 startView(on: startViewCommand, context: context)
-            } else if !hasActiveView {
-                handleOffViewCommand(command: command, context: context)
+
+            case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
+                hadApplicationLaunchViewWhenEnteringBackground = activeViewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
+
+            case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .willEnterForeground:
+                if hadApplicationLaunchViewWhenEnteringBackground == true {
+                    startApplicationLaunchView(on: appLifecycleCommand, context: context, writer: writer)
+                }
+                hadApplicationLaunchViewWhenEnteringBackground = nil
+
+            default:
+                if !hasActiveView {
+                    handleOffViewCommand(command: command, context: context, writer: writer)
+                }
             }
         }
 
@@ -246,6 +284,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// If there is an active view.
     private var hasActiveView: Bool {
         return viewScopes.contains { $0.isActiveView }
+    }
+
+    /// The path of the active view (if any).
+    private var activeViewPath: String? {
+        return viewScopes.last(where: { $0.isActiveView })?.viewPath
     }
 
     // MARK: - RUMCommands Processing
@@ -286,8 +329,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             customTimings: customTimings,
             startTime: startTime,
             serverTimeOffset: serverTimeOffset,
-            interactionToNextViewMetric: interactionToNextViewMetric
+            interactionToNextViewMetric: interactionToNextViewMetric,
+            viewIndexInSession: nextViewIndex
         )
+        nextViewIndex += 1
+
+        if path != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
+            applicationState.numberOfNonApplicationLaunchViewsCreated += 1
+        }
 
         viewScopes.append(scope)
 
@@ -301,9 +350,29 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
     }
 
-    private func startApplicationLaunchView(on command: RUMApplicationStartCommand, context: DatadogContext, writer: Writer) {
-        let isActivePrewarm = context.launchTime.isActivePrewarm
-        let startTime = isActivePrewarm ? sessionStartTime : context.launchTime.launchDate
+    private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        let isActivePrewarm = context.launchInfo.launchReason == .prewarming
+        let startTime: Date
+
+        if command is RUMApplicationStartCommand {
+            if context.applicationStateHistory.initialState == .active {
+                // The SDK was initialized after the app became active, not during
+                // `application(_:didFinishLaunchingWithOptions:)`. This can happen
+                // with lazy initialization from already presented view, or if the SDK
+                // was stopped and later re-initialized during runtime.
+                startTime = sessionStartTime
+            } else {
+                // For prewarmed apps, use session start time; otherwise, use launch time.
+                //
+                // RUM-8372: In practice, `isActivePrewarm == true` is never reached here because
+                // prewarmed apps start in the BACKGROUND state, and the ApplicationLaunch view is never created in that case.
+                startTime = isActivePrewarm ? sessionStartTime : context.launchInfo.processLaunchDate
+            }
+        } else {
+            // Lazily starting the ApplicationLaunch view to capture events that would
+            // otherwise be lost due to the absence of an active view.
+            startTime = command.time
+        }
 
         startView(
             isInitialView: true,
@@ -318,16 +387,20 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
     }
 
-    private func handleOffViewCommand(command: RUMCommand, context: DatadogContext) {
+    private func handleOffViewCommand(command: RUMCommand, context: DatadogContext, writer: Writer) {
         let handlingRule = RUMOffViewEventsHandlingRule(
+            applicationState: applicationState,
             sessionState: state,
-            isAppInForeground: context.applicationStateHistory.currentSnapshot.state.isRunningInForeground,
-            isBETEnabled: trackBackgroundEvents
+            isAppInForeground: context.applicationStateHistory.currentState.isRunningInForeground,
+            isBETEnabled: trackBackgroundEvents,
+            command: command
         )
 
         switch handlingRule {
         case .handleInBackgroundView where command.canStartBackgroundView:
             startBackgroundView(on: command, context: context)
+        case .handleInApplicationLaunchView where command.canStartApplicationLaunchView:
+            startApplicationLaunchView(on: command, context: context, writer: writer)
         default:
             if let missedEventType = command.missedEventType {
                 // In case there was an event missed due to no active view, track it in Session Ended metric
@@ -351,7 +424,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // It is expected to receive 'keep alive' while no active view (when tracking WebView events), and performance metric
         // updates are sent automatically by cross platform frameworks whether a view is active or not, resulting in log
         // spam.
-        return command is RUMKeepSessionAliveCommand || command is RUMUpdatePerformanceMetric
+        return command is RUMKeepSessionAliveCommand || command is RUMUpdatePerformanceMetric || command is RUMHandleAppLifecycleEventCommand
     }
 
     private func startBackgroundView(on command: RUMCommand, context: DatadogContext) {

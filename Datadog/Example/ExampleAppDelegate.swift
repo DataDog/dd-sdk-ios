@@ -24,6 +24,8 @@ var otelTracer: OpenTelemetryApi.Tracer {
         .get(instrumentationName: "", instrumentationVersion: nil)
 }
 
+final class DummySessionDataDelegate: NSObject, URLSessionDataDelegate {}
+
 @UIApplicationMain
 class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
@@ -47,6 +49,9 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
 
         // Set user information
         Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
+
+        // Set account information
+        Datadog.setAccountInfo(id: "account-1234", name: "account-US")
 
         // Enable Logs
         Logs.enable(
@@ -88,6 +93,8 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             )
         )
         RUMMonitor.shared().debug = true
+
+        URLSessionInstrumentation.enable(with: .init(delegateClass: DummySessionDataDelegate.self))
 
         // Register Trace Provider
         OpenTelemetry.registerTracerProvider(

@@ -17,16 +17,30 @@ public struct _TelemetryProxy
 [?] extension InternalExtension where ExtendedType == Datadog.Configuration
     public var additionalConfiguration: [String: Any]
 public enum Datadog
+    public static var verbosityLevel: CoreLoggerLevel?
+    public static func isInitialized(instanceName name: String = CoreRegistry.defaultInstanceName) -> Bool
+    public static func sdkInstance(named name: String) -> DatadogCoreProtocol
+    public static func setUserInfo(id: String,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func addUserExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func clearUserInfo(in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func setAccountInfo(id: String,name: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func addAccountExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func clearAccountInfo(in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func set(trackingConsent: TrackingConsent, in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func clearAllData(in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func stopInstance(named instanceName: String = CoreRegistry.defaultInstanceName)
+    public static func initialize(with configuration: Configuration,trackingConsent: TrackingConsent,instanceName: String = CoreRegistry.defaultInstanceName) -> DatadogCoreProtocol
+[?] extension Datadog
     public struct Configuration
-        public enum BatchSize
+        public enum BatchSize: CaseIterable
             case small
             case medium
             case large
-        public enum UploadFrequency
+        public enum UploadFrequency: CaseIterable
             case frequent
             case average
             case rare
-        public enum BatchProcessingLevel
+        public enum BatchProcessingLevel: CaseIterable
             case low
             case medium
             case high
@@ -43,19 +57,6 @@ public enum Datadog
         public var batchProcessingLevel: BatchProcessingLevel
         public var backgroundTasksEnabled: Bool
         public init(clientToken: String,env: String,site: DatadogSite = .us1,service: String? = nil,bundle: Bundle = .main,batchSize: BatchSize = .medium,uploadFrequency: UploadFrequency = .average,proxyConfiguration: [AnyHashable: Any]? = nil,encryption: DataEncryption? = nil,serverDateProvider: ServerDateProvider? = nil,batchProcessingLevel: BatchProcessingLevel = .medium,backgroundTasksEnabled: Bool = false)
-    public static var verbosityLevel: CoreLoggerLevel?
-    public static func isInitialized(instanceName name: String = CoreRegistry.defaultInstanceName) -> Bool
-    public static func sdkInstance(named name: String) -> DatadogCoreProtocol
-    public static func setUserInfo(id: String,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func addUserExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func setAccountInfo(id: String,name: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func addAccountExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func clearAccountInfo(in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func set(trackingConsent: TrackingConsent, in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func clearAllData(in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func stopInstance(named instanceName: String = CoreRegistry.defaultInstanceName)
-    public static func initialize(with configuration: Configuration,trackingConsent: TrackingConsent,instanceName: String = CoreRegistry.defaultInstanceName) -> DatadogCoreProtocol
 
 
 # ----------------------------------
@@ -87,17 +88,10 @@ public struct LogEvent: Encodable
         public var sourceType: String = "ios"
         public var fingerprint: String?
         public var binaryImages: [BinaryImage]?
-    public struct DeviceInfo: Codable
-        public let brand: String
-        public let name: String
-        public let model: String
-        public let architecture: String
-    public struct OperatingSystem: Codable
-        public let name: String
-        public let version: String
-        public let build: String?
     public struct Dd: Codable
-        public let device: DeviceInfo
+        public struct Device: Codable
+            public let architecture: String
+        public let device: Device
     public let date: Date
     public let status: Status
     public var message: String
@@ -112,6 +106,7 @@ public struct LogEvent: Encodable
     public let buildId: String?
     public let variant: String?
     public let dd: Dd
+    public let device: Device
     public let os: OperatingSystem
     public var userInfo: UserInfo
     public var accountInfo: AccountInfo?
@@ -171,7 +166,7 @@ public enum Logs
         public var eventMapper: EventMapper?
         public var customEndpoint: URL?
         public init(eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
-    public static func enable(with configuration: Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func enable(with configuration: Logs.Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func addAttribute(forKey key: AttributeKey, value: AttributeValue, in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func removeAttribute(forKey key: AttributeKey, in core: DatadogCoreProtocol = CoreRegistry.default)
 [?] extension Logs
@@ -191,13 +186,6 @@ public protocol LogEventMapper
     public func inject(spanContext: OTSpanContext)
 [?] extension TracePropagationHeadersReader where Self: OTFormatReader
     public func extract() -> OTSpanContext?
-    public enum LogLevel: Int, Codable
-        case debug
-        case info
-        case notice
-        case warn
-        case error
-        case critical
 [?] extension OpenTelemetryApi.TraceState
     public func w3c() -> String
 public class OTelTracerProvider: OpenTelemetryApi.TracerProvider
@@ -284,24 +272,8 @@ public struct SpanEvent: Encodable
     public let applicationVersion: String
     public let networkConnectionInfo: NetworkConnectionInfo?
     public let mobileCarrierInfo: CarrierInfo?
-    public struct DeviceInfo: Codable
-        public enum DeviceType: String, Codable
-            case mobile = "mobile"
-            case tablet = "tablet"
-            case tv = "tv"
-            case other = "other"
-        public let brand: String
-        public let name: String
-        public let model: String
-        public let architecture: String
-        public let type: DeviceType
-    public let deviceInfo: DeviceInfo
-    public struct OperatingSystemInfo: Codable
-        public let name: String
-        public let version: String
-        public let build: String?
-        public let versionMajor: String
-    public let osInfo: OperatingSystemInfo
+    public let device: Device
+    public let os: OperatingSystem
     public struct UserInfo
         public let id: String?
         public let name: String?
@@ -331,8 +303,8 @@ public enum Trace
         public struct URLSessionTracking
             public var firstPartyHostsTracing: FirstPartyHostsTracing
             public enum FirstPartyHostsTracing
-                case trace(hosts: Set<String>,sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
-                case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
+                case trace(hosts: Set<String>,sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
+                case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
             public init(firstPartyHostsTracing: FirstPartyHostsTracing)
         public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: Encodable]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
 public enum SpanTags
@@ -347,1422 +319,18 @@ public class Tracer
 # API surface for DatadogRUM:
 # ----------------------------------
 
-public struct RUMActionEvent: RUMDataModel
-    public var dd: DD
-    public var account: RUMAccount?
-    public var action: Action
-    public let application: Application
-    public let buildId: String?
-    public let buildVersion: String?
-    public let ciTest: RUMCITest?
-    public let connectivity: RUMConnectivity?
-    public let container: Container?
-    public var context: RUMEventAttributes?
-    public let date: Int64
-    public let device: RUMDevice?
-    public let display: Display?
-    public let os: RUMOperatingSystem?
-    public let service: String?
-    public let session: Session
-    public let source: Source?
-    public let synthetics: RUMSyntheticsTest?
-    public let type: String = "action"
-    public var usr: RUMUser?
-    public let version: String?
-    public var view: View
-    public struct DD: Codable
-        public var action: Action?
-        public let browserSdkVersion: String?
-        public let configuration: Configuration?
-        public let formatVersion: Int64 = 2
-        public let session: Session?
-        public struct Action: Codable
-            public var nameSource: NameSource?
-            public let position: Position?
-            public let target: Target?
-            public enum NameSource: String, Codable
-                case customAttribute = "custom_attribute"
-                case maskPlaceholder = "mask_placeholder"
-                case standardAttribute = "standard_attribute"
-                case textContent = "text_content"
-                case maskDisallowed = "mask_disallowed"
-                case blank = "blank"
-            public struct Position: Codable
-                public let x: Int64
-                public let y: Int64
-            public struct Target: Codable
-                public let height: Int64?
-                public let selector: String?
-                public let width: Int64?
-        public struct Configuration: Codable
-            public let sessionReplaySampleRate: Double?
-            public let sessionSampleRate: Double
-        public struct Session: Codable
-            public let plan: Plan?
-            public let sessionPrecondition: RUMSessionPrecondition?
-            public enum Plan: Int, Codable
-                case plan1 = 1
-                case plan2 = 2
-    public struct Action: Codable
-        public let crash: Crash?
-        public let error: Error?
-        public let frustration: Frustration?
-        public let id: String?
-        public let loadingTime: Int64?
-        public let longTask: LongTask?
-        public let resource: Resource?
-        public var target: Target?
-        public let type: ActionType
-        public struct Crash: Codable
-            public let count: Int64
-        public struct Error: Codable
-            public let count: Int64
-        public struct Frustration: Codable
-            public let type: [FrustrationType]
-            public enum FrustrationType: String, Codable
-                case rageClick = "rage_click"
-                case deadClick = "dead_click"
-                case errorClick = "error_click"
-                case rageTap = "rage_tap"
-                case errorTap = "error_tap"
-        public struct LongTask: Codable
-            public let count: Int64
-        public struct Resource: Codable
-            public let count: Int64
-        public struct Target: Codable
-            public var name: String
-        public enum ActionType: String, Codable
-            case custom = "custom"
-            case click = "click"
-            case tap = "tap"
-            case scroll = "scroll"
-            case swipe = "swipe"
-            case applicationStart = "application_start"
-            case back = "back"
-    public struct Application: Codable
-        public let id: String
-    public struct Container: Codable
-        public let source: Source
-        public let view: View
-        public enum Source: String, Codable
-            case android = "android"
-            case ios = "ios"
-            case browser = "browser"
-            case flutter = "flutter"
-            case reactNative = "react-native"
-            case roku = "roku"
-            case unity = "unity"
-            case kotlinMultiplatform = "kotlin-multiplatform"
-        public struct View: Codable
-            public let id: String
-    public struct Display: Codable
-        public let viewport: Viewport?
-        public struct Viewport: Codable
-            public let height: Double
-            public let width: Double
-    public struct Session: Codable
-        public let hasReplay: Bool?
-        public let id: String
-        public let type: RUMSessionType
-    public enum Source: String, Codable
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-        case roku = "roku"
-        case unity = "unity"
-        case kotlinMultiplatform = "kotlin-multiplatform"
-    public struct View: Codable
-        public let id: String
-        public let inForeground: Bool?
-        public var name: String?
-        public var referrer: String?
-        public var url: String
-public struct RUMErrorEvent: RUMDataModel
-    public let dd: DD
-    public var account: RUMAccount?
-    public let action: Action?
-    public let application: Application
-    public let buildId: String?
-    public let buildVersion: String?
-    public let ciTest: RUMCITest?
-    public let connectivity: RUMConnectivity?
-    public let container: Container?
-    public var context: RUMEventAttributes?
-    public let date: Int64
-    public let device: RUMDevice?
-    public let display: Display?
-    public var error: Error
-    public var featureFlags: FeatureFlags?
-    public let freeze: Freeze?
-    public let os: RUMOperatingSystem?
-    public let service: String?
-    public let session: Session
-    public let source: Source?
-    public let synthetics: RUMSyntheticsTest?
-    public let type: String = "error"
-    public var usr: RUMUser?
-    public let version: String?
-    public var view: View
-    public struct DD: Codable
-        public let browserSdkVersion: String?
-        public let configuration: Configuration?
-        public let formatVersion: Int64 = 2
-        public let session: Session?
-        public struct Configuration: Codable
-            public let sessionReplaySampleRate: Double?
-            public let sessionSampleRate: Double
-        public struct Session: Codable
-            public let plan: Plan?
-            public let sessionPrecondition: RUMSessionPrecondition?
-            public enum Plan: Int, Codable
-                case plan1 = 1
-                case plan2 = 2
-    public struct Action: Codable
-        public let id: RUMActionID
-    public struct Application: Codable
-        public let id: String
-    public struct Container: Codable
-        public let source: Source
-        public let view: View
-        public enum Source: String, Codable
-            case android = "android"
-            case ios = "ios"
-            case browser = "browser"
-            case flutter = "flutter"
-            case reactNative = "react-native"
-            case roku = "roku"
-            case unity = "unity"
-            case kotlinMultiplatform = "kotlin-multiplatform"
-        public struct View: Codable
-            public let id: String
-    public struct Display: Codable
-        public let viewport: Viewport?
-        public struct Viewport: Codable
-            public let height: Double
-            public let width: Double
-    public struct Error: Codable
-        public let binaryImages: [BinaryImages]?
-        public let category: Category?
-        public var causes: [Causes]?
-        public let csp: CSP?
-        public var fingerprint: String?
-        public let handling: Handling?
-        public let handlingStack: String?
-        public let id: String?
-        public let isCrash: Bool?
-        public var message: String
-        public let meta: Meta?
-        public var resource: Resource?
-        public let source: Source
-        public let sourceType: SourceType?
-        public var stack: String?
-        public let threads: [Threads]?
-        public let timeSinceAppStart: Int64?
-        public let type: String?
-        public let wasTruncated: Bool?
-        public struct BinaryImages: Codable
-            public let arch: String?
-            public let isSystem: Bool
-            public let loadAddress: String?
-            public let maxAddress: String?
-            public let name: String
-            public let uuid: String
-        public enum Category: String, Codable
-            case aNR = "ANR"
-            case appHang = "App Hang"
-            case exception = "Exception"
-            case watchdogTermination = "Watchdog Termination"
-            case memoryWarning = "Memory Warning"
-        public struct Causes: Codable
-            public var message: String
-            public let source: Source
-            public var stack: String?
-            public let type: String?
-            public enum Source: String, Codable
-                case network = "network"
-                case source = "source"
-                case console = "console"
-                case logger = "logger"
-                case agent = "agent"
-                case webview = "webview"
-                case custom = "custom"
-                case report = "report"
-        public struct CSP: Codable
-            public let disposition: Disposition?
-            public enum Disposition: String, Codable
-                case enforce = "enforce"
-                case report = "report"
-        public enum Handling: String, Codable
-            case handled = "handled"
-            case unhandled = "unhandled"
-        public struct Meta: Codable
-            public let codeType: String?
-            public let exceptionCodes: String?
-            public let exceptionType: String?
-            public let incidentIdentifier: String?
-            public let parentProcess: String?
-            public let path: String?
-            public let process: String?
-        public struct Resource: Codable
-            public let method: RUMMethod
-            public let provider: Provider?
-            public let statusCode: Int64
-            public var url: String
-            public struct Provider: Codable
-                public let domain: String?
-                public let name: String?
-                public let type: ProviderType?
-                public enum ProviderType: String, Codable
-                    case ad = "ad"
-                    case advertising = "advertising"
-                    case analytics = "analytics"
-                    case cdn = "cdn"
-                    case content = "content"
-                    case customerSuccess = "customer-success"
-                    case firstParty = "first party"
-                    case hosting = "hosting"
-                    case marketing = "marketing"
-                    case other = "other"
-                    case social = "social"
-                    case tagManager = "tag-manager"
-                    case utility = "utility"
-                    case video = "video"
-        public enum Source: String, Codable
-            case network = "network"
-            case source = "source"
-            case console = "console"
-            case logger = "logger"
-            case agent = "agent"
-            case webview = "webview"
-            case custom = "custom"
-            case report = "report"
-        public enum SourceType: String, Codable
-            case android = "android"
-            case browser = "browser"
-            case ios = "ios"
-            case reactNative = "react-native"
-            case flutter = "flutter"
-            case roku = "roku"
-            case ndk = "ndk"
-            case iosIl2cpp = "ios+il2cpp"
-            case ndkIl2cpp = "ndk+il2cpp"
-        public struct Threads: Codable
-            public let crashed: Bool
-            public let name: String
-            public let stack: String
-            public let state: String?
-    public struct FeatureFlags: Codable
-        public var featureFlagsInfo: [String: Encodable]
-    public struct Freeze: Codable
-        public let duration: Int64
-    public struct Session: Codable
-        public let hasReplay: Bool?
-        public let id: String
-        public let type: RUMSessionType
-    public enum Source: String, Codable
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-        case roku = "roku"
-        case unity = "unity"
-        case kotlinMultiplatform = "kotlin-multiplatform"
-    public struct View: Codable
-        public let id: String
-        public let inForeground: Bool?
-        public var name: String?
-        public var referrer: String?
-        public var url: String
-[?] extension RUMErrorEvent.FeatureFlags
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
-public struct RUMLongTaskEvent: RUMDataModel
-    public let dd: DD
-    public var account: RUMAccount?
-    public let action: Action?
-    public let application: Application
-    public let buildId: String?
-    public let buildVersion: String?
-    public let ciTest: RUMCITest?
-    public let connectivity: RUMConnectivity?
-    public let container: Container?
-    public var context: RUMEventAttributes?
-    public let date: Int64
-    public let device: RUMDevice?
-    public let display: Display?
-    public let longTask: LongTask
-    public let os: RUMOperatingSystem?
-    public let service: String?
-    public let session: Session
-    public let source: Source?
-    public let synthetics: RUMSyntheticsTest?
-    public let type: String = "long_task"
-    public var usr: RUMUser?
-    public let version: String?
-    public var view: View
-    public struct DD: Codable
-        public let browserSdkVersion: String?
-        public let configuration: Configuration?
-        public let discarded: Bool?
-        public let formatVersion: Int64 = 2
-        public let session: Session?
-        public struct Configuration: Codable
-            public let sessionReplaySampleRate: Double?
-            public let sessionSampleRate: Double
-        public struct Session: Codable
-            public let plan: Plan?
-            public let sessionPrecondition: RUMSessionPrecondition?
-            public enum Plan: Int, Codable
-                case plan1 = 1
-                case plan2 = 2
-    public struct Action: Codable
-        public let id: RUMActionID
-    public struct Application: Codable
-        public let id: String
-    public struct Container: Codable
-        public let source: Source
-        public let view: View
-        public enum Source: String, Codable
-            case android = "android"
-            case ios = "ios"
-            case browser = "browser"
-            case flutter = "flutter"
-            case reactNative = "react-native"
-            case roku = "roku"
-            case unity = "unity"
-            case kotlinMultiplatform = "kotlin-multiplatform"
-        public struct View: Codable
-            public let id: String
-    public struct Display: Codable
-        public let viewport: Viewport?
-        public struct Viewport: Codable
-            public let height: Double
-            public let width: Double
-    public struct LongTask: Codable
-        public let blockingDuration: Int64?
-        public let duration: Int64
-        public let entryType: EntryType?
-        public let firstUiEventTimestamp: Double?
-        public let id: String?
-        public let isFrozenFrame: Bool?
-        public let renderStart: Double?
-        public let scripts: [Scripts]?
-        public let startTime: Double?
-        public let styleAndLayoutStart: Double?
-        public enum EntryType: String, Codable
-            case longTask = "long-task"
-            case longAnimationFrame = "long-animation-frame"
-        public struct Scripts: Codable
-            public let duration: Int64?
-            public let executionStart: Double?
-            public let forcedStyleAndLayoutDuration: Int64?
-            public let invoker: String?
-            public let invokerType: InvokerType?
-            public let pauseDuration: Int64?
-            public let sourceCharPosition: Int64?
-            public let sourceFunctionName: String?
-            public let sourceUrl: String?
-            public let startTime: Double?
-            public let windowAttribution: String?
-            public enum InvokerType: String, Codable
-                case userCallback = "user-callback"
-                case eventListener = "event-listener"
-                case resolvePromise = "resolve-promise"
-                case rejectPromise = "reject-promise"
-                case classicScript = "classic-script"
-                case moduleScript = "module-script"
-    public struct Session: Codable
-        public let hasReplay: Bool?
-        public let id: String
-        public let type: RUMSessionType
-    public enum Source: String, Codable
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-        case roku = "roku"
-        case unity = "unity"
-        case kotlinMultiplatform = "kotlin-multiplatform"
-    public struct View: Codable
-        public let id: String
-        public var name: String?
-        public var referrer: String?
-        public var url: String
-public struct RUMResourceEvent: RUMDataModel
-    public let dd: DD
-    public var account: RUMAccount?
-    public let action: Action?
-    public let application: Application
-    public let buildId: String?
-    public let buildVersion: String?
-    public let ciTest: RUMCITest?
-    public let connectivity: RUMConnectivity?
-    public let container: Container?
-    public var context: RUMEventAttributes?
-    public let date: Int64
-    public let device: RUMDevice?
-    public let display: Display?
-    public let os: RUMOperatingSystem?
-    public var resource: Resource
-    public let service: String?
-    public let session: Session
-    public let source: Source?
-    public let synthetics: RUMSyntheticsTest?
-    public let type: String = "resource"
-    public var usr: RUMUser?
-    public let version: String?
-    public var view: View
-    public struct DD: Codable
-        public let browserSdkVersion: String?
-        public let configuration: Configuration?
-        public let discarded: Bool?
-        public let formatVersion: Int64 = 2
-        public let rulePsr: Double?
-        public let session: Session?
-        public let spanId: String?
-        public let traceId: String?
-        public struct Configuration: Codable
-            public let sessionReplaySampleRate: Double?
-            public let sessionSampleRate: Double
-        public struct Session: Codable
-            public let plan: Plan?
-            public let sessionPrecondition: RUMSessionPrecondition?
-            public enum Plan: Int, Codable
-                case plan1 = 1
-                case plan2 = 2
-    public struct Action: Codable
-        public let id: RUMActionID
-    public struct Application: Codable
-        public let id: String
-    public struct Container: Codable
-        public let source: Source
-        public let view: View
-        public enum Source: String, Codable
-            case android = "android"
-            case ios = "ios"
-            case browser = "browser"
-            case flutter = "flutter"
-            case reactNative = "react-native"
-            case roku = "roku"
-            case unity = "unity"
-            case kotlinMultiplatform = "kotlin-multiplatform"
-        public struct View: Codable
-            public let id: String
-    public struct Display: Codable
-        public let viewport: Viewport?
-        public struct Viewport: Codable
-            public let height: Double
-            public let width: Double
-    public struct Resource: Codable
-        public let connect: Connect?
-        public let decodedBodySize: Int64?
-        public let deliveryType: DeliveryType?
-        public let dns: DNS?
-        public let download: Download?
-        public let duration: Int64?
-        public let encodedBodySize: Int64?
-        public let firstByte: FirstByte?
-        public var graphql: Graphql?
-        public let id: String?
-        public let method: RUMMethod?
-        public let `protocol`: String?
-        public let provider: Provider?
-        public let redirect: Redirect?
-        public let renderBlockingStatus: RenderBlockingStatus?
-        public let size: Int64?
-        public let ssl: SSL?
-        public let statusCode: Int64?
-        public let transferSize: Int64?
-        public let type: ResourceType
-        public var url: String
-        public let worker: Worker?
-        public struct Connect: Codable
-            public let duration: Int64
-            public let start: Int64
-        public enum DeliveryType: String, Codable
-            case cache = "cache"
-            case navigationalPrefetch = "navigational-prefetch"
-            case other = "other"
-        public struct DNS: Codable
-            public let duration: Int64
-            public let start: Int64
-        public struct Download: Codable
-            public let duration: Int64
-            public let start: Int64
-        public struct FirstByte: Codable
-            public let duration: Int64
-            public let start: Int64
-        public struct Graphql: Codable
-            public let operationName: String?
-            public let operationType: OperationType
-            public var payload: String?
-            public var variables: String?
-            public enum OperationType: String, Codable
-                case query = "query"
-                case mutation = "mutation"
-                case subscription = "subscription"
-        public struct Provider: Codable
-            public let domain: String?
-            public let name: String?
-            public let type: ProviderType?
-            public enum ProviderType: String, Codable
-                case ad = "ad"
-                case advertising = "advertising"
-                case analytics = "analytics"
-                case cdn = "cdn"
-                case content = "content"
-                case customerSuccess = "customer-success"
-                case firstParty = "first party"
-                case hosting = "hosting"
-                case marketing = "marketing"
-                case other = "other"
-                case social = "social"
-                case tagManager = "tag-manager"
-                case utility = "utility"
-                case video = "video"
-        public struct Redirect: Codable
-            public let duration: Int64
-            public let start: Int64
-        public enum RenderBlockingStatus: String, Codable
-            case blocking = "blocking"
-            case nonBlocking = "non-blocking"
-        public struct SSL: Codable
-            public let duration: Int64
-            public let start: Int64
-        public enum ResourceType: String, Codable
-            case document = "document"
-            case xhr = "xhr"
-            case beacon = "beacon"
-            case fetch = "fetch"
-            case css = "css"
-            case js = "js"
-            case image = "image"
-            case font = "font"
-            case media = "media"
-            case other = "other"
-            case native = "native"
-        public struct Worker: Codable
-            public let duration: Int64
-            public let start: Int64
-    public struct Session: Codable
-        public let hasReplay: Bool?
-        public let id: String
-        public let type: RUMSessionType
-    public enum Source: String, Codable
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-        case roku = "roku"
-        case unity = "unity"
-        case kotlinMultiplatform = "kotlin-multiplatform"
-    public struct View: Codable
-        public let id: String
-        public var name: String?
-        public var referrer: String?
-        public var url: String
-public struct RUMViewEvent: RUMDataModel
-    public let dd: DD
-    public var account: RUMAccount?
-    public let application: Application
-    public let buildId: String?
-    public let buildVersion: String?
-    public let ciTest: RUMCITest?
-    public let connectivity: RUMConnectivity?
-    public let container: Container?
-    public var context: RUMEventAttributes?
-    public let date: Int64
-    public let device: RUMDevice?
-    public let display: Display?
-    public var featureFlags: FeatureFlags?
-    public let os: RUMOperatingSystem?
-    public let privacy: Privacy?
-    public let service: String?
-    public let session: Session
-    public let source: Source?
-    public let synthetics: RUMSyntheticsTest?
-    public let type: String = "view"
-    public var usr: RUMUser?
-    public let version: String?
-    public var view: View
-    public struct DD: Codable
-        public let browserSdkVersion: String?
-        public let cls: CLS?
-        public let configuration: Configuration?
-        public let documentVersion: Int64
-        public let formatVersion: Int64 = 2
-        public let pageStates: [PageStates]?
-        public let replayStats: ReplayStats?
-        public let session: Session?
-        public struct CLS: Codable
-            public let devicePixelRatio: Double?
-        public struct Configuration: Codable
-            public let sessionReplaySampleRate: Double?
-            public let sessionSampleRate: Double
-            public let startSessionReplayRecordingManually: Bool?
-        public struct PageStates: Codable
-            public let start: Int64
-            public let state: State
-            public enum State: String, Codable
-                case active = "active"
-                case passive = "passive"
-                case hidden = "hidden"
-                case frozen = "frozen"
-                case terminated = "terminated"
-        public struct ReplayStats: Codable
-            public let recordsCount: Int64?
-            public let segmentsCount: Int64?
-            public let segmentsTotalRawSize: Int64?
-        public struct Session: Codable
-            public let plan: Plan?
-            public let sessionPrecondition: RUMSessionPrecondition?
-            public enum Plan: Int, Codable
-                case plan1 = 1
-                case plan2 = 2
-    public struct Application: Codable
-        public let id: String
-    public struct Container: Codable
-        public let source: Source
-        public let view: View
-        public enum Source: String, Codable
-            case android = "android"
-            case ios = "ios"
-            case browser = "browser"
-            case flutter = "flutter"
-            case reactNative = "react-native"
-            case roku = "roku"
-            case unity = "unity"
-            case kotlinMultiplatform = "kotlin-multiplatform"
-        public struct View: Codable
-            public let id: String
-    public struct Display: Codable
-        public let scroll: Scroll?
-        public let viewport: Viewport?
-        public struct Scroll: Codable
-            public let maxDepth: Double
-            public let maxDepthScrollTop: Double
-            public let maxScrollHeight: Double
-            public let maxScrollHeightTime: Double
-        public struct Viewport: Codable
-            public let height: Double
-            public let width: Double
-    public struct FeatureFlags: Codable
-        public var featureFlagsInfo: [String: Encodable]
-    public struct Privacy: Codable
-        public let replayLevel: ReplayLevel
-        public enum ReplayLevel: String, Codable
-            case allow = "allow"
-            case mask = "mask"
-            case maskUserInput = "mask-user-input"
-    public struct Session: Codable
-        public let hasReplay: Bool?
-        public let id: String
-        public let isActive: Bool?
-        public let sampledForReplay: Bool?
-        public let type: RUMSessionType
-    public enum Source: String, Codable
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-        case roku = "roku"
-        case unity = "unity"
-        case kotlinMultiplatform = "kotlin-multiplatform"
-    public struct View: Codable
-        public let action: Action
-        public let cpuTicksCount: Double?
-        public let cpuTicksPerSecond: Double?
-        public let crash: Crash?
-        public let cumulativeLayoutShift: Double?
-        public let cumulativeLayoutShiftTargetSelector: String?
-        public let cumulativeLayoutShiftTime: Int64?
-        public let customTimings: [String: Int64]?
-        public let domComplete: Int64?
-        public let domContentLoaded: Int64?
-        public let domInteractive: Int64?
-        public let error: Error
-        public let firstByte: Int64?
-        public let firstContentfulPaint: Int64?
-        public let firstInputDelay: Int64?
-        public let firstInputTargetSelector: String?
-        public let firstInputTime: Int64?
-        public let flutterBuildTime: FlutterBuildTime?
-        public let flutterRasterTime: FlutterRasterTime?
-        public let freezeRate: Double?
-        public let frozenFrame: FrozenFrame?
-        public let frustration: Frustration?
-        public let id: String
-        public let inForegroundPeriods: [InForegroundPeriods]?
-        public let interactionToNextPaint: Int64?
-        public let interactionToNextPaintTargetSelector: String?
-        public let interactionToNextPaintTime: Int64?
-        public let interactionToNextViewTime: Int64?
-        public let isActive: Bool?
-        public let isSlowRendered: Bool?
-        public let jsRefreshRate: JsRefreshRate?
-        public let largestContentfulPaint: Int64?
-        public let largestContentfulPaintTargetSelector: String?
-        public let loadEvent: Int64?
-        public let loadingTime: Int64?
-        public let loadingType: LoadingType?
-        public let longTask: LongTask?
-        public let memoryAverage: Double?
-        public let memoryMax: Double?
-        public var name: String?
-        public let networkSettledTime: Int64?
-        public var performance: Performance?
-        public var referrer: String?
-        public let refreshRateAverage: Double?
-        public let refreshRateMin: Double?
-        public let resource: Resource
-        public let slowFrames: [SlowFrames]?
-        public let slowFramesRate: Double?
-        public let timeSpent: Int64
-        public var url: String
-        public struct Action: Codable
-            public let count: Int64
-        public struct Crash: Codable
-            public let count: Int64
-        public struct Error: Codable
-            public let count: Int64
-        public struct FlutterBuildTime: Codable
-            public let average: Double
-            public let max: Double
-            public let metricMax: Double?
-            public let min: Double
-        public struct FlutterRasterTime: Codable
-            public let average: Double
-            public let max: Double
-            public let metricMax: Double?
-            public let min: Double
-        public struct FrozenFrame: Codable
-            public let count: Int64
-        public struct Frustration: Codable
-            public let count: Int64
-        public struct InForegroundPeriods: Codable
-            public let duration: Int64
-            public let start: Int64
-        public struct JsRefreshRate: Codable
-            public let average: Double
-            public let max: Double
-            public let metricMax: Double?
-            public let min: Double
-        public enum LoadingType: String, Codable
-            case initialLoad = "initial_load"
-            case routeChange = "route_change"
-            case activityDisplay = "activity_display"
-            case activityRedisplay = "activity_redisplay"
-            case fragmentDisplay = "fragment_display"
-            case fragmentRedisplay = "fragment_redisplay"
-            case viewControllerDisplay = "view_controller_display"
-            case viewControllerRedisplay = "view_controller_redisplay"
-        public struct LongTask: Codable
-            public let count: Int64
-        public struct Performance: Codable
-            public let cls: CLS?
-            public let fbc: FBC?
-            public let fcp: FCP?
-            public let fid: FID?
-            public let inp: INP?
-            public var lcp: LCP?
-            public struct CLS: Codable
-                public let currentRect: CurrentRect?
-                public let previousRect: PreviousRect?
-                public let score: Double
-                public let targetSelector: String?
-                public let timestamp: Int64?
-                public struct CurrentRect: Codable
-                    public let height: Double
-                    public let width: Double
-                    public let x: Double
-                    public let y: Double
-                public struct PreviousRect: Codable
-                    public let height: Double
-                    public let width: Double
-                    public let x: Double
-                    public let y: Double
-            public struct FBC: Codable
-                public let timestamp: Int64
-            public struct FCP: Codable
-                public let timestamp: Int64
-            public struct FID: Codable
-                public let duration: Int64
-                public let targetSelector: String?
-                public let timestamp: Int64
-            public struct INP: Codable
-                public let duration: Int64
-                public let targetSelector: String?
-                public let timestamp: Int64?
-            public struct LCP: Codable
-                public var resourceUrl: String?
-                public let targetSelector: String?
-                public let timestamp: Int64
-        public struct Resource: Codable
-            public let count: Int64
-        public struct SlowFrames: Codable
-            public let duration: Int64
-            public let start: Int64
-[?] extension RUMViewEvent.FeatureFlags
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
-public struct RUMVitalEvent: RUMDataModel
-    public let dd: DD
-    public var account: RUMAccount?
-    public let application: Application
-    public let buildId: String?
-    public let buildVersion: String?
-    public let ciTest: RUMCITest?
-    public let connectivity: RUMConnectivity?
-    public let container: Container?
-    public var context: RUMEventAttributes?
-    public let date: Int64
-    public let device: RUMDevice?
-    public let display: Display?
-    public let os: RUMOperatingSystem?
-    public let service: String?
-    public let session: Session
-    public let source: Source?
-    public let synthetics: RUMSyntheticsTest?
-    public let type: String = "vital"
-    public var usr: RUMUser?
-    public let version: String?
-    public var view: View
-    public let vital: Vital
-    public struct DD: Codable
-        public let browserSdkVersion: String?
-        public let configuration: Configuration?
-        public let formatVersion: Int64 = 2
-        public let session: Session?
-        public let vital: Vital?
-        public struct Configuration: Codable
-            public let sessionReplaySampleRate: Double?
-            public let sessionSampleRate: Double
-        public struct Session: Codable
-            public let plan: Plan?
-            public let sessionPrecondition: RUMSessionPrecondition?
-            public enum Plan: Int, Codable
-                case plan1 = 1
-                case plan2 = 2
-        public struct Vital: Codable
-            public let computedValue: Bool?
-    public struct Application: Codable
-        public let id: String
-    public struct Container: Codable
-        public let source: Source
-        public let view: View
-        public enum Source: String, Codable
-            case android = "android"
-            case ios = "ios"
-            case browser = "browser"
-            case flutter = "flutter"
-            case reactNative = "react-native"
-            case roku = "roku"
-            case unity = "unity"
-            case kotlinMultiplatform = "kotlin-multiplatform"
-        public struct View: Codable
-            public let id: String
-    public struct Display: Codable
-        public let viewport: Viewport?
-        public struct Viewport: Codable
-            public let height: Double
-            public let width: Double
-    public struct Session: Codable
-        public let hasReplay: Bool?
-        public let id: String
-        public let type: RUMSessionType
-    public enum Source: String, Codable
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-        case roku = "roku"
-        case unity = "unity"
-        case kotlinMultiplatform = "kotlin-multiplatform"
-    public struct View: Codable
-        public let id: String
-        public var name: String?
-        public var referrer: String?
-        public var url: String
-    public struct Vital: Codable
-        public let custom: [String: Double]?
-        public let vitalDescription: String?
-        public let duration: Double?
-        public let id: String
-        public let name: String?
-        public let type: VitalType
-        public enum VitalType: String, Codable
-            case duration = "duration"
-public struct TelemetryErrorEvent: RUMDataModel
-    public let dd: DD
-    public let action: Action?
-    public let application: Application?
-    public let date: Int64
-    public let effectiveSampleRate: Double?
-    public let experimentalFeatures: [String]?
-    public let service: String
-    public let session: Session?
-    public let source: Source
-    public var telemetry: Telemetry
-    public let type: String = "telemetry"
-    public let version: String
-    public let view: View?
-    public struct DD: Codable
-        public let formatVersion: Int64 = 2
-    public struct Action: Codable
-        public let id: String
-    public struct Application: Codable
-        public let id: String
-    public struct Session: Codable
-        public let id: String
-    public enum Source: String, Codable
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-        case unity = "unity"
-        case kotlinMultiplatform = "kotlin-multiplatform"
-    public struct Telemetry: Codable
-        public let device: RUMTelemetryDevice?
-        public let error: Error?
-        public let message: String
-        public let os: RUMTelemetryOperatingSystem?
-        public let status: String = "error"
-        public let type: String? = "log"
-        public var telemetryInfo: [String: Encodable]
-        public struct Error: Codable
-            public let kind: String?
-            public let stack: String?
-    public struct View: Codable
-        public let id: String
-[?] extension TelemetryErrorEvent.Telemetry
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
-public struct TelemetryDebugEvent: RUMDataModel
-    public let dd: DD
-    public let action: Action?
-    public let application: Application?
-    public let date: Int64
-    public let effectiveSampleRate: Double?
-    public let experimentalFeatures: [String]?
-    public let service: String
-    public let session: Session?
-    public let source: Source
-    public var telemetry: Telemetry
-    public let type: String = "telemetry"
-    public let version: String
-    public let view: View?
-    public struct DD: Codable
-        public let formatVersion: Int64 = 2
-    public struct Action: Codable
-        public let id: String
-    public struct Application: Codable
-        public let id: String
-    public struct Session: Codable
-        public let id: String
-    public enum Source: String, Codable
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-        case unity = "unity"
-        case kotlinMultiplatform = "kotlin-multiplatform"
-    public struct Telemetry: Codable
-        public let device: RUMTelemetryDevice?
-        public let message: String
-        public let os: RUMTelemetryOperatingSystem?
-        public let status: String = "debug"
-        public let type: String? = "log"
-        public var telemetryInfo: [String: Encodable]
-    public struct View: Codable
-        public let id: String
-[?] extension TelemetryDebugEvent.Telemetry
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
-public struct TelemetryConfigurationEvent: RUMDataModel
-    public let dd: DD
-    public let action: Action?
-    public let application: Application?
-    public let date: Int64
-    public let effectiveSampleRate: Double?
-    public let experimentalFeatures: [String]?
-    public let service: String
-    public let session: Session?
-    public let source: Source
-    public var telemetry: Telemetry
-    public let type: String = "telemetry"
-    public let version: String
-    public let view: View?
-    public struct DD: Codable
-        public let formatVersion: Int64 = 2
-    public struct Action: Codable
-        public let id: String
-    public struct Application: Codable
-        public let id: String
-    public struct Session: Codable
-        public let id: String
-    public enum Source: String, Codable
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-        case unity = "unity"
-        case kotlinMultiplatform = "kotlin-multiplatform"
-    public struct Telemetry: Codable
-        public var configuration: Configuration
-        public let device: RUMTelemetryDevice?
-        public let os: RUMTelemetryOperatingSystem?
-        public let type: String = "configuration"
-        public var telemetryInfo: [String: Encodable]
-        public struct Configuration: Codable
-            public let actionNameAttribute: String?
-            public let allowFallbackToLocalStorage: Bool?
-            public let allowUntrustedEvents: Bool?
-            public let appHangThreshold: Int64?
-            public let backgroundTasksEnabled: Bool?
-            public let batchProcessingLevel: Int64?
-            public let batchSize: Int64?
-            public let batchUploadFrequency: Int64?
-            public let compressIntakeRequests: Bool?
-            public var dartVersion: String?
-            public var defaultPrivacyLevel: String?
-            public var enablePrivacyForActionName: Bool?
-            public let forwardConsoleLogs: ForwardConsoleLogs?
-            public let forwardErrorsToLogs: Bool?
-            public let forwardReports: ForwardReports?
-            public var imagePrivacyLevel: String?
-            public var initializationType: String?
-            public let invTimeThresholdMs: Int64?
-            public let isMainProcess: Bool?
-            public var mobileVitalsUpdatePeriod: Int64?
-            public var plugins: [Plugins]?
-            public let premiumSampleRate: Int64?
-            public var reactNativeVersion: String?
-            public var reactVersion: String?
-            public let replaySampleRate: Int64?
-            public let selectedTracingPropagators: [SelectedTracingPropagators]?
-            public var sendLogsAfterSessionExpiration: Bool?
-            public let sessionPersistence: SessionPersistence?
-            public var sessionReplaySampleRate: Int64?
-            public let sessionSampleRate: Int64?
-            public let silentMultipleInit: Bool?
-            public var startRecordingImmediately: Bool?
-            public var startSessionReplayRecordingManually: Bool?
-            public let storeContextsAcrossPages: Bool?
-            public let telemetryConfigurationSampleRate: Int64?
-            public let telemetrySampleRate: Int64?
-            public let telemetryUsageSampleRate: Int64?
-            public var textAndInputPrivacyLevel: String?
-            public let tnsTimeThresholdMs: Int64?
-            public var touchPrivacyLevel: String?
-            public var traceContextInjection: TraceContextInjection?
-            public let traceSampleRate: Int64?
-            public var tracerApi: String?
-            public var tracerApiVersion: String?
-            public var trackAnonymousUser: Bool?
-            public var trackBackgroundEvents: Bool?
-            public var trackCrossPlatformLongTasks: Bool?
-            public var trackErrors: Bool?
-            public let trackFeatureFlagsForEvents: [TrackFeatureFlagsForEvents]?
-            public var trackFlutterPerformance: Bool?
-            public var trackFrustrations: Bool?
-            public var trackInteractions: Bool?
-            public var trackLongTask: Bool?
-            public var trackNativeErrors: Bool?
-            public var trackNativeLongTasks: Bool?
-            public var trackNativeViews: Bool?
-            public var trackNetworkRequests: Bool?
-            public var trackResources: Bool?
-            public let trackSessionAcrossSubdomains: Bool?
-            public var trackUserInteractions: Bool?
-            public var trackViewsManually: Bool?
-            public let trackingConsent: TrackingConsent?
-            public var unityVersion: String?
-            public let useAllowedTracingOrigins: Bool?
-            public let useAllowedTracingUrls: Bool?
-            public let useBeforeSend: Bool?
-            public let useCrossSiteSessionCookie: Bool?
-            public let useExcludedActivityUrls: Bool?
-            public var useFirstPartyHosts: Bool?
-            public let useLocalEncryption: Bool?
-            public let usePartitionedCrossSiteSessionCookie: Bool?
-            public var usePciIntake: Bool?
-            public var useProxy: Bool?
-            public let useSecureSessionCookie: Bool?
-            public let useTracing: Bool?
-            public let useWorkerUrl: Bool?
-            public let viewTrackingStrategy: ViewTrackingStrategy?
-            public enum ForwardConsoleLogs: Codable
-                case stringsArray(value: [String])
-                case string(value: String)
-                public func encode(to encoder: Encoder) throws
-                public init(from decoder: Decoder) throws
-            public enum ForwardReports: Codable
-                case stringsArray(value: [String])
-                case string(value: String)
-                public func encode(to encoder: Encoder) throws
-                public init(from decoder: Decoder) throws
-            public struct Plugins: Codable
-                public let name: String
-                public var pluginsInfo: [String: Encodable]
-            public enum SelectedTracingPropagators: String, Codable
-                case datadog = "datadog"
-                case b3 = "b3"
-                case b3multi = "b3multi"
-                case tracecontext = "tracecontext"
-            public enum SessionPersistence: String, Codable
-                case localStorage = "local-storage"
-                case cookie = "cookie"
-            public enum TraceContextInjection: String, Codable
-                case all = "all"
-                case sampled = "sampled"
-            public enum TrackFeatureFlagsForEvents: String, Codable
-                case vital = "vital"
-                case resource = "resource"
-                case action = "action"
-                case longTask = "long_task"
-            public enum TrackingConsent: String, Codable
-                case granted = "granted"
-                case notGranted = "not-granted"
-                case pending = "pending"
-            public enum ViewTrackingStrategy: String, Codable
-                case activityViewTrackingStrategy = "ActivityViewTrackingStrategy"
-                case fragmentViewTrackingStrategy = "FragmentViewTrackingStrategy"
-                case mixedViewTrackingStrategy = "MixedViewTrackingStrategy"
-                case navigationViewTrackingStrategy = "NavigationViewTrackingStrategy"
-    public struct View: Codable
-        public let id: String
-[?] extension TelemetryConfigurationEvent.Telemetry
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
-[?] extension TelemetryConfigurationEvent.Telemetry.Configuration.Plugins
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
-public struct TelemetryUsageEvent: RUMDataModel
-    public let dd: DD
-    public let action: Action?
-    public let application: Application?
-    public let date: Int64
-    public let effectiveSampleRate: Double?
-    public let experimentalFeatures: [String]?
-    public let service: String
-    public let session: Session?
-    public let source: Source
-    public var telemetry: Telemetry
-    public let type: String = "telemetry"
-    public let version: String
-    public let view: View?
-    public struct DD: Codable
-        public let formatVersion: Int64 = 2
-    public struct Action: Codable
-        public let id: String
-    public struct Application: Codable
-        public let id: String
-    public struct Session: Codable
-        public let id: String
-    public enum Source: String, Codable
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-        case unity = "unity"
-        case kotlinMultiplatform = "kotlin-multiplatform"
-    public struct Telemetry: Codable
-        public let device: RUMTelemetryDevice?
-        public let os: RUMTelemetryOperatingSystem?
-        public let type: String = "usage"
-        public let usage: Usage
-        public var telemetryInfo: [String: Encodable]
-        public enum Usage: Codable
-            case telemetryCommonFeaturesUsage(value: TelemetryCommonFeaturesUsage)
-            case telemetryMobileFeaturesUsage(value: TelemetryMobileFeaturesUsage)
-            public func encode(to encoder: Encoder) throws
-            public init(from decoder: Decoder) throws
-            public enum TelemetryCommonFeaturesUsage: Codable
-                case setTrackingConsent(value: SetTrackingConsent)
-                case stopSession(value: StopSession)
-                case startView(value: StartView)
-                case setViewContext(value: SetViewContext)
-                case setViewContextProperty(value: SetViewContextProperty)
-                case setViewName(value: SetViewName)
-                case getViewContext(value: GetViewContext)
-                case addAction(value: AddAction)
-                case addError(value: AddError)
-                case setGlobalContext(value: SetGlobalContext)
-                case setUser(value: SetUser)
-                case setAccount(value: SetAccount)
-                case addFeatureFlagEvaluation(value: AddFeatureFlagEvaluation)
-                public func encode(to encoder: Encoder) throws
-                public init(from decoder: Decoder) throws
-                public struct SetTrackingConsent: Codable
-                    public let feature: String = "set-tracking-consent"
-                    public let trackingConsent: TrackingConsent
-                    public enum TrackingConsent: String, Codable
-                        case granted = "granted"
-                        case notGranted = "not-granted"
-                        case pending = "pending"
-                public struct StopSession: Codable
-                    public let feature: String = "stop-session"
-                public struct StartView: Codable
-                    public let feature: String = "start-view"
-                public struct SetViewContext: Codable
-                    public let feature: String = "set-view-context"
-                public struct SetViewContextProperty: Codable
-                    public let feature: String = "set-view-context-property"
-                public struct SetViewName: Codable
-                    public let feature: String = "set-view-name"
-                public struct GetViewContext: Codable
-                    public let feature: String = "get-view-context"
-                public struct AddAction: Codable
-                    public let feature: String = "add-action"
-                public struct AddError: Codable
-                    public let feature: String = "add-error"
-                public struct SetGlobalContext: Codable
-                    public let feature: String = "set-global-context"
-                public struct SetUser: Codable
-                    public let feature: String = "set-user"
-                public struct SetAccount: Codable
-                    public let feature: String = "set-account"
-                public struct AddFeatureFlagEvaluation: Codable
-                    public let feature: String = "add-feature-flag-evaluation"
-            public enum TelemetryMobileFeaturesUsage: Codable
-                case addViewLoadingTime(value: AddViewLoadingTime)
-                public func encode(to encoder: Encoder) throws
-                public init(from decoder: Decoder) throws
-                public struct AddViewLoadingTime: Codable
-                    public let feature: String = "addViewLoadingTime"
-                    public let noActiveView: Bool
-                    public let noView: Bool
-                    public let overwritten: Bool
-    public struct View: Codable
-        public let id: String
-[?] extension TelemetryUsageEvent.Telemetry
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
-public enum RUMSessionPrecondition: String, Codable
-    case userAppLaunch = "user_app_launch"
-    case inactivityTimeout = "inactivity_timeout"
-    case maxDuration = "max_duration"
-    case backgroundLaunch = "background_launch"
-    case prewarm = "prewarm"
-    case fromNonInteractiveSession = "from_non_interactive_session"
-    case explicitStop = "explicit_stop"
-public struct RUMAccount: Codable
-    public let id: String
-    public let name: String?
-    public var accountInfo: [String: Encodable]
-[?] extension RUMAccount
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
-public struct RUMCITest: Codable
-    public let testExecutionId: String
-public struct RUMConnectivity: Codable
-    public let cellular: Cellular?
-    public let effectiveType: EffectiveType?
-    public let interfaces: [Interfaces]?
-    public let status: Status
-    public struct Cellular: Codable
-        public let carrierName: String?
-        public let technology: String?
-    public enum EffectiveType: String, Codable
-        case slow2g = "slow-2g"
-        case effectiveType2g = "2g"
-        case effectiveType3g = "3g"
-        case effectiveType4g = "4g"
-    public enum Interfaces: String, Codable
-        case bluetooth = "bluetooth"
-        case cellular = "cellular"
-        case ethernet = "ethernet"
-        case wifi = "wifi"
-        case wimax = "wimax"
-        case mixed = "mixed"
-        case other = "other"
-        case unknown = "unknown"
-        case interfacesNone = "none"
-    public enum Status: String, Codable
-        case connected = "connected"
-        case notConnected = "not_connected"
-        case maybe = "maybe"
-public struct RUMEventAttributes: Codable
-    public var contextInfo: [String: Encodable]
-[?] extension RUMEventAttributes
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
-public struct RUMDevice: Codable
-    public let architecture: String?
-    public let brand: String?
-    public let model: String?
-    public let name: String?
-    public let type: RUMDeviceType
-    public enum RUMDeviceType: String, Codable
-        case mobile = "mobile"
-        case desktop = "desktop"
-        case tablet = "tablet"
-        case tv = "tv"
-        case gamingConsole = "gaming_console"
-        case bot = "bot"
-        case other = "other"
-public struct RUMOperatingSystem: Codable
-    public let build: String?
-    public let name: String
-    public let version: String
-    public let versionMajor: String
-public enum RUMSessionType: String, Codable
-    case user = "user"
-    case synthetics = "synthetics"
-    case ciTest = "ci_test"
-public struct RUMSyntheticsTest: Codable
-    public let injected: Bool?
-    public let resultId: String
-    public let testId: String
-public struct RUMUser: Codable
-    public let anonymousId: String?
-    public let email: String?
-    public let id: String?
-    public let name: String?
-    public var usrInfo: [String: Encodable]
-[?] extension RUMUser
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
-public enum RUMActionID: Codable
-    case string(value: String)
-    case stringsArray(value: [String])
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
-public enum RUMMethod: String, Codable
-    case post = "POST"
-    case get = "GET"
-    case head = "HEAD"
-    case put = "PUT"
-    case delete = "DELETE"
-    case patch = "PATCH"
-    case trace = "TRACE"
-    case options = "OPTIONS"
-    case connect = "CONNECT"
-public struct RUMTelemetryDevice: Codable
-    public let architecture: String?
-    public let brand: String?
-    public let model: String?
-public struct RUMTelemetryOperatingSystem: Codable
-    public let build: String?
-    public let name: String?
-    public let version: String?
-public extension SwiftUI.View
-    func trackRUMTapAction(name: String,attributes: [String: Encodable] = [:],count: Int = 1,in core: DatadogCoreProtocol = CoreRegistry.default) -> some View
 public struct RUMAction
     public var name: String
     public var attributes: [AttributeKey: AttributeValue]
     public init(name: String, attributes: [AttributeKey: AttributeValue] = [:])
+public extension SwiftUI.View
+    func trackRUMTapAction(name: String,attributes: [String: Encodable] = [:],count: Int = 1,in core: DatadogCoreProtocol = CoreRegistry.default) -> some View
+public protocol SwiftUIRUMActionsPredicate
+    func rumAction(with componentName: String) -> RUMAction?
+public struct DefaultSwiftUIRUMActionsPredicate
+    public init(isLegacyDetectionEnabled: Bool)
+[?] extension DefaultSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate
+    public func rumAction(with componentName: String) -> RUMAction?
 public typealias UIKitRUMActionsPredicate = UITouchRUMActionsPredicate
 public protocol UITouchRUMActionsPredicate
     func rumAction(targetView: UIView) -> RUMAction?
@@ -1779,7 +347,6 @@ public struct RUMView
     public var path: String?
     public var attributes: [AttributeKey: AttributeValue]
     public var isUntrackedModal: Bool
-    public init(path: String, attributes: [AttributeKey: AttributeValue] = [:])
     public init(name: String, attributes: [AttributeKey: AttributeValue] = [:], isUntrackedModal: Bool = false)
 public protocol SwiftUIRUMViewsPredicate
     func rumView(for extractedViewName: String) -> RUMView?
@@ -1815,6 +382,7 @@ public enum RUM
         public var uiKitViewsPredicate: UIKitRUMViewsPredicate?
         public var uiKitActionsPredicate: UIKitRUMActionsPredicate?
         public var swiftUIViewsPredicate: SwiftUIRUMViewsPredicate?
+        public var swiftUIActionsPredicate: SwiftUIRUMActionsPredicate?
         public var urlSessionTracking: URLSessionTracking?
         public var trackFrustrations: Bool
         public var trackBackgroundEvents: Bool
@@ -1832,6 +400,7 @@ public enum RUM
         public var onSessionStart: RUM.SessionListener?
         public var customEndpoint: URL?
         public var trackAnonymousUser: Bool
+        public var trackMemoryWarnings: Bool
         public var telemetrySampleRate: SampleRate
         public var featureFlags: FeatureFlags
         public struct URLSessionTracking
@@ -1843,17 +412,18 @@ public enum RUM
             case rare
 [?] extension RUM.Configuration.URLSessionTracking
     public enum FirstPartyHostsTracing
-        case trace(hosts: Set<String>,sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
-        case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
+        case trace(hosts: Set<String>,sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
+        case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil)
 [?] extension RUM.Configuration
-    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,telemetrySampleRate: SampleRate = 20,featureFlags: FeatureFlags = .defaults)
+    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,telemetrySampleRate: SampleRate = 20,featureFlags: FeatureFlags = .defaults)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
     public var configurationTelemetrySampleRate: Float
 [?] extension RUM.Configuration
     public typealias FeatureFlags = [FeatureFlag: Bool]
     public enum FeatureFlag: String
         case viewHitches
+        case collectAccessibilitySettings
 [?] extension RUM.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
@@ -1918,18 +488,13 @@ public enum RUMErrorSource
     case webview
     case console
     case custom
-public protocol RUMMonitorProtocol: AnyObject
+public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject
     func addAttribute(forKey key: AttributeKey, value: AttributeValue)
     func addAttributes(_ attributes: [AttributeKey: AttributeValue])
     func removeAttribute(forKey key: AttributeKey)
     func removeAttributes(forKeys keys: [AttributeKey])
     func currentSessionID(completion: @escaping (String?) -> Void)
     func stopSession()
-    func startView(viewController: UIViewController,name: String?,attributes: [AttributeKey: AttributeValue])
-    func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
-    func startView(key: String,name: String?,attributes: [AttributeKey: AttributeValue])
-    func stopView(key: String,attributes: [AttributeKey: AttributeValue])
-    func addViewLoadingTime(overwrite: Bool)
     func addTiming(name: String)
     func addError(message: String,type: String?,stack: String?,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
     func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue])
@@ -1946,6 +511,16 @@ public protocol RUMMonitorProtocol: AnyObject
     func stopAction(type: RUMActionType,name: String?,attributes: [AttributeKey: AttributeValue])
     func addFeatureFlagEvaluation(name: String,value: Encodable)
     var debug: Bool
+public protocol RUMMonitorViewProtocol: AnyObject
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue)
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue])
+    func removeViewAttribute(forKey key: AttributeKey)
+    func removeViewAttributes(forKeys keys: [AttributeKey])
+    func startView(viewController: UIViewController,name: String?,attributes: [AttributeKey: AttributeValue])
+    func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
+    func startView(key: String,name: String?,attributes: [AttributeKey: AttributeValue])
+    func stopView(key: String,attributes: [AttributeKey: AttributeValue])
+    func addViewLoadingTime(overwrite: Bool)
 public enum PerformanceMetric
     case flutterBuildTime
     case flutterRasterTime
@@ -1970,9 +545,6 @@ public protocol CrashReportingPlugin: AnyObject
 # API surface for DatadogWebViewTracking:
 # ----------------------------------
 
-public final class objc_WebViewTracking: NSObject
-    public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: SampleRate = .maxSampleRate)
-    public static func disable(webView: WKWebView)
 public enum WebViewTracking
     public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: SampleRate = .maxSampleRate,in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func disable(webView: WKWebView)
@@ -1999,10 +571,28 @@ public struct SRSegment: SRDataModel
     public let source: Source
     public let start: Int64
     public let view: View
+    public enum CodingKeys: String, CodingKey
+        case application = "application"
+        case end = "end"
+        case hasFullSnapshot = "has_full_snapshot"
+        case indexInView = "index_in_view"
+        case records = "records"
+        case recordsCount = "records_count"
+        case session = "session"
+        case source = "source"
+        case start = "start"
+        case view = "view"
+    public init(application: Application,end: Int64,hasFullSnapshot: Bool? = nil,indexInView: Int64? = nil,records: [SRRecord],recordsCount: Int64,session: Session,source: Source,start: Int64,view: View)
     public struct Application: Codable
         public let id: String
+        public enum CodingKeys: String, CodingKey
+            case id = "id"
+        public init(id: String)
     public struct Session: Codable
         public let id: String
+        public enum CodingKeys: String, CodingKey
+            case id = "id"
+        public init(id: String)
     public enum Source: String, Codable
         case android = "android"
         case ios = "ios"
@@ -2011,18 +601,36 @@ public struct SRSegment: SRDataModel
         case kotlinMultiplatform = "kotlin-multiplatform"
     public struct View: Codable
         public let id: String
+        public enum CodingKeys: String, CodingKey
+            case id = "id"
+        public init(id: String)
 public struct SRShapeBorder: Codable, Hashable
     public let color: String
     public let width: Int64
+    public enum CodingKeys: String, CodingKey
+        case color = "color"
+        case width = "width"
+    public init(color: String,width: Int64)
 public struct SRContentClip: Codable, Hashable
     public let bottom: Int64?
     public let left: Int64?
     public let right: Int64?
     public let top: Int64?
+    public enum CodingKeys: String, CodingKey
+        case bottom = "bottom"
+        case left = "left"
+        case right = "right"
+        case top = "top"
+    public init(bottom: Int64? = nil,left: Int64? = nil,right: Int64? = nil,top: Int64? = nil)
 public struct SRShapeStyle: Codable, Hashable
     public let backgroundColor: String?
     public let cornerRadius: Double?
     public let opacity: Double?
+    public enum CodingKeys: String, CodingKey
+        case backgroundColor = "backgroundColor"
+        case cornerRadius = "cornerRadius"
+        case opacity = "opacity"
+    public init(backgroundColor: String? = nil,cornerRadius: Double? = nil,opacity: Double? = nil)
 public struct SRShapeWireframe: Codable, Hashable
     public let border: SRShapeBorder?
     public let clip: SRContentClip?
@@ -2033,12 +641,31 @@ public struct SRShapeWireframe: Codable, Hashable
     public let width: Int64
     public let x: Int64
     public let y: Int64
+    public enum CodingKeys: String, CodingKey
+        case border = "border"
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case shapeStyle = "shapeStyle"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,shapeStyle: SRShapeStyle? = nil,width: Int64,x: Int64,y: Int64)
 public struct SRTextPosition: Codable, Hashable
     public let alignment: Alignment?
     public let padding: Padding?
+    public enum CodingKeys: String, CodingKey
+        case alignment = "alignment"
+        case padding = "padding"
+    public init(alignment: Alignment? = nil,padding: Padding? = nil)
     public struct Alignment: Codable, Hashable
         public let horizontal: Horizontal?
         public let vertical: Vertical?
+        public enum CodingKeys: String, CodingKey
+            case horizontal = "horizontal"
+            case vertical = "vertical"
+        public init(horizontal: Horizontal? = nil,vertical: Vertical? = nil)
         public enum Horizontal: String, Codable
             case left = "left"
             case right = "right"
@@ -2052,10 +679,21 @@ public struct SRTextPosition: Codable, Hashable
         public let left: Int64?
         public let right: Int64?
         public let top: Int64?
+        public enum CodingKeys: String, CodingKey
+            case bottom = "bottom"
+            case left = "left"
+            case right = "right"
+            case top = "top"
+        public init(bottom: Int64? = nil,left: Int64? = nil,right: Int64? = nil,top: Int64? = nil)
 public struct SRTextStyle: Codable, Hashable
     public let color: String
     public let family: String
     public let size: Int64
+    public enum CodingKeys: String, CodingKey
+        case color = "color"
+        case family = "family"
+        case size = "size"
+    public init(color: String,family: String,size: Int64)
 public struct SRTextWireframe: Codable, Hashable
     public let border: SRShapeBorder?
     public let clip: SRContentClip?
@@ -2069,6 +707,20 @@ public struct SRTextWireframe: Codable, Hashable
     public let width: Int64
     public let x: Int64
     public let y: Int64
+    public enum CodingKeys: String, CodingKey
+        case border = "border"
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case shapeStyle = "shapeStyle"
+        case text = "text"
+        case textPosition = "textPosition"
+        case textStyle = "textStyle"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,shapeStyle: SRShapeStyle? = nil,text: String,textPosition: SRTextPosition? = nil,textStyle: SRTextStyle,width: Int64,x: Int64,y: Int64)
 public struct SRImageWireframe: Codable, Hashable
     public var base64: String?
     public let border: SRShapeBorder?
@@ -2083,6 +735,21 @@ public struct SRImageWireframe: Codable, Hashable
     public let width: Int64
     public let x: Int64
     public let y: Int64
+    public enum CodingKeys: String, CodingKey
+        case base64 = "base64"
+        case border = "border"
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case isEmpty = "isEmpty"
+        case mimeType = "mimeType"
+        case resourceId = "resourceId"
+        case shapeStyle = "shapeStyle"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    public init(base64: String? = nil,border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,isEmpty: Bool? = nil,mimeType: String? = nil,resourceId: String? = nil,shapeStyle: SRShapeStyle? = nil,width: Int64,x: Int64,y: Int64)
 public struct SRPlaceholderWireframe: Codable, Hashable
     public let clip: SRContentClip?
     public let height: Int64
@@ -2092,6 +759,16 @@ public struct SRPlaceholderWireframe: Codable, Hashable
     public let width: Int64
     public let x: Int64
     public let y: Int64
+    public enum CodingKeys: String, CodingKey
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case label = "label"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    public init(clip: SRContentClip? = nil,height: Int64,id: Int64,label: String? = nil,width: Int64,x: Int64,y: Int64)
 public struct SRWebviewWireframe: Codable, Hashable
     public let border: SRShapeBorder?
     public let clip: SRContentClip?
@@ -2104,6 +781,19 @@ public struct SRWebviewWireframe: Codable, Hashable
     public let width: Int64
     public let x: Int64
     public let y: Int64
+    public enum CodingKeys: String, CodingKey
+        case border = "border"
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case isVisible = "isVisible"
+        case shapeStyle = "shapeStyle"
+        case slotId = "slotId"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,isVisible: Bool? = nil,shapeStyle: SRShapeStyle? = nil,slotId: String,width: Int64,x: Int64,y: Int64)
 public enum SRWireframe: Codable
     case shapeWireframe(value: SRShapeWireframe)
     case textWireframe(value: SRTextWireframe)
@@ -2116,12 +806,25 @@ public struct SRFullSnapshotRecord: Codable
     public let data: Data
     public let timestamp: Int64
     public let type: Int64 = 10
+    public enum CodingKeys: String, CodingKey
+        case data = "data"
+        case timestamp = "timestamp"
+        case type = "type"
+    public init(data: Data,timestamp: Int64)
     public struct Data: Codable
         public let wireframes: [SRWireframe]
+        public enum CodingKeys: String, CodingKey
+            case wireframes = "wireframes"
+        public init(wireframes: [SRWireframe])
 public struct SRIncrementalSnapshotRecord: Codable
     public let data: Data
     public let timestamp: Int64
     public let type: Int64 = 11
+    public enum CodingKeys: String, CodingKey
+        case data = "data"
+        case timestamp = "timestamp"
+        case type = "type"
+    public init(data: Data,timestamp: Int64)
     public enum Data: Codable
         case mutationData(value: MutationData)
         case touchData(value: TouchData)
@@ -2134,11 +837,24 @@ public struct SRIncrementalSnapshotRecord: Codable
             public let removes: [Removes]
             public let source: Int64 = 0
             public let updates: [Updates]
+            public enum CodingKeys: String, CodingKey
+                case adds = "adds"
+                case removes = "removes"
+                case source = "source"
+                case updates = "updates"
+            public init(adds: [Adds],removes: [Removes],updates: [Updates])
             public struct Adds: Codable
                 public let previousId: Int64?
                 public let wireframe: SRWireframe
+                public enum CodingKeys: String, CodingKey
+                    case previousId = "previousId"
+                    case wireframe = "wireframe"
+                public init(previousId: Int64? = nil,wireframe: SRWireframe)
             public struct Removes: Codable
                 public let id: Int64
+                public enum CodingKeys: String, CodingKey
+                    case id = "id"
+                public init(id: Int64)
             public enum Updates: Codable
                 case textWireframeUpdate(value: TextWireframeUpdate)
                 case shapeWireframeUpdate(value: ShapeWireframeUpdate)
@@ -2160,6 +876,20 @@ public struct SRIncrementalSnapshotRecord: Codable
                     public let width: Int64?
                     public let x: Int64?
                     public let y: Int64?
+                    public enum CodingKeys: String, CodingKey
+                        case border = "border"
+                        case clip = "clip"
+                        case height = "height"
+                        case id = "id"
+                        case shapeStyle = "shapeStyle"
+                        case text = "text"
+                        case textPosition = "textPosition"
+                        case textStyle = "textStyle"
+                        case type = "type"
+                        case width = "width"
+                        case x = "x"
+                        case y = "y"
+                    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64? = nil,id: Int64,shapeStyle: SRShapeStyle? = nil,text: String? = nil,textPosition: SRTextPosition? = nil,textStyle: SRTextStyle? = nil,width: Int64? = nil,x: Int64? = nil,y: Int64? = nil)
                 public struct ShapeWireframeUpdate: Codable
                     public let border: SRShapeBorder?
                     public let clip: SRContentClip?
@@ -2170,6 +900,17 @@ public struct SRIncrementalSnapshotRecord: Codable
                     public let width: Int64?
                     public let x: Int64?
                     public let y: Int64?
+                    public enum CodingKeys: String, CodingKey
+                        case border = "border"
+                        case clip = "clip"
+                        case height = "height"
+                        case id = "id"
+                        case shapeStyle = "shapeStyle"
+                        case type = "type"
+                        case width = "width"
+                        case x = "x"
+                        case y = "y"
+                    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64? = nil,id: Int64,shapeStyle: SRShapeStyle? = nil,width: Int64? = nil,x: Int64? = nil,y: Int64? = nil)
                 public struct ImageWireframeUpdate: Codable
                     public var base64: String?
                     public let border: SRShapeBorder?
@@ -2184,6 +925,21 @@ public struct SRIncrementalSnapshotRecord: Codable
                     public let width: Int64?
                     public let x: Int64?
                     public let y: Int64?
+                    public enum CodingKeys: String, CodingKey
+                        case base64 = "base64"
+                        case border = "border"
+                        case clip = "clip"
+                        case height = "height"
+                        case id = "id"
+                        case isEmpty = "isEmpty"
+                        case mimeType = "mimeType"
+                        case resourceId = "resourceId"
+                        case shapeStyle = "shapeStyle"
+                        case type = "type"
+                        case width = "width"
+                        case x = "x"
+                        case y = "y"
+                    public init(base64: String? = nil,border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64? = nil,id: Int64,isEmpty: Bool? = nil,mimeType: String? = nil,resourceId: String? = nil,shapeStyle: SRShapeStyle? = nil,width: Int64? = nil,x: Int64? = nil,y: Int64? = nil)
                 public struct PlaceholderWireframeUpdate: Codable
                     public let clip: SRContentClip?
                     public let height: Int64?
@@ -2193,6 +949,16 @@ public struct SRIncrementalSnapshotRecord: Codable
                     public let width: Int64?
                     public let x: Int64?
                     public let y: Int64?
+                    public enum CodingKeys: String, CodingKey
+                        case clip = "clip"
+                        case height = "height"
+                        case id = "id"
+                        case label = "label"
+                        case type = "type"
+                        case width = "width"
+                        case x = "x"
+                        case y = "y"
+                    public init(clip: SRContentClip? = nil,height: Int64? = nil,id: Int64,label: String? = nil,width: Int64? = nil,x: Int64? = nil,y: Int64? = nil)
                 public struct WebviewWireframeUpdate: Codable
                     public let border: SRShapeBorder?
                     public let clip: SRContentClip?
@@ -2205,18 +971,46 @@ public struct SRIncrementalSnapshotRecord: Codable
                     public let width: Int64?
                     public let x: Int64?
                     public let y: Int64?
+                    public enum CodingKeys: String, CodingKey
+                        case border = "border"
+                        case clip = "clip"
+                        case height = "height"
+                        case id = "id"
+                        case isVisible = "isVisible"
+                        case shapeStyle = "shapeStyle"
+                        case slotId = "slotId"
+                        case type = "type"
+                        case width = "width"
+                        case x = "x"
+                        case y = "y"
+                    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64? = nil,id: Int64,isVisible: Bool? = nil,shapeStyle: SRShapeStyle? = nil,slotId: String,width: Int64? = nil,x: Int64? = nil,y: Int64? = nil)
         public struct TouchData: Codable
             public let positions: [Positions]?
             public let source: Int64 = 2
+            public enum CodingKeys: String, CodingKey
+                case positions = "positions"
+                case source = "source"
+            public init(positions: [Positions]? = nil)
             public struct Positions: Codable
                 public let id: Int64
                 public let timestamp: Int64
                 public let x: Int64
                 public let y: Int64
+                public enum CodingKeys: String, CodingKey
+                    case id = "id"
+                    case timestamp = "timestamp"
+                    case x = "x"
+                    case y = "y"
+                public init(id: Int64,timestamp: Int64,x: Int64,y: Int64)
         public struct ViewportResizeData: Codable
             public let height: Int64
             public let source: Int64 = 4
             public let width: Int64
+            public enum CodingKeys: String, CodingKey
+                case height = "height"
+                case source = "source"
+                case width = "width"
+            public init(height: Int64,width: Int64)
         public struct PointerInteractionData: Codable
             public let pointerEventType: PointerEventType
             public let pointerId: Int64
@@ -2224,6 +1018,14 @@ public struct SRIncrementalSnapshotRecord: Codable
             public let source: Int64 = 9
             public let x: Double
             public let y: Double
+            public enum CodingKeys: String, CodingKey
+                case pointerEventType = "pointerEventType"
+                case pointerId = "pointerId"
+                case pointerType = "pointerType"
+                case source = "source"
+                case x = "x"
+                case y = "y"
+            public init(pointerEventType: PointerEventType,pointerId: Int64,pointerType: PointerType,x: Double,y: Double)
             public enum PointerEventType: String, Codable
                 case down = "down"
                 case up = "up"
@@ -2237,26 +1039,57 @@ public struct SRMetaRecord: Codable
     public let slotId: String?
     public let timestamp: Int64
     public let type: Int64 = 4
+    public enum CodingKeys: String, CodingKey
+        case data = "data"
+        case slotId = "slotId"
+        case timestamp = "timestamp"
+        case type = "type"
+    public init(data: Data,slotId: String? = nil,timestamp: Int64)
     public struct Data: Codable
         public let height: Int64
         public let href: String?
         public let width: Int64
+        public enum CodingKeys: String, CodingKey
+            case height = "height"
+            case href = "href"
+            case width = "width"
+        public init(height: Int64,href: String? = nil,width: Int64)
 public struct SRFocusRecord: Codable
     public let data: Data
     public let slotId: String?
     public let timestamp: Int64
     public let type: Int64 = 6
+    public enum CodingKeys: String, CodingKey
+        case data = "data"
+        case slotId = "slotId"
+        case timestamp = "timestamp"
+        case type = "type"
+    public init(data: Data,slotId: String? = nil,timestamp: Int64)
     public struct Data: Codable
         public let hasFocus: Bool
+        public enum CodingKeys: String, CodingKey
+            case hasFocus = "has_focus"
+        public init(hasFocus: Bool)
 public struct SRViewEndRecord: Codable
     public let slotId: String?
     public let timestamp: Int64
     public let type: Int64 = 7
+    public enum CodingKeys: String, CodingKey
+        case slotId = "slotId"
+        case timestamp = "timestamp"
+        case type = "type"
+    public init(slotId: String? = nil,timestamp: Int64)
 public struct SRVisualViewportRecord: Codable
     public let data: Data
     public let slotId: String?
     public let timestamp: Int64
     public let type: Int64 = 8
+    public enum CodingKeys: String, CodingKey
+        case data = "data"
+        case slotId = "slotId"
+        case timestamp = "timestamp"
+        case type = "type"
+    public init(data: Data,slotId: String? = nil,timestamp: Int64)
     public struct Data: Codable
         public let height: Double
         public let offsetLeft: Double
@@ -2265,6 +1098,15 @@ public struct SRVisualViewportRecord: Codable
         public let pageTop: Double
         public let scale: Double
         public let width: Double
+        public enum CodingKeys: String, CodingKey
+            case height = "height"
+            case offsetLeft = "offsetLeft"
+            case offsetTop = "offsetTop"
+            case pageLeft = "pageLeft"
+            case pageTop = "pageTop"
+            case scale = "scale"
+            case width = "width"
+        public init(height: Double,offsetLeft: Double,offsetTop: Double,pageLeft: Double,pageTop: Double,scale: Double,width: Double)
 public enum SRRecord: Codable
     case fullSnapshotRecord(value: SRFullSnapshotRecord)
     case incrementalSnapshotRecord(value: SRIncrementalSnapshotRecord)
@@ -2279,7 +1121,7 @@ public class SessionReplayWireframesBuilder
     public struct FontOverride
         public init(size: CGFloat?)
     public func createShapeWireframe(id: WireframeID,frame: CGRect,clip: CGRect,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
-    public func createImageWireframe(id: WireframeID,resource: SessionReplayResource,frame: CGRect,clip: CGRect,mimeType: String = "png",borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
+    public func createImageWireframe(id: WireframeID,resource: SessionReplayResource,frame: CGRect,clip: CGRect,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
     public func createTextWireframe(id: WireframeID,frame: CGRect,clip: CGRect,text: String,textFrame: CGRect? = nil,textAlignment: SRTextPosition.Alignment? = nil,textColor: CGColor? = nil,font: UIFont? = nil,fontOverride: FontOverride? = nil,fontScalingEnabled: Bool = false,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
     public func createPlaceholderWireframe(id: Int64,frame: CGRect,clip: CGRect,label: String) -> SRWireframe
     public func visibleWebViewWireframe(id: Int,frame: CGRect,clip: CGRect,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
@@ -2321,6 +1163,7 @@ public struct SessionReplayNode
     public let wireframesBuilder: SessionReplayNodeWireframesBuilder
     public init(viewAttributes: SessionReplayViewAttributes, wireframesBuilder: SessionReplayNodeWireframesBuilder)
 public protocol SessionReplayResource
+    var mimeType: String
     func calculateIdentifier() -> String
     func calculateData() -> Data
 public struct SessionReplayViewAttributes: Equatable
@@ -2331,6 +1174,9 @@ public struct SessionReplayViewAttributes: Equatable
     public internal(set) var layerBorderWidth: CGFloat
     public internal(set) var layerCornerRadius: CGFloat
     public internal(set) var alpha: CGFloat
+public extension SessionReplayViewAttributes
+    func resolveTextAndInputPrivacyLevel(in context: SessionReplayViewTreeRecordingContext) -> TextAndInputPrivacyLevel
+    func resolveImagePrivacyLevel(in context: SessionReplayViewTreeRecordingContext) -> ImagePrivacyLevel
 public protocol SessionReplayNodeSemantics
     static var importance: Int
     var subtreeStrategy: SessionReplayNodeSubtreeStrategy
@@ -2348,37 +1194,6 @@ public struct SessionReplaySpecificElement: SessionReplayNodeSemantics
     public let subtreeStrategy: SessionReplayNodeSubtreeStrategy
     public let nodes: [SessionReplayNode]
     public init(subtreeStrategy: SessionReplayNodeSubtreeStrategy,nodes: [SessionReplayNode])
-public final class objc_SessionReplay: NSObject
-    public static func enable(with configuration: objc_SessionReplayConfiguration)
-    public static func startRecording()
-    public static func stopRecording()
-public final class objc_SessionReplayConfiguration: NSObject
-    @objc public var replaySampleRate: Float
-    @objc public var defaultPrivacyLevel: objc_SessionReplayConfigurationPrivacyLevel
-    @objc public var textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel
-    @objc public var imagePrivacyLevel: objc_ImagePrivacyLevel
-    @objc public var touchPrivacyLevel: objc_TouchPrivacyLevel
-    @objc public var startRecordingImmediately: Bool
-    @objc public var customEndpoint: URL?
-    @objc public var featureFlags: [String: Bool]
-    public required init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel,featureFlags: [String: Bool]?)
-    public convenience init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel)
-    public required init(replaySampleRate: Float)
-public enum objc_SessionReplayConfigurationPrivacyLevel: Int
-    case allow
-    case mask
-    case maskUserInput
-public enum objc_TextAndInputPrivacyLevel: Int
-    case maskSensitiveInputs
-    case maskAllInputs
-    case maskAll
-public enum objc_ImagePrivacyLevel: Int
-    case maskNonBundledOnly
-    case maskAll
-    case maskNone
-public enum objc_TouchPrivacyLevel: Int
-    case show
-    case hide
 public enum SessionReplay
     public static func enable(with configuration: SessionReplay.Configuration,in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func startRecording(in core: DatadogCoreProtocol = CoreRegistry.default)
@@ -2386,15 +1201,13 @@ public enum SessionReplay
 [?] extension SessionReplay
     public struct Configuration
         public var replaySampleRate: Float
-        public var defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask
         public var textAndInputPrivacyLevel: TextAndInputPrivacyLevel
         public var imagePrivacyLevel: ImagePrivacyLevel
         public var touchPrivacyLevel: TouchPrivacyLevel
         public var startRecordingImmediately: Bool
         public var customEndpoint: URL?
         public var featureFlags: FeatureFlags
-        public init(replaySampleRate: SampleRate = .maxSampleRate,textAndInputPrivacyLevel: TextAndInputPrivacyLevel,imagePrivacyLevel: ImagePrivacyLevel,touchPrivacyLevel: TouchPrivacyLevel,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil,featureFlags: FeatureFlags = .defaults)
-        public init(replaySampleRate: SampleRate = .maxSampleRate,defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil)
+        public init(replaySampleRate: SampleRate = .maxSampleRate,textAndInputPrivacyLevel: TextAndInputPrivacyLevel = .maskAll,imagePrivacyLevel: ImagePrivacyLevel = .maskAll,touchPrivacyLevel: TouchPrivacyLevel = .hide,startRecordingImmediately: Bool = true,customEndpoint: URL? = nil,featureFlags: FeatureFlags = .defaults)
         public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder])
 [?] extension SessionReplay.Configuration
     public typealias FeatureFlags = [FeatureFlag: Bool]
@@ -2403,20 +1216,6 @@ public enum SessionReplay
 [?] extension SessionReplay.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
-public enum objc_TextAndInputPrivacyLevelOverride: Int
-    case none
-    case maskSensitiveInputs
-    case maskAllInputs
-    case maskAll
-public enum objc_ImagePrivacyLevelOverride: Int
-    case none
-    case maskNone
-    case maskNonBundledOnly
-    case maskAll
-public enum objc_TouchPrivacyLevelOverride: Int
-    case none
-    case show
-    case hide
 [?] extension DatadogExtension where ExtendedType: UIView
     public var sessionReplayPrivacyOverrides: SessionReplayPrivacyOverrides
 public final class SessionReplayPrivacyOverrides
@@ -2426,11 +1225,6 @@ public final class SessionReplayPrivacyOverrides
     public var hide: Bool?
 [?] extension PrivacyOverrides: Equatable
     public static func == (lhs: SessionReplayPrivacyOverrides, rhs: SessionReplayPrivacyOverrides) -> Bool
-public extension UIView
-    @objc var ddSessionReplayPrivacyOverrides: objc_SessionReplayPrivacyOverrides
-public final class objc_SessionReplayPrivacyOverrides: NSObject
-    public init(view: UIView)
-    @objc public var textAndInputPrivacy: objc_TextAndInputPrivacyLevelOverride
-    @objc public var imagePrivacy: objc_ImagePrivacyLevelOverride
-    @objc public var touchPrivacy: objc_TouchPrivacyLevelOverride
-    @objc public var hide: NSNumber?
+public struct SessionReplayPrivacyView<Content: View>: View
+    public init(isActive: Bool = true,textAndInputPrivacy: TextAndInputPrivacyLevel? = nil,imagePrivacy: ImagePrivacyLevel? = nil,touchPrivacy: TouchPrivacyLevel? = nil,hide: Bool? = nil,core: DatadogCoreProtocol = CoreRegistry.default,@ViewBuilder content: @escaping () -> Content)
+    public var body: some View

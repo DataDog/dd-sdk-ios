@@ -26,7 +26,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         for events: [Event],
         with context: DatadogContext,
         execution: ExecutionContext
-    ) -> URLRequest {
+    ) throws -> URLRequest {
         var tags = [
             "service:\(context.service)",
             "version:\(context.version)",
@@ -44,6 +44,11 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         }
 
         let filteredEvents = eventsFilter.filter(events: events)
+
+        guard !filteredEvents.isEmpty else {
+            throw InternalError(description: "All \(events.count) RUM events were filtered out, resulting in empty payload")
+        }
+
         let data = format.format(filteredEvents.map { $0.data })
 
         let builder = URLRequestBuilder(
@@ -57,7 +62,8 @@ internal struct RequestBuilder: FeatureRequestBuilder {
                 .userAgentHeader(
                     appName: context.applicationName,
                     appVersion: context.version,
-                    device: context.device
+                    device: context.device,
+                    os: context.os
                 ),
                 .ddAPIKeyHeader(clientToken: context.clientToken),
                 .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),

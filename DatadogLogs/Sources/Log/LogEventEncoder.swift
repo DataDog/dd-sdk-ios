@@ -97,35 +97,15 @@ public struct LogEvent: Encodable {
         public var binaryImages: [BinaryImage]?
     }
 
-    /// Device information.
-    public struct DeviceInfo: Codable {
-        /// Device manufacturer name. Always'Apple'
-        public let brand: String
-
-        /// Device marketing name, e.g. "iPhone", "iPad", "iPod touch".
-        public let name: String
-
-        /// Device model name, e.g. "iPhone10,1", "iPhone13,2".
-        public let model: String
-
-        /// The architecture of the device
-        public let architecture: String
-    }
-
-    /// Operating System description.
-    public struct OperatingSystem: Codable {
-        /// Operating system name, e.g. Android, iOS
-        public let name: String
-        /// Full operating system version, e.g. 8.1.1
-        public let version: String
-        /// Operating system build number, e.g. 15D21
-        public let build: String?
-    }
-
     /// Datadog specific attributes.
     public struct Dd: Codable {
         /// Device information
-        public let device: DeviceInfo
+        public struct Device: Codable {
+            /// The CPU architecture of the device. Used to symbolication and deobfuscation.
+            public let architecture: String
+        }
+        /// Device with the architecture info
+        public let device: Device
     }
 
     /// The log's timestamp
@@ -138,7 +118,7 @@ public struct LogEvent: Encodable {
     public var error: Error?
     /// The service name configured for Logs.
     public let serviceName: String
-    /// The current log environement.
+    /// The current log environment.
     public let environment: String
     /// The configured logger name.
     public let loggerName: String
@@ -156,7 +136,9 @@ public struct LogEvent: Encodable {
     public let variant: String?
     /// Datadog specific attributes
     public let dd: Dd
-    /// The associated log error
+    /// Device information
+    public let device: Device
+    /// Operating System information
     public let os: OperatingSystem
     /// Custom user information configured globally for the SDK.
     public var userInfo: UserInfo
@@ -187,7 +169,6 @@ internal struct LogEventEncoder {
         case serviceName = "service"
         case environment = "env"
         case tags = "ddtags"
-        case os = "os"
 
         // MARK: - Error
 
@@ -207,6 +188,10 @@ internal struct LogEventEncoder {
         // MARK: - Dd info
 
         case dd = "_dd"
+
+        // MARK: - Device info
+        case device
+        case os
 
         // MARK: - Logger info
 
@@ -258,7 +243,6 @@ internal struct LogEventEncoder {
         try container.encode(log.status, forKey: .status)
         try container.encode(log.message, forKey: .message)
         try container.encode(log.serviceName, forKey: .serviceName)
-        try container.encode(log.os, forKey: .os)
 
         // Encode log.error properties
         if let someError = log.error {
@@ -285,6 +269,8 @@ internal struct LogEventEncoder {
         }
 
         try container.encode(log.dd, forKey: .dd)
+        try container.encode(log.device, forKey: .device)
+        try container.encode(log.os, forKey: .os)
 
         // Encode user info
         try log.userInfo.id.ifNotNil { try container.encode($0, forKey: .userId) }

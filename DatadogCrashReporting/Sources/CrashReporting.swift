@@ -33,29 +33,42 @@ public final class CrashReporting {
     /// - Provide backtraces
     public static func enable(with plugin: CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default) {
         do {
-            let contextProvider = CrashContextCoreProvider()
-
-            let reporter = CrashReportingFeature(
-                crashReportingPlugin: plugin,
-                crashContextProvider: contextProvider,
-                sender: MessageBusSender(core: core),
-                messageReceiver: contextProvider,
-                telemetry: core.telemetry
-            )
-
-            try core.register(feature: reporter)
-
-            if let backtraceReporter = plugin.backtraceReporter {
-                try core.register(backtraceReporter: backtraceReporter)
+            // To ensure the correct registration order between Core and Features,
+            // the entire initialization flow is synchronized on the main thread.
+            try runOnMainThreadSync {
+                try enableOrThrow(with: plugin, in: core)
             }
-
-            reporter.sendCrashReportIfFound()
-
-            core.telemetry
-                .configuration(trackErrors: true)
-        } catch {
+        } catch let error {
             consolePrint("\(error)", .error)
         }
+    }
+
+    internal static func enableOrThrow(with plugin: CrashReportingPlugin, in core: DatadogCoreProtocol) throws {
+        guard !(core is NOPDatadogCore) else {
+            throw ProgrammerError(
+                description: "Datadog SDK must be initialized before calling `CrashReporting.enable()`."
+            )
+        }
+
+        let contextProvider = CrashContextCoreProvider()
+
+        let reporter = CrashReportingFeature(
+            crashReportingPlugin: plugin,
+            crashContextProvider: contextProvider,
+            sender: MessageBusSender(core: core),
+            messageReceiver: contextProvider,
+            telemetry: core.telemetry
+        )
+
+        try core.register(feature: reporter)
+
+        if let backtraceReporter = plugin.backtraceReporter {
+            try core.register(backtraceReporter: backtraceReporter)
+        }
+
+        reporter.sendCrashReportIfFound()
+
+        core.telemetry.configuration(trackErrors: true)
     }
 }
 

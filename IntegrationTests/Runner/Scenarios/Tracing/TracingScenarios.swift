@@ -47,7 +47,7 @@ class TracingURLSessionBaseScenario: URLSessionBaseScenario {
         }
 
         switch setup.instrumentationMethod {
-        case .legacyWithFeatureFirstPartyHosts, .legacyInheritance, .legacyComposition, .delegateUsingFeatureFirstPartyHosts:
+        case .delegateUsingFeatureFirstPartyHosts:
             config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(
                     hosts: [
@@ -58,7 +58,7 @@ class TracingURLSessionBaseScenario: URLSessionBaseScenario {
                     sampleRate: 100
                 )
             )
-        case .legacyWithAdditionalFirstyPartyHosts, .delegateWithAdditionalFirstyPartyHosts:
+        case .delegateWithAdditionalFirstPartyHosts:
             config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100) // hosts will be set through `DDURLSessionDelegate`
             )

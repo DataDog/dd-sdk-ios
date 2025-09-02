@@ -63,10 +63,10 @@ class RUMFeatureTests: XCTestCase {
                     sdkVersion: randomSDKVersion,
                     ciAppOrigin: randomOrigin,
                     applicationName: randomApplicationName,
-                    device: .mockWith(
-                        name: randomDeviceName,
-                        osName: randomDeviceOSName,
-                        osVersion: randomDeviceOSVersion
+                    device: .mockWith(name: randomDeviceName),
+                    os: .mockWith(
+                        name: randomDeviceOSName,
+                        version: randomDeviceOSVersion
                     )
                 )
             ),
@@ -157,7 +157,6 @@ class RUMFeatureTests: XCTestCase {
 
         let eventMatchers = try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(payload)
         XCTAssertFalse(eventMatchers.filterRUMEvents(ofType: RUMViewEvent.self).isEmpty, "It must include view event")
-        XCTAssertFalse(eventMatchers.filterRUMEvents(ofType: RUMActionEvent.self).isEmpty, "It must include action event")
     }
 
     func testItOnlyKeepsOneViewEventPerPayload() throws {

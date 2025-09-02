@@ -38,6 +38,7 @@ public enum Fixture: FixtureProtocol, CaseIterable {
     /// Instantiated view controller is ``PopupsViewController``
     case popups
     case swiftUI
+    case symbols
     case navigationBars
     case navigationBarDefaultTranslucent
     case navigationBarDefaultNonTranslucent
@@ -94,6 +95,12 @@ public enum Fixture: FixtureProtocol, CaseIterable {
                 return UIHostingController(rootView: SwiftUIView())
             } else {
                 return ErrorViewController(message: "`.swiftUI` fixture is only available on iOS 15+")
+            }
+        case .symbols:
+            if #available(iOS 15.0, *) {
+                return UIHostingController(rootView: SymbolsView())
+            } else {
+                return ErrorViewController(message: "`.symbols` fixture is only available on iOS 15+")
             }
         //- Navigation Bars
         case .navigationBars:

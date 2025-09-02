@@ -9,17 +9,21 @@
 import Foundation
 import UIKit
 import DatadogInternal
+import SwiftUI
 
 @available(iOS 13.0, *)
 internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     internal struct Context {
         var frame: CGRect
         var clip: CGRect
+        var tintColor: Color._Resolved?
         let builder: WireframesBuilder
     }
 
     let wireframeID: WireframeID
     let renderer: DisplayList.ViewUpdater
+    /// Image renderer for drawings.
+    let imageRenderer: ImageRenderer
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
     /// Flag that determines if font should be scaled.
@@ -71,12 +75,15 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
             let clip = context.convert(frame: path.boundingRect)
             context.clip = context.clip.intersection(clip)
 
+        case let .filter(.colorMultiply(color)):
+            context.tintColor = color
+
         case .platformGroup:
             if let viewInfo = renderer.viewCache.map[.init(id: .init(identity: item.identity))] {
                 context.convert(to: viewInfo.frame)
             }
 
-        case .identify, .unknown:
+        case .identify, .filter, .unknown:
             break
         }
 
@@ -147,7 +154,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                             scale: resolvedImage.scale,
                             orientation: .init(resolvedImage.orientation)
                         ),
-                        tintColor: nil
+                        tintColor: resolvedImage.maskColor?.uiColor
                     )
                     return context.builder.createImageWireframe(
                         id: id,
@@ -171,7 +178,36 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                     label: "Unsupported image type"
                 )
             }
-
+        case let .drawing(drawing):
+            // We treat `drawing` as bundled images
+            if case .maskAll = self.imagePrivacyLevel {
+                return context.builder.createPlaceholderWireframe(
+                    id: id,
+                    frame: context.convert(frame: item.frame),
+                    clip: context.clip,
+                    label: "Image"
+                )
+            } else {
+                if let image = imageRenderer.image(for: drawing) {
+                    let imageResource = UIImageResource(
+                        image: image,
+                        tintColor: context.tintColor?.uiColor
+                    )
+                    return context.builder.createImageWireframe(
+                        id: id,
+                        resource: imageResource,
+                        frame: context.convert(frame: item.frame),
+                        clip: context.clip
+                    )
+                } else {
+                    return context.builder.createPlaceholderWireframe(
+                        id: id,
+                        frame: context.convert(frame: item.frame),
+                        clip: context.clip,
+                        label: "Unsupported image type"
+                    )
+                }
+            }
         case .platformView:
             return nil // Should be recorder by UIKit recorder
         case .unknown:

@@ -21,9 +21,17 @@ extension SwiftUI.Color._Resolved: Reflection {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
+extension SwiftUI.Color._ResolvedHDR: Reflection {
+    init(from reflector: Reflector) throws {
+        base = try reflector.descendant("base")
+        _headroom = try reflector.descendant("_headroom")
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
 extension ColorView: Reflection {
     init(from reflector: Reflector) throws {
-        color = try reflector.descendant("color", "base")
+        color = try reflector.descendant("color")
     }
 }
 

@@ -18,20 +18,38 @@ internal final class SessionEndedMetricController {
     /// Array to keep track of pending session IDs in their start order.
     private var pendingSessionIDs: [RUMUUID] = []
 
+    /// The number of sessions tracked in this SDK instance.
+    /// Only includes sessions that tracked at least one view.
+    private var validSessionCount = 0
+
     /// Telemetry endpoint for sending metrics.
     private let telemetry: Telemetry
 
     /// The sample rate for "RUM Session Ended" metric.
     internal var sampleRate: SampleRate
 
+    /// If background events tracking is enabled.
+    private let tracksBackgroundEvents: Bool
+
+    /// If the app declares `UIApplicationSceneManifest` in its `Info.plist`.
+    private let isUsingSceneLifecycle: Bool
+
     /// Initializes a new instance of the metric controller.
     /// - Parameters:
     ///    - telemetry: The telemetry endpoint used for sending metrics.
     ///    - sampleRate: The sample rate for "RUM Session Ended" metric.
-
-    init(telemetry: Telemetry, sampleRate: SampleRate) {
+    ///    - tracksBackgroundEvents: If background events tracking is enabled.
+    ///    - isUsingSceneLifecycle: If the app declares`UIApplicationSceneManifest` in its `Info.plist`.
+    init(
+        telemetry: Telemetry,
+        sampleRate: SampleRate,
+        tracksBackgroundEvents: Bool,
+        isUsingSceneLifecycle: Bool
+    ) {
         self.telemetry = telemetry
         self.sampleRate = sampleRate
+        self.tracksBackgroundEvents = tracksBackgroundEvents
+        self.isUsingSceneLifecycle = isUsingSceneLifecycle
     }
 
     /// Starts a new metric for a given session.
@@ -39,14 +57,20 @@ internal final class SessionEndedMetricController {
     ///   - sessionID: The ID of the session to track.
     ///   - precondition: The precondition that led to starting this session.
     ///   - context: The SDK context at the moment of starting this session.
-    ///   - tracksBackgroundEvents: If background events tracking is enabled for this session.
     /// - Returns: The newly created `SessionEndedMetric` instance.
-    func startMetric(sessionID: RUMUUID, precondition: RUMSessionPrecondition?, context: DatadogContext, tracksBackgroundEvents: Bool) {
+    func startMetric(sessionID: RUMUUID, precondition: RUMSessionPrecondition?, context: DatadogContext) {
         guard sessionID != RUMUUID.nullUUID else {
             return // do not track metric when session is not sampled
         }
         _metricsBySessionID.mutate { metrics in
-            metrics[sessionID] = SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context, tracksBackgroundEvents: tracksBackgroundEvents)
+            metrics[sessionID] = SessionEndedMetric(
+                sessionID: sessionID,
+                precondition: precondition,
+                context: context,
+                tracksBackgroundEvents: tracksBackgroundEvents,
+                isUsingSceneLifecycle: isUsingSceneLifecycle,
+                validSessionCount: validSessionCount
+            )
             pendingSessionIDs.append(sessionID)
         }
     }
@@ -107,12 +131,16 @@ internal final class SessionEndedMetricController {
             guard let metric = metrics[sessionID] else {
                 return
             }
+            let metricAttribtues = metric.asMetricAttributes(with: context)
             telemetry.metric(
                 name: SessionEndedMetric.Constants.name,
-                attributes: metric.asMetricAttributes(with: context),
+                attributes: metricAttribtues,
                 sampleRate: sampleRate
             )
             metrics[sessionID] = nil
+            if metric.hasTrackedAnyViews { // count only sessions that tracked any view
+                validSessionCount += 1
+            }
             pendingSessionIDs.removeAll(where: { $0 == sessionID }) // O(n), but "ending the metric" is very rare event
         }
     }

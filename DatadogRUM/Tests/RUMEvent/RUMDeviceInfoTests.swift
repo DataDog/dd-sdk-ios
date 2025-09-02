@@ -9,51 +9,47 @@ import DatadogInternal
 import TestUtilities
 @testable import DatadogRUM
 
-class RUMDeviceInfoTests: XCTestCase {
+final class DeviceInfoTests: XCTestCase {
     func testItSetsProperties() {
         let randomModel: String = .mockRandom()
         let randomName: String = .mockRandom()
         let randomArch: String = .mockRandom()
-
         let batteryLevel: Double = .mockRandom()
         let brightnessLevel: Double = .mockRandom()
         let powerSavingMode: Bool = .mockRandom()
+        let locale: String = "en"
 
-        let info = RUMDevice(
-            device: .mockWith(name: randomName, model: randomModel, architecture: randomArch),
+        let info: Device = .mockWith(
+            architecture: randomArch,
             batteryLevel: batteryLevel,
             brightnessLevel: brightnessLevel,
-            powerSavingMode: powerSavingMode,
-            localeInfo: .mockWith(locales: ["en"], currentLocale: Locale(identifier: "en"))
+            locale: locale,
+            model: randomModel,
+            name: randomName,
+            powerSavingMode: powerSavingMode
         )
 
         XCTAssertEqual(info.brand, "Apple")
         XCTAssertEqual(info.name, randomName)
         XCTAssertEqual(info.model, randomModel)
         XCTAssertEqual(info.architecture, randomArch)
+        XCTAssertEqual(info.batteryLevel, batteryLevel)
+        XCTAssertEqual(info.brightnessLevel, brightnessLevel)
+        XCTAssertEqual(info.locale, locale)
+        XCTAssertEqual(info.powerSavingMode, powerSavingMode)
     }
 
     func testItInfersDeviceTypeFromDeviceModel() {
-        let iPhone = RUMDevice(
-            context: .mockWith(device: .mockWith(model: "iPhone" + String.mockRandom(among: .alphanumerics, length: 2)))
-        )
-        let iPod = RUMDevice(
-            context: .mockWith(device: .mockWith(model: "iPod" + String.mockRandom(among: .alphanumerics, length: 2)))
-        )
-        let iPad = RUMDevice(
-            context: .mockWith(device: .mockWith(model: "iPad" + String.mockRandom(among: .alphanumerics, length: 2)))
-        )
-        let appleTV = RUMDevice(
-            context: .mockWith(device: .mockWith(model: "AppleTV" + String.mockRandom(among: .alphanumerics, length: 2)))
-        )
-        let unknownDevice = RUMDevice(
-            context: .mockWith(device: .mockWith(model: .mockRandom()))
-        )
+        let iPhone: DeviceInfo = .mockWith(model: "iPhone" + String.mockRandom(among: .alphanumerics, length: 2))
+        let iPod: DeviceInfo = .mockWith(model: "iPod" + String.mockRandom(among: .alphanumerics, length: 2))
+        let iPad: DeviceInfo = .mockWith(model: "iPad" + String.mockRandom(among: .alphanumerics, length: 2))
+        let appleTV: DeviceInfo = .mockWith(model: "AppleTV" + String.mockRandom(among: .alphanumerics, length: 2))
+        let unknownDevice: DeviceInfo = .mockWith(model: .mockRandom())
 
-        XCTAssertEqual(iPhone.type, .mobile)
-        XCTAssertEqual(iPod.type, .mobile)
-        XCTAssertEqual(iPad.type, .tablet)
-        XCTAssertEqual(appleTV.type, .tv)
-        XCTAssertEqual(unknownDevice.type, .other)
+        XCTAssertEqual(iPhone.type.normalizedDeviceType, .mobile)
+        XCTAssertEqual(iPod.type.normalizedDeviceType, .mobile)
+        XCTAssertEqual(iPad.type.normalizedDeviceType, .tablet)
+        XCTAssertEqual(appleTV.type.normalizedDeviceType, .tv)
+        XCTAssertEqual(unknownDevice.type.normalizedDeviceType, .other)
     }
 }

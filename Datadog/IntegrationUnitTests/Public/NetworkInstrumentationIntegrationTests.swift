@@ -43,12 +43,12 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         )
 
         URLSessionInstrumentation.enable(
-            with: URLSessionInstrumentation.Configuration(delegateClass: MockDelegate.self),
+            with: URLSessionInstrumentation.Configuration(delegateClass: SessionDataDelegateMock.self),
             in: core
         )
     }
 
-        override func tearDownWithError() throws {
+    override func tearDownWithError() throws {
         try core.flushAndTearDown()
         core = nil
     }
@@ -59,7 +59,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         let request: URLRequest = .mockWith(url: "https://www.example.com")
         let span = Tracer.shared(in: core).startRootSpan(operationName: "root")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
-        let session = server.getInterceptedURLSession(delegate: MockDelegate())
+        let session = server.getInterceptedURLSession(delegate: SessionDataDelegateMock())
 
         // When
         span.setActive() // start root span
@@ -86,9 +86,6 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         try XCTAssertEqual(matcher2.traceID(), .init(idHi: 10, idLo: 100))
         try XCTAssertEqual(matcher2.parentSpanID(), .init(rawValue: 100))
         try XCTAssertEqual(matcher2.spanID(), .init(rawValue: 101))
-    }
-
-    class MockDelegate: NSObject, URLSessionDataDelegate {
     }
 
     func testResourceAttributesProvider_givenURLSessionDataTaskRequest() {

@@ -65,7 +65,7 @@ internal func generateRUMObjcInteropModels(from schema: URL, skip typesToSkip: S
 
             """
     )
-    let printer = ObjcInteropPrinter(objcTypeNamesPrefix: "DD")
+    let printer = ObjcInteropPrinter(objcTypeNamesPrefix: "objc_")
 
     return try generator
         .generateCode(from: schema)

@@ -11,7 +11,6 @@ import DatadogInternal
 class B3HTTPHeadersWriterTests: XCTestCase {
     func testWritingSampledTraceContext_withSingleEncoding_andAutoSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .single,
             traceContextInjection: .all
         )
@@ -31,7 +30,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withSingleEncoding_andAutoSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .single,
             traceContextInjection: .all
         )
@@ -51,7 +49,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingSampledTraceContext_withSingleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 100),
             injectEncoding: .single,
             traceContextInjection: .all
         )
@@ -61,7 +58,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: .random()
+                isKept: true
             )
         )
 
@@ -71,7 +68,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withSingleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 0),
             injectEncoding: .single,
             traceContextInjection: .all
         )
@@ -81,7 +77,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: .random()
+                isKept: false
             )
         )
 
@@ -91,7 +87,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testItWritesSingleHeaderWithoutOptionalValues() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .single,
             traceContextInjection: .all
         )
@@ -110,7 +105,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingSampledTraceContext_withMultipleEncoding_andAutoSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .multiple,
             traceContextInjection: .all
         )
@@ -133,7 +127,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withMultipleEncoding_andAutoSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .multiple,
             traceContextInjection: .all
         )
@@ -156,7 +149,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingSampledTraceContext_withMultipleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 100),
             injectEncoding: .multiple,
             traceContextInjection: .all
         )
@@ -166,7 +158,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: .random()
+                isKept: true
             )
         )
 
@@ -179,7 +171,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withMultipleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: 0),
             injectEncoding: .multiple,
             traceContextInjection: .all
         )
@@ -189,7 +180,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: .random()
+                isKept: false
             )
         )
 
@@ -202,7 +193,6 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testItWritesMultipleHeaderWithoutOptionalValues() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .headBased,
             injectEncoding: .multiple,
             traceContextInjection: .all
         )
@@ -220,5 +210,44 @@ class B3HTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[B3HTTPHeaders.Multiple.spanIDField], "0000000000000929")
         XCTAssertEqual(headers[B3HTTPHeaders.Multiple.sampledField], "1")
         XCTAssertNil(headers[B3HTTPHeaders.Multiple.parentSpanIDField])
+    }
+
+    // The sampling based on session ID should pass at 18% sampling rate and fail at 17%
+    func testWritingSampledTraceContext_withCustomSamplingStrategy_18percent() {
+        let writer = B3HTTPHeadersWriter(injectEncoding: .multiple, traceContextInjection: .sampled)
+
+        writer.write(
+            traceContext: .mockWith(
+                traceID: .init(idHi: 1_234, idLo: 1_234),
+                spanID: 2_345,
+                isKept: true,
+                rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
+            )
+        )
+
+        let headers = writer.traceHeaderFields
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.traceIDField], "00000000000004d200000000000004d2")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.spanIDField], "0000000000000929")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.sampledField], "1")
+    }
+
+    func testWritingDroppedTraceContext_withCustomSamplingStrategy_17percent() {
+        let writer = B3HTTPHeadersWriter(injectEncoding: .multiple, traceContextInjection: .sampled)
+
+        writer.write(
+            traceContext: .mockWith(
+                traceID: .init(idHi: 1_234, idLo: 1_234),
+                spanID: 2_345,
+                isKept: false,
+                rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
+            )
+        )
+
+        let headers = writer.traceHeaderFields
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.traceIDField])
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.spanIDField])
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.sampledField])
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.parentSpanIDField])
+        XCTAssertNil(headers[W3CHTTPHeaders.baggage])
     }
 }

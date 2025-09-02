@@ -67,21 +67,6 @@ extension LogMessageReceiver: AnyMockable {
     }
 }
 
-extension CrashLogReceiver: AnyMockable {
-    public static func mockAny() -> Self {
-        .mockWith()
-    }
-
-    public static func mockWith(
-        dateProvider: DateProvider = SystemDateProvider()
-    ) -> Self {
-        .init(
-            dateProvider: dateProvider,
-            logEventMapper: nil
-        )
-    }
-}
-
 // MARK: - Log Mocks
 
 extension LogLevel: AnyMockable, RandomMockable {
@@ -120,8 +105,8 @@ extension LogEvent: AnyMockable, RandomMockable {
         applicationBuildNumber: String = .mockAny(),
         buildId: String? = .mockAny(),
         variant: String? = .mockAny(),
-        dd: LogEvent.Dd = .mockAny(),
-        os: LogEvent.OperatingSystem = .mockAny(),
+        device: Device = .mockAny(),
+        os: OperatingSystem = .mockAny(),
         userInfo: UserInfo = .mockAny(),
         accountInfo: AccountInfo = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
@@ -143,7 +128,8 @@ extension LogEvent: AnyMockable, RandomMockable {
             applicationBuildNumber: applicationBuildNumber,
             buildId: nil,
             variant: variant,
-            dd: dd,
+            dd: .init(device: .init(architecture: device.architecture ?? "")),
+            device: device,
             os: os,
             userInfo: userInfo,
             accountInfo: accountInfo,
@@ -169,7 +155,8 @@ extension LogEvent: AnyMockable, RandomMockable {
             applicationBuildNumber: .mockRandom(),
             buildId: .mockRandom(),
             variant: .mockRandom(),
-            dd: .mockRandom(),
+            dd: .init(device: .init(architecture: .mockRandom())),
+            device: .mockRandom(),
             os: .mockRandom(),
             userInfo: .mockRandom(),
             accountInfo: .mockRandom(),
@@ -188,58 +175,6 @@ extension LogEvent.Status: RandomMockable {
 
     public static func mockRandom() -> LogEvent.Status {
         return allCases.randomElement()!
-    }
-}
-
-extension LogEvent.Dd: AnyMockable, RandomMockable {
-    public static func mockAny() -> LogEvent.Dd {
-        return LogEvent.Dd(
-            device: .mockAny()
-        )
-    }
-
-    public static func mockRandom() -> LogEvent.Dd {
-        return LogEvent.Dd(
-            device: .mockRandom()
-        )
-    }
-}
-
-extension LogEvent.DeviceInfo: AnyMockable, RandomMockable {
-    public static func mockAny() -> LogEvent.DeviceInfo {
-        return LogEvent.DeviceInfo(
-            brand: .mockAny(),
-            name: .mockAny(),
-            model: .mockAny(),
-            architecture: .mockAny()
-        )
-    }
-
-    public static func mockRandom() -> LogEvent.DeviceInfo {
-        return LogEvent.DeviceInfo(
-            brand: .mockRandom(),
-            name: .mockRandom(),
-            model: .mockRandom(),
-            architecture: .mockRandom()
-        )
-    }
-}
-
-extension LogEvent.OperatingSystem: AnyMockable, RandomMockable {
-    public static func mockAny() -> Self {
-        .init(
-            name: .mockAny(),
-            version: .mockAny(),
-            build: .mockAny()
-        )
-    }
-
-    public static func mockRandom() -> Self {
-        .init(
-            name: .mockRandom(),
-            version: .mockRandom(),
-            build: .mockRandom()
-        )
     }
 }
 

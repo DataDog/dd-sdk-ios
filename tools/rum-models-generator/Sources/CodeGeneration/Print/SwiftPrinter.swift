@@ -237,14 +237,21 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
                 writeLine("// Encode dynamic properties:")
                 writeLine("var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)")
 
-                guard dynamicProperty.type is SwiftDictionary else {
+                guard let dict = dynamicProperty.type as? SwiftDictionary else {
                     throw Exception.unimplemented("Printing dynamic property of type `\(dynamicProperty.type)` is not supported ")
+                }
+
+                let value: String
+                switch dict.value {
+                case is SwiftEncodable, is SwiftCodable:
+                    value = "AnyEncodable($1)"
+                default:
+                    value = "$1"
                 }
 
                 writeLine("try \(dynamicProperty.backtickName).forEach {") // dynamic properties are dictionaries
                 indentRight()
-                    writeLine("let key = DynamicCodingKey($0)") // dictionary key is used as coding key
-                    writeLine("try dynamicContainer.encode(AnyEncodable($1), forKey: key)") // encode value
+                    writeLine("try dynamicContainer.encode(\(value), forKey: DynamicCodingKey($0))") // encode `value` (dictionary `key` is used as coding key)
                 indentLeft()
                 writeLine("}")
             }
@@ -277,33 +284,41 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
             }
 
             if let dynamicProperty = dynamicallyCodedProperty {
-                writeLine("// Decode other properties into [String: Codable] dictionary:")
+                guard let dict = dynamicProperty.type as? SwiftDictionary else {
+                    throw Exception.unimplemented("Printing dynamic property of type `\(dynamicProperty.type)` is not supported ")
+                }
+
+                let valueType: String
+                switch dict.value {
+                case is SwiftEncodable, is SwiftCodable:
+                    valueType = "AnyCodable"
+                default:
+                    valueType = try typeDeclaration(dict.value)
+                }
+
+                writeLine("// Decode other properties into [String: \(valueType)] dictionary:")
                 writeLine("let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)")
+                writeLine("self.\(dynamicProperty.name) = [:]")
+
+                writeEmptyLine()
 
                 if !staticallyDecodedProperties.isEmpty {
                     // If the type defines some static properties, treat other properties as dynamic
                     writeLine("let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })")
-                    writeLine("let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }")
+                    writeLine("try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {")
                 } else {
                     // If the type doesn't define any static properties, treat all properties as dynamic
-                    writeLine("let dynamicKeys = dynamicContainer.allKeys")
+                    writeLine("try dynamicContainer.allKeys.forEach {")
                 }
 
-                writeLine("var dictionary: [String: Codable] = [:]")
-                writeEmptyLine()
-
-                writeLine("try dynamicKeys.forEach { codingKey in")
                 indentRight()
                 // We use `dynamicContainer.decode()` instead of `dynamicContainer.decodeIfPresent()` to not lose
                 // the information of decoded `null` value. Our `AnyCodable` implementation recognizes `null` and preserves
                 // it for eventual encoding. This guarantees no difference in serialized payload even if we deserialize it
                 // and encode again.
-                writeLine("dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)")
+                writeLine("self.\(dynamicProperty.name)[$0.stringValue] = try dynamicContainer.decode(\(valueType).self, forKey: $0)")
                 indentLeft()
                 writeLine("}")
-
-                writeEmptyLine()
-                writeLine("self.\(dynamicProperty.name) = dictionary")
             }
 
             indentLeft()
