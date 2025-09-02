@@ -10,7 +10,11 @@ import Foundation
 import UIKit
 import DatadogInternal
 
+#if $RetroactiveAttribute
+extension UIColor: @retroactive DatadogExtended {}
+#else
 extension UIColor: DatadogExtended {}
+#endif
 
 private var identifierKey: UInt8 = 0
 
@@ -20,24 +24,35 @@ extension DatadogExtension where ExtendedType: UIColor {
             return hash
         }
 
-        let hash = computeIdentifier()
+        let hash = String(hexString.dropFirst())
         objc_setAssociatedObject(type, &identifierKey, hash, .OBJC_ASSOCIATION_RETAIN)
         return hash
     }
 
-    private func computeIdentifier() -> String {
+    var hexString: String {
         var r: CGFloat = 0
         var g: CGFloat = 0
         var b: CGFloat = 0
-        var a: CGFloat = 0
+        var a: CGFloat = 1
+
         type.getRed(&r, green: &g, blue: &b, alpha: &a)
-        return String(
-            format: "%02X%02X%02X%02X",
-            Int(round(r * 255)),
-            Int(round(g * 255)),
-            Int(round(b * 255)),
-            Int(round(a * 255))
-        )
+
+        let ri = Int16(withNoOverflow: round(r * 255))
+        let gi = Int16(withNoOverflow: round(g * 255))
+        let bi = Int16(withNoOverflow: round(b * 255))
+        let ai = Int16(withNoOverflow: round(a * 255))
+
+        var rstr = String(ri, radix: 16, uppercase: true)
+        var gstr = String(gi, radix: 16, uppercase: true)
+        var bstr = String(bi, radix: 16, uppercase: true)
+        var astr = String(ai, radix: 16, uppercase: true)
+
+        rstr = ri < 16 ? "0\(rstr)" : rstr
+        gstr = gi < 16 ? "0\(gstr)" : gstr
+        bstr = bi < 16 ? "0\(bstr)" : bstr
+        astr = ai < 16 ? "0\(astr)" : astr
+
+        return "#\(rstr)\(gstr)\(bstr)\(astr)"
     }
 }
 

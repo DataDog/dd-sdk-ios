@@ -38,7 +38,11 @@ extension ColorView: Reflection {
 @available(iOS 13.0, tvOS 13.0, *)
 extension ResolvedPaint: Reflection {
     init(from reflector: Reflector) throws {
-        paint = reflector.descendantIfPresent("paint")
+        if #available(iOS 26, tvOS 26, *) {
+            paint = reflector.descendantIfPresent(type: ColorView.self, "paint")?.color.base
+        } else {
+            paint = reflector.descendantIfPresent("paint")
+        }
     }
 }
 
