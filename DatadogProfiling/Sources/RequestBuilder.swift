@@ -39,16 +39,18 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         var multipart = multipartBuilder
 
         multipart.addFormData(
-            name: ProfileEvent.Constants.eventFilename,
+            name: "event",
             filename: ProfileEvent.Constants.eventFilename,
             data: event,
             mimeType: "application/json"
         )
 
-        multipart.addFormData(
+        let decoder = JSONDecoder()
+
+        try multipart.addFormData(
             name: ProfileEvent.Constants.wallFilename,
             filename: ProfileEvent.Constants.wallFilename,
-            data: prof.data,
+            data: decoder.decode(Data.self, from: prof.data),
             mimeType: "application/octet-stream"
         )
 
