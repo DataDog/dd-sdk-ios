@@ -16,13 +16,19 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 internal final class MachProfiler: Profiler {
+    internal let samplingIntervalNs: UInt64
+    internal let dateProvider: DateProvider
+
     private var profiler: OpaquePointer?
     private var profile: OpaquePointer?
     private var startTime: Date?
-    private let samplingIntervalNs: UInt64
 
-    init(samplingFrequencyHz: Double = 101) {
+    init(
+        samplingFrequencyHz: Double = 101,
+        dateProvider: DateProvider = SystemDateProvider()
+    ) {
         self.samplingIntervalNs = UInt64(1_000_000_000 / samplingFrequencyHz) // Convert Hz to nanoseconds
+        self.dateProvider = dateProvider
     }
 
     deinit {
@@ -48,7 +54,7 @@ internal final class MachProfiler: Profiler {
 
         profiler = profiler_create(&config, dd_pprof_callback, UnsafeMutableRawPointer(profile))
 
-        startTime = Date()
+        startTime = dateProvider.now
         profiler_start(profiler)
     }
 
@@ -60,7 +66,7 @@ internal final class MachProfiler: Profiler {
         defer { startTime = nil }
 
         profiler_stop(profiler)
-        let end = Date()
+        let end = dateProvider.now
         profiler_destroy(profiler)
         profiler = nil
 
