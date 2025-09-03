@@ -1884,6 +1884,8 @@
 		D2D0E2112E3D0B4400BA4113 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257958B298ABB83008A1BE5 /* TestUtilities.framework */; platformFilters = (tvos, ); };
 		D2D0E2192E40E34A00BA4113 /* MockThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E2182E40E34A00BA4113 /* MockThread.swift */; };
 		D2D0E21A2E40E34A00BA4113 /* MockThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E2182E40E34A00BA4113 /* MockThread.swift */; };
+		D2D179E22E684DC0004C4D13 /* MachProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D179E12E684DC0004C4D13 /* MachProfilerTests.swift */; };
+		D2D179E32E684DC0004C4D13 /* MachProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D179E12E684DC0004C4D13 /* MachProfilerTests.swift */; };
 		D2D30E5B2A40BF540020C553 /* Logs.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D30E5A2A40BF540020C553 /* Logs.swift */; };
 		D2D30E5C2A40BF540020C553 /* Logs.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D30E5A2A40BF540020C553 /* Logs.swift */; };
 		D2D30E602A40CD310020C553 /* LogsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D30E5D2A40CD2C0020C553 /* LogsTests.swift */; };
@@ -3610,6 +3612,7 @@
 		D2D0E2022E3CEF1200BA4113 /* MachSamplingProfilerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MachSamplingProfilerTests.swift; sourceTree = "<group>"; };
 		D2D0E20D2E3CFA6500BA4113 /* CCallbackContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CCallbackContext.swift; sourceTree = "<group>"; };
 		D2D0E2182E40E34A00BA4113 /* MockThread.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockThread.swift; sourceTree = "<group>"; };
+		D2D179E12E684DC0004C4D13 /* MachProfilerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MachProfilerTests.swift; sourceTree = "<group>"; };
 		D2D30E5A2A40BF540020C553 /* Logs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logs.swift; sourceTree = "<group>"; };
 		D2D30E5D2A40CD2C0020C553 /* LogsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsTests.swift; sourceTree = "<group>"; };
 		D2D3199929E98D970004F169 /* DefaultJSONEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultJSONEncoder.swift; sourceTree = "<group>"; };
@@ -7227,14 +7230,15 @@
 		D2C9F2522E3B8A88008397FD /* DatadogProfilingTests */ = {
 			isa = PBXGroup;
 			children = (
-				D2D0E2182E40E34A00BA4113 /* MockThread.swift */,
 				D2D0E20D2E3CFA6500BA4113 /* CCallbackContext.swift */,
 				D2D0E2012E3CEF1200BA4113 /* MachProfilerCAPITests.swift */,
 				D2D0E2022E3CEF1200BA4113 /* MachSamplingProfilerTests.swift */,
 				D233E7DD2E4A109100E7CFDE /* ProfilingTest.swift */,
-				D233E7E02E4A10E100E7CFDE /* MockProfiler.swift */,
+				D2D179E12E684DC0004C4D13 /* MachProfilerTests.swift */,
 				D233E7E32E4A2AFE00E7CFDE /* RequestBuilderTests.swift */,
 				D2E937302E53368E00FECA76 /* ProfileCxxTests.swift */,
+				D2D0E2182E40E34A00BA4113 /* MockThread.swift */,
+				D233E7E02E4A10E100E7CFDE /* MockProfiler.swift */,
 				D2E937332E535B6400FECA76 /* ProfileMocks.swift */,
 			);
 			name = DatadogProfilingTests;
@@ -10753,6 +10757,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D233E7E42E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */,
+				D2D179E32E684DC0004C4D13 /* MachProfilerTests.swift in Sources */,
 				D233E7DE2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
 				D2D0E2192E40E34A00BA4113 /* MockThread.swift in Sources */,
 				D2D0E2072E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */,
@@ -10769,6 +10774,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D233E7E52E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */,
+				D2D179E22E684DC0004C4D13 /* MachProfilerTests.swift in Sources */,
 				D233E7DF2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
 				D2D0E21A2E40E34A00BA4113 /* MockThread.swift in Sources */,
 				D2D0E2042E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */,
