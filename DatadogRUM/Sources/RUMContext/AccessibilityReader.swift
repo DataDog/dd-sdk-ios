@@ -11,22 +11,6 @@ import UIKit
 internal protocol AccessibilityReading {
     /// The current accessibility state containing all accessibility settings
     var state: AccessibilityInfo { get }
-
-    /// Returns all accessibility attributes in RUM View Event format.
-    /// Returns nil if no valid accessibility data is available.
-    var allAccessibilityAttributes: RUMViewEvent.View.Accessibility? { get }
-
-    /// Returns only changed accessibility attributes in RUM View Event format.
-    /// Returns nil if no changes have been detected or no valid accessibility data is available.
-    var changedAccessibilityAttributes: RUMViewEvent.View.Accessibility? { get }
-
-    /// Indicates whether the current accessibility state contains valid data to send.
-    /// Returns true if at least one accessibility property has a non-nil value.
-    var hasValidAccessibilityData: Bool { get }
-
-    /// Called after a view update event has been sent to clear the changed attributes.
-    /// This ensures that only new changes are tracked for the next view update.
-    func clearChangedAttributes()
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
@@ -36,9 +20,6 @@ internal final class AccessibilityReader: AccessibilityReading {
 
     private let notificationCenter: NotificationCenter
     private var observers: [NSObjectProtocol] = []
-
-    /// Track changed accessibility attributes
-    private var changedAttributes: RUMViewEvent.View.Accessibility?
 
     init(notificationCenter: NotificationCenter) {
         self.state = AccessibilityInfo()
@@ -53,12 +34,7 @@ internal final class AccessibilityReader: AccessibilityReading {
 
     private func updateState() {
         Task { @MainActor in
-            let newState = self.currentState
-
-            // Track changes by comparing with the previous state
-            self.trackChanges(from: self.state, to: newState)
-
-            self.state = newState
+            self.state = self.currentState
         }
     }
 
@@ -286,113 +262,5 @@ internal final class AccessibilityReader: AccessibilityReading {
         }
 
         return state
-    }
-
-    /// Returns all accessibility attributes in RUM View Event format.
-    var allAccessibilityAttributes: RUMViewEvent.View.Accessibility? {
-        // Only proceed if we have a valid state (at least one non-nil value)
-        guard hasValidAccessibilityData else {
-            return nil
-        }
-
-        let accessibility = RUMViewEvent.View.Accessibility(
-            assistiveSwitchEnabled: state.assistiveSwitchEnabled,
-            assistiveTouchEnabled: state.assistiveTouchEnabled,
-            boldTextEnabled: state.boldTextEnabled,
-            buttonShapesEnabled: state.buttonShapesEnabled,
-            closedCaptioningEnabled: state.closedCaptioningEnabled,
-            grayscaleEnabled: state.grayscaleEnabled,
-            increaseContrastEnabled: state.increaseContrastEnabled,
-            invertColorsEnabled: state.invertColorsEnabled,
-            monoAudioEnabled: state.monoAudioEnabled,
-            onOffSwitchLabelsEnabled: state.onOffSwitchLabelsEnabled,
-            reduceMotionEnabled: state.reduceMotionEnabled,
-            reduceTransparencyEnabled: state.reduceTransparencyEnabled,
-            reducedAnimationsEnabled: state.reducedAnimationsEnabled,
-            rtlEnabled: state.rtlEnabled,
-            screenReaderEnabled: state.screenReaderEnabled,
-            shakeToUndoEnabled: state.shakeToUndoEnabled,
-            shouldDifferentiateWithoutColor: state.shouldDifferentiateWithoutColor,
-            singleAppModeEnabled: state.singleAppModeEnabled,
-            speakScreenEnabled: state.speakScreenEnabled,
-            speakSelectionEnabled: state.speakSelectionEnabled,
-            textSize: state.textSize,
-            videoAutoplayEnabled: state.videoAutoplayEnabled
-        )
-        return accessibility
-    }
-
-    /// Returns only changed accessibility attributes in RUM View Event format.
-    var changedAccessibilityAttributes: RUMViewEvent.View.Accessibility? {
-        // Only proceed if we have a valid state (at least one non-nil value)
-        guard hasValidAccessibilityData else {
-            return nil
-        }
-
-        return changedAttributes
-    }
-
-    /// Called after a view update event has been sent to clear the changed attributes
-    func clearChangedAttributes() {
-        changedAttributes = nil
-    }
-
-    /// Check if we have valid accessibility data to send
-    var hasValidAccessibilityData: Bool {
-        return state.textSize != nil ||
-               state.screenReaderEnabled != nil ||
-               state.boldTextEnabled != nil ||
-               state.reduceTransparencyEnabled != nil ||
-               state.reduceMotionEnabled != nil ||
-               state.buttonShapesEnabled != nil ||
-               state.invertColorsEnabled != nil ||
-               state.increaseContrastEnabled != nil ||
-               state.assistiveSwitchEnabled != nil ||
-               state.assistiveTouchEnabled != nil ||
-               state.videoAutoplayEnabled != nil ||
-               state.closedCaptioningEnabled != nil ||
-               state.monoAudioEnabled != nil ||
-               state.shakeToUndoEnabled != nil ||
-               state.reducedAnimationsEnabled != nil ||
-               state.shouldDifferentiateWithoutColor != nil ||
-               state.grayscaleEnabled != nil ||
-               state.singleAppModeEnabled != nil ||
-               state.onOffSwitchLabelsEnabled != nil ||
-               state.speakScreenEnabled != nil ||
-               state.speakSelectionEnabled != nil ||
-               state.rtlEnabled != nil
-    }
-
-    /// Track changes between two accessibility states
-    private func trackChanges(from oldState: AccessibilityInfo, to newState: AccessibilityInfo) {
-        // Only track changes if there are actual differences
-        if oldState != newState {
-            self.changedAttributes = RUMViewEvent.View.Accessibility(
-                assistiveSwitchEnabled: oldState.assistiveSwitchEnabled != newState.assistiveSwitchEnabled ? newState.assistiveSwitchEnabled : nil,
-                assistiveTouchEnabled: oldState.assistiveTouchEnabled != newState.assistiveTouchEnabled ? newState.assistiveTouchEnabled : nil,
-                boldTextEnabled: oldState.boldTextEnabled != newState.boldTextEnabled ? newState.boldTextEnabled : nil,
-                buttonShapesEnabled: oldState.buttonShapesEnabled != newState.buttonShapesEnabled ? newState.buttonShapesEnabled : nil,
-                closedCaptioningEnabled: oldState.closedCaptioningEnabled != newState.closedCaptioningEnabled ? newState.closedCaptioningEnabled : nil,
-                grayscaleEnabled: oldState.grayscaleEnabled != newState.grayscaleEnabled ? newState.grayscaleEnabled : nil,
-                increaseContrastEnabled: oldState.increaseContrastEnabled != newState.increaseContrastEnabled ? newState.increaseContrastEnabled : nil,
-                invertColorsEnabled: oldState.invertColorsEnabled != newState.invertColorsEnabled ? newState.invertColorsEnabled : nil,
-                monoAudioEnabled: oldState.monoAudioEnabled != newState.monoAudioEnabled ? newState.monoAudioEnabled : nil,
-                onOffSwitchLabelsEnabled: oldState.onOffSwitchLabelsEnabled != newState.onOffSwitchLabelsEnabled ? newState.onOffSwitchLabelsEnabled : nil,
-                reduceMotionEnabled: oldState.reduceMotionEnabled != newState.reduceMotionEnabled ? newState.reduceMotionEnabled : nil,
-                reduceTransparencyEnabled: oldState.reduceTransparencyEnabled != newState.reduceTransparencyEnabled ? newState.reduceTransparencyEnabled : nil,
-                reducedAnimationsEnabled: oldState.reducedAnimationsEnabled != newState.reducedAnimationsEnabled ? newState.reducedAnimationsEnabled : nil,
-                rtlEnabled: oldState.rtlEnabled != newState.rtlEnabled ? newState.rtlEnabled : nil,
-                screenReaderEnabled: oldState.screenReaderEnabled != newState.screenReaderEnabled ? newState.screenReaderEnabled : nil,
-                shakeToUndoEnabled: oldState.shakeToUndoEnabled != newState.shakeToUndoEnabled ? newState.shakeToUndoEnabled : nil,
-                shouldDifferentiateWithoutColor: oldState.shouldDifferentiateWithoutColor != newState.shouldDifferentiateWithoutColor ? newState.shouldDifferentiateWithoutColor : nil,
-                singleAppModeEnabled: oldState.singleAppModeEnabled != newState.singleAppModeEnabled ? newState.singleAppModeEnabled : nil,
-                speakScreenEnabled: oldState.speakScreenEnabled != newState.speakScreenEnabled ? newState.speakScreenEnabled : nil,
-                speakSelectionEnabled: oldState.speakSelectionEnabled != newState.speakSelectionEnabled ? newState.speakSelectionEnabled : nil,
-                textSize: oldState.textSize != newState.textSize ? newState.textSize : nil,
-                videoAutoplayEnabled: oldState.videoAutoplayEnabled != newState.videoAutoplayEnabled ? newState.videoAutoplayEnabled : nil
-            )
-        } else {
-            self.changedAttributes = nil
-        }
     }
 }
