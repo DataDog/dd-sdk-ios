@@ -59,22 +59,10 @@ internal struct RUMViewEventsFilter {
                 telemetry.error("Failed to decode RUM view event metadata", error: error)
                 return event
             }
-
-            guard seen.contains(viewMetadata.id) == false else {
-                // If we've already seen this view, we can skip this
-                if skipped[viewMetadata.id] == nil {
-                    skipped[viewMetadata.id] = []
-                }
-                skipped[viewMetadata.id]?.append(viewMetadata.documentVersion)
-                return nil
-            }
-
-            seen.insert(viewMetadata.id)
-            return event
         }
 
-        for (id, versions) in skipped {
-            DD.logger.debug("Skipping RUMViewEvent with id: \(id) and versions: \(versions.reversed().map(String.init).joined(separator: ", "))")
+        if redundantEventsCount > 0 || initialOneNsEventsCount > 0 {
+            DD.logger.debug("RUMViewEventsFilter: skipped \(redundantEventsCount) redundant view updates, \(initialOneNsEventsCount) initial 1ns views")
         }
 
         return filtered.reversed()
@@ -86,12 +74,12 @@ internal struct RUMViewEventsFilter {
             return .keep
         }
 
-        if viewMetadata.hasAccessibility {
+        let viewMetadata = try decoder.decode(RUMViewEvent.Metadata.self, from: metadata)
+
+        if viewMetadata.hasAccessibility == true {
                 // If this event has accessibility information, always keep it
             return .keep
         }
-
-        let viewMetadata = try decoder.decode(RUMViewEvent.Metadata.self, from: metadata)
 
         if viewMetadata.duration == oneNanosecondDuration, viewMetadata.indexInSession == 0 {
             // Filter out initial 1ns views.
