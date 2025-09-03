@@ -1,5 +1,9 @@
 # Unreleased
 
+# 3.0.0 / 02-09-2025
+
+Release `3.0` introduces breaking changes. Follow the [Migration Guide](MIGRATION.md) to upgrade from `2.x` versions.
+
 - [FIX] Fix `DDLogEvent.accountInfo` property initialization in case of missing account info. See [#2442][]
 - [IMPROVEMENT] Update Session Replay batch maximum age to 5hrs. See[#2455][]
 - [IMPROVEMENT] Update the default tracing sampling rate to 100%. See [#2253][] 
