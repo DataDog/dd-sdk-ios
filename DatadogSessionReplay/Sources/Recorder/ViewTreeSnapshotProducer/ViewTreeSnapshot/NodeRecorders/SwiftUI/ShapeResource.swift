@@ -7,10 +7,7 @@
 #if os(iOS)
 
 import SwiftUI
-
-#if canImport(CryptoKit)
-import CryptoKit
-#endif
+import CommonCrypto
 
 @available(iOS 13.0, *)
 internal final class ShapeResource: NSObject {
@@ -24,13 +21,11 @@ internal final class ShapeResource: NSObject {
     }
 
     private func makeIdentifier() -> String {
-#if canImport(CryptoKit)
-        let hash = Insecure.MD5.hash(data: self.data)
-        return hash.map { String(format: "%02hhx", $0) }.joined()
-#else
-        // Should never execute since CryptoKit is available iOS 13
-        fatalError("CryptoKit not available")
-#endif
+        var digest = [UInt8](repeating: 0, count: Int(CC_MD5_DIGEST_LENGTH))
+        self.data.withUnsafeBytes { buffer in
+            _ = CC_MD5(buffer.baseAddress, CC_LONG(buffer.count), &digest)
+        }
+        return digest.map { String(format: "%02hhx", $0) }.joined()
     }
 
     private func makeData() -> Data {

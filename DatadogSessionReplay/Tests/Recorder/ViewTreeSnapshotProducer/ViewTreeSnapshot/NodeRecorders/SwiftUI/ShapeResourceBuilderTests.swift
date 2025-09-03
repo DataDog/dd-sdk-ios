@@ -115,6 +115,23 @@ final class ShapeResourceBuilderTests: XCTestCase {
 
         XCTAssertFalse(firstResource === secondResource)
     }
+
+    func testIdentifierStability() {
+        // Given
+        let svgString = """
+            <svg width="50.000" height="50.000" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 0.000 0.000 L 50.000 50.000" fill="#00000000" fill-rule="evenodd"/>
+            </svg>
+            """
+
+        // When
+        let firstResource = ShapeResource(svgString: svgString)
+        let secondResource = ShapeResource(svgString: svgString)
+
+        // Then
+        XCTAssertEqual(firstResource.calculateIdentifier(), "33102ea8ca2ccf8c37ba97cdb3391587")
+        XCTAssertEqual(firstResource.calculateIdentifier(), secondResource.calculateIdentifier())
+    }
 }
 
 #endif

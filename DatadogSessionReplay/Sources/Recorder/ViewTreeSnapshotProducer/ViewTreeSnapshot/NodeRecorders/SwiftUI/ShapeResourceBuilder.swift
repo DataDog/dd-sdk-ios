@@ -9,8 +9,14 @@
 import Foundation
 import SwiftUI
 
+/// A performance-optimized builder for creating SVG-based shape resources from SwiftUI paths.
+///
+/// `ShapeResourceBuilder` implements a multi-level caching strategy to eliminate expensive
+/// recomputations during UI updates and scrolling animations. This addresses performance
+/// issues that can occur when the same shapes are rendered repeatedly in Session Replay.
 @available(iOS 13.0, *)
 internal final class ShapeResourceBuilder {
+    /// Cache key for SwiftUI path data, used to avoid redundant SVG path string generation.
     private class PathKey: NSObject {
         private let path: SwiftUI.Path
 
@@ -32,6 +38,7 @@ internal final class ShapeResourceBuilder {
         }
     }
 
+    /// Composite cache key for complete shape resources, incorporating all visual properties.
     private class ResourceKey: NSObject {
         private let path: SwiftUI.Path
         private let color: ResolvedPaint
@@ -71,7 +78,10 @@ internal final class ShapeResourceBuilder {
         }
     }
 
+    /// Cache for SVG path data strings, preventing redundant path-to-SVG conversions.
     private let pathCache = NSCache<PathKey, NSString>()
+
+    /// Cache for complete shape resources, avoiding full SVG generation and hashing.
     private let resourceCache = NSCache<ResourceKey, ShapeResource>()
 
     init() {
@@ -79,6 +89,22 @@ internal final class ShapeResourceBuilder {
         resourceCache.countLimit = 50
     }
 
+    /// Creates or retrieves a cached SVG-based shape resource for the given parameters.
+    ///
+    /// Generated SVG follows this structure:
+    ///
+    /// ```xml
+    /// <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+    ///   <path d="M 10 10 L 90 90 Z" fill="#FF0000FF" fill-rule="nonzero"/>
+    /// </svg>
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - path: The SwiftUI path defining the shape geometry
+    ///   - color: Resolved paint information including color and opacity
+    ///   - fillStyle: Fill style determining the fill rule (even-odd vs non-zero)
+    ///   - size: The target size for the SVG viewport
+    /// - Returns: A `ShapeResource` containing the complete SVG markup
     func shapeResource(
         for path: SwiftUI.Path,
         color: ResolvedPaint,
@@ -108,6 +134,13 @@ internal final class ShapeResourceBuilder {
         return resource
     }
 
+    /// Retrieves or generates SVG path data string for the given SwiftUI path.
+    ///
+    /// This method provides path-level caching to avoid expensive path-to-SVG conversion
+    /// when the same path geometry is used with different visual properties (colors, sizes).
+    ///
+    /// - Parameter path: The SwiftUI path to convert to SVG path data
+    /// - Returns: SVG path data string (e.g., "M 10 10 L 90 90 Z")
     private func pathData(for path: SwiftUI.Path) -> String {
         let key = PathKey(path)
 
