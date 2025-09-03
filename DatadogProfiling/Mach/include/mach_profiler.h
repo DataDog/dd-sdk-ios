@@ -13,6 +13,7 @@
 #include <pthread/qos.h>
 
 #ifdef __cplusplus
+
 namespace dd::profiler {
 // Forward declaration
     class mach_sampling_profiler;
@@ -25,7 +26,7 @@ extern "C" {
  * Structure representing a binary image loaded in memory.
  */
 typedef struct binary_image {
-    uint64_t load_address;  ///< Base address where the image is loaded
+    uint64_t load_address; ///< Base address where the image is loaded
     uuid_t uuid;           ///< UUID of the binary
     const char* filename;  ///< Filename of the binary
 } binary_image_t;

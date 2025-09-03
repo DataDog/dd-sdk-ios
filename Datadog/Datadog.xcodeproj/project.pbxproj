@@ -1176,9 +1176,17 @@
 		D233E7E42E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7E32E4A2AFE00E7CFDE /* RequestBuilderTests.swift */; };
 		D233E7E52E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7E32E4A2AFE00E7CFDE /* RequestBuilderTests.swift */; };
 		D233E7EE2E4B588000E7CFDE /* profile.pb-c.c in Sources */ = {isa = PBXBuildFile; fileRef = D233E7EB2E4B588000E7CFDE /* profile.pb-c.c */; };
+		D233E7EF2E4B588000E7CFDE /* profile_pprof_packer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D233E7E92E4B588000E7CFDE /* profile_pprof_packer.cpp */; };
+		D233E7F02E4B588000E7CFDE /* profile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D233E7E72E4B588000E7CFDE /* profile.cpp */; };
 		D233E7F12E4B588000E7CFDE /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = D233E7ED2E4B588000E7CFDE /* protobuf-c.c */; };
 		D233E7F62E4B588000E7CFDE /* profile.pb-c.c in Sources */ = {isa = PBXBuildFile; fileRef = D233E7EB2E4B588000E7CFDE /* profile.pb-c.c */; };
+		D233E7F72E4B588000E7CFDE /* profile_pprof_packer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D233E7E92E4B588000E7CFDE /* profile_pprof_packer.cpp */; };
+		D233E7F82E4B588000E7CFDE /* profile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D233E7E72E4B588000E7CFDE /* profile.cpp */; };
 		D233E7F92E4B588000E7CFDE /* protobuf-c.c in Sources */ = {isa = PBXBuildFile; fileRef = D233E7ED2E4B588000E7CFDE /* protobuf-c.c */; };
+		D233E7FF2E4B588B00E7CFDE /* dd_pprof.h in Headers */ = {isa = PBXBuildFile; fileRef = D233E7FE2E4B588B00E7CFDE /* dd_pprof.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D233E8002E4B588B00E7CFDE /* dd_pprof.h in Headers */ = {isa = PBXBuildFile; fileRef = D233E7FE2E4B588B00E7CFDE /* dd_pprof.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D233E8022E4B653F00E7CFDE /* dd_pprof.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D233E8012E4B653F00E7CFDE /* dd_pprof.cpp */; };
+		D233E8032E4B653F00E7CFDE /* dd_pprof.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D233E8012E4B653F00E7CFDE /* dd_pprof.cpp */; };
 		D234613128B7713000055D4C /* FeatureContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D234613028B7712F00055D4C /* FeatureContextTests.swift */; };
 		D234613228B7713000055D4C /* FeatureContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D234613028B7712F00055D4C /* FeatureContextTests.swift */; };
 		D23F8E5229DDCD28001CFAE8 /* UIViewControllerHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA2251118FB00C816E5 /* UIViewControllerHandler.swift */; };
@@ -1762,6 +1770,8 @@
 		D2D0E2112E3D0B4400BA4113 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257958B298ABB83008A1BE5 /* TestUtilities.framework */; platformFilters = (tvos, ); };
 		D2D0E2192E40E34A00BA4113 /* MockThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E2182E40E34A00BA4113 /* MockThread.swift */; };
 		D2D0E21A2E40E34A00BA4113 /* MockThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E2182E40E34A00BA4113 /* MockThread.swift */; };
+		D2D179E22E684DC0004C4D13 /* MachProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D179E12E684DC0004C4D13 /* MachProfilerTests.swift */; };
+		D2D179E32E684DC0004C4D13 /* MachProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D179E12E684DC0004C4D13 /* MachProfilerTests.swift */; };
 		D2D30E5B2A40BF540020C553 /* Logs.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D30E5A2A40BF540020C553 /* Logs.swift */; };
 		D2D30E5C2A40BF540020C553 /* Logs.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D30E5A2A40BF540020C553 /* Logs.swift */; };
 		D2D30E602A40CD310020C553 /* LogsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D30E5D2A40CD2C0020C553 /* LogsTests.swift */; };
@@ -1846,12 +1856,20 @@
 		D2E6E8FC2D8039BB00FF1398 /* BenchmarkURLSessionTaskDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E6E8FA2D8039B200FF1398 /* BenchmarkURLSessionTaskDelegate.swift */; };
 		D2E8A8E72DCBBA5100CF7C63 /* RUMCoreContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E8A8E62DCBBA5100CF7C63 /* RUMCoreContext.swift */; };
 		D2E8A8E82DCBBA5100CF7C63 /* RUMCoreContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E8A8E62DCBBA5100CF7C63 /* RUMCoreContext.swift */; };
-		D2E9371A2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */; };
-		D2E9371B2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */; };
-		D2E9372B2E53325200FECA76 /* profile.pb-c.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E9372A2E53325200FECA76 /* profile.pb-c.h */; };
-		D2E9372C2E53325200FECA76 /* profile.pb-c.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E9372A2E53325200FECA76 /* profile.pb-c.h */; };
-		D2E9372E2E53325900FECA76 /* protobuf-c.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E9372D2E53325900FECA76 /* protobuf-c.h */; };
-		D2E9372F2E53325900FECA76 /* protobuf-c.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E9372D2E53325900FECA76 /* protobuf-c.h */; };
+		D2E9371A2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D2E9371B2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D2E937252E53324100FECA76 /* profile.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E937242E53324100FECA76 /* profile.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D2E937262E53324100FECA76 /* profile.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E937242E53324100FECA76 /* profile.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D2E937282E53324A00FECA76 /* profile_pprof_packer.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E937272E53324A00FECA76 /* profile_pprof_packer.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D2E937292E53324A00FECA76 /* profile_pprof_packer.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E937272E53324A00FECA76 /* profile_pprof_packer.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D2E9372B2E53325200FECA76 /* profile.pb-c.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E9372A2E53325200FECA76 /* profile.pb-c.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D2E9372C2E53325200FECA76 /* profile.pb-c.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E9372A2E53325200FECA76 /* profile.pb-c.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D2E9372E2E53325900FECA76 /* protobuf-c.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E9372D2E53325900FECA76 /* protobuf-c.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D2E9372F2E53325900FECA76 /* protobuf-c.h in Headers */ = {isa = PBXBuildFile; fileRef = D2E9372D2E53325900FECA76 /* protobuf-c.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D2E937312E53368E00FECA76 /* ProfileCxxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E937302E53368E00FECA76 /* ProfileCxxTests.swift */; };
+		D2E937322E53368E00FECA76 /* ProfileCxxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E937302E53368E00FECA76 /* ProfileCxxTests.swift */; };
+		D2E937342E535B6400FECA76 /* ProfileMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E937332E535B6400FECA76 /* ProfileMocks.swift */; };
+		D2E937352E535B6400FECA76 /* ProfileMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E937332E535B6400FECA76 /* ProfileMocks.swift */; };
 		D2EA0F462C0E1AE300CB20F8 /* SessionReplayConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EA0F452C0E1AE200CB20F8 /* SessionReplayConfiguration.swift */; };
 		D2EBEE1F29BA160F00B15732 /* HTTPHeadersReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618E13A92524B8700098C6B0 /* HTTPHeadersReader.swift */; };
 		D2EBEE2029BA160F00B15732 /* TracePropagationHeadersWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EBEDCF29B8A02100B15732 /* TracePropagationHeadersWriter.swift */; };
@@ -3268,8 +3286,12 @@
 		D233E7DD2E4A109100E7CFDE /* ProfilingTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingTest.swift; sourceTree = "<group>"; };
 		D233E7E02E4A10E100E7CFDE /* MockProfiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockProfiler.swift; sourceTree = "<group>"; };
 		D233E7E32E4A2AFE00E7CFDE /* RequestBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestBuilderTests.swift; sourceTree = "<group>"; };
+		D233E7E72E4B588000E7CFDE /* profile.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = profile.cpp; sourceTree = "<group>"; };
+		D233E7E92E4B588000E7CFDE /* profile_pprof_packer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = profile_pprof_packer.cpp; sourceTree = "<group>"; };
 		D233E7EB2E4B588000E7CFDE /* profile.pb-c.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "profile.pb-c.c"; sourceTree = "<group>"; };
 		D233E7ED2E4B588000E7CFDE /* protobuf-c.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "protobuf-c.c"; sourceTree = "<group>"; };
+		D233E7FE2E4B588B00E7CFDE /* dd_pprof.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dd_pprof.h; sourceTree = "<group>"; };
+		D233E8012E4B653F00E7CFDE /* dd_pprof.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dd_pprof.cpp; sourceTree = "<group>"; };
 		D234613028B7712F00055D4C /* FeatureContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureContextTests.swift; sourceTree = "<group>"; };
 		D2355B262E4E05CE000DDF5F /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		D236BE2729520FED00676E67 /* CrashReportReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportReceiver.swift; sourceTree = "<group>"; };
@@ -3404,6 +3426,7 @@
 		D2D0E2022E3CEF1200BA4113 /* MachSamplingProfilerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MachSamplingProfilerTests.swift; sourceTree = "<group>"; };
 		D2D0E20D2E3CFA6500BA4113 /* CCallbackContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CCallbackContext.swift; sourceTree = "<group>"; };
 		D2D0E2182E40E34A00BA4113 /* MockThread.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockThread.swift; sourceTree = "<group>"; };
+		D2D179E12E684DC0004C4D13 /* MachProfilerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MachProfilerTests.swift; sourceTree = "<group>"; };
 		D2D30E5A2A40BF540020C553 /* Logs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logs.swift; sourceTree = "<group>"; };
 		D2D30E5D2A40CD2C0020C553 /* LogsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsTests.swift; sourceTree = "<group>"; };
 		D2D3199929E98D970004F169 /* DefaultJSONEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultJSONEncoder.swift; sourceTree = "<group>"; };
@@ -3431,8 +3454,12 @@
 		D2E8A8E62DCBBA5100CF7C63 /* RUMCoreContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMCoreContext.swift; sourceTree = "<group>"; };
 		D2E8D59728C7AB90007E5DE1 /* ContextMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mach_sampling_profiler.h; sourceTree = "<group>"; };
+		D2E937242E53324100FECA76 /* profile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = profile.h; sourceTree = "<group>"; };
+		D2E937272E53324A00FECA76 /* profile_pprof_packer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = profile_pprof_packer.h; sourceTree = "<group>"; };
 		D2E9372A2E53325200FECA76 /* profile.pb-c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "profile.pb-c.h"; sourceTree = "<group>"; };
 		D2E9372D2E53325900FECA76 /* protobuf-c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "protobuf-c.h"; sourceTree = "<group>"; };
+		D2E937302E53368E00FECA76 /* ProfileCxxTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileCxxTests.swift; sourceTree = "<group>"; };
+		D2E937332E535B6400FECA76 /* ProfileMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileMocks.swift; sourceTree = "<group>"; };
 		D2EA0F452C0E1AE200CB20F8 /* SessionReplayConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayConfiguration.swift; sourceTree = "<group>"; };
 		D2EBEDCF29B8A02100B15732 /* TracePropagationHeadersWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracePropagationHeadersWriter.swift; sourceTree = "<group>"; };
 		D2EBEDD229B8A58E00B15732 /* TracePropagationHeadersReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracePropagationHeadersReader.swift; sourceTree = "<group>"; };
@@ -6321,6 +6348,9 @@
 				D2355B262E4E05CE000DDF5F /* module.modulemap */,
 				D229FF592E3BA298009CCD62 /* mach_profiler.h */,
 				D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */,
+				D233E7FE2E4B588B00E7CFDE /* dd_pprof.h */,
+				D2E937242E53324100FECA76 /* profile.h */,
+				D2E937272E53324A00FECA76 /* profile_pprof_packer.h */,
 				D2E9372A2E53325200FECA76 /* profile.pb-c.h */,
 				D2E9372D2E53325900FECA76 /* protobuf-c.h */,
 			);
@@ -6332,7 +6362,10 @@
 			children = (
 				D229FF5A2E3BA298009CCD62 /* include */,
 				D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */,
+				D233E8012E4B653F00E7CFDE /* dd_pprof.cpp */,
 				D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */,
+				D233E7E72E4B588000E7CFDE /* profile.cpp */,
+				D233E7E92E4B588000E7CFDE /* profile_pprof_packer.cpp */,
 				D233E7EB2E4B588000E7CFDE /* profile.pb-c.c */,
 				D233E7ED2E4B588000E7CFDE /* protobuf-c.c */,
 			);
@@ -6862,13 +6895,16 @@
 		D2C9F2522E3B8A88008397FD /* DatadogProfilingTests */ = {
 			isa = PBXGroup;
 			children = (
-				D2D0E2182E40E34A00BA4113 /* MockThread.swift */,
 				D2D0E20D2E3CFA6500BA4113 /* CCallbackContext.swift */,
 				D2D0E2012E3CEF1200BA4113 /* MachProfilerCAPITests.swift */,
 				D2D0E2022E3CEF1200BA4113 /* MachSamplingProfilerTests.swift */,
 				D233E7DD2E4A109100E7CFDE /* ProfilingTest.swift */,
-				D233E7E02E4A10E100E7CFDE /* MockProfiler.swift */,
+				D2D179E12E684DC0004C4D13 /* MachProfilerTests.swift */,
 				D233E7E32E4A2AFE00E7CFDE /* RequestBuilderTests.swift */,
+				D2E937302E53368E00FECA76 /* ProfileCxxTests.swift */,
+				D2D0E2182E40E34A00BA4113 /* MockThread.swift */,
+				D233E7E02E4A10E100E7CFDE /* MockProfiler.swift */,
+				D2E937332E535B6400FECA76 /* ProfileMocks.swift */,
 			);
 			name = DatadogProfilingTests;
 			path = ../DatadogProfiling/Tests;
@@ -7097,10 +7133,13 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D233E7FF2E4B588B00E7CFDE /* dd_pprof.h in Headers */,
+				D2E937292E53324A00FECA76 /* profile_pprof_packer.h in Headers */,
+				D2E937252E53324100FECA76 /* profile.h in Headers */,
 				D2E9372E2E53325900FECA76 /* protobuf-c.h in Headers */,
 				D2E9372C2E53325200FECA76 /* profile.pb-c.h in Headers */,
-				D229FFAC2E3BCAAE009CCD62 /* mach_profiler.h in Headers */,
 				D2E9371B2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */,
+				D229FFAC2E3BCAAE009CCD62 /* mach_profiler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7108,10 +7147,13 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2E937282E53324A00FECA76 /* profile_pprof_packer.h in Headers */,
+				D2E937262E53324100FECA76 /* profile.h in Headers */,
 				D2E9372F2E53325900FECA76 /* protobuf-c.h in Headers */,
 				D2E9372B2E53325200FECA76 /* profile.pb-c.h in Headers */,
-				D229FFA92E3BCA9B009CCD62 /* mach_profiler.h in Headers */,
 				D2E9371A2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */,
+				D229FFA92E3BCA9B009CCD62 /* mach_profiler.h in Headers */,
+				D233E8002E4B588B00E7CFDE /* dd_pprof.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9273,9 +9315,12 @@
 				D233E7CB2E46264600E7CFDE /* ProfilerFeature.swift in Sources */,
 				D233E7C72E4625D400E7CFDE /* RequestBuilder.swift in Sources */,
 				D233E7C82E4625D400E7CFDE /* ProfileEvent.swift in Sources */,
+				D233E8032E4B653F00E7CFDE /* dd_pprof.cpp in Sources */,
 				D233E7C92E4625D400E7CFDE /* DatadogProfiling.swift in Sources */,
 				D2D0E1F32E3CE59700BA4113 /* mach_profiler.cpp in Sources */,
 				D233E7F62E4B588000E7CFDE /* profile.pb-c.c in Sources */,
+				D233E7F72E4B588000E7CFDE /* profile_pprof_packer.cpp in Sources */,
+				D233E7F82E4B588000E7CFDE /* profile.cpp in Sources */,
 				D233E7F92E4B588000E7CFDE /* protobuf-c.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -9290,9 +9335,12 @@
 				D233E7CC2E46264600E7CFDE /* ProfilerFeature.swift in Sources */,
 				D233E7C42E4625D400E7CFDE /* RequestBuilder.swift in Sources */,
 				D233E7C52E4625D400E7CFDE /* ProfileEvent.swift in Sources */,
+				D233E8022E4B653F00E7CFDE /* dd_pprof.cpp in Sources */,
 				D233E7C62E4625D400E7CFDE /* DatadogProfiling.swift in Sources */,
 				D2D0E1F22E3CE59700BA4113 /* mach_profiler.cpp in Sources */,
 				D233E7EE2E4B588000E7CFDE /* profile.pb-c.c in Sources */,
+				D233E7EF2E4B588000E7CFDE /* profile_pprof_packer.cpp in Sources */,
+				D233E7F02E4B588000E7CFDE /* profile.cpp in Sources */,
 				D233E7F12E4B588000E7CFDE /* protobuf-c.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -10142,12 +10190,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				D233E7E42E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */,
+				D2D179E32E684DC0004C4D13 /* MachProfilerTests.swift in Sources */,
 				D233E7DE2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
 				D2D0E2192E40E34A00BA4113 /* MockThread.swift in Sources */,
 				D2D0E2072E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */,
 				D233E7E22E4A10E100E7CFDE /* MockProfiler.swift in Sources */,
 				D2D0E20E2E3CFA6500BA4113 /* CCallbackContext.swift in Sources */,
 				D2D0E2082E3CEF1200BA4113 /* MachProfilerCAPITests.swift in Sources */,
+				D2E937352E535B6400FECA76 /* ProfileMocks.swift in Sources */,
+				D2E937322E53368E00FECA76 /* ProfileCxxTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10156,12 +10207,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				D233E7E52E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */,
+				D2D179E22E684DC0004C4D13 /* MachProfilerTests.swift in Sources */,
 				D233E7DF2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
 				D2D0E21A2E40E34A00BA4113 /* MockThread.swift in Sources */,
 				D2D0E2042E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */,
 				D233E7E12E4A10E100E7CFDE /* MockProfiler.swift in Sources */,
 				D2D0E20F2E3CFA6500BA4113 /* CCallbackContext.swift in Sources */,
 				D2D0E2052E3CEF1200BA4113 /* MachProfilerCAPITests.swift in Sources */,
+				D2E937342E535B6400FECA76 /* ProfileMocks.swift in Sources */,
+				D2E937312E53368E00FECA76 /* ProfileCxxTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -11162,7 +11216,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -11194,7 +11247,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -11226,7 +11278,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -11258,7 +11309,6 @@
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -11284,7 +11334,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -11309,7 +11358,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -11366,7 +11414,6 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -11427,7 +11474,6 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -11610,7 +11656,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -11643,7 +11688,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -11675,7 +11719,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -11707,7 +11750,6 @@
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -11734,7 +11776,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -11760,7 +11801,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -12043,7 +12083,6 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -12146,7 +12185,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12180,7 +12218,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12214,7 +12251,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12248,7 +12284,6 @@
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -12268,7 +12303,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -12288,7 +12322,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -12309,7 +12342,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12339,7 +12371,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12369,7 +12400,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12400,7 +12430,6 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12433,7 +12462,6 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12466,7 +12494,6 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12499,7 +12526,6 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12535,7 +12561,6 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12571,7 +12596,6 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12606,7 +12630,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12639,7 +12662,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12671,7 +12693,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12703,7 +12724,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12735,7 +12755,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12767,7 +12786,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12799,7 +12817,6 @@
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -12818,7 +12835,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -12837,7 +12853,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -12918,7 +12933,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12954,7 +12968,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -12990,7 +13003,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -13026,7 +13038,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -13062,7 +13073,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -13098,7 +13108,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -13134,7 +13143,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -13166,7 +13174,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -13198,7 +13205,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -13230,7 +13236,6 @@
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -13249,7 +13254,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -13268,7 +13272,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -13288,7 +13291,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -13320,7 +13322,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -13352,7 +13353,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -13384,7 +13384,6 @@
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -13403,7 +13402,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -13422,7 +13420,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -13442,7 +13439,6 @@
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -13460,7 +13456,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -13478,7 +13473,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -13497,7 +13491,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -13529,7 +13522,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -13561,7 +13553,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -13593,7 +13584,6 @@
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -13612,7 +13602,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -13631,7 +13620,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -13650,14 +13638,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilingTests;
@@ -13665,6 +13653,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
+				SWIFT_OBJC_INTEROP_MODE = objcxx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -13674,14 +13663,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilingTests;
@@ -13696,14 +13685,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogProfilingTests;
@@ -13718,13 +13707,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
@@ -13734,8 +13722,10 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
+				SWIFT_OBJC_INTEROP_MODE = objcxx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 16.6;
 			};
 			name = Debug;
 		};
@@ -13743,13 +13733,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
@@ -13759,6 +13748,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 16.6;
 			};
 			name = Release;
 		};
@@ -13766,13 +13756,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = c17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
@@ -13782,6 +13771,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
 				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 16.6;
 			};
 			name = Integration;
 		};
@@ -14168,7 +14158,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -14202,7 +14191,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -14235,7 +14223,6 @@
 			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -14268,7 +14255,6 @@
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -14294,7 +14280,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -14319,7 +14304,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -14345,7 +14329,6 @@
 			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -14372,7 +14355,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -14398,7 +14380,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";

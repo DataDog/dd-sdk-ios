@@ -59,7 +59,7 @@ public enum Profiling {
     ///   - core: The Datadog core instance to use. Defaults to the default core.
     public static func start(currentThreadOnly: Bool = false, in core: DatadogCoreProtocol = CoreRegistry.default) {
         core.get(feature: ProfilerFeature.self)?
-            .profiler.start()
+            .profiler.start(currentThreadOnly: currentThreadOnly)
     }
 
     /// Stops the current profiling session and uploads the captured data.

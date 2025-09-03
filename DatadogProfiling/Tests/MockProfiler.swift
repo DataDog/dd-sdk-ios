@@ -32,7 +32,7 @@ internal struct MockProfiler: Profiler {
 
     /// Starts the mock profiling session.
     /// This is a no-op implementation for testing purposes.
-    func start() {
+    func start(currentThreadOnly: Bool) {
         // no-op
     }
 

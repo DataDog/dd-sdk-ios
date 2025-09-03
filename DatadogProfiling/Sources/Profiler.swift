@@ -19,7 +19,7 @@ internal struct Profile {
 /// Protocol defining the interface for profilers that can capture performance data.
 internal protocol Profiler {
     /// Starts the profiling session.
-    func start()
+    func start(currentThreadOnly: Bool)
     /// Stops the profiling session and returns the captured profile data.
     /// - Returns: A `Profile` containing the session data, or `nil` if no data was captured.
     /// - Throws: An error if the profiling session could not be stopped properly.
