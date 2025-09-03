@@ -171,13 +171,13 @@ final class RUMViewEventsFilterTests: XCTestCase {
     func testFilterAlwaysKeepsEventsWithAccessibility() throws {
         // Test that events with accessibility are always kept, even if they would normally be filtered out
         let events = [
-            try Event(data: "A.1", metadata: RUMViewEvent.Metadata(id: "A", documentVersion: 1, hasAccessibility: false)),
-            try Event(data: "A.2", metadata: RUMViewEvent.Metadata(id: "A", documentVersion: 2, hasAccessibility: true)), // This should be kept
-            try Event(data: "A.3", metadata: RUMViewEvent.Metadata(id: "A", documentVersion: 3, hasAccessibility: false)),
-            try Event(data: "A.4", metadata: RUMViewEvent.Metadata(id: "A", documentVersion: 4, hasAccessibility: false)),
-            try Event(data: "B.1", metadata: RUMViewEvent.Metadata(id: "B", documentVersion: 1, hasAccessibility: false)),
-            try Event(data: "B.2", metadata: RUMViewEvent.Metadata(id: "B", documentVersion: 2, hasAccessibility: true)), // This should be kept
-            try Event(data: "B.3", metadata: RUMViewEvent.Metadata(id: "B", documentVersion: 3, hasAccessibility: false)),
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1, hasAccessibility: false)),
+            try Event(data: "A.2", viewMetadata: .mock(id: "A", documentVersion: 2, hasAccessibility: true)), // This should be kept
+            try Event(data: "A.3", viewMetadata: .mock(id: "A", documentVersion: 3, hasAccessibility: false)),
+            try Event(data: "A.4", viewMetadata: .mock(id: "A", documentVersion: 4, hasAccessibility: false)),
+            try Event(data: "B.1", viewMetadata: .mock(id: "B", documentVersion: 1, hasAccessibility: false)),
+            try Event(data: "B.2", viewMetadata: .mock(id: "B", documentVersion: 2, hasAccessibility: true)), // This should be kept
+            try Event(data: "B.3", viewMetadata: .mock(id: "B", documentVersion: 3, hasAccessibility: false)),
         ]
 
         let actual = sut.filter(events: events)
@@ -271,9 +271,10 @@ extension RUMViewEvent.Metadata {
         id: String = .mockAny(),
         documentVersion: Int64 = .mockAny(),
         duration: Int64? = nil,
-        indexInSession: Int? = nil
+        indexInSession: Int? = nil,
+        hasAccessibility: Bool? = nil
     ) -> RUMViewEvent.Metadata {
-        return RUMViewEvent.Metadata(id: id, documentVersion: documentVersion, duration: duration, indexInSession: indexInSession)
+        return RUMViewEvent.Metadata(id: id, documentVersion: documentVersion, hasAccessibility: hasAccessibility, duration: duration, indexInSession: indexInSession)
     }
 }
 

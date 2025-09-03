@@ -91,6 +91,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private var didReceiveStartCommand = false
     /// Track if this is the first view update for the current view
     private var isFirstViewUpdate = true
+    /// Track accessibility info for the current view
+    private var accessibilityState: AccessibilityInfo? = nil
 
     /// Number of Actions happened on this View.
     private var actionsCount: UInt = 0
@@ -280,8 +282,6 @@ extension RUMViewScope {
                 // the `RUMViewScope` for tracking this View, so we mark this one as inactive.
                 isActiveView = false
             } else {
-                // Reset accessibility reader for a new view
-                accessibilityReader?.clearChangedAttributes()
                 // Reset first view update flag for new view
                 isFirstViewUpdate = true
             }
@@ -653,12 +653,21 @@ extension RUMViewScope {
             performance = nil
         }
 
+        // Take one snapshot of the current accessibility state
+        let currentAccessibilityState = accessibilityReader?.state
+
         var accessibility: RUMViewEvent.View.Accessibility? = nil
         if isFirstViewUpdate {
-            accessibility = accessibilityReader?.allAccessibilityAttributes
+            // For first view update, send the entire state
+            accessibility = currentAccessibilityState?.toRUMViewAccessibility()
         } else {
-            accessibility = accessibilityReader?.changedAccessibilityAttributes
+            // For subsequent updates, send only the differences
+            let accessibilityDifferences = currentAccessibilityState?.differences(from: accessibilityState) ?? .empty
+            accessibility = accessibilityDifferences.toRUMViewAccessibility()
         }
+
+        // Update the stored state for next comparison
+        accessibilityState = currentAccessibilityState
 
         let viewEvent = RUMViewEvent(
             dd: .init(
@@ -795,10 +804,6 @@ extension RUMViewScope {
             // a watchdog termination event will be sent using saved view event.
             dependencies.watchdogTermination?.update(viewEvent: event)
 
-            // Clear changed attributes after sending the view update
-            if let accessibilityReader = accessibilityReader {
-                accessibilityReader.clearChangedAttributes()
-            }
             // Mark that we've sent the first view update
             isFirstViewUpdate = false
         } else { // if event was dropped by mapper
