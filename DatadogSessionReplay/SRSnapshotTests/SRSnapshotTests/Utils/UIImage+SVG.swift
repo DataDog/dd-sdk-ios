@@ -30,7 +30,11 @@ extension UIImage {
             path.fill()
         }
 
-        self.init(cgImage: image.cgImage!, scale: image.scale, orientation: .up)
+        guard let cgImage = image.cgImage else {
+            return nil
+        }
+
+        self.init(cgImage: cgImage, scale: image.scale, orientation: .up)
     }
 }
 
@@ -115,9 +119,12 @@ extension CGPath {
         var hasSubpath = false
 
         func nextCommand() -> Character? {
+            let uppercase: ClosedRange<Character> = "A"..."Z"
+            let lowercase: ClosedRange<Character> = "a"..."z"
+
             while !scanner.isAtEnd {
                 let character = scanner.string[scanner.currentIndex]
-                if ("A"..."Z").contains(character) || ("a"..."z").contains(character) {
+                if uppercase.contains(character) || lowercase.contains(character) {
                     scanner.currentIndex = scanner.string.index(after: scanner.currentIndex)
                     return character
                 }
