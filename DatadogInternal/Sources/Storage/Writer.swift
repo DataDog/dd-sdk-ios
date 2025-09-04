@@ -11,7 +11,7 @@ public protocol Writer {
     /// Encodes given encodable value and metadata, and writes to the destination.
     /// - Parameters:
     ///   - value: Encodable value to write.
-    ///   -  metadata: Encodable metadata to write.
+    ///   - metadata: Encodable metadata to write.
     ///   - completion: The block to execute after the write task is completed.
     func write<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler)
 }
@@ -39,7 +39,7 @@ extension Writer {
     /// Encodes given encodable value and metadata, and writes to the destination.
     /// - Parameters:
     ///   - value: Encodable value to write.
-    ///   -  metadata: Encodable metadata to write.
+    ///   - metadata: Encodable metadata to write.
     public func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
         write(value: value, metadata: metadata, completion: {})
     }

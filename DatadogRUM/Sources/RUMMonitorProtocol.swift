@@ -399,7 +399,7 @@ extension RUMMonitorViewProtocol {
     }
 }
 
-// MARK: - NOP moniotor
+// MARK: - NOP monitor
 
 internal class NOPMonitor: RUMMonitorProtocol {
     private func warn(method: StaticString = #function) {
