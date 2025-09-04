@@ -4,9 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if os(iOS)
 import XCTest
-@testable import DatadogSessionReplay
+
+@testable import DatadogInternal
 
 class MultipartFormDataTests: XCTestCase {
     func testBuildingFormData() throws {
@@ -63,4 +63,3 @@ class MultipartFormDataTests: XCTestCase {
         XCTAssertEqual(expectedDataString, actualDataString)
     }
 }
-#endif

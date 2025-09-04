@@ -6,10 +6,22 @@
 
 import Foundation
 
-// swiftlint:disable duplicate_imports
-#if swift(>=6.0)
-internal import DatadogMachProfiler
-#else
-@_implementationOnly import DatadogMachProfiler
-#endif
-// swiftlint:enable duplicate_imports
+/// Represents a captured profiling session with timing information and pprof data.
+internal struct Profile {
+    /// The start time of the profiling session.
+    let start: Date
+    /// The end time of the profiling session.
+    let end: Date
+    /// The profiling data in pprof format.
+    let pprof: Data
+}
+
+/// Protocol defining the interface for profilers that can capture performance data.
+internal protocol Profiler {
+    /// Starts the profiling session.
+    func start()
+    /// Stops the profiling session and returns the captured profile data.
+    /// - Returns: A `Profile` containing the session data, or `nil` if no data was captured.
+    /// - Throws: An error if the profiling session could not be stopped properly.
+    func stop() throws -> Profile?
+}
