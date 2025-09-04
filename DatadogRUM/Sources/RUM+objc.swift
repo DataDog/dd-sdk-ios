@@ -9,7 +9,6 @@ import UIKit
 @_spi(objc)
 import DatadogInternal
 
-
 internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
     let objcPredicate: objc_UIKitRUMViewsPredicate
 
@@ -692,7 +691,7 @@ public class objc_RUMMonitor: NSObject {
     }
 }
 
-extension DDRUMMonitor {
+extension objc_RUMMonitor {
     /// **For Datadog internal use only. Subject to changes.**
     ///
     /// Adds RUM error to current RUM view in sync.
@@ -706,7 +705,7 @@ extension DDRUMMonitor {
     @objc
     public func _internal_sync_addError(
         _ error: Error,
-        source: DDRUMErrorSource,
+        source: objc_RUMErrorSource,
         attributes: [String: Any]
     ) {
         let semaphore = DispatchSemaphore(value: 0)

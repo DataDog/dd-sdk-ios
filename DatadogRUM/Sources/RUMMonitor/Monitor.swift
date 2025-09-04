@@ -499,6 +499,7 @@ extension Monitor: RUMMonitorProtocol {
                 time: dateProvider.now,
                 error: error,
                 source: RUMInternalErrorSource(source),
+                globalAttributes: self.attributes,
                 attributes: attributes,
                 completionHandler: completionHandler
             )

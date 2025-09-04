@@ -2860,7 +2860,8 @@ class RUMViewScopeTests: XCTestCase {
             customTimings: [:],
             startTime: currentTime,
             serverTimeOffset: .zero,
-            interactionToNextViewMetric: INVMetricMock()
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
         )
 
         XCTAssertTrue(

@@ -757,7 +757,7 @@ extension RUMViewScope {
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
             writer.write(
-                value: event, 
+                value: event,
                 metadata: event.metadata(viewIndexInSession: viewIndexInSession),
                 completion: completionHandler
             )
