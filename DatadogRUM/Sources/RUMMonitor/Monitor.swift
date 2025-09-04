@@ -269,7 +269,8 @@ extension Monitor: RUMMonitorProtocol {
                 stack: stack,
                 source: RUMInternalErrorSource(source),
                 globalAttributes: self.attributes,
-                attributes: attributes
+                attributes: attributes,
+                completionHandler: NOPCompletionHandler
             )
         )
     }
@@ -281,7 +282,8 @@ extension Monitor: RUMMonitorProtocol {
                 error: error,
                 source: RUMInternalErrorSource(source),
                 globalAttributes: self.attributes,
-                attributes: attributes
+                attributes: attributes,
+                completionHandler: NOPCompletionHandler
             )
         )
     }
@@ -483,6 +485,26 @@ extension Monitor: RUMMonitorProtocol {
             debugging != nil
         }
     }
+
+    // MARK: - Internal
+
+    func addError(
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler
+    ) {
+        process(
+            command: RUMAddCurrentViewErrorCommand(
+                time: dateProvider.now,
+                error: error,
+                source: RUMInternalErrorSource(source),
+                globalAttributes: self.attributes,
+                attributes: attributes,
+                completionHandler: completionHandler
+            )
+        )
+    }
 }
 
 // MARK: - View
@@ -611,7 +633,8 @@ extension Monitor {
                 stack: stack,
                 source: source,
                 globalAttributes: self.attributes,
-                attributes: attributes
+                attributes: attributes,
+                completionHandler: NOPCompletionHandler
             )
         )
     }

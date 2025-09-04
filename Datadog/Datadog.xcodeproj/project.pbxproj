@@ -1862,6 +1862,8 @@
 		D2EFA869286DA85700F1FAA6 /* DatadogContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA867286DA85700F1FAA6 /* DatadogContextProvider.swift */; };
 		D2EFA875286E011900F1FAA6 /* DatadogContextProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */; };
 		D2EFA876286E011900F1FAA6 /* DatadogContextProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */; };
+		D2F448E12D43A3DC007BB995 /* CompletionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F448E02D43A3DC007BB995 /* CompletionHandler.swift */; };
+		D2F448E22D43A3DC007BB995 /* CompletionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F448E02D43A3DC007BB995 /* CompletionHandler.swift */; };
 		D2F44FB8299AA1DA0074B0D9 /* DataCompressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D213532F270CA722000315AD /* DataCompressionTests.swift */; };
 		D2F44FB9299AA1DB0074B0D9 /* DataCompressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D213532F270CA722000315AD /* DataCompressionTests.swift */; };
 		D2F44FC2299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F44FC1299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift */; };
@@ -3313,6 +3315,7 @@
 		D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogContextProviderTests.swift; sourceTree = "<group>"; };
 		D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandler.swift; sourceTree = "<group>"; };
 		D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopTracerTests.swift; sourceTree = "<group>"; };
+		D2F448E02D43A3DC007BB995 /* CompletionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionHandler.swift; sourceTree = "<group>"; };
 		D2F44FC1299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+KeyboardControlling.swift"; sourceTree = "<group>"; };
 		D2F8235229915E12003C7E99 /* DatadogSite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogSite.swift; sourceTree = "<group>"; };
 		D2FB1253292E0E92005B13F8 /* TrackingConsentPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingConsentPublisher.swift; sourceTree = "<group>"; };
@@ -6321,6 +6324,7 @@
 				D23039DB298D5235001A1FA3 /* ReadWriteLock.swift */,
 				618031F72D6DC430007027E3 /* Threading.swift */,
 				D2432CF829EDB22C00D93657 /* Flushable.swift */,
+				D2F448E02D43A3DC007BB995 /* CompletionHandler.swift */,
 			);
 			path = Concurrency;
 			sourceTree = "<group>";
@@ -8914,6 +8918,7 @@
 				614A708E2BF754D800D9AF42 /* ImmutableRequest.swift in Sources */,
 				D2160CF429C0EDFC00FAA9A5 /* UploadPerformancePreset.swift in Sources */,
 				D23039E1298D5236001A1FA3 /* AppState.swift in Sources */,
+				D2F448E22D43A3DC007BB995 /* CompletionHandler.swift in Sources */,
 				D2DE63532A30A7CA00441A54 /* CoreRegistry.swift in Sources */,
 				D2D748402DC24F1100C61353 /* Crash.swift in Sources */,
 				E2AA55EA2C32C76A002FEF28 /* WatchKitExtensions.swift in Sources */,
@@ -10041,6 +10046,7 @@
 				D2160CF529C0EDFC00FAA9A5 /* UploadPerformancePreset.swift in Sources */,
 				D2DA236C298D57AA00C6C7E6 /* AppState.swift in Sources */,
 				D28FB6972DB7D3F000CD76D0 /* RUMDataModels.swift in Sources */,
+				D2F448E12D43A3DC007BB995 /* CompletionHandler.swift in Sources */,
 				D2DE63542A30A7CA00441A54 /* CoreRegistry.swift in Sources */,
 				E2AA55EC2C32C78B002FEF28 /* WatchKitExtensions.swift in Sources */,
 				D2EBEE3629BA161100B15732 /* W3CHTTPHeadersWriter.swift in Sources */,

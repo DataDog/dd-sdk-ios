@@ -287,6 +287,23 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     ///
     /// The default value is false.
     var debug: Bool { set get }
+
+    // MARK: - Internal
+
+    /// Adds RUM error to current RUM view.
+    /// 
+    /// - Parameters:
+    ///   - error: the `Error` object. It will be used to infer error details.
+    ///   - source: the origin of the error.
+    ///   - attributes: custom attributes to attach to this error.
+    ///   - completionHandler: A completion closure called when reporting the error is completed.
+    @_spi(Internal)
+    func addError(
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler
+    )
 }
 
 // MARK: - View Interface
@@ -370,9 +387,19 @@ extension RUMMonitorViewProtocol {
     func addViewLoadingTime(overwrite: Bool) {
         // no-op
     }
+
+    /// It cannot be declared '@_spi' without a default implementation in a protocol extension
+    func addError(
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler
+    ) {
+        completionHandler()
+    }
 }
 
-// MARK: - NOP moniotor
+// MARK: - NOP monitor
 
 internal class NOPMonitor: RUMMonitorProtocol {
     private func warn(method: StaticString = #function) {
@@ -405,6 +432,11 @@ internal class NOPMonitor: RUMMonitorProtocol {
     func startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func addFeatureFlagEvaluation(name: String, value: Encodable) { warn() }
+    func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], completionHandler: () -> Void) {
+        warn()
+        completionHandler()
+    }
+
     var debug: Bool {
         set { warn() }
         get {

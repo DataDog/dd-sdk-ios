@@ -213,6 +213,9 @@ internal protocol RUMErrorCommand: RUMCommand {
     var binaryImages: [BinaryImage]? { get }
     /// Indicates whether any stack trace information in `stack` or `threads` was truncated due to stack trace minimization.
     var isStackTraceTruncated: Bool? { get }
+    /// A completion closure called when processing the command is completed.
+    /// Processing the command includes writting data.
+    var completionHandler: CompletionHandler { get }
 }
 
 /// Adds exception error to current view.
@@ -240,6 +243,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
     let binaryImages: [BinaryImage]?
     let isStackTraceTruncated: Bool?
     let missedEventType: SessionEndedMetric.MissedEventType? = .error
+    let completionHandler: CompletionHandler
 
     /// Constructor dedicated to errors defined by message, type and stack.
     init(
@@ -249,7 +253,8 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
         stack: String?,
         source: RUMInternalErrorSource,
         globalAttributes: [AttributeKey: AttributeValue],
-        attributes: [AttributeKey: AttributeValue]
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler
     ) {
         self.init(
             time: time,
@@ -262,7 +267,8 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
             binaryImages: nil,
             isStackTraceTruncated: nil,
             globalAttributes: globalAttributes,
-            attributes: attributes
+            attributes: attributes,
+            completionHandler: completionHandler
         )
     }
 
@@ -272,7 +278,8 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
         error: Error,
         source: RUMInternalErrorSource,
         globalAttributes: [AttributeKey: AttributeValue],
-        attributes: [AttributeKey: AttributeValue]
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler
     ) {
         let dderror = DDError(error: error)
         self.init(
@@ -286,7 +293,8 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
             binaryImages: nil,
             isStackTraceTruncated: nil,
             globalAttributes: globalAttributes,
-            attributes: attributes
+            attributes: attributes,
+            completionHandler: completionHandler
         )
     }
 
@@ -302,7 +310,8 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
         binaryImages: [BinaryImage]?,
         isStackTraceTruncated: Bool?,
         globalAttributes: [AttributeKey: AttributeValue],
-        attributes: [AttributeKey: AttributeValue]
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler
     ) {
         var attributes = attributes
         let isCrossPlatformCrash: Bool? = attributes.removeValue(forKey: CrossPlatformAttributes.errorIsCrash)?.dd.decode()
@@ -320,6 +329,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
         self.threads = threads
         self.binaryImages = binaryImages
         self.isStackTraceTruncated = isStackTraceTruncated
+        self.completionHandler = completionHandler
     }
 }
 
@@ -351,6 +361,8 @@ internal struct RUMAddCurrentViewAppHangCommand: RUMErrorCommand {
     /// The duration of hang.
     let hangDuration: TimeInterval
     let missedEventType: SessionEndedMetric.MissedEventType? = .error
+
+    let completionHandler: CompletionHandler = NOPCompletionHandler
 }
 
 internal struct RUMAddCurrentViewMemoryWarningCommand: RUMErrorCommand {
@@ -376,6 +388,8 @@ internal struct RUMAddCurrentViewMemoryWarningCommand: RUMErrorCommand {
     let isStackTraceTruncated: Bool?
 
     let missedEventType: SessionEndedMetric.MissedEventType? = .error
+
+    let completionHandler: CompletionHandler = NOPCompletionHandler
 }
 
 internal struct RUMAddViewLoadingTime: RUMCommand {
