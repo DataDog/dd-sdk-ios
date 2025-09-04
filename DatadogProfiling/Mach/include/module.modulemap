@@ -1,4 +1,9 @@
 module DatadogMachProfiler {
   header "mach_profiler.h"
   export *
+
+  explicit module Pprof {
+      header "profile.pb-c.h"
+      export *
+  }
 }

@@ -29,6 +29,8 @@ function files {
 		-not -name "Versioning.swift" \
 		-not -path "*/BenchmarkTests/CatalogUIKit/*" \
 		-not -path "*/BenchmarkTests/CatalogSwiftUI/*" \
+		-not -path "*/DatadogProfiling/Mach/include/profile.pb-c.h" \
+		-not -path "*/DatadogProfiling/Mach/include/protobuf-c.h" \
 		-not -name "__init__.py"
 }
 
