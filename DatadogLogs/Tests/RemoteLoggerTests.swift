@@ -161,6 +161,53 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(errorMessage.attributes[Logs.Attributes.errorFingerprint] as? String, mockFingerprint)
     }
 
+    func testWhenCriticalLoggedFromInternal_itCallCompletion() throws {
+        let completionExpectation = expectation(description: "Error processing completion")
+
+        // Given
+        let stubBacktrace: BacktraceReport = .mockRandom()
+
+        let logger = RemoteLogger(
+            featureScope: featureScope,
+            globalAttributes: .mockAny(),
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock(backtrace: stubBacktrace)
+        )
+
+        // When
+        let message = String.mockRandom()
+        logger._internal.critical(
+            message: message,
+            error: ErrorMock(),
+            attributes: [CrossPlatformAttributes.includeBinaryImages: true],
+            completionHandler: completionExpectation.fulfill
+        )
+
+        // Then
+        wait(for: [completionExpectation], timeout: 0)
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
+        XCTAssertEqual(logs.count, 1)
+
+        let log = try XCTUnwrap(logs.first)
+        XCTAssertEqual(log.message, message)
+        XCTAssertNil(log.attributes.userAttributes[CrossPlatformAttributes.includeBinaryImages])
+        XCTAssertNotNil(log.error?.binaryImages)
+        XCTAssertEqual(log.error?.binaryImages?.count, stubBacktrace.binaryImages.count)
+        for i in 0..<stubBacktrace.binaryImages.count {
+            let logBacktrace = log.error!.binaryImages![i]
+            let errorBacktrace = stubBacktrace.binaryImages[i]
+            XCTAssertEqual(logBacktrace.name, errorBacktrace.libraryName)
+            XCTAssertEqual(logBacktrace.uuid, errorBacktrace.uuid)
+            XCTAssertEqual(logBacktrace.arch, errorBacktrace.architecture)
+            XCTAssertEqual(logBacktrace.isSystem, errorBacktrace.isSystemLibrary)
+            XCTAssertEqual(logBacktrace.loadAddress, errorBacktrace.loadAddress)
+            XCTAssertEqual(logBacktrace.maxAddress, errorBacktrace.maxAddress)
+        }
+    }
+
     // MARK: - Attributes
 
     func testWhenAddingAndRemovingLoggerAttributes_itSendsLogsWithCurrentAttributes() throws {

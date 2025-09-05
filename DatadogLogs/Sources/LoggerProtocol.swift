@@ -227,7 +227,8 @@ extension CombinedLogger: InternalLoggerProtocol {
         errorKind: String?,
         errorMessage: String?,
         stackTrace: String?,
-        attributes: [String: Encodable]?) {
+        attributes: [String: Encodable]?
+    ) {
         combinedLoggers.forEach {
             $0._internal.log(
                 level: level,
@@ -237,6 +238,34 @@ extension CombinedLogger: InternalLoggerProtocol {
                 stackTrace: stackTrace,
                 attributes: attributes
             )
+        }
+    }
+
+    func critical(
+        message: String,
+        error: Error?,
+        attributes: [String: Encodable]?,
+        completionHandler: @escaping CompletionHandler
+    ) {
+        let group = DispatchGroup()
+
+        combinedLoggers.forEach {
+            group.enter()
+
+            $0._internal.critical(
+                message: message,
+                error: error,
+                attributes: attributes,
+                completionHandler: { group.leave() }
+            )
+        }
+
+        // Sync on a global queue for simplicity.
+        // In practice, users of the internal logger are cross-platform
+        // SDKs which don't use console logger and therefor don't use
+        // the combined-logger.
+        group.notify(queue: .global()) {
+            completionHandler()
         }
     }
 }
