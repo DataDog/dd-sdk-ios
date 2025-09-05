@@ -9110,6 +9110,16 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.premiumSampleRate as NSNumber?
     }
 
+    public var profilingSampleRate: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.profilingSampleRate = newValue?.doubleValue }
+        get { root.swiftModel.telemetry.configuration.profilingSampleRate as NSNumber? }
+    }
+
+    public var propagateTraceBaggage: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.propagateTraceBaggage = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.propagateTraceBaggage as NSNumber? }
+    }
+
     public var reactNativeVersion: String? {
         set { root.swiftModel.telemetry.configuration.reactNativeVersion = newValue }
         get { root.swiftModel.telemetry.configuration.reactNativeVersion }
@@ -9118,6 +9128,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
     public var reactVersion: String? {
         set { root.swiftModel.telemetry.configuration.reactVersion = newValue }
         get { root.swiftModel.telemetry.configuration.reactVersion }
+    }
+
+    public var remoteConfigurationId: String? {
+        set { root.swiftModel.telemetry.configuration.remoteConfigurationId = newValue }
+        get { root.swiftModel.telemetry.configuration.remoteConfigurationId }
     }
 
     public var replaySampleRate: NSNumber? {
@@ -9326,6 +9341,10 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.unityVersion }
     }
 
+    public var useAllowedGraphQlUrls: NSNumber? {
+        root.swiftModel.telemetry.configuration.useAllowedGraphQlUrls as NSNumber?
+    }
+
     public var useAllowedTracingOrigins: NSNumber? {
         root.swiftModel.telemetry.configuration.useAllowedTracingOrigins as NSNumber?
     }
@@ -9374,12 +9393,21 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.useProxy as NSNumber? }
     }
 
+    public var useRemoteConfigurationProxy: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.useRemoteConfigurationProxy = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.useRemoteConfigurationProxy as NSNumber? }
+    }
+
     public var useSecureSessionCookie: NSNumber? {
         root.swiftModel.telemetry.configuration.useSecureSessionCookie as NSNumber?
     }
 
     public var useTracing: NSNumber? {
         root.swiftModel.telemetry.configuration.useTracing as NSNumber?
+    }
+
+    public var useTrackGraphQlPayload: NSNumber? {
+        root.swiftModel.telemetry.configuration.useTrackGraphQlPayload as NSNumber?
     }
 
     public var useWorkerUrl: NSNumber? {
@@ -9695,4 +9723,4 @@ public class objc_TelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/364afe383024cfbdc0a57253c1961cf938b19cf0
+// Generated from https://github.com/DataDog/rum-events-format/tree/7dbaaa9c5dcc56ab9f31a90e847e909039ce24f5

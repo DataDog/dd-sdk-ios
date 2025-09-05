@@ -89,6 +89,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Tells if this scope has received the "start" command.
     /// If `didReceiveStartCommand == true` and another "start" command is received for this View this scope is marked as inactive.
     private var didReceiveStartCommand = false
+    /// Track accessibility info for the current view
+    private var accessibilityState: AccessibilityInfo? = nil
 
     /// Number of Actions happened on this View.
     private var actionsCount: UInt = 0
@@ -277,6 +279,9 @@ extension RUMViewScope {
                 // This is the case of duplicated "start" command. We know that the Session scope has created another instance of
                 // the `RUMViewScope` for tracking this View, so we mark this one as inactive.
                 isActiveView = false
+            } else {
+                // Reset to nil for a new view
+                accessibilityState = nil
             }
             attributes.merge(command.attributes) { $1 }
             didReceiveStartCommand = true
@@ -646,11 +651,21 @@ extension RUMViewScope {
             performance = nil
         }
 
-        var localAttributes = attributes
+        // Take one snapshot of the current accessibility state
+        let currentAccessibilityState = accessibilityReader?.state
 
-        if let accessibility = self.accessibilityReader?.state {
-            localAttributes["accessibility"] = accessibility
+        var accessibility: RUMViewEvent.View.Accessibility? = nil
+        if accessibilityState == nil {
+            // For first view update, send the entire state
+            accessibility = currentAccessibilityState?.rumViewAccessibility
+        } else if currentAccessibilityState != accessibilityState {
+            // For subsequent updates, send only the differences if states are different
+            let accessibilityDifferences = currentAccessibilityState?.differences(from: accessibilityState)
+            accessibility = accessibilityDifferences?.rumViewAccessibility
         }
+
+        // Update the stored state for next comparison
+        accessibilityState = currentAccessibilityState
 
         let viewEvent = RUMViewEvent(
             dd: .init(
@@ -680,7 +695,7 @@ extension RUMViewScope {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: localAttributes),
+            context: .init(contextInfo: attributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: context.normalizedDevice(),
             display: nil,
@@ -700,6 +715,7 @@ extension RUMViewScope {
             usr: .init(context: context),
             version: context.version,
             view: .init(
+                accessibility: accessibility,
                 action: .init(count: actionsCount.toInt64),
                 cpuTicksCount: cpuInfo?.greatestDiff,
                 cpuTicksPerSecond: timeSpent > 1.0 ? cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)) : nil,

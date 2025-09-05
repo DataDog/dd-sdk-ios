@@ -6,10 +6,11 @@
 
 import Foundation
 @testable import DatadogRUM
+@testable import DatadogInternal
 
-extension Accessibility: AnyMockable, RandomMockable {
+extension AccessibilityInfo: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
-        return Accessibility(
+        return AccessibilityInfo(
             textSize: .mockAny(),
             screenReaderEnabled: .mockAny(),
             boldTextEnabled: .mockAny(),
@@ -36,7 +37,7 @@ extension Accessibility: AnyMockable, RandomMockable {
     }
 
     public static func mockRandom() -> Self {
-        return Accessibility(
+        return AccessibilityInfo(
             textSize: ["extraSmall", "small", "medium", "large", "extraLarge", "extraExtraLarge", "extraExtraExtraLarge", "accessibilityMedium", "accessibilityLarge", "accessibilityExtraLarge", "accessibilityExtraExtraLarge", "accessibilityExtraExtraExtraLarge"].randomElement(),
             screenReaderEnabled: .random(),
             boldTextEnabled: .random(),
@@ -65,9 +66,9 @@ extension Accessibility: AnyMockable, RandomMockable {
 
 @available(iOS 13.0, tvOS 13.0, *)
 public final class AccessibilityReaderMock: AccessibilityReading, AnyMockable, RandomMockable {
-    public var state: Accessibility
+    public var state: AccessibilityInfo
 
-    public init(state: Accessibility = .mockAny()) {
+    public init(state: AccessibilityInfo = .mockAny()) {
         self.state = state
     }
 

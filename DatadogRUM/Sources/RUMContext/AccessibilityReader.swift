@@ -9,19 +9,20 @@ import Foundation
 import UIKit
 
 internal protocol AccessibilityReading {
-    var state: Accessibility { get }
+    /// The current accessibility state containing all accessibility settings
+    var state: AccessibilityInfo { get }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 internal final class AccessibilityReader: AccessibilityReading {
     @ReadWriteLock
-    private(set) var state: Accessibility
+    private(set) var state: AccessibilityInfo
 
     private let notificationCenter: NotificationCenter
     private var observers: [NSObjectProtocol] = []
 
     init(notificationCenter: NotificationCenter) {
-        self.state = Accessibility()
+        self.state = AccessibilityInfo()
         self.notificationCenter = notificationCenter
         startObserving()
         updateState()
@@ -226,8 +227,8 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.removeAll()
     }
 
-    @MainActor private var currentState: Accessibility {
-        var state = Accessibility()
+    @MainActor private var currentState: AccessibilityInfo {
+        var state = AccessibilityInfo()
 
         if let contentSize = UIApplication.dd.managedShared?.preferredContentSizeCategory.rawValue as String? {
             state.textSize = contentSize

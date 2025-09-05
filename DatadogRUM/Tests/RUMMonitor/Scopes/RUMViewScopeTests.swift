@@ -4152,7 +4152,7 @@ class RUMViewScopeTests: XCTestCase {
     @MainActor
     func testAccessibilityAttributesInViewEvents() throws {
         // Given
-        let mockAccessibilityState = Accessibility(
+        let mockAccessibilityState = AccessibilityInfo(
             textSize: "medium",
             screenReaderEnabled: false,
             boldTextEnabled: true,
@@ -4216,7 +4216,7 @@ class RUMViewScopeTests: XCTestCase {
         let initialEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
 
         let initialAccessibilityData = try XCTUnwrap(
-            initialEvent.context?.contextInfo["accessibility"] as? Accessibility
+            initialEvent.view.accessibility
         )
         let finalExpectation = XCTestExpectation(description: "Initial accessibility state set")
         DispatchQueue.main.async {
@@ -4260,6 +4260,6 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
-        XCTAssertNil(viewEvent.context?.contextInfo["accessibility"])
+        XCTAssertNil(viewEvent.view.accessibility)
     }
 }
