@@ -42,6 +42,7 @@ internal struct RUMScopeDependencies {
     let ciTest: RUMCITest?
     let syntheticsTest: RUMSyntheticsTest?
     let renderLoopObserver: RenderLoopObserver?
+    let firstFrameReader: RenderLoopReader
     let viewHitchesReaderFactory: () -> (RenderLoopReader & ViewHitchesModel)?
     let vitalsReaders: VitalsReaders?
     let accessibilityReader: AccessibilityReading?
@@ -81,6 +82,7 @@ internal struct RUMScopeDependencies {
         ciTest: RUMCITest?,
         syntheticsTest: RUMSyntheticsTest?,
         renderLoopObserver: RenderLoopObserver?,
+        firstFrameReader: RenderLoopReader,
         viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)?,
         vitalsReaders: VitalsReaders?,
         accessibilityReader: AccessibilityReading?,
@@ -107,6 +109,7 @@ internal struct RUMScopeDependencies {
         self.ciTest = ciTest
         self.syntheticsTest = syntheticsTest
         self.renderLoopObserver = renderLoopObserver
+        self.firstFrameReader = firstFrameReader
         self.viewHitchesReaderFactory = viewHitchesReaderFactory
         self.vitalsReaders = vitalsReaders
         self.accessibilityReader = accessibilityReader
