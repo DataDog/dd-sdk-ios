@@ -9,7 +9,7 @@ import APISurfaceCore
 import ArgumentParser
 
 class IntegrationTests: XCTestCase {
-    func testCreatingSurfaceForFixtureLibraries() throws {
+    func testCreatingSurface_ForFixtureLibraries() throws {
         // Given
         let temporaryFile = "/tmp/api-surface-test-output"
         let command = try GenerateCommand.parse([
@@ -66,7 +66,7 @@ class IntegrationTests: XCTestCase {
         )
     }
 
-    func testVerifySurfaceForFixtureLibraries() throws {
+    func testVerifySurface_ForFixtureLibraries() throws {
         // Write expected output to a temporary file
         let referenceFile = "/tmp/api-surface-test-reference"
         let expectedOutput = """
@@ -109,7 +109,7 @@ class IntegrationTests: XCTestCase {
         try verifyCommand.run()
     }
 
-    func testVerifySurfaceMismatch() throws {
+    func testVerifySurface_Mismatch() throws {
         // Write incorrect reference output to a temporary file
         let referenceFile = "/tmp/api-surface-test-reference"
         let incorrectOutput = """
@@ -151,6 +151,49 @@ class IntegrationTests: XCTestCase {
                 XCTFail("Unexpected error type: \(error)")
             }
         }
+    }
+
+    func testCreatingSurface_WithObjCLanguage() throws {
+        // Given
+        let temporaryFile = "/tmp/api-surface-test-objc-output"
+        let command = try GenerateCommand.parse([
+            "--library-name", "Fixture1",
+            "--path", fixturesPackageFolder().path,
+            "--language", "objc",
+            "--output-file", temporaryFile
+        ])
+
+        // When
+        try command.run()
+
+        // Then
+        let output = try String(contentsOfFile: temporaryFile)
+        XCTAssertEqual(
+            output,
+            """
+            # ----------------------------------
+            # API surface for Fixture1:
+            # ----------------------------------
+
+            public class objc_Car: NSObject
+                @objc public enum Manufacturer: Int
+                    case manufacturer1
+                    case manufacturer2
+                    case manufacturer3
+                public init(manufacturer: Manufacturer)
+                public func startEngine() -> Bool
+                public func stopEngine() -> Bool
+                public var price: Int
+            public protocol objc_CarDelegate: AnyObject
+                func carDidStart(_ car: objc_Car)
+                func carDidStop(_ car: objc_Car)
+            public class objc_CarConfiguration: NSObject
+                public var maxPrice: Int
+                public init(maxPrice: Int)
+                public func setDelegate(_ delegate: objc_CarDelegate?)
+
+            """
+        )
     }
 }
 
