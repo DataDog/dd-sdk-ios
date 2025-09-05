@@ -132,6 +132,7 @@ public struct Logger
     public static func create(with configuration: Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default) -> LoggerProtocol
 public protocol InternalLoggerProtocol
     func log(level: LogLevel,message: String,errorKind: String?,errorMessage: String?,stackTrace: String?,attributes: [String: Encodable]?)
+    func critical(message: String,error: Error?,attributes: [String: Encodable]?,completionHandler: @escaping CompletionHandler)
 [?] extension LoggerProtocol
     public var _internal: InternalLoggerProtocol
 public enum LogLevel: Int, Codable

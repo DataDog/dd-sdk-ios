@@ -127,6 +127,8 @@ public final class objc_Logger: NSObject
     public func add(tag: String)
     public func remove(tag: String)
     public static func create(with configuration: objc_LoggerConfiguration = .init()) -> objc_Logger
+[?] extension objc_Logger
+    public func _internal_sync_critical(message: String,error: Error?,attributes: [String: Any])
 public class objc_LogEvent: NSObject
     public var date: Date
     public var status: objc_LogEventStatus
@@ -187,6 +189,7 @@ public class objc_LogEventOperatingSystem: NSObject
     public var name: String
     public var version: String
     public var build: String?
+    public var versionMajor: String
 public class objc_LogEventDd: NSObject
     public var device: objc_LogEventDevice
 public class objc_LogEventDevice: NSObject

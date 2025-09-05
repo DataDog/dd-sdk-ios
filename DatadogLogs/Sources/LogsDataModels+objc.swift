@@ -329,6 +329,10 @@ public class objc_LogEventOperatingSystem: NSObject {
     public var build: String? {
         root.swiftModel.os.build
     }
+
+    public var versionMajor: String {
+        root.swiftModel.os.versionMajor
+    }
 }
 
 @objc(DDLogEventDd)
