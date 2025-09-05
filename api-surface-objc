@@ -2345,6 +2345,8 @@ public class objc_RUMMonitor: NSObject
     public func removeAttributes(forKeys keys: [String])
     public func addFeatureFlagEvaluation(name: String, value: Any)
     public var debug: Bool
+[?] extension objc_RUMMonitor
+    public func _internal_sync_addError(_ error: Error,source: objc_RUMErrorSource,attributes: [String: Any])
 
 
 # ----------------------------------
@@ -2381,10 +2383,6 @@ public final class objc_SessionReplayConfiguration: NSObject
     @objc public var featureFlags: [String: Bool]
     public required init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel,featureFlags: [String: Bool]?)
     public convenience init(replaySampleRate: Float,textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel,imagePrivacyLevel: objc_ImagePrivacyLevel,touchPrivacyLevel: objc_TouchPrivacyLevel)
-public enum objc_SessionReplayConfigurationPrivacyLevel: Int
-    case allow
-    case mask
-    case maskUserInput
 public enum objc_TextAndInputPrivacyLevel: Int
     case maskSensitiveInputs
     case maskAllInputs

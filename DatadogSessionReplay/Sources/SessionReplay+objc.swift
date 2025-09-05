@@ -161,36 +161,6 @@ public final class objc_SessionReplayConfiguration: NSObject {
     }
 }
 
-/// Available privacy levels for content masking.
-@objc(DDSessionReplayConfigurationPrivacyLevel)
-@_spi(objc)
-public enum objc_SessionReplayConfigurationPrivacyLevel: Int {
-    /// Record all content.
-    case allow
-
-    /// Mask all content.
-    case mask
-
-    /// Mask input elements, but record all other content.
-    case maskUserInput
-
-    internal var _swift: SessionReplayPrivacyLevel {
-        switch self {
-        case .allow: return .allow
-        case .mask: return .mask
-        case .maskUserInput: return .maskUserInput
-        }
-    }
-
-    internal init(_ swift: SessionReplayPrivacyLevel) {
-        switch swift {
-        case .allow: self = .allow
-        case .mask: self = .mask
-        case .maskUserInput: self = .maskUserInput
-        }
-    }
-}
-
 /// Available privacy levels for text and input masking.
 @objc(DDTextAndInputPrivacyLevel)
 @_spi(objc)
