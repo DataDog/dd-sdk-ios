@@ -94,44 +94,13 @@ internal extension RUMViewEvent {
         case view
     }
 
-    /// Checks if the accessibility object has any meaningful data
-    private func hasValidAccessibilityData() -> Bool {
-        guard let accessibility = view.accessibility else {
-            return false
-        }
-
-        // Check if any accessibility property has a non-nil value
-        return accessibility.assistiveSwitchEnabled != nil ||
-               accessibility.assistiveTouchEnabled != nil ||
-               accessibility.boldTextEnabled != nil ||
-               accessibility.buttonShapesEnabled != nil ||
-               accessibility.closedCaptioningEnabled != nil ||
-               accessibility.grayscaleEnabled != nil ||
-               accessibility.increaseContrastEnabled != nil ||
-               accessibility.invertColorsEnabled != nil ||
-               accessibility.monoAudioEnabled != nil ||
-               accessibility.onOffSwitchLabelsEnabled != nil ||
-               accessibility.reduceMotionEnabled != nil ||
-               accessibility.reduceTransparencyEnabled != nil ||
-               accessibility.reducedAnimationsEnabled != nil ||
-               accessibility.rtlEnabled != nil ||
-               accessibility.screenReaderEnabled != nil ||
-               accessibility.shakeToUndoEnabled != nil ||
-               accessibility.shouldDifferentiateWithoutColor != nil ||
-               accessibility.singleAppModeEnabled != nil ||
-               accessibility.speakScreenEnabled != nil ||
-               accessibility.speakSelectionEnabled != nil ||
-               accessibility.textSize != nil ||
-               accessibility.videoAutoplayEnabled != nil
-    }
-
     /// Creates `Metadata` from the given `RUMViewEvent`.
     /// - Returns: The `Metadata` for the given `RUMViewEvent`.
     func metadata(viewIndexInSession: Int) -> Metadata {
         return Metadata(
             id: view.id,
             documentVersion: dd.documentVersion,
-            hasAccessibility: hasValidAccessibilityData(),
+            hasAccessibility: view.accessibility != nil,
             duration: view.timeSpent,
             indexInSession: viewIndexInSession
         )

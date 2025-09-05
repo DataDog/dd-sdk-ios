@@ -89,8 +89,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Tells if this scope has received the "start" command.
     /// If `didReceiveStartCommand == true` and another "start" command is received for this View this scope is marked as inactive.
     private var didReceiveStartCommand = false
-    /// Track if this is the first view update for the current view
-    private var isFirstViewUpdate = true
     /// Track accessibility info for the current view
     private var accessibilityState: AccessibilityInfo? = nil
 
@@ -282,8 +280,8 @@ extension RUMViewScope {
                 // the `RUMViewScope` for tracking this View, so we mark this one as inactive.
                 isActiveView = false
             } else {
-                // Reset first view update flag for new view
-                isFirstViewUpdate = true
+                // Reset to nil for a new view
+                accessibilityState = nil
             }
             attributes.merge(command.attributes) { $1 }
             didReceiveStartCommand = true
@@ -657,13 +655,13 @@ extension RUMViewScope {
         let currentAccessibilityState = accessibilityReader?.state
 
         var accessibility: RUMViewEvent.View.Accessibility? = nil
-        if isFirstViewUpdate {
+        if accessibilityState == nil {
             // For first view update, send the entire state
-            accessibility = currentAccessibilityState?.toRUMViewAccessibility()
-        } else {
-            // For subsequent updates, send only the differences
-            let accessibilityDifferences = currentAccessibilityState?.differences(from: accessibilityState) ?? .empty
-            accessibility = accessibilityDifferences.toRUMViewAccessibility()
+            accessibility = currentAccessibilityState?.rumViewAccessibility
+        } else if currentAccessibilityState != accessibilityState {
+            // For subsequent updates, send only the differences if states are different
+            let accessibilityDifferences = currentAccessibilityState?.differences(from: accessibilityState)
+            accessibility = accessibilityDifferences?.rumViewAccessibility
         }
 
         // Update the stored state for next comparison
@@ -803,9 +801,6 @@ extension RUMViewScope {
             // if a watchdog termination occurs in this session, in the next session
             // a watchdog termination event will be sent using saved view event.
             dependencies.watchdogTermination?.update(viewEvent: event)
-
-            // Mark that we've sent the first view update
-            isFirstViewUpdate = false
         } else { // if event was dropped by mapper
             version -= 1
             completionHandler()

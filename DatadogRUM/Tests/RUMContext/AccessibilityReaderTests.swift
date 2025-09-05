@@ -115,7 +115,7 @@ final class AccessibilityReaderTests: XCTestCase {
         let mockReader = AccessibilityReaderMock(state: nonEmptyState)
 
         // When
-        let accessibility = mockReader.state.toRUMViewAccessibility()
+        let accessibility = mockReader.state.rumViewAccessibility
 
         // Then - Should return RUM accessibility object
         XCTAssertNotNil(accessibility)
@@ -129,7 +129,7 @@ final class AccessibilityReaderTests: XCTestCase {
         let mockReader = AccessibilityReaderMock(state: AccessibilityInfo())
 
         // When
-        let accessibility = mockReader.state.toRUMViewAccessibility()
+        let accessibility = mockReader.state.rumViewAccessibility
 
         // Then - Should return nil when no valid data
         XCTAssertNil(accessibility)
@@ -157,7 +157,7 @@ final class AccessibilityReaderTests: XCTestCase {
         let differences = newState.differences(from: initialState)
 
         // Then - Should only include changed values
-        let rumDifferences = differences.toRUMViewAccessibility()
+        let rumDifferences = differences.rumViewAccessibility
         XCTAssertNotNil(rumDifferences)
         XCTAssertEqual(rumDifferences?.boldTextEnabled, true)
         XCTAssertEqual(rumDifferences?.reduceTransparencyEnabled, true)
@@ -178,7 +178,7 @@ final class AccessibilityReaderTests: XCTestCase {
         let differences = currentState.differences(from: nil)
 
         // Then - Should return the entire current state
-        let rumDifferences = differences.toRUMViewAccessibility()
+        let rumDifferences = differences.rumViewAccessibility
         XCTAssertNotNil(rumDifferences)
         XCTAssertEqual(rumDifferences?.textSize, "large")
         XCTAssertEqual(rumDifferences?.screenReaderEnabled, true)
@@ -202,7 +202,7 @@ final class AccessibilityReaderTests: XCTestCase {
         let differences = state2.differences(from: state1)
 
         // Then - Should return empty (no differences)
-        let rumDifferences = differences.toRUMViewAccessibility()
+        let rumDifferences = differences.rumViewAccessibility
         XCTAssertNil(rumDifferences)
     }
 }
