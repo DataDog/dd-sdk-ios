@@ -7,6 +7,32 @@
 #include "dd_pprof.h"
 #include "profile.h"
 #include "profile_pprof_packer.h"
+#include <chrono>
+#include <mach/mach_time.h>
+
+namespace {
+
+/**
+ * Convert mach_absolute_time to epoch seconds using current time as reference
+ */
+double mach_to_epoch(uint64_t mach_timestamp) {
+    if (mach_timestamp == 0) return 0.0;
+    
+    // Get current time in both formats
+    uint64_t current_mach = mach_absolute_time();
+    auto now = std::chrono::system_clock::now();
+    double current_epoch = std::chrono::duration<double>(now.time_since_epoch()).count();
+    
+    // Get timebase info for conversion
+    mach_timebase_info_data_t timebase;
+    if (mach_timebase_info(&timebase) != KERN_SUCCESS) return 0.0;
+    
+    // Calculate time difference and convert to epoch time
+    int64_t offset = (int64_t)(mach_timestamp - current_mach) * timebase.numer / timebase.denom;
+    return current_epoch + static_cast<double>(offset) / 1e9; // to seconds
+}
+
+} // anonymous namespace
 
 // C interface implementation
 extern "C" {

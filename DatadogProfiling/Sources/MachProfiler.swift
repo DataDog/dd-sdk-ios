@@ -64,7 +64,6 @@ internal final class MachProfiler: Profiler {
 
         var data: UnsafeMutablePointer<UInt8>?
         let size = dd_pprof_serialize(profile, &data)
-
         dd_pprof_destroy(profile)
         profile = nil
 
