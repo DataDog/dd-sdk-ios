@@ -124,6 +124,13 @@ Lint:
     - make clean repo-setup ENV=ci
     - make lint license-check
     - make rum-models-verify sr-models-verify
+
+API Surface Verify:
+  stage: lint
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $MAIN_BRANCH'
+  script:
+    - make clean repo-setup ENV=ci
     - make api-surface-verify
 
 Unit Tests (iOS):
