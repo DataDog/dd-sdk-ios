@@ -11,7 +11,10 @@ import ArgumentParser
 class IntegrationTests: XCTestCase {
     func testCreatingSurface_ForFixtureLibraries() throws {
         // Given
-        let temporaryFile = "/tmp/api-surface-test-output"
+        let tempDirectory = try createTemporaryDirectory()
+        defer { cleanupTemporaryDirectory(tempDirectory) }
+
+        let temporaryFile = tempDirectory.appendingPathComponent("api-surface-test-output").path
         let command = try GenerateCommand.parse([
             "--library-name", "Fixture1",
             "--library-name", "Fixture2",
@@ -67,8 +70,12 @@ class IntegrationTests: XCTestCase {
     }
 
     func testVerifySurface_ForFixtureLibraries() throws {
+        // Given
+        let tempDirectory = try createTemporaryDirectory()
+        defer { cleanupTemporaryDirectory(tempDirectory) }
+
         // Write expected output to a temporary file
-        let referenceFile = "/tmp/api-surface-test-reference"
+        let referenceFile = tempDirectory.appendingPathComponent("api-surface-test-reference").path
         let expectedOutput = """
         # ----------------------------------
         # API surface for Fixture1:
@@ -89,7 +96,7 @@ class IntegrationTests: XCTestCase {
         try expectedOutput.write(toFile: referenceFile, atomically: true, encoding: .utf8)
 
         // Generate API surface to temporary file
-        let generatedFile = "/tmp/api-surface-test-generated"
+        let generatedFile = tempDirectory.appendingPathComponent("api-surface-test-generated").path
         let generateCommand = try GenerateCommand.parse([
             "--library-name", "Fixture1",
             "--path", fixturesPackageFolder().path,
@@ -110,8 +117,12 @@ class IntegrationTests: XCTestCase {
     }
 
     func testVerifySurface_Mismatch() throws {
+        // Given
+        let tempDirectory = try createTemporaryDirectory()
+        defer { cleanupTemporaryDirectory(tempDirectory) }
+
         // Write incorrect reference output to a temporary file
-        let referenceFile = "/tmp/api-surface-test-reference"
+        let referenceFile = tempDirectory.appendingPathComponent("api-surface-test-reference").path
         let incorrectOutput = """
         # ----------------------------------
         # API surface for Fixture1:
@@ -123,7 +134,7 @@ class IntegrationTests: XCTestCase {
         try incorrectOutput.write(toFile: referenceFile, atomically: true, encoding: .utf8)
 
         // Generate API surface to temporary file
-        let generatedFile = "/tmp/api-surface-test-generated"
+        let generatedFile = tempDirectory.appendingPathComponent("api-surface-test-generated").path
         let generateCommand = try GenerateCommand.parse([
             "--library-name", "Fixture1",
             "--path", fixturesPackageFolder().path,
@@ -155,7 +166,10 @@ class IntegrationTests: XCTestCase {
 
     func testCreatingSurface_WithObjCLanguage() throws {
         // Given
-        let temporaryFile = "/tmp/api-surface-test-objc-output"
+        let tempDirectory = try createTemporaryDirectory()
+        defer { cleanupTemporaryDirectory(tempDirectory) }
+
+        let temporaryFile = tempDirectory.appendingPathComponent("api-surface-test-objc-output").path
         let command = try GenerateCommand.parse([
             "--library-name", "Fixture1",
             "--path", fixturesPackageFolder().path,
@@ -176,7 +190,7 @@ class IntegrationTests: XCTestCase {
             # ----------------------------------
 
             public class objc_Car: NSObject
-                @objc public enum Manufacturer: Int
+                public enum Manufacturer: Int
                     case manufacturer1
                     case manufacturer2
                     case manufacturer3
@@ -195,19 +209,34 @@ class IntegrationTests: XCTestCase {
             """
         )
     }
-}
 
-/// Resolves the url to `Fixtures` folder.
-private func fixturesPackageFolder() -> URL {
-    var currentFolder = URL(fileURLWithPath: #file).deletingLastPathComponent()
-    while currentFolder.pathComponents.count > 0 {
-        let packageFileName = currentFolder.appendingPathComponent("Package.swift")
-        if FileManager.default.fileExists(atPath: packageFileName.path) {
-            return currentFolder.appendingPathComponent("Fixtures")
-        } else {
-            currentFolder.deleteLastPathComponent()
-        }
+    // MARK: Helpers
+
+    /// Creates a unique temporary directory
+    private func createTemporaryDirectory() throws -> URL {
+        let tempDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("com.datadoghq.api-surface-" + UUID().uuidString)
+        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true, attributes: nil)
+        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true, attributes: nil)
+        return tempDirectory
     }
 
-    fatalError("Cannot resolve the URL to folder containing `Package.swift`.")
+    /// Cleans up a temporary directory and its contents
+    private func cleanupTemporaryDirectory(_ directory: URL) {
+        try? FileManager.default.removeItem(at: directory)
+    }
+
+    /// Resolves the url to `Fixtures` folder.
+    private func fixturesPackageFolder() -> URL {
+        var currentFolder = URL(fileURLWithPath: #file).deletingLastPathComponent()
+        while currentFolder.pathComponents.count > 0 {
+            let packageFileName = currentFolder.appendingPathComponent("Package.swift")
+            if FileManager.default.fileExists(atPath: packageFileName.path) {
+                return currentFolder.appendingPathComponent("Fixtures")
+            } else {
+                currentFolder.deleteLastPathComponent()
+            }
+        }
+
+        fatalError("Cannot resolve the URL to folder containing `Package.swift`.")
+    }
 }
