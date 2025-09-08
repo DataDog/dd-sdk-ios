@@ -17,18 +17,12 @@ internal import DatadogMachProfiler
 
 internal final class MachProfiler: Profiler {
     internal let samplingIntervalNs: UInt64
-    internal let dateProvider: DateProvider
 
     private var profiler: OpaquePointer?
     private var profile: OpaquePointer?
-    private var startTime: Date?
 
-    init(
-        samplingFrequencyHz: Double = 101,
-        dateProvider: DateProvider = SystemDateProvider()
-    ) {
+    init(samplingFrequencyHz: Double = 101) {
         self.samplingIntervalNs = UInt64(1_000_000_000 / samplingFrequencyHz) // Convert Hz to nanoseconds
-        self.dateProvider = dateProvider
     }
 
     deinit {
@@ -54,19 +48,17 @@ internal final class MachProfiler: Profiler {
 
         profiler = profiler_create(&config, dd_pprof_callback, UnsafeMutableRawPointer(profile))
 
-        startTime = dateProvider.now
         profiler_start(profiler)
     }
 
     func stop() throws -> Profile? {
-        guard let start = startTime else {
+        guard profile != nil else {
             return nil
         }
 
-        defer { startTime = nil }
-
         profiler_stop(profiler)
-        let end = dateProvider.now
+        let start = dd_pprof_get_start_timestamp_s(profile)
+        let end = dd_pprof_get_end_timestamp_s(profile)
         profiler_destroy(profiler)
         profiler = nil
 
@@ -84,8 +76,8 @@ internal final class MachProfiler: Profiler {
         dd_pprof_free_serialized_data(data)
 
         return Profile(
-            start: start,
-            end: end,
+            start: Date(timeIntervalSince1970: start),
+            end: Date(timeIntervalSince1970: end),
             pprof: pprof
         )
     }

@@ -81,6 +81,22 @@ void dd_pprof_free_serialized_data(uint8_t* data);
  */
 void dd_pprof_callback(const stack_trace_t* traces, size_t count, void* ctx);
 
+/**
+ * Get profile start timestamp in seconds since Unix epoch
+ *
+ * @param profile Pointer to the profile
+ * @return Start timestamp in seconds since Unix epoch, or 0.0 if no samples
+ */
+double dd_pprof_get_start_timestamp_s(dd_pprof_t* profile);
+
+/**
+ * Get profile end timestamp in seconds since Unix epoch
+ *
+ * @param profile Pointer to the profile
+ * @return End timestamp in seconds since Unix epoch, or 0.0 if no samples
+ */
+double dd_pprof_get_end_timestamp_s(dd_pprof_t* profile);
+
 #ifdef __cplusplus
 }
 #endif

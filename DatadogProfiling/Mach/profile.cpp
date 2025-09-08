@@ -81,7 +81,9 @@ std::string uuid_string(const uuid_t uuid) {
  * @param sampling_interval_ns Sampling interval in nanoseconds
  */
 profile::profile(uint64_t sampling_interval_ns) 
-    : _sampling_interval_ns(sampling_interval_ns) {
+    : _sampling_interval_ns(sampling_interval_ns)
+    , _start_timestamp(0)
+    , _end_timestamp(0) {
     
     // Ensure empty string is always at index 0
     _strings.push_back("");
@@ -106,7 +108,7 @@ profile::profile(uint64_t sampling_interval_ns)
  */
 int64_t profile::mach_time_to_epoch_ns(uint64_t mach_time) const {
     uint64_t mach_time_ns = mach_time * _timeref.timebase_info.numer / _timeref.timebase_info.denom;
-    return (int64_t)mach_time_ns + _timeref.epoch_offset;
+    return static_cast<int64_t>(mach_time_ns) + _timeref.epoch_offset;
 }
 
 /**
@@ -167,6 +169,15 @@ void profile::add_samples(const stack_trace_t* traces, size_t count) {
         sample.values = {static_cast<int64_t>(trace.sampling_interval_nanos)};
         
         _samples.push_back(std::move(sample));
+
+        // Update start/end timestamps
+        if (_start_timestamp == 0 || trace.timestamp < _start_timestamp) {
+            _start_timestamp = trace.timestamp;
+        }
+
+        if (_end_timestamp < trace.timestamp) {
+            _end_timestamp = trace.timestamp;
+        }
     }
 }
 
