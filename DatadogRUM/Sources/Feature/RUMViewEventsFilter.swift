@@ -76,6 +76,11 @@ internal struct RUMViewEventsFilter {
 
         let viewMetadata = try decoder.decode(RUMViewEvent.Metadata.self, from: metadata)
 
+        if viewMetadata.hasAccessibility == true {
+            // If this event has accessibility information, always keep it
+            return .keep
+        }
+
         if viewMetadata.duration == oneNanosecondDuration, viewMetadata.indexInSession == 0 {
             // Filter out initial 1ns views.
             return .skipInitialOneNs
