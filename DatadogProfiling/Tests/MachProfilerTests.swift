@@ -30,19 +30,15 @@ final class MachProfilerTests: XCTestCase {
 
     func testStart_beforeStop_ignoresSubsequentStarts() throws {
         // Given
-        let startDate: Date = .mockRandom()
-        let dateProvider = RelativeDateProvider(
-            startingFrom: startDate,
-            advancingBySeconds: 0.01
-        )
-        let profiler = MachProfiler(
-            samplingFrequencyHz: 100,
-            dateProvider: dateProvider
-        )
+        let profiler = MachProfiler(samplingFrequencyHz: 100)
+        var secondStart: Date? = nil
 
         let mockThread = MockThread {
             profiler.start(currentThreadOnly: true)
-            profiler.start(currentThreadOnly: false) // Should be ignored
+            Thread.sleep(forTimeInterval: 0.01)
+            secondStart = Date()
+            profiler.start(currentThreadOnly: true) // Should be ignored
+            Thread.sleep(forTimeInterval: 0.01)
         }
 
         // When
@@ -52,8 +48,8 @@ final class MachProfilerTests: XCTestCase {
         // Then
         let profile = try XCTUnwrap(profiler.stop())
         XCTAssertNotNil(profile)
-        XCTAssertEqual(profile.start, startDate)
-        XCTAssertGreaterThan(profile.end, startDate)
+        XCTAssertGreaterThan(secondStart ?? .distantPast, profile.start)
+        XCTAssertGreaterThan(profile.end, profile.start)
     }
 
     func testStop_withoutStart_returnsNil() throws {
@@ -69,18 +65,11 @@ final class MachProfilerTests: XCTestCase {
 
     func testStop_afterStart_returnsValidProfile() throws {
         // Given
-        let startDate: Date = .mockRandom()
-        let dateProvider = RelativeDateProvider(
-            startingFrom: startDate,
-            advancingBySeconds: 0.02
-        )
-        let profiler = MachProfiler(
-            samplingFrequencyHz: 100,
-            dateProvider: dateProvider
-        )
+        let profiler = MachProfiler(samplingFrequencyHz: 100)
 
         let mockThread = MockThread {
             profiler.start(currentThreadOnly: true)
+            Thread.sleep(forTimeInterval: 0.01)
         }
 
         mockThread.start()
@@ -90,8 +79,7 @@ final class MachProfilerTests: XCTestCase {
         let profile = try XCTUnwrap(profiler.stop())
 
         // Then
-        XCTAssertEqual(profile.start, startDate)
-        XCTAssertEqual(profile.end, startDate.addingTimeInterval(0.02))
+        XCTAssertGreaterThan(profile.end, profile.start)
         XCTAssertGreaterThan(profile.pprof.count, 0)
     }
 

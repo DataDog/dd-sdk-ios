@@ -48,4 +48,16 @@ void dd_pprof_callback(const stack_trace_t* traces, size_t count, void* ctx) {
     }
 }
 
+double dd_pprof_get_start_timestamp_s(dd_pprof_t* profile) {
+    if (!profile) return 0.0;
+    int64_t timestamp = reinterpret_cast<dd::profiler::profile*>(profile)->start_timestamp();
+    return static_cast<double>(timestamp) / 1e9; // to seconds
+}
+
+double dd_pprof_get_end_timestamp_s(dd_pprof_t* profile) {
+    if (!profile) return 0.0;
+    int64_t timestamp = reinterpret_cast<dd::profiler::profile*>(profile)->end_timestamp();
+    return static_cast<double>(timestamp) / 1e9; // to seconds
+}
+
 } // extern "C"

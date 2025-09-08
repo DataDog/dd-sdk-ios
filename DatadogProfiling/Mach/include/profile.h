@@ -191,6 +191,12 @@ public:
     /** @brief Get cached string ID for "tid" */
     uint32_t tid_str_id() const { return _tid_str_id; }
 
+    /** @brief Get profile start timestamp (mach_absolute_time) */
+    int64_t start_timestamp() const { return mach_time_to_epoch_ns(_start_timestamp); };
+
+    /** @brief Get profile end timestamp (mach_absolute_time) */
+    int64_t end_timestamp() const { return mach_time_to_epoch_ns(_end_timestamp); };
+
 private:
     /** @brief Deduplicated string table (index 0 is always empty string) */
     std::vector<std::string> _strings;
@@ -224,6 +230,12 @@ private:
     
     /** @brief Time reference data for mach_absolute_time to epoch conversion */
     mach_timeref_t _timeref;
+
+    /** @brief Profile start timestamp (mach_absolute_time, 0 if no samples) */
+    uint64_t _start_timestamp;
+    
+    /** @brief Profile end timestamp (mach_absolute_time, 0 if no samples) */
+    uint64_t _end_timestamp;
     
     /** @brief Hash table for string deduplication: string -> string_id */
     std::unordered_map<std::string, uint32_t> _string_lookup;
