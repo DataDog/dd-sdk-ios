@@ -28,15 +28,9 @@
 #include <unordered_map>
 #include <vector>
 #include <cstdint>
+#include <mach/mach_time.h>
 
 namespace dd::profiler {
-
-/**
- * @brief Convert binary UUID to formatted string representation
- * @param uuid 16-byte UUID array
- * @return Formatted UUID string in standard hyphenated format
- */
-std::string uuid_string(const uuid_t uuid);
 
 /**
  * @brief Represents a deduplicated binary mapping in the profile
@@ -101,8 +95,28 @@ struct sample_t {
     std::vector<uint32_t> location_ids;
     std::vector<label_t> labels;
     std::vector<int64_t> values;
-    uint64_t timestamp;
 };
+
+/**
+ * @brief Reference data for converting mach_absolute_time to epoch time
+ */
+struct mach_timeref_t {
+    mach_timebase_info_data_t timebase_info;
+    int64_t epoch_offset;
+};
+
+/**
+ * @brief Initialize mach time reference data
+ * @param timeref Time reference structure to initialize
+ */
+void mach_timeref_init(mach_timeref_t* timeref);
+
+/**
+ * @brief Convert binary UUID to formatted string representation
+ * @param uuid 16-byte UUID array
+ * @return Formatted UUID string in standard hyphenated format
+ */
+std::string uuid_string(const uuid_t uuid);
 
 /**
  * @brief Efficient profiling data aggregator with automatic deduplication
@@ -208,8 +222,14 @@ private:
     /** @brief Cached string ID for "tid" */
     uint32_t _tid_str_id;
     
+    /** @brief Time reference data for mach_absolute_time to epoch conversion */
+    mach_timeref_t _timeref;
+    
     /** @brief Hash table for string deduplication: string -> string_id */
     std::unordered_map<std::string, uint32_t> _string_lookup;
+    
+    /** @brief Convert mach_absolute_time to epoch time in nanoseconds */
+    int64_t mach_time_to_epoch_ns(uint64_t mach_time) const;
     
     /** @brief Hash table for mapping deduplication: memory_start -> mapping_id */
     std::unordered_map<uint64_t, uint32_t> _mapping_lookup;
