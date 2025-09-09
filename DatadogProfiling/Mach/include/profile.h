@@ -176,20 +176,11 @@ public:
     /** @brief Get profile sampling interval in nanoseconds */
     uint64_t sampling_interval_ns() const { return _sampling_interval_ns; }
     
-    /** @brief Get cached string ID for empty string */
-    uint32_t empty_str_id() const { return _empty_str_id; }
-    
     /** @brief Get cached string ID for "wall-time" */
     uint32_t wall_time_str_id() const { return _wall_time_str_id; }
     
     /** @brief Get cached string ID for "nanoseconds" */
     uint32_t nanoseconds_str_id() const { return _nanoseconds_str_id; }
-    
-    /** @brief Get cached string ID for "end_timestamp_ns" */
-    uint32_t end_timestamp_ns_str_id() const { return _end_timestamp_ns_str_id; }
-    
-    /** @brief Get cached string ID for "tid" */
-    uint32_t tid_str_id() const { return _tid_str_id; }
 
     /** @brief Get profile start timestamp (mach_absolute_time) */
     int64_t start_timestamp() const { return mach_time_to_epoch_ns(_start_timestamp); };
@@ -226,8 +217,11 @@ private:
     uint32_t _end_timestamp_ns_str_id;
     
     /** @brief Cached string ID for "tid" */
-    uint32_t _tid_str_id;
+    uint32_t _thread_id_str_id;
     
+    /** @brief Cached string ID for "thread name" */
+    uint32_t _thread_name_str_id;
+
     /** @brief Time reference data for mach_absolute_time to epoch conversion */
     mach_timeref_t _timeref;
 

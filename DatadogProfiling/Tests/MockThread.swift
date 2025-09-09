@@ -51,7 +51,7 @@ final class MockThread: Thread {
 
 /// Helper class to manage multiple profiled threads for testing
 final class MockThreadGroup {
-    private var threads: [MockThread] = []
+    private(set) var threads: [MockThread] = []
 
     /// Add a thread to the group
     /// - Parameter thread: The thread to add

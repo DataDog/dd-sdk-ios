@@ -287,6 +287,7 @@ final class MachSamplingProfilerTests: XCTestCase {
 
         struct CallbackContext {
             var tids: Set<mach_port_t> = []
+            var names: Set<String> = []
             var count: Int = 0
         }
 
@@ -299,7 +300,10 @@ final class MachSamplingProfilerTests: XCTestCase {
 
             CCallbackContext<CallbackContext>.withContextPointer(ctx) { context in
                 context.count += count
-                (0..<count).forEach { context.tids.insert(traces[$0].tid) }
+                (0..<count).forEach {
+                    context.tids.insert(traces[$0].tid)
+                    context.names.insert(String(cString: traces[$0].thread_name))
+                }
             }
         }
 

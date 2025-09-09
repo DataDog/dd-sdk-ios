@@ -98,11 +98,11 @@ final class ProfileCxxTests: XCTestCase {
         let addresses: [UInt64] = [0x100001000, 0x100002000, 0x100003000]
 
         // When
-        // - Add same stack from different threads
+        // - Add same stack from different threads with different names
         let thread1Trace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
-        thread1Trace.pointee = .mockWith(tid: 1, addresses: addresses)
+        thread1Trace.pointee = .mockWith(tid: 1, addresses: addresses, threadName: "Thread1")
         let thread2Trace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
-        thread2Trace.pointee = .mockWith(tid: 2, addresses: addresses)
+        thread2Trace.pointee = .mockWith(tid: 2, addresses: addresses, threadName: "Thread2")
         defer {
             dd_free(thread1Trace)
             dd_free(thread2Trace)
@@ -123,13 +123,35 @@ final class ProfileCxxTests: XCTestCase {
         // - Validate the profile separates samples by thread
         XCTAssertEqual(unpackedProfile.pointee.n_sample, 2, "Different threads should create separate samples")
 
-        // - Verify both samples have correct values and structure
-        for i in 0..<2 {
+        var receivedTIDs: Set<Int64> = []
+        var receivedThreadNames: Set<String> = []
+
+        for i in 0..<unpackedProfile.pointee.n_sample {
             let sample = try XCTUnwrap(unpackedProfile.pointee.sample[i])
             XCTAssertEqual(sample.pointee.n_value, 1, "Sample should have one value")
             XCTAssertEqual(sample.pointee.value[0], 10_000_000, "Each sample should have 10ms interval")
             XCTAssertEqual(sample.pointee.n_location_id, 3, "Sample should reference 3 locations")
+
+            XCTAssertEqual(sample.pointee.n_label, 3, "Each sample should have 3 labels")
+
+            for j in 0..<sample.pointee.n_label {
+                guard let label = sample.pointee.label?[j] else { continue }
+
+                let keyString = try XCTUnwrap(unpackedProfile.pointee.string_table[Int(label.pointee.key)])
+                let keyName = String(cString: keyString)
+
+                if keyName == "thread id" {
+                    receivedTIDs.insert(label.pointee.num)
+                } else if keyName == "thread name" {
+                    let valueString = try XCTUnwrap(unpackedProfile.pointee.string_table[Int(label.pointee.str)])
+                    let name = String(cString: valueString)
+                    receivedThreadNames.insert(name)
+                }
+            }
         }
+
+        XCTAssertEqual(receivedTIDs, [1, 2])
+        XCTAssertEqual(receivedThreadNames, ["Thread1", "Thread2"])
     }
 
     func testProfileAggregation_withDifferentStacks_createsMultipleSamples() throws {
