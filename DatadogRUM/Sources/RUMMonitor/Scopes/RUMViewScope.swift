@@ -236,24 +236,41 @@ public class RUMViewScope: RUMScope, RUMContextProvider {
 extension RUMViewScope {
 
     private func sendTTIDEvent(context: DatadogContext, writer: Writer) {
-        let vital = RUMVitalEvent.Vital(
-            vitalDescription: "Time to initial display",
-            duration: Double(1),
-//            duration: Double(viewStartTime.timeIntervalSince(context.launchInfo.processLaunchDate).toInt64Nanoseconds),
-            failureReason: nil,
-            id:  dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-            name: "TTID",
-            operationKey: nil,
-            stepType: nil,
-            type: .duration
+
+        let durationVital = RUMVitalEvent.Vital.durationProperties(value: RUMVitalEvent.Vital.DurationProperties(
+            duration: 1.0,
+            id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat
+        ))
+
+        RUMVitalEvent.Vital.appLaunchProperties(
+            value: RUMVitalEvent.Vital.AppLaunchProperties(
+                appLaunchMetric: .ttid,
+                duration: 2.0,
+                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                isPrewarmed: true,
+                startupType: .coldStart
+            )
         )
+
+        let vital = RUMVitalEvent.Vital
+            .featureOperationProperties(value: RUMVitalEvent.Vital.FeatureOperationProperties(
+                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                operationKey: "operationSimao",
+                stepType: .start,
+            )
+        )
+
+//        let durationVital = RUMVitalEvent.Vital.durationProperties(
+//            value: .init(duration: 1.0))
+//
+//        let operationStepVital = RUMVitalEvent.Vital.featureOperationsProperties(
+//            value: .init())
 
         let vitalEvent = RUMVitalEvent(
             dd: .init(),
             application: .init(id: parent.context.rumApplicationID),
-            context: .init(contextInfo: [:]),
-            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-//            date: context.launchInfo.processLaunchDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            context: RUMEventAttributes(contextInfo: [:]),
+            date: context.launchInfo.processLaunchDate.timeIntervalSince1970.toInt64Milliseconds,
             session: .init(
                 hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
@@ -267,44 +284,79 @@ extension RUMViewScope {
             ),
             vital: vital
         )
-
         writer.write(value: vitalEvent)
+
+//        let vital = RUMVitalEvent.Vital(
+//            vitalDescription: "Time to initial display",
+//            duration: Double(1),
+////            duration: Double(viewStartTime.timeIntervalSince(context.launchInfo.processLaunchDate).toInt64Nanoseconds),
+//            failureReason: nil,
+//            id:  dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+//            name: "TTID",
+//            operationKey: nil,
+//            stepType: nil,
+//            type: .duration
+//        )
+//
+//        let vitalEvent = RUMVitalEvent(
+//            dd: .init(),
+//            application: .init(id: parent.context.rumApplicationID),
+//            context: .init(contextInfo: [:]),
+//            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+////            date: context.launchInfo.processLaunchDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+//            session: .init(
+//                hasReplay: context.hasReplay,
+//                id: self.context.sessionID.toRUMDataFormat,
+//                type: dependencies.sessionType
+//            ),
+//            view: .init(
+//                id: viewUUID.toRUMDataFormat,
+//                name: viewName,
+//                referrer: nil,
+//                url: viewPath
+//            ),
+//            vital: vital
+//        )
+//
+//        writer.write(value: vitalEvent)
     }
 
     private func sendTTFDEvent(time: Double, context: DatadogContext, writer: Writer) {
-        let vital = RUMVitalEvent.Vital(
-            vitalDescription: "Time to full display",
-            duration: Double(time.toInt64Nanoseconds),
-//            duration: Double((viewStartTime.timeIntervalSince(context.launchInfo.processLaunchDate) + time).toInt64Nanoseconds),
-            failureReason: nil,
-            id:  dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-            name: "TTFD",
-            operationKey: nil,
-            stepType: nil,
-            type: .duration
-        )
 
-        let vitalEvent = RUMVitalEvent(
-            dd: .init(),
-            application: .init(id: parent.context.rumApplicationID),
-            context: .init(contextInfo: [:]),
-            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-//            date: context.launchInfo.processLaunchDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            session: .init(
-                hasReplay: context.hasReplay,
-                id: self.context.sessionID.toRUMDataFormat,
-                type: dependencies.sessionType
-            ),
-            view: .init(
-                id: viewUUID.toRUMDataFormat,
-                name: viewName,
-                referrer: nil,
-                url: viewPath
-            ),
-            vital: vital
-        )
 
-        writer.write(value: vitalEvent)
+//        let vital = RUMVitalEvent.Vital(
+//            vitalDescription: "Time to full display",
+//            duration: Double(time.toInt64Nanoseconds),
+////            duration: Double((viewStartTime.timeIntervalSince(context.launchInfo.processLaunchDate) + time).toInt64Nanoseconds),
+//            failureReason: nil,
+//            id:  dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+//            name: "TTFD",
+//            operationKey: nil,
+//            stepType: nil,
+//            type: .duration
+//        )
+//
+//        let vitalEvent = RUMVitalEvent(
+//            dd: .init(),
+//            application: .init(id: parent.context.rumApplicationID),
+//            context: .init(contextInfo: [:]),
+//            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+////            date: context.launchInfo.processLaunchDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+//            session: .init(
+//                hasReplay: context.hasReplay,
+//                id: self.context.sessionID.toRUMDataFormat,
+//                type: dependencies.sessionType
+//            ),
+//            view: .init(
+//                id: viewUUID.toRUMDataFormat,
+//                name: viewName,
+//                referrer: nil,
+//                url: viewPath
+//            ),
+//            vital: vital
+//        )
+//
+//        writer.write(value: vitalEvent)
     }
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {

@@ -8160,44 +8160,44 @@ public class objc_RUMVitalEventVital: NSObject {
     internal init(root: objc_RUMVitalEvent) {
         self.root = root
     }
-
-    public var vitalDescription: String? {
-        root.swiftModel.vital.vitalDescription
-    }
-
-    public var duration: NSNumber? {
-        root.swiftModel.vital.duration as NSNumber?
-    }
-
-    public var failureReason: objc_RUMVitalEventVitalFailureReason {
-        .init(swift: root.swiftModel.vital.failureReason)
-    }
-
-    public var id: String {
-        root.swiftModel.vital.id
-    }
-
-    public var name: String? {
-        root.swiftModel.vital.name
-    }
-
-    public var operationKey: String? {
-        root.swiftModel.vital.operationKey
-    }
-
-    public var stepType: objc_RUMVitalEventVitalStepType {
-        .init(swift: root.swiftModel.vital.stepType)
-    }
-
-    public var type: objc_RUMVitalEventVitalVitalType {
-        .init(swift: root.swiftModel.vital.type)
-    }
+//
+//    public var vitalDescription: String? {
+//        root.swiftModel.vital.vitalDescription
+//    }
+//
+//    public var duration: NSNumber? {
+//        root.swiftModel.vital.duration as NSNumber?
+//    }
+//
+//    public var failureReason: objc_RUMVitalEventVitalFailureReason {
+//        .init(swift: root.swiftModel.vital.failureReason)
+//    }
+//
+//    public var id: String {
+//        root.swiftModel.vital.id
+//    }
+//
+//    public var name: String? {
+//        root.swiftModel.vital.name
+//    }
+//
+//    public var operationKey: String? {
+//        root.swiftModel.vital.operationKey
+//    }
+//
+//    public var stepType: objc_RUMVitalEventVitalStepType {
+//        .init(swift: root.swiftModel.vital.stepType)
+//    }
+//
+//    public var type: objc_RUMVitalEventVitalVitalType {
+//        .init(swift: root.swiftModel.vital.type)
+//    }
 }
 
 @objc(DDRUMVitalEventVitalFailureReason)
 @_spi(objc)
 public enum objc_RUMVitalEventVitalFailureReason: Int {
-    internal init(swift: RUMVitalEvent.Vital.FailureReason?) {
+    internal init(swift: RUMVitalEvent.Vital.FeatureOperationProperties.FailureReason?) {
         switch swift {
         case nil: self = .none
         case .error?: self = .error
@@ -8206,7 +8206,7 @@ public enum objc_RUMVitalEventVitalFailureReason: Int {
         }
     }
 
-    internal var toSwift: RUMVitalEvent.Vital.FailureReason? {
+    internal var toSwift: RUMVitalEvent.Vital.FeatureOperationProperties.FailureReason? {
         switch self {
         case .none: return nil
         case .error: return .error
@@ -8224,7 +8224,7 @@ public enum objc_RUMVitalEventVitalFailureReason: Int {
 @objc(DDRUMVitalEventVitalStepType)
 @_spi(objc)
 public enum objc_RUMVitalEventVitalStepType: Int {
-    internal init(swift: RUMVitalEvent.Vital.StepType?) {
+    internal init(swift: RUMVitalEvent.Vital.FeatureOperationProperties.StepType?) {
         switch swift {
         case nil: self = .none
         case .start?: self = .start
@@ -8234,7 +8234,7 @@ public enum objc_RUMVitalEventVitalStepType: Int {
         }
     }
 
-    internal var toSwift: RUMVitalEvent.Vital.StepType? {
+    internal var toSwift: RUMVitalEvent.Vital.FeatureOperationProperties.StepType? {
         switch self {
         case .none: return nil
         case .start: return .start
@@ -8254,19 +8254,19 @@ public enum objc_RUMVitalEventVitalStepType: Int {
 @objc(DDRUMVitalEventVitalVitalType)
 @_spi(objc)
 public enum objc_RUMVitalEventVitalVitalType: Int {
-    internal init(swift: RUMVitalEvent.Vital.VitalType) {
-        switch swift {
-        case .duration: self = .duration
-        case .operationStep: self = .operationStep
-        }
-    }
-
-    internal var toSwift: RUMVitalEvent.Vital.VitalType {
-        switch self {
-        case .duration: return .duration
-        case .operationStep: return .operationStep
-        }
-    }
+//    internal init(swift: RUMVitalEvent.Vital.FeatureOperationProperties.VitalType) {
+//        switch swift {
+//        case .duration: self = .duration
+//        case .operationStep: self = .operationStep
+//        }
+//    }
+//
+//    internal var toSwift: RUMVitalEvent.Vital.FeatureOperationProperties.VitalType {
+//        switch self {
+//        case .duration: return .duration
+//        case .operationStep: return .operationStep
+//        }
+//    }
 
     case duration
     case operationStep
@@ -9110,6 +9110,16 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.premiumSampleRate as NSNumber?
     }
 
+    public var profilingSampleRate: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.profilingSampleRate = newValue?.doubleValue }
+        get { root.swiftModel.telemetry.configuration.profilingSampleRate as NSNumber? }
+    }
+
+    public var propagateTraceBaggage: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.propagateTraceBaggage = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.propagateTraceBaggage as NSNumber? }
+    }
+
     public var reactNativeVersion: String? {
         set { root.swiftModel.telemetry.configuration.reactNativeVersion = newValue }
         get { root.swiftModel.telemetry.configuration.reactNativeVersion }
@@ -9118,6 +9128,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
     public var reactVersion: String? {
         set { root.swiftModel.telemetry.configuration.reactVersion = newValue }
         get { root.swiftModel.telemetry.configuration.reactVersion }
+    }
+
+    public var remoteConfigurationId: String? {
+        set { root.swiftModel.telemetry.configuration.remoteConfigurationId = newValue }
+        get { root.swiftModel.telemetry.configuration.remoteConfigurationId }
     }
 
     public var replaySampleRate: NSNumber? {
@@ -9326,6 +9341,10 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.unityVersion }
     }
 
+    public var useAllowedGraphQlUrls: NSNumber? {
+        root.swiftModel.telemetry.configuration.useAllowedGraphQlUrls as NSNumber?
+    }
+
     public var useAllowedTracingOrigins: NSNumber? {
         root.swiftModel.telemetry.configuration.useAllowedTracingOrigins as NSNumber?
     }
@@ -9374,12 +9393,21 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.useProxy as NSNumber? }
     }
 
+    public var useRemoteConfigurationProxy: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.useRemoteConfigurationProxy = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.useRemoteConfigurationProxy as NSNumber? }
+    }
+
     public var useSecureSessionCookie: NSNumber? {
         root.swiftModel.telemetry.configuration.useSecureSessionCookie as NSNumber?
     }
 
     public var useTracing: NSNumber? {
         root.swiftModel.telemetry.configuration.useTracing as NSNumber?
+    }
+
+    public var useTrackGraphQlPayload: NSNumber? {
+        root.swiftModel.telemetry.configuration.useTrackGraphQlPayload as NSNumber?
     }
 
     public var useWorkerUrl: NSNumber? {
@@ -9695,4 +9723,4 @@ public class objc_TelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/364afe383024cfbdc0a57253c1961cf938b19cf0
+// Generated from https://github.com/DataDog/rum-events-format/tree/7dbaaa9c5dcc56ab9f31a90e847e909039ce24f5

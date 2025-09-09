@@ -5935,7 +5935,6 @@ public struct RUMVitalEvent: RUMDataModel {
     /// View properties
     public var view: View
 
-    /// Vital properties
     public let vital: Vital
 
     public enum CodingKeys: String, CodingKey {
@@ -5988,7 +5987,7 @@ public struct RUMVitalEvent: RUMDataModel {
     ///   - usr: User properties
     ///   - version: The version for this application
     ///   - view: View properties
-    ///   - vital: Vital properties
+    ///   - vital:
     public init(
         dd: DD,
         account: RUMAccount? = nil,
@@ -6396,93 +6395,255 @@ public struct RUMVitalEvent: RUMDataModel {
         }
     }
 
-    /// Vital properties
-    public struct Vital: Codable {
-        /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
-        public let vitalDescription: String?
+    public enum Vital: Codable {
+        case durationProperties(value: DurationProperties)
+        case appLaunchProperties(value: AppLaunchProperties)
+        case featureOperationProperties(value: FeatureOperationProperties)
 
-        /// Duration of the vital in nanoseconds
-        public let duration: Double?
+        // MARK: - Codable
 
-        /// Reason for the failure of the step, if applicable
-        public let failureReason: FailureReason?
+        public func encode(to encoder: Encoder) throws {
+            // Encode only the associated value, without encoding enum case
+            var container = encoder.singleValueContainer()
 
-        /// UUID of the vital
-        public let id: String
-
-        /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
-        public let name: String?
-
-        /// UUID for distinguishing the active operations in parallel, if applicable
-        public let operationKey: String?
-
-        /// Type of the step that triggered the vital, if applicable
-        public let stepType: StepType?
-
-        /// Type of the vital
-        public let type: VitalType
-
-        public enum CodingKeys: String, CodingKey {
-            case vitalDescription = "description"
-            case duration = "duration"
-            case failureReason = "failure_reason"
-            case id = "id"
-            case name = "name"
-            case operationKey = "operation_key"
-            case stepType = "step_type"
-            case type = "type"
+            switch self {
+            case .durationProperties(let value):
+                try container.encode(value)
+            case .appLaunchProperties(let value):
+                try container.encode(value)
+            case .featureOperationProperties(let value):
+                try container.encode(value)
+            }
         }
 
-        /// Vital properties
-        ///
-        /// - Parameters:
-        ///   - vitalDescription: Description of the vital. It can be used as a secondary identifier (URL, React component name...)
-        ///   - duration: Duration of the vital in nanoseconds
-        ///   - failureReason: Reason for the failure of the step, if applicable
-        ///   - id: UUID of the vital
-        ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
-        ///   - operationKey: UUID for distinguishing the active operations in parallel, if applicable
-        ///   - stepType: Type of the step that triggered the vital, if applicable
-        ///   - type: Type of the vital
-        public init(
-            vitalDescription: String? = nil,
-            duration: Double? = nil,
-            failureReason: FailureReason? = nil,
-            id: String,
-            name: String? = nil,
-            operationKey: String? = nil,
-            stepType: StepType? = nil,
-            type: VitalType
-        ) {
-            self.vitalDescription = vitalDescription
-            self.duration = duration
-            self.failureReason = failureReason
-            self.id = id
-            self.name = name
-            self.operationKey = operationKey
-            self.stepType = stepType
-            self.type = type
+        public init(from decoder: Decoder) throws {
+            // Decode enum case from associated value
+            let container = try decoder.singleValueContainer()
+
+            if let value = try? container.decode(DurationProperties.self) {
+                self = .durationProperties(value: value)
+                return
+            }
+            if let value = try? container.decode(AppLaunchProperties.self) {
+                self = .appLaunchProperties(value: value)
+                return
+            }
+            if let value = try? container.decode(FeatureOperationProperties.self) {
+                self = .featureOperationProperties(value: value)
+                return
+            }
+            let error = DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription: """
+                Failed to decode `Vital`.
+                Ran out of possibilities when trying to decode the value of associated type.
+                """
+            )
+            throw DecodingError.typeMismatch(Vital.self, error)
         }
 
-        /// Reason for the failure of the step, if applicable
-        public enum FailureReason: String, Codable {
-            case error = "error"
-            case abandoned = "abandoned"
-            case other = "other"
+        /// Duration properties of a Vital event
+        public struct DurationProperties: Codable {
+            /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
+            public let durationPropertiesDescription: String?
+
+            /// Duration of the vital in nanoseconds.
+            public let duration: Double
+
+            /// UUID of the vital
+            public let id: String
+
+            /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+            public let name: String?
+
+            /// Type of the vital.
+            public let type: String = "duration"
+
+            public enum CodingKeys: String, CodingKey {
+                case durationPropertiesDescription = "description"
+                case duration = "duration"
+                case id = "id"
+                case name = "name"
+                case type = "type"
+            }
+
+            /// Duration properties of a Vital event
+            ///
+            /// - Parameters:
+            ///   - durationPropertiesDescription: Description of the vital. It can be used as a secondary identifier (URL, React component name...)
+            ///   - duration: Duration of the vital in nanoseconds.
+            ///   - id: UUID of the vital
+            ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+            public init(
+                durationPropertiesDescription: String? = nil,
+                duration: Double,
+                id: String,
+                name: String? = nil
+            ) {
+                self.durationPropertiesDescription = durationPropertiesDescription
+                self.duration = duration
+                self.id = id
+                self.name = name
+            }
         }
 
-        /// Type of the step that triggered the vital, if applicable
-        public enum StepType: String, Codable {
-            case start = "start"
-            case update = "update"
-            case retry = "retry"
-            case end = "end"
+        /// Schema for app launch metrics.
+        public struct AppLaunchProperties: Codable {
+            /// The metric of the app launch.
+            public let appLaunchMetric: AppLaunchMetric
+
+            /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
+            public let appLaunchPropertiesDescription: String?
+
+            /// Duration of the vital in nanoseconds.
+            public let duration: Double
+
+            /// If the app launch had a saved instance state bundle.
+            public let hasSavedInstanceStateBundle: Bool?
+
+            /// UUID of the vital
+            public let id: String
+
+            /// Whether the app launch was prewarmed.
+            public let isPrewarmed: Bool?
+
+            /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+            public let name: String?
+
+            /// The type of the app launch.
+            public let startupType: StartupType?
+
+            /// Type of the vital.
+            public let type: String = "app_launch"
+
+            public enum CodingKeys: String, CodingKey {
+                case appLaunchMetric = "app_launch_metric"
+                case appLaunchPropertiesDescription = "description"
+                case duration = "duration"
+                case hasSavedInstanceStateBundle = "has_saved_instance_state_bundle"
+                case id = "id"
+                case isPrewarmed = "is_prewarmed"
+                case name = "name"
+                case startupType = "startup_type"
+                case type = "type"
+            }
+
+            /// Schema for app launch metrics.
+            ///
+            /// - Parameters:
+            ///   - appLaunchMetric: The metric of the app launch.
+            ///   - appLaunchPropertiesDescription: Description of the vital. It can be used as a secondary identifier (URL, React component name...)
+            ///   - duration: Duration of the vital in nanoseconds.
+            ///   - hasSavedInstanceStateBundle: If the app launch had a saved instance state bundle.
+            ///   - id: UUID of the vital
+            ///   - isPrewarmed: Whether the app launch was prewarmed.
+            ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+            ///   - startupType: The type of the app launch.
+            public init(
+                appLaunchMetric: AppLaunchMetric,
+                appLaunchPropertiesDescription: String? = nil,
+                duration: Double,
+                hasSavedInstanceStateBundle: Bool? = nil,
+                id: String,
+                isPrewarmed: Bool? = nil,
+                name: String? = nil,
+                startupType: StartupType? = nil
+            ) {
+                self.appLaunchMetric = appLaunchMetric
+                self.appLaunchPropertiesDescription = appLaunchPropertiesDescription
+                self.duration = duration
+                self.hasSavedInstanceStateBundle = hasSavedInstanceStateBundle
+                self.id = id
+                self.isPrewarmed = isPrewarmed
+                self.name = name
+                self.startupType = startupType
+            }
+
+            /// The metric of the app launch.
+            public enum AppLaunchMetric: String, Codable {
+                case ttid = "ttid"
+                case ttfd = "ttfd"
+            }
+
+            /// The type of the app launch.
+            public enum StartupType: String, Codable {
+                case coldStart = "cold_start"
+                case warmStart = "warm_start"
+            }
         }
 
-        /// Type of the vital
-        public enum VitalType: String, Codable {
-            case duration = "duration"
-            case operationStep = "operation_step"
+        /// Schema for a feature operation.
+        public struct FeatureOperationProperties: Codable {
+            /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
+            public let featureOperationPropertiesDescription: String?
+
+            /// Reason for the failure of the step, if applicable
+            public let failureReason: FailureReason?
+
+            /// UUID of the vital
+            public let id: String
+
+            /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+            public let name: String?
+
+            /// Optional key to distinguish between multiple operations of the same name running in parallel (e.g., 'photo_upload' with keys 'profile_pic' vs 'cover')
+            public let operationKey: String?
+
+            /// Type of the step that triggered the vital, if applicable
+            public let stepType: StepType?
+
+            /// Type of the vital.
+            public let type: String = "operation_step"
+
+            public enum CodingKeys: String, CodingKey {
+                case featureOperationPropertiesDescription = "description"
+                case failureReason = "failure_reason"
+                case id = "id"
+                case name = "name"
+                case operationKey = "operation_key"
+                case stepType = "step_type"
+                case type = "type"
+            }
+
+            /// Schema for a feature operation.
+            ///
+            /// - Parameters:
+            ///   - featureOperationPropertiesDescription: Description of the vital. It can be used as a secondary identifier (URL, React component name...)
+            ///   - failureReason: Reason for the failure of the step, if applicable
+            ///   - id: UUID of the vital
+            ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+            ///   - operationKey: Optional key to distinguish between multiple operations of the same name running in parallel (e.g., 'photo_upload' with keys 'profile_pic' vs 'cover')
+            ///   - stepType: Type of the step that triggered the vital, if applicable
+            public init(
+                featureOperationPropertiesDescription: String? = nil,
+                failureReason: FailureReason? = nil,
+                id: String,
+                name: String? = nil,
+                operationKey: String? = nil,
+                stepType: StepType? = nil
+            ) {
+                self.featureOperationPropertiesDescription = featureOperationPropertiesDescription
+                self.failureReason = failureReason
+                self.id = id
+                self.name = name
+                self.operationKey = operationKey
+                self.stepType = stepType
+            }
+
+            /// Reason for the failure of the step, if applicable
+            public enum FailureReason: String, Codable {
+                case error = "error"
+                case abandoned = "abandoned"
+                case other = "other"
+            }
+
+            /// Type of the step that triggered the vital, if applicable
+            public enum StepType: String, Codable {
+                case start = "start"
+                case update = "update"
+                case retry = "retry"
+                case end = "end"
+            }
         }
     }
 }
@@ -7394,11 +7555,20 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
             public let premiumSampleRate: Int64?
 
+            /// The percentage of sessions with Profiling enabled
+            public var profilingSampleRate: Double?
+
+            /// Whether trace baggage is propagated to child spans
+            public var propagateTraceBaggage: Bool?
+
             /// The version of ReactNative used in a ReactNative application
             public var reactNativeVersion: String?
 
             /// The version of React used in a ReactNative application
             public var reactVersion: String?
+
+            /// The id of the remote configuration
+            public var remoteConfigurationId: String?
 
             /// The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
             public let replaySampleRate: Int64?
@@ -7532,6 +7702,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The version of Unity used in a Unity application
             public var unityVersion: String?
 
+            /// Whether the allowed GraphQL urls list is used
+            public let useAllowedGraphQlUrls: Bool?
+
             /// Whether the allowed tracing origins list is used (deprecated in favor of use_allowed_tracing_urls)
             public let useAllowedTracingOrigins: Bool?
 
@@ -7565,11 +7738,17 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether a proxy is used
             public var useProxy: Bool?
 
+            /// Whether a proxy is used for remote configuration
+            public var useRemoteConfigurationProxy: Bool?
+
             /// Whether a secure session cookie is used
             public let useSecureSessionCookie: Bool?
 
             /// Whether tracing features are enabled
             public let useTracing: Bool?
+
+            /// Whether GraphQL payload tracking is used for at least one GraphQL endpoint
+            public let useTrackGraphQlPayload: Bool?
 
             /// Whether the Worker is loaded from an external URL
             public let useWorkerUrl: Bool?
@@ -7604,8 +7783,11 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case numberOfDisplays = "number_of_displays"
                 case plugins = "plugins"
                 case premiumSampleRate = "premium_sample_rate"
+                case profilingSampleRate = "profiling_sample_rate"
+                case propagateTraceBaggage = "propagate_trace_baggage"
                 case reactNativeVersion = "react_native_version"
                 case reactVersion = "react_version"
+                case remoteConfigurationId = "remote_configuration_id"
                 case replaySampleRate = "replay_sample_rate"
                 case sdkVersion = "sdk_version"
                 case selectedTracingPropagators = "selected_tracing_propagators"
@@ -7650,6 +7832,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case trackViewsManually = "track_views_manually"
                 case trackingConsent = "tracking_consent"
                 case unityVersion = "unity_version"
+                case useAllowedGraphQlUrls = "use_allowed_graph_ql_urls"
                 case useAllowedTracingOrigins = "use_allowed_tracing_origins"
                 case useAllowedTracingUrls = "use_allowed_tracing_urls"
                 case useAllowedTrackingOrigins = "use_allowed_tracking_origins"
@@ -7661,8 +7844,10 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case usePartitionedCrossSiteSessionCookie = "use_partitioned_cross_site_session_cookie"
                 case usePciIntake = "use_pci_intake"
                 case useProxy = "use_proxy"
+                case useRemoteConfigurationProxy = "use_remote_configuration_proxy"
                 case useSecureSessionCookie = "use_secure_session_cookie"
                 case useTracing = "use_tracing"
+                case useTrackGraphQlPayload = "use_track_graph_ql_payload"
                 case useWorkerUrl = "use_worker_url"
                 case variant = "variant"
                 case viewTrackingStrategy = "view_tracking_strategy"
@@ -7694,8 +7879,11 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - numberOfDisplays: The number of displays available to the device
             ///   - plugins: The list of plugins enabled
             ///   - premiumSampleRate: The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
+            ///   - profilingSampleRate: The percentage of sessions with Profiling enabled
+            ///   - propagateTraceBaggage: Whether trace baggage is propagated to child spans
             ///   - reactNativeVersion: The version of ReactNative used in a ReactNative application
             ///   - reactVersion: The version of React used in a ReactNative application
+            ///   - remoteConfigurationId: The id of the remote configuration
             ///   - replaySampleRate: The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
             ///   - sdkVersion: The version of the SDK that is running.
             ///   - selectedTracingPropagators: A list of selected tracing propagators
@@ -7740,6 +7928,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - trackViewsManually: Whether the RUM views creation is handled manually
             ///   - trackingConsent: The initial tracking consent value
             ///   - unityVersion: The version of Unity used in a Unity application
+            ///   - useAllowedGraphQlUrls: Whether the allowed GraphQL urls list is used
             ///   - useAllowedTracingOrigins: Whether the allowed tracing origins list is used (deprecated in favor of use_allowed_tracing_urls)
             ///   - useAllowedTracingUrls: Whether the allowed tracing urls list is used
             ///   - useAllowedTrackingOrigins: Whether a list of allowed origins is used to control SDK execution in browser extension contexts. When enabled, the SDK will check if the current origin matches the allowed origins list before running.
@@ -7751,8 +7940,10 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - usePartitionedCrossSiteSessionCookie: Whether a partitioned secure cross-site session cookie is used
             ///   - usePciIntake: Whether logs are sent to the PCI-compliant intake
             ///   - useProxy: Whether a proxy is used
+            ///   - useRemoteConfigurationProxy: Whether a proxy is used for remote configuration
             ///   - useSecureSessionCookie: Whether a secure session cookie is used
             ///   - useTracing: Whether tracing features are enabled
+            ///   - useTrackGraphQlPayload: Whether GraphQL payload tracking is used for at least one GraphQL endpoint
             ///   - useWorkerUrl: Whether the Worker is loaded from an external URL
             ///   - variant: The variant of the SDK build (e.g., standard, lite, etc.).
             ///   - viewTrackingStrategy: View tracking strategy
@@ -7780,8 +7971,11 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 numberOfDisplays: Int64? = nil,
                 plugins: [Plugins]? = nil,
                 premiumSampleRate: Int64? = nil,
+                profilingSampleRate: Double? = nil,
+                propagateTraceBaggage: Bool? = nil,
                 reactNativeVersion: String? = nil,
                 reactVersion: String? = nil,
+                remoteConfigurationId: String? = nil,
                 replaySampleRate: Int64? = nil,
                 sdkVersion: String? = nil,
                 selectedTracingPropagators: [SelectedTracingPropagators]? = nil,
@@ -7826,6 +8020,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 trackViewsManually: Bool? = nil,
                 trackingConsent: TrackingConsent? = nil,
                 unityVersion: String? = nil,
+                useAllowedGraphQlUrls: Bool? = nil,
                 useAllowedTracingOrigins: Bool? = nil,
                 useAllowedTracingUrls: Bool? = nil,
                 useAllowedTrackingOrigins: Bool? = nil,
@@ -7837,8 +8032,10 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 usePartitionedCrossSiteSessionCookie: Bool? = nil,
                 usePciIntake: Bool? = nil,
                 useProxy: Bool? = nil,
+                useRemoteConfigurationProxy: Bool? = nil,
                 useSecureSessionCookie: Bool? = nil,
                 useTracing: Bool? = nil,
+                useTrackGraphQlPayload: Bool? = nil,
                 useWorkerUrl: Bool? = nil,
                 variant: String? = nil,
                 viewTrackingStrategy: ViewTrackingStrategy? = nil
@@ -7866,8 +8063,11 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.numberOfDisplays = numberOfDisplays
                 self.plugins = plugins
                 self.premiumSampleRate = premiumSampleRate
+                self.profilingSampleRate = profilingSampleRate
+                self.propagateTraceBaggage = propagateTraceBaggage
                 self.reactNativeVersion = reactNativeVersion
                 self.reactVersion = reactVersion
+                self.remoteConfigurationId = remoteConfigurationId
                 self.replaySampleRate = replaySampleRate
                 self.sdkVersion = sdkVersion
                 self.selectedTracingPropagators = selectedTracingPropagators
@@ -7912,6 +8112,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.trackViewsManually = trackViewsManually
                 self.trackingConsent = trackingConsent
                 self.unityVersion = unityVersion
+                self.useAllowedGraphQlUrls = useAllowedGraphQlUrls
                 self.useAllowedTracingOrigins = useAllowedTracingOrigins
                 self.useAllowedTracingUrls = useAllowedTracingUrls
                 self.useAllowedTrackingOrigins = useAllowedTrackingOrigins
@@ -7923,8 +8124,10 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.usePartitionedCrossSiteSessionCookie = usePartitionedCrossSiteSessionCookie
                 self.usePciIntake = usePciIntake
                 self.useProxy = useProxy
+                self.useRemoteConfigurationProxy = useRemoteConfigurationProxy
                 self.useSecureSessionCookie = useSecureSessionCookie
                 self.useTracing = useTracing
+                self.useTrackGraphQlPayload = useTrackGraphQlPayload
                 self.useWorkerUrl = useWorkerUrl
                 self.variant = variant
                 self.viewTrackingStrategy = viewTrackingStrategy
@@ -8456,6 +8659,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                 case removeAccountProperty(value: RemoveAccountProperty)
                 case clearAccount(value: ClearAccount)
                 case addFeatureFlagEvaluation(value: AddFeatureFlagEvaluation)
+                case addOperationStepVital(value: AddOperationStepVital)
 
                 // MARK: - Codable
 
@@ -8513,6 +8717,8 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     case .clearAccount(let value):
                         try container.encode(value)
                     case .addFeatureFlagEvaluation(let value):
+                        try container.encode(value)
+                    case .addOperationStepVital(let value):
                         try container.encode(value)
                     }
                 }
@@ -8619,6 +8825,10 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     }
                     if let value = try? container.decode(AddFeatureFlagEvaluation.self) {
                         self = .addFeatureFlagEvaluation(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(AddOperationStepVital.self) {
+                        self = .addOperationStepVital(value: value)
                         return
                     }
                     let error = DecodingError.Context(
@@ -8922,6 +9132,35 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     }
 
                     public init() { }
+                }
+
+                public struct AddOperationStepVital: Codable {
+                    /// Feature operations action type
+                    public let actionType: ActionType
+
+                    /// addOperationStepVital API
+                    public let feature: String = "add-operation-step-vital"
+
+                    public enum CodingKeys: String, CodingKey {
+                        case actionType = "action_type"
+                        case feature = "feature"
+                    }
+
+                    ///
+                    /// - Parameters:
+                    ///   - actionType: Feature operations action type
+                    public init(
+                        actionType: ActionType
+                    ) {
+                        self.actionType = actionType
+                    }
+
+                    /// Feature operations action type
+                    public enum ActionType: String, Codable {
+                        case start = "start"
+                        case succeed = "succeed"
+                        case fail = "fail"
+                    }
                 }
             }
 
@@ -9664,4 +9903,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/364afe383024cfbdc0a57253c1961cf938b19cf0
+// Generated from https://github.com/DataDog/rum-events-format/tree/f97f9a2c0c948fda3a9090bc6d7fb2b9d01f4b0b

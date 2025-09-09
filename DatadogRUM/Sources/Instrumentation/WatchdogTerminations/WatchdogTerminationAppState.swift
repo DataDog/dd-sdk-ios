@@ -48,7 +48,7 @@ internal struct WatchdogTerminationAppState: Codable {
 
 extension WatchdogTerminationAppState: CustomDebugStringConvertible {
     var debugDescription: String {
-        return """
+        let a = """
         WatchdogTerminationAppState
         - appVersion: \(appVersion)
         - osVersion: \(osVersion)
@@ -61,5 +61,8 @@ extension WatchdogTerminationAppState: CustomDebugStringConvertible {
         - trackingConsent: \(trackingConsent)
         - syntheticsEnvironment: \(syntheticsEnvironment)
         """
+
+        print(a)
+        return a
     }
 }

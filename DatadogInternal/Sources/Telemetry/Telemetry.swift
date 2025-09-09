@@ -73,7 +73,7 @@ public protocol SampledTelemetry {
 
 public struct MetricTelemetry: SampledTelemetry {
     /// The default sample rate for metric events (15%), applied in addition to the telemetry sample rate (20% by default).
-    public static let defaultSampleRate: SampleRate = 15
+    public static let defaultSampleRate: SampleRate = 100
 
     /// The name of the metric.
     public let name: String
