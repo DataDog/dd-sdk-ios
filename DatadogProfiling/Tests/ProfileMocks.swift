@@ -30,6 +30,7 @@ extension stack_trace_t {
     static func mockWith(
         tid: UInt32,
         addresses: [UInt64],
+        threadName: StaticString = "TestThread",
         timestamp: UInt64? = nil,
         samplingIntervalNanos: UInt64 = 10_000_000,
         binaryImage: binary_image_t = .mockAny()
@@ -51,6 +52,7 @@ extension stack_trace_t {
 
         return stack_trace_t(
             tid: tid,
+            thread_name: UnsafeRawPointer(threadName.utf8Start).assumingMemoryBound(to: CChar.self),
             timestamp: timestamp ?? UInt64(Date().timeIntervalSince1970 * 1_000_000_000),
             sampling_interval_nanos: samplingIntervalNanos,
             frames: frames,

@@ -94,8 +94,9 @@ profile::profile(uint64_t sampling_interval_ns)
     _wall_time_str_id = intern_string("wall-time");
     _nanoseconds_str_id = intern_string("nanoseconds");
     _end_timestamp_ns_str_id = intern_string("end_timestamp_ns");
-    _tid_str_id = intern_string("tid");
-    
+    _thread_id_str_id = intern_string("thread id");
+    _thread_name_str_id = intern_string("thread name");
+
     // Initialize time reference data
     mach_timeref_init(&_timeref);
 }
@@ -142,9 +143,9 @@ void profile::add_samples(const stack_trace_t* traces, size_t count) {
             location_ids.push_back(location_id);
         }
         
-        // Create labels with timestamp and tid
+        // Create labels with timestamp, tid, and thread name
         std::vector<label_t> labels;
-        labels.reserve(2);
+        labels.reserve(3);
         
         // Add timestamp label (convert mach_absolute_time to epoch)
         label_t timestamp_label;
@@ -156,11 +157,21 @@ void profile::add_samples(const stack_trace_t* traces, size_t count) {
         
         // Add thread ID label
         label_t thread_label;
-        thread_label.key_id = _tid_str_id;
+        thread_label.key_id = _thread_id_str_id;
         thread_label.str_id = 0;
         thread_label.num = static_cast<int64_t>(trace.tid);
         thread_label.num_unit_id = 0; // No unit for thread ID
         labels.push_back(thread_label);
+        
+        // Add thread name label if available
+        if (trace.thread_name) {
+            label_t thread_name_label;
+            thread_name_label.key_id = _thread_name_str_id;
+            thread_name_label.str_id = intern_string(trace.thread_name);
+            thread_name_label.num = 0;
+            thread_name_label.num_unit_id = 0;
+            labels.push_back(thread_name_label);
+        }
         
         // Create sample
         sample_t sample;
