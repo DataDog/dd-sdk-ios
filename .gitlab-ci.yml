@@ -128,7 +128,7 @@ Lint:
 API Surface Verify:
   stage: lint
   rules:
-    - if: '$CI_COMMIT_BRANCH == $MAIN_BRANCH'
+    - if: '$CI_COMMIT_BRANCH =~ /^(release|hotfix)\/.*/'
   script:
     - make clean repo-setup ENV=ci
     - make api-surface-verify
