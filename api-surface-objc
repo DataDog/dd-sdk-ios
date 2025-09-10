@@ -71,7 +71,6 @@ public final class objc_URLSessionInstrumentation: NSObject
     public static func enable(configuration: objc_URLSessionInstrumentationConfiguration)
     public static func disable(delegateClass: URLSessionDataDelegate.Type)
 
-
 # ----------------------------------
 # API surface for DatadogLogs:
 # ----------------------------------
@@ -233,7 +232,6 @@ public enum objc_LogEventRadioAccessTechnology: Int
     case LTE
     case unknown
 
-
 # ----------------------------------
 # API surface for DatadogTrace:
 # ----------------------------------
@@ -309,7 +307,6 @@ public final class objc_Tracer: NSObject, objc_OTTracer
     public func startSpan(_ operationName: String,childOf parent: objc_OTSpanContext?,tags: NSDictionary?,startTime: Date?) -> objc_OTSpan
     public func inject(_ spanContext: objc_OTSpanContext, format: String, carrier: Any) throws
     public func extractWithFormat(_ format: String, carrier: Any) throws
-
 
 # ----------------------------------
 # API surface for DatadogRUM:
@@ -2351,11 +2348,9 @@ public class objc_RUMMonitor: NSObject
 [?] extension objc_RUMMonitor
     public func _internal_sync_addError(_ error: Error,source: objc_RUMErrorSource,attributes: [String: Any])
 
-
 # ----------------------------------
 # API surface for DatadogCrashReporting:
 # ----------------------------------
-
 
 
 
@@ -2366,7 +2361,6 @@ public class objc_RUMMonitor: NSObject
 public final class objc_WebViewTracking: NSObject
     public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: SampleRate = .maxSampleRate)
     public static func disable(webView: WKWebView)
-
 
 # ----------------------------------
 # API surface for DatadogSessionReplay:

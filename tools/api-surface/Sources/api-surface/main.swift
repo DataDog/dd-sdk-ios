@@ -9,11 +9,12 @@ import APISurfaceCore
 
 private struct RootCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "api-surface",
-        abstract: "Prints API surface for given module.",
+        abstract: "A tool to manage API surface files.",
         subcommands: [
-            SPMLibrarySurfaceCommand.self
-        ]
+            GenerateCommand.self,
+            VerifyCommand.self
+        ],
+        defaultSubcommand: GenerateCommand.self
     )
 }
 
