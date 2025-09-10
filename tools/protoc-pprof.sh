@@ -33,7 +33,7 @@ echo_title "🔄 Generating pprof protobuf-c implementation with symbol prefixin
 if ! command -v protoc &> /dev/null; then
     echo_err "protoc is not installed or not in PATH"
     echo_info "Please install protocol buffer compiler:"
-    echo_info "  brew install protobuf"
+    echo_info "brew install protobuf"
     exit 1
 fi
 
