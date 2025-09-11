@@ -6746,6 +6746,7 @@
 		D2DA239C298D58F300C6C7E6 /* Context */ = {
 			isa = PBXGroup;
 			children = (
+				11E4B7172E4DF87F005C1767 /* DatadogContextTests.swift */,
 				D2DA239D298D58F300C6C7E6 /* AppStateHistoryTests.swift */,
 				D2DA239E298D58F300C6C7E6 /* DeviceInfoTests.swift */,
 				6174D6152BFDF29B00EC7469 /* BundleTypeTests.swift */,
@@ -10185,6 +10186,7 @@
 				D2DA23A3298D58F400C6C7E6 /* AnyEncodableTests.swift in Sources */,
 				3CCECDAF2BC688120013C125 /* SpanIDGeneratorTests.swift in Sources */,
 				D263BCB429DB014900FA0E21 /* FixedWidthInteger+ConvenienceTests.swift in Sources */,
+				11E4B7182E4DF88A005C1767 /* DatadogContextTests.swift in Sources */,
 				960A0D402D6F88A0004BB999 /* ReflectorTests.swift in Sources */,
 				6174D6162BFDF29B00EC7469 /* BundleTypeTests.swift in Sources */,
 				116F84062CFDD06700705755 /* SampleRateTests.swift in Sources */,
@@ -10254,6 +10256,7 @@
 				D284C7412C2059F3005142CC /* ObjcExceptionTests.swift in Sources */,
 				D2C5D5292B83FD5400B63F36 /* WebViewMessageTests.swift in Sources */,
 				D20731CE29A52E8700ECBF94 /* SamplerTests.swift in Sources */,
+				11E4B7192E4DF88A005C1767 /* DatadogContextTests.swift in Sources */,
 				D2160CEA29C0E00200FAA9A5 /* MethodSwizzlerTests.swift in Sources */,
 				D2EBEE4229BA163F00B15732 /* W3CHTTPHeadersReaderTests.swift in Sources */,
 				D2160CDD29C0DF6700FAA9A5 /* HostsSanitizerTests.swift in Sources */,
