@@ -303,7 +303,7 @@ sr-models-verify:
 
 # Generate profiling protobuf-c files from pprof proto
 protoc-pprof:
-	@$(ECHO_TITLE) "make profiling-protoc"
+	@$(ECHO_TITLE) "protoc-pprof"
 	./tools/protoc-pprof.sh --proto-path DatadogProfiling/Protos/profile.proto --output-dir DatadogProfiling/Mach
 
 # Pushes current SR snapshots to snapshots repo
