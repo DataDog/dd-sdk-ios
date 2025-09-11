@@ -1,6 +1,8 @@
 # Unreleased
 
-- [IMPROVEMENT] Add `ddtags` to to RUM events. See [#2436][]
+# 2.30.1 / 11-09-2025
+
+- [IMPROVEMENT] Add `ddtags` to RUM events. See [#2436][]
 
 # 2.30.0 / 28-07-2025
 
