@@ -189,6 +189,7 @@ internal class RUMResourceScope: RUMScope {
             container: nil,
             context: .init(contextInfo: command.globalAttributes.merging(parent.attributes) { $1 }.merging(attributes) { $1 }),
             date: resourceStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,
             os: context.os,
@@ -304,6 +305,7 @@ internal class RUMResourceScope: RUMScope {
             container: nil,
             context: .init(contextInfo: command.globalAttributes.merging(parent.attributes) { $1 }.merging(attributes) { $1 }),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,
             error: .init(

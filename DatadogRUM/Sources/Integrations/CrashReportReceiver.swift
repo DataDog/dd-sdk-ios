@@ -335,6 +335,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // See https://github.com/DataDog/dd-sdk-ios/pull/1834 for more context.
             context: context.lastRUMAttributes,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: context.device,
             display: nil,
             // RUMM-2197: In very rare cases, the OS info computed below might not be exactly the one

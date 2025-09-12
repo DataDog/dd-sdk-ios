@@ -27,18 +27,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         with context: DatadogContext,
         execution: ExecutionContext
     ) throws -> URLRequest {
-        var tags = [
-            "service:\(context.service)",
-            "version:\(context.version)",
-            "sdk_version:\(context.sdkVersion)",
-            "env:\(context.env)"
-        ]
-
-        if let variant = context.variant {
-            tags.append("variant:\(variant)")
-        }
-
-        tags.append("retry_count:\(execution.attempt + 1)")
+        var tags = ["retry_count:\(execution.attempt + 1)"]
         if let previousResponseCode = execution.previousResponseCode {
             tags.append("last_failure_status:\(previousResponseCode)")
         }
