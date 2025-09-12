@@ -308,6 +308,7 @@ public extension RUMMonitorProtocol {
     ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - attributes: custom attributes to attach to this operation
+    @available(*, message: "This API is in preview and may change in future releases")
     func startFeatureOperation(
         name: String,
         operationKey: String? = nil,
@@ -321,6 +322,7 @@ public extension RUMMonitorProtocol {
     ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startFeatureOperation`
     ///   - attributes: custom attributes to attach to this operation
+    @available(*, message: "This API is in preview and may change in future releases")
     func succeedFeatureOperation(
         name: String,
         operationKey: String? = nil,
@@ -335,6 +337,7 @@ public extension RUMMonitorProtocol {
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startFeatureOperation`
     ///   - reason: the reason for the failure
     ///   - attributes: custom attributes to attach to this operation
+    @available(*, message: "This API is in preview and may change in future releases")
     func failFeatureOperation(
         name: String,
         operationKey: String? = nil,
