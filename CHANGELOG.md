@@ -1,6 +1,7 @@
 # Unreleased
 - [FEATURE] Send Accessibility attributes in View Updates. See [#2410][]
 - [IMPROVEMENT] Add missing `versionMajor` property to the `DDLogEventOperatingSystem` definition in Objective-C. See [#2463][]
+- [IMPROVEMENT] Add `ddtags` to RUM events. See [#2436][]
 
 # 3.0.0 / 02-09-2025
 
@@ -956,6 +957,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2455]: https://github.com/DataDog/dd-sdk-ios/pull/2455
 [#2463]: https://github.com/DataDog/dd-sdk-ios/pull/2463
 [#2410]: https://github.com/DataDog/dd-sdk-ios/pull/2410
+[#2436]: https://github.com/DataDog/dd-sdk-ios/pull/2436
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
