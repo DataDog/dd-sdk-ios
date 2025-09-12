@@ -50,11 +50,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         RUMFeatureOperationManager(parent: self, dependencies: dependencies)
     }()
 
-    /// Feature Operation manager for processing Feature Operation commands.
-    private lazy var featureOperationManager: RUMFeatureOperationManager = {
-        RUMFeatureOperationManager(parent: self, dependencies: dependencies)
-    }()
-
     /// Information about this session state, shared with `CrashContext`.
     private var state: RUMSessionState {
         didSet {
@@ -241,23 +236,23 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 dependencies.sessionEndedMetric.trackWasStopped(sessionID: self.context.sessionID)
                 endReason = .stopAPI
                 deactivating = true
-                
+
             case let startApplicationCommand as RUMApplicationStartCommand:
                 startApplicationLaunchView(on: startApplicationCommand, context: context, writer: writer)
-                
+
             case let startViewCommand as RUMStartViewCommand:
                 // Start view scope explicitly on receiving "start view" command
                 startView(on: startViewCommand, context: context)
-                
+
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
                 hadApplicationLaunchViewWhenEnteringBackground = activeViewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
-                
+
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .willEnterForeground:
                 if hadApplicationLaunchViewWhenEnteringBackground == true {
                     startApplicationLaunchView(on: appLifecycleCommand, context: context, writer: writer)
                 }
                 hadApplicationLaunchViewWhenEnteringBackground = nil
-                
+
             case let operationStepVitalCommand as RUMOperationStepVitalCommand:
                 let activeView = viewScopes.first { $0.isActiveView }
                 // Forward command to the feature operation manager
@@ -267,7 +262,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     writer: writer,
                     activeView: activeView
                 )
-
             default:
                 if !hasActiveView {
                     handleOffViewCommand(command: command, context: context, writer: writer)
