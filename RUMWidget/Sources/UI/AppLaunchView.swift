@@ -8,19 +8,17 @@ import SwiftUI
 import TipKit
 
 @available(iOS 15.0, *)
-public struct DDVitalsView: View {
-    public static let height: CGFloat = 220
+public struct AppLaunchView: View {
+    public static let height: CGFloat = 400
     private static let padding: CGFloat = 10
 
-    @StateObject var viewModel: DDVitalsViewModel
+    @StateObject var viewModel: AppLaunchViewModel
 
     @State var isShowingConfigView: Bool
 
-    @State var showTip: Bool = false
-
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
-    public init(viewModel: DDVitalsViewModel) {
+    public init(viewModel: AppLaunchViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
         isShowingConfigView = false
     }
@@ -56,7 +54,7 @@ public struct DDVitalsView: View {
 }
 
 @available(iOS 15.0, *)
-extension DDVitalsView {
+extension AppLaunchView {
     var topView: some View {
         HStack {
             Image("datadog", bundle: .module)
@@ -93,37 +91,6 @@ extension DDVitalsView {
         VStack(spacing: 10) {
             // Vitals
             HStack(spacing: 10) {
-//                if #available(iOS 18.3, *) {
-//                    vitalView(
-//                        title: "CPU",
-//                        value: viewModel.cpuValue,
-//                        metric: "%",
-//                        level: viewModel.levelFor(cpu: viewModel.cpuValue)
-//                    )
-//                    .popoverTip(showTip ? RUMCpuSuggestionTip() : nil)
-//                    .onChange(of: self.viewModel.cpuValue) {
-//
-//                        if self.viewModel.cpuValue > 80 {
-//
-//                            showTip = true
-//                        }
-//                    }
-//                }
-//
-//                vitalView(
-//                    title: "Memory",
-//                    value: viewModel.memoryValue,
-//                    metric: "MB",
-//                    level: viewModel.levelFor(memory: viewModel.memoryValue)
-//                )
-
-//                vitalView(
-//                    title: "Stack",
-//                    value: viewModel.threadsCount,
-//                    metric: "threads",
-//                    level: viewModel.levelFor(threads: viewModel.threadsCount)
-//                )
-
                 vitalView(
                     title: "Time to Initial Display",
                     value: viewModel.ttid,
@@ -150,28 +117,24 @@ extension DDVitalsView {
                 .background(.gray)
 
             // Timeline
-            timelineView(title: "RUM Timeline", progress: self.viewModel.progress, events: self.viewModel.rumEvents)
+            timelineView(title: "App Launch Events", events: self.viewModel.rumEvents)
 
-//            Divider()
-//                .background(.gray)
-//
-//            HStack {
-//                rateView(
-//                    title: "SlowFrame Rate",
-//                    value: viewModel.hitchesRatio > 1 ? viewModel.hitchesRatio : 0,
-//                    metric: "ms/s",
-//                    level: viewModel.hitchesRatio > 10 ? .high : .low
-//                )
-//                .frame(maxWidth: .infinity, alignment: .leading)
-//
-//                rateView(
-//                    title: "Freeze Rate",
-//                    value: viewModel.hangsRatio > 1 ? viewModel.hangsRatio : 0,
-//                    metric: "s/h",
-//                    level: viewModel.hangsRatio > 100 ? .high : .low
-//                )
-//                .frame(maxWidth: .infinity, alignment: .leading)
-//            }
+           Divider()
+               .background(.gray)
+
+            Text(self.viewModel.launchDetails)
+                .font(.system(size: 12, design: .monospaced))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(spacing: 2) {
+                ForEach(self.viewModel.rumEvents) { marker in
+                    Text("\(marker.text)")
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundColor(marker.id.color)
+                        .padding(0)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
         }
     }
 
@@ -230,7 +193,7 @@ extension DDVitalsView {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    func timelineView(title: String, progress: CGFloat, events: [TimelineEvent]) -> some View {
+    func timelineView(title: String, events: [AppEvent]) -> some View {
         VStack(spacing: 0) {
             Text(title)
                 .font(.system(size: 10)).bold()
@@ -238,36 +201,14 @@ extension DDVitalsView {
                 .padding(.bottom, 5)
                 .foregroundStyle(.white)
 
-            timelineView(progress: progress, events: events)
-
-            HStack(spacing: 2) {
-                Rectangle()
-                    .fill(.orange)
-                    .frame(width: 2, height: 15)
-                Text("Slow frames ")
-                    .font(.system(size: 8))
-                    .foregroundStyle(.white)
-                Circle()
-                    .fill(.blue)
-                    .frame(width: 10, height: 10)
-                Text("User action")
-                    .font(.system(size: 8))
-                    .foregroundStyle(.white)
-                Rectangle()
-                    .fill(.purple)
-                    .frame(width: 10, height: 10)
-                    .padding(.leading, 5)
-                Text("Network resource")
-                    .font(.system(size: 8))
-                    .foregroundStyle(.white)
-            }
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .padding(.top, 2)
+            timelineView(events: events)
         }
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .padding(.top, 2)
     }
 
     @ViewBuilder
-    func timelineView(progress _: CGFloat, events: [TimelineEvent]) -> some View {
+    func timelineView(events: [AppEvent]) -> some View {
         let barHeight: CGFloat = 40
 
         ZStack(alignment: .leading) {
@@ -282,28 +223,15 @@ extension DDVitalsView {
 
                 Rectangle()
                     .fill(Color.gray.opacity(0.7))
-                    .frame(width: viewModel.progress * barWidth, height: barHeight)
+                    .frame(width: barWidth, height: barHeight)
                     .cornerRadius(5)
 
                 ForEach(events) { marker in
+                    Rectangle()
+                        .fill(marker.id.color)
+                        .frame(width: marker.width, height: barHeight)
+                        .offset(x: marker.start * barWidth) // Centering
 
-                    switch marker.event {
-                    case .userAction:
-                        Circle()
-                            .fill(marker.color)
-                            .frame(width: 10, height: 10)
-                            .offset(x: marker.start * barWidth - 5, y: (barHeight / 2) - 5)
-                    case .resource:
-                        Rectangle()
-                            .fill(marker.color)
-                            .frame(width: 10, height: 10)
-                            .offset(x: marker.start * barWidth - 5, y: barHeight - 10)
-                    default:
-                        Rectangle()
-                            .fill(marker.color)
-                            .frame(width: 2.0 * marker.duration, height: barHeight)
-                            .offset(x: marker.start * barWidth - 2) // Centering
-                    }
                 }
             }
         }
@@ -312,7 +240,7 @@ extension DDVitalsView {
 }
 
 @available(iOS 15.0, *)
-private extension DDVitalsView {
+private extension AppLaunchView {
     private func timeString(from seconds: Int) -> String {
         let minutes = seconds / 60
         let seconds = seconds % 60
@@ -320,58 +248,10 @@ private extension DDVitalsView {
     }
 }
 
-@available(iOS 15.0, *)
-enum WarningLevel {
-    case low
-    case medium
-    case high
 
-    var color: Color {
-        switch self {
-        case .low:
-            .green
-        case .medium:
-            .yellow
-        case .high:
-            .red
-        }
-    }
-}
-
-extension TimelineEvent {
-    @available(iOS 13.0, *)
-    var color: Color {
-        switch event {
-        case .viewHitch:
-            .orange
-        case .appHang:
-            .red
-        case .userAction:
-            .blue
-        case .resource:
-            .purple
-        case .appEvent:
-            .yellow
-        }
-    }
-}
-
-@available(iOS 15.0, *)
-extension AppEvent.Event {
-    var color: Color {
-        switch self {
-        case .load: .red
-        case .attribute101: .orange
-        case .attribute50000: .yellow
-        case .main: .purple
-        case .didFinishLaunching: .white
-        case .ttid: .blue
-        case .ttfd: .green
-        }
-    }
-}
 
 @available(iOS 15.0, *)
 #Preview {
-    DDVitalsView(viewModel: DDVitalsViewModel())
+    AppLaunchView(viewModel: AppLaunchViewModel())
 }
+

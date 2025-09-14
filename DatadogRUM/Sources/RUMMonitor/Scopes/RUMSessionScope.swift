@@ -29,8 +29,6 @@ public class RUMSessionScope: RUMScope, RUMContextProvider {
 
     // MARK: - Child Scopes
 
-    public var startUpTime: Double?
-
     /// Active View scopes. Scopes are added / removed when the View starts / stops displaying.
     private(set) var viewScopes: [RUMViewScope] = [] {
         didSet {
@@ -46,24 +44,6 @@ public class RUMSessionScope: RUMScope, RUMContextProvider {
                     hasTrackedAnyView: true,
                     didStartWithReplay: state.didStartWithReplay
                 )
-            }
-
-            if startUpTime == nil && !viewScopes.isEmpty{
-
-                if (viewScopes.count == 1 && viewScopes[0].viewName == "ApplicationLaunch") == false {
-
-                    viewScopes.forEach { viewscope in
-                        if viewscope.viewName != "ApplicationLaunch" {
-
-                            print("initialview: \(viewscope.viewName)")
-
-                            self.startUpTime = viewscope.viewStartTime.timeIntervalSince(self.processStartTime)
-
-                            print("startup: \(self.startUpTime)")
-                        }
-
-                    }
-                }
             }
         }
     }
@@ -114,6 +94,9 @@ public class RUMSessionScope: RUMScope, RUMContextProvider {
     private var nextViewIndex: Int = 0
 
     private let interactionToNextViewMetric: INVMetricTracking?
+
+    public var startUpTime: Double?
+    public var ttidDate: Date?
 
     init(
         isInitialSession: Bool,
@@ -276,6 +259,41 @@ public class RUMSessionScope: RUMScope, RUMContextProvider {
                     startApplicationLaunchView(on: appLifecycleCommand, context: context, writer: writer)
                 }
                 hadApplicationLaunchViewWhenEnteringBackground = nil
+
+            case let ttidCommand as RUMTimeToInitialDisplayCommand:
+                self.startUpTime = ttidCommand.time.timeIntervalSince(self.processStartTime)
+                self.ttidDate = ttidCommand.time
+
+                let durationVital = RUMVitalEvent.Vital.durationProperties(
+                    value: RUMVitalEvent.Vital.DurationProperties(
+                        durationPropertiesDescription: "Time to Initial Display",
+                        duration: Double(ttidCommand.time.timeIntervalSince(self.processStartTime).toInt64Nanoseconds),
+                        id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                        name: "TTID"
+                    )
+                )
+
+                guard let view = viewScopes.first(where: { $0.isActiveView }) else { return true }
+
+                let vitalEvent = RUMVitalEvent(
+                    dd: .init(),
+                    application: .init(id: parent.context.rumApplicationID),
+                    context: RUMEventAttributes(contextInfo: [:]),
+                    date: self.processStartTime.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+                    session: .init(
+                        hasReplay: context.hasReplay,
+                        id: self.context.sessionID.toRUMDataFormat,
+                        type: dependencies.sessionType
+                    ),
+                    view: .init(
+                        id: view.viewUUID.toRUMDataFormat,
+                        name: view.viewName,
+                        referrer: nil,
+                        url: view.viewPath
+                    ),
+                    vital: durationVital
+                )
+                writer.write(value: vitalEvent)
 
             default:
                 if !hasActiveView {

@@ -23,8 +23,11 @@ public struct RUMWidgetView: View {
 
     public var body: some View {
         ZStack {
-            DDVitalsView(
-                viewModel: DDVitalsViewModel(),
+//            DDVitalsView(
+//                viewModel: DDVitalsViewModel(),
+//            )
+            AppLaunchView(
+                viewModel: AppLaunchViewModel(),
             )
             .frame(width: UIScreen.main.bounds.width)
             .opacity(viewModel.isExpanded ? 1 : 0)

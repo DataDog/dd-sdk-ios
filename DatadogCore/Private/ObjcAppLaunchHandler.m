@@ -42,20 +42,24 @@ __used __attribute__((constructor(DDConstructorPriority)))
 static void recordPreMainInitialization(void) {
     [PreMainHelper recordSecondAttribute];
     [__dd_private_AppLaunchHandler.shared setPreMainDate: CFAbsoluteTimeGetCurrent()];
-    NSLog(@"hello1");
+    NSLog(@"hello-");
 }
 
-__used __attribute__((constructor(65535)))
+__used __attribute__((constructor(0)))
+static void recordPreMainInitialization1(void) {
+    NSLog(@"hello1");
+}
+// Runs before main()
+__used __attribute__((constructor(101)))
 static void recordPreMainInitialization2(void) {
+    [PreMainHelper recordFirstAttribute];
+    [__dd_private_AppLaunchHandler.shared setPreMainDate: CFAbsoluteTimeGetCurrent()];
     NSLog(@"hello2");
 }
 
-// Runs before main()
-__used __attribute__((constructor(101)))
-static void recordPrePreMainInitialization(void) {
-    [PreMainHelper recordFirstAttribute];
-    [__dd_private_AppLaunchHandler.shared setPreMainDate: CFAbsoluteTimeGetCurrent()];
-    NSLog(@"hello0");
+__used __attribute__((constructor(65535)))
+static void recordPreMainInitialization3(void) {
+    NSLog(@"hello3");
 }
 
 /// Constants for special task policy results

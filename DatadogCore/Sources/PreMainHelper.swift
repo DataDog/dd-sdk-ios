@@ -45,8 +45,12 @@ public extension PreMainHelper {
     public static func recordSecondAttribute() { Self.secondAttribute = Date() }
     public static func recordMainExecution() { Self.mainExecution = Date() }
     public static func recordPostMainExecution() { Self.postMainExecution = Date() }
-    public static func recordFirstFrame() { Self.firstFrame = Date() }
-    public static func recordFullDisplay() { Self.fullDisplay = Date() }
+    public static func recordFirstFrame(_ date: Date? = nil) { Self.firstFrame = date }
+    public static func recordFullDisplay(_ date: Date? = nil) {
+        guard let firstFrame, let date else { return }
+
+        Self.fullDisplay = firstFrame < date ? date : firstFrame
+    }
 
     @nonobjc public  static var info: PreMainInfo? {
 
@@ -55,21 +59,7 @@ public extension PreMainHelper {
               let loadExecution = Self.loadExecution,
               let mainExecution = Self.mainExecution,
               let postMainExecution = Self.postMainExecution,
-              let firstFrame = Self.firstFrame,
-              let fullDisplay = Self.fullDisplay else {
-
-            print(
-                """
-            failed to have
-            \(Self.secondAttribute)
-            \(Self.firstAttribute)
-            \(Self.loadExecution)
-            \(Self.mainExecution)
-            \(Self.postMainExecution)
-            \(Self.firstFrame)
-            \(Self.fullDisplay)
-            """
-            )
+              let firstFrame = Self.firstFrame else {
             return nil }
 
         return PreMainInfo(processStart: Self.processStart,
@@ -84,19 +74,28 @@ public extension PreMainHelper {
     }
 }
 
+/// Date formatter producing string representation of a given date for user-facing features (like console output).
+let shortFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.calendar = Calendar(identifier: .gregorian)
+    formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+    return formatter
+}()
+
+
 public struct PreMainInfo: CustomDebugStringConvertible {
 
     let processStart: Date
     let systemStart: Date
-    let processToLoad: TimeInterval
-    let didFinishLaunching: TimeInterval
-    let processBootstrap: TimeInterval
-    let processBootstrap2: TimeInterval
-    let mainInitialization: TimeInterval
-    let mainDuration: TimeInterval
-    let preWarmingGapDuration: TimeInterval
-    let ttid: TimeInterval
-    let ttfd: TimeInterval
+    public let processToLoad: TimeInterval
+    public let didFinishLaunching: TimeInterval
+    public let processBootstrap: TimeInterval
+    public let processBootstrap2: TimeInterval
+    public let mainInitialization: TimeInterval
+    public let mainDuration: TimeInterval
+    public let preWarmingGapDuration: TimeInterval
+    public let ttid: TimeInterval
+    public let ttfd: TimeInterval?
 
     public init(processStart: Date,
          systemStart: Date,
@@ -106,37 +105,61 @@ public struct PreMainInfo: CustomDebugStringConvertible {
          mainExecution: Date,
          postMainExecution: Date,
          firstFrame: Date,
-         fullDisplay: Date) {
+         fullDisplay: Date?) {
 
         self.processStart = processStart
         self.systemStart = systemStart
+        self.processToLoad = loadExecution.timeIntervalSince1970 - processStart.timeIntervalSince1970
         self.processBootstrap = firstAttribute.timeIntervalSince1970 - processStart.timeIntervalSince1970
         self.processBootstrap2 = secondAttribute.timeIntervalSince1970 - processStart.timeIntervalSince1970
-        self.processToLoad = loadExecution.timeIntervalSince1970 - processStart.timeIntervalSince1970
         self.mainInitialization = mainExecution.timeIntervalSince1970 - processStart.timeIntervalSince1970
         self.didFinishLaunching = postMainExecution.timeIntervalSince1970 - processStart.timeIntervalSince1970
         self.ttid = firstFrame.timeIntervalSince1970 - processStart.timeIntervalSince1970
-        self.ttfd = fullDisplay.timeIntervalSince1970 - processStart.timeIntervalSince1970
+
+        if let fullDisplay {
+            self.ttfd = fullDisplay.timeIntervalSince1970 - processStart.timeIntervalSince1970
+        } else {
+            self.ttfd = nil
+        }
 
         self.preWarmingGapDuration = postMainExecution.timeIntervalSince1970 - secondAttribute.timeIntervalSince1970
         self.mainDuration = postMainExecution.timeIntervalSince1970 - mainExecution.timeIntervalSince1970
     }
 
-    private func format(_ interval: TimeInterval) -> String {
-            String(format: "%.6f s", interval)
+    private func format(_ interval: TimeInterval?) -> String {
+        guard let interval else {
+            return "N/A"
         }
+
+        return String(format: "%.6f s", interval)
+    }
+
+    public var loadString: String { "+ (void)load        = \(format(processToLoad))" }
+    public var attribute101String: String { "__attribute__ 101   = \(format(processBootstrap))" }
+    public var attribute65000String: String { "__attribute__ 65000 = \(format(processBootstrap2))" }
+    public var mainString: String { "main                = \(format(mainInitialization))" }
+    public var didFinishLaunchingString: String { "didFinishLaunching  = \(format(didFinishLaunching))" }
+    public var ttidString: String { "TTID                = \(format(ttid))" }
+    public var ttfdString: String { "TTFD                = \(format(ttfd))" }
+
+    public var displayDescription: String {
+            """
+            ⏱ System start: \(shortFormatter.string(from: systemStart))
+            ⏱ App start:    \(shortFormatter.string(from: processStart))
+            """
+    }
 
     public var debugDescription: String {
             """
             ⏱ System start: \(systemStart)
-            ⏱ App start: \(processStart) {
-                processToLoad       = \(format(processToLoad))
-                attribute101        = \(format(processBootstrap))
-                attribute65000      = \(format(processBootstrap2)) - preWarmingGap   \(format(preWarmingGapDuration))
+            ⏱ App start:    \(processStart) {
+                + (void)load        = \(format(processToLoad))
+                __attribute__ 101   = \(format(processBootstrap))
+                __attribute__ 65000 = \(format(processBootstrap2)) - preWarmingGap   \(format(preWarmingGapDuration))
                 main                = \(format(mainInitialization)) - mainDapDuration \(format(mainDuration))
                 didFinishLaunching  = \(format(didFinishLaunching))
-                ttid                = \(format(ttid))
-                ttfd                = \(format(ttfd))
+                TTID                = \(format(ttid))
+                TTFD                = \(format(ttfd))
             }
             """
     }

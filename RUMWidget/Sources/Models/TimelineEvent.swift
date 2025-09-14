@@ -6,6 +6,32 @@
 
 import Foundation
 
+struct AppEvent: Identifiable {
+    let id: Event
+    let text: String
+    let width: CGFloat
+    let start: CGFloat
+
+    init(id: Event, text: String, width: CGFloat = 2, start: CGFloat) {
+        self.id = id
+        self.text = text
+        self.width = width
+        self.start = start
+    }
+}
+
+extension AppEvent {
+    enum Event: Int {
+        case load
+        case attribute101
+        case attribute50000
+        case main
+        case didFinishLaunching
+        case ttid
+        case ttfd
+    }
+}
+
 struct TimelineEvent: Identifiable {
     let id: Int
     let start: CGFloat
@@ -19,5 +45,6 @@ extension TimelineEvent {
         case appHang
         case userAction
         case resource
+        case appEvent
     }
 }

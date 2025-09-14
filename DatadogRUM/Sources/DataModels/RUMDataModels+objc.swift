@@ -94,6 +94,10 @@ public class objc_RUMActionEvent: NSObject {
         .init(swift: root.swiftModel.source)
     }
 
+    public var stream: objc_RUMActionEventStream? {
+        root.swiftModel.stream != nil ? objc_RUMActionEventStream(root: root) : nil
+    }
+
     public var synthetics: objc_RUMActionEventRUMSyntheticsTest? {
         root.swiftModel.synthetics != nil ? objc_RUMActionEventRUMSyntheticsTest(root: root) : nil
     }
@@ -1097,6 +1101,21 @@ public enum objc_RUMActionEventSource: Int {
     case kotlinMultiplatform
 }
 
+@objc(DDRUMActionEventStream)
+@objcMembers
+@_spi(objc)
+public class objc_RUMActionEventStream: NSObject {
+    internal let root: objc_RUMActionEvent
+
+    internal init(root: objc_RUMActionEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.stream!.id
+    }
+}
+
 @objc(DDRUMActionEventRUMSyntheticsTest)
 @objcMembers
 @_spi(objc)
@@ -1168,6 +1187,848 @@ public class objc_RUMActionEventView: NSObject {
 
     public var inForeground: NSNumber? {
         root.swiftModel.view.inForeground as NSNumber?
+    }
+
+    public var name: String? {
+        set { root.swiftModel.view.name = newValue }
+        get { root.swiftModel.view.name }
+    }
+
+    public var referrer: String? {
+        set { root.swiftModel.view.referrer = newValue }
+        get { root.swiftModel.view.referrer }
+    }
+
+    public var url: String {
+        set { root.swiftModel.view.url = newValue }
+        get { root.swiftModel.view.url }
+    }
+}
+
+@objc(DDRUMTransitionEvent)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEvent: NSObject {
+    public internal(set) var swiftModel: RUMTransitionEvent
+    internal var root: objc_RUMTransitionEvent { self }
+
+    public init(swiftModel: RUMTransitionEvent) {
+        self.swiftModel = swiftModel
+    }
+
+    public var dd: objc_RUMTransitionEventDD {
+        objc_RUMTransitionEventDD(root: root)
+    }
+
+    public var account: objc_RUMTransitionEventRUMAccount? {
+        root.swiftModel.account != nil ? objc_RUMTransitionEventRUMAccount(root: root) : nil
+    }
+
+    public var application: objc_RUMTransitionEventApplication {
+        objc_RUMTransitionEventApplication(root: root)
+    }
+
+    public var buildId: String? {
+        root.swiftModel.buildId
+    }
+
+    public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
+    public var ciTest: objc_RUMTransitionEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? objc_RUMTransitionEventRUMCITest(root: root) : nil
+    }
+
+    public var connectivity: objc_RUMTransitionEventRUMConnectivity? {
+        root.swiftModel.connectivity != nil ? objc_RUMTransitionEventRUMConnectivity(root: root) : nil
+    }
+
+    public var context: objc_RUMTransitionEventRUMEventAttributes? {
+        root.swiftModel.context != nil ? objc_RUMTransitionEventRUMEventAttributes(root: root) : nil
+    }
+
+    public var date: NSNumber {
+        root.swiftModel.date as NSNumber
+    }
+
+    public var ddtags: String? {
+        root.swiftModel.ddtags
+    }
+
+    public var device: objc_RUMTransitionEventDevice? {
+        root.swiftModel.device != nil ? objc_RUMTransitionEventDevice(root: root) : nil
+    }
+
+    public var display: objc_RUMTransitionEventDisplay? {
+        root.swiftModel.display != nil ? objc_RUMTransitionEventDisplay(root: root) : nil
+    }
+
+    public var os: objc_RUMTransitionEventOperatingSystem? {
+        root.swiftModel.os != nil ? objc_RUMTransitionEventOperatingSystem(root: root) : nil
+    }
+
+    public var service: String? {
+        root.swiftModel.service
+    }
+
+    public var session: objc_RUMTransitionEventSession {
+        objc_RUMTransitionEventSession(root: root)
+    }
+
+    public var source: objc_RUMTransitionEventSource {
+        .init(swift: root.swiftModel.source)
+    }
+
+    public var stream: objc_RUMTransitionEventStream {
+        objc_RUMTransitionEventStream(root: root)
+    }
+
+    public var synthetics: objc_RUMTransitionEventRUMSyntheticsTest? {
+        root.swiftModel.synthetics != nil ? objc_RUMTransitionEventRUMSyntheticsTest(root: root) : nil
+    }
+
+    public var transition: objc_RUMTransitionEventTransition {
+        objc_RUMTransitionEventTransition(root: root)
+    }
+
+    public var type: String {
+        root.swiftModel.type
+    }
+
+    public var usr: objc_RUMTransitionEventRUMUser? {
+        root.swiftModel.usr != nil ? objc_RUMTransitionEventRUMUser(root: root) : nil
+    }
+
+    public var version: String? {
+        root.swiftModel.version
+    }
+
+    public var view: objc_RUMTransitionEventView {
+        objc_RUMTransitionEventView(root: root)
+    }
+}
+
+@objc(DDRUMTransitionEventDD)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventDD: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var browserSdkVersion: String? {
+        root.swiftModel.dd.browserSdkVersion
+    }
+
+    public var configuration: objc_RUMTransitionEventDDConfiguration? {
+        root.swiftModel.dd.configuration != nil ? objc_RUMTransitionEventDDConfiguration(root: root) : nil
+    }
+
+    public var formatVersion: NSNumber {
+        root.swiftModel.dd.formatVersion as NSNumber
+    }
+
+    public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
+    public var session: objc_RUMTransitionEventDDSession? {
+        root.swiftModel.dd.session != nil ? objc_RUMTransitionEventDDSession(root: root) : nil
+    }
+}
+
+@objc(DDRUMTransitionEventDDConfiguration)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventDDConfiguration: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var profilingSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
+    }
+
+    public var sessionSampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
+    }
+}
+
+@objc(DDRUMTransitionEventDDSession)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventDDSession: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var plan: objc_RUMTransitionEventDDSessionPlan {
+        .init(swift: root.swiftModel.dd.session!.plan)
+    }
+
+    public var sessionPrecondition: objc_RUMTransitionEventDDSessionRUMSessionPrecondition {
+        .init(swift: root.swiftModel.dd.session!.sessionPrecondition)
+    }
+}
+
+@objc(DDRUMTransitionEventDDSessionPlan)
+@_spi(objc)
+public enum objc_RUMTransitionEventDDSessionPlan: Int {
+    internal init(swift: RUMTransitionEvent.DD.Session.Plan?) {
+        switch swift {
+        case nil: self = .none
+        case .plan1?: self = .plan1
+        case .plan2?: self = .plan2
+        }
+    }
+
+    internal var toSwift: RUMTransitionEvent.DD.Session.Plan? {
+        switch self {
+        case .none: return nil
+        case .plan1: return .plan1
+        case .plan2: return .plan2
+        }
+    }
+
+    case none
+    case plan1
+    case plan2
+}
+
+@objc(DDRUMTransitionEventDDSessionRUMSessionPrecondition)
+@_spi(objc)
+public enum objc_RUMTransitionEventDDSessionRUMSessionPrecondition: Int {
+    internal init(swift: RUMSessionPrecondition?) {
+        switch swift {
+        case nil: self = .none
+        case .userAppLaunch?: self = .userAppLaunch
+        case .inactivityTimeout?: self = .inactivityTimeout
+        case .maxDuration?: self = .maxDuration
+        case .backgroundLaunch?: self = .backgroundLaunch
+        case .prewarm?: self = .prewarm
+        case .fromNonInteractiveSession?: self = .fromNonInteractiveSession
+        case .explicitStop?: self = .explicitStop
+        }
+    }
+
+    internal var toSwift: RUMSessionPrecondition? {
+        switch self {
+        case .none: return nil
+        case .userAppLaunch: return .userAppLaunch
+        case .inactivityTimeout: return .inactivityTimeout
+        case .maxDuration: return .maxDuration
+        case .backgroundLaunch: return .backgroundLaunch
+        case .prewarm: return .prewarm
+        case .fromNonInteractiveSession: return .fromNonInteractiveSession
+        case .explicitStop: return .explicitStop
+        }
+    }
+
+    case none
+    case userAppLaunch
+    case inactivityTimeout
+    case maxDuration
+    case backgroundLaunch
+    case prewarm
+    case fromNonInteractiveSession
+    case explicitStop
+}
+
+@objc(DDRUMTransitionEventRUMAccount)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventRUMAccount: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.account!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.account!.name
+    }
+
+    public var accountInfo: [String: Any] {
+        set { root.swiftModel.account!.accountInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.account!.accountInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMTransitionEventApplication)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventApplication: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
+    }
+
+    public var id: String {
+        root.swiftModel.application.id
+    }
+}
+
+@objc(DDRUMTransitionEventRUMCITest)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventRUMCITest: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var testExecutionId: String {
+        root.swiftModel.ciTest!.testExecutionId
+    }
+}
+
+@objc(DDRUMTransitionEventRUMConnectivity)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventRUMConnectivity: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var cellular: objc_RUMTransitionEventRUMConnectivityCellular? {
+        root.swiftModel.connectivity!.cellular != nil ? objc_RUMTransitionEventRUMConnectivityCellular(root: root) : nil
+    }
+
+    public var effectiveType: objc_RUMTransitionEventRUMConnectivityEffectiveType {
+        .init(swift: root.swiftModel.connectivity!.effectiveType)
+    }
+
+    public var interfaces: [Int]? {
+        root.swiftModel.connectivity!.interfaces?.map { objc_RUMTransitionEventRUMConnectivityInterfaces(swift: $0).rawValue }
+    }
+
+    public var status: objc_RUMTransitionEventRUMConnectivityStatus {
+        .init(swift: root.swiftModel.connectivity!.status)
+    }
+}
+
+@objc(DDRUMTransitionEventRUMConnectivityCellular)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventRUMConnectivityCellular: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var carrierName: String? {
+        root.swiftModel.connectivity!.cellular!.carrierName
+    }
+
+    public var technology: String? {
+        root.swiftModel.connectivity!.cellular!.technology
+    }
+}
+
+@objc(DDRUMTransitionEventRUMConnectivityEffectiveType)
+@_spi(objc)
+public enum objc_RUMTransitionEventRUMConnectivityEffectiveType: Int {
+    internal init(swift: RUMConnectivity.EffectiveType?) {
+        switch swift {
+        case nil: self = .none
+        case .slow2g?: self = .slow2g
+        case .effectiveType2g?: self = .effectiveType2g
+        case .effectiveType3g?: self = .effectiveType3g
+        case .effectiveType4g?: self = .effectiveType4g
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.EffectiveType? {
+        switch self {
+        case .none: return nil
+        case .slow2g: return .slow2g
+        case .effectiveType2g: return .effectiveType2g
+        case .effectiveType3g: return .effectiveType3g
+        case .effectiveType4g: return .effectiveType4g
+        }
+    }
+
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+}
+
+@objc(DDRUMTransitionEventRUMConnectivityInterfaces)
+@_spi(objc)
+public enum objc_RUMTransitionEventRUMConnectivityInterfaces: Int {
+    internal init(swift: RUMConnectivity.Interfaces?) {
+        switch swift {
+        case nil: self = .none
+        case .bluetooth?: self = .bluetooth
+        case .cellular?: self = .cellular
+        case .ethernet?: self = .ethernet
+        case .wifi?: self = .wifi
+        case .wimax?: self = .wimax
+        case .mixed?: self = .mixed
+        case .other?: self = .other
+        case .unknown?: self = .unknown
+        case .interfacesNone?: self = .interfacesNone
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Interfaces? {
+        switch self {
+        case .none: return nil
+        case .bluetooth: return .bluetooth
+        case .cellular: return .cellular
+        case .ethernet: return .ethernet
+        case .wifi: return .wifi
+        case .wimax: return .wimax
+        case .mixed: return .mixed
+        case .other: return .other
+        case .unknown: return .unknown
+        case .interfacesNone: return .interfacesNone
+        }
+    }
+
+    case none
+    case bluetooth
+    case cellular
+    case ethernet
+    case wifi
+    case wimax
+    case mixed
+    case other
+    case unknown
+    case interfacesNone
+}
+
+@objc(DDRUMTransitionEventRUMConnectivityStatus)
+@_spi(objc)
+public enum objc_RUMTransitionEventRUMConnectivityStatus: Int {
+    internal init(swift: RUMConnectivity.Status) {
+        switch swift {
+        case .connected: self = .connected
+        case .notConnected: self = .notConnected
+        case .maybe: self = .maybe
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Status {
+        switch self {
+        case .connected: return .connected
+        case .notConnected: return .notConnected
+        case .maybe: return .maybe
+        }
+    }
+
+    case connected
+    case notConnected
+    case maybe
+}
+
+@objc(DDRUMTransitionEventRUMEventAttributes)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventRUMEventAttributes: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var contextInfo: [String: Any] {
+        set { root.swiftModel.context!.contextInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.context!.contextInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMTransitionEventDevice)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventDevice: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var architecture: String? {
+        root.swiftModel.device!.architecture
+    }
+
+    public var batteryLevel: NSNumber? {
+        root.swiftModel.device!.batteryLevel as NSNumber?
+    }
+
+    public var brand: String? {
+        root.swiftModel.device!.brand
+    }
+
+    public var brightnessLevel: NSNumber? {
+        root.swiftModel.device!.brightnessLevel as NSNumber?
+    }
+
+    public var locale: String? {
+        root.swiftModel.device!.locale
+    }
+
+    public var locales: [String]? {
+        root.swiftModel.device!.locales
+    }
+
+    public var model: String? {
+        root.swiftModel.device!.model
+    }
+
+    public var name: String? {
+        root.swiftModel.device!.name
+    }
+
+    public var powerSavingMode: NSNumber? {
+        root.swiftModel.device!.powerSavingMode as NSNumber?
+    }
+
+    public var timeZone: String? {
+        root.swiftModel.device!.timeZone
+    }
+
+    public var type: objc_RUMTransitionEventDeviceDeviceType {
+        .init(swift: root.swiftModel.device!.type)
+    }
+}
+
+@objc(DDRUMTransitionEventDeviceDeviceType)
+@_spi(objc)
+public enum objc_RUMTransitionEventDeviceDeviceType: Int {
+    internal init(swift: Device.DeviceType?) {
+        switch swift {
+        case nil: self = .none
+        case .mobile?: self = .mobile
+        case .desktop?: self = .desktop
+        case .tablet?: self = .tablet
+        case .tv?: self = .tv
+        case .gamingConsole?: self = .gamingConsole
+        case .bot?: self = .bot
+        case .other?: self = .other
+        }
+    }
+
+    internal var toSwift: Device.DeviceType? {
+        switch self {
+        case .none: return nil
+        case .mobile: return .mobile
+        case .desktop: return .desktop
+        case .tablet: return .tablet
+        case .tv: return .tv
+        case .gamingConsole: return .gamingConsole
+        case .bot: return .bot
+        case .other: return .other
+        }
+    }
+
+    case none
+    case mobile
+    case desktop
+    case tablet
+    case tv
+    case gamingConsole
+    case bot
+    case other
+}
+
+@objc(DDRUMTransitionEventDisplay)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventDisplay: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var viewport: objc_RUMTransitionEventDisplayViewport? {
+        root.swiftModel.display!.viewport != nil ? objc_RUMTransitionEventDisplayViewport(root: root) : nil
+    }
+}
+
+@objc(DDRUMTransitionEventDisplayViewport)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventDisplayViewport: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var height: NSNumber {
+        root.swiftModel.display!.viewport!.height as NSNumber
+    }
+
+    public var width: NSNumber {
+        root.swiftModel.display!.viewport!.width as NSNumber
+    }
+}
+
+@objc(DDRUMTransitionEventOperatingSystem)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventOperatingSystem: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var build: String? {
+        root.swiftModel.os!.build
+    }
+
+    public var name: String {
+        root.swiftModel.os!.name
+    }
+
+    public var version: String {
+        root.swiftModel.os!.version
+    }
+
+    public var versionMajor: String {
+        root.swiftModel.os!.versionMajor
+    }
+}
+
+@objc(DDRUMTransitionEventSession)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventSession: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var hasReplay: NSNumber? {
+        root.swiftModel.session.hasReplay as NSNumber?
+    }
+
+    public var id: String {
+        root.swiftModel.session.id
+    }
+
+    public var type: objc_RUMTransitionEventSessionRUMSessionType {
+        .init(swift: root.swiftModel.session.type)
+    }
+}
+
+@objc(DDRUMTransitionEventSessionRUMSessionType)
+@_spi(objc)
+public enum objc_RUMTransitionEventSessionRUMSessionType: Int {
+    internal init(swift: RUMSessionType) {
+        switch swift {
+        case .user: self = .user
+        case .synthetics: self = .synthetics
+        case .ciTest: self = .ciTest
+        }
+    }
+
+    internal var toSwift: RUMSessionType {
+        switch self {
+        case .user: return .user
+        case .synthetics: return .synthetics
+        case .ciTest: return .ciTest
+        }
+    }
+
+    case user
+    case synthetics
+    case ciTest
+}
+
+@objc(DDRUMTransitionEventSource)
+@_spi(objc)
+public enum objc_RUMTransitionEventSource: Int {
+    internal init(swift: RUMTransitionEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        case .roku?: self = .roku
+        case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
+        }
+    }
+
+    internal var toSwift: RUMTransitionEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        case .roku: return .roku
+        case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+}
+
+@objc(DDRUMTransitionEventStream)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventStream: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.stream.id
+    }
+}
+
+@objc(DDRUMTransitionEventRUMSyntheticsTest)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventRUMSyntheticsTest: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var injected: NSNumber? {
+        root.swiftModel.synthetics!.injected as NSNumber?
+    }
+
+    public var resultId: String {
+        root.swiftModel.synthetics!.resultId
+    }
+
+    public var testId: String {
+        root.swiftModel.synthetics!.testId
+    }
+}
+
+@objc(DDRUMTransitionEventTransition)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventTransition: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var bufferStarvationDuration: NSNumber? {
+        root.swiftModel.transition.bufferStarvationDuration as NSNumber?
+    }
+
+    public var duration: NSNumber? {
+        root.swiftModel.transition.duration as NSNumber?
+    }
+
+    public var errorCode: NSNumber? {
+        root.swiftModel.transition.errorCode as NSNumber?
+    }
+
+    public var id: String? {
+        root.swiftModel.transition.id
+    }
+
+    public var mediaStartDelay: NSNumber? {
+        root.swiftModel.transition.mediaStartDelay as NSNumber?
+    }
+
+    public var timestamp: NSNumber? {
+        root.swiftModel.transition.timestamp as NSNumber?
+    }
+
+    public var type: String {
+        root.swiftModel.transition.type
+    }
+}
+
+@objc(DDRUMTransitionEventRUMUser)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventRUMUser: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
+    }
+
+    public var email: String? {
+        root.swiftModel.usr!.email
+    }
+
+    public var id: String? {
+        root.swiftModel.usr!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.usr!.name
+    }
+
+    public var usrInfo: [String: Any] {
+        set { root.swiftModel.usr!.usrInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.usr!.usrInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMTransitionEventView)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTransitionEventView: NSObject {
+    internal let root: objc_RUMTransitionEvent
+
+    internal init(root: objc_RUMTransitionEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.view.id
     }
 
     public var name: String? {
@@ -1279,6 +2140,10 @@ public class objc_RUMErrorEvent: NSObject {
 
     public var source: objc_RUMErrorEventSource {
         .init(swift: root.swiftModel.source)
+    }
+
+    public var stream: objc_RUMErrorEventStream? {
+        root.swiftModel.stream != nil ? objc_RUMErrorEventStream(root: root) : nil
     }
 
     public var synthetics: objc_RUMErrorEventRUMSyntheticsTest? {
@@ -2644,6 +3509,21 @@ public enum objc_RUMErrorEventSource: Int {
     case kotlinMultiplatform
 }
 
+@objc(DDRUMErrorEventStream)
+@objcMembers
+@_spi(objc)
+public class objc_RUMErrorEventStream: NSObject {
+    internal let root: objc_RUMErrorEvent
+
+    internal init(root: objc_RUMErrorEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.stream!.id
+    }
+}
+
 @objc(DDRUMErrorEventRUMSyntheticsTest)
 @objcMembers
 @_spi(objc)
@@ -2818,6 +3698,10 @@ public class objc_RUMLongTaskEvent: NSObject {
 
     public var source: objc_RUMLongTaskEventSource {
         .init(swift: root.swiftModel.source)
+    }
+
+    public var stream: objc_RUMLongTaskEventStream? {
+        root.swiftModel.stream != nil ? objc_RUMLongTaskEventStream(root: root) : nil
     }
 
     public var synthetics: objc_RUMLongTaskEventRUMSyntheticsTest? {
@@ -3807,6 +4691,21 @@ public enum objc_RUMLongTaskEventSource: Int {
     case kotlinMultiplatform
 }
 
+@objc(DDRUMLongTaskEventStream)
+@objcMembers
+@_spi(objc)
+public class objc_RUMLongTaskEventStream: NSObject {
+    internal let root: objc_RUMLongTaskEvent
+
+    internal init(root: objc_RUMLongTaskEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.stream!.id
+    }
+}
+
 @objc(DDRUMLongTaskEventRUMSyntheticsTest)
 @objcMembers
 @_spi(objc)
@@ -3977,6 +4876,10 @@ public class objc_RUMResourceEvent: NSObject {
 
     public var source: objc_RUMResourceEventSource {
         .init(swift: root.swiftModel.source)
+    }
+
+    public var stream: objc_RUMResourceEventStream? {
+        root.swiftModel.stream != nil ? objc_RUMResourceEventStream(root: root) : nil
     }
 
     public var synthetics: objc_RUMResourceEventRUMSyntheticsTest? {
@@ -5245,6 +6148,21 @@ public enum objc_RUMResourceEventSource: Int {
     case kotlinMultiplatform
 }
 
+@objc(DDRUMResourceEventStream)
+@objcMembers
+@_spi(objc)
+public class objc_RUMResourceEventStream: NSObject {
+    internal let root: objc_RUMResourceEvent
+
+    internal init(root: objc_RUMResourceEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.stream!.id
+    }
+}
+
 @objc(DDRUMResourceEventRUMSyntheticsTest)
 @objcMembers
 @_spi(objc)
@@ -5415,6 +6333,10 @@ public class objc_RUMViewEvent: NSObject {
 
     public var source: objc_RUMViewEventSource {
         .init(swift: root.swiftModel.source)
+    }
+
+    public var stream: objc_RUMViewEventStream? {
+        root.swiftModel.stream != nil ? objc_RUMViewEventStream(root: root) : nil
     }
 
     public var synthetics: objc_RUMViewEventRUMSyntheticsTest? {
@@ -6395,6 +7317,49 @@ public enum objc_RUMViewEventSource: Int {
     case kotlinMultiplatform
 }
 
+@objc(DDRUMViewEventStream)
+@objcMembers
+@_spi(objc)
+public class objc_RUMViewEventStream: NSObject {
+    internal let root: objc_RUMViewEvent
+
+    internal init(root: objc_RUMViewEvent) {
+        self.root = root
+    }
+
+    public var bitrate: NSNumber? {
+        root.swiftModel.stream!.bitrate as NSNumber?
+    }
+
+    public var duration: NSNumber? {
+        root.swiftModel.stream!.duration as NSNumber?
+    }
+
+    public var format: String? {
+        root.swiftModel.stream!.format
+    }
+
+    public var fps: NSNumber? {
+        root.swiftModel.stream!.fps as NSNumber?
+    }
+
+    public var id: String {
+        root.swiftModel.stream!.id
+    }
+
+    public var resolution: String? {
+        root.swiftModel.stream!.resolution
+    }
+
+    public var timestamp: NSNumber? {
+        root.swiftModel.stream!.timestamp as NSNumber?
+    }
+
+    public var watchTime: NSNumber? {
+        root.swiftModel.stream!.watchTime as NSNumber?
+    }
+}
+
 @objc(DDRUMViewEventRUMSyntheticsTest)
 @objcMembers
 @_spi(objc)
@@ -7350,6 +8315,10 @@ public class objc_RUMVitalEvent: NSObject {
         .init(swift: root.swiftModel.source)
     }
 
+    public var stream: objc_RUMVitalEventStream? {
+        root.swiftModel.stream != nil ? objc_RUMVitalEventStream(root: root) : nil
+    }
+
     public var synthetics: objc_RUMVitalEventRUMSyntheticsTest? {
         root.swiftModel.synthetics != nil ? objc_RUMVitalEventRUMSyntheticsTest(root: root) : nil
     }
@@ -8066,6 +9035,21 @@ public enum objc_RUMVitalEventSource: Int {
     case kotlinMultiplatform
 }
 
+@objc(DDRUMVitalEventStream)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalEventStream: NSObject {
+    internal let root: objc_RUMVitalEvent
+
+    internal init(root: objc_RUMVitalEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.stream!.id
+    }
+}
+
 @objc(DDRUMVitalEventRUMSyntheticsTest)
 @objcMembers
 @_spi(objc)
@@ -8131,23 +9115,23 @@ public class objc_RUMVitalEventView: NSObject {
         self.root = root
     }
 
-    public var id: String {
-        root.swiftModel.view.id
+    public var id: String? {
+        root.swiftModel.view?.id
     }
 
     public var name: String? {
-        set { root.swiftModel.view.name = newValue }
-        get { root.swiftModel.view.name }
+        set { root.swiftModel.view?.name = newValue }
+        get { root.swiftModel.view?.name }
     }
 
     public var referrer: String? {
-        set { root.swiftModel.view.referrer = newValue }
-        get { root.swiftModel.view.referrer }
+        set { root.swiftModel.view?.referrer = newValue }
+        get { root.swiftModel.view?.referrer }
     }
 
-    public var url: String {
-        set { root.swiftModel.view.url = newValue }
-        get { root.swiftModel.view.url }
+    public var url: String? {
+        set { root.swiftModel.view?.url = newValue ?? "" }
+        get { root.swiftModel.view?.url }
     }
 }
 
@@ -8160,116 +9144,147 @@ public class objc_RUMVitalEventVital: NSObject {
     internal init(root: objc_RUMVitalEvent) {
         self.root = root
     }
-//
-//    public var vitalDescription: String? {
-//        root.swiftModel.vital.vitalDescription
-//    }
-//
-//    public var duration: NSNumber? {
-//        root.swiftModel.vital.duration as NSNumber?
-//    }
-//
-//    public var failureReason: objc_RUMVitalEventVitalFailureReason {
-//        .init(swift: root.swiftModel.vital.failureReason)
-//    }
-//
-//    public var id: String {
-//        root.swiftModel.vital.id
-//    }
-//
-//    public var name: String? {
-//        root.swiftModel.vital.name
-//    }
-//
-//    public var operationKey: String? {
-//        root.swiftModel.vital.operationKey
-//    }
-//
-//    public var stepType: objc_RUMVitalEventVitalStepType {
-//        .init(swift: root.swiftModel.vital.stepType)
-//    }
-//
-//    public var type: objc_RUMVitalEventVitalVitalType {
-//        .init(swift: root.swiftModel.vital.type)
-//    }
+
+    public var durationProperties: objc_RUMVitalEventVitalDurationProperties? {
+        guard case .durationProperties(let value) = root.swiftModel.vital else {
+            return nil
+        }
+        return objc_RUMVitalEventVitalDurationProperties(swiftModel: value)
+    }
+
+    public var appLaunchProperties: objc_RUMVitalEventVitalAppLaunchProperties? {
+        guard case .appLaunchProperties(let value) = root.swiftModel.vital else {
+            return nil
+        }
+        return objc_RUMVitalEventVitalAppLaunchProperties(swiftModel: value)
+    }
+
+    public var featureOperationProperties: objc_RUMVitalEventVitalFeatureOperationProperties? {
+        guard case .featureOperationProperties(let value) = root.swiftModel.vital else {
+            return nil
+        }
+        return objc_RUMVitalEventVitalFeatureOperationProperties(swiftModel: value)
+    }
 }
 
-@objc(DDRUMVitalEventVitalFailureReason)
+@objc(DDRUMVitalEventVitalDurationProperties)
+@objcMembers
 @_spi(objc)
-public enum objc_RUMVitalEventVitalFailureReason: Int {
-    internal init(swift: RUMVitalEvent.Vital.FeatureOperationProperties.FailureReason?) {
-        switch swift {
-        case nil: self = .none
-        case .error?: self = .error
-        case .abandoned?: self = .abandoned
-        case .other?: self = .other
-        }
+public class objc_RUMVitalEventVitalDurationProperties: NSObject {
+    internal var swiftModel: RUMVitalEvent.Vital.DurationProperties
+    internal var root: objc_RUMVitalEventVitalDurationProperties { self }
+
+    internal init(swiftModel: RUMVitalEvent.Vital.DurationProperties) {
+        self.swiftModel = swiftModel
     }
 
-    internal var toSwift: RUMVitalEvent.Vital.FeatureOperationProperties.FailureReason? {
-        switch self {
-        case .none: return nil
-        case .error: return .error
-        case .abandoned: return .abandoned
-        case .other: return .other
-        }
+    public var durationPropertiesDescription: String? {
+        root.swiftModel.durationPropertiesDescription
     }
 
-    case none
-    case error
-    case abandoned
-    case other
+    public var duration: NSNumber {
+        root.swiftModel.duration as NSNumber
+    }
+
+    public var id: String {
+        root.swiftModel.id
+    }
+
+    public var name: String? {
+        root.swiftModel.name
+    }
+
+    public var type: String {
+        root.swiftModel.type
+    }
 }
 
-@objc(DDRUMVitalEventVitalStepType)
+@objc(DDRUMVitalEventVitalAppLaunchProperties)
+@objcMembers
 @_spi(objc)
-public enum objc_RUMVitalEventVitalStepType: Int {
-    internal init(swift: RUMVitalEvent.Vital.FeatureOperationProperties.StepType?) {
-        switch swift {
-        case nil: self = .none
-        case .start?: self = .start
-        case .update?: self = .update
-        case .retry?: self = .retry
-        case .end?: self = .end
-        }
+public class objc_RUMVitalEventVitalAppLaunchProperties: NSObject {
+    internal var swiftModel: RUMVitalEvent.Vital.AppLaunchProperties
+    internal var root: objc_RUMVitalEventVitalAppLaunchProperties { self }
+
+    internal init(swiftModel: RUMVitalEvent.Vital.AppLaunchProperties) {
+        self.swiftModel = swiftModel
     }
 
-    internal var toSwift: RUMVitalEvent.Vital.FeatureOperationProperties.StepType? {
-        switch self {
-        case .none: return nil
-        case .start: return .start
-        case .update: return .update
-        case .retry: return .retry
-        case .end: return .end
-        }
+//    public var appLaunchMetric: objc_RUMVitalEventAppLaunchPropertiesAppLaunchMetricAppLaunchMetric {
+//        root.swiftModel.appLaunchMetric as objc_RUMVitalEventAppLaunchPropertiesAppLaunchMetricAppLaunchMetric
+//    }
+
+    public var appLaunchPropertiesDescription: String? {
+        root.swiftModel.appLaunchPropertiesDescription
     }
 
-    case none
-    case start
-    case update
-    case retry
-    case end
+    public var duration: NSNumber {
+        root.swiftModel.duration as NSNumber
+    }
+
+    public var hasSavedInstanceStateBundle: NSNumber? {
+        root.swiftModel.hasSavedInstanceStateBundle as NSNumber?
+    }
+
+    public var id: String {
+        root.swiftModel.id
+    }
+
+    public var isPrewarmed: NSNumber? {
+        root.swiftModel.isPrewarmed as NSNumber?
+    }
+
+    public var name: String? {
+        root.swiftModel.name
+    }
+
+//    public var startupType: objc_RUMVitalEventAppLaunchPropertiesStartupTypeStartupType? {
+//        root.swiftModel.startupType as objc_RUMVitalEventAppLaunchPropertiesStartupTypeStartupType
+//    }
+
+    public var type: String {
+        root.swiftModel.type
+    }
 }
 
-@objc(DDRUMVitalEventVitalVitalType)
+@objc(DDRUMVitalEventVitalFeatureOperationProperties)
+@objcMembers
 @_spi(objc)
-public enum objc_RUMVitalEventVitalVitalType: Int {
-//    internal init(swift: RUMVitalEvent.Vital.FeatureOperationProperties.VitalType) {
-//        switch swift {
-//        case .duration: self = .duration
-//        case .operationStep: self = .operationStep
-//        }
-//    }
-//
-//    internal var toSwift: RUMVitalEvent.Vital.FeatureOperationProperties.VitalType {
-//        switch self {
-//        case .duration: return .duration
-//        case .operationStep: return .operationStep
-//        }
+public class objc_RUMVitalEventVitalFeatureOperationProperties: NSObject {
+    internal var swiftModel: RUMVitalEvent.Vital.FeatureOperationProperties
+    internal var root: objc_RUMVitalEventVitalFeatureOperationProperties { self }
+
+    internal init(swiftModel: RUMVitalEvent.Vital.FeatureOperationProperties) {
+        self.swiftModel = swiftModel
+    }
+
+    public var featureOperationPropertiesDescription: String? {
+        root.swiftModel.featureOperationPropertiesDescription
+    }
+
+//    public var failureReason: objc_RUMVitalEventFeatureOperationPropertiesFailureReasonFailureReason? {
+//        root.swiftModel.failureReason as objc_RUMVitalEventFeatureOperationPropertiesFailureReasonFailureReason
 //    }
 
-    case duration
-    case operationStep
+    public var id: String {
+        root.swiftModel.id
+    }
+
+    public var name: String? {
+        root.swiftModel.name
+    }
+
+    public var operationKey: String? {
+        root.swiftModel.operationKey
+    }
+
+//    public var stepType: objc_RUMVitalEventFeatureOperationPropertiesStepTypeStepType? {
+//        root.swiftModel.stepType as objc_RUMVitalEventFeatureOperationPropertiesStepTypeStepType
+//    }
+
+    public var type: String {
+        root.swiftModel.type
+    }
 }
 
 @objc(DDTelemetryErrorEvent)
@@ -9722,5 +10737,3 @@ public class objc_TelemetryConfigurationEventView: NSObject {
 }
 
 // swiftlint:enable force_unwrapping
-
-// Generated from https://github.com/DataDog/rum-events-format/tree/7dbaaa9c5dcc56ab9f31a90e847e909039ce24f5
