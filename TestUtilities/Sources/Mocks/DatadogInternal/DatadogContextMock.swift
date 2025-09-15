@@ -453,6 +453,26 @@ extension String {
     public static func mockAnySourceType() -> String {
         return ["ios", "android", "browser", "react-native", "flutter", "roku", "ndk", "ios+il2cpp", "ndk+il2cpp"].randomElement()!
     }
+
+    public static func mockRandomDDTags() -> String {
+        mockAnyDDTags(
+            service: .mockRandom(),
+            version: .mockRandom(),
+            sdkVersion: .mockRandom(),
+            env: .mockRandom(),
+            variant: .mockRandom()
+        )
+    }
+
+    public static func mockAnyDDTags(
+        service: String = .mockAny(),
+        version: String = .mockAny(),
+        sdkVersion: String = .mockAny(),
+        env: String = .mockAny(),
+        variant: String? = .mockAny()
+    ) -> String {
+        "service:\(service),version:\(version),sdk_version:\(sdkVersion),env:\(env)\(variant != nil ? ",variant:\(variant!)" : "")"
+    }
 }
 
 extension NetworkConnectionInfo.Reachability {

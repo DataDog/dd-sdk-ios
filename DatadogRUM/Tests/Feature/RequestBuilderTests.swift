@@ -109,27 +109,8 @@ class RequestBuilderTests: XCTestCase {
         let request = try builder.request(for: mockEvents, with: context, execution: execution)
 
         // Then
-        let expextedQuery = "ddsource=\(randomSource)&ddtags=service:\(randomService),version:\(randomVersion),sdk_version:\(randomSDKVersion),env:\(randomEnv),retry_count:\(randomAttempt + 1),last_failure_status:\(randomStatus)"
+        let expextedQuery = "ddsource=\(randomSource)&ddtags=retry_count:\(randomAttempt + 1),last_failure_status:\(randomStatus)"
         XCTAssertEqual(request.url?.query, expextedQuery)
-    }
-
-    func testItSetsVariantAsExtraQueryParameter() throws {
-        let randomVariant: String = .mockRandom(among: .alphanumerics)
-
-        // Given
-        let builder = RequestBuilder(
-            customIntakeURL: nil,
-            eventsFilter: .init(telemetry: TelemetryMock()),
-            telemetry: NOPTelemetry()
-        )
-        let context: DatadogContext = .mockWith(variant: randomVariant)
-
-        // When
-        let request = try builder.request(for: mockEvents, with: context, execution: .mockAny())
-
-        // Then
-        let query = request.url?.query ?? ""
-        XCTAssertTrue(query.contains(",variant:\(randomVariant)"))
     }
 
     func testItSetsRUMHTTPHeaders() throws {

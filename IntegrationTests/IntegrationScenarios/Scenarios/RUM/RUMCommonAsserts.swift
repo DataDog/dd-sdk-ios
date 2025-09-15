@@ -30,11 +30,7 @@ extension RUMCommonAsserts {
 
             let ddtags = request.queryItems?.ddtags()
             XCTAssertNotNil(ddtags, file: file, line: line)
-            XCTAssertEqual(ddtags?.count, 5, file: file, line: line)
-            XCTAssertEqual(ddtags?["service"], "ui-tests-service-name", file: file, line: line)
-            XCTAssertEqual(ddtags?["version"], "1.0", file: file, line: line)
-            XCTAssertEqual(ddtags?["sdk_version"]?.matches(regex: semverRegex), true, file: file, line: line)
-            XCTAssertEqual(ddtags?["env"], "integration", file: file, line: line)
+            XCTAssertEqual(ddtags?.count, 1, file: file, line: line)
             XCTAssertEqual(ddtags?["retry_count"], "1", file: file, line: line)
 
             XCTAssertEqual(request.httpHeaders["Content-Type"], "text/plain;charset=UTF-8", file: file, line: line)
