@@ -1,4 +1,5 @@
 # Unreleased
+
 - [FEATURE] Add Start and End Feature Operations APIs. See [#2469][]
 - [FEATURE] Send Accessibility attributes in View Updates. See [#2410][]
 - [IMPROVEMENT] Add missing `versionMajor` property to the `DDLogEventOperatingSystem` definition in Objective-C. See [#2463][]
@@ -954,6 +955,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2370]: https://github.com/DataDog/dd-sdk-ios/pull/2370
 [#2395]: https://github.com/DataDog/dd-sdk-ios/pull/2395
 [#2405]: https://github.com/DataDog/dd-sdk-ios/pull/2405
+[#2410]: https://github.com/DataDog/dd-sdk-ios/pull/2410
 [#2442]: https://github.com/DataDog/dd-sdk-ios/pull/2442
 [#2455]: https://github.com/DataDog/dd-sdk-ios/pull/2455
 [#2463]: https://github.com/DataDog/dd-sdk-ios/pull/2463
