@@ -44,13 +44,13 @@ class B3HTTPHeadersWriterTests: XCTestCase {
         )
 
         let headers = writer.traceHeaderFields
-        XCTAssertEqual(headers[B3HTTPHeaders.Single.b3Field], "0")
+        XCTAssertEqual(headers[B3HTTPHeaders.Single.b3Field], "00000000000004d200000000000004d2-0000000000000929-0-000000000000162e")
     }
 
     func testWritingSampledTraceContext_withSingleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
             injectEncoding: .single,
-            traceContextInjection: .all
+            traceContextInjection: .sampled
         )
 
         writer.write(
@@ -69,7 +69,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
     func testWritingDroppedTraceContext_withSingleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
             injectEncoding: .single,
-            traceContextInjection: .all
+            traceContextInjection: .sampled
         )
 
         writer.write(
@@ -82,7 +82,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
         )
 
         let headers = writer.traceHeaderFields
-        XCTAssertEqual(headers[B3HTTPHeaders.Single.b3Field], "0")
+        XCTAssertNil(headers[B3HTTPHeaders.Single.b3Field])
     }
 
     func testItWritesSingleHeaderWithoutOptionalValues() {
@@ -141,10 +141,10 @@ class B3HTTPHeadersWriterTests: XCTestCase {
         )
 
         let headers = writer.traceHeaderFields
-        XCTAssertNil(headers[B3HTTPHeaders.Multiple.traceIDField])
-        XCTAssertNil(headers[B3HTTPHeaders.Multiple.spanIDField])
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.traceIDField], "00000000000004d200000000000004d2")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.spanIDField], "0000000000000929")
         XCTAssertEqual(headers[B3HTTPHeaders.Multiple.sampledField], "0")
-        XCTAssertNil(headers[B3HTTPHeaders.Multiple.parentSpanIDField])
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.parentSpanIDField], "000000000000162e")
     }
 
     func testWritingSampledTraceContext_withMultipleEncoding_andCustomSamplingStrategy() {
@@ -185,10 +185,10 @@ class B3HTTPHeadersWriterTests: XCTestCase {
         )
 
         let headers = writer.traceHeaderFields
-        XCTAssertNil(headers[B3HTTPHeaders.Multiple.traceIDField])
-        XCTAssertNil(headers[B3HTTPHeaders.Multiple.spanIDField])
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.traceIDField], "00000000000004d200000000000004d2")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.spanIDField], "0000000000000929")
         XCTAssertEqual(headers[B3HTTPHeaders.Multiple.sampledField], "0")
-        XCTAssertNil(headers[B3HTTPHeaders.Multiple.parentSpanIDField])
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.parentSpanIDField], "000000000000162e")
     }
 
     func testItWritesMultipleHeaderWithoutOptionalValues() {
