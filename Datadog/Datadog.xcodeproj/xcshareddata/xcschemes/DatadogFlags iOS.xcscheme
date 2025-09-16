@@ -22,13 +22,13 @@
          </BuildActionEntry>
          <BuildActionEntry
             buildForTesting = "YES"
-            buildForRunning = "YES"
+            buildForRunning = "NO"
             buildForProfiling = "NO"
             buildForArchiving = "NO"
             buildForAnalyzing = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "5BA8C2F42E784B3D00B1DA80"
+               BlueprintIdentifier = "5BF228272E795D6500D79E8A"
                BuildableName = "DatadogFlagsTests iOS.xctest"
                BlueprintName = "DatadogFlagsTests iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
@@ -199,7 +199,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "5BA8C2F42E784B3D00B1DA80"
+               BlueprintIdentifier = "5BF228272E795D6500D79E8A"
                BuildableName = "DatadogFlagsTests iOS.xctest"
                BlueprintName = "DatadogFlagsTests iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
