@@ -61,48 +61,52 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
         typealias Constants = W3CHTTPHeaders.Constants
 
         let sampled = traceContext.isKept
-
-        switch (traceContextInjection, sampled) {
-        case (.all, _), (.sampled, true):
-            traceHeaderFields[W3CHTTPHeaders.traceparent] = [
-                Constants.version,
-                String(traceContext.traceID, representation: .hexadecimal32Chars),
-                String(traceContext.spanID, representation: .hexadecimal16Chars),
-                sampled ? Constants.sampledValue : Constants.unsampledValue
-            ]
-            .joined(separator: Constants.separator)
-
-            // while merging, the tracestate values from the tracestate property take precedence
-            // over the ones from the trace context
-            let tracestate: [String: String] = [
-                Constants.sampling: "\(sampled ? 1 : 0)",
-                Constants.parentId: String(traceContext.spanID, representation: .hexadecimal16Chars)
-            ].merging(tracestate) { old, new in
-                return new
+        let shouldInject: Bool = {
+            switch traceContextInjection {
+                case .all:      return true
+                case .sampled:  return sampled
             }
+        }()
+        guard shouldInject else {
+            return
+        }
 
-            let ddtracestate = tracestate
-                .map { "\($0.key)\(Constants.tracestateKeyValueSeparator)\($0.value)" }
-                .sorted()
-                .joined(separator: Constants.tracestatePairSeparator)
+        traceHeaderFields[W3CHTTPHeaders.traceparent] = [
+            Constants.version,
+            String(traceContext.traceID, representation: .hexadecimal32Chars),
+            String(traceContext.spanID, representation: .hexadecimal16Chars),
+            sampled ? Constants.sampledValue : Constants.unsampledValue
+        ]
+        .joined(separator: Constants.separator)
 
-            traceHeaderFields[W3CHTTPHeaders.tracestate] = "\(Constants.dd)=\(ddtracestate)"
+        // while merging, the tracestate values from the tracestate property take precedence
+        // over the ones from the trace context
+        let tracestate: [String: String] = [
+            Constants.sampling: "\(sampled ? 1 : 0)",
+            Constants.parentId: String(traceContext.spanID, representation: .hexadecimal16Chars)
+        ].merging(tracestate) { old, new in
+            return new
+        }
 
-            var baggageItems: [String] = []
-            if let sessionId = traceContext.rumSessionId {
-                baggageItems.append("\(Constants.rumSessionBaggageKey)=\(sessionId)")
-            }
-            if let userId = traceContext.userId {
-                baggageItems.append("\(Constants.userBaggageKey)=\(userId)")
-            }
-            if let accountId = traceContext.accountId {
-                baggageItems.append("\(Constants.accountBaggageKey)=\(accountId)")
-            }
-            if !baggageItems.isEmpty {
-                traceHeaderFields[W3CHTTPHeaders.baggage] = baggageItems.joined(separator: ",")
-            }
-        case (.sampled, false):
-            break
+        let ddtracestate = tracestate
+            .map { "\($0.key)\(Constants.tracestateKeyValueSeparator)\($0.value)" }
+            .sorted()
+            .joined(separator: Constants.tracestatePairSeparator)
+
+        traceHeaderFields[W3CHTTPHeaders.tracestate] = "\(Constants.dd)=\(ddtracestate)"
+
+        var baggageItems: [String] = []
+        if let sessionId = traceContext.rumSessionId {
+            baggageItems.append("\(Constants.rumSessionBaggageKey)=\(sessionId)")
+        }
+        if let userId = traceContext.userId {
+            baggageItems.append("\(Constants.userBaggageKey)=\(userId)")
+        }
+        if let accountId = traceContext.accountId {
+            baggageItems.append("\(Constants.accountBaggageKey)=\(accountId)")
+        }
+        if !baggageItems.isEmpty {
+            traceHeaderFields[W3CHTTPHeaders.baggage] = baggageItems.joined(separator: ",")
         }
     }
 }
