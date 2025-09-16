@@ -60,6 +60,10 @@ let package = Package(
             name: "DatadogWebViewTracking",
             targets: ["DatadogWebViewTracking"]
         ),
+        .library(
+            name: "DatadogFlags",
+            targets: ["DatadogFlags"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/microsoft/plcrashreporter.git", from: "1.12.0"),
@@ -206,6 +210,22 @@ let package = Package(
         ),
 
         .target(
+            name: "DatadogFlags",
+            dependencies: [
+                .target(name: "DatadogInternal"),
+            ],
+            path: "DatadogFlags/Sources"
+        ),
+        .testTarget(
+            name: "DatadogFlagsTests",
+            dependencies: [
+                .target(name: "DatadogFlags"),
+                .target(name: "TestUtilities"),
+            ],
+            path: "DatadogFlags/Tests"
+        ),
+
+        .target(
             name: "TestUtilities",
             dependencies: [
                 .target(name: "DatadogCore"),
@@ -216,7 +236,8 @@ let package = Package(
                 .target(name: "DatadogSessionReplay"),
                 .target(name: "DatadogTrace"),
                 .target(name: "DatadogCrashReporting"),
-                .target(name: "DatadogWebViewTracking")
+                .target(name: "DatadogWebViewTracking"),
+                .target(name: "DatadogFlags")
             ],
             path: "TestUtilities/Sources",
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
