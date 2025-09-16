@@ -63,8 +63,8 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
         let sampled = traceContext.isKept
         let shouldInject: Bool = {
             switch traceContextInjection {
-                case .all:      return true
-                case .sampled:  return sampled
+            case .all:      return true
+            case .sampled:  return sampled
             }
         }()
         guard shouldInject else {
