@@ -284,7 +284,7 @@ class DDTracerTests: XCTestCase {
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
 
         let expectedHTTPHeaders = [
-            "b3": "0",
+            "b3": "000000000000000a0000000000000064-00000000000000c8-0-0000000000000000",
         ]
         XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }
