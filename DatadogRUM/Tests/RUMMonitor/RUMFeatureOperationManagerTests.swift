@@ -59,6 +59,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
         let event = try XCTUnwrap(vitalEvents.first)
         XCTAssertNotNil(event)
+        // Operation Step specific properties
         XCTAssertEqual(event.vital.type, .operationStep)
         XCTAssertEqual(event.vital.id, command.vitalId)
         XCTAssertEqual(event.vital.name, command.name)
@@ -69,6 +70,23 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertEqual(event.view.url, view.viewPath)
         XCTAssertNil(event.vital.vitalDescription)
         XCTAssertNil(event.vital.duration)
+        // Common properties
+        XCTAssertNil(event.account)
+        XCTAssertNil(event.buildId)
+        XCTAssertNotNil(event.buildVersion)
+        XCTAssertNil(event.ciTest)
+        XCTAssertNotNil(event.connectivity)
+        XCTAssertNil(event.container)
+        XCTAssertNotNil(event.context)
+        XCTAssertNotNil(event.ddtags)
+        XCTAssertNotNil(event.device)
+        XCTAssertNil(event.display)
+        XCTAssertNotNil(event.os)
+        XCTAssertNotNil(event.service)
+        XCTAssertEqual(event.source, .ios)
+        XCTAssertNil(event.synthetics)
+        XCTAssertNil(event.usr)
+        XCTAssertNotNil(event.version)
     }
 
     func testProcess_MultipleOperations_CreatesCorrectNumberOfEvents() {
@@ -211,5 +229,44 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
         // Then
         XCTAssertNil(dd.logger.warnLog)
+    }
+
+    // MARK: - Synthetics Test ID Tests
+
+    func testProcess_WithSyntheticsTestId_IncludesSyntheticsInVitalEvent() throws {
+        // Given
+        let fakeSyntheticsTestId: String = .mockRandom()
+        let fakeSyntheticsResultId: String = .mockRandom()
+        let syntheticsTest = RUMSyntheticsTest(
+            injected: nil,
+            resultId: fakeSyntheticsResultId,
+            testId: fakeSyntheticsTestId
+        )
+
+        mockDependencies = RUMScopeDependencies.mockWith(syntheticsTest: syntheticsTest)
+        manager = RUMFeatureOperationManager(
+            parent: mockParent,
+            dependencies: mockDependencies
+        )
+
+        let command = RUMOperationStepVitalCommand.mockRandom()
+        let view: RUMViewScope = .mockAny()
+
+        // When
+        manager.process(
+            command,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: view
+        )
+
+        // Then
+        let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)
+        XCTAssertEqual(vitalEvents.count, 1)
+
+        let event = try XCTUnwrap(vitalEvents.first)
+        XCTAssertEqual(event.synthetics?.testId, fakeSyntheticsTestId)
+        XCTAssertEqual(event.synthetics?.resultId, fakeSyntheticsResultId)
+        XCTAssertEqual(event.synthetics?.injected, nil)
     }
 }

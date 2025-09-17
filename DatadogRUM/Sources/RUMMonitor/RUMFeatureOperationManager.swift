@@ -96,14 +96,29 @@ internal class RUMFeatureOperationManager {
 
         let vitalEvent = RUMVitalEvent(
             dd: .init(),
+            account: .init(context: context),
             application: .init(id: parent.context.rumApplicationID),
+            buildId: context.buildId,
+            buildVersion: context.buildNumber,
+            ciTest: dependencies.ciTest,
+            connectivity: .init(context: context),
+            container: nil,
             context: .init(contextInfo: mergedAttributes),
             date: command.time.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
+            device: context.normalizedDevice(),
+            display: nil,
+            os: context.os,
+            service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
                 id: parent.context.sessionID.toRUMDataFormat,
                 type: dependencies.sessionType
             ),
+            source: .init(rawValue: context.source) ?? .ios,
+            synthetics: dependencies.syntheticsTest,
+            usr: .init(context: context),
+            version: context.version,
             view: .init(
                 id: (activeView?.viewUUID).orNull.toRUMDataFormat,
                 url: activeView?.viewPath ?? ""
