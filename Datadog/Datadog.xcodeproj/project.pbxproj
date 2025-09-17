@@ -453,10 +453,21 @@
 		5B9CB9E32E41F6F9005485E6 /* ImageRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9CB9E22E41F6F6005485E6 /* ImageRepresentable.swift */; };
 		5B9CB9E52E41FD60005485E6 /* Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9CB9E42E41FD5C005485E6 /* Drawing.swift */; };
 		5B9CB9E72E420ACB005485E6 /* ImageRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9CB9E62E420AC4005485E6 /* ImageRendererTests.swift */; };
+		5BA8C3042E784C0200B1DA80 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
+		5BA8C3102E785A2000B1DA80 /* Flags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA8C30F2E785A2000B1DA80 /* Flags.swift */; };
+		5BA8C3222E785B6F00B1DA80 /* DatadogFlags.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C3192E785B6F00B1DA80 /* DatadogFlags.framework */; };
+		5BA8C3302E785CFC00B1DA80 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; };
+		5BA8C3352E785E3400B1DA80 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257958B298ABB83008A1BE5 /* TestUtilities.framework */; };
+		5BA8C33A2E785FD500B1DA80 /* Flags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA8C30F2E785A2000B1DA80 /* Flags.swift */; };
+		5BA8C33B2E785FE100B1DA80 /* FlagsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA8C3122E785A5E00B1DA80 /* FlagsTests.swift */; };
 		5BCBC0CD2DF85B6A0094DCC2 /* SessionReplayPrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */; };
 		5BE0EA2B2E66E8A800216E1C /* ShapeResourceBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */; };
 		5BE0EA2D2E66EFA300216E1C /* Path+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE0EA2C2E66EF9B00216E1C /* Path+SessionReplay.swift */; };
 		5BE0EA2F2E66F25200216E1C /* Path+SessionReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE0EA2E2E66F23F00216E1C /* Path+SessionReplayTests.swift */; };
+		5BF228632E795D6500D79E8A /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257953E298ABA65008A1BE5 /* TestUtilities.framework */; platformFilter = ios; };
+		5BF2286B2E795D8C00D79E8A /* DatadogFlags.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */; };
+		5BF2286C2E795D8C00D79E8A /* DatadogFlags.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5BF228702E795DF800D79E8A /* FlagsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA8C3122E785A5E00B1DA80 /* FlagsTests.swift */; };
 		5BF7B51F2E44F7D300E0B772 /* ShapeResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF7B51E2E44F7CE00E0B772 /* ShapeResource.swift */; };
 		5BFDD7A92E28FDD3009A2CEE /* RUMWebViewContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */; };
 		5BFDD7AA2E28FDD3009A2CEE /* RUMWebViewContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */; };
@@ -2036,6 +2047,41 @@
 			remoteGlobalIDString = 3CE119FD29F7BE0000202522;
 			remoteInfo = "DatadogWebViewTracking iOS";
 		};
+		5BA8C3062E784C0200B1DA80 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D23039A4298D513C001A1FA3;
+			remoteInfo = "DatadogInternal iOS";
+		};
+		5BA8C3232E785B6F00B1DA80 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5BA8C3182E785B6F00B1DA80;
+			remoteInfo = "DatadogFlags tvOS";
+		};
+		5BA8C3322E785CFC00B1DA80 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D2DA2355298D57AA00C6C7E6;
+			remoteInfo = "DatadogInternal tvOS";
+		};
+		5BA8C3372E785E3400B1DA80 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D2579571298ABB83008A1BE5;
+			remoteInfo = "TestUtilities tvOS";
+		};
+		5BF2286D2E795D8C00D79E8A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5BA8C2EC2E784B3C00B1DA80;
+			remoteInfo = "DatadogFlags iOS";
+		};
 		6133D1E72A6ED9E100384BEF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
@@ -2256,6 +2302,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		5BF2286F2E795D8C00D79E8A /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				5BF2286C2E795D8C00D79E8A /* DatadogFlags.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D240684527CE6C9E00C04F44 /* ⚙️ Embed Framework Dependencies */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2488,10 +2545,16 @@
 		5B9CB9E22E41F6F6005485E6 /* ImageRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRepresentable.swift; sourceTree = "<group>"; };
 		5B9CB9E42E41FD5C005485E6 /* Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Drawing.swift; sourceTree = "<group>"; };
 		5B9CB9E62E420AC4005485E6 /* ImageRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRendererTests.swift; sourceTree = "<group>"; };
+		5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogFlags.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5BA8C30F2E785A2000B1DA80 /* Flags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flags.swift; sourceTree = "<group>"; };
+		5BA8C3122E785A5E00B1DA80 /* FlagsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsTests.swift; sourceTree = "<group>"; };
+		5BA8C3192E785B6F00B1DA80 /* DatadogFlags.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogFlags.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5BA8C3212E785B6F00B1DA80 /* DatadogFlagsTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogFlagsTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayPrivacyView.swift; sourceTree = "<group>"; };
 		5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilder.swift; sourceTree = "<group>"; };
 		5BE0EA2C2E66EF9B00216E1C /* Path+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Path+SessionReplay.swift"; sourceTree = "<group>"; };
 		5BE0EA2E2E66F23F00216E1C /* Path+SessionReplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Path+SessionReplayTests.swift"; sourceTree = "<group>"; };
+		5BF2286A2E795D6500D79E8A /* DatadogFlagsTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogFlagsTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BF7B51E2E44F7CE00E0B772 /* ShapeResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResource.swift; sourceTree = "<group>"; };
 		5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMWebViewContext.swift; sourceTree = "<group>"; };
 		5BFE7B7A2E3CFCDA00B8FAA8 /* ImageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRenderer.swift; sourceTree = "<group>"; };
@@ -3382,6 +3445,40 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5BA8C2EA2E784B3C00B1DA80 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BA8C3042E784C0200B1DA80 /* DatadogInternal.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C3162E785B6F00B1DA80 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BA8C3302E785CFC00B1DA80 /* DatadogInternal.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C31E2E785B6F00B1DA80 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BA8C3222E785B6F00B1DA80 /* DatadogFlags.framework in Frameworks */,
+				5BA8C3352E785E3400B1DA80 /* TestUtilities.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BF228622E795D6500D79E8A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BF228632E795D6500D79E8A /* TestUtilities.framework in Frameworks */,
+				5BF2286B2E795D8C00D79E8A /* DatadogFlags.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		61133B88242393DE00786299 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -4078,6 +4175,24 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		5BA8C30E2E7859EC00B1DA80 /* DatadogFlags */ = {
+			isa = PBXGroup;
+			children = (
+				5BA8C30F2E785A2000B1DA80 /* Flags.swift */,
+			);
+			name = DatadogFlags;
+			path = ../DatadogFlags/Sources;
+			sourceTree = "<group>";
+		};
+		5BA8C3112E785A2D00B1DA80 /* DatadogFlagsTests */ = {
+			isa = PBXGroup;
+			children = (
+				5BA8C3122E785A5E00B1DA80 /* FlagsTests.swift */,
+			);
+			name = DatadogFlagsTests;
+			path = ../DatadogFlags/Tests;
+			sourceTree = "<group>";
+		};
 		61020C272757AD63005EEAEA /* BackgroundEvents */ = {
 			isa = PBXGroup;
 			children = (
@@ -4652,6 +4767,8 @@
 				6170DC1425C18663003AED5C /* DatadogCrashReportingTests */,
 				3CE11A3B29F7BEE700202522 /* DatadogWebViewTracking */,
 				3CE11A3C29F7BEF300202522 /* DatadogWebViewTrackingTests */,
+				5BA8C30E2E7859EC00B1DA80 /* DatadogFlags */,
+				5BA8C3112E785A2D00B1DA80 /* DatadogFlagsTests */,
 				610ABD492A69309900AFEA34 /* IntegrationUnitTests */,
 				1182FA1F2DA2F827007FE71A /* TestUtilities */,
 				61133C07242397F200786299 /* TargetSupport */,
@@ -4698,6 +4815,10 @@
 				6133D2082A6EDB7700384BEF /* DatadogSessionReplayTests iOS.xctest */,
 				118248612D908BEF00E3D16F /* DatadogIntegrationTests iOS.xctest */,
 				118249122D9094EA00E3D16F /* DatadogIntegrationTests tvOS.xctest */,
+				5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */,
+				5BA8C3192E785B6F00B1DA80 /* DatadogFlags.framework */,
+				5BA8C3212E785B6F00B1DA80 /* DatadogFlagsTests tvOS.xctest */,
+				5BF2286A2E795D6500D79E8A /* DatadogFlagsTests iOS.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -6740,7 +6861,6 @@
 		D2DA239C298D58F300C6C7E6 /* Context */ = {
 			isa = PBXGroup;
 			children = (
-				11E4B7172E4DF87F005C1767 /* DatadogContextTests.swift */,
 				D2DA239D298D58F300C6C7E6 /* AppStateHistoryTests.swift */,
 				D2DA239E298D58F300C6C7E6 /* DeviceInfoTests.swift */,
 				6174D6152BFDF29B00EC7469 /* BundleTypeTests.swift */,
@@ -6853,6 +6973,20 @@
 
 /* Begin PBXHeadersBuildPhase section */
 		3CE119F929F7BE0000202522 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C2E82E784B3C00B1DA80 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C3142E785B6F00B1DA80 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -7054,6 +7188,88 @@
 			name = "DatadogWebViewTrackingTests iOS";
 			productName = "DatadogWebViewTracking iOSTests";
 			productReference = 3CE11A0529F7BE0300202522 /* DatadogWebViewTrackingTests iOS.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		5BA8C2EC2E784B3C00B1DA80 /* DatadogFlags iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BA8C3022E784B3D00B1DA80 /* Build configuration list for PBXNativeTarget "DatadogFlags iOS" */;
+			buildPhases = (
+				5BA8C2E82E784B3C00B1DA80 /* Headers */,
+				5BA8C2E92E784B3C00B1DA80 /* Sources */,
+				5BA8C2EA2E784B3C00B1DA80 /* Frameworks */,
+				5BA8C2EB2E784B3C00B1DA80 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5BA8C3072E784C0200B1DA80 /* PBXTargetDependency */,
+			);
+			name = "DatadogFlags iOS";
+			packageProductDependencies = (
+			);
+			productName = "DatadogFlags iOS";
+			productReference = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		5BA8C3182E785B6F00B1DA80 /* DatadogFlags tvOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BA8C3282E785B7000B1DA80 /* Build configuration list for PBXNativeTarget "DatadogFlags tvOS" */;
+			buildPhases = (
+				5BA8C3142E785B6F00B1DA80 /* Headers */,
+				5BA8C3152E785B6F00B1DA80 /* Sources */,
+				5BA8C3162E785B6F00B1DA80 /* Frameworks */,
+				5BA8C3172E785B6F00B1DA80 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5BA8C3332E785CFC00B1DA80 /* PBXTargetDependency */,
+			);
+			name = "DatadogFlags tvOS";
+			packageProductDependencies = (
+			);
+			productName = "DatadogFlags tvOS";
+			productReference = 5BA8C3192E785B6F00B1DA80 /* DatadogFlags.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		5BA8C3202E785B6F00B1DA80 /* DatadogFlagsTests tvOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BA8C32C2E785B7000B1DA80 /* Build configuration list for PBXNativeTarget "DatadogFlagsTests tvOS" */;
+			buildPhases = (
+				5BA8C31D2E785B6F00B1DA80 /* Sources */,
+				5BA8C31E2E785B6F00B1DA80 /* Frameworks */,
+				5BA8C31F2E785B6F00B1DA80 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5BA8C3242E785B6F00B1DA80 /* PBXTargetDependency */,
+				5BA8C3382E785E3400B1DA80 /* PBXTargetDependency */,
+			);
+			name = "DatadogFlagsTests tvOS";
+			packageProductDependencies = (
+			);
+			productName = "DatadogFlags tvOSTests";
+			productReference = 5BA8C3212E785B6F00B1DA80 /* DatadogFlagsTests tvOS.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		5BF228272E795D6500D79E8A /* DatadogFlagsTests iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BF228662E795D6500D79E8A /* Build configuration list for PBXNativeTarget "DatadogFlagsTests iOS" */;
+			buildPhases = (
+				5BF2282A2E795D6500D79E8A /* Sources */,
+				5BF228622E795D6500D79E8A /* Frameworks */,
+				5BF228652E795D6500D79E8A /* Resources */,
+				5BF2286F2E795D8C00D79E8A /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5BF2286E2E795D8C00D79E8A /* PBXTargetDependency */,
+			);
+			name = "DatadogFlagsTests iOS";
+			productName = DatadogRUMTests;
+			productReference = 5BF2286A2E795D6500D79E8A /* DatadogFlagsTests iOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		61133B81242393DE00786299 /* DatadogCore iOS */ = {
@@ -7657,7 +7873,7 @@
 		61133B79242393DE00786299 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1400;
+				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1410;
 				ORGANIZATIONNAME = Datadog;
 				TargetAttributes = {
@@ -7667,6 +7883,16 @@
 					3CE11A0429F7BE0300202522 = {
 						CreatedOnToolsVersion = 14.0.1;
 						LastSwiftMigration = 1430;
+					};
+					5BA8C2EC2E784B3C00B1DA80 = {
+						CreatedOnToolsVersion = 16.4;
+						LastSwiftMigration = 1640;
+					};
+					5BA8C3182E785B6F00B1DA80 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					5BA8C3202E785B6F00B1DA80 = {
+						CreatedOnToolsVersion = 16.4;
 					};
 					61133B81242393DE00786299 = {
 						CreatedOnToolsVersion = 11.3.1;
@@ -7778,6 +8004,10 @@
 				6133D1F62A6EDB7700384BEF /* DatadogSessionReplayTests iOS */,
 				118247B32D908BEF00E3D16F /* DatadogIntegrationTests iOS */,
 				118248852D9094EA00E3D16F /* DatadogIntegrationTests tvOS */,
+				5BA8C2EC2E784B3C00B1DA80 /* DatadogFlags iOS */,
+				5BF228272E795D6500D79E8A /* DatadogFlagsTests iOS */,
+				5BA8C3182E785B6F00B1DA80 /* DatadogFlags tvOS */,
+				5BA8C3202E785B6F00B1DA80 /* DatadogFlagsTests tvOS */,
 			);
 		};
 /* End PBXProject section */
@@ -7805,6 +8035,34 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3CE11A0329F7BE0300202522 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C2EB2E784B3C00B1DA80 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C3172E785B6F00B1DA80 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C31F2E785B6F00B1DA80 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BF228652E795D6500D79E8A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -8322,6 +8580,38 @@
 			files = (
 				D29732532A5C109A00827599 /* WebViewTrackingTests.swift in Sources */,
 				D29732512A5C109A00827599 /* MessageEmitterTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C2E92E784B3C00B1DA80 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BA8C3102E785A2000B1DA80 /* Flags.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C3152E785B6F00B1DA80 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BA8C33A2E785FD500B1DA80 /* Flags.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C31D2E785B6F00B1DA80 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BA8C33B2E785FE100B1DA80 /* FlagsTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BF2282A2E795D6500D79E8A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BF228702E795DF800D79E8A /* FlagsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10129,7 +10419,6 @@
 				D2DA23A3298D58F400C6C7E6 /* AnyEncodableTests.swift in Sources */,
 				3CCECDAF2BC688120013C125 /* SpanIDGeneratorTests.swift in Sources */,
 				D263BCB429DB014900FA0E21 /* FixedWidthInteger+ConvenienceTests.swift in Sources */,
-				11E4B7182E4DF88A005C1767 /* DatadogContextTests.swift in Sources */,
 				960A0D402D6F88A0004BB999 /* ReflectorTests.swift in Sources */,
 				6174D6162BFDF29B00EC7469 /* BundleTypeTests.swift in Sources */,
 				116F84062CFDD06700705755 /* SampleRateTests.swift in Sources */,
@@ -10196,7 +10485,6 @@
 				D284C7412C2059F3005142CC /* ObjcExceptionTests.swift in Sources */,
 				D2C5D5292B83FD5400B63F36 /* WebViewMessageTests.swift in Sources */,
 				D20731CE29A52E8700ECBF94 /* SamplerTests.swift in Sources */,
-				11E4B7192E4DF88A005C1767 /* DatadogContextTests.swift in Sources */,
 				D2160CEA29C0E00200FAA9A5 /* MethodSwizzlerTests.swift in Sources */,
 				D2EBEE4229BA163F00B15732 /* W3CHTTPHeadersReaderTests.swift in Sources */,
 				D2160CDD29C0DF6700FAA9A5 /* HostsSanitizerTests.swift in Sources */,
@@ -10324,6 +10612,31 @@
 			isa = PBXTargetDependency;
 			target = 3CE119FD29F7BE0000202522 /* DatadogWebViewTracking iOS */;
 			targetProxy = 3CE11A0729F7BE0500202522 /* PBXContainerItemProxy */;
+		};
+		5BA8C3072E784C0200B1DA80 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D23039A4298D513C001A1FA3 /* DatadogInternal iOS */;
+			targetProxy = 5BA8C3062E784C0200B1DA80 /* PBXContainerItemProxy */;
+		};
+		5BA8C3242E785B6F00B1DA80 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5BA8C3182E785B6F00B1DA80 /* DatadogFlags tvOS */;
+			targetProxy = 5BA8C3232E785B6F00B1DA80 /* PBXContainerItemProxy */;
+		};
+		5BA8C3332E785CFC00B1DA80 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D2DA2355298D57AA00C6C7E6 /* DatadogInternal tvOS */;
+			targetProxy = 5BA8C3322E785CFC00B1DA80 /* PBXContainerItemProxy */;
+		};
+		5BA8C3382E785E3400B1DA80 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D2579571298ABB83008A1BE5 /* TestUtilities tvOS */;
+			targetProxy = 5BA8C3372E785E3400B1DA80 /* PBXContainerItemProxy */;
+		};
+		5BF2286E2E795D8C00D79E8A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5BA8C2EC2E784B3C00B1DA80 /* DatadogFlags iOS */;
+			targetProxy = 5BF2286D2E795D8C00D79E8A /* PBXContainerItemProxy */;
 		};
 		6133D1E62A6ED9E100384BEF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -10810,6 +11123,320 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogWebViewTrackingTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Integration;
+		};
+		5BA8C2FC2E784B3D00B1DA80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlags;
+				PRODUCT_NAME = DatadogFlags;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5BA8C2FD2E784B3D00B1DA80 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlags;
+				PRODUCT_NAME = DatadogFlags;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		5BA8C2FE2E784B3D00B1DA80 /* Integration */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlags;
+				PRODUCT_NAME = DatadogFlags;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Integration;
+		};
+		5BA8C3292E785B7000B1DA80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlags;
+				PRODUCT_NAME = DatadogFlags;
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Debug;
+		};
+		5BA8C32A2E785B7000B1DA80 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlags;
+				PRODUCT_NAME = DatadogFlags;
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Release;
+		};
+		5BA8C32B2E785B7000B1DA80 /* Integration */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlags;
+				PRODUCT_NAME = DatadogFlags;
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Integration;
+		};
+		5BA8C32D2E785B7000B1DA80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlagsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Debug;
+		};
+		5BA8C32E2E785B7000B1DA80 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlagsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Release;
+		};
+		5BA8C32F2E785B7000B1DA80 /* Integration */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlagsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Integration;
+		};
+		5BF228672E795D6500D79E8A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlagsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5BF228682E795D6500D79E8A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlagsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		5BF228692E795D6500D79E8A /* Integration */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlagsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -13491,6 +14118,46 @@
 				3CE11A1629F7BE0B00202522 /* Debug */,
 				3CE11A1729F7BE0B00202522 /* Release */,
 				3CE11A1829F7BE0B00202522 /* Integration */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5BA8C3022E784B3D00B1DA80 /* Build configuration list for PBXNativeTarget "DatadogFlags iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BA8C2FC2E784B3D00B1DA80 /* Debug */,
+				5BA8C2FD2E784B3D00B1DA80 /* Release */,
+				5BA8C2FE2E784B3D00B1DA80 /* Integration */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5BA8C3282E785B7000B1DA80 /* Build configuration list for PBXNativeTarget "DatadogFlags tvOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BA8C3292E785B7000B1DA80 /* Debug */,
+				5BA8C32A2E785B7000B1DA80 /* Release */,
+				5BA8C32B2E785B7000B1DA80 /* Integration */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5BA8C32C2E785B7000B1DA80 /* Build configuration list for PBXNativeTarget "DatadogFlagsTests tvOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BA8C32D2E785B7000B1DA80 /* Debug */,
+				5BA8C32E2E785B7000B1DA80 /* Release */,
+				5BA8C32F2E785B7000B1DA80 /* Integration */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5BF228662E795D6500D79E8A /* Build configuration list for PBXNativeTarget "DatadogFlagsTests iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BF228672E795D6500D79E8A /* Debug */,
+				5BF228682E795D6500D79E8A /* Release */,
+				5BF228692E795D6500D79E8A /* Integration */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
