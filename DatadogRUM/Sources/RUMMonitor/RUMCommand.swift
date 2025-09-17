@@ -720,7 +720,7 @@ internal struct RUMOperationStepVitalCommand: RUMCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
-    let canStartBackgroundView = false
+    let canStartBackgroundView = true
     let isUserInteraction = false
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
     let canStartApplicationLaunchView = true
