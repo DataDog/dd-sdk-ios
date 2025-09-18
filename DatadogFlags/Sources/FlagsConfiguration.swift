@@ -6,10 +6,6 @@
 
 import Foundation
 
-public struct FlagsConfiguration {
-    public init() {}
-}
-
 public struct FlagsClientConfiguration {
     public let clientToken: String
     public let environment: String

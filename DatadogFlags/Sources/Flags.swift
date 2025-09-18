@@ -7,6 +7,11 @@
 import Foundation
 import DatadogInternal
 
+// Temporary forward declaration to resolve compilation order issues
+public struct FlagsConfiguration {
+    public init() {}
+}
+
 public enum Flags {
     public static func enable(with configuration: FlagsConfiguration) {
         // TODO: RUM-000 (for the linter, actually FFL-1015) Initialize flags feature
