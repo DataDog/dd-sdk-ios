@@ -9,7 +9,6 @@ import Foundation
 public class FlagsEvaluationContext {
     public let targetingKey: String
     public let attributes: [String: Any]
-    
     public init(targetingKey: String, attributes: [String: Any] = [:]) {
         self.targetingKey = targetingKey
         self.attributes = attributes

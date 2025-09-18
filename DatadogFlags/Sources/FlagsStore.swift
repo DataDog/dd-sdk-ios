@@ -65,7 +65,9 @@ internal class FlagsStore {
     }
 
     private func saveToDisk() {
-        guard let cacheFileURL = self.cacheFileURL else { return }
+        guard let cacheFileURL = self.cacheFileURL else {
+            return
+        }
 
         Self.persistenceQueue.async { [weak self] in
             guard let self = self else {
@@ -100,12 +102,13 @@ internal class FlagsStore {
     }
 
     private func loadFromDisk() {
-        guard let cacheFileURL = self.cacheFileURL else { return }
+        guard let cacheFileURL = self.cacheFileURL else {
+            return
+        }
 
         do {
             let data = try Data(contentsOf: cacheFileURL)
             if let cacheData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-
                 // Load flags
                 if let flags = cacheData["flags"] as? [String: Any] {
                     self.cachedFlags = flags
@@ -114,7 +117,6 @@ internal class FlagsStore {
                 // Load metadata if available
                 if let metadataDict = cacheData["metadata"] as? [String: Any],
                    let fetchedAt = metadataDict["fetchedAt"] as? Double {
-
                     var context: FlagsEvaluationContext?
                     if let contextDict = metadataDict["context"] as? [String: Any],
                        let targetingKey = contextDict["targetingKey"] as? String,

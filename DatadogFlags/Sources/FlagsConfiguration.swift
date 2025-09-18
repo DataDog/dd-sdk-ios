@@ -18,7 +18,6 @@ public struct FlagsClientConfiguration {
     public let applicationId: String?
     public let customHeaders: [String: String]
     public let flaggingProxy: String?
-    
     public init(
         clientToken: String,
         environment: String = "prod",

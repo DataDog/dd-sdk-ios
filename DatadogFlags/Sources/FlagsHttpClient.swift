@@ -15,7 +15,6 @@ internal protocol FlagsHttpClient {
 }
 
 internal class NetworkFlagsHttpClient: FlagsHttpClient {
-
     func postPrecomputeAssignments(
         context: FlagsEvaluationContext,
         configuration: FlagsClientConfiguration,
@@ -114,18 +113,20 @@ internal class NetworkFlagsHttpClient: FlagsHttpClient {
             return
         }
 
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
+        URLSession.shared
+            .dataTask(with: request) { data, response, error in
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
 
-            guard let data = data, let response = response else {
-                completion(.failure(FlagsError.invalidResponse))
-                return
-            }
+                guard let data = data, let response = response else {
+                    completion(.failure(FlagsError.invalidResponse))
+                    return
+                }
 
-            completion(.success((data, response)))
-        }.resume()
+                completion(.success((data, response)))
+            }
+            .resume()
     }
 }

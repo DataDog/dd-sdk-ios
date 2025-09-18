@@ -7,7 +7,6 @@
 import Foundation
 
 internal struct FlagsEndpointBuilder {
-
     /// Builds the complete endpoint URL for precompute-assignments API
     /// - Parameters:
     ///   - site: The Datadog site (e.g., "datadoghq.com", "datadoghq.eu")
