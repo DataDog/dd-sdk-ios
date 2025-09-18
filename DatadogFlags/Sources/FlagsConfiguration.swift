@@ -20,8 +20,8 @@ public struct FlagsClientConfiguration {
     public let flaggingProxy: String?
     
     public init(
-        clientToken: String, 
-        environment: String = "prod", 
+        clientToken: String,
+        environment: String = "prod",
         baseURL: String? = nil,
         site: String = "datadoghq.com",
         applicationId: String? = nil,

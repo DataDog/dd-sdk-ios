@@ -9,6 +9,6 @@ import DatadogInternal
 
 public enum Flags {
     public static func enable(with configuration: FlagsConfiguration) {
-        // TODO: Initialize flags feature
+        // TODO: FFL-1015 Initialize flags feature
     }
 }

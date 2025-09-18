@@ -8,21 +8,21 @@ import Foundation
 
 internal protocol FlagsHttpClient {
     func postPrecomputeAssignments(
-        context: FlagsEvaluationContext, 
-        configuration: FlagsClientConfiguration, 
+        context: FlagsEvaluationContext,
+        configuration: FlagsClientConfiguration,
         completion: @escaping (Result<(Data, URLResponse), Error>) -> Void
     )
 }
 
 internal class NetworkFlagsHttpClient: FlagsHttpClient {
-    
+
     func postPrecomputeAssignments(
-        context: FlagsEvaluationContext, 
-        configuration: FlagsClientConfiguration, 
+        context: FlagsEvaluationContext,
+        configuration: FlagsClientConfiguration,
         completion: @escaping (Result<(Data, URLResponse), Error>) -> Void
     ) {
         let endpointURL: String
-        
+
         // Determine endpoint URL based on configuration priority
         if let flaggingProxy = configuration.flaggingProxy {
             // Use flagging proxy if provided
@@ -47,35 +47,35 @@ internal class NetworkFlagsHttpClient: FlagsHttpClient {
                 return
             }
         }
-        
+
         guard let url = URL(string: endpointURL) else {
             completion(.failure(FlagsError.invalidConfiguration))
             return
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        
+
         // Build headers
         var headers = [String: String]()
         headers["Content-Type"] = "application/vnd.api+json"
         headers["dd-client-token"] = configuration.clientToken
-        
+
         // Add application ID header if provided
         if let applicationId = configuration.applicationId {
             headers["dd-application-id"] = applicationId
         }
-        
+
         // Add custom headers
         for (key, value) in configuration.customHeaders {
             headers[key] = value
         }
-        
+
         // Set headers on request
         for (key, value) in headers {
             request.addValue(value, forHTTPHeaderField: key)
         }
-        
+
         // Serialize context attributes (stringify non-string values like JavaScript client)
         let stringifiedAttributes: [String: String] = context.attributes.mapValues { value in
             if let stringValue = value as? String {
@@ -90,7 +90,7 @@ internal class NetworkFlagsHttpClient: FlagsHttpClient {
                 }
             }
         }
-        
+
         let requestBody: [String: Any] = [
             "data": [
                 "type": "precompute-assignments-request",
@@ -106,25 +106,25 @@ internal class NetworkFlagsHttpClient: FlagsHttpClient {
                 ]
             ]
         ]
-        
+
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
         } catch {
             completion(.failure(error))
             return
         }
-        
+
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 completion(.failure(error))
                 return
             }
-            
+
             guard let data = data, let response = response else {
                 completion(.failure(FlagsError.invalidResponse))
                 return
             }
-            
+
             completion(.success((data, response)))
         }.resume()
     }
