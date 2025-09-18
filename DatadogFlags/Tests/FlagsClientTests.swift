@@ -97,6 +97,7 @@ final class FlagsClientTests: XCTestCase {
 
 private class MockFlagsHttpClient: FlagsHttpClient {
     func postPrecomputeAssignments(context: FlagsEvaluationContext, configuration: FlagsClientConfiguration, completion: @escaping (Result<(Data, URLResponse), Error>) -> Void) {
+        // Try to load from bundle resource
         let testBundle = Bundle(for: FlagsClientTests.self)
         guard let url = testBundle.url(forResource: "precomputed-v1", withExtension: "json"),
               let data = try? Data(contentsOf: url) else {
@@ -107,8 +108,8 @@ private class MockFlagsHttpClient: FlagsHttpClient {
         let response = HTTPURLResponse(
             url: URL(string: "https://test.example.com")!,
             statusCode: 200,
-            httpVersion: nil,
-            headerFields: nil
+            httpVersion: "HTTP/1.1",
+            headerFields: ["Content-Type": "application/json"]
         )!
 
         completion(.success((data, response)))
@@ -142,13 +143,15 @@ private class AttributeSerializationTestClient: FlagsHttpClient {
         let stringifiedAttributes: [String: String] = context.attributes.mapValues { value in
             if let stringValue = value as? String {
                 return stringValue
-            } else {
+            } else if JSONSerialization.isValidJSONObject(value) {
                 if let data = try? JSONSerialization.data(withJSONObject: value, options: []),
                    let jsonString = String(data: data, encoding: .utf8) {
                     return jsonString
                 } else {
                     return String(describing: value)
                 }
+            } else {
+                return String(describing: value)
             }
         }
 
@@ -174,8 +177,8 @@ private class AttributeSerializationTestClient: FlagsHttpClient {
             let response = HTTPURLResponse(
                 url: URL(string: "https://test.example.com")!,
                 statusCode: 200,
-                httpVersion: nil,
-                headerFields: nil
+                httpVersion: "HTTP/1.1",
+                headerFields: ["Content-Type": "application/json"]
             )!
 
             completion(.success((data, response)))
