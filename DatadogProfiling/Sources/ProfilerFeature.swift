@@ -10,8 +10,6 @@ import DatadogInternal
 internal final class ProfilerFeature: DatadogRemoteFeature {
     static let name = "profiler"
 
-    let profiler: Profiler
-
     let requestBuilder: FeatureRequestBuilder
 
     let messageReceiver: FeatureMessageReceiver
@@ -21,11 +19,9 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
     let performanceOverride = PerformancePresetOverride(maxFileSize: .min)
 
     init(
-        profiler: Profiler,
         requestBuilder: FeatureRequestBuilder,
         messageReceiver: FeatureMessageReceiver
     ) {
-        self.profiler = profiler
         self.requestBuilder = requestBuilder
         self.messageReceiver = messageReceiver
     }

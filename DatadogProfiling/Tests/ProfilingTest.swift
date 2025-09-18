@@ -9,13 +9,15 @@ import DatadogInternal
 import TestUtilities
 
 @testable import DatadogProfiling
+import DatadogMachProfiler
 
 class ProfilingTest: XCTestCase {
-    func testProfilingConfiguration() {
+    func testProfilingConfiguration() throws {
         // Given
         let configuration = Profiling.Configuration(customEndpoint: .mockRandom())
-
         let core = SingleFeatureCoreMock<ProfilerFeature>()
+        ctor_profiler_start_testing(100, false, 5.seconds.toInt64Nanoseconds)
+        defer { ctor_profiler_destroy() }
 
         // When
         Profiling.enable(with: configuration, in: core)
@@ -24,77 +26,8 @@ class ProfilingTest: XCTestCase {
         let feature = core.feature(named: ProfilerFeature.name, type: ProfilerFeature.self)
         let requestBuilder = feature?.requestBuilder as? RequestBuilder
         XCTAssertEqual(requestBuilder?.customUploadURL, configuration.customEndpoint)
-    }
 
-    func testProfiling_writeEventAndPprofData() {
-        // Given
-        let profile = Profile(
-            start: .mockRandomInThePast(),
-            end: Date(),
-            pprof: .mockRandom()
-        )
-
-        let profiler = MockProfiler(profile: profile)
-        let feature = ProfilerFeature(
-            profiler: profiler,
-            requestBuilder: FeatureRequestBuilderMock(),
-            messageReceiver: NOPFeatureMessageReceiver()
-        )
-
-        let core = SingleFeatureCoreMock(feature: feature)
-
-        // When
-        Profiling.stop(in: core)
-
-        // Then
-        let event = core.metadata(ofType: ProfileEvent.self).first
-        XCTAssertEqual(event?.start, profile.start)
-        XCTAssertEqual(event?.end, profile.end)
-        XCTAssertEqual(event?.family, "ios")
-        XCTAssertEqual(event?.runtime, "ios")
-        XCTAssertEqual(event?.version, "4")
-        XCTAssertEqual(event?.attachments, ["wall.pprof"])
-        XCTAssertEqual(event?.tags, "service:abc,version:abc,env:abc,source:abc,language:swift,format:pprof,remote_symbols:yes")
-
-        let pprof = core.events(ofType: Data.self).first
-        XCTAssertEqual(pprof, profile.pprof)
-    }
-
-    func testProfiling_writeEventWithRUMContext() {
-        // Given
-        let profile = Profile(
-            start: .mockRandomInThePast(),
-            end: Date(),
-            pprof: .mockRandom()
-        )
-
-        let profiler = MockProfiler(profile: profile)
-        let feature = ProfilerFeature(
-            profiler: profiler,
-            requestBuilder: FeatureRequestBuilderMock(),
-            messageReceiver: NOPFeatureMessageReceiver()
-        )
-
-        let rum = RUMCoreContext(
-            applicationID: .mockRandom(),
-            sessionID: .mockRandom(),
-            viewID: .mockRandom()
-        )
-
-        let core = SingleFeatureCoreMock(
-            context: .mockWith(
-                additionalContext: [rum]
-            ),
-            feature: feature
-        )
-
-        // When
-        Profiling.stop(in: core)
-
-        // Then
-        let event = core.metadata(ofType: ProfileEvent.self).first
-        XCTAssertEqual(event?.application?.id, rum.applicationID)
-        XCTAssertEqual(event?.session?.id, rum.sessionID)
-        XCTAssertEqual(event?.view?.id.first, rum.viewID)
+        let context = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
+        XCTAssertEqual(context.status, .running)
     }
 }

@@ -20,7 +20,8 @@ class RequestBuilderTests: XCTestCase {
         start: .mockRandomInThePast(),
         end: Date(),
         attachments: [],
-        tags: .mockAny()
+        tags: .mockAny(),
+        additionalAttributes: mockRandomAttributes()
     )
 
     let profileData: Data = .mockRandom()
