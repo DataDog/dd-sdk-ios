@@ -5,29 +5,12 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal struct ProfileEvent: Encodable {
     internal enum Constants {
         static let eventFilename: String = "event.json"
         static let wallFilename: String = "wall.pprof"
-    }
-
-    /// The RUM Application
-    internal struct Application: Encodable {
-        /// The RUM Application ID
-        let id: String
-    }
-
-    /// The RUM Session
-    internal struct Session: Encodable {
-        /// The RUM Session ID
-        let id: String
-    }
-
-    /// The RUM Views.
-    internal struct Views: Encodable {
-        /// List of RUM View IDs
-        let id: [String]
     }
 
     enum CodingKeys: String, CodingKey {
@@ -54,10 +37,22 @@ internal struct ProfileEvent: Encodable {
     let attachments: [String]
     /// The profile tags
     let tags: String
-    /// The RUM Application
-    var application: Application? = nil
-    /// The RUM Session
-    var session: Session? = nil
-    /// The RUM Views.
-    var view: Views? = nil
+    /// The profile additional attributes, such a the RUM context.
+    let additionalAttributes: [String: Encodable]?
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(start, forKey: .start)
+        try container.encode(end, forKey: .end)
+        try container.encode(attachments, forKey: .attachments)
+        try container.encode(tags, forKey: .tags)
+        try container.encode(family, forKey: .family)
+        try container.encode(runtime, forKey: .runtime)
+        try container.encode(version, forKey: .version)
+
+        var additionalContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try additionalAttributes?.forEach { key, value in
+            try additionalContainer.encode(AnyEncodable(value), forKey: .init(key))
+        }
+    }
 }

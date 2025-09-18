@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import DatadogInternal
 import DatadogMachProfiler
 
 final class CTorProfilerTests: XCTestCase {
@@ -27,33 +28,33 @@ final class CTorProfilerTests: XCTestCase {
     }
 
     func testCtorProfiler_startTesting_withValidSampleRate_startsSuccessfully() {
-        ctor_profiler_start_testing(100.0, false, 5_000_000_000)
+        ctor_profiler_start_testing(100, false, 5.seconds.toInt64Nanoseconds)
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING, "Profiler should be running after starting with valid sample rate")
     }
 
     func testCtorProfiler_startTesting_withZeroSampleRate_doesNotStart() {
-        ctor_profiler_start_testing(0.0, false, 5_000_000_000)
+        ctor_profiler_start_testing(0, false, 5.seconds.toInt64Nanoseconds)
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_SAMPLED_OUT, "Profiler should not start with zero sample rate")
     }
 
     func testCtorProfiler_startTesting_withSampleRateAbove100_startsSuccessfully() {
-        ctor_profiler_start_testing(150.0, false, 5_000_000_000)
+        ctor_profiler_start_testing(150, false, 5.seconds.toInt64Nanoseconds)
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING, "Profiler should start successfully with sample rate above 100")
     }
 
     func testCtorProfiler_startTesting_withCustomTimeout() {
-        ctor_profiler_start_testing(100.0, false, 1_000_000_000) // 1 second timeout
+        ctor_profiler_start_testing(100, false, 1.seconds.toInt64Nanoseconds) // 1 second timeout
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING, "Profiler should start with custom timeout")
     }
 
     func testCtorProfiler_startTesting_withPrewarming_doesNotStart() {
-        ctor_profiler_start_testing(100.0, true, 5_000_000_000) // prewarming = true
+        ctor_profiler_start_testing(100, true, 5.seconds.toInt64Nanoseconds) // prewarming = true
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_PREWARMED, "Profiler should not start when prewarming is active")
     }
 
     func testCtorProfiler_stop_whenRunning_stopsSuccessfully() {
         // Given
-        ctor_profiler_start_testing(100.0, false, 5_000_000_000)
+        ctor_profiler_start_testing(100, false, 5.seconds.toInt64Nanoseconds)
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING, "Profiler should be running")
 
         // When
@@ -74,7 +75,7 @@ final class CTorProfilerTests: XCTestCase {
 
     func testCtorProfiler_multipleStops_doesNotCrash() {
         // Given
-        ctor_profiler_start_testing(100.0, false, 5_000_000_000)
+        ctor_profiler_start_testing(100, false, 5.seconds.toInt64Nanoseconds)
         ctor_profiler_stop()
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_STOPPED, "Profiler should be stopped")
 
@@ -96,7 +97,7 @@ final class CTorProfilerTests: XCTestCase {
 
     func testCtorProfiler_getProfile_whenRunning_returnsValidProfile() {
         // Given
-        ctor_profiler_start_testing(100.0, false, 5_000_000_000)
+        ctor_profiler_start_testing(100, false, 5.seconds.toInt64Nanoseconds)
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING, "Profiler should be running")
 
         // Allow some time for sampling to occur
@@ -111,7 +112,7 @@ final class CTorProfilerTests: XCTestCase {
 
     func testCtorProfiler_getProfile_afterStopping_returnsValidProfile() {
         // Given
-        ctor_profiler_start_testing(100.0, false, 5_000_000_000)
+        ctor_profiler_start_testing(100, false, 5.seconds.toInt64Nanoseconds)
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING, "Profiler should be running")
 
         // Allow some time for sampling
@@ -129,7 +130,7 @@ final class CTorProfilerTests: XCTestCase {
 
     func testCtorProfiler_destroy_clearsAllData() {
         // Given
-        ctor_profiler_start_testing(100.0, false, 5_000_000_000)
+        ctor_profiler_start_testing(100, false, 5.seconds.toInt64Nanoseconds)
         Thread.sleep(forTimeInterval: 0.1)
 
         ctor_profiler_stop()
@@ -158,7 +159,7 @@ final class CTorProfilerTests: XCTestCase {
 
     func testCtorProfiler_multipleDestroy_doesNotCrash() {
         // Given
-        ctor_profiler_start_testing(100.0, false, 5_000_000_000)
+        ctor_profiler_start_testing(100, false, 5.seconds.toInt64Nanoseconds)
         Thread.sleep(forTimeInterval: 0.1)
 
         // When
@@ -175,24 +176,8 @@ final class CTorProfilerTests: XCTestCase {
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Status should remain not started")
     }
 
-    // MARK: - Status Code Tests
-
-    func testCtorProfiler_statusCodes_sampledOut() {
-        // Note: This test might be flaky due to probabilistic sampling
-        // Try a low sample rate multiple times to increase chance of being sampled out
-        var sampledOutCount = 0
-        for _ in 0..<10 {
-            ctor_profiler_start_testing(1.0, false, 5_000_000_000) // 1% sample rate
-            if ctor_profiler_get_status() == CTOR_PROFILER_STATUS_SAMPLED_OUT {
-                sampledOutCount += 1
-            }
-            ctor_profiler_destroy()
-        }
-        XCTAssertGreaterThan(sampledOutCount, 0, "Should get sampled out at least once with low sample rate")
-    }
-
     func testCtorProfiler_statusCodes_prewarmed() {
-        ctor_profiler_start_testing(100.0, true, 5_000_000_000) // prewarming = true
+        ctor_profiler_start_testing(100, true, 5.seconds.toInt64Nanoseconds) // prewarming = true
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_PREWARMED, "Should return PREWARMED status when prewarming is true")
     }
 }

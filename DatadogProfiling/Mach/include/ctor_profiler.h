@@ -119,9 +119,8 @@ typedef enum {
     CTOR_PROFILER_STATUS_ERROR = 4,             ///< Profiler encountered an error
     CTOR_PROFILER_STATUS_PREWARMED = 5,         ///< Profiler was not started due to prewarming
     CTOR_PROFILER_STATUS_SAMPLED_OUT = 6,       ///< Profiler was not started due to sample rate
-    CTOR_PROFILER_STATUS_NO_CONFIG = 7,         ///< Profiler was not started due to missing config
-    CTOR_PROFILER_STATUS_ALLOCATION_FAILED = 8, ///< Memory allocation failed
-    CTOR_PROFILER_STATUS_START_FAILED = 9,      ///< Failed to start sampling
+    CTOR_PROFILER_STATUS_ALLOCATION_FAILED = 7, ///< Memory allocation failed
+    CTOR_PROFILER_STATUS_START_FAILED = 8,      ///< Failed to start sampling
 } ctor_profiler_status_t;
 
 /**
@@ -142,9 +141,6 @@ typedef struct profile ctor_profile_t;
  *
  * @return Current profiler status code
  *
- * @note This function is thread-safe and can be called from any thread
- * @note Useful for debugging profiler initialization and lifecycle issues
- *
  * # Swift Usage Example
  *
  * ```swift
@@ -162,8 +158,6 @@ typedef struct profile ctor_profile_t;
  *     print("Profiler status: \(status)")
  * }
  * ```
- *
- * @see ctor_profiler_is_active()
  */
 ctor_profiler_status_t ctor_profiler_get_status(void);
 
@@ -175,18 +169,16 @@ ctor_profiler_status_t ctor_profiler_get_status(void);
  * 
  * - Stop the sampling thread
  * - Flush any remaining collected samples
- * - Clean up all allocated resources
  * - Set the profiler state to inactive
  * 
- * After calling this function, ctor_profiler_is_active() will return 0.
- * 
- * @note This function is thread-safe and can be called from any thread
+ * After calling this function, `ctor_profiler_get_status()` will return `CTOR_PROFILER_STATUS_STOPPED`.
+ *
  * @note Safe to call multiple times - subsequent calls are no-ops
  * @note Safe to call even if profiling was never started
  * 
  * @warning Once stopped, constructor profiling cannot be restarted in the same process
  * 
- * @see ctor_profiler_is_active()
+ * @see `ctor_profiler_get_status()`
  */
 void ctor_profiler_stop(void);
 
@@ -206,24 +198,23 @@ void ctor_profiler_stop(void);
  * @note This function can be called before or after stopping the profiler
  * @note The profile data accumulates all samples from constructor start to stop
  * 
- * @see ctor_profiler_stop(), ctor_profiler_destroy_profile()
+ * @see `ctor_profiler_stop()`, `ctor_profiler_destroy()`
  */
 ctor_profile_t* ctor_profiler_get_profile(void);
 
 /**
- * @brief Destroys the constructor profile data and frees all associated memory
+ * @brief Destroys the constructor profiler data and frees all associated memory
  *
  * This function should be called when the profile data is no longer needed
- * to free memory resources. After calling this function, ctor_profiler_get_profile()
+ * to free memory resources. After calling this function, `ctor_profiler_get_profile()`
  * will return NULL.
  *
- * @note This function is thread-safe and can be called from any thread
  * @note Safe to call multiple times - subsequent calls are no-ops
  * @note Safe to call even if profiling was never started
  *
  * @warning After calling this function, any previously returned profile handles become invalid
  *
- * @see ctor_profiler_get_profile()
+ * @see `ctor_profiler_get_profile()`
  */
 void ctor_profiler_destroy(void);
 
@@ -231,46 +222,30 @@ void ctor_profiler_destroy(void);
  * @brief Manually starts constructor profiling for testing purposes
  *
  * This function bypasses the automatic constructor-based startup mechanism and allows
- * manual control over profiling for testing scenarios. Unlike the automatic startup,
- * this function:
- *
- * - Ignores Info.plist configuration
- * - Bypasses prewarming detection
- * - Uses the provided sample rate with probabilistic sampling
- * - Can be called at any time during application lifecycle
- * - Destroys any existing profiler instance before creating a new one
+ * manual control over profiling for testing scenarios.
  *
  * The profiler uses 101 Hz sampling frequency and 10,000 sample buffer.
  * It will automatically stop when the specified timeout is reached.
  *
  * @param sample_rate Sample rate percentage (0.0-100.0)
- *                    - 0.0 will not start profiling (STATUS_NO_CONFIG)
+ *                    - 0.0 will not start profiling
  *                    - Values 0.0-100.0 use probabilistic sampling
  *                    - Values > 100.0 are treated as 100%
  * @param is_prewarming Whether the app is in prewarming state
- *                      - true: Will not start profiling (STATUS_PREWARMED)
+ *                      - true: Will not start profiling
  *                      - false: Normal profiling behavior
  * @param timeout_ns Timeout in nanoseconds after which profiling automatically stops
  *                   - Default: 5000000000ULL (5 seconds)
  *                   - Timeout checking occurs during sample processing
  *
- * @note This function is thread-safe and can be called from any thread
  * @note Safe to call multiple times - destroys existing instance before creating new one
- * @note Check ctor_profiler_get_status() for detailed status after calling
+ * @note Check `ctor_profiler_get_status()` for detailed status after calling
  * @note Designed for unit tests, integration tests, and development builds
  *
  * @warning FOR TESTING USE ONLY - Not intended for production environments
  * @warning May impact application performance if used inappropriately
  *
- * Possible status codes after calling:
- * - CTOR_PROFILER_STATUS_RUNNING: Successfully started
- * - CTOR_PROFILER_STATUS_PREWARMED: Not started due to active prewarming
- * - CTOR_PROFILER_STATUS_NO_CONFIG: Not started due to sample_rate == 0.0
- * - CTOR_PROFILER_STATUS_SAMPLED_OUT: Not started due to probabilistic sampling
- * - CTOR_PROFILER_STATUS_ALLOCATION_FAILED: Memory allocation failed
- * - CTOR_PROFILER_STATUS_START_FAILED: Failed to start sampling thread
- *
- * @see ctor_profiler_get_status(), ctor_profiler_stop(), ctor_profiler_get_profile()
+ * @see `ctor_profiler_get_status()`, `ctor_profiler_stop()`, `ctor_profiler_get_profile()`
  */
 void ctor_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns);
 
