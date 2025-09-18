@@ -1,5 +1,8 @@
 # Unreleased
 
+
+# 3.1.0 / 18-09-2025
+
 - [FEATURE] Add Start and End Feature Operations APIs. See [#2469][]
 - [FEATURE] Send Accessibility attributes in View Updates. See [#2410][]
 - [IMPROVEMENT] Add missing `versionMajor` property to the `DDLogEventOperatingSystem` definition in Objective-C. See [#2463][]
