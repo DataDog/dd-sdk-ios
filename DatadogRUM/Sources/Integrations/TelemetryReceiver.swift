@@ -367,6 +367,14 @@ private extension TelemetryUsageEvent.Telemetry.Usage {
                     )
                 )
             )
+        case .addOperationStepVital(let addOperationStepVital):
+            self = .telemetryCommonFeaturesUsage(
+                value: .addOperationStepVital(
+                    value: .init(
+                        actionType: addOperationStepVital.actionType
+                    )
+                )
+            )
         }
     }
 }

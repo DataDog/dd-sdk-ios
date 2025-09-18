@@ -346,6 +346,10 @@ extension RUMViewScope {
         case let command as RUMUpdatePerformanceMetric where isActiveView:
             updatePerformanceMetric(on: command)
 
+        // Feature Operation commands
+        case _ as RUMOperationStepVitalCommand where isActiveView:
+            needsViewUpdate = true
+
         default:
             break
         }

@@ -45,6 +45,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     /// Information about the application state since `RUM.enable()` was called.
     private let applicationState: RUMApplicationState
+    /// Feature Operation manager for processing Feature Operation commands.
+    private lazy var featureOperationManager: RUMFeatureOperationManager = {
+        RUMFeatureOperationManager(parent: self, dependencies: dependencies)
+    }()
 
     /// Information about this session state, shared with `CrashContext`.
     private var state: RUMSessionState {
@@ -249,6 +253,15 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 }
                 hadApplicationLaunchViewWhenEnteringBackground = nil
 
+            case let operationStepVitalCommand as RUMOperationStepVitalCommand:
+                let activeView = viewScopes.first { $0.isActiveView }
+                // Forward command to the feature operation manager
+                featureOperationManager.process(
+                    operationStepVitalCommand,
+                    context: context,
+                    writer: writer,
+                    activeView: activeView
+                )
             default:
                 if !hasActiveView {
                     handleOffViewCommand(command: command, context: context, writer: writer)

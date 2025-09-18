@@ -190,12 +190,30 @@ public class objc_LogEventOperatingSystem: NSObject
     public var build: String?
     public var versionMajor: String
 public class objc_LogEventDd: NSObject
-    public var device: objc_LogEventDevice
-public class objc_LogEventDevice: NSObject
-    public var brand: String
-    public var name: String
-    public var model: String
+    public var device: objc_LogEventDDDevice
+public class objc_LogEventDDDevice: NSObject
     public var architecture: String
+public class objc_LogEventDevice: NSObject
+    public var architecture: String?
+    public var batteryLevel: Double?
+    public var brand: String?
+    public var brightnessLevel: Double?
+    public var locale: String?
+    public var locales: [String]?
+    public var model: String?
+    public var name: String?
+    public var powerSavingMode: Bool?
+    public var timeZone: String?
+    public var type: objc_LogEventDeviceDeviceType
+public enum objc_LogEventDeviceDeviceType: Int
+    case none
+    case mobile
+    case desktop
+    case tablet
+    case tv
+    case gamingConsole
+    case bot
+    case other
 public class objc_LogEventNetworkConnectionInfo: NSObject
     public var reachability: objc_LogEventReachability
     public var availableInterfaces: [Int]?
@@ -2102,8 +2120,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var numberOfDisplays: NSNumber?
     public var plugins: [objc_TelemetryConfigurationEventTelemetryConfigurationPlugins]?
     public var premiumSampleRate: NSNumber?
+    public var profilingSampleRate: NSNumber?
+    public var propagateTraceBaggage: NSNumber?
     public var reactNativeVersion: String?
     public var reactVersion: String?
+    public var remoteConfigurationId: String?
     public var replaySampleRate: NSNumber?
     public var sdkVersion: String?
     public var selectedTracingPropagators: [Int]?
@@ -2148,6 +2169,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var trackViewsManually: NSNumber?
     public var trackingConsent: objc_TelemetryConfigurationEventTelemetryConfigurationTrackingConsent
     public var unityVersion: String?
+    public var useAllowedGraphQlUrls: NSNumber?
     public var useAllowedTracingOrigins: NSNumber?
     public var useAllowedTracingUrls: NSNumber?
     public var useAllowedTrackingOrigins: NSNumber?
@@ -2159,8 +2181,10 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var usePartitionedCrossSiteSessionCookie: NSNumber?
     public var usePciIntake: NSNumber?
     public var useProxy: NSNumber?
+    public var useRemoteConfigurationProxy: NSNumber?
     public var useSecureSessionCookie: NSNumber?
     public var useTracing: NSNumber?
+    public var useTrackGraphQlPayload: NSNumber?
     public var useWorkerUrl: NSNumber?
     public var variant: String?
     public var viewTrackingStrategy: objc_TelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy
@@ -2280,6 +2304,10 @@ public enum objc_VitalsFrequency: Int
     case average
     case rare
     case never
+public enum objc_RUMFeatureOperationFailureReason: Int
+    case error
+    case abandoned
+    case other
 public class objc_FirstPartyHostsTracing: NSObject
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>])
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>], sampleRate: Float)
@@ -2344,6 +2372,9 @@ public class objc_RUMMonitor: NSObject
     public func removeAttribute(forKey key: String)
     public func removeAttributes(forKeys keys: [String])
     public func addFeatureFlagEvaluation(name: String, value: Any)
+    public func startFeatureOperation(name: String,operationKey: String?,attributes: [String: Any])
+    public func succeedFeatureOperation(name: String,operationKey: String?,attributes: [String: Any])
+    public func failFeatureOperation(name: String,operationKey: String?,reason: objc_RUMFeatureOperationFailureReason,attributes: [String: Any])
     public var debug: Bool
 [?] extension objc_RUMMonitor
     public func _internal_sync_addError(_ error: Error,source: objc_RUMErrorSource,attributes: [String: Any])

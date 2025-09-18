@@ -41,11 +41,15 @@ class NOPMonitorTests: XCTestCase {
         noop.startAction(type: .click, name: .mockAny())
         noop.stopAction(type: .click)
         noop.addFeatureFlagEvaluation(name: .mockAny(), value: String.mockAny())
+        noop.startFeatureOperation(name: .mockAny())
+        noop.succeedFeatureOperation(name: .mockAny())
+        noop.failFeatureOperation(name: .mockAny(), reason: .mockAny())
+
         noop.debug = .mockRandom()
         _ = noop.debug
 
         // Then
-        XCTAssertEqual(dd.logger.criticalLogs.count, 24)
+        XCTAssertEqual(dd.logger.criticalLogs.count, 27)
         let actualMessages = dd.logger.criticalLogs.map { $0.message }
         let expectedMessages = [
             "addAttribute(forKey:value:)",
@@ -70,6 +74,9 @@ class NOPMonitorTests: XCTestCase {
             "startAction(type:name:attributes:)",
             "stopAction(type:name:attributes:)",
             "addFeatureFlagEvaluation(name:value:)",
+            "startFeatureOperation(name:operationKey:attributes:)",
+            "succeedFeatureOperation(name:operationKey:attributes:)",
+            "failFeatureOperation(name:operationKey:reason:attributes:)",
             "debug",
             "debug",
         ].map { method in
