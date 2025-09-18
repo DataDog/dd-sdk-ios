@@ -8,22 +8,21 @@ import XCTest
 @testable import DatadogFlags
 
 final class FlagsConfigurationTests: XCTestCase {
-    
     func testFlagsClientConfiguration() {
         let config = FlagsClientConfiguration(
             clientToken: "test-token",
             environment: "staging",
             baseURL: "https://custom.example.com"
         )
-        
+
         XCTAssertEqual(config.clientToken, "test-token")
         XCTAssertEqual(config.environment, "staging")
         XCTAssertEqual(config.baseURL, "https://custom.example.com")
     }
-    
+
     func testFlagsClientConfigurationDefaults() {
         let config = FlagsClientConfiguration(clientToken: "test-token")
-        
+
         XCTAssertEqual(config.clientToken, "test-token")
         XCTAssertEqual(config.environment, "prod")
         XCTAssertNil(config.baseURL)
@@ -32,19 +31,19 @@ final class FlagsConfigurationTests: XCTestCase {
         XCTAssertTrue(config.customHeaders.isEmpty)
         XCTAssertNil(config.flaggingProxy)
     }
-    
+
     func testFlagsClientConfigurationWithAllParameters() {
         let customHeaders = ["X-Custom": "value", "X-Test": "test"]
         let config = FlagsClientConfiguration(
             clientToken: "test-token",
-            environment: "staging", 
+            environment: "staging",
             baseURL: "https://custom.example.com",
             site: "datadoghq.eu",
             applicationId: "app-123",
             customHeaders: customHeaders,
             flaggingProxy: "proxy.example.com"
         )
-        
+
         XCTAssertEqual(config.clientToken, "test-token")
         XCTAssertEqual(config.environment, "staging")
         XCTAssertEqual(config.baseURL, "https://custom.example.com")

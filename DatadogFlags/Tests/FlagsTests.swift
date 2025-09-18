@@ -8,22 +8,21 @@ import XCTest
 @testable import DatadogFlags
 
 final class FlagsTests: XCTestCase {
-    
     func testFlagsEnableMethod() {
         // Test that the enable method exists and can be called
         let configuration = FlagsConfiguration()
-        
+
         // This should not crash - the method is currently a placeholder
         Flags.enable(with: configuration)
-        
-        // Since it's a TODO implementation, we just verify it doesn't crash
+
+        // Since it's a TODO: RUM-000 (actually FFL-1015) implementation, we just verify it doesn't crash
         XCTAssertTrue(true, "Flags.enable should not crash")
     }
-    
+
     func testFlagsConfiguration() {
         // Test that FlagsConfiguration can be instantiated
         let configuration = FlagsConfiguration()
-        
+
         XCTAssertNotNil(configuration)
     }
 }
