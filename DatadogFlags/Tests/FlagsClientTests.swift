@@ -5,14 +5,18 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import DatadogFlags
 
 final class FlagsClientTests: XCTestCase {
     func testFlagsClientCreation() {
-        let config = FlagsClientConfiguration(clientToken: "test-token")
-        let client = FlagsClient.create(with: config)
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
 
-        XCTAssertNotNil(client)
+        let config = FlagsClientConfiguration(clientToken: "test-token")
+        let client = FlagsClient.create(with: config, in: core)
+
+        XCTAssertNotNil(client) // TODO: FFL-1016 Assert that it is not a NOPFlagsClient
     }
 
     func testFlagsClientWithMockHttpClient() {
@@ -24,7 +28,8 @@ final class FlagsClientTests: XCTestCase {
         let client = FlagsClient(
             configuration: config,
             httpClient: mockHttpClient,
-            store: mockStore
+            store: mockStore,
+            featureScope: FeatureScopeMock()
         )
 
         let context = FlagsEvaluationContext(
@@ -64,7 +69,8 @@ final class FlagsClientTests: XCTestCase {
         let client = FlagsClient(
             configuration: config,
             httpClient: AttributeSerializationTestClient(),
-            store: MockFlagsStore()
+            store: MockFlagsStore(),
+            featureScope: FeatureScopeMock()
         )
 
         let stringAttributes: [String: String] = [

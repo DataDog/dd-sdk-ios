@@ -5,22 +5,45 @@
  */
 
 import Foundation
+import DatadogInternal
 
 public class FlagsClient {
     private let configuration: FlagsClientConfiguration
     private let httpClient: FlagsHttpClient
     private let store: FlagsStore
+    private let featureScope: FeatureScope
 
-    internal init(configuration: FlagsClientConfiguration, httpClient: FlagsHttpClient, store: FlagsStore) {
+    internal init(configuration: FlagsClientConfiguration, httpClient: FlagsHttpClient, store: FlagsStore, featureScope: FeatureScope) {
         self.configuration = configuration
         self.httpClient = httpClient
         self.store = store
+        self.featureScope = featureScope
     }
 
-    public static func create(with configuration: FlagsClientConfiguration) -> FlagsClient {
+    public static func create(with configuration: FlagsClientConfiguration, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
+        do {
+            // To ensure the correct registration order between Core and Features,
+            // the entire initialization flow is synchronized on the main thread.
+            return try runOnMainThreadSync {
+                try createOrThrow(with: configuration, in: core)
+            }
+        } catch let error {
+            consolePrint("\(error)", .error)
+            fatalError("TODO: FFL-1016 Fallback to NOP Client")
+        }
+    }
+
+    internal static func createOrThrow(with configuration: FlagsClientConfiguration, in core: DatadogCoreProtocol) throws -> FlagsClient {
+        guard core.get(feature: FlagsFeature.self) != nil else {
+            throw ProgrammerError(
+                description: "`FlagsClient.create()` produces a non-functional client because the `Flags` feature was not enabled."
+            )
+        }
+
         let httpClient = NetworkFlagsHttpClient()
         let store = FlagsStore()
-        return FlagsClient(configuration: configuration, httpClient: httpClient, store: store)
+        let featureScope = core.scope(for: FlagsFeature.self)
+        return FlagsClient(configuration: configuration, httpClient: httpClient, store: store, featureScope: featureScope)
     }
 
     public func setEvaluationContext(_ context: FlagsEvaluationContext, completion: @escaping (Result<Void, FlagsError>) -> Void) {
