@@ -100,7 +100,7 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
         internalLog(level: level, message: message, error: error.map { DDError(error: $0) }, attributes: attributes)
     }
 
-    func internalLog(level: LogLevel, message: String, error: DDError?, attributes: [String: Encodable]?) {
+    func internalLog(level: LogLevel, message: String, error: DDError?, attributes: [String: Encodable]?, completionHandler: @escaping CompletionHandler = NOPCompletionHandler) {
         guard configuration.sampler.sample() else {
             return
         }
@@ -178,7 +178,7 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
                 context: context,
                 threadName: threadName
             ) { log in
-                writer.write(value: log)
+                writer.write(value: log, completion: completionHandler)
 
                 guard log.status == .error || log.status == .critical else {
                     return
@@ -212,18 +212,40 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
 }
 
 extension RemoteLogger: InternalLoggerProtocol {
-    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String: Encodable]?) {
+    func log(
+        level: LogLevel,
+        message: String,
+        errorKind: String?,
+        errorMessage: String?,
+        stackTrace: String?,
+        attributes: [String: Encodable]?
+    ) {
         var ddError: DDError?
         // Find and remove source_type if it's in the attributes
         var logAttributes = attributes
         let sourceType = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorSourceType) as? String
 
         if errorKind != nil || errorMessage != nil || stackTrace != nil {
-            // Cross platform frameworks don't necessarilly send all values for errors. Send empty strings
+            // Cross platform frameworks don't necessarily send all values for errors. Send empty strings
             // for any values that are empty.
             ddError = DDError(type: errorKind ?? "", message: errorMessage ?? "", stack: stackTrace ?? "", sourceType: sourceType ?? "ios")
         }
 
         internalLog(level: level, message: message, error: ddError, attributes: logAttributes)
+    }
+
+    func critical(
+        message: String,
+        error: Error?,
+        attributes: [String: Encodable]?,
+        completionHandler: @escaping CompletionHandler
+    ) {
+        internalLog(
+            level: .critical,
+            message: message,
+            error: error.map { DDError(error: $0) },
+            attributes: attributes,
+            completionHandler: completionHandler
+        )
     }
 }

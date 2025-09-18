@@ -58,7 +58,6 @@ public enum Datadog
         public var backgroundTasksEnabled: Bool
         public init(clientToken: String,env: String,site: DatadogSite = .us1,service: String? = nil,bundle: Bundle = .main,batchSize: BatchSize = .medium,uploadFrequency: UploadFrequency = .average,proxyConfiguration: [AnyHashable: Any]? = nil,encryption: DataEncryption? = nil,serverDateProvider: ServerDateProvider? = nil,batchProcessingLevel: BatchProcessingLevel = .medium,backgroundTasksEnabled: Bool = false)
 
-
 # ----------------------------------
 # API surface for DatadogLogs:
 # ----------------------------------
@@ -132,6 +131,7 @@ public struct Logger
     public static func create(with configuration: Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default) -> LoggerProtocol
 public protocol InternalLoggerProtocol
     func log(level: LogLevel,message: String,errorKind: String?,errorMessage: String?,stackTrace: String?,attributes: [String: Encodable]?)
+    func critical(message: String,error: Error?,attributes: [String: Encodable]?,completionHandler: @escaping CompletionHandler)
 [?] extension LoggerProtocol
     public var _internal: InternalLoggerProtocol
 public enum LogLevel: Int, Codable
@@ -176,7 +176,6 @@ public enum Logs
     public mutating func setLogEventMapper(_ mapper: LogEventMapper)
 public protocol LogEventMapper
     func map(event: LogEvent, callback: @escaping (LogEvent) -> Void)
-
 
 # ----------------------------------
 # API surface for DatadogTrace:
@@ -314,7 +313,6 @@ public enum SpanTags
 public class Tracer
     public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> OTTracer
 
-
 # ----------------------------------
 # API surface for DatadogRUM:
 # ----------------------------------
@@ -402,6 +400,7 @@ public enum RUM
         public var trackAnonymousUser: Bool
         public var trackMemoryWarnings: Bool
         public var telemetrySampleRate: SampleRate
+        public var collectAccessibility: Bool
         public var featureFlags: FeatureFlags
         public struct URLSessionTracking
             public var firstPartyHostsTracing: FirstPartyHostsTracing?
@@ -416,14 +415,13 @@ public enum RUM
         case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil)
 [?] extension RUM.Configuration
-    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,telemetrySampleRate: SampleRate = 20,featureFlags: FeatureFlags = .defaults)
+    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,telemetrySampleRate: SampleRate = 20,collectAccessibility: Bool = false,featureFlags: FeatureFlags = .defaults)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
     public var configurationTelemetrySampleRate: Float
 [?] extension RUM.Configuration
     public typealias FeatureFlags = [FeatureFlag: Bool]
     public enum FeatureFlag: String
         case viewHitches
-        case collectAccessibilitySettings
 [?] extension RUM.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
@@ -468,6 +466,9 @@ public extension RUMMonitorProtocol
     func addAction(type: RUMActionType,name: String,attributes: [AttributeKey: AttributeValue] = [:])
     func startAction(type: RUMActionType,name: String,attributes: [AttributeKey: AttributeValue] = [:])
     func stopAction(type: RUMActionType,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    func startFeatureOperation(name: String,operationKey: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    func succeedFeatureOperation(name: String,operationKey: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    func failFeatureOperation(name: String,operationKey: String? = nil,reason: RUMFeatureOperationFailureReason,attributes: [AttributeKey: AttributeValue] = [:])
 public extension RUMMonitorProtocol
     var _internal: DatadogInternalInterface?
 public struct DatadogInternalInterface
@@ -476,6 +477,7 @@ public struct DatadogInternalInterface
     public func setInternalViewAttribute(at time: Date,key: AttributeKey,value: AttributeValue)
     public func addResourceMetrics(at time: Date,resourceKey: String,fetch: (start: Date, end: Date),redirection: (start: Date, end: Date)?,dns: (start: Date, end: Date)?,connect: (start: Date, end: Date)?,ssl: (start: Date, end: Date)?,firstByte: (start: Date, end: Date)?,download: (start: Date, end: Date)?,responseSize: Int64?,attributes: [AttributeKey: AttributeValue] = [:])
 public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
+public typealias RUMFeatureOperationFailureReason = RUMVitalEvent.Vital.FailureReason
 public enum RUMActionType
     case tap
     case click
@@ -510,7 +512,11 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject
     func startAction(type: RUMActionType,name: String,attributes: [AttributeKey: AttributeValue])
     func stopAction(type: RUMActionType,name: String?,attributes: [AttributeKey: AttributeValue])
     func addFeatureFlagEvaluation(name: String,value: Encodable)
+    func startFeatureOperation(name: String,operationKey: String?,attributes: [AttributeKey: AttributeValue])
+    func succeedFeatureOperation(name: String,operationKey: String?,attributes: [AttributeKey: AttributeValue])
+    func failFeatureOperation(name: String,operationKey: String?,reason: RUMFeatureOperationFailureReason,attributes: [AttributeKey: AttributeValue])
     var debug: Bool
+    func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue],completionHandler: @escaping CompletionHandler)
 public protocol RUMMonitorViewProtocol: AnyObject
     func addViewAttribute(forKey key: AttributeKey, value: AttributeValue)
     func addViewAttributes(_ attributes: [AttributeKey: AttributeValue])
@@ -526,7 +532,6 @@ public enum PerformanceMetric
     case flutterRasterTime
     case jsFrameTimeSeconds
 
-
 # ----------------------------------
 # API surface for DatadogCrashReporting:
 # ----------------------------------
@@ -540,7 +545,6 @@ public protocol CrashReportingPlugin: AnyObject
     func inject(context: Data)
     var backtraceReporter: BacktraceReporting?
 
-
 # ----------------------------------
 # API surface for DatadogWebViewTracking:
 # ----------------------------------
@@ -552,7 +556,6 @@ public enum WebViewTracking
     public class AbstractMessageEmitter
         public func send(body: Any, slotId: String? = nil)
     public static func messageEmitter(in core: DatadogCoreProtocol,logsSampleRate: SampleRate = .maxSampleRate) -> AbstractMessageEmitter
-
 
 # ----------------------------------
 # API surface for DatadogSessionReplay:

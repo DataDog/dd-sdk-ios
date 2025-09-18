@@ -121,16 +121,6 @@ class DDSessionReplayTests: XCTestCase {
         XCTAssertEqual(config._swift.startRecordingImmediately, startRecordingImmediately)
     }
 
-    func testPrivacyLevelsInterop() {
-        XCTAssertEqual(objc_SessionReplayConfigurationPrivacyLevel.allow._swift, .allow)
-        XCTAssertEqual(objc_SessionReplayConfigurationPrivacyLevel.mask._swift, .mask)
-        XCTAssertEqual(objc_SessionReplayConfigurationPrivacyLevel.maskUserInput._swift, .maskUserInput)
-
-        XCTAssertEqual(objc_SessionReplayConfigurationPrivacyLevel(.allow), .allow)
-        XCTAssertEqual(objc_SessionReplayConfigurationPrivacyLevel(.mask), .mask)
-        XCTAssertEqual(objc_SessionReplayConfigurationPrivacyLevel(.maskUserInput), .maskUserInput)
-    }
-
     func testTextAndInputPrivacyLevelsInterop() {
         XCTAssertEqual(objc_TextAndInputPrivacyLevel.maskAll._swift, .maskAll)
         XCTAssertEqual(objc_TextAndInputPrivacyLevel.maskAllInputs._swift, .maskAllInputs)

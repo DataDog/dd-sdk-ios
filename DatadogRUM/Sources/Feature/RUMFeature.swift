@@ -77,7 +77,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         }
 
         var accessibilityReader: AccessibilityReading? = nil
-        if #available(iOS 13.0, tvOS 13.0, *), configuration.featureFlags[.collectAccessibilitySettings] {
+        if  #available(iOS 13.0, tvOS 13.0, *), configuration.collectAccessibility {
              accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenter)
         }
 

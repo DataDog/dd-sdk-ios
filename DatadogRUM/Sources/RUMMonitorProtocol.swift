@@ -15,6 +15,9 @@ import DatadogInternal
 /// The type of RUM resource.
 public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
 
+/// The type of RUM feature operation failure reason.
+public typealias RUMFeatureOperationFailureReason = RUMVitalEvent.Vital.FailureReason
+
 /// The type of a RUM action.
 public enum RUMActionType {
     case tap
@@ -278,6 +281,43 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
         value: Encodable
     )
 
+    // MARK: - features
+
+    /// Starts a Feature Operation
+    /// - Parameters:
+    ///   - name: the name of the operation (e.g., `login_flow`)
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
+    ///   - attributes: custom attributes to attach to this operation
+    func startFeatureOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue]
+    )
+
+    /// Completes a Feature successfully.
+    /// - Parameters:
+    ///   - name: the name of the operation (e.g., `login_flow`)
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startFeatureOperation`
+    ///   - attributes: custom attributes to attach to this operation
+    func succeedFeatureOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue]
+    )
+
+    /// Fails a Feature Operation.
+    /// - Parameters:
+    ///   - name: the name of the operation (e.g., `login_flow`)
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startFeatureOperation`
+    ///   - reason: the reason for the failure
+    ///   - attributes: custom attributes to attach to this operation
+    func failFeatureOperation(
+        name: String,
+        operationKey: String?,
+        reason: RUMFeatureOperationFailureReason,
+        attributes: [AttributeKey: AttributeValue]
+    )
+
     // MARK: - debugging
 
     /// Debug utility to inspect the active RUM view. Use it only when debugging.
@@ -287,6 +327,23 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     ///
     /// The default value is false.
     var debug: Bool { set get }
+
+    // MARK: - Internal
+
+    /// Adds RUM error to current RUM view.
+    /// 
+    /// - Parameters:
+    ///   - error: the `Error` object. It will be used to infer error details.
+    ///   - source: the origin of the error.
+    ///   - attributes: custom attributes to attach to this error.
+    ///   - completionHandler: A completion closure called when reporting the error is completed.
+    @_spi(Internal)
+    func addError(
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler
+    )
 }
 
 // MARK: - View Interface
@@ -370,9 +427,19 @@ extension RUMMonitorViewProtocol {
     func addViewLoadingTime(overwrite: Bool) {
         // no-op
     }
+
+    /// It cannot be declared '@_spi' without a default implementation in a protocol extension
+    func addError(
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler
+    ) {
+        completionHandler()
+    }
 }
 
-// MARK: - NOP moniotor
+// MARK: - NOP monitor
 
 internal class NOPMonitor: RUMMonitorProtocol {
     private func warn(method: StaticString = #function) {
@@ -405,6 +472,13 @@ internal class NOPMonitor: RUMMonitorProtocol {
     func startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func addFeatureFlagEvaluation(name: String, value: Encodable) { warn() }
+    func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], completionHandler: () -> Void) {
+        warn()
+        completionHandler()
+    }
+    func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func succeedFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func failFeatureOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) { warn() }
     var debug: Bool {
         set { warn() }
         get {

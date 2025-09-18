@@ -96,6 +96,14 @@ class DDRUMUserActionTypeTests: XCTestCase {
     }
 }
 
+class DDRUMFeatureOperationFailureReasonTests: XCTestCase {
+    func testMappingToSwiftRUMFeatureOperationFailureReason() {
+        XCTAssertEqual(objc_RUMFeatureOperationFailureReason.error.swiftType, .error)
+        XCTAssertEqual(objc_RUMFeatureOperationFailureReason.abandoned.swiftType, .abandoned)
+        XCTAssertEqual(objc_RUMFeatureOperationFailureReason.other.swiftType, .other)
+    }
+}
+
 class SwiftUIRUMViewsPredicateBridgeTests: XCTestCase {
     func testItForwardsCallToObjcPredicate() {
         class MockPredicate: objc_SwiftUIRUMViewsPredicate {
@@ -388,10 +396,12 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.addError(error: error, source: .custom, attributes: ["event-attribute1": "foo1"])
         objcRUMMonitor.addError(message: "error message", stack: "error stack", source: .source, attributes: [:])
 
+        objcRUMMonitor._internal_sync_addError(NSError.mockAny(), source: .custom, attributes: [:])
+
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
         let errorEvents = rumEventMatchers.filterRUMEvents(ofType: RUMErrorEvent.self)
-        XCTAssertEqual(errorEvents.count, 4)
+        XCTAssertEqual(errorEvents.count, 5)
 
         let event1Matcher = errorEvents[0]
         let event1: RUMErrorEvent = try event1Matcher.model()
@@ -426,6 +436,12 @@ class DDRUMMonitorTests: XCTestCase {
         XCTAssertEqual(event4.error.message, "error message")
         XCTAssertEqual(event4.error.source, .source)
         XCTAssertEqual(event4.error.stack, "error stack")
+
+        let event5Matcher = errorEvents[4]
+        let event5: RUMErrorEvent = try event5Matcher.model()
+        XCTAssertEqual(event5.error.type, "abc - 0")
+        XCTAssertEqual(event5.error.source, .custom)
+        XCTAssertEqual(event5.error.message, #"Error Domain=abc Code=0 "(null)""#)
     }
 
     func testSendingActionEvents() throws {

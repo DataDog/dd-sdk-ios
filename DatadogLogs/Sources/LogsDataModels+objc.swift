@@ -329,6 +329,10 @@ public class objc_LogEventOperatingSystem: NSObject {
     public var build: String? {
         root.swiftModel.os.build
     }
+
+    public var versionMajor: String {
+        root.swiftModel.os.versionMajor
+    }
 }
 
 @objc(DDLogEventDd)
@@ -341,8 +345,23 @@ public class objc_LogEventDd: NSObject {
         self.root = root
     }
 
-    public var device: objc_LogEventDevice {
+    public var device: objc_LogEventDDDevice {
         .init(root: root)
+    }
+}
+
+@objc(DDLogEventDDDevice)
+@objcMembers
+@_spi(objc)
+public class objc_LogEventDDDevice: NSObject {
+    internal let root: objc_LogEvent
+
+    internal init(root: objc_LogEvent) {
+        self.root = root
+    }
+
+    public var architecture: String {
+        root.swiftModel.dd.device.architecture
     }
 }
 
@@ -356,21 +375,88 @@ public class objc_LogEventDevice: NSObject {
         self.root = root
     }
 
-    public var brand: String {
-        root.swiftModel.device.brand ?? ""
+    public var architecture: String? {
+        root.swiftModel.device.architecture
     }
 
-    public var name: String {
-        root.swiftModel.device.name ?? ""
+    public var batteryLevel: Double? {
+        root.swiftModel.device.batteryLevel
     }
 
-    public var model: String {
-        root.swiftModel.device.model ?? ""
+    public var brand: String? {
+        root.swiftModel.device.brand
     }
 
-    public var architecture: String {
-        root.swiftModel.dd.device.architecture
+    public var brightnessLevel: Double? {
+        root.swiftModel.device.brightnessLevel
     }
+
+    public var locale: String? {
+        root.swiftModel.device.locale
+    }
+
+    public var locales: [String]? {
+        root.swiftModel.device.locales
+    }
+
+    public var model: String? {
+        root.swiftModel.device.model
+    }
+
+    public var name: String? {
+        root.swiftModel.device.name
+    }
+
+    public var powerSavingMode: Bool? {
+        root.swiftModel.device.powerSavingMode
+    }
+
+    public var timeZone: String? {
+        root.swiftModel.device.timeZone
+    }
+
+    public var type: objc_LogEventDeviceDeviceType {
+        .init(swift: root.swiftModel.device.type)
+    }
+}
+
+@objc(DDLogEventDeviceDeviceType)
+@_spi(objc)
+public enum objc_LogEventDeviceDeviceType: Int {
+    internal init(swift: Device.DeviceType?) {
+        switch swift {
+        case nil: self = .none
+        case .mobile?: self = .mobile
+        case .desktop?: self = .desktop
+        case .tablet?: self = .tablet
+        case .tv?: self = .tv
+        case .gamingConsole?: self = .gamingConsole
+        case .bot?: self = .bot
+        case .other?: self = .other
+        }
+    }
+
+    internal var toSwift: Device.DeviceType? {
+        switch self {
+        case .none: return nil
+        case .mobile: return .mobile
+        case .desktop: return .desktop
+        case .tablet: return .tablet
+        case .tv: return .tv
+        case .gamingConsole: return .gamingConsole
+        case .bot: return .bot
+        case .other: return .other
+        }
+    }
+
+    case none
+    case mobile
+    case desktop
+    case tablet
+    case tv
+    case gamingConsole
+    case bot
+    case other
 }
 
 @objc(DDLogEventNetworkConnectionInfo)

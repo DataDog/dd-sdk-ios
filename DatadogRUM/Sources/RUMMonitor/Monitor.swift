@@ -108,6 +108,8 @@ internal class Monitor: RUMCommandSubscriber {
     private var attributes: [AttributeKey: AttributeValue] = [:]
 
     private let fatalErrorContext: FatalErrorContextNotifying
+    private let rumUUIDGenerator: RUMUUIDGenerator
+    private let telemetry: Telemetry
 
     init(
         dependencies: RUMScopeDependencies,
@@ -117,6 +119,8 @@ internal class Monitor: RUMCommandSubscriber {
         self.scopes = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
         self.fatalErrorContext = dependencies.fatalErrorContext
+        self.rumUUIDGenerator = dependencies.rumUUIDGenerator
+        self.telemetry = dependencies.telemetry
     }
 
     func process(command: RUMCommand) {
@@ -269,7 +273,8 @@ extension Monitor: RUMMonitorProtocol {
                 stack: stack,
                 source: RUMInternalErrorSource(source),
                 globalAttributes: self.attributes,
-                attributes: attributes
+                attributes: attributes,
+                completionHandler: NOPCompletionHandler
             )
         )
     }
@@ -281,7 +286,8 @@ extension Monitor: RUMMonitorProtocol {
                 error: error,
                 source: RUMInternalErrorSource(source),
                 globalAttributes: self.attributes,
-                attributes: attributes
+                attributes: attributes,
+                completionHandler: NOPCompletionHandler
             )
         )
     }
@@ -464,6 +470,69 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
+    // MARK: - Feature Operations
+
+    func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
+        DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) started")
+
+        telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .start)))))
+
+        process(
+            command: RUMOperationStepVitalCommand(
+                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                name: name,
+                operationKey: operationKey,
+                stepType: .start,
+                failureReason: nil,
+                time: dateProvider.now,
+                attributes: attributes
+            )
+        )
+    }
+
+    func succeedFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
+        DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) successfully ended")
+
+        telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .succeed)))))
+
+        process(
+            command: RUMOperationStepVitalCommand(
+                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                name: name,
+                operationKey: operationKey,
+                stepType: .end,
+                failureReason: nil,
+                time: dateProvider.now,
+                attributes: attributes
+            )
+        )
+    }
+
+    func failFeatureOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
+        DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) unsuccessfully ended with the following failure reason: \(reason.rawValue)")
+
+        telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .fail)))))
+
+        process(
+            command: RUMOperationStepVitalCommand(
+                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                name: name,
+                operationKey: operationKey,
+                stepType: .end,
+                failureReason: reason,
+                time: dateProvider.now,
+                attributes: attributes
+            )
+        )
+    }
+
+    private func instanceSuffix(_ operationKey: String?) -> String {
+        guard let operationKey = operationKey else {
+            return ""
+        }
+        return " (instance `\(operationKey)`)"
+    }
+
     // MARK: - debugging
 
     var debug: Bool {
@@ -482,6 +551,26 @@ extension Monitor: RUMMonitorProtocol {
         get {
             debugging != nil
         }
+    }
+
+    // MARK: - Internal
+
+    func addError(
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler
+    ) {
+        process(
+            command: RUMAddCurrentViewErrorCommand(
+                time: dateProvider.now,
+                error: error,
+                source: RUMInternalErrorSource(source),
+                globalAttributes: self.attributes,
+                attributes: attributes,
+                completionHandler: completionHandler
+            )
+        )
     }
 }
 
@@ -611,7 +700,8 @@ extension Monitor {
                 stack: stack,
                 source: source,
                 globalAttributes: self.attributes,
-                attributes: attributes
+                attributes: attributes,
+                completionHandler: NOPCompletionHandler
             )
         )
     }

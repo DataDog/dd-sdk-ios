@@ -323,3 +323,40 @@ public final class objc_Logger: NSObject {
         return objc_Logger(sdkLogger: Logger.create(with: configuration.configuration))
     }
 }
+
+extension objc_Logger {
+    /// **For Datadog internal use only. Subject to changes.**
+    ///
+    /// Logs a critical entry in sync.
+    ///
+    /// **This method will block the caller thread for maximum 2 seconds.**
+    ///
+    /// - Parameters:
+    ///   - message: the message to be logged
+    ///   - error: the error information (optional)
+    ///   - attributes: a dictionary of attributes (optional) to add for this message. If an attribute with
+    ///                 the same key already exist in this logger, it will be overridden (only for this message).
+    @objc
+    public func _internal_sync_critical(
+        message: String,
+        error: Error?,
+        attributes: [String: Any]
+    ) {
+        guard let logger = sdkLogger as? InternalLoggerProtocol else {
+            return
+        }
+
+        let semaphore = DispatchSemaphore(value: 0)
+
+        logger.critical(
+            message: message,
+            error: error,
+            attributes: attributes.dd.swiftAttributes,
+            completionHandler: {
+                semaphore.signal()
+            }
+        )
+
+        _ = semaphore.wait(timeout: .now() + .seconds(2))
+    }
+}

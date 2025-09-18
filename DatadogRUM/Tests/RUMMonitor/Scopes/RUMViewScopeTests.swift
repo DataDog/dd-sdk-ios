@@ -2100,6 +2100,8 @@ class RUMViewScopeTests: XCTestCase {
     // MARK: - Error Tracking
 
     func testWhenViewErrorIsAdded_itSendsErrorEventAndViewUpdateEvent() throws {
+        let completionExpectation = expectation(description: "Error processing completion")
+
         let hasReplay: Bool = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
@@ -2131,11 +2133,19 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime, message: "view error", source: .source, stack: nil),
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(
+                    time: currentTime,
+                    message: "view error",
+                    source: .source,
+                    stack: nil,
+                    completionHandler: completionExpectation.fulfill
+                ),
                 context: context,
                 writer: writer
             )
         )
+
+        wait(for: [completionExpectation], timeout: 0)
 
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertEqual(error.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.toInt64Milliseconds)
@@ -2218,6 +2228,8 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     func testGivenStartedView_whenCrossPlatformErrorIsAdded_itSendsCorrectErrorEvent() throws {
+        let completionExpectation = expectation(description: "Error processing completion")
+
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         let customSource = String.mockAnySource()
@@ -2250,12 +2262,15 @@ class RUMViewScopeTests: XCTestCase {
                     attributes: [
                         CrossPlatformAttributes.errorSourceType: customSourceType,
                         CrossPlatformAttributes.errorIsCrash: true
-                    ]
+                    ],
+                    completionHandler: completionExpectation.fulfill
                 ),
                 context: customContext,
                 writer: writer
             )
         )
+
+        wait(for: [completionExpectation], timeout: 0)
 
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertEqual(error.error.sourceType, expectedSourceType)
@@ -2825,6 +2840,57 @@ class RUMViewScopeTests: XCTestCase {
         // The rate is only calculated in the Stop View event
         let stopViewEvent = viewEvents.last
         XCTAssertEqual(stopViewEvent?.view.freezeRate, 0.5.hours)
+    }
+
+    func testWhenViewErrorIsAdded_ButErrorEventDiscarded_itCallsCompletionHandler() throws {
+        let completionExpectation = expectation(description: "Error processing completion")
+
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(
+                eventBuilder: RUMEventBuilder(
+                    eventsMapper: .mockWith(errorEventMapper: { _ in nil })
+                )
+            ),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(
+                    time: currentTime,
+                    message: "view error",
+                    source: .source,
+                    stack: nil,
+                    completionHandler: completionExpectation.fulfill
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        wait(for: [completionExpectation], timeout: 0)
+        XCTAssertTrue(writer.events(ofType: RUMErrorEvent.self).isEmpty)
+        XCTAssertFalse(writer.events(ofType: RUMViewEvent.self).isEmpty)
     }
 
     // MARK: - App Hangs
@@ -4086,7 +4152,7 @@ class RUMViewScopeTests: XCTestCase {
     @MainActor
     func testAccessibilityAttributesInViewEvents() throws {
         // Given
-        let mockAccessibilityState = Accessibility(
+        let mockAccessibilityState = AccessibilityInfo(
             textSize: "medium",
             screenReaderEnabled: false,
             boldTextEnabled: true,
@@ -4150,7 +4216,7 @@ class RUMViewScopeTests: XCTestCase {
         let initialEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
 
         let initialAccessibilityData = try XCTUnwrap(
-            initialEvent.context?.contextInfo["accessibility"] as? Accessibility
+            initialEvent.view.accessibility
         )
         let finalExpectation = XCTestExpectation(description: "Initial accessibility state set")
         DispatchQueue.main.async {
@@ -4194,6 +4260,6 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
-        XCTAssertNil(viewEvent.context?.contextInfo["accessibility"])
+        XCTAssertNil(viewEvent.view.accessibility)
     }
 }

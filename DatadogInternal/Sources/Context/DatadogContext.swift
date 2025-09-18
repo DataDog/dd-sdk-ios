@@ -158,14 +158,14 @@ public struct DatadogContext {
     ) {
         self.site = site
         self.clientToken = clientToken
-        self.service = service
-        self.env = env
-        self.version = version
+        self.service = service.sanitizedToDDTags()
+        self.env = env.sanitizedToDDTags()
+        self.version = version.sanitizedToDDTags()
         self.buildNumber = buildNumber
         self.buildId = buildId
-        self.variant = variant
+        self.variant = variant?.sanitizedToDDTags()
         self.source = source
-        self.sdkVersion = sdkVersion
+        self.sdkVersion = sdkVersion.sanitizedToDDTags()
         self.ciAppOrigin = ciAppOrigin
         self.serverTimeOffset = serverTimeOffset
         self.applicationName = applicationName
@@ -198,6 +198,24 @@ public protocol AdditionalContext {
 }
 
 extension DatadogContext {
+    /// Datadog tags to send in the events.
+    public var ddTags: String {
+        var tags = [
+            "service": service,
+            "version": version,
+            "sdk_version": sdkVersion,
+            "env": env
+        ]
+
+        if let variant {
+            tags["variant"] = variant
+        }
+
+        return tags.map { "\($0.key):\($0.value)" }.joined(separator: ",")
+    }
+}
+
+extension DatadogContext {
     /// Gets an additional context value of `Context` type.
     ///
     /// - Parameter type: The additional context type.
@@ -226,5 +244,11 @@ extension DatadogContext {
     ///   - type: The context's type to remove.
     public mutating func removeContext<Context>(ofType type: Context.Type) where Context: AdditionalContext {
         additionalContext[Context.key] = nil
+    }
+}
+
+extension String {
+    func sanitizedToDDTags() -> String {
+        self.replacingOccurrences(of: "[,:]", with: "", options: .regularExpression)
     }
 }

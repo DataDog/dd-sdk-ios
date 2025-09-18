@@ -128,4 +128,43 @@ class ConsoleLoggerTests: XCTestCase {
         XCTAssertEqual(mock.printedMessages.first, expectedMessage)
         XCTAssertEqual(mock.printedMessages.count, 1)
     }
+
+    func testItPrintsCritical_andCallCompletion() {
+        let completionExpectation = expectation(description: "Error processing completion")
+
+        // Given
+        let logger = ConsoleLogger(
+            configuration: .init(
+                timeZone: .UTC,
+                format: .short
+            ),
+            dateProvider: RelativeDateProvider(
+                using: .mockDecember15th2019At10AMUTC()
+            ),
+            printFunction: mock.print
+        )
+
+        let message = String.mockRandom()
+
+        logger._internal.critical(
+            message: message,
+            error: NSError.mockAny(),
+            attributes: nil,
+            completionHandler: completionExpectation.fulfill
+        )
+
+        // Then
+        let expectedMessage = """
+            10:00:00.000 [CRITICAL] \(message)
+
+            Error details:
+            → type: abc - 0
+            → message: Error Domain=abc Code=0 "(null)"
+            → stack: Error Domain=abc Code=0 "(null)"
+            """
+
+        wait(for: [completionExpectation], timeout: 0)
+        XCTAssertEqual(mock.printedMessages.first, expectedMessage)
+        XCTAssertEqual(mock.printedMessages.count, 1)
+    }
 }

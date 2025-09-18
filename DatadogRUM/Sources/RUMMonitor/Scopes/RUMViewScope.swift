@@ -89,6 +89,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Tells if this scope has received the "start" command.
     /// If `didReceiveStartCommand == true` and another "start" command is received for this View this scope is marked as inactive.
     private var didReceiveStartCommand = false
+    /// Track accessibility info for the current view
+    private var accessibilityState: AccessibilityInfo? = nil
 
     /// Number of Actions happened on this View.
     private var actionsCount: UInt = 0
@@ -277,6 +279,9 @@ extension RUMViewScope {
                 // This is the case of duplicated "start" command. We know that the Session scope has created another instance of
                 // the `RUMViewScope` for tracking this View, so we mark this one as inactive.
                 isActiveView = false
+            } else {
+                // Reset to nil for a new view
+                accessibilityState = nil
             }
             attributes.merge(command.attributes) { $1 }
             didReceiveStartCommand = true
@@ -340,6 +345,10 @@ extension RUMViewScope {
 
         case let command as RUMUpdatePerformanceMetric where isActiveView:
             updatePerformanceMetric(on: command)
+
+        // Feature Operation commands
+        case _ as RUMOperationStepVitalCommand where isActiveView:
+            needsViewUpdate = true
 
         default:
             break
@@ -551,6 +560,7 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: commandAttributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,
             os: context.os,
@@ -598,7 +608,10 @@ extension RUMViewScope {
             attributes = self.attributes
         }
 
-        let isCrash = (command as? RUMErrorCommand).map { $0.isCrash ?? false } ?? false
+        let errorCommand = command as? RUMErrorCommand
+        let isCrash = errorCommand?.isCrash ?? false
+        let completionHandler = errorCommand?.completionHandler ?? NOPCompletionHandler
+
         // RUMM-1779 Keep view active as long as we have ongoing resources
         let isActive = isActiveView || !resourceScopes.isEmpty
         // RUMM-2079 `time_spent` can't be lower than 1ns
@@ -643,11 +656,21 @@ extension RUMViewScope {
             performance = nil
         }
 
-        var localAttributes = attributes
+        // Take one snapshot of the current accessibility state
+        let currentAccessibilityState = accessibilityReader?.state
 
-        if let accessibility = self.accessibilityReader?.state {
-            localAttributes["accessibility"] = accessibility
+        var accessibility: RUMViewEvent.View.Accessibility? = nil
+        if accessibilityState == nil {
+            // For first view update, send the entire state
+            accessibility = currentAccessibilityState?.rumViewAccessibility
+        } else if currentAccessibilityState != accessibilityState {
+            // For subsequent updates, send only the differences if states are different
+            let accessibilityDifferences = currentAccessibilityState?.differences(from: accessibilityState)
+            accessibility = accessibilityDifferences?.rumViewAccessibility
         }
+
+        // Update the stored state for next comparison
+        accessibilityState = currentAccessibilityState
 
         let viewEvent = RUMViewEvent(
             dd: .init(
@@ -677,8 +700,9 @@ extension RUMViewScope {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: localAttributes),
+            context: .init(contextInfo: attributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,
             featureFlags: .init(featureFlagsInfo: featureFlags),
@@ -697,6 +721,7 @@ extension RUMViewScope {
             usr: .init(context: context),
             version: context.version,
             view: .init(
+                accessibility: accessibility,
                 action: .init(count: actionsCount.toInt64),
                 cpuTicksCount: cpuInfo?.greatestDiff,
                 cpuTicksPerSecond: timeSpent > 1.0 ? cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)) : nil,
@@ -753,7 +778,11 @@ extension RUMViewScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            writer.write(value: event, metadata: event.metadata(viewIndexInSession: viewIndexInSession))
+            writer.write(
+                value: event,
+                metadata: event.metadata(viewIndexInSession: viewIndexInSession),
+                completion: completionHandler
+            )
 
             // Update fatal error context with recent RUM view:
             dependencies.fatalErrorContext.view = event
@@ -780,6 +809,7 @@ extension RUMViewScope {
             dependencies.watchdogTermination?.update(viewEvent: event)
         } else { // if event was dropped by mapper
             version -= 1
+            completionHandler()
         }
     }
 
@@ -825,6 +855,7 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: commandAttributes),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,
             error: .init(
@@ -877,6 +908,10 @@ extension RUMViewScope {
             needsViewUpdate = true
         } else {
             errorsCount -= 1
+            // Call the completion when the event is discarded.
+            // When the error is kept, the completion is called when the
+            // view update is written.
+            command.completionHandler()
         }
     }
 
@@ -912,6 +947,7 @@ extension RUMViewScope {
             container: nil,
             context: .init(contextInfo: commandAttributes),
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,
             longTask: .init(

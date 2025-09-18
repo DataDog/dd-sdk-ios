@@ -426,14 +426,16 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         error: Error = ErrorMock(),
         source: RUMInternalErrorSource = .source,
         globalAttributes: [AttributeKey: AttributeValue] = [:],
-        attributes: [AttributeKey: AttributeValue] = [:]
+        attributes: [AttributeKey: AttributeValue] = [:],
+        completionHandler: @escaping CompletionHandler = NOPCompletionHandler
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
             time: time,
             error: error,
             source: source,
             globalAttributes: globalAttributes,
-            attributes: attributes
+            attributes: attributes,
+            completionHandler: completionHandler
         )
     }
 
@@ -444,7 +446,8 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         source: RUMInternalErrorSource = .source,
         stack: String? = "Foo.swift:10",
         globalAttributes: [AttributeKey: AttributeValue] = [:],
-        attributes: [AttributeKey: AttributeValue] = [:]
+        attributes: [AttributeKey: AttributeValue] = [:],
+        completionHandler: @escaping CompletionHandler = NOPCompletionHandler
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
             time: time,
@@ -453,7 +456,8 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
             stack: stack,
             source: source,
             globalAttributes: globalAttributes,
-            attributes: attributes
+            attributes: attributes,
+            completionHandler: completionHandler
         )
     }
 }
@@ -836,6 +840,45 @@ extension RUMStopSessionCommand: AnyMockable {
 
     public static func mockWith(time: Date = .mockAny()) -> RUMStopSessionCommand {
         return RUMStopSessionCommand(time: time)
+    }
+}
+
+extension RUMOperationStepVitalCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMOperationStepVitalCommand { mockWith() }
+
+    public static func mockRandom() -> RUMOperationStepVitalCommand {
+        return mockWith(
+            vitalId: .mockRandom(),
+            name: .mockRandom(),
+            operationKey: .mockRandom(),
+            stepType: .mockRandom(),
+            failureReason: .mockRandom(),
+            time: .mockRandomInThePast(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes()
+        )
+    }
+
+    public static func mockWith(
+        vitalId: String = .mockAny(),
+        name: String = .mockAny(),
+        operationKey: String? = .mockAny(),
+        stepType: RUMVitalEvent.Vital.StepType = .mockAny(),
+        failureReason: RUMFeatureOperationFailureReason = .mockAny(),
+        time: Date = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) -> RUMOperationStepVitalCommand {
+        return RUMOperationStepVitalCommand(
+            vitalId: vitalId,
+            name: name,
+            operationKey: operationKey,
+            stepType: stepType,
+            failureReason: failureReason,
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes
+        )
     }
 }
 

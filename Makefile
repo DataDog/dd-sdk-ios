@@ -321,37 +321,60 @@ sr-snapshot-tests-open:
 	@$(ECHO_TITLE) "make sr-snapshot-tests-open"
 	./tools/sr-snapshot-test.sh --open-project
 
-# Generate api-surface files for Datadog.
-api-surface:
-		@echo "Generating api-surface-swift"
-		@cd tools/api-surface && \
-			swift run api-surface spm \
-			--path ../../ \
-			--language swift \
-			--library-name DatadogCore \
-			--library-name DatadogLogs \
-			--library-name DatadogTrace \
-			--library-name DatadogRUM \
-			--library-name DatadogCrashReporting \
-			--library-name DatadogWebViewTracking \
-			--library-name DatadogSessionReplay \
-			> ../../api-surface-swift && \
-			cd -
+### API-SURFACE
 
-		@echo "Generating api-surface-objc"
-		@cd tools/api-surface && \
-			swift run api-surface spm \
-			--path ../../ \
-			--language objc \
-			--library-name DatadogCore \
-			--library-name DatadogLogs \
-			--library-name DatadogTrace \
-			--library-name DatadogRUM \
-			--library-name DatadogCrashReporting \
-			--library-name DatadogWebViewTracking \
-			--library-name DatadogSessionReplay \
-			> ../../api-surface-objc && \
-			cd -
+# Define default paths for API output files
+SWIFT_OUTPUT_PATH ?= api-surface-swift
+OBJC_OUTPUT_PATH ?= api-surface-objc
+
+# Use different paths when running in CI
+ifeq ($(ENV),ci)
+  SWIFT_OUTPUT_PATH := api-surface-swift-generated
+  OBJC_OUTPUT_PATH := api-surface-objc-generated
+endif
+
+# Define the list of Datadog modules for API surface generation
+DATADOG_MODULES := DatadogCore DatadogLogs DatadogTrace DatadogRUM DatadogCrashReporting DatadogWebViewTracking DatadogSessionReplay
+
+# Generate api-surface files for Datadog APIs
+api-surface:
+	@$(ECHO_TITLE) "make api-surface"
+	@echo "Generating api-surface-swift"
+	@cd tools/api-surface && \
+		swift run api-surface generate \
+		--path ../../ \
+		--language swift \
+		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
+		--output-file ../../$(SWIFT_OUTPUT_PATH)
+
+	@echo "Generating api-surface-objc"
+	@cd tools/api-surface && \
+		swift run api-surface generate \
+		--path ../../ \
+		--language objc \
+		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
+		--output-file ../../$(OBJC_OUTPUT_PATH)
+
+# Verify API surface files for Datadog APIs
+api-surface-verify:
+	@$(ECHO_TITLE) "make api-surface-verify"
+	@echo "Verifying api-surface-swift"
+	@cd tools/api-surface && \
+		swift run api-surface verify \
+		--path ../../ \
+		--language swift \
+		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
+		--output-file /tmp/api-surface-swift-generated \
+		../../api-surface-swift
+
+	@echo "Verifying api-surface-objc"
+	@cd tools/api-surface && \
+		swift run api-surface verify \
+		--path ../../ \
+		--language objc \
+		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
+		--output-file /tmp/api-surface-objc-generated \
+		../../api-surface-objc
 
 # Builds API documentation using the same process as Swift Package Index.
 spi-docs-build:
