@@ -236,7 +236,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "0")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000064-0")
 
         XCTAssertNil(traceContext, "It must return no trace context")
     }
@@ -266,8 +266,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField))
-        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000064")
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "0")
 
