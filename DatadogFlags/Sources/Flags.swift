@@ -7,4 +7,8 @@
 import Foundation
 import DatadogInternal
 
-public enum Flags {}
+public enum Flags {
+    public static func enable(with configuration: FlagsConfiguration) {
+        // TODO: Initialize flags feature
+    }
+}
