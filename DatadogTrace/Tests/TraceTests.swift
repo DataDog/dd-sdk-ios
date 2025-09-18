@@ -121,10 +121,12 @@ class TraceTests: XCTestCase {
         oneOf([
             { self.config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(hosts: ["example.com"])
-            ) },
+            )
+            },
             { self.config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: ["example.com": [.datadog, .b3]])
-            ) },
+            )
+            },
         ])
         // swiftlint:enable opening_brace
 
@@ -150,10 +152,12 @@ class TraceTests: XCTestCase {
         oneOf([
             { self.config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(hosts: ["example.com"], sampleRate: random)
-            ) },
+            )
+            },
             { self.config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: ["example.com": [.datadog, .b3]], sampleRate: random)
-            ) },
+            )
+            },
         ])
         // swiftlint:enable opening_brace
 
