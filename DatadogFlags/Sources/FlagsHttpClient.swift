@@ -11,6 +11,7 @@ internal protocol FlagsHttpClient {
     func postPrecomputeAssignments(
         context: FlagsEvaluationContext,
         configuration: FlagsClientConfiguration,
+        sdkContext: DatadogContext,
         completion: @escaping (Result<(Data, URLResponse), Error>) -> Void
     )
 }
@@ -25,9 +26,11 @@ internal class NetworkFlagsHttpClient: FlagsHttpClient {
         // TODO: FFL-1049 Add proxy support via configuration.connectionProxyDictionary
         self.urlSession = URLSession(configuration: configuration)
     }
+
     func postPrecomputeAssignments(
         context: FlagsEvaluationContext,
         configuration: FlagsClientConfiguration,
+        sdkContext: DatadogContext,
         completion: @escaping (Result<(Data, URLResponse), Error>) -> Void
     ) {
         let endpointURL: String
@@ -46,9 +49,9 @@ internal class NetworkFlagsHttpClient: FlagsHttpClient {
         } else {
             // Build endpoint using site configuration
             do {
-                let customerDomain = FlagsEndpointBuilder.extractCustomerDomain(from: configuration.clientToken)
+                let customerDomain = FlagsEndpointBuilder.extractCustomerDomain(from: sdkContext.clientToken)
                 endpointURL = try FlagsEndpointBuilder.buildEndpointURL(
-                    site: configuration.site,
+                    site: sdkContext.site,
                     customerDomain: customerDomain
                 )
             } catch {
@@ -68,10 +71,10 @@ internal class NetworkFlagsHttpClient: FlagsHttpClient {
         // Build headers
         var headers = [String: String]()
         headers["Content-Type"] = "application/vnd.api+json"
-        headers["dd-client-token"] = configuration.clientToken
+        headers["dd-client-token"] = sdkContext.clientToken
 
         // Add application ID header if provided
-        if let applicationId = configuration.applicationId {
+        if let applicationId = sdkContext.additionalContext(ofType: RUMCoreContext.self)?.applicationID {
             headers["dd-application-id"] = applicationId
         }
 
@@ -91,8 +94,8 @@ internal class NetworkFlagsHttpClient: FlagsHttpClient {
                 type: "precompute-assignments-request",
                 attributes: PrecomputeAssignmentsRequest.Attributes(
                     environment: PrecomputeAssignmentsRequest.Attributes.Environment(
-                        name: configuration.environment,
-                        ddEnv: configuration.environment
+                        name: sdkContext.env,
+                        ddEnv: sdkContext.env
                     ),
                     subject: PrecomputeAssignmentsRequest.Attributes.Subject(
                         targetingKey: context.targetingKey,

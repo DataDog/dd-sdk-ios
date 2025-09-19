@@ -47,40 +47,43 @@ public class FlagsClient {
     }
 
     public func setEvaluationContext(_ context: FlagsEvaluationContext, completion: @escaping (Result<Void, FlagsError>) -> Void) {
-        httpClient.postPrecomputeAssignments(
-            context: context,
-            configuration: configuration
-        ) { [weak self] result in
-            guard let self = self else {
-                completion(.failure(.clientNotInitialized))
-                return
-            }
-
-            switch result {
-            case .success(let (data, response)):
-                guard let httpResponse = response as? HTTPURLResponse,
-                      200...299 ~= httpResponse.statusCode else {
-                    completion(.failure(.invalidResponse))
+        featureScope.context { [httpClient, configuration] sdkContext in
+            httpClient.postPrecomputeAssignments(
+                context: context,
+                configuration: configuration,
+                sdkContext: sdkContext
+            ) { [weak self] result in
+                guard let self = self else {
+                    completion(.failure(.clientNotInitialized))
                     return
                 }
 
-                do {
-                    let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-
-                    if let responseData = json?["data"] as? [String: Any],
-                       let attributes = responseData["attributes"] as? [String: Any],
-                       let flags = attributes["flags"] as? [String: Any] {
-                        self.store.setFlags(flags, context: context)
-                        completion(.success(()))
-                    } else {
+                switch result {
+                case .success(let (data, response)):
+                    guard let httpResponse = response as? HTTPURLResponse,
+                          200...299 ~= httpResponse.statusCode else {
                         completion(.failure(.invalidResponse))
+                        return
                     }
-                } catch {
+
+                    do {
+                        let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+
+                        if let responseData = json?["data"] as? [String: Any],
+                           let attributes = responseData["attributes"] as? [String: Any],
+                           let flags = attributes["flags"] as? [String: Any] {
+                            self.store.setFlags(flags, context: context)
+                            completion(.success(()))
+                        } else {
+                            completion(.failure(.invalidResponse))
+                        }
+                    } catch {
+                        completion(.failure(.networkError(error)))
+                    }
+
+                case .failure(let error):
                     completion(.failure(.networkError(error)))
                 }
-
-            case .failure(let error):
-                completion(.failure(.networkError(error)))
             }
         }
     }

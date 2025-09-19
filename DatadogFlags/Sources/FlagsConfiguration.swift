@@ -8,27 +8,16 @@ import Foundation
 import DatadogInternal
 
 public struct FlagsClientConfiguration {
-    public let clientToken: String
-    public let environment: String
     public let baseURL: String?
-    public let site: DatadogSite
-    public let applicationId: String?
     public let customHeaders: [String: String]
     public let flaggingProxy: String?
+
     public init(
-        clientToken: String,
-        environment: String = "prod",
         baseURL: String? = nil,
-        site: DatadogSite = .us1,
-        applicationId: String? = nil,
         customHeaders: [String: String] = [:],
         flaggingProxy: String? = nil
     ) {
-        self.clientToken = clientToken
-        self.environment = environment
         self.baseURL = baseURL
-        self.site = site
-        self.applicationId = applicationId
         self.customHeaders = customHeaders
         self.flaggingProxy = flaggingProxy
     }
