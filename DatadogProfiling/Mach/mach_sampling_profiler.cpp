@@ -56,6 +56,13 @@ static constexpr uintptr_t FRAME_POINTER_ALIGN = 0x7ULL;            // 8-byte al
 static constexpr uint32_t MAX_LOAD_COMMANDS = 1000;         // Generous upper bound for ncmds
 static constexpr uint32_t MAX_LOAD_COMMAND_SIZE = 0x10000;  // 64KB max per load command
 
+// Thread name buffer size
+//
+// PTHREAD_THREAD_NAME_MAX (64):
+//   - Apple OSs do not expose the length limit of the name
+
+static constexpr size_t PTHREAD_THREAD_NAME_MAX = 64;
+
 /**
  * Validates if an address is within reasonable user-space bounds.
  * Rejects null pointers, kernel addresses, and other invalid ranges.
@@ -182,6 +189,7 @@ bool binary_image_lookup_pc(binary_image_t* info, void* pc) {
 bool stack_trace_init(stack_trace_t* trace, uint32_t max_depth, uint64_t interval_nanos) {
     if (!trace) return false;
     trace->tid = 0;
+    trace->thread_name = nullptr;
     trace->timestamp = 0;
     trace->sampling_interval_nanos = interval_nanos;
     trace->frame_count = 0;
@@ -197,14 +205,21 @@ bool stack_trace_init(stack_trace_t* trace, uint32_t max_depth, uint64_t interva
  */
 void stack_trace_destroy(stack_trace_t* trace) {
     if (!trace) return;
-    if (!trace->frames) return;
-
-    // Clean up binary image data for each frame
-    for (uint32_t i = 0; i < trace->frame_count; i++) {
-        binary_image_destroy(&trace->frames[i].image);
+    
+    // Free thread name if allocated
+    if (trace->thread_name) {
+        free((void*)trace->thread_name);
+        trace->thread_name = nullptr;
     }
-    free(trace->frames);
-    trace->frames = nullptr;
+    
+    if (trace->frames) {
+        // Clean up binary image data for each frame
+        for (uint32_t i = 0; i < trace->frame_count; i++) {
+            binary_image_destroy(&trace->frames[i].image);
+        }
+        free(trace->frames);
+        trace->frames = nullptr;
+    }
 }
 
 /**
@@ -254,6 +269,35 @@ bool thread_get_frame_pointers(thread_t thread, void** fp, void** pc) {
 }
 
 /**
+ * Fills thread information (TID and name) for a stack trace.
+ * Safe to call outside critical sections.
+ *
+ * @param trace Stack trace to fill with thread info
+ * @param thread The mach thread to get info from
+ * @return true if thread info was successfully retrieved
+ */
+bool stack_trace_get_thread_info(stack_trace_t* trace, thread_t thread) {
+    if (!trace) return false;
+    
+    trace->tid = thread;
+    trace->thread_name = nullptr;
+    
+    pthread_t pthread = pthread_from_mach_thread_np(thread);
+    if (!pthread) return false;
+    
+    // Allocate buffer and get thread name directly
+    trace->thread_name = (char*)malloc(PTHREAD_THREAD_NAME_MAX);
+    if (!trace->thread_name) return false;
+    
+    int result = pthread_getname_np(pthread, (char*)trace->thread_name, PTHREAD_THREAD_NAME_MAX);
+    if (result == KERN_SUCCESS) return true;
+    
+    free((void*)trace->thread_name);
+    trace->thread_name = nullptr;
+    return false;
+}
+
+/**
  * Samples a thread's stack to collect stack trace information.
  *
  * @param trace Pre-allocated stack trace to fill
@@ -261,7 +305,6 @@ bool thread_get_frame_pointers(thread_t thread, void** fp, void** pc) {
  * @param max_depth Maximum number of frames to capture
  */
 void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t max_depth) {
-    trace->tid = thread;
     trace->timestamp = mach_absolute_time();
     trace->frame_count = 0;
 
@@ -367,6 +410,9 @@ void mach_sampling_profiler::stop_sampling() {
 void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_nanos) {
     stack_trace_t trace;
     if (!stack_trace_init(&trace, config.max_stack_depth, interval_nanos)) return;
+
+    // Get thread info
+    stack_trace_get_thread_info(&trace, thread);
 
     if (thread_suspend(thread) == KERN_SUCCESS) {
         // CRITICAL: Thread is suspended - avoid operations that could deadlock
