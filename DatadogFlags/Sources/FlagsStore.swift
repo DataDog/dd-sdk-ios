@@ -6,6 +6,7 @@
 
 import Foundation
 
+// TODO: FFL-1048 Use the Core SDK’s DataStore instead
 internal class FlagsStore {
     private var cachedFlags: [String: Any] = [:]
     private var flagsMetadata: FlagsMetadata?
@@ -120,7 +121,11 @@ internal class FlagsStore {
                     var context: FlagsEvaluationContext?
                     if let contextDict = metadataDict["context"] as? [String: Any],
                        let targetingKey = contextDict["targetingKey"] as? String,
-                       let attributes = contextDict["attributes"] as? [String: Any] {
+                       let attributesAny = contextDict["attributes"] as? [String: Any] {
+                        // Convert [String: Any] to [String: String] for type safety
+                        let attributes: [String: String] = attributesAny.compactMapValues { value in
+                            return value as? String ?? String(describing: value)
+                        }
                         context = FlagsEvaluationContext(targetingKey: targetingKey, attributes: attributes)
                     }
 

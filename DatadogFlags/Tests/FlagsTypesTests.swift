@@ -19,9 +19,9 @@ final class FlagsTypesTests: XCTestCase {
         )
 
         XCTAssertEqual(context.targetingKey, "user-123")
-        XCTAssertEqual(context.attributes["email"] as? String, "user@example.com")
-        XCTAssertEqual(context.attributes["product"] as? String, "premium")
-        XCTAssertEqual(context.attributes["region"] as? String, "us-east-1")
+        XCTAssertEqual(context.attributes["email"], "user@example.com")
+        XCTAssertEqual(context.attributes["product"], "premium")
+        XCTAssertEqual(context.attributes["region"], "us-east-1")
     }
 
     func testFlagsEvaluationContextWithEmptyAttributes() {
@@ -39,7 +39,7 @@ final class FlagsTypesTests: XCTestCase {
 
         XCTAssertEqual(metadata.fetchedAt, timestamp)
         XCTAssertEqual(metadata.context?.targetingKey, "test-user")
-        XCTAssertEqual(metadata.context?.attributes["key"] as? String, "value")
+        XCTAssertEqual(metadata.context?.attributes["key"], "value")
     }
 
     func testFlagsMetadataWithoutContext() {

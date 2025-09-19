@@ -15,6 +15,15 @@ internal protocol FlagsHttpClient {
 }
 
 internal class NetworkFlagsHttpClient: FlagsHttpClient {
+    private let urlSession: URLSession
+    
+    init() {
+        // Create dedicated URLSession for SDK use (avoid URLSession.shared)
+        let configuration: URLSessionConfiguration = .ephemeral
+        configuration.urlCache = nil
+        // TODO: FFL-1049 Add proxy support via configuration.connectionProxyDictionary
+        self.urlSession = URLSession(configuration: configuration)
+    }
     func postPrecomputeAssignments(
         context: FlagsEvaluationContext,
         configuration: FlagsClientConfiguration,
@@ -98,7 +107,7 @@ internal class NetworkFlagsHttpClient: FlagsHttpClient {
             return
         }
 
-        URLSession.shared
+        urlSession
             .dataTask(with: request) { data, response, error in
                 if let error = error {
                     completion(.failure(error))
