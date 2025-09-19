@@ -140,7 +140,7 @@ private class AttributeSerializationTestClient: FlagsHttpClient {
     func postPrecomputeAssignments(context: FlagsEvaluationContext, configuration: FlagsClientConfiguration, completion: @escaping (Result<(Data, URLResponse), Error>) -> Void) {
         // Verify that the context attributes are properly typed as [String: String]
         let attributes = context.attributes
-        
+
         // Verify attributes are correctly passed as strings
         XCTAssertEqual(attributes["stringValue"], "test")
         XCTAssertEqual(attributes["intValue"], "42")

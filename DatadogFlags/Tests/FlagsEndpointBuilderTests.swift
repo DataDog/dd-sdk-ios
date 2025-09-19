@@ -53,7 +53,7 @@ final class FlagsEndpointBuilderTests: XCTestCase {
                 XCTFail("Expected unsupportedSite error, got \(error)")
             }
         }
-        
+
         XCTAssertThrowsError(try FlagsEndpointBuilder.buildEndpointURL(site: .us1_fed)) { error in
             if case FlagsError.unsupportedSite(let returnedSite) = error {
                 XCTAssertEqual(returnedSite, "us1_fed")
@@ -66,7 +66,7 @@ final class FlagsEndpointBuilderTests: XCTestCase {
     func testExhaustiveSiteMapping() throws {
         // Test ensures all DatadogSite cases are handled - will fail to compile if new sites are added without updating the switch
         let allSites: [DatadogSite] = [.us1, .us3, .us5, .eu1, .ap1, .ap2, .us1_fed]
-        
+
         for site in allSites {
             if site == .us1_fed {
                 // Should throw for unsupported government site

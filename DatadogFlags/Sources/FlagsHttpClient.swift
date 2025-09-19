@@ -17,7 +17,7 @@ internal protocol FlagsHttpClient {
 
 internal class NetworkFlagsHttpClient: FlagsHttpClient {
     private let urlSession: URLSession
-    
+
     init() {
         // Create dedicated URLSession for SDK use (avoid URLSession.shared)
         let configuration: URLSessionConfiguration = .ephemeral

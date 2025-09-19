@@ -37,20 +37,20 @@ final class PrecomputeAssignmentsRequestTests: XCTestCase {
 
         // Then
         XCTAssertNotNil(json)
-        
+
         let dataContainer = json?["data"] as? [String: Any]
         XCTAssertEqual(dataContainer?["type"] as? String, "precompute-assignments-request")
-        
+
         let attributes = dataContainer?["attributes"] as? [String: Any]
         XCTAssertNotNil(attributes)
-        
+
         let environment = attributes?["environment"] as? [String: Any]
         XCTAssertEqual(environment?["name"] as? String, "production")
         XCTAssertEqual(environment?["dd_env"] as? String, "production")
-        
+
         let subject = attributes?["subject"] as? [String: Any]
         XCTAssertEqual(subject?["targeting_key"] as? String, "user123")
-        
+
         let targetingAttributes = subject?["targeting_attributes"] as? [String: String]
         XCTAssertEqual(targetingAttributes?["userId"], "123")
         XCTAssertEqual(targetingAttributes?["plan"], "premium")
@@ -76,12 +76,12 @@ final class PrecomputeAssignmentsRequestTests: XCTestCase {
 
         let data = try JSONEncoder().encode(request)
         let jsonString = String(data: data, encoding: .utf8)!
-        
+
         // Verify snake_case keys are present in JSON
         XCTAssertTrue(jsonString.contains("\"dd_env\""))
         XCTAssertTrue(jsonString.contains("\"targeting_key\""))
         XCTAssertTrue(jsonString.contains("\"targeting_attributes\""))
-        
+
         // Verify camelCase keys are NOT present
         XCTAssertFalse(jsonString.contains("\"ddEnv\""))
         XCTAssertFalse(jsonString.contains("\"targetingKey\""))
