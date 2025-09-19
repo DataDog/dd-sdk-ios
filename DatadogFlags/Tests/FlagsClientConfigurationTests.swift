@@ -8,7 +8,7 @@ import XCTest
 @testable import DatadogFlags
 @testable import DatadogInternal
 
-final class FlagsConfigurationTests: XCTestCase {
+final class FlagsClientConfigurationTests: XCTestCase {
     func testFlagsClientConfiguration() {
         let config = FlagsClient.Configuration(
             baseURL: "https://custom.example.com"
