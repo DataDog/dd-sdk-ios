@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal protocol FlagsHttpClient {
     func postPrecomputeAssignments(
@@ -84,24 +85,26 @@ internal class NetworkFlagsHttpClient: FlagsHttpClient {
             request.addValue(value, forHTTPHeaderField: key)
         }
 
-        let requestBody: [String: Any] = [
-            "data": [
-                "type": "precompute-assignments-request",
-                "attributes": [
-                    "env": [
-                        "name": configuration.environment,
-                        "dd_env": configuration.environment
-                    ],
-                    "subject": [
-                        "targeting_key": context.targetingKey,
-                        "targeting_attributes": context.attributes
-                    ]
-                ]
-            ]
-        ]
+        // Build type-safe request payload
+        let requestPayload = PrecomputeAssignmentsRequest(
+            data: PrecomputeAssignmentsRequest.DataContainer(
+                type: "precompute-assignments-request",
+                attributes: PrecomputeAssignmentsRequest.Attributes(
+                    environment: PrecomputeAssignmentsRequest.Attributes.Environment(
+                        name: configuration.environment,
+                        ddEnv: configuration.environment
+                    ),
+                    subject: PrecomputeAssignmentsRequest.Attributes.Subject(
+                        targetingKey: context.targetingKey,
+                        targetingAttributes: context.attributes
+                    )
+                )
+            )
+        )
 
         do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+            let encoder = JSONEncoder.dd.default()
+            request.httpBody = try encoder.encode(requestPayload)
         } catch {
             completion(.failure(error))
             return
