@@ -98,6 +98,7 @@ public class FlagsClient {
         return defaultValue
     }
 
+    // TODO: FFL-1047 Replace [String: Any] with OpenFeature.Value-compatible type
     public func getObjectValue(key: String, defaultValue: [String: Any]) -> [String: Any] {
         let flags = store.getFlags()
         if let flagData = flags[key] as? [String: Any],

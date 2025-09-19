@@ -15,7 +15,7 @@ final class FlagsTests: XCTestCase {
         // This should not crash - the method is currently a placeholder
         Flags.enable(with: configuration)
 
-        // Since it's a TODO: RUM-000 (actually FFL-1015) implementation, we just verify it doesn't crash
+        // Since it's a TODO: FFL-1015 implementation, we just verify it doesn't crash
         XCTAssertTrue(true, "Flags.enable should not crash")
     }
 

@@ -14,6 +14,6 @@ public struct FlagsConfiguration {
 
 public enum Flags {
     public static func enable(with configuration: FlagsConfiguration) {
-        // TODO: RUM-000 (for the linter, actually FFL-1015) Initialize flags feature
+        // TODO: FFL-1015 Initialize flags feature
     }
 }
