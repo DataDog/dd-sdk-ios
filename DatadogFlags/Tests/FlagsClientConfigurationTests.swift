@@ -8,48 +8,32 @@ import XCTest
 @testable import DatadogFlags
 @testable import DatadogInternal
 
-final class FlagsConfigurationTests: XCTestCase {
+final class FlagsClientConfigurationTests: XCTestCase {
     func testFlagsClientConfiguration() {
-        let config = FlagsClientConfiguration(
-            clientToken: "test-token",
-            environment: "staging",
+        let config = FlagsClient.Configuration(
             baseURL: "https://custom.example.com"
         )
 
-        XCTAssertEqual(config.clientToken, "test-token")
-        XCTAssertEqual(config.environment, "staging")
         XCTAssertEqual(config.baseURL, "https://custom.example.com")
     }
 
     func testFlagsClientConfigurationDefaults() {
-        let config = FlagsClientConfiguration(clientToken: "test-token")
+        let config = FlagsClient.Configuration()
 
-        XCTAssertEqual(config.clientToken, "test-token")
-        XCTAssertEqual(config.environment, "prod")
         XCTAssertNil(config.baseURL)
-        XCTAssertEqual(config.site, .us1)
-        XCTAssertNil(config.applicationId)
         XCTAssertTrue(config.customHeaders.isEmpty)
         XCTAssertNil(config.flaggingProxy)
     }
 
     func testFlagsClientConfigurationWithAllParameters() {
         let customHeaders = ["X-Custom": "value", "X-Test": "test"]
-        let config = FlagsClientConfiguration(
-            clientToken: "test-token",
-            environment: "staging",
+        let config = FlagsClient.Configuration(
             baseURL: "https://custom.example.com",
-            site: .eu1,
-            applicationId: "app-123",
             customHeaders: customHeaders,
             flaggingProxy: "proxy.example.com"
         )
 
-        XCTAssertEqual(config.clientToken, "test-token")
-        XCTAssertEqual(config.environment, "staging")
         XCTAssertEqual(config.baseURL, "https://custom.example.com")
-        XCTAssertEqual(config.site, .eu1)
-        XCTAssertEqual(config.applicationId, "app-123")
         XCTAssertEqual(config.customHeaders, customHeaders)
         XCTAssertEqual(config.flaggingProxy, "proxy.example.com")
     }

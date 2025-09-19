@@ -5,24 +5,49 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import DatadogFlags
 
 final class FlagsTests: XCTestCase {
-    func testFlagsEnableMethod() {
-        // Test that the enable method exists and can be called
-        let configuration = FlagsConfiguration()
+    func testDefaultConfiguration() {
+        // Given
+        let config = Flags.Configuration()
 
-        // This should not crash - the method is currently a placeholder
-        Flags.enable(with: configuration)
-
-        // Since it's a TODO: FFL-1015 implementation, we just verify it doesn't crash
-        XCTAssertTrue(true, "Flags.enable should not crash")
+        // Then
+        XCTAssertNil(config.customExposureEndpoint)
     }
 
-    func testFlagsConfiguration() {
-        // Test that FlagsConfiguration can be instantiated
-        let configuration = FlagsConfiguration()
+    func testWhenNotEnabled() {
+        // Given
+        let core = FeatureRegistrationCoreMock()
 
-        XCTAssertNotNil(configuration)
+        // When / Then
+        XCTAssertNil(core.get(feature: FlagsFeature.self))
+    }
+
+    func testWhenEnabled() {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+
+        // When
+        Flags.enable(in: core)
+
+        // Then
+        XCTAssertNotNil(core.get(feature: FlagsFeature.self))
+    }
+
+    func testCustomConfiguration() throws {
+        // Given
+        var config = Flags.Configuration()
+        config.customExposureEndpoint = .mockRandom()
+        let core = FeatureRegistrationCoreMock()
+
+        // When
+        Flags.enable(with: config, in: core)
+
+        // Then
+        let flags = try XCTUnwrap(core.get(feature: FlagsFeature.self))
+        let requestBuilder = try XCTUnwrap(flags.requestBuilder as? ExposureRequestBuilder)
+        XCTAssertEqual(requestBuilder.customIntakeURL, config.customExposureEndpoint)
     }
 }

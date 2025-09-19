@@ -5,59 +5,85 @@
  */
 
 import Foundation
+import DatadogInternal
 
 public class FlagsClient {
-    private let configuration: FlagsClientConfiguration
+    private let configuration: FlagsClient.Configuration
     private let httpClient: FlagsHttpClient
     private let store: FlagsStore
+    private let featureScope: FeatureScope
 
-    internal init(configuration: FlagsClientConfiguration, httpClient: FlagsHttpClient, store: FlagsStore) {
+    internal init(configuration: FlagsClient.Configuration, httpClient: FlagsHttpClient, store: FlagsStore, featureScope: FeatureScope) {
         self.configuration = configuration
         self.httpClient = httpClient
         self.store = store
+        self.featureScope = featureScope
     }
 
-    public static func create(with configuration: FlagsClientConfiguration) -> FlagsClient {
+    public static func create(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
+        do {
+            // To ensure the correct registration order between Core and Features,
+            // the entire initialization flow is synchronized on the main thread.
+            return try runOnMainThreadSync {
+                try createOrThrow(with: configuration, in: core)
+            }
+        } catch let error {
+            consolePrint("\(error)", .error)
+            fatalError("TODO: FFL-1016 Fallback to NOP Client")
+        }
+    }
+
+    internal static func createOrThrow(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol) throws -> FlagsClient {
+        guard core.get(feature: FlagsFeature.self) != nil else {
+            throw ProgrammerError(
+                description: "`FlagsClient.create()` produces a non-functional client because the `Flags` feature was not enabled."
+            )
+        }
+
         let httpClient = NetworkFlagsHttpClient()
         let store = FlagsStore()
-        return FlagsClient(configuration: configuration, httpClient: httpClient, store: store)
+        let featureScope = core.scope(for: FlagsFeature.self)
+        return FlagsClient(configuration: configuration, httpClient: httpClient, store: store, featureScope: featureScope)
     }
 
     public func setEvaluationContext(_ context: FlagsEvaluationContext, completion: @escaping (Result<Void, FlagsError>) -> Void) {
-        httpClient.postPrecomputeAssignments(
-            context: context,
-            configuration: configuration
-        ) { [weak self] result in
-            guard let self = self else {
-                completion(.failure(.clientNotInitialized))
-                return
-            }
-
-            switch result {
-            case .success(let (data, response)):
-                guard let httpResponse = response as? HTTPURLResponse,
-                      200...299 ~= httpResponse.statusCode else {
-                    completion(.failure(.invalidResponse))
+        featureScope.context { [httpClient, configuration] sdkContext in
+            httpClient.postPrecomputeAssignments(
+                context: context,
+                configuration: configuration,
+                sdkContext: sdkContext
+            ) { [weak self] result in
+                guard let self = self else {
+                    completion(.failure(.clientNotInitialized))
                     return
                 }
 
-                do {
-                    let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-
-                    if let responseData = json?["data"] as? [String: Any],
-                       let attributes = responseData["attributes"] as? [String: Any],
-                       let flags = attributes["flags"] as? [String: Any] {
-                        self.store.setFlags(flags, context: context)
-                        completion(.success(()))
-                    } else {
+                switch result {
+                case .success(let (data, response)):
+                    guard let httpResponse = response as? HTTPURLResponse,
+                          200...299 ~= httpResponse.statusCode else {
                         completion(.failure(.invalidResponse))
+                        return
                     }
-                } catch {
+
+                    do {
+                        let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+
+                        if let responseData = json?["data"] as? [String: Any],
+                           let attributes = responseData["attributes"] as? [String: Any],
+                           let flags = attributes["flags"] as? [String: Any] {
+                            self.store.setFlags(flags, context: context)
+                            completion(.success(()))
+                        } else {
+                            completion(.failure(.invalidResponse))
+                        }
+                    } catch {
+                        completion(.failure(.networkError(error)))
+                    }
+
+                case .failure(let error):
                     completion(.failure(.networkError(error)))
                 }
-
-            case .failure(let error):
-                completion(.failure(.networkError(error)))
             }
         }
     }

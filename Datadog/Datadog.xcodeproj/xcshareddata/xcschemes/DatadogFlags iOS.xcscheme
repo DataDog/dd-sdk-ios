@@ -188,9 +188,9 @@
       <CodeCoverageTargets>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D29A9F3329DD84AA005C54A4"
-            BuildableName = "DatadogRUM.framework"
-            BlueprintName = "DatadogRUM iOS"
+            BlueprintIdentifier = "5BA8C2EC2E784B3C00B1DA80"
+            BuildableName = "DatadogFlags.framework"
+            BlueprintName = "DatadogFlags iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>
