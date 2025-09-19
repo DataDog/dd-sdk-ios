@@ -5,12 +5,13 @@
  */
 
 import Foundation
+import DatadogInternal
 
 public struct FlagsClientConfiguration {
     public let clientToken: String
     public let environment: String
     public let baseURL: String?
-    public let site: String
+    public let site: DatadogSite
     public let applicationId: String?
     public let customHeaders: [String: String]
     public let flaggingProxy: String?
@@ -18,7 +19,7 @@ public struct FlagsClientConfiguration {
         clientToken: String,
         environment: String = "prod",
         baseURL: String? = nil,
-        site: String = "datadoghq.com",
+        site: DatadogSite = .us1,
         applicationId: String? = nil,
         customHeaders: [String: String] = [:],
         flaggingProxy: String? = nil

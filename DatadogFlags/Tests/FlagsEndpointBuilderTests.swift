@@ -6,17 +6,17 @@
 
 import XCTest
 @testable import DatadogFlags
+@testable import DatadogInternal
 
 final class FlagsEndpointBuilderTests: XCTestCase {
     func testFlagsEndpointBuilderSupportedSites() throws {
-        let testCases = [
-            ("datadoghq.com", "ff-cdn.datadoghq.com"),
-            ("datadoghq.eu", "ff-cdn.datadoghq.eu"),
-            ("us3.datadoghq.com", "ff-cdn.us3.datadoghq.com"),
-            ("us5.datadoghq.com", "ff-cdn.us5.datadoghq.com"),
-            ("ap1.datadoghq.com", "ff-cdn.ap1.datadoghq.com"),
-            ("ap2.datadoghq.com", "ff-cdn.ap2.datadoghq.com"),
-            ("datad0g.com", "ff-cdn.datad0g.com")
+        let testCases: [(DatadogSite, String)] = [
+            (.us1, "ff-cdn.datadoghq.com"),
+            (.eu1, "ff-cdn.datadoghq.eu"),
+            (.us3, "ff-cdn.us3.datadoghq.com"),
+            (.us5, "ff-cdn.us5.datadoghq.com"),
+            (.ap1, "ff-cdn.ap1.datadoghq.com"),
+            (.ap2, "ff-cdn.ap2.datadoghq.com")
         ]
 
         for (site, expectedHost) in testCases {
@@ -29,41 +29,53 @@ final class FlagsEndpointBuilderTests: XCTestCase {
     }
 
     func testFlagsEndpointBuilderWithCustomerDomain() throws {
-        let host = try FlagsEndpointBuilder.buildEndpointHost(site: "datadoghq.com", customerDomain: "customer123")
+        let host = try FlagsEndpointBuilder.buildEndpointHost(site: .us1, customerDomain: "customer123")
         XCTAssertEqual(host, "customer123.ff-cdn.datadoghq.com")
 
-        let url = try FlagsEndpointBuilder.buildEndpointURL(site: "datadoghq.com", customerDomain: "customer123")
+        let url = try FlagsEndpointBuilder.buildEndpointURL(site: .us1, customerDomain: "customer123")
         XCTAssertEqual(url, "https://customer123.ff-cdn.datadoghq.com/precompute-assignments")
     }
 
     func testFlagsEndpointBuilderWithEmptyCustomerDomain() throws {
-        let host = try FlagsEndpointBuilder.buildEndpointHost(site: "datadoghq.com", customerDomain: "")
+        let host = try FlagsEndpointBuilder.buildEndpointHost(site: .us1, customerDomain: "")
         XCTAssertEqual(host, "ff-cdn.datadoghq.com")
 
-        let hostWithNil = try FlagsEndpointBuilder.buildEndpointHost(site: "datadoghq.com", customerDomain: nil)
+        let hostWithNil = try FlagsEndpointBuilder.buildEndpointHost(site: .us1, customerDomain: nil)
         XCTAssertEqual(hostWithNil, "ff-cdn.datadoghq.com")
     }
 
     func testFlagsEndpointBuilderUnsupportedSites() {
-        let unsupportedSites = ["ddog-gov.com", "invalid.site.com", ""]
-
-        for site in unsupportedSites {
-            XCTAssertThrowsError(try FlagsEndpointBuilder.buildEndpointHost(site: site)) { error in
-                if case FlagsError.unsupportedSite(let returnedSite) = error {
-                    XCTAssertEqual(returnedSite.lowercased(), site.lowercased())
-                } else {
-                    XCTFail("Expected unsupportedSite error, got \(error)")
-                }
+        // Government sites should not be supported for feature flags
+        XCTAssertThrowsError(try FlagsEndpointBuilder.buildEndpointHost(site: .us1_fed)) { error in
+            if case FlagsError.unsupportedSite(let returnedSite) = error {
+                XCTAssertEqual(returnedSite, "us1_fed")
+            } else {
+                XCTFail("Expected unsupportedSite error, got \(error)")
+            }
+        }
+        
+        XCTAssertThrowsError(try FlagsEndpointBuilder.buildEndpointURL(site: .us1_fed)) { error in
+            if case FlagsError.unsupportedSite(let returnedSite) = error {
+                XCTAssertEqual(returnedSite, "us1_fed")
+            } else {
+                XCTFail("Expected unsupportedSite error, got \(error)")
             }
         }
     }
 
-    func testFlagsEndpointBuilderCaseInsensitive() throws {
-        let host1 = try FlagsEndpointBuilder.buildEndpointHost(site: "DATADOGHQ.COM")
-        let host2 = try FlagsEndpointBuilder.buildEndpointHost(site: "datadoghq.com")
-
-        XCTAssertEqual(host1, host2)
-        XCTAssertEqual(host1, "ff-cdn.datadoghq.com")
+    func testExhaustiveSiteMapping() throws {
+        // Test ensures all DatadogSite cases are handled - will fail to compile if new sites are added without updating the switch
+        let allSites: [DatadogSite] = [.us1, .us3, .us5, .eu1, .ap1, .ap2, .us1_fed]
+        
+        for site in allSites {
+            if site == .us1_fed {
+                // Should throw for unsupported government site
+                XCTAssertThrowsError(try FlagsEndpointBuilder.buildEndpointHost(site: site))
+            } else {
+                // Should succeed for all other sites
+                XCTAssertNoThrow(try FlagsEndpointBuilder.buildEndpointHost(site: site))
+            }
+        }
     }
 
     func testExtractCustomerDomainPlaceholder() {

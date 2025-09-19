@@ -5,46 +5,45 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal struct FlagsEndpointBuilder {
     /// Builds the complete endpoint URL for precompute-assignments API
     /// - Parameters:
-    ///   - site: The Datadog site (e.g., "datadoghq.com", "datadoghq.eu")
+    ///   - site: The Datadog site enum value
     ///   - customerDomain: Optional customer-specific domain prefix
     /// - Returns: Complete URL string for the flags endpoint
-    /// - Throws: FlagsError.invalidConfiguration if site is unsupported
-    static func buildEndpointURL(site: String, customerDomain: String? = nil) throws -> String {
+    /// - Throws: FlagsError.unsupportedSite if site is not supported for feature flags
+    static func buildEndpointURL(site: DatadogSite, customerDomain: String? = nil) throws -> String {
         let host = try buildEndpointHost(site: site, customerDomain: customerDomain)
         return "https://\(host)/precompute-assignments"
     }
 
     /// Builds the endpoint host for flags API based on site configuration
     /// - Parameters:
-    ///   - site: The Datadog site (e.g., "datadoghq.com", "datadoghq.eu")
+    ///   - site: The Datadog site enum value
     ///   - customerDomain: Optional customer-specific domain prefix
     /// - Returns: Host string for the flags endpoint
-    /// - Throws: FlagsError.invalidConfiguration if site is unsupported
-    static func buildEndpointHost(site: String, customerDomain: String? = nil) throws -> String {
-        let normalizedSite = site.lowercased()
-
-        // Handle unsupported government site
-        if normalizedSite == "ddog-gov.com" {
-            throw FlagsError.unsupportedSite(normalizedSite)
-        }
-
-        // Map sites to their flag endpoint patterns
-        let siteMapping: [String: String] = [
-            "datadoghq.com": "ff-cdn.datadoghq.com",
-            "datadoghq.eu": "ff-cdn.datadoghq.eu",
-            "us3.datadoghq.com": "ff-cdn.us3.datadoghq.com",
-            "us5.datadoghq.com": "ff-cdn.us5.datadoghq.com",
-            "ap1.datadoghq.com": "ff-cdn.ap1.datadoghq.com",
-            "ap2.datadoghq.com": "ff-cdn.ap2.datadoghq.com",
-            "datad0g.com": "ff-cdn.datad0g.com" // Staging environment
-        ]
-
-        guard let baseHost = siteMapping[normalizedSite] else {
-            throw FlagsError.unsupportedSite(normalizedSite)
+    /// - Throws: FlagsError.unsupportedSite if site is not supported for feature flags
+    static func buildEndpointHost(site: DatadogSite, customerDomain: String? = nil) throws -> String {
+        // Map DatadogSite enum to flags-specific CDN endpoints (exhaustive switch)
+        let baseHost: String
+        switch site {
+        case .us1:
+            baseHost = "ff-cdn.datadoghq.com"
+        case .us3:
+            baseHost = "ff-cdn.us3.datadoghq.com"
+        case .us5:
+            baseHost = "ff-cdn.us5.datadoghq.com"
+        case .eu1:
+            baseHost = "ff-cdn.datadoghq.eu"
+        case .ap1:
+            baseHost = "ff-cdn.ap1.datadoghq.com"
+        case .ap2:
+            baseHost = "ff-cdn.ap2.datadoghq.com"
+        case .us1_fed:
+            // Government sites are not supported for feature flags
+            throw FlagsError.unsupportedSite(site.rawValue)
         }
 
         // If customer domain is provided, prepend it to the base host

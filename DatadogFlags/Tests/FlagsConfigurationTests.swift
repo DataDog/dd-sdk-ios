@@ -6,6 +6,7 @@
 
 import XCTest
 @testable import DatadogFlags
+@testable import DatadogInternal
 
 final class FlagsConfigurationTests: XCTestCase {
     func testFlagsClientConfiguration() {
@@ -26,7 +27,7 @@ final class FlagsConfigurationTests: XCTestCase {
         XCTAssertEqual(config.clientToken, "test-token")
         XCTAssertEqual(config.environment, "prod")
         XCTAssertNil(config.baseURL)
-        XCTAssertEqual(config.site, "datadoghq.com")
+        XCTAssertEqual(config.site, .us1)
         XCTAssertNil(config.applicationId)
         XCTAssertTrue(config.customHeaders.isEmpty)
         XCTAssertNil(config.flaggingProxy)
@@ -38,7 +39,7 @@ final class FlagsConfigurationTests: XCTestCase {
             clientToken: "test-token",
             environment: "staging",
             baseURL: "https://custom.example.com",
-            site: "datadoghq.eu",
+            site: .eu1,
             applicationId: "app-123",
             customHeaders: customHeaders,
             flaggingProxy: "proxy.example.com"
@@ -47,7 +48,7 @@ final class FlagsConfigurationTests: XCTestCase {
         XCTAssertEqual(config.clientToken, "test-token")
         XCTAssertEqual(config.environment, "staging")
         XCTAssertEqual(config.baseURL, "https://custom.example.com")
-        XCTAssertEqual(config.site, "datadoghq.eu")
+        XCTAssertEqual(config.site, .eu1)
         XCTAssertEqual(config.applicationId, "app-123")
         XCTAssertEqual(config.customHeaders, customHeaders)
         XCTAssertEqual(config.flaggingProxy, "proxy.example.com")
