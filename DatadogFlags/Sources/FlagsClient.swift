@@ -8,19 +8,19 @@ import Foundation
 import DatadogInternal
 
 public class FlagsClient {
-    private let configuration: FlagsClientConfiguration
+    private let configuration: FlagsClient.Configuration
     private let httpClient: FlagsHttpClient
     private let store: FlagsStore
     private let featureScope: FeatureScope
 
-    internal init(configuration: FlagsClientConfiguration, httpClient: FlagsHttpClient, store: FlagsStore, featureScope: FeatureScope) {
+    internal init(configuration: FlagsClient.Configuration, httpClient: FlagsHttpClient, store: FlagsStore, featureScope: FeatureScope) {
         self.configuration = configuration
         self.httpClient = httpClient
         self.store = store
         self.featureScope = featureScope
     }
 
-    public static func create(with configuration: FlagsClientConfiguration, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
+    public static func create(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
         do {
             // To ensure the correct registration order between Core and Features,
             // the entire initialization flow is synchronized on the main thread.
@@ -33,7 +33,7 @@ public class FlagsClient {
         }
     }
 
-    internal static func createOrThrow(with configuration: FlagsClientConfiguration, in core: DatadogCoreProtocol) throws -> FlagsClient {
+    internal static func createOrThrow(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol) throws -> FlagsClient {
         guard core.get(feature: FlagsFeature.self) != nil else {
             throw ProgrammerError(
                 description: "`FlagsClient.create()` produces a non-functional client because the `Flags` feature was not enabled."

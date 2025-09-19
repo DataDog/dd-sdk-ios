@@ -14,7 +14,7 @@ final class FlagsClientTests: XCTestCase {
         let core = FeatureRegistrationCoreMock()
         Flags.enable(in: core)
 
-        let config = FlagsClientConfiguration()
+        let config = FlagsClient.Configuration()
         let client = FlagsClient.create(with: config, in: core)
 
         XCTAssertNotNil(client) // TODO: FFL-1016 Assert that it is not a NOPFlagsClient
@@ -25,7 +25,7 @@ final class FlagsClientTests: XCTestCase {
 
         let mockHttpClient = MockFlagsHttpClient()
         let mockStore = MockFlagsStore()
-        let config = FlagsClientConfiguration()
+        let config = FlagsClient.Configuration()
         let client = FlagsClient(
             configuration: config,
             httpClient: mockHttpClient,
@@ -66,7 +66,7 @@ final class FlagsClientTests: XCTestCase {
     func testContextAttributeSerialization() {
         let expectation = expectation(description: "Context serialization test")
 
-        let config = FlagsClientConfiguration()
+        let config = FlagsClient.Configuration()
         let client = FlagsClient(
             configuration: config,
             httpClient: AttributeSerializationTestClient(),
@@ -105,7 +105,7 @@ final class FlagsClientTests: XCTestCase {
 private class MockFlagsHttpClient: FlagsHttpClient {
     func postPrecomputeAssignments(
         context: FlagsEvaluationContext,
-        configuration: FlagsClientConfiguration,
+        configuration: FlagsClient.Configuration,
         sdkContext: DatadogContext,
         completion: @escaping (Result<(Data, URLResponse), Error>) -> Void
     ) {
@@ -151,7 +151,7 @@ private class MockFlagsStore: FlagsStore {
 private class AttributeSerializationTestClient: FlagsHttpClient {
     func postPrecomputeAssignments(
         context: FlagsEvaluationContext,
-        configuration: FlagsClientConfiguration,
+        configuration: FlagsClient.Configuration,
         sdkContext: DatadogContext,
         completion: @escaping (Result<(Data, URLResponse), Error>) -> Void
     ) {

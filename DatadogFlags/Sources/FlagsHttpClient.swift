@@ -10,7 +10,7 @@ import DatadogInternal
 internal protocol FlagsHttpClient {
     func postPrecomputeAssignments(
         context: FlagsEvaluationContext,
-        configuration: FlagsClientConfiguration,
+        configuration: FlagsClient.Configuration,
         sdkContext: DatadogContext,
         completion: @escaping (Result<(Data, URLResponse), Error>) -> Void
     )
@@ -29,7 +29,7 @@ internal class NetworkFlagsHttpClient: FlagsHttpClient {
 
     func postPrecomputeAssignments(
         context: FlagsEvaluationContext,
-        configuration: FlagsClientConfiguration,
+        configuration: FlagsClient.Configuration,
         sdkContext: DatadogContext,
         completion: @escaping (Result<(Data, URLResponse), Error>) -> Void
     ) {

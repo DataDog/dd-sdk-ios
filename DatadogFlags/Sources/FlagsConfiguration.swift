@@ -7,18 +7,20 @@
 import Foundation
 import DatadogInternal
 
-public struct FlagsClientConfiguration {
-    public let baseURL: String?
-    public let customHeaders: [String: String]
-    public let flaggingProxy: String?
+extension FlagsClient {
+    public struct Configuration {
+        public let baseURL: String?
+        public let customHeaders: [String: String]
+        public let flaggingProxy: String?
 
-    public init(
-        baseURL: String? = nil,
-        customHeaders: [String: String] = [:],
-        flaggingProxy: String? = nil
-    ) {
-        self.baseURL = baseURL
-        self.customHeaders = customHeaders
-        self.flaggingProxy = flaggingProxy
+        public init(
+            baseURL: String? = nil,
+            customHeaders: [String: String] = [:],
+            flaggingProxy: String? = nil
+        ) {
+            self.baseURL = baseURL
+            self.customHeaders = customHeaders
+            self.flaggingProxy = flaggingProxy
+        }
     }
 }

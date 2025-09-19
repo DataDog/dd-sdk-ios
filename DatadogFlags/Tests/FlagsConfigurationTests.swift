@@ -10,7 +10,7 @@ import XCTest
 
 final class FlagsConfigurationTests: XCTestCase {
     func testFlagsClientConfiguration() {
-        let config = FlagsClientConfiguration(
+        let config = FlagsClient.Configuration(
             baseURL: "https://custom.example.com"
         )
 
@@ -18,7 +18,7 @@ final class FlagsConfigurationTests: XCTestCase {
     }
 
     func testFlagsClientConfigurationDefaults() {
-        let config = FlagsClientConfiguration()
+        let config = FlagsClient.Configuration()
 
         XCTAssertNil(config.baseURL)
         XCTAssertTrue(config.customHeaders.isEmpty)
@@ -27,7 +27,7 @@ final class FlagsConfigurationTests: XCTestCase {
 
     func testFlagsClientConfigurationWithAllParameters() {
         let customHeaders = ["X-Custom": "value", "X-Test": "test"]
-        let config = FlagsClientConfiguration(
+        let config = FlagsClient.Configuration(
             baseURL: "https://custom.example.com",
             customHeaders: customHeaders,
             flaggingProxy: "proxy.example.com"
