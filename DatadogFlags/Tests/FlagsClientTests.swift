@@ -67,17 +67,17 @@ final class FlagsClientTests: XCTestCase {
             store: MockFlagsStore()
         )
 
-        let complexAttributes: [String: Any] = [
+        let stringAttributes: [String: String] = [
             "stringValue": "test",
-            "intValue": 42,
-            "boolValue": true,
-            "arrayValue": ["a", "b", "c"],
-            "dictValue": ["key": "value", "number": 123]
+            "intValue": "42",
+            "boolValue": "true",
+            "arrayValue": "[\"a\", \"b\", \"c\"]",
+            "dictValue": "{\"key\": \"value\", \"number\": \"123\"}"
         ]
 
         let context = FlagsEvaluationContext(
             targetingKey: "test-user",
-            attributes: complexAttributes
+            attributes: stringAttributes
         )
 
         client.setEvaluationContext(context) { result in
@@ -138,29 +138,15 @@ private class MockFlagsStore: FlagsStore {
 
 private class AttributeSerializationTestClient: FlagsHttpClient {
     func postPrecomputeAssignments(context: FlagsEvaluationContext, configuration: FlagsClientConfiguration, completion: @escaping (Result<(Data, URLResponse), Error>) -> Void) {
-        // Verify that the context attributes would be properly serialized
-        // This test client simulates what the real NetworkFlagsHttpClient does
-        let stringifiedAttributes: [String: String] = context.attributes.mapValues { value in
-            if let stringValue = value as? String {
-                return stringValue
-            } else if JSONSerialization.isValidJSONObject(value) {
-                if let data = try? JSONSerialization.data(withJSONObject: value, options: []),
-                   let jsonString = String(data: data, encoding: .utf8) {
-                    return jsonString
-                } else {
-                    return String(describing: value)
-                }
-            } else {
-                return String(describing: value)
-            }
-        }
-
-        // Verify serialization worked correctly
-        XCTAssertEqual(stringifiedAttributes["stringValue"], "test")
-        XCTAssertEqual(stringifiedAttributes["intValue"], "42")
-        XCTAssertEqual(stringifiedAttributes["boolValue"], "true")
-        XCTAssertTrue(stringifiedAttributes["arrayValue"]?.contains("\"a\"") == true)
-        XCTAssertTrue(stringifiedAttributes["dictValue"]?.contains("\"key\":\"value\"") == true)
+        // Verify that the context attributes are properly typed as [String: String]
+        let attributes = context.attributes
+        
+        // Verify attributes are correctly passed as strings
+        XCTAssertEqual(attributes["stringValue"], "test")
+        XCTAssertEqual(attributes["intValue"], "42")
+        XCTAssertEqual(attributes["boolValue"], "true")
+        XCTAssertEqual(attributes["arrayValue"], "[\"a\", \"b\", \"c\"]")
+        XCTAssertEqual(attributes["dictValue"], "{\"key\": \"value\", \"number\": \"123\"}")
 
         // Return success with empty flags
         let responseData: [String: Any] = [

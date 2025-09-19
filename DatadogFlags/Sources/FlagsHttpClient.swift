@@ -75,21 +75,6 @@ internal class NetworkFlagsHttpClient: FlagsHttpClient {
             request.addValue(value, forHTTPHeaderField: key)
         }
 
-        // Serialize context attributes (stringify non-string values like JavaScript client)
-        let stringifiedAttributes: [String: String] = context.attributes.mapValues { value in
-            if let stringValue = value as? String {
-                return stringValue
-            } else {
-                // JSON serialize non-string values
-                if let data = try? JSONSerialization.data(withJSONObject: value, options: []),
-                   let jsonString = String(data: data, encoding: .utf8) {
-                    return jsonString
-                } else {
-                    return String(describing: value)
-                }
-            }
-        }
-
         let requestBody: [String: Any] = [
             "data": [
                 "type": "precompute-assignments-request",
@@ -100,7 +85,7 @@ internal class NetworkFlagsHttpClient: FlagsHttpClient {
                     ],
                     "subject": [
                         "targeting_key": context.targetingKey,
-                        "targeting_attributes": stringifiedAttributes
+                        "targeting_attributes": context.attributes
                     ]
                 ]
             ]
