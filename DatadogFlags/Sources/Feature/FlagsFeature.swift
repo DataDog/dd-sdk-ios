@@ -25,7 +25,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         )
         messageReceiver = NOPFeatureMessageReceiver()
         performanceOverride = PerformancePresetOverride(
-            maxObjectsInFile: 1 // to sent only one Exposure event per request
+            maxObjectsInFile: 1 // to send only one Exposure event per request
         )
     }
 }
