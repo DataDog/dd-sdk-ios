@@ -132,7 +132,7 @@ private class MockFlagsStore: FlagsStore {
     private var flags: [String: Any] = [:]
 
     init() {
-        super.init(withPersistentCache: false)
+        super.init(featureScope: FeatureScopeMock())
     }
 
     override func getFlags() -> [String: Any] {

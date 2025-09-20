@@ -959,12 +959,10 @@
 		86B43EC82DE464ED00FDDD29 /* LocaleInfoPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B43EC62DE464ED00FDDD29 /* LocaleInfoPublisher.swift */; };
 		8DADC3B42E7CCF0D0060F558 /* FlagsClientConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3AF2E7CCF0D0060F558 /* FlagsClientConfiguration.swift */; };
 		8DADC3B62E7CCF0D0060F558 /* FlagsTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3B32E7CCF0D0060F558 /* FlagsTypes.swift */; };
-		8DADC3B72E7CCF0D0060F558 /* FlagsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3B22E7CCF0D0060F558 /* FlagsStore.swift */; };
 		8DADC3B82E7CCF0D0060F558 /* FlagsEndpointBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3B02E7CCF0D0060F558 /* FlagsEndpointBuilder.swift */; };
 		8DADC3B92E7CCF0D0060F558 /* FlagsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3AE2E7CCF0D0060F558 /* FlagsClient.swift */; };
 		8DADC3BA2E7CCF0D0060F558 /* FlagsClientConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3AF2E7CCF0D0060F558 /* FlagsClientConfiguration.swift */; };
 		8DADC3BC2E7CCF0D0060F558 /* FlagsTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3B32E7CCF0D0060F558 /* FlagsTypes.swift */; };
-		8DADC3BD2E7CCF0D0060F558 /* FlagsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3B22E7CCF0D0060F558 /* FlagsStore.swift */; };
 		8DADC3BE2E7CCF0D0060F558 /* FlagsEndpointBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3B02E7CCF0D0060F558 /* FlagsEndpointBuilder.swift */; };
 		8DADC3BF2E7CCF0D0060F558 /* FlagsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3AE2E7CCF0D0060F558 /* FlagsClient.swift */; };
 		8DADC3C42E7CCF190060F558 /* FlagsClientConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3C12E7CCF190060F558 /* FlagsClientConfigurationTests.swift */; };
@@ -983,6 +981,10 @@
 		8DADC3DF2E7D250E0060F558 /* PrecomputeAssignmentsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3DD2E7D250E0060F558 /* PrecomputeAssignmentsRequestTests.swift */; };
 		8DADC3E12E7E4B4A0060F558 /* FlagsHTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3E02E7E4B4A0060F558 /* FlagsHTTPClient.swift */; };
 		8DADC3E22E7E4B4A0060F558 /* FlagsHTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3E02E7E4B4A0060F558 /* FlagsHTTPClient.swift */; };
+		8DADC3E42E7E5BE00060F558 /* FlagsDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3E32E7E5BE00060F558 /* FlagsDataStore.swift */; };
+		8DADC3E52E7E5BE00060F558 /* FlagsDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3E32E7E5BE00060F558 /* FlagsDataStore.swift */; };
+		8DADC3E72E7E5BF80060F558 /* FlagsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3E62E7E5BF80060F558 /* FlagsStore.swift */; };
+		8DADC3E82E7E5BF80060F558 /* FlagsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3E62E7E5BF80060F558 /* FlagsStore.swift */; };
 		960A0D3B2D6E2490004BB999 /* Reflector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D3A2D6E2490004BB999 /* Reflector.swift */; };
 		960A0D3C2D6E2490004BB999 /* CustomDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D382D6E2490004BB999 /* CustomDump.swift */; };
 		960A0D3D2D6E2490004BB999 /* ReflectionMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D392D6E2490004BB999 /* ReflectionMirror.swift */; };
@@ -3086,7 +3088,6 @@
 		8DADC3AE2E7CCF0D0060F558 /* FlagsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClient.swift; sourceTree = "<group>"; };
 		8DADC3AF2E7CCF0D0060F558 /* FlagsClientConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientConfiguration.swift; sourceTree = "<group>"; };
 		8DADC3B02E7CCF0D0060F558 /* FlagsEndpointBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsEndpointBuilder.swift; sourceTree = "<group>"; };
-		8DADC3B22E7CCF0D0060F558 /* FlagsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsStore.swift; sourceTree = "<group>"; };
 		8DADC3B32E7CCF0D0060F558 /* FlagsTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsTypes.swift; sourceTree = "<group>"; };
 		8DADC3C02E7CCF190060F558 /* FlagsClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientTests.swift; sourceTree = "<group>"; };
 		8DADC3C12E7CCF190060F558 /* FlagsClientConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientConfigurationTests.swift; sourceTree = "<group>"; };
@@ -3096,6 +3097,8 @@
 		8DADC3D72E7D24740060F558 /* PrecomputeAssignmentsRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecomputeAssignmentsRequest.swift; sourceTree = "<group>"; };
 		8DADC3DD2E7D250E0060F558 /* PrecomputeAssignmentsRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecomputeAssignmentsRequestTests.swift; sourceTree = "<group>"; };
 		8DADC3E02E7E4B4A0060F558 /* FlagsHTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsHTTPClient.swift; sourceTree = "<group>"; };
+		8DADC3E32E7E5BE00060F558 /* FlagsDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsDataStore.swift; sourceTree = "<group>"; };
+		8DADC3E62E7E5BF80060F558 /* FlagsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsStore.swift; sourceTree = "<group>"; };
 		960A0D382D6E2490004BB999 /* CustomDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomDump.swift; sourceTree = "<group>"; };
 		960A0D392D6E2490004BB999 /* ReflectionMirror.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionMirror.swift; sourceTree = "<group>"; };
 		960A0D3A2D6E2490004BB999 /* Reflector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reflector.swift; sourceTree = "<group>"; };
@@ -4232,13 +4235,14 @@
 		5BA8C30E2E7859EC00B1DA80 /* DatadogFlags */ = {
 			isa = PBXGroup;
 			children = (
+				8DADC3E62E7E5BF80060F558 /* FlagsStore.swift */,
+				8DADC3E32E7E5BE00060F558 /* FlagsDataStore.swift */,
 				8DADC3E02E7E4B4A0060F558 /* FlagsHTTPClient.swift */,
 				614964462E7D7B0D00D9EFFF /* Feature */,
 				8DADC3D72E7D24740060F558 /* PrecomputeAssignmentsRequest.swift */,
 				8DADC3AE2E7CCF0D0060F558 /* FlagsClient.swift */,
 				8DADC3AF2E7CCF0D0060F558 /* FlagsClientConfiguration.swift */,
 				8DADC3B02E7CCF0D0060F558 /* FlagsEndpointBuilder.swift */,
-				8DADC3B22E7CCF0D0060F558 /* FlagsStore.swift */,
 				8DADC3B32E7CCF0D0060F558 /* FlagsTypes.swift */,
 				5BA8C30F2E785A2000B1DA80 /* Flags.swift */,
 			);
@@ -8679,10 +8683,11 @@
 			files = (
 				8DADC3BA2E7CCF0D0060F558 /* FlagsClientConfiguration.swift in Sources */,
 				8DADC3BC2E7CCF0D0060F558 /* FlagsTypes.swift in Sources */,
-				8DADC3BD2E7CCF0D0060F558 /* FlagsStore.swift in Sources */,
 				8DADC3BE2E7CCF0D0060F558 /* FlagsEndpointBuilder.swift in Sources */,
 				614964492E7D7B0D00D9EFFF /* ExposureRequestBuilder.swift in Sources */,
 				6149644A2E7D7B0D00D9EFFF /* FlagsFeature.swift in Sources */,
+				8DADC3E52E7E5BE00060F558 /* FlagsDataStore.swift in Sources */,
+				8DADC3E82E7E5BF80060F558 /* FlagsStore.swift in Sources */,
 				8DADC3BF2E7CCF0D0060F558 /* FlagsClient.swift in Sources */,
 				5BA8C3102E785A2000B1DA80 /* Flags.swift in Sources */,
 				8DADC3E12E7E4B4A0060F558 /* FlagsHTTPClient.swift in Sources */,
@@ -8696,10 +8701,11 @@
 			files = (
 				8DADC3B42E7CCF0D0060F558 /* FlagsClientConfiguration.swift in Sources */,
 				8DADC3B62E7CCF0D0060F558 /* FlagsTypes.swift in Sources */,
-				8DADC3B72E7CCF0D0060F558 /* FlagsStore.swift in Sources */,
 				8DADC3B82E7CCF0D0060F558 /* FlagsEndpointBuilder.swift in Sources */,
 				614964472E7D7B0D00D9EFFF /* ExposureRequestBuilder.swift in Sources */,
 				614964482E7D7B0D00D9EFFF /* FlagsFeature.swift in Sources */,
+				8DADC3E42E7E5BE00060F558 /* FlagsDataStore.swift in Sources */,
+				8DADC3E72E7E5BF80060F558 /* FlagsStore.swift in Sources */,
 				8DADC3B92E7CCF0D0060F558 /* FlagsClient.swift in Sources */,
 				5BA8C33A2E785FD500B1DA80 /* Flags.swift in Sources */,
 				8DADC3E22E7E4B4A0060F558 /* FlagsHTTPClient.swift in Sources */,
