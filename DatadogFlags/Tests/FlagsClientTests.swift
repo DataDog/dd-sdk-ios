@@ -23,7 +23,7 @@ final class FlagsClientTests: XCTestCase {
     func testFlagsClientWithMockHttpClient() {
         let expectation = expectation(description: "Flags loaded")
 
-        let mockHttpClient = MockFlagsHttpClient()
+        let mockHttpClient = MockFlagsHTTPClient()
         let mockStore = MockFlagsStore()
         let config = FlagsClient.Configuration()
         let client = FlagsClient(
@@ -102,7 +102,7 @@ final class FlagsClientTests: XCTestCase {
 
 // MARK: - Test Helpers
 
-private class MockFlagsHttpClient: FlagsHttpClient {
+private class MockFlagsHTTPClient: FlagsHTTPClient {
     func postPrecomputeAssignments(
         context: FlagsEvaluationContext,
         configuration: FlagsClient.Configuration,
@@ -148,7 +148,7 @@ private class MockFlagsStore: FlagsStore {
     }
 }
 
-private class AttributeSerializationTestClient: FlagsHttpClient {
+private class AttributeSerializationTestClient: FlagsHTTPClient {
     func postPrecomputeAssignments(
         context: FlagsEvaluationContext,
         configuration: FlagsClient.Configuration,

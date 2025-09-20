@@ -9,11 +9,11 @@ import DatadogInternal
 
 public class FlagsClient {
     private let configuration: FlagsClient.Configuration
-    private let httpClient: FlagsHttpClient
+    private let httpClient: FlagsHTTPClient
     private let store: FlagsStore
     private let featureScope: FeatureScope
 
-    internal init(configuration: FlagsClient.Configuration, httpClient: FlagsHttpClient, store: FlagsStore, featureScope: FeatureScope) {
+    internal init(configuration: FlagsClient.Configuration, httpClient: FlagsHTTPClient, store: FlagsStore, featureScope: FeatureScope) {
         self.configuration = configuration
         self.httpClient = httpClient
         self.store = store
@@ -40,7 +40,7 @@ public class FlagsClient {
             )
         }
 
-        let httpClient = NetworkFlagsHttpClient()
+        let httpClient = NetworkFlagsHTTPClient()
         let store = FlagsStore()
         let featureScope = core.scope(for: FlagsFeature.self)
         return FlagsClient(configuration: configuration, httpClient: httpClient, store: store, featureScope: featureScope)
