@@ -41,15 +41,6 @@ internal class FlagsStore {
         }
     }
 
-feat: Replace FlagsStore with DataStore-based implementation
-
-- Remove borrowed ConfigurationStore.swift from Eppo SDK
-- Implement FlagsDataStore wrapper following RUM pattern
-- Add Codable support to FlagsEvaluationContext and FlagsMetadata
-- Create CodableFlags/CodableAny for JSON serialization of Any values
-- Update FlagsStore to use featureScope.dataStore for persistence
-- Fix tests to use FeatureScopeMock for new constructor
-
     func getFlagsMetadata() -> FlagsMetadata? {
         return syncQueue.sync { self.cachedMetadata }
     }
