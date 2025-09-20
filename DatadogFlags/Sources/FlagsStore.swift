@@ -56,11 +56,10 @@ feat: Replace FlagsStore with DataStore-based implementation
 
     private func saveToDataStore() {
         let dataStore = featureScope.flagsDataStore
-        
+
         // Save flags
         let codableFlags = CodableFlags(flags: cachedFlags)
         dataStore.setValue(codableFlags, forKey: .flags)
-        
         // Save metadata if available
         if let metadata = cachedMetadata {
             dataStore.setValue(metadata, forKey: .flagsMetadata)
@@ -69,7 +68,6 @@ feat: Replace FlagsStore with DataStore-based implementation
 
     private func loadFromDataStore() {
         let dataStore = featureScope.flagsDataStore
-        
         // Load flags
         dataStore.value(forKey: .flags) { [weak self] (codableFlags: CodableFlags?) in
             if let codableFlags = codableFlags {
@@ -78,7 +76,6 @@ feat: Replace FlagsStore with DataStore-based implementation
                 }
             }
         }
-        
         // Load metadata
         dataStore.value(forKey: .flagsMetadata) { [weak self] (metadata: FlagsMetadata?) in
             if let metadata = metadata {
