@@ -31,11 +31,11 @@ internal struct FlagsMetadata: Codable {
 /// A Codable wrapper for flags dictionary to enable JSON serialization in DataStore
 internal struct CodableFlags: Codable {
     let flags: [String: CodableAny]
-    
+
     init(flags: [String: Any]) {
         self.flags = flags.compactMapValues { CodableAny($0) }
     }
-    
+
     func toDictionary() -> [String: Any] {
         return flags.compactMapValues { $0.value }
     }
@@ -44,14 +44,14 @@ internal struct CodableFlags: Codable {
 /// A type-erased Codable wrapper to handle Any values in flags
 internal struct CodableAny: Codable {
     let value: Any
-    
+
     init(_ value: Any) {
         self.value = value
     }
-    
+
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        
+
         if let intValue = try? container.decode(Int.self) {
             value = intValue
         } else if let doubleValue = try? container.decode(Double.self) {
@@ -68,10 +68,10 @@ internal struct CodableAny: Codable {
             throw DecodingError.typeMismatch(CodableAny.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Unsupported type"))
         }
     }
-    
+
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        
+
         switch value {
         case let intValue as Int:
             try container.encode(intValue)
