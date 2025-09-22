@@ -160,6 +160,7 @@ class PerformancePresetTests: XCTestCase {
             changeRate: .mockRandom()
         )
         let maxFileAgeForRead: TimeInterval = .mockRandom(min: 100, max: 1_000)
+        let maxObjectsInFile: Int = .mockRandom(min: 1, max: 100)
 
         // When
         let preset = PerformancePreset(
@@ -175,6 +176,7 @@ class PerformancePresetTests: XCTestCase {
                 maxObjectSize: maxObjectSizeOverride,
                 meanFileAge: meanFileAgeOverride,
                 maxFileAgeForRead: maxFileAgeForRead,
+                maxObjectsInFile: maxObjectsInFile,
                 uploadDelay: uploadDelayOverride
             )
         )
@@ -185,6 +187,7 @@ class PerformancePresetTests: XCTestCase {
         XCTAssertEqual(updatedPreset.maxFileAgeForWrite, meanFileAgeOverride * 0.95, accuracy: 0.01)
         XCTAssertEqual(updatedPreset.minFileAgeForRead, meanFileAgeOverride * 1.05, accuracy: 0.01)
         XCTAssertEqual(updatedPreset.maxFileAgeForRead, maxFileAgeForRead)
+        XCTAssertEqual(updatedPreset.maxObjectsInFile, maxObjectsInFile)
         XCTAssertEqual(updatedPreset.uploaderWindow, meanFileAgeOverride, accuracy: 0.01)
         XCTAssertEqual(updatedPreset.initialUploadDelay, uploadDelayOverride.initial)
         XCTAssertEqual(updatedPreset.minUploadDelay, uploadDelayOverride.range.lowerBound)

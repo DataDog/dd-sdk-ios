@@ -7,4 +7,51 @@
 import Foundation
 import DatadogInternal
 
-public enum Flags {}
+public enum Flags {
+    public struct Configuration {
+        /// Custom server url for sending Flags exposure data.
+        ///
+        /// Default: `nil`.
+        public var customExposureEndpoint: URL?
+
+        public init() {}
+    }
+
+    /// Enables the Datadog Flags feature.
+    ///
+    /// - Parameters:
+    ///   - configuration: Flags configuration options.
+    ///   - core: The Datadog SDK instance to enable Flags in (defaults to the global core instance).
+    public static func enable(
+        with configuration: Flags.Configuration = .init(),
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) {
+        do {
+            // To ensure the correct registration order between Core and Features,
+            // the entire initialization flow is synchronized on the main thread.
+            try runOnMainThreadSync {
+                try enableOrThrow(with: configuration, in: core)
+            }
+        } catch let error {
+            consolePrint("\(error)", .error)
+        }
+    }
+
+    internal static func enableOrThrow(
+        with configuration: Flags.Configuration,
+        in core: DatadogCoreProtocol
+    ) throws {
+        guard !(core is NOPDatadogCore) else {
+            throw ProgrammerError(
+                description: "Datadog SDK must be initialized before calling `Flags.enable(with:)`."
+            )
+        }
+
+        let featureScope = core.scope(for: FlagsFeature.self) // safe to obtain scope before feature registration; scope is lazily evaluated
+        let feature = FlagsFeature(
+            configuration: configuration,
+            featureScope: featureScope
+        )
+        try core.register(feature: feature)
+    }
+}
