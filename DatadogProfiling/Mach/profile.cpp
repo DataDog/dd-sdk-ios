@@ -23,33 +23,29 @@
  */
 
 #include "profile.h"
-#include <mach/mach_time.h>
 #include <time.h>
 
 namespace dd::profiler {
 
 /**
- * @brief Initialize mach time reference data
- * 
- * Calculates the offset needed to convert mach_absolute_time values
+ * @brief Calculate uptime to epoch time offset
+ *
+ * Calculates the offset needed to convert uptime nanoseconds
  * to epoch time in nanoseconds.
- * 
- * @param timeref Time reference structure to initialize
+ *
+ * @return Offset to convert uptime nanoseconds to epoch time
  */
-void mach_timeref_init(mach_timeref_t* timeref) {
-    // Get timebase info for mach time conversion
-    mach_timebase_info(&timeref->timebase_info);
-    
-    // Calculate current times
-    uint64_t mach_time = mach_absolute_time();
-    uint64_t mach_time_ns = mach_time * timeref->timebase_info.numer / timeref->timebase_info.denom;
-    
+int64_t uptime_epoch_offset() {
+    // Get current uptime nanoseconds
+    uint64_t uptime_ns = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
+
+    // Get current epoch time
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
     int64_t epoch_time_ns = (int64_t)ts.tv_sec * 1000000000LL + (int64_t)ts.tv_nsec;
-    
-    // Calculate offset
-    timeref->epoch_offset = epoch_time_ns - (int64_t)mach_time_ns;
+
+    // Calculate and return offset to convert uptime to epoch
+    return epoch_time_ns - (int64_t)uptime_ns;
 }
 
 /**
@@ -97,19 +93,18 @@ profile::profile(uint64_t sampling_interval_ns)
     _thread_id_str_id = intern_string("thread id");
     _thread_name_str_id = intern_string("thread name");
 
-    // Initialize time reference data
-    mach_timeref_init(&_timeref);
+    // Initialize epoch offset for uptime conversion
+    _epoch_offset = uptime_epoch_offset();
 }
 
 /**
- * @brief Convert mach_absolute_time to epoch time in nanoseconds
- * 
- * @param mach_time Mach absolute time value
+ * @brief Convert uptime nanoseconds to epoch time in nanoseconds
+ *
+ * @param uptime_ns Uptime nanoseconds value
  * @return Epoch time in nanoseconds
  */
-int64_t profile::mach_time_to_epoch_ns(uint64_t mach_time) const {
-    uint64_t mach_time_ns = mach_time * _timeref.timebase_info.numer / _timeref.timebase_info.denom;
-    return static_cast<int64_t>(mach_time_ns) + _timeref.epoch_offset;
+int64_t profile::uptime_ns_to_epoch_ns(uint64_t uptime_ns) const {
+    return static_cast<int64_t>(uptime_ns) + _epoch_offset;
 }
 
 /**
@@ -147,11 +142,11 @@ void profile::add_samples(const stack_trace_t* traces, size_t count) {
         std::vector<label_t> labels;
         labels.reserve(3);
         
-        // Add timestamp label (convert mach_absolute_time to epoch)
+        // Add timestamp label (convert uptime nanoseconds to epoch)
         label_t timestamp_label;
         timestamp_label.key_id = _end_timestamp_ns_str_id;
         timestamp_label.str_id = 0;
-        timestamp_label.num = mach_time_to_epoch_ns(trace.timestamp);
+        timestamp_label.num = uptime_ns_to_epoch_ns(trace.timestamp);
         timestamp_label.num_unit_id = _nanoseconds_str_id;
         labels.push_back(timestamp_label);
         

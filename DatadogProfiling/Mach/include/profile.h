@@ -28,7 +28,7 @@
 #include <unordered_map>
 #include <vector>
 #include <cstdint>
-#include <mach/mach_time.h>
+#include <time.h>
 
 namespace dd::profiler {
 
@@ -86,7 +86,6 @@ struct label_t {
  * - Stack trace as a sequence of location IDs (leaf-to-root order)
  * - Associated labels (e.g., timestamps, thread info)
  * - Sample values (e.g., CPU time, wall time, memory allocation)
- * - Timestamp when the sample was collected
  * 
  * Samples are not aggregated at this level - aggregation happens during
  * serialization if needed.
@@ -98,18 +97,10 @@ struct sample_t {
 };
 
 /**
- * @brief Reference data for converting mach_absolute_time to epoch time
+ * @brief Calculate uptime to epoch time offset
+ * @return Offset to convert uptime nanoseconds to epoch time
  */
-struct mach_timeref_t {
-    mach_timebase_info_data_t timebase_info;
-    int64_t epoch_offset;
-};
-
-/**
- * @brief Initialize mach time reference data
- * @param timeref Time reference structure to initialize
- */
-void mach_timeref_init(mach_timeref_t* timeref);
+int64_t uptime_epoch_offset();
 
 /**
  * @brief Convert binary UUID to formatted string representation
@@ -182,11 +173,11 @@ public:
     /** @brief Get cached string ID for "nanoseconds" */
     uint32_t nanoseconds_str_id() const { return _nanoseconds_str_id; }
 
-    /** @brief Get profile start timestamp (mach_absolute_time) */
-    int64_t start_timestamp() const { return mach_time_to_epoch_ns(_start_timestamp); };
+    /** @brief Get profile start timestamp (uptime nanoseconds converted to epoch) */
+    int64_t start_timestamp() const { return uptime_ns_to_epoch_ns(_start_timestamp); };
 
-    /** @brief Get profile end timestamp (mach_absolute_time) */
-    int64_t end_timestamp() const { return mach_time_to_epoch_ns(_end_timestamp); };
+    /** @brief Get profile end timestamp (uptime nanoseconds converted to epoch) */
+    int64_t end_timestamp() const { return uptime_ns_to_epoch_ns(_end_timestamp); };
 
 private:
     /** @brief Deduplicated string table (index 0 is always empty string) */
@@ -222,20 +213,20 @@ private:
     /** @brief Cached string ID for "thread name" */
     uint32_t _thread_name_str_id;
 
-    /** @brief Time reference data for mach_absolute_time to epoch conversion */
-    mach_timeref_t _timeref;
+    /** @brief Offset to convert uptime nanoseconds to epoch time */
+    int64_t _epoch_offset;
 
-    /** @brief Profile start timestamp (mach_absolute_time, 0 if no samples) */
+    /** @brief Profile start timestamp (uptime nanoseconds, 0 if no samples) */
     uint64_t _start_timestamp;
-    
-    /** @brief Profile end timestamp (mach_absolute_time, 0 if no samples) */
+
+    /** @brief Profile end timestamp (uptime nanoseconds, 0 if no samples) */
     uint64_t _end_timestamp;
-    
+
     /** @brief Hash table for string deduplication: string -> string_id */
     std::unordered_map<std::string, uint32_t> _string_lookup;
-    
-    /** @brief Convert mach_absolute_time to epoch time in nanoseconds */
-    int64_t mach_time_to_epoch_ns(uint64_t mach_time) const;
+
+    /** @brief Convert uptime nanoseconds to epoch time in nanoseconds */
+    int64_t uptime_ns_to_epoch_ns(uint64_t uptime_ns) const;
     
     /** @brief Hash table for mapping deduplication: memory_start -> mapping_id */
     std::unordered_map<uint64_t, uint32_t> _mapping_lookup;
