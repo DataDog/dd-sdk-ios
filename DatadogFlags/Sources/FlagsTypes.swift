@@ -23,6 +23,7 @@ public enum FlagsError: Error {
     case unsupportedSite(String)
 }
 
+// TODO: FFL-1016 Include everything to fully hydrate a client (evaluationContext, clientConfiguration, anything else?)
 internal struct FlagsMetadata: Codable {
     let fetchedAt: Double // Timestamp in milliseconds (JavaScript-style)
     let context: FlagsEvaluationContext?

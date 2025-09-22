@@ -7,12 +7,18 @@
 import Foundation
 import DatadogInternal
 
-/// A wrapper around FlagsDataStore that provides the same interface as the original FlagsStore
-/// while using the Core SDK's DataStore for persistence.
+/// High-level business logic layer for Flags storage.
+///
+/// This class manages the application-level concerns for flag storage:
+/// - In-memory caching of flags for fast access
+/// - Thread-safe operations using concurrent queues
+/// - Flag metadata management (timestamps, evaluation contexts)
+/// - Business logic for setting/getting flags with proper context
 internal class FlagsStore {
     private let featureScope: FeatureScope
     private var cachedFlags: [String: Any] = [:]
     private var cachedMetadata: FlagsMetadata?
+    // TODO: FFL-1016 Also scope queues by clientKey
     private let syncQueue = DispatchQueue(label: "com.datadoghq.flags.store", attributes: .concurrent)
 
     init(featureScope: FeatureScope) {
@@ -45,6 +51,7 @@ internal class FlagsStore {
         return syncQueue.sync { self.cachedMetadata }
     }
 
+    /// Persists in-memory flags and metadata to the underlying data store.
     private func saveToDataStore() {
         let dataStore = featureScope.flagsDataStore
 

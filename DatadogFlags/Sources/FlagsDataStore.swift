@@ -21,12 +21,16 @@ internal extension FeatureScope {
     }
 }
 
-/// Flags interface for data store.
+/// Low-level layer for Flags storage (similar to RUMDataStore).
 ///
-/// It stores values in JSON format and implements convenience for type-safe key referencing and data serialization.
-/// Serialization errors are logged to telemetry.
+/// This struct provides the data persistence interface for the Flags feature, handling:
+/// - JSON serialization/deserialization of flag data
+/// - Type-safe key management for different data types
+/// - Error handling and telemetry logging for storage operations
+/// - Integration with the Core SDK's DataStore
 internal struct FlagsDataStore {
     internal enum Key: String {
+        // TODO: FFL-1016 Include clientKey for multi-client support
         /// References cached flags data from precompute-assignments API
         case flags = "flags-cache"
         /// References metadata about the flags including fetch timestamp and context
