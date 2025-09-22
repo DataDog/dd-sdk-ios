@@ -6,7 +6,7 @@
 #include <thread>
 #include <string.h>
 #include <stdlib.h>
-#include <mach/mach_time.h>
+#include <time.h>
 #include <mach/thread_act.h>
 #include <mach/thread_status.h>
 #include <mach/machine/thread_state.h>
@@ -285,7 +285,7 @@ bool stack_trace_get_thread_info(stack_trace_t* trace, thread_t thread) {
     pthread_t pthread = pthread_from_mach_thread_np(thread);
     if (!pthread) return false;
     
-    // Allocate buffer and get thread name directly
+    // Allocate buffer and get thread name
     trace->thread_name = (char*)malloc(PTHREAD_THREAD_NAME_MAX);
     if (!trace->thread_name) return false;
     
@@ -305,7 +305,7 @@ bool stack_trace_get_thread_info(stack_trace_t* trace, thread_t thread) {
  * @param max_depth Maximum number of frames to capture
  */
 void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t max_depth) {
-    trace->timestamp = mach_absolute_time();
+    trace->timestamp = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
     trace->frame_count = 0;
 
     void *fp, *pc = nullptr;
