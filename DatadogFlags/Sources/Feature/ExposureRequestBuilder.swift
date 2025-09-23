@@ -21,18 +21,25 @@ internal struct ExposureRequestBuilder: FeatureRequestBuilder {
         let builder = URLRequestBuilder(
             url: url(with: context),
             queryItems: [
-                // TODO: FFL-1022 Send Exposure event data to /api/v2/exposures
+                .ddsource(source: context.source)
             ],
             headers: [
-                // TODO: FFL-1022 Send Exposure event data to /api/v2/exposures
+                .contentTypeHeader(contentType: .applicationJSON),
+                .userAgentHeader(
+                    appName: context.applicationName,
+                    appVersion: context.version,
+                    device: context.device,
+                    os: context.os
+                ),
+                .ddAPIKeyHeader(clientToken: context.clientToken),
+                .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),
+                .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
+                .ddRequestIDHeader()
             ],
             telemetry: telemetry
         )
 
-        return builder.uploadRequest(
-            with: exposureEventData,
-            compress: true // TODO: FFL-1022 If /api/v2/exposures supports compression
-        )
+        return builder.uploadRequest(with: exposureEventData, compress: false)
     }
 
     private func url(with context: DatadogContext) -> URL {
