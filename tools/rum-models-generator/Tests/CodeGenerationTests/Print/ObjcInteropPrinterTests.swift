@@ -14,7 +14,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
             .transform(swiftTypes: swiftTypes)
 
         let swiftPrinter = SwiftPrinter()
-        let objcInteropPrinter = ObjcInteropPrinter(objcTypeNamesPrefix: "DD")
+        let objcInteropPrinter = ObjcInteropPrinter(objcTypeNamesPrefix: "objc_")
 
         return """
         // MARK: - Swift
@@ -92,29 +92,31 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var immutableString: String {
+            public var immutableString: String {
                 root.swiftModel.immutableString
             }
 
-            @objc public var optionalImmutableString: String? {
+            public var optionalImmutableString: String? {
                 root.swiftModel.optionalImmutableString
             }
 
-            @objc public var mutableString: String {
+            public var mutableString: String {
                 set { root.swiftModel.mutableString = newValue }
                 get { root.swiftModel.mutableString }
             }
 
-            @objc public var optionalMutableString: String? {
+            public var optionalMutableString: String? {
                 set { root.swiftModel.optionalMutableString = newValue }
                 get { root.swiftModel.optionalMutableString }
             }
@@ -193,29 +195,31 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var immutableInt: NSNumber {
+            public var immutableInt: NSNumber {
                 root.swiftModel.immutableInt as NSNumber
             }
 
-            @objc public var optionalImmutableInt: NSNumber? {
+            public var optionalImmutableInt: NSNumber? {
                 root.swiftModel.optionalImmutableInt as NSNumber?
             }
 
-            @objc public var mutableInt: NSNumber {
+            public var mutableInt: NSNumber {
                 set { root.swiftModel.mutableInt = newValue.intValue }
                 get { root.swiftModel.mutableInt as NSNumber }
             }
 
-            @objc public var optionalMutableInt: NSNumber? {
+            public var optionalMutableInt: NSNumber? {
                 set { root.swiftModel.optionalMutableInt = newValue?.intValue }
                 get { root.swiftModel.optionalMutableInt as NSNumber? }
             }
@@ -294,29 +298,31 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var immutableInt64: NSNumber {
+            public var immutableInt64: NSNumber {
                 root.swiftModel.immutableInt64 as NSNumber
             }
 
-            @objc public var optionalImmutableInt64: NSNumber? {
+            public var optionalImmutableInt64: NSNumber? {
                 root.swiftModel.optionalImmutableInt64 as NSNumber?
             }
 
-            @objc public var mutableInt: NSNumber {
+            public var mutableInt: NSNumber {
                 set { root.swiftModel.mutableInt = newValue.int64Value }
                 get { root.swiftModel.mutableInt as NSNumber }
             }
 
-            @objc public var optionalMutableInt64: NSNumber? {
+            public var optionalMutableInt64: NSNumber? {
                 set { root.swiftModel.optionalMutableInt64 = newValue?.int64Value }
                 get { root.swiftModel.optionalMutableInt64 as NSNumber? }
             }
@@ -395,29 +401,31 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var immutableDouble: NSNumber {
+            public var immutableDouble: NSNumber {
                 root.swiftModel.immutableDouble as NSNumber
             }
 
-            @objc public var optionalImmutableDouble: NSNumber? {
+            public var optionalImmutableDouble: NSNumber? {
                 root.swiftModel.optionalImmutableDouble as NSNumber?
             }
 
-            @objc public var mutableDouble: NSNumber {
+            public var mutableDouble: NSNumber {
                 set { root.swiftModel.mutableDouble = newValue.doubleValue }
                 get { root.swiftModel.mutableDouble as NSNumber }
             }
 
-            @objc public var optionalMutableDouble: NSNumber? {
+            public var optionalMutableDouble: NSNumber? {
                 set { root.swiftModel.optionalMutableDouble = newValue?.doubleValue }
                 get { root.swiftModel.optionalMutableDouble as NSNumber? }
             }
@@ -496,29 +504,31 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var immutableBool: NSNumber {
+            public var immutableBool: NSNumber {
                 root.swiftModel.immutableBool as NSNumber
             }
 
-            @objc public var optionalImmutableBool: NSNumber? {
+            public var optionalImmutableBool: NSNumber? {
                 root.swiftModel.optionalImmutableBool as NSNumber?
             }
 
-            @objc public var mutableBool: NSNumber {
+            public var mutableBool: NSNumber {
                 set { root.swiftModel.mutableBool = newValue.boolValue }
                 get { root.swiftModel.mutableBool as NSNumber }
             }
 
-            @objc public var optionalMutableBool: NSNumber? {
+            public var optionalMutableBool: NSNumber? {
                 set { root.swiftModel.optionalMutableBool = newValue?.boolValue }
                 get { root.swiftModel.optionalMutableBool as NSNumber? }
             }
@@ -634,36 +644,39 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var immutableEnum: DDFooEnumeration1 {
+            public var immutableEnum: objc_FooEnumeration1 {
                 .init(swift: root.swiftModel.immutableEnum)
             }
 
-            @objc public var optionalImmutableEnum: DDFooEnumeration2 {
+            public var optionalImmutableEnum: objc_FooEnumeration2 {
                 .init(swift: root.swiftModel.optionalImmutableEnum)
             }
 
-            @objc public var mutableEnum: DDFooEnumeration3 {
+            public var mutableEnum: objc_FooEnumeration3 {
                 set { root.swiftModel.mutableEnum = newValue.toSwift }
                 get { .init(swift: root.swiftModel.mutableEnum) }
             }
 
-            @objc public var optionalMutableEnum: DDFooEnumeration4 {
+            public var optionalMutableEnum: objc_FooEnumeration4 {
                 set { root.swiftModel.optionalMutableEnum = newValue.toSwift }
                 get { .init(swift: root.swiftModel.optionalMutableEnum) }
             }
         }
 
-        @objc
-        public enum DDFooEnumeration1: Int {
+        @objc(DDFooEnumeration1)
+        @_spi(objc)
+        public enum objc_FooEnumeration1: Int {
             internal init(swift: Foo.Enumeration1) {
                 switch swift {
                 case .case1: self = .case1
@@ -685,8 +698,9 @@ final class ObjcInteropPrinterTests: XCTestCase {
             case case3
         }
 
-        @objc
-        public enum DDFooEnumeration2: Int {
+        @objc(DDFooEnumeration2)
+        @_spi(objc)
+        public enum objc_FooEnumeration2: Int {
             internal init(swift: Foo.Enumeration2?) {
                 switch swift {
                 case nil: self = .none
@@ -711,8 +725,9 @@ final class ObjcInteropPrinterTests: XCTestCase {
             case case3
         }
 
-        @objc
-        public enum DDFooEnumeration3: Int {
+        @objc(DDFooEnumeration3)
+        @_spi(objc)
+        public enum objc_FooEnumeration3: Int {
             internal init(swift: Foo.Enumeration3) {
                 switch swift {
                 case .case1: self = .case1
@@ -734,8 +749,9 @@ final class ObjcInteropPrinterTests: XCTestCase {
             case case3
         }
 
-        @objc
-        public enum DDFooEnumeration4: Int {
+        @objc(DDFooEnumeration4)
+        @_spi(objc)
+        public enum objc_FooEnumeration4: Int {
             internal init(swift: Foo.Enumeration4?) {
                 switch swift {
                 case nil: self = .none
@@ -835,29 +851,31 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var immutableStrings: [String] {
+            public var immutableStrings: [String] {
                 root.swiftModel.immutableStrings
             }
 
-            @objc public var optionalImmutableStrings: [String]? {
+            public var optionalImmutableStrings: [String]? {
                 root.swiftModel.optionalImmutableStrings
             }
 
-            @objc public var mutableStrings: [String] {
+            public var mutableStrings: [String] {
                 set { root.swiftModel.mutableStrings = newValue }
                 get { root.swiftModel.mutableStrings }
             }
 
-            @objc public var optionalMutableStrings: [String]? {
+            public var optionalMutableStrings: [String]? {
                 set { root.swiftModel.optionalMutableStrings = newValue }
                 get { root.swiftModel.optionalMutableStrings }
             }
@@ -936,29 +954,31 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var immutableInt64s: [NSNumber] {
+            public var immutableInt64s: [NSNumber] {
                 root.swiftModel.immutableInt64s as [NSNumber]
             }
 
-            @objc public var optionalImmutableInt64s: [NSNumber]? {
+            public var optionalImmutableInt64s: [NSNumber]? {
                 root.swiftModel.optionalImmutableInt64s as [NSNumber]?
             }
 
-            @objc public var mutableInt64s: [NSNumber] {
+            public var mutableInt64s: [NSNumber] {
                 set { root.swiftModel.mutableInt64s = newValue.map { $0.int64Value } }
                 get { root.swiftModel.mutableInt64s as [NSNumber] }
             }
 
-            @objc public var optionalMutableInt64s: [NSNumber]? {
+            public var optionalMutableInt64s: [NSNumber]? {
                 set { root.swiftModel.optionalMutableInt64s = newValue?.map { $0.int64Value } }
                 get { root.swiftModel.optionalMutableInt64s as [NSNumber]? }
             }
@@ -1040,26 +1060,29 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var immutableEnums: [Int] {
-                root.swiftModel.immutableEnums.map { DDFooOptions1(swift: $0).rawValue }
+            public var immutableEnums: [Int] {
+                root.swiftModel.immutableEnums.map { objc_FooOptions1(swift: $0).rawValue }
             }
 
-            @objc public var optionalImmutableEnums: [Int]? {
-                root.swiftModel.optionalImmutableEnums?.map { DDFooOptions2(swift: $0).rawValue }
+            public var optionalImmutableEnums: [Int]? {
+                root.swiftModel.optionalImmutableEnums?.map { objc_FooOptions2(swift: $0).rawValue }
             }
         }
 
-        @objc
-        public enum DDFooOptions1: Int {
+        @objc(DDFooOptions1)
+        @_spi(objc)
+        public enum objc_FooOptions1: Int {
             internal init(swift: Foo.Options1) {
                 switch swift {
                 case .option1: self = .option1
@@ -1081,8 +1104,9 @@ final class ObjcInteropPrinterTests: XCTestCase {
             case option3
         }
 
-        @objc
-        public enum DDFooOptions2: Int {
+        @objc(DDFooOptions2)
+        @_spi(objc)
+        public enum objc_FooOptions2: Int {
             internal init(swift: Foo.Options2?) {
                 switch swift {
                 case nil: self = .none
@@ -1203,48 +1227,54 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var immutableStructs: [DDFooBar] {
-                root.swiftModel.immutableStructs.map { DDFooBar(swiftModel: $0) }
+            public var immutableStructs: [objc_FooBar] {
+                root.swiftModel.immutableStructs.map { objc_FooBar(swiftModel: $0) }
             }
 
-            @objc public var optionalImmutableStructs: [DDFooBizz]? {
-                root.swiftModel.optionalImmutableStructs?.map { DDFooBizz(swiftModel: $0) }
+            public var optionalImmutableStructs: [objc_FooBizz]? {
+                root.swiftModel.optionalImmutableStructs?.map { objc_FooBizz(swiftModel: $0) }
             }
         }
 
-        @objc
-        public class DDFooBar: NSObject {
+        @objc(DDFooBar)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooBar: NSObject {
             internal var swiftModel: Foo.Bar
-            internal var root: DDFooBar { self }
+            internal var root: objc_FooBar { self }
 
             internal init(swiftModel: Foo.Bar) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var property: String {
+            public var property: String {
                 root.swiftModel.property
             }
         }
 
-        @objc
-        public class DDFooBizz: NSObject {
+        @objc(DDFooBizz)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooBizz: NSObject {
             internal var swiftModel: Foo.Bizz
-            internal var root: DDFooBizz { self }
+            internal var root: objc_FooBizz { self }
 
             internal init(swiftModel: Foo.Bizz) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var property: String {
+            public var property: String {
                 root.swiftModel.property
             }
         }
@@ -1324,29 +1354,31 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var immutableStrings: [String: String] {
+            public var immutableStrings: [String: String] {
                 root.swiftModel.immutableStrings
             }
 
-            @objc public var optionalImmutableStrings: [String: String]? {
+            public var optionalImmutableStrings: [String: String]? {
                 root.swiftModel.optionalImmutableStrings
             }
 
-            @objc public var mutableStrings: [String: String] {
+            public var mutableStrings: [String: String] {
                 set { root.swiftModel.mutableStrings = newValue }
                 get { root.swiftModel.mutableStrings }
             }
 
-            @objc public var optionalMutableStrings: [String: String]? {
+            public var optionalMutableStrings: [String: String]? {
                 set { root.swiftModel.optionalMutableStrings = newValue }
                 get { root.swiftModel.optionalMutableStrings }
             }
@@ -1425,30 +1457,32 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var immutableInt64s: [String: NSNumber] {
+            public var immutableInt64s: [String: NSNumber] {
                 root.swiftModel.immutableInt64s as [String: NSNumber]
             }
 
-            @objc public var optionalImmutableInt64s: [String: NSNumber]? {
+            public var optionalImmutableInt64s: [String: NSNumber]? {
                 root.swiftModel.optionalImmutableInt64s as [String: NSNumber]?
             }
 
-            @objc public var mutableInt64s: [String: NSNumber] {
-                set { root.swiftModel.mutableInt64s = newValue.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value }
+            public var mutableInt64s: [String: NSNumber] {
+                set { root.swiftModel.mutableInt64s = newValue.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value } }
                 get { root.swiftModel.mutableInt64s as [String: NSNumber] }
             }
 
-            @objc public var optionalMutableInt64s: [String: NSNumber]? {
-                set { root.swiftModel.optionalMutableInt64s = newValue?.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value }
+            public var optionalMutableInt64s: [String: NSNumber]? {
+                set { root.swiftModel.optionalMutableInt64s = newValue?.reduce(into: [:]) { $0[$1.0] = $1.1.int64Value } }
                 get { root.swiftModel.optionalMutableInt64s as [String: NSNumber]? }
             }
         }
@@ -1504,20 +1538,22 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var immutableCodables: [String: Any] {
+            public var immutableCodables: [String: Any] {
                 root.swiftModel.immutableCodables.dd.objCAttributes
             }
 
-            @objc public var optionalImmutableCodables: [String: Any]? {
+            public var optionalImmutableCodables: [String: Any]? {
                 root.swiftModel.optionalImmutableCodables?.dd.objCAttributes
             }
         }
@@ -1713,106 +1749,116 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var mutableBar: DDFooMutableBar {
-                DDFooMutableBar(root: root)
+            public var mutableBar: objc_FooMutableBar {
+                objc_FooMutableBar(root: root)
             }
 
-            @objc public var immutableBar: DDFooImmutableBar {
-                DDFooImmutableBar(root: root)
+            public var immutableBar: objc_FooImmutableBar {
+                objc_FooImmutableBar(root: root)
             }
 
-            @objc public var optionalMutableBar: DDFooOptionalMutableBar? {
-                root.swiftModel.optionalMutableBar != nil ? DDFooOptionalMutableBar(root: root) : nil
+            public var optionalMutableBar: objc_FooOptionalMutableBar? {
+                root.swiftModel.optionalMutableBar != nil ? objc_FooOptionalMutableBar(root: root) : nil
             }
 
-            @objc public var optionalImmutableBar: DDFooOptionalImmutableBar? {
-                root.swiftModel.optionalImmutableBar != nil ? DDFooOptionalImmutableBar(root: root) : nil
+            public var optionalImmutableBar: objc_FooOptionalImmutableBar? {
+                root.swiftModel.optionalImmutableBar != nil ? objc_FooOptionalImmutableBar(root: root) : nil
             }
         }
 
-        @objc
-        public class DDFooMutableBar: NSObject {
-            internal let root: DDFoo
+        @objc(DDFooMutableBar)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooMutableBar: NSObject {
+            internal let root: objc_Foo
 
-            internal init(root: DDFoo) {
+            internal init(root: objc_Foo) {
                 self.root = root
             }
 
-            @objc public var immutableString: String {
+            public var immutableString: String {
                 root.swiftModel.mutableBar.immutableString
             }
 
-            @objc public var optionalImmutableString: String? {
+            public var optionalImmutableString: String? {
                 root.swiftModel.mutableBar.optionalImmutableString
             }
 
-            @objc public var mutableString: String {
+            public var mutableString: String {
                 set { root.swiftModel.mutableBar.mutableString = newValue }
                 get { root.swiftModel.mutableBar.mutableString }
             }
 
-            @objc public var optionalMutableString: String? {
+            public var optionalMutableString: String? {
                 set { root.swiftModel.mutableBar.optionalMutableString = newValue }
                 get { root.swiftModel.mutableBar.optionalMutableString }
             }
         }
 
-        @objc
-        public class DDFooImmutableBar: NSObject {
-            internal let root: DDFoo
+        @objc(DDFooImmutableBar)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooImmutableBar: NSObject {
+            internal let root: objc_Foo
 
-            internal init(root: DDFoo) {
+            internal init(root: objc_Foo) {
                 self.root = root
             }
 
-            @objc public var immutableString: String {
+            public var immutableString: String {
                 root.swiftModel.immutableBar.immutableString
             }
 
-            @objc public var optionalImmutableString: String? {
+            public var optionalImmutableString: String? {
                 root.swiftModel.immutableBar.optionalImmutableString
             }
         }
 
-        @objc
-        public class DDFooOptionalMutableBar: NSObject {
-            internal let root: DDFoo
+        @objc(DDFooOptionalMutableBar)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooOptionalMutableBar: NSObject {
+            internal let root: objc_Foo
 
-            internal init(root: DDFoo) {
+            internal init(root: objc_Foo) {
                 self.root = root
             }
 
-            @objc public var immutableString: String {
+            public var immutableString: String {
                 root.swiftModel.optionalMutableBar!.immutableString
             }
 
-            @objc public var optionalImmutableString: String? {
+            public var optionalImmutableString: String? {
                 root.swiftModel.optionalMutableBar!.optionalImmutableString
             }
         }
 
-        @objc
-        public class DDFooOptionalImmutableBar: NSObject {
-            internal let root: DDFoo
+        @objc(DDFooOptionalImmutableBar)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooOptionalImmutableBar: NSObject {
+            internal let root: objc_Foo
 
-            internal init(root: DDFoo) {
+            internal init(root: objc_Foo) {
                 self.root = root
             }
 
-            @objc public var immutableString: String {
+            public var immutableString: String {
                 root.swiftModel.optionalImmutableBar!.immutableString
             }
 
-            @objc public var optionalImmutableString: String? {
+            public var optionalImmutableString: String? {
                 root.swiftModel.optionalImmutableBar!.optionalImmutableString
             }
         }
@@ -1897,36 +1943,41 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var bar: DDFooBar {
-                DDFooBar(root: root)
+            public var bar: objc_FooBar {
+                objc_FooBar(root: root)
             }
         }
 
-        @objc
-        public class DDFooBar: NSObject {
-            internal let root: DDFoo
+        @objc(DDFooBar)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooBar: NSObject {
+            internal let root: objc_Foo
 
-            internal init(root: DDFoo) {
+            internal init(root: objc_Foo) {
                 self.root = root
             }
 
-            @objc public var enumeration: DDFooBarEnumeration {
+            public var enumeration: objc_FooBarEnumeration {
                 set { root.swiftModel.bar.enumeration = newValue.toSwift }
                 get { .init(swift: root.swiftModel.bar.enumeration) }
             }
         }
 
-        @objc
-        public enum DDFooBarEnumeration: Int {
+        @objc(DDFooBarEnumeration)
+        @_spi(objc)
+        public enum objc_FooBarEnumeration: Int {
             internal init(swift: Foo.Bar.Enumeration) {
                 switch swift {
                 case .case1: self = .case1
@@ -2128,54 +2179,61 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var bar: DDFooBar {
-                DDFooBar(root: root)
+            public var bar: objc_FooBar {
+                objc_FooBar(root: root)
             }
         }
 
-        @objc
-        public class DDFooBar: NSObject {
-            internal let root: DDFoo
+        @objc(DDFooBar)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooBar: NSObject {
+            internal let root: objc_Foo
 
-            internal init(root: DDFoo) {
+            internal init(root: objc_Foo) {
                 self.root = root
             }
 
-            @objc public var sharedStruct: DDFooBarSharedStruct {
-                DDFooBarSharedStruct(root: root)
+            public var sharedStruct: objc_FooBarSharedStruct {
+                objc_FooBarSharedStruct(root: root)
             }
 
-            @objc public var sharedEnumeration: DDFooBarSharedEnum {
+            public var sharedEnumeration: objc_FooBarSharedEnum {
                 set { root.swiftModel.bar.sharedEnumeration = newValue.toSwift }
                 get { .init(swift: root.swiftModel.bar.sharedEnumeration) }
             }
         }
 
-        @objc
-        public class DDFooBarSharedStruct: NSObject {
-            internal let root: DDFoo
+        @objc(DDFooBarSharedStruct)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooBarSharedStruct: NSObject {
+            internal let root: objc_Foo
 
-            internal init(root: DDFoo) {
+            internal init(root: objc_Foo) {
                 self.root = root
             }
 
-            @objc public var integer: NSNumber? {
+            public var integer: NSNumber? {
                 set { root.swiftModel.bar.sharedStruct.integer = newValue?.intValue }
                 get { root.swiftModel.bar.sharedStruct.integer as NSNumber? }
             }
         }
 
-        @objc
-        public enum DDFooBarSharedEnum: Int {
+        @objc(DDFooBarSharedEnum)
+        @_spi(objc)
+        public enum objc_FooBarSharedEnum: Int {
             internal init(swift: SharedEnum) {
                 switch swift {
                 case .case1: self = .case1
@@ -2197,54 +2255,61 @@ final class ObjcInteropPrinterTests: XCTestCase {
             case case3
         }
 
-        @objc
-        public class DDBizz: NSObject {
-            internal var swiftModel: Bizz
-            internal var root: DDBizz { self }
+        @objc(DDBizz)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Bizz: NSObject {
+            public internal(set) var swiftModel: Bizz
+            internal var root: objc_Bizz { self }
 
-            internal init(swiftModel: Bizz) {
+            public init(swiftModel: Bizz) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var buzz: DDBizzBuzz {
-                DDBizzBuzz(root: root)
+            public var buzz: objc_BizzBuzz {
+                objc_BizzBuzz(root: root)
             }
         }
 
-        @objc
-        public class DDBizzBuzz: NSObject {
-            internal let root: DDBizz
+        @objc(DDBizzBuzz)
+        @objcMembers
+        @_spi(objc)
+        public class objc_BizzBuzz: NSObject {
+            internal let root: objc_Bizz
 
-            internal init(root: DDBizz) {
+            internal init(root: objc_Bizz) {
                 self.root = root
             }
 
-            @objc public var sharedStruct: DDBizzBuzzSharedStruct {
-                DDBizzBuzzSharedStruct(root: root)
+            public var sharedStruct: objc_BizzBuzzSharedStruct {
+                objc_BizzBuzzSharedStruct(root: root)
             }
 
-            @objc public var sharedEnumeration: DDBizzBuzzSharedEnum {
+            public var sharedEnumeration: objc_BizzBuzzSharedEnum {
                 set { root.swiftModel.buzz.sharedEnumeration = newValue.toSwift }
                 get { .init(swift: root.swiftModel.buzz.sharedEnumeration) }
             }
         }
 
-        @objc
-        public class DDBizzBuzzSharedStruct: NSObject {
-            internal let root: DDBizz
+        @objc(DDBizzBuzzSharedStruct)
+        @objcMembers
+        @_spi(objc)
+        public class objc_BizzBuzzSharedStruct: NSObject {
+            internal let root: objc_Bizz
 
-            internal init(root: DDBizz) {
+            internal init(root: objc_Bizz) {
                 self.root = root
             }
 
-            @objc public var integer: NSNumber? {
+            public var integer: NSNumber? {
                 set { root.swiftModel.buzz.sharedStruct.integer = newValue?.intValue }
                 get { root.swiftModel.buzz.sharedStruct.integer as NSNumber? }
             }
         }
 
-        @objc
-        public enum DDBizzBuzzSharedEnum: Int {
+        @objc(DDBizzBuzzSharedEnum)
+        @_spi(objc)
+        public enum objc_BizzBuzzSharedEnum: Int {
             internal init(swift: SharedEnum) {
                 switch swift {
                 case .case1: self = .case1
@@ -2348,56 +2413,62 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         // MARK: - ObjcInterop
 
-        @objc
-        public class DDFoo: NSObject {
-            internal var swiftModel: Foo
-            internal var root: DDFoo { self }
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
 
-            internal init(swiftModel: Foo) {
+            public init(swiftModel: Foo) {
                 self.swiftModel = swiftModel
             }
 
-            @objc public var bar: DDFooBar {
-                DDFooBar(root: root)
+            public var bar: objc_FooBar {
+                objc_FooBar(root: root)
             }
         }
 
-        @objc
-        public class DDFooBar: NSObject {
-            internal let root: DDFoo
+        @objc(DDFooBar)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooBar: NSObject {
+            internal let root: objc_Foo
 
-            internal init(root: DDFoo) {
+            internal init(root: objc_Foo) {
                 self.root = root
             }
 
-            @objc public var sharedEnumeration: DDFooBarSharedAssociatedTypeEnum {
-                DDFooBarSharedAssociatedTypeEnum(root: root)
+            public var sharedEnumeration: objc_FooBarSharedAssociatedTypeEnum {
+                objc_FooBarSharedAssociatedTypeEnum(root: root)
             }
         }
 
-        @objc
-        public class DDFooBarSharedAssociatedTypeEnum: NSObject {
-            internal let root: DDFoo
+        @objc(DDFooBarSharedAssociatedTypeEnum)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooBarSharedAssociatedTypeEnum: NSObject {
+            internal let root: objc_Foo
 
-            internal init(root: DDFoo) {
+            internal init(root: objc_Foo) {
                 self.root = root
             }
 
-            @objc public var singleNumber: NSNumber? {
+            public var singleNumber: NSNumber? {
                 guard case .singleNumber(let value) = root.swiftModel.bar.sharedEnumeration else {
                     return nil
                 }
                 return value as NSNumber
             }
 
-            @objc public var multipleNumbers: [NSNumber]? {
+            public var multipleNumbers: [NSNumber]? {
                 guard case .multipleNumbers(let value) = root.swiftModel.bar.sharedEnumeration else {
                     return nil
                 }
                 return value as [NSNumber]
             }
 
-            @objc public var mapOfNumbers: [String: NSNumber]? {
+            public var mapOfNumbers: [String: NSNumber]? {
                 guard case .mapOfNumbers(let value) = root.swiftModel.bar.sharedEnumeration else {
                     return nil
                 }

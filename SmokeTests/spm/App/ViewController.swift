@@ -6,7 +6,6 @@
 
 import UIKit
 import DatadogRUM
-import DatadogObjc
 import DatadogSessionReplay // it should compile for iOS and tvOS, but APIs are only available on iOS
 import DatadogTrace
 import DatadogProfiling

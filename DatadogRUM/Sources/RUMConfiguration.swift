@@ -7,11 +7,7 @@
 import Foundation
 import DatadogInternal
 
-// Export `DDURLSessionDelegate` elements to be available with `import DatadogRUM`:
 // swiftlint:disable duplicate_imports
-@_exported import class DatadogInternal.DatadogURLSessionDelegate
-@_exported import typealias DatadogInternal.DDURLSessionDelegate
-@_exported import protocol DatadogInternal.__URLSessionDelegateProviding
 @_exported import enum DatadogInternal.URLSessionInstrumentation
 @_exported import enum DatadogInternal.TraceContextInjection
 @_exported import struct DatadogInternal.RUMViewEvent
@@ -281,12 +277,26 @@ extension RUM {
         /// Default: `true`.
         public var trackAnonymousUser: Bool
 
+        /// Enables the collection of memory warnings.
+        ///
+        /// When enabled, all the memory warnings are reported as RUM Errors.
+        ///
+        /// Default: `true`.
+        public var trackMemoryWarnings: Bool
+
         /// The sampling rate for SDK internal telemetry utilized by Datadog.
         /// This telemetry is used to monitor the internal workings of the entire Datadog iOS SDK.
         ///
         /// It must be a number between 0.0 and 100.0, where 0 means no telemetry will be sent,
         /// and 100 means all telemetry will be uploaded. The default value is 20.0.
         public var telemetrySampleRate: SampleRate
+
+        /// Determines whether accessibility data should be collected and included in RUM view events.
+        ///
+        /// When enabled, the SDK will collect accessibility settings and include them in view events.
+        ///
+        /// Default: `false`.
+        public var collectAccessibility: Bool
 
         /// Feature flags to preview features in RUM.
         public var featureFlags: FeatureFlags
@@ -357,6 +367,8 @@ extension RUM {
         internal var processID: UUID = currentProcessID
         /// The default notification center used for subscribing to app lifecycle events and system notifications.
         internal var notificationCenter: NotificationCenter = .default
+        /// The bundle object that contains the current executable.
+        internal var bundle: Bundle = .main
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
         internal var debugViews: Bool = ProcessInfo.processInfo.arguments.contains("DD_DEBUG_RUM")
@@ -375,23 +387,23 @@ extension RUM.Configuration.URLSessionTracking {
         ///
         /// - Parameters:
         ///   - hosts: The set of hosts to inject tracing headers. Note: Hosts must not include the "http(s)://" prefix.
-        ///   - sampleRate: The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `20`.
-        ///   - traceControlInjection: The strategy for injecting trace context into requests. Default: `.all`.
+        ///   - sampleRate: The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `100`.
+        ///   - traceControlInjection: The strategy for injecting trace context into requests. Default: `.sampled`.
         case trace(
             hosts: Set<String>,
-            sampleRate: Float = 20,
-            traceControlInjection: TraceContextInjection = .all
+            sampleRate: Float = .maxSampleRate,
+            traceControlInjection: TraceContextInjection = .sampled
         )
 
         /// Trace given hosts with using custom tracing headers.
         ///
         /// - `hostsWithHeaders` - Dictionary of hosts and tracing header types to use. Note: Hosts must not include "http(s)://" prefix.
-        /// - `sampleRate` - The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `20`.
-        /// - `traceControlInjection` - The strategy for injecting trace context into requests. Default: `.all`.
+        /// - `sampleRate` - The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `100`.
+        /// - `traceControlInjection` - The strategy for injecting trace context into requests. Default: `.sampled`.
         case traceWithHeaders(
             hostsWithHeaders: [String: Set<TracingHeaderType>],
-            sampleRate: Float = 20,
-            traceControlInjection: TraceContextInjection = .all
+            sampleRate: Float = .maxSampleRate,
+            traceControlInjection: TraceContextInjection = .sampled
         )
     }
 
@@ -435,7 +447,10 @@ extension RUM.Configuration {
     ///   - longTaskEventMapper: Custom mapper for RUM long task events. Default: `nil`.
     ///   - onSessionStart: RUM session start callback. Default: `nil`.
     ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
+    ///   - trackAnonymousUser: Enables the collection of anonymous user id across sessions. Default: `true`.
+    ///   - trackMemoryWarnings: Enables the collection of memory warnings. Default: `true`.
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
+    ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
     ///   - featureFlags: Experimental feature flags.
     public init(
         applicationID: String,
@@ -461,7 +476,9 @@ extension RUM.Configuration {
         onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = nil,
         trackAnonymousUser: Bool = true,
+        trackMemoryWarnings: Bool = true,
         telemetrySampleRate: SampleRate = 20,
+        collectAccessibility: Bool = false,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -487,7 +504,9 @@ extension RUM.Configuration {
         self.customEndpoint = customEndpoint
         self.trackAnonymousUser = trackAnonymousUser
         self.telemetrySampleRate = telemetrySampleRate
+        self.collectAccessibility = collectAccessibility
         self.trackWatchdogTerminations = trackWatchdogTerminations
+        self.trackMemoryWarnings = trackMemoryWarnings
         self.featureFlags = featureFlags
     }
 }
@@ -512,8 +531,6 @@ extension RUM.Configuration {
     public enum FeatureFlag: String {
         /// View Hitches
         case viewHitches
-        /// Accessibility attributes
-        case collectAccessibilitySettings
     }
 }
 
@@ -521,8 +538,7 @@ extension RUM.Configuration.FeatureFlags {
     /// The defaults Feature Flags applied to RUM Configuration
     public static var defaults: Self {
         [
-            .viewHitches: false,
-            .collectAccessibilitySettings: false
+            .viewHitches: false
         ]
     }
 

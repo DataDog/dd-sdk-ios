@@ -20,7 +20,6 @@
   "testTargets" : [
     {
       "selectedTests" : [
-        "CrashReportingWithLoggingScenarioTests\/testCrashReportingCollectOrSendWithLoggingScenario()",
         "CrashReportingWithRUMScenarioTests\/testCrashReportingCollectOrSendWithRUMScenario()"
       ],
       "target" : {

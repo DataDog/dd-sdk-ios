@@ -201,7 +201,6 @@ struct NumberDetailView: View {
     }
 }
 
-@available(iOS 13.0, *)
 struct PlaceholderView: View {
     var body: some View {
         Text("Wrong item selected")
@@ -210,7 +209,6 @@ struct PlaceholderView: View {
     }
 }
 
-@available(iOS 13.0, *)
 struct ModalSheet: View {
     let type: String
     var onDismiss: (() -> Void)? = nil

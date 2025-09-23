@@ -208,8 +208,7 @@ public class LogMatcher: JSONDataMatcher {
 
     public func assertHasArchitecture() {
         var architecture: String?
-        if let dd = json[JSONKey.dd] as? [String: Any],
-           let device = dd[JSONKey.ddDevice] as? [String: Any] {
+        if let device = json[JSONKey.ddDevice] as? [String: Any] {
             architecture = device[JSONKey.ddDeviceArchitecture] as? String
         }
 

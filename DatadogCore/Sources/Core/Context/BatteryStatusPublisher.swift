@@ -33,12 +33,12 @@ internal final class BatteryStatusPublisher: ContextValuePublisher {
         self.device = device
         self.notificationCenter = notificationCenter
         self.isBatteryMonitoringEnabled = device.isBatteryMonitoringEnabled
+
+        device.isBatteryMonitoringEnabled = true // enabled to check the battery level
         self.initialValue = BatteryStatus(
             state: .init(device.batteryState),
             level: device.batteryLevel
         )
-
-        device.isBatteryMonitoringEnabled = true
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<BatteryStatus?>) {

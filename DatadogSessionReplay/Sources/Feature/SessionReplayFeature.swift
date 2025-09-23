@@ -89,6 +89,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             maxFileSize: SessionReplay.maxObjectSize,
             maxObjectSize: SessionReplay.maxObjectSize,
             meanFileAge: 2, // vs 5s with `batchSize: .small` - see `DatadogCore.PerformancePreset`
+            maxFileAgeForRead: 5.hours, // Session Replay intake max age is 5 hours
             uploadDelay: (
                 initial: 2, // vs 5s with `uploadFrequency: .frequent`
                 range: 0.6..<6, // vs 1s ..< 10s with `uploadFrequency: .frequent`

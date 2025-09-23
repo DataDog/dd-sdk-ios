@@ -73,6 +73,7 @@ internal struct DisplayList {
     internal enum Effect {
         case identify
         case clip(SwiftUI.Path, SwiftUI.FillStyle)
+        case filter(GraphicsFilter)
         case platformGroup
         case unknown
     }
@@ -84,6 +85,7 @@ internal struct DisplayList {
             case platformView
             case color(Color._Resolved)
             case image(GraphicsImage)
+            case drawing(AnyImageRepresentable)
             case unknown
         }
 

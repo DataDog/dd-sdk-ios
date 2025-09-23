@@ -14,11 +14,14 @@ import XCTest
 class SessionReplayConfigurationTests: XCTestCase {
     func testDefaultConfiguration() {
         // When
-        let config = SessionReplay.Configuration()
+        let config = SessionReplay.Configuration(
+            textAndInputPrivacyLevel: .maskAll,
+            imagePrivacyLevel: .maskAll,
+            touchPrivacyLevel: .hide
+        )
 
         // Then
         XCTAssertEqual(config.replaySampleRate, 100)
-        XCTAssertEqual(config.defaultPrivacyLevel, .mask)
         XCTAssertEqual(config.textAndInputPrivacyLevel, .maskAll)
         XCTAssertEqual(config.imagePrivacyLevel, .maskAll)
         XCTAssertEqual(config.touchPrivacyLevel, .hide)
@@ -37,7 +40,6 @@ class SessionReplayConfigurationTests: XCTestCase {
 
         // Then
         XCTAssertEqual(config.replaySampleRate, 100)
-        XCTAssertEqual(config.defaultPrivacyLevel, .mask)
         XCTAssertEqual(config.textAndInputPrivacyLevel, .maskAll)
         XCTAssertEqual(config.imagePrivacyLevel, .maskAll)
         XCTAssertEqual(config.touchPrivacyLevel, .hide)

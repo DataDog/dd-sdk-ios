@@ -301,9 +301,24 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                 SwiftStruct.Property(
                     name: "propertyWithAdditionalIntProperties",
                     comment: "Description of a property with nested additional Int properties.",
-                    type: SwiftDictionary(value: SwiftPrimitive<Int>()),
+                    type: SwiftStruct(
+                        name: "propertyWithAdditionalIntProperties",
+                        comment: "Description of a property with nested additional Int properties.",
+                        properties: [
+                            SwiftStruct.Property(
+                                name: "propertyWithAdditionalIntPropertiesInfo",
+                                comment: nil,
+                                type: SwiftDictionary(value: SwiftPrimitive<Int>()),
+                                isOptional: false,
+                                mutability: .mutable,
+                                defaultValue: nil,
+                                codingKey: .dynamic
+                            )
+                        ],
+                        conformance: []
+                    ),
                     isOptional: true,
-                    mutability: .immutable,
+                    mutability: .mutable,
                     defaultValue: nil,
                     codingKey: .static(value: "propertyWithAdditionalIntProperties")
                 )
@@ -529,11 +544,24 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                 SwiftStruct.Property(
                     name: "propertyWithAdditionalProperties",
                     comment: "Description of a property with nested additional properties.",
-                    type: SwiftDictionary(
-                        value: SwiftPrimitive<Int>()
+                    type: SwiftStruct(
+                        name: "propertyWithAdditionalProperties",
+                        comment: "Description of a property with nested additional properties.",
+                        properties: [
+                            SwiftStruct.Property(
+                                name: "propertyWithAdditionalPropertiesInfo",
+                                comment: nil,
+                                type: SwiftDictionary(value: SwiftPrimitive<Int>()),
+                                isOptional: false,
+                                mutability: .mutable,
+                                defaultValue: nil,
+                                codingKey: .dynamic
+                            )
+                        ],
+                        conformance: []
                     ),
                     isOptional: false,
-                    mutability: .immutable,
+                    mutability: .mutable,
                     defaultValue: nil,
                     codingKey: .static(value: "propertyWithAdditionalProperties")
                 )

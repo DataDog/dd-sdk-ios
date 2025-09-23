@@ -112,19 +112,19 @@ public class RUMSessionMatcher {
     public let longTaskEventMatchers: [RUMEventMatcher]
 
     /// `RUMView` events tracked in this session.
-    let viewEvents: [RUMViewEvent]
+    public let viewEvents: [RUMViewEvent]
 
     /// `RUMAction` events tracked in this session.
-    let actionEvents: [RUMActionEvent]
+    public let actionEvents: [RUMActionEvent]
 
     /// `RUMResource` events tracked in this session.
-    let resourceEvents: [RUMResourceEvent]
+    public let resourceEvents: [RUMResourceEvent]
 
     /// `RUMError` events tracked in this session.
-    let errorEvents: [RUMErrorEvent]
+    public let errorEvents: [RUMErrorEvent]
 
     /// `RUMLongTask` events tracked in this session.
-    let longTaskEvents: [RUMLongTaskEvent]
+    public let longTaskEvents: [RUMLongTaskEvent]
 
     private init(applicationID: String, sessionID: String, sessionEventMatchers: [RUMEventMatcher]) throws {
         // Sort events so they follow increasing time order
@@ -247,7 +247,13 @@ public class RUMSessionMatcher {
         let visitsEventOrderedByTime = visits.sorted { firstVisit, secondVisit in
             let firstVisitTime = firstVisit.viewEvents[0].date
             let secondVisitTime = secondVisit.viewEvents[0].date
-            return firstVisitTime < secondVisitTime
+            let firstViewName = firstVisit.viewEvents[0].view.name ?? ""
+            let secondViewName = secondVisit.viewEvents[0].view.name ?? ""
+            if firstVisitTime == secondVisitTime { // arbitrary: if times equal, sort by view name
+                return firstViewName < secondViewName
+            } else {
+                return firstVisitTime < secondVisitTime
+            }
         }
 
         // Sort view events in each visit by document version
@@ -351,7 +357,7 @@ private func validate(rumLongTaskEvents: [RUMLongTaskEvent]) throws {
     }
 }
 
-private func validate(device: RUMDevice?) throws {
+private func validate(device: Device?) throws {
     guard let device = device else {
         throw RUMSessionConsistencyException(
             description: "All RUM events must include device information"
@@ -362,7 +368,7 @@ private func validate(device: RUMDevice?) throws {
     #endif
 }
 
-private func validate(os: RUMOperatingSystem?) throws {
+private func validate(os: OperatingSystem?) throws {
     guard let os = os else {
         throw RUMSessionConsistencyException(
             description: "All RUM events must include OS information"
@@ -377,14 +383,14 @@ private func validate(os: RUMOperatingSystem?) throws {
 
 /// Performs strict validation of `RUMDevice` for integration tests.
 /// It asserts that all values make sense for current environment.
-private func strictValidate(device: RUMDevice) throws {
+private func strictValidate(device: Device) throws {
     guard device.brand == "Apple" else {
         throw RUMSessionConsistencyException(description: "All RUM events must use `device.brand = Apple` (got `\(device.brand ?? "nil")` instead)")
     }
     #if os(iOS)
     guard device.type == .mobile || device.type == .tablet else {
         throw RUMSessionConsistencyException(
-            description: "When running on iOS or iPadOS, the `device.type` must be `.mobile` or `.tablet` (got `\(device.type)` instead)"
+            description: "When running on iOS or iPadOS, the `device.type` must be `.mobile` or `.tablet` (got `\(device.type ?? .other)` instead)"
         )
     }
     let prefixes = ["iPhone", "iPod", "iPad"]
@@ -401,7 +407,7 @@ private func strictValidate(device: RUMDevice) throws {
     #else
     guard device.type != .tv else {
         throw RUMSessionConsistencyException(
-            description: "When running on tvOS, the `device.type` must be `.tv` (got `\(device.type)` instead)"
+            description: "When running on tvOS, the `device.type` must be `.tv` (got `\(device.type ?? .other)` instead)"
         )
     }
     guard device.name == "Apple TV" else {
@@ -419,7 +425,7 @@ private func strictValidate(device: RUMDevice) throws {
 
 /// Performs strict validation of `RUMOperatingSystem` for integration tests.
 /// It asserts that all values make sense for current environment.
-private func strictValidate(os: RUMOperatingSystem) throws {
+private func strictValidate(os: OperatingSystem) throws {
     #if os(iOS)
     guard os.name == "iOS" || os.name == "iPadOS" else {
         throw RUMSessionConsistencyException(
@@ -488,18 +494,6 @@ extension RUMSessionMatcher.View {
     }
 }
 
-private extension Date {
-    init(millisecondsSince1970: Int64) {
-        self.init(timeIntervalSince1970: TimeInterval(millisecondsSince1970) / 1_000)
-    }
-}
-
-private extension TimeInterval {
-    init(fromNanoseconds nanoseconds: Int64) {
-        self = TimeInterval(nanoseconds) / 1_000_000_000
-    }
-}
-
 extension RUMSessionMatcher {
     /// Asserts that all events in this session have certain `sessionPrecondition` set.
     /// Throws if there are no views in this session.
@@ -507,26 +501,18 @@ extension RUMSessionMatcher {
         guard !views.isEmpty else {
             throw RUMSessionConsistencyException(description: "There are no views in this session")
         }
+        return sessionPrecondition == self.sessionPrecondition
+    }
 
-        for view in views {
-            guard view.viewEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
-                return false
-            }
-            guard view.actionEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
-                return false
-            }
-            guard view.resourceEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
-                return false
-            }
-            guard view.errorEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
-                return false
-            }
-            guard view.longTaskEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
-                return false
-            }
-        }
-
-        return true
+    public var sessionPrecondition: RUMSessionPrecondition? {
+        let fromViews = viewEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        let fromActions = actionEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        let fromResources = resourceEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        let fromErrors = errorEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        let fromLongTasks = longTaskEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        let all = Set(fromViews + fromActions + fromResources + fromErrors + fromLongTasks)
+        precondition(all.count == 1, "All events must share the same session precondition")
+        return all.first
     }
 }
 
@@ -534,20 +520,51 @@ extension RUMSessionMatcher {
 
 extension RUMSessionMatcher.View {
     /// The start of this view (as timestamp; milliseconds) defined as the start timestamp of the earliest view event in this view.
-    var startTimestampMs: Int64 { viewEvents.map({ $0.date }).min() ?? 0 }
+    public var startTimestampMs: Int64 { viewEvents.map({ $0.date }).min() ?? 0 }
+
+    /// The duration of this view, in nanoseconds.
+    public var durationNs: Int64? { viewEvents.last?.view.timeSpent }
+
+    /// The duration of this view, in seconds.
+    public var duration: TimeInterval? { durationNs.map { TimeInterval(fromNanoseconds: $0) } }
 }
 
 extension RUMSessionMatcher: CustomStringConvertible {
     public var description: String { renderSession() }
 
     /// The start of this session (as timestamp; milliseconds) defined as the start timestamp of the earliest view in this session.
-    private var sessionStartTimestampMs: Int64 { viewEvents.map({ $0.date }).min() ?? 0 }
+    private var sessionStartTimestampMs: Int64? { viewEvents.map({ $0.date }).min() }
 
     /// The start of this session (as timestamp; nanoseconds) defined as the start timestamp of the earliest view in this session.
-    private var sessionStartTimestampNs: Int64 { sessionStartTimestampMs * 1_000_000 }
+    private var sessionStartTimestampNs: Int64? { sessionStartTimestampMs.map { $0 * 1_000_000 } }
 
     /// The end of this session (as timestamp; nanoseconds) defined as the end timestamp of the latest view in this session.
-    private var sessionEndTimestampNs: Int64 { viewEvents.map({ $0.date * 1_000_000 + $0.view.timeSpent }).max() ?? 0 }
+    private var sessionEndTimestampNs: Int64? { viewEvents.map({ $0.date * 1_000_000 + $0.view.timeSpent }).max() }
+
+    public var sessionStartDate: Date? { sessionStartTimestampMs.map { Date(millisecondsSince1970: $0) } }
+
+    /// The duration of this session, in nanoseconds.
+    public var durationNs: Int64? {
+        guard let startNs = sessionStartTimestampNs, let endNs = sessionEndTimestampNs else {
+            return nil
+        }
+        return endNs - startNs
+    }
+
+    /// The duration of this session, in seconds.
+    public var duration: TimeInterval? { durationNs.map { TimeInterval(fromNanoseconds: $0) } }
+
+    /// The application start action.
+    public var applicationStartAction: RUMActionEvent? {
+        let appStartActions = actionEvents.filter { $0.action.type == .applicationStart }
+        precondition(appStartActions.count <= 1, "Session cannot have more than one `.applicationStart` action")
+        return appStartActions.first
+    }
+
+    /// The application startup time (nanoseconds).
+    public var applicationStartupTime: TimeInterval? {
+        return applicationStartAction?.action.loadingTime.map { TimeInterval(fromNanoseconds: $0) }
+    }
 
     private func renderSession() -> String {
         var output = renderBox(string: "🎞 RUM session")
@@ -555,9 +572,10 @@ extension RUMSessionMatcher: CustomStringConvertible {
             attributes: [
                 ("application.id", applicationID),
                 ("id", sessionID),
+                ("precondition", sessionPrecondition?.rawValue ?? "nil"),
                 ("views.count", "\(views.count)"),
                 ("start", prettyDate(timestampMs: sessionStartTimestampMs)),
-                ("duration", pretty(nanoseconds: sessionEndTimestampNs - sessionStartTimestampNs)),
+                ("duration", pretty(nanoseconds: durationNs)),
             ]
         )
         views.forEach { view in
@@ -578,7 +596,7 @@ extension RUMSessionMatcher: CustomStringConvertible {
                 ("name", view.name ?? "nil"),
                 ("id", view.viewID),
                 ("date", prettyDate(timestampMs: lastViewEvent.date)),
-                ("date (relative in session)", pretty(milliseconds: lastViewEvent.date - sessionStartTimestampMs)),
+                ("date (relative in session)", pretty(milliseconds: sessionStartTimestampMs.map { lastViewEvent.date - $0 })),
                 ("duration", pretty(nanoseconds: lastViewEvent.view.timeSpent)),
                 ("event counts", "view (\(view.viewEvents.count)), action (\(view.actionEvents.count)), resource (\(view.resourceEvents.count)), error (\(view.errorEvents.count)), long task (\(view.longTaskEvents.count))"),
             ]
@@ -716,11 +734,17 @@ extension RUMSessionMatcher: CustomStringConvertible {
         return horizontalBorder + "\n"
     }
 
-    private func pretty(milliseconds: Int64) -> String {
-        pretty(nanoseconds: milliseconds * 1_000_000)
+    private func pretty(milliseconds: Int64?) -> String {
+        guard let milliseconds else {
+            return "nil"
+        }
+        return pretty(nanoseconds: milliseconds * 1_000_000)
     }
 
-    private func pretty(nanoseconds: Int64) -> String {
+    private func pretty(nanoseconds: Int64?) -> String {
+        guard let nanoseconds else {
+            return "nil"
+        }
         if nanoseconds >= 1_000_000_000 {
             let seconds = round((Double(nanoseconds) / 1_000_000_000) * 100) / 100
             return "\(seconds)s"
@@ -739,7 +763,11 @@ extension RUMSessionMatcher: CustomStringConvertible {
         return formatter
     }()
 
-    private func prettyDate(timestampMs: Int64) -> String {
+    private func prettyDate(timestampMs: Int64?) -> String {
+        guard let timestampMs else {
+            return "nil"
+        }
+
         let timestampSec = TimeInterval(timestampMs) / 1_000
         let date = Date(timeIntervalSince1970: timestampSec)
         return RUMSessionMatcher.dateFormatter.string(from: date)

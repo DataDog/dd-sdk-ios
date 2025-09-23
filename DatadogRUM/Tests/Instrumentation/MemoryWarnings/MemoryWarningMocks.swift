@@ -9,14 +9,14 @@ import XCTest
 import TestUtilities
 
 final class MemoryWarningReporterMock: MemoryWarningReporting {
-    let didReport: (MemoryWarning) -> Void
+    let didReportMemoryWarning: () -> Void
 
-    init(didReport: @escaping (MemoryWarning) -> Void) {
-        self.didReport = didReport
+    init(didReport: @escaping () -> Void) {
+        self.didReportMemoryWarning = didReport
     }
 
-    func report(warning: DatadogRUM.MemoryWarning) {
-        didReport(warning)
+    func reportMemoryWarning() {
+        didReportMemoryWarning()
     }
 
     /// nop
@@ -27,7 +27,6 @@ final class MemoryWarningReporterMock: MemoryWarningReporting {
 extension MemoryWarningMonitor: RandomMockable {
     public static func mockRandom() -> MemoryWarningMonitor {
         return .init(
-            backtraceReporter: nil,
             memoryWarningReporter: MemoryWarningReporterMock.mockRandom(),
             notificationCenter: .default
         )
@@ -35,7 +34,5 @@ extension MemoryWarningMonitor: RandomMockable {
 }
 
 extension MemoryWarningReporterMock: RandomMockable {
-    static func mockRandom() -> MemoryWarningReporterMock {
-        return .init { _ in }
-    }
+    static func mockRandom() -> MemoryWarningReporterMock { .init {}}
 }

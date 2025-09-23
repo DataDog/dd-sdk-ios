@@ -81,13 +81,15 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
     private func print(objcInteropRootClass: ObjcInteropRootClass) throws {
         let className = objcTypeNamesPrefix + objcInteropRootClass.objcTypeName
         writeEmptyLine()
-        writeLine("@objc")
+        writeLine("@objc(\(className.objcNaming))")
+        writeLine("@objcMembers")
+        writeLine("@_spi(objc)")
         writeLine("public class \(className): NSObject {")
         indentRight()
-            writeLine("internal var swiftModel: \(objcInteropRootClass.swiftTypeName)")
+            writeLine("public internal(set) var swiftModel: \(objcInteropRootClass.swiftTypeName)")
             writeLine("internal var root: \(className) { self }")
             writeEmptyLine()
-            writeLine("internal init(swiftModel: \(objcInteropRootClass.swiftTypeName)) {")
+            writeLine("public init(swiftModel: \(objcInteropRootClass.swiftTypeName)) {")
             indentRight()
                 writeLine("self.swiftModel = swiftModel")
             indentLeft()
@@ -102,11 +104,13 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
     private func print(objcInteropNestedClass: ObjcInteropNestedClass) throws {
         let className = objcTypeNamesPrefix + objcInteropNestedClass.objcTypeName
         writeEmptyLine()
-        writeLine("@objc")
+        writeLine("@objc(\(className.objcNaming))")
+        writeLine("@objcMembers")
+        writeLine("@_spi(objc)")
         writeLine("public class \(className): NSObject {")
         indentRight()
             writeLine("internal var swiftModel: \(objcInteropNestedClass.swiftTypeName)")
-            writeLine("internal var root: \(className) { self }")
+        writeLine("internal var root: \(className) { self }")
             writeEmptyLine()
             writeLine("internal init(swiftModel: \(objcInteropNestedClass.swiftTypeName)) {")
             indentRight()
@@ -124,7 +128,9 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         let className = objcTypeNamesPrefix + objcInteropNestedTransitiveClass.objcTypeName
         let rootClassName = objcTypeNamesPrefix + objcInteropNestedTransitiveClass.objcRootClass.objcTypeName
         writeEmptyLine()
-        writeLine("@objc")
+        writeLine("@objc(\(className.objcNaming))")
+        writeLine("@objcMembers")
+        writeLine("@_spi(objc)")
         writeLine("public class \(className): NSObject {")
         indentRight()
             writeLine("internal let root: \(rootClassName)")
@@ -147,7 +153,8 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         let managesOptionalEnum = objcInteropEnum.parentProperty.bridgedSwiftProperty.isOptional
         let objcEnumOptionality = managesOptionalEnum ? "?" : ""
         writeEmptyLine()
-        writeLine("@objc")
+        writeLine("@objc(\(enumName.objcNaming))")
+        writeLine("@_spi(objc)")
         writeLine("public enum \(enumName): Int {")
         indentRight()
             writeLine("internal init(swift: \(objcInteropEnum.swiftTypeName)\(objcEnumOptionality)) {")
@@ -197,7 +204,9 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         }
 
         writeEmptyLine()
-        writeLine("@objc")
+        writeLine("@objc(\(className.objcNaming))")
+        writeLine("@objcMembers")
+        writeLine("@_spi(objc)")
         writeLine("public class \(className): NSObject {")
         indentRight()
         writeLine("internal let root: \(rootClassName)")
@@ -218,7 +227,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
                 let caseName = swiftEnumCase.backtickLabel
 
                 writeEmptyLine()
-                writeLine("@objc public var \(caseName): \(objcTypeName)? {")
+                writeLine("public var \(caseName): \(objcTypeName)? {")
                 indentRight()
                     writeLine("guard case .\(caseName)(let value) = root.swiftModel.\(propertyWrapper.keyPath) else {")
                     indentRight()
@@ -269,7 +278,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         let objcPropertyName = swiftProperty.backtickName
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcClassName = objcTypeNamesPrefix + nestedObjcClass.objcTypeName
-        writeLine("@objc public var \(objcPropertyName): \(objcClassName)\(objcPropertyOptionality) {")
+        writeLine("public var \(objcPropertyName): \(objcClassName)\(objcPropertyOptionality) {")
         indentRight()
             if swiftProperty.isOptional {
                 // The property is optional, so the accessor must be returned only if the wrapped value is `!= nil`, e.g.:
@@ -304,14 +313,14 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
 
         switch swiftProperty.mutability {
         case .mutable:
-            writeLine("@objc public var \(objcPropertyName): \(objcEnumName) {")
+            writeLine("public var \(objcPropertyName): \(objcEnumName) {")
             indentRight()
                 writeLine("set { root.swiftModel.\(propertyWrapper.keyPath) = newValue.toSwift }")
                 writeLine("get { .init(swift: root.swiftModel.\(propertyWrapper.keyPath)) }")
             indentLeft()
             writeLine("}")
         case .immutable, .mutableInternally:
-            writeLine("@objc public var \(objcPropertyName): \(objcEnumName) {")
+            writeLine("public var \(objcPropertyName): \(objcEnumName) {")
             indentRight()
                 writeLine(".init(swift: root.swiftModel.\(propertyWrapper.keyPath))")
             indentLeft()
@@ -339,7 +348,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             throw Exception.unimplemented("Generating setter for `ObjcInteropEnumArray` is not supported: \(swiftProperty.type).")
         }
 
-        writeLine("@objc public var \(objcPropertyName): [Int]\(objcPropertyOptionality) {")
+        writeLine("public var \(objcPropertyName): [Int]\(objcPropertyOptionality) {")
         indentRight()
             writeLine("root.swiftModel.\(propertyWrapper.keyPath)\(objcPropertyOptionality).map { \(objcEnumName)(swift: $0).rawValue }")
         indentLeft()
@@ -361,14 +370,14 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         let objcClassName = objcTypeNamesPrefix + nestedObjcClass.objcTypeName
 
         if swiftProperty.mutability == .mutable {
-            writeLine("@objc public var \(objcPropertyName): [\(objcClassName)]\(objcPropertyOptionality) {")
+            writeLine("public var \(objcPropertyName): [\(objcClassName)]\(objcPropertyOptionality) {")
             indentRight()
                 writeLine("set { root.swiftModel.\(propertyWrapper.keyPath) = newValue\(objcPropertyOptionality).map { $0.swiftModel } }")
                 writeLine("get { root.swiftModel.\(propertyWrapper.keyPath)\(objcPropertyOptionality).map { \(objcClassName)(swiftModel: $0) } }")
             indentLeft()
             writeLine("}")
         } else {
-            writeLine("@objc public var \(objcPropertyName): [\(objcClassName)]\(objcPropertyOptionality) {")
+            writeLine("public var \(objcPropertyName): [\(objcClassName)]\(objcPropertyOptionality) {")
             indentRight()
                 writeLine("root.swiftModel.\(propertyWrapper.keyPath)\(objcPropertyOptionality).map { \(objcClassName)(swiftModel: $0) }")
             indentLeft()
@@ -394,7 +403,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             let toSwiftCast = try objcToSwiftCast(for: swiftProperty.type).ifNotNil { toSwiftCast in
                 objcPropertyOptionality + toSwiftCast
             } ?? ""
-            writeLine("@objc public var \(objcPropertyName): \(objcTypeName)\(objcPropertyOptionality) {")
+            writeLine("public var \(objcPropertyName): \(objcTypeName)\(objcPropertyOptionality) {")
             indentRight()
                 writeLine("set { root.swiftModel.\(propertyWrapper.keyPath) = newValue\(toSwiftCast) }")
                 writeLine("get { root.swiftModel.\(propertyWrapper.keyPath)\(asObjcCast) }")
@@ -407,7 +416,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             //     root.swiftModel.bar.propertyX
             // }
             // ```
-            writeLine("@objc public var \(objcPropertyName): \(objcTypeName)\(objcPropertyOptionality) {")
+            writeLine("public var \(objcPropertyName): \(objcTypeName)\(objcPropertyOptionality) {")
             indentRight()
                 writeLine("root.swiftModel.\(propertyWrapper.keyPath)\(asObjcCast)")
             indentLeft()
@@ -428,7 +437,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         let objcPropertyName = swiftProperty.backtickName
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcClassName = objcTypeNamesPrefix + nestedObjcAssociatedTypeEnum.objcTypeName
-        writeLine("@objc public var \(objcPropertyName): \(objcClassName)\(objcPropertyOptionality) {")
+        writeLine("public var \(objcPropertyName): \(objcClassName)\(objcPropertyOptionality) {")
         indentRight()
             if swiftProperty.isOptional {
                 // The property is optional, so the accessor must be returned only if the wrapped value is `!= nil`, e.g.:
@@ -488,7 +497,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             // However our SDK bridges `[String: Any]` attributes passed in Objective-C API to their `[String: Encodable]` representation
             // in underlying Swift SDK. This is done with `AnyEncodable` type erasure. To return these attributes back
             // to the user, `AnyEncodable` must be unpacked to its original `Any` value. This is done in `.dd.objCAttributes` extension
-            // defined in `DatadogObjc` module. Here we just emit its invocation:
+            // defined in `DatadogInternal` module. Here we just emit its invocation:
             return optionality + ".dd.objCAttributes"
         default:
             throw Exception.unimplemented("Cannot print `swiftToObjcCast()` for \(type(of: objcType)).")
@@ -521,11 +530,21 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             let keyCast = try objcToSwiftCast(for: swiftDictionary.key) ?? ""
             let valueCast = try objcToSwiftCast(for: swiftDictionary.value)
                 .unwrapOrThrow(.illegal("Cannot print `objcToSwiftCast()` for `SwiftDictionary` with values of type: \(type(of: swiftDictionary.value))"))
-            return ".reduce(into: [:]) { $0[$1.0\(keyCast)] = $1.1\(valueCast)"
+            return ".reduce(into: [:]) { $0[$1.0\(keyCast)] = $1.1\(valueCast) }"
         case is SwiftPrimitive<String>:
             return nil // `String` <> `NSString` interoperability doesn't require casting
         default:
             throw Exception.unimplemented("Cannot print `objcToSwiftCast()` for \(type(of: swiftType)).")
         }
+    }
+}
+
+private extension String {
+    var objcNaming: String {
+        let objcPrefix = "objc_"
+        if self.hasPrefix(objcPrefix) {
+            return "DD" + self.dropFirst(objcPrefix.count)
+        }
+        return self
     }
 }

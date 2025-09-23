@@ -147,16 +147,13 @@ private class DebugRUMSessionViewModel: ObservableObject {
             print("🔥 POST Request not sent - invalid url: \(instrumentedRequestURL)")
             return
         }
-        guard let host = url.host else {
-            print("🔥 POST Request not sent - invalid url host: \(instrumentedRequestURL)")
-            return
-        }
 
-        let delegate = DDURLSessionDelegate(additionalFirstPartyHosts: [host])
+        let delegate = DummySessionDataDelegate()
         let session = URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: nil)
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.setValue("example_key=example_value", forHTTPHeaderField: "baggage")
         let task = session.dataTask(with: request) { _, _, error in
             if let error = error {
                 print("🌍🔥 POST \(url) completed with network error: \(error)")

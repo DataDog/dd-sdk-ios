@@ -7,18 +7,7 @@
 import Foundation
 
 /// Describes current device information.
-public struct DeviceInfo: Codable, Equatable {
-    /// Represents the type of device.
-    public enum DeviceType: Codable, Equatable {
-        case iPhone
-        case iPod
-        case iPad
-        case appleTV
-        case other(modelName: String, osName: String)
-    }
-
-    // MARK: - Info
-
+public struct DeviceInfo: Equatable {
     /// Device manufacturer name. Always'Apple'
     public let brand: String
 
@@ -30,18 +19,6 @@ public struct DeviceInfo: Codable, Equatable {
 
     /// The type of device.
     public let type: DeviceType
-
-    /// The name of operating system, e.g. "iOS", "iPadOS", "tvOS".
-    public let osName: String
-
-    /// The version of the operating system, e.g. "15.4.1".
-    public let osVersion: String
-
-    /// The major version of the operating system, e.g. "15".
-    public let osVersionMajor: String
-
-    /// The build numer of the operating system, e.g.  "15D21" or "13D20".
-    public let osBuildNumber: String?
 
     /// The architecture of the device
     public let architecture: String
@@ -62,8 +39,6 @@ public struct DeviceInfo: Codable, Equatable {
         name: String,
         model: String,
         osName: String,
-        osVersion: String,
-        osBuildNumber: String?,
         architecture: String,
         isSimulator: Bool,
         vendorId: String?,
@@ -73,16 +48,38 @@ public struct DeviceInfo: Codable, Equatable {
         self.brand = "Apple"
         self.name = name
         self.model = model
-        self.type = DeviceType(modelName: model, osName: osName)
-        self.osName = osName
-        self.osVersion = osVersion
-        self.osVersionMajor = osVersion.split(separator: ".").first.map { String($0) } ?? osVersion
-        self.osBuildNumber = osBuildNumber
+        self.type = .init(modelName: model, osName: osName)
         self.architecture = architecture
         self.isSimulator = isSimulator
         self.vendorId = vendorId
         self.isDebugging = isDebugging
         self.systemBootTime = systemBootTime
+    }
+}
+
+extension DeviceInfo {
+    /// Represents the type of device.
+    public enum DeviceType: Codable, Equatable {
+        case iPhone
+        case iPod
+        case iPad
+        case appleTV
+        case appleVision
+        case appleWatch
+        case other(model: String, os: String)
+
+        public var normalizedDeviceType: Device.DeviceType {
+            switch self {
+            case .iPhone, .iPod:
+                    .mobile
+            case .iPad:
+                    .tablet
+            case .appleTV:
+                    .tv
+            case .appleVision, .appleWatch, .other:
+                    .other
+            }
+        }
     }
 }
 
@@ -99,12 +96,16 @@ private extension DeviceInfo.DeviceType {
             self = .iPhone
         } else if lowercasedModelName.hasPrefix("ipod") {
             self = .iPod
-        } else if lowercasedModelName.hasPrefix("ipad") {
+        } else if lowercasedModelName.hasPrefix("ipad") || (lowercasedOSName == "ipados" && lowercasedModelName.hasPrefix("realitydevice") == false) {
             self = .iPad
-        } else if lowercasedModelName.hasPrefix("appletv") || lowercasedOSName == "tvos" {
+        } else if lowercasedModelName.hasPrefix("appletv") || lowercasedOSName == "tvos" || lowercasedOSName == "apple tvos" {
             self = .appleTV
+        } else if lowercasedModelName.hasPrefix("realitydevice") || lowercasedOSName == "visionos" {
+            self = .appleVision
+        } else if lowercasedModelName.hasPrefix("watch") || lowercasedOSName == "watchos" {
+            self = .appleWatch
         } else {
-            self = .other(modelName: modelName, osName: osName)
+            self = .other(model: modelName, os: osName)
         }
     }
 }
@@ -130,7 +131,6 @@ extension DeviceInfo {
             architecture = String(utf8String: archInfo.name) ?? "unknown"
         }
 
-        let build = try? sysctl.osBuild()
         let isDebugging = try? sysctl.isDebugging()
         let systemBootTime = try? sysctl.systemBootTime()
 
@@ -141,8 +141,6 @@ extension DeviceInfo {
             name: device.model,
             model: model ?? device.model,
             osName: device.systemName,
-            osVersion: device.systemVersion,
-            osBuildNumber: build,
             architecture: architecture,
             isSimulator: false,
             vendorId: device.identifierForVendor?.uuidString,
@@ -156,8 +154,6 @@ extension DeviceInfo {
             name: device.model,
             model: "\(model) Simulator",
             osName: device.systemName,
-            osVersion: device.systemVersion,
-            osBuildNumber: build,
             architecture: architecture,
             isSimulator: true,
             vendorId: device.identifierForVendor?.uuidString,
@@ -183,9 +179,7 @@ extension DeviceInfo {
             architecture = String(utf8String: archInfo.name) ?? "unknown"
         }
 
-        let build = (try? sysctl.osBuild()) ?? ""
         let model = (try? sysctl.model()) ?? ""
-        let systemVersion = processInfo.operatingSystemVersion
         let systemBootTime = try? sysctl.systemBootTime()
         let isDebugging = try? sysctl.isDebugging()
 #if targetEnvironment(simulator)
@@ -198,8 +192,6 @@ extension DeviceInfo {
             name: model.components(separatedBy: CharacterSet.letters.inverted).joined(),
             model: model,
             osName: "macOS",
-            osVersion: "\(systemVersion.majorVersion).\(systemVersion.minorVersion).\(systemVersion.patchVersion)",
-            osBuildNumber: build,
             architecture: architecture,
             isSimulator: isSimulator,
             vendorId: nil,
@@ -232,3 +224,42 @@ extension DatadogExtension where ExtendedType == _UIDevice {
     public static var current: ExtendedType { .current }
 }
 #endif
+
+extension DatadogContext {
+    /// Current device information to send in the events.
+    ///
+    /// - Parameter addLocales: Temporary boolean to remove locales from events that don't support array parameters.
+    /// NOTE: RUM-9494 only basic types (boolean, string, number) are supported for `meta.*` attributes.
+    ///
+    /// - Returns: The device model for the events.
+    public func normalizedDevice(addLocales: Bool = true) -> Device {
+        var battery: Double?
+        if let batteryLevel = batteryStatus?.level {
+            battery = Double(batteryLevel)
+        }
+
+        var brightness: Double?
+        if let brightnessLevel = brightnessLevel {
+            brightness = Double(brightnessLevel)
+        }
+
+        var locales: [String]?
+        if addLocales {
+            locales = localeInfo.locales
+        }
+
+        return .init(
+            architecture: device.architecture,
+            batteryLevel: battery,
+            brand: device.brand,
+            brightnessLevel: brightness,
+            locale: localeInfo.currentLocale,
+            locales: locales,
+            model: device.model,
+            name: device.name,
+            powerSavingMode: isLowPowerModeEnabled,
+            timeZone: localeInfo.timeZoneIdentifier,
+            type: device.type.normalizedDeviceType
+        )
+    }
+}

@@ -17,8 +17,6 @@ class WatchdogTerminationsMonitoringTests: XCTestCase {
         name: .mockAny(),
         model: .mockAny(),
         osName: .mockAny(),
-        osVersion: .mockAny(),
-        osBuildNumber: .mockAny(),
         architecture: .mockAny(),
         isSimulator: false,
         vendorId: .mockAny(),

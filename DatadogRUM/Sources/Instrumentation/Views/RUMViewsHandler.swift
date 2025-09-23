@@ -174,6 +174,7 @@ internal final class RUMViewsHandler {
                 identity: view.identity,
                 name: view.name,
                 path: view.path,
+                globalAttributes: [:],
                 attributes: view.attributes,
                 instrumentationType: view.instrumentationType
             )
@@ -188,7 +189,7 @@ internal final class RUMViewsHandler {
         subscriber?.process(
             command: RUMStopViewCommand(
                 time: dateProvider.now,
-                attributes: [:],
+                attributes: view.attributes,
                 identity: view.identity
             )
         )
@@ -199,6 +200,13 @@ internal final class RUMViewsHandler {
         if let current = stack.last {
             stop(view: current)
         }
+
+        subscriber?.process(
+            command: RUMHandleAppLifecycleEventCommand(
+                time: dateProvider.now,
+                event: .didEnterBackground
+            )
+        )
     }
 
     @objc
@@ -206,6 +214,13 @@ internal final class RUMViewsHandler {
         if let current = stack.last {
             start(view: current)
         }
+
+        subscriber?.process(
+            command: RUMHandleAppLifecycleEventCommand(
+                time: dateProvider.now,
+                event: .willEnterForeground
+            )
+        )
     }
 }
 

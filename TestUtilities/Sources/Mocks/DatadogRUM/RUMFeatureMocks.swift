@@ -10,9 +10,9 @@ import DatadogInternal
 
 @testable import DatadogRUM
 
-extension RUM.Configuration {
+extension RUM.Configuration: AnyMockable, RandomMockable {
     public static func mockAny() -> RUM.Configuration {
-        .init(applicationID: .mockAny())
+        .mockWith()
     }
 
     public static func mockWith(
@@ -22,6 +22,79 @@ extension RUM.Configuration {
         var config = RUM.Configuration(applicationID: applicationID)
         mutation(&config)
         return config
+    }
+
+    public static func mockWith(
+        applicationID: String = .mockAny(),
+        sessionSampleRate: SampleRate = .maxSampleRate,
+        uiKitViewsPredicate: UIKitRUMViewsPredicate? = DefaultUIKitRUMViewsPredicate(),
+        uiKitActionsPredicate: UIKitRUMActionsPredicate? = DefaultUIKitRUMActionsPredicate(),
+        swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = DefaultSwiftUIRUMViewsPredicate(),
+        urlSessionTracking: URLSessionTracking? = nil,
+        trackFrustrations: Bool = .mockAny(),
+        trackBackgroundEvents: Bool = .mockAny(),
+        longTaskThreshold: TimeInterval? = 0.1,
+        appHangThreshold: TimeInterval? = nil,
+        trackWatchdogTerminations: Bool = .mockAny(),
+        vitalsUpdateFrequency: VitalsFrequency? = .average,
+        networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
+        nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
+        viewEventMapper: RUM.ViewEventMapper? = nil,
+        resourceEventMapper: RUM.ResourceEventMapper? = nil,
+        actionEventMapper: RUM.ActionEventMapper? = nil,
+        errorEventMapper: RUM.ErrorEventMapper? = nil,
+        longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
+        onSessionStart: RUM.SessionListener? = nil,
+        customEndpoint: URL? = .mockAny(),
+        trackAnonymousUser: Bool = .mockAny(),
+        trackMemoryWarnings: Bool = .mockAny(),
+        telemetrySampleRate: SampleRate = 0,
+        featureFlags: FeatureFlags = .defaults
+    ) -> RUM.Configuration {
+        .init(
+            applicationID: applicationID,
+            sessionSampleRate: sessionSampleRate,
+            uiKitViewsPredicate: uiKitViewsPredicate,
+            uiKitActionsPredicate: uiKitActionsPredicate,
+            swiftUIViewsPredicate: swiftUIViewsPredicate,
+            urlSessionTracking: urlSessionTracking,
+            trackFrustrations: trackFrustrations,
+            trackBackgroundEvents: trackBackgroundEvents,
+            longTaskThreshold: longTaskThreshold,
+            appHangThreshold: appHangThreshold,
+            trackWatchdogTerminations: trackWatchdogTerminations,
+            vitalsUpdateFrequency: vitalsUpdateFrequency,
+            networkSettledResourcePredicate: networkSettledResourcePredicate,
+            nextViewActionPredicate: nextViewActionPredicate,
+            viewEventMapper: viewEventMapper,
+            resourceEventMapper: resourceEventMapper,
+            actionEventMapper: actionEventMapper,
+            errorEventMapper: errorEventMapper,
+            longTaskEventMapper: longTaskEventMapper,
+            onSessionStart: onSessionStart,
+            customEndpoint: customEndpoint,
+            trackAnonymousUser: trackAnonymousUser,
+            trackMemoryWarnings: trackMemoryWarnings,
+            telemetrySampleRate: telemetrySampleRate,
+            featureFlags: featureFlags
+        )
+    }
+
+    public static func mockRandom() -> RUM.Configuration {
+        .mockWith(
+            applicationID: .mockRandom(),
+            sessionSampleRate: .mockRandom(min: 0, max: 100),
+            trackFrustrations: .mockRandom(),
+            trackBackgroundEvents: .mockRandom(),
+            longTaskThreshold: .mockRandom(),
+            appHangThreshold: .mockRandom(),
+            trackWatchdogTerminations: .mockRandom(),
+            vitalsUpdateFrequency: [VitalsFrequency.frequent, .average, .rare].randomElement(),
+            customEndpoint: .mockRandom(),
+            trackAnonymousUser: .mockRandom(),
+            trackMemoryWarnings: .mockRandom(),
+            telemetrySampleRate: .mockRandom(min: 0, max: 100)
+        )
     }
 }
 
@@ -152,7 +225,11 @@ public struct RUMCommandMock: RUMCommand {
     public var time: Date
     public var globalAttributes: [AttributeKey: AttributeValue]
     public var attributes: [AttributeKey: AttributeValue]
+    public var canStartApplicationLaunchView: Bool
     public var canStartBackgroundView: Bool
+    public var shouldRestartLastViewAfterSessionExpiration: Bool
+    public var shouldRestartLastViewAfterSessionStop: Bool
+    public var canStartBackgroundViewAfterSessionStop: Bool
     public var isUserInteraction: Bool
     public var missedEventType: SessionEndedMetric.MissedEventType? = nil
 
@@ -160,13 +237,21 @@ public struct RUMCommandMock: RUMCommand {
         time: Date = Date(),
         globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
+        canStartApplicationLaunchView: Bool = false,
         canStartBackgroundView: Bool = false,
+        shouldRestartLastViewAfterSessionExpiration: Bool = false,
+        shouldRestartLastViewAfterSessionStop: Bool = false,
+        canStartBackgroundViewAfterSessionStop: Bool = false,
         isUserInteraction: Bool = false
     ) {
         self.time = time
         self.globalAttributes = globalAttributes
         self.attributes = attributes
+        self.canStartApplicationLaunchView = canStartApplicationLaunchView
         self.canStartBackgroundView = canStartBackgroundView
+        self.shouldRestartLastViewAfterSessionExpiration = shouldRestartLastViewAfterSessionExpiration
+        self.shouldRestartLastViewAfterSessionStop = shouldRestartLastViewAfterSessionStop
+        self.canStartBackgroundViewAfterSessionStop = canStartBackgroundViewAfterSessionStop
         self.isUserInteraction = isUserInteraction
     }
 }
@@ -199,6 +284,60 @@ extension RUMCommand {
     }
 }
 
+extension RUMAddViewAttributesCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMAddViewAttributesCommand { mockWith() }
+
+    public static func mockRandom() -> RUMAddViewAttributesCommand {
+        .mockWith(
+            time: .mockRandomInThePast(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes(),
+            areInternalAttributes: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:],
+        areInternalAttributes: Bool = .mockAny()
+    ) -> RUMAddViewAttributesCommand {
+        RUMAddViewAttributesCommand(
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            areInternalAttributes: areInternalAttributes
+        )
+    }
+}
+
+extension RUMRemoveViewAttributesCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMRemoveViewAttributesCommand { mockWith() }
+
+    public static func mockRandom() -> RUMRemoveViewAttributesCommand {
+        .mockWith(
+            time: .mockRandomInThePast(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes(),
+            keysToRemove: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:],
+        keysToRemove: [AttributeKey] = []
+    ) -> RUMRemoveViewAttributesCommand {
+        RUMRemoveViewAttributesCommand(
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            keysToRemove: keysToRemove
+        )
+    }
+}
+
 extension RUMStartViewCommand: AnyMockable, RandomMockable {
     public static func mockAny() -> RUMStartViewCommand { mockWith() }
 
@@ -214,6 +353,7 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
 
     static func mockWith(
         time: Date = Date(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
         identity: ViewIdentifier = .mockViewIdentifier(),
         name: String = .mockAny(),
@@ -225,6 +365,7 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
             identity: identity,
             name: name,
             path: path,
+            globalAttributes: globalAttributes,
             attributes: attributes,
             instrumentationType: instrumentationType
         )
@@ -285,13 +426,16 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         error: Error = ErrorMock(),
         source: RUMInternalErrorSource = .source,
         globalAttributes: [AttributeKey: AttributeValue] = [:],
-        attributes: [AttributeKey: AttributeValue] = [:]
+        attributes: [AttributeKey: AttributeValue] = [:],
+        completionHandler: @escaping CompletionHandler = NOPCompletionHandler
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
             time: time,
             error: error,
             source: source,
-            attributes: attributes
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            completionHandler: completionHandler
         )
     }
 
@@ -301,7 +445,9 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         type: String? = .mockAny(),
         source: RUMInternalErrorSource = .source,
         stack: String? = "Foo.swift:10",
-        attributes: [AttributeKey: AttributeValue] = [:]
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:],
+        completionHandler: @escaping CompletionHandler = NOPCompletionHandler
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
             time: time,
@@ -309,7 +455,9 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
             type: type,
             stack: stack,
             source: source,
-            attributes: attributes
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            completionHandler: completionHandler
         )
     }
 }
@@ -505,6 +653,7 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
         error: Error = ErrorMock(),
         source: RUMInternalErrorSource = .source,
         httpStatusCode: Int? = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMStopResourceWithErrorCommand {
         return RUMStopResourceWithErrorCommand(
@@ -513,6 +662,7 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
             error: error,
             source: source,
             httpStatusCode: httpStatusCode,
+            globalAttributes: globalAttributes,
             attributes: attributes
         )
     }
@@ -524,6 +674,7 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
         type: String? = .mockAny(),
         source: RUMInternalErrorSource = .source,
         httpStatusCode: Int? = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMStopResourceWithErrorCommand {
         return RUMStopResourceWithErrorCommand(
@@ -533,6 +684,7 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
             type: type,
             source: source,
             httpStatusCode: httpStatusCode,
+            globalAttributes: globalAttributes,
             attributes: attributes
         )
     }
@@ -691,6 +843,45 @@ extension RUMStopSessionCommand: AnyMockable {
     }
 }
 
+extension RUMOperationStepVitalCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMOperationStepVitalCommand { mockWith() }
+
+    public static func mockRandom() -> RUMOperationStepVitalCommand {
+        return mockWith(
+            vitalId: .mockRandom(),
+            name: .mockRandom(),
+            operationKey: .mockRandom(),
+            stepType: .mockRandom(),
+            failureReason: .mockRandom(),
+            time: .mockRandomInThePast(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes()
+        )
+    }
+
+    public static func mockWith(
+        vitalId: String = .mockAny(),
+        name: String = .mockAny(),
+        operationKey: String? = .mockAny(),
+        stepType: RUMVitalEvent.Vital.StepType = .mockAny(),
+        failureReason: RUMFeatureOperationFailureReason = .mockAny(),
+        time: Date = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) -> RUMOperationStepVitalCommand {
+        return RUMOperationStepVitalCommand(
+            vitalId: vitalId,
+            name: name,
+            operationKey: operationKey,
+            stepType: stepType,
+            failureReason: failureReason,
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes
+        )
+    }
+}
+
 // MARK: - RUMCommand Property Mocks
 
 extension RUMInternalErrorSource: RandomMockable {
@@ -717,6 +908,12 @@ public class RUMUUIDGeneratorMock: RUMUUIDGenerator {
 
     public init(uuid: RUMUUID) {
         self.uuid = uuid
+    }
+}
+
+extension RUMApplicationState: AnyMockable {
+    public static func mockAny() -> RUMApplicationState {
+        return RUMApplicationState()
     }
 }
 
@@ -785,7 +982,7 @@ extension RUMScopeDependencies {
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
         viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
-        sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0),
+        sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0, tracksBackgroundEvents: .mockAny(), isUsingSceneLifecycle: .mockAny()),
         viewEndedMetricFactory: @escaping () -> ViewEndedController = {
             ViewEndedController(telemetry: NOPTelemetry(), sampleRate: 0)
         },
@@ -903,6 +1100,7 @@ extension RUMSessionScope {
         startPrecondition: RUMSessionPrecondition? = .userAppLaunch,
         context: DatadogContext = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
+        applicationState: RUMApplicationState = .mockAny(),
         hasReplay: Bool? = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
@@ -911,7 +1109,8 @@ extension RUMSessionScope {
             startTime: startTime,
             startPrecondition: startPrecondition,
             context: context,
-            dependencies: dependencies
+            dependencies: dependencies,
+            applicationState: applicationState
         )
     }
     // swiftlint:enable function_default_parameter_at_end
@@ -967,7 +1166,8 @@ extension RUMViewScope {
         customTimings: [String: Int64] = randomTimings(),
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
-        interactionToNextViewMetric: INVMetricTracking = INVMetric(predicate: TimeBasedINVActionPredicate())
+        interactionToNextViewMetric: INVMetricTracking = INVMetric(predicate: TimeBasedINVActionPredicate()),
+        viewIndexInSession: Int = 0
     ) -> RUMViewScope {
         return RUMViewScope(
             isInitialView: isInitialView,
@@ -979,14 +1179,15 @@ extension RUMViewScope {
             customTimings: customTimings,
             startTime: startTime,
             serverTimeOffset: serverTimeOffset,
-            interactionToNextViewMetric: interactionToNextViewMetric
+            interactionToNextViewMetric: interactionToNextViewMetric,
+            viewIndexInSession: viewIndexInSession
         )
     }
 }
 
 extension RUMResourceScope {
     static func mockWith(
-        context: RUMContext,
+        parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         resourceKey: String = .mockAny(),
         globalAttributes: [AttributeKey: AttributeValue] = [:],
@@ -1003,7 +1204,7 @@ extension RUMResourceScope {
         onErrorEvent: @escaping (Bool) -> Void = { _ in }
     ) -> RUMResourceScope {
         return RUMResourceScope(
-            context: context,
+            parent: parent,
             dependencies: dependencies,
             resourceKey: resourceKey,
             startTime: startTime,
@@ -1052,11 +1253,13 @@ extension RUMUserActionScope {
 }
 
 public class RUMContextProviderMock: RUMContextProvider {
-    public init(context: RUMContext = .mockAny()) {
+    public init(context: RUMContext = .mockAny(), attributes: [AttributeKey: AttributeValue] = [:]) {
         self.context = context
+        self.attributes = attributes
     }
 
     public var context: RUMContext
+    public var attributes: [AttributeKey: AttributeValue]
 }
 
 // MARK: - Auto Instrumentation Mocks
@@ -1491,7 +1694,7 @@ extension RUMWebViewContext: RandomMockable {
 
 extension RUMResourceScope {
     static func mockWith(
-        context: RUMContext,
+        parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         resourceKey: String = .mockAny(),
         startTime: Date = .mockAny(),
@@ -1506,7 +1709,7 @@ extension RUMResourceScope {
         onErrorEvent: @escaping (Bool) -> Void = { _ in }
     ) -> RUMResourceScope {
         return RUMResourceScope(
-            context: context,
+            parent: parent,
             dependencies: dependencies,
             resourceKey: resourceKey,
             startTime: startTime,
