@@ -9,14 +9,14 @@ import DatadogInternal
 
 internal extension FeatureScope {
     /// Data store endpoint suited for Flags data.
-    var flagsDataStore: FlagsDataStore {
-        FlagsDataStore(featureScope: self)
+    func flagsDataStore(clientKey: String?) -> FlagsDataStore {
+        FlagsDataStore(featureScope: self, clientKey: clientKey)
     }
 
     /// Flags data store endpoint within SDK context.
-    func flagsDataStoreContext(_ block: @escaping (DatadogContext, FlagsDataStore) -> Void) {
+    func flagsDataStoreContext(clientKey: String?, _ block: @escaping (DatadogContext, FlagsDataStore) -> Void) {
         dataStoreContext { context, dataStore in
-            block(context, FlagsDataStore(featureScope: self))
+            block(context, FlagsDataStore(featureScope: self, clientKey: clientKey))
         }
     }
 }
@@ -30,10 +30,9 @@ internal extension FeatureScope {
 /// - Integration with the Core SDK's DataStore
 internal struct FlagsDataStore {
     internal enum Key: String {
-        // TODO: FFL-1016 Include clientKey for multi-client support
-        /// References cached flags data from precompute-assignments API
-        case flags = "flags-cache"
-        /// References metadata about the flags including fetch timestamp and context
+        /// References flag data from precompute-assignments API
+        case flags = "flags-assignments"
+        /// References metadata about the stored flags-assignments, e.g. the evaluation context
         case flagsMetadata = "flags-metadata"
     }
 
@@ -44,11 +43,21 @@ internal struct FlagsDataStore {
 
     /// Flags feature scope.
     let featureScope: FeatureScope
+    /// Client key for storage isolation between multiple client instances.
+    let clientKey: String?
+
+    /// Generates a client-specific storage key for multi-instance isolation.
+    private func storageKey(for key: Key) -> String {
+        if let clientKey = clientKey {
+            return "\(key.rawValue)-\(clientKey)"
+        }
+        return key.rawValue
+    }
 
     func setValue<V: Codable>(_ value: V, forKey key: Key, version: DataStoreKeyVersion = dataStoreDefaultKeyVersion) {
         do {
             let data = try FlagsDataStore.encoder.encode(value)
-            featureScope.dataStore.setValue(data, forKey: key.rawValue, version: version)
+            featureScope.dataStore.setValue(data, forKey: storageKey(for: key), version: version)
         } catch let error {
             DD.logger.error("Failed to encode \(type(of: value)) in Flags Data Store", error: error)
             featureScope.telemetry.error("Failed to encode \(type(of: value)) in Flags Data Store", error: error)
@@ -56,7 +65,7 @@ internal struct FlagsDataStore {
     }
 
     func value<V: Codable>(forKey key: Key, version: DataStoreKeyVersion = dataStoreDefaultKeyVersion, callback: @escaping (V?) -> Void) {
-        featureScope.dataStore.value(forKey: key.rawValue) { result in
+        featureScope.dataStore.value(forKey: storageKey(for: key)) { result in
             guard let data = result.data(expectedVersion: version) else {
                 // One of following:
                 // - no value
@@ -77,6 +86,6 @@ internal struct FlagsDataStore {
     }
 
     func removeValue(forKey key: Key) {
-        featureScope.dataStore.removeValue(forKey: key.rawValue)
+        featureScope.dataStore.removeValue(forKey: storageKey(for: key))
     }
 }

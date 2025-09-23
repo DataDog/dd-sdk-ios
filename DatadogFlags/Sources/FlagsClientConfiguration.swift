@@ -12,15 +12,18 @@ extension FlagsClient {
         public let baseURL: String?
         public let customHeaders: [String: String]
         public let flaggingProxy: String?
+        public let clientKey: String?
 
         public init(
             baseURL: String? = nil,
             customHeaders: [String: String] = [:],
-            flaggingProxy: String? = nil
+            flaggingProxy: String? = nil,
+            clientKey: String? = nil
         ) {
             self.baseURL = baseURL
             self.customHeaders = customHeaders
             self.flaggingProxy = flaggingProxy
+            self.clientKey = clientKey
         }
     }
 }

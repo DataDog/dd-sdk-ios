@@ -16,13 +16,22 @@ import DatadogInternal
 /// - Business logic for setting/getting flags with proper context
 internal class FlagsStore {
     private let featureScope: FeatureScope
+    private let clientKey: String?
     private var cachedFlags: [String: Any] = [:]
     private var cachedMetadata: FlagsMetadata?
-    // TODO: FFL-1016 Also scope queues by clientKey
-    private let syncQueue = DispatchQueue(label: "com.datadoghq.flags.store", attributes: .concurrent)
+    private let syncQueue: DispatchQueue
 
-    init(featureScope: FeatureScope) {
+    init(featureScope: FeatureScope, clientKey: String? = nil) {
         self.featureScope = featureScope
+        self.clientKey = clientKey
+        
+        let queueLabel = if let clientKey = clientKey {
+            "com.datadoghq.flags.store-\(clientKey)"
+        } else {
+            "com.datadoghq.flags.store"
+        }
+        self.syncQueue = DispatchQueue(label: queueLabel, attributes: .concurrent)
+        
         loadFromDataStore()
     }
 
@@ -53,7 +62,7 @@ internal class FlagsStore {
 
     /// Persists in-memory flags and metadata to the underlying data store.
     private func saveToDataStore() {
-        let dataStore = featureScope.flagsDataStore
+        let dataStore = featureScope.flagsDataStore(clientKey: clientKey)
 
         // Save flags
         let codableFlags = CodableFlags(flags: cachedFlags)
@@ -65,7 +74,7 @@ internal class FlagsStore {
     }
 
     private func loadFromDataStore() {
-        let dataStore = featureScope.flagsDataStore
+        let dataStore = featureScope.flagsDataStore(clientKey: clientKey)
         // Load flags
         dataStore.value(forKey: .flags) { [weak self] (codableFlags: CodableFlags?) in
             if let codableFlags = codableFlags {

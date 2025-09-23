@@ -42,7 +42,7 @@ public class FlagsClient {
 
         let httpClient = NetworkFlagsHTTPClient()
         let featureScope = core.scope(for: FlagsFeature.self)
-        let store = FlagsStore(featureScope: featureScope)
+        let store = FlagsStore(featureScope: featureScope, clientKey: configuration.clientKey)
         return FlagsClient(configuration: configuration, httpClient: httpClient, store: store, featureScope: featureScope)
     }
 
