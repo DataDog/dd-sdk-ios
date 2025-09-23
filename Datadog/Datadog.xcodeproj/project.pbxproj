@@ -464,6 +464,8 @@
 		5BA8C33B2E785FE100B1DA80 /* FlagsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA8C3122E785A5E00B1DA80 /* FlagsTests.swift */; };
 		5BB294AC2E8286B200CAA44B /* ExposureEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */; };
 		5BB294AD2E8286B200CAA44B /* ExposureEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */; };
+		5BB294B02E82CCA400CAA44B /* ExposureRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */; };
+		5BB294B12E82CCA400CAA44B /* ExposureRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */; };
 		5BCBC0CD2DF85B6A0094DCC2 /* SessionReplayPrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */; };
 		5BE0EA2B2E66E8A800216E1C /* ShapeResourceBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */; };
 		5BE0EA2D2E66EFA300216E1C /* Path+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE0EA2C2E66EF9B00216E1C /* Path+SessionReplay.swift */; };
@@ -2590,6 +2592,7 @@
 		5BA8C3192E785B6F00B1DA80 /* DatadogFlags.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogFlags.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BA8C3212E785B6F00B1DA80 /* DatadogFlagsTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogFlagsTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureEvent.swift; sourceTree = "<group>"; };
+		5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureRequestBuilderTests.swift; sourceTree = "<group>"; };
 		5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayPrivacyView.swift; sourceTree = "<group>"; };
 		5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilder.swift; sourceTree = "<group>"; };
 		5BE0EA2C2E66EF9B00216E1C /* Path+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Path+SessionReplay.swift"; sourceTree = "<group>"; };
@@ -4235,9 +4238,9 @@
 		5BA8C30E2E7859EC00B1DA80 /* DatadogFlags */ = {
 			isa = PBXGroup;
 			children = (
+				614964462E7D7B0D00D9EFFF /* Feature */,
 				5BB294AA2E82864300CAA44B /* Models */,
 				8DADC3E02E7E4B4A0060F558 /* FlagsHTTPClient.swift */,
-				614964462E7D7B0D00D9EFFF /* Feature */,
 				8DADC3D72E7D24740060F558 /* PrecomputeAssignmentsRequest.swift */,
 				8DADC3AE2E7CCF0D0060F558 /* FlagsClient.swift */,
 				8DADC3AF2E7CCF0D0060F558 /* FlagsClientConfiguration.swift */,
@@ -4253,6 +4256,7 @@
 		5BA8C3112E785A2D00B1DA80 /* DatadogFlagsTests */ = {
 			isa = PBXGroup;
 			children = (
+				5BB294AE2E82CC9100CAA44B /* Feature */,
 				8DADC3DD2E7D250E0060F558 /* PrecomputeAssignmentsRequestTests.swift */,
 				8DADC3D12E7CCF670060F558 /* Resources */,
 				8DADC3C02E7CCF190060F558 /* FlagsClientTests.swift */,
@@ -4271,6 +4275,14 @@
 				5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		5BB294AE2E82CC9100CAA44B /* Feature */ = {
+			isa = PBXGroup;
+			children = (
+				5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */,
+			);
+			path = Feature;
 			sourceTree = "<group>";
 		};
 		61020C272757AD63005EEAEA /* BackgroundEvents */ = {
@@ -8726,6 +8738,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5BA8C33B2E785FE100B1DA80 /* FlagsTests.swift in Sources */,
+				5BB294B12E82CCA400CAA44B /* ExposureRequestBuilderTests.swift in Sources */,
 				8DADC3C42E7CCF190060F558 /* FlagsClientConfigurationTests.swift in Sources */,
 				8DADC3DF2E7D250E0060F558 /* PrecomputeAssignmentsRequestTests.swift in Sources */,
 				8DADC3C52E7CCF190060F558 /* FlagsClientTests.swift in Sources */,
@@ -8739,6 +8752,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5BF228702E795DF800D79E8A /* FlagsTests.swift in Sources */,
+				5BB294B02E82CCA400CAA44B /* ExposureRequestBuilderTests.swift in Sources */,
 				8DADC3C82E7CCF190060F558 /* FlagsClientConfigurationTests.swift in Sources */,
 				8DADC3DE2E7D250E0060F558 /* PrecomputeAssignmentsRequestTests.swift in Sources */,
 				8DADC3C92E7CCF190060F558 /* FlagsClientTests.swift in Sources */,

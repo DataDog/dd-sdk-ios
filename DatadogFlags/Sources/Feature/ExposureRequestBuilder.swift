@@ -10,21 +10,21 @@ import DatadogInternal
 internal struct ExposureRequestBuilder: FeatureRequestBuilder {
     /// A custom RUM intake.
     let customIntakeURL: URL?
+
+    /// The exposure request body format.
+    let format = DataFormat(prefix: "", suffix: "", separator: "\n")
+
     /// Telemetry interface.
     let telemetry: Telemetry
 
     func request(for events: [Event], with context: DatadogContext, execution: ExecutionContext) throws -> URLRequest {
-        guard let exposureEventData = events.first?.data else {
-            throw InternalError(description: "Found no event in Flags batch")
-        }
-
         let builder = URLRequestBuilder(
             url: url(with: context),
             queryItems: [
                 .ddsource(source: context.source)
             ],
             headers: [
-                .contentTypeHeader(contentType: .applicationJSON),
+                .contentTypeHeader(contentType: .textPlainUTF8),
                 .userAgentHeader(
                     appName: context.applicationName,
                     appVersion: context.version,
@@ -38,8 +38,8 @@ internal struct ExposureRequestBuilder: FeatureRequestBuilder {
             ],
             telemetry: telemetry
         )
-
-        return builder.uploadRequest(with: exposureEventData, compress: false)
+        let data = format.format(events.map(\.data))
+        return builder.uploadRequest(with: data, compress: false)
     }
 
     private func url(with context: DatadogContext) -> URL {
