@@ -66,7 +66,12 @@ internal struct RequestBuilder: FeatureRequestBuilder {
             ],
             headers: [
                 .contentTypeHeader(contentType: .multipartFormData(boundary: multipart.boundary)),
-                .userAgentHeader(appName: context.applicationName, appVersion: context.version, device: context.device),
+                .userAgentHeader(
+                    appName: context.applicationName,
+                    appVersion: context.version,
+                    device: context.device,
+                    os: context.os
+                ),
                 .ddAPIKeyHeader(clientToken: context.clientToken),
                 .ddEVPOriginHeader(source: context.source),
                 .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
