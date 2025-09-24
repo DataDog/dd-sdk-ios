@@ -41,11 +41,13 @@ public final class FlagsClientRegistry {
     ///   - instance: The FlagsClient instance
     ///   - name: The name of the given instance.
     public static func register(_ instance: FlagsClient, named name: String) {
-        guard !isRegistered(instanceName: name) else {
-            DD.logger.warn("A FlagsClient instance with name '\(name)' has already been registered.")
-            return
+        _instances.mutate { instances in
+            guard instances[name] == nil else {
+                DD.logger.warn("A FlagsClient instance with name '\(name)' has already been registered.")
+                return
+            }
+            instances[name] = instance
         }
-        instances[name] = instance
     }
 
     /// Checks if a FlagsClient instance with the specified name is currently registered.
