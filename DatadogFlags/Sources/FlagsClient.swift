@@ -88,49 +88,40 @@ public class FlagsClient {
         }
     }
 
+    @inlinable
     public func getBooleanValue(key: String, defaultValue: Bool) -> Bool {
-        let flags = store.getFlags()
-        if let flagData = flags[key] as? [String: Any],
-           let value = flagData["variationValue"] as? Bool {
-            return value
-        }
-        return defaultValue
+        getValue(key: key, defaultValue: defaultValue)
     }
 
+    @inlinable
     public func getStringValue(key: String, defaultValue: String) -> String {
-        let flags = store.getFlags()
-        if let flagData = flags[key] as? [String: Any],
-           let value = flagData["variationValue"] as? String {
-            return value
-        }
-        return defaultValue
+        getValue(key: key, defaultValue: defaultValue)
     }
 
+    @inlinable
     public func getIntegerValue(key: String, defaultValue: Int64) -> Int64 {
-        let flags = store.getFlags()
-        if let flagData = flags[key] as? [String: Any],
-           let value = flagData["variationValue"] as? NSNumber {
-            return value.int64Value
-        }
-        return defaultValue
+        getValue(key: key, defaultValue: defaultValue)
     }
 
+    @inlinable
     public func getDoubleValue(key: String, defaultValue: Double) -> Double {
-        let flags = store.getFlags()
-        if let flagData = flags[key] as? [String: Any],
-           let value = flagData["variationValue"] as? NSNumber {
-            return value.doubleValue
-        }
-        return defaultValue
+        getValue(key: key, defaultValue: defaultValue)
     }
 
     // TODO: FFL-1047 Replace [String: Any] with OpenFeature.Value-compatible type
+    @inlinable
     public func getObjectValue(key: String, defaultValue: [String: Any]) -> [String: Any] {
+        getValue(key: key, defaultValue: defaultValue)
+    }
+
+    public func getValue<T: FlagValue>(key: String, defaultValue: T) -> T {
         let flags = store.getFlags()
-        if let flagData = flags[key] as? [String: Any],
-           let value = flagData["variationValue"] as? [String: Any] {
-            return value
+        guard
+            let flagData = flags[key] as? [String: Any],
+            let value = flagData["variationValue"] as? T
+        else {
+            return defaultValue
         }
-        return defaultValue
+        return value
     }
 }

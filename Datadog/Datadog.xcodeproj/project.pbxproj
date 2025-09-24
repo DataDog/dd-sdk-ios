@@ -466,6 +466,8 @@
 		5BB294AD2E8286B200CAA44B /* ExposureEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */; };
 		5BB294B02E82CCA400CAA44B /* ExposureRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */; };
 		5BB294B12E82CCA400CAA44B /* ExposureRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */; };
+		5BB294BD2E82E66500CAA44B /* FlagValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294BC2E82E66200CAA44B /* FlagValue.swift */; };
+		5BB294BE2E82E66500CAA44B /* FlagValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294BC2E82E66200CAA44B /* FlagValue.swift */; };
 		5BCBC0CD2DF85B6A0094DCC2 /* SessionReplayPrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */; };
 		5BE0EA2B2E66E8A800216E1C /* ShapeResourceBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */; };
 		5BE0EA2D2E66EFA300216E1C /* Path+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE0EA2C2E66EF9B00216E1C /* Path+SessionReplay.swift */; };
@@ -2593,6 +2595,7 @@
 		5BA8C3212E785B6F00B1DA80 /* DatadogFlagsTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogFlagsTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureEvent.swift; sourceTree = "<group>"; };
 		5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureRequestBuilderTests.swift; sourceTree = "<group>"; };
+		5BB294BC2E82E66200CAA44B /* FlagValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagValue.swift; sourceTree = "<group>"; };
 		5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayPrivacyView.swift; sourceTree = "<group>"; };
 		5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilder.swift; sourceTree = "<group>"; };
 		5BE0EA2C2E66EF9B00216E1C /* Path+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Path+SessionReplay.swift"; sourceTree = "<group>"; };
@@ -4257,8 +4260,8 @@
 			isa = PBXGroup;
 			children = (
 				5BB294AE2E82CC9100CAA44B /* Feature */,
-				8DADC3DD2E7D250E0060F558 /* PrecomputeAssignmentsRequestTests.swift */,
 				8DADC3D12E7CCF670060F558 /* Resources */,
+				8DADC3DD2E7D250E0060F558 /* PrecomputeAssignmentsRequestTests.swift */,
 				8DADC3C02E7CCF190060F558 /* FlagsClientTests.swift */,
 				8DADC3C12E7CCF190060F558 /* FlagsClientConfigurationTests.swift */,
 				8DADC3C22E7CCF190060F558 /* FlagsEndpointBuilderTests.swift */,
@@ -4272,6 +4275,7 @@
 		5BB294AA2E82864300CAA44B /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				5BB294BC2E82E66200CAA44B /* FlagValue.swift */,
 				5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */,
 			);
 			path = Models;
@@ -8702,6 +8706,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DADC3BA2E7CCF0D0060F558 /* FlagsClientConfiguration.swift in Sources */,
+				5BB294BD2E82E66500CAA44B /* FlagValue.swift in Sources */,
 				5BB294AD2E8286B200CAA44B /* ExposureEvent.swift in Sources */,
 				8DADC3BC2E7CCF0D0060F558 /* FlagsTypes.swift in Sources */,
 				8DADC3BD2E7CCF0D0060F558 /* FlagsStore.swift in Sources */,
@@ -8720,6 +8725,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DADC3B42E7CCF0D0060F558 /* FlagsClientConfiguration.swift in Sources */,
+				5BB294BE2E82E66500CAA44B /* FlagValue.swift in Sources */,
 				5BB294AC2E8286B200CAA44B /* ExposureEvent.swift in Sources */,
 				8DADC3B62E7CCF0D0060F558 /* FlagsTypes.swift in Sources */,
 				8DADC3B72E7CCF0D0060F558 /* FlagsStore.swift in Sources */,
