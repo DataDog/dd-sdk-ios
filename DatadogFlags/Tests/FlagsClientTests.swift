@@ -10,6 +10,11 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagsClientTests: XCTestCase {
+    private struct Model: Equatable, Decodable {
+        let key: String
+        let prop: Int
+    }
+
     func testFlagsClientCreation() {
         let core = FeatureRegistrationCoreMock()
         Flags.enable(in: core)
@@ -45,14 +50,23 @@ final class FlagsClientTests: XCTestCase {
                 let stringValue = client.getStringValue(key: "string-flag", defaultValue: "default")
                 let integerValue = client.getIntegerValue(key: "integer-flag", defaultValue: 0)
                 let doubleValue = client.getDoubleValue(key: "numeric-flag", defaultValue: 0.0)
-                let objectValue = client.getObjectValue(key: "json-flag", defaultValue: [:])
+                let objectValue = client.getObjectValue(key: "json-flag", defaultValue: .null)
+                let typedObjectValue = client.getObjectValue(key: "json-flag", defaultValue: Model(key: "null", prop: 0))
 
                 XCTAssertTrue(boolValue)
                 XCTAssertEqual(stringValue, "red")
                 XCTAssertEqual(integerValue, 42)
                 XCTAssertEqual(doubleValue, 3.14, accuracy: 0.001)
-                XCTAssertEqual(objectValue["key"] as? String, "value")
-                XCTAssertEqual(objectValue["prop"] as? Int, 123)
+                XCTAssertEqual(
+                    objectValue,
+                    .dictionary(
+                        [
+                            "key": .string("value"),
+                            "prop": .int(123)
+                        ]
+                    )
+                )
+                XCTAssertEqual(typedObjectValue, Model(key: "value", prop: 123))
 
                 expectation.fulfill()
             case .failure(let error):
@@ -129,21 +143,17 @@ private class MockFlagsHTTPClient: FlagsHTTPClient {
 }
 
 private class MockFlagsStore: FlagsStore {
-    private var flags: [String: Any] = [:]
+    private var flags: [String: FlagAssignment] = [:]
 
     init() {
         super.init(withPersistentCache: false)
     }
 
-    override func getFlags() -> [String: Any] {
-        return flags
+    override func flagAssignment(for key: String) -> FlagAssignment? {
+        flags[key]
     }
 
-    override func setFlags(_ flags: [String: Any]) {
-        self.flags = flags
-    }
-
-    override func setFlags(_ flags: [String: Any], context: FlagsEvaluationContext?) {
+    override func setFlags(_ flags: [String: FlagAssignment], context: FlagsEvaluationContext? = nil) {
         self.flags = flags
     }
 }

@@ -8,7 +8,12 @@ import Foundation
 
 // TODO: FFL-1048 Use the Core SDK’s DataStore instead
 internal class FlagsStore {
-    private var cachedFlags: [String: Any] = [:]
+    private struct State: Codable {
+        let flags: [String: FlagAssignment]
+        let metadata: FlagsMetadata?
+    }
+
+    private var cachedFlags: [String: FlagAssignment] = [:]
     private var flagsMetadata: FlagsMetadata?
     private let syncQueue = DispatchQueue(label: "com.datadoghq.flags.store", attributes: .concurrent)
     private let cacheFileURL: URL?
@@ -40,15 +45,13 @@ internal class FlagsStore {
         return cacheDirectoryURL.appendingPathComponent("flags-cache.json", isDirectory: false)
     }
 
-    func getFlags() -> [String: Any] {
-        return syncQueue.sync { self.cachedFlags }
+    func flagAssignment(for key: String) -> FlagAssignment? {
+        syncQueue.sync {
+            self.cachedFlags[key]
+        }
     }
 
-    func setFlags(_ flags: [String: Any]) {
-        setFlags(flags, context: nil)
-    }
-
-    func setFlags(_ flags: [String: Any], context: FlagsEvaluationContext?) {
+    func setFlags(_ flags: [String: FlagAssignment], context: FlagsEvaluationContext? = nil) {
         let timestamp = Date().timeIntervalSince1970 * 1_000 // JavaScript-style timestamp in milliseconds
 
         syncQueue.sync(flags: .barrier) {
@@ -75,26 +78,9 @@ internal class FlagsStore {
                 return
             }
             do {
-                var cacheData: [String: Any] = [
-                    "flags": self.cachedFlags
-                ]
+                let state = State(flags: self.cachedFlags, metadata: self.flagsMetadata)
+                let data = try JSONEncoder().encode(state)
 
-                if let metadata = self.flagsMetadata {
-                    var metadataDict: [String: Any] = [
-                        "fetchedAt": metadata.fetchedAt
-                    ]
-
-                    if let context = metadata.context {
-                        metadataDict["context"] = [
-                            "targetingKey": context.targetingKey,
-                            "attributes": context.attributes
-                        ]
-                    }
-
-                    cacheData["metadata"] = metadataDict
-                }
-
-                let data = try JSONSerialization.data(withJSONObject: cacheData, options: [])
                 try data.write(to: cacheFileURL, options: .atomic)
             } catch {
                 print("Error saving flags to disk: \(error)")
@@ -109,34 +95,10 @@ internal class FlagsStore {
 
         do {
             let data = try Data(contentsOf: cacheFileURL)
-            if let cacheData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                // Load flags
-                if let flags = cacheData["flags"] as? [String: Any] {
-                    self.cachedFlags = flags
-                }
+            let state = try JSONDecoder().decode(State.self, from: data)
 
-                // Load metadata if available
-                if let metadataDict = cacheData["metadata"] as? [String: Any],
-                   let fetchedAt = metadataDict["fetchedAt"] as? Double {
-                    var context: FlagsEvaluationContext?
-                    if let contextDict = metadataDict["context"] as? [String: Any],
-                       let targetingKey = contextDict["targetingKey"] as? String,
-                       let attributesAny = contextDict["attributes"] as? [String: Any] {
-                        // Convert [String: Any] to [String: String] for type safety
-                        let attributes: [String: String] = attributesAny.compactMapValues { value in
-                            return value as? String ?? String(describing: value)
-                        }
-                        context = FlagsEvaluationContext(targetingKey: targetingKey, attributes: attributes)
-                    }
-
-                    self.flagsMetadata = FlagsMetadata(fetchedAt: fetchedAt, context: context)
-                }
-            } else {
-                // Handle legacy cache format (just flags without metadata)
-                if let flags = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    self.cachedFlags = flags
-                }
-            }
+            self.cachedFlags = state.flags
+            self.flagsMetadata = state.metadata
         } catch {
             print("No flags found on disk or error decoding: \(error)")
         }

@@ -60,27 +60,21 @@ public class FlagsClient {
 
                 switch result {
                 case .success(let (data, response)):
-                    guard let httpResponse = response as? HTTPURLResponse,
-                          200...299 ~= httpResponse.statusCode else {
+                    guard
+                        let httpResponse = response as? HTTPURLResponse,
+                        200...299 ~= httpResponse.statusCode
+                    else {
                         completion(.failure(.invalidResponse))
                         return
                     }
 
                     do {
-                        let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-
-                        if let responseData = json?["data"] as? [String: Any],
-                           let attributes = responseData["attributes"] as? [String: Any],
-                           let flags = attributes["flags"] as? [String: Any] {
-                            self.store.setFlags(flags, context: context)
-                            completion(.success(()))
-                        } else {
-                            completion(.failure(.invalidResponse))
-                        }
+                        let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: data)
+                        self.store.setFlags(response.flags)
+                        completion(.success(()))
                     } catch {
-                        completion(.failure(.networkError(error)))
+                        completion(.failure(.invalidResponse))
                     }
-
                 case .failure(let error):
                     completion(.failure(.networkError(error)))
                 }
@@ -99,7 +93,7 @@ public class FlagsClient {
     }
 
     @inlinable
-    public func getIntegerValue(key: String, defaultValue: Int64) -> Int64 {
+    public func getIntegerValue(key: String, defaultValue: Int) -> Int {
         getValue(key: key, defaultValue: defaultValue)
     }
 
@@ -108,20 +102,22 @@ public class FlagsClient {
         getValue(key: key, defaultValue: defaultValue)
     }
 
-    // TODO: FFL-1047 Replace [String: Any] with OpenFeature.Value-compatible type
     @inlinable
-    public func getObjectValue(key: String, defaultValue: [String: Any]) -> [String: Any] {
+    public func getObjectValue(key: String, defaultValue: AnyValue) -> AnyValue {
         getValue(key: key, defaultValue: defaultValue)
     }
 
+    @inlinable
+    public func getObjectValue<T: Decodable>(key: String, defaultValue: T, using decoder: JSONDecoder = .init()) -> T {
+        let anyValue = getValue(key: key, defaultValue: AnyValue.null)
+        let value = try? anyValue.as(T.self, using: decoder)
+        return value ?? defaultValue
+    }
+
     public func getValue<T: FlagValue>(key: String, defaultValue: T) -> T {
-        let flags = store.getFlags()
-        guard
-            let flagData = flags[key] as? [String: Any],
-            let value = flagData["variationValue"] as? T
-        else {
+        guard let flagAssignment = store.flagAssignment(for: key) else {
             return defaultValue
         }
-        return value
+        return flagAssignment.variation(as: T.self) ?? defaultValue
     }
 }

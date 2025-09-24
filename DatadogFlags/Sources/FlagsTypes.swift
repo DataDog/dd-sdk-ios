@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class FlagsEvaluationContext {
+public class FlagsEvaluationContext: Codable {
     public let targetingKey: String
     public let attributes: [String: String]
     public init(targetingKey: String, attributes: [String: String] = [:]) {
@@ -23,7 +23,7 @@ public enum FlagsError: Error {
     case unsupportedSite(String)
 }
 
-internal struct FlagsMetadata {
+internal struct FlagsMetadata: Codable {
     let fetchedAt: Double // Timestamp in milliseconds (JavaScript-style)
     let context: FlagsEvaluationContext?
 }

@@ -5,11 +5,13 @@
  */
 
 import Foundation
+import DatadogInternal
 
-public protocol FlagValue {}
-
-extension Bool: FlagValue {}
-extension String: FlagValue {}
-extension Int: FlagValue {}
-extension Double: FlagValue {}
-extension AnyValue: FlagValue {}
+internal final class ExposureLogger {
+    private struct Exposure: Hashable {
+        let targetingKey: String
+        let flagKey: String
+        let allocationKey: String
+        let variationKey: String
+    }
+}
