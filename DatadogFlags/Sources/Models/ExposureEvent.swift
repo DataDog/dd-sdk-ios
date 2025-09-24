@@ -16,7 +16,7 @@ internal struct ExposureEvent: Codable {
         let attributes: [String: String]
     }
 
-    let timestamp: Int
+    let timestamp: Int64
     let allocation: Identifier
     let flag: Identifier
     let variant: Identifier
