@@ -9,15 +9,27 @@ import DatadogInternal
 
 internal extension FeatureScope {
     /// Data store endpoint suited for Flags data.
-    func flagsDataStore(clientKey: String?) -> FlagsDataStore {
-        FlagsDataStore(featureScope: self, clientKey: clientKey)
+    func flagsDataStore(instanceName: String) -> FlagsDataStore {
+        FlagsDataStore(featureScope: self, instanceName: instanceName)
     }
 
     /// Flags data store endpoint within SDK context.
-    func flagsDataStoreContext(clientKey: String?, _ block: @escaping (DatadogContext, FlagsDataStore) -> Void) {
+    func flagsDataStoreContext(instanceName: String, _ block: @escaping (DatadogContext, FlagsDataStore) -> Void) {
         dataStoreContext { context, dataStore in
-            block(context, FlagsDataStore(featureScope: self, clientKey: clientKey))
+            block(context, FlagsDataStore(featureScope: self, instanceName: instanceName))
         }
+    }
+    
+    @available(*, deprecated, message: "Use flagsDataStore(instanceName:) instead")
+    func flagsDataStore(clientKey: String?) -> FlagsDataStore {
+        let instanceName = clientKey ?? FlagsClientRegistry.defaultInstanceName
+        return FlagsDataStore(featureScope: self, instanceName: instanceName)
+    }
+
+    @available(*, deprecated, message: "Use flagsDataStoreContext(instanceName:_:) instead")
+    func flagsDataStoreContext(clientKey: String?, _ block: @escaping (DatadogContext, FlagsDataStore) -> Void) {
+        let instanceName = clientKey ?? FlagsClientRegistry.defaultInstanceName
+        flagsDataStoreContext(instanceName: instanceName, block)
     }
 }
 
@@ -43,15 +55,24 @@ internal struct FlagsDataStore {
 
     /// Flags feature scope.
     let featureScope: FeatureScope
-    /// Client key for storage isolation between multiple client instances.
-    let clientKey: String?
+    /// Instance name for storage isolation between multiple client instances.
+    let instanceName: String
+    
+    /// Creates a new FlagsDataStore with the specified feature scope and instance name.
+    init(featureScope: FeatureScope, instanceName: String) {
+        self.featureScope = featureScope
+        self.instanceName = instanceName
+    }
+    
+    @available(*, deprecated, message: "Use init(featureScope:instanceName:) instead")
+    init(featureScope: FeatureScope, clientKey: String?) {
+        self.featureScope = featureScope
+        self.instanceName = clientKey ?? FlagsClientRegistry.defaultInstanceName
+    }
 
-    /// Generates a client-specific storage key for multi-instance isolation.
+    /// Generates an instance-specific storage key for multi-instance isolation.
     private func storageKey(for key: Key) -> String {
-        if let clientKey = clientKey {
-            return "\(key.rawValue)-\(clientKey)"
-        }
-        return key.rawValue
+        return "\(key.rawValue)-\(instanceName)"
     }
 
     func setValue<V: Codable>(_ value: V, forKey key: Key, version: DataStoreKeyVersion = dataStoreDefaultKeyVersion) {

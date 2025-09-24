@@ -16,23 +16,25 @@ import DatadogInternal
 /// - Business logic for setting/getting flags with proper context
 internal class FlagsStore {
     private let featureScope: FeatureScope
-    private let clientKey: String?
+    private let instanceName: String
     private var cachedFlags: [String: Any] = [:]
     private var cachedMetadata: FlagsMetadata?
     private let syncQueue: DispatchQueue
 
-    init(featureScope: FeatureScope, clientKey: String? = nil) {
+    init(featureScope: FeatureScope, instanceName: String) {
         self.featureScope = featureScope
-        self.clientKey = clientKey
-        
-        let queueLabel = if let clientKey = clientKey {
-            "com.datadoghq.flags.store-\(clientKey)"
-        } else {
-            "com.datadoghq.flags.store"
-        }
+        self.instanceName = instanceName
+
+        let queueLabel = "com.datadoghq.flags.store-\(instanceName)"
         self.syncQueue = DispatchQueue(label: queueLabel, attributes: .concurrent)
-        
+
         loadFromDataStore()
+    }
+
+    @available(*, deprecated, message: "Use init(featureScope:instanceName:) instead")
+    convenience init(featureScope: FeatureScope, clientKey: String? = nil) {
+        let instanceName = clientKey ?? FlagsClientRegistry.defaultInstanceName
+        self.init(featureScope: featureScope, instanceName: instanceName)
     }
 
     func getFlags() -> [String: Any] {
@@ -62,7 +64,7 @@ internal class FlagsStore {
 
     /// Persists in-memory flags and metadata to the underlying data store.
     private func saveToDataStore() {
-        let dataStore = featureScope.flagsDataStore(clientKey: clientKey)
+        let dataStore = featureScope.flagsDataStore(instanceName: instanceName)
 
         // Save flags
         let codableFlags = CodableFlags(flags: cachedFlags)
@@ -74,7 +76,7 @@ internal class FlagsStore {
     }
 
     private func loadFromDataStore() {
-        let dataStore = featureScope.flagsDataStore(clientKey: clientKey)
+        let dataStore = featureScope.flagsDataStore(instanceName: instanceName)
         // Load flags
         dataStore.value(forKey: .flags) { [weak self] (codableFlags: CodableFlags?) in
             if let codableFlags = codableFlags {

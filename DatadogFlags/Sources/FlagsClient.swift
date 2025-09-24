@@ -20,20 +20,54 @@ public class FlagsClient {
         self.featureScope = featureScope
     }
 
-    public static func create(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
+    /// Creates a named FlagsClient instance with default configuration.
+    ///
+    /// - Parameters:
+    ///   - name: The unique name for this instance. Required.
+    ///   - core: The DatadogCore instance to use. Defaults to CoreRegistry.default.
+    /// - Returns: FlagsClient instance, or NOPFlagsClient if creation fails.
+    public static func create(name: String, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
+        return create(with: Configuration(), name: name, in: core)
+    }
+    
+    /// Creates a named FlagsClient instance with custom configuration.
+    ///
+    /// - Parameters:
+    ///   - configuration: Custom configuration for the client.
+    ///   - name: The unique name for this instance. Required.
+    ///   - core: The DatadogCore instance to use. Defaults to CoreRegistry.default.
+    /// - Returns: FlagsClient instance, or NOPFlagsClient if creation fails.
+    public static func create(with configuration: FlagsClient.Configuration, name: String, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
         do {
             // To ensure the correct registration order between Core and Features,
             // the entire initialization flow is synchronized on the main thread.
-            return try runOnMainThreadSync {
-                try createOrThrow(with: configuration, in: core)
+            let client = try runOnMainThreadSync {
+                try createOrThrow(with: configuration, instanceName: name, in: core)
             }
+            
+            // Register the created client in the registry
+            FlagsClientRegistry.register(client, named: name)
+            return client
         } catch let error {
-            consolePrint("\(error)", .error)
-            fatalError("TODO: FFL-1016 Fallback to NOP Client")
+            DD.logger.error("Failed to create FlagsClient with name '\(name)'", error: error)
+            return NOPFlagsClient()
         }
     }
 
-    internal static func createOrThrow(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol) throws -> FlagsClient {
+    /// Returns an existing FlagsClient instance by name.
+    ///
+    /// - Parameter name: The name of the instance to retrieve.
+    /// - Returns: FlagsClient instance if it exists, NOPFlagsClient otherwise.
+    public static func instance(named name: String) -> FlagsClient {
+        return FlagsClientRegistry.instance(named: name)
+    }
+
+    @available(*, deprecated, message: "Use create(name:in:) or create(with:name:in:) instead")
+    public static func create(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
+        return create(with: configuration, name: FlagsClientRegistry.defaultInstanceName, in: core)
+    }
+
+    internal static func createOrThrow(with configuration: FlagsClient.Configuration, instanceName: String, in core: DatadogCoreProtocol) throws -> FlagsClient {
         guard core.get(feature: FlagsFeature.self) != nil else {
             throw ProgrammerError(
                 description: "`FlagsClient.create()` produces a non-functional client because the `Flags` feature was not enabled."
@@ -42,8 +76,13 @@ public class FlagsClient {
 
         let httpClient = NetworkFlagsHTTPClient()
         let featureScope = core.scope(for: FlagsFeature.self)
-        let store = FlagsStore(featureScope: featureScope, clientKey: configuration.clientKey)
+        let store = FlagsStore(featureScope: featureScope, instanceName: instanceName)
         return FlagsClient(configuration: configuration, httpClient: httpClient, store: store, featureScope: featureScope)
+    }
+
+    @available(*, deprecated, message: "Use createOrThrow(with:instanceName:in:) instead")
+    internal static func createOrThrow(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol) throws -> FlagsClient {
+        return try createOrThrow(with: configuration, instanceName: FlagsClientRegistry.defaultInstanceName, in: core)
     }
 
     public func setEvaluationContext(_ context: FlagsEvaluationContext, completion: @escaping (Result<Void, FlagsError>) -> Void) {

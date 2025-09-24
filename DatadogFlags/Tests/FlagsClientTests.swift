@@ -14,10 +14,10 @@ final class FlagsClientTests: XCTestCase {
         let core = FeatureRegistrationCoreMock()
         Flags.enable(in: core)
 
-        let config = FlagsClient.Configuration()
-        let client = FlagsClient.create(with: config, in: core)
+        let client = FlagsClient.create(name: "test", in: core)
 
-        XCTAssertNotNil(client) // TODO: FFL-1016 Assert that it is not a NOPFlagsClient
+        XCTAssertNotNil(client)
+        XCTAssertFalse(client is NOPFlagsClient, "Should create a functional FlagsClient")
     }
 
     func testFlagsClientWithMockHttpClient() {
@@ -132,7 +132,7 @@ private class MockFlagsStore: FlagsStore {
     private var flags: [String: Any] = [:]
 
     init() {
-        super.init(featureScope: FeatureScopeMock())
+        super.init(featureScope: FeatureScopeMock(), instanceName: "mock-test")
     }
 
     override func getFlags() -> [String: Any] {
