@@ -14,24 +14,24 @@ public final class FlagsClientRegistry {
     public static var `default`: FlagsClient {
         instances[defaultInstanceName] ?? NOPFlagsClient()
     }
-    
+
     /// The name for the default FlagsClient instance.
     ///
     /// Features should use this name as default parameter.
     public static let defaultInstanceName = "main"
-    
+
     @ReadWriteLock
     internal private(set) static var instances: [String: FlagsClient] = [:]
-    
+
     private init() { }
-    
+
     /// Register default FlagsClient instance.
     ///
     /// - Parameter instance: The default FlagsClient instance
     public static func register(default instance: FlagsClient) {
         register(instance, named: defaultInstanceName)
     }
-    
+
     /// Register a FlagsClient instance with the given name.
     ///
     /// If an instance with the same name already exists, this will silently fail
@@ -47,7 +47,7 @@ public final class FlagsClientRegistry {
         }
         instances[name] = instance
     }
-    
+
     /// Checks if a FlagsClient instance with the specified name is currently registered.
     ///
     /// - Parameter instanceName: The name of the FlagsClient instance to check.
@@ -55,7 +55,7 @@ public final class FlagsClientRegistry {
     public static func isRegistered(instanceName: String) -> Bool {
         return instances[instanceName] != nil
     }
-    
+
     /// Unregisters the instance for the given name.
     ///
     /// - Parameter name: The name of the instance to unregister.
@@ -64,7 +64,7 @@ public final class FlagsClientRegistry {
     public static func unregisterInstance(named name: String) -> FlagsClient? {
         instances.removeValue(forKey: name)
     }
-    
+
     /// Unregisters the default instance.
     ///
     /// - Returns: The instance that was removed, or nil if the key was not present in the registry.
@@ -72,7 +72,7 @@ public final class FlagsClientRegistry {
     public static func unregisterDefault() -> FlagsClient? {
         unregisterInstance(named: defaultInstanceName)
     }
-    
+
     /// Returns the instance for the given name.
     ///
     /// - Parameter name: The name of the instance to get.
@@ -80,7 +80,7 @@ public final class FlagsClientRegistry {
     public static func instance(named name: String) -> FlagsClient {
         instances[name] ?? NOPFlagsClient()
     }
-    
+
     /// Returns all registered instance names.
     ///
     /// - Returns: Array of registered instance names.

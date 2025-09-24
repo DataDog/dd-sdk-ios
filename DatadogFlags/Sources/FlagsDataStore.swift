@@ -19,7 +19,7 @@ internal extension FeatureScope {
             block(context, FlagsDataStore(featureScope: self, instanceName: instanceName))
         }
     }
-    
+
     @available(*, deprecated, message: "Use flagsDataStore(instanceName:) instead")
     func flagsDataStore(clientKey: String?) -> FlagsDataStore {
         let instanceName = clientKey ?? FlagsClientRegistry.defaultInstanceName
@@ -57,13 +57,13 @@ internal struct FlagsDataStore {
     let featureScope: FeatureScope
     /// Instance name for storage isolation between multiple client instances.
     let instanceName: String
-    
+
     /// Creates a new FlagsDataStore with the specified feature scope and instance name.
     init(featureScope: FeatureScope, instanceName: String) {
         self.featureScope = featureScope
         self.instanceName = instanceName
     }
-    
+
     @available(*, deprecated, message: "Use init(featureScope:instanceName:) instead")
     init(featureScope: FeatureScope, clientKey: String?) {
         self.featureScope = featureScope

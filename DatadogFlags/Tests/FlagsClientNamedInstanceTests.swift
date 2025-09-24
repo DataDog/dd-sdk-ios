@@ -10,7 +10,6 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagsClientNamedInstanceTests: XCTestCase {
-
     override func setUp() {
         super.setUp()
         // Clean up registry before each test

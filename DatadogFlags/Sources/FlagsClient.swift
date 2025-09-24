@@ -29,7 +29,7 @@ public class FlagsClient {
     public static func create(name: String, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
         return create(with: Configuration(), name: name, in: core)
     }
-    
+
     /// Creates a named FlagsClient instance with custom configuration.
     ///
     /// - Parameters:
@@ -44,7 +44,7 @@ public class FlagsClient {
             let client = try runOnMainThreadSync {
                 try createOrThrow(with: configuration, instanceName: name, in: core)
             }
-            
+
             // Register the created client in the registry
             FlagsClientRegistry.register(client, named: name)
             return client
