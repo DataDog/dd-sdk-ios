@@ -134,31 +134,16 @@ final class FlagsClientNamedInstanceTests: XCTestCase {
         XCTAssertFalse(FlagsClientRegistry.instance(named: "duplicate") === client2, "Should not replace existing registration")
     }
 
-    func testDeprecatedCreateMethod() {
-        let core = FeatureRegistrationCoreMock()
-        Flags.enable(in: core)
-
-        let config = FlagsClient.Configuration()
-        let client = FlagsClient.create(with: config, in: core)
-
-        XCTAssertFalse(client is NOPFlagsClient, "Deprecated method should still work")
-        XCTAssertTrue(FlagsClientRegistry.isRegistered(instanceName: "main"), "Should register with default name")
-
-        let retrieved = FlagsClientRegistry.instance(named: "main")
-        XCTAssertTrue(retrieved === client, "Should be retrievable by default name")
-    }
-
     func testMultipleInstancesWithDifferentConfigurations() {
         let core = FeatureRegistrationCoreMock()
         Flags.enable(in: core)
 
         let config1 = FlagsClient.Configuration(baseURL: "https://endpoint1.com")
         let config2 = FlagsClient.Configuration(baseURL: "https://endpoint2.com")
-        let config3 = FlagsClient.Configuration() // Default config
 
-        let client1 = FlagsClient.create(with: config1, name: "endpoint1", in: core)
-        let client2 = FlagsClient.create(with: config2, name: "endpoint2", in: core)
-        let client3 = FlagsClient.create(name: "default-config", in: core)
+        _ = FlagsClient.create(with: config1, name: "endpoint1", in: core)
+        _ = FlagsClient.create(with: config2, name: "endpoint2", in: core)
+        _ = FlagsClient.create(name: "default-config", in: core)
 
         XCTAssertTrue(FlagsClientRegistry.isRegistered(instanceName: "endpoint1"))
         XCTAssertTrue(FlagsClientRegistry.isRegistered(instanceName: "endpoint2"))

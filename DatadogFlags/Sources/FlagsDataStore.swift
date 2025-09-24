@@ -19,18 +19,6 @@ internal extension FeatureScope {
             block(context, FlagsDataStore(featureScope: self, instanceName: instanceName))
         }
     }
-
-    @available(*, deprecated, message: "Use flagsDataStore(instanceName:) instead")
-    func flagsDataStore(clientKey: String?) -> FlagsDataStore {
-        let instanceName = clientKey ?? FlagsClientRegistry.defaultInstanceName
-        return FlagsDataStore(featureScope: self, instanceName: instanceName)
-    }
-
-    @available(*, deprecated, message: "Use flagsDataStoreContext(instanceName:_:) instead")
-    func flagsDataStoreContext(clientKey: String?, _ block: @escaping (DatadogContext, FlagsDataStore) -> Void) {
-        let instanceName = clientKey ?? FlagsClientRegistry.defaultInstanceName
-        flagsDataStoreContext(instanceName: instanceName, block)
-    }
 }
 
 /// Low-level layer for Flags storage (similar to RUMDataStore).
@@ -62,12 +50,6 @@ internal struct FlagsDataStore {
     init(featureScope: FeatureScope, instanceName: String) {
         self.featureScope = featureScope
         self.instanceName = instanceName
-    }
-
-    @available(*, deprecated, message: "Use init(featureScope:instanceName:) instead")
-    init(featureScope: FeatureScope, clientKey: String?) {
-        self.featureScope = featureScope
-        self.instanceName = clientKey ?? FlagsClientRegistry.defaultInstanceName
     }
 
     /// Generates an instance-specific storage key for multi-instance isolation.

@@ -31,12 +31,6 @@ internal class FlagsStore {
         loadFromDataStore()
     }
 
-    @available(*, deprecated, message: "Use init(featureScope:instanceName:) instead")
-    convenience init(featureScope: FeatureScope, clientKey: String? = nil) {
-        let instanceName = clientKey ?? FlagsClientRegistry.defaultInstanceName
-        self.init(featureScope: featureScope, instanceName: instanceName)
-    }
-
     func getFlags() -> [String: Any] {
         return syncQueue.sync { self.cachedFlags }
     }

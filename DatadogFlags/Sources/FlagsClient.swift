@@ -62,11 +62,6 @@ public class FlagsClient {
         return FlagsClientRegistry.instance(named: name)
     }
 
-    @available(*, deprecated, message: "Use create(name:in:) or create(with:name:in:) instead")
-    public static func create(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
-        return create(with: configuration, name: FlagsClientRegistry.defaultInstanceName, in: core)
-    }
-
     internal static func createOrThrow(with configuration: FlagsClient.Configuration, instanceName: String, in core: DatadogCoreProtocol) throws -> FlagsClient {
         guard core.get(feature: FlagsFeature.self) != nil else {
             throw ProgrammerError(
@@ -78,11 +73,6 @@ public class FlagsClient {
         let featureScope = core.scope(for: FlagsFeature.self)
         let store = FlagsStore(featureScope: featureScope, instanceName: instanceName)
         return FlagsClient(configuration: configuration, httpClient: httpClient, store: store, featureScope: featureScope)
-    }
-
-    @available(*, deprecated, message: "Use createOrThrow(with:instanceName:in:) instead")
-    internal static func createOrThrow(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol) throws -> FlagsClient {
-        return try createOrThrow(with: configuration, instanceName: FlagsClientRegistry.defaultInstanceName, in: core)
     }
 
     public func setEvaluationContext(_ context: FlagsEvaluationContext, completion: @escaping (Result<Void, FlagsError>) -> Void) {
