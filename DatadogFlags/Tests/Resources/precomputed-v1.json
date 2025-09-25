@@ -55,7 +55,7 @@
         "json-flag": {
           "allocationKey": "allocation-127",
           "variationKey": "variation-127",
-          "variationType": "OBJECT",
+          "variationType": "JSON",
           "variationValue": { "key": "value", "prop": 123 },
           "extraLogging": {
             "experiment": true
