@@ -187,4 +187,54 @@ final class FlagsClientNamedInstanceTests: XCTestCase {
         XCTAssertTrue(defaultAfter === client, "Should return the created default client")
         XCTAssertFalse(defaultAfter is NOPFlagsClient, "Should not be NOP after creation")
     }
+
+    func testCreateOrGetBasicFunctionality() {
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
+
+        // First call should create a new client
+        let client1 = FlagsClient.createOrGet(name: "test-client", in: core)
+        XCTAssertFalse(client1 is NOPFlagsClient, "Should create a functional client")
+        XCTAssertTrue(FlagsClientRegistry.isRegistered(instanceName: "test-client"))
+
+        // Second call should return the same existing client
+        let client2 = FlagsClient.createOrGet(name: "test-client", in: core)
+        XCTAssertTrue(client1 === client2, "Should return the existing client instance")
+
+        // Verify only one instance is registered
+        XCTAssertEqual(FlagsClientRegistry.registeredInstanceNames().count, 1)
+    }
+
+    func testCreateOrGetWithConfiguration() {
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
+
+        let config1 = FlagsClient.Configuration(baseURL: "https://endpoint1.com")
+        let config2 = FlagsClient.Configuration(baseURL: "https://endpoint2.com")
+
+        // First call creates with config1
+        let client1 = FlagsClient.createOrGet(with: config1, name: "configured-client", in: core)
+        XCTAssertFalse(client1 is NOPFlagsClient)
+
+        // Second call with different config should return existing client (ignores new config)
+        let client2 = FlagsClient.createOrGet(with: config2, name: "configured-client", in: core)
+        XCTAssertTrue(client1 === client2, "Should return existing client even with different config")
+    }
+
+    func testCreateOrGetWithDefaultName() {
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
+
+        // Create using default name
+        let client1 = FlagsClient.createOrGet(in: core)
+        XCTAssertTrue(FlagsClientRegistry.isRegistered(instanceName: "main"))
+
+        // Second call should return the same client
+        let client2 = FlagsClient.createOrGet(in: core)
+        XCTAssertTrue(client1 === client2, "Should return existing default client")
+
+        // Should be accessible via default property
+        let defaultClient = FlagsClient.default
+        XCTAssertTrue(defaultClient === client1, "Should be accessible via default property")
+    }
 }
