@@ -11,16 +11,30 @@ public class FlagsClient {
     private let configuration: FlagsClient.Configuration
     private let httpClient: FlagsHTTPClient
     private let store: FlagsStore
-    private let featureScope: FeatureScope
+    private let exposureLogger: any ExposureLogging
+    private let dateProvider: any DateProvider
+    private let featureScope: any FeatureScope
 
-    internal init(configuration: FlagsClient.Configuration, httpClient: FlagsHTTPClient, store: FlagsStore, featureScope: FeatureScope) {
+    internal init(
+        configuration: FlagsClient.Configuration,
+        httpClient: FlagsHTTPClient,
+        store: FlagsStore,
+        exposureLogger: any ExposureLogging,
+        dateProvider: any DateProvider,
+        featureScope: any FeatureScope
+    ) {
         self.configuration = configuration
         self.httpClient = httpClient
         self.store = store
+        self.exposureLogger = exposureLogger
+        self.dateProvider = dateProvider
         self.featureScope = featureScope
     }
 
-    public static func create(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
+    public static func create(
+        with configuration: FlagsClient.Configuration,
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) -> FlagsClient {
         do {
             // To ensure the correct registration order between Core and Features,
             // the entire initialization flow is synchronized on the main thread.
@@ -33,7 +47,10 @@ public class FlagsClient {
         }
     }
 
-    internal static func createOrThrow(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol) throws -> FlagsClient {
+    internal static func createOrThrow(
+        with configuration: FlagsClient.Configuration,
+        in core: DatadogCoreProtocol
+    ) throws -> FlagsClient {
         guard core.get(feature: FlagsFeature.self) != nil else {
             throw ProgrammerError(
                 description: "`FlagsClient.create()` produces a non-functional client because the `Flags` feature was not enabled."
@@ -43,7 +60,15 @@ public class FlagsClient {
         let httpClient = NetworkFlagsHTTPClient()
         let store = FlagsStore()
         let featureScope = core.scope(for: FlagsFeature.self)
-        return FlagsClient(configuration: configuration, httpClient: httpClient, store: store, featureScope: featureScope)
+
+        return FlagsClient(
+            configuration: configuration,
+            httpClient: httpClient,
+            store: store,
+            exposureLogger: ExposureLogger(featureScope: featureScope),
+            dateProvider: SystemDateProvider(),
+            featureScope: featureScope
+        )
     }
 
     public func setEvaluationContext(_ context: FlagsEvaluationContext, completion: @escaping (Result<Void, FlagsError>) -> Void) {
@@ -118,6 +143,17 @@ public class FlagsClient {
         guard let flagAssignment = store.flagAssignment(for: key) else {
             return defaultValue
         }
-        return flagAssignment.variation(as: T.self) ?? defaultValue
+        let value = flagAssignment.variation(as: T.self) ?? defaultValue
+
+        if let context = store.getFlagsMetadata()?.context {
+            exposureLogger.logExposure(
+                at: dateProvider.now,
+                for: key,
+                assignment: flagAssignment,
+                context: context
+            )
+        }
+
+        return value
     }
 }

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class FlagsEvaluationContext: Codable {
+public struct FlagsEvaluationContext: Equatable, Codable {
     public let targetingKey: String
     public let attributes: [String: String]
     public init(targetingKey: String, attributes: [String: String] = [:]) {

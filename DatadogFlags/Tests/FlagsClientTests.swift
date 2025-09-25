@@ -35,6 +35,8 @@ final class FlagsClientTests: XCTestCase {
             configuration: config,
             httpClient: mockHttpClient,
             store: mockStore,
+            exposureLogger: ExposureLoggerMock(),
+            dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock()
         )
 
@@ -85,6 +87,8 @@ final class FlagsClientTests: XCTestCase {
             configuration: config,
             httpClient: AttributeSerializationTestClient(),
             store: MockFlagsStore(),
+            exposureLogger: ExposureLoggerMock(),
+            dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock()
         )
 

@@ -8,7 +8,12 @@ import Foundation
 import DatadogInternal
 
 internal protocol ExposureLogging {
-    func logExposure(at date: Date, for flagKey: String, flagAssignment: FlagAssignment)
+    func logExposure(
+        at date: Date,
+        for flagKey: String,
+        assignment: FlagAssignment,
+        context: FlagsEvaluationContext
+    )
 }
 
 internal final class ExposureLogger: ExposureLogging {
@@ -19,21 +24,20 @@ internal final class ExposureLogger: ExposureLogging {
         let variationKey: String
     }
 
-    private let flagsEvaluationContext: FlagsEvaluationContext
-    private let featureScope: FeatureScope
-
+    private let featureScope: any FeatureScope
     private var loggedExposures: Set<Exposure> = []
 
-    init(
-        flagsEvaluationContext: FlagsEvaluationContext,
-        featureScope: FeatureScope
-    ) {
+    init(featureScope: any FeatureScope) {
         self.featureScope = featureScope
-        self.flagsEvaluationContext = flagsEvaluationContext
     }
 
-    func logExposure(at date: Date, for flagKey: String, flagAssignment: FlagAssignment) {
-        guard flagAssignment.doLog else {
+    func logExposure(
+        at date: Date,
+        for flagKey: String,
+        assignment: FlagAssignment,
+        context: FlagsEvaluationContext
+    ) {
+        guard assignment.doLog else {
             return
         }
 
@@ -43,10 +47,10 @@ internal final class ExposureLogger: ExposureLogging {
             }
 
             let exposure = Exposure(
-                targetingKey: flagsEvaluationContext.targetingKey,
+                targetingKey: context.targetingKey,
                 flagKey: flagKey,
-                allocationKey: flagAssignment.allocationKey,
-                variationKey: flagAssignment.variationKey
+                allocationKey: assignment.allocationKey,
+                variationKey: assignment.variationKey
             )
 
             guard !loggedExposures.contains(exposure) else {
@@ -56,12 +60,12 @@ internal final class ExposureLogger: ExposureLogging {
 
             let exposureEvent = ExposureEvent(
                 timestamp: date.timeIntervalSince1970.toInt64Milliseconds,
-                allocation: .init(key: flagAssignment.allocationKey),
+                allocation: .init(key: assignment.allocationKey),
                 flag: .init(key: flagKey),
-                variant: .init(key: flagAssignment.variationKey),
+                variant: .init(key: assignment.variationKey),
                 subject: .init(
-                    id: flagsEvaluationContext.targetingKey,
-                    attributes: flagsEvaluationContext.attributes
+                    id: context.targetingKey,
+                    attributes: context.attributes
                 )
             )
 
