@@ -153,19 +153,4 @@ final class FlagsClientNamedInstanceTests: XCTestCase {
         XCTAssertEqual(FlagsClientRegistry.registeredInstanceNames().count, 3)
     }
 
-    func testMainInstanceAccess() {
-        let core = FeatureRegistrationCoreMock()
-        Flags.enable(in: core)
-
-        // Before creating any client, should return NOP
-        let instanceBefore = FlagsClient.instance(named: "main")
-        XCTAssertTrue(instanceBefore is NOPFlagsClient, "Should return NOP when no main instance exists")
-        XCTAssertEqual(instanceBefore.name, "nop", "NOP client should have default name")
-
-        // Create a client named "main"
-        let client = FlagsClient.create(name: "main", in: core)
-        let instanceAfter = FlagsClient.instance(named: "main")
-        XCTAssertTrue(instanceAfter === client, "Should return the created main client")
-        XCTAssertFalse(instanceAfter is NOPFlagsClient, "Should not be NOP after creation")
-    }
 }

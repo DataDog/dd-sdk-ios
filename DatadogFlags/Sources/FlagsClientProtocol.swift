@@ -65,15 +65,3 @@ public final class NOPFlagsClient: FlagsClientProtocol {
         return defaultValue
     }
 }
-
-/// No-operation implementation of FlagsHTTPClient
-internal struct NOPFlagsHTTPClient: FlagsHTTPClient {
-    internal func postPrecomputeAssignments(
-        context: FlagsEvaluationContext,
-        configuration: FlagsClient.Configuration,
-        sdkContext: DatadogContext,
-        completion: @escaping (Result<(Data, URLResponse), Error>) -> Void
-    ) {
-        completion(.failure(FlagsError.clientNotInitialized))
-    }
-}
