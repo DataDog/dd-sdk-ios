@@ -957,14 +957,14 @@
 		866CA4A92E02EE0100E0CD03 /* BrightnessLevelPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866CA4A72E02EE0100E0CD03 /* BrightnessLevelPublisherTests.swift */; };
 		86B43EC72DE464ED00FDDD29 /* LocaleInfoPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B43EC62DE464ED00FDDD29 /* LocaleInfoPublisher.swift */; };
 		86B43EC82DE464ED00FDDD29 /* LocaleInfoPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B43EC62DE464ED00FDDD29 /* LocaleInfoPublisher.swift */; };
-		8D05D4732E83D26000773D46 /* NOPFlagsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D05D4722E83D26000773D46 /* NOPFlagsClient.swift */; };
-		8D05D4742E83D26000773D46 /* NOPFlagsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D05D4722E83D26000773D46 /* NOPFlagsClient.swift */; };
 		8D05D4762E83D26A00773D46 /* FlagsClientRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D05D4752E83D26A00773D46 /* FlagsClientRegistry.swift */; };
 		8D05D4772E83D26A00773D46 /* FlagsClientRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D05D4752E83D26A00773D46 /* FlagsClientRegistry.swift */; };
 		8D05D4792E83D27400773D46 /* FlagsClientNamedInstanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D05D4782E83D27400773D46 /* FlagsClientNamedInstanceTests.swift */; };
 		8D05D47A2E83D27400773D46 /* FlagsClientNamedInstanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D05D4782E83D27400773D46 /* FlagsClientNamedInstanceTests.swift */; };
 		8D05D47C2E83D28000773D46 /* FlagsClientRegistryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D05D47B2E83D28000773D46 /* FlagsClientRegistryTests.swift */; };
 		8D05D47D2E83D28000773D46 /* FlagsClientRegistryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D05D47B2E83D28000773D46 /* FlagsClientRegistryTests.swift */; };
+		8D05D47F2E85CBD500773D46 /* FlagsClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D05D47E2E85CBD500773D46 /* FlagsClientProtocol.swift */; };
+		8D05D4802E85CBD500773D46 /* FlagsClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D05D47E2E85CBD500773D46 /* FlagsClientProtocol.swift */; };
 		8DADC3B42E7CCF0D0060F558 /* FlagsClientConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3AF2E7CCF0D0060F558 /* FlagsClientConfiguration.swift */; };
 		8DADC3B62E7CCF0D0060F558 /* FlagsTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3B32E7CCF0D0060F558 /* FlagsTypes.swift */; };
 		8DADC3B82E7CCF0D0060F558 /* FlagsEndpointBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3B02E7CCF0D0060F558 /* FlagsEndpointBuilder.swift */; };
@@ -3093,10 +3093,10 @@
 		864A707E2DE092AD00AC0619 /* AccessibilityReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityReaderTests.swift; sourceTree = "<group>"; };
 		866CA4A72E02EE0100E0CD03 /* BrightnessLevelPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrightnessLevelPublisherTests.swift; sourceTree = "<group>"; };
 		86B43EC62DE464ED00FDDD29 /* LocaleInfoPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleInfoPublisher.swift; sourceTree = "<group>"; };
-		8D05D4722E83D26000773D46 /* NOPFlagsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NOPFlagsClient.swift; sourceTree = "<group>"; };
 		8D05D4752E83D26A00773D46 /* FlagsClientRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientRegistry.swift; sourceTree = "<group>"; };
 		8D05D4782E83D27400773D46 /* FlagsClientNamedInstanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientNamedInstanceTests.swift; sourceTree = "<group>"; };
 		8D05D47B2E83D28000773D46 /* FlagsClientRegistryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientRegistryTests.swift; sourceTree = "<group>"; };
+		8D05D47E2E85CBD500773D46 /* FlagsClientProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientProtocol.swift; sourceTree = "<group>"; };
 		8DADC3AE2E7CCF0D0060F558 /* FlagsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClient.swift; sourceTree = "<group>"; };
 		8DADC3AF2E7CCF0D0060F558 /* FlagsClientConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientConfiguration.swift; sourceTree = "<group>"; };
 		8DADC3B02E7CCF0D0060F558 /* FlagsEndpointBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsEndpointBuilder.swift; sourceTree = "<group>"; };
@@ -4247,8 +4247,8 @@
 		5BA8C30E2E7859EC00B1DA80 /* DatadogFlags */ = {
 			isa = PBXGroup;
 			children = (
+				8D05D47E2E85CBD500773D46 /* FlagsClientProtocol.swift */,
 				8D05D4752E83D26A00773D46 /* FlagsClientRegistry.swift */,
-				8D05D4722E83D26000773D46 /* NOPFlagsClient.swift */,
 				8DADC3E62E7E5BF80060F558 /* FlagsStore.swift */,
 				8DADC3E32E7E5BE00060F558 /* FlagsDataStore.swift */,
 				8DADC3E02E7E4B4A0060F558 /* FlagsHTTPClient.swift */,
@@ -8698,10 +8698,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DADC3BA2E7CCF0D0060F558 /* FlagsClientConfiguration.swift in Sources */,
+				8D05D4802E85CBD500773D46 /* FlagsClientProtocol.swift in Sources */,
 				8DADC3BC2E7CCF0D0060F558 /* FlagsTypes.swift in Sources */,
 				8DADC3BE2E7CCF0D0060F558 /* FlagsEndpointBuilder.swift in Sources */,
 				614964492E7D7B0D00D9EFFF /* ExposureRequestBuilder.swift in Sources */,
-				8D05D4742E83D26000773D46 /* NOPFlagsClient.swift in Sources */,
 				8D05D4772E83D26A00773D46 /* FlagsClientRegistry.swift in Sources */,
 				6149644A2E7D7B0D00D9EFFF /* FlagsFeature.swift in Sources */,
 				8DADC3E52E7E5BE00060F558 /* FlagsDataStore.swift in Sources */,
@@ -8718,10 +8718,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DADC3B42E7CCF0D0060F558 /* FlagsClientConfiguration.swift in Sources */,
+				8D05D47F2E85CBD500773D46 /* FlagsClientProtocol.swift in Sources */,
 				8DADC3B62E7CCF0D0060F558 /* FlagsTypes.swift in Sources */,
 				8DADC3B82E7CCF0D0060F558 /* FlagsEndpointBuilder.swift in Sources */,
 				614964472E7D7B0D00D9EFFF /* ExposureRequestBuilder.swift in Sources */,
-				8D05D4732E83D26000773D46 /* NOPFlagsClient.swift in Sources */,
 				8D05D4762E83D26A00773D46 /* FlagsClientRegistry.swift in Sources */,
 				614964482E7D7B0D00D9EFFF /* FlagsFeature.swift in Sources */,
 				8DADC3E42E7E5BE00060F558 /* FlagsDataStore.swift in Sources */,

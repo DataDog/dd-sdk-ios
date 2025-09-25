@@ -26,23 +26,6 @@ final class FlagsClientRegistryTests: XCTestCase {
         super.tearDown()
     }
 
-    func testDefaultInstance() {
-        let core = FeatureRegistrationCoreMock()
-        Flags.enable(in: core)
-
-        let client = FlagsClient.create(name: "main", in: core)
-        FlagsClientRegistry.register(default: client)
-
-        let defaultClient = FlagsClientRegistry.default
-        XCTAssertTrue(defaultClient === client, "Default instance should return the registered client")
-
-        XCTAssertTrue(FlagsClientRegistry.isRegistered(instanceName: "main"))
-    }
-
-    func testDefaultInstanceNameConstant() {
-        XCTAssertEqual(FlagsClientRegistry.defaultInstanceName, "main")
-    }
-
     func testRegisterNamed() {
         let core = FeatureRegistrationCoreMock()
         Flags.enable(in: core)
@@ -83,11 +66,6 @@ final class FlagsClientRegistryTests: XCTestCase {
         XCTAssertTrue(retrieved is NOPFlagsClient, "Should return NOPFlagsClient for non-existent instance")
     }
 
-    func testDefaultNotRegisteredReturnsNOP() {
-        let defaultClient = FlagsClientRegistry.default
-        XCTAssertTrue(defaultClient is NOPFlagsClient, "Should return NOPFlagsClient when default is not registered")
-    }
-
     func testUnregisterInstance() {
         let core = FeatureRegistrationCoreMock()
         Flags.enable(in: core)
@@ -103,23 +81,6 @@ final class FlagsClientRegistryTests: XCTestCase {
 
         let retrieved = FlagsClientRegistry.instance(named: "test")
         XCTAssertTrue(retrieved is NOPFlagsClient, "Should return NOP after unregistering")
-    }
-
-    func testUnregisterDefault() {
-        let core = FeatureRegistrationCoreMock()
-        Flags.enable(in: core)
-
-        let client = FlagsClient.create(name: "main", in: core)
-        FlagsClientRegistry.register(default: client)
-
-        XCTAssertTrue(FlagsClientRegistry.isRegistered(instanceName: "main"))
-
-        let unregistered = FlagsClientRegistry.unregisterDefault()
-        XCTAssertTrue(unregistered === client, "Should return the unregistered default client")
-        XCTAssertFalse(FlagsClientRegistry.isRegistered(instanceName: "main"))
-
-        let defaultClient = FlagsClientRegistry.default
-        XCTAssertTrue(defaultClient is NOPFlagsClient, "Should return NOP after unregistering default")
     }
 
     func testUnregisterNonExistentReturnsNil() {

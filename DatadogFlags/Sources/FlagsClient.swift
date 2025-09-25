@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-public class FlagsClient {
+public class FlagsClient: FlagsClientProtocol {
     private let configuration: FlagsClient.Configuration
     private let httpClient: FlagsHTTPClient
     private let store: FlagsStore
@@ -26,7 +26,7 @@ public class FlagsClient {
     ///   - name: The unique name for this instance. Required.
     ///   - core: The DatadogCore instance to use. Defaults to CoreRegistry.default.
     /// - Returns: FlagsClient instance, or NOPFlagsClient if creation fails.
-    public static func create(name: String, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
+    public static func create(name: String, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol {
         return create(with: Configuration(), name: name, in: core)
     }
 
@@ -37,7 +37,7 @@ public class FlagsClient {
     ///   - name: The unique name for this instance. Required.
     ///   - core: The DatadogCore instance to use. Defaults to CoreRegistry.default.
     /// - Returns: FlagsClient instance, or NOPFlagsClient if creation fails.
-    public static func create(with configuration: FlagsClient.Configuration, name: String, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
+    public static func create(with configuration: FlagsClient.Configuration, name: String, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol {
         do {
             // To ensure the correct registration order between Core and Features,
             // the entire initialization flow is synchronized on the main thread.
@@ -58,7 +58,7 @@ public class FlagsClient {
     ///
     /// - Parameter name: The name of the instance to retrieve.
     /// - Returns: FlagsClient instance if it exists, NOPFlagsClient otherwise.
-    public static func instance(named name: String) -> FlagsClient {
+    public static func instance(named name: String) -> FlagsClientProtocol {
         return FlagsClientRegistry.instance(named: name)
     }
 

@@ -10,27 +10,10 @@ import DatadogInternal
 /// A Registry for all FlagsClient instances, allowing access to named instances
 /// from anywhere in the application.
 public final class FlagsClientRegistry {
-    /// Returns the default FlagsClient instance if registered, `NOPFlagsClient` instance otherwise.
-    public static var `default`: FlagsClient {
-        instances[defaultInstanceName] ?? NOPFlagsClient()
-    }
-
-    /// The name for the default FlagsClient instance.
-    ///
-    /// Features should use this name as default parameter.
-    public static let defaultInstanceName = "main"
-
     @ReadWriteLock
-    internal private(set) static var instances: [String: FlagsClient] = [:]
+    internal private(set) static var instances: [String: FlagsClientProtocol] = [:]
 
     private init() { }
-
-    /// Register default FlagsClient instance.
-    ///
-    /// - Parameter instance: The default FlagsClient instance
-    public static func register(default instance: FlagsClient) {
-        register(instance, named: defaultInstanceName)
-    }
 
     /// Register a FlagsClient instance with the given name.
     ///
@@ -40,7 +23,7 @@ public final class FlagsClientRegistry {
     /// - Parameters:
     ///   - instance: The FlagsClient instance
     ///   - name: The name of the given instance.
-    public static func register(_ instance: FlagsClient, named name: String) {
+    public static func register(_ instance: FlagsClientProtocol, named name: String) {
         _instances.mutate { instances in
             guard instances[name] == nil else {
                 DD.logger.warn("A FlagsClient instance with name '\(name)' has already been registered.")
@@ -63,23 +46,15 @@ public final class FlagsClientRegistry {
     /// - Parameter name: The name of the instance to unregister.
     /// - Returns: The instance that was removed, or nil if the key was not present in the registry.
     @discardableResult
-    public static func unregisterInstance(named name: String) -> FlagsClient? {
+    public static func unregisterInstance(named name: String) -> FlagsClientProtocol? {
         instances.removeValue(forKey: name)
-    }
-
-    /// Unregisters the default instance.
-    ///
-    /// - Returns: The instance that was removed, or nil if the key was not present in the registry.
-    @discardableResult
-    public static func unregisterDefault() -> FlagsClient? {
-        unregisterInstance(named: defaultInstanceName)
     }
 
     /// Returns the instance for the given name.
     ///
     /// - Parameter name: The name of the instance to get.
     /// - Returns: The FlagsClient instance if it exists, `NOPFlagsClient` instance otherwise.
-    public static func instance(named name: String) -> FlagsClient {
+    public static func instance(named name: String) -> FlagsClientProtocol {
         instances[name] ?? NOPFlagsClient()
     }
 
