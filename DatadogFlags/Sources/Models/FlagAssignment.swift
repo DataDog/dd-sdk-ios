@@ -15,10 +15,10 @@ internal struct FlagAssignment: Equatable {
         case object(AnyValue)
     }
 
-    let allocationKey: String
-    let variationKey: String
-    let variation: Variation
-    let doLog: Bool
+    var allocationKey: String
+    var variationKey: String
+    var variation: Variation
+    var doLog: Bool
 
     func variation<T: FlagValue>(as type: T.Type) -> T? {
         switch self.variation {

@@ -26,16 +26,18 @@ final class FlagsClientTests: XCTestCase {
     }
 
     func testFlagsClientWithMockHttpClient() {
+        // Given
         let expectation = expectation(description: "Flags loaded")
 
         let mockHttpClient = MockFlagsHTTPClient()
         let mockStore = MockFlagsStore()
         let config = FlagsClient.Configuration()
+        let exposureLoggerMock = ExposureLoggerMock()
         let client = FlagsClient(
             configuration: config,
             httpClient: mockHttpClient,
             store: mockStore,
-            exposureLogger: ExposureLoggerMock(),
+            exposureLogger: exposureLoggerMock,
             dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock()
         )
@@ -45,31 +47,10 @@ final class FlagsClientTests: XCTestCase {
             attributes: ["attr1": "value1", "companyId": "1"]
         )
 
+        // When
         client.setEvaluationContext(context) { result in
             switch result {
             case .success:
-                let boolValue = client.getBooleanValue(key: "boolean-flag", defaultValue: false)
-                let stringValue = client.getStringValue(key: "string-flag", defaultValue: "default")
-                let integerValue = client.getIntegerValue(key: "integer-flag", defaultValue: 0)
-                let doubleValue = client.getDoubleValue(key: "numeric-flag", defaultValue: 0.0)
-                let objectValue = client.getObjectValue(key: "json-flag", defaultValue: .null)
-                let typedObjectValue = client.getObjectValue(key: "json-flag", defaultValue: Model(key: "null", prop: 0))
-
-                XCTAssertTrue(boolValue)
-                XCTAssertEqual(stringValue, "red")
-                XCTAssertEqual(integerValue, 42)
-                XCTAssertEqual(doubleValue, 3.14, accuracy: 0.001)
-                XCTAssertEqual(
-                    objectValue,
-                    .dictionary(
-                        [
-                            "key": .string("value"),
-                            "prop": .int(123)
-                        ]
-                    )
-                )
-                XCTAssertEqual(typedObjectValue, Model(key: "value", prop: 123))
-
                 expectation.fulfill()
             case .failure(let error):
                 XCTFail("Expected success but got error: \(error)")
@@ -77,6 +58,30 @@ final class FlagsClientTests: XCTestCase {
         }
 
         waitForExpectations(timeout: 1.0)
+
+        let boolValue = client.getBooleanValue(key: "boolean-flag", defaultValue: false)
+        let stringValue = client.getStringValue(key: "string-flag", defaultValue: "default")
+        let integerValue = client.getIntegerValue(key: "integer-flag", defaultValue: 0)
+        let doubleValue = client.getDoubleValue(key: "numeric-flag", defaultValue: 0.0)
+        let objectValue = client.getObjectValue(key: "json-flag", defaultValue: .null)
+        let typedObjectValue = client.getObjectValue(key: "json-flag", defaultValue: Model(key: "null", prop: 0))
+
+        // Then
+        XCTAssertTrue(boolValue)
+        XCTAssertEqual(stringValue, "red")
+        XCTAssertEqual(integerValue, 42)
+        XCTAssertEqual(doubleValue, 3.14, accuracy: 0.001)
+        XCTAssertEqual(
+            objectValue,
+            .dictionary(
+                [
+                    "key": .string("value"),
+                    "prop": .int(123)
+                ]
+            )
+        )
+        XCTAssertEqual(typedObjectValue, Model(key: "value", prop: 123))
+        XCTAssertEqual(exposureLoggerMock.logExposureCalls.count, 6)
     }
 
     func testContextAttributeSerialization() {
@@ -151,6 +156,10 @@ private class MockFlagsStore: FlagsStore {
         var flags: [String: FlagAssignment]
         var context: FlagsEvaluationContext
         var date: Date
+    }
+
+    override var context: FlagsEvaluationContext? {
+        mockState?.context
     }
 
     private var mockState: MockState?

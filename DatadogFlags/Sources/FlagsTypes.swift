@@ -22,8 +22,3 @@ public enum FlagsError: Error {
     case invalidConfiguration
     case unsupportedSite(String)
 }
-
-internal struct FlagsMetadata: Codable {
-    let fetchedAt: Double // Timestamp in milliseconds (JavaScript-style)
-    let context: FlagsEvaluationContext?
-}

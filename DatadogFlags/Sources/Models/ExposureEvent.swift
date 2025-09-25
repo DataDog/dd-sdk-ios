@@ -6,12 +6,12 @@
 
 import Foundation
 
-internal struct ExposureEvent: Codable {
-    struct Identifier: Codable {
+internal struct ExposureEvent: Equatable, Codable {
+    struct Identifier: Equatable, Codable {
         let key: String
     }
 
-    struct Subject: Codable {
+    struct Subject: Equatable, Codable {
         let id: String
         let attributes: [String: String]
     }
