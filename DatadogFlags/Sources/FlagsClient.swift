@@ -72,51 +72,6 @@ public class FlagsClient {
         }
     }
 
-    /// Creates a FlagsClient instance with default configuration, or returns existing if one with the same name exists.
-    ///
-    /// - Parameter core: The DatadogCore instance to use. Defaults to CoreRegistry.default.
-    /// - Returns: FlagsClient instance (new or existing).
-    public static func createOrGet(in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
-        return createOrGet(with: Configuration(), name: FlagsClientRegistry.defaultInstanceName, in: core)
-    }
-
-    /// Creates a named FlagsClient instance with default configuration, or returns existing if one with the same name exists.
-    ///
-    /// - Parameters:
-    ///   - name: The unique name for this instance.
-    ///   - core: The DatadogCore instance to use. Defaults to CoreRegistry.default.
-    /// - Returns: FlagsClient instance (new or existing).
-    public static func createOrGet(name: String, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
-        return createOrGet(with: Configuration(), name: name, in: core)
-    }
-
-    /// Creates a FlagsClient instance with custom configuration, or returns existing if one with the same name exists.
-    ///
-    /// - Parameters:
-    ///   - configuration: Custom configuration for the client.
-    ///   - core: The DatadogCore instance to use. Defaults to CoreRegistry.default.
-    /// - Returns: FlagsClient instance (new or existing).
-    public static func createOrGet(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
-        return createOrGet(with: configuration, name: FlagsClientRegistry.defaultInstanceName, in: core)
-    }
-
-    /// Creates a named FlagsClient instance with custom configuration, or returns existing if one with the same name exists.
-    ///
-    /// - Parameters:
-    ///   - configuration: Custom configuration for the client.
-    ///   - name: The unique name for this instance.
-    ///   - core: The DatadogCore instance to use. Defaults to CoreRegistry.default.
-    /// - Returns: FlagsClient instance (new or existing).
-    public static func createOrGet(with configuration: FlagsClient.Configuration, name: String, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
-        // Check if instance already exists
-        if FlagsClientRegistry.isRegistered(instanceName: name) {
-            return FlagsClientRegistry.instance(named: name)
-        }
-
-        // Create new instance if it doesn't exist
-        return create(with: configuration, name: name, in: core)
-    }
-
     /// Returns the default FlagsClient instance if it exists.
     ///
     /// - Returns: Default FlagsClient instance if it exists, NOPFlagsClient otherwise.
