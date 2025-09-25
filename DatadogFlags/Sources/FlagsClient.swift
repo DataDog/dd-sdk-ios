@@ -124,6 +124,13 @@ public class FlagsClient {
         return FlagsClientRegistry.default
     }
 
+    /// Returns the default FlagsClient instance.
+    ///
+    /// - Returns: Default FlagsClient instance if it exists, NOPFlagsClient otherwise.
+    public static func instance() -> FlagsClient {
+        return FlagsClientRegistry.default
+    }
+
     /// Returns an existing FlagsClient instance by name.
     ///
     /// - Parameter name: The name of the instance to retrieve.

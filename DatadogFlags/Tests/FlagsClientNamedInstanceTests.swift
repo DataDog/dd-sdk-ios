@@ -177,15 +177,23 @@ final class FlagsClientNamedInstanceTests: XCTestCase {
         let core = FeatureRegistrationCoreMock()
         Flags.enable(in: core)
 
-        // Before creating any client, default should be NOP
+        // Before creating any client, both methods should return NOP
         let defaultBefore = FlagsClient.default
+        let instanceBefore = FlagsClient.instance()
         XCTAssertTrue(defaultBefore is NOPFlagsClient, "Should return NOP when no default exists")
+        XCTAssertTrue(instanceBefore is NOPFlagsClient, "Should return NOP when no default exists")
 
         // Create a default client
         let client = FlagsClient.create(in: core)
         let defaultAfter = FlagsClient.default
+        let instanceAfter = FlagsClient.instance()
         XCTAssertTrue(defaultAfter === client, "Should return the created default client")
+        XCTAssertTrue(instanceAfter === client, "Should return the created default client")
         XCTAssertFalse(defaultAfter is NOPFlagsClient, "Should not be NOP after creation")
+        XCTAssertFalse(instanceAfter is NOPFlagsClient, "Should not be NOP after creation")
+
+        // Both methods should return the same instance
+        XCTAssertTrue(defaultAfter === instanceAfter, "Both methods should return the same instance")
     }
 
     func testCreateOrGetBasicFunctionality() {
