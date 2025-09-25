@@ -20,14 +20,6 @@ public class FlagsClient {
         self.featureScope = featureScope
     }
 
-    /// Creates a FlagsClient instance with default configuration.
-    ///
-    /// - Parameter core: The DatadogCore instance to use. Defaults to CoreRegistry.default.
-    /// - Returns: FlagsClient instance, or NOPFlagsClient if creation fails.
-    public static func create(in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
-        return create(with: Configuration(), name: FlagsClientRegistry.defaultInstanceName, in: core)
-    }
-
     /// Creates a named FlagsClient instance with default configuration.
     ///
     /// - Parameters:
@@ -36,16 +28,6 @@ public class FlagsClient {
     /// - Returns: FlagsClient instance, or NOPFlagsClient if creation fails.
     public static func create(name: String, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
         return create(with: Configuration(), name: name, in: core)
-    }
-
-    /// Creates a FlagsClient instance with custom configuration.
-    ///
-    /// - Parameters:
-    ///   - configuration: Custom configuration for the client.
-    ///   - core: The DatadogCore instance to use. Defaults to CoreRegistry.default.
-    /// - Returns: FlagsClient instance, or NOPFlagsClient if creation fails.
-    public static func create(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
-        return create(with: configuration, name: FlagsClientRegistry.defaultInstanceName, in: core)
     }
 
     /// Creates a named FlagsClient instance with custom configuration.
@@ -70,20 +52,6 @@ public class FlagsClient {
             DD.logger.error("Failed to create FlagsClient with name '\(name)'", error: error)
             return NOPFlagsClient()
         }
-    }
-
-    /// Returns the default FlagsClient instance if it exists.
-    ///
-    /// - Returns: Default FlagsClient instance if it exists, NOPFlagsClient otherwise.
-    public static var `default`: FlagsClient {
-        return FlagsClientRegistry.default
-    }
-
-    /// Returns the default FlagsClient instance.
-    ///
-    /// - Returns: Default FlagsClient instance if it exists, NOPFlagsClient otherwise.
-    public static func instance() -> FlagsClient {
-        return FlagsClientRegistry.default
     }
 
     /// Returns an existing FlagsClient instance by name.
