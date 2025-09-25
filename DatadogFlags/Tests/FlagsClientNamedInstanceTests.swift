@@ -151,4 +151,40 @@ final class FlagsClientNamedInstanceTests: XCTestCase {
 
         XCTAssertEqual(FlagsClientRegistry.registeredInstanceNames().count, 3)
     }
+
+    func testCreateWithOptionalName() {
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
+
+        // Test create without name - should use "main" as default
+        let client1 = FlagsClient.create(in: core)
+        XCTAssertFalse(client1 is NOPFlagsClient, "Should create a functional client")
+        XCTAssertTrue(FlagsClientRegistry.isRegistered(instanceName: "main"))
+
+        let retrieved = FlagsClient.default
+        XCTAssertTrue(retrieved === client1, "Default client should be retrievable")
+
+        // Test create with config but no name - should also use "main"
+        let config = FlagsClient.Configuration(baseURL: "https://custom.endpoint.com")
+        let client2 = FlagsClient.create(with: config, in: core)
+
+        // This should silently fail (second registration to "main") 
+        XCTAssertFalse(client2 is NOPFlagsClient, "Client creation should succeed")
+        XCTAssertTrue(FlagsClient.default === client1, "Default should remain the first client")
+    }
+
+    func testDefaultClientAccess() {
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
+
+        // Before creating any client, default should be NOP
+        let defaultBefore = FlagsClient.default
+        XCTAssertTrue(defaultBefore is NOPFlagsClient, "Should return NOP when no default exists")
+
+        // Create a default client
+        let client = FlagsClient.create(in: core)
+        let defaultAfter = FlagsClient.default
+        XCTAssertTrue(defaultAfter === client, "Should return the created default client")
+        XCTAssertFalse(defaultAfter is NOPFlagsClient, "Should not be NOP after creation")
+    }
 }
