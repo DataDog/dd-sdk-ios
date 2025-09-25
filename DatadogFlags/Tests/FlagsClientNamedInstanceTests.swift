@@ -152,5 +152,4 @@ final class FlagsClientNamedInstanceTests: XCTestCase {
 
         XCTAssertEqual(FlagsClientRegistry.registeredInstanceNames().count, 3)
     }
-
 }
