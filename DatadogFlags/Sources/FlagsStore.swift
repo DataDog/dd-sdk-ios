@@ -5,17 +5,23 @@
  */
 
 import Foundation
+import DatadogInternal
 
 // TODO: FFL-1048 Use the Core SDK’s DataStore instead
 internal class FlagsStore {
     private struct State: Codable {
-        let flags: [String: FlagAssignment]
-        let metadata: FlagsMetadata?
+        var flags: [String: FlagAssignment]
+        var context: FlagsEvaluationContext
+        var date: Date
     }
 
-    private var cachedFlags: [String: FlagAssignment] = [:]
-    private var flagsMetadata: FlagsMetadata?
-    private let syncQueue = DispatchQueue(label: "com.datadoghq.flags.store", attributes: .concurrent)
+    var context: FlagsEvaluationContext? {
+        state?.context
+    }
+
+    @ReadWriteLock
+    private var state: State?
+
     private let cacheFileURL: URL?
     private static let persistenceQueue = DispatchQueue(label: "com.datadoghq.flags.persistence", qos: .background)
 
@@ -46,26 +52,12 @@ internal class FlagsStore {
     }
 
     func flagAssignment(for key: String) -> FlagAssignment? {
-        syncQueue.sync {
-            self.cachedFlags[key]
-        }
+        state?.flags[key]
     }
 
-    func setFlags(_ flags: [String: FlagAssignment], context: FlagsEvaluationContext? = nil) {
-        let timestamp = Date().timeIntervalSince1970 * 1_000 // JavaScript-style timestamp in milliseconds
-
-        syncQueue.sync(flags: .barrier) {
-            self.cachedFlags = flags
-            self.flagsMetadata = FlagsMetadata(
-                fetchedAt: timestamp,
-                context: context
-            )
-            self.saveToDisk()
-        }
-    }
-
-    func getFlagsMetadata() -> FlagsMetadata? {
-        return syncQueue.sync { self.flagsMetadata }
+    func setFlagAssignments(_ flags: [String: FlagAssignment], for context: FlagsEvaluationContext, date: Date) {
+        state = .init(flags: flags, context: context, date: date)
+        saveToDisk()
     }
 
     private func saveToDisk() {
@@ -73,14 +65,12 @@ internal class FlagsStore {
             return
         }
 
-        Self.persistenceQueue.async { [weak self] in
-            guard let self = self else {
+        Self.persistenceQueue.async { [state] in
+            guard let state else {
                 return
             }
             do {
-                let state = State(flags: self.cachedFlags, metadata: self.flagsMetadata)
                 let data = try JSONEncoder().encode(state)
-
                 try data.write(to: cacheFileURL, options: .atomic)
             } catch {
                 print("Error saving flags to disk: \(error)")
@@ -95,10 +85,7 @@ internal class FlagsStore {
 
         do {
             let data = try Data(contentsOf: cacheFileURL)
-            let state = try JSONDecoder().decode(State.self, from: data)
-
-            self.cachedFlags = state.flags
-            self.flagsMetadata = state.metadata
+            state = try JSONDecoder().decode(State.self, from: data)
         } catch {
             print("No flags found on disk or error decoding: \(error)")
         }

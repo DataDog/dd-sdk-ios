@@ -78,7 +78,7 @@ public class FlagsClient {
                 configuration: configuration,
                 sdkContext: sdkContext
             ) { [weak self] result in
-                guard let self = self else {
+                guard let self else {
                     completion(.failure(.clientNotInitialized))
                     return
                 }
@@ -95,7 +95,7 @@ public class FlagsClient {
 
                     do {
                         let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: data)
-                        self.store.setFlags(response.flags)
+                        self.store.setFlagAssignments(response.flags, for: context, date: dateProvider.now)
                         completion(.success(()))
                     } catch {
                         completion(.failure(.invalidResponse))
@@ -145,7 +145,7 @@ public class FlagsClient {
         }
         let value = flagAssignment.variation(as: T.self) ?? defaultValue
 
-        if let context = store.getFlagsMetadata()?.context {
+        if let context = store.context {
             exposureLogger.logExposure(
                 at: dateProvider.now,
                 for: key,

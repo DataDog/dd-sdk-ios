@@ -147,18 +147,24 @@ private class MockFlagsHTTPClient: FlagsHTTPClient {
 }
 
 private class MockFlagsStore: FlagsStore {
-    private var flags: [String: FlagAssignment] = [:]
+    private struct MockState {
+        var flags: [String: FlagAssignment]
+        var context: FlagsEvaluationContext
+        var date: Date
+    }
+
+    private var mockState: MockState?
 
     init() {
         super.init(withPersistentCache: false)
     }
 
     override func flagAssignment(for key: String) -> FlagAssignment? {
-        flags[key]
+        mockState?.flags[key]
     }
 
-    override func setFlags(_ flags: [String: FlagAssignment], context: FlagsEvaluationContext? = nil) {
-        self.flags = flags
+    override func setFlagAssignments(_ flags: [String: FlagAssignment], for context: FlagsEvaluationContext, date: Date) {
+        self.mockState = .init(flags: flags, context: context, date: date)
     }
 }
 
