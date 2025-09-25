@@ -8,7 +8,9 @@ import Foundation
 import DatadogInternal
 
 /// Protocol defining the interface for FlagsClient
-public protocol FlagsClientProtocol {
+public protocol FlagsClientProtocol: AnyObject {
+    /// The name of this FlagsClient instance
+    var name: String { get }
     func setEvaluationContext(
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
@@ -20,17 +22,15 @@ public protocol FlagsClientProtocol {
     func getObjectValue(key: String, defaultValue: [String: Any]) -> [String: Any]
 }
 
-/// Protocol defining the interface for FlagsStore
-public protocol FlagsStoreProtocol {
-    func setFlags(_ flags: [String: Any], context: FlagsEvaluationContext?)
-    func getFlags() -> [String: Any]
-}
-
 /// A no-operation implementation of FlagsClient that does nothing.
 /// Used as a safe fallback when FlagsClient creation fails.
-/// Follows the same pattern as NOPDataStore.
-public struct NOPFlagsClient: FlagsClientProtocol {
-    public init() {}
+public final class NOPFlagsClient: FlagsClientProtocol {
+    /// The name of this NOP client instance
+    public let name: String
+
+    public init(name: String = "nop") {
+        self.name = name
+    }
 
     /// no-op - returns failure
     public func setEvaluationContext(
@@ -75,16 +75,5 @@ internal struct NOPFlagsHTTPClient: FlagsHTTPClient {
         completion: @escaping (Result<(Data, URLResponse), Error>) -> Void
     ) {
         completion(.failure(FlagsError.clientNotInitialized))
-    }
-}
-
-/// No-operation implementation of FlagsStore
-internal struct NOPFlagsStore: FlagsStoreProtocol {
-    internal func setFlags(_ flags: [String: Any], context: FlagsEvaluationContext?) {
-        // No-op
-    }
-
-    internal func getFlags() -> [String: Any] {
-        return [:]
     }
 }

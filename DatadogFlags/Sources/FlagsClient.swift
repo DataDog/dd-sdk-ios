@@ -13,11 +13,15 @@ public class FlagsClient: FlagsClientProtocol {
     private let store: FlagsStore
     private let featureScope: FeatureScope
 
-    internal init(configuration: FlagsClient.Configuration, httpClient: FlagsHTTPClient, store: FlagsStore, featureScope: FeatureScope) {
+    /// The name of this FlagsClient instance
+    public let name: String
+
+    internal init(configuration: FlagsClient.Configuration, httpClient: FlagsHTTPClient, store: FlagsStore, featureScope: FeatureScope, name: String) {
         self.configuration = configuration
         self.httpClient = httpClient
         self.store = store
         self.featureScope = featureScope
+        self.name = name
     }
 
     /// Creates a named FlagsClient instance with default configuration.
@@ -72,7 +76,7 @@ public class FlagsClient: FlagsClientProtocol {
         let httpClient = NetworkFlagsHTTPClient()
         let featureScope = core.scope(for: FlagsFeature.self)
         let store = FlagsStore(featureScope: featureScope, instanceName: instanceName)
-        return FlagsClient(configuration: configuration, httpClient: httpClient, store: store, featureScope: featureScope)
+        return FlagsClient(configuration: configuration, httpClient: httpClient, store: store, featureScope: featureScope, name: instanceName)
     }
 
     public func setEvaluationContext(_ context: FlagsEvaluationContext, completion: @escaping (Result<Void, FlagsError>) -> Void) {

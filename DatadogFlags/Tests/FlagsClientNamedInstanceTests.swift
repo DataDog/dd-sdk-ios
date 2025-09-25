@@ -75,6 +75,7 @@ final class FlagsClientNamedInstanceTests: XCTestCase {
         // Non-existent instance should return NOP
         let nonExistent = FlagsClient.instance(named: "nonexistent")
         XCTAssertTrue(nonExistent is NOPFlagsClient)
+        XCTAssertEqual(nonExistent.name, "nop")
     }
 
     func testCreateFailureReturnsNOP() {
@@ -126,7 +127,7 @@ final class FlagsClientNamedInstanceTests: XCTestCase {
         let client2 = FlagsClient.create(name: "duplicate", in: core)
 
         // First client should be registered
-        XCTAssertTrue(FlagsClientRegistry.instance(named: "duplicate") === client1)
+        XCTAssertTrue(FlagsClientRegistry.instance(named: "duplicate") === client1, "Should retrieve first registered client")
 
         // Second client with same name should have been ignored during registration
         // But the creation itself should still return a functional client
@@ -159,6 +160,7 @@ final class FlagsClientNamedInstanceTests: XCTestCase {
         // Before creating any client, should return NOP
         let instanceBefore = FlagsClient.instance(named: "main")
         XCTAssertTrue(instanceBefore is NOPFlagsClient, "Should return NOP when no main instance exists")
+        XCTAssertEqual(instanceBefore.name, "nop", "NOP client should have default name")
 
         // Create a client named "main"
         let client = FlagsClient.create(name: "main", in: core)

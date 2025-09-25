@@ -30,7 +30,8 @@ final class FlagsClientTests: XCTestCase {
             configuration: config,
             httpClient: mockHttpClient,
             store: mockStore,
-            featureScope: FeatureScopeMock()
+            featureScope: FeatureScopeMock(),
+            name: "test"
         )
 
         let context = FlagsEvaluationContext(
@@ -71,7 +72,8 @@ final class FlagsClientTests: XCTestCase {
             configuration: config,
             httpClient: AttributeSerializationTestClient(),
             store: MockFlagsStore(),
-            featureScope: FeatureScopeMock()
+            featureScope: FeatureScopeMock(),
+            name: "test-serialization"
         )
 
         let stringAttributes: [String: String] = [

@@ -55,7 +55,7 @@ public final class FlagsClientRegistry {
     /// - Parameter name: The name of the instance to get.
     /// - Returns: The FlagsClient instance if it exists, `NOPFlagsClient` instance otherwise.
     public static func instance(named name: String) -> FlagsClientProtocol {
-        instances[name] ?? NOPFlagsClient()
+        return instances[name] ?? NOPFlagsClient()
     }
 
     /// Returns all registered instance names.

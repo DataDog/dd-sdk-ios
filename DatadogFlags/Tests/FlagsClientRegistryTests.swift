@@ -64,6 +64,7 @@ final class FlagsClientRegistryTests: XCTestCase {
     func testInstanceNotFoundReturnsNOP() {
         let retrieved = FlagsClientRegistry.instance(named: "nonexistent")
         XCTAssertTrue(retrieved is NOPFlagsClient, "Should return NOPFlagsClient for non-existent instance")
+        XCTAssertEqual(retrieved.name, "nop", "NOP client should have default name")
     }
 
     func testUnregisterInstance() {
@@ -80,7 +81,8 @@ final class FlagsClientRegistryTests: XCTestCase {
         XCTAssertFalse(FlagsClientRegistry.isRegistered(instanceName: "test"))
 
         let retrieved = FlagsClientRegistry.instance(named: "test")
-        XCTAssertTrue(retrieved is NOPFlagsClient, "Should return NOP after unregistering")
+        XCTAssertTrue(retrieved is NOPFlagsClient, "Should return NOPFlagsClient after unregistering")
+        XCTAssertEqual(retrieved.name, "nop", "NOP client should have default name")
     }
 
     func testUnregisterNonExistentReturnsNil() {
@@ -119,7 +121,7 @@ final class FlagsClientRegistryTests: XCTestCase {
                 FlagsClientRegistry.register(client, named: "test\(i)")
 
                 let retrieved = FlagsClientRegistry.instance(named: "test\(i)")
-                XCTAssertTrue(retrieved === client)
+                XCTAssertTrue(retrieved === client, "Should retrieve correct client instance")
 
                 expectation.fulfill()
             }
