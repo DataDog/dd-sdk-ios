@@ -107,6 +107,43 @@ public class FlagsClient {
         }
     }
 
+    public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
+        guard let flagAssignment = store.flagAssignment(for: key) else {
+            return FlagDetails(key: key, value: defaultValue, error: .flagNotFound)
+        }
+
+        guard let value = flagAssignment.variation(as: T.self) else {
+            return FlagDetails(key: key, value: defaultValue, error: .typeMismatch)
+        }
+
+        let details = FlagDetails(
+            key: key,
+            value: value,
+            variant: flagAssignment.variationKey,
+            reason: flagAssignment.reason
+        )
+
+        if let context = store.context {
+            exposureLogger.logExposure(
+                at: dateProvider.now,
+                for: key,
+                assignment: flagAssignment,
+                context: context
+            )
+        }
+
+        return details
+    }
+}
+
+// MARK: - Convenience flag evaluation methods
+
+extension FlagsClient {
+    @inlinable
+    public func getValue<T>(key: String, defaultValue: T) -> T where T: Equatable, T: FlagValue {
+        getDetails(key: key, defaultValue: defaultValue).value
+    }
+
     @inlinable
     public func getBooleanValue(key: String, defaultValue: Bool) -> Bool {
         getValue(key: key, defaultValue: defaultValue)
@@ -131,29 +168,31 @@ public class FlagsClient {
     public func getObjectValue(key: String, defaultValue: AnyValue) -> AnyValue {
         getValue(key: key, defaultValue: defaultValue)
     }
+}
 
+extension FlagsClient {
     @inlinable
-    public func getObjectValue<T: Decodable>(key: String, defaultValue: T, using decoder: JSONDecoder = .init()) -> T {
-        let anyValue = getValue(key: key, defaultValue: AnyValue.null)
-        let value = try? anyValue.as(T.self, using: decoder)
-        return value ?? defaultValue
+    public func getBooleanDetails(key: String, defaultValue: Bool) -> FlagDetails<Bool> {
+        getDetails(key: key, defaultValue: defaultValue)
     }
 
-    public func getValue<T: FlagValue>(key: String, defaultValue: T) -> T {
-        guard let flagAssignment = store.flagAssignment(for: key) else {
-            return defaultValue
-        }
-        let value = flagAssignment.variation(as: T.self) ?? defaultValue
+    @inlinable
+    public func getStringDetails(key: String, defaultValue: String) -> FlagDetails<String> {
+        getDetails(key: key, defaultValue: defaultValue)
+    }
 
-        if let context = store.context {
-            exposureLogger.logExposure(
-                at: dateProvider.now,
-                for: key,
-                assignment: flagAssignment,
-                context: context
-            )
-        }
+    @inlinable
+    public func getIntegerDetails(key: String, defaultValue: Int) -> FlagDetails<Int> {
+        getDetails(key: key, defaultValue: defaultValue)
+    }
 
-        return value
+    @inlinable
+    public func getDoubleDetails(key: String, defaultValue: Double) -> FlagDetails<Double> {
+        getDetails(key: key, defaultValue: defaultValue)
+    }
+
+    @inlinable
+    public func getObjectDetails(key: String, defaultValue: AnyValue) -> FlagDetails<AnyValue> {
+        getDetails(key: key, defaultValue: defaultValue)
     }
 }

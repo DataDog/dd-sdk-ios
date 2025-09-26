@@ -30,6 +30,7 @@ extension FlagAssignment: AnyMockable, RandomMockable {
             allocationKey: .mockRandom(),
             variationKey: .mockRandom(),
             variation: .mockRandom(),
+            reason: .mockRandom(),
             doLog: .mockRandom()
         )
     }
@@ -39,6 +40,7 @@ extension FlagAssignment: AnyMockable, RandomMockable {
             allocationKey: .mockAny(),
             variationKey: .mockAny(),
             variation: .mockAnyBoolean(),
+            reason: .mockAny(),
             doLog: doLog
         )
     }
@@ -48,6 +50,7 @@ extension FlagAssignment: AnyMockable, RandomMockable {
             allocationKey: .mockAny(),
             variationKey: .mockAny(),
             variation: .mockAnyString(),
+            reason: .mockAny(),
             doLog: doLog
         )
     }
@@ -57,6 +60,7 @@ extension FlagAssignment: AnyMockable, RandomMockable {
             allocationKey: .mockAny(),
             variationKey: .mockAny(),
             variation: .mockAnyInteger(),
+            reason: .mockAny(),
             doLog: doLog
         )
     }
@@ -66,6 +70,7 @@ extension FlagAssignment: AnyMockable, RandomMockable {
             allocationKey: .mockAny(),
             variationKey: .mockAny(),
             variation: .mockAnyDouble(),
+            reason: .mockAny(),
             doLog: doLog
         )
     }
@@ -75,6 +80,7 @@ extension FlagAssignment: AnyMockable, RandomMockable {
             allocationKey: .mockAny(),
             variationKey: .mockAny(),
             variation: .mockAnyObject(),
+            reason: .mockAny(),
             doLog: doLog
         )
     }

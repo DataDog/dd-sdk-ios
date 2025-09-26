@@ -16,13 +16,6 @@ public enum AnyValue: Equatable {
     case null
 }
 
-extension AnyValue {
-    public func `as`<T>(_ type: T.Type, using decoder: JSONDecoder = .init()) throws -> T where T: Decodable {
-        let data = try JSONEncoder().encode(self)
-        return try decoder.decode(T.self, from: data)
-    }
-}
-
 extension AnyValue: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()

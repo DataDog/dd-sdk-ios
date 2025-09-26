@@ -465,6 +465,8 @@
 		5B4F552D2E853B3B00A241C3 /* ExposureLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F552B2E853B2E00A241C3 /* ExposureLoggerTests.swift */; };
 		5B4F552F2E853D7700A241C3 /* FlagsClientMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F552E2E853D7200A241C3 /* FlagsClientMocks.swift */; };
 		5B4F55302E853D7700A241C3 /* FlagsClientMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F552E2E853D7200A241C3 /* FlagsClientMocks.swift */; };
+		5B9565FC2E86BBFA00EAF677 /* FlagDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */; };
+		5B9565FD2E86BBFA00EAF677 /* FlagDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */; };
 		5B9B20C52E460A0600C95B6C /* ShapeResourceBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9B20C42E4609FC00C95B6C /* ShapeResourceBuilderTests.swift */; };
 		5B9CB9E32E41F6F9005485E6 /* ImageRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9CB9E22E41F6F6005485E6 /* ImageRepresentable.swift */; };
 		5B9CB9E52E41FD60005485E6 /* Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9CB9E42E41FD5C005485E6 /* Drawing.swift */; };
@@ -2607,6 +2609,7 @@
 		5B3AF8A92E4B3AE6009E5375 /* EnrichedResourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnrichedResourceTests.swift; sourceTree = "<group>"; };
 		5B4F552B2E853B2E00A241C3 /* ExposureLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureLoggerTests.swift; sourceTree = "<group>"; };
 		5B4F552E2E853D7200A241C3 /* FlagsClientMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientMocks.swift; sourceTree = "<group>"; };
+		5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagDetails.swift; sourceTree = "<group>"; };
 		5B9B20C42E4609FC00C95B6C /* ShapeResourceBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilderTests.swift; sourceTree = "<group>"; };
 		5B9CB9E22E41F6F6005485E6 /* ImageRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRepresentable.swift; sourceTree = "<group>"; };
 		5B9CB9E42E41FD5C005485E6 /* Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Drawing.swift; sourceTree = "<group>"; };
@@ -4308,11 +4311,12 @@
 		5BB294AA2E82864300CAA44B /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				5B16A3652E83E3BF0046A863 /* AnyValue.swift */,
+				5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */,
 				5B16A36F2E83EE2B0046A863 /* FlagAssignmentsResponse.swift */,
 				5B16A36C2E83E51D0046A863 /* FlagAssignment.swift */,
-				5B16A3652E83E3BF0046A863 /* AnyValue.swift */,
+				5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */,
 				5BB294BC2E82E66200CAA44B /* FlagValue.swift */,
-				5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -8745,6 +8749,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B9565FD2E86BBFA00EAF677 /* FlagDetails.swift in Sources */,
 				8DADC3BA2E7CCF0D0060F558 /* FlagsClientConfiguration.swift in Sources */,
 				5BB294BD2E82E66500CAA44B /* FlagValue.swift in Sources */,
 				5BB294AD2E8286B200CAA44B /* ExposureEvent.swift in Sources */,
@@ -8768,6 +8773,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B9565FC2E86BBFA00EAF677 /* FlagDetails.swift in Sources */,
 				8DADC3B42E7CCF0D0060F558 /* FlagsClientConfiguration.swift in Sources */,
 				5BB294BE2E82E66500CAA44B /* FlagValue.swift in Sources */,
 				5BB294AC2E8286B200CAA44B /* ExposureEvent.swift in Sources */,

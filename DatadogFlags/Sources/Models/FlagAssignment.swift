@@ -18,6 +18,7 @@ internal struct FlagAssignment: Equatable {
     var allocationKey: String
     var variationKey: String
     var variation: Variation
+    var reason: String
     var doLog: Bool
 
     func variation<T: FlagValue>(as type: T.Type) -> T? {
@@ -42,6 +43,7 @@ extension FlagAssignment: Codable {
         case variationKey
         case variationType
         case variationValue
+        case reason
         case doLog
     }
 
@@ -50,6 +52,7 @@ extension FlagAssignment: Codable {
 
         self.allocationKey = try container.decode(String.self, forKey: .allocationKey)
         self.variationKey = try container.decode(String.self, forKey: .variationKey)
+        self.reason = try container.decode(String.self, forKey: .reason)
         self.doLog = try container.decode(Bool.self, forKey: .doLog)
 
         let variationType = try container.decode(String.self, forKey: .variationType)
@@ -82,6 +85,7 @@ extension FlagAssignment: Codable {
 
         try container.encode(allocationKey, forKey: .allocationKey)
         try container.encode(variationKey, forKey: .variationKey)
+        try container.encode(reason, forKey: .reason)
         try container.encode(doLog, forKey: .doLog)
 
         switch variation {
