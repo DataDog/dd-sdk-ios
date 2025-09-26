@@ -41,7 +41,7 @@ internal final class ExposureLogger: ExposureLogging {
             return
         }
 
-        featureScope.eventWriteContext { [weak self] _, writer in
+        featureScope.eventWriteContext { [weak self] ddContext, writer in
             guard let self else {
                 return
             }
@@ -58,8 +58,9 @@ internal final class ExposureLogger: ExposureLogging {
             }
             loggedExposures.insert(exposure)
 
+            let adjustedDate = date.addingTimeInterval(ddContext.serverTimeOffset)
             let exposureEvent = ExposureEvent(
-                timestamp: date.timeIntervalSince1970.toInt64Milliseconds,
+                timestamp: adjustedDate.timeIntervalSince1970.toInt64Milliseconds,
                 allocation: .init(key: assignment.allocationKey),
                 flag: .init(key: flagKey),
                 variant: .init(key: assignment.variationKey),

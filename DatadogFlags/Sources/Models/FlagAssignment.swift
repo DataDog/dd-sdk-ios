@@ -66,7 +66,7 @@ extension FlagAssignment: Codable {
             } else {
                 self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
             }
-        case "OBJECT", "JSON":
+        case "JSON":
             self.variation = try .object(container.decode(AnyValue.self, forKey: .variationValue))
         default:
             let context = DecodingError.Context(
