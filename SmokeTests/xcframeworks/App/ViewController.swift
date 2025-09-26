@@ -9,7 +9,6 @@ import DatadogCore
 import DatadogLogs
 import DatadogTrace
 import DatadogRUM
-import DatadogObjc
 import DatadogCrashReporting
 import DatadogProfiling
 

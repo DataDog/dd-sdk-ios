@@ -320,11 +320,7 @@ class TNSMetricTests: XCTestCase {
         metric.trackResourceEnd(at: resourceEnd, resourceID: .resource1, resourceDuration: nil)
 
         // When
-        let appStateHistory = AppStateHistory(
-            initialSnapshot: .init(state: .active, date: .distantPast),
-            recentDate: .distantFuture,
-            snapshots: [.init(state: .active, date: .distantFuture)]
-        )
+        let appStateHistory = AppStateHistory(initialState: .active, date: .distantPast)
 
         // Then
         let ttns = try metric.value(with: appStateHistory).get()
@@ -340,14 +336,9 @@ class TNSMetricTests: XCTestCase {
         metric.trackResourceEnd(at: resourceEnd, resourceID: .resource1, resourceDuration: nil)
 
         // When
-        let appStateHistory = AppStateHistory(
-            initialSnapshot: .init(state: .active, date: .distantPast),
-            recentDate: .distantFuture,
-            snapshots: [
-                .init(state: .inactive, date: resourceStart + 0.1),
-                .init(state: .active, date: .distantFuture)
-            ]
-        )
+        var appStateHistory = AppStateHistory(initialState: .active, date: .distantPast)
+        appStateHistory.append(state: .inactive, at: resourceStart + 0.1)
+        appStateHistory.append(state: .active, at: .distantFuture)
 
         // Then
         let ttns = try metric.value(with: appStateHistory).get()
@@ -364,14 +355,9 @@ class TNSMetricTests: XCTestCase {
         metric.trackResourceEnd(at: resourceEnd, resourceID: .resource1, resourceDuration: resourceDuration)
 
         // When
-        let appStateHistory = AppStateHistory(
-            initialSnapshot: .init(state: .active, date: .distantPast),
-            recentDate: .distantFuture,
-            snapshots: [
-                .init(state: .background, date: resourceStart + resourceDuration * 0.25),
-                .init(state: .active, date: resourceStart + resourceDuration * 0.5),
-            ]
-        )
+        var appStateHistory = AppStateHistory(initialState: .active, date: .distantPast)
+        appStateHistory.append(state: .background, at: resourceStart + resourceDuration * 0.25)
+        appStateHistory.append(state: .active, at: resourceStart + resourceDuration * 0.5)
 
         // Then
         XCTAssertEqual(metric.value(with: appStateHistory), .failure(.appNotInForeground))

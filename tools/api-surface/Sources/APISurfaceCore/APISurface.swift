@@ -13,6 +13,7 @@ public struct APISurfaceError: Error, CustomStringConvertible {
 
 public struct APISurface {
     private let module: Module
+    private let language: Language
     private let generator = Generator()
     private let printer = Printer()
 
@@ -22,14 +23,15 @@ public struct APISurface {
     /// - Parameters:
     ///   - libraryName: the name of Swift library for generating API surface.
     ///   - path: the path to a folder containing `Package.swift`.
-    public init(spmLibraryName libraryName: String, inPath path: String) throws {
+    ///   - language: the language of the API surface.
+    public init(spmLibraryName libraryName: String, inPath path: String, language: Language) throws {
         // Create patch folder:
         let newPath = try patchXcodebuildConfusionAndReturnNewPath(originalPath: path)
 
         let module = Module(
             xcodeBuildArguments: [
                 "-scheme", libraryName,
-                "-destination", "platform='iOS Simulator'",
+                "-destination", "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.3.1",
                 "-sdk", "iphonesimulator",
             ],
             inPath: newPath
@@ -43,17 +45,18 @@ public struct APISurface {
         }
 
         self.module = module
+        self.language = language
     }
 
     // MARK: - Output
 
     public func print() throws -> String {
-        let items = try generator.generateSurfaceItems(for: module)
+        let items = try generator.generateSurfaceItems(for: module, language: language)
         return printer.print(items: items)
     }
 }
 
-/// When a folder contains both `Package.swift` and `.xcworspace` then `xcodebuild` gets
+/// When a folder contains both `Package.swift` and `.xcworkspace` then `xcodebuild` gets
 /// confused and instead of processing swift package, it builds the workspace. There is no option in `xcodebuild`
 /// to force required behaviour, hence we patch the entire concept by copying `Package.swift` to temporary folder
 /// and creating symbolic links to all source folders from original location.

@@ -95,10 +95,10 @@ check_pod_command_status() {
     #
     # Example:
     # ```
-    #  -> DatadogObjc (2.11.1)
+    #  -> DatadogInternal (2.11.1)
     #     - ERROR | [iOS] unknown: Encountered an unknown error (CocoaPods could not find compatible versions for pod "DatadogRUM":
     #   In Podfile:
-    #     DatadogObjc (from `/private/var/.../dd-sdk-ios/DatadogObjc.podspec`) was resolved to 2.11.1, which depends on
+    #     DatadogInternal (from `/private/var/.../dd-sdk-ios/DatadogInternal.podspec`) was resolved to 2.11.1, which depends on
     #       DatadogRUM (= 2.11.1)
     # ```
     # Ref.: https://github.com/CocoaPods/Molinillo/blob/1d62d7d5f448e79418716dc779a4909509ccda2a/lib/molinillo/errors.rb#L106

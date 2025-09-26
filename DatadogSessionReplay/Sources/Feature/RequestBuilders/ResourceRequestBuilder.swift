@@ -56,7 +56,12 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
             ],
             headers: [
                 .contentTypeHeader(contentType: .multipartFormData(boundary: multipart.boundary)),
-                .userAgentHeader(appName: context.applicationName, appVersion: context.version, device: context.device),
+                .userAgentHeader(
+                    appName: context.applicationName,
+                    appVersion: context.version,
+                    device: context.device,
+                    os: context.os
+                ),
                 .ddAPIKeyHeader(clientToken: context.clientToken),
                 .ddEVPOriginHeader(source: context.source),
                 .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
@@ -70,7 +75,7 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
                 name: "image",
                 filename: $0.identifier,
                 data: $0.data,
-                mimeType: "image/png"
+                mimeType: $0.mimeType
             )
         }
         if let context = resources.first?.context {

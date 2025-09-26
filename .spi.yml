@@ -2,16 +2,12 @@ version: 1
 builder:
   configs:
     - platform: ios
-      documentation_targets:
-        [
-          "DatadogInternal",
-          "DatadogCore",
-          "DatadogObjc",
-          "DatadogLogs",
-          "DatadogTrace",
-          "DatadogRUM",
-          "DatadogSessionReplay",
-          "DatadogCrashReporting",
-          "DatadogWebViewTracking",
-          "DatadogProfiling"
-        ]
+      documentation_targets: 
+        - DatadogCore iOS
+        - DatadogLogs iOS
+        - DatadogTrace iOS
+        - DatadogRUM iOS
+        - DatadogSessionReplay iOS
+        - DatadogCrashReporting iOS
+        - DatadogWebViewTracking iOS
+        - DatadogProfiling iOS

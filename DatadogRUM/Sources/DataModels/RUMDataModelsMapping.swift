@@ -67,10 +67,26 @@ internal extension RUMViewEvent {
     struct Metadata: Codable {
         let id: String
         let documentVersion: Int64
+        let hasAccessibility: Bool?
+        /// Duration of the view in nanoseconds.
+        let duration: Int64?
+        /// Index of the view within its session (0 for the first view).
+        let indexInSession: Int?
 
         private enum CodingKeys: String, CodingKey {
             case id = "id"
             case documentVersion = "document_version"
+            case hasAccessibility = "has_accessibility"
+            case duration = "duration"
+            case indexInSession = "index"
+        }
+
+        init(id: String, documentVersion: Int64, hasAccessibility: Bool? = false, duration: Int64? = nil, indexInSession: Int? = nil) {
+            self.id = id
+            self.documentVersion = documentVersion
+            self.hasAccessibility = hasAccessibility
+            self.duration = duration
+            self.indexInSession = indexInSession
         }
     }
 
@@ -80,8 +96,14 @@ internal extension RUMViewEvent {
 
     /// Creates `Metadata` from the given `RUMViewEvent`.
     /// - Returns: The `Metadata` for the given `RUMViewEvent`.
-    func metadata() -> Metadata {
-        return Metadata(id: view.id, documentVersion: dd.documentVersion)
+    func metadata(viewIndexInSession: Int) -> Metadata {
+        return Metadata(
+            id: view.id,
+            documentVersion: dd.documentVersion,
+            hasAccessibility: view.accessibility != nil,
+            duration: view.timeSpent,
+            indexInSession: viewIndexInSession
+        )
     }
 }
 

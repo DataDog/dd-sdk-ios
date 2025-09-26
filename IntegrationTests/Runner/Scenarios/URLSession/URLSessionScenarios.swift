@@ -9,36 +9,6 @@ import DatadogCore
 import DatadogTrace
 import DatadogRUM
 
-/// An example of instrumenting existing `URLSessionDelegate` with `DDURLSessionDelegate` through inheritance.
-private class InheritedURLSessionDelegate: DDURLSessionDelegate {
-    override func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        super.urlSession(session, task: task, didCompleteWithError: error) // forward to DD
-        /* run custom logic */
-    }
-}
-
-/// An example of instrumenting existing `URLSessionDelegate` with `DDURLSessionDelegate` through composition.
-private class CompositedURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate, __URLSessionDelegateProviding {
-    // MARK: - __URLSessionDelegateProviding conformance
-    let ddURLSessionDelegate = DatadogURLSessionDelegate()
-
-    // MARK: - __URLSessionDelegateProviding handling
-    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        ddURLSessionDelegate.urlSession(session, task: task, didFinishCollecting: metrics) // forward to DD
-        /* run custom logic */
-    }
-
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        ddURLSessionDelegate.urlSession(session, task: task, didCompleteWithError: error) // forward to DD
-        /* run custom logic */
-    }
-
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        ddURLSessionDelegate.urlSession(session, dataTask: dataTask, didReceive: data) // forward to DD
-        /* run custom logic */
-    }
-}
-
 /// Base scenario for `URLSession` and `NSURLSession` instrumentation.  It makes
 /// both Swift and Objective-C tests share the same endpoints and SDK configuration.
 ///
@@ -68,9 +38,6 @@ class URLSessionBaseScenario: NSObject {
     /// The `URL` to fake 3rd party resource. As it's 3rd party, it won't be observed by Tracing auto instrumentation.
     @objc
     let thirdPartyURL: URL
-
-    /// Randomized value determining if the `DDURLSessionDelegate` should be initialized before (`false)` or after `Datadog.initialize()` (`true`).
-    private var ddURLSessionDelegate: DDURLSessionDelegate?
 
     override init() {
         if Environment.isRunningUITests() {
@@ -144,24 +111,10 @@ class URLSessionBaseScenario: NSObject {
         let delegate: URLSessionDataDelegate
 
         switch setup.instrumentationMethod {
-        case .legacyWithFeatureFirstPartyHosts:
-            delegate = DDURLSessionDelegate()
-        case .legacyWithAdditionalFirstyPartyHosts:
-            delegate = DDURLSessionDelegate(
-                additionalFirstPartyHosts: [
-                    customGETResourceURL.host!,
-                    customPOSTRequest.url!.host!,
-                    badResourceURL.host!
-                ]
-            )
-        case .legacyInheritance:
-            delegate = InheritedURLSessionDelegate()
-        case .legacyComposition:
-            delegate = CompositedURLSessionDelegate()
         case .delegateUsingFeatureFirstPartyHosts:
             URLSessionInstrumentation.enable(with: .init(delegateClass: CustomURLSessionDelegate.self))
             delegate = CustomURLSessionDelegate()
-        case .delegateWithAdditionalFirstyPartyHosts:
+        case .delegateWithAdditionalFirstPartyHosts:
             URLSessionInstrumentation.enable(
                 with: .init(
                     delegateClass: CustomURLSessionDelegate.self,

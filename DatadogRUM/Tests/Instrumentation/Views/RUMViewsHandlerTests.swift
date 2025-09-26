@@ -81,7 +81,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertTrue(startCommand1.identity == ViewIdentifier(view1))
         XCTAssertEqual(startCommand1.attributes as? [String: String], ["key1": "val1"])
         XCTAssertTrue(stopCommand.identity == ViewIdentifier(view1))
-        XCTAssertEqual(stopCommand.attributes.count, 0)
+        XCTAssertEqual(stopCommand.attributes as? [String: String], ["key1": "val1"])
         XCTAssertTrue(startCommand2.identity == ViewIdentifier(view2))
         XCTAssertEqual(startCommand2.attributes as? [String: String], ["key2": "val2"])
     }
@@ -212,7 +212,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(startCommand1.attributes as? [String: String], ["key1": "val1"])
         XCTAssertEqual(startCommand1.instrumentationType, .swiftuiAutomatic)
         XCTAssertTrue(stopCommand.identity == ViewIdentifier(view1))
-        XCTAssertEqual(stopCommand.attributes.count, 0)
+        XCTAssertEqual(stopCommand.attributes as? [String: String], ["key1": "val1"])
         XCTAssertTrue(startCommand2.identity == ViewIdentifier(view2))
         XCTAssertEqual(startCommand2.attributes as? [String: String], ["key2": "val2"])
         XCTAssertEqual(startCommand2.instrumentationType, .swiftuiAutomatic)
@@ -341,22 +341,28 @@ class RUMViewsHandlerTests: XCTestCase {
         notificationCenter.post(name: UIApplication.willEnterForegroundNotification, object: nil)
 
         // Then
-        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
 
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
         XCTAssertTrue(stopCommand.identity == ViewIdentifier(view))
-        XCTAssertEqual(stopCommand.attributes.count, 0)
+        XCTAssertEqual(stopCommand.attributes as? [String: String], ["foo": "bar"])
         XCTAssertEqual(stopCommand.time, .mockDecember15th2019At10AMUTC())
 
-        let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
+        let lifecycleCommand1 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMHandleAppLifecycleEventCommand)
+        XCTAssertEqual(lifecycleCommand1.event, .didEnterBackground)
+
+        let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[3] as? RUMStartViewCommand)
         XCTAssertTrue(startCommand.identity == ViewIdentifier(view))
         XCTAssertEqual(startCommand.path, viewControllerClassName)
         XCTAssertEqual(startCommand.name, viewName)
         XCTAssertEqual(startCommand.attributes as? [String: String], ["foo": "bar"])
         XCTAssertEqual(startCommand.time, .mockDecember15th2019At10AMUTC() + 1)
+
+        let lifecycleCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[4] as? RUMHandleAppLifecycleEventCommand)
+        XCTAssertEqual(lifecycleCommand2.event, .willEnterForeground)
     }
 
-    func testGivenViewControllerDidNotStart_whenAppStateChanges_itDoesNothing() throws {
+    func testGivenViewControllerDidNotStart_whenAppStateChanges_itDoesAlterViews() throws {
         let view = createMockViewInWindow()
         let viewName: String = .mockRandom()
 
@@ -371,7 +377,9 @@ class RUMViewsHandlerTests: XCTestCase {
         notificationCenter.post(name: UIApplication.willEnterForegroundNotification, object: nil)
 
         // Then
-        XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+        XCTAssertEqual((commandSubscriber.receivedCommands[0] as? RUMHandleAppLifecycleEventCommand)?.event, .didEnterBackground)
+        XCTAssertEqual((commandSubscriber.receivedCommands[1] as? RUMHandleAppLifecycleEventCommand)?.event, .willEnterForeground)
     }
 
     // MARK: - Interacting with predicate
@@ -507,7 +515,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertTrue(startCommand1.identity == ViewIdentifier(view1Identity))
         DDAssertDictionariesEqual(startCommand1.attributes, view1Attributes)
         XCTAssertTrue(stopCommand.identity == ViewIdentifier(view1Identity))
-        XCTAssertEqual(stopCommand.attributes.count, 0)
+        XCTAssertGreaterThan(stopCommand.attributes.count, 0)
         XCTAssertTrue(startCommand2.identity == ViewIdentifier(view2Identity))
         DDAssertDictionariesEqual(startCommand2.attributes, view2Attributes)
     }
@@ -581,7 +589,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertTrue(startCommand.identity == ViewIdentifier(viewIdentity))
         DDAssertDictionariesEqual(startCommand.attributes, viewAttributes)
         XCTAssertTrue(stopCommand.identity == ViewIdentifier(viewIdentity))
-        XCTAssertEqual(stopCommand.attributes.count, 0)
+        XCTAssertGreaterThan(stopCommand.attributes.count, 0)
     }
 
     func testGiven2AppearedView_whenTheFirstDisappears_itDoesNotStopItTwice() throws {
@@ -702,12 +710,14 @@ class RUMViewsHandlerTests: XCTestCase {
         notificationCenter.post(name: UIApplication.willEnterForegroundNotification, object: nil)
 
         // Then
-        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
 
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
-        let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
+        XCTAssertEqual((commandSubscriber.receivedCommands[2] as? RUMHandleAppLifecycleEventCommand)?.event, .didEnterBackground)
+        let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[3] as? RUMStartViewCommand)
+        XCTAssertEqual((commandSubscriber.receivedCommands[4] as? RUMHandleAppLifecycleEventCommand)?.event, .willEnterForeground)
         XCTAssertTrue(stopCommand.identity == ViewIdentifier(viewIdentity))
-        XCTAssertEqual(stopCommand.attributes.count, 0)
+        XCTAssertGreaterThan(stopCommand.attributes.count, 0)
         XCTAssertEqual(stopCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertTrue(startCommand.identity == ViewIdentifier(viewIdentity))
         XCTAssertEqual(startCommand.path, viewPath)

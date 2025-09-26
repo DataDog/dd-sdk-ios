@@ -13,7 +13,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639 # v9.1.0
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           stale-issue-message: |
@@ -33,6 +33,8 @@ jobs:
           days-before-issue-close: 3
           # Automatically remove the stale label when the issues or the pull requests are updated
           remove-stale-when-updated: true
+          # Specify the reason used when closing issues: `completed` or `not_planned`
+          close-issue-reason: completed
           # Run the stale workflow as dry-run.
           # No GitHub API calls that can alter the issues and pull requests will happen.
           # Useful to debug or when you want to configure the stale workflow safely. 

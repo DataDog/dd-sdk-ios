@@ -151,9 +151,11 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         using crashTimings: AdjustedCrashTimings
     ) {
         let handlingRule = RUMOffViewEventsHandlingRule(
+            applicationState: nil,
             sessionState: lastRUMSessionState,
             isAppInForeground: crashContext.lastIsAppInForeground,
-            isBETEnabled: trackBackgroundEvents
+            isBETEnabled: trackBackgroundEvents,
+            command: nil
         )
 
         let newRUMView: RUMViewEvent?
@@ -203,9 +205,11 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         // the `lastRUMSessionState` would have been set in `CrashContext` and we could be sending the crash to previous session
         // through `sendCrashReportToPreviousSession()`.
         let handlingRule = RUMOffViewEventsHandlingRule(
+            applicationState: nil,
             sessionState: nil,
             isAppInForeground: crashContext.lastIsAppInForeground,
-            isBETEnabled: trackBackgroundEvents
+            isBETEnabled: trackBackgroundEvents,
+            command: nil
         )
 
         let newRUMView: RUMViewEvent?
@@ -317,7 +321,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             ),
             account: context.accountInfo.map { RUMAccount(accountInfo: $0) },
             application: .init(
-                currentLocale: context.localeInfo?.currentLocale, id: applicationID
+                currentLocale: context.device.locale, id: applicationID
             ),
             buildVersion: context.buildNumber,
             ciTest: ciTest,
@@ -331,20 +335,14 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // See https://github.com/DataDog/dd-sdk-ios/pull/1834 for more context.
             context: context.lastRUMAttributes,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(
-                device: context.device,
-                batteryLevel: Double(context.batteryStatus?.level ?? 0),
-                brightnessLevel: Double(context.brightnessLevel ?? 0),
-                powerSavingMode: context.isLowPowerModeEnabled,
-                localeInfo: context.localeInfo ?? LocaleInfo(),
-                telemetry: featureScope.telemetry
-            ),
+            ddtags: context.ddTags,
+            device: context.device,
             display: nil,
             // RUMM-2197: In very rare cases, the OS info computed below might not be exactly the one
             // that the app crashed on. This would correspond to a scenario when the device OS was upgraded
             // before restarting the app after crash. To solve this, the OS information would have to be
             // persisted in `crashContext` the same way as we do for other dynamic information.
-            os: .init(device: context.device),
+            os: context.os,
             privacy: nil,
             service: context.service,
             session: .init(

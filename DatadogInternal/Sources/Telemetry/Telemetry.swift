@@ -114,8 +114,10 @@ public struct UsageTelemetry: SampledTelemetry {
         case setAccount
         /// addFeatureFlagEvaluation API
         case addFeatureFlagEvaluation
-        /// addFeatureFlagEvaluation API
+        /// addViewLoadingTime API
         case addViewLoadingTime(ViewLoadingTime)
+        /// addOperationStepVital API
+        case addOperationStepVital(TelemetryUsageEvent.Telemetry.Usage.TelemetryCommonFeaturesUsage.AddOperationStepVital)
 
         /// Describes the properties of `addViewLoadingTime` usage telemetry.
         public struct ViewLoadingTime {

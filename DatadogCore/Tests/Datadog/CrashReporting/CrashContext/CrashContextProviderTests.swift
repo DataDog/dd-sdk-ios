@@ -302,19 +302,21 @@ class CrashContextProviderTests: XCTestCase {
     // MARK: - Helpers
 
     private func DDAssert(crashContext: CrashContext, includes sdkContext: DatadogContext, file: StaticString = #filePath, line: UInt = #line) {
-        XCTAssertEqual(crashContext.appLaunchDate, sdkContext.launchTime.launchDate, file: file, line: line)
+        XCTAssertEqual(crashContext.appLaunchDate, sdkContext.launchInfo.processLaunchDate, file: file, line: line)
         XCTAssertEqual(crashContext.serverTimeOffset, sdkContext.serverTimeOffset, file: file, line: line)
         XCTAssertEqual(crashContext.service, sdkContext.service, file: file, line: line)
         XCTAssertEqual(crashContext.env, sdkContext.env, file: file, line: line)
         XCTAssertEqual(crashContext.version, sdkContext.version, file: file, line: line)
         XCTAssertEqual(crashContext.buildNumber, sdkContext.buildNumber, file: file, line: line)
-        XCTAssertEqual(crashContext.device, sdkContext.device, file: file, line: line)
+        DDAssertReflectionEqual(crashContext.device, sdkContext.normalizedDevice(), file: file, line: line)
+        DDAssertReflectionEqual(crashContext.os, sdkContext.os, file: file, line: line)
         XCTAssertEqual(crashContext.sdkVersion, sdkContext.sdkVersion, file: file, line: line)
         XCTAssertEqual(crashContext.source, sdkContext.source, file: file, line: line)
         XCTAssertEqual(crashContext.trackingConsent, sdkContext.trackingConsent, file: file, line: line)
         DDAssertReflectionEqual(crashContext.userInfo, sdkContext.userInfo, file: file, line: line)
+        DDAssertReflectionEqual(crashContext.accountInfo, sdkContext.accountInfo, file: file, line: line)
         XCTAssertEqual(crashContext.networkConnectionInfo, sdkContext.networkConnectionInfo, file: file, line: line)
         XCTAssertEqual(crashContext.carrierInfo, sdkContext.carrierInfo, file: file, line: line)
-        XCTAssertEqual(crashContext.lastIsAppInForeground, sdkContext.applicationStateHistory.currentSnapshot.state.isRunningInForeground, file: file, line: line)
+        XCTAssertEqual(crashContext.lastIsAppInForeground, sdkContext.applicationStateHistory.currentState.isRunningInForeground, file: file, line: line)
     }
 }

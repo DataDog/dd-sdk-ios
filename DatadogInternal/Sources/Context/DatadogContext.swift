@@ -71,6 +71,9 @@ public struct DatadogContext {
     /// Current device information.
     public var device: DeviceInfo
 
+    /// Operating System information.
+    public let os: OperatingSystem
+
     /// Current locale information.
     public var localeInfo: LocaleInfo
 
@@ -83,8 +86,8 @@ public struct DatadogContext {
     /// The user's consent to data collection
     public var trackingConsent: TrackingConsent = .pending
 
-    /// Application launch time info.
-    public var launchTime: LaunchTime
+    /// Application launch info.
+    public var launchInfo: LaunchInfo
 
     /// Provides the history of app foreground / background states.
     public var applicationStateHistory: AppStateHistory
@@ -138,12 +141,13 @@ public struct DatadogContext {
         applicationBundleType: BundleType,
         sdkInitDate: Date,
         device: DeviceInfo,
+        os: OperatingSystem,
         localeInfo: LocaleInfo,
         nativeSourceOverride: String? = nil,
         userInfo: UserInfo? = nil,
         accountInfo: AccountInfo? = nil,
         trackingConsent: TrackingConsent = .pending,
-        launchTime: LaunchTime,
+        launchInfo: LaunchInfo,
         applicationStateHistory: AppStateHistory,
         networkConnectionInfo: NetworkConnectionInfo? = nil,
         carrierInfo: CarrierInfo? = nil,
@@ -154,14 +158,14 @@ public struct DatadogContext {
     ) {
         self.site = site
         self.clientToken = clientToken
-        self.service = service
-        self.env = env
-        self.version = version
+        self.service = service.sanitizedToDDTags()
+        self.env = env.sanitizedToDDTags()
+        self.version = version.sanitizedToDDTags()
         self.buildNumber = buildNumber
         self.buildId = buildId
-        self.variant = variant
+        self.variant = variant?.sanitizedToDDTags()
         self.source = source
-        self.sdkVersion = sdkVersion
+        self.sdkVersion = sdkVersion.sanitizedToDDTags()
         self.ciAppOrigin = ciAppOrigin
         self.serverTimeOffset = serverTimeOffset
         self.applicationName = applicationName
@@ -169,12 +173,13 @@ public struct DatadogContext {
         self.applicationBundleType = applicationBundleType
         self.sdkInitDate = sdkInitDate
         self.device = device
+        self.os = os
         self.localeInfo = localeInfo
         self.nativeSourceOverride = nativeSourceOverride
         self.userInfo = userInfo
         self.accountInfo = accountInfo
         self.trackingConsent = trackingConsent
-        self.launchTime = launchTime
+        self.launchInfo = launchInfo
         self.applicationStateHistory = applicationStateHistory
         self.networkConnectionInfo = networkConnectionInfo
         self.carrierInfo = carrierInfo
@@ -190,6 +195,24 @@ public struct DatadogContext {
 public protocol AdditionalContext {
     /// The additional context key.
     static var key: String { get }
+}
+
+extension DatadogContext {
+    /// Datadog tags to send in the events.
+    public var ddTags: String {
+        var tags = [
+            "service": service,
+            "version": version,
+            "sdk_version": sdkVersion,
+            "env": env
+        ]
+
+        if let variant {
+            tags["variant"] = variant
+        }
+
+        return tags.map { "\($0.key):\($0.value)" }.joined(separator: ",")
+    }
 }
 
 extension DatadogContext {
@@ -221,5 +244,11 @@ extension DatadogContext {
     ///   - type: The context's type to remove.
     public mutating func removeContext<Context>(ofType type: Context.Type) where Context: AdditionalContext {
         additionalContext[Context.key] = nil
+    }
+}
+
+extension String {
+    func sanitizedToDDTags() -> String {
+        self.replacingOccurrences(of: "[,:]", with: "", options: .regularExpression)
     }
 }

@@ -102,10 +102,10 @@ class ResourceRequestBuilderTests: XCTestCase {
             source: randomSource,
             sdkVersion: randomSDKVersion,
             applicationName: randomApplicationName,
-            device: .mockWith(
-                name: randomDeviceName,
-                osName: randomDeviceOSName,
-                osVersion: randomDeviceOSVersion
+            device: .mockWith(name: randomDeviceName),
+            os: .mockWith(
+                name: randomDeviceOSName,
+                version: randomDeviceOSVersion
             )
         )
 
@@ -143,7 +143,7 @@ class ResourceRequestBuilderTests: XCTestCase {
         for i in 0..<resources.count {
             XCTAssertNotNil(multipartSpy.formFiles[i].filename)
             XCTAssertGreaterThan(multipartSpy.formFiles[i].data.count, 0)
-            XCTAssertEqual(multipartSpy.formFiles[i].mimeType, "image/png")
+            XCTAssertEqual(multipartSpy.formFiles[i].mimeType, resources[i].mimeType)
         }
 
         XCTAssertEqual(multipartSpy.formFiles.last?.filename, "blob")

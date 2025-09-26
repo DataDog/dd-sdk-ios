@@ -58,3 +58,16 @@ extension ViewHitchesMock: AnyMockable, RandomMockable {
         ViewHitchesMock(hitchesDataModel: (Array(repeating: (.mockAny(), .mockAny()), count: .mockAny()), .mockAny())) as! Self
     }
 }
+
+extension RUMFeatureOperationFailureReason: AnyMockable, RandomMockable, CaseIterable {
+    public static var allCases: [RUMFeatureOperationFailureReason]
+        = [.error, .abandoned, .other]
+
+    public static func mockAny() -> Self {
+        return .error
+    }
+
+    public static func mockRandom() -> Self {
+        return RUMFeatureOperationFailureReason.allCases.randomElement()!
+    }
+}

@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// A custion ``URLSessionDataDelegate`` for instrumenting ``URLSession``.
+/// A custom ``URLSessionDataDelegate`` for instrumenting ``URLSession``.
 internal class CustomURLSessionDelegate: NSObject, URLSessionDataDelegate {
 
 }

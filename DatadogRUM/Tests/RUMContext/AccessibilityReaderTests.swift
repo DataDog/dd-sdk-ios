@@ -94,66 +94,6 @@ final class AccessibilityReaderTests: XCTestCase {
     }
 
     @MainActor
-    func testStateUpdatesWhenNotificationIsSent() {
-        // Given
-        let expectedState = Accessibility(
-            textSize: "large",
-            screenReaderEnabled: true,
-            boldTextEnabled: false,
-            reduceTransparencyEnabled: true,
-            reduceMotionEnabled: false,
-            buttonShapesEnabled: true,
-            invertColorsEnabled: false,
-            increaseContrastEnabled: true,
-            assistiveSwitchEnabled: false,
-            assistiveTouchEnabled: true,
-            videoAutoplayEnabled: false,
-            closedCaptioningEnabled: true,
-            monoAudioEnabled: false,
-            shakeToUndoEnabled: true,
-            reducedAnimationsEnabled: false,
-            shouldDifferentiateWithoutColor: true,
-            grayscaleEnabled: false,
-            singleAppModeEnabled: true,
-            onOffSwitchLabelsEnabled: false,
-            speakScreenEnabled: true,
-            speakSelectionEnabled: false,
-            rtlEnabled: true
-        )
-
-        let mockNotificationCenter = MockNotificationCenter()
-        let mockReader = AccessibilityReaderMock(state: expectedState)
-
-        // When
-        mockNotificationCenter.postFakeNotification(name: UIAccessibility.voiceOverStatusDidChangeNotification)
-
-        // Then
-        let actualState = mockReader.state
-        XCTAssertEqual(actualState.textSize, "large")
-        XCTAssertEqual(actualState.screenReaderEnabled, true)
-        XCTAssertEqual(actualState.boldTextEnabled, false)
-        XCTAssertEqual(actualState.reduceTransparencyEnabled, true)
-        XCTAssertEqual(actualState.reduceMotionEnabled, false)
-        XCTAssertEqual(actualState.buttonShapesEnabled, true)
-        XCTAssertEqual(actualState.invertColorsEnabled, false)
-        XCTAssertEqual(actualState.increaseContrastEnabled, true)
-        XCTAssertEqual(actualState.assistiveSwitchEnabled, false)
-        XCTAssertEqual(actualState.assistiveTouchEnabled, true)
-        XCTAssertEqual(actualState.videoAutoplayEnabled, false)
-        XCTAssertEqual(actualState.closedCaptioningEnabled, true)
-        XCTAssertEqual(actualState.monoAudioEnabled, false)
-        XCTAssertEqual(actualState.shakeToUndoEnabled, true)
-        XCTAssertEqual(actualState.reducedAnimationsEnabled, false)
-        XCTAssertEqual(actualState.shouldDifferentiateWithoutColor, true)
-        XCTAssertEqual(actualState.grayscaleEnabled, false)
-        XCTAssertEqual(actualState.singleAppModeEnabled, true)
-        XCTAssertEqual(actualState.onOffSwitchLabelsEnabled, false)
-        XCTAssertEqual(actualState.speakScreenEnabled, true)
-        XCTAssertEqual(actualState.speakSelectionEnabled, false)
-        XCTAssertEqual(actualState.rtlEnabled, true)
-    }
-
-    @MainActor
     func testAccessibilityReaderProtocolConformance() {
         // Given
         let reader: AccessibilityReading = AccessibilityReader(notificationCenter: .init())
@@ -165,27 +105,104 @@ final class AccessibilityReaderTests: XCTestCase {
         XCTAssertNotNil(state)
     }
 
-    func testAccessibilityReaderMock() {
-        // Given
-        let mockState = Accessibility.mockRandom()
-        let mockReader = AccessibilityReaderMock(state: mockState)
+    func testAccessibilityInfoToRUMConversion() {
+        // Given - Non-empty state
+        let nonEmptyState = AccessibilityInfo(
+            textSize: "large",
+            screenReaderEnabled: true,
+            boldTextEnabled: false
+        )
+        let mockReader = AccessibilityReaderMock(state: nonEmptyState)
 
         // When
-        let state = mockReader.state
+        let accessibility = mockReader.state.rumViewAccessibility
 
-        // Then
-        XCTAssertEqual(state.textSize, mockState.textSize)
-        XCTAssertEqual(state.screenReaderEnabled, mockState.screenReaderEnabled)
-        XCTAssertEqual(state.boldTextEnabled, mockState.boldTextEnabled)
+        // Then - Should return RUM accessibility object
+        XCTAssertNotNil(accessibility)
+        XCTAssertEqual(accessibility?.textSize, "large")
+        XCTAssertEqual(accessibility?.screenReaderEnabled, true)
+        XCTAssertEqual(accessibility?.boldTextEnabled, false)
     }
 
-    func testAccessibilityMockAny() {
-        let mock = AccessibilityReaderMock.mockAny()
-        XCTAssertNotNil(mock.state)
+    func testEmptyAccessibilityInfoToRUMConversion() {
+        // Given - Empty state
+        let mockReader = AccessibilityReaderMock(state: AccessibilityInfo())
+
+        // When
+        let accessibility = mockReader.state.rumViewAccessibility
+
+        // Then - Should return nil when no valid data
+        XCTAssertNil(accessibility)
     }
 
-    func testAccessibilityMockRandom() {
-        let mock = AccessibilityReaderMock.mockRandom()
-        XCTAssertNotNil(mock.state)
+    func testAccessibilityInfoDifferences() {
+        // Given - Initial state
+        let initialState = AccessibilityInfo(
+            textSize: "large",
+            screenReaderEnabled: true,
+            boldTextEnabled: false,
+            reduceTransparencyEnabled: false,
+            reduceMotionEnabled: false
+        )
+
+        // When - New state with some changes
+        let newState = AccessibilityInfo(
+            textSize: "large", // Same
+            screenReaderEnabled: true, // Same
+            boldTextEnabled: true, // Changed
+            reduceTransparencyEnabled: true, // Changed
+            reduceMotionEnabled: false // Same
+        )
+
+        let differences = newState.differences(from: initialState)
+
+        // Then - Should only include changed values
+        let rumDifferences = differences.rumViewAccessibility
+        XCTAssertNotNil(rumDifferences)
+        XCTAssertEqual(rumDifferences?.boldTextEnabled, true)
+        XCTAssertEqual(rumDifferences?.reduceTransparencyEnabled, true)
+        XCTAssertNil(rumDifferences?.textSize)
+        XCTAssertNil(rumDifferences?.screenReaderEnabled)
+        XCTAssertNil(rumDifferences?.reduceMotionEnabled)
+    }
+
+    func testAccessibilityInfoDifferencesFromNil() {
+        // Given
+        let currentState = AccessibilityInfo(
+            textSize: "large",
+            screenReaderEnabled: true,
+            boldTextEnabled: false
+        )
+
+        // When - Compare with nil (no previous state)
+        let differences = currentState.differences(from: nil)
+
+        // Then - Should return the entire current state
+        let rumDifferences = differences.rumViewAccessibility
+        XCTAssertNotNil(rumDifferences)
+        XCTAssertEqual(rumDifferences?.textSize, "large")
+        XCTAssertEqual(rumDifferences?.screenReaderEnabled, true)
+        XCTAssertEqual(rumDifferences?.boldTextEnabled, false)
+    }
+
+    func testAccessibilityInfoNoDifferences() {
+        // Given - Two identical states
+        let state1 = AccessibilityInfo(
+            textSize: "large",
+            screenReaderEnabled: true,
+            boldTextEnabled: false
+        )
+        let state2 = AccessibilityInfo(
+            textSize: "large",
+            screenReaderEnabled: true,
+            boldTextEnabled: false
+        )
+
+        // When
+        let differences = state2.differences(from: state1)
+
+        // Then - Should return empty (no differences)
+        let rumDifferences = differences.rumViewAccessibility
+        XCTAssertNil(rumDifferences)
     }
 }

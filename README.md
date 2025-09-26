@@ -44,7 +44,7 @@ RUM allows you to monitor web views and eliminate blind spots in your hybrid mob
 
 ## Integrations
 
-If you use [Alamofire][7] or [Apollo GraphQL][8], see [Integrated Libraries][4] to learn how to instrument requests automatically.
+If you use [Alamofire][7], [Apollo GraphQL][8], [SDWebImage][9], or [OpenAPI Generator][10], see [Integrated Libraries][4] to learn how to instrument requests automatically.
 
 ## Contributing
 
@@ -66,3 +66,5 @@ See the [Supported Versions][6] documentation for more details.
 [6]: https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/supported_versions/ios/
 [7]: https://github.com/Alamofire/Alamofire
 [8]: https://github.com/apollographql/apollo-ios
+[9]: https://github.com/SDWebImage/SDWebImage
+[10]: https://github.com/OpenAPITools/openapi-generator

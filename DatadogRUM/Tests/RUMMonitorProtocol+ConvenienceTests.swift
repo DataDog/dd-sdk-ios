@@ -39,5 +39,8 @@ class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
         monitor.addAction(type: .click, name: .mockAny())
         monitor.startAction(type: .click, name: .mockAny())
         monitor.stopAction(type: .click)
+        monitor.startFeatureOperation(name: .mockAny())
+        monitor.succeedFeatureOperation(name: .mockAny())
+        monitor.failFeatureOperation(name: .mockAny(), reason: .mockAny())
     }
 }

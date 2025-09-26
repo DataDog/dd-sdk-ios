@@ -62,15 +62,6 @@ public final class objc_SessionReplayConfiguration: NSObject {
         get { _swift.replaySampleRate }
     }
 
-    /// Defines the way sensitive content (e.g. text) should be masked.
-    ///
-    /// Default: `.mask`.
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use the new privacy levels instead.")
-    @objc public var defaultPrivacyLevel: objc_SessionReplayConfigurationPrivacyLevel {
-        set { _swift.defaultPrivacyLevel = newValue._swift }
-        get { .init(_swift.defaultPrivacyLevel) }
-    }
-
     /// Defines the way texts and inputs (e.g. labels, textfields, checkboxes) should be masked.
     ///
     /// Default: `.maskAll`.
@@ -167,51 +158,6 @@ public final class objc_SessionReplayConfiguration: NSObject {
             touchPrivacyLevel: touchPrivacyLevel,
             featureFlags: nil
         )
-    }
-
-    /// Creates Session Replay configuration.
-    ///
-    /// - Parameters:
-    ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
-    @objc
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(replaySampleRate:textAndInputPrivacyLevel:imagePrivacyLevel:touchPrivacyLevel:)` instead.")
-    public required init(
-        replaySampleRate: Float
-    ) {
-        _swift = SessionReplay.Configuration(
-            replaySampleRate: replaySampleRate
-        )
-        super.init()
-    }
-}
-
-/// Available privacy levels for content masking.
-@objc(DDSessionReplayConfigurationPrivacyLevel)
-@_spi(objc)
-public enum objc_SessionReplayConfigurationPrivacyLevel: Int {
-    /// Record all content.
-    case allow
-
-    /// Mask all content.
-    case mask
-
-    /// Mask input elements, but record all other content.
-    case maskUserInput
-
-    internal var _swift: SessionReplayPrivacyLevel {
-        switch self {
-        case .allow: return .allow
-        case .mask: return .mask
-        case .maskUserInput: return .maskUserInput
-        }
-    }
-
-    internal init(_ swift: SessionReplayPrivacyLevel) {
-        switch swift {
-        case .allow: self = .allow
-        case .mask: self = .mask
-        case .maskUserInput: self = .maskUserInput
-        }
     }
 }
 

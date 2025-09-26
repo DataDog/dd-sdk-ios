@@ -105,12 +105,8 @@ final class RUMUntrackedModalViewsAutoInstrumentationScenario: TestScenario {
         func rumView(for viewController: UIViewController) -> RUMView? {
             if let viewName = viewController.accessibilityLabel {
                 if viewController.modalPresentationStyle == .fullScreen {
-                    if #available(iOS 13, tvOS 13, *) {
-                        // Untracked on iOS/tvOS 13+ via isModalInPresentation
-                        return nil
-                    } else {
-                        return .init(name: viewName, isUntrackedModal: true)
-                    }
+                    // Untracked on iOS/tvOS 13+ via isModalInPresentation
+                    return nil
                 }
                 return .init(name: viewName)
             } else {
@@ -181,7 +177,7 @@ class RUMResourcesBaseScenario: URLSessionBaseScenario {
         config.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
 
         switch setup.instrumentationMethod {
-        case .legacyWithFeatureFirstPartyHosts, .legacyInheritance, .legacyComposition, .delegateUsingFeatureFirstPartyHosts:
+        case .delegateUsingFeatureFirstPartyHosts:
             config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(
                     hosts: [
@@ -193,7 +189,7 @@ class RUMResourcesBaseScenario: URLSessionBaseScenario {
                 ),
                 resourceAttributesProvider: rumResourceAttributesProvider(request:response:data:error:)
             )
-        case .legacyWithAdditionalFirstyPartyHosts, .delegateWithAdditionalFirstyPartyHosts:
+        case .delegateWithAdditionalFirstPartyHosts:
             config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100), // hosts will be set through `DDURLSessionDelegate`
                 resourceAttributesProvider: rumResourceAttributesProvider(request:response:data:error:)
@@ -285,7 +281,6 @@ final class RUMStopSessionsScenario: TestScenario {
     }
 }
 
-@available(iOS 13, *)
 /// Scenario which presents `SwiftUI`-based hierarchy and navigates through
 /// its views and view controllers.
 final class RUMSwiftUIManualInstrumentationScenario: TestScenario {
@@ -336,7 +331,6 @@ final class RUMSwiftUIAutoInstrumentationSingleRootViewScenario: TestScenario {
 }
 
 /// 2. Tabbar root view and multiple navigation scenario in each tab.
-@available(iOS 13, *)
 final class RUMSwiftUIAutoInstrumentationRootTabbarScenario: TestScenario {
     static var storyboardName: String = "RUMSwiftUIAutoInstrumentationRootTabbarScenario"
 

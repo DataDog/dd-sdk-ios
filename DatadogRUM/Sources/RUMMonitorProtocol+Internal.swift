@@ -49,7 +49,9 @@ public struct DatadogInternalInterface {
             threads: nil,
             binaryImages: binaryImages,
             isStackTraceTruncated: nil,
-            attributes: attributes
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            completionHandler: NOPCompletionHandler
         )
         monitor.process(command: addErrorCommand)
     }
@@ -104,10 +106,10 @@ public struct DatadogInternalInterface {
         key: AttributeKey,
         value: AttributeValue
     ) {
-        let attributeCommand = RUMSetInternalViewAttributeCommand(
+        let attributeCommand = RUMAddViewAttributesCommand(
             time: time,
-            key: key,
-            value: value
+            attributes: [key: value],
+            areInternalAttributes: true
         )
         monitor.process(command: attributeCommand)
     }
