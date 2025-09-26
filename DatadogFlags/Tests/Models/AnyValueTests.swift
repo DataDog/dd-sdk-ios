@@ -276,30 +276,4 @@ final class AnyValueTests: XCTestCase {
         // Then
         XCTAssertEqual(expected, result)
     }
-
-    func testAsDecodable() throws {
-        // Given
-        struct Foo: Equatable, Decodable {
-            let value: String
-        }
-        let data = """
-        [
-          {
-            "value" : "bar"
-          },
-          {
-            "value" : "baz"
-          }
-        ]
-        """.data(using: .utf8)!
-        let expected = [Foo(value: "bar"), Foo(value: "baz")]
-
-        // When
-        let result = try JSONDecoder()
-            .decode(AnyValue.self, from: data)
-            .as([Foo].self)
-
-        // Then
-        XCTAssertEqual(expected, result)
-    }
 }

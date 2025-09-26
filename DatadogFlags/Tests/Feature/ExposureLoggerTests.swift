@@ -25,6 +25,7 @@ final class ExposureLoggerTests: XCTestCase {
                 allocationKey: "allocation-123",
                 variationKey: "variation-123",
                 variation: .mockAnyBoolean(),
+                reason: .mockAny(),
                 doLog: true
             ),
             context: .mockAny()

@@ -10,11 +10,6 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagsClientTests: XCTestCase {
-    private struct Model: Equatable, Decodable {
-        let key: String
-        let prop: Int
-    }
-
     func testFlagsClientCreation() {
         let core = FeatureRegistrationCoreMock()
         Flags.enable(in: core)
@@ -64,7 +59,10 @@ final class FlagsClientTests: XCTestCase {
         let integerValue = client.getIntegerValue(key: "integer-flag", defaultValue: 0)
         let doubleValue = client.getDoubleValue(key: "numeric-flag", defaultValue: 0.0)
         let objectValue = client.getObjectValue(key: "json-flag", defaultValue: .null)
-        let typedObjectValue = client.getObjectValue(key: "json-flag", defaultValue: Model(key: "null", prop: 0))
+
+        let boolDetails = client.getBooleanDetails(key: "boolean-flag", defaultValue: false)
+        let flagNotFoundDetails = client.getBooleanDetails(key: "missing-flag", defaultValue: false)
+        let typeMismatchDetails = client.getBooleanDetails(key: "string-flag", defaultValue: false)
 
         // Then
         XCTAssertTrue(boolValue)
@@ -80,8 +78,33 @@ final class FlagsClientTests: XCTestCase {
                 ]
             )
         )
-        XCTAssertEqual(typedObjectValue, Model(key: "value", prop: 123))
         XCTAssertEqual(exposureLoggerMock.logExposureCalls.count, 6)
+
+        XCTAssertEqual(
+            boolDetails,
+            FlagDetails(
+                key: "boolean-flag",
+                value: true,
+                variant: "variation-124",
+                reason: "TARGETING_MATCH"
+            )
+        )
+        XCTAssertEqual(
+            flagNotFoundDetails,
+            .init(
+                key: "missing-flag",
+                value: false,
+                error: .flagNotFound
+            )
+        )
+        XCTAssertEqual(
+            typeMismatchDetails,
+            .init(
+                key: "string-flag",
+                value: false,
+                error: .typeMismatch
+            )
+        )
     }
 
     func testContextAttributeSerialization() {
