@@ -7,80 +7,87 @@
 import Foundation
 import DatadogInternal
 
-/// High-level business logic layer for Flags storage.
-///
-/// This class manages the application-level concerns for flag storage:
-/// - In-memory caching of flags for fast access
-/// - Thread-safe operations using concurrent queues
-/// - Flag metadata management (timestamps, evaluation contexts)
-/// - Business logic for setting/getting flags with proper context
+// TODO: FFL-1048 Use the Core SDK’s DataStore instead
 internal class FlagsStore {
-    private let featureScope: FeatureScope
-    private var cachedFlags: [String: Any] = [:]
-    private var cachedMetadata: FlagsMetadata?
-    // TODO: FFL-1016 Also scope queues by clientKey
-    private let syncQueue = DispatchQueue(label: "com.datadoghq.flags.store", attributes: .concurrent)
-
-    init(featureScope: FeatureScope) {
-        self.featureScope = featureScope
-        loadFromDataStore()
+    private struct State: Codable {
+        var flags: [String: FlagAssignment]
+        var context: FlagsEvaluationContext
+        var date: Date
     }
 
-    func getFlags() -> [String: Any] {
-        return syncQueue.sync { self.cachedFlags }
+    var context: FlagsEvaluationContext? {
+        state?.context
     }
 
-    func setFlags(_ flags: [String: Any]) {
-        setFlags(flags, context: nil)
+    @ReadWriteLock
+    private var state: State?
+
+    private let cacheFileURL: URL?
+    private static let persistenceQueue = DispatchQueue(label: "com.datadoghq.flags.persistence", qos: .background)
+
+    init(withPersistentCache: Bool = true) {
+        self.cacheFileURL = withPersistentCache ? Self.findCacheFileURL() : nil
+        loadFromDisk()
     }
 
-    func setFlags(_ flags: [String: Any], context: FlagsEvaluationContext?) {
-        let timestamp = Date().timeIntervalSince1970 * 1_000 // JavaScript-style timestamp in milliseconds
+    private static func findCacheFileURL() -> URL? {
+        guard let cacheDirectoryURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
+            .first?
+            .appendingPathComponent("datadog-flags", isDirectory: true) else {
+            return nil
+        }
 
-        syncQueue.sync(flags: .barrier) {
-            self.cachedFlags = flags
-            self.cachedMetadata = FlagsMetadata(
-                fetchedAt: timestamp,
-                context: context
+        do {
+            try FileManager.default.createDirectory(
+                at: cacheDirectoryURL,
+                withIntermediateDirectories: true,
+                attributes: nil
             )
-            self.saveToDataStore()
+        } catch {
+            print("Error creating cache directory: \(error)")
+            return nil
         }
+
+        return cacheDirectoryURL.appendingPathComponent("flags-cache.json", isDirectory: false)
     }
 
-    func getFlagsMetadata() -> FlagsMetadata? {
-        return syncQueue.sync { self.cachedMetadata }
+    func flagAssignment(for key: String) -> FlagAssignment? {
+        state?.flags[key]
     }
 
-    /// Persists in-memory flags and metadata to the underlying data store.
-    private func saveToDataStore() {
-        let dataStore = featureScope.flagsDataStore
+    func setFlagAssignments(_ flags: [String: FlagAssignment], for context: FlagsEvaluationContext, date: Date) {
+        state = .init(flags: flags, context: context, date: date)
+        saveToDisk()
+    }
 
-        // Save flags
-        let codableFlags = CodableFlags(flags: cachedFlags)
-        dataStore.setValue(codableFlags, forKey: .flags)
-        // Save metadata if available
-        if let metadata = cachedMetadata {
-            dataStore.setValue(metadata, forKey: .flagsMetadata)
+    private func saveToDisk() {
+        guard let cacheFileURL = self.cacheFileURL else {
+            return
         }
-    }
 
-    private func loadFromDataStore() {
-        let dataStore = featureScope.flagsDataStore
-        // Load flags
-        dataStore.value(forKey: .flags) { [weak self] (codableFlags: CodableFlags?) in
-            if let codableFlags = codableFlags {
-                self?.syncQueue.sync(flags: .barrier) {
-                    self?.cachedFlags = codableFlags.toDictionary()
-                }
+        Self.persistenceQueue.async { [state] in
+            guard let state else {
+                return
+            }
+            do {
+                let data = try JSONEncoder().encode(state)
+                try data.write(to: cacheFileURL, options: .atomic)
+            } catch {
+                print("Error saving flags to disk: \(error)")
             }
         }
-        // Load metadata
-        dataStore.value(forKey: .flagsMetadata) { [weak self] (metadata: FlagsMetadata?) in
-            if let metadata = metadata {
-                self?.syncQueue.sync(flags: .barrier) {
-                    self?.cachedMetadata = metadata
-                }
-            }
+    }
+
+    private func loadFromDisk() {
+        guard let cacheFileURL = self.cacheFileURL else {
+            return
+        }
+
+        do {
+            let data = try Data(contentsOf: cacheFileURL)
+            state = try JSONDecoder().decode(State.self, from: data)
+        } catch {
+            print("No flags found on disk or error decoding: \(error)")
         }
     }
 }

@@ -21,15 +21,19 @@ final class FlagsClientTests: XCTestCase {
     }
 
     func testFlagsClientWithMockHttpClient() {
+        // Given
         let expectation = expectation(description: "Flags loaded")
 
         let mockHttpClient = MockFlagsHTTPClient()
         let mockStore = MockFlagsStore()
         let config = FlagsClient.Configuration()
+        let exposureLoggerMock = ExposureLoggerMock()
         let client = FlagsClient(
             configuration: config,
             httpClient: mockHttpClient,
             store: mockStore,
+            exposureLogger: exposureLoggerMock,
+            dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock()
         )
 
@@ -38,22 +42,10 @@ final class FlagsClientTests: XCTestCase {
             attributes: ["attr1": "value1", "companyId": "1"]
         )
 
+        // When
         client.setEvaluationContext(context) { result in
             switch result {
             case .success:
-                let boolValue = client.getBooleanValue(key: "boolean-flag", defaultValue: false)
-                let stringValue = client.getStringValue(key: "string-flag", defaultValue: "default")
-                let integerValue = client.getIntegerValue(key: "integer-flag", defaultValue: 0)
-                let doubleValue = client.getDoubleValue(key: "numeric-flag", defaultValue: 0.0)
-                let objectValue = client.getObjectValue(key: "json-flag", defaultValue: [:])
-
-                XCTAssertTrue(boolValue)
-                XCTAssertEqual(stringValue, "red")
-                XCTAssertEqual(integerValue, 42)
-                XCTAssertEqual(doubleValue, 3.14, accuracy: 0.001)
-                XCTAssertEqual(objectValue["key"] as? String, "value")
-                XCTAssertEqual(objectValue["prop"] as? Int, 123)
-
                 expectation.fulfill()
             case .failure(let error):
                 XCTFail("Expected success but got error: \(error)")
@@ -61,6 +53,58 @@ final class FlagsClientTests: XCTestCase {
         }
 
         waitForExpectations(timeout: 1.0)
+
+        let boolValue = client.getBooleanValue(key: "boolean-flag", defaultValue: false)
+        let stringValue = client.getStringValue(key: "string-flag", defaultValue: "default")
+        let integerValue = client.getIntegerValue(key: "integer-flag", defaultValue: 0)
+        let doubleValue = client.getDoubleValue(key: "numeric-flag", defaultValue: 0.0)
+        let objectValue = client.getObjectValue(key: "json-flag", defaultValue: .null)
+
+        let boolDetails = client.getBooleanDetails(key: "boolean-flag", defaultValue: false)
+        let flagNotFoundDetails = client.getBooleanDetails(key: "missing-flag", defaultValue: false)
+        let typeMismatchDetails = client.getBooleanDetails(key: "string-flag", defaultValue: false)
+
+        // Then
+        XCTAssertTrue(boolValue)
+        XCTAssertEqual(stringValue, "red")
+        XCTAssertEqual(integerValue, 42)
+        XCTAssertEqual(doubleValue, 3.14, accuracy: 0.001)
+        XCTAssertEqual(
+            objectValue,
+            .dictionary(
+                [
+                    "key": .string("value"),
+                    "prop": .int(123)
+                ]
+            )
+        )
+        XCTAssertEqual(exposureLoggerMock.logExposureCalls.count, 6)
+
+        XCTAssertEqual(
+            boolDetails,
+            FlagDetails(
+                key: "boolean-flag",
+                value: true,
+                variant: "variation-124",
+                reason: "TARGETING_MATCH"
+            )
+        )
+        XCTAssertEqual(
+            flagNotFoundDetails,
+            .init(
+                key: "missing-flag",
+                value: false,
+                error: .flagNotFound
+            )
+        )
+        XCTAssertEqual(
+            typeMismatchDetails,
+            .init(
+                key: "string-flag",
+                value: false,
+                error: .typeMismatch
+            )
+        )
     }
 
     func testContextAttributeSerialization() {
@@ -71,6 +115,8 @@ final class FlagsClientTests: XCTestCase {
             configuration: config,
             httpClient: AttributeSerializationTestClient(),
             store: MockFlagsStore(),
+            exposureLogger: ExposureLoggerMock(),
+            dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock()
         )
 
@@ -129,22 +175,24 @@ private class MockFlagsHTTPClient: FlagsHTTPClient {
 }
 
 private class MockFlagsStore: FlagsStore {
-    private var flags: [String: Any] = [:]
-
-    init() {
-        super.init(featureScope: FeatureScopeMock())
+    private struct MockState {
+        var flags: [String: FlagAssignment]
+        var context: FlagsEvaluationContext
+        var date: Date
     }
 
-    override func getFlags() -> [String: Any] {
-        return flags
+    override var context: FlagsEvaluationContext? {
+        mockState?.context
     }
 
-    override func setFlags(_ flags: [String: Any]) {
-        self.flags = flags
+    private var mockState: MockState?
+
+    override func flagAssignment(for key: String) -> FlagAssignment? {
+        mockState?.flags[key]
     }
 
-    override func setFlags(_ flags: [String: Any], context: FlagsEvaluationContext?) {
-        self.flags = flags
+    override func setFlagAssignments(_ flags: [String: FlagAssignment], for context: FlagsEvaluationContext, date: Date) {
+        self.mockState = .init(flags: flags, context: context, date: date)
     }
 }
 
