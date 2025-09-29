@@ -38,27 +38,45 @@ public struct ProfilingContext: AdditionalContext {
     ///
     /// This enum maps directly to the underlying C profiler status codes
     /// from the constructor profiler implementation.
-    public enum Status {
-        /// Profiling has not been started or initialized.
-        case notStarted
+    public enum Status: Equatable {
+        /// Reasons why profiling was stopped.
+        public enum StopReason: Equatable {
+            /// Profiling was manually stopped by explicit API call.
+            case manual
+
+            /// Profiling was never started in the first place.
+            case notStarted
+
+            /// Profiling stopped due to configured timeout being reached.
+            case timeout
+
+            /// Profiling stopped because app was pre-warmed (iOS 15+ app launch optimization).
+            case prewarmed
+
+            /// Profiling was not started due to sampling configuration (profiling was sampled out).
+            case sampledOut
+        }
+
+        /// Errors that can occur during profiling operations.
+        public enum ErrorReason: Equatable {
+            /// Failed to allocate required memory for profiling operations.
+            case memoryAllocationFailed
+
+            /// Attempted to start profiling when it was already running.
+            case alreadyStarted
+        }
 
         /// Profiling is currently active and collecting samples.
         case running
 
         /// Profiling was manually stopped via API call.
-        case stopped
-
-        /// Profiling was automatically stopped due to timeout.
-        case timedOut
+        case stopped(reason: StopReason)
 
         /// Profiling encountered an error during operation.
-        case error
+        case error(reason: ErrorReason)
 
-        /// Profiling was not started due to app prewarming detection.
-        case prewarmed
-
-        /// Profiling was not started due to probabilistic sampling decision.
-        case sampledOut
+        /// Profiling status is unknown or could not be determined.
+        case unknown
     }
 
     /// The current profiling status.

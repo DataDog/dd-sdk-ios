@@ -6,48 +6,50 @@
 
 import Foundation
 
-/// Message payload used to signal the end of application launch profiling.
+/// Message payload used to signal the end of profiling operations.
 ///
 /// This message is sent to trigger the collection and submission of profiling
-/// data captured during application startup. The constructor profiler automatically
-/// starts during early app launch and continues until this stop message is received.
+/// data captured during various profiling sessions. Profiling may be active
+/// for different use cases (such as application startup) and continues until
+/// this stop message is received.
 ///
 /// ## Usage
 ///
-/// Send this message through the core messaging system when the application
-/// has completed its launch phase:
+/// Send this message through the core messaging system when profiling
+/// should be stopped and data collected:
 ///
 /// ```swift
-/// let context = ["launch_duration": 1.5, "view_controller": "MainViewController"]
-/// let stopMessage = AppLaunchProfileStop(context: context)
+/// let context = ["session.id": "abc123", "view.id": "home_screen"]
+/// let stopMessage = ProfilerStop(context: context)
 /// core.send(message: .payload(stopMessage))
 /// ```
 ///
 /// ## Integration
 ///
-/// This message is handled by `AppLaunchProfiler` which will:
-/// 1. Stop the constructor-based profiler
+/// This message is handled by profiling components which will:
+/// 1. Stop the active profiler
 /// 2. Extract the collected profile data
 /// 3. Serialize it to pprof format
 /// 4. Submit it through the profiling pipeline with the provided context
 ///
 /// ## Context Data
 ///
-/// The context dictionary can contain any additional metadata about the launch.
-/// The context will be injected into the profile data for query.
+/// The context dictionary contains correlation IDs and identifiers that allow
+/// linking the profile data with other telemetry data (RUM, logs, traces).
 ///
 /// This context is included as additional attributes in the final profile event.
-public struct AppLaunchProfileStop {
-    /// Additional context metadata to include with the profile submission.
+public struct ProfilerStop {
+    /// Correlation context to include with the profile submission.
     ///
-    /// This context is merged into the profile event as additional attributes,
-    /// allowing custom launch-specific data to be associated with the profile.
+    /// This context contains identifiers and correlation IDs that are merged
+    /// into the profile event as additional attributes, enabling data correlation
+    /// across different telemetry streams.
     public let context: [String: Encodable]
 
-    /// Creates a new app launch profile stop message.
+    /// Creates a new profiler stop message.
     ///
-    /// - Parameter context: Additional context metadata to include with the profile.
-    ///                      Such as RUM context.
+    /// - Parameter context: Correlation context containing IDs for data correlation.
+    ///                      Such as session IDs, view IDs, or other telemetry identifiers.
     public init(context: [String: Encodable]) {
         self.context = context
     }

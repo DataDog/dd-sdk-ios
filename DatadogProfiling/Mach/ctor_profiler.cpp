@@ -15,7 +15,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <random>
-#include <mutex>
 
 static constexpr int64_t CTOR_PROFILER_TIMEOUT_NS = 5000000000ULL; // 5 seconds
 
@@ -148,7 +147,7 @@ public:
             delete profile;
             profiler = nullptr;
             profile = nullptr;
-            status = CTOR_PROFILER_STATUS_START_FAILED;
+            status = CTOR_PROFILER_STATUS_ALREADY_STARTED;
             return;
         }
     }

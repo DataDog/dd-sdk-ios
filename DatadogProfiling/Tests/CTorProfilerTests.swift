@@ -9,12 +9,6 @@ import DatadogInternal
 import DatadogMachProfiler
 
 final class CTorProfilerTests: XCTestCase {
-    override func setUp() {
-        super.setUp()
-        ctor_profiler_stop()
-        ctor_profiler_destroy()
-    }
-
     override func tearDown() {
         super.tearDown()
         ctor_profiler_stop()
