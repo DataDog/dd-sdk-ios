@@ -2482,6 +2482,256 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         XCTAssertEqual(expected, actual)
     }
+
+    // MARK: - Nested Swift Enums with associated types
+
+    func testPrintingObjcInteropForSwiftStructsWithSwiftAssociatedTypeEnum() throws {
+        let sharedAssociatedTypeEnum = SwiftAssociatedTypeEnum(
+            name: "NestedEnum",
+            comment: nil,
+            cases: [
+                SwiftAssociatedTypeEnum
+                    .Case(
+                        label: "case1",
+                        associatedType: SwiftStruct(
+                            name: "NestedStruct",
+                            properties: [
+                                .mock(
+                                    propertyName: "param",
+                                    type: SwiftPrimitive<String>(),
+                                    isOptional: false,
+                                    mutability: .immutable
+                                ),
+                                .mock(
+                                    propertyName: "enumParam",
+                                    type: SwiftEnum(
+                                        name: "Enum",
+                                        comment: nil,
+                                        cases: [
+                                            SwiftEnum.Case(label: "case1", rawValue: .string(value: "case1")),
+                                            SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
+                                        ],
+                                        conformance: []
+                                    ),
+                                    isOptional: false,
+                                    mutability: .immutable
+                                )
+                            ],
+                            conformance: []
+                        )
+                    ),
+                SwiftAssociatedTypeEnum
+                    .Case(
+                        label: "case2",
+                        associatedType: SwiftPrimitive<Int>()
+                    )
+            ],
+            conformance: []
+        )
+
+        let fooStruct = SwiftStruct(
+            name: "Foo",
+            comment: nil,
+            properties: [
+                .mock(
+                    propertyName: "immutableString",
+                    type: SwiftPrimitive<String>(),
+                    isOptional: false,
+                    mutability: .immutable
+                ),
+                .mock(
+                    propertyName: "bar",
+                    type: SwiftStruct(
+                        name: "Bar",
+                        comment: nil,
+                        properties: [
+                            .mock(
+                                propertyName: "nestedEnum",
+                                type: sharedAssociatedTypeEnum,
+                                isOptional: false,
+                                mutability: .immutable
+                            )
+                        ],
+                        conformance: []
+                    ),
+                    isOptional: false,
+                    mutability: .immutable
+                )
+            ],
+            conformance: []
+        )
+
+        let expected = """
+        // MARK: - Swift
+
+        public struct Foo {
+            public let immutableString: String
+
+            public let bar: Bar
+
+            ///
+            /// - Parameters:
+            ///   - immutableString:
+            ///   - bar:
+            public init(
+                immutableString: String,
+                bar: Bar
+            ) {
+                self.immutableString = immutableString
+                self.bar = bar
+            }
+
+            public struct Bar {
+                public let nestedEnum: NestedEnum
+
+                ///
+                /// - Parameters:
+                ///   - nestedEnum:
+                public init(
+                    nestedEnum: NestedEnum
+                ) {
+                    self.nestedEnum = nestedEnum
+                }
+
+                public enum NestedEnum {
+                    case case1(value: NestedStruct)
+                    case case2(value: Int)
+
+                    public struct NestedStruct {
+                        public let param: String
+
+                        public let enumParam: Enum
+
+                        ///
+                        /// - Parameters:
+                        ///   - param:
+                        ///   - enumParam:
+                        public init(
+                            param: String,
+                            enumParam: Enum
+                        ) {
+                            self.param = param
+                            self.enumParam = enumParam
+                        }
+
+                        public enum Enum: String {
+                            case case1 = "case1"
+                            case case2 = "case2"
+                        }
+                    }
+                }
+            }
+        }
+
+        // MARK: - ObjcInterop
+
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
+
+            public init(swiftModel: Foo) {
+                self.swiftModel = swiftModel
+            }
+
+            public var immutableString: String {
+                root.swiftModel.immutableString
+            }
+
+            public var bar: objc_FooBar {
+                objc_FooBar(root: root)
+            }
+        }
+
+        @objc(DDFooBar)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooBar: NSObject {
+            internal let root: objc_Foo
+
+            internal init(root: objc_Foo) {
+                self.root = root
+            }
+
+            public var nestedEnum: objc_FooBarNestedEnum {
+                objc_FooBarNestedEnum(root: root)
+            }
+        }
+
+        @objc(DDFooBarNestedEnum)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooBarNestedEnum: NSObject {
+            internal let root: objc_Foo
+
+            internal init(root: objc_Foo) {
+                self.root = root
+            }
+
+            public var case1: objc_FooBarNestedEnumNestedStruct? {
+                guard case .case1(let value) = root.swiftModel.bar.nestedEnum else {
+                    return nil
+                }
+                return objc_FooBarNestedEnumNestedStruct(swiftModel: value)
+            }
+
+            public var case2: NSNumber? {
+                guard case .case2(let value) = root.swiftModel.bar.nestedEnum else {
+                    return nil
+                }
+                return value as NSNumber
+            }
+        }
+
+        @objc(DDFooBarNestedEnumNestedStruct)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooBarNestedEnumNestedStruct: NSObject {
+            internal var swiftModel: Foo.Bar.NestedEnum.NestedStruct
+            internal var root: objc_FooBarNestedEnumNestedStruct { self }
+
+            internal init(swiftModel: Foo.Bar.NestedEnum.NestedStruct) {
+                self.swiftModel = swiftModel
+            }
+
+            public var param: String {
+                root.swiftModel.param
+            }
+
+            public var enumParam: objc_FooBarNestedEnumNestedStructEnum {
+                .init(swift: root.swiftModel.enumParam)
+            }
+        }
+
+        @objc(DDFooBarNestedEnumNestedStructEnum)
+        @_spi(objc)
+        public enum objc_FooBarNestedEnumNestedStructEnum: Int {
+            internal init(swift: Foo.Bar.NestedEnum.NestedStruct.Enum) {
+                switch swift {
+                case .case1: self = .case1
+                case .case2: self = .case2
+                }
+            }
+
+            internal var toSwift: Foo.Bar.NestedEnum.NestedStruct.Enum {
+                switch self {
+                case .case1: return .case1
+                case .case2: return .case2
+                }
+            }
+
+            case case1
+            case case2
+        }
+
+        """
+
+        let actual = try printSwiftWithObjcInterop(for: [fooStruct])
+
+        XCTAssertEqual(expected, actual)
+    }
 }
 
 extension SwiftStruct.Property {

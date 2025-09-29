@@ -722,15 +722,18 @@ extension RUMSessionMatcher: CustomStringConvertible {
     }
 
     private func render(event: RUMVitalEvent, in view: View) -> String {
+        guard case let .featureOperationProperties(value: vital) = event.vital else {
+            return ""
+        }
         var output = renderAttributesBox(attributes: [("⚡ RUM Vital", "")], indentationLevel: 2)
         output += renderAttributesBox(
             attributes: [
                 ("date (relative in view)", pretty(milliseconds: event.date - view.startTimestampMs)),
-                ("name", event.vital.name ?? ""),
-                ("operation.key", event.vital.operationKey ?? "nil"),
-                ("type", "\(event.vital.type)"),
-                ("step.type", "\(event.vital.stepType?.rawValue ?? "")"),
-                ("failure.reason", event.vital.failureReason?.rawValue ?? "nil"),
+                ("name", vital.name ?? ""),
+                ("operation.key", vital.operationKey ?? "nil"),
+                ("type", "\(vital.type)"),
+                ("step.type", "\(vital.stepType?.rawValue ?? "")"),
+                ("failure.reason", vital.failureReason?.rawValue ?? "nil"),
             ],
             prefix: "→",
             indentationLevel: 3

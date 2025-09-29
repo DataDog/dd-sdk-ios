@@ -1,8 +1,8 @@
 /*
-* Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
-* This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-Present Datadog, Inc.
-*/
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
 
 import Foundation
 
@@ -56,7 +56,7 @@ internal class SwiftToObjcInteropTypeTransformer {
                         owner: objcClass,
                         swiftProperty: swiftProperty
                     )
-                    propertyWrapper.objcNestedEnum = ObjcInteropEnum(
+                    propertyWrapper.objcNestedEnum = ObjcInteropNestedEnum(
                         owner: propertyWrapper,
                         bridgedSwiftEnum: swiftEnum
                     )
@@ -100,13 +100,63 @@ internal class SwiftToObjcInteropTypeTransformer {
                         owner: objcClass,
                         swiftProperty: swiftProperty
                     )
-                    propertyWrapper.objcNestedAssociatedTypeEnum = ObjcInteropReferencedAssociatedTypeEnum(
+
+                    let objcAssociatedTypeEnum = ObjcInteropReferencedAssociatedTypeEnum(
                         owner: propertyWrapper,
-                        bridgedSwiftAssociatedTypeEnum: swiftAssociatedTypeEnum,
-                        associatedObjcInteropTypes: try swiftAssociatedTypeEnum.cases.map { swiftEnumCase in
-                            try objcInteropType(for: swiftEnumCase.associatedType)
-                        }
+                        bridgedSwiftAssociatedTypeEnum: swiftAssociatedTypeEnum
                     )
+
+                    let associatedObjcInteropTypes: [ObjcInteropType] = try swiftAssociatedTypeEnum.cases.map { swiftEnumCase in
+                        let objcInteropClass = try objcInteropType(for: swiftEnumCase.associatedType)
+
+                        guard let objcInteropClass = objcInteropClass as? ObjcInteropNestedClass else {
+                            return objcInteropClass
+                        }
+
+                        let objcNestedClass = ObjcInteropTransitiveNestedClass(
+                            owner: propertyWrapper,
+                            bridgedSwiftStruct: SwiftStruct(name: swiftAssociatedTypeEnum.name, properties: [], conformance: [])
+                        )
+
+                        let objcNestedAssociatedTypeEnumPropertyWrapper = ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnum(
+                            owner: objcNestedClass,
+                            swiftProperty: propertyWrapper.bridgedSwiftProperty
+                        )
+                        objcNestedAssociatedTypeEnumPropertyWrapper.objcNestedClass = objcNestedClass // to retain the Objc Enum representation
+                        objcNestedAssociatedTypeEnumPropertyWrapper.objcNestedAssociatedTypeEnum = objcAssociatedTypeEnum
+                        objcNestedClass.objcPropertyWrappers = [objcNestedAssociatedTypeEnumPropertyWrapper]
+                        objcInteropClass.parentProperty = objcNestedAssociatedTypeEnumPropertyWrapper
+
+                        let objcPropertyWrappers: [ObjcInteropPropertyWrapper] =
+                        try (swiftEnumCase.associatedType as? SwiftStruct)?.properties.map {
+                            let objcNestedType = try objcInteropType(for: $0.type)
+
+                            if let objcNestedType = objcNestedType as? ObjcInteropEnum {
+                                let nestedPropertyWrapper = ObjcInteropPropertyWrapperAccessingNestedEnum(
+                                    owner: objcInteropClass,
+                                    swiftProperty: $0
+                                )
+                                nestedPropertyWrapper.objcNestedEnum = ObjcInteropNestedEnum(owner: nestedPropertyWrapper, bridgedSwiftEnum: objcNestedType.bridgedSwiftEnum)
+
+                                return nestedPropertyWrapper
+                            } else {
+                                let nestedPropertyWrapper = ObjcInteropPropertyWrapperManagingSwiftStructProperty(
+                                    owner: objcInteropClass,
+                                    swiftProperty: $0
+                                )
+
+                                nestedPropertyWrapper.objcInteropType = objcNestedType
+                                return nestedPropertyWrapper
+                            }
+                        } ?? []
+
+                        objcInteropClass.objcPropertyWrappers = objcPropertyWrappers
+
+                        return objcInteropClass
+                    }
+
+                    objcAssociatedTypeEnum.associatedObjcInteropTypes = associatedObjcInteropTypes
+                    propertyWrapper.objcNestedAssociatedTypeEnum = objcAssociatedTypeEnum
                     return propertyWrapper
                 case let swifTypeReference as SwiftTypeReference:
                     let referencedType = try resolve(swiftTypeReference: swifTypeReference)
@@ -187,6 +237,10 @@ internal class SwiftToObjcInteropTypeTransformer {
                 key: try objcInteropType(for: swiftDictionary.key),
                 value: try objcInteropType(for: swiftDictionary.value)
             )
+        case let swiftStruct as SwiftStruct:
+            return ObjcInteropNestedClass(owner: nil, bridgedSwiftStruct: swiftStruct)
+        case let swiftEnum as SwiftEnum:
+            return ObjcInteropEnum(bridgedSwiftEnum: swiftEnum)
         default:
             throw Exception.unimplemented(
                 "Cannot create `ObjcInteropType` type for \(type(of: swiftType))."
