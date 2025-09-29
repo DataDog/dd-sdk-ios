@@ -26,7 +26,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
     // MARK: - Message Handling Tests
 
-    func testReceive_withAppLaunchProfileStopMessage_returnsTrue() {
+    func testReceive_withProfilerStopMessage_returnsTrue() {
         // Given
         let core = PassthroughCoreMock()
         let profiler = AppLaunchProfiler()
@@ -34,14 +34,14 @@ final class AppLaunchProfilerTests: XCTestCase {
 
         // When
         let result = profiler.receive(
-            message: .payload(AppLaunchProfileStop(context: mockRandomAttributes())),
+            message: .payload(ProfilerStop(context: mockRandomAttributes())),
             from: core
         )
         // Then
-        XCTAssertTrue(result, "Should return true when processing AppLaunchProfileStop message")
+        XCTAssertTrue(result, "Should return true when processing ProfilerStop message")
     }
 
-    func testReceive_withNonAppLaunchProfileStopMessage_returnsFalse() {
+    func testReceive_withNonProfilerStopMessage_returnsFalse() {
         // Given
         let core = PassthroughCoreMock()
         let profiler = AppLaunchProfiler()
@@ -50,10 +50,10 @@ final class AppLaunchProfilerTests: XCTestCase {
         let result = profiler.receive(message: .payload(0), from: core)
 
         // Then
-        XCTAssertFalse(result, "Should return false for non-AppLaunchProfileStop messages")
+        XCTAssertFalse(result, "Should return false for non-ProfilerStop messages")
     }
 
-    func testReceive_withAppLaunchProfileStopMessage_stopsProfiler() {
+    func testReceive_withProfilerStopMessage_stopsProfiler() {
         // Given
         let core = PassthroughCoreMock()
         let profiler = AppLaunchProfiler()
@@ -62,13 +62,13 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING, "Profiler should be running")
 
         // When
-        XCTAssertTrue(profiler.receive(message: .payload(AppLaunchProfileStop(context: mockRandomAttributes())), from: core))
+        XCTAssertTrue(profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core))
 
         // Then
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Profiler should be destroyed after processing message")
     }
 
-    func testReceive_withAppLaunchProfileStopMessage_whenNoProfileData_returnsFalse() {
+    func testReceive_withProfilerStopMessage_whenNoProfileData_returnsFalse() {
         // Given - profiler not started, so no profile data
         let core = PassthroughCoreMock()
         let profiler = AppLaunchProfiler()
@@ -76,13 +76,13 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Profiler should not be started")
 
         // When
-        let result = profiler.receive(message: .payload(AppLaunchProfileStop(context: mockRandomAttributes())), from: core)
+        let result = profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core)
 
         // Then
         XCTAssertFalse(result, "Should return false when no profile data is available")
     }
 
-    func testReceive_withAppLaunchProfileStopMessage_whenProfilerSampledOut_returnsFalse() {
+    func testReceive_withProfilerStopMessage_whenProfilerSampledOut_returnsFalse() {
         // Given - profiler sampled out
         let core = PassthroughCoreMock()
         let profiler = AppLaunchProfiler()
@@ -91,13 +91,13 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_SAMPLED_OUT, "Profiler should be sampled out")
 
         // When
-        let result = profiler.receive(message: .payload(AppLaunchProfileStop(context: mockRandomAttributes())), from: core)
+        let result = profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core)
 
         // Then
         XCTAssertFalse(result, "Should return false when profiler was sampled out")
     }
 
-    func testReceive_withAppLaunchProfileStopMessage_whenProfilerPrewarmed_returnsFalse() {
+    func testReceive_withProfilerStopMessage_whenProfilerPrewarmed_returnsFalse() {
         // Given - profiler prewarmed
         let core = PassthroughCoreMock()
         let profiler = AppLaunchProfiler()
@@ -106,7 +106,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_PREWARMED, "Profiler should be prewarmed")
 
         // When
-        let result = profiler.receive(message: .payload(AppLaunchProfileStop(context: mockRandomAttributes())), from: core)
+        let result = profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core)
 
         // Then
         XCTAssertFalse(result, "Should return false when profiler was prewarmed")
@@ -122,7 +122,8 @@ final class AppLaunchProfilerTests: XCTestCase {
                 service: "test-service",
                 env: "staging",
                 version: "1.2.3",
-                source: "ios"
+                source: "ios",
+                sdkVersion: "4.5.6"
             ),
             feature: ProfilerFeature(
                 requestBuilder: FeatureRequestBuilderMock(),
@@ -136,11 +137,11 @@ final class AppLaunchProfilerTests: XCTestCase {
         let stopContext = mockRandomAttributes()
 
         // When
-        XCTAssertTrue(profiler.receive(message: .payload(AppLaunchProfileStop(context: stopContext)), from: core))
+        XCTAssertTrue(profiler.receive(message: .payload(ProfilerStop(context: stopContext)), from: core))
 
         // Then
         let profilingContext = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
-        XCTAssertEqual(profilingContext.status, .stopped, "Should update the core context")
+        XCTAssertEqual(profilingContext.status, .stopped(reason: .manual), "Should update the core context")
 
         XCTAssertEqual(core.events.count, 1, "Should write exactly one event")
         let event = try XCTUnwrap(core.events.first)
@@ -155,6 +156,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         let expectedTags = [
             "service:test-service",
             "version:1.2.3",
+            "sdk_version:4.5.6",
             "env:staging",
             "source:ios",
             "language:swift",
@@ -173,15 +175,14 @@ final class AppLaunchProfilerTests: XCTestCase {
 
     func testProfilingContextStatus_mapsCorrectlyFromCtorStatus() {
         let cases: [(ctor_profiler_status_t, ProfilingContext.Status)] = [
-            (CTOR_PROFILER_STATUS_NOT_STARTED, .notStarted),
+            (CTOR_PROFILER_STATUS_NOT_STARTED, .stopped(reason: .notStarted)),
             (CTOR_PROFILER_STATUS_RUNNING, .running),
-            (CTOR_PROFILER_STATUS_STOPPED, .stopped),
-            (CTOR_PROFILER_STATUS_TIMEOUT, .timedOut),
-            (CTOR_PROFILER_STATUS_PREWARMED, .prewarmed),
-            (CTOR_PROFILER_STATUS_SAMPLED_OUT, .sampledOut),
-            (CTOR_PROFILER_STATUS_ERROR, .error),
-            (CTOR_PROFILER_STATUS_ALLOCATION_FAILED, .error),
-            (CTOR_PROFILER_STATUS_START_FAILED, .error)
+            (CTOR_PROFILER_STATUS_STOPPED, .stopped(reason: .manual)),
+            (CTOR_PROFILER_STATUS_TIMEOUT, .stopped(reason: .timeout)),
+            (CTOR_PROFILER_STATUS_PREWARMED, .stopped(reason: .prewarmed)),
+            (CTOR_PROFILER_STATUS_SAMPLED_OUT, .stopped(reason: .sampledOut)),
+            (CTOR_PROFILER_STATUS_ALLOCATION_FAILED, .error(reason: .memoryAllocationFailed)),
+            (CTOR_PROFILER_STATUS_ALREADY_STARTED, .error(reason: .alreadyStarted))
         ]
 
         for (cStatus, swiftStatus) in cases {

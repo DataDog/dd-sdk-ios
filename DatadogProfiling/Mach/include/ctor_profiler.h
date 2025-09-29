@@ -42,7 +42,7 @@
  * 
  * # Profiling Characteristics
  * 
- * - **Timing**: Starts via __attribute__((constructor(101))) - very early in process lifecycle
+ * - **Timing**: Starts via __attribute__((constructor(65535))) - very early in process lifecycle
  * - **Sampling Rate**: 101 Hz (~9.9ms intervals) - optimized for launch profiling without performance impact
  * - **Buffer Size**: 10,000 samples to capture entire launch phase
  * - **Stack Depth**: 64 frames maximum per trace
@@ -85,7 +85,7 @@
  * 
  * # Performance Considerations
  * 
- * - Profiling starts before main() and most static initializers
+ * - Profiling starts right before main()
  * - Uses 101 Hz sampling frequency - provides good resolution without impacting launch performance
  * - Automatically stops when ctor_profiler_stop() is called
  * - No overhead when disabled via Info.plist configuration
@@ -116,11 +116,10 @@ typedef enum {
     CTOR_PROFILER_STATUS_RUNNING = 1,           ///< Profiler is currently running
     CTOR_PROFILER_STATUS_STOPPED = 2,           ///< Profiler was stopped manually
     CTOR_PROFILER_STATUS_TIMEOUT = 3,           ///< Profiler was stopped due to timeout
-    CTOR_PROFILER_STATUS_ERROR = 4,             ///< Profiler encountered an error
-    CTOR_PROFILER_STATUS_PREWARMED = 5,         ///< Profiler was not started due to prewarming
-    CTOR_PROFILER_STATUS_SAMPLED_OUT = 6,       ///< Profiler was not started due to sample rate
-    CTOR_PROFILER_STATUS_ALLOCATION_FAILED = 7, ///< Memory allocation failed
-    CTOR_PROFILER_STATUS_START_FAILED = 8,      ///< Failed to start sampling
+    CTOR_PROFILER_STATUS_PREWARMED = 4,         ///< Profiler was not started due to prewarming
+    CTOR_PROFILER_STATUS_SAMPLED_OUT = 5,       ///< Profiler was not started due to sample rate
+    CTOR_PROFILER_STATUS_ALLOCATION_FAILED = 6, ///< Memory allocation failed
+    CTOR_PROFILER_STATUS_ALREADY_STARTED = 7,   ///< Failed to start profiler because it is already started
 } ctor_profiler_status_t;
 
 /**

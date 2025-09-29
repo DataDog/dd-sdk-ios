@@ -17,7 +17,7 @@ internal import DatadogMachProfiler
 
 internal final class AppLaunchProfiler: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(cmd as AppLaunchProfileStop) = message else {
+        guard case let .payload(cmd as ProfilerStop) = message else {
             return false
         }
 
@@ -56,6 +56,7 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
                 tags: [
                     "service:\(context.service)",
                     "version:\(context.version)",
+                    "sdk_version:\(context.sdkVersion)",
                     "env:\(context.env)",
                     "source:\(context.source)",
                     "language:swift",
@@ -79,25 +80,23 @@ extension ProfilingContext.Status {
     init(_ status: ctor_profiler_status_t) {
         switch status {
         case CTOR_PROFILER_STATUS_NOT_STARTED:
-            self = .notStarted
+            self = .stopped(reason: .notStarted)
         case CTOR_PROFILER_STATUS_RUNNING:
             self = .running
         case CTOR_PROFILER_STATUS_STOPPED:
-            self = .stopped
+            self = .stopped(reason: .manual)
         case CTOR_PROFILER_STATUS_TIMEOUT:
-            self = .timedOut
+            self = .stopped(reason: .timeout)
         case CTOR_PROFILER_STATUS_PREWARMED:
-            self = .prewarmed
+            self = .stopped(reason: .prewarmed)
         case CTOR_PROFILER_STATUS_SAMPLED_OUT:
-            self = .sampledOut
-        case CTOR_PROFILER_STATUS_ERROR:
-            self = .error
+            self = .stopped(reason: .sampledOut)
         case CTOR_PROFILER_STATUS_ALLOCATION_FAILED:
-            self = .error
-        case CTOR_PROFILER_STATUS_START_FAILED:
-            self = .error
+            self = .error(reason: .memoryAllocationFailed)
+        case CTOR_PROFILER_STATUS_ALREADY_STARTED:
+            self = .error(reason: .alreadyStarted)
         default:
-            self = .notStarted
+            self = .unknown
         }
     }
 }
