@@ -24,8 +24,6 @@ internal struct FlagsFeature: DatadogRemoteFeature {
             telemetry: featureScope.telemetry
         )
         messageReceiver = NOPFeatureMessageReceiver()
-        performanceOverride = PerformancePresetOverride(
-            maxObjectsInFile: 1 // to send only one Exposure event per request
-        )
+        performanceOverride = PerformancePresetOverride(maxObjectsInFile: 50)
     }
 }

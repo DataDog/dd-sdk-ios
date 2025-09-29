@@ -30,24 +30,4 @@ final class FlagsTypesTests: XCTestCase {
         XCTAssertEqual(context.targetingKey, "user-456")
         XCTAssertTrue(context.attributes.isEmpty)
     }
-
-    func testFlagsMetadata() {
-        let context = FlagsEvaluationContext(targetingKey: "test-user", attributes: ["key": "value"])
-        let timestamp: Double = 1_234_567_890_123.0
-
-        let metadata = FlagsMetadata(fetchedAt: timestamp, context: context)
-
-        XCTAssertEqual(metadata.fetchedAt, timestamp)
-        XCTAssertEqual(metadata.context?.targetingKey, "test-user")
-        XCTAssertEqual(metadata.context?.attributes["key"], "value")
-    }
-
-    func testFlagsMetadataWithoutContext() {
-        let timestamp: Double = 1_234_567_890_123.0
-
-        let metadata = FlagsMetadata(fetchedAt: timestamp, context: nil)
-
-        XCTAssertEqual(metadata.fetchedAt, timestamp)
-        XCTAssertNil(metadata.context)
-    }
 }

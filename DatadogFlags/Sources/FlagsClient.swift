@@ -11,16 +11,30 @@ public class FlagsClient {
     private let configuration: FlagsClient.Configuration
     private let httpClient: FlagsHTTPClient
     private let store: FlagsStore
-    private let featureScope: FeatureScope
+    private let exposureLogger: any ExposureLogging
+    private let dateProvider: any DateProvider
+    private let featureScope: any FeatureScope
 
-    internal init(configuration: FlagsClient.Configuration, httpClient: FlagsHTTPClient, store: FlagsStore, featureScope: FeatureScope) {
+    internal init(
+        configuration: FlagsClient.Configuration,
+        httpClient: FlagsHTTPClient,
+        store: FlagsStore,
+        exposureLogger: any ExposureLogging,
+        dateProvider: any DateProvider,
+        featureScope: any FeatureScope
+    ) {
         self.configuration = configuration
         self.httpClient = httpClient
         self.store = store
+        self.exposureLogger = exposureLogger
+        self.dateProvider = dateProvider
         self.featureScope = featureScope
     }
 
-    public static func create(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClient {
+    public static func create(
+        with configuration: FlagsClient.Configuration,
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) -> FlagsClient {
         do {
             // To ensure the correct registration order between Core and Features,
             // the entire initialization flow is synchronized on the main thread.
@@ -33,7 +47,10 @@ public class FlagsClient {
         }
     }
 
-    internal static func createOrThrow(with configuration: FlagsClient.Configuration, in core: DatadogCoreProtocol) throws -> FlagsClient {
+    internal static func createOrThrow(
+        with configuration: FlagsClient.Configuration,
+        in core: DatadogCoreProtocol
+    ) throws -> FlagsClient {
         guard core.get(feature: FlagsFeature.self) != nil else {
             throw ProgrammerError(
                 description: "`FlagsClient.create()` produces a non-functional client because the `Flags` feature was not enabled."
@@ -43,7 +60,15 @@ public class FlagsClient {
         let httpClient = NetworkFlagsHTTPClient()
         let store = FlagsStore()
         let featureScope = core.scope(for: FlagsFeature.self)
-        return FlagsClient(configuration: configuration, httpClient: httpClient, store: store, featureScope: featureScope)
+
+        return FlagsClient(
+            configuration: configuration,
+            httpClient: httpClient,
+            store: store,
+            exposureLogger: ExposureLogger(featureScope: featureScope),
+            dateProvider: SystemDateProvider(),
+            featureScope: featureScope
+        )
     }
 
     public func setEvaluationContext(_ context: FlagsEvaluationContext, completion: @escaping (Result<Void, FlagsError>) -> Void) {
@@ -53,34 +78,28 @@ public class FlagsClient {
                 configuration: configuration,
                 sdkContext: sdkContext
             ) { [weak self] result in
-                guard let self = self else {
+                guard let self else {
                     completion(.failure(.clientNotInitialized))
                     return
                 }
 
                 switch result {
                 case .success(let (data, response)):
-                    guard let httpResponse = response as? HTTPURLResponse,
-                          200...299 ~= httpResponse.statusCode else {
+                    guard
+                        let httpResponse = response as? HTTPURLResponse,
+                        200...299 ~= httpResponse.statusCode
+                    else {
                         completion(.failure(.invalidResponse))
                         return
                     }
 
                     do {
-                        let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-
-                        if let responseData = json?["data"] as? [String: Any],
-                           let attributes = responseData["attributes"] as? [String: Any],
-                           let flags = attributes["flags"] as? [String: Any] {
-                            self.store.setFlags(flags, context: context)
-                            completion(.success(()))
-                        } else {
-                            completion(.failure(.invalidResponse))
-                        }
+                        let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: data)
+                        self.store.setFlagAssignments(response.flags, for: context, date: dateProvider.now)
+                        completion(.success(()))
                     } catch {
-                        completion(.failure(.networkError(error)))
+                        completion(.failure(.invalidResponse))
                     }
-
                 case .failure(let error):
                     completion(.failure(.networkError(error)))
                 }
@@ -88,49 +107,92 @@ public class FlagsClient {
         }
     }
 
+    public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
+        guard let flagAssignment = store.flagAssignment(for: key) else {
+            return FlagDetails(key: key, value: defaultValue, error: .flagNotFound)
+        }
+
+        guard let value = flagAssignment.variation(as: T.self) else {
+            return FlagDetails(key: key, value: defaultValue, error: .typeMismatch)
+        }
+
+        let details = FlagDetails(
+            key: key,
+            value: value,
+            variant: flagAssignment.variationKey,
+            reason: flagAssignment.reason
+        )
+
+        if let context = store.context {
+            exposureLogger.logExposure(
+                at: dateProvider.now,
+                for: key,
+                assignment: flagAssignment,
+                context: context
+            )
+        }
+
+        return details
+    }
+}
+
+// MARK: - Convenience flag evaluation methods
+
+extension FlagsClient {
+    @inlinable
+    public func getValue<T>(key: String, defaultValue: T) -> T where T: Equatable, T: FlagValue {
+        getDetails(key: key, defaultValue: defaultValue).value
+    }
+
+    @inlinable
     public func getBooleanValue(key: String, defaultValue: Bool) -> Bool {
-        let flags = store.getFlags()
-        if let flagData = flags[key] as? [String: Any],
-           let value = flagData["variationValue"] as? Bool {
-            return value
-        }
-        return defaultValue
+        getValue(key: key, defaultValue: defaultValue)
     }
 
+    @inlinable
     public func getStringValue(key: String, defaultValue: String) -> String {
-        let flags = store.getFlags()
-        if let flagData = flags[key] as? [String: Any],
-           let value = flagData["variationValue"] as? String {
-            return value
-        }
-        return defaultValue
+        getValue(key: key, defaultValue: defaultValue)
     }
 
-    public func getIntegerValue(key: String, defaultValue: Int64) -> Int64 {
-        let flags = store.getFlags()
-        if let flagData = flags[key] as? [String: Any],
-           let value = flagData["variationValue"] as? NSNumber {
-            return value.int64Value
-        }
-        return defaultValue
+    @inlinable
+    public func getIntegerValue(key: String, defaultValue: Int) -> Int {
+        getValue(key: key, defaultValue: defaultValue)
     }
 
+    @inlinable
     public func getDoubleValue(key: String, defaultValue: Double) -> Double {
-        let flags = store.getFlags()
-        if let flagData = flags[key] as? [String: Any],
-           let value = flagData["variationValue"] as? NSNumber {
-            return value.doubleValue
-        }
-        return defaultValue
+        getValue(key: key, defaultValue: defaultValue)
     }
 
-    // TODO: FFL-1047 Replace [String: Any] with OpenFeature.Value-compatible type
-    public func getObjectValue(key: String, defaultValue: [String: Any]) -> [String: Any] {
-        let flags = store.getFlags()
-        if let flagData = flags[key] as? [String: Any],
-           let value = flagData["variationValue"] as? [String: Any] {
-            return value
-        }
-        return defaultValue
+    @inlinable
+    public func getObjectValue(key: String, defaultValue: AnyValue) -> AnyValue {
+        getValue(key: key, defaultValue: defaultValue)
+    }
+}
+
+extension FlagsClient {
+    @inlinable
+    public func getBooleanDetails(key: String, defaultValue: Bool) -> FlagDetails<Bool> {
+        getDetails(key: key, defaultValue: defaultValue)
+    }
+
+    @inlinable
+    public func getStringDetails(key: String, defaultValue: String) -> FlagDetails<String> {
+        getDetails(key: key, defaultValue: defaultValue)
+    }
+
+    @inlinable
+    public func getIntegerDetails(key: String, defaultValue: Int) -> FlagDetails<Int> {
+        getDetails(key: key, defaultValue: defaultValue)
+    }
+
+    @inlinable
+    public func getDoubleDetails(key: String, defaultValue: Double) -> FlagDetails<Double> {
+        getDetails(key: key, defaultValue: defaultValue)
+    }
+
+    @inlinable
+    public func getObjectDetails(key: String, defaultValue: AnyValue) -> FlagDetails<AnyValue> {
+        getDetails(key: key, defaultValue: defaultValue)
     }
 }
