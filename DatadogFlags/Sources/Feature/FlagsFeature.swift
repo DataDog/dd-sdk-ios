@@ -12,6 +12,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
 
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
+    let clientRegistry: FlagsClientRegistry
 
     let performanceOverride: PerformancePresetOverride
 
@@ -24,6 +25,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
             telemetry: featureScope.telemetry
         )
         messageReceiver = NOPFeatureMessageReceiver()
+        clientRegistry = FlagsClientRegistry()
         performanceOverride = PerformancePresetOverride(maxObjectsInFile: 50)
     }
 }

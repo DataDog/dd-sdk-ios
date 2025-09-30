@@ -8,6 +8,8 @@ import Foundation
 import DatadogInternal
 
 public class FlagsClient {
+    public static let defaultName = "default"
+
     private let configuration: FlagsClient.Configuration
     private let httpClient: FlagsHTTPClient
     private let repository: any FlagsRepositoryProtocol
@@ -32,42 +34,67 @@ public class FlagsClient {
     }
 
     public static func create(
-        with configuration: FlagsClient.Configuration,
+        name: String = FlagsClient.defaultName,
+        with configuration: FlagsClient.Configuration = .init(),
         in core: DatadogCoreProtocol = CoreRegistry.default
-    ) -> FlagsClient {
+    ) -> FlagsClientProtocol {
         do {
             // To ensure the correct registration order between Core and Features,
             // the entire initialization flow is synchronized on the main thread.
             return try runOnMainThreadSync {
-                try createOrThrow(with: configuration, in: core)
+                try createOrThrow(name: name, with: configuration, in: core)
             }
         } catch let error {
             consolePrint("\(error)", .error)
-            fatalError("TODO: FFL-1016 Fallback to NOP Client")
+            return NOPFlagsClient()
+        }
+    }
+
+    public static func instance(
+        named name: String,
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) -> FlagsClientProtocol {
+        do {
+            guard let clientRegistry = core.get(feature: FlagsFeature.self)?.clientRegistry else {
+                throw ProgrammerError(
+                    description: "Flags feature must be enabled before calling `FlagsClient.instance(named:in:)`."
+                )
+            }
+            return clientRegistry.client(named: name)
+        } catch let error {
+            consolePrint("\(error)", .error)
+            return NOPFlagsClient()
         }
     }
 
     internal static func createOrThrow(
+        name: String,
         with configuration: FlagsClient.Configuration,
         in core: DatadogCoreProtocol
-    ) throws -> FlagsClient {
-        guard core.get(feature: FlagsFeature.self) != nil else {
+    ) throws -> FlagsClientProtocol {
+        guard let clientRegistry = core.get(feature: FlagsFeature.self)?.clientRegistry else {
             throw ProgrammerError(
-                description: "`FlagsClient.create()` produces a non-functional client because the `Flags` feature was not enabled."
+                description: "Flags feature must be enabled before calling `FlagsClient.create(name:with:in:)`."
+            )
+        }
+        guard !clientRegistry.isRegistered(clientName: name) else {
+            throw ProgrammerError(
+                description: "A flags client named '\(name)' already exists."
             )
         }
 
-        let httpClient = NetworkFlagsHTTPClient()
         let featureScope = core.scope(for: FlagsFeature.self)
-        return FlagsClient(
+        let client = FlagsClient(
             configuration: configuration,
-            httpClient: httpClient,
-            // TODO: FFL-1016 Use the provided client name
-            repository: FlagsRepository(clientName: "default", featureScope: featureScope),
+            httpClient: NetworkFlagsHTTPClient(),
+            repository: FlagsRepository(clientName: name, featureScope: featureScope),
             exposureLogger: ExposureLogger(featureScope: featureScope),
             dateProvider: SystemDateProvider(),
             featureScope: featureScope
         )
+
+        clientRegistry.register(client, named: name)
+        return client
     }
 }
 
