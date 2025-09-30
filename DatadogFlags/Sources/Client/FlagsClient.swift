@@ -33,6 +33,7 @@ public class FlagsClient {
         self.featureScope = featureScope
     }
 
+    @discardableResult
     public static func create(
         name: String = FlagsClient.defaultName,
         with configuration: FlagsClient.Configuration = .init(),
@@ -51,7 +52,7 @@ public class FlagsClient {
     }
 
     public static func instance(
-        named name: String,
+        named name: String = FlagsClient.defaultName,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) -> FlagsClientProtocol {
         do {

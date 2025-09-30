@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-public protocol FlagsClientProtocol {
+public protocol FlagsClientProtocol: AnyObject {
     func setEvaluationContext(
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
