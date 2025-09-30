@@ -125,3 +125,27 @@ extension AnyValue: AnyMockable, RandomMockable {
         .string(.mockRandom())
     }
 }
+
+final class FlagsRepositoryMock: FlagsRepositoryProtocol {
+    var context: FlagsEvaluationContext? {
+        state?.context
+    }
+
+    private var state: FlagsData?
+
+    func flagAssignment(for key: String) -> DatadogFlags.FlagAssignment? {
+        state?.flags[key]
+    }
+
+    func setFlagAssignments(
+        _ flags: [String: DatadogFlags.FlagAssignment],
+        for context: DatadogFlags.FlagsEvaluationContext,
+        date: Date
+    ) {
+        state = .init(flags: flags, context: context, date: date)
+    }
+
+    func reset() {
+        state = nil
+    }
+}

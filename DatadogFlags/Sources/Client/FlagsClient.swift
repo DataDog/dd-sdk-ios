@@ -10,7 +10,7 @@ import DatadogInternal
 public class FlagsClient {
     private let configuration: FlagsClient.Configuration
     private let httpClient: FlagsHTTPClient
-    private let store: FlagsStore
+    private let repository: any FlagsRepositoryProtocol
     private let exposureLogger: any ExposureLogging
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
@@ -18,14 +18,14 @@ public class FlagsClient {
     internal init(
         configuration: FlagsClient.Configuration,
         httpClient: FlagsHTTPClient,
-        store: FlagsStore,
+        repository: any FlagsRepositoryProtocol,
         exposureLogger: any ExposureLogging,
         dateProvider: any DateProvider,
         featureScope: any FeatureScope
     ) {
         self.configuration = configuration
         self.httpClient = httpClient
-        self.store = store
+        self.repository = repository
         self.exposureLogger = exposureLogger
         self.dateProvider = dateProvider
         self.featureScope = featureScope
@@ -59,11 +59,11 @@ public class FlagsClient {
 
         let httpClient = NetworkFlagsHTTPClient()
         let featureScope = core.scope(for: FlagsFeature.self)
-        let store = FlagsStore()
         return FlagsClient(
             configuration: configuration,
             httpClient: httpClient,
-            store: store,
+            // TODO: FFL-1016 Use the provided client name
+            repository: FlagsRepository(clientName: "default", featureScope: featureScope),
             exposureLogger: ExposureLogger(featureScope: featureScope),
             dateProvider: SystemDateProvider(),
             featureScope: featureScope
@@ -94,7 +94,7 @@ public class FlagsClient {
 
                     do {
                         let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: data)
-                        self.store.setFlagAssignments(response.flags, for: context, date: dateProvider.now)
+                        self.repository.setFlagAssignments(response.flags, for: context, date: dateProvider.now)
                         completion(.success(()))
                     } catch {
                         completion(.failure(.invalidResponse))
@@ -107,7 +107,7 @@ public class FlagsClient {
     }
 
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
-        guard let flagAssignment = store.flagAssignment(for: key) else {
+        guard let flagAssignment = repository.flagAssignment(for: key) else {
             return FlagDetails(key: key, value: defaultValue, error: .flagNotFound)
         }
 
@@ -122,7 +122,7 @@ public class FlagsClient {
             reason: flagAssignment.reason
         )
 
-        if let context = store.context {
+        if let context = repository.context {
             exposureLogger.logExposure(
                 at: dateProvider.now,
                 for: key,

@@ -25,13 +25,13 @@ final class FlagsClientTests: XCTestCase {
         let expectation = expectation(description: "Flags loaded")
 
         let mockHttpClient = MockFlagsHTTPClient()
-        let mockStore = MockFlagsStore()
+        let repositoryMock = FlagsRepositoryMock()
         let config = FlagsClient.Configuration()
         let exposureLoggerMock = ExposureLoggerMock()
         let client = FlagsClient(
             configuration: config,
             httpClient: mockHttpClient,
-            store: mockStore,
+            repository: repositoryMock,
             exposureLogger: exposureLoggerMock,
             dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock()
@@ -114,7 +114,7 @@ final class FlagsClientTests: XCTestCase {
         let client = FlagsClient(
             configuration: config,
             httpClient: AttributeSerializationTestClient(),
-            store: MockFlagsStore(),
+            repository: FlagsRepositoryMock(),
             exposureLogger: ExposureLoggerMock(),
             dateProvider: DateProviderMock(),
             featureScope: FeatureScopeMock()
@@ -171,28 +171,6 @@ private class MockFlagsHTTPClient: FlagsHTTPClient {
         )!
 
         completion(.success((data, response)))
-    }
-}
-
-private class MockFlagsStore: FlagsStore {
-    private struct MockState {
-        var flags: [String: FlagAssignment]
-        var context: FlagsEvaluationContext
-        var date: Date
-    }
-
-    override var context: FlagsEvaluationContext? {
-        mockState?.context
-    }
-
-    private var mockState: MockState?
-
-    override func flagAssignment(for key: String) -> FlagAssignment? {
-        mockState?.flags[key]
-    }
-
-    override func setFlagAssignments(_ flags: [String: FlagAssignment], for context: FlagsEvaluationContext, date: Date) {
-        self.mockState = .init(flags: flags, context: context, date: date)
     }
 }
 
