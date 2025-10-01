@@ -20,6 +20,19 @@ extension FlagsEvaluationContext: AnyMockable, RandomMockable {
     }
 }
 
+extension FlagAssignmentsResponse: AnyMockable {
+    public static func mockAny() -> FlagAssignmentsResponse {
+        .init(flags: [.mockAny(): .mockAny()])
+    }
+}
+
+extension Data {
+    static func mockAnyFlagAssignmentsResponse() -> Data {
+        // swiftlint:disable:next force_unwrapping
+        try! JSONEncoder().encode(FlagAssignmentsResponse.mockAny())
+    }
+}
+
 extension FlagAssignment: AnyMockable, RandomMockable {
     public static func mockAny() -> FlagAssignment {
         .mockAnyBoolean()

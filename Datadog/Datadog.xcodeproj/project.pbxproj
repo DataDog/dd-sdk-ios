@@ -462,6 +462,14 @@
 		5B16A3742E8434200046A863 /* ExposureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A3722E8434140046A863 /* ExposureMocks.swift */; };
 		5B1D026D2E8D079F00AB2391 /* NOPFlagsClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D026C2E8D078F00AB2391 /* NOPFlagsClientTests.swift */; };
 		5B1D026E2E8D079F00AB2391 /* NOPFlagsClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D026C2E8D078F00AB2391 /* NOPFlagsClientTests.swift */; };
+		5B1D02702E8D254E00AB2391 /* FlagAssignmentsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D026F2E8D252F00AB2391 /* FlagAssignmentsRequest.swift */; };
+		5B1D02712E8D254E00AB2391 /* FlagAssignmentsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D026F2E8D252F00AB2391 /* FlagAssignmentsRequest.swift */; };
+		5B1D02732E8D2EF600AB2391 /* FlagAssignmentsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */; };
+		5B1D02742E8D2EF600AB2391 /* FlagAssignmentsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */; };
+		5B1D02762E8D34D800AB2391 /* FlagAssignmentsFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02752E8D34D000AB2391 /* FlagAssignmentsFetcher.swift */; };
+		5B1D02772E8D34D800AB2391 /* FlagAssignmentsFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02752E8D34D000AB2391 /* FlagAssignmentsFetcher.swift */; };
+		5B1D02792E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */; };
+		5B1D027A2E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */; };
 		5B3AF8AA2E4B3AE9009E5375 /* EnrichedResourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3AF8A92E4B3AE6009E5375 /* EnrichedResourceTests.swift */; };
 		5B4F552C2E853B3B00A241C3 /* ExposureLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F552B2E853B2E00A241C3 /* ExposureLoggerTests.swift */; };
 		5B4F552D2E853B3B00A241C3 /* ExposureLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F552B2E853B2E00A241C3 /* ExposureLoggerTests.swift */; };
@@ -2619,6 +2627,10 @@
 		5B16A36F2E83EE2B0046A863 /* FlagAssignmentsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsResponse.swift; sourceTree = "<group>"; };
 		5B16A3722E8434140046A863 /* ExposureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureMocks.swift; sourceTree = "<group>"; };
 		5B1D026C2E8D078F00AB2391 /* NOPFlagsClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NOPFlagsClientTests.swift; sourceTree = "<group>"; };
+		5B1D026F2E8D252F00AB2391 /* FlagAssignmentsRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequest.swift; sourceTree = "<group>"; };
+		5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequestTests.swift; sourceTree = "<group>"; };
+		5B1D02752E8D34D000AB2391 /* FlagAssignmentsFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsFetcher.swift; sourceTree = "<group>"; };
+		5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsFetcherTests.swift; sourceTree = "<group>"; };
 		5B3AF8A92E4B3AE6009E5375 /* EnrichedResourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnrichedResourceTests.swift; sourceTree = "<group>"; };
 		5B4F552B2E853B2E00A241C3 /* ExposureLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureLoggerTests.swift; sourceTree = "<group>"; };
 		5B4F552E2E853D7200A241C3 /* FlagsClientMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientMocks.swift; sourceTree = "<group>"; };
@@ -4301,6 +4313,8 @@
 				8DADC3C02E7CCF190060F558 /* FlagsClientTests.swift */,
 				5B1D026C2E8D078F00AB2391 /* NOPFlagsClientTests.swift */,
 				5B5B8CB52E8BCA5F00A6740E /* FlagsRepositoryTests.swift */,
+				5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */,
+				5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */,
 			);
 			path = Client;
 			sourceTree = "<group>";
@@ -4361,6 +4375,8 @@
 				5B5B8CBE2E8BDB0D00A6740E /* FlagsData.swift */,
 				5B5B8CB82E8BD44000A6740E /* FlagsDataStore.swift */,
 				5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */,
+				5B1D026F2E8D252F00AB2391 /* FlagAssignmentsRequest.swift */,
+				5B1D02752E8D34D000AB2391 /* FlagAssignmentsFetcher.swift */,
 			);
 			path = Client;
 			sourceTree = "<group>";
@@ -8787,6 +8803,7 @@
 				5BD6C6572E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */,
 				5BB294BD2E82E66500CAA44B /* FlagValue.swift in Sources */,
 				5BB294AD2E8286B200CAA44B /* ExposureEvent.swift in Sources */,
+				5B1D02772E8D34D800AB2391 /* FlagAssignmentsFetcher.swift in Sources */,
 				8DADC3BC2E7CCF0D0060F558 /* FlagsTypes.swift in Sources */,
 				5B16A36E2E83E5210046A863 /* FlagAssignment.swift in Sources */,
 				8DADC3BE2E7CCF0D0060F558 /* FlagsEndpointBuilder.swift in Sources */,
@@ -8801,6 +8818,7 @@
 				8DADC3E12E7E4B4A0060F558 /* FlagsHTTPClient.swift in Sources */,
 				5B16A3702E83EE340046A863 /* FlagAssignmentsResponse.swift in Sources */,
 				8DADC3D92E7D24740060F558 /* PrecomputeAssignmentsRequest.swift in Sources */,
+				5B1D02702E8D254E00AB2391 /* FlagAssignmentsRequest.swift in Sources */,
 				5BB294C02E83E02900CAA44B /* ExposureLogger.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -8815,6 +8833,7 @@
 				5BD6C6562E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */,
 				5BB294BE2E82E66500CAA44B /* FlagValue.swift in Sources */,
 				5BB294AC2E8286B200CAA44B /* ExposureEvent.swift in Sources */,
+				5B1D02762E8D34D800AB2391 /* FlagAssignmentsFetcher.swift in Sources */,
 				8DADC3B62E7CCF0D0060F558 /* FlagsTypes.swift in Sources */,
 				5B16A36D2E83E5210046A863 /* FlagAssignment.swift in Sources */,
 				8DADC3B82E7CCF0D0060F558 /* FlagsEndpointBuilder.swift in Sources */,
@@ -8829,6 +8848,7 @@
 				8DADC3E22E7E4B4A0060F558 /* FlagsHTTPClient.swift in Sources */,
 				5B16A3712E83EE340046A863 /* FlagAssignmentsResponse.swift in Sources */,
 				8DADC3D82E7D24740060F558 /* PrecomputeAssignmentsRequest.swift in Sources */,
+				5B1D02712E8D254E00AB2391 /* FlagAssignmentsRequest.swift in Sources */,
 				5BB294C12E83E02900CAA44B /* ExposureLogger.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -8845,10 +8865,12 @@
 				5B4F55302E853D7700A241C3 /* FlagsClientMocks.swift in Sources */,
 				8DADC3C52E7CCF190060F558 /* FlagsClientTests.swift in Sources */,
 				5B1D026D2E8D079F00AB2391 /* NOPFlagsClientTests.swift in Sources */,
+				5B1D02792E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */,
 				5B16A3742E8434200046A863 /* ExposureMocks.swift in Sources */,
 				8DADC3C62E7CCF190060F558 /* FlagsEndpointBuilderTests.swift in Sources */,
 				5B5B8CB72E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */,
 				5B16A36A2E83E46F0046A863 /* AnyValueTests.swift in Sources */,
+				5B1D02732E8D2EF600AB2391 /* FlagAssignmentsRequestTests.swift in Sources */,
 				8DADC3C72E7CCF190060F558 /* FlagsTypesTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -8865,10 +8887,12 @@
 				5B4F552F2E853D7700A241C3 /* FlagsClientMocks.swift in Sources */,
 				8DADC3C92E7CCF190060F558 /* FlagsClientTests.swift in Sources */,
 				5B1D026E2E8D079F00AB2391 /* NOPFlagsClientTests.swift in Sources */,
+				5B1D027A2E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */,
 				5B16A3732E8434200046A863 /* ExposureMocks.swift in Sources */,
 				8DADC3CA2E7CCF190060F558 /* FlagsEndpointBuilderTests.swift in Sources */,
 				5B5B8CB62E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */,
 				5B16A36B2E83E46F0046A863 /* AnyValueTests.swift in Sources */,
+				5B1D02742E8D2EF600AB2391 /* FlagAssignmentsRequestTests.swift in Sources */,
 				8DADC3CB2E7CCF190060F558 /* FlagsTypesTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

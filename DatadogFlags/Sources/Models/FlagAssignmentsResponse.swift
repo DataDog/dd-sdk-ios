@@ -10,7 +10,7 @@ internal struct FlagAssignmentsResponse: Equatable {
     let flags: [String: FlagAssignment]
 }
 
-extension FlagAssignmentsResponse: Decodable {
+extension FlagAssignmentsResponse: Codable {
     private enum CodingKeys: String, CodingKey {
         case data
         case attributes
@@ -23,5 +23,12 @@ extension FlagAssignmentsResponse: Decodable {
         let attributesContainer = try dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
 
         self.flags = try attributesContainer.decode([String: FlagAssignment].self, forKey: .flags)
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var rootContainer = encoder.container(keyedBy: CodingKeys.self)
+        var dataContainer = rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
+        var attributesContainer = dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
+        try attributesContainer.encode(flags, forKey: .flags)
     }
 }
