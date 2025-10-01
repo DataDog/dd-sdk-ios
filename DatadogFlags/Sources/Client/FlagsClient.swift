@@ -8,6 +8,8 @@ import Foundation
 import DatadogInternal
 
 public class FlagsClient {
+    public static let defaultName = "default"
+
     private let configuration: FlagsClient.Configuration
     private let httpClient: FlagsHTTPClient
     private let repository: any FlagsRepositoryProtocol
@@ -31,45 +33,78 @@ public class FlagsClient {
         self.featureScope = featureScope
     }
 
+    @discardableResult
     public static func create(
-        with configuration: FlagsClient.Configuration,
+        name: String = FlagsClient.defaultName,
+        with configuration: FlagsClient.Configuration = .init(),
         in core: DatadogCoreProtocol = CoreRegistry.default
-    ) -> FlagsClient {
+    ) -> FlagsClientProtocol {
         do {
             // To ensure the correct registration order between Core and Features,
             // the entire initialization flow is synchronized on the main thread.
             return try runOnMainThreadSync {
-                try createOrThrow(with: configuration, in: core)
+                try createOrThrow(name: name, with: configuration, in: core)
             }
         } catch let error {
             consolePrint("\(error)", .error)
-            fatalError("TODO: FFL-1016 Fallback to NOP Client")
+            return NOPFlagsClient()
+        }
+    }
+
+    public static func instance(
+        named name: String = FlagsClient.defaultName,
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) -> FlagsClientProtocol {
+        do {
+            guard let clientRegistry = core.get(feature: FlagsFeature.self)?.clientRegistry else {
+                throw ProgrammerError(
+                    description: "Flags feature must be enabled before calling `FlagsClient.instance(named:in:)`."
+                )
+            }
+            guard let client = clientRegistry.client(named: name) else {
+                throw ProgrammerError(
+                    description: "Flags client '\(name)' not found. Make sure that you call `FlagsClient.create(name:with:in:)` first."
+                )
+            }
+            return client
+        } catch let error {
+            consolePrint("\(error)", .error)
+            return NOPFlagsClient()
         }
     }
 
     internal static func createOrThrow(
+        name: String,
         with configuration: FlagsClient.Configuration,
         in core: DatadogCoreProtocol
-    ) throws -> FlagsClient {
-        guard core.get(feature: FlagsFeature.self) != nil else {
+    ) throws -> FlagsClientProtocol {
+        guard let clientRegistry = core.get(feature: FlagsFeature.self)?.clientRegistry else {
             throw ProgrammerError(
-                description: "`FlagsClient.create()` produces a non-functional client because the `Flags` feature was not enabled."
+                description: "Flags feature must be enabled before calling `FlagsClient.create(name:with:in:)`."
+            )
+        }
+        guard !clientRegistry.isRegistered(clientName: name) else {
+            throw ProgrammerError(
+                description: "A flags client named '\(name)' already exists."
             )
         }
 
-        let httpClient = NetworkFlagsHTTPClient()
         let featureScope = core.scope(for: FlagsFeature.self)
-        return FlagsClient(
+        let client = FlagsClient(
             configuration: configuration,
-            httpClient: httpClient,
-            // TODO: FFL-1016 Use the provided client name
-            repository: FlagsRepository(clientName: "default", featureScope: featureScope),
+            httpClient: NetworkFlagsHTTPClient(),
+            repository: FlagsRepository(clientName: name, featureScope: featureScope),
             exposureLogger: ExposureLogger(featureScope: featureScope),
             dateProvider: SystemDateProvider(),
             featureScope: featureScope
         )
-    }
 
+        clientRegistry.register(client, named: name)
+        return client
+    }
+}
+
+extension FlagsClient: FlagsClientProtocol {
     public func setEvaluationContext(_ context: FlagsEvaluationContext, completion: @escaping (Result<Void, FlagsError>) -> Void) {
         featureScope.context { [httpClient, configuration] sdkContext in
             httpClient.postPrecomputeAssignments(
@@ -132,66 +167,5 @@ public class FlagsClient {
         }
 
         return details
-    }
-}
-
-// MARK: - Convenience flag evaluation methods
-
-extension FlagsClient {
-    @inlinable
-    public func getValue<T>(key: String, defaultValue: T) -> T where T: Equatable, T: FlagValue {
-        getDetails(key: key, defaultValue: defaultValue).value
-    }
-
-    @inlinable
-    public func getBooleanValue(key: String, defaultValue: Bool) -> Bool {
-        getValue(key: key, defaultValue: defaultValue)
-    }
-
-    @inlinable
-    public func getStringValue(key: String, defaultValue: String) -> String {
-        getValue(key: key, defaultValue: defaultValue)
-    }
-
-    @inlinable
-    public func getIntegerValue(key: String, defaultValue: Int) -> Int {
-        getValue(key: key, defaultValue: defaultValue)
-    }
-
-    @inlinable
-    public func getDoubleValue(key: String, defaultValue: Double) -> Double {
-        getValue(key: key, defaultValue: defaultValue)
-    }
-
-    @inlinable
-    public func getObjectValue(key: String, defaultValue: AnyValue) -> AnyValue {
-        getValue(key: key, defaultValue: defaultValue)
-    }
-}
-
-extension FlagsClient {
-    @inlinable
-    public func getBooleanDetails(key: String, defaultValue: Bool) -> FlagDetails<Bool> {
-        getDetails(key: key, defaultValue: defaultValue)
-    }
-
-    @inlinable
-    public func getStringDetails(key: String, defaultValue: String) -> FlagDetails<String> {
-        getDetails(key: key, defaultValue: defaultValue)
-    }
-
-    @inlinable
-    public func getIntegerDetails(key: String, defaultValue: Int) -> FlagDetails<Int> {
-        getDetails(key: key, defaultValue: defaultValue)
-    }
-
-    @inlinable
-    public func getDoubleDetails(key: String, defaultValue: Double) -> FlagDetails<Double> {
-        getDetails(key: key, defaultValue: defaultValue)
-    }
-
-    @inlinable
-    public func getObjectDetails(key: String, defaultValue: AnyValue) -> FlagDetails<AnyValue> {
-        getDetails(key: key, defaultValue: defaultValue)
     }
 }

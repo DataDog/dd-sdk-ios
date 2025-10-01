@@ -7,17 +7,100 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+
 @testable import DatadogFlags
 
 final class FlagsClientTests: XCTestCase {
-    func testFlagsClientCreation() {
+    func testCreate() {
+        // Given
         let core = FeatureRegistrationCoreMock()
         Flags.enable(in: core)
 
-        let config = FlagsClient.Configuration()
-        let client = FlagsClient.create(with: config, in: core)
+        // When
+        let defaultClient = FlagsClient.create(in: core)
+        let nopDefaultClient = FlagsClient.create(in: core)
+        let namedClient = FlagsClient.create(name: "test", in: core)
+        let nopNamedClient = FlagsClient.create(name: "test", in: core)
 
-        XCTAssertNotNil(client) // TODO: FFL-1016 Assert that it is not a NOPFlagsClient
+        // Then
+        XCTAssertTrue(defaultClient is FlagsClient)
+        XCTAssertTrue(nopDefaultClient is NOPFlagsClient)
+        XCTAssertTrue(namedClient is FlagsClient)
+        XCTAssertTrue(nopNamedClient is NOPFlagsClient)
+    }
+
+    func testCreateWhenFlagsNotEnabled() {
+        // Given
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
+        let core = FeatureRegistrationCoreMock()
+
+        // When
+        let client = FlagsClient.create(in: core)
+
+        // Then
+        XCTAssertTrue(client is NOPFlagsClient)
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: Flags feature must be enabled before calling `FlagsClient.create(name:with:in:)`."
+        )
+    }
+
+    func testInstance() {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
+
+        // When
+        let createdClient = FlagsClient.create(in: core)
+        let client = FlagsClient.instance(in: core)
+        let createdNamedClient = FlagsClient.create(name: "test", in: core)
+        let namedClient = FlagsClient.instance(named: "test", in: core)
+
+        // Then
+        XCTAssertIdentical(client, createdClient)
+        XCTAssertIdentical(namedClient, createdNamedClient)
+    }
+
+    func testNotFoundInstance() {
+        // Given
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
+
+        // When
+        let notFoundClient = FlagsClient.instance(named: "foo", in: core)
+
+        // Then
+        XCTAssertTrue(notFoundClient is NOPFlagsClient)
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: Flags client 'foo' not found. Make sure that you call `FlagsClient.create(name:with:in:)` first."
+        )
+    }
+
+    func testInstanceWhenFlagsNotEnabled() {
+        // Given
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
+        let core = FeatureRegistrationCoreMock()
+
+        // When
+        let client = FlagsClient.instance(in: core)
+
+        // Then
+        XCTAssertTrue(client is NOPFlagsClient)
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: Flags feature must be enabled before calling `FlagsClient.instance(named:in:)`."
+        )
     }
 
     func testFlagsClientWithMockHttpClient() {
