@@ -61,7 +61,12 @@ public class FlagsClient {
                     description: "Flags feature must be enabled before calling `FlagsClient.instance(named:in:)`."
                 )
             }
-            return clientRegistry.client(named: name)
+            guard let client = clientRegistry.client(named: name) else {
+                throw ProgrammerError(
+                    description: "Flags client '\(name)' not found. Make sure that you call `FlagsClient.create(name:with:in:)` first."
+                )
+            }
+            return client
         } catch let error {
             consolePrint("\(error)", .error)
             return NOPFlagsClient()

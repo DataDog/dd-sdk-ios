@@ -28,7 +28,7 @@ internal final class FlagsClientRegistry {
         clients.removeValue(forKey: name)
     }
 
-    func client(named name: String) -> FlagsClientProtocol {
-        clients[name] ?? NOPFlagsClient()
+    func client(named name: String) -> FlagsClientProtocol? {
+        clients[name]
     }
 }

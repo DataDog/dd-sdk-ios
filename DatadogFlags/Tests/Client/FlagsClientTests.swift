@@ -7,6 +7,7 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+
 @testable import DatadogFlags
 
 final class FlagsClientTests: XCTestCase {
@@ -57,12 +58,30 @@ final class FlagsClientTests: XCTestCase {
         let client = FlagsClient.instance(in: core)
         let createdNamedClient = FlagsClient.create(name: "test", in: core)
         let namedClient = FlagsClient.instance(named: "test", in: core)
-        let notFoundClient = FlagsClient.instance(named: "foo", in: core)
 
         // Then
         XCTAssertIdentical(client, createdClient)
         XCTAssertIdentical(namedClient, createdNamedClient)
+    }
+
+    func testNotFoundInstance() {
+        // Given
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
+
+        // When
+        let notFoundClient = FlagsClient.instance(named: "foo", in: core)
+
+        // Then
         XCTAssertTrue(notFoundClient is NOPFlagsClient)
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: Flags client 'foo' not found. Make sure that you call `FlagsClient.create(name:with:in:)` first."
+        )
     }
 
     func testInstanceWhenFlagsNotEnabled() {
