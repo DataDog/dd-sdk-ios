@@ -10,7 +10,7 @@ import DatadogInternal
 /// Reports Watchdog Termination events to Datadog.
 internal protocol WatchdogTerminationReporting {
     /// Sends the Watchdog Termination event to Datadog.
-    func send(date: Date?, state: WatchdogTerminationAppState, viewEvent: RUMViewEvent)
+    func send(date: Date?, state: AppStateInfo, viewEvent: RUMViewEvent)
 }
 
 /// Default implementation of `WatchdogTerminationReporting`.
@@ -38,7 +38,7 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
     }
 
     /// Sends the Watchdog Termination event to Datadog.
-    func send(date: Date?, state: WatchdogTerminationAppState, viewEvent: RUMViewEvent) {
+    func send(date: Date?, state: AppStateInfo, viewEvent: RUMViewEvent) {
         guard state.trackingConsent == .granted else { // consider the user consent from previous session
             DD.logger.debug("Skipped sending Watchdog Termination as it was recorded with \(state.trackingConsent) consent")
             return

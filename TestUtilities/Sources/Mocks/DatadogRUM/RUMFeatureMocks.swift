@@ -987,6 +987,7 @@ extension RUMScopeDependencies {
         viewEndedMetricFactory: @escaping () -> ViewEndedController = {
             ViewEndedController(telemetry: NOPTelemetry(), sampleRate: 0)
         },
+        appStateManager: AppStateManager = AppStateManager(featureScope: NOPFeatureScope(), processId: UUID(), syntheticsEnvironment: false),
         watchdogTermination: WatchdogTerminationMonitor? = nil,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking = {
             TNSMetric(viewName: $1, viewStartDate: $0, resourcePredicate: TimeBasedTNSResourcePredicate())
@@ -1019,6 +1020,7 @@ extension RUMScopeDependencies {
             fatalErrorContext: fatalErrorContext,
             sessionEndedMetric: sessionEndedMetric,
             viewEndedMetricFactory: viewEndedMetricFactory,
+            appStateManager: appStateManager,
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory,
@@ -1049,6 +1051,7 @@ extension RUMScopeDependencies {
         fatalErrorContext: FatalErrorContextNotifying? = nil,
         sessionEndedMetric: SessionEndedMetricController? = nil,
         viewEndedMetricFactory: (() -> ViewEndedController)? = nil,
+        appStateManager: AppStateManager? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
         interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil,
@@ -1077,6 +1080,7 @@ extension RUMScopeDependencies {
             fatalErrorContext: fatalErrorContext ?? self.fatalErrorContext,
             sessionEndedMetric: sessionEndedMetric ?? self.sessionEndedMetric,
             viewEndedMetricFactory: viewEndedMetricFactory ?? self.viewEndedMetricFactory,
+            appStateManager: appStateManager ?? self.appStateManager,
             watchdogTermination: watchdogTermination ?? self.watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory,

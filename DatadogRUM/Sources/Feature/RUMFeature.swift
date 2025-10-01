@@ -51,15 +51,16 @@ internal final class RUMFeature: DatadogRemoteFeature {
         let tnsPredicateType = configuration.networkSettledResourcePredicate.metricPredicateType
         let invPredicateType = configuration.nextViewActionPredicate?.metricPredicateType ?? .disabled
 
+        let appStateManager = AppStateManager(
+            featureScope: featureScope,
+            processId: configuration.processID,
+            syntheticsEnvironment: configuration.syntheticsEnvironment
+        )
+
         let bundleType = BundleType(bundle: configuration.bundle)
         var watchdogTermination: WatchdogTerminationMonitor?
         if bundleType == .iOSApp,
             configuration.trackWatchdogTerminations {
-            let appStateManager = WatchdogTerminationAppStateManager(
-                featureScope: featureScope,
-                processId: configuration.processID,
-                syntheticsEnvironment: configuration.syntheticsEnvironment
-            )
             let monitor = WatchdogTerminationMonitor(
                 appStateManager: appStateManager,
                 checker: .init(
@@ -152,6 +153,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
                 return viewEndedController
             },
+            appStateManager: appStateManager,
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: { viewStartDate, viewName in
                 return TNSMetric(

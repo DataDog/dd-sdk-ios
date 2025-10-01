@@ -29,7 +29,7 @@ internal final class WatchdogTerminationMonitor {
     }
 
     let checker: WatchdogTerminationChecker
-    let appStateManager: WatchdogTerminationAppStateManager
+    let appStateManager: AppStateManager
     let feature: FeatureScope
     let reporter: WatchdogTerminationReporting
     let storage: Storage?
@@ -40,7 +40,7 @@ internal final class WatchdogTerminationMonitor {
     internal var currentState: State
 
     init(
-        appStateManager: WatchdogTerminationAppStateManager,
+        appStateManager: AppStateManager,
         checker: WatchdogTerminationChecker,
         storage: Storage?,
         feature: FeatureScope,
@@ -115,7 +115,7 @@ internal final class WatchdogTerminationMonitor {
     /// Because Watchdog Termination are reported in the next app session, it uses the saved `RUMViewEvent`
     /// to report the event.
     /// - Parameter state: The app state when the Watchdog Termination occurred.
-    private func sendWatchTermination(state: WatchdogTerminationAppState, completion: @escaping () -> Void) {
+    private func sendWatchTermination(state: AppStateInfo, completion: @escaping () -> Void) {
         feature.context { [weak self] context in
             do {
                 let likelyCrashedAt = try self?.storage?.mostRecentModifiedFileAt(before: context.launchInfo.processLaunchDate)

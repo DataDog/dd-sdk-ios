@@ -11,7 +11,7 @@ import TestUtilities
 
 final class WatchdogTerminationAppStateManagerTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
-    var sut: WatchdogTerminationAppStateManager!
+    var sut: AppStateManager!
     var featureScope: FeatureScopeMock!
     // swiftlint:enable implicitly_unwrapped_optional
 
@@ -19,7 +19,7 @@ final class WatchdogTerminationAppStateManagerTests: XCTestCase {
         try super.setUpWithError()
 
         featureScope = FeatureScopeMock()
-        sut = WatchdogTerminationAppStateManager(
+        sut = AppStateManager(
             featureScope: featureScope,
             processId: .init(),
             syntheticsEnvironment: false
@@ -33,7 +33,7 @@ final class WatchdogTerminationAppStateManagerTests: XCTestCase {
 
         // app state changes
         sut.updateAppState(state: .active)
-        featureScope.rumDataStore.value(forKey: .watchdogAppStateKey) { (appState: WatchdogTerminationAppState?) in
+        featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in
             XCTAssertTrue(appState?.isActive == true)
             isActiveExpectation.fulfill()
         }
@@ -43,7 +43,7 @@ final class WatchdogTerminationAppStateManagerTests: XCTestCase {
 
         // app state changes again
         sut.updateAppState(state: .background)
-        featureScope.rumDataStore.value(forKey: .watchdogAppStateKey) { (appState: WatchdogTerminationAppState?) in
+        featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in
             XCTAssertTrue(appState?.isActive == false)
             isBackgroundedExpectation.fulfill()
         }
@@ -55,7 +55,7 @@ final class WatchdogTerminationAppStateManagerTests: XCTestCase {
         try sut.storeCurrentAppState()
 
         let isActiveExpectation = expectation(description: "isActive is set")
-        featureScope.rumDataStore.value(forKey: .watchdogAppStateKey) { (appState: WatchdogTerminationAppState?) in
+        featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in
             XCTAssertNotNil(appState)
             isActiveExpectation.fulfill()
         }
@@ -63,7 +63,7 @@ final class WatchdogTerminationAppStateManagerTests: XCTestCase {
 
         let deleteExpectation = expectation(description: "isActive is set to false")
         sut.deleteAppState()
-        featureScope.rumDataStore.value(forKey: .watchdogAppStateKey) { (appState: WatchdogTerminationAppState?) in
+        featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in
             XCTAssertNil(appState)
             deleteExpectation.fulfill()
         }

@@ -9,8 +9,8 @@ import DatadogInternal
 @testable import DatadogRUM
 import TestUtilities
 
-extension WatchdogTerminationAppState: RandomMockable, AnyMockable {
-    public static func mockAny() -> DatadogRUM.WatchdogTerminationAppState {
+extension AppStateInfo: RandomMockable, AnyMockable {
+    public static func mockAny() -> DatadogRUM.AppStateInfo {
         return .init(
             appVersion: .mockAny(),
             osVersion: .mockAny(),
@@ -25,7 +25,7 @@ extension WatchdogTerminationAppState: RandomMockable, AnyMockable {
         )
     }
 
-    public static func mockRandom() -> WatchdogTerminationAppState {
+    public static func mockRandom() -> AppStateInfo {
         return .init(
             appVersion: .mockRandom(),
             osVersion: .mockRandom(),
@@ -49,14 +49,14 @@ class WatchdogTerminationReporterMock: WatchdogTerminationReporting {
         self.didSend = didSend
     }
 
-    func send(date: Date?, state: DatadogRUM.WatchdogTerminationAppState, viewEvent: DatadogInternal.RUMViewEvent) {
+    func send(date: Date?, state: DatadogRUM.AppStateInfo, viewEvent: DatadogInternal.RUMViewEvent) {
         sendParams = SendParams(date: date, state: state, viewEvent: viewEvent)
         didSend.fulfill()
     }
 
     struct SendParams {
         let date: Date?
-        let state: DatadogRUM.WatchdogTerminationAppState
+        let state: DatadogRUM.AppStateInfo
         let viewEvent: DatadogInternal.RUMViewEvent
     }
 }
@@ -76,8 +76,8 @@ extension WatchdogTerminationChecker: RandomMockable {
     }
 }
 
-extension WatchdogTerminationAppStateManager: RandomMockable {
-    public static func mockRandom() -> WatchdogTerminationAppStateManager {
+extension AppStateManager: RandomMockable {
+    public static func mockRandom() -> AppStateManager {
         return .init(
             featureScope: FeatureScopeMock(),
             processId: .mockRandom(),

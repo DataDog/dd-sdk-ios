@@ -17,7 +17,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testSyntheticsEnvironment_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous = AppStateInfo(
             appVersion: .mockAny(),
             osVersion: .mockAny(),
             systemBootTime: .mockAny(),
@@ -37,7 +37,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testIsDebugging_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous = AppStateInfo(
             appVersion: .mockAny(),
             osVersion: .mockAny(),
             systemBootTime: .mockAny(),
@@ -53,7 +53,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testDifferentAppVersions_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: .mockAny(),
             systemBootTime: .mockAny(),
@@ -66,7 +66,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current = AppStateInfo(
             appVersion: "1.0.1",
             osVersion: .mockAny(),
             systemBootTime: .mockAny(),
@@ -83,7 +83,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testApplicationDidCrash_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous = AppStateInfo(
             appVersion: .mockAny(),
             osVersion: .mockAny(),
             systemBootTime: .mockAny(),
@@ -96,7 +96,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current = AppStateInfo(
             appVersion: .mockAny(),
             osVersion: .mockAny(),
             systemBootTime: .mockAny(),
@@ -113,7 +113,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testApplicationWasTerminated_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: .mockAny(),
             systemBootTime: .mockAny(),
@@ -126,7 +126,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: .mockAny(),
             systemBootTime: .mockAny(),
@@ -143,7 +143,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testDifferentOSVersions_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: .mockAny(),
@@ -156,7 +156,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: "1.0.1",
             systemBootTime: .mockAny(),
@@ -173,7 +173,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testDifferentBootTimes_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
@@ -186,7 +186,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 2.0,
@@ -203,7 +203,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testDifferentVendorId_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
@@ -216,7 +216,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
@@ -235,7 +235,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     func testSDKWasStoppedAndStarted_NoWatchdogTermination() throws {
         let pid = UUID()
 
-        let previous = WatchdogTerminationAppState(
+        let previous = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
@@ -248,7 +248,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
@@ -265,7 +265,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testApplicationWasInBackground_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
@@ -278,7 +278,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
@@ -295,7 +295,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testApplicationWasInForeground_WatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
@@ -308,7 +308,7 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current = AppStateInfo(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,

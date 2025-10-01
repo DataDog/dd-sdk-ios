@@ -15,11 +15,11 @@ import UIKit
 /// It uses the app state information from the last app session and the current app session
 /// to determine if the app was terminated by Watchdog.
 internal final class WatchdogTerminationChecker {
-    let appStateManager: WatchdogTerminationAppStateManager
+    let appStateManager: AppStateManager
     let featureScope: FeatureScope
 
     init(
-        appStateManager: WatchdogTerminationAppStateManager,
+        appStateManager: AppStateManager,
         featureScope: FeatureScope
     ) {
         self.appStateManager = appStateManager
@@ -30,14 +30,13 @@ internal final class WatchdogTerminationChecker {
     /// - Parameters:
     ///   - launch: The launch report containing information about the app launch.
     ///   - completion: The completion block called with the result.
-    func isWatchdogTermination(launch: LaunchReport, completion: @escaping (Bool, WatchdogTerminationAppState?) -> Void) throws {
+    func isWatchdogTermination(launch: LaunchReport, completion: @escaping (Bool, AppStateInfo?) -> Void) throws {
         do {
-            try appStateManager.currentAppState { current in
-                self.appStateManager.readAppState { [weak self] previous in
-                    self?.featureScope.context { [weak self] context in
-                        let isWatchdogTermination = self?.isWatchdogTermination(launch: launch, deviceInfo: context.device, from: previous, to: current)
-                        completion(isWatchdogTermination ?? false, previous)
-                    }
+            try appStateManager.currentAppStateInfo { [weak self] current in
+                self?.featureScope.context { [weak self] context in
+                    let previous = self?.appStateManager.previousAppStateInfo
+                    let isWatchdogTermination = self?.isWatchdogTermination(launch: launch, deviceInfo: context.device, from: previous, to: current)
+                    completion(isWatchdogTermination ?? false, previous)
                 }
             }
         } catch let error {
@@ -56,8 +55,8 @@ internal final class WatchdogTerminationChecker {
     func isWatchdogTermination(
         launch: LaunchReport,
         deviceInfo: DeviceInfo,
-        from previous: WatchdogTerminationAppState?,
-        to current: WatchdogTerminationAppState
+        from previous: AppStateInfo?,
+        to current: AppStateInfo
     ) -> Bool {
         DD.logger.debug(launch.debugDescription)
         DD.logger.debug(previous.debugDescription)
