@@ -10,8 +10,9 @@ import DatadogInternal
 internal struct FlagsFeature: DatadogRemoteFeature {
     static let name = "flags"
 
-    let requestBuilder: FeatureRequestBuilder
-    let messageReceiver: FeatureMessageReceiver
+    let flagAssignmentsFetcher: any FlagAssignmentsFetching
+    let requestBuilder: any FeatureRequestBuilder
+    let messageReceiver: any FeatureMessageReceiver
     let clientRegistry: FlagsClientRegistry
 
     let performanceOverride: PerformancePresetOverride
@@ -20,6 +21,11 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         configuration: Flags.Configuration,
         featureScope: FeatureScope
     ) {
+        flagAssignmentsFetcher = FlagAssignmentsFetcher(
+            customEndpoint: configuration.customFlagsEndpoint,
+            customHeaders: configuration.customFlagsHeaders,
+            featureScope: featureScope
+        )
         requestBuilder = ExposureRequestBuilder(
             customIntakeURL: configuration.customExposureEndpoint,
             telemetry: featureScope.telemetry

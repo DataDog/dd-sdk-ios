@@ -8,28 +8,39 @@ import Foundation
 import DatadogInternal
 
 internal protocol FlagsRepositoryProtocol {
+    var clientName: String { get }
+
     var context: FlagsEvaluationContext? { get }
 
-    func flagAssignment(for key: String) -> FlagAssignment?
-
-    func setFlagAssignments(
-        _ flags: [String: FlagAssignment],
-        for context: FlagsEvaluationContext,
-        date: Date
+    func setEvaluationContext(
+        _ context: FlagsEvaluationContext,
+        completion: @escaping (Result<Void, FlagsError>) -> Void
     )
+
+    func flagAssignment(for key: String) -> FlagAssignment?
 
     func reset()
 }
 
 internal final class FlagsRepository {
-    private let clientName: String
+    let clientName: String
+
+    private let flagAssignmentsFetcher: any FlagAssignmentsFetching
+    private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
 
     @ReadWriteLock
     private var state: FlagsData?
 
-    init(clientName: String, featureScope: any FeatureScope) {
+    init(
+        clientName: String,
+        flagAssignmentsFetcher: any FlagAssignmentsFetching,
+        dateProvider: any DateProvider,
+        featureScope: any FeatureScope
+    ) {
         self.clientName = clientName
+        self.flagAssignmentsFetcher = flagAssignmentsFetcher
+        self.dateProvider = dateProvider
         self.featureScope = featureScope
         readState()
     }
@@ -57,13 +68,28 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         state?.flags[key]
     }
 
-    func setFlagAssignments(
-        _ flags: [String: FlagAssignment],
-        for context: FlagsEvaluationContext,
-        date: Date
+    func setEvaluationContext(
+        _ context: FlagsEvaluationContext,
+        completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
-        state = .init(flags: flags, context: context, date: date)
-        writeState()
+        flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
+            switch result {
+            case .success(let flags):
+                guard let self else {
+                    completion(.failure(.clientNotInitialized))
+                    return
+                }
+                self.state = .init(
+                    flags: flags,
+                    context: context,
+                    date: self.dateProvider.now
+                )
+                self.writeState()
+                completion(.success(()))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
 
     func reset() {

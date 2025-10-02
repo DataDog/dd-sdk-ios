@@ -9,12 +9,34 @@ import DatadogInternal
 
 public enum Flags {
     public struct Configuration {
+        /// Custom server URL for retrieving flag assignments.
+        ///
+        /// If not set, the SDK uses the default Datadog Flags endpoint for the configured site.
+        ///
+        /// Default: `nil`.
+        public var customFlagsEndpoint: URL?
+
+        /// Additional HTTP headers to attach to requests made to `customFlagsEndpoint`.
+        ///
+        /// Useful for authentication or routing when using your own Flags service. Ignored when using the default Datadog endpoint.
+        ///
+        /// Default: `nil`.
+        public var customFlagsHeaders: [String: String]?
+
         /// Custom server url for sending Flags exposure data.
         ///
         /// Default: `nil`.
         public var customExposureEndpoint: URL?
 
-        public init() {}
+        public init(
+            customFlagsEndpoint: URL? = nil,
+            customFlagsHeaders: [String: String]? = nil,
+            customExposureEndpoint: URL? = nil
+        ) {
+            self.customFlagsEndpoint = customFlagsEndpoint
+            self.customFlagsHeaders = customFlagsHeaders
+            self.customExposureEndpoint = customExposureEndpoint
+        }
     }
 
     /// Enables the Datadog Flags feature.
