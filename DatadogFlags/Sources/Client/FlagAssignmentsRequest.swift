@@ -13,7 +13,7 @@ extension URLRequest {
         evaluationContext: FlagsEvaluationContext,
         context: DatadogContext,
         customHeaders: [String: String]?
-    ) -> URLRequest {
+    ) throws -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
 
@@ -41,12 +41,8 @@ extension URLRequest {
             )
         )
 
-        do {
-            let encoder = JSONEncoder.dd.default()
-            request.httpBody = try encoder.encode(requestBody)
-        } catch let error {
-            DD.logger.error("Failed to encode flag assignments request body.", error: error)
-        }
+        let encoder = JSONEncoder.dd.default()
+        request.httpBody = try encoder.encode(requestBody)
 
         return request
     }

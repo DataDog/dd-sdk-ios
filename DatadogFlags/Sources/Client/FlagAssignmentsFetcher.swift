@@ -62,24 +62,29 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 completion(.failure(.clientNotInitialized))
                 return
             }
-            let request = URLRequest.flagAssignmentsRequest(
-                url: self.url(with: context),
-                evaluationContext: evaluationContext,
-                context: context,
-                customHeaders: self.customHeaders
-            )
-            self.fetch(request) { result in
-                switch result {
-                case .success(let data):
-                    do {
-                        let response = try Self.decoder.decode(FlagAssignmentsResponse.self, from: data)
-                        completion(.success(response.flags))
-                    } catch {
-                        completion(.failure(.invalidResponse))
+            do {
+                let request = try URLRequest.flagAssignmentsRequest(
+                    url: self.url(with: context),
+                    evaluationContext: evaluationContext,
+                    context: context,
+                    customHeaders: self.customHeaders
+                )
+                self.fetch(request) { result in
+                    switch result {
+                    case .success(let data):
+                        do {
+                            let response = try Self.decoder.decode(FlagAssignmentsResponse.self, from: data)
+                            completion(.success(response.flags))
+                        } catch {
+                            completion(.failure(.invalidResponse))
+                        }
+                    case .failure(let error):
+                        completion(.failure(.networkError(error)))
                     }
-                case .failure(let error):
-                    completion(.failure(.networkError(error)))
                 }
+            } catch let error {
+                DD.logger.error("Failed to encode flag assignments request body.", error: error)
+                completion(.failure(.invalidConfiguration))
             }
         }
     }

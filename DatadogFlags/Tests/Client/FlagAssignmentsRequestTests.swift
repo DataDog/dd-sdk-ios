@@ -47,7 +47,7 @@ final class FlagAssignmentsRequestTests: XCTestCase {
         """
 
         // When
-        let request = URLRequest.flagAssignmentsRequest(
+        let request = try URLRequest.flagAssignmentsRequest(
             url: testURL,
             evaluationContext: evaluationContext,
             context: context,
