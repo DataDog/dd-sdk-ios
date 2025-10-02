@@ -2,6 +2,7 @@
 
 - [FIX] Fix Logger race condition. See [#2514][]
 - [FEATURE] Add `DatadogFlags` module for feature flag evaluation and management. See [#2532][]
+- [FEATURE] Send data for GraphQL requests in Resource Events. See [#2501][]
 
 # 3.1.0 / 18-09-2025
 
@@ -970,6 +971,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2469]: https://github.com/DataDog/dd-sdk-ios/pull/2469
 [#2474]: https://github.com/DataDog/dd-sdk-ios/pull/2474
 [#2514]: https://github.com/DataDog/dd-sdk-ios/pull/2514
+[#2501]: https://github.com/DataDog/dd-sdk-ios/pull/2501
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
