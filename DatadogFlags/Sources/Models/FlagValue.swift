@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol FlagValue {}
+public protocol FlagValue: Encodable {}
 
 extension Bool: FlagValue {}
 extension String: FlagValue {}

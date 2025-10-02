@@ -88,3 +88,67 @@ public struct RUMErrorMessage {
         self.binaryImages = binaryImages
     }
 }
+
+/// Flag evaluation message consumed by RUM on the message-bus.
+public struct RUMFlagEvaluationMessage {
+    /// The flag key
+    public let flagKey: String
+    /// The evaluated value
+    public let value: any Encodable
+
+    /// Create a flag evaluation message to be sent on the message-bus.
+    ///
+    /// - Parameters:
+    ///   - flagKey: The flag key
+    ///   - value: The evaluated value
+    public init(flagKey: String, value: any Encodable) {
+        self.flagKey = flagKey
+        self.value = value
+    }
+}
+
+/// Flag exposure message consumed by RUM on the message-bus.
+public struct RUMFlagExposureMessage {
+    /// The timestamp of the exposure
+    public let timestamp: TimeInterval
+    /// The flag key
+    public let flagKey: String
+    /// The allocation key from the flag assignment
+    public let allocationKey: String
+    /// The combined exposure key (flagKey-allocationKey)
+    public let exposureKey: String
+    /// The subject/targeting key
+    public let subjectKey: String
+    /// The variant key
+    public let variantKey: String
+    /// The subject attributes
+    public let subjectAttributes: [String: any Encodable]
+
+    /// Create a flag exposure message to be sent on the message-bus.
+    ///
+    /// - Parameters:
+    ///   - timestamp: The timestamp of the exposure
+    ///   - flagKey: The flag key
+    ///   - allocationKey: The allocation key from the flag assignment
+    ///   - exposureKey: The combined exposure key
+    ///   - subjectKey: The subject/targeting key
+    ///   - variantKey: The variant key
+    ///   - subjectAttributes: The subject attributes
+    public init(
+        timestamp: TimeInterval,
+        flagKey: String,
+        allocationKey: String,
+        exposureKey: String,
+        subjectKey: String,
+        variantKey: String,
+        subjectAttributes: [String: any Encodable]
+    ) {
+        self.timestamp = timestamp
+        self.flagKey = flagKey
+        self.allocationKey = allocationKey
+        self.exposureKey = exposureKey
+        self.subjectKey = subjectKey
+        self.variantKey = variantKey
+        self.subjectAttributes = subjectAttributes
+    }
+}
