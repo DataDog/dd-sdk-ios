@@ -6,15 +6,6 @@
 
 import Foundation
 
-public struct FlagsEvaluationContext: Equatable, Codable {
-    public let targetingKey: String
-    public let attributes: [String: String]
-    public init(targetingKey: String, attributes: [String: String] = [:]) {
-        self.targetingKey = targetingKey
-        self.attributes = attributes
-    }
-}
-
 public enum FlagsError: Error {
     case networkError(Error)
     case invalidResponse

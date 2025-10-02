@@ -54,18 +54,16 @@ extension ExposureEvent.Subject: AnyMockable, RandomMockable {
 
 final class ExposureLoggerMock: ExposureLogging {
     var logExposureCalls: [(
-        date: Date,
         flagKey: String,
         assignment: FlagAssignment,
         context: FlagsEvaluationContext
     )] = []
 
     func logExposure(
-        at date: Date,
         for flagKey: String,
         assignment: FlagAssignment,
-        context: FlagsEvaluationContext
+        evaluationContext: FlagsEvaluationContext
     ) {
-        logExposureCalls.append((date, flagKey, assignment, context))
+        logExposureCalls.append((flagKey, assignment, evaluationContext))
     }
 }

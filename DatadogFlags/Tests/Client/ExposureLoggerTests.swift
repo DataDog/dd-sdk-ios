@@ -15,11 +15,16 @@ final class ExposureLoggerTests: XCTestCase {
 
     func testLogExposure() {
         // Given
-        let logger = ExposureLogger(featureScope: featureScope)
+        let logger = ExposureLogger(
+            dateProvider: DateProviderMock(now: .mockAny()),
+            featureScope: featureScope
+        )
+
+        let serverTimeOffset: TimeInterval = 1
+        featureScope.contextMock.serverTimeOffset = serverTimeOffset
 
         // When
         logger.logExposure(
-            at: .mockAny(),
             for: "some-flag",
             assignment: .init(
                 allocationKey: "allocation-123",
@@ -28,7 +33,7 @@ final class ExposureLoggerTests: XCTestCase {
                 reason: .mockAny(),
                 doLog: true
             ),
-            context: .mockAny()
+            evaluationContext: .mockAny()
         )
 
         // Then
@@ -36,7 +41,10 @@ final class ExposureLoggerTests: XCTestCase {
             featureScope.exposureEventsWritten,
             [
                 .init(
-                    timestamp: Date.mockAny().timeIntervalSince1970.toInt64Milliseconds,
+                    timestamp: Date.mockAny()
+                        .addingTimeInterval(serverTimeOffset)
+                        .timeIntervalSince1970
+                        .toInt64Milliseconds,
                     allocation: .init(key: "allocation-123"),
                     flag: .init(key: "some-flag"),
                     variant: .init(key: "variation-123"),
@@ -48,14 +56,16 @@ final class ExposureLoggerTests: XCTestCase {
 
     func testLogExposureLoggingDisabled() {
         // Given
-        let logger = ExposureLogger(featureScope: featureScope)
+        let logger = ExposureLogger(
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
 
         // When
         logger.logExposure(
-            at: .mockAny(),
             for: .mockAny(),
             assignment: .mockAnyBoolean(doLog: false),
-            context: .mockAny()
+            evaluationContext: .mockAny()
         )
 
         // Then
@@ -64,20 +74,21 @@ final class ExposureLoggerTests: XCTestCase {
 
     func testLogExposureDeduplication() {
         // Given
-        let logger = ExposureLogger(featureScope: featureScope)
+        let logger = ExposureLogger(
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
 
         // When
         logger.logExposure(
-            at: .mockAny(),
             for: .mockAny(),
             assignment: .mockAnyBoolean(),
-            context: .mockAny()
+            evaluationContext: .mockAny()
         )
         logger.logExposure(
-            at: .mockAny(),
             for: .mockAny(),
             assignment: .mockAnyBoolean(),
-            context: .mockAny()
+            evaluationContext: .mockAny()
         )
 
         // Then
@@ -86,23 +97,24 @@ final class ExposureLoggerTests: XCTestCase {
 
     func testLogExposureDifferentVariation() {
         // Given
-        let logger = ExposureLogger(featureScope: featureScope)
+        let logger = ExposureLogger(
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
         let assignment1 = FlagAssignment.mockAnyBoolean()
         var assignment2 = assignment1
         assignment2.variationKey = "other-variation"
 
         // When
         logger.logExposure(
-            at: .mockAny(),
             for: .mockAny(),
             assignment: assignment1,
-            context: .mockAny()
+            evaluationContext: .mockAny()
         )
         logger.logExposure(
-            at: .mockAny(),
             for: .mockAny(),
             assignment: assignment2,
-            context: .mockAny()
+            evaluationContext: .mockAny()
         )
 
         // Then
@@ -111,23 +123,24 @@ final class ExposureLoggerTests: XCTestCase {
 
     func testLogExposureDifferentAllocation() {
         // Given
-        let logger = ExposureLogger(featureScope: featureScope)
+        let logger = ExposureLogger(
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
         let assignment1 = FlagAssignment.mockAnyBoolean()
         var assignment2 = assignment1
         assignment2.allocationKey = "other-allocation"
 
         // When
         logger.logExposure(
-            at: .mockAny(),
             for: .mockAny(),
             assignment: assignment1,
-            context: .mockAny()
+            evaluationContext: .mockAny()
         )
         logger.logExposure(
-            at: .mockAny(),
             for: .mockAny(),
             assignment: assignment2,
-            context: .mockAny()
+            evaluationContext: .mockAny()
         )
 
         // Then
@@ -136,20 +149,21 @@ final class ExposureLoggerTests: XCTestCase {
 
     func testLogExposureDifferentFlag() {
         // Given
-        let logger = ExposureLogger(featureScope: featureScope)
+        let logger = ExposureLogger(
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
 
         // When
         logger.logExposure(
-            at: .mockAny(),
             for: .mockAny(),
             assignment: .mockAnyBoolean(),
-            context: .mockAny()
+            evaluationContext: .mockAny()
         )
         logger.logExposure(
-            at: .mockAny(),
             for: "other-flag",
             assignment: .mockAnyBoolean(),
-            context: .mockAny()
+            evaluationContext: .mockAny()
         )
 
         // Then
@@ -158,20 +172,21 @@ final class ExposureLoggerTests: XCTestCase {
 
     func testLogExposureDifferentTargeting() {
         // Given
-        let logger = ExposureLogger(featureScope: featureScope)
+        let logger = ExposureLogger(
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
 
         // When
         logger.logExposure(
-            at: .mockAny(),
             for: .mockAny(),
             assignment: .mockAnyBoolean(),
-            context: .mockAny()
+            evaluationContext: .mockAny()
         )
         logger.logExposure(
-            at: .mockAny(),
             for: .mockAny(),
             assignment: .mockAnyBoolean(),
-            context: .init(targetingKey: "other-targeting", attributes: .mockAny())
+            evaluationContext: .init(targetingKey: "other-targeting", attributes: .mockAny())
         )
 
         // Then

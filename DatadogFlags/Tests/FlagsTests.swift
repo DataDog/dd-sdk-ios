@@ -39,6 +39,8 @@ final class FlagsTests: XCTestCase {
     func testCustomConfiguration() throws {
         // Given
         var config = Flags.Configuration()
+        config.customFlagsEndpoint = .mockRandom()
+        config.customFlagsHeaders = .mockRandom()
         config.customExposureEndpoint = .mockRandom()
         let core = FeatureRegistrationCoreMock()
 
@@ -47,6 +49,9 @@ final class FlagsTests: XCTestCase {
 
         // Then
         let flags = try XCTUnwrap(core.get(feature: FlagsFeature.self))
+        let flagAssignmentFetcher = try XCTUnwrap(flags.flagAssignmentsFetcher as? FlagAssignmentsFetcher)
+        XCTAssertEqual(flagAssignmentFetcher.customEndpoint, config.customFlagsEndpoint)
+        XCTAssertEqual(flagAssignmentFetcher.customHeaders, config.customFlagsHeaders)
         let requestBuilder = try XCTUnwrap(flags.requestBuilder as? ExposureRequestBuilder)
         XCTAssertEqual(requestBuilder.customIntakeURL, config.customExposureEndpoint)
     }

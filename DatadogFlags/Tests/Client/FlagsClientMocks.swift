@@ -140,25 +140,55 @@ extension AnyValue: AnyMockable, RandomMockable {
 }
 
 final class FlagsRepositoryMock: FlagsRepositoryProtocol {
+    var setEvaluationContextStub: ((FlagsEvaluationContext, @escaping (Result<Void, FlagsError>) -> Void) -> Void)?
+
+    var clientName = String.mockAny()
+
     var context: FlagsEvaluationContext? {
         state?.context
     }
 
     private var state: FlagsData?
 
+    func setEvaluationContext(
+        _ context: FlagsEvaluationContext,
+        completion: @escaping (Result<Void, FlagsError>) -> Void
+    ) {
+        setEvaluationContextStub?(context, completion)
+    }
+
     func flagAssignment(for key: String) -> DatadogFlags.FlagAssignment? {
         state?.flags[key]
     }
 
-    func setFlagAssignments(
-        _ flags: [String: DatadogFlags.FlagAssignment],
-        for context: DatadogFlags.FlagsEvaluationContext,
-        date: Date
-    ) {
-        state = .init(flags: flags, context: context, date: date)
-    }
-
     func reset() {
         state = nil
+    }
+}
+
+final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
+    var flagAssignmentsStub: (
+        (
+            FlagsEvaluationContext,
+            @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
+        ) -> Void
+    )?
+
+    init(
+        flagAssignmentsStub: (
+            (
+                FlagsEvaluationContext,
+                @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
+            ) -> Void
+        )? = nil
+    ) {
+        self.flagAssignmentsStub = flagAssignmentsStub
+    }
+
+    func flagAssignments(
+        for evaluationContext: FlagsEvaluationContext,
+        completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
+    ) {
+        flagAssignmentsStub?(evaluationContext, completion)
     }
 }

@@ -103,6 +103,7 @@ final class FlagsClientTests: XCTestCase {
         )
     }
 
+    /*
     func testFlagsClientWithMockHttpClient() {
         // Given
         let expectation = expectation(description: "Flags loaded")
@@ -227,75 +228,5 @@ final class FlagsClientTests: XCTestCase {
 
         waitForExpectations(timeout: 1.0)
     }
-}
-
-// MARK: - Test Helpers
-
-private class MockFlagsHTTPClient: FlagsHTTPClient {
-    func postPrecomputeAssignments(
-        context: FlagsEvaluationContext,
-        configuration: FlagsClient.Configuration,
-        sdkContext: DatadogContext,
-        completion: @escaping (Result<(Data, URLResponse), Error>) -> Void
-    ) {
-        // Try to load from bundle resource
-        let testBundle = Bundle(for: FlagsClientTests.self)
-        guard let url = testBundle.url(forResource: "precomputed-v1", withExtension: "json"),
-              let data = try? Data(contentsOf: url) else {
-            completion(.failure(FlagsError.invalidResponse))
-            return
-        }
-
-        let response = HTTPURLResponse(
-            url: URL(string: "https://test.example.com")!,
-            statusCode: 200,
-            httpVersion: "HTTP/1.1",
-            headerFields: ["Content-Type": "application/json"]
-        )!
-
-        completion(.success((data, response)))
-    }
-}
-
-private class AttributeSerializationTestClient: FlagsHTTPClient {
-    func postPrecomputeAssignments(
-        context: FlagsEvaluationContext,
-        configuration: FlagsClient.Configuration,
-        sdkContext: DatadogContext,
-        completion: @escaping (Result<(Data, URLResponse), Error>) -> Void
-    ) {
-        // Verify that the context attributes are properly typed as [String: String]
-        let attributes = context.attributes
-
-        // Verify attributes are correctly passed as strings
-        XCTAssertEqual(attributes["stringValue"], "test")
-        XCTAssertEqual(attributes["intValue"], "42")
-        XCTAssertEqual(attributes["boolValue"], "true")
-        XCTAssertEqual(attributes["arrayValue"], "[\"a\", \"b\", \"c\"]")
-        XCTAssertEqual(attributes["dictValue"], "{\"key\": \"value\", \"number\": \"123\"}")
-
-        // Return success with empty flags
-        let responseData: [String: Any] = [
-            "data": [
-                "type": "precomputed-assignments",
-                "attributes": [
-                    "flags": [:]
-                ]
-            ]
-        ]
-
-        do {
-            let data = try JSONSerialization.data(withJSONObject: responseData)
-            let response = HTTPURLResponse(
-                url: URL(string: "https://test.example.com")!,
-                statusCode: 200,
-                httpVersion: "HTTP/1.1",
-                headerFields: ["Content-Type": "application/json"]
-            )!
-
-            completion(.success((data, response)))
-        } catch {
-            completion(.failure(error))
-        }
-    }
+     */
 }

@@ -12,7 +12,7 @@ extension URLRequest {
         url: URL,
         evaluationContext: FlagsEvaluationContext,
         context: DatadogContext,
-        customHeaders: [String: String]
+        customHeaders: [String: String]?
     ) -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -24,8 +24,10 @@ extension URLRequest {
             request.setValue(applicationId, forHTTPHeaderField: "dd-application-id")
         }
 
-        for (key, value) in customHeaders {
-            request.setValue(value, forHTTPHeaderField: key)
+        if let customHeaders {
+            for (key, value) in customHeaders {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
         }
 
         let requestBody = FlagAssignmentsRequestBody(

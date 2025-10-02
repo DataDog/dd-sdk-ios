@@ -15,8 +15,9 @@ internal protocol FlagAssignmentsFetching {
 }
 
 internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
-    private let customEndpoint: URL?
-    private let customHeaders: [String: String]
+    let customEndpoint: URL?
+    let customHeaders: [String: String]?
+
     private let featureScope: any FeatureScope
     private let fetch: (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
 
@@ -24,7 +25,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     convenience init(
         customEndpoint: URL?,
-        customHeaders: [String: String],
+        customHeaders: [String: String]?,
         featureScope: any FeatureScope
     ) {
         let configuration = URLSessionConfiguration.ephemeral
@@ -42,7 +43,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     init(
         customEndpoint: URL?,
-        customHeaders: [String: String],
+        customHeaders: [String: String]?,
         featureScope: any FeatureScope,
         fetch: @escaping (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
     ) {

@@ -9,10 +9,9 @@ import DatadogInternal
 
 internal protocol ExposureLogging {
     func logExposure(
-        at date: Date,
         for flagKey: String,
         assignment: FlagAssignment,
-        context: FlagsEvaluationContext
+        evaluationContext: FlagsEvaluationContext
     )
 }
 
@@ -24,30 +23,31 @@ internal final class ExposureLogger: ExposureLogging {
         let variationKey: String
     }
 
+    private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
     private var loggedExposures: Set<Exposure> = []
 
-    init(featureScope: any FeatureScope) {
+    init(dateProvider: any DateProvider, featureScope: any FeatureScope) {
+        self.dateProvider = dateProvider
         self.featureScope = featureScope
     }
 
     func logExposure(
-        at date: Date,
         for flagKey: String,
         assignment: FlagAssignment,
-        context: FlagsEvaluationContext
+        evaluationContext: FlagsEvaluationContext
     ) {
         guard assignment.doLog else {
             return
         }
 
-        featureScope.eventWriteContext { [weak self] ddContext, writer in
+        featureScope.eventWriteContext { [weak self] context, writer in
             guard let self else {
                 return
             }
 
             let exposure = Exposure(
-                targetingKey: context.targetingKey,
+                targetingKey: evaluationContext.targetingKey,
                 flagKey: flagKey,
                 allocationKey: assignment.allocationKey,
                 variationKey: assignment.variationKey
@@ -58,15 +58,15 @@ internal final class ExposureLogger: ExposureLogging {
             }
             loggedExposures.insert(exposure)
 
-            let adjustedDate = date.addingTimeInterval(ddContext.serverTimeOffset)
+            let date = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
             let exposureEvent = ExposureEvent(
-                timestamp: adjustedDate.timeIntervalSince1970.toInt64Milliseconds,
+                timestamp: date.timeIntervalSince1970.toInt64Milliseconds,
                 allocation: .init(key: assignment.allocationKey),
                 flag: .init(key: flagKey),
                 variant: .init(key: assignment.variationKey),
                 subject: .init(
-                    id: context.targetingKey,
-                    attributes: context.attributes
+                    id: evaluationContext.targetingKey,
+                    attributes: evaluationContext.attributes
                 )
             )
 

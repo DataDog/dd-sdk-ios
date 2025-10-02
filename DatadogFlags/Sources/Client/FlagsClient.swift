@@ -10,40 +10,27 @@ import DatadogInternal
 public class FlagsClient {
     public static let defaultName = "default"
 
-    private let configuration: FlagsClient.Configuration
-    private let httpClient: FlagsHTTPClient
     private let repository: any FlagsRepositoryProtocol
     private let exposureLogger: any ExposureLogging
-    private let dateProvider: any DateProvider
-    private let featureScope: any FeatureScope
 
     internal init(
-        configuration: FlagsClient.Configuration,
-        httpClient: FlagsHTTPClient,
         repository: any FlagsRepositoryProtocol,
-        exposureLogger: any ExposureLogging,
-        dateProvider: any DateProvider,
-        featureScope: any FeatureScope
+        exposureLogger: any ExposureLogging
     ) {
-        self.configuration = configuration
-        self.httpClient = httpClient
         self.repository = repository
         self.exposureLogger = exposureLogger
-        self.dateProvider = dateProvider
-        self.featureScope = featureScope
     }
 
     @discardableResult
     public static func create(
         name: String = FlagsClient.defaultName,
-        with configuration: FlagsClient.Configuration = .init(),
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) -> FlagsClientProtocol {
         do {
             // To ensure the correct registration order between Core and Features,
             // the entire initialization flow is synchronized on the main thread.
             return try runOnMainThreadSync {
-                try createOrThrow(name: name, with: configuration, in: core)
+                try createOrThrow(name: name, in: core)
             }
         } catch let error {
             consolePrint("\(error)", .error)
@@ -75,70 +62,45 @@ public class FlagsClient {
 
     internal static func createOrThrow(
         name: String,
-        with configuration: FlagsClient.Configuration,
         in core: DatadogCoreProtocol
     ) throws -> FlagsClientProtocol {
-        guard let clientRegistry = core.get(feature: FlagsFeature.self)?.clientRegistry else {
+        guard let feature = core.get(feature: FlagsFeature.self) else {
             throw ProgrammerError(
                 description: "Flags feature must be enabled before calling `FlagsClient.create(name:with:in:)`."
             )
         }
-        guard !clientRegistry.isRegistered(clientName: name) else {
+        guard !feature.clientRegistry.isRegistered(clientName: name) else {
             throw ProgrammerError(
                 description: "A flags client named '\(name)' already exists."
             )
         }
 
         let featureScope = core.scope(for: FlagsFeature.self)
+        let dateProvider = SystemDateProvider()
         let client = FlagsClient(
-            configuration: configuration,
-            httpClient: NetworkFlagsHTTPClient(),
-            repository: FlagsRepository(clientName: name, featureScope: featureScope),
-            exposureLogger: ExposureLogger(featureScope: featureScope),
-            dateProvider: SystemDateProvider(),
-            featureScope: featureScope
+            repository: FlagsRepository(
+                clientName: name,
+                flagAssignmentsFetcher: feature.flagAssignmentsFetcher,
+                dateProvider: dateProvider,
+                featureScope: featureScope
+            ),
+            exposureLogger: ExposureLogger(
+                dateProvider: dateProvider,
+                featureScope: featureScope
+            )
         )
 
-        clientRegistry.register(client, named: name)
+        feature.clientRegistry.register(client, named: name)
         return client
     }
 }
 
 extension FlagsClient: FlagsClientProtocol {
-    public func setEvaluationContext(_ context: FlagsEvaluationContext, completion: @escaping (Result<Void, FlagsError>) -> Void) {
-        featureScope.context { [httpClient, configuration] sdkContext in
-            httpClient.postPrecomputeAssignments(
-                context: context,
-                configuration: configuration,
-                sdkContext: sdkContext
-            ) { [weak self] result in
-                guard let self else {
-                    completion(.failure(.clientNotInitialized))
-                    return
-                }
-
-                switch result {
-                case .success(let (data, response)):
-                    guard
-                        let httpResponse = response as? HTTPURLResponse,
-                        200...299 ~= httpResponse.statusCode
-                    else {
-                        completion(.failure(.invalidResponse))
-                        return
-                    }
-
-                    do {
-                        let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: data)
-                        self.repository.setFlagAssignments(response.flags, for: context, date: dateProvider.now)
-                        completion(.success(()))
-                    } catch {
-                        completion(.failure(.invalidResponse))
-                    }
-                case .failure(let error):
-                    completion(.failure(.networkError(error)))
-                }
-            }
-        }
+    public func setEvaluationContext(
+        _ context: FlagsEvaluationContext,
+        completion: @escaping (Result<Void, FlagsError>) -> Void
+    ) {
+        repository.setEvaluationContext(context, completion: completion)
     }
 
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
@@ -159,10 +121,9 @@ extension FlagsClient: FlagsClientProtocol {
 
         if let context = repository.context {
             exposureLogger.logExposure(
-                at: dateProvider.now,
                 for: key,
                 assignment: flagAssignment,
-                context: context
+                evaluationContext: context
             )
         }
 

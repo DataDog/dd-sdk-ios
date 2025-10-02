@@ -28,11 +28,14 @@ final class FlagsRepositoryTests: XCTestCase {
         // When
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
             featureScope: featureScope
         )
         featureScope.dataStore.flush()
 
         // Then
+        XCTAssertEqual(flagsRepository.clientName, .mockAny())
         XCTAssertEqual(flagsRepository.context, .mockAny())
         XCTAssertEqual(flagsRepository.flagAssignment(for: "test"), .mockAny())
 
@@ -46,33 +49,75 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertTrue(featureScope.dataStoreMock.storage.isEmpty)
     }
 
-    func testSetFlagAssignments() throws {
+    func testSetEvaluationContext() throws {
         // Given
+        let evaluationContext = FlagsEvaluationContext.mockAny()
+        let flags = ["test": FlagAssignment.mockAny()]
+        let dateProvider = DateProviderMock(now: .mockAny())
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(flags))
+            },
+            dateProvider: dateProvider,
             featureScope: featureScope
         )
-        let state = FlagsData(
-            flags: ["test": .mockAny()],
-            context: .mockAny(),
-            date: .mockAny()
-        )
+        let completed = expectation(description: "completed")
 
         // When
-        flagsRepository.setFlagAssignments(
-            state.flags,
-            for: state.context,
-            date: state.date
-        )
-        featureScope.dataStore.flush()
+        var capturedResult: Result<Void, FlagsError>?
+        flagsRepository.setEvaluationContext(evaluationContext) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
 
         // Then
+        waitForExpectations(timeout: 0)
+
+        XCTAssertNotNil(capturedResult)
+        XCTAssertNoThrow(try capturedResult?.get())
+
         XCTAssertEqual(flagsRepository.context, .mockAny())
         XCTAssertEqual(flagsRepository.flagAssignment(for: "test"), .mockAny())
 
         let data = try XCTUnwrap(featureScope.dataStoreMock.storage[.mockAny()]?.data())
         let storedState = try JSONDecoder().decode(FlagsData.self, from: data)
 
-        XCTAssertEqual(storedState, state)
+        XCTAssertEqual(
+            storedState,
+            FlagsData(
+                flags: flags,
+                context: evaluationContext,
+                date: dateProvider.now
+            )
+        )
+    }
+
+    func testSetEvaluationContextError() throws {
+        // Given
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.failure(.invalidResponse))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let completed = expectation(description: "completed")
+
+        // When
+        var capturedResult: Result<Void, FlagsError>?
+        flagsRepository.setEvaluationContext(.mockAny()) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 0)
+
+        XCTAssertNotNil(capturedResult)
+        XCTAssertThrowsError(try capturedResult?.get())
+        XCTAssertNil(flagsRepository.context)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "test"))
     }
 }
