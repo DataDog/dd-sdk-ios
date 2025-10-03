@@ -69,8 +69,8 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             try print(objcInteropNestedClass: nestedClass)
         case let nestedTransitiveClass as ObjcInteropTransitiveNestedClass:
             try print(objcInteropNestedTransitiveClass: nestedTransitiveClass)
-        case let enumeration as ObjcInteropEnum:
-            try print(objcInteropEnum: enumeration)
+        case let enumeration as ObjcInteropNestedEnum:
+            try print(objcInteropNestedEnum: enumeration)
         case let nestedAssociatedTypeEnum as ObjcInteropAssociatedTypeEnum:
             try print(objcInteropNestedAssociatedTypeEnum: nestedAssociatedTypeEnum)
         default:
@@ -102,17 +102,32 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
     }
 
     private func print(objcInteropNestedClass: ObjcInteropNestedClass) throws {
-        let className = objcTypeNamesPrefix + objcInteropNestedClass.objcTypeName
+        var objcTypeName = ""
+        var swiftTypeName = ""
+
+        switch objcInteropNestedClass.parentProperty {
+        case let objcStruct as ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnum:
+            switch objcStruct.objcTransitiveType {
+            case let objcAssociatedTypeEnum as ObjcInteropReferencedAssociatedTypeEnum:
+                objcTypeName = objcTypeNamesPrefix + objcAssociatedTypeEnum.objcTypeName + objcInteropNestedClass.bridgedSwiftStruct.name
+                swiftTypeName = objcAssociatedTypeEnum.swiftTypeName + "." + objcInteropNestedClass.bridgedSwiftStruct.name
+            default: break
+            }
+        default:
+            objcTypeName = objcTypeNamesPrefix + objcInteropNestedClass.objcTypeName
+            swiftTypeName = objcInteropNestedClass.swiftTypeName
+        }
+
         writeEmptyLine()
-        writeLine("@objc(\(className.objcNaming))")
+        writeLine("@objc(\(objcTypeName.objcNaming))")
         writeLine("@objcMembers")
         writeLine("@_spi(objc)")
-        writeLine("public class \(className): NSObject {")
+        writeLine("public class \(objcTypeName): NSObject {")
         indentRight()
-            writeLine("internal var swiftModel: \(objcInteropNestedClass.swiftTypeName)")
-        writeLine("internal var root: \(className) { self }")
+            writeLine("internal var swiftModel: \(swiftTypeName)")
+        writeLine("internal var root: \(objcTypeName) { self }")
             writeEmptyLine()
-            writeLine("internal init(swiftModel: \(objcInteropNestedClass.swiftTypeName)) {")
+            writeLine("internal init(swiftModel: \(swiftTypeName)) {")
             indentRight()
                 writeLine("self.swiftModel = swiftModel")
             indentLeft()
@@ -147,17 +162,34 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         writeLine("}")
     }
 
-    private func print(objcInteropEnum: ObjcInteropEnum) throws {
-        let enumName = objcTypeNamesPrefix + objcInteropEnum.objcTypeName
-        let swiftEnum = objcInteropEnum.bridgedSwiftEnum
-        let managesOptionalEnum = objcInteropEnum.parentProperty.bridgedSwiftProperty.isOptional
+    private func print(objcInteropNestedEnum: ObjcInteropNestedEnum) throws {
+        var objcTypeName = ""
+        var swiftTypeName = ""
+
+        switch objcInteropNestedEnum.parentProperty {
+        case let objcStruct as ObjcInteropPropertyWrapperManagingSwiftStructProperty:
+            switch objcStruct.objcInteropType {
+            case let objcNestedEnum as ObjcInteropNestedEnum:
+                objcTypeName = objcNestedEnum.objcTypeName
+                swiftTypeName = objcNestedEnum.swiftTypeName
+            default: break
+            }
+        default:
+            objcTypeName = objcInteropNestedEnum.objcTypeName
+            swiftTypeName = objcInteropNestedEnum.swiftTypeName
+        }
+
+        let enumName = objcTypeNamesPrefix + objcTypeName
+        let swiftEnum = objcInteropNestedEnum.bridgedSwiftEnum
+
+        let managesOptionalEnum = objcInteropNestedEnum.parentProperty.bridgedSwiftProperty.isOptional
         let objcEnumOptionality = managesOptionalEnum ? "?" : ""
         writeEmptyLine()
         writeLine("@objc(\(enumName.objcNaming))")
         writeLine("@_spi(objc)")
         writeLine("public enum \(enumName): Int {")
         indentRight()
-            writeLine("internal init(swift: \(objcInteropEnum.swiftTypeName)\(objcEnumOptionality)) {")
+            writeLine("internal init(swift: \(swiftTypeName)\(objcEnumOptionality)) {")
             indentRight()
                 writeLine("switch swift {")
                 if managesOptionalEnum {
@@ -170,7 +202,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             indentLeft()
             writeLine("}")
             writeEmptyLine()
-            writeLine("internal var toSwift: \(objcInteropEnum.swiftTypeName)\(objcEnumOptionality) {")
+            writeLine("internal var toSwift: \(swiftTypeName)\(objcEnumOptionality) {")
             indentRight()
                 writeLine("switch self {")
                 if managesOptionalEnum {
@@ -223,7 +255,8 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
                 objcInteropNestedAssociatedTypeEnum.associatedObjcInteropTypes
             ).forEach { swiftEnumCase, objcInteropAssociatedType in
                 let objcTypeName = try objcInteropTypeName(for: objcInteropAssociatedType)
-                let asObjcCast = try swiftToObjcCast(for: objcInteropAssociatedType, isOptional: swiftProperty.isOptional) ?? ""
+                let swiftToObjcCast = try swiftToObjcCast(for: objcInteropAssociatedType, isOptional: swiftProperty.isOptional) ?? ""
+                let returnValue = objcInteropAssociatedType is ObjcInteropNestedClass ? swiftToObjcCast : "value\(swiftToObjcCast)"
                 let caseName = swiftEnumCase.backtickLabel
 
                 writeEmptyLine()
@@ -234,12 +267,27 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
                         writeLine("return nil")
                     indentLeft()
                     writeLine("}")
-                    writeLine("return value\(asObjcCast)")
+                    writeLine("return \(returnValue)")
                 indentLeft()
                 writeLine("}")
             }
+
         indentLeft()
         writeLine("}")
+
+        try objcInteropNestedAssociatedTypeEnum.associatedObjcInteropTypes.forEach { objcInteropType in
+            if let objcInteropClass = objcInteropType as? ObjcInteropNestedClass {
+                try print(objcInteropNestedClass: objcInteropClass)
+
+                try objcInteropClass.objcPropertyWrappers.forEach {
+                    switch $0 {
+                    case let objcNestedEnum as ObjcInteropPropertyWrapperAccessingNestedEnum:
+                        try print(objcInteropNestedEnum: objcNestedEnum.objcNestedEnum)
+                    default: break
+                    }
+                }
+            }
+        }
     }
 
     // MARK: - Printing Property Wrappers
@@ -418,7 +466,12 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             // ```
             writeLine("public var \(objcPropertyName): \(objcTypeName)\(objcPropertyOptionality) {")
             indentRight()
+            switch propertyWrapper.objcInteropType {
+            case is ObjcInteropNestedEnum:
+                writeLine(".init(swift: root.swiftModel.\(propertyWrapper.keyPath))")
+            default:
                 writeLine("root.swiftModel.\(propertyWrapper.keyPath)\(asObjcCast)")
+            }
             indentLeft()
             writeLine("}")
         }
@@ -437,6 +490,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         let objcPropertyName = swiftProperty.backtickName
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcClassName = objcTypeNamesPrefix + nestedObjcAssociatedTypeEnum.objcTypeName
+
         writeLine("public var \(objcPropertyName): \(objcClassName)\(objcPropertyOptionality) {")
         indentRight()
             if swiftProperty.isOptional {
@@ -470,6 +524,13 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             return "[\(try objcInteropTypeName(for: objcArray.element))]"
         case let objcDictionary as ObjcInteropNSDictionary:
             return "[\(try objcInteropTypeName(for: objcDictionary.key)): \(try objcInteropTypeName(for: objcDictionary.value))]"
+        case let objcStruct as ObjcInteropNestedClass:
+            let transitiveType = objcStruct.parentProperty as? ObjcInteropPropertyWrapperForTransitiveType
+            let objcTypeName = (transitiveType?.objcTransitiveType as? ObjcInteropAssociatedTypeEnum)?.objcTypeName
+
+            return objcTypeNamesPrefix + (objcTypeName ?? "") + objcStruct.bridgedSwiftStruct.name
+        case let objcEnum as ObjcInteropEnum:
+            return objcTypeNamesPrefix + objcEnum.bridgedSwiftEnum.name
         default:
             throw Exception.unimplemented(
                 "Cannot print `ObjcInteropType` name for \(type(of: objcType))."
@@ -499,6 +560,19 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             // to the user, `AnyEncodable` must be unpacked to its original `Any` value. This is done in `.dd.objCAttributes` extension
             // defined in `DatadogInternal` module. Here we just emit its invocation:
             return optionality + ".dd.objCAttributes"
+        case let objcStruct as ObjcInteropNestedClass:
+            let transitiveType = objcStruct.parentProperty as? ObjcInteropPropertyWrapperForTransitiveType
+            let objcTypeName = (transitiveType?.objcTransitiveType as? ObjcInteropAssociatedTypeEnum)?.objcTypeName
+
+            return "\(objcTypeNamesPrefix + (objcTypeName ?? "") + objcStruct.bridgedSwiftStruct.name)(swiftModel: value)"
+        case let objcEnum as ObjcInteropNestedEnum:
+            let transitiveType = objcEnum.parentProperty as? ObjcInteropPropertyWrapperManagingSwiftStructProperty
+            let objcTypeName = (transitiveType?.objcInteropType as? ObjcInteropNestedEnum)?.objcTypeName
+
+            return " as \(objcTypeNamesPrefix + (objcTypeName ?? "") + objcEnum.bridgedSwiftEnum.name)"
+        case let objcEnum as ObjcInteropEnum:
+
+            return " as \(objcTypeNamesPrefix + objcEnum.bridgedSwiftEnum.name)"
         default:
             throw Exception.unimplemented("Cannot print `swiftToObjcCast()` for \(type(of: objcType)).")
         }

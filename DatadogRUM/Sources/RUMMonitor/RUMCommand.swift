@@ -713,9 +713,9 @@ internal struct RUMOperationStepVitalCommand: RUMCommand {
     /// The key of the operation for this operation step (when running several instances of the same operation)
     var operationKey: String?
     /// The step type (start, end, retry, etc.)
-    var stepType: RUMVitalEvent.Vital.StepType
+    var stepType: RUMVitalEvent.Vital.FeatureOperationProperties.StepType
     /// The reason for failure, if applicable
-    var failureReason: RUMVitalEvent.Vital.FailureReason?
+    var failureReason: RUMVitalEvent.Vital.FeatureOperationProperties.FailureReason?
     // Common properties
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]

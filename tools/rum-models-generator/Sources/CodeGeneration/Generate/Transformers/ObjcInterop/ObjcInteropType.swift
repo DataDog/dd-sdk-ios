@@ -8,7 +8,7 @@ import Foundation
 
 // MARK: - Type wrapper schemas
 
-/// Type-safe Swift ↔ Objc interopability schema.
+/// Type-safe Swift ↔ Objc interoperability schema.
 internal protocol ObjcInteropType: AnyObject {}
 
 /// Any `@objc class` which manages Swift `struct`.
@@ -51,37 +51,45 @@ internal class ObjcInteropReferencedTransitiveClass: ObjcInteropTransitiveNested
 /// Schema of a non-transitive `@objc class` exposing values of nested `SwiftStruct`.
 internal class ObjcInteropNestedClass: ObjcInteropClass {
     /// Property wrapper in the parent class, which stores the definition of this transitive class.
-    private(set) unowned var parentProperty: ObjcInteropPropertyWrapper
+    unowned var parentProperty: ObjcInteropPropertyWrapper! // swiftlint:disable:this implicitly_unwrapped_optional
 
     /// The `SwiftStruct` managed by this `@objc class`.
     let bridgedSwiftStruct: SwiftStruct
     /// `bridgedSwiftStruct's` property wrappers exposed to Objc.
     var objcPropertyWrappers: [ObjcInteropPropertyWrapper] = []
 
-    init(owner: ObjcInteropPropertyWrapper, bridgedSwiftStruct: SwiftStruct) {
+    init(owner: ObjcInteropPropertyWrapper?, bridgedSwiftStruct: SwiftStruct) {
         self.parentProperty = owner
         self.bridgedSwiftStruct = bridgedSwiftStruct
     }
 }
 
-/// Schema of an `@objc enum` exposing values for the `SwiftEnum`.
+/// Schema of a transitive `@objc class` managing the access to a`SwiftEnum`.
 internal class ObjcInteropEnum: ObjcInteropType {
-    /// Property wrapper in the parent class, which stores the definition of this enum.
-    private(set) unowned var parentProperty: ObjcInteropPropertyWrapper
     /// The `SwiftEnum` exposed by this Obj-c enum.
     let bridgedSwiftEnum: SwiftEnum
 
-    init(owner: ObjcInteropPropertyWrapper, bridgedSwiftEnum: SwiftEnum) {
-        self.parentProperty = owner
+    init(bridgedSwiftEnum: SwiftEnum) {
         self.bridgedSwiftEnum = bridgedSwiftEnum
     }
 }
 
+/// Schema of an `@objc enum` exposing values for the `SwiftEnum`.
+internal class ObjcInteropNestedEnum: ObjcInteropEnum {
+    /// Property wrapper in the parent class, which stores the definition of this enum.
+    private(set) unowned var parentProperty: ObjcInteropPropertyWrapper
+
+    init(owner: ObjcInteropPropertyWrapper, bridgedSwiftEnum: SwiftEnum) {
+        self.parentProperty = owner
+        super.init(bridgedSwiftEnum: bridgedSwiftEnum)
+    }
+}
+
 /// Schema of an `@objc enum` exposing values of the `SwiftEnum` referenced using `SwiftTypeReference`.
-internal class ObjcInteropReferencedEnum: ObjcInteropEnum {}
+internal class ObjcInteropReferencedEnum: ObjcInteropNestedEnum {}
 
 /// Schema of an `@objc enum` exposing values of an array of `SwiftEnums`.
-internal class ObjcInteropEnumArray: ObjcInteropEnum {}
+internal class ObjcInteropEnumArray: ObjcInteropNestedEnum {}
 
 /// Schema of an `@objc class` managing `SwiftAssociatedTypeEnum`.
 internal class ObjcInteropAssociatedTypeEnum: ObjcInteropType {
@@ -90,12 +98,12 @@ internal class ObjcInteropAssociatedTypeEnum: ObjcInteropType {
     /// The `SwiftAssociatedTypeEnum` managed by this `@objc class`.
     let bridgedSwiftAssociatedTypeEnum: SwiftAssociatedTypeEnum
     /// An array of Objc-interop types for associated values in each case (follows the order of enum cases in `bridgedSwiftAssociatedTypeEnum`).
-    let associatedObjcInteropTypes: [ObjcInteropType]
+    var associatedObjcInteropTypes: [ObjcInteropType]
 
     init(
         owner: ObjcInteropPropertyWrapper,
         bridgedSwiftAssociatedTypeEnum: SwiftAssociatedTypeEnum,
-        associatedObjcInteropTypes: [ObjcInteropType]
+        associatedObjcInteropTypes: [ObjcInteropType] = []
     ) {
         self.parentProperty = owner
         self.bridgedSwiftAssociatedTypeEnum = bridgedSwiftAssociatedTypeEnum
@@ -108,7 +116,7 @@ internal class ObjcInteropReferencedAssociatedTypeEnum: ObjcInteropAssociatedTyp
 
 // MARK: - Property wrapper schemas
 
-/// Schema fo an `@objc` property which manages the access to the `SwiftStruct's` property.
+/// Schema for an `@objc` property which manages the access to the `SwiftStruct's` property.
 internal class ObjcInteropPropertyWrapper: ObjcInteropType {
     /// The `@objc class` owning this property.
     private(set) unowned var owner: ObjcInteropClass
@@ -134,7 +142,7 @@ internal class ObjcInteropPropertyWrapperAccessingNestedStruct: ObjcInteropPrope
 
 /// Schema of an `@objc` property managing access to the nested `SwiftEnum`.
 internal class ObjcInteropPropertyWrapperAccessingNestedEnum: ObjcInteropPropertyWrapper, ObjcInteropPropertyWrapperForTransitiveType {
-    var objcNestedEnum: ObjcInteropEnum! // swiftlint:disable:this implicitly_unwrapped_optional
+    var objcNestedEnum: ObjcInteropNestedEnum! // swiftlint:disable:this implicitly_unwrapped_optional
     var objcTransitiveType: ObjcInteropType { objcNestedEnum }
 }
 
@@ -157,6 +165,7 @@ internal class ObjcInteropPropertyWrapperManagingSwiftStructProperty: ObjcIntero
 
 /// Schema fo an `@objc` property which manages the access to `SwiftAssociatedTypeEnum`.
 internal class ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnum: ObjcInteropPropertyWrapper, ObjcInteropPropertyWrapperForTransitiveType {
+    var objcNestedClass: ObjcInteropTransitiveNestedClass?
     var objcNestedAssociatedTypeEnum: ObjcInteropAssociatedTypeEnum! // swiftlint:disable:this implicitly_unwrapped_optional
     var objcTransitiveType: ObjcInteropType { objcNestedAssociatedTypeEnum }
 }
