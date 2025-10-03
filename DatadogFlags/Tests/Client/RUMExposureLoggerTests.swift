@@ -34,7 +34,10 @@ final class RUMExposureLoggerTests: XCTestCase {
 
         let evaluationContext = FlagsEvaluationContext(
             targetingKey: "user-123",
-            attributes: ["email": "test@example.com", "plan": "premium"]
+            attributes: [
+                "email": .string("test@example.com"),
+                "plan": .string("premium")
+            ]
         )
 
         // When
@@ -66,7 +69,7 @@ final class RUMExposureLoggerTests: XCTestCase {
         XCTAssertEqual(flagExposure.timestamp, expectedTimestamp, accuracy: 0.001)
 
         let subjectAttributes = flagExposure.subjectAttributes
-        XCTAssertEqual(subjectAttributes["email"] as? String, "test@example.com")
-        XCTAssertEqual(subjectAttributes["plan"] as? String, "premium")
+        XCTAssertEqual(subjectAttributes["email"] as? AnyValue, .string("test@example.com"))
+        XCTAssertEqual(subjectAttributes["plan"] as? AnyValue, .string("premium"))
     }
 }

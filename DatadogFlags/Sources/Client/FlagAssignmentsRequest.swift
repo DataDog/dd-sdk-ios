@@ -56,7 +56,7 @@ internal struct FlagAssignmentsRequestBody {
         }
 
         let targetingKey: String
-        let targetingAttributes: [String: String]
+        let targetingAttributes: [String: AnyValue]
     }
 
     struct Environment: Encodable {
