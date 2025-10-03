@@ -17,7 +17,10 @@ final class FlagAssignmentsRequestTests: XCTestCase {
         // Given
         let evaluationContext = FlagsEvaluationContext(
             targetingKey: "user123",
-            attributes: ["plan": "premium", "userId": "123"]
+            attributes: [
+                "plan": .string("premium"),
+                "userId": .string("123")
+            ]
         )
         let context = DatadogContext.mockWith(
             clientToken: "test-token",

@@ -13,7 +13,7 @@ internal struct ExposureEvent: Equatable, Codable {
 
     struct Subject: Equatable, Codable {
         let id: String
-        let attributes: [String: String]
+        let attributes: [String: AnyValue]
     }
 
     let timestamp: Int64
