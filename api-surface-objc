@@ -2348,6 +2348,10 @@ public class objc_RUMMonitor: NSObject
     public static func shared() -> objc_RUMMonitor
     public func currentSessionID(completion: @escaping (String?) -> Void)
     public func stopSession()
+    public func addViewAttribute(forKey key: String, value: Any)
+    public func addViewAttributes(_ attributes: [String: Any])
+    public func removeViewAttribute(forKey key: String)
+    public func removeViewAttributes(forKeys keys: [String])
     public func startView(viewController: UIViewController,name: String?,attributes: [String: Any])
     public func stopView(viewController: UIViewController,attributes: [String: Any])
     public func startView(key: String,name: String?,attributes: [String: Any])

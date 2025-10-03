@@ -522,6 +522,22 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.stopSession()
     }
 
+    public func addViewAttribute(forKey key: String, value: Any) {
+        swiftRUMMonitor.addViewAttribute(forKey: key, value: AnyEncodable(value))
+    }
+
+    public func addViewAttributes(_ attributes: [String: Any]) {
+        swiftRUMMonitor.addViewAttributes(attributes.dd.swiftAttributes)
+    }
+
+    public func removeViewAttribute(forKey key: String) {
+        swiftRUMMonitor.removeViewAttribute(forKey: key)
+    }
+
+    public func removeViewAttributes(forKeys keys: [String]) {
+        swiftRUMMonitor.removeViewAttributes(forKeys: keys)
+    }
+
     public func startView(
         viewController: UIViewController,
         name: String?,
