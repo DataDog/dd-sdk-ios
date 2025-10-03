@@ -140,15 +140,23 @@ extension AnyValue: AnyMockable, RandomMockable {
 }
 
 final class FlagsRepositoryMock: FlagsRepositoryProtocol {
+    var clientName: String
+    var state: FlagsData?
     var setEvaluationContextStub: ((FlagsEvaluationContext, @escaping (Result<Void, FlagsError>) -> Void) -> Void)?
-
-    var clientName = String.mockAny()
 
     var context: FlagsEvaluationContext? {
         state?.context
     }
 
-    private var state: FlagsData?
+    init(
+        clientName: String = .mockAny(),
+        state: FlagsData? = nil,
+        setEvaluationContextStub: ((FlagsEvaluationContext, @escaping (Result<Void, FlagsError>) -> Void) -> Void)? = nil
+    ) {
+        self.clientName = clientName
+        self.state = state
+        self.setEvaluationContextStub = setEvaluationContextStub
+    }
 
     func setEvaluationContext(
         _ context: FlagsEvaluationContext,
@@ -190,5 +198,18 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
         completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
     ) {
         flagAssignmentsStub?(evaluationContext, completion)
+    }
+}
+
+final class RUMExposureLoggerMock: RUMExposureLogging {
+    var logExposureCalls: [(String, Any, FlagAssignment, FlagsEvaluationContext)] = []
+
+    func logExposure<T>(
+        flagKey: String,
+        value: T,
+        assignment: FlagAssignment,
+        evaluationContext: FlagsEvaluationContext
+    ) where T: FlagValue {
+        logExposureCalls.append((flagKey, value, assignment, evaluationContext))
     }
 }

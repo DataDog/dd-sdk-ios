@@ -102,4 +102,141 @@ final class FlagsClientTests: XCTestCase {
             "🔥 Datadog SDK usage error: Flags feature must be enabled before calling `FlagsClient.instance(named:in:)`."
         )
     }
+
+    func testSetEvaluationContext() {
+        // Given
+        var capturedContext: FlagsEvaluationContext?
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock { context, completion in
+                capturedContext = context
+                completion(.success(()))
+            },
+            exposureLogger: ExposureLoggerMock(),
+            rumExposureLogger: RUMExposureLoggerMock()
+        )
+
+        let context = FlagsEvaluationContext(targetingKey: "test")
+        let completed = expectation(description: "completed")
+
+        // When
+        var capturedResult: Result<Void, FlagsError>?
+        client.setEvaluationContext(context) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 0)
+        XCTAssertNotNil(capturedResult)
+        XCTAssertNoThrow(try capturedResult?.get())
+        XCTAssertEqual(capturedContext?.targetingKey, "test")
+    }
+
+    func testFlagEvaluation() {
+        // Given
+        let exposureLogger = ExposureLoggerMock()
+        let rumExposureLogger = RUMExposureLoggerMock()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(
+                state: .init(
+                    flags: [
+                        "string-flag": .init(
+                            allocationKey: "allocation-123",
+                            variationKey: "variation-123",
+                            variation: .string("red"),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "boolean-flag": .init(
+                            allocationKey: "allocation-124",
+                            variationKey: "variation-124",
+                            variation: .boolean(true),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "integer-flag": .init(
+                            allocationKey: "allocation-125",
+                            variationKey: "variation-125",
+                            variation: .integer(42),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "numeric-flag": .init(
+                            allocationKey: "allocation-126",
+                            variationKey: "variation-126",
+                            variation: .double(3.14),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "json-flag": .init(
+                            allocationKey: "allocation-127",
+                            variationKey: "variation-127",
+                            variation: .object(
+                                .dictionary(["key": .string("value"), "prop": .int(123)])
+                            ),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                    ],
+                    context: .mockAny(),
+                    date: .mockAny()
+                )
+            ),
+            exposureLogger: exposureLogger,
+            rumExposureLogger: rumExposureLogger
+        )
+
+        // When
+        let boolValue = client.getBooleanValue(key: "boolean-flag", defaultValue: false)
+        let stringValue = client.getStringValue(key: "string-flag", defaultValue: "default")
+        let integerValue = client.getIntegerValue(key: "integer-flag", defaultValue: 0)
+        let doubleValue = client.getDoubleValue(key: "numeric-flag", defaultValue: 0.0)
+        let objectValue = client.getObjectValue(key: "json-flag", defaultValue: .null)
+
+        let boolDetails = client.getBooleanDetails(key: "boolean-flag", defaultValue: false)
+        let flagNotFoundDetails = client.getBooleanDetails(key: "missing-flag", defaultValue: false)
+        let typeMismatchDetails = client.getBooleanDetails(key: "string-flag", defaultValue: false)
+
+        // Then
+        XCTAssertTrue(boolValue)
+        XCTAssertEqual(stringValue, "red")
+        XCTAssertEqual(integerValue, 42)
+        XCTAssertEqual(doubleValue, 3.14, accuracy: 0.001)
+        XCTAssertEqual(
+            objectValue,
+            .dictionary(
+                [
+                    "key": .string("value"),
+                    "prop": .int(123)
+                ]
+            )
+        )
+        XCTAssertEqual(
+            boolDetails,
+            FlagDetails(
+                key: "boolean-flag",
+                value: true,
+                variant: "variation-124",
+                reason: "TARGETING_MATCH"
+            )
+        )
+        XCTAssertEqual(
+            flagNotFoundDetails,
+            .init(
+                key: "missing-flag",
+                value: false,
+                error: .flagNotFound
+            )
+        )
+        XCTAssertEqual(
+            typeMismatchDetails,
+            .init(
+                key: "string-flag",
+                value: false,
+                error: .typeMismatch
+            )
+        )
+        XCTAssertEqual(exposureLogger.logExposureCalls.count, 6)
+        XCTAssertEqual(rumExposureLogger.logExposureCalls.count, 6)
+    }
 }

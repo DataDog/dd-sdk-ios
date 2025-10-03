@@ -12,13 +12,16 @@ public class FlagsClient {
 
     private let repository: any FlagsRepositoryProtocol
     private let exposureLogger: any ExposureLogging
+    private let rumExposureLogger: any RUMExposureLogging
 
     internal init(
         repository: any FlagsRepositoryProtocol,
-        exposureLogger: any ExposureLogging
+        exposureLogger: any ExposureLogging,
+        rumExposureLogger: any RUMExposureLogging
     ) {
         self.repository = repository
         self.exposureLogger = exposureLogger
+        self.rumExposureLogger = rumExposureLogger
     }
 
     @discardableResult
@@ -87,6 +90,10 @@ public class FlagsClient {
             exposureLogger: ExposureLogger(
                 dateProvider: dateProvider,
                 featureScope: featureScope
+            ),
+            rumExposureLogger: RUMExposureLogger(
+                dateProvider: dateProvider,
+                featureScope: featureScope
             )
         )
 
@@ -122,6 +129,12 @@ extension FlagsClient: FlagsClientProtocol {
         if let context = repository.context {
             exposureLogger.logExposure(
                 for: key,
+                assignment: flagAssignment,
+                evaluationContext: context
+            )
+            rumExposureLogger.logExposure(
+                flagKey: key,
+                value: value,
                 assignment: flagAssignment,
                 evaluationContext: context
             )
