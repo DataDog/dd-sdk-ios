@@ -45,7 +45,7 @@ public class B3HTTPHeadersReader: TracePropagationHeadersReader {
 
     public var sampled: Bool? {
         if let single = httpHeaderFields[B3HTTPHeaders.Single.b3Field] {
-            return single != B3HTTPHeaders.Constants.unsampledValue
+            return single.components(separatedBy: B3HTTPHeaders.Constants.b3Separator)[safe: 2] != B3HTTPHeaders.Constants.unsampledValue
         } else if let multiple = httpHeaderFields[B3HTTPHeaders.Multiple.sampledField] {
             return multiple == B3HTTPHeaders.Constants.sampledValue
         }
