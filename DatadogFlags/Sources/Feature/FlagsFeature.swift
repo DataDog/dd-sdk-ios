@@ -14,6 +14,8 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     let requestBuilder: any FeatureRequestBuilder
     let messageReceiver: any FeatureMessageReceiver
     let clientRegistry: FlagsClientRegistry
+    let enableRUMIntegration: Bool
+    let enableExposureLogging: Bool
 
     let performanceOverride: PerformancePresetOverride
 
@@ -21,6 +23,8 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         configuration: Flags.Configuration,
         featureScope: FeatureScope
     ) {
+        self.enableRUMIntegration = configuration.enableRUMIntegration
+        self.enableExposureLogging = configuration.enableExposureLogging
         flagAssignmentsFetcher = FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
             customHeaders: configuration.customFlagsHeaders,

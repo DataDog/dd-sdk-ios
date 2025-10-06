@@ -13,15 +13,21 @@ public class FlagsClient {
     private let repository: any FlagsRepositoryProtocol
     private let exposureLogger: any ExposureLogging
     private let rumExposureLogger: any RUMExposureLogging
+    private let enableExposureLogging: Bool
+    private let enableRUMIntegration: Bool
 
     internal init(
         repository: any FlagsRepositoryProtocol,
         exposureLogger: any ExposureLogging,
-        rumExposureLogger: any RUMExposureLogging
+        rumExposureLogger: any RUMExposureLogging,
+        enableExposureLogging: Bool,
+        enableRUMIntegration: Bool
     ) {
         self.repository = repository
         self.exposureLogger = exposureLogger
         self.rumExposureLogger = rumExposureLogger
+        self.enableExposureLogging = enableExposureLogging
+        self.enableRUMIntegration = enableRUMIntegration
     }
 
     @discardableResult
@@ -94,7 +100,9 @@ public class FlagsClient {
             rumExposureLogger: RUMExposureLogger(
                 dateProvider: dateProvider,
                 featureScope: featureScope
-            )
+            ),
+            enableExposureLogging: feature.enableExposureLogging,
+            enableRUMIntegration: feature.enableRUMIntegration
         )
 
         feature.clientRegistry.register(client, named: name)
@@ -127,17 +135,21 @@ extension FlagsClient: FlagsClientProtocol {
         )
 
         if let context = repository.context {
-            exposureLogger.logExposure(
-                for: key,
-                assignment: flagAssignment,
-                evaluationContext: context
-            )
-            rumExposureLogger.logExposure(
-                flagKey: key,
-                value: value,
-                assignment: flagAssignment,
-                evaluationContext: context
-            )
+            if enableExposureLogging {
+                exposureLogger.logExposure(
+                    for: key,
+                    assignment: flagAssignment,
+                    evaluationContext: context
+                )
+            }
+            if enableRUMIntegration {
+                rumExposureLogger.logExposure(
+                    flagKey: key,
+                    value: value,
+                    assignment: flagAssignment,
+                    evaluationContext: context
+                )
+            }
         }
 
         return details

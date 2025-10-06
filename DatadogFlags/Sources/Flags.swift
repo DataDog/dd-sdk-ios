@@ -28,14 +28,32 @@ public enum Flags {
         /// Default: `nil`.
         public var customExposureEndpoint: URL?
 
+        /// Enables exposure logging via the dedicated exposures intake endpoint.
+        ///
+        /// When enabled, flag evaluation events are sent to the exposures endpoint for analytics and monitoring.
+        ///
+        /// Default: `true`.
+        public var enableExposureLogging: Bool
+
+        /// Enables exposure logging via RUM integration.
+        ///
+        /// When enabled, flag evaluation events are logged as RUM actions for correlation with user sessions.
+        ///
+        /// Default: `true`.
+        public var enableRUMIntegration: Bool
+
         public init(
             customFlagsEndpoint: URL? = nil,
             customFlagsHeaders: [String: String]? = nil,
-            customExposureEndpoint: URL? = nil
+            customExposureEndpoint: URL? = nil,
+            enableExposureLogging: Bool = true,
+            enableRUMIntegration: Bool = true
         ) {
             self.customFlagsEndpoint = customFlagsEndpoint
             self.customFlagsHeaders = customFlagsHeaders
             self.customExposureEndpoint = customExposureEndpoint
+            self.enableExposureLogging = enableExposureLogging
+            self.enableRUMIntegration = enableRUMIntegration
         }
     }
 

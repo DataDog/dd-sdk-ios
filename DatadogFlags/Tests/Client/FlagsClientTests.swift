@@ -112,7 +112,9 @@ final class FlagsClientTests: XCTestCase {
                 completion(.success(()))
             },
             exposureLogger: ExposureLoggerMock(),
-            rumExposureLogger: RUMExposureLoggerMock()
+            rumExposureLogger: RUMExposureLoggerMock(),
+            enableExposureLogging: true,
+            enableRUMIntegration: true
         )
 
         let context = FlagsEvaluationContext(targetingKey: "test")
@@ -183,7 +185,9 @@ final class FlagsClientTests: XCTestCase {
                 )
             ),
             exposureLogger: exposureLogger,
-            rumExposureLogger: rumExposureLogger
+            rumExposureLogger: rumExposureLogger,
+            enableExposureLogging: true,
+            enableRUMIntegration: true
         )
 
         // When
@@ -238,5 +242,99 @@ final class FlagsClientTests: XCTestCase {
         )
         XCTAssertEqual(exposureLogger.logExposureCalls.count, 6)
         XCTAssertEqual(rumExposureLogger.logExposureCalls.count, 6)
+    }
+
+    func testExposureLoggingCanBeDisabled() {
+        // Given
+        let exposureLogger = ExposureLoggerMock()
+        let rumExposureLogger = RUMExposureLoggerMock()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(
+                state: .init(
+                    flags: [
+                        "test-flag": .init(
+                            allocationKey: "allocation-123",
+                            variationKey: "variation-123",
+                            variation: .boolean(true),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        )
+                    ],
+                    context: .mockAny(),
+                    date: .mockAny()
+                )
+            ),
+            exposureLogger: exposureLogger,
+            rumExposureLogger: rumExposureLogger,
+            enableExposureLogging: false,
+            enableRUMIntegration: false
+        )
+
+        // When
+        _ = client.getBooleanValue(key: "test-flag", defaultValue: false)
+
+        // Then
+        XCTAssertEqual(exposureLogger.logExposureCalls.count, 0)
+        XCTAssertEqual(rumExposureLogger.logExposureCalls.count, 0)
+    }
+
+    func testExposureLoggingCanBeEnabledSelectively() {
+        // Given
+        let exposureLogger = ExposureLoggerMock()
+        let rumExposureLogger = RUMExposureLoggerMock()
+        
+        // Test exposure logging only
+        let exposureOnlyClient = FlagsClient(
+            repository: FlagsRepositoryMock(
+                state: .init(
+                    flags: [
+                        "test-flag": .init(
+                            allocationKey: "allocation-123",
+                            variationKey: "variation-123",
+                            variation: .boolean(true),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        )
+                    ],
+                    context: .mockAny(),
+                    date: .mockAny()
+                )
+            ),
+            exposureLogger: exposureLogger,
+            rumExposureLogger: rumExposureLogger,
+            enableExposureLogging: true,
+            enableRUMIntegration: false
+        )
+        
+        // Test RUM integration only
+        let rumOnlyClient = FlagsClient(
+            repository: FlagsRepositoryMock(
+                state: .init(
+                    flags: [
+                        "test-flag": .init(
+                            allocationKey: "allocation-123",
+                            variationKey: "variation-123",
+                            variation: .boolean(true),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        )
+                    ],
+                    context: .mockAny(),
+                    date: .mockAny()
+                )
+            ),
+            exposureLogger: exposureLogger,
+            rumExposureLogger: rumExposureLogger,
+            enableExposureLogging: false,
+            enableRUMIntegration: true
+        )
+
+        // When
+        _ = exposureOnlyClient.getBooleanValue(key: "test-flag", defaultValue: false)
+        _ = rumOnlyClient.getBooleanValue(key: "test-flag", defaultValue: false)
+
+        // Then
+        XCTAssertEqual(exposureLogger.logExposureCalls.count, 1) // Only exposure-only client logged
+        XCTAssertEqual(rumExposureLogger.logExposureCalls.count, 1) // Only RUM-only client logged
     }
 }
