@@ -109,7 +109,7 @@ public struct RUMFlagEvaluationMessage {
 
 /// Flag exposure message consumed by RUM on the message-bus.
 public struct RUMFlagExposureMessage {
-    /// The timestamp of the exposure
+    /// The timestamp of the exposure (server time with NTP correction)
     public let timestamp: TimeInterval
     /// The flag key
     public let flagKey: String
