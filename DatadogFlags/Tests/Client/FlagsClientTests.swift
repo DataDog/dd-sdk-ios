@@ -282,7 +282,7 @@ final class FlagsClientTests: XCTestCase {
         // Given
         let exposureLogger = ExposureLoggerMock()
         let rumExposureLogger = RUMExposureLoggerMock()
-        
+
         // Test exposure logging only
         let exposureOnlyClient = FlagsClient(
             repository: FlagsRepositoryMock(
@@ -305,7 +305,7 @@ final class FlagsClientTests: XCTestCase {
             enableExposureLogging: true,
             enableRUMIntegration: false
         )
-        
+
         // Test RUM integration only
         let rumOnlyClient = FlagsClient(
             repository: FlagsRepositoryMock(
