@@ -244,7 +244,7 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(rumExposureLogger.logExposureCalls.count, 6)
     }
 
-    func testExposureLoggingCanBeDisabled() {
+    func testExposureLoggingAndRUMIntegrationCanBeDisabled() {
         // Given
         let exposureLogger = ExposureLoggerMock()
         let rumExposureLogger = RUMExposureLoggerMock()
