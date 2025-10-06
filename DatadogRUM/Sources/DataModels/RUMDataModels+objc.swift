@@ -8335,8 +8335,8 @@ public class objc_RUMVitalEvent: NSObject {
         root.swiftModel.version
     }
 
-    public var view: objc_RUMVitalEventView {
-        objc_RUMVitalEventView(root: root)
+    public var view: objc_RUMVitalEventView? {
+        root.swiftModel.view != nil ? objc_RUMVitalEventView(root: root) : nil
     }
 
     public var vital: objc_RUMVitalEventVital {
@@ -8364,6 +8364,10 @@ public class objc_RUMVitalEventDD: NSObject {
 
     public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
+    }
+
+    public var profiling: objc_RUMVitalEventDDProfiling? {
+        root.swiftModel.dd.profiling != nil ? objc_RUMVitalEventDDProfiling(root: root) : nil
     }
 
     public var sdkName: String? {
@@ -8400,6 +8404,85 @@ public class objc_RUMVitalEventDDConfiguration: NSObject {
     public var sessionSampleRate: NSNumber {
         root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
     }
+}
+
+@objc(DDRUMVitalEventDDProfiling)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalEventDDProfiling: NSObject {
+    internal let root: objc_RUMVitalEvent
+
+    internal init(root: objc_RUMVitalEvent) {
+        self.root = root
+    }
+
+    public var errorReason: objc_RUMVitalEventDDProfilingErrorReason {
+        .init(swift: root.swiftModel.dd.profiling!.errorReason)
+    }
+
+    public var status: objc_RUMVitalEventDDProfilingStatus {
+        .init(swift: root.swiftModel.dd.profiling!.status)
+    }
+}
+
+@objc(DDRUMVitalEventDDProfilingErrorReason)
+@_spi(objc)
+public enum objc_RUMVitalEventDDProfilingErrorReason: Int {
+    internal init(swift: RUMVitalEvent.DD.Profiling.ErrorReason?) {
+        switch swift {
+        case nil: self = .none
+        case .notSupportedByBrowser?: self = .notSupportedByBrowser
+        case .failedToLazyLoad?: self = .failedToLazyLoad
+        case .missingDocumentPolicyHeader?: self = .missingDocumentPolicyHeader
+        case .unexpectedException?: self = .unexpectedException
+        }
+    }
+
+    internal var toSwift: RUMVitalEvent.DD.Profiling.ErrorReason? {
+        switch self {
+        case .none: return nil
+        case .notSupportedByBrowser: return .notSupportedByBrowser
+        case .failedToLazyLoad: return .failedToLazyLoad
+        case .missingDocumentPolicyHeader: return .missingDocumentPolicyHeader
+        case .unexpectedException: return .unexpectedException
+        }
+    }
+
+    case none
+    case notSupportedByBrowser
+    case failedToLazyLoad
+    case missingDocumentPolicyHeader
+    case unexpectedException
+}
+
+@objc(DDRUMVitalEventDDProfilingStatus)
+@_spi(objc)
+public enum objc_RUMVitalEventDDProfilingStatus: Int {
+    internal init(swift: RUMVitalEvent.DD.Profiling.Status?) {
+        switch swift {
+        case nil: self = .none
+        case .starting?: self = .starting
+        case .running?: self = .running
+        case .stopped?: self = .stopped
+        case .error?: self = .error
+        }
+    }
+
+    internal var toSwift: RUMVitalEvent.DD.Profiling.Status? {
+        switch self {
+        case .none: return nil
+        case .starting: return .starting
+        case .running: return .running
+        case .stopped: return .stopped
+        case .error: return .error
+        }
+    }
+
+    case none
+    case starting
+    case running
+    case stopped
+    case error
 }
 
 @objc(DDRUMVitalEventDDSession)
@@ -9116,22 +9199,22 @@ public class objc_RUMVitalEventView: NSObject {
     }
 
     public var id: String {
-        root.swiftModel.view.id
+        root.swiftModel.view!.id
     }
 
     public var name: String? {
-        set { root.swiftModel.view.name = newValue }
-        get { root.swiftModel.view.name }
+        set { root.swiftModel.view!.name = newValue }
+        get { root.swiftModel.view!.name }
     }
 
     public var referrer: String? {
-        set { root.swiftModel.view.referrer = newValue }
-        get { root.swiftModel.view.referrer }
+        set { root.swiftModel.view!.referrer = newValue }
+        get { root.swiftModel.view!.referrer }
     }
 
     public var url: String {
-        set { root.swiftModel.view.url = newValue }
-        get { root.swiftModel.view.url }
+        set { root.swiftModel.view!.url = newValue }
+        get { root.swiftModel.view!.url }
     }
 }
 
@@ -10845,4 +10928,4 @@ public class objc_TelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/fbf83da4ab8e7b6ad956aa0038d6e9fef3ec0a9a
+// Generated from https://github.com/DataDog/rum-events-format/tree/5ef89a3314c439b24ebf57cb5736f43790cac9df

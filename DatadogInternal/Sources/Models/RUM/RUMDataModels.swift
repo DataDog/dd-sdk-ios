@@ -6646,7 +6646,7 @@ public struct RUMVitalEvent: RUMDataModel {
     public let version: String?
 
     /// View properties
-    public var view: View
+    public var view: View?
 
     public let vital: Vital
 
@@ -6725,7 +6725,7 @@ public struct RUMVitalEvent: RUMDataModel {
         synthetics: RUMSyntheticsTest? = nil,
         usr: RUMUser? = nil,
         version: String? = nil,
-        view: View,
+        view: View? = nil,
         vital: Vital
     ) {
         self.dd = dd
@@ -6764,6 +6764,9 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// Profiling context
+        public let profiling: Profiling?
+
         /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         public let sdkName: String?
 
@@ -6777,6 +6780,7 @@ public struct RUMVitalEvent: RUMDataModel {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
             case formatVersion = "format_version"
+            case profiling = "profiling"
             case sdkName = "sdk_name"
             case session = "session"
             case vital = "vital"
@@ -6787,18 +6791,21 @@ public struct RUMVitalEvent: RUMDataModel {
         /// - Parameters:
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - profiling: Profiling context
         ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         ///   - vital: Internal vital properties
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
+            profiling: Profiling? = nil,
             sdkName: String? = nil,
             session: Session? = nil,
             vital: Vital? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
+            self.profiling = profiling
             self.sdkName = sdkName
             self.session = session
             self.vital = vital
@@ -6835,6 +6842,88 @@ public struct RUMVitalEvent: RUMDataModel {
                 self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
+            }
+        }
+
+        /// Profiling context
+        public struct Profiling: Codable {
+            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            public let errorReason: ErrorReason?
+
+            /// Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public let status: Status?
+
+            public enum CodingKeys: String, CodingKey {
+                case errorReason = "error_reason"
+                case status = "status"
+            }
+
+            /// Profiling context
+            ///
+            /// - Parameters:
+            ///   - errorReason: The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            ///   - status: Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public init(
+                errorReason: ErrorReason? = nil,
+                status: Status? = nil
+            ) {
+                self.errorReason = errorReason
+                self.status = status
+            }
+
+            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            public enum ErrorReason: String, Codable {
+                case notSupportedByBrowser = "not-supported-by-browser"
+                case failedToLazyLoad = "failed-to-lazy-load"
+                case missingDocumentPolicyHeader = "missing-document-policy-header"
+                case unexpectedException = "unexpected-exception"
+            }
+
+            /// Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public enum Status: String, Codable {
+                case starting = "starting"
+                case running = "running"
+                case stopped = "stopped"
+                case error = "error"
             }
         }
 
@@ -10647,4 +10736,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/fbf83da4ab8e7b6ad956aa0038d6e9fef3ec0a9a
+// Generated from https://github.com/DataDog/rum-events-format/tree/5ef89a3314c439b24ebf57cb5736f43790cac9df
