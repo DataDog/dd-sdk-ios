@@ -38,7 +38,8 @@ class TelemetryReceiverTests: XCTestCase {
                         viewID: .mockRandom(),
                         userActionID: .mockRandom()
                     )
-                ) }
+                )
+                }
             ],
             iterations: 50
         )
