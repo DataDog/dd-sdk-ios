@@ -33,19 +33,32 @@ int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval);
 
 @implementation __dd_private_AppLaunchHandler {
     NSTimeInterval _processLaunchDate;
-    NSTimeInterval _timeToDidBecomeActive;
-    NSMutableArray<UIApplicationDidBecomeActiveCallback> *_applicationDidBecomeActiveCallbacks;
+    NSTimeInterval _runtimeLoadDate;
+    NSTimeInterval _runtimePreMainDate;
+    NSTimeInterval _didFinishLaunchingDate;
+    NSTimeInterval _didBecomeActiveDate;
+    NSMutableArray<UIApplicationNotificationCallback> *_applicationNotificationCallbacks;
 }
 
 static __dd_private_AppLaunchHandler *_shared;
 
 + (void)load {
+    NSTimeInterval runtimeLoadDate = CFAbsoluteTimeGetCurrent();
     _shared = [[self alloc] init];
+    _shared->_runtimeLoadDate = runtimeLoadDate;
     [_shared observeNotificationCenter:NSNotificationCenter.defaultCenter];
 }
 
 + (__dd_private_AppLaunchHandler *)shared {
     return _shared;
+}
+
+/**
+ * Constructor attribute function that runs right before  @c main() is executed during app launch.
+ */
+__attribute__((constructor(65535)))
+static void recordPreMainDate(void) {
+    _shared->_runtimePreMainDate = CFAbsoluteTimeGetCurrent();
 }
 
 - (instancetype)init {
@@ -57,39 +70,57 @@ static __dd_private_AppLaunchHandler *_shared;
     if (!self) return nil;
 
     _processLaunchDate = startTime;
-    _applicationDidBecomeActiveCallbacks = [NSMutableArray array];
+    _applicationNotificationCallbacks = [NSMutableArray array];
     return self;
 }
 
 - (void)observeNotificationCenter:(NSNotificationCenter *)notificationCenter {
-    NSString *notificationName;
+    __weak NSNotificationCenter *weakCenter = notificationCenter;
+
 #if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION
-    notificationName = UIApplicationDidBecomeActiveNotification;
-#elif TARGET_OS_OSX
-    notificationName = NSApplicationDidBecomeActiveNotification;
+    __block id __unused didFinishLaunchingNotification = [notificationCenter addObserverForName:UIApplicationDidFinishLaunchingNotification
+                                                                object:nil
+                                                                 queue:NSOperationQueue.mainQueue
+                                                            usingBlock:^(NSNotification *_){
+
+        @synchronized(self) {
+            self->_didFinishLaunchingDate = CFAbsoluteTimeGetCurrent();
+            for (UIApplicationNotificationCallback callback in self->_applicationNotificationCallbacks) {
+                callback(self.didFinishLaunchingDate, self.didBecomeActiveDate);
+            }
+        }
+
+        [weakCenter removeObserver:didFinishLaunchingNotification];
+        didFinishLaunchingNotification = nil;
+    }];
 #endif
 
-    if (!notificationName || !notificationCenter) {
+    NSString *didBecomeActiveNotificationName;
+#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION
+    didBecomeActiveNotificationName = UIApplicationDidBecomeActiveNotification;
+#elif TARGET_OS_OSX
+    didBecomeActiveNotificationName = NSApplicationDidBecomeActiveNotification;
+#endif
+
+    if (!didBecomeActiveNotificationName || !weakCenter) {
         return;
     }
 
-    __weak NSNotificationCenter *weakCenter = notificationCenter;
-    __block id __unused token = [notificationCenter addObserverForName:notificationName
+    __block id __unused didBecomeActiveNotification = [notificationCenter addObserverForName:didBecomeActiveNotificationName
                                                                 object:nil
                                                                  queue:NSOperationQueue.mainQueue
                                                             usingBlock:^(NSNotification *_){
         @synchronized(self) {
-            NSTimeInterval time = CFAbsoluteTimeGetCurrent() - self->_processLaunchDate;
-            self->_timeToDidBecomeActive = time;
-            for (UIApplicationDidBecomeActiveCallback callback in self->_applicationDidBecomeActiveCallbacks) {
-                callback(time);
+            self->_didBecomeActiveDate = CFAbsoluteTimeGetCurrent();
+            for (UIApplicationNotificationCallback callback in self->_applicationNotificationCallbacks) {
+                callback(self.didFinishLaunchingDate, self.didBecomeActiveDate);
             }
             //we can clean the callbacks array since the new triggered notifications won't be associated with the app launch
-            [self->_applicationDidBecomeActiveCallbacks removeAllObjects];
+            [self->_applicationNotificationCallbacks removeAllObjects];
         }
 
-        [weakCenter removeObserver:token];
-        token = nil;
+        [weakCenter removeObserver:didBecomeActiveNotification];
+        didBecomeActiveNotification = nil;
     }];
 }
 
@@ -123,15 +154,33 @@ static __dd_private_AppLaunchHandler *_shared;
     }
 }
 
-- (NSNumber *)timeToDidBecomeActive {
+- (NSDate *)runtimeLoadDate {
     @synchronized(self) {
-        return _timeToDidBecomeActive > 0 ? @(_timeToDidBecomeActive) : nil;
+        return [NSDate dateWithTimeIntervalSinceReferenceDate:_runtimeLoadDate];
     }
 }
 
-- (void)setApplicationDidBecomeActiveCallback:(nonnull UIApplicationDidBecomeActiveCallback)callback {
+- (NSDate *)runtimePreMainDate {
     @synchronized(self) {
-        [_applicationDidBecomeActiveCallbacks addObject:[callback copy]];
+        return [NSDate dateWithTimeIntervalSinceReferenceDate:_runtimePreMainDate];
+    }
+}
+
+- (NSDate *)didFinishLaunchingDate {
+    @synchronized(self) {
+        return _didFinishLaunchingDate > 0 ? [NSDate dateWithTimeIntervalSinceReferenceDate:_didFinishLaunchingDate] : nil;
+    }
+}
+
+- (NSDate *)didBecomeActiveDate {
+    @synchronized(self) {
+        return _didBecomeActiveDate > 0 ? [NSDate dateWithTimeIntervalSinceReferenceDate:_didBecomeActiveDate] : nil;
+    }
+}
+
+- (void)setApplicationNotificationCallback:(nonnull UIApplicationNotificationCallback)callback {
+    @synchronized(self) {
+        [_applicationNotificationCallbacks addObject:[callback copy]];
     }
 }
 

@@ -54,7 +54,7 @@ internal struct RUMScopeDependencies {
     let telemetry: Telemetry
     let sessionType: RUMSessionType
     let sessionEndedMetric: SessionEndedMetricController
-    let appStateManager: AppStateManager
+    let appStateManager: AppStateManaging
     let watchdogTermination: WatchdogTerminationMonitor?
 
     /// A factory function that creates `ViewEndedMetricController` for each new view started.
@@ -92,7 +92,7 @@ internal struct RUMScopeDependencies {
         fatalErrorContext: FatalErrorContextNotifying,
         sessionEndedMetric: SessionEndedMetricController,
         viewEndedMetricFactory: @escaping () -> ViewEndedController,
-        appStateManager: AppStateManager,
+        appStateManager: AppStateManaging,
         watchdogTermination: WatchdogTerminationMonitor?,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking,
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?,

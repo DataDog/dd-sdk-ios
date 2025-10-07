@@ -7,14 +7,32 @@
 import Foundation
 import DatadogInternal
 
+internal protocol AppStateManaging {
+    /// The app state information of the last application run.
+    var previousAppStateInfo: AppStateInfo? { get }
+    /// Deletes the app state from the data store.
+    func deleteAppState()
+    /// Updates the app state based on the given application state.
+    func updateAppState(state: AppState)
+    /// Builds the current app state.
+    func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void) throws
+    /// Builds the current app state and stores it in the data store.
+    func storeCurrentAppState() throws
+}
+
 /// Manages the app state changes observed during application lifecycle events such as application start, resume and termination.
-internal final class AppStateManager {
+internal final class AppStateManager: AppStateManaging {
+    enum ErrorMessage: String {
+        case failedToStoreAppState = "Failed to store App State information"
+    }
+
     let featureScope: FeatureScope
 
     /// The last app state observed during application lifecycle events.
     @ReadWriteLock
     private var lastAppState: AppState?
 
+    /// The app state information of the last application run.
     @ReadWriteLock
     private(set) var previousAppStateInfo: AppStateInfo?
 
@@ -33,8 +51,19 @@ internal final class AppStateManager {
         self.processId = processId
         self.syntheticsEnvironment = syntheticsEnvironment
 
+        start()
+    }
+
+    private func start() {
         self.readAppState { [weak self] in
             self?.previousAppStateInfo = $0
+
+            do {
+                try self?.storeCurrentAppState()
+            } catch {
+                DD.logger.error(ErrorMessage.failedToStoreAppState.rawValue, error: error)
+                self?.featureScope.telemetry.error(ErrorMessage.failedToStoreAppState.rawValue, error: error)
+            }
         }
     }
 
@@ -85,13 +114,6 @@ internal final class AppStateManager {
         }
     }
 
-    /// Builds the current app state and stores it in the data store.
-    func storeCurrentAppState() throws {
-        try currentAppStateInfo { [self] appState in
-            featureScope.rumDataStore.setValue(appState, forKey: .appStateKey)
-        }
-    }
-
     /// Builds the current app state asynchronously.
     /// - Parameter completion: The completion block called with the app state.
     func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void) throws {
@@ -110,6 +132,13 @@ internal final class AppStateManager {
                 syntheticsEnvironment: self.syntheticsEnvironment
             )
             completion(state)
+        }
+    }
+
+    /// Builds the current app state and stores it in the data store.
+    func storeCurrentAppState() throws {
+        try currentAppStateInfo { [self] appState in
+            featureScope.rumDataStore.setValue(appState, forKey: .appStateKey)
         }
     }
 

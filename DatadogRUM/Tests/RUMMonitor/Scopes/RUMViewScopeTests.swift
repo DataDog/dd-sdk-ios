@@ -137,7 +137,7 @@ class RUMViewScopeTests: XCTestCase {
         context.launchInfo = .mockWith(
             launchReason: .userLaunch,
             processLaunchDate: processLaunchDate,
-            timeToDidBecomeActive: nil
+            didBecomeActiveDate: nil
         )
         context.applicationStateHistory = .mockWith(initialState: .inactive, date: .distantPast)
 

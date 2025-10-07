@@ -882,6 +882,30 @@ extension RUMOperationStepVitalCommand: AnyMockable, RandomMockable {
     }
 }
 
+extension RUMTimeToInitialDisplayCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMTimeToInitialDisplayCommand { mockWith() }
+
+    public static func mockRandom() -> RUMTimeToInitialDisplayCommand {
+        mockWith(
+            time: .mockRandom(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes()
+        )
+    }
+
+    public static func mockWith(
+        time: Date = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) -> RUMTimeToInitialDisplayCommand {
+        RUMTimeToInitialDisplayCommand(
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes
+        )
+    }
+}
+
 // MARK: - RUMCommand Property Mocks
 
 extension RUMInternalErrorSource: RandomMockable {
@@ -987,7 +1011,7 @@ extension RUMScopeDependencies {
         viewEndedMetricFactory: @escaping () -> ViewEndedController = {
             ViewEndedController(telemetry: NOPTelemetry(), sampleRate: 0)
         },
-        appStateManager: AppStateManager = AppStateManager(featureScope: NOPFeatureScope(), processId: UUID(), syntheticsEnvironment: false),
+        appStateManager: AppStateManaging = AppStateManagerMock(),
         watchdogTermination: WatchdogTerminationMonitor? = nil,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking = {
             TNSMetric(viewName: $1, viewStartDate: $0, resourcePredicate: TimeBasedTNSResourcePredicate())

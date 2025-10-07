@@ -7,29 +7,30 @@
 import XCTest
 import DatadogInternal
 @testable import DatadogRUM
-import TestUtilities
 
 extension AppStateInfo: RandomMockable, AnyMockable {
-    public static func mockAny() -> DatadogRUM.AppStateInfo {
-        return .init(
+    public static func mockAny() -> AppStateInfo {
+        .init(
             appVersion: .mockAny(),
             osVersion: .mockAny(),
             systemBootTime: .mockAny(),
+            appLaunchTime: .mockAny(),
             isDebugging: .mockAny(),
             wasTerminated: .mockAny(),
             isActive: .mockAny(),
             vendorId: .mockAny(),
             processId: .mockAny(),
             trackingConsent: .mockRandom(),
-            syntheticsEnvironment: .mockRandom()
+            syntheticsEnvironment: .mockAny()
         )
     }
 
     public static func mockRandom() -> AppStateInfo {
-        return .init(
+        .init(
             appVersion: .mockRandom(),
             osVersion: .mockRandom(),
             systemBootTime: .mockRandom(),
+            appLaunchTime: .mockAny(),
             isDebugging: .mockRandom(),
             wasTerminated: .mockRandom(),
             isActive: .mockRandom(),
@@ -39,25 +40,53 @@ extension AppStateInfo: RandomMockable, AnyMockable {
             syntheticsEnvironment: .mockRandom()
         )
     }
+
+    public static func mockWith(
+        appVersion: String = .mockAny(),
+        osVersion: String = .mockAny(),
+        systemBootTime: TimeInterval = .mockAny(),
+        appLaunchTime: TimeInterval = .mockAny(),
+        isDebugging: Bool = .mockAny(),
+        wasTerminated: Bool = .mockAny(),
+        isActive: Bool = .mockAny(),
+        vendorId: String? = .mockAny(),
+        processId: UUID = .mockAny(),
+        trackingConsent: TrackingConsent = .mockRandom(),
+        syntheticsEnvironment: Bool = .mockAny()
+    ) -> AppStateInfo {
+        .init(
+            appVersion: osVersion,
+            osVersion: osVersion,
+            systemBootTime: systemBootTime,
+            appLaunchTime: appLaunchTime,
+            isDebugging: isDebugging,
+            wasTerminated: wasTerminated,
+            isActive: isActive,
+            vendorId: vendorId,
+            processId: processId,
+            trackingConsent: trackingConsent,
+            syntheticsEnvironment: syntheticsEnvironment
+        )
+    }
 }
 
-class WatchdogTerminationReporterMock: WatchdogTerminationReporting {
-    var didSend: XCTestExpectation
-    var sendParams: SendParams?
+public final class WatchdogTerminationReporterMock: WatchdogTerminationReporting {
+    public var didSend: XCTestExpectation
+    public var sendParams: SendParams?
 
-    init(didSend: XCTestExpectation) {
+    public init(didSend: XCTestExpectation) {
         self.didSend = didSend
     }
 
-    func send(date: Date?, state: DatadogRUM.AppStateInfo, viewEvent: DatadogInternal.RUMViewEvent) {
+    public func send(date: Date?, state: DatadogRUM.AppStateInfo, viewEvent: DatadogInternal.RUMViewEvent) {
         sendParams = SendParams(date: date, state: state, viewEvent: viewEvent)
         didSend.fulfill()
     }
 
-    struct SendParams {
-        let date: Date?
-        let state: DatadogRUM.AppStateInfo
-        let viewEvent: DatadogInternal.RUMViewEvent
+    public struct SendParams {
+        public let date: Date?
+        public let state: AppStateInfo
+        public let viewEvent: RUMViewEvent
     }
 }
 

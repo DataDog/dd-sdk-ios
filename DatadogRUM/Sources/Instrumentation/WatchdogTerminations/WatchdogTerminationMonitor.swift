@@ -21,7 +21,6 @@ internal final class WatchdogTerminationMonitor {
 
     enum ErrorMessages {
         static let failedToCheckWatchdogTermination = "Failed to check if Watchdog Termination occurred"
-        static let failedToStartAppState = "Failed to start Watchdog Termination App State Manager"
         static let detectedWatchdogTermination = "Based on heuristics, previous app session was terminated by Watchdog"
         static let failedToReadViewEvent = "Failed to read the view event from the data store"
         static let rumViewEventUpdated = "RUM View event updated"
@@ -63,12 +62,6 @@ internal final class WatchdogTerminationMonitor {
 
         currentState = .starting
         sendWatchTerminationIfFound(launch: launchReport) { [weak self] in
-            do {
-                try self?.appStateManager.storeCurrentAppState()
-            } catch {
-                DD.logger.error(ErrorMessages.failedToStartAppState, error: error)
-                self?.feature.telemetry.error(ErrorMessages.failedToStartAppState, error: error)
-            }
             self?.currentState = .started
         }
     }

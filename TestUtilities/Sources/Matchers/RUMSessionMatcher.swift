@@ -256,12 +256,19 @@ public class RUMSessionMatcher {
         }
 
         try vitalEvents.forEach { rumEvent in
-            if let visit = visitsByViewID[rumEvent.view.id] {
-                visit.vitalEvents.append(rumEvent)
-            } else {
-                throw RUMSessionConsistencyException(
-                    description: "Cannot link RUM Event: \(rumEvent) to `RUMSessionMatcher.ViewVisit` by `view.id`."
-                )
+            switch rumEvent.vital {
+            case .featureOperationProperties:
+                if let viewId = rumEvent.view?.id,
+                   let visit = visitsByViewID[viewId] {
+                    visit.vitalEvents.append(rumEvent)
+                } else {
+                    throw RUMSessionConsistencyException(
+                        description: "Cannot link RUM Event: \(rumEvent) to `RUMSessionMatcher.ViewVisit` by `view.id`."
+                    )
+                }
+            case .durationProperties, .appLaunchProperties:
+                // RUM-11999: Handle `appLaunchProperties` with IntegrationTests
+                break
             }
         }
 

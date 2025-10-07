@@ -371,26 +371,39 @@ public class AppLaunchHandlerMock: AppLaunchHandling {
     /// - `__dd_private_TASK_POLICY_DEFAULTED`
     /// - `__dd_private_TASK_POLICY_UNAVAILABLE`
     public var taskPolicyRole: Int
-    /// The timestamp when the application process was launched.
+    /// The date when the application process was launched.
     public let processLaunchDate: Date
-    /// The time interval between the app process launch and the `UIApplication.didBecomeActiveNotification`.
+    /// The date when the SDK was loaded.
+    public let runtimeLoadDate: Date
+    /// The date right before the @c main() is executed.
+    public let runtimePreMainDate: Date
+    /// The date when the `UIApplication.didFinishLaunchingNotification` was triggered.
     /// Returns `nil` if the notification has not yet been received.
-    public var timeToDidBecomeActive: NSNumber?
+    public var didFinishLaunchingDate: Date?
+    /// The date when the `UIApplication.didBecomeActiveNotification` was triggered.
+    /// Returns `nil` if the notification has not yet been received.
+    public var didBecomeActiveDate: Date?
     /// Stores the callback to be invoked when the application becomes active.
-    private var didBecomeActiveCallback: UIApplicationDidBecomeActiveCallback?
+    private var didBecomeActiveCallback: UIApplicationNotificationCallback?
 
     public init(
         taskPolicyRole: Int = 1,
         processLaunchDate: Date = .mockAny(),
-        timeToDidBecomeActive: TimeInterval? = nil
+        runtimeLoadDate: Date = .mockAny(),
+        runtimePreMainDate: Date = .mockAny(),
+        didFinishLaunchingDate: Date? = .mockAny(),
+        didBecomeActiveDate: Date? = .mockAny()
     ) {
         self.taskPolicyRole = taskPolicyRole
         self.processLaunchDate = processLaunchDate
-        self.timeToDidBecomeActive = timeToDidBecomeActive.map { NSNumber(value: $0) }
+        self.runtimeLoadDate = runtimeLoadDate
+        self.runtimePreMainDate = runtimePreMainDate
+        self.didFinishLaunchingDate = didFinishLaunchingDate
+        self.didBecomeActiveDate = didBecomeActiveDate
     }
 
-    public func setApplicationDidBecomeActiveCallback(_ callback: @escaping UIApplicationDidBecomeActiveCallback) {
-        guard timeToDidBecomeActive == nil else {
+    public func setApplicationNotificationCallback(_ callback: @escaping UIApplicationNotificationCallback) {
+        guard didBecomeActiveDate == nil else {
             // The app is already active; do nothing as per the interface contract.
             return
         }
@@ -403,14 +416,31 @@ public class AppLaunchHandlerMock: AppLaunchHandling {
     /// If a callback has been set before activation, it will be invoked.
     ///
     /// - Parameter timeInterval: The time interval from launch to activation.
-    public func simulateDidBecomeActive(timeInterval: TimeInterval) {
-        guard timeToDidBecomeActive == nil else {
+    public func simulateDidBecomeActive(date: Date) {
+        guard didBecomeActiveDate == nil else {
             // Following the `AppLaunchHandling.setApplicationDidBecomeActiveCallback(_:)` requirement, do not
             // notify the callback for subsequent activations.
             return
         }
 
-        timeToDidBecomeActive = NSNumber(value: timeInterval)
-        didBecomeActiveCallback?(timeInterval)
+        didBecomeActiveDate = date
+        didBecomeActiveCallback?(nil, date)
+    }
+
+    /// Simulates the application did finish launching.
+    ///
+    /// This method can be called in tests to simulate the `UIApplication.didFinishLaunchingNotification`.
+    /// If a callback has been set before activation, it will be invoked.
+    ///
+    /// - Parameter timeInterval: The time interval from launch to activation.
+    public func simulateDidFinishLaunching(date: Date) {
+        guard didFinishLaunchingDate == nil else {
+            // Following the `AppLaunchHandling.setApplicationDidBecomeActiveCallback(_:)` requirement, do not
+            // notify the callback for subsequent activations.
+            return
+        }
+
+        didFinishLaunchingDate = date
+        didBecomeActiveCallback?(date, nil)
     }
 }

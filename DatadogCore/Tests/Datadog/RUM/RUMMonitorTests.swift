@@ -980,7 +980,10 @@ class RUMMonitorTests: XCTestCase {
             launchInfo: LaunchInfo(
                 launchReason: .userLaunch,
                 processLaunchDate: launchDate,
-                timeToDidBecomeActive: nil,
+                runtimeLoadDate: nil,
+                runtimePreMainDate: nil,
+                didFinishLaunchingDate: nil,
+                didBecomeActiveDate: nil,
                 raw: .mockAny()
             )
         )
@@ -1007,7 +1010,10 @@ class RUMMonitorTests: XCTestCase {
             launchInfo: LaunchInfo(
                 launchReason: .prewarming,
                 processLaunchDate: launchDate,
-                timeToDidBecomeActive: nil,
+                runtimeLoadDate: nil,
+                runtimePreMainDate: nil,
+                didFinishLaunchingDate: nil,
+                didBecomeActiveDate: nil,
                 raw: .mockAny()
             )
         )
@@ -1041,7 +1047,10 @@ class RUMMonitorTests: XCTestCase {
             launchInfo: LaunchInfo(
                 launchReason: .userLaunch,
                 processLaunchDate: launchDate,
-                timeToDidBecomeActive: nil,
+                runtimeLoadDate: nil,
+                runtimePreMainDate: nil,
+                didFinishLaunchingDate: nil,
+                didBecomeActiveDate: nil,
                 raw: .mockAny()
             )
         )

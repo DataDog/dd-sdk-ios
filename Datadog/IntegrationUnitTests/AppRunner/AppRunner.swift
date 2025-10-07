@@ -146,7 +146,7 @@ internal class AppRunner {
         appLaunchHandler = AppLaunchHandlerMock(
             taskPolicyRole: launchType.taskPolicyRole,
             processLaunchDate: launchType.processLaunchDate,
-            timeToDidBecomeActive: nil // will wait for SimulationStep.changeAppState(_:)
+            didBecomeActiveDate: nil // will wait for SimulationStep.changeAppState(_:)
         )
 
         appStateObservers = [
@@ -158,8 +158,7 @@ internal class AppRunner {
                 appStateProvider.current = .active
 
                 // Simulate the application becoming active in `appLaunchHandler`:
-                let launchTime = dateProvider.now.timeIntervalSince(appLaunchHandler.processLaunchDate)
-                appLaunchHandler.simulateDidBecomeActive(timeInterval: launchTime)
+                appLaunchHandler.simulateDidBecomeActive(date: dateProvider.now)
             },
             notificationCenter.addObserver(forName: ApplicationNotifications.willResignActive, object: nil, queue: nil) { [weak self] _ in
                 self?.appStateProvider.current = .inactive

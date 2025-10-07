@@ -49,6 +49,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private lazy var featureOperationManager: RUMFeatureOperationManager = {
         RUMFeatureOperationManager(parent: self, dependencies: dependencies)
     }()
+    /// App launch manager to process TTID and TTFD commands.
+    private lazy var appLaunchManager: RUMAppLaunchManager = {
+        RUMAppLaunchManager(parent: self, dependencies: dependencies)
+    }()
 
     /// Information about this session state, shared with `CrashContext`.
     private var state: RUMSessionState {
@@ -262,6 +266,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     writer: writer,
                     activeView: activeView
                 )
+            case let command as RUMTimeToInitialDisplayCommand:
+                appLaunchManager.process(command, context: context, writer: writer, activeView: viewScopes.first { $0.isActiveView })
+                dependencies.renderLoopObserver?.unregister(dependencies.firstFrameReader)
+                // command doesn't need to be propagated to other scopes
+                return true
             default:
                 if !hasActiveView {
                     handleOffViewCommand(command: command, context: context, writer: writer)

@@ -514,9 +514,9 @@ extension RUMViewScope {
             // Set `active_pre_warm` attribute to true in case
             // of pre-warmed app.
             commandAttributes[Constants.activePrewarm] = true
-        } else if let launchTime = context.launchInfo.timeToDidBecomeActive {
+        } else if let didBecomeActiveDate = context.launchInfo.launchPhaseDates[.didBecomeActive] {
             // Report Application Launch Time only if not pre-warmed
-            loadingTime = launchTime.toInt64Nanoseconds
+            loadingTime = didBecomeActiveDate.timeIntervalSince(context.launchInfo.processLaunchDate).toInt64Nanoseconds
         } else {
             // The launchTime can be `nil` if the application is not yet
             // active (UIApplicationDidBecomeActiveNotification). That is

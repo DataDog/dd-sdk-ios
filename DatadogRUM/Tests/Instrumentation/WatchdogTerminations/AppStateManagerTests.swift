@@ -9,7 +9,7 @@ import DatadogInternal
 @testable import DatadogRUM
 import TestUtilities
 
-final class WatchdogTerminationAppStateManagerTests: XCTestCase {
+final class AppStateManagerTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
     var sut: AppStateManager!
     var featureScope: FeatureScopeMock!

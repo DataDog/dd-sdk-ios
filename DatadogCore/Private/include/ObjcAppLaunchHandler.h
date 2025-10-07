@@ -21,10 +21,12 @@ FOUNDATION_EXPORT const NSInteger __dd_private_TASK_POLICY_UNAVAILABLE;
 /// https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
 @interface __dd_private_AppLaunchHandler : NSObject
 
-/// Callback block invoked when the app transitions to an active state.
+/// Callback block invoked when the app receives a UIApplication notification.
 ///
-/// - Parameter timeInterval: The elapsed time, in seconds, from process launch to the delivery of the `didBecomeActive` notification.
-typedef void (^UIApplicationDidBecomeActiveCallback)(NSTimeInterval timeInterval);
+/// - Parameter didFinishLaunchingTimeInterval: The date when the `didFinishLaunching` notification triggered.
+/// - Parameter didBecomeActiveTimeInterval: The date when the `didBecomeActive` notification triggered.
+typedef void (^UIApplicationNotificationCallback)(NSDate * _Nullable didFinishLaunchingTimeInterval,
+                                                  NSDate * _Nullable didBecomeActiveTimeInterval);
 
 /// Shared singleton instance.
 @property (class, nonatomic, readonly) __dd_private_AppLaunchHandler *shared;
@@ -40,8 +42,20 @@ typedef void (^UIApplicationDidBecomeActiveCallback)(NSTimeInterval timeInterval
 /// The timestamp when the application process was launched.
 @property (nonatomic, readonly) NSDate *processLaunchDate;
 
-/// The time interval (in seconds) between process launch and app activation (`didBecomeActive`), or nil if not yet activated.
-@property (nonatomic, readonly, nullable) NSNumber *timeToDidBecomeActive;
+/// The timestamp when the SDK was loaded.
+@property (nonatomic, readonly) NSDate *runtimeLoadDate;
+
+/// The timestamp right before the @c main() is executed.
+@property (nonatomic, readonly) NSDate *runtimePreMainDate;
+
+/// The timestamp when the app did finish launching (`didFinishLaunching`).
+/// `nil` if not yet launched.
+@property (nonatomic, readonly, nullable) NSDate *didFinishLaunchingDate;
+
+/// The timestamp when the app was activated (`didBecomeActive`).
+/// `nil` if not yet activated.
+@property (nonatomic, readonly, nullable) NSDate *didBecomeActiveDate;
+
 
 /// Observes the given notification center for application lifecycle events.
 ///
@@ -50,14 +64,10 @@ typedef void (^UIApplicationDidBecomeActiveCallback)(NSTimeInterval timeInterval
 /// - Parameter notificationCenter: The `NSNotificationCenter` instance used to observe application state changes.
 - (void)observeNotificationCenter:(NSNotificationCenter *)notificationCenter;
 
-/// Sets a callback to be invoked when the application becomes active.
-///
-/// The callback receives the time interval from process launch to app activation.
-/// The callback is triggered only once upon the next `UIApplicationDidBecomeActiveNotification`
-/// and is not retained for subsequent activations.
+/// Sets a callback to be invoked when the application receives UIApplication notifications.
 ///
 /// - Parameter callback: A closure executed upon app activation.
-- (void)setApplicationDidBecomeActiveCallback:(nonnull UIApplicationDidBecomeActiveCallback)callback;
+- (void)setApplicationNotificationCallback:(nonnull UIApplicationNotificationCallback)callback;
 
 - (instancetype)init;
 + (instancetype)new NS_UNAVAILABLE;
