@@ -9,6 +9,9 @@ import DatadogInternal
 
 /// Receives flag exposure messages and adds them as custom RUM actions.
 internal struct FlagExposureReceiver: FeatureMessageReceiver {
+    private enum Constants {
+        static let exposureActionName = "__dd_exposure"
+    }
     /// The RUM monitor instance.
     let monitor: Monitor
 
@@ -20,7 +23,7 @@ internal struct FlagExposureReceiver: FeatureMessageReceiver {
 
         monitor.addAction(
             type: .custom,
-            name: "__dd_exposure",
+            name: Constants.exposureActionName,
             attributes: [
                 "timestamp": exposure.timestamp.toInt64Milliseconds,
                 "flag_key": exposure.flagKey,
