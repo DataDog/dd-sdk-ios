@@ -17,6 +17,10 @@ public struct DD {
     /// It is meant for debugging purposes when using the SDK, hence **it should log information useful and actionable
     /// to the SDK user**. Think of possible logs that we may want to receive from our users when asking them to enable
     /// SDK verbosity and send us their console log.
+    ///
+    /// The lock prevents race conditions when the logger is replaced
+    /// during SDK initialization while being accessed from other threads.
+    @ReadWriteLock
     public static var logger: CoreLogger = InternalLogger(
         dateProvider: SystemDateProvider(),
         timeZone: .current,
