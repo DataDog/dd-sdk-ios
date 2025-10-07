@@ -16,6 +16,13 @@ public protocol FlagsClientProtocol: AnyObject {
     func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
 }
 
+extension FlagsClientProtocol {
+    @inlinable
+    public func setEvaluationContext(_ context: FlagsEvaluationContext) {
+        setEvaluationContext(context, completion: { _ in })
+    }
+}
+
 // MARK: - Convenience flag evaluation methods
 
 extension FlagsClientProtocol {
