@@ -271,7 +271,7 @@ final class FlagsClientTests: XCTestCase {
 
     func testConfigurationControlsLoggerInjection() {
         // Test that the correct logger types are injected based on configuration flags
-        let testCases: [(enableExposureLogging: Bool, enableRUMIntegration: Bool, description: String)] = [
+        let testCases: [(trackExposures: Bool, rumIntegrationEnabled: Bool, description: String)] = [
             (true, true, "both enabled"),
             (false, false, "both disabled"),
             (true, false, "exposure only"),
@@ -282,8 +282,8 @@ final class FlagsClientTests: XCTestCase {
             // Given
             let core = FeatureRegistrationCoreMock()
             let config = Flags.Configuration(
-                enableExposureLogging: testCase.enableExposureLogging,
-                enableRUMIntegration: testCase.enableRUMIntegration
+                trackExposures: testCase.trackExposures,
+                rumIntegrationEnabled: testCase.rumIntegrationEnabled
             )
 
             // When
@@ -291,8 +291,8 @@ final class FlagsClientTests: XCTestCase {
             let client = FlagsClient.create(in: core) as! FlagsClient
 
             // Then - Verify correct logger types are injected
-            let expectedNOPExposure = !testCase.enableExposureLogging
-            let expectedNOPRUM = !testCase.enableRUMIntegration
+            let expectedNOPExposure = !testCase.trackExposures
+            let expectedNOPRUM = !testCase.rumIntegrationEnabled
 
             XCTAssertEqual(
                 client.isUsingNOPExposureLogger,

@@ -97,11 +97,11 @@ public class FlagsClient {
                 dateProvider: dateProvider,
                 featureScope: featureScope
             ),
-            exposureLogger: feature.enableExposureLogging ? ExposureLogger(
+            exposureLogger: feature.trackExposures ? ExposureLogger(
                 dateProvider: dateProvider,
                 featureScope: featureScope
             ) : NOPExposureLogger(),
-            rumExposureLogger: feature.enableRUMIntegration ? RUMExposureLogger(
+            rumExposureLogger: feature.rumIntegrationEnabled ? RUMExposureLogger(
                 dateProvider: dateProvider,
                 featureScope: featureScope
             ) : NOPRUMExposureLogger()
