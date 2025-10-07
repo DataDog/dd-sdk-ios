@@ -39,7 +39,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         waitForExpectations(timeout: 0)
         XCTAssertEqual(
             capturedRequest?.url?.absoluteString,
-            "https://ff-cdn.us3.datadoghq.com/precompute-assignments"
+            "https://preview.ff-cdn.us3.datadoghq.com/precompute-assignments"
         )
         let flagAssignments = try XCTUnwrap(capturedResult?.get())
         XCTAssertEqual(flagAssignments, .mockAny())
@@ -122,16 +122,16 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
 
     func testFlagsEndpointForAllSites() {
         let flagsEndpoints: [(DatadogSite, String)] = [
-            (.us1, "https://ff-cdn.datadoghq.com"),
-            (.us3, "https://ff-cdn.us3.datadoghq.com"),
-            (.us5, "https://ff-cdn.us5.datadoghq.com"),
-            (.eu1, "https://ff-cdn.datadoghq.eu"),
-            (.ap1, "https://ff-cdn.ap1.datadoghq.com"),
-            (.ap2, "https://ff-cdn.ap2.datadoghq.com"),
+            (.us1, "https://preview.ff-cdn.datadoghq.com"),
+            (.us3, "https://preview.ff-cdn.us3.datadoghq.com"),
+            (.us5, "https://preview.ff-cdn.us5.datadoghq.com"),
+            (.eu1, "https://preview.ff-cdn.datadoghq.eu"),
+            (.ap1, "https://preview.ff-cdn.ap1.datadoghq.com"),
+            (.ap2, "https://preview.ff-cdn.ap2.datadoghq.com"),
         ]
 
         for (site, expectedEndpoint) in flagsEndpoints {
-            XCTAssertEqual(site.flagsEndpoint.absoluteString, expectedEndpoint)
+            XCTAssertEqual(site.flagsEndpoint().absoluteString, expectedEndpoint)
         }
     }
 }
