@@ -13,21 +13,25 @@ public class FlagsClient {
     private let repository: any FlagsRepositoryProtocol
     private let exposureLogger: any ExposureLogging
     private let rumExposureLogger: any RUMExposureLogging
-    private let enableExposureLogging: Bool
-    private let enableRUMIntegration: Bool
 
     internal init(
         repository: any FlagsRepositoryProtocol,
         exposureLogger: any ExposureLogging,
-        rumExposureLogger: any RUMExposureLogging,
-        enableExposureLogging: Bool,
-        enableRUMIntegration: Bool
+        rumExposureLogger: any RUMExposureLogging
     ) {
         self.repository = repository
         self.exposureLogger = exposureLogger
         self.rumExposureLogger = rumExposureLogger
-        self.enableExposureLogging = enableExposureLogging
-        self.enableRUMIntegration = enableRUMIntegration
+    }
+
+    // MARK: - Internal Testing Helpers
+
+    internal var isUsingNOPExposureLogger: Bool {
+        return exposureLogger is NOPExposureLogger
+    }
+
+    internal var isUsingNOPRUMLogger: Bool {
+        return rumExposureLogger is NOPRUMExposureLogger
     }
 
     @discardableResult
@@ -93,16 +97,14 @@ public class FlagsClient {
                 dateProvider: dateProvider,
                 featureScope: featureScope
             ),
-            exposureLogger: ExposureLogger(
+            exposureLogger: feature.enableExposureLogging ? ExposureLogger(
                 dateProvider: dateProvider,
                 featureScope: featureScope
-            ),
-            rumExposureLogger: RUMExposureLogger(
+            ) : NOPExposureLogger(),
+            rumExposureLogger: feature.enableRUMIntegration ? RUMExposureLogger(
                 dateProvider: dateProvider,
                 featureScope: featureScope
-            ),
-            enableExposureLogging: feature.enableExposureLogging,
-            enableRUMIntegration: feature.enableRUMIntegration
+            ) : NOPRUMExposureLogger()
         )
 
         feature.clientRegistry.register(client, named: name)
@@ -135,21 +137,17 @@ extension FlagsClient: FlagsClientProtocol {
         )
 
         if let context = repository.context {
-            if enableExposureLogging {
-                exposureLogger.logExposure(
-                    for: key,
-                    assignment: flagAssignment,
-                    evaluationContext: context
-                )
-            }
-            if enableRUMIntegration {
-                rumExposureLogger.logExposure(
-                    flagKey: key,
-                    value: value,
-                    assignment: flagAssignment,
-                    evaluationContext: context
-                )
-            }
+            exposureLogger.logExposure(
+                for: key,
+                assignment: flagAssignment,
+                evaluationContext: context
+            )
+            rumExposureLogger.logExposure(
+                flagKey: key,
+                value: value,
+                assignment: flagAssignment,
+                evaluationContext: context
+            )
         }
 
         return details

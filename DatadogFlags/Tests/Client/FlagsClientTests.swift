@@ -112,9 +112,7 @@ final class FlagsClientTests: XCTestCase {
                 completion(.success(()))
             },
             exposureLogger: ExposureLoggerMock(),
-            rumExposureLogger: RUMExposureLoggerMock(),
-            enableExposureLogging: true,
-            enableRUMIntegration: true
+            rumExposureLogger: RUMExposureLoggerMock()
         )
 
         let context = FlagsEvaluationContext(targetingKey: "test")
@@ -185,9 +183,7 @@ final class FlagsClientTests: XCTestCase {
                 )
             ),
             exposureLogger: exposureLogger,
-            rumExposureLogger: rumExposureLogger,
-            enableExposureLogging: true,
-            enableRUMIntegration: true
+            rumExposureLogger: rumExposureLogger
         )
 
         // When
@@ -244,10 +240,8 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(rumExposureLogger.logExposureCalls.count, 6)
     }
 
-    func testExposureLoggingAndRUMIntegrationCanBeDisabled() {
+    func testClientWithNOPLoggers() {
         // Given
-        let exposureLogger = ExposureLoggerMock()
-        let rumExposureLogger = RUMExposureLoggerMock()
         let client = FlagsClient(
             repository: FlagsRepositoryMock(
                 state: .init(
@@ -264,77 +258,56 @@ final class FlagsClientTests: XCTestCase {
                     date: .mockAny()
                 )
             ),
-            exposureLogger: exposureLogger,
-            rumExposureLogger: rumExposureLogger,
-            enableExposureLogging: false,
-            enableRUMIntegration: false
+            exposureLogger: NOPExposureLogger(),
+            rumExposureLogger: NOPRUMExposureLogger()
         )
 
         // When
-        _ = client.getBooleanValue(key: "test-flag", defaultValue: false)
+        let result = client.getBooleanValue(key: "test-flag", defaultValue: false)
 
-        // Then
-        XCTAssertEqual(exposureLogger.logExposureCalls.count, 0)
-        XCTAssertEqual(rumExposureLogger.logExposureCalls.count, 0)
+        // Then - Should work normally without any errors from NOP loggers
+        XCTAssertTrue(result)
     }
 
-    func testExposureLoggingCanBeEnabledSelectively() {
-        // Given
-        let exposureLogger = ExposureLoggerMock()
-        let rumExposureLogger = RUMExposureLoggerMock()
+    func testConfigurationControlsLoggerInjection() {
+        // Test that the correct logger types are injected based on configuration flags
+        let testCases: [(enableExposureLogging: Bool, enableRUMIntegration: Bool, description: String)] = [
+            (true, true, "both enabled"),
+            (false, false, "both disabled"),
+            (true, false, "exposure only"),
+            (false, true, "RUM only")
+        ]
 
-        // Test exposure logging only
-        let exposureOnlyClient = FlagsClient(
-            repository: FlagsRepositoryMock(
-                state: .init(
-                    flags: [
-                        "test-flag": .init(
-                            allocationKey: "allocation-123",
-                            variationKey: "variation-123",
-                            variation: .boolean(true),
-                            reason: "TARGETING_MATCH",
-                            doLog: true
-                        )
-                    ],
-                    context: .mockAny(),
-                    date: .mockAny()
-                )
-            ),
-            exposureLogger: exposureLogger,
-            rumExposureLogger: rumExposureLogger,
-            enableExposureLogging: true,
-            enableRUMIntegration: false
-        )
+        for testCase in testCases {
+            // Given
+            let core = FeatureRegistrationCoreMock()
+            let config = Flags.Configuration(
+                enableExposureLogging: testCase.enableExposureLogging,
+                enableRUMIntegration: testCase.enableRUMIntegration
+            )
 
-        // Test RUM integration only
-        let rumOnlyClient = FlagsClient(
-            repository: FlagsRepositoryMock(
-                state: .init(
-                    flags: [
-                        "test-flag": .init(
-                            allocationKey: "allocation-123",
-                            variationKey: "variation-123",
-                            variation: .boolean(true),
-                            reason: "TARGETING_MATCH",
-                            doLog: true
-                        )
-                    ],
-                    context: .mockAny(),
-                    date: .mockAny()
-                )
-            ),
-            exposureLogger: exposureLogger,
-            rumExposureLogger: rumExposureLogger,
-            enableExposureLogging: false,
-            enableRUMIntegration: true
-        )
+            // When
+            Flags.enable(with: config, in: core)
+            let client = FlagsClient.create(in: core) as! FlagsClient
 
-        // When
-        _ = exposureOnlyClient.getBooleanValue(key: "test-flag", defaultValue: false)
-        _ = rumOnlyClient.getBooleanValue(key: "test-flag", defaultValue: false)
+            // Then - Verify correct logger types are injected
+            let expectedNOPExposure = !testCase.enableExposureLogging
+            let expectedNOPRUM = !testCase.enableRUMIntegration
 
-        // Then
-        XCTAssertEqual(exposureLogger.logExposureCalls.count, 1) // Only exposure-only client logged
-        XCTAssertEqual(rumExposureLogger.logExposureCalls.count, 1) // Only RUM-only client logged
+            XCTAssertEqual(
+                client.isUsingNOPExposureLogger,
+                expectedNOPExposure,
+                "ExposureLogger type incorrect for \(testCase.description)"
+            )
+            XCTAssertEqual(
+                client.isUsingNOPRUMLogger,
+                expectedNOPRUM,
+                "RUMExposureLogger type incorrect for \(testCase.description)"
+            )
+
+            // Also verify end-to-end functionality works without crashes
+            let result = client.getBooleanValue(key: "nonexistent-flag", defaultValue: false)
+            XCTAssertFalse(result, "Should return default value for \(testCase.description)")
+        }
     }
 }

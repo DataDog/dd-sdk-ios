@@ -65,3 +65,16 @@ internal final class RUMExposureLogger: RUMExposureLogging {
         }
     }
 }
+
+// MARK: - NOPRUMExposureLogger
+
+internal final class NOPRUMExposureLogger: RUMExposureLogging {
+    func logExposure<T: FlagValue>(
+        flagKey: String,
+        value: T,
+        assignment: FlagAssignment,
+        evaluationContext: FlagsEvaluationContext
+    ) {
+        // No-op: RUM integration is disabled
+    }
+}
