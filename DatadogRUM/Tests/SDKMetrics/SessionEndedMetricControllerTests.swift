@@ -104,7 +104,7 @@ class SessionEndedMetricControllerTests: XCTestCase {
         callConcurrently(
             closures: [
                 { controller.startMetric(
-                    sessionID: sessionIDs.randomElement()!, precondition: .mockRandom(), context: .mockRandom()
+                    sessionID: sessionIDs.randomElement()!, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom()
                 )
                 },
                 { controller.track(view: .mockRandom(), instrumentationType: nil, in: sessionIDs.randomElement()!) },
