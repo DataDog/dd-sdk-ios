@@ -14,7 +14,7 @@ import DatadogInternal
 /// Covers integration scenarios between Flags and RUM features.
 final class FlagsRUMIntegrationTests: XCTestCase {
     private enum Fixtures {
-        static let flagsRepositoryState = FlagsData(
+        static let flagsData = FlagsData(
             flags: [
                 "string-flag": .init(
                     allocationKey: "allocation-123",
@@ -43,48 +43,41 @@ final class FlagsRUMIntegrationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+
         core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
+
+        RUM.enable(with: .init(applicationID: "test-app-id"), in: core)
+        Flags.enable(in: core)
+
+        let featureScope = core.scope(for: FlagsFeature.self)
+        featureScope.flagsDataStore.setFlagsData(Fixtures.flagsData, forClientNamed: FlagsClient.defaultName)
+        featureScope.dataStore.flush()
     }
 
     override func tearDownWithError() throws {
+        let featureScope = core.scope(for: FlagsFeature.self)
+        featureScope.dataStore.clearAllData()
+
         try core.flushAndTearDown()
         core = nil
+
         super.tearDown()
-    }
-
-    private func createFlagsClient(state: FlagsData? = Fixtures.flagsRepositoryState) -> FlagsClientProtocol {
-        let featureScope = core.scope(for: FlagsFeature.self)
-        let dateProvider = SystemDateProvider()
-
-        return FlagsClient(
-            repository: FlagsRepositoryMock(
-                clientName: "default",
-                state: state
-            ),
-            exposureLogger: ExposureLogger(
-                dateProvider: dateProvider,
-                featureScope: featureScope
-            ),
-            rumExposureLogger: RUMExposureLogger(
-                dateProvider: dateProvider,
-                featureScope: featureScope
-            )
-        )
     }
 
     func testWhenFlagIsEvaluated_itAddsFeatureFlagToRUMView() throws {
         // Given
-        RUM.enable(with: .init(applicationID: "test-app-id"), in: core)
-        Flags.enable(in: core)
-
         let monitor = RUMMonitor.shared(in: core)
-        let client = createFlagsClient()
+        let client = FlagsClient.create(in: core)
 
         // When
         monitor.startView(key: "test-view", name: "Test View")
 
+        let featureScope = core.scope(for: FlagsFeature.self)
+        featureScope.dataStore.flush()
+
         let boolValue = client.getBooleanValue(key: "boolean-flag", defaultValue: false)
         let stringValue = client.getStringValue(key: "string-flag", defaultValue: "blue")
+
         core.flush()
 
         monitor.stopView(key: "test-view")
@@ -103,20 +96,22 @@ final class FlagsRUMIntegrationTests: XCTestCase {
             "View should have feature flags"
         )
 
+        XCTAssertEqual(featureFlags.count, 2)
         XCTAssertEqual(featureFlags["boolean-flag"] as? Bool, boolValue)
         XCTAssertEqual(featureFlags["string-flag"] as? String, stringValue)
     }
 
     func testWhenFlagIsEvaluated_itCreatesRUMActionWithExposureDetails() throws {
         // Given
-        RUM.enable(with: .init(applicationID: "test-app-id"), in: core)
-        Flags.enable(in: core)
-
         let monitor = RUMMonitor.shared(in: core)
-        let client = createFlagsClient()
+        let client = FlagsClient.create(in: core)
 
         // When
         monitor.startView(key: "test-view", name: "Test View")
+
+        let featureScope = core.scope(for: FlagsFeature.self)
+        featureScope.dataStore.flush()
+
         _ = client.getBooleanValue(key: "boolean-flag", defaultValue: false)
 
         // Then
@@ -137,45 +132,7 @@ final class FlagsRUMIntegrationTests: XCTestCase {
         XCTAssertEqual(contextInfo["exposure_key"] as? String, "boolean-flag-allocation-124")
         XCTAssertEqual(contextInfo["subject_key"] as? String, "user-123")
         XCTAssertEqual(contextInfo["variant_key"] as? String, "variation-124")
-        XCTAssertNotNil(contextInfo["subject_attributes"])
-    }
-}
-
-// MARK: - FlagsRepositoryMock
-
-final class FlagsRepositoryMock: FlagsRepositoryProtocol {
-    let clientName: String
-
-    @ReadWriteLock
-    private var state: FlagsData?
-    private let setEvaluationContextStub: ((FlagsEvaluationContext, @escaping (Result<Void, FlagsError>) -> Void) -> Void)?
-
-    init(
-        clientName: String,
-        state: FlagsData? = nil,
-        setEvaluationContextStub: ((FlagsEvaluationContext, @escaping (Result<Void, FlagsError>) -> Void) -> Void)? = nil
-    ) {
-        self.clientName = clientName
-        self.state = state
-        self.setEvaluationContextStub = setEvaluationContextStub
-    }
-
-    var context: FlagsEvaluationContext? {
-        state?.context
-    }
-
-    func setEvaluationContext(
-        _ context: FlagsEvaluationContext,
-        completion: @escaping (Result<Void, FlagsError>) -> Void
-    ) {
-        setEvaluationContextStub?(context, completion)
-    }
-
-    func flagAssignment(for key: String) -> DatadogFlags.FlagAssignment? {
-        state?.flags[key]
-    }
-
-    func reset() {
-        state = nil
+        let subjectAttributes = try XCTUnwrap(contextInfo["subject_attributes"])
+        DDAssertJSONEqual(subjectAttributes, ["foo": "bar"])
     }
 }
