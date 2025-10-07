@@ -189,6 +189,6 @@ class InternalLoggerTests: XCTestCase {
             }
         }
 
-        waitForExpectations(timeout: 60)
+        waitForExpectations(timeout: 2)
     }
 }
