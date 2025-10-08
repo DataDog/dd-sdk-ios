@@ -36,7 +36,7 @@ internal final class ExposureTracker {
     private let cache = NSCache<ExposureBox, NSNumber>()
     private let sentinel = NSNumber(value: true)
 
-    init(countLimit: Int = 100) {
+    init(countLimit: Int = 1_000) {
         self.cache.countLimit = countLimit
     }
 
