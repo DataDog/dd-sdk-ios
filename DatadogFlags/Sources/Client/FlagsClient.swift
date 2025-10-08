@@ -24,16 +24,6 @@ public class FlagsClient {
         self.rumExposureLogger = rumExposureLogger
     }
 
-    // MARK: - Internal Testing Helpers
-
-    internal var isUsingNOPExposureLogger: Bool {
-        return exposureLogger is NOPExposureLogger
-    }
-
-    internal var isUsingNOPRUMLogger: Bool {
-        return rumExposureLogger is NOPRUMExposureLogger
-    }
-
     @discardableResult
     public static func create(
         name: String = FlagsClient.defaultName,
@@ -89,22 +79,15 @@ public class FlagsClient {
         }
 
         let featureScope = core.scope(for: FlagsFeature.self)
-        let dateProvider = SystemDateProvider()
         let client = FlagsClient(
             repository: FlagsRepository(
                 clientName: name,
                 flagAssignmentsFetcher: feature.flagAssignmentsFetcher,
-                dateProvider: dateProvider,
+                dateProvider: SystemDateProvider(),
                 featureScope: featureScope
             ),
-            exposureLogger: feature.trackExposures ? ExposureLogger(
-                dateProvider: dateProvider,
-                featureScope: featureScope
-            ) : NOPExposureLogger(),
-            rumExposureLogger: feature.rumIntegrationEnabled ? RUMExposureLogger(
-                dateProvider: dateProvider,
-                featureScope: featureScope
-            ) : NOPRUMExposureLogger()
+            exposureLogger: feature.makeExposureLogger(featureScope),
+            rumExposureLogger: feature.makeRUMExposureLogger(featureScope)
         )
 
         feature.clientRegistry.register(client, named: name)

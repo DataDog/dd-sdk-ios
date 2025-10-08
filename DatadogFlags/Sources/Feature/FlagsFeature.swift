@@ -14,17 +14,14 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     let requestBuilder: any FeatureRequestBuilder
     let messageReceiver: any FeatureMessageReceiver
     let clientRegistry: FlagsClientRegistry
-    let rumIntegrationEnabled: Bool
-    let trackExposures: Bool
-
+    let makeExposureLogger: (any FeatureScope) -> any ExposureLogging
+    let makeRUMExposureLogger: (any FeatureScope) -> any RUMExposureLogging
     let performanceOverride: PerformancePresetOverride
 
     init(
         configuration: Flags.Configuration,
         featureScope: FeatureScope
     ) {
-        self.rumIntegrationEnabled = configuration.rumIntegrationEnabled
-        self.trackExposures = configuration.trackExposures
         flagAssignmentsFetcher = FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
             customHeaders: configuration.customFlagsHeaders,
@@ -36,6 +33,24 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         )
         messageReceiver = NOPFeatureMessageReceiver()
         clientRegistry = FlagsClientRegistry()
+        makeExposureLogger = { featureScope in
+            guard configuration.trackExposures else {
+                return NOPExposureLogger()
+            }
+            return ExposureLogger(
+                dateProvider: SystemDateProvider(),
+                featureScope: featureScope
+            )
+        }
+        makeRUMExposureLogger = { featureScope in
+            guard configuration.rumIntegrationEnabled else {
+                return NOPRUMExposureLogger()
+            }
+            return RUMExposureLogger(
+                dateProvider: SystemDateProvider(),
+                featureScope: featureScope
+            )
+        }
         performanceOverride = PerformancePresetOverride(maxObjectsInFile: 50)
     }
 }
