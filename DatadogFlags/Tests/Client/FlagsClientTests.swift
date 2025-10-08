@@ -240,74 +240,74 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(rumExposureLogger.logExposureCalls.count, 6)
     }
 
-    func testClientWithNOPLoggers() {
+    func testExposureTrackingDisabled() throws {
         // Given
-        let client = FlagsClient(
-            repository: FlagsRepositoryMock(
-                state: .init(
-                    flags: [
-                        "test-flag": .init(
-                            allocationKey: "allocation-123",
-                            variationKey: "variation-123",
-                            variation: .boolean(true),
-                            reason: "TARGETING_MATCH",
-                            doLog: true
-                        )
-                    ],
-                    context: .mockAny(),
-                    date: .mockAny()
-                )
+        let initialState = FlagsData(
+            flags: ["test": .mockAnyString()],
+            context: .mockAny(),
+            date: .mockAny()
+        )
+        let data = try JSONEncoder().encode(initialState)
+        let messageReceiver = FeatureMessageReceiverMock()
+        let core = SingleFeatureCoreMock<FlagsFeature>(
+            dataStore: DataStoreMock(
+                storage: [
+                    FlagsClient.defaultName: .value(data, dataStoreDefaultKeyVersion)
+                ]
             ),
-            exposureLogger: NOPExposureLogger(),
-            rumExposureLogger: NOPRUMExposureLogger()
+            messageReceiver: messageReceiver
         )
 
         // When
-        let result = client.getBooleanValue(key: "test-flag", defaultValue: false)
+        Flags.enable(with: .init(trackExposures: false), in: core)
+        let client = FlagsClient.create(in: core)
+        let value = client.getStringValue(key: "test", defaultValue: "")
 
-        // Then - Should work normally without any errors from NOP loggers
-        XCTAssertTrue(result)
+        // Then
+        XCTAssertEqual(value, .mockAny())
+        XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 0, "No exposure events should be written")
+        XCTAssertEqual(messageReceiver.messages.count(where: \.isFlagsRUMMessage), 2, "RUM integration should still work")
     }
 
-    func testConfigurationControlsLoggerInjection() {
-        // Test that the correct logger types are injected based on configuration flags
-        let testCases: [(trackExposures: Bool, rumIntegrationEnabled: Bool, description: String)] = [
-            (true, true, "both enabled"),
-            (false, false, "both disabled"),
-            (true, false, "exposure only"),
-            (false, true, "RUM only")
-        ]
+    func testRUMIntegrationDisabled() throws {
+        // Given
+        let initialState = FlagsData(
+            flags: ["test": .mockAnyString()],
+            context: .mockAny(),
+            date: .mockAny()
+        )
+        let data = try JSONEncoder().encode(initialState)
+        let messageReceiver = FeatureMessageReceiverMock()
+        let core = SingleFeatureCoreMock<FlagsFeature>(
+            dataStore: DataStoreMock(
+                storage: [
+                    FlagsClient.defaultName: .value(data, dataStoreDefaultKeyVersion)
+                ]
+            ),
+            messageReceiver: messageReceiver
+        )
 
-        for testCase in testCases {
-            // Given
-            let core = FeatureRegistrationCoreMock()
-            let config = Flags.Configuration(
-                trackExposures: testCase.trackExposures,
-                rumIntegrationEnabled: testCase.rumIntegrationEnabled
-            )
+        // When
+        Flags.enable(with: .init(rumIntegrationEnabled: false), in: core)
+        let client = FlagsClient.create(in: core)
+        let value = client.getStringValue(key: "test", defaultValue: "")
 
-            // When
-            Flags.enable(with: config, in: core)
-            let client = FlagsClient.create(in: core) as! FlagsClient
+        // Then
+        XCTAssertEqual(value, .mockAny())
+        XCTAssertEqual(messageReceiver.messages.count(where: \.isFlagsRUMMessage), 0, "No RUM messages should be sent")
+        XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 1, "Exposure should still be logged")
+    }
+}
 
-            // Then - Verify correct logger types are injected
-            let expectedNOPExposure = !testCase.trackExposures
-            let expectedNOPRUM = !testCase.rumIntegrationEnabled
-
-            XCTAssertEqual(
-                client.isUsingNOPExposureLogger,
-                expectedNOPExposure,
-                "ExposureLogger type incorrect for \(testCase.description)"
-            )
-            XCTAssertEqual(
-                client.isUsingNOPRUMLogger,
-                expectedNOPRUM,
-                "RUMExposureLogger type incorrect for \(testCase.description)"
-            )
-
-            // Also verify end-to-end functionality works without crashes
-            let result = client.getBooleanValue(key: "nonexistent-flag", defaultValue: false)
-            XCTAssertFalse(result, "Should return default value for \(testCase.description)")
+extension FeatureMessage {
+    fileprivate var isFlagsRUMMessage: Bool {
+        switch self {
+        case .payload(let message) where message is RUMFlagEvaluationMessage:
+            return true
+        case .payload(let message) where message is RUMFlagExposureMessage:
+            return true
+        default:
+            return false
         }
     }
 }
