@@ -266,7 +266,7 @@ final class FlagsClientTests: XCTestCase {
         // Then
         XCTAssertEqual(value, .mockAny())
         XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 0, "No exposure events should be written")
-        XCTAssertEqual(messageReceiver.messages.count(where: \.isFlagsRUMMessage), 2, "RUM integration should still work")
+        XCTAssertEqual(messageReceiver.messages.filter(\.isFlagsRUMMessage).count, 2, "RUM integration should still work")
     }
 
     func testRUMIntegrationDisabled() throws {
@@ -294,7 +294,7 @@ final class FlagsClientTests: XCTestCase {
 
         // Then
         XCTAssertEqual(value, .mockAny())
-        XCTAssertEqual(messageReceiver.messages.count(where: \.isFlagsRUMMessage), 0, "No RUM messages should be sent")
+        XCTAssertEqual(messageReceiver.messages.filter(\.isFlagsRUMMessage).count, 0, "No RUM messages should be sent")
         XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 1, "Exposure should still be logged")
     }
 }
