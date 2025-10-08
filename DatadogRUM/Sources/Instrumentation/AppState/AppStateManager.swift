@@ -17,7 +17,7 @@ internal protocol AppStateManaging {
     /// Builds the current app state.
     func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void)
     /// Builds the current app state and stores it in the data store.
-    func storeCurrentAppState() throws
+    func storeCurrentAppState()
 }
 
 /// Manages the app state changes observed during application lifecycle events such as application start, resume and termination.
@@ -57,13 +57,7 @@ internal final class AppStateManager: AppStateManaging {
     private func start() {
         self.readAppState { [weak self] in
             self?.previousAppStateInfo = $0
-
-            do {
-                try self?.storeCurrentAppState()
-            } catch {
-                DD.logger.error(ErrorMessage.failedToStoreAppState.rawValue, error: error)
-                self?.featureScope.telemetry.error(ErrorMessage.failedToStoreAppState.rawValue, error: error)
-            }
+            self?.storeCurrentAppState()
         }
     }
 
@@ -136,7 +130,7 @@ internal final class AppStateManager: AppStateManaging {
     }
 
     /// Builds the current app state and stores it in the data store.
-    func storeCurrentAppState() throws {
+    func storeCurrentAppState() {
         currentAppStateInfo { [self] appState in
             featureScope.rumDataStore.setValue(appState, forKey: .appStateKey)
         }
