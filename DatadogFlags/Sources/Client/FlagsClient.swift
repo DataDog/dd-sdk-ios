@@ -41,14 +41,14 @@ public class FlagsClient {
         }
     }
 
-    public static func instance(
+    public static func shared(
         named name: String = FlagsClient.defaultName,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) -> FlagsClientProtocol {
         do {
             guard let clientRegistry = core.get(feature: FlagsFeature.self)?.clientRegistry else {
                 throw ProgrammerError(
-                    description: "Flags feature must be enabled before calling `FlagsClient.instance(named:in:)`."
+                    description: "Flags feature must be enabled before calling `FlagsClient.shared(named:in:)`."
                 )
             }
             guard let client = clientRegistry.client(named: name) else {

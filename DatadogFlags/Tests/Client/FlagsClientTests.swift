@@ -55,9 +55,9 @@ final class FlagsClientTests: XCTestCase {
 
         // When
         let createdClient = FlagsClient.create(in: core)
-        let client = FlagsClient.instance(in: core)
+        let client = FlagsClient.shared(in: core)
         let createdNamedClient = FlagsClient.create(name: "test", in: core)
-        let namedClient = FlagsClient.instance(named: "test", in: core)
+        let namedClient = FlagsClient.shared(named: "test", in: core)
 
         // Then
         XCTAssertIdentical(client, createdClient)
@@ -74,7 +74,7 @@ final class FlagsClientTests: XCTestCase {
         Flags.enable(in: core)
 
         // When
-        let notFoundClient = FlagsClient.instance(named: "foo", in: core)
+        let notFoundClient = FlagsClient.shared(named: "foo", in: core)
 
         // Then
         XCTAssertTrue(notFoundClient is NOPFlagsClient)
@@ -93,7 +93,7 @@ final class FlagsClientTests: XCTestCase {
         let core = FeatureRegistrationCoreMock()
 
         // When
-        let client = FlagsClient.instance(in: core)
+        let client = FlagsClient.shared(in: core)
 
         // Then
         XCTAssertTrue(client is NOPFlagsClient)
