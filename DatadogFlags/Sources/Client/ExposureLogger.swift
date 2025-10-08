@@ -16,16 +16,9 @@ internal protocol ExposureLogging {
 }
 
 internal final class ExposureLogger: ExposureLogging {
-    private struct Exposure: Hashable {
-        let targetingKey: String
-        let flagKey: String
-        let allocationKey: String
-        let variationKey: String
-    }
-
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
-    private var loggedExposures: Set<Exposure> = []
+    private let loggedExposures = ExposureTracker()
 
     init(dateProvider: any DateProvider, featureScope: any FeatureScope) {
         self.dateProvider = dateProvider
@@ -46,7 +39,7 @@ internal final class ExposureLogger: ExposureLogging {
                 return
             }
 
-            let exposure = Exposure(
+            let exposure = ExposureTracker.Exposure(
                 targetingKey: evaluationContext.targetingKey,
                 flagKey: flagKey,
                 allocationKey: assignment.allocationKey,
