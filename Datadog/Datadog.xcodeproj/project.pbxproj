@@ -450,6 +450,8 @@
 		49D8C0BE2AC5F2BC0075E427 /* Logs+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */; };
 		5B0A9B8B2E3BB98E00A8131C /* GraphicsFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0A9B8A2E3BB98500A8131C /* GraphicsFilter.swift */; };
 		5B0A9B8D2E3BBB4500A8131C /* GraphicsFilter+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */; };
+		5B0E75DA2E9690D200F66739 /* ExposureTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E75D92E9690C400F66739 /* ExposureTracker.swift */; };
+		5B0E75DB2E9690D200F66739 /* ExposureTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E75D92E9690C400F66739 /* ExposureTracker.swift */; };
 		5B16A3662E83E3BF0046A863 /* AnyValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A3652E83E3BF0046A863 /* AnyValue.swift */; };
 		5B16A3672E83E3BF0046A863 /* AnyValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A3652E83E3BF0046A863 /* AnyValue.swift */; };
 		5B16A36A2E83E46F0046A863 /* AnyValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A3692E83E46F0046A863 /* AnyValueTests.swift */; };
@@ -2621,6 +2623,7 @@
 		49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logs+Internal.swift"; sourceTree = "<group>"; };
 		5B0A9B8A2E3BB98500A8131C /* GraphicsFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphicsFilter.swift; sourceTree = "<group>"; };
 		5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphicsFilter+Reflection.swift"; sourceTree = "<group>"; };
+		5B0E75D92E9690C400F66739 /* ExposureTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureTracker.swift; sourceTree = "<group>"; };
 		5B16A3652E83E3BF0046A863 /* AnyValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyValue.swift; sourceTree = "<group>"; };
 		5B16A3692E83E46F0046A863 /* AnyValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyValueTests.swift; sourceTree = "<group>"; };
 		5B16A36C2E83E51D0046A863 /* FlagAssignment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignment.swift; sourceTree = "<group>"; };
@@ -4371,6 +4374,7 @@
 			isa = PBXGroup;
 			children = (
 				5BB294BF2E83E02100CAA44B /* ExposureLogger.swift */,
+				5B0E75D92E9690C400F66739 /* ExposureTracker.swift */,
 				5B1D028A2E8EBCE600AB2391 /* RUMExposureLogger.swift */,
 				5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */,
 				5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */,
@@ -8814,6 +8818,7 @@
 				8DADC3BF2E7CCF0D0060F558 /* FlagsClient.swift in Sources */,
 				5B5B8CC32E8C0E9100A6740E /* FlagsClientProtocol.swift in Sources */,
 				5BA8C3102E785A2000B1DA80 /* Flags.swift in Sources */,
+				5B0E75DB2E9690D200F66739 /* ExposureTracker.swift in Sources */,
 				5B16A3702E83EE340046A863 /* FlagAssignmentsResponse.swift in Sources */,
 				5B1D027D2E8D896300AB2391 /* FlagAssignmentsFetcher.swift in Sources */,
 				5B1D027E2E8D896300AB2391 /* FlagAssignmentsRequest.swift in Sources */,
@@ -8842,6 +8847,7 @@
 				8DADC3B92E7CCF0D0060F558 /* FlagsClient.swift in Sources */,
 				5B5B8CC22E8C0E9100A6740E /* FlagsClientProtocol.swift in Sources */,
 				5BA8C33A2E785FD500B1DA80 /* Flags.swift in Sources */,
+				5B0E75DA2E9690D200F66739 /* ExposureTracker.swift in Sources */,
 				5B16A3712E83EE340046A863 /* FlagAssignmentsResponse.swift in Sources */,
 				5B1D027F2E8D896300AB2391 /* FlagAssignmentsFetcher.swift in Sources */,
 				5B1D02802E8D896300AB2391 /* FlagAssignmentsRequest.swift in Sources */,
