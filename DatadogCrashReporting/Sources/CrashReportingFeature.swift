@@ -19,7 +19,7 @@ internal final class CrashReportingFeature: DatadogFeature {
 
     /// An interface for accessing the `DDCrashReportingPlugin` from `DatadogCrashReporting`.
     let plugin: CrashReportingPlugin
-    /// Integration enabling sending crash reports as Logs or RUM Errors.
+    /// Integration enabling sending crash reports as RUM Errors.
     let sender: CrashReportSender
     /// Telemetry interface.
     let telemetry: Telemetry
