@@ -13,20 +13,31 @@ import DatadogInternal
 final class FlagsClientTests: XCTestCase {
     func testCreate() {
         // Given
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
         let core = FeatureRegistrationCoreMock()
         Flags.enable(in: core)
 
         // When
         let defaultClient = FlagsClient.create(in: core)
-        let nopDefaultClient = FlagsClient.create(in: core)
+        let otherDefaultClient = FlagsClient.create(in: core)
         let namedClient = FlagsClient.create(name: "test", in: core)
-        let nopNamedClient = FlagsClient.create(name: "test", in: core)
+        let otherNamedClient = FlagsClient.create(name: "test", in: core)
 
         // Then
         XCTAssertTrue(defaultClient is FlagsClient)
-        XCTAssertTrue(nopDefaultClient is NOPFlagsClient)
+        XCTAssertIdentical(defaultClient, otherDefaultClient)
         XCTAssertTrue(namedClient is FlagsClient)
-        XCTAssertTrue(nopNamedClient is NOPFlagsClient)
+        XCTAssertIdentical(namedClient, otherNamedClient)
+        XCTAssertEqual(
+            printFunction.printedMessages,
+            [
+                "🔥 Datadog SDK usage error: Attempted to create a `FlagsClient` named 'default', but one already exists. The existing client will be used, and any new configuration will be ignored.",
+                "🔥 Datadog SDK usage error: Attempted to create a `FlagsClient` named 'test', but one already exists. The existing client will be used, and any new configuration will be ignored."
+            ]
+        )
     }
 
     func testCreateWhenFlagsNotEnabled() {
@@ -41,14 +52,14 @@ final class FlagsClientTests: XCTestCase {
         let client = FlagsClient.create(in: core)
 
         // Then
-        XCTAssertTrue(client is NOPFlagsClient)
+        XCTAssertTrue(client is FallbackFlagsClient)
         XCTAssertEqual(
             printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: Flags feature must be enabled before calling `FlagsClient.create(name:with:in:)`."
+            "🔥 Datadog SDK usage error: Failed to create `FlagsClient` named 'default': Flags feature must be enabled first. Call `Flags.enable()` before creating clients. Operating in no-op mode."
         )
     }
 
-    func testInstance() {
+    func testSharedInstance() {
         // Given
         let core = FeatureRegistrationCoreMock()
         Flags.enable(in: core)
@@ -64,7 +75,7 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertIdentical(namedClient, createdNamedClient)
     }
 
-    func testNotFoundInstance() {
+    func testNotFoundSharedInstance() {
         // Given
         let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
@@ -77,14 +88,14 @@ final class FlagsClientTests: XCTestCase {
         let notFoundClient = FlagsClient.shared(named: "foo", in: core)
 
         // Then
-        XCTAssertTrue(notFoundClient is NOPFlagsClient)
+        XCTAssertTrue(notFoundClient is FallbackFlagsClient)
         XCTAssertEqual(
             printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: Flags client 'foo' not found. Make sure that you call `FlagsClient.create(name:with:in:)` first."
+            "🔥 Datadog SDK usage error: Attempted to use a `FlagsClient` named 'foo', but no such client exists. Create the client with `FlagsClient.create(name:in:)` before using it. Operating in no-op mode."
         )
     }
 
-    func testInstanceWhenFlagsNotEnabled() {
+    func testSharedInstanceWhenFlagsNotEnabled() {
         // Given
         let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
@@ -96,10 +107,10 @@ final class FlagsClientTests: XCTestCase {
         let client = FlagsClient.shared(in: core)
 
         // Then
-        XCTAssertTrue(client is NOPFlagsClient)
+        XCTAssertTrue(client is FallbackFlagsClient)
         XCTAssertEqual(
             printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: Flags feature must be enabled before calling `FlagsClient.shared(named:in:)`."
+            "🔥 Datadog SDK usage error: Attempted to use a `FlagsClient` named 'default', but no such client exists. Create the client with `FlagsClient.create(name:in:)` before using it. Operating in no-op mode."
         )
     }
 

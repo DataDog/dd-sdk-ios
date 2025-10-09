@@ -33,7 +33,7 @@ extension IssueReporter {
     }
 
     private static let consolePrint = Self { message, _, _ in
-        DatadogInternal.consolePrint(message, .error)
+        DatadogInternal.consolePrint("🔥 Datadog SDK usage error: \(message)", .error)
     }
 
     private static let fatalError = Self { message, file, line in
@@ -48,5 +48,5 @@ internal func reportIssue(
     line: UInt = #line
 ) {
     let issueReporter = core?.get(feature: FlagsFeature.self)?.issueReporter ?? .default
-    issueReporter.reportIssue("🔥 Datadog SDK usage error: \(message())", file, line)
+    issueReporter.reportIssue(message(), file, line)
 }
