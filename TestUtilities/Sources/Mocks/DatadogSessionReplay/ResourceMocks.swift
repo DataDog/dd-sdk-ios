@@ -36,7 +36,7 @@ extension EnrichedResource: RandomMockable, AnyMockable {
         return .init(
             identifier: .mockRandom(),
             data: .mockRandom(),
-            mimeType: "image/png",
+            mimeType: .mockRandom(),
             context: .mockRandom()
         )
     }
