@@ -34,7 +34,7 @@ int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval);
 @implementation __dd_private_AppLaunchHandler {
     NSTimeInterval _processLaunchDate;
     NSTimeInterval _timeToDidBecomeActive;
-    UIApplicationDidBecomeActiveCallback _applicationDidBecomeActiveCallback;
+    NSMutableArray<UIApplicationDidBecomeActiveCallback> *_applicationDidBecomeActiveCallbacks;
 }
 
 static __dd_private_AppLaunchHandler *_shared;
@@ -57,7 +57,7 @@ static __dd_private_AppLaunchHandler *_shared;
     if (!self) return nil;
 
     _processLaunchDate = startTime;
-    _applicationDidBecomeActiveCallback = ^(NSTimeInterval _) {};
+    _applicationDidBecomeActiveCallbacks = [NSMutableArray array];
     return self;
 }
 
@@ -81,7 +81,11 @@ static __dd_private_AppLaunchHandler *_shared;
         @synchronized(self) {
             NSTimeInterval time = CFAbsoluteTimeGetCurrent() - self->_processLaunchDate;
             self->_timeToDidBecomeActive = time;
-            self->_applicationDidBecomeActiveCallback(time);
+            for (UIApplicationDidBecomeActiveCallback callback in self->_applicationDidBecomeActiveCallbacks) {
+                callback(time);
+            }
+            //we can clean the callbacks array since the new triggered notifications won't be associated with the app launch
+            [self->_applicationDidBecomeActiveCallbacks removeAllObjects];
         }
 
         [weakCenter removeObserver:token];
@@ -125,9 +129,9 @@ static __dd_private_AppLaunchHandler *_shared;
     }
 }
 
-- (void)setApplicationDidBecomeActiveCallback:(UIApplicationDidBecomeActiveCallback)callback {
+- (void)setApplicationDidBecomeActiveCallback:(nonnull UIApplicationDidBecomeActiveCallback)callback {
     @synchronized(self) {
-        _applicationDidBecomeActiveCallback = callback;
+        [_applicationDidBecomeActiveCallbacks addObject:[callback copy]];
     }
 }
 
