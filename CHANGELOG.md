@@ -1,5 +1,9 @@
 # Unreleased
 
+# 2.30.2 / 09-10-2025
+
+- [IMPROVEMENT] `mimeType` support for Session Replay on React Native. See [#2506][]
+
 # 2.30.1 / 11-09-2025
 
 - [IMPROVEMENT] Add `ddtags` to RUM events. See [#2436][]
@@ -923,6 +927,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2395]: https://github.com/DataDog/dd-sdk-ios/pull/2395
 [#2405]: https://github.com/DataDog/dd-sdk-ios/pull/2405
 [#2436]: https://github.com/DataDog/dd-sdk-ios/pull/2436
+[#2506]: https://github.com/DataDog/dd-sdk-ios/pull/2506
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
