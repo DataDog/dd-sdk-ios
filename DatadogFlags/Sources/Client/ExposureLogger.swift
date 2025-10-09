@@ -74,3 +74,15 @@ internal final class ExposureLogger: ExposureLogging {
         }
     }
 }
+
+// MARK: - NOPExposureLogger
+
+internal final class NOPExposureLogger: ExposureLogging {
+    func logExposure(
+        for flagKey: String,
+        assignment: FlagAssignment,
+        evaluationContext: FlagsEvaluationContext
+    ) {
+        // No-op: exposure logging is disabled
+    }
+}

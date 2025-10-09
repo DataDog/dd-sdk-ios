@@ -239,4 +239,75 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(exposureLogger.logExposureCalls.count, 6)
         XCTAssertEqual(rumExposureLogger.logExposureCalls.count, 6)
     }
+
+    func testExposureTrackingDisabled() throws {
+        // Given
+        let initialState = FlagsData(
+            flags: ["test": .mockAnyString()],
+            context: .mockAny(),
+            date: .mockAny()
+        )
+        let data = try JSONEncoder().encode(initialState)
+        let messageReceiver = FeatureMessageReceiverMock()
+        let core = SingleFeatureCoreMock<FlagsFeature>(
+            dataStore: DataStoreMock(
+                storage: [
+                    FlagsClient.defaultName: .value(data, dataStoreDefaultKeyVersion)
+                ]
+            ),
+            messageReceiver: messageReceiver
+        )
+
+        // When
+        Flags.enable(with: .init(trackExposures: false), in: core)
+        let client = FlagsClient.create(in: core)
+        let value = client.getStringValue(key: "test", defaultValue: "")
+
+        // Then
+        XCTAssertEqual(value, .mockAny())
+        XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 0, "No exposure events should be written")
+        XCTAssertEqual(messageReceiver.messages.filter(\.isFlagsRUMMessage).count, 2, "RUM integration should still work")
+    }
+
+    func testRUMIntegrationDisabled() throws {
+        // Given
+        let initialState = FlagsData(
+            flags: ["test": .mockAnyString()],
+            context: .mockAny(),
+            date: .mockAny()
+        )
+        let data = try JSONEncoder().encode(initialState)
+        let messageReceiver = FeatureMessageReceiverMock()
+        let core = SingleFeatureCoreMock<FlagsFeature>(
+            dataStore: DataStoreMock(
+                storage: [
+                    FlagsClient.defaultName: .value(data, dataStoreDefaultKeyVersion)
+                ]
+            ),
+            messageReceiver: messageReceiver
+        )
+
+        // When
+        Flags.enable(with: .init(rumIntegrationEnabled: false), in: core)
+        let client = FlagsClient.create(in: core)
+        let value = client.getStringValue(key: "test", defaultValue: "")
+
+        // Then
+        XCTAssertEqual(value, .mockAny())
+        XCTAssertEqual(messageReceiver.messages.filter(\.isFlagsRUMMessage).count, 0, "No RUM messages should be sent")
+        XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 1, "Exposure should still be logged")
+    }
+}
+
+extension FeatureMessage {
+    fileprivate var isFlagsRUMMessage: Bool {
+        switch self {
+        case .payload(let message) where message is RUMFlagEvaluationMessage:
+            return true
+        case .payload(let message) where message is RUMFlagExposureMessage:
+            return true
+        default:
+            return false
+        }
+    }
 }

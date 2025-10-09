@@ -79,22 +79,15 @@ public class FlagsClient {
         }
 
         let featureScope = core.scope(for: FlagsFeature.self)
-        let dateProvider = SystemDateProvider()
         let client = FlagsClient(
             repository: FlagsRepository(
                 clientName: name,
                 flagAssignmentsFetcher: feature.flagAssignmentsFetcher,
-                dateProvider: dateProvider,
+                dateProvider: SystemDateProvider(),
                 featureScope: featureScope
             ),
-            exposureLogger: ExposureLogger(
-                dateProvider: dateProvider,
-                featureScope: featureScope
-            ),
-            rumExposureLogger: RUMExposureLogger(
-                dateProvider: dateProvider,
-                featureScope: featureScope
-            )
+            exposureLogger: feature.makeExposureLogger(featureScope),
+            rumExposureLogger: feature.makeRUMExposureLogger(featureScope)
         )
 
         feature.clientRegistry.register(client, named: name)
