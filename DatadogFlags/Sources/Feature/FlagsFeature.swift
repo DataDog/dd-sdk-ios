@@ -17,6 +17,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     let makeExposureLogger: (any FeatureScope) -> any ExposureLogging
     let makeRUMExposureLogger: (any FeatureScope) -> any RUMExposureLogging
     let performanceOverride: PerformancePresetOverride
+    let issueReporter: IssueReporter
 
     init(
         configuration: Flags.Configuration,
@@ -52,5 +53,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
             )
         }
         performanceOverride = PerformancePresetOverride(maxObjectsInFile: 50)
+
+        issueReporter = IssueReporter.default(isGracefulModeEnabled: configuration.gracefulModeEnabled)
     }
 }

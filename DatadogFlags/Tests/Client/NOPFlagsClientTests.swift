@@ -49,7 +49,7 @@ final class NOPFlagsClientTests: XCTestCase {
         // Then
         XCTAssertEqual(
             flagDetails,
-            FlagDetails(key: "booleanFlag", value: false, error: .invalidClient)
+            FlagDetails(key: "booleanFlag", value: false, error: .providerNotReady)
         )
         XCTAssertEqual(dd.logger.criticalMessages.count, 1)
         XCTAssertEqual(

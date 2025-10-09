@@ -29,15 +29,10 @@ public class FlagsClient {
         name: String = FlagsClient.defaultName,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) -> FlagsClientProtocol {
-        do {
-            // To ensure the correct registration order between Core and Features,
-            // the entire initialization flow is synchronized on the main thread.
-            return try runOnMainThreadSync {
-                try createOrThrow(name: name, in: core)
-            }
-        } catch let error {
-            consolePrint("\(error)", .error)
-            return NOPFlagsClient()
+        // To ensure the correct registration order between Core and Features,
+        // the entire initialization flow is synchronized on the main thread.
+        runOnMainThreadSync {
+            doCreate(name: name, in: core)
         }
     }
 
@@ -45,37 +40,49 @@ public class FlagsClient {
         named name: String = FlagsClient.defaultName,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) -> FlagsClientProtocol {
-        do {
-            guard let clientRegistry = core.get(feature: FlagsFeature.self)?.clientRegistry else {
-                throw ProgrammerError(
-                    description: "Flags feature must be enabled before calling `FlagsClient.shared(named:in:)`."
-                )
-            }
-            guard let client = clientRegistry.client(named: name) else {
-                throw ProgrammerError(
-                    description: "Flags client '\(name)' not found. Make sure that you call `FlagsClient.create(name:with:in:)` first."
-                )
-            }
-            return client
-        } catch let error {
-            consolePrint("\(error)", .error)
-            return NOPFlagsClient()
+        guard
+            let clientRegistry = core.get(feature: FlagsFeature.self)?.clientRegistry,
+            let client = clientRegistry.client(named: name)
+        else {
+            reportIssue(
+                """
+                Attempted to use a `FlagsClient` named '\(name)', but no such client exists. \
+                Create the client with `FlagsClient.create(name:in:)` before using it. \
+                Operating in no-op mode.
+                """,
+                in: core
+            )
+            return FallbackFlagsClient(name: name, core: core)
         }
+
+        return client
     }
 
-    internal static func createOrThrow(
+    internal static func doCreate(
         name: String,
         in core: DatadogCoreProtocol
-    ) throws -> FlagsClientProtocol {
+    ) -> FlagsClientProtocol {
         guard let feature = core.get(feature: FlagsFeature.self) else {
-            throw ProgrammerError(
-                description: "Flags feature must be enabled before calling `FlagsClient.create(name:with:in:)`."
+            reportIssue(
+                """
+                Failed to create `FlagsClient` named '\(name)': Flags feature must be enabled first. \
+                Call `Flags.enable()` before creating clients. \
+                Operating in no-op mode.
+                """,
+                in: core
             )
+            return FallbackFlagsClient(name: name, core: core)
         }
-        guard !feature.clientRegistry.isRegistered(clientName: name) else {
-            throw ProgrammerError(
-                description: "A flags client named '\(name)' already exists."
+
+        if let client = feature.clientRegistry.client(named: name) {
+            reportIssue(
+                """
+                Attempted to create a `FlagsClient` named '\(name)', but one already exists. \
+                The existing client will be used, and any new configuration will be ignored.
+                """,
+                in: core
             )
+            return client
         }
 
         let featureScope = core.scope(for: FlagsFeature.self)

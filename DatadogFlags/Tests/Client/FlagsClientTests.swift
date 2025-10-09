@@ -99,7 +99,7 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertTrue(client is NOPFlagsClient)
         XCTAssertEqual(
             printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: Flags feature must be enabled before calling `FlagsClient.instance(named:in:)`."
+            "🔥 Datadog SDK usage error: Flags feature must be enabled before calling `FlagsClient.shared(named:in:)`."
         )
     }
 

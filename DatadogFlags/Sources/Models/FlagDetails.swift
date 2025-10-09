@@ -7,7 +7,7 @@
 import Foundation
 
 public enum FlagEvaluationError: Error {
-    case invalidClient
+    case providerNotReady
     case flagNotFound
     case typeMismatch
 }

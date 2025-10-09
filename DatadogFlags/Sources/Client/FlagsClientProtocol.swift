@@ -99,7 +99,7 @@ internal final class NOPFlagsClient: FlagsClientProtocol {
 
     func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
         warn()
-        return FlagDetails(key: key, value: defaultValue, error: .invalidClient)
+        return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
     }
 
     private func warn(method: StaticString = #function) {
