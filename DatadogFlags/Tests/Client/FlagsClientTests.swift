@@ -34,8 +34,8 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(
             printFunction.printedMessages,
             [
-                "🔥 Datadog SDK usage error: Attempted to create a `FlagsClient` named 'default', but one already exists. The existing client will be used, and any new configuration will be ignored.",
-                "🔥 Datadog SDK usage error: Attempted to create a `FlagsClient` named 'test', but one already exists. The existing client will be used, and any new configuration will be ignored."
+                "🔥 Datadog SDK usage error: Attempted to create a `FlagsClient` named 'default', but one already exists. The existing client will be used, and new configuration will be ignored.",
+                "🔥 Datadog SDK usage error: Attempted to create a `FlagsClient` named 'test', but one already exists. The existing client will be used, and new configuration will be ignored."
             ]
         )
     }
