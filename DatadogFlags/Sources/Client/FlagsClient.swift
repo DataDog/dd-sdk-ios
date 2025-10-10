@@ -78,7 +78,7 @@ public class FlagsClient {
             reportIssue(
                 """
                 Attempted to create a `FlagsClient` named '\(name)', but one already exists. \
-                The existing client will be used, and any new configuration will be ignored.
+                The existing client will be used, and new configuration will be ignored.
                 """,
                 in: core
             )
