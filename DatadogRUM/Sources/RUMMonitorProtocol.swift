@@ -16,7 +16,7 @@ import DatadogInternal
 public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
 
 /// The type of RUM feature operation failure reason.
-public typealias RUMFeatureOperationFailureReason = RUMVitalEvent.Vital.FailureReason
+public typealias RUMFeatureOperationFailureReason = RUMVitalEvent.Vital.FeatureOperationProperties.FailureReason
 
 /// The type of a RUM action.
 public enum RUMActionType {

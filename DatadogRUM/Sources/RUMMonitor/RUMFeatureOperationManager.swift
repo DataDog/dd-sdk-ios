@@ -78,15 +78,14 @@ internal class RUMFeatureOperationManager {
     // MARK: - Private Methods
 
     private func writeVitalEvent(from command: RUMOperationStepVitalCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope?) {
-        let vital = RUMVitalEvent.Vital(
-            vitalDescription: nil,
-            duration: nil,
-            failureReason: command.failureReason,
-            id: command.vitalId,
-            name: command.name,
-            operationKey: command.operationKey,
-            stepType: command.stepType,
-            type: .operationStep
+        let vital = RUMVitalEvent.Vital.featureOperationProperties(
+            value: RUMVitalEvent.Vital.FeatureOperationProperties(
+                failureReason: command.failureReason,
+                id: command.vitalId,
+                name: command.name,
+                operationKey: command.operationKey,
+                stepType: command.stepType
+            )
         )
 
         let mergedAttributes = command.globalAttributes
@@ -142,7 +141,7 @@ internal class RUMFeatureOperationManager {
         activeOperations.insert(lookupKey)
     }
 
-    private func trackOperationUpdate(name: String, operationKey: String?, lookupKey: String, stepType: RUMVitalEvent.Vital.StepType) {
+    private func trackOperationUpdate(name: String, operationKey: String?, lookupKey: String, stepType: RUMVitalEvent.Vital.FeatureOperationProperties.StepType) {
         // Check if operation is currently being tracked
         if !activeOperations.contains(lookupKey) {
             // Warning: Operation step called without a corresponding start
@@ -175,7 +174,7 @@ internal class RUMFeatureOperationManager {
 
     /// Validates the string is not empty
     // or contains only whitespace/line breaks
-    private func validateString(_ value: String, stepType: RUMVitalEvent.Vital.StepType) -> Bool {
+    private func validateString(_ value: String, stepType: RUMVitalEvent.Vital.FeatureOperationProperties.StepType) -> Bool {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmed.isEmpty else {

@@ -1,22 +1,20 @@
 # Dependabot configuration for GitHub Actions and Python dependencies
-# This will automatically create PRs to update GitHub Actions and Python packages to their latest versions
+# This will automatically create PR to update GitHub Actions and Python packages to their latest versions
 
 version: 2
+
+multi-ecosystem-groups:
+  repo-dependencies:
+    schedule:
+      interval: "monthly"
+
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
-    schedule:
-      interval: "monthly"
-    groups:
-      gh-actions-packages:
-        patterns:
-          - "*"
+    patterns: ["*"]
+    multi-ecosystem-group: "repo-dependencies"
   
   - package-ecosystem: "pip"
     directory: "/tools/issue_handler"
-    schedule:
-      interval: "monthly"
-    groups:
-      python-packages:
-        patterns:
-          - "*"
+    patterns: ["*"]
+    multi-ecosystem-group: "repo-dependencies"

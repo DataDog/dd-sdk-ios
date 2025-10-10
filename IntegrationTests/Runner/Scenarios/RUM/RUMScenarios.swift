@@ -361,6 +361,21 @@ final class RUMSwiftUIAutoInstrumentationActionViewScenario: TestScenario {
 
 // TODO: RUM-9888 - Manual + Auto instrumentation scenario
 
+// MARK: - Feature Operations
+
+/// Scenario which tests Feature Operations API by starting, succeeding, and failing various operations.
+/// Each operation creates vital events that are sent to the server.
+final class RUMFeatureOperationsScenario: TestScenario {
+    static let storyboardName = "RUMFeatureOperationsScenario"
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        RUM.enable(with: config)
+    }
+}
+
 // MARK: - Helpers
 
 private class SwiftUIPredicate: SwiftUIRUMViewsPredicate {

@@ -5,7 +5,7 @@
 
 // Active compilation conditions that are only enabled on the local machine:
 // - DD_SDK_COMPILED_FOR_TESTING: This condition ensures the SDK code is compiled specifically for testing purposes.
-SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_COMPILED_FOR_TESTING
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DD_SDK_COMPILED_FOR_TESTING
 
 // Build only the active architecture to optimize build time
 ONLY_ACTIVE_ARCH = YES

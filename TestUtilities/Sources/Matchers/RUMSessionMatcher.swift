@@ -91,6 +91,9 @@ public class RUMSessionMatcher {
 
         /// `RUMLongTask` events tracked during this visit.
         public fileprivate(set) var longTaskEvents: [RUMLongTaskEvent] = []
+
+        /// `RUMVital` events tracked during this visit.
+        public fileprivate(set) var vitalEvents: [RUMVitalEvent] = []
     }
 
     /// RUM application ID for this session.
@@ -110,6 +113,7 @@ public class RUMSessionMatcher {
     public let resourceEventMatchers: [RUMEventMatcher]
     public let errorEventMatchers: [RUMEventMatcher]
     public let longTaskEventMatchers: [RUMEventMatcher]
+    public let vitalEventMatchers: [RUMEventMatcher]
 
     /// `RUMView` events tracked in this session.
     public let viewEvents: [RUMViewEvent]
@@ -125,6 +129,9 @@ public class RUMSessionMatcher {
 
     /// `RUMLongTask` events tracked in this session.
     public let longTaskEvents: [RUMLongTaskEvent]
+
+    /// `RUMVital` events tracked in this session.
+    public let vitalEvents: [RUMVitalEvent]
 
     private init(applicationID: String, sessionID: String, sessionEventMatchers: [RUMEventMatcher]) throws {
         // Sort events so they follow increasing time order
@@ -148,6 +155,7 @@ public class RUMSessionMatcher {
         self.resourceEventMatchers = eventsMatchersByType["resource"] ?? []
         self.errorEventMatchers = eventsMatchersByType["error"] ?? []
         self.longTaskEventMatchers = eventsMatchersByType["long_task"] ?? []
+        self.vitalEventMatchers = eventsMatchersByType["vital"] ?? []
 
         let viewEvents: [RUMViewEvent] = try viewEventMatchers.map { matcher in try matcher.model() }
 
@@ -163,12 +171,16 @@ public class RUMSessionMatcher {
         let longTaskEvents: [RUMLongTaskEvent] = try longTaskEventMatchers
             .map { matcher in try matcher.model() }
 
+        let vitalEvents: [RUMVitalEvent] = try vitalEventMatchers
+            .map { matcher in try matcher.model() }
+
         // Validate each group of events individually
         try validate(rumViewEvents: viewEvents)
         try validate(rumActionEvents: actionEvents)
         try validate(rumResourceEvents: resourceEvents)
         try validate(rumErrorEvents: errorEvents)
         try validate(rumLongTaskEvents: longTaskEvents)
+        try validate(rumVitalEvents: vitalEvents)
 
         // Group RUMView events into ViewVisits:
         let uniqueViewIDs = Set(viewEvents.map { $0.view.id })
@@ -243,6 +255,16 @@ public class RUMSessionMatcher {
             }
         }
 
+        try vitalEvents.forEach { rumEvent in
+            if let visit = visitsByViewID[rumEvent.view.id] {
+                visit.vitalEvents.append(rumEvent)
+            } else {
+                throw RUMSessionConsistencyException(
+                    description: "Cannot link RUM Event: \(rumEvent) to `RUMSessionMatcher.ViewVisit` by `view.id`."
+                )
+            }
+        }
+
         // Sort visits by time
         let visitsEventOrderedByTime = visits.sorted { firstVisit, secondVisit in
             let firstVisitTime = firstVisit.viewEvents[0].date
@@ -288,6 +310,7 @@ public class RUMSessionMatcher {
         self.resourceEvents = resourceEvents
         self.errorEvents = errorEvents
         self.longTaskEvents = longTaskEvents
+        self.vitalEvents = vitalEvents
     }
 
     /// Checks if this session contains a view with a specific ID.
@@ -353,6 +376,16 @@ private func validate(rumLongTaskEvents: [RUMLongTaskEvent]) throws {
         if longTaskEvent.source == .ios { // validete only mobile events
             try validate(device: longTaskEvent.device)
             try validate(os: longTaskEvent.os)
+        }
+    }
+}
+
+private func validate(rumVitalEvents: [RUMVitalEvent]) throws {
+    // All vital events must use `session.plan` "lite"
+    try rumVitalEvents.forEach { vitalEvent in
+        if vitalEvent.source == .ios { // validate only mobile events
+            try validate(device: vitalEvent.device)
+            try validate(os: vitalEvent.os)
         }
     }
 }
@@ -598,7 +631,7 @@ extension RUMSessionMatcher: CustomStringConvertible {
                 ("date", prettyDate(timestampMs: lastViewEvent.date)),
                 ("date (relative in session)", pretty(milliseconds: sessionStartTimestampMs.map { lastViewEvent.date - $0 })),
                 ("duration", pretty(nanoseconds: lastViewEvent.view.timeSpent)),
-                ("event counts", "view (\(view.viewEvents.count)), action (\(view.actionEvents.count)), resource (\(view.resourceEvents.count)), error (\(view.errorEvents.count)), long task (\(view.longTaskEvents.count))"),
+                ("event counts", "view (\(view.viewEvents.count)), action (\(view.actionEvents.count)), resource (\(view.resourceEvents.count)), error (\(view.errorEvents.count)), long task (\(view.longTaskEvents.count)), vital (\(view.vitalEvents.count))"),
             ]
         )
 
@@ -620,6 +653,11 @@ extension RUMSessionMatcher: CustomStringConvertible {
         for longTask in view.longTaskEvents {
             output += renderEmptyLine()
             output += render(event: longTask, in: view)
+        }
+
+        for vital in view.vitalEvents {
+            output += renderEmptyLine()
+            output += render(event: vital, in: view)
         }
 
         output += renderEmptyLine()
@@ -676,6 +714,26 @@ extension RUMSessionMatcher: CustomStringConvertible {
             attributes: [
                 ("date (relative in view)", pretty(milliseconds: event.date - view.startTimestampMs)),
                 ("duration", pretty(nanoseconds: event.longTask.duration)),
+            ],
+            prefix: "→",
+            indentationLevel: 3
+        )
+        return output
+    }
+
+    private func render(event: RUMVitalEvent, in view: View) -> String {
+        guard case let .featureOperationProperties(value: vital) = event.vital else {
+            return ""
+        }
+        var output = renderAttributesBox(attributes: [("⚡ RUM Vital", "")], indentationLevel: 2)
+        output += renderAttributesBox(
+            attributes: [
+                ("date (relative in view)", pretty(milliseconds: event.date - view.startTimestampMs)),
+                ("name", vital.name ?? ""),
+                ("operation.key", vital.operationKey ?? "nil"),
+                ("type", "\(vital.type)"),
+                ("step.type", "\(vital.stepType?.rawValue ?? "")"),
+                ("failure.reason", vital.failureReason?.rawValue ?? "nil"),
             ],
             prefix: "→",
             indentationLevel: 3

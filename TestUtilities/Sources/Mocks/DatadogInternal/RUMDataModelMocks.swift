@@ -760,22 +760,22 @@ extension RUMVitalEvent: RandomMockable {
 }
 
 extension RUMVitalEvent.Vital: RandomMockable {
-    public static func mockRandom() -> RUMVitalEvent.Vital {
-        return RUMVitalEvent.Vital(
+    public static func mockRandom() -> Self {
+        return .featureOperationProperties(value: .mockRandom())
+    }
+}
+
+extension RUMVitalEvent.Vital.FeatureOperationProperties: RandomMockable {
+    public static func mockRandom() -> RUMVitalEvent.Vital.FeatureOperationProperties {
+        return RUMVitalEvent.Vital.FeatureOperationProperties(
             id: .mockRandom(),
-            type: .mockRandom()
+            stepType: .mockRandom()
         )
     }
 }
 
-extension RUMVitalEvent.Vital.VitalType: RandomMockable {
-    public static func mockRandom() -> RUMVitalEvent.Vital.VitalType {
-        return [.duration, .operationStep].randomElement()!
-    }
-}
-
-extension RUMVitalEvent.Vital.StepType: AnyMockable, RandomMockable, CaseIterable {
-    public static var allCases: [RUMVitalEvent.Vital.StepType]
+extension RUMVitalEvent.Vital.FeatureOperationProperties.StepType: AnyMockable, RandomMockable, CaseIterable {
+    public static var allCases: [RUMVitalEvent.Vital.FeatureOperationProperties.StepType]
     = [.start, .end, .retry, .update]
 
     public static func mockAny() -> Self {
@@ -783,6 +783,6 @@ extension RUMVitalEvent.Vital.StepType: AnyMockable, RandomMockable, CaseIterabl
     }
 
     public static func mockRandom() -> Self {
-        return RUMVitalEvent.Vital.StepType.allCases.randomElement()!
+        return RUMVitalEvent.Vital.FeatureOperationProperties.StepType.allCases.randomElement()!
     }
 }

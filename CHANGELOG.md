@@ -1,5 +1,9 @@
 # Unreleased
 
+- [FIX] Fix Logger race condition. See [#2514][]
+
+# 3.1.0 / 18-09-2025
+
 - [FEATURE] Add Start and End Feature Operations APIs. See [#2469][]
 - [FEATURE] Send Accessibility attributes in View Updates. See [#2410][]
 - [IMPROVEMENT] Add missing `versionMajor` property to the `DDLogEventOperatingSystem` definition in Objective-C. See [#2463][]
@@ -964,6 +968,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2436]: https://github.com/DataDog/dd-sdk-ios/pull/2436
 [#2469]: https://github.com/DataDog/dd-sdk-ios/pull/2469
 [#2474]: https://github.com/DataDog/dd-sdk-ios/pull/2474
+[#2514]: https://github.com/DataDog/dd-sdk-ios/pull/2514
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

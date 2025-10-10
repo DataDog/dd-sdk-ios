@@ -86,7 +86,7 @@ class TestOpenAIHandler:
             html_url="https://github.com/test/issues/123"
         )
         
-        result = self.handler._format_issue_content(issue, "Sanitized content")
+        result = self.handler._format_issue_content(issue, "Sanitized content", "Labels: bug")
         
         assert "Issue Title: Test Issue" in result
         assert "Issue URL: https://github.com/test/issues/123" in result
@@ -104,7 +104,7 @@ class TestOpenAIHandler:
         # Mock response
         mock_response = Mock()
         mock_response.choices = [Mock()]
-        mock_response.choices[0].message.content = '{"summary": "Test summary", "suggested_response": "Test response", "confidence_level": "high"}'
+        mock_response.choices[0].message.content = '{"summary": "Test summary", "problem": "Test problem", "scope": "sdk", "category": "bug", "confidence_level": "high", "next_steps": ["Step 1"], "clarifying_questions": ["Question 1"], "suggested_response": "Test response"}'
         mock_client.chat.completions.create.return_value = mock_response
         
         # Create handler with mocked client and environment
@@ -127,8 +127,13 @@ class TestOpenAIHandler:
             # Verify result
             assert isinstance(result, AnalysisResult)
             assert result.summary == "Test summary"
-            assert result.suggested_response == "Test response"
+            assert result.problem == "Test problem"
+            assert result.scope == "sdk"
+            assert result.category == "bug"
             assert result.confidence_level == "high"
+            assert result.next_steps == ["Step 1"]
+            assert result.clarifying_questions == ["Question 1"]
+            assert result.suggested_response == "Test response"
             
             # Verify OpenAI call
             mock_client.chat.completions.create.assert_called_once()
@@ -169,7 +174,7 @@ class TestOpenAIHandler:
     
     @patch('src.openai_handler.openai.OpenAI')
     def test_analyze_issue_missing_fields(self, mock_openai):
-        """Test handling of response missing required fields."""
+        """Test handling of response missing required fields - should normalize with defaults."""
         # Mock OpenAI client
         mock_client = Mock()
         mock_openai.return_value = mock_client
@@ -194,9 +199,19 @@ class TestOpenAIHandler:
                 html_url="https://github.com/test/issues/123"
             )
             
-            # Should raise error
-            with pytest.raises(OpenAIError, match="Invalid response format"):
-                handler.analyze_issue(issue)
+            # Should normalize missing fields with defaults
+            result = handler.analyze_issue(issue)
+            
+            # Verify result has defaults for missing fields
+            assert isinstance(result, AnalysisResult)
+            assert result.summary == "Test summary"
+            assert result.problem == "unclear"  # default
+            assert result.scope == "unclear"    # default
+            assert result.category == "other"   # default
+            assert result.confidence_level == "low"  # default
+            assert result.next_steps == []      # default
+            assert result.clarifying_questions == []  # default
+            assert result.suggested_response == "[missing]"  # default
 
 
 class TestAnalysisResult:
@@ -206,13 +221,23 @@ class TestAnalysisResult:
         """Test AnalysisResult object creation."""
         result = AnalysisResult(
             summary="Test summary",
-            suggested_response="Test response",
-            confidence_level="high"
+            problem="Test problem",
+            scope="sdk",
+            category="bug",
+            confidence_level="high",
+            next_steps=["Step 1", "Step 2"],
+            clarifying_questions=["Question 1"],
+            suggested_response="Test response"
         )
         
         assert result.summary == "Test summary"
-        assert result.suggested_response == "Test response"
+        assert result.problem == "Test problem"
+        assert result.scope == "sdk"
+        assert result.category == "bug"
         assert result.confidence_level == "high"
+        assert result.next_steps == ["Step 1", "Step 2"]
+        assert result.clarifying_questions == ["Question 1"]
+        assert result.suggested_response == "Test response"
 
 
 class TestOpenAIHandlerFactory:

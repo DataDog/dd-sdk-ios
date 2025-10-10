@@ -58,18 +58,10 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertEqual(vitalEvents.count, 1)
 
         let event = try XCTUnwrap(vitalEvents.first)
-        XCTAssertNotNil(event)
-        // Operation Step specific properties
-        XCTAssertEqual(event.vital.type, .operationStep)
-        XCTAssertEqual(event.vital.id, command.vitalId)
-        XCTAssertEqual(event.vital.name, command.name)
-        XCTAssertEqual(event.vital.operationKey, command.operationKey)
-        XCTAssertEqual(event.vital.stepType, command.stepType)
-        XCTAssertEqual(event.vital.failureReason, command.failureReason)
+        // View properties
         XCTAssertEqual(event.view.id, view.viewUUID.toRUMDataFormat)
         XCTAssertEqual(event.view.url, view.viewPath)
-        XCTAssertNil(event.vital.vitalDescription)
-        XCTAssertNil(event.vital.duration)
+
         // Common properties
         XCTAssertNil(event.account)
         XCTAssertNil(event.buildId)
@@ -87,6 +79,18 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertNil(event.synthetics)
         XCTAssertNil(event.usr)
         XCTAssertNotNil(event.version)
+
+        // Operation Step specific properties
+        guard case let .featureOperationProperties(vital) = event.vital else {
+            return XCTFail("Expected event.vital to be .featureOperationProperties, but got \(event.vital)")
+        }
+        XCTAssertEqual(vital.type, "operation_step")
+        XCTAssertEqual(vital.id, command.vitalId)
+        XCTAssertEqual(vital.name, command.name)
+        XCTAssertEqual(vital.operationKey, command.operationKey)
+        XCTAssertEqual(vital.stepType, command.stepType)
+        XCTAssertEqual(vital.failureReason, command.failureReason)
+        XCTAssertNil(vital.featureOperationPropertiesDescription)
     }
 
     func testProcess_MultipleOperations_CreatesCorrectNumberOfEvents() {
@@ -110,16 +114,19 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
         for (index, operation) in commands.enumerated() {
             let event = vitalEvents[index]
-            XCTAssertEqual(event.vital.type, .operationStep)
-            XCTAssertEqual(event.vital.id, operation.vitalId)
-            XCTAssertEqual(event.vital.name, operation.name)
-            XCTAssertEqual(event.vital.operationKey, operation.operationKey)
-            XCTAssertEqual(event.vital.stepType, operation.stepType)
-            XCTAssertEqual(event.vital.failureReason, operation.failureReason)
             XCTAssertEqual(event.view.id, view.viewUUID.toRUMDataFormat)
             XCTAssertEqual(event.view.url, view.viewPath)
-            XCTAssertNil(event.vital.vitalDescription)
-            XCTAssertNil(event.vital.duration)
+
+            guard case let .featureOperationProperties(vital) = event.vital else {
+                return XCTFail("Expected event.vital to be .featureOperationProperties, but got \(event.vital)")
+            }
+            XCTAssertEqual(vital.type, "operation_step")
+            XCTAssertEqual(vital.id, operation.vitalId)
+            XCTAssertEqual(vital.name, operation.name)
+            XCTAssertEqual(vital.operationKey, operation.operationKey)
+            XCTAssertEqual(vital.stepType, operation.stepType)
+            XCTAssertEqual(vital.failureReason, operation.failureReason)
+            XCTAssertNil(vital.featureOperationPropertiesDescription)
         }
     }
 
@@ -172,9 +179,9 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         defer { dd.reset() }
         let operationName: String = .mockRandom()
         let stepType = [
-            RUMVitalEvent.Vital.StepType.end,
-            RUMVitalEvent.Vital.StepType.retry,
-            RUMVitalEvent.Vital.StepType.update
+            RUMVitalEvent.Vital.FeatureOperationProperties.StepType.end,
+            RUMVitalEvent.Vital.FeatureOperationProperties.StepType.retry,
+            RUMVitalEvent.Vital.FeatureOperationProperties.StepType.update
         ].randomElement()!
         let command = RUMOperationStepVitalCommand.mockWith(
             name: operationName,

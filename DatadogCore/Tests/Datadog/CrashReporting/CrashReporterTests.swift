@@ -303,8 +303,8 @@ class CrashReporterTests: XCTestCase {
         let logs = dd.logger.warnLogs
 
         XCTAssert(logs.contains(where: { $0.message == """
-            In order to use Crash Reporting, RUM or Logging feature must be enabled.
-            Make sure `RUM` or `Logs` are enabled when initializing Datadog SDK.
+            In order to use Crash Reporting, RUM feature must be enabled.
+            Make sure `RUM.enable(with:)` is called when initializing Datadog SDK.
             """
         }))
     }
