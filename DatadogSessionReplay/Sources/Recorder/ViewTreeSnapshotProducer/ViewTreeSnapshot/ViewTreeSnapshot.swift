@@ -56,6 +56,7 @@ internal typealias Node = SessionReplayNode
 // An individual resource in `ViewTreeSnapshot`. It is used to describe binary representation of heavy resources such as images.
 @_spi(Internal)
 public protocol SessionReplayResource {
+    var mimeType: String { get }
     /// Calculates the unique identifier of the resource.
     /// This function is not thread safe and needs to be synchronized by the caller.
     func calculateIdentifier() -> String

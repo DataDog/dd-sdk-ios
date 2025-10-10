@@ -70,7 +70,7 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
                 name: "image",
                 filename: $0.identifier,
                 data: $0.data,
-                mimeType: "image/png"
+                mimeType: $0.mimeType
             )
         }
         if let context = resources.first?.context {

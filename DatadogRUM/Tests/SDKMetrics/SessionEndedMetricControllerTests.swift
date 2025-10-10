@@ -105,7 +105,8 @@ class SessionEndedMetricControllerTests: XCTestCase {
             closures: [
                 { controller.startMetric(
                     sessionID: sessionIDs.randomElement()!, precondition: .mockRandom(), context: .mockRandom(), tracksBackgroundEvents: .mockRandom()
-                ) },
+                )
+                },
                 { controller.track(view: .mockRandom(), instrumentationType: nil, in: sessionIDs.randomElement()!) },
                 { controller.track(sdkErrorKind: .mockRandom(), in: sessionIDs.randomElement()!) },
                 { controller.trackWasStopped(sessionID: sessionIDs.randomElement()!) },

@@ -290,10 +290,12 @@ extension Node: AnyMockable, RandomMockable {
 public struct MockResource: Resource, AnyMockable, RandomMockable {
     public var identifier: String
     public var data: Data
+    public let mimeType: String
 
-    public init(identifier: String, data: Data) {
+    public init(identifier: String, data: Data, mimeType: String) {
         self.identifier = identifier
         self.data = data
+        self.mimeType = mimeType
     }
 
     public func calculateIdentifier() -> String {
@@ -305,11 +307,11 @@ public struct MockResource: Resource, AnyMockable, RandomMockable {
     }
 
     public static func mockAny() -> MockResource {
-        return MockResource(identifier: .mockAny(), data: .mockAny())
+        return MockResource(identifier: .mockAny(), data: .mockAny(), mimeType: .mockAny())
     }
 
     public static func mockRandom() -> MockResource {
-        return MockResource(identifier: . mockRandom(), data: .mockRandom())
+        return MockResource(identifier: . mockRandom(), data: .mockRandom(), mimeType: .mockRandom())
     }
 }
 
