@@ -23,6 +23,10 @@ internal protocol FlagsRepositoryProtocol {
 }
 
 internal final class FlagsRepository {
+    private enum Constants {
+        static let readTimeout: TimeInterval = 0.1
+    }
+
     let clientName: String
 
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
@@ -31,6 +35,11 @@ internal final class FlagsRepository {
 
     @ReadWriteLock
     private var state: FlagsData?
+
+    @ReadWriteLock
+    private var hasReadFlagsData = false
+
+    private let readSemaphore = DispatchSemaphore(value: 0)
 
     init(
         clientName: String,
@@ -46,9 +55,26 @@ internal final class FlagsRepository {
     }
 
     private func readState() {
-        featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { state in
+        featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [weak self, readSemaphore] state in
+            defer {
+                // Signal on elevated queue to avoid priority inversion
+                DispatchQueue.global(qos: .userInitiated).async {
+                    readSemaphore.signal()
+                }
+            }
+            guard let self else {
+                return
+            }
             self.state = state
+            self.hasReadFlagsData = true
         }
+    }
+
+    private func waitForFlagsDataRead() {
+        guard !hasReadFlagsData else {
+            return
+        }
+        _ = readSemaphore.wait(timeout: .now() + Constants.readTimeout)
     }
 
     private func writeState() {
@@ -61,11 +87,13 @@ internal final class FlagsRepository {
 
 extension FlagsRepository: FlagsRepositoryProtocol {
     var context: FlagsEvaluationContext? {
-        state?.context
+        waitForFlagsDataRead()
+        return state?.context
     }
 
     func flagAssignment(for key: String) -> FlagAssignment? {
-        state?.flags[key]
+        waitForFlagsDataRead()
+        return state?.flags[key]
     }
 
     func setEvaluationContext(
