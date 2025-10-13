@@ -478,18 +478,10 @@
 		5B1D02832E8E6D2700AB2391 /* FlagsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02812E8E6D2300AB2391 /* FlagsError.swift */; };
 		5B1D02852E8EB78800AB2391 /* FlagEvaluationReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */; };
 		5B1D02862E8EB78800AB2391 /* FlagEvaluationReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */; };
-		5B1D02882E8EB87600AB2391 /* FlagExposureReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02872E8EB87400AB2391 /* FlagExposureReceiver.swift */; };
-		5B1D02892E8EB87600AB2391 /* FlagExposureReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02872E8EB87400AB2391 /* FlagExposureReceiver.swift */; };
-		5B1D028B2E8EBCF100AB2391 /* RUMExposureLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D028A2E8EBCE600AB2391 /* RUMExposureLogger.swift */; };
-		5B1D028C2E8EBCF100AB2391 /* RUMExposureLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D028A2E8EBCE600AB2391 /* RUMExposureLogger.swift */; };
 		5B1D028E2E8ED10200AB2391 /* FlagAssignmentsResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */; };
 		5B1D028F2E8ED10200AB2391 /* FlagAssignmentsResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */; };
-		5B1D02912E8ED31F00AB2391 /* RUMExposureLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02902E8ED31800AB2391 /* RUMExposureLoggerTests.swift */; };
-		5B1D02922E8ED31F00AB2391 /* RUMExposureLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02902E8ED31800AB2391 /* RUMExposureLoggerTests.swift */; };
 		5B1D02942E8ED6C000AB2391 /* FlagEvaluationReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */; };
 		5B1D02952E8ED6C000AB2391 /* FlagEvaluationReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */; };
-		5B1D02972E8ED6D000AB2391 /* FlagExposureReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02962E8ED6CE00AB2391 /* FlagExposureReceiverTests.swift */; };
-		5B1D02982E8ED6D000AB2391 /* FlagExposureReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02962E8ED6CE00AB2391 /* FlagExposureReceiverTests.swift */; };
 		5B3AF8AA2E4B3AE9009E5375 /* EnrichedResourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3AF8A92E4B3AE6009E5375 /* EnrichedResourceTests.swift */; };
 		5B4F37692E93C5C90093778F /* FlagsRUMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F37682E93C5B80093778F /* FlagsRUMIntegrationTests.swift */; };
 		5B4F376A2E93C5C90093778F /* FlagsRUMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F37682E93C5B80093778F /* FlagsRUMIntegrationTests.swift */; };
@@ -541,6 +533,10 @@
 		5BF2286C2E795D8C00D79E8A /* DatadogFlags.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5BF228702E795DF800D79E8A /* FlagsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA8C3122E785A5E00B1DA80 /* FlagsTests.swift */; };
 		5BF7B51F2E44F7D300E0B772 /* ShapeResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF7B51E2E44F7CE00E0B772 /* ShapeResource.swift */; };
+		5BF802722E9CD14100097B0E /* RUMFlagEvaluationReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */; };
+		5BF802732E9CD14100097B0E /* RUMFlagEvaluationReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */; };
+		5BF802752E9CD28900097B0E /* RUMFlagEvaluationReporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF802742E9CD28500097B0E /* RUMFlagEvaluationReporterTests.swift */; };
+		5BF802762E9CD28900097B0E /* RUMFlagEvaluationReporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF802742E9CD28500097B0E /* RUMFlagEvaluationReporterTests.swift */; };
 		5BFDD7A92E28FDD3009A2CEE /* RUMWebViewContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */; };
 		5BFDD7AA2E28FDD3009A2CEE /* RUMWebViewContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */; };
 		5BFE7B7B2E3CFCDE00B8FAA8 /* ImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BFE7B7A2E3CFCDA00B8FAA8 /* ImageRenderer.swift */; };
@@ -2641,12 +2637,8 @@
 		5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsFetcher.swift; sourceTree = "<group>"; };
 		5B1D02812E8E6D2300AB2391 /* FlagsError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsError.swift; sourceTree = "<group>"; };
 		5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagEvaluationReceiver.swift; sourceTree = "<group>"; };
-		5B1D02872E8EB87400AB2391 /* FlagExposureReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagExposureReceiver.swift; sourceTree = "<group>"; };
-		5B1D028A2E8EBCE600AB2391 /* RUMExposureLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMExposureLogger.swift; sourceTree = "<group>"; };
 		5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsResponseTests.swift; sourceTree = "<group>"; };
-		5B1D02902E8ED31800AB2391 /* RUMExposureLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMExposureLoggerTests.swift; sourceTree = "<group>"; };
 		5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagEvaluationReceiverTests.swift; sourceTree = "<group>"; };
-		5B1D02962E8ED6CE00AB2391 /* FlagExposureReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagExposureReceiverTests.swift; sourceTree = "<group>"; };
 		5B3AF8A92E4B3AE6009E5375 /* EnrichedResourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnrichedResourceTests.swift; sourceTree = "<group>"; };
 		5B4F37682E93C5B80093778F /* FlagsRUMIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsRUMIntegrationTests.swift; sourceTree = "<group>"; };
 		5B4F552B2E853B2E00A241C3 /* ExposureLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureLoggerTests.swift; sourceTree = "<group>"; };
@@ -2678,6 +2670,8 @@
 		5BE0EA2E2E66F23F00216E1C /* Path+SessionReplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Path+SessionReplayTests.swift"; sourceTree = "<group>"; };
 		5BF2286A2E795D6500D79E8A /* DatadogFlagsTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogFlagsTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BF7B51E2E44F7CE00E0B772 /* ShapeResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResource.swift; sourceTree = "<group>"; };
+		5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFlagEvaluationReporter.swift; sourceTree = "<group>"; };
+		5BF802742E9CD28500097B0E /* RUMFlagEvaluationReporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFlagEvaluationReporterTests.swift; sourceTree = "<group>"; };
 		5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMWebViewContext.swift; sourceTree = "<group>"; };
 		5BFE7B7A2E3CFCDA00B8FAA8 /* ImageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRenderer.swift; sourceTree = "<group>"; };
 		61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundLocationMonitor.swift; sourceTree = "<group>"; };
@@ -4327,7 +4321,7 @@
 				5B4F552E2E853D7200A241C3 /* FlagsClientMocks.swift */,
 				5B16A3722E8434140046A863 /* ExposureMocks.swift */,
 				5B4F552B2E853B2E00A241C3 /* ExposureLoggerTests.swift */,
-				5B1D02902E8ED31800AB2391 /* RUMExposureLoggerTests.swift */,
+				5BF802742E9CD28500097B0E /* RUMFlagEvaluationReporterTests.swift */,
 				5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */,
 				8DADC3C02E7CCF190060F558 /* FlagsClientTests.swift */,
 				5B1D026C2E8D078F00AB2391 /* FallbackFlagsClientTests.swift */,
@@ -4381,7 +4375,7 @@
 			children = (
 				5BB294BF2E83E02100CAA44B /* ExposureLogger.swift */,
 				5B0E75D92E9690C400F66739 /* ExposureTracker.swift */,
-				5B1D028A2E8EBCE600AB2391 /* RUMExposureLogger.swift */,
+				5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */,
 				5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */,
 				5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */,
 				5B5B8CC12E8C0E8900A6740E /* FlagsClientProtocol.swift */,
@@ -5556,7 +5550,6 @@
 				61DCC84D2C071DCD00CB59E5 /* TelemetryInterceptor.swift */,
 				D2D748222DC0FF7E00C61353 /* FatalErrorContextNotifier.swift */,
 				5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */,
-				5B1D02872E8EB87400AB2391 /* FlagExposureReceiver.swift */,
 			);
 			path = Integrations;
 			sourceTree = "<group>";
@@ -6679,7 +6672,6 @@
 				D248ED4728081B9B00B315B4 /* TelemetryReceiverTests.swift */,
 				61C453492C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift */,
 				5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */,
-				5B1D02962E8ED6CE00AB2391 /* FlagExposureReceiverTests.swift */,
 			);
 			path = Integrations;
 			sourceTree = "<group>";
@@ -8809,7 +8801,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5B1D028C2E8EBCF100AB2391 /* RUMExposureLogger.swift in Sources */,
 				5B5B8CC52E8C14B900A6740E /* FlagsClientRegistry.swift in Sources */,
 				5B9565FD2E86BBFA00EAF677 /* FlagDetails.swift in Sources */,
 				5BD6C6572E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */,
@@ -8824,6 +8815,7 @@
 				5B16A3662E83E3BF0046A863 /* AnyValue.swift in Sources */,
 				5B5B8CBF2E8BDB1000A6740E /* FlagsData.swift in Sources */,
 				8DADC3BF2E7CCF0D0060F558 /* FlagsClient.swift in Sources */,
+				5BF802732E9CD14100097B0E /* RUMFlagEvaluationReporter.swift in Sources */,
 				5BBDF1C32E97B33800670CEB /* FallbackFlagsClient.swift in Sources */,
 				5B0E75DD2E96C57800F66739 /* IssueReporter.swift in Sources */,
 				5B5B8CC32E8C0E9100A6740E /* FlagsClientProtocol.swift in Sources */,
@@ -8840,7 +8832,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5B1D028B2E8EBCF100AB2391 /* RUMExposureLogger.swift in Sources */,
 				5B5B8CC62E8C14B900A6740E /* FlagsClientRegistry.swift in Sources */,
 				5B9565FC2E86BBFA00EAF677 /* FlagDetails.swift in Sources */,
 				5BD6C6562E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */,
@@ -8855,6 +8846,7 @@
 				5B16A3672E83E3BF0046A863 /* AnyValue.swift in Sources */,
 				5B5B8CC02E8BDB1000A6740E /* FlagsData.swift in Sources */,
 				8DADC3B92E7CCF0D0060F558 /* FlagsClient.swift in Sources */,
+				5BF802722E9CD14100097B0E /* RUMFlagEvaluationReporter.swift in Sources */,
 				5BBDF1C42E97B33800670CEB /* FallbackFlagsClient.swift in Sources */,
 				5B0E75DE2E96C57800F66739 /* IssueReporter.swift in Sources */,
 				5B5B8CC22E8C0E9100A6740E /* FlagsClientProtocol.swift in Sources */,
@@ -8882,7 +8874,7 @@
 				5B16A3742E8434200046A863 /* ExposureMocks.swift in Sources */,
 				5B5B8CB72E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */,
 				5B16A36A2E83E46F0046A863 /* AnyValueTests.swift in Sources */,
-				5B1D02922E8ED31F00AB2391 /* RUMExposureLoggerTests.swift in Sources */,
+				5BF802762E9CD28900097B0E /* RUMFlagEvaluationReporterTests.swift in Sources */,
 				5B1D02732E8D2EF600AB2391 /* FlagAssignmentsRequestTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -8902,7 +8894,7 @@
 				5B16A3732E8434200046A863 /* ExposureMocks.swift in Sources */,
 				5B5B8CB62E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */,
 				5B16A36B2E83E46F0046A863 /* AnyValueTests.swift in Sources */,
-				5B1D02912E8ED31F00AB2391 /* RUMExposureLoggerTests.swift in Sources */,
+				5BF802752E9CD28900097B0E /* RUMFlagEvaluationReporterTests.swift in Sources */,
 				5B1D02742E8D2EF600AB2391 /* FlagAssignmentsRequestTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -9642,7 +9634,6 @@
 				6194B9312BB451C100179430 /* NonFatalAppHangsHandler.swift in Sources */,
 				D23F8E7529DDCD28001CFAE8 /* RUMUserActionScope.swift in Sources */,
 				6167E6D72B7F8C3400C3CA2D /* AppHangsWatchdogThread.swift in Sources */,
-				5B1D02892E8EB87600AB2391 /* FlagExposureReceiver.swift in Sources */,
 				965497032D761EA3006428EE /* SwiftUIRUMViewsPredicate.swift in Sources */,
 				61C713A42A3B78F900FA735A /* RUMMonitorProtocol.swift in Sources */,
 				6174D6112BFDEA4600EC7469 /* SessionEndedMetric.swift in Sources */,
@@ -9734,7 +9725,6 @@
 				61C713C12A3C9DAD00FA735A /* RequestBuilderTests.swift in Sources */,
 				D23F8EB429DDCD38001CFAE8 /* RUMApplicationScopeTests.swift in Sources */,
 				6105C5152D0C584F00C4C5EE /* INVMetricTests.swift in Sources */,
-				5B1D02972E8ED6D000AB2391 /* FlagExposureReceiverTests.swift in Sources */,
 				D23F8EB629DDCD38001CFAE8 /* RUMViewsHandlerTests.swift in Sources */,
 				61C713CB2A3DC22700FA735A /* RUMTests.swift in Sources */,
 				D23F8EB829DDCD38001CFAE8 /* RUMActionsHandlerTests.swift in Sources */,
@@ -10120,7 +10110,6 @@
 				6194B9302BB451C100179430 /* NonFatalAppHangsHandler.swift in Sources */,
 				D29A9F6529DD85BB005C54A4 /* RUMUserActionScope.swift in Sources */,
 				6167E6D62B7F8C3400C3CA2D /* AppHangsWatchdogThread.swift in Sources */,
-				5B1D02882E8EB87600AB2391 /* FlagExposureReceiver.swift in Sources */,
 				965497022D761EA3006428EE /* SwiftUIRUMViewsPredicate.swift in Sources */,
 				61C713A32A3B78F900FA735A /* RUMMonitorProtocol.swift in Sources */,
 				6174D6102BFDEA4600EC7469 /* SessionEndedMetric.swift in Sources */,
@@ -10212,7 +10201,6 @@
 				D29A9F9F29DDB483005C54A4 /* RUMApplicationScopeTests.swift in Sources */,
 				6105C5142D0C584F00C4C5EE /* INVMetricTests.swift in Sources */,
 				D29A9FAA29DDB483005C54A4 /* RUMViewsHandlerTests.swift in Sources */,
-				5B1D02982E8ED6D000AB2391 /* FlagExposureReceiverTests.swift in Sources */,
 				61C713CA2A3DC22700FA735A /* RUMTests.swift in Sources */,
 				D29A9FAC29DDB483005C54A4 /* RUMActionsHandlerTests.swift in Sources */,
 				61C713AD2A3B793E00FA735A /* RUMMonitorProtocolTests.swift in Sources */,
