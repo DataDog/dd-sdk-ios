@@ -85,29 +85,3 @@ extension FlagsClientProtocol {
         getDetails(key: key, defaultValue: defaultValue)
     }
 }
-
-// MARK: - NOPFlagsClient
-
-internal final class NOPFlagsClient: FlagsClientProtocol {
-    func setEvaluationContext(
-        _: FlagsEvaluationContext,
-        completion: @escaping (Result<Void, FlagsError>) -> Void
-    ) {
-        warn()
-        completion(.failure(.clientNotInitialized))
-    }
-
-    func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
-        warn()
-        return FlagDetails(key: key, value: defaultValue, error: .invalidClient)
-    }
-
-    private func warn(method: StaticString = #function) {
-        DD.logger.critical(
-            """
-            Calling `\(method)` on NOPFlagsClient.
-            Make sure Flags feature is enabled and that the `FlagsClient` was created successfully.
-            """
-        )
-    }
-}
