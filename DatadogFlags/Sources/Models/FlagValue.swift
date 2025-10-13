@@ -6,6 +6,14 @@
 
 import Foundation
 
+/// A protocol representing types that can be used as feature flag values.
+///
+/// The SDK supports the following flag value types:
+/// - `Bool` for boolean flags
+/// - `String` for string flags
+/// - `Int` for integer flags
+/// - `Double` for numeric flags
+/// - ``AnyValue`` for object/JSON flags
 public protocol FlagValue: Encodable {}
 
 extension Bool: FlagValue {}
