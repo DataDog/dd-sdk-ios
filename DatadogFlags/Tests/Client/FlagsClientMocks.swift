@@ -201,15 +201,10 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
     }
 }
 
-final class RUMExposureLoggerMock: RUMExposureLogging {
-    var logExposureCalls: [(String, Any, FlagAssignment, FlagsEvaluationContext)] = []
+final class RUMFlagEvaluationReporterMock: RUMFlagEvaluationReporting {
+    var sendFlagEvaluationCalls: [(String, Any)] = []
 
-    func logExposure<T>(
-        flagKey: String,
-        value: T,
-        assignment: FlagAssignment,
-        evaluationContext: FlagsEvaluationContext
-    ) where T: FlagValue {
-        logExposureCalls.append((flagKey, value, assignment, evaluationContext))
+    func sendFlagEvaluation<T>(flagKey: String, value: T) where T: FlagValue {
+        sendFlagEvaluationCalls.append((flagKey, value))
     }
 }

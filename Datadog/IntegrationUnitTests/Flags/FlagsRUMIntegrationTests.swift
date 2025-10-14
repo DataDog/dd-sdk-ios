@@ -100,39 +100,4 @@ final class FlagsRUMIntegrationTests: XCTestCase {
         XCTAssertEqual(featureFlags["boolean-flag"] as? Bool, boolValue)
         XCTAssertEqual(featureFlags["string-flag"] as? String, stringValue)
     }
-
-    func testWhenFlagIsEvaluated_itCreatesRUMActionWithExposureDetails() throws {
-        // Given
-        let monitor = RUMMonitor.shared(in: core)
-        let client = FlagsClient.create(in: core)
-
-        // When
-        monitor.startView(key: "test-view", name: "Test View")
-
-        let featureScope = core.scope(for: FlagsFeature.self)
-        featureScope.dataStore.flush()
-
-        _ = client.getBooleanValue(key: "boolean-flag", defaultValue: false)
-
-        // Then
-        let rumActionEvents = core.waitAndReturnEvents(
-            ofFeature: RUMFeature.name,
-            ofType: RUMActionEvent.self
-        )
-        XCTAssertEqual(rumActionEvents.count, 1)
-        let exposureAction = try XCTUnwrap(rumActionEvents.first)
-
-        XCTAssertEqual(exposureAction.action.type, .custom)
-        XCTAssertEqual(exposureAction.action.target?.name, "__dd_exposure")
-
-        let contextInfo = try XCTUnwrap(exposureAction.context?.contextInfo)
-        XCTAssertNotNil(contextInfo["timestamp"])
-        XCTAssertEqual(contextInfo["flag_key"] as? String, "boolean-flag")
-        XCTAssertEqual(contextInfo["allocation_key"] as? String, "allocation-124")
-        XCTAssertEqual(contextInfo["exposure_key"] as? String, "boolean-flag-allocation-124")
-        XCTAssertEqual(contextInfo["subject_key"] as? String, "user-123")
-        XCTAssertEqual(contextInfo["variant_key"] as? String, "variation-124")
-        let subjectAttributes = try XCTUnwrap(contextInfo["subject_attributes"])
-        DDAssertJSONEqual(subjectAttributes, ["foo": "bar"])
-    }
 }

@@ -123,7 +123,7 @@ final class FlagsClientTests: XCTestCase {
                 completion(.success(()))
             },
             exposureLogger: ExposureLoggerMock(),
-            rumExposureLogger: RUMExposureLoggerMock()
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
         )
 
         let context = FlagsEvaluationContext(targetingKey: "test")
@@ -146,7 +146,7 @@ final class FlagsClientTests: XCTestCase {
     func testFlagEvaluation() {
         // Given
         let exposureLogger = ExposureLoggerMock()
-        let rumExposureLogger = RUMExposureLoggerMock()
+        let rumFlagEvaluationReporter = RUMFlagEvaluationReporterMock()
         let client = FlagsClient(
             repository: FlagsRepositoryMock(
                 state: .init(
@@ -194,7 +194,7 @@ final class FlagsClientTests: XCTestCase {
                 )
             ),
             exposureLogger: exposureLogger,
-            rumExposureLogger: rumExposureLogger
+            rumFlagEvaluationReporter: rumFlagEvaluationReporter
         )
 
         // When
@@ -248,7 +248,7 @@ final class FlagsClientTests: XCTestCase {
             )
         )
         XCTAssertEqual(exposureLogger.logExposureCalls.count, 6)
-        XCTAssertEqual(rumExposureLogger.logExposureCalls.count, 6)
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls.count, 6)
     }
 
     func testExposureTrackingDisabled() throws {
@@ -277,7 +277,7 @@ final class FlagsClientTests: XCTestCase {
         // Then
         XCTAssertEqual(value, .mockAny())
         XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 0, "No exposure events should be written")
-        XCTAssertEqual(messageReceiver.messages.filter(\.isFlagsRUMMessage).count, 2, "RUM integration should still work")
+        XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, 1, "RUM integration should still work")
     }
 
     func testRUMIntegrationDisabled() throws {
@@ -305,17 +305,15 @@ final class FlagsClientTests: XCTestCase {
 
         // Then
         XCTAssertEqual(value, .mockAny())
-        XCTAssertEqual(messageReceiver.messages.filter(\.isFlagsRUMMessage).count, 0, "No RUM messages should be sent")
+        XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, 0, "No RUM messages should be sent")
         XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 1, "Exposure should still be logged")
     }
 }
 
 extension FeatureMessage {
-    fileprivate var isFlagsRUMMessage: Bool {
+    fileprivate var isRUMMessage: Bool {
         switch self {
         case .payload(let message) where message is RUMFlagEvaluationMessage:
-            return true
-        case .payload(let message) where message is RUMFlagExposureMessage:
             return true
         default:
             return false
