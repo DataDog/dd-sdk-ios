@@ -77,6 +77,15 @@ public enum Flags {
         /// Default: `true`.
         public var rumIntegrationEnabled: Bool
 
+        /// Creates a configuration for the Datadog Flags feature.
+        ///
+        /// - Parameters:
+        ///   - gracefulModeEnabled: Controls error handling behavior for API misuse. Default: `true`.
+        ///   - customFlagsEndpoint: Custom server URL for retrieving flag assignments. Default: `nil`.
+        ///   - customFlagsHeaders: Additional HTTP headers for requests to `customFlagsEndpoint`. Default: `nil`.
+        ///   - customExposureEndpoint: Custom server URL for sending exposure data. Default: `nil`.
+        ///   - trackExposures: Enables exposure logging to the exposures intake endpoint. Default: `true`.
+        ///   - rumIntegrationEnabled: Enables the RUM integration for flag evaluations. Default: `true`.
         public init(
             gracefulModeEnabled: Bool = true,
             customFlagsEndpoint: URL? = nil,
