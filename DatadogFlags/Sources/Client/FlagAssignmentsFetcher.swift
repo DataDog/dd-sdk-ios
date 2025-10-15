@@ -69,22 +69,28 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     context: context,
                     customHeaders: self.customHeaders
                 )
-                self.fetch(request) { result in
+                self.fetch(request) { [featureScope] result in
                     switch result {
                     case .success(let data):
                         do {
                             let response = try Self.decoder.decode(FlagAssignmentsResponse.self, from: data)
                             completion(.success(response.flags))
                         } catch {
+                            featureScope.telemetry.error(
+                                "Failed to decode \(FlagAssignmentsResponse.self) from flag assignments response",
+                                error: error
+                            )
                             completion(.failure(.invalidResponse))
                         }
                     case .failure(let error):
                         DD.logger.error("Failed to fetch flag assignments from the server.", error: error)
+                        featureScope.telemetry.error("Failed to fetch flag assignments from the server", error: error)
                         completion(.failure(.networkError(error)))
                     }
                 }
             } catch let error {
                 DD.logger.error("Failed to encode flag assignments request body.", error: error)
+                featureScope.telemetry.error("Failed to encode flag assignments request body.", error: error)
                 completion(.failure(.invalidConfiguration))
             }
         }
