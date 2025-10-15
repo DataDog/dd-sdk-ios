@@ -24,6 +24,12 @@ internal class ActivityReference {
     }
 
     deinit {
+        leave()
+    }
+    
+    func leave() {
+        guard isActive else { return }
+        isActive = false
         os_activity_scope_leave(&activityState)
     }
 }
