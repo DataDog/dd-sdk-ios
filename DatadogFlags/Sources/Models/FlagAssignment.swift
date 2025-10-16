@@ -63,7 +63,8 @@ extension FlagAssignment: Codable {
         case "string":
             self.variation = try .string(container.decode(String.self, forKey: .variationValue))
         case "number":
-            // Check integer first, then double for backwards compatibility
+            // Backwards compatibility for legacy "number" type
+            // Check integer first, then double
             if let number = try? container.decode(Int.self, forKey: .variationValue) {
                 self.variation = .integer(number)
             } else {
