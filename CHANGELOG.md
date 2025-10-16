@@ -1,7 +1,7 @@
 # Unreleased
 
 - [FIX] Fix Logger race condition. See [#2514][]
-- [FEATURE] Add `DatadogFlags` module for feature flag evaluation and management. See [#2472][] [#2477][] [#2479][] [#2480][] [#2484][] [#2487][] [#2491][] [#2493][] [#2497][] [#2500][] [#2502][] [#2503][] [#2508][] [#2510][] [#2515][] [#2516][] [#2518][] [#2526][] [#2527][] [#2528][] [#2529][] [#2531][]
+- [FEATURE] Add `DatadogFlags` module for feature flag evaluation and management. See [#2532][]
 
 # 3.1.0 / 18-09-2025
 
