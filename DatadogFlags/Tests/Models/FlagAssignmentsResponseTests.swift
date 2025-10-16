@@ -27,7 +27,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
                 "string-flag": {
                   "allocationKey": "allocation-123",
                   "variationKey": "variation-123",
-                  "variationType": "STRING",
+                  "variationType": "string",
                   "variationValue": "red",
                   "extraLogging": {
                     "experiment": true
@@ -38,7 +38,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
                 "boolean-flag": {
                   "allocationKey": "allocation-124",
                   "variationKey": "variation-124",
-                  "variationType": "BOOLEAN",
+                  "variationType": "boolean",
                   "variationValue": true,
                   "extraLogging": {
                     "experiment": true
@@ -49,7 +49,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
                 "integer-flag": {
                   "allocationKey": "allocation-125",
                   "variationKey": "variation-125",
-                  "variationType": "NUMBER",
+                  "variationType": "integer",
                   "variationValue": 42,
                   "extraLogging": {
                     "experiment": true
@@ -60,8 +60,19 @@ final class FlagAssignmentsResponseTests: XCTestCase {
                 "numeric-flag": {
                   "allocationKey": "allocation-126",
                   "variationKey": "variation-126",
-                  "variationType": "NUMBER",
+                  "variationType": "float",
                   "variationValue": 3.14,
+                  "extraLogging": {
+                    "experiment": true
+                  },
+                  "doLog": true,
+                  "reason": "TARGETING_MATCH"
+                },
+                "legacy-number-flag": {
+                  "allocationKey": "allocation-128",
+                  "variationKey": "variation-128",
+                  "variationType": "number",
+                  "variationValue": 99,
                   "extraLogging": {
                     "experiment": true
                   },
@@ -71,7 +82,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
                 "json-flag": {
                   "allocationKey": "allocation-127",
                   "variationKey": "variation-127",
-                  "variationType": "JSON",
+                  "variationType": "object",
                   "variationValue": { "key": "value", "prop": 123 },
                   "extraLogging": {
                     "experiment": true
@@ -118,6 +129,13 @@ final class FlagAssignmentsResponseTests: XCTestCase {
                         allocationKey: "allocation-126",
                         variationKey: "variation-126",
                         variation: .double(3.14),
+                        reason: "TARGETING_MATCH",
+                        doLog: true
+                    ),
+                    "legacy-number-flag": .init(
+                        allocationKey: "allocation-128",
+                        variationKey: "variation-128",
+                        variation: .integer(99),
                         reason: "TARGETING_MATCH",
                         doLog: true
                     ),
