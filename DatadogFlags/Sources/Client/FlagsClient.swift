@@ -7,7 +7,38 @@
 import Foundation
 import DatadogInternal
 
-public class FlagsClient {
+/// A client for evaluating feature flags in your application.
+///
+/// `FlagsClient` provides methods to evaluate feature flags with type-safe access to flag values.
+/// Each client maintains its own evaluation context and can be used independently throughout your application.
+///
+/// ## Overview
+///
+/// Create a client after enabling the Flags feature:
+///
+/// ```swift
+/// // Create the default client
+/// let client = FlagsClient.create()
+///
+/// // Set evaluation context (user/session information)
+/// client.setEvaluationContext(
+///     FlagsEvaluationContext(
+///         targetingKey: "user-123",
+///         attributes: [
+///             "email": .string("user@example.com"),
+///             "tier": .string("premium")
+///         ]
+///     )
+/// )
+///
+/// // Evaluate flags
+/// let showNewFeature = client.getBooleanValue(key: "show-new-feature", defaultValue: false)
+/// let themeColor = client.getStringValue(key: "theme-color", defaultValue: "blue")
+/// ```
+public final class FlagsClient {
+    /// The default client name used when no name is specified.
+    ///
+    /// Use this constant when you need to reference the default client by name.
     public static let defaultName = "default"
 
     private let repository: any FlagsRepositoryProtocol
@@ -24,6 +55,40 @@ public class FlagsClient {
         self.rumFlagEvaluationReporter = rumFlagEvaluationReporter
     }
 
+    /// Creates a new `FlagsClient` instance.
+    ///
+    /// Use this method to create a client for evaluating feature flags. The client is registered internally
+    /// by name, so you don't need to keep a reference to it. Access the same client from anywhere in your
+    /// app using ``shared(named:in:)``.
+    ///
+    /// If a client with the same name already exists, the existing client is returned and a warning is logged.
+    ///
+    /// ```swift
+    /// // Create the default client (typically in app initialization)
+    /// FlagsClient.create()
+    ///
+    /// // Later, access it from anywhere without keeping a reference
+    /// let client = FlagsClient.shared()
+    /// let isEnabled = client.getBooleanValue(key: "new-feature", defaultValue: false)
+    ///
+    /// // Create named clients for different modules
+    /// FlagsClient.create(name: "checkout")
+    /// FlagsClient.create(name: "recommendations")
+    ///
+    /// // Access them from different parts of your app
+    /// let checkoutClient = FlagsClient.shared(named: "checkout")
+    /// let recsClient = FlagsClient.shared(named: "recommendations")
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: A unique name for this client. Defaults to ``defaultName``.
+    ///   - core: The Datadog SDK core instance. Defaults to the global shared instance.
+    ///
+    /// - Returns: A `FlagsClientProtocol` instance for evaluating flags.
+    ///
+    /// - Important: ``Flags/enable(with:in:)`` must be called before creating clients.
+    ///
+    /// - Note: Clients are retained internally, so you don't need to keep references to them.
     @discardableResult
     public static func create(
         name: String = FlagsClient.defaultName,
@@ -36,6 +101,26 @@ public class FlagsClient {
         }
     }
 
+    /// Returns an existing `FlagsClient` instance by name.
+    ///
+    /// Use this method to retrieve a client that was previously created with ``create(name:in:)``.
+    /// If no client with the specified name exists, a no-op client is returned and a warning is logged.
+    ///
+    /// ```swift
+    /// // Get the default client
+    /// let client = FlagsClient.shared()
+    ///
+    /// // Get a named client
+    /// let checkoutClient = FlagsClient.shared(named: "checkout")
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: The name of the client to retrieve. Defaults to ``defaultName``.
+    ///   - core: The Datadog SDK core instance. Defaults to the global shared instance.
+    ///
+    /// - Returns: A `FlagsClientProtocol` instance. Returns a no-op client if the requested client doesn't exist.
+    ///
+    /// - Important: The client must first be created with ``create(name:in:)``.
     public static func shared(
         named name: String = FlagsClient.defaultName,
         in core: DatadogCoreProtocol = CoreRegistry.default

@@ -6,13 +6,62 @@
 
 import Foundation
 
+/// A type-safe representation of JSON values for attributes and object flags.
+///
+/// `AnyValue` is used to represent arbitrary JSON data in feature flag contexts, particularly for:
+/// - Custom attributes in ``FlagsEvaluationContext``
+/// - Object-type feature flag values
+///
+/// You can create `AnyValue` instances using the case constructors:
+///
+/// ```swift
+/// let context = FlagsEvaluationContext(
+///     targetingKey: "user-123",
+///     attributes: [
+///         "email": .string("user@example.com"),
+///         "age": .int(25),
+///         "premium": .bool(true),
+///         "balance": .double(99.99),
+///         "tags": .array([.string("beta"), .string("power-user")]),
+///         "metadata": .dictionary(["level": .int(5)]),
+///         "optional_field": .null
+///     ]
+/// )
+/// ```
 public enum AnyValue: Equatable {
+    /// A string value.
     case string(String)
+
+    /// A boolean value.
     case bool(Bool)
+
+    /// An integer value.
     case int(Int)
+
+    /// A double-precision floating-point value.
     case double(Double)
+
+    /// A dictionary (object) with string keys and `AnyValue` values.
+    ///
+    /// ```swift
+    /// let config: AnyValue = .dictionary([
+    ///     "timeout": .int(30),
+    ///     "retries": .int(3)
+    /// ])
+    /// ```
     case dictionary([String: AnyValue])
+
+    /// An array of `AnyValue` elements.
+    ///
+    /// ```swift
+    /// let tags: AnyValue = .array([
+    ///     .string("important"),
+    ///     .string("urgent")
+    /// ])
+    /// ```
     case array([AnyValue])
+
+    /// A null value.
     case null
 }
 
