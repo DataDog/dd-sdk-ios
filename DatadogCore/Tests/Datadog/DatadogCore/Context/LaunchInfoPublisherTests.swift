@@ -189,6 +189,47 @@ class AppLaunchHandlerTests: XCTestCase {
         waitForExpectations(timeout: 1)
     }
 
+    func testSetApplicationDidBecomeActiveCallbackByMultipleEntities() {
+        // Given
+        let handler = AppLaunchHandler()
+        let callbacksCount = 10
+        let notified = expectation(description: "All callbacks notified")
+        notified.expectedFulfillmentCount = callbacksCount
+
+        (0..<callbacksCount).forEach { _ in
+            handler.setApplicationDidBecomeActiveCallback { _ in notified.fulfill() }
+        }
+
+        // When
+        handler.observe(notificationCenter)
+        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+
+        // Then
+        waitForExpectations(timeout: 1)
+    }
+
+    func testApplicationDidBecomeActiveMultipleTimesInMultipleEntities() {
+        // Given
+        let handler = AppLaunchHandler()
+        let callbacksCount: Int = .mockRandom(min: 3, max: 10)
+        let notificationsCount: Int = .mockRandom(min: 3, max: 10)
+        let notified = expectation(description: "All callbacks notified")
+        notified.expectedFulfillmentCount = callbacksCount
+
+        (0..<callbacksCount).forEach { _ in
+            handler.setApplicationDidBecomeActiveCallback { _ in notified.fulfill() }
+        }
+
+        // When
+        handler.observe(notificationCenter)
+        (0..<notificationsCount).forEach { _ in
+            notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+    }
+
     func testThreadSafety() {
         let handler = AppLaunchHandler()
 
