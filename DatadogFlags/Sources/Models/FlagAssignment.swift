@@ -58,18 +58,23 @@ extension FlagAssignment: Codable {
         let variationType = try container.decode(String.self, forKey: .variationType)
 
         switch variationType {
-        case "BOOLEAN":
+        case "boolean":
             self.variation = try .boolean(container.decode(Bool.self, forKey: .variationValue))
-        case "STRING":
+        case "string":
             self.variation = try .string(container.decode(String.self, forKey: .variationValue))
-        case "NUMBER":
+        case "number":
+            // Backwards compatibility for legacy "number" type
             // Check integer first, then double
             if let number = try? container.decode(Int.self, forKey: .variationValue) {
                 self.variation = .integer(number)
             } else {
                 self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
             }
-        case "JSON":
+        case "integer":
+            self.variation = try .integer(container.decode(Int.self, forKey: .variationValue))
+        case "float":
+            self.variation = try .double(container.decode(Double.self, forKey: .variationValue))
+        case "object":
             self.variation = try .object(container.decode(AnyValue.self, forKey: .variationValue))
         default:
             let context = DecodingError.Context(
@@ -90,19 +95,19 @@ extension FlagAssignment: Codable {
 
         switch variation {
         case .boolean(let value):
-            try container.encode("BOOLEAN", forKey: .variationType)
+            try container.encode("boolean", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .string(let value):
-            try container.encode("STRING", forKey: .variationType)
+            try container.encode("string", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .double(let value):
-            try container.encode("NUMBER", forKey: .variationType)
+            try container.encode("float", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .integer(let value):
-            try container.encode("NUMBER", forKey: .variationType)
+            try container.encode("integer", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .object(let value):
-            try container.encode("JSON", forKey: .variationType)
+            try container.encode("object", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         }
     }
