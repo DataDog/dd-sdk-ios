@@ -40,6 +40,35 @@ class DatadogTracer_SamplingTests: XCTestCase {
         XCTAssertEqual(events.filter({ !$0.isKept }).count, 0, "Not kept spans should be dropped")
     }
 
+    func testRecordingCustomSampleRateInRootSpanEvent() throws {
+        // When
+        let tracer = createTracer(sampleRate: 5)
+        (0..<10).forEach { _ in
+            let span = tracer.startRootSpan(operationName: .mockAny(), customSamplingRate: 42)
+            span.finish()
+        }
+
+        // Then
+        let events = try XCTUnwrap(featureScope.spanEventsWritten())
+        XCTAssertEqual(events.filter({ $0.samplingRate == 0.42 }).count, 10)
+    }
+
+    func testCustomSamplingRatePropagatesToChildSpans() throws {
+        // When
+        let tracer = createTracer(sampleRate: 5)
+        let root = tracer.startRootSpan(operationName: .mockAny(), customSamplingRate: 37)
+        let child = tracer.startSpan(operationName: .mockAny(), childOf: root.context)
+        let grandChild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
+        grandChild.finish()
+        child.finish()
+        root.finish()
+
+        // Then
+        let events = try XCTUnwrap(featureScope.spanEventsWritten())
+        XCTAssertEqual(events.count, 3)
+        XCTAssertEqual(events.filter({ $0.samplingRate == 0.37 }).count, 3)
+    }
+
     func testRecordingSampledSpan() throws {
         // When
         let tracer = createTracer(sampleRate: 100)
