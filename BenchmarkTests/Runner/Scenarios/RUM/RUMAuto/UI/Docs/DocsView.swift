@@ -12,6 +12,7 @@ struct DocsView: UIViewRepresentable {
 
     func makeUIView(context _: Context) -> some UIView {
         let webView = WKWebView()
+        webView.isInspectable = true
         webView.load(URLRequest(url: url))
 
         return webView
