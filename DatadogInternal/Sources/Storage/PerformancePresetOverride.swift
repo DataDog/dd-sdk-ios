@@ -31,6 +31,10 @@ public struct PerformancePresetOverride {
     /// Files older than this are considered obsolete and get deleted without uploading.
     public let maxFileAgeForRead: TimeInterval?
 
+    /// Maximum number of serialized objects written to a single file.
+    /// If number of objects in recently used file reaches this limit, new file is created for new data.
+    public let maxObjectsInFile: Int?
+
     /// Overrides the initial upload delay (in seconds).
     /// At runtime, the upload interval starts with `initialUploadDelay` and then ranges from `minUploadDelay` to `maxUploadDelay` depending
     /// on delivery success or failure.
@@ -59,11 +63,13 @@ public struct PerformancePresetOverride {
         maxObjectSize: UInt32? = nil,
         meanFileAge: TimeInterval? = nil,
         maxFileAgeForRead: TimeInterval? = nil,
+        maxObjectsInFile: Int? = nil,
         uploadDelay: (initial: TimeInterval, range: Range<TimeInterval>, changeRate: Double)? = nil
     ) {
         self.maxFileSize = maxFileSize
         self.maxObjectSize = maxObjectSize
         self.maxFileAgeForRead = maxFileAgeForRead
+        self.maxObjectsInFile = maxObjectsInFile
 
         if let meanFileAge = meanFileAge {
             // Following constants are the same as in `DatadogCore.PerformancePreset`

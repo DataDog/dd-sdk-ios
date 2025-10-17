@@ -88,3 +88,21 @@ public struct RUMErrorMessage {
         self.binaryImages = binaryImages
     }
 }
+
+/// Flag evaluation message consumed by RUM on the message-bus.
+public struct RUMFlagEvaluationMessage {
+    /// The flag key
+    public let flagKey: String
+    /// The evaluated value
+    public let value: any Encodable
+
+    /// Create a flag evaluation message to be sent on the message-bus.
+    ///
+    /// - Parameters:
+    ///   - flagKey: The flag key
+    ///   - value: The evaluated value
+    public init(flagKey: String, value: any Encodable) {
+        self.flagKey = flagKey
+        self.value = value
+    }
+}

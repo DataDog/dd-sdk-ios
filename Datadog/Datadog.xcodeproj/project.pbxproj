@@ -450,16 +450,93 @@
 		49D8C0BE2AC5F2BC0075E427 /* Logs+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */; };
 		5B0A9B8B2E3BB98E00A8131C /* GraphicsFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0A9B8A2E3BB98500A8131C /* GraphicsFilter.swift */; };
 		5B0A9B8D2E3BBB4500A8131C /* GraphicsFilter+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */; };
+		5B0E75DA2E9690D200F66739 /* ExposureTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E75D92E9690C400F66739 /* ExposureTracker.swift */; };
+		5B0E75DB2E9690D200F66739 /* ExposureTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E75D92E9690C400F66739 /* ExposureTracker.swift */; };
+		5B0E75DD2E96C57800F66739 /* IssueReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E75DC2E96C57400F66739 /* IssueReporter.swift */; };
+		5B0E75DE2E96C57800F66739 /* IssueReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E75DC2E96C57400F66739 /* IssueReporter.swift */; };
+		5B16A3662E83E3BF0046A863 /* AnyValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A3652E83E3BF0046A863 /* AnyValue.swift */; };
+		5B16A3672E83E3BF0046A863 /* AnyValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A3652E83E3BF0046A863 /* AnyValue.swift */; };
+		5B16A36A2E83E46F0046A863 /* AnyValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A3692E83E46F0046A863 /* AnyValueTests.swift */; };
+		5B16A36B2E83E46F0046A863 /* AnyValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A3692E83E46F0046A863 /* AnyValueTests.swift */; };
+		5B16A36D2E83E5210046A863 /* FlagAssignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A36C2E83E51D0046A863 /* FlagAssignment.swift */; };
+		5B16A36E2E83E5210046A863 /* FlagAssignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A36C2E83E51D0046A863 /* FlagAssignment.swift */; };
+		5B16A3702E83EE340046A863 /* FlagAssignmentsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A36F2E83EE2B0046A863 /* FlagAssignmentsResponse.swift */; };
+		5B16A3712E83EE340046A863 /* FlagAssignmentsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A36F2E83EE2B0046A863 /* FlagAssignmentsResponse.swift */; };
+		5B16A3732E8434200046A863 /* ExposureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A3722E8434140046A863 /* ExposureMocks.swift */; };
+		5B16A3742E8434200046A863 /* ExposureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A3722E8434140046A863 /* ExposureMocks.swift */; };
+		5B1D026D2E8D079F00AB2391 /* FallbackFlagsClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D026C2E8D078F00AB2391 /* FallbackFlagsClientTests.swift */; };
+		5B1D026E2E8D079F00AB2391 /* FallbackFlagsClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D026C2E8D078F00AB2391 /* FallbackFlagsClientTests.swift */; };
+		5B1D02732E8D2EF600AB2391 /* FlagAssignmentsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */; };
+		5B1D02742E8D2EF600AB2391 /* FlagAssignmentsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */; };
+		5B1D02792E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */; };
+		5B1D027A2E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */; };
+		5B1D027D2E8D896300AB2391 /* FlagAssignmentsFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */; };
+		5B1D027E2E8D896300AB2391 /* FlagAssignmentsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */; };
+		5B1D027F2E8D896300AB2391 /* FlagAssignmentsFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */; };
+		5B1D02802E8D896300AB2391 /* FlagAssignmentsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */; };
+		5B1D02822E8E6D2700AB2391 /* FlagsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02812E8E6D2300AB2391 /* FlagsError.swift */; };
+		5B1D02832E8E6D2700AB2391 /* FlagsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02812E8E6D2300AB2391 /* FlagsError.swift */; };
+		5B1D02852E8EB78800AB2391 /* FlagEvaluationReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */; };
+		5B1D02862E8EB78800AB2391 /* FlagEvaluationReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */; };
+		5B1D028E2E8ED10200AB2391 /* FlagAssignmentsResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */; };
+		5B1D028F2E8ED10200AB2391 /* FlagAssignmentsResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */; };
+		5B1D02942E8ED6C000AB2391 /* FlagEvaluationReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */; };
+		5B1D02952E8ED6C000AB2391 /* FlagEvaluationReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */; };
 		5B3AF8AA2E4B3AE9009E5375 /* EnrichedResourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3AF8A92E4B3AE6009E5375 /* EnrichedResourceTests.swift */; };
+		5B4F37692E93C5C90093778F /* FlagsRUMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F37682E93C5B80093778F /* FlagsRUMIntegrationTests.swift */; };
+		5B4F376A2E93C5C90093778F /* FlagsRUMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F37682E93C5B80093778F /* FlagsRUMIntegrationTests.swift */; };
+		5B4F552C2E853B3B00A241C3 /* ExposureLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F552B2E853B2E00A241C3 /* ExposureLoggerTests.swift */; };
+		5B4F552D2E853B3B00A241C3 /* ExposureLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F552B2E853B2E00A241C3 /* ExposureLoggerTests.swift */; };
+		5B4F552F2E853D7700A241C3 /* FlagsClientMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F552E2E853D7200A241C3 /* FlagsClientMocks.swift */; };
+		5B4F55302E853D7700A241C3 /* FlagsClientMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F552E2E853D7200A241C3 /* FlagsClientMocks.swift */; };
+		5B5B8CB62E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CB52E8BCA5F00A6740E /* FlagsRepositoryTests.swift */; };
+		5B5B8CB72E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CB52E8BCA5F00A6740E /* FlagsRepositoryTests.swift */; };
+		5B5B8CB92E8BD44700A6740E /* FlagsDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CB82E8BD44000A6740E /* FlagsDataStore.swift */; };
+		5B5B8CBA2E8BD44700A6740E /* FlagsDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CB82E8BD44000A6740E /* FlagsDataStore.swift */; };
+		5B5B8CBF2E8BDB1000A6740E /* FlagsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CBE2E8BDB0D00A6740E /* FlagsData.swift */; };
+		5B5B8CC02E8BDB1000A6740E /* FlagsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CBE2E8BDB0D00A6740E /* FlagsData.swift */; };
+		5B5B8CC22E8C0E9100A6740E /* FlagsClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CC12E8C0E8900A6740E /* FlagsClientProtocol.swift */; };
+		5B5B8CC32E8C0E9100A6740E /* FlagsClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CC12E8C0E8900A6740E /* FlagsClientProtocol.swift */; };
+		5B5B8CC52E8C14B900A6740E /* FlagsClientRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CC42E8C14B200A6740E /* FlagsClientRegistry.swift */; };
+		5B5B8CC62E8C14B900A6740E /* FlagsClientRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CC42E8C14B200A6740E /* FlagsClientRegistry.swift */; };
+		5B9565FC2E86BBFA00EAF677 /* FlagDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */; };
+		5B9565FD2E86BBFA00EAF677 /* FlagDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */; };
 		5B9B20C52E460A0600C95B6C /* ShapeResourceBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9B20C42E4609FC00C95B6C /* ShapeResourceBuilderTests.swift */; };
 		5B9CB9E32E41F6F9005485E6 /* ImageRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9CB9E22E41F6F6005485E6 /* ImageRepresentable.swift */; };
 		5B9CB9E52E41FD60005485E6 /* Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9CB9E42E41FD5C005485E6 /* Drawing.swift */; };
 		5B9CB9E72E420ACB005485E6 /* ImageRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9CB9E62E420AC4005485E6 /* ImageRendererTests.swift */; };
+		5BA8C3042E784C0200B1DA80 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
+		5BA8C3102E785A2000B1DA80 /* Flags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA8C30F2E785A2000B1DA80 /* Flags.swift */; };
+		5BA8C3222E785B6F00B1DA80 /* DatadogFlags.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C3192E785B6F00B1DA80 /* DatadogFlags.framework */; };
+		5BA8C3302E785CFC00B1DA80 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; };
+		5BA8C3352E785E3400B1DA80 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257958B298ABB83008A1BE5 /* TestUtilities.framework */; };
+		5BA8C33A2E785FD500B1DA80 /* Flags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA8C30F2E785A2000B1DA80 /* Flags.swift */; };
+		5BA8C33B2E785FE100B1DA80 /* FlagsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA8C3122E785A5E00B1DA80 /* FlagsTests.swift */; };
+		5BB294AC2E8286B200CAA44B /* ExposureEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */; };
+		5BB294AD2E8286B200CAA44B /* ExposureEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */; };
+		5BB294B02E82CCA400CAA44B /* ExposureRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */; };
+		5BB294B12E82CCA400CAA44B /* ExposureRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */; };
+		5BB294BD2E82E66500CAA44B /* FlagValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294BC2E82E66200CAA44B /* FlagValue.swift */; };
+		5BB294BE2E82E66500CAA44B /* FlagValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294BC2E82E66200CAA44B /* FlagValue.swift */; };
+		5BB294C02E83E02900CAA44B /* ExposureLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294BF2E83E02100CAA44B /* ExposureLogger.swift */; };
+		5BB294C12E83E02900CAA44B /* ExposureLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294BF2E83E02100CAA44B /* ExposureLogger.swift */; };
+		5BBDF1C32E97B33800670CEB /* FallbackFlagsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BBDF1C22E97B33300670CEB /* FallbackFlagsClient.swift */; };
+		5BBDF1C42E97B33800670CEB /* FallbackFlagsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BBDF1C22E97B33300670CEB /* FallbackFlagsClient.swift */; };
 		5BCBC0CD2DF85B6A0094DCC2 /* SessionReplayPrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */; };
+		5BD6C6562E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */; };
+		5BD6C6572E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */; };
 		5BE0EA2B2E66E8A800216E1C /* ShapeResourceBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */; };
 		5BE0EA2D2E66EFA300216E1C /* Path+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE0EA2C2E66EF9B00216E1C /* Path+SessionReplay.swift */; };
 		5BE0EA2F2E66F25200216E1C /* Path+SessionReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE0EA2E2E66F23F00216E1C /* Path+SessionReplayTests.swift */; };
+		5BF228632E795D6500D79E8A /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257953E298ABA65008A1BE5 /* TestUtilities.framework */; platformFilter = ios; };
+		5BF2286B2E795D8C00D79E8A /* DatadogFlags.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */; };
+		5BF2286C2E795D8C00D79E8A /* DatadogFlags.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5BF228702E795DF800D79E8A /* FlagsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA8C3122E785A5E00B1DA80 /* FlagsTests.swift */; };
 		5BF7B51F2E44F7D300E0B772 /* ShapeResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF7B51E2E44F7CE00E0B772 /* ShapeResource.swift */; };
+		5BF802722E9CD14100097B0E /* RUMFlagEvaluationReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */; };
+		5BF802732E9CD14100097B0E /* RUMFlagEvaluationReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */; };
+		5BF802752E9CD28900097B0E /* RUMFlagEvaluationReporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF802742E9CD28500097B0E /* RUMFlagEvaluationReporterTests.swift */; };
+		5BF802762E9CD28900097B0E /* RUMFlagEvaluationReporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF802742E9CD28500097B0E /* RUMFlagEvaluationReporterTests.swift */; };
 		5BFDD7A92E28FDD3009A2CEE /* RUMWebViewContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */; };
 		5BFDD7AA2E28FDD3009A2CEE /* RUMWebViewContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */; };
 		5BFE7B7B2E3CFCDE00B8FAA8 /* ImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BFE7B7A2E3CFCDA00B8FAA8 /* ImageRenderer.swift */; };
@@ -686,6 +763,10 @@
 		6147989D2A459E2B0095CB02 /* DDTrace+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 6147989B2A459E2B0095CB02 /* DDTrace+apiTests.m */; };
 		614798A22A45A48F0095CB02 /* DatadogTrace.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2C1A55A29C4F2DF00946C31 /* DatadogTrace.framework */; };
 		614798A32A45A4980095CB02 /* DatadogTrace.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D25EE93429C4C3C300CE3839 /* DatadogTrace.framework */; };
+		614964472E7D7B0D00D9EFFF /* ExposureRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614964442E7D7B0D00D9EFFF /* ExposureRequestBuilder.swift */; };
+		614964482E7D7B0D00D9EFFF /* FlagsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614964452E7D7B0D00D9EFFF /* FlagsFeature.swift */; };
+		614964492E7D7B0D00D9EFFF /* ExposureRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614964442E7D7B0D00D9EFFF /* ExposureRequestBuilder.swift */; };
+		6149644A2E7D7B0D00D9EFFF /* FlagsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614964452E7D7B0D00D9EFFF /* FlagsFeature.swift */; };
 		614A708E2BF754D800D9AF42 /* ImmutableRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614A708D2BF754D700D9AF42 /* ImmutableRequest.swift */; };
 		614A708F2BF754D800D9AF42 /* ImmutableRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614A708D2BF754D700D9AF42 /* ImmutableRequest.swift */; };
 		614B78F1296D7B63009C6B92 /* LowPowerModePublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B78EC296D7B63009C6B92 /* LowPowerModePublisherTests.swift */; };
@@ -942,6 +1023,12 @@
 		866CA4A92E02EE0100E0CD03 /* BrightnessLevelPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866CA4A72E02EE0100E0CD03 /* BrightnessLevelPublisherTests.swift */; };
 		86B43EC72DE464ED00FDDD29 /* LocaleInfoPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B43EC62DE464ED00FDDD29 /* LocaleInfoPublisher.swift */; };
 		86B43EC82DE464ED00FDDD29 /* LocaleInfoPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B43EC62DE464ED00FDDD29 /* LocaleInfoPublisher.swift */; };
+		8DADC3B62E7CCF0D0060F558 /* FlagsEvaluationContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3B32E7CCF0D0060F558 /* FlagsEvaluationContext.swift */; };
+		8DADC3B92E7CCF0D0060F558 /* FlagsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3AE2E7CCF0D0060F558 /* FlagsClient.swift */; };
+		8DADC3BC2E7CCF0D0060F558 /* FlagsEvaluationContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3B32E7CCF0D0060F558 /* FlagsEvaluationContext.swift */; };
+		8DADC3BF2E7CCF0D0060F558 /* FlagsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3AE2E7CCF0D0060F558 /* FlagsClient.swift */; };
+		8DADC3C52E7CCF190060F558 /* FlagsClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3C02E7CCF190060F558 /* FlagsClientTests.swift */; };
+		8DADC3C92E7CCF190060F558 /* FlagsClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DADC3C02E7CCF190060F558 /* FlagsClientTests.swift */; };
 		960A0D3B2D6E2490004BB999 /* Reflector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D3A2D6E2490004BB999 /* Reflector.swift */; };
 		960A0D3C2D6E2490004BB999 /* CustomDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D382D6E2490004BB999 /* CustomDump.swift */; };
 		960A0D3D2D6E2490004BB999 /* ReflectionMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D392D6E2490004BB999 /* ReflectionMirror.swift */; };
@@ -2042,6 +2129,41 @@
 			remoteGlobalIDString = 3CE119FD29F7BE0000202522;
 			remoteInfo = "DatadogWebViewTracking iOS";
 		};
+		5BA8C3062E784C0200B1DA80 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D23039A4298D513C001A1FA3;
+			remoteInfo = "DatadogInternal iOS";
+		};
+		5BA8C3232E785B6F00B1DA80 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5BA8C3182E785B6F00B1DA80;
+			remoteInfo = "DatadogFlags tvOS";
+		};
+		5BA8C3322E785CFC00B1DA80 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D2DA2355298D57AA00C6C7E6;
+			remoteInfo = "DatadogInternal tvOS";
+		};
+		5BA8C3372E785E3400B1DA80 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D2579571298ABB83008A1BE5;
+			remoteInfo = "TestUtilities tvOS";
+		};
+		5BF2286D2E795D8C00D79E8A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5BA8C2EC2E784B3C00B1DA80;
+			remoteInfo = "DatadogFlags iOS";
+		};
 		6133D1E72A6ED9E100384BEF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
@@ -2262,6 +2384,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		5BF2286F2E795D8C00D79E8A /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				5BF2286C2E795D8C00D79E8A /* DatadogFlags.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D240684527CE6C9E00C04F44 /* ⚙️ Embed Framework Dependencies */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2490,16 +2623,55 @@
 		49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logs+Internal.swift"; sourceTree = "<group>"; };
 		5B0A9B8A2E3BB98500A8131C /* GraphicsFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphicsFilter.swift; sourceTree = "<group>"; };
 		5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphicsFilter+Reflection.swift"; sourceTree = "<group>"; };
+		5B0E75D92E9690C400F66739 /* ExposureTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureTracker.swift; sourceTree = "<group>"; };
+		5B0E75DC2E96C57400F66739 /* IssueReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueReporter.swift; sourceTree = "<group>"; };
+		5B16A3652E83E3BF0046A863 /* AnyValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyValue.swift; sourceTree = "<group>"; };
+		5B16A3692E83E46F0046A863 /* AnyValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyValueTests.swift; sourceTree = "<group>"; };
+		5B16A36C2E83E51D0046A863 /* FlagAssignment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignment.swift; sourceTree = "<group>"; };
+		5B16A36F2E83EE2B0046A863 /* FlagAssignmentsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsResponse.swift; sourceTree = "<group>"; };
+		5B16A3722E8434140046A863 /* ExposureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureMocks.swift; sourceTree = "<group>"; };
+		5B1D026C2E8D078F00AB2391 /* FallbackFlagsClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackFlagsClientTests.swift; sourceTree = "<group>"; };
+		5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequestTests.swift; sourceTree = "<group>"; };
+		5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsFetcherTests.swift; sourceTree = "<group>"; };
+		5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequest.swift; sourceTree = "<group>"; };
+		5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsFetcher.swift; sourceTree = "<group>"; };
+		5B1D02812E8E6D2300AB2391 /* FlagsError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsError.swift; sourceTree = "<group>"; };
+		5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagEvaluationReceiver.swift; sourceTree = "<group>"; };
+		5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsResponseTests.swift; sourceTree = "<group>"; };
+		5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagEvaluationReceiverTests.swift; sourceTree = "<group>"; };
 		5B3AF8A92E4B3AE6009E5375 /* EnrichedResourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnrichedResourceTests.swift; sourceTree = "<group>"; };
+		5B4F37682E93C5B80093778F /* FlagsRUMIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsRUMIntegrationTests.swift; sourceTree = "<group>"; };
+		5B4F552B2E853B2E00A241C3 /* ExposureLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureLoggerTests.swift; sourceTree = "<group>"; };
+		5B4F552E2E853D7200A241C3 /* FlagsClientMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientMocks.swift; sourceTree = "<group>"; };
+		5B5B8CB52E8BCA5F00A6740E /* FlagsRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsRepositoryTests.swift; sourceTree = "<group>"; };
+		5B5B8CB82E8BD44000A6740E /* FlagsDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsDataStore.swift; sourceTree = "<group>"; };
+		5B5B8CBE2E8BDB0D00A6740E /* FlagsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsData.swift; sourceTree = "<group>"; };
+		5B5B8CC12E8C0E8900A6740E /* FlagsClientProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientProtocol.swift; sourceTree = "<group>"; };
+		5B5B8CC42E8C14B200A6740E /* FlagsClientRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientRegistry.swift; sourceTree = "<group>"; };
+		5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagDetails.swift; sourceTree = "<group>"; };
 		5B9B20C42E4609FC00C95B6C /* ShapeResourceBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilderTests.swift; sourceTree = "<group>"; };
 		5B9CB9E22E41F6F6005485E6 /* ImageRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRepresentable.swift; sourceTree = "<group>"; };
 		5B9CB9E42E41FD5C005485E6 /* Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Drawing.swift; sourceTree = "<group>"; };
 		5B9CB9E62E420AC4005485E6 /* ImageRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRendererTests.swift; sourceTree = "<group>"; };
+		5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogFlags.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5BA8C30F2E785A2000B1DA80 /* Flags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flags.swift; sourceTree = "<group>"; };
+		5BA8C3122E785A5E00B1DA80 /* FlagsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsTests.swift; sourceTree = "<group>"; };
+		5BA8C3192E785B6F00B1DA80 /* DatadogFlags.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogFlags.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5BA8C3212E785B6F00B1DA80 /* DatadogFlagsTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogFlagsTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureEvent.swift; sourceTree = "<group>"; };
+		5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureRequestBuilderTests.swift; sourceTree = "<group>"; };
+		5BB294BC2E82E66200CAA44B /* FlagValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagValue.swift; sourceTree = "<group>"; };
+		5BB294BF2E83E02100CAA44B /* ExposureLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureLogger.swift; sourceTree = "<group>"; };
+		5BBDF1C22E97B33300670CEB /* FallbackFlagsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackFlagsClient.swift; sourceTree = "<group>"; };
 		5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayPrivacyView.swift; sourceTree = "<group>"; };
+		5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsRepository.swift; sourceTree = "<group>"; };
 		5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilder.swift; sourceTree = "<group>"; };
 		5BE0EA2C2E66EF9B00216E1C /* Path+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Path+SessionReplay.swift"; sourceTree = "<group>"; };
 		5BE0EA2E2E66F23F00216E1C /* Path+SessionReplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Path+SessionReplayTests.swift"; sourceTree = "<group>"; };
+		5BF2286A2E795D6500D79E8A /* DatadogFlagsTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogFlagsTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BF7B51E2E44F7CE00E0B772 /* ShapeResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResource.swift; sourceTree = "<group>"; };
+		5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFlagEvaluationReporter.swift; sourceTree = "<group>"; };
+		5BF802742E9CD28500097B0E /* RUMFlagEvaluationReporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFlagEvaluationReporterTests.swift; sourceTree = "<group>"; };
 		5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMWebViewContext.swift; sourceTree = "<group>"; };
 		5BFE7B7A2E3CFCDA00B8FAA8 /* ImageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRenderer.swift; sourceTree = "<group>"; };
 		61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundLocationMonitor.swift; sourceTree = "<group>"; };
@@ -2732,6 +2904,8 @@
 		61494CB024C839460082C633 /* RUMResourceScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceScope.swift; sourceTree = "<group>"; };
 		61494CB424C864680082C633 /* RUMResourceScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceScopeTests.swift; sourceTree = "<group>"; };
 		61494CB924CB126F0082C633 /* RUMUserActionScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUserActionScope.swift; sourceTree = "<group>"; };
+		614964442E7D7B0D00D9EFFF /* ExposureRequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureRequestBuilder.swift; sourceTree = "<group>"; };
+		614964452E7D7B0D00D9EFFF /* FlagsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsFeature.swift; sourceTree = "<group>"; };
 		614A708D2BF754D700D9AF42 /* ImmutableRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImmutableRequest.swift; sourceTree = "<group>"; };
 		614B0A4A24EBC43D00A2A780 /* RUMUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUser.swift; sourceTree = "<group>"; };
 		614B0A4E24EBDC6B00A2A780 /* RUMConnectivityInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMConnectivityInfoProvider.swift; sourceTree = "<group>"; };
@@ -2988,6 +3162,9 @@
 		864A707E2DE092AD00AC0619 /* AccessibilityReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityReaderTests.swift; sourceTree = "<group>"; };
 		866CA4A72E02EE0100E0CD03 /* BrightnessLevelPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrightnessLevelPublisherTests.swift; sourceTree = "<group>"; };
 		86B43EC62DE464ED00FDDD29 /* LocaleInfoPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleInfoPublisher.swift; sourceTree = "<group>"; };
+		8DADC3AE2E7CCF0D0060F558 /* FlagsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClient.swift; sourceTree = "<group>"; };
+		8DADC3B32E7CCF0D0060F558 /* FlagsEvaluationContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsEvaluationContext.swift; sourceTree = "<group>"; };
+		8DADC3C02E7CCF190060F558 /* FlagsClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientTests.swift; sourceTree = "<group>"; };
 		960A0D382D6E2490004BB999 /* CustomDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomDump.swift; sourceTree = "<group>"; };
 		960A0D392D6E2490004BB999 /* ReflectionMirror.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionMirror.swift; sourceTree = "<group>"; };
 		960A0D3A2D6E2490004BB999 /* Reflector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reflector.swift; sourceTree = "<group>"; };
@@ -3388,6 +3565,40 @@
 			files = (
 				3C85D42A29F7C70300AFF894 /* TestUtilities.framework in Frameworks */,
 				3C41693C29FBF4D50042B9D2 /* DatadogWebViewTracking.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C2EA2E784B3C00B1DA80 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BA8C3042E784C0200B1DA80 /* DatadogInternal.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C3162E785B6F00B1DA80 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BA8C3302E785CFC00B1DA80 /* DatadogInternal.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C31E2E785B6F00B1DA80 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BA8C3222E785B6F00B1DA80 /* DatadogFlags.framework in Frameworks */,
+				5BA8C3352E785E3400B1DA80 /* TestUtilities.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BF228622E795D6500D79E8A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BF228632E795D6500D79E8A /* TestUtilities.framework in Frameworks */,
+				5BF2286B2E795D8C00D79E8A /* DatadogFlags.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4079,12 +4290,103 @@
 			path = WatchdogTerminations;
 			sourceTree = "<group>";
 		};
+		5B16A3682E83E40E0046A863 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */,
+				5B16A3692E83E46F0046A863 /* AnyValueTests.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		5B3AF8A82E4B3A7F009E5375 /* Models */ = {
 			isa = PBXGroup;
 			children = (
 				5B3AF8A92E4B3AE6009E5375 /* EnrichedResourceTests.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		5B4F37672E93C59A0093778F /* Flags */ = {
+			isa = PBXGroup;
+			children = (
+				5B4F37682E93C5B80093778F /* FlagsRUMIntegrationTests.swift */,
+			);
+			path = Flags;
+			sourceTree = "<group>";
+		};
+		5B5B8CB42E8BCA3C00A6740E /* Client */ = {
+			isa = PBXGroup;
+			children = (
+				5B4F552E2E853D7200A241C3 /* FlagsClientMocks.swift */,
+				5B16A3722E8434140046A863 /* ExposureMocks.swift */,
+				5B4F552B2E853B2E00A241C3 /* ExposureLoggerTests.swift */,
+				5BF802742E9CD28500097B0E /* RUMFlagEvaluationReporterTests.swift */,
+				5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */,
+				8DADC3C02E7CCF190060F558 /* FlagsClientTests.swift */,
+				5B1D026C2E8D078F00AB2391 /* FallbackFlagsClientTests.swift */,
+				5B5B8CB52E8BCA5F00A6740E /* FlagsRepositoryTests.swift */,
+				5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */,
+				5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */,
+			);
+			path = Client;
+			sourceTree = "<group>";
+		};
+		5BA8C30E2E7859EC00B1DA80 /* DatadogFlags */ = {
+			isa = PBXGroup;
+			children = (
+				5BD6C6542E8AC5D800F5D2CC /* Client */,
+				614964462E7D7B0D00D9EFFF /* Feature */,
+				5BB294AA2E82864300CAA44B /* Models */,
+				5BA8C30F2E785A2000B1DA80 /* Flags.swift */,
+			);
+			name = DatadogFlags;
+			path = ../DatadogFlags/Sources;
+			sourceTree = "<group>";
+		};
+		5BA8C3112E785A2D00B1DA80 /* DatadogFlagsTests */ = {
+			isa = PBXGroup;
+			children = (
+				5B5B8CB42E8BCA3C00A6740E /* Client */,
+				5B16A3682E83E40E0046A863 /* Models */,
+				5BA8C3122E785A5E00B1DA80 /* FlagsTests.swift */,
+			);
+			name = DatadogFlagsTests;
+			path = ../DatadogFlags/Tests;
+			sourceTree = "<group>";
+		};
+		5BB294AA2E82864300CAA44B /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				5B16A3652E83E3BF0046A863 /* AnyValue.swift */,
+				5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */,
+				5B16A36F2E83EE2B0046A863 /* FlagAssignmentsResponse.swift */,
+				5B16A36C2E83E51D0046A863 /* FlagAssignment.swift */,
+				5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */,
+				5BB294BC2E82E66200CAA44B /* FlagValue.swift */,
+				8DADC3B32E7CCF0D0060F558 /* FlagsEvaluationContext.swift */,
+				5B1D02812E8E6D2300AB2391 /* FlagsError.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		5BD6C6542E8AC5D800F5D2CC /* Client */ = {
+			isa = PBXGroup;
+			children = (
+				5BB294BF2E83E02100CAA44B /* ExposureLogger.swift */,
+				5B0E75D92E9690C400F66739 /* ExposureTracker.swift */,
+				5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */,
+				5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */,
+				5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */,
+				5B5B8CC12E8C0E8900A6740E /* FlagsClientProtocol.swift */,
+				8DADC3AE2E7CCF0D0060F558 /* FlagsClient.swift */,
+				5BBDF1C22E97B33300670CEB /* FallbackFlagsClient.swift */,
+				5B5B8CC42E8C14B200A6740E /* FlagsClientRegistry.swift */,
+				5B5B8CBE2E8BDB0D00A6740E /* FlagsData.swift */,
+				5B5B8CB82E8BD44000A6740E /* FlagsDataStore.swift */,
+				5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */,
+			);
+			path = Client;
 			sourceTree = "<group>";
 		};
 		61020C272757AD63005EEAEA /* BackgroundEvents */ = {
@@ -4615,6 +4917,7 @@
 				6179DB542B60229D00E9E04E /* CrashReporting */,
 				61E8C5062B28896100E709B4 /* RUM */,
 				61F3E36B2BC7D51400C7881E /* Trace */,
+				5B4F37672E93C59A0093778F /* Flags */,
 				610ABD4A2A6930AB00AFEA34 /* Public */,
 				618353BA2A6946F40085F84A /* Internal */,
 			);
@@ -4661,6 +4964,8 @@
 				6170DC1425C18663003AED5C /* DatadogCrashReportingTests */,
 				3CE11A3B29F7BEE700202522 /* DatadogWebViewTracking */,
 				3CE11A3C29F7BEF300202522 /* DatadogWebViewTrackingTests */,
+				5BA8C30E2E7859EC00B1DA80 /* DatadogFlags */,
+				5BA8C3112E785A2D00B1DA80 /* DatadogFlagsTests */,
 				610ABD492A69309900AFEA34 /* IntegrationUnitTests */,
 				1182FA1F2DA2F827007FE71A /* TestUtilities */,
 				61133C07242397F200786299 /* TargetSupport */,
@@ -4707,6 +5012,10 @@
 				6133D2082A6EDB7700384BEF /* DatadogSessionReplayTests iOS.xctest */,
 				118248612D908BEF00E3D16F /* DatadogIntegrationTests iOS.xctest */,
 				118249122D9094EA00E3D16F /* DatadogIntegrationTests tvOS.xctest */,
+				5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */,
+				5BA8C3192E785B6F00B1DA80 /* DatadogFlags.framework */,
+				5BA8C3212E785B6F00B1DA80 /* DatadogFlagsTests tvOS.xctest */,
+				5BF2286A2E795D6500D79E8A /* DatadogFlagsTests iOS.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -5185,6 +5494,16 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
+		614964462E7D7B0D00D9EFFF /* Feature */ = {
+			isa = PBXGroup;
+			children = (
+				614964452E7D7B0D00D9EFFF /* FlagsFeature.swift */,
+				614964442E7D7B0D00D9EFFF /* ExposureRequestBuilder.swift */,
+				5B0E75DC2E96C57400F66739 /* IssueReporter.swift */,
+			);
+			path = Feature;
+			sourceTree = "<group>";
+		};
 		615519242461BCE7002A85CF /* xcconfigs */ = {
 			isa = PBXGroup;
 			children = (
@@ -5230,6 +5549,7 @@
 				D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */,
 				61DCC84D2C071DCD00CB59E5 /* TelemetryInterceptor.swift */,
 				D2D748222DC0FF7E00C61353 /* FatalErrorContextNotifier.swift */,
+				5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */,
 			);
 			path = Integrations;
 			sourceTree = "<group>";
@@ -6351,6 +6671,7 @@
 				9E53889B2773C4B300A7DC42 /* WebViewEventReceiverTests.swift */,
 				D248ED4728081B9B00B315B4 /* TelemetryReceiverTests.swift */,
 				61C453492C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift */,
+				5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */,
 			);
 			path = Integrations;
 			sourceTree = "<group>";
@@ -6752,7 +7073,6 @@
 		D2DA239C298D58F300C6C7E6 /* Context */ = {
 			isa = PBXGroup;
 			children = (
-				11E4B7172E4DF87F005C1767 /* DatadogContextTests.swift */,
 				D2DA239D298D58F300C6C7E6 /* AppStateHistoryTests.swift */,
 				D2DA239E298D58F300C6C7E6 /* DeviceInfoTests.swift */,
 				6174D6152BFDF29B00EC7469 /* BundleTypeTests.swift */,
@@ -6865,6 +7185,20 @@
 
 /* Begin PBXHeadersBuildPhase section */
 		3CE119F929F7BE0000202522 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C2E82E784B3C00B1DA80 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C3142E785B6F00B1DA80 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -7066,6 +7400,88 @@
 			name = "DatadogWebViewTrackingTests iOS";
 			productName = "DatadogWebViewTracking iOSTests";
 			productReference = 3CE11A0529F7BE0300202522 /* DatadogWebViewTrackingTests iOS.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		5BA8C2EC2E784B3C00B1DA80 /* DatadogFlags iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BA8C3022E784B3D00B1DA80 /* Build configuration list for PBXNativeTarget "DatadogFlags iOS" */;
+			buildPhases = (
+				5BA8C2E82E784B3C00B1DA80 /* Headers */,
+				5BA8C2E92E784B3C00B1DA80 /* Sources */,
+				5BA8C2EA2E784B3C00B1DA80 /* Frameworks */,
+				5BA8C2EB2E784B3C00B1DA80 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5BA8C3072E784C0200B1DA80 /* PBXTargetDependency */,
+			);
+			name = "DatadogFlags iOS";
+			packageProductDependencies = (
+			);
+			productName = "DatadogFlags iOS";
+			productReference = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		5BA8C3182E785B6F00B1DA80 /* DatadogFlags tvOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BA8C3282E785B7000B1DA80 /* Build configuration list for PBXNativeTarget "DatadogFlags tvOS" */;
+			buildPhases = (
+				5BA8C3142E785B6F00B1DA80 /* Headers */,
+				5BA8C3152E785B6F00B1DA80 /* Sources */,
+				5BA8C3162E785B6F00B1DA80 /* Frameworks */,
+				5BA8C3172E785B6F00B1DA80 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5BA8C3332E785CFC00B1DA80 /* PBXTargetDependency */,
+			);
+			name = "DatadogFlags tvOS";
+			packageProductDependencies = (
+			);
+			productName = "DatadogFlags tvOS";
+			productReference = 5BA8C3192E785B6F00B1DA80 /* DatadogFlags.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		5BA8C3202E785B6F00B1DA80 /* DatadogFlagsTests tvOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BA8C32C2E785B7000B1DA80 /* Build configuration list for PBXNativeTarget "DatadogFlagsTests tvOS" */;
+			buildPhases = (
+				5BA8C31D2E785B6F00B1DA80 /* Sources */,
+				5BA8C31E2E785B6F00B1DA80 /* Frameworks */,
+				5BA8C31F2E785B6F00B1DA80 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5BA8C3242E785B6F00B1DA80 /* PBXTargetDependency */,
+				5BA8C3382E785E3400B1DA80 /* PBXTargetDependency */,
+			);
+			name = "DatadogFlagsTests tvOS";
+			packageProductDependencies = (
+			);
+			productName = "DatadogFlags tvOSTests";
+			productReference = 5BA8C3212E785B6F00B1DA80 /* DatadogFlagsTests tvOS.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		5BF228272E795D6500D79E8A /* DatadogFlagsTests iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BF228662E795D6500D79E8A /* Build configuration list for PBXNativeTarget "DatadogFlagsTests iOS" */;
+			buildPhases = (
+				5BF2282A2E795D6500D79E8A /* Sources */,
+				5BF228622E795D6500D79E8A /* Frameworks */,
+				5BF228652E795D6500D79E8A /* Resources */,
+				5BF2286F2E795D8C00D79E8A /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5BF2286E2E795D8C00D79E8A /* PBXTargetDependency */,
+			);
+			name = "DatadogFlagsTests iOS";
+			productName = DatadogRUMTests;
+			productReference = 5BF2286A2E795D6500D79E8A /* DatadogFlagsTests iOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		61133B81242393DE00786299 /* DatadogCore iOS */ = {
@@ -7669,7 +8085,7 @@
 		61133B79242393DE00786299 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1400;
+				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1410;
 				ORGANIZATIONNAME = Datadog;
 				TargetAttributes = {
@@ -7679,6 +8095,16 @@
 					3CE11A0429F7BE0300202522 = {
 						CreatedOnToolsVersion = 14.0.1;
 						LastSwiftMigration = 1430;
+					};
+					5BA8C2EC2E784B3C00B1DA80 = {
+						CreatedOnToolsVersion = 16.4;
+						LastSwiftMigration = 1640;
+					};
+					5BA8C3182E785B6F00B1DA80 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					5BA8C3202E785B6F00B1DA80 = {
+						CreatedOnToolsVersion = 16.4;
 					};
 					61133B81242393DE00786299 = {
 						CreatedOnToolsVersion = 11.3.1;
@@ -7790,6 +8216,10 @@
 				6133D1F62A6EDB7700384BEF /* DatadogSessionReplayTests iOS */,
 				118247B32D908BEF00E3D16F /* DatadogIntegrationTests iOS */,
 				118248852D9094EA00E3D16F /* DatadogIntegrationTests tvOS */,
+				5BA8C2EC2E784B3C00B1DA80 /* DatadogFlags iOS */,
+				5BF228272E795D6500D79E8A /* DatadogFlagsTests iOS */,
+				5BA8C3182E785B6F00B1DA80 /* DatadogFlags tvOS */,
+				5BA8C3202E785B6F00B1DA80 /* DatadogFlagsTests tvOS */,
 			);
 		};
 /* End PBXProject section */
@@ -7817,6 +8247,34 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3CE11A0329F7BE0300202522 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C2EB2E784B3C00B1DA80 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C3172E785B6F00B1DA80 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C31F2E785B6F00B1DA80 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BF228652E795D6500D79E8A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -8273,6 +8731,7 @@
 				6119DDCB2DD24A9600DA80F9 /* RUMSessionStartInBackgroundTests.swift in Sources */,
 				6119DDCC2DD24A9600DA80F9 /* RUMSessionStopTests.swift in Sources */,
 				6119DDCD2DD24A9600DA80F9 /* RUMSessionStartInForegroundTests.swift in Sources */,
+				5B4F37692E93C5C90093778F /* FlagsRUMIntegrationTests.swift in Sources */,
 				118248722D908D3400E3D16F /* CoreMetricsIntegrationTests.swift in Sources */,
 				1182486B2D908CF400E3D16F /* WebEventIntegrationTests.swift in Sources */,
 				118247BE2D908BEF00E3D16F /* RUMViewEndedMetricIntegrationTests.swift in Sources */,
@@ -8314,6 +8773,7 @@
 				118249372D9096B400E3D16F /* HeadBasedSamplingTests.swift in Sources */,
 				118249382D9096B400E3D16F /* RUMAttributesIntegrationTests.swift in Sources */,
 				118249392D9096B400E3D16F /* SendingCrashReportTests.swift in Sources */,
+				5B4F376A2E93C5C90093778F /* FlagsRUMIntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8334,6 +8794,108 @@
 			files = (
 				D29732532A5C109A00827599 /* WebViewTrackingTests.swift in Sources */,
 				D29732512A5C109A00827599 /* MessageEmitterTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C2E92E784B3C00B1DA80 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5B5B8CC52E8C14B900A6740E /* FlagsClientRegistry.swift in Sources */,
+				5B9565FD2E86BBFA00EAF677 /* FlagDetails.swift in Sources */,
+				5BD6C6572E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */,
+				5BB294BD2E82E66500CAA44B /* FlagValue.swift in Sources */,
+				5BB294AD2E8286B200CAA44B /* ExposureEvent.swift in Sources */,
+				8DADC3BC2E7CCF0D0060F558 /* FlagsEvaluationContext.swift in Sources */,
+				5B16A36E2E83E5210046A863 /* FlagAssignment.swift in Sources */,
+				614964492E7D7B0D00D9EFFF /* ExposureRequestBuilder.swift in Sources */,
+				6149644A2E7D7B0D00D9EFFF /* FlagsFeature.swift in Sources */,
+				5B5B8CB92E8BD44700A6740E /* FlagsDataStore.swift in Sources */,
+				5B1D02822E8E6D2700AB2391 /* FlagsError.swift in Sources */,
+				5B16A3662E83E3BF0046A863 /* AnyValue.swift in Sources */,
+				5B5B8CBF2E8BDB1000A6740E /* FlagsData.swift in Sources */,
+				8DADC3BF2E7CCF0D0060F558 /* FlagsClient.swift in Sources */,
+				5BF802732E9CD14100097B0E /* RUMFlagEvaluationReporter.swift in Sources */,
+				5BBDF1C32E97B33800670CEB /* FallbackFlagsClient.swift in Sources */,
+				5B0E75DD2E96C57800F66739 /* IssueReporter.swift in Sources */,
+				5B5B8CC32E8C0E9100A6740E /* FlagsClientProtocol.swift in Sources */,
+				5BA8C3102E785A2000B1DA80 /* Flags.swift in Sources */,
+				5B0E75DB2E9690D200F66739 /* ExposureTracker.swift in Sources */,
+				5B16A3702E83EE340046A863 /* FlagAssignmentsResponse.swift in Sources */,
+				5B1D027D2E8D896300AB2391 /* FlagAssignmentsFetcher.swift in Sources */,
+				5B1D027E2E8D896300AB2391 /* FlagAssignmentsRequest.swift in Sources */,
+				5BB294C02E83E02900CAA44B /* ExposureLogger.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C3152E785B6F00B1DA80 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5B5B8CC62E8C14B900A6740E /* FlagsClientRegistry.swift in Sources */,
+				5B9565FC2E86BBFA00EAF677 /* FlagDetails.swift in Sources */,
+				5BD6C6562E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */,
+				5BB294BE2E82E66500CAA44B /* FlagValue.swift in Sources */,
+				5BB294AC2E8286B200CAA44B /* ExposureEvent.swift in Sources */,
+				8DADC3B62E7CCF0D0060F558 /* FlagsEvaluationContext.swift in Sources */,
+				5B16A36D2E83E5210046A863 /* FlagAssignment.swift in Sources */,
+				614964472E7D7B0D00D9EFFF /* ExposureRequestBuilder.swift in Sources */,
+				614964482E7D7B0D00D9EFFF /* FlagsFeature.swift in Sources */,
+				5B5B8CBA2E8BD44700A6740E /* FlagsDataStore.swift in Sources */,
+				5B1D02832E8E6D2700AB2391 /* FlagsError.swift in Sources */,
+				5B16A3672E83E3BF0046A863 /* AnyValue.swift in Sources */,
+				5B5B8CC02E8BDB1000A6740E /* FlagsData.swift in Sources */,
+				8DADC3B92E7CCF0D0060F558 /* FlagsClient.swift in Sources */,
+				5BF802722E9CD14100097B0E /* RUMFlagEvaluationReporter.swift in Sources */,
+				5BBDF1C42E97B33800670CEB /* FallbackFlagsClient.swift in Sources */,
+				5B0E75DE2E96C57800F66739 /* IssueReporter.swift in Sources */,
+				5B5B8CC22E8C0E9100A6740E /* FlagsClientProtocol.swift in Sources */,
+				5BA8C33A2E785FD500B1DA80 /* Flags.swift in Sources */,
+				5B0E75DA2E9690D200F66739 /* ExposureTracker.swift in Sources */,
+				5B16A3712E83EE340046A863 /* FlagAssignmentsResponse.swift in Sources */,
+				5B1D027F2E8D896300AB2391 /* FlagAssignmentsFetcher.swift in Sources */,
+				5B1D02802E8D896300AB2391 /* FlagAssignmentsRequest.swift in Sources */,
+				5BB294C12E83E02900CAA44B /* ExposureLogger.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BA8C31D2E785B6F00B1DA80 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BA8C33B2E785FE100B1DA80 /* FlagsTests.swift in Sources */,
+				5BB294B12E82CCA400CAA44B /* ExposureRequestBuilderTests.swift in Sources */,
+				5B4F552C2E853B3B00A241C3 /* ExposureLoggerTests.swift in Sources */,
+				5B4F55302E853D7700A241C3 /* FlagsClientMocks.swift in Sources */,
+				8DADC3C52E7CCF190060F558 /* FlagsClientTests.swift in Sources */,
+				5B1D028F2E8ED10200AB2391 /* FlagAssignmentsResponseTests.swift in Sources */,
+				5B1D026D2E8D079F00AB2391 /* FallbackFlagsClientTests.swift in Sources */,
+				5B1D02792E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */,
+				5B16A3742E8434200046A863 /* ExposureMocks.swift in Sources */,
+				5B5B8CB72E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */,
+				5B16A36A2E83E46F0046A863 /* AnyValueTests.swift in Sources */,
+				5BF802762E9CD28900097B0E /* RUMFlagEvaluationReporterTests.swift in Sources */,
+				5B1D02732E8D2EF600AB2391 /* FlagAssignmentsRequestTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BF2282A2E795D6500D79E8A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BF228702E795DF800D79E8A /* FlagsTests.swift in Sources */,
+				5BB294B02E82CCA400CAA44B /* ExposureRequestBuilderTests.swift in Sources */,
+				5B4F552D2E853B3B00A241C3 /* ExposureLoggerTests.swift in Sources */,
+				5B4F552F2E853D7700A241C3 /* FlagsClientMocks.swift in Sources */,
+				8DADC3C92E7CCF190060F558 /* FlagsClientTests.swift in Sources */,
+				5B1D028E2E8ED10200AB2391 /* FlagAssignmentsResponseTests.swift in Sources */,
+				5B1D026E2E8D079F00AB2391 /* FallbackFlagsClientTests.swift in Sources */,
+				5B1D027A2E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */,
+				5B16A3732E8434200046A863 /* ExposureMocks.swift in Sources */,
+				5B5B8CB62E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */,
+				5B16A36B2E83E46F0046A863 /* AnyValueTests.swift in Sources */,
+				5BF802752E9CD28900097B0E /* RUMFlagEvaluationReporterTests.swift in Sources */,
+				5B1D02742E8D2EF600AB2391 /* FlagAssignmentsRequestTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9011,6 +9573,7 @@
 				D23F8E5529DDCD28001CFAE8 /* RUMEventSanitizer.swift in Sources */,
 				D23F8E5729DDCD28001CFAE8 /* RUMScopeDependencies.swift in Sources */,
 				D23F8E5829DDCD28001CFAE8 /* VitalMemoryReader.swift in Sources */,
+				5B1D02852E8EB78800AB2391 /* FlagEvaluationReceiver.swift in Sources */,
 				962900252D8351AB008DFE39 /* TopLevelReflector.swift in Sources */,
 				6194B9342BB451DB00179430 /* FatalAppHangsHandler.swift in Sources */,
 				D23F8E5929DDCD28001CFAE8 /* WebViewEventReceiver.swift in Sources */,
@@ -9150,6 +9713,7 @@
 				D23F8EB129DDCD38001CFAE8 /* RUMViewScopeTests.swift in Sources */,
 				D224431029E977A100274EC7 /* TelemetryReceiverTests.swift in Sources */,
 				96155A2A2D79A4E50029034E /* SwiftUIViewNameExtractorIntegrationTests.swift in Sources */,
+				5B1D02952E8ED6C000AB2391 /* FlagEvaluationReceiverTests.swift in Sources */,
 				3C4CF99C2C47DAA5006DE1C0 /* MemoryWarningMocks.swift in Sources */,
 				3C43A3892C188975000BFB21 /* WatchdogTerminationMonitorTests.swift in Sources */,
 				D23F8EB229DDCD38001CFAE8 /* ValuePublisherTests.swift in Sources */,
@@ -9485,6 +10049,7 @@
 				D29A9F7F29DD85BB005C54A4 /* RUMEventSanitizer.swift in Sources */,
 				D29A9F5A29DD85BB005C54A4 /* RUMScopeDependencies.swift in Sources */,
 				D29A9F5B29DD85BB005C54A4 /* VitalMemoryReader.swift in Sources */,
+				5B1D02862E8EB78800AB2391 /* FlagEvaluationReceiver.swift in Sources */,
 				962900242D8351AB008DFE39 /* TopLevelReflector.swift in Sources */,
 				6194B9332BB451DB00179430 /* FatalAppHangsHandler.swift in Sources */,
 				D29A9F6229DD85BB005C54A4 /* WebViewEventReceiver.swift in Sources */,
@@ -9624,6 +10189,7 @@
 				D224430F29E9779F00274EC7 /* TelemetryReceiverTests.swift in Sources */,
 				96155A292D79A4E50029034E /* SwiftUIViewNameExtractorIntegrationTests.swift in Sources */,
 				3C4CF99B2C47DAA5006DE1C0 /* MemoryWarningMocks.swift in Sources */,
+				5B1D02942E8ED6C000AB2391 /* FlagEvaluationReceiverTests.swift in Sources */,
 				3C43A3882C188974000BFB21 /* WatchdogTerminationMonitorTests.swift in Sources */,
 				D29A9F9D29DDB483005C54A4 /* ValuePublisherTests.swift in Sources */,
 				6174D61A2BFE449300EC7469 /* SessionEndedMetricTests.swift in Sources */,
@@ -10147,7 +10713,6 @@
 				D2DA23A3298D58F400C6C7E6 /* AnyEncodableTests.swift in Sources */,
 				3CCECDAF2BC688120013C125 /* SpanIDGeneratorTests.swift in Sources */,
 				D263BCB429DB014900FA0E21 /* FixedWidthInteger+ConvenienceTests.swift in Sources */,
-				11E4B7182E4DF88A005C1767 /* DatadogContextTests.swift in Sources */,
 				960A0D402D6F88A0004BB999 /* ReflectorTests.swift in Sources */,
 				6174D6162BFDF29B00EC7469 /* BundleTypeTests.swift in Sources */,
 				116F84062CFDD06700705755 /* SampleRateTests.swift in Sources */,
@@ -10214,7 +10779,6 @@
 				D284C7412C2059F3005142CC /* ObjcExceptionTests.swift in Sources */,
 				D2C5D5292B83FD5400B63F36 /* WebViewMessageTests.swift in Sources */,
 				D20731CE29A52E8700ECBF94 /* SamplerTests.swift in Sources */,
-				11E4B7192E4DF88A005C1767 /* DatadogContextTests.swift in Sources */,
 				D2160CEA29C0E00200FAA9A5 /* MethodSwizzlerTests.swift in Sources */,
 				D2EBEE4229BA163F00B15732 /* W3CHTTPHeadersReaderTests.swift in Sources */,
 				D2160CDD29C0DF6700FAA9A5 /* HostsSanitizerTests.swift in Sources */,
@@ -10342,6 +10906,31 @@
 			isa = PBXTargetDependency;
 			target = 3CE119FD29F7BE0000202522 /* DatadogWebViewTracking iOS */;
 			targetProxy = 3CE11A0729F7BE0500202522 /* PBXContainerItemProxy */;
+		};
+		5BA8C3072E784C0200B1DA80 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D23039A4298D513C001A1FA3 /* DatadogInternal iOS */;
+			targetProxy = 5BA8C3062E784C0200B1DA80 /* PBXContainerItemProxy */;
+		};
+		5BA8C3242E785B6F00B1DA80 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5BA8C3182E785B6F00B1DA80 /* DatadogFlags tvOS */;
+			targetProxy = 5BA8C3232E785B6F00B1DA80 /* PBXContainerItemProxy */;
+		};
+		5BA8C3332E785CFC00B1DA80 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D2DA2355298D57AA00C6C7E6 /* DatadogInternal tvOS */;
+			targetProxy = 5BA8C3322E785CFC00B1DA80 /* PBXContainerItemProxy */;
+		};
+		5BA8C3382E785E3400B1DA80 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D2579571298ABB83008A1BE5 /* TestUtilities tvOS */;
+			targetProxy = 5BA8C3372E785E3400B1DA80 /* PBXContainerItemProxy */;
+		};
+		5BF2286E2E795D8C00D79E8A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5BA8C2EC2E784B3C00B1DA80 /* DatadogFlags iOS */;
+			targetProxy = 5BF2286D2E795D8C00D79E8A /* PBXContainerItemProxy */;
 		};
 		6133D1E62A6ED9E100384BEF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -10828,6 +11417,316 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogWebViewTrackingTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Integration;
+		};
+		5BA8C2FC2E784B3D00B1DA80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlags;
+				PRODUCT_NAME = DatadogFlags;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5BA8C2FD2E784B3D00B1DA80 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlags;
+				PRODUCT_NAME = DatadogFlags;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		5BA8C2FE2E784B3D00B1DA80 /* Integration */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlags;
+				PRODUCT_NAME = DatadogFlags;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Integration;
+		};
+		5BA8C3292E785B7000B1DA80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlags;
+				PRODUCT_NAME = DatadogFlags;
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Debug;
+		};
+		5BA8C32A2E785B7000B1DA80 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlags;
+				PRODUCT_NAME = DatadogFlags;
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Release;
+		};
+		5BA8C32B2E785B7000B1DA80 /* Integration */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlags;
+				PRODUCT_NAME = DatadogFlags;
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Integration;
+		};
+		5BA8C32D2E785B7000B1DA80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlagsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Debug;
+		};
+		5BA8C32E2E785B7000B1DA80 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlagsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Release;
+		};
+		5BA8C32F2E785B7000B1DA80 /* Integration */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlagsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Integration;
+		};
+		5BF228672E795D6500D79E8A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61378BA72555329E00F28837 /* DatadogTests.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlagsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5BF228682E795D6500D79E8A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlagsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		5BF228692E795D6500D79E8A /* Integration */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogFlagsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -13509,6 +14408,46 @@
 				3CE11A1629F7BE0B00202522 /* Debug */,
 				3CE11A1729F7BE0B00202522 /* Release */,
 				3CE11A1829F7BE0B00202522 /* Integration */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5BA8C3022E784B3D00B1DA80 /* Build configuration list for PBXNativeTarget "DatadogFlags iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BA8C2FC2E784B3D00B1DA80 /* Debug */,
+				5BA8C2FD2E784B3D00B1DA80 /* Release */,
+				5BA8C2FE2E784B3D00B1DA80 /* Integration */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5BA8C3282E785B7000B1DA80 /* Build configuration list for PBXNativeTarget "DatadogFlags tvOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BA8C3292E785B7000B1DA80 /* Debug */,
+				5BA8C32A2E785B7000B1DA80 /* Release */,
+				5BA8C32B2E785B7000B1DA80 /* Integration */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5BA8C32C2E785B7000B1DA80 /* Build configuration list for PBXNativeTarget "DatadogFlagsTests tvOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BA8C32D2E785B7000B1DA80 /* Debug */,
+				5BA8C32E2E785B7000B1DA80 /* Release */,
+				5BA8C32F2E785B7000B1DA80 /* Integration */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5BF228662E795D6500D79E8A /* Build configuration list for PBXNativeTarget "DatadogFlagsTests iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BF228672E795D6500D79E8A /* Debug */,
+				5BF228682E795D6500D79E8A /* Release */,
+				5BF228692E795D6500D79E8A /* Integration */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

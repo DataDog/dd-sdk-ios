@@ -149,7 +149,7 @@ internal extension PerformancePreset {
             maxFileAgeForWrite: override.maxFileAgeForWrite ?? maxFileAgeForWrite,
             minFileAgeForRead: override.minFileAgeForRead ?? minFileAgeForRead,
             maxFileAgeForRead: override.maxFileAgeForRead ?? maxFileAgeForRead,
-            maxObjectsInFile: maxObjectsInFile,
+            maxObjectsInFile: override.maxObjectsInFile ?? maxObjectsInFile,
             maxObjectSize: override.maxObjectSize ?? maxObjectSize,
             initialUploadDelay: override.initialUploadDelay ?? initialUploadDelay,
             minUploadDelay: override.minUploadDelay ?? minUploadDelay,
