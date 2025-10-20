@@ -36,14 +36,6 @@ internal protocol AppLaunchHandling {
     /// The date right before the @c main() is executed.
     var runtimePreMainDate: Date { get }
 
-    /// The date when the `UIApplication.didFinishLaunchingNotification` was triggered.
-    /// Returns `nil` if the notification has not yet been received.
-    var didFinishLaunchingDate: Date? { get }
-
-    /// The date when the `UIApplication.didBecomeActiveNotification` was triggered.
-    /// Returns `nil` if the notification has not yet been received.
-    var didBecomeActiveDate: Date? { get }
-
     /// Sets a callback to be invoked when the application receives UIApplication notifications.
     ///
     /// - Parameter callback: A closure executed upon app activation.
@@ -63,8 +55,6 @@ extension AppLaunchHandling {
             processLaunchDate: processLaunchDate,
             runtimeLoadDate: runtimeLoadDate,
             runtimePreMainDate: runtimePreMainDate,
-            didFinishLaunchingDate: didFinishLaunchingDate,
-            didBecomeActiveDate: didBecomeActiveDate,
             raw: .init(
                 taskPolicyRole: rawTaskPolicyRole,
                 isPrewarmed: isPrewarmed(processInfo: processInfo)
@@ -143,9 +133,7 @@ internal struct LaunchInfoPublisher: ContextValuePublisher {
         }
     }
 
-    func cancel() {
-        handler.setApplicationNotificationCallback { _, _ in }
-    }
+    func cancel() {} // The `handler` already cleans up all callbacks after the notifications are triggered
 }
 
 #endif

@@ -55,7 +55,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         )
 
         // When
-        manager.process(command, context: mockContext, writer: mockWriter, activeView: nil)
+        manager.process(command, context: mockContext, writer: mockWriter)
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)
@@ -109,7 +109,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         let command: RUMTimeToInitialDisplayCommand = .mockWith(time: runtimeLoadDate.addingTimeInterval(ttid))
 
         // When
-        manager.process(command, context: mockContext, writer: mockWriter, activeView: nil)
+        manager.process(command, context: mockContext, writer: mockWriter)
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)
@@ -138,7 +138,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         let command: RUMTimeToInitialDisplayCommand = .mockWith(time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(ttid))
 
         // When
-        manager.process(command, context: mockContext, writer: mockWriter, activeView: nil)
+        manager.process(command, context: mockContext, writer: mockWriter)
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)
@@ -171,9 +171,9 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         )
 
         // When
-        manager.process(firstCommand, context: mockContext, writer: mockWriter, activeView: nil)
-        manager.process(secondCommand, context: mockContext, writer: mockWriter, activeView: nil)
-        manager.process(thirdCommand, context: mockContext, writer: mockWriter, activeView: nil)
+        manager.process(firstCommand, context: mockContext, writer: mockWriter)
+        manager.process(secondCommand, context: mockContext, writer: mockWriter)
+        manager.process(thirdCommand, context: mockContext, writer: mockWriter)
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)
@@ -187,7 +187,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         )
 
         // When
-        manager.process(command, context: mockContext, writer: mockWriter, activeView: nil)
+        manager.process(command, context: mockContext, writer: mockWriter)
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)
@@ -202,7 +202,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         )
 
         // When
-        manager.process(command, context: mockContext, writer: mockWriter, activeView: nil)
+        manager.process(command, context: mockContext, writer: mockWriter)
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)
@@ -217,7 +217,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         )
 
         // When
-        manager.process(command, context: mockContext, writer: mockWriter, activeView: nil)
+        manager.process(command, context: mockContext, writer: mockWriter)
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)

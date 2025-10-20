@@ -9,9 +9,7 @@ import Foundation
 
 internal class RUMAppLaunchManager {
     internal enum Constants {
-        // Maximum time for a long interval between app launches
-        static let maxInactivityDuration: TimeInterval = 604_800 // 1 week
-        // Maximum time for an erroneous ttid
+        // Maximum time for an erroneous TTID (Time to Initial Display)
         static let maxTTIDDuration: TimeInterval = 60 // 1 minute
     }
     // MARK: - Properties
@@ -32,11 +30,11 @@ internal class RUMAppLaunchManager {
 
     // MARK: - Internal Interface
 
-    func process(_ command: RUMCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope?) {
+    func process(_ command: RUMCommand, context: DatadogContext, writer: Writer) {
         do {
             switch command {
             case let command as RUMTimeToInitialDisplayCommand:
-                try writeTTIDVitalEvent(from: command, context: context, writer: writer, activeView: activeView)
+                try writeTTIDVitalEvent(from: command, context: context, writer: writer)
             default: break
             }
         } catch {
@@ -46,16 +44,20 @@ internal class RUMAppLaunchManager {
 
     // MARK: - Private Methods
 
-    private func writeTTIDVitalEvent(from command: RUMTimeToInitialDisplayCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope?) throws {
-        guard shouldProcess(command: command, context: context),
-              let timeToInitialDisplay = timeToInitialDisplay(from: command, context: context) else { return }
+    private func writeTTIDVitalEvent(from command: RUMTimeToInitialDisplayCommand, context: DatadogContext, writer: Writer) throws {
+        guard
+            shouldProcess(command: command, context: context),
+            let timeToInitialDisplay = timeToInitialDisplay(from: command, context: context)
+        else {
+            return
+        }
 
         self.timeToInitialDisplay = timeToInitialDisplay
 
         let attributes = command.globalAttributes
             .merging(command.attributes) { $1 }
 
-        try dependencies.appStateManager.currentAppStateInfo { [weak self] currentAppStateInfo in
+        dependencies.appStateManager.currentAppStateInfo { [weak self] currentAppStateInfo in
             guard let self else {
                 return
             }
@@ -128,6 +130,7 @@ internal class RUMAppLaunchManager {
             return command.time.timeIntervalSince(context.launchInfo.processLaunchDate)
         case .prewarming:
             guard let runtimeLoadDate = context.launchInfo.launchPhaseDates[.runtimeLoad] else {
+                dependencies.telemetry.error("Prewarming app launch without runtime load date.")
                 return nil
             }
             return command.time.timeIntervalSince(runtimeLoadDate)
@@ -143,53 +146,5 @@ private extension RUMVitalEvent.Vital.AppLaunchProperties.AppLaunchMetric {
         case .ttid: return "time_to_initial_display"
         case .ttfd: return "time_to_full_display"
         }
-    }
-}
-
-private enum ColdStartRule: CaseIterable {
-    case freshInstall
-    case appUpdate
-    case systemRestart
-    case longInactivity
-}
-
-private class StartupTypeHandler {
-    private let appStateManager: AppStateManaging
-    private let coldStartRules: [ColdStartRule]
-
-    init(
-        appStateManager: AppStateManaging,
-        coldStartRules: [ColdStartRule] = ColdStartRule.allCases
-    ) {
-        self.appStateManager = appStateManager
-        self.coldStartRules = coldStartRules
-    }
-
-    func startupType(currentAppState: AppStateInfo) -> RUMVitalEvent.Vital.AppLaunchProperties.StartupType {
-        for rule in coldStartRules {
-            switch rule {
-            case .freshInstall:
-                if appStateManager.previousAppStateInfo == nil {
-                    return .coldStart
-                }
-            case .appUpdate:
-                if let previousAppStateInfo = appStateManager.previousAppStateInfo,
-                   previousAppStateInfo.appVersion != currentAppState.appVersion {
-                    return .coldStart
-                }
-            case .systemRestart:
-                if let previousAppStateInfo = appStateManager.previousAppStateInfo,
-                   previousAppStateInfo.systemBootTime < currentAppState.systemBootTime {
-                    return .coldStart
-                }
-            case .longInactivity:
-                if let previousAppStateInfo = appStateManager.previousAppStateInfo,
-                   (currentAppState.appLaunchTime - previousAppStateInfo.appLaunchTime) > RUMAppLaunchManager.Constants.maxInactivityDuration {
-                    return .coldStart
-                }
-            }
-        }
-
-        return .warmStart
     }
 }

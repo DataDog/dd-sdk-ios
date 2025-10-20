@@ -88,19 +88,13 @@ internal final class WatchdogTerminationMonitor {
     /// Checks if the app was terminated by Watchdog and sends the Watchdog Termination event to Datadog.
     /// - Parameter launch: The launch report containing information about the app launch.
     private func sendWatchTerminationIfFound(launch: LaunchReport, completion: @escaping () -> Void) {
-        do {
-            try checker.isWatchdogTermination(launch: launch) { [weak self] isWatchdogTermination, state  in
-                if isWatchdogTermination, let state = state {
-                    DD.logger.debug(ErrorMessages.detectedWatchdogTermination)
-                    self?.sendWatchTermination(state: state, completion: completion)
-                } else {
-                    completion()
-                }
+        checker.isWatchdogTermination(launch: launch) { [weak self] isWatchdogTermination, state  in
+            if isWatchdogTermination, let state = state {
+                DD.logger.debug(ErrorMessages.detectedWatchdogTermination)
+                self?.sendWatchTermination(state: state, completion: completion)
+            } else {
+                completion()
             }
-        } catch {
-            DD.logger.error(ErrorMessages.failedToCheckWatchdogTermination, error: error)
-            feature.telemetry.error(ErrorMessages.failedToCheckWatchdogTermination, error: error)
-            completion()
         }
     }
 

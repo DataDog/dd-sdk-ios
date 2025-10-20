@@ -30,19 +30,13 @@ internal final class WatchdogTerminationChecker {
     /// - Parameters:
     ///   - launch: The launch report containing information about the app launch.
     ///   - completion: The completion block called with the result.
-    func isWatchdogTermination(launch: LaunchReport, completion: @escaping (Bool, AppStateInfo?) -> Void) throws {
-        do {
-            try appStateManager.currentAppStateInfo { [weak self] current in
-                self?.featureScope.context { [weak self] context in
-                    let previous = self?.appStateManager.previousAppStateInfo
-                    let isWatchdogTermination = self?.isWatchdogTermination(launch: launch, deviceInfo: context.device, from: previous, to: current)
-                    completion(isWatchdogTermination ?? false, previous)
-                }
+    func isWatchdogTermination(launch: LaunchReport, completion: @escaping (Bool, AppStateInfo?) -> Void) {
+        appStateManager.currentAppStateInfo { [weak self] current in
+            self?.featureScope.context { [weak self] context in
+                let previous = self?.appStateManager.previousAppStateInfo
+                let isWatchdogTermination = self?.isWatchdogTermination(launch: launch, deviceInfo: context.device, from: previous, to: current)
+                completion(isWatchdogTermination ?? false, previous)
             }
-        } catch let error {
-            DD.logger.error("Failed to check if Watchdog Termination occurred", error: error)
-            completion(false, nil)
-            throw error
         }
     }
 

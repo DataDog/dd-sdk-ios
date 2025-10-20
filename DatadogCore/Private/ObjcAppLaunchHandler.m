@@ -85,8 +85,11 @@ static void recordPreMainDate(void) {
 
         @synchronized(self) {
             self->_didFinishLaunchingDate = CFAbsoluteTimeGetCurrent();
+            NSDate *didFinishLaunchingDate = [NSDate dateWithTimeIntervalSinceReferenceDate:self->_didFinishLaunchingDate];
+            NSDate *didBecomeActiveDate = self->_didBecomeActiveDate > 0 ? [NSDate dateWithTimeIntervalSinceReferenceDate:self->_didBecomeActiveDate] : nil;
+
             for (UIApplicationNotificationCallback callback in self->_applicationNotificationCallbacks) {
-                callback(self.didFinishLaunchingDate, self.didBecomeActiveDate);
+                callback(didFinishLaunchingDate, didBecomeActiveDate);
             }
         }
 
@@ -112,8 +115,11 @@ static void recordPreMainDate(void) {
                                                             usingBlock:^(NSNotification *_){
         @synchronized(self) {
             self->_didBecomeActiveDate = CFAbsoluteTimeGetCurrent();
+            NSDate *didBecomeActiveDate = [NSDate dateWithTimeIntervalSinceReferenceDate:self->_didBecomeActiveDate];
+            NSDate *didFinishLaunchingDate = self->_didFinishLaunchingDate > 0 ? [NSDate dateWithTimeIntervalSinceReferenceDate:self->_didFinishLaunchingDate] : nil;
+
             for (UIApplicationNotificationCallback callback in self->_applicationNotificationCallbacks) {
-                callback(self.didFinishLaunchingDate, self.didBecomeActiveDate);
+                callback(didFinishLaunchingDate, didBecomeActiveDate);
             }
             //we can clean the callbacks array since the new triggered notifications won't be associated with the app launch
             [self->_applicationNotificationCallbacks removeAllObjects];
@@ -163,18 +169,6 @@ static void recordPreMainDate(void) {
 - (NSDate *)runtimePreMainDate {
     @synchronized(self) {
         return [NSDate dateWithTimeIntervalSinceReferenceDate:_runtimePreMainDate];
-    }
-}
-
-- (NSDate *)didFinishLaunchingDate {
-    @synchronized(self) {
-        return _didFinishLaunchingDate > 0 ? [NSDate dateWithTimeIntervalSinceReferenceDate:_didFinishLaunchingDate] : nil;
-    }
-}
-
-- (NSDate *)didBecomeActiveDate {
-    @synchronized(self) {
-        return _didBecomeActiveDate > 0 ? [NSDate dateWithTimeIntervalSinceReferenceDate:_didBecomeActiveDate] : nil;
     }
 }
 

@@ -98,20 +98,21 @@ class AppLaunchHandlerLaunchInfoTests: XCTestCase {
         }
     }
 
-    func testProcessLaunchDateForwarding() {
-        let expectedDate = Date()
-        let handler = AppLaunchHandlerMock(processLaunchDate: expectedDate)
-        let info = handler.resolveLaunchInfo(using: ProcessInfoMock())
-        XCTAssertEqual(info.processLaunchDate, expectedDate)
-    }
-
-    func testTimeToDidBecomeActiveForwarding() {
+    func testAppLaunchDatesForwarding() {
         let processLaunchDate = Date()
         let expectedInterval: TimeInterval = 4.56
-        let didBecomeActiveDate = processLaunchDate.addingTimeInterval(expectedInterval)
-        let handler = AppLaunchHandlerMock(processLaunchDate: processLaunchDate, didBecomeActiveDate: didBecomeActiveDate)
+        let runtimeLoadDate = processLaunchDate.addingTimeInterval(expectedInterval)
+        let runtimePreMainDate = runtimeLoadDate.addingTimeInterval(expectedInterval)
+        let handler = AppLaunchHandlerMock(
+            processLaunchDate: processLaunchDate,
+            runtimeLoadDate: runtimeLoadDate,
+            runtimePreMainDate: runtimePreMainDate
+        )
         let info = handler.resolveLaunchInfo(using: ProcessInfoMock())
-        XCTAssertEqual(info.launchPhaseDates[.didBecomeActive], didBecomeActiveDate)
+        XCTAssertEqual(info.processLaunchDate, processLaunchDate)
+        XCTAssertEqual(info.launchPhaseDates[.processLaunch], processLaunchDate)
+        XCTAssertEqual(info.launchPhaseDates[.runtimeLoad], runtimeLoadDate)
+        XCTAssertEqual(info.launchPhaseDates[.runtimePreMain], runtimePreMainDate)
     }
 
     func testTimeToDidBecomeActiveForwardingNil() {
@@ -148,33 +149,7 @@ class AppLaunchHandlerTests: XCTestCase {
         XCTAssertLessThan(uptime, 3_600, "Process uptime should be less than 1 hour — test process likely launched recently.")
     }
 
-    func testTimeToDidBecomeActive() {
-        // Given
-        let handler = AppLaunchHandler()
-        XCTAssertNil(handler.didBecomeActiveDate)
-
-        // When
-        handler.observe(notificationCenter)
-        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
-
-        // Then
-        XCTAssertNotNil(handler.didBecomeActiveDate)
-    }
-
-    func testTimeToDidFinishLaunching() {
-        // Given
-        let handler = AppLaunchHandler()
-        XCTAssertNil(handler.didFinishLaunchingDate)
-
-        // When
-        handler.observe(notificationCenter)
-        notificationCenter.post(name: ApplicationNotifications.didFinishLaunching, object: nil)
-
-        // Then
-        XCTAssertNotNil(handler.didFinishLaunchingDate)
-    }
-
-    func testSetApplicationNotificationCallback() {
+    func testDidFinishLaunchingNotification() {
         // Given
         let handler = AppLaunchHandler()
         let callbackNotified = expectation(description: "Notify setApplicationNotificationCallback()")
@@ -182,27 +157,20 @@ class AppLaunchHandlerTests: XCTestCase {
 
         // When
         handler.observe(notificationCenter)
-        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        notificationCenter.post(name: ApplicationNotifications.didFinishLaunching, object: nil)
 
         // Then
         waitForExpectations(timeout: 1)
     }
 
-    func testSetApplicationNotificationCallbackByMultipleHandlers() {
+    func testDidBecomeActiveNotification() {
         // Given
-        let handlersCount = 3
-        let handlers = (0..<handlersCount).map { _ in AppLaunchHandler() }
-        let notified = expectation(description: "All handlers notified")
-        notified.expectedFulfillmentCount = handlersCount
-
-        handlers.forEach { handler in
-            handler.setApplicationNotificationCallback { _, _ in
-                notified.fulfill()
-            }
-            handler.observe(notificationCenter)
-        }
+        let handler = AppLaunchHandler()
+        let callbackNotified = expectation(description: "Notify setApplicationNotificationCallback()")
+        handler.setApplicationNotificationCallback { _, _ in callbackNotified.fulfill() }
 
         // When
+        handler.observe(notificationCenter)
         notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
 
         // Then
@@ -225,7 +193,7 @@ class AppLaunchHandlerTests: XCTestCase {
         waitForExpectations(timeout: 1)
     }
 
-    func testSetApplicationDidBecomeActiveCallbackByMultipleEntities() {
+    func testSetApplicationNotificationCallbackByMultipleEntities() {
         // Given
         let handler = AppLaunchHandler()
         let callbacksCount = 10
@@ -233,7 +201,7 @@ class AppLaunchHandlerTests: XCTestCase {
         notified.expectedFulfillmentCount = callbacksCount
 
         (0..<callbacksCount).forEach { _ in
-            handler.setApplicationDidBecomeActiveCallback { _ in notified.fulfill() }
+            handler.setApplicationNotificationCallback { _, _ in notified.fulfill() }
         }
 
         // When
@@ -244,7 +212,7 @@ class AppLaunchHandlerTests: XCTestCase {
         waitForExpectations(timeout: 1)
     }
 
-    func testApplicationDidBecomeActiveMultipleTimesInMultipleEntities() {
+    func testApplicationNotificationsMultipleTimesInMultipleEntities() {
         // Given
         let handler = AppLaunchHandler()
         let callbacksCount: Int = .mockRandom(min: 3, max: 10)
@@ -253,7 +221,7 @@ class AppLaunchHandlerTests: XCTestCase {
         notified.expectedFulfillmentCount = callbacksCount
 
         (0..<callbacksCount).forEach { _ in
-            handler.setApplicationDidBecomeActiveCallback { _ in notified.fulfill() }
+            handler.setApplicationNotificationCallback { _, _ in notified.fulfill() }
         }
 
         // When
@@ -274,7 +242,8 @@ class AppLaunchHandlerTests: XCTestCase {
             closures: [
                 { _ = handler.taskPolicyRole },
                 { _ = handler.processLaunchDate },
-                { _ = handler.didBecomeActiveDate },
+                { _ = handler.runtimeLoadDate },
+                { _ = handler.runtimePreMainDate },
                 { handler.setApplicationNotificationCallback { _, _ in } }
             ],
             iterations: 1_000

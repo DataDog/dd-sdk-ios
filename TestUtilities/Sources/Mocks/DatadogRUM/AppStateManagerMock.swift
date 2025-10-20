@@ -11,14 +11,11 @@ import DatadogInternal
 /// Mock of the AppState manager.
 public final class AppStateManagerMock: AppStateManaging {
     public var previousAppStateInfo: AppStateInfo?
-    public var currentAppStateInfo: AppStateInfo? = .mockAny()
+    public var currentAppStateInfo: AppStateInfo = .mockAny()
 
     public func deleteAppState() {}
     public func updateAppState(state: AppState) {}
-    public func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void) throws {
-        guard let currentAppStateInfo else {
-            throw ErrorMock()
-        }
+    public func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void) {
         completion(currentAppStateInfo)
     }
     public func storeCurrentAppState() throws {}

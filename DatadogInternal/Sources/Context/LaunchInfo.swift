@@ -61,8 +61,8 @@ public struct LaunchInfo: Codable, Equatable {
         processLaunchDate: Date,
         runtimeLoadDate: Date?,
         runtimePreMainDate: Date?,
-        didFinishLaunchingDate: Date?,
-        didBecomeActiveDate: Date?,
+        didFinishLaunchingDate: Date? = nil,
+        didBecomeActiveDate: Date? = nil, // swiftlint:disable:this function_default_parameter_at_end
         raw: Raw
     ) {
         self.launchReason = launchReason

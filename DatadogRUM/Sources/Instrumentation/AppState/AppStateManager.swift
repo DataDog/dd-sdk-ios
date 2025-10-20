@@ -15,7 +15,7 @@ internal protocol AppStateManaging {
     /// Updates the app state based on the given application state.
     func updateAppState(state: AppState)
     /// Builds the current app state.
-    func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void) throws
+    func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void)
     /// Builds the current app state and stores it in the data store.
     func storeCurrentAppState() throws
 }
@@ -116,7 +116,7 @@ internal final class AppStateManager: AppStateManaging {
 
     /// Builds the current app state asynchronously.
     /// - Parameter completion: The completion block called with the app state.
-    func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void) throws {
+    func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void) {
         featureScope.context { context in
             let state: AppStateInfo = .init(
                 appVersion: context.version,
@@ -137,7 +137,7 @@ internal final class AppStateManager: AppStateManaging {
 
     /// Builds the current app state and stores it in the data store.
     func storeCurrentAppState() throws {
-        try currentAppStateInfo { [self] appState in
+        currentAppStateInfo { [self] appState in
             featureScope.rumDataStore.setValue(appState, forKey: .appStateKey)
         }
     }

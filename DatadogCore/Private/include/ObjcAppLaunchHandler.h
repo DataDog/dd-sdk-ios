@@ -48,15 +48,6 @@ typedef void (^UIApplicationNotificationCallback)(NSDate * _Nullable didFinishLa
 /// The timestamp right before the @c main() is executed.
 @property (nonatomic, readonly) NSDate *runtimePreMainDate;
 
-/// The timestamp when the app did finish launching (`didFinishLaunching`).
-/// `nil` if not yet launched.
-@property (nonatomic, readonly, nullable) NSDate *didFinishLaunchingDate;
-
-/// The timestamp when the app was activated (`didBecomeActive`).
-/// `nil` if not yet activated.
-@property (nonatomic, readonly, nullable) NSDate *didBecomeActiveDate;
-
-
 /// Observes the given notification center for application lifecycle events.
 ///
 /// This method listens for the application becoming active and updates launch-related timestamps accordingly.
