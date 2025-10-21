@@ -114,14 +114,14 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
             interception.completion?.error
         ) ?? [:]
 
-        var originalRequest = interception.request.unsafeOriginal
+        let originalRequest = interception.request.unsafeOriginal
 
         // Extract GraphQL attributes from request headers
         var combinedAttributes = userAttributes
         if let operationName = originalRequest.value(forHTTPHeaderField: "_dd-custom-header-graph-ql-operation-name") {
             combinedAttributes[CrossPlatformAttributes.graphqlOperationName] = operationName
         }
-        if let operationType = originalRequest.value(forHTTPHeaderField: "_dd-custom-header-graph-ql-operation_type") {
+        if let operationType = originalRequest.value(forHTTPHeaderField: "_dd-custom-header-graph-ql-operation-type") {
             combinedAttributes[CrossPlatformAttributes.graphqlOperationType] = operationType
         }
         if let variables = originalRequest.value(forHTTPHeaderField: "_dd-custom-header-graph-ql-variables") {
