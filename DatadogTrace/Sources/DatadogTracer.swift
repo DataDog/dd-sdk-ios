@@ -160,8 +160,8 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         updateCoreAttributes()
     }
 
-    internal func removeSpan(activityReference: ActivityReference) {
-        activeSpansPool.removeSpan(activityReference: activityReference)
+    internal func removeSpan(span: DDSpan) {
+        activeSpansPool.removeSpan(span: span)
         updateCoreAttributes()
     }
 

@@ -123,7 +123,7 @@ internal final class DDSpan: OTSpan {
         isFinished = true
 
         if let activity = activityReference {
-            ddTracer.removeSpan(activityReference: activity)
+            ddTracer.removeSpan(span: self)
             activity.leave()
         }
         sendSpan(finishTime: time, sampler: ddTracer.localTraceSampler)

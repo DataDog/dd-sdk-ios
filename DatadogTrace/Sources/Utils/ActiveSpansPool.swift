@@ -15,6 +15,8 @@ internal let OS_ACTIVITY_CURRENT = unsafeBitCast(dlsym(UnsafeMutableRawPointer(b
 internal class ActivityReference {
     let activityId: os_activity_id_t
     fileprivate var activityState = os_activity_scope_state_s()
+    
+    private var isActive = true
 
     init() {
         let dso = UnsafeMutableRawPointer(mutating: #dsohandle)
@@ -57,9 +59,11 @@ internal class ActiveSpansPool {
         rlock.unlock()
     }
 
-    func removeSpan(activityReference: ActivityReference) {
+    func removeSpan(span: DDSpan) {
         rlock.lock()
-        contextMap[activityReference.activityId] = nil
+        contextMap = contextMap.filter { key, value in
+            value.ddContext.spanID != span.ddContext.spanID
+        }
         rlock.unlock()
     }
 
