@@ -953,7 +953,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        var mockRequest = URLRequest(url: URL(string: "https://graphql.example.com/api")!)
+        var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
         mockRequest.setValue("GetUser", forHTTPHeaderField: "_dd-custom-header-graph-ql-operation-name")
         mockRequest.setValue("query", forHTTPHeaderField: "_dd-custom-header-graph-ql-operation-type")
         mockRequest.setValue("{\"userId\":\"123\"}", forHTTPHeaderField: "_dd-custom-header-graph-ql-variables")
@@ -988,7 +988,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        var mockRequest = URLRequest(url: URL(string: "https://graphql.example.com/api")!)
+        var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
         mockRequest.setValue("FailedMutation", forHTTPHeaderField: "_dd-custom-header-graph-ql-operation-name")
         mockRequest.setValue("mutation", forHTTPHeaderField: "_dd-custom-header-graph-ql-operation-type")
 
