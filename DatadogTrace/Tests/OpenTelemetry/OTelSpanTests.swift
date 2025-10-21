@@ -226,7 +226,7 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertNil(parent.parentID)
         XCTAssertEqual(child.parentID, parent.spanID)
     }
-    
+
     func testSetActive_givenParentWithMultipleChildren() throws {
         // Given
         let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
@@ -245,12 +245,11 @@ final class OTelSpanTests: XCTestCase {
         let recordedParent = recordedSpans.first { $0.resource == "Parent" }!
         let recordedChild1 = recordedSpans.first { $0.resource == "Child1" }!
         let recordedChild2 = recordedSpans.first { $0.resource == "Child2" }!
-        
+
         XCTAssertEqual(recordedChild1.traceID, recordedParent.traceID)
         XCTAssertEqual(recordedChild1.parentID, recordedParent.spanID)
         XCTAssertEqual(recordedChild2.traceID, recordedParent.traceID)
         XCTAssertEqual(recordedChild2.parentID, recordedParent.spanID)
-
     }
 
     func testWithActiveSpan() throws {

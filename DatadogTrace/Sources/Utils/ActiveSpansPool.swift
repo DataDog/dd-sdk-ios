@@ -14,8 +14,7 @@ internal let OS_ACTIVITY_CURRENT = unsafeBitCast(dlsym(UnsafeMutableRawPointer(b
 /// Used to reference the active span in the current execution context.
 internal class ActivityReference {
     let activityId: os_activity_id_t
-    fileprivate var activityState = os_activity_scope_state_s()
-    
+    private var activityState = os_activity_scope_state_s()
     private var isActive = true
 
     init() {
@@ -25,14 +24,16 @@ internal class ActivityReference {
         os_activity_scope_enter(activity, &activityState)
     }
 
-    deinit {
-        leave()
-    }
-    
     func leave() {
-        guard isActive else { return }
+        guard isActive else {
+            return
+        }
         isActive = false
         os_activity_scope_leave(&activityState)
+    }
+
+    deinit {
+        leave()
     }
 }
 
@@ -40,6 +41,12 @@ internal class ActivityReference {
 internal class ActiveSpansPool {
     private var contextMap = [os_activity_id_t: DDSpan]()
     private let rlock = NSRecursiveLock()
+
+    var isEmpty: Bool {
+        rlock.lock()
+        defer { rlock.unlock() }
+        return contextMap.isEmpty
+    }
 
     /// Returns the Span from the current context
     func getActiveSpan() -> DDSpan? {
