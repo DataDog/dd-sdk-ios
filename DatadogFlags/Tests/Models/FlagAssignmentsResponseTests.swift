@@ -153,4 +153,112 @@ final class FlagAssignmentsResponseTests: XCTestCase {
             )
         )
     }
+
+    func testDecodingWithBrokenFlags_healsFromInvalidVariationType() throws {
+        // Given
+        let json = """
+        {
+          "data": {
+            "id": "test_subject",
+            "type": "precomputed-assignments",
+            "attributes": {
+              "createdAt": 1731939805123,
+              "environment": {
+                "name": "prod"
+              },
+              "flags": {
+                "valid-string-flag": {
+                  "allocationKey": "allocation-123",
+                  "variationKey": "variation-123",
+                  "variationType": "string",
+                  "variationValue": "red",
+                  "doLog": true,
+                  "reason": "TARGETING_MATCH"
+                },
+                "broken-flag": {
+                  "allocationKey": "allocation-999",
+                  "variationKey": "variation-999",
+                  "variationType": "NEW_VARIANT_TYPE",
+                  "variationValue": "something",
+                  "doLog": true,
+                  "reason": "TARGETING_MATCH"
+                },
+                "valid-boolean-flag": {
+                  "allocationKey": "allocation-124",
+                  "variationKey": "variation-124",
+                  "variationType": "boolean",
+                  "variationValue": true,
+                  "doLog": true,
+                  "reason": "TARGETING_MATCH"
+                },
+                "another-broken-flag": {
+                  "allocationKey": "allocation-998",
+                  "variationKey": "variation-998",
+                  "variationType": "ANOTHER_NEW_TYPE",
+                  "variationValue": 123,
+                  "doLog": true,
+                  "reason": "TARGETING_MATCH"
+                },
+                "valid-integer-flag": {
+                  "allocationKey": "allocation-125",
+                  "variationKey": "variation-125",
+                  "variationType": "integer",
+                  "variationValue": 42,
+                  "doLog": true,
+                  "reason": "TARGETING_MATCH"
+                }
+              }
+            }
+          }
+        }
+        """.data(using: .utf8)!
+
+        // When
+        let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: json)
+
+        // Then - Verify valid flags were decoded successfully
+        XCTAssertEqual(response.flags.count, 3, "Should have 3 valid flags")
+        XCTAssertEqual(
+            response.flags["valid-string-flag"],
+            .init(
+                allocationKey: "allocation-123",
+                variationKey: "variation-123",
+                variation: .string("red"),
+                reason: "TARGETING_MATCH",
+                doLog: true
+            )
+        )
+        XCTAssertEqual(
+            response.flags["valid-boolean-flag"],
+            .init(
+                allocationKey: "allocation-124",
+                variationKey: "variation-124",
+                variation: .boolean(true),
+                reason: "TARGETING_MATCH",
+                doLog: true
+            )
+        )
+        XCTAssertEqual(
+            response.flags["valid-integer-flag"],
+            .init(
+                allocationKey: "allocation-125",
+                variationKey: "variation-125",
+                variation: .integer(42),
+                reason: "TARGETING_MATCH",
+                doLog: true
+            )
+        )
+
+        // Then - Verify broken flags were captured
+        XCTAssertEqual(response.failedFlags.count, 2, "Should have 2 failed flags")
+        XCTAssertTrue(response.failedFlags.keys.contains("broken-flag"), "Should contain broken-flag")
+        XCTAssertTrue(response.failedFlags.keys.contains("another-broken-flag"), "Should contain another-broken-flag")
+
+        // Verify the error messages contain information about the unknown type
+        let brokenFlagError = try XCTUnwrap(response.failedFlags["broken-flag"])
+        XCTAssertTrue(brokenFlagError.contains("NEW_VARIANT_TYPE"), "Error should mention the unknown variant type")
+
+        let anotherBrokenFlagError = try XCTUnwrap(response.failedFlags["another-broken-flag"])
+        XCTAssertTrue(anotherBrokenFlagError.contains("ANOTHER_NEW_TYPE"), "Error should mention the unknown variant type")
+    }
 }

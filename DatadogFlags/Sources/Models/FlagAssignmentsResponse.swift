@@ -8,6 +8,12 @@ import Foundation
 
 internal struct FlagAssignmentsResponse: Equatable {
     let flags: [String: FlagAssignment]
+    let failedFlags: [String: String] // key -> error description
+
+    init(flags: [String: FlagAssignment], failedFlags: [String: String] = [:]) {
+        self.flags = flags
+        self.failedFlags = failedFlags
+    }
 }
 
 extension FlagAssignmentsResponse: Codable {
@@ -22,7 +28,40 @@ extension FlagAssignmentsResponse: Codable {
         let dataContainer = try rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
         let attributesContainer = try dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
 
-        self.flags = try attributesContainer.decode([String: FlagAssignment].self, forKey: .flags)
+        // Manually decode flags dictionary to handle individual flag failures gracefully
+        let flagsContainer = try attributesContainer.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .flags)
+
+        var successfulFlags: [String: FlagAssignment] = [:]
+        var failedFlags: [String: String] = [:]
+
+        for key in flagsContainer.allKeys {
+            do {
+                let flagAssignment = try flagsContainer.decode(FlagAssignment.self, forKey: key)
+                successfulFlags[key.stringValue] = flagAssignment
+            } catch {
+                // Store the error for telemetry logging
+                failedFlags[key.stringValue] = String(describing: error)
+            }
+        }
+
+        self.flags = successfulFlags
+        self.failedFlags = failedFlags
+    }
+
+    // Helper for dynamic key decoding
+    private struct DynamicCodingKey: CodingKey {
+        var stringValue: String
+        var intValue: Int?
+
+        init(stringValue: String) {
+            self.stringValue = stringValue
+            self.intValue = nil
+        }
+
+        init?(intValue: Int) {
+            self.stringValue = String(intValue)
+            self.intValue = intValue
+        }
     }
 
     func encode(to encoder: any Encoder) throws {
