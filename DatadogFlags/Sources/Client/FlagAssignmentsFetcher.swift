@@ -83,7 +83,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                                         "Failed to decode flag '\(flagKey)' from flag assignments response. Flag will be dropped from configuration.",
                                         error: error
                                     )
-                                    featureScope.telemetry.error(
+                                    featureScope.telemetry.debug(
                                         "Failed to decode flag '\(flagKey)' from flag assignments response",
                                         error: error
                                     )

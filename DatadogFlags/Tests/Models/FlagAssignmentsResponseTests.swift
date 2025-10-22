@@ -154,7 +154,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         )
     }
 
-    func testDecodingWithBrokenFlags_healsFromInvalidVariationType() throws {
+    func testDecodingFlagAssignmentsResponseWithUnknownVariationTypes() throws {
         // Given
         let json = """
         {

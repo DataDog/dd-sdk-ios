@@ -109,6 +109,7 @@ extension FlagAssignment: Codable {
             try container.encode("object", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
         case .unknown(let typeName):
+            // Should never happen as unknown variations are filtered out
             try container.encode(typeName, forKey: .variationType)
             try container.encodeNil(forKey: .variationValue)
         }
