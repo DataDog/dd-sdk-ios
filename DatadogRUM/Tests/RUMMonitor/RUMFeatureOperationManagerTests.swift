@@ -59,8 +59,8 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
         let event = try XCTUnwrap(vitalEvents.first)
         // View properties
-        XCTAssertEqual(event.view.id, view.viewUUID.toRUMDataFormat)
-        XCTAssertEqual(event.view.url, view.viewPath)
+        XCTAssertEqual(event.view?.id, view.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(event.view?.url, view.viewPath)
 
         // Common properties
         XCTAssertNil(event.account)
@@ -114,8 +114,8 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
         for (index, operation) in commands.enumerated() {
             let event = vitalEvents[index]
-            XCTAssertEqual(event.view.id, view.viewUUID.toRUMDataFormat)
-            XCTAssertEqual(event.view.url, view.viewPath)
+            XCTAssertEqual(event.view?.id, view.viewUUID.toRUMDataFormat)
+            XCTAssertEqual(event.view?.url, view.viewPath)
 
             guard case let .featureOperationProperties(vital) = event.vital else {
                 return XCTFail("Expected event.vital to be .featureOperationProperties, but got \(event.vital)")

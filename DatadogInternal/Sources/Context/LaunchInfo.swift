@@ -19,6 +19,15 @@ public enum LaunchReason: Codable {
     case uncertain
 }
 
+/// The phase for app startup.
+public enum LaunchPhase: Codable {
+    case processLaunch
+    case runtimeLoad
+    case runtimePreMain
+    case didFinishLaunching
+    case didBecomeActive
+}
+
 /// Info about app launch.
 public struct LaunchInfo: Codable, Equatable {
     /// The reason for app startup.
@@ -31,9 +40,8 @@ public struct LaunchInfo: Codable, Equatable {
     /// The date when the application process was started.
     public let processLaunchDate: Date
 
-    /// The duration measured from `processLaunchDate` to receiving `UIApplication.didBecomeActiveNotification`.
-    /// If the notification has not yet been received the value will be `nil`.
-    public let timeToDidBecomeActive: TimeInterval?
+    /// The dates for app startup phases.
+    public let launchPhaseDates: [LaunchPhase: Date]
 
     public struct Raw: Codable, Equatable {
         public let taskPolicyRole: String
@@ -51,12 +59,20 @@ public struct LaunchInfo: Codable, Equatable {
     public init(
         launchReason: LaunchReason,
         processLaunchDate: Date,
-        timeToDidBecomeActive: TimeInterval?,
+        runtimeLoadDate: Date?,
+        runtimePreMainDate: Date?,
+        didFinishLaunchingDate: Date? = nil,
+        didBecomeActiveDate: Date? = nil, // swiftlint:disable:this function_default_parameter_at_end
         raw: Raw
     ) {
         self.launchReason = launchReason
         self.processLaunchDate = processLaunchDate
-        self.timeToDidBecomeActive = timeToDidBecomeActive
+        var launchPhaseDates = [LaunchPhase.processLaunch: processLaunchDate]
+        launchPhaseDates[.runtimeLoad] = runtimeLoadDate
+        launchPhaseDates[.runtimePreMain] = runtimePreMainDate
+        launchPhaseDates[.didFinishLaunching] = didFinishLaunchingDate
+        launchPhaseDates[.didBecomeActive] = didBecomeActiveDate
+        self.launchPhaseDates = launchPhaseDates
         self.raw = raw
     }
 }

@@ -561,7 +561,8 @@ internal class SessionEndedMetric {
                     taskRole: context.launchInfo.raw.taskPolicyRole,
                     prewarmed: context.launchInfo.raw.isPrewarmed,
                     timeToSdkInit: context.sdkInitDate.timeIntervalSince(context.launchInfo.processLaunchDate).toInt64Milliseconds,
-                    timeToDidBecomeActive: context.launchInfo.timeToDidBecomeActive?.toInt64Milliseconds,
+                    timeToDidBecomeActive: context.launchInfo.launchPhaseDates[.didBecomeActive]?
+                        .timeIntervalSince(context.launchInfo.processLaunchDate).toInt64Milliseconds,
                     hasScenesLifecycle: isUsingSceneLifecycle,
                     appStateAtSdkInit: context.applicationStateHistory.initialState.toString
                 ),

@@ -17,10 +17,11 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testSyntheticsEnvironment_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous = AppStateInfo(
             appVersion: .mockAny(),
             osVersion: .mockAny(),
             systemBootTime: .mockAny(),
+            appLaunchTime: .mockAny(),
             isDebugging: true,
             wasTerminated: .mockAny(),
             isActive: .mockAny(),
@@ -37,45 +38,23 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testIsDebugging_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
-            appVersion: .mockAny(),
-            osVersion: .mockAny(),
-            systemBootTime: .mockAny(),
+        let previous: AppStateInfo = .mockWith(
             isDebugging: true,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
-            vendorId: .mockAny(),
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
         XCTAssertFalse(sut.isWatchdogTermination(launch: .mockRandom(), deviceInfo: .mockWith(isSimulator: false), from: previous, to: .mockRandom()))
     }
 
     func testDifferentAppVersions_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
-            osVersion: .mockAny(),
-            systemBootTime: .mockAny(),
             isDebugging: false,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
-            vendorId: .mockAny(),
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current: AppStateInfo = .mockWith(
             appVersion: "1.0.1",
-            osVersion: .mockAny(),
-            systemBootTime: .mockAny(),
             isDebugging: false,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
-            vendorId: .mockAny(),
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
@@ -83,29 +62,13 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testApplicationDidCrash_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
-            appVersion: .mockAny(),
-            osVersion: .mockAny(),
-            systemBootTime: .mockAny(),
+        let previous: AppStateInfo = .mockWith(
             isDebugging: false,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
-            vendorId: .mockAny(),
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
-            appVersion: .mockAny(),
-            osVersion: .mockAny(),
-            systemBootTime: .mockAny(),
+        let current: AppStateInfo = .mockWith(
             isDebugging: false,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
-            vendorId: .mockAny(),
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
@@ -113,29 +76,16 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testApplicationWasTerminated_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
-            osVersion: .mockAny(),
-            systemBootTime: .mockAny(),
             isDebugging: false,
             wasTerminated: true,
-            isActive: .mockAny(),
-            vendorId: .mockAny(),
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
-            osVersion: .mockAny(),
-            systemBootTime: .mockAny(),
             isDebugging: false,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
-            vendorId: .mockAny(),
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
@@ -143,29 +93,17 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testDifferentOSVersions_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
-            systemBootTime: .mockAny(),
             isDebugging: false,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
-            vendorId: .mockAny(),
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
             osVersion: "1.0.1",
-            systemBootTime: .mockAny(),
             isDebugging: false,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
-            vendorId: .mockAny(),
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
@@ -173,29 +111,19 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testDifferentBootTimes_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
             isDebugging: false,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
-            vendorId: .mockAny(),
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 2.0,
             isDebugging: false,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
-            vendorId: .mockAny(),
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
@@ -203,29 +131,21 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testDifferentVendorId_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
             isDebugging: false,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
             vendorId: "foo",
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
             isDebugging: false,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
             vendorId: "bar",
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
@@ -235,29 +155,23 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     func testSDKWasStoppedAndStarted_NoWatchdogTermination() throws {
         let pid = UUID()
 
-        let previous = WatchdogTerminationAppState(
+        let previous: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
             isDebugging: false,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
             vendorId: "foo",
             processId: pid,
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
             isDebugging: false,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
             vendorId: "foo",
             processId: pid,
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
@@ -265,29 +179,22 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testApplicationWasInBackground_NoWatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
             isDebugging: false,
-            wasTerminated: .mockAny(),
             isActive: false,
             vendorId: "foo",
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
             isDebugging: false,
-            wasTerminated: .mockAny(),
-            isActive: .mockAny(),
             vendorId: "foo",
-            processId: .mockAny(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
@@ -295,29 +202,25 @@ final class WatchdogTerminationCheckerTests: XCTestCase {
     }
 
     func testApplicationWasInForeground_WatchdogTermination() throws {
-        let previous = WatchdogTerminationAppState(
+        let previous: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
             isDebugging: false,
-            wasTerminated: .mockAny(),
             isActive: true,
             vendorId: "foo",
             processId: UUID(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
-        let current = WatchdogTerminationAppState(
+        let current: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
             osVersion: "1.0.0",
             systemBootTime: 1.0,
             isDebugging: false,
-            wasTerminated: .mockAny(),
             isActive: true,
             vendorId: "foo",
             processId: UUID(),
-            trackingConsent: .mockRandom(),
             syntheticsEnvironment: false
         )
 
