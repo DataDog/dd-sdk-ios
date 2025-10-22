@@ -261,4 +261,40 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         let anotherBrokenFlagError = try XCTUnwrap(response.failedFlags["another-broken-flag"])
         XCTAssertTrue(anotherBrokenFlagError.contains("ANOTHER_NEW_TYPE"), "Error should mention the unknown variant type")
     }
+
+    func testDecodingFlagAssignmentWithUnknownVariationType() throws {
+        // Given
+        let json = """
+        {
+          "allocationKey": "allocation-999",
+          "variationKey": "variation-999",
+          "variationType": "FUTURE_TYPE",
+          "variationValue": "something",
+          "doLog": true,
+          "reason": "TARGETING_MATCH"
+        }
+        """.data(using: .utf8)!
+
+        // When
+        let assignment = try JSONDecoder().decode(FlagAssignment.self, from: json)
+
+        // Then - Verify it decoded successfully with unknown variation
+        XCTAssertEqual(assignment.allocationKey, "allocation-999")
+        XCTAssertEqual(assignment.variationKey, "variation-999")
+        XCTAssertEqual(assignment.reason, "TARGETING_MATCH")
+        XCTAssertTrue(assignment.doLog)
+
+        // Verify the variation is .unknown with the correct type name
+        if case .unknown(let typeName) = assignment.variation {
+            XCTAssertEqual(typeName, "FUTURE_TYPE")
+        } else {
+            XCTFail("Expected .unknown variation, got \(assignment.variation)")
+        }
+
+        // Verify variation(as:) returns nil for unknown types
+        XCTAssertNil(assignment.variation(as: String.self))
+        XCTAssertNil(assignment.variation(as: Bool.self))
+        XCTAssertNil(assignment.variation(as: Int.self))
+        XCTAssertNil(assignment.variation(as: Double.self))
+    }
 }

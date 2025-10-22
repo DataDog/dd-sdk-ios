@@ -28,40 +28,23 @@ extension FlagAssignmentsResponse: Codable {
         let dataContainer = try rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
         let attributesContainer = try dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
 
-        // Manually decode flags dictionary to handle individual flag failures gracefully
-        let flagsContainer = try attributesContainer.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .flags)
+        // Decode all flags (including those with unknown variation types)
+        let allFlags = try attributesContainer.decode([String: FlagAssignment].self, forKey: .flags)
 
+        // Separate valid flags from unknown variations
         var successfulFlags: [String: FlagAssignment] = [:]
         var failedFlags: [String: String] = [:]
 
-        for key in flagsContainer.allKeys {
-            do {
-                let flagAssignment = try flagsContainer.decode(FlagAssignment.self, forKey: key)
-                successfulFlags[key.stringValue] = flagAssignment
-            } catch {
-                // Store the error for telemetry logging
-                failedFlags[key.stringValue] = String(describing: error)
+        for (key, assignment) in allFlags {
+            if case .unknown(let typeName) = assignment.variation {
+                failedFlags[key] = "Unrecognized variation type \(typeName)"
+            } else {
+                successfulFlags[key] = assignment
             }
         }
 
         self.flags = successfulFlags
         self.failedFlags = failedFlags
-    }
-
-    // Helper for dynamic key decoding
-    private struct DynamicCodingKey: CodingKey {
-        var stringValue: String
-        var intValue: Int?
-
-        init(stringValue: String) {
-            self.stringValue = stringValue
-            self.intValue = nil
-        }
-
-        init?(intValue: Int) {
-            self.stringValue = String(intValue)
-            self.intValue = intValue
-        }
     }
 
     func encode(to encoder: any Encoder) throws {

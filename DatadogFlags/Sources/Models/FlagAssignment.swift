@@ -13,6 +13,7 @@ internal struct FlagAssignment: Equatable {
         case integer(Int)
         case double(Double)
         case object(AnyValue)
+        case unknown(String)
     }
 
     var allocationKey: String
@@ -33,6 +34,8 @@ internal struct FlagAssignment: Equatable {
             return value as? T
         case .object(let value):
             return value as? T
+        case .unknown:
+            return nil
         }
     }
 }
@@ -77,11 +80,7 @@ extension FlagAssignment: Codable {
         case "object":
             self.variation = try .object(container.decode(AnyValue.self, forKey: .variationValue))
         default:
-            let context = DecodingError.Context(
-                codingPath: container.codingPath + [CodingKeys.variationType],
-                debugDescription: "Unrecognized variation type \(variationType)"
-            )
-            throw DecodingError.typeMismatch(FlagAssignment.self, context)
+            self.variation = .unknown(variationType)
         }
     }
 
@@ -109,6 +108,9 @@ extension FlagAssignment: Codable {
         case .object(let value):
             try container.encode("object", forKey: .variationType)
             try container.encode(value, forKey: .variationValue)
+        case .unknown(let typeName):
+            try container.encode(typeName, forKey: .variationType)
+            try container.encodeNil(forKey: .variationValue)
         }
     }
 }
