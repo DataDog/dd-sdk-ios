@@ -1,7 +1,13 @@
 name: Github Issue Notification
 
 on:
-  workflow_dispatch:    # Trigger manually
+  # When a new issue is opened
+  issues:
+    types:
+    - opened
+
+  # When manually triggering the workflow
+  workflow_dispatch:
     inputs:
       issue_number:
         description: 'Issue number to process'
