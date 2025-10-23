@@ -15,7 +15,7 @@ internal enum ColdStartRule: CaseIterable {
 }
 
 internal final class StartupTypeHandler {
-    private enum Constants {
+    enum Constants {
         // Maximum time for a long interval between app launches
         static let maxInactivityDuration: TimeInterval = 604_800 // 1 week
     }

@@ -22,10 +22,6 @@ internal protocol AppStateManaging {
 
 /// Manages the app state changes observed during application lifecycle events such as application start, resume and termination.
 internal final class AppStateManager: AppStateManaging {
-    enum ErrorMessage: String {
-        case failedToStoreAppState = "Failed to store App State information"
-    }
-
     let featureScope: FeatureScope
 
     /// The last app state observed during application lifecycle events.

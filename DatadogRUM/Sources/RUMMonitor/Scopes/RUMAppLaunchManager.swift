@@ -21,7 +21,6 @@ internal class RUMAppLaunchManager {
 
     private var timeToInitialDisplay: Double?
     private var timeToFullDisplay: Double?
-    private var viewLoadingTime: Double?
     private var startupType: RUMVitalEvent.Vital.AppLaunchProperties.StartupType?
 
     private lazy var startupTypeHandler = StartupTypeHandler(appStateManager: dependencies.appStateManager)
@@ -41,13 +40,6 @@ internal class RUMAppLaunchManager {
             writeTTIDVitalEvent(from: command, context: context, writer: writer)
         case let command as RUMTimeToFullDisplayCommand:
             writeTTFDVitalEvent(from: command, context: context, writer: writer)
-        case let command as RUMAddViewLoadingTime:
-            registerViewLoadingTime(from: command, context: context)
-        case let command as RUMStopViewCommand:
-            if viewLoadingTime != nil,
-               timeToFullDisplay == nil {
-               writeTTFDVitalEvent(from: command, context: context, writer: writer)
-            }
         default: break
         }
     }
@@ -56,7 +48,7 @@ internal class RUMAppLaunchManager {
 // MARK: - TTID
 
 private extension RUMAppLaunchManager {
-    private func writeTTIDVitalEvent(from command: RUMTimeToInitialDisplayCommand, context: DatadogContext, writer: Writer) {
+    func writeTTIDVitalEvent(from command: RUMTimeToInitialDisplayCommand, context: DatadogContext, writer: Writer) {
         guard shouldProcess(command: command, context: context),
               let ttid = time(from: command, context: context)
         else {
@@ -212,49 +204,7 @@ private extension RUMAppLaunchManager {
     func shouldProcess(command: RUMTimeToFullDisplayCommand, context: DatadogContext) -> Bool {
         // Ignore command if the time to full display was already written
         guard self.timeToFullDisplay == nil else {
-            return false
-        }
-
-        // Ignore command if the time since the SDK load is too big
-        guard let runtimeLoadDate = context.launchInfo.launchPhaseDates[.runtimeLoad],
-              command.time.timeIntervalSince(runtimeLoadDate) < Constants.maxTTFDDuration else {
-            return false
-        }
-
-        return true
-    }
-}
-
-// MARK: - View loading time
-
-private extension RUMAppLaunchManager {
-    func registerViewLoadingTime(from command: RUMAddViewLoadingTime, context: DatadogContext) {
-        guard shouldProcess(command: command, context: context),
-              let viewLoadingTime = time(from: command, context: context) else { return }
-
-        self.viewLoadingTime = viewLoadingTime
-    }
-
-    func writeTTFDVitalEvent(from command: RUMStopViewCommand, context: DatadogContext, writer: Writer) {
-        if let viewLoadingTime, let timeToInitialDisplay, let startupType {
-            let attributes = command.globalAttributes
-                .merging(command.attributes) { $1 }
-            let ttfd = max(timeToInitialDisplay, viewLoadingTime)
-
-            self.writeVitalEvent(
-                duration: Double(ttfd.toInt64Nanoseconds),
-                appLaunchMetric: .ttfd,
-                startupType: startupType,
-                attributes: attributes,
-                context: context,
-                writer: writer
-            )
-        }
-    }
-
-    func shouldProcess(command: RUMAddViewLoadingTime, context: DatadogContext) -> Bool {
-        // Ignore command if the time to full display was already written
-        guard self.timeToFullDisplay == nil else {
+            DD.logger.warn("Time to Full Display was already processed. Make sure the `reportAppFullyDisplayed()` API is only called once.")
             return false
         }
 

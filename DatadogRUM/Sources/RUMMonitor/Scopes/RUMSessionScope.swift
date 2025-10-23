@@ -275,12 +275,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 appLaunchManager.process(command, context: context, writer: writer)
                 // command doesn't need to be propagated to other scopes
                 return true
-            case let command as RUMAddViewLoadingTime where isInitialSession && nextViewIndex <= 2:
-                // Register view loading time in case the TTFD is not reported
-                appLaunchManager.process(command, context: context, writer: writer)
-            case let command as RUMStopViewCommand where isInitialSession && nextViewIndex <= 2:
-                // Check if there is any missing metric to be reported
-                appLaunchManager.process(command, context: context, writer: writer)
             default:
                 if !hasActiveView {
                     handleOffViewCommand(command: command, context: context, writer: writer)
