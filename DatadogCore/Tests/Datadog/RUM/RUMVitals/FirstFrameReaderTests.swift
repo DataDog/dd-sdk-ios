@@ -15,7 +15,7 @@ final class FirstFrameReaderTests: XCTestCase {
         let reader = FirstFrameReader(dateProvider: DateProviderMock(), mediaTimeProvider: MediaTimeProviderMock(current: 0))
         let rumCommandSubscriber = RUMCommandSubscriberMock()
         reader.publish(to: rumCommandSubscriber)
-        var frameInfoProvider = FrameInfoProviderMock(maximumDeviceFramesPerSecond: 60)
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
 
         // 1st frame
         frameInfoProvider.currentFrameTimestamp = 2

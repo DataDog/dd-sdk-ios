@@ -595,15 +595,30 @@ extension RUMSessionMatcher: CustomStringConvertible {
     public var duration: TimeInterval? { durationNs.map { TimeInterval(fromNanoseconds: $0) } }
 
     /// The application start action.
-    public var applicationStartAction: RUMActionEvent? {
-        let appStartActions = actionEvents.filter { $0.action.type == .applicationStart }
-        precondition(appStartActions.count <= 1, "Session cannot have more than one `.applicationStart` action")
-        return appStartActions.first
+    public var ttidEvent: RUMVitalEvent? {
+        let appStartEvents = vitalEvents.filter {
+            if case .appLaunchProperties = $0.vital {
+                return true
+            }
+            // RUM-11999: Handle properly the type of vital.
+            if case let .durationProperties(value: vital) = $0.vital {
+                return vital.name == "time_to_initial_display"
+            }
+            return false
+        }
+        precondition(appStartEvents.count <= 2, "Session has only TTID and TTFD app launch metrics (or none).")
+        return appStartEvents.first
     }
 
     /// The application startup time (nanoseconds).
-    public var applicationStartupTime: TimeInterval? {
-        return applicationStartAction?.action.loadingTime.map { TimeInterval(fromNanoseconds: $0) }
+    public var timeToInitialDisplay: TimeInterval? {
+        switch ttidEvent?.vital {
+        case let .appLaunchProperties(value: vital):
+            return vital.duration / 1_000_000_000
+        case let .durationProperties(value: vital):
+            return vital.duration / 1_000_000_000
+        default: return nil
+        }
     }
 
     private func renderSession() -> String {

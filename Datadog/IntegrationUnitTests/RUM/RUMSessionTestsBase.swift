@@ -15,6 +15,8 @@ import TestUtilities
 class RUMSessionTestsBase: XCTestCase {
     /// Timestamp representing when the app process was spawned.
     let processLaunchDate = Date()
+    /// Timestamp representing when the SDK was loaded.
+    private(set) lazy var runtimeLoadDate: Date = { processLaunchDate.addingTimeInterval(0.1) }()
     /// Simulated delay between app launch and SDK initialization (`Datadog.initialize()` + `RUM.enable()`).
     let timeToSDKInit: TimeInterval = 0.7
 
@@ -22,6 +24,11 @@ class RUMSessionTestsBase: XCTestCase {
     let timeToAppBecomeActive: TimeInterval = 0.8
     /// Simulated delay before the app transitions to the BACKGROUND state.
     let timeToAppEnterBackground: TimeInterval = 0.9
+
+    /// Simulated delay between app launch and the display of the first frame.
+    let timeToInitialDisplay: TimeInterval = 1.5
+    /// Simulated delay between SDK load and the display of the first frame.
+    let preWarmedTimeToInitialDisplay: TimeInterval = 1.4
 
     /// Time deltas used to advance or compare time in test scenarios.
     let dt1: TimeInterval = 1.1
@@ -59,6 +66,7 @@ class RUMSessionTestsBase: XCTestCase {
         return .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
             .and(.enableRUM(after: timeToSDKInit, rumSetup: rumSetup))
             .and(.appBecomesActive(after: timeToAppBecomeActive))
+            .and(.appDisplaysFirstFrame())
     }
 
     /// Starts `"user_app_launch"` session with `ApplicationLaunch` view succeeded by automatic view started
@@ -122,7 +130,7 @@ class RUMSessionTestsBase: XCTestCase {
     /// ```
     @available(tvOS, unavailable)
     func prewarmedSession(rumSetup: AppRunner.RUMSetup? = nil) -> AppRun {
-        return .given(.appLaunch(type: .osPrewarm(processLaunchDate: processLaunchDate)))
+        return .given(.appLaunch(type: .osPrewarm(processLaunchDate: processLaunchDate, runtimeLoadDate: runtimeLoadDate)))
             .and(.enableRUM(after: timeToSDKInit, rumSetup: rumSetup))
     }
 
@@ -136,7 +144,7 @@ class RUMSessionTestsBase: XCTestCase {
         resourceDuration: TimeInterval,
         rumSetup: AppRunner.RUMSetup? = nil
     ) -> AppRun {
-        return .given(.appLaunch(type: .osPrewarm(processLaunchDate: processLaunchDate)))
+        return .given(.appLaunch(type: .osPrewarm(processLaunchDate: processLaunchDate, runtimeLoadDate: runtimeLoadDate)))
             .and(.enableRUM(after: timeToSDKInit, rumSetup: { rumConfig in
                 rumConfig.trackBackgroundEvents = true
                 rumSetup?(&rumConfig)

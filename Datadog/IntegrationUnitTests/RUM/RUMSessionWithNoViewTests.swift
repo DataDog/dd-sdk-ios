@@ -24,6 +24,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
     ) -> AppRun {
         return backgroundSessionWithResource(resourceStartAfter: dt1, resourceDuration: dt2, rumSetup: rumSetup)
             .and(.appBecomesActive(after: timeToAppBecomeActive))
+            .and(.appDisplaysFirstFrame())
     }
 
     /// Creates `"prewarm"` session that is in foreground but has no view.
@@ -37,6 +38,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
     ) -> AppRun {
         return prewarmedSessionWithResource(resourceStartAfter: dt1, resourceDuration: dt2, rumSetup: rumSetup)
             .and(.appBecomesActive(after: timeToAppBecomeActive))
+            .and(.appDisplaysFirstFrame())
     }
 
     /// Creates `"user_app_launch"` session that is now in background.
@@ -81,8 +83,13 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
                 // Then
                 // - it only tracks Background view (foreground events are dropped due to "no view")
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                if session.sessionPrecondition == .prewarm {
+                    XCTAssertNotNil(session.ttidEvent)
+                    DDAssertEqual(session.timeToInitialDisplay, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2 - 0.1 , accuracy: accuracy)
+                } else {
+                    XCTAssertNil(session.ttidEvent)
+                    XCTAssertNil(session.timeToInitialDisplay)
+                }
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, given == given1 ? .backgroundLaunch : .prewarm)
@@ -132,8 +139,8 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, given == given3 ? .backgroundLaunch : .prewarm)
@@ -171,8 +178,8 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
             // Then
             // - it only tracks ApplicationLaunch view (background events are dropped due to BET disabled)
             let session = try when.then().takeSingle()
-            XCTAssertNotNil(session.applicationStartAction)
-            DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+            XCTAssertNotNil(session.ttidEvent)
+            DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
             DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
             DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + timeToAppEnterBackground, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -195,8 +202,8 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
             // Then
             // - it tracks ApplicationLaunch and Background views
             let session = try when.then().takeSingle()
-            XCTAssertNotNil(session.applicationStartAction)
-            DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+            XCTAssertNotNil(session.ttidEvent)
+            DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
             DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
             DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + timeToAppEnterBackground + dt1 + dt2, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -214,8 +221,8 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
         // Then
         // - it only tracks ApplicationLaunch view (Long Tasks are not tracked in background even if BET is enabled)
         let session = try when6.then().takeSingle()
-        XCTAssertNotNil(session.applicationStartAction)
-        DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+        XCTAssertNotNil(session.ttidEvent)
+        DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
         DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
         DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + timeToAppEnterBackground, accuracy: accuracy)
         XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -241,8 +248,8 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
             // Then
             // - it only tracks ApplicationLaunch + AutomaticView views (background events are dropped due to BET disabled)
             let session = try when.then().takeSingle()
-            XCTAssertNotNil(session.applicationStartAction)
-            DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+            XCTAssertNotNil(session.ttidEvent)
+            DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
             DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
             DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + timeToAppEnterBackground, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -267,8 +274,8 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
             // Then
             // - it tracks ApplicationLaunch + AutomaticView + Background views
             let session = try when.then().takeSingle()
-            XCTAssertNotNil(session.applicationStartAction)
-            DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+            XCTAssertNotNil(session.ttidEvent)
+            DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
             DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
             DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + timeToAppEnterBackground + dt1 + dt2, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -288,8 +295,8 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
         // Then
         // - it only tracks ApplicationLaunch + AutomaticView views (Long Tasks are not tracked in background even if BET is enabled)
         let session = try when6.then().takeSingle()
-        XCTAssertNotNil(session.applicationStartAction)
-        DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+        XCTAssertNotNil(session.ttidEvent)
+        DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
         DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
         DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + timeToAppEnterBackground, accuracy: accuracy)
         XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)

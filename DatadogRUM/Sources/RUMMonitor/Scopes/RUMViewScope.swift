@@ -14,8 +14,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         static let minimumTimeSpentForRates = 1.0 // 1s
         /// Minimum duration of a view (1ns). Prevents negative durations and serves as placeholder value assigned when view starts.
         static let minimumTimeSpent: TimeInterval = 1e-9 // 1ns
-        /// The pre-warming detection attribute key
-        static let activePrewarm = "active_pre_warm"
     }
 
     // MARK: - Child Scopes
@@ -223,23 +221,7 @@ extension RUMViewScope {
         // Apply side effects
         switch command {
         // Application Launch
-        case let command as RUMApplicationStartCommand:
-            let isUserLaunch = context.launchInfo.launchReason == .userLaunch
-            let viewStartsAtProcessLaunch = viewStartTime == context.launchInfo.processLaunchDate
-
-            if isUserLaunch && viewStartsAtProcessLaunch {
-                // Application start is only reported for user-initiated launches,
-                // and only if the "ApplicationLaunch" view starts exactly at process start.
-                //
-                // In some valid cases, the view may start later (e.g., if RUM.enable() is called
-                // while the app is already in ACTIVE state), in which case we don't assume
-                // it’s part of the launch sequence.
-                //
-                // This check ensures the "application_start" action spans a meaningful portion
-                // of the app startup (from process start to a point within the launch view).
-                // Otherwise, it could be reported as starting "before" the view exists.
-                sendApplicationStartAction(on: command, context: context, writer: writer)
-            }
+        case is RUMApplicationStartCommand:
             if !isInitialView || viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
                 dependencies.telemetry.error(
                     "A RUMApplicationStartCommand got sent to a View other than the ApplicationLaunch view."
@@ -247,8 +229,6 @@ extension RUMViewScope {
             }
             // Application Launch also serves as a StartView command for this view
             didReceiveStartCommand = true
-            needsViewUpdate = true
-
         case let command as RUMHandleAppLifecycleEventCommand:
             if command.event == .didEnterBackground && viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
                 // Stop 'ApplicationLaunch' view on transition to background
@@ -499,97 +479,6 @@ extension RUMViewScope {
     }
 
     // MARK: - Sending RUM Events
-
-    private func sendApplicationStartAction(on command: RUMApplicationStartCommand, context: DatadogContext, writer: Writer) {
-        actionsCount += 1
-
-        // Application start event attributes
-        // Attribute Precedence: global attributes <- view attributes (highest priority)
-        var commandAttributes = command.globalAttributes
-            .merging(attributes) { $1 }
-
-        var loadingTime: Int64?
-
-        if context.launchInfo.launchReason == .prewarming {
-            // Set `active_pre_warm` attribute to true in case
-            // of pre-warmed app.
-            commandAttributes[Constants.activePrewarm] = true
-        } else if let didBecomeActiveDate = context.launchInfo.launchPhaseDates[.didBecomeActive] {
-            // Report Application Launch Time only if not pre-warmed
-            loadingTime = didBecomeActiveDate.timeIntervalSince(context.launchInfo.processLaunchDate).toInt64Nanoseconds
-        } else {
-            // The launchTime can be `nil` if the application is not yet
-            // active (UIApplicationDidBecomeActiveNotification). That is
-            // the case when instrumenting a SwiftUI application that start
-            // a RUM view on `SwiftUI.View/onAppear`.
-            //
-            // In that case, we consider the time between the application
-            // launch and the sdkInitialization as the application loading
-            // time.
-            let launchDate = context.launchInfo.processLaunchDate
-            loadingTime = command.time.timeIntervalSince(launchDate).toInt64Nanoseconds
-        }
-
-        let actionEvent = RUMActionEvent(
-            dd: .init(
-                action: nil,
-                browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
-                session: .init(
-                    plan: .plan1,
-                    sessionPrecondition: self.context.sessionPrecondition
-                )
-            ),
-            account: .init(context: context),
-            action: .init(
-                crash: .init(count: 0),
-                error: .init(count: 0),
-                frustration: nil,
-                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                loadingTime: loadingTime,
-                longTask: .init(count: 0),
-                resource: .init(count: 0),
-                target: nil,
-                type: .applicationStart
-            ),
-            application: .init(id: self.context.rumApplicationID),
-            buildId: context.buildId,
-            buildVersion: context.buildNumber,
-            ciTest: dependencies.ciTest,
-            connectivity: .init(context: context),
-            container: nil,
-            context: .init(contextInfo: commandAttributes),
-            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            ddtags: context.ddTags,
-            device: context.normalizedDevice(),
-            display: nil,
-            os: context.os,
-            service: context.service,
-            session: .init(
-                hasReplay: context.hasReplay,
-                id: self.context.sessionID.toRUMDataFormat,
-                type: dependencies.sessionType
-            ),
-            source: .init(rawValue: context.source) ?? .ios,
-            synthetics: dependencies.syntheticsTest,
-            usr: .init(context: context),
-            version: context.version,
-            view: .init(
-                id: viewUUID.toRUMDataFormat,
-                inForeground: nil,
-                name: viewName,
-                referrer: nil,
-                url: viewPath
-            )
-        )
-
-        if let event = dependencies.eventBuilder.build(from: actionEvent) {
-            writer.write(value: event)
-            needsViewUpdate = true
-        } else {
-            actionsCount -= 1
-        }
-    }
 
     private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         version += 1

@@ -82,7 +82,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
              accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenter)
         }
 
-        let firstFrameReader = FirstFrameReader()
+        let firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
 
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
@@ -115,7 +115,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     return nil
                 }
             }(),
-            renderLoopObserver: DisplayLinker(notificationCenter: configuration.notificationCenter),
+            renderLoopObserver: DisplayLinker(
+                notificationCenter: configuration.notificationCenter,
+                frameInfoProviderFactory: configuration.frameInfoProviderFactory
+            ),
             firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: {
                 configuration.featureFlags[.viewHitches]
