@@ -19,7 +19,7 @@ final class VitalRefreshRateReaderTests: XCTestCase {
     */
     func testFramesPerSecond_given60HzFixedRateDisplay() {
         let reader = VitalRefreshRateReader()
-        var frameInfoProvider = FrameInfoProviderMock(maximumDeviceFramesPerSecond: 60)
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
 
         // first frame recorded
         frameInfoProvider.currentFrameTimestamp = 0
@@ -47,7 +47,8 @@ final class VitalRefreshRateReaderTests: XCTestCase {
     */
     func testFramesPerSecond_given120HzFixedRateDisplay_normalizesTo60Hz() {
         let reader = VitalRefreshRateReader()
-        var frameInfoProvider = FrameInfoProviderMock(maximumDeviceFramesPerSecond: 120)
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+        frameInfoProvider.maximumDeviceFramesPerSecond = 120
 
         // first frame recorded
         frameInfoProvider.currentFrameTimestamp = 0
@@ -80,7 +81,8 @@ final class VitalRefreshRateReaderTests: XCTestCase {
     */
     func testFramesPerSecond_givenAdaptiveSyncDisplay() {
         let reader = VitalRefreshRateReader()
-        var frameInfoProvider = FrameInfoProviderMock(maximumDeviceFramesPerSecond: 120)
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+        frameInfoProvider.maximumDeviceFramesPerSecond = 120
 
         // first frame recorded
         frameInfoProvider.currentFrameTimestamp = 0
@@ -114,7 +116,8 @@ final class VitalRefreshRateReaderTests: XCTestCase {
     */
     func testFramesPerSecond_givenAdaptiveSyncDisplayWithFreezingFrames() {
         let reader = VitalRefreshRateReader()
-        var frameInfoProvider = FrameInfoProviderMock(maximumDeviceFramesPerSecond: 120)
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+        frameInfoProvider.maximumDeviceFramesPerSecond = 120
 
         // first frame recorded
         frameInfoProvider.currentFrameTimestamp = 0
@@ -142,7 +145,8 @@ final class VitalRefreshRateReaderTests: XCTestCase {
     */
     func testFramesPerSecond_givenAdaptiveSyncDisplayWithQuickerThanExpectedFrames() {
         let reader = VitalRefreshRateReader()
-        var frameInfoProvider = FrameInfoProviderMock(maximumDeviceFramesPerSecond: 120)
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+        frameInfoProvider.maximumDeviceFramesPerSecond = 120
 
         // first frame recorded
         frameInfoProvider.currentFrameTimestamp = 0

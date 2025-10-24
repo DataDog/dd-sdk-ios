@@ -17,14 +17,12 @@ internal final class FirstFrameReader: RUMCommandPublisher {
     private var firstFrameTimestamp: Double?
     private var firstFrameDate: Date?
 
+    @ReadWriteLock
     private(set) var isActive: Bool = true
 
     private(set) weak var subscriber: RUMCommandSubscriber?
 
-    init(
-        dateProvider: DateProvider = SystemDateProvider(),
-        mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider()
-    ) {
+    init(dateProvider: DateProvider, mediaTimeProvider: CACurrentMediaTimeProvider) {
         self.dateProvider = dateProvider
         self.mediaTimeProvider = mediaTimeProvider
     }

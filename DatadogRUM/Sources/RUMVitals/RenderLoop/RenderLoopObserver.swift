@@ -29,14 +29,20 @@ internal protocol RenderLoopObserver {
 
 /// A class reading information from the display vsync.
 internal class DisplayLinker {
+    @ReadWriteLock
     private var renderLoopReaders: [RenderLoopReader] = []
     private var displayLink: FrameInfoProvider?
     private let notificationCenter: NotificationCenter
+    private let frameInfoProviderFactory: (Any, Selector) -> FrameInfoProvider
 
     var isActive: Bool { displayLink != nil }
 
-    init(notificationCenter: NotificationCenter) {
+    init(
+        notificationCenter: NotificationCenter,
+        frameInfoProviderFactory: @escaping (Any, Selector) -> FrameInfoProvider = { CADisplayLink(target: $0, selector: $1) }
+    ) {
         self.notificationCenter = notificationCenter
+        self.frameInfoProviderFactory = frameInfoProviderFactory
 
         notificationCenter.addObserver(
             self,
@@ -64,7 +70,7 @@ internal class DisplayLinker {
             return
         }
 
-        displayLink = CADisplayLink(target: self, selector: #selector(self.didUpdateFrame(link:)))
+        displayLink = frameInfoProviderFactory(self, #selector(self.didUpdateFrame))
 
         // NOTE: RUMM-1544 `.default` mode doesn't get fired while scrolling the UI, `.common` does.
         displayLink?.add(to: .main, forMode: .common)
@@ -88,22 +94,21 @@ internal class DisplayLinker {
     }
 
     @objc
-    private func didUpdateFrame(link: CADisplayLink) {
-        renderLoopReaders.forEach { $0.didUpdateFrame(link: link) }
+    private func didUpdateFrame() {
+        guard let displayLink else {
+            return
+        }
+        renderLoopReaders.forEach { $0.didUpdateFrame(link: displayLink) }
     }
 }
 
 extension DisplayLinker: RenderLoopObserver {
     func register(_ renderLoopReader: RenderLoopReader) {
-        DispatchQueue.main.async {
-            self.renderLoopReaders.append(renderLoopReader)
-        }
+        renderLoopReaders.append(renderLoopReader)
     }
 
     func unregister(_ renderLoopReader: RenderLoopReader) {
-        DispatchQueue.main.async {
-            renderLoopReader.stop()
-            self.renderLoopReaders.removeAll { $0 === renderLoopReader }
-        }
+        renderLoopReader.stop()
+        renderLoopReaders.removeAll { $0 === renderLoopReader }
     }
 }
