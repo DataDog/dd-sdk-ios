@@ -67,7 +67,7 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     /// - Parameter keys: array of attribute keys that will be removed.
     func removeAttributes(forKeys keys: [AttributeKey])
 
-    // MARK: - session
+    // MARK: - Session
 
     /// Get the currently active session ID. Returns `nil` if no sessions are currently active or if
     /// the current session is sampled out.
@@ -83,13 +83,9 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     /// If the session is started because of a call to `addAction`, the last known view is restarted in the new session.
     func stopSession()
 
-    // MARK: - custom timings
-
-    /// Records a specific timing within the current RUM view.
-    /// The duration of the timing is calculated as the number of nanoseconds elapsed between the start of the view and the addition of the timing.
-    /// - Parameters:
-    ///   - name: The name of the custom timing attribute. It must be unique for each timing.
-    func addTiming(name: String)
+    /// Records the time to full display (TTFD) of the current app launch.
+    /// The duration of the TTFD is calculated as the number of nanoseconds elapsed between the start of the app and the time of this call.
+    func reportAppFullyDisplayed()
 
     // MARK: - errors
 
@@ -413,6 +409,12 @@ public protocol RUMMonitorViewProtocol: AnyObject {
         attributes: [AttributeKey: AttributeValue]
     )
 
+    /// Records a specific timing within the current RUM view.
+    /// The duration of the timing is calculated as the number of nanoseconds elapsed between the start of the view and the addition of the timing.
+    /// - Parameters:
+    ///   - name: The name of the custom timing attribute. It must be unique for each timing.
+    func addTiming(name: String)
+
     /// Adds view loading time to current RUM view based on the time elapsed since the view was started.
     /// This method should be called only once per view.
     /// If the view is not started, this method does nothing.
@@ -457,7 +459,7 @@ internal class NOPMonitor: RUMMonitorProtocol {
     func removeAttribute(forKey key: AttributeKey) { warn() }
     func removeAttributes(forKeys keys: [AttributeKey]) {warn() }
     func stopSession() { warn() }
-    func addTiming(name: String) { warn() }
+    func reportAppFullyDisplayed() { warn() }
     func addError(message: String, type: String?, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], file: StaticString?, line: UInt?) { warn() }
     func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) { warn() }
     func startResource(resourceKey: String, request: URLRequest, attributes: [AttributeKey: AttributeValue]) { warn() }
@@ -499,5 +501,6 @@ extension NOPMonitor: RUMMonitorViewProtocol {
     func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopView(key: String, attributes: [AttributeKey: AttributeValue]) { warn() }
 
+    func addTiming(name: String) { warn() }
     func addViewLoadingTime(overwrite: Bool) { warn() }
 }

@@ -26,8 +26,8 @@ final class AppStateManagerTests: XCTestCase {
         )
     }
 
-    func testUpdateAppState_SetsIsActive() throws {
-        try sut.storeCurrentAppState()
+    func testUpdateAppState_SetsIsActive() {
+        sut.storeCurrentAppState()
 
         let isActiveExpectation = expectation(description: "isActive is set to true")
 
@@ -51,8 +51,8 @@ final class AppStateManagerTests: XCTestCase {
         wait(for: [isBackgroundedExpectation], timeout: 1)
     }
 
-    func testDeleteAppState() throws {
-        try sut.storeCurrentAppState()
+    func testDeleteAppState() {
+        sut.storeCurrentAppState()
 
         let isActiveExpectation = expectation(description: "isActive is set")
         featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in

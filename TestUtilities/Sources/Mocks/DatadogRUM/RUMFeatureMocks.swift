@@ -882,10 +882,37 @@ extension RUMOperationStepVitalCommand: AnyMockable, RandomMockable {
     }
 }
 
-extension RUMTimeToInitialDisplayCommand: AnyMockable, RandomMockable {
-    public static func mockAny() -> RUMTimeToInitialDisplayCommand { mockWith() }
+extension RUMAddViewLoadingTime: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self { mockWith() }
 
-    public static func mockRandom() -> RUMTimeToInitialDisplayCommand {
+    public static func mockRandom() -> Self {
+        mockWith(
+            time: .mockRandom(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes(),
+            overwrite: .mockRandom()
+        )
+    }
+
+    public static func mockWith(
+        time: Date = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:],
+        overwrite: Bool = .mockAny()
+    ) -> Self {
+        .init(
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            overwrite: overwrite
+        )
+    }
+}
+
+extension RUMTimeToInitialDisplayCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self { mockWith() }
+
+    public static func mockRandom() -> Self {
         mockWith(
             time: .mockRandom(),
             globalAttributes: mockRandomAttributes(),
@@ -897,8 +924,32 @@ extension RUMTimeToInitialDisplayCommand: AnyMockable, RandomMockable {
         time: Date = .mockAny(),
         globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:]
-    ) -> RUMTimeToInitialDisplayCommand {
-        RUMTimeToInitialDisplayCommand(
+    ) -> Self {
+        .init(
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes
+        )
+    }
+}
+
+extension RUMTimeToFullDisplayCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self { mockWith() }
+
+    public static func mockRandom() -> Self {
+        mockWith(
+            time: .mockRandom(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes()
+        )
+    }
+
+    public static func mockWith(
+        time: Date = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) -> Self {
+        .init(
             time: time,
             globalAttributes: globalAttributes,
             attributes: attributes

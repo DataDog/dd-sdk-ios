@@ -18,5 +18,5 @@ public final class AppStateManagerMock: AppStateManaging {
     public func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void) {
         completion(currentAppStateInfo)
     }
-    public func storeCurrentAppState() throws {}
+    public func storeCurrentAppState() {}
 }

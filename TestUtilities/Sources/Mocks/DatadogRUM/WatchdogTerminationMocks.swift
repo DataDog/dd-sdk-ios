@@ -55,7 +55,7 @@ extension AppStateInfo: RandomMockable, AnyMockable {
         syntheticsEnvironment: Bool = .mockAny()
     ) -> AppStateInfo {
         .init(
-            appVersion: osVersion,
+            appVersion: appVersion,
             osVersion: osVersion,
             systemBootTime: systemBootTime,
             appLaunchTime: appLaunchTime,

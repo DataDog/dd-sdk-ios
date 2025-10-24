@@ -271,6 +271,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 dependencies.renderLoopObserver?.unregister(dependencies.firstFrameReader)
                 // command doesn't need to be propagated to other scopes
                 return true
+            case let command as RUMTimeToFullDisplayCommand:
+                appLaunchManager.process(command, context: context, writer: writer)
+                // command doesn't need to be propagated to other scopes
+                return true
             default:
                 if !hasActiveView {
                     handleOffViewCommand(command: command, context: context, writer: writer)

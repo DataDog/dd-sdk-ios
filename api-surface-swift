@@ -477,7 +477,7 @@ public struct DatadogInternalInterface
     public func setInternalViewAttribute(at time: Date,key: AttributeKey,value: AttributeValue)
     public func addResourceMetrics(at time: Date,resourceKey: String,fetch: (start: Date, end: Date),redirection: (start: Date, end: Date)?,dns: (start: Date, end: Date)?,connect: (start: Date, end: Date)?,ssl: (start: Date, end: Date)?,firstByte: (start: Date, end: Date)?,download: (start: Date, end: Date)?,responseSize: Int64?,attributes: [AttributeKey: AttributeValue] = [:])
 public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
-public typealias RUMFeatureOperationFailureReason = RUMVitalEvent.Vital.FailureReason
+public typealias RUMFeatureOperationFailureReason = RUMVitalEvent.Vital.FeatureOperationProperties.FailureReason
 public enum RUMActionType
     case tap
     case click
@@ -497,7 +497,7 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject
     func removeAttributes(forKeys keys: [AttributeKey])
     func currentSessionID(completion: @escaping (String?) -> Void)
     func stopSession()
-    func addTiming(name: String)
+    func reportAppFullyDisplayed()
     func addError(message: String,type: String?,stack: String?,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
     func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue])
     func startResource(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue])
@@ -526,11 +526,17 @@ public protocol RUMMonitorViewProtocol: AnyObject
     func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
     func startView(key: String,name: String?,attributes: [AttributeKey: AttributeValue])
     func stopView(key: String,attributes: [AttributeKey: AttributeValue])
+    func addTiming(name: String)
     func addViewLoadingTime(overwrite: Bool)
 public enum PerformanceMetric
     case flutterBuildTime
     case flutterRasterTime
     case jsFrameTimeSeconds
+public protocol CACurrentMediaTimeProvider: Sendable
+    var current: CFTimeInterval
+public struct MediaTimeProvider: CACurrentMediaTimeProvider
+    public init()
+    public var current: CFTimeInterval
 
 # ----------------------------------
 # API surface for DatadogCrashReporting:

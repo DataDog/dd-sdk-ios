@@ -323,6 +323,7 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.stopView(viewController: mockView, attributes: ["event-attribute2": "foo2"])
         objcRUMMonitor.startView(key: "view2", name: "SecondView", attributes: ["event-attribute1": "bar1"])
         objcRUMMonitor.addViewLoadingTime(overwrite: true)
+        objcRUMMonitor.reportAppFullyDisplayed()
         objcRUMMonitor.stopView(key: "view2", attributes: ["event-attribute2": "bar2"])
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()

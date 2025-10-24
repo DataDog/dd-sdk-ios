@@ -522,6 +522,10 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.stopSession()
     }
 
+    public func reportAppFullyDisplayed() {
+        swiftRUMMonitor.reportAppFullyDisplayed()
+    }
+
     public func addViewAttribute(forKey key: String, value: Any) {
         swiftRUMMonitor.addViewAttribute(forKey: key, value: AnyEncodable(value))
     }

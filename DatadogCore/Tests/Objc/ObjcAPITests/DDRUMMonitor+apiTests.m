@@ -59,6 +59,7 @@
     DDRUMMonitor *monitor = [DDRUMMonitor shared];
     [monitor currentSessionIDWithCompletion:^(NSString * _Nullable sessionID) {}];
     [monitor stopSession];
+    [monitor reportAppFullyDisplayed];
 
     [monitor addViewAttributeForKey:@"key" value: @"value"];
     [monitor addViewAttributes:@{@"string": @"value", @"integer": @1, @"boolean": @true}];
