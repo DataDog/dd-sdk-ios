@@ -149,6 +149,9 @@ private extension RUMAppLaunchManager {
             )
         )
 
+        var attributes = attributes
+        attributes.merge(context.launchInfo.attributes) { $1 }
+
         let vitalEvent = RUMVitalEvent(
             dd: .init(),
             account: .init(context: context),
@@ -234,3 +237,44 @@ private extension RUMVitalEvent.Vital.AppLaunchProperties.AppLaunchMetric {
         }
     }
 }
+
+private extension LaunchInfo {
+    var attributes: [AttributeKey: AttributeValue] {
+
+        var attributes: [AttributeKey: AttributeValue] = ["launch_reason": self.launchReason,
+                                                          "task_policy_role": self.raw.taskPolicyRole]
+
+
+        launchPhaseDates.forEach { (key: LaunchPhase, date: Date) in
+
+            attributes["\(key.key)"] = date.timeIntervalSince(self.processLaunchDate)
+        }
+
+        launchPhaseDates.forEach { (key: LaunchPhase, date: Date) in
+
+            attributes["\(key.key)_date"] = shortFormatter.string(from: date)
+        }
+
+        return attributes
+    }
+}
+
+private extension LaunchPhase {
+    public var key: String {
+        switch self {
+        case .processLaunch: return "1-process_launch"
+        case .runtimeLoad: return "2-runtime_load"
+        case .runtimePreMain: return "3-runtime_pre_main"
+        case .didFinishLaunching: return "4-did_finish_launching"
+        case .didBecomeActive: return "5-did_become_active"
+        }
+    }
+}
+
+let shortFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.calendar = Calendar(identifier: .gregorian)
+    formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+    return formatter
+}()
+
