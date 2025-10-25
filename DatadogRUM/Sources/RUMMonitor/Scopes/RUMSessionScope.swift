@@ -267,12 +267,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     activeView: activeView
                 )
             case let command as RUMTimeToInitialDisplayCommand:
-                appLaunchManager.process(command, context: context, writer: writer)
+                appLaunchManager.process(command, context: context, writer: writer, activeView: viewScopes.first { $0.isActiveView })
                 dependencies.renderLoopObserver?.unregister(dependencies.firstFrameReader)
                 // command doesn't need to be propagated to other scopes
                 return true
             case let command as RUMTimeToFullDisplayCommand:
-                appLaunchManager.process(command, context: context, writer: writer)
+                appLaunchManager.process(command, context: context, writer: writer, activeView: viewScopes.first { $0.isActiveView })
                 // command doesn't need to be propagated to other scopes
                 return true
             default:

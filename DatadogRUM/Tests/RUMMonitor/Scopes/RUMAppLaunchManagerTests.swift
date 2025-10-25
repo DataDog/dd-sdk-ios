@@ -62,7 +62,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(vitalEvents.count, 1)
 
         let event = try XCTUnwrap(vitalEvents.first)
-        XCTAssertNil(event.view)
+        XCTAssertNotNil(event.view)
 
         guard case let .appLaunchProperties(value: vital) = event.vital else {
             return XCTFail("Expected event.vital to be .appLaunchProperties, but got \(event.vital)")
@@ -116,7 +116,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(vitalEvents.count, 1)
 
         let event = try XCTUnwrap(vitalEvents.first)
-        XCTAssertNil(event.view)
+        XCTAssertNotNil(event.view)
 
         guard case let .appLaunchProperties(value: vital) = event.vital else {
             return XCTFail("Expected event.vital to be .appLaunchProperties, but got \(event.vital)")
@@ -145,7 +145,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(vitalEvents.count, 1)
 
         let event = try XCTUnwrap(vitalEvents.first)
-        XCTAssertNil(event.view)
+        XCTAssertNotNil(event.view)
 
         guard case let .appLaunchProperties(value: vital) = event.vital else {
             return XCTFail("Expected event.vital to be .appLaunchProperties, but got \(event.vital)")
@@ -244,7 +244,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(vitalEvents.count, 2)
 
         let event = try XCTUnwrap(vitalEvents.last)
-        XCTAssertNil(event.view)
+        XCTAssertNotNil(event.view)
 
         guard case let .appLaunchProperties(value: vital) = event.vital else {
             return XCTFail("Expected event.vital to be .appLaunchProperties, but got \(event.vital)")
@@ -303,7 +303,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(vitalEvents.count, 2)
 
         let event = try XCTUnwrap(vitalEvents.last)
-        XCTAssertNil(event.view)
+        XCTAssertNotNil(event.view)
 
         guard case let .appLaunchProperties(value: vital) = event.vital else {
             return XCTFail("Expected event.vital to be .appLaunchProperties, but got \(event.vital)")
@@ -337,7 +337,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(vitalEvents.count, 2)
 
         let event = try XCTUnwrap(vitalEvents.last)
-        XCTAssertNil(event.view)
+        XCTAssertNotNil(event.view)
 
         guard case let .appLaunchProperties(value: vital) = event.vital else {
             return XCTFail("Expected event.vital to be .appLaunchProperties, but got \(event.vital)")
