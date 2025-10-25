@@ -340,6 +340,8 @@
 		11F55FFE2DCE501A00DE4944 /* B3HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FDF2DCE501A00DE4944 /* B3HTTPHeadersWriter+objc.swift */; };
 		11F55FFF2DCE501A00DE4944 /* DDSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE72DCE501A00DE4944 /* DDSpanContext+objc.swift */; };
 		11F560002DCE501A00DE4944 /* OTTracer+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FDD2DCE501A00DE4944 /* OTTracer+objc.swift */; };
+		11F59BDA2EB4C874009F8579 /* MetricKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F59BD92EB4C874009F8579 /* MetricKitManager.swift */; };
+		11F59BDB2EB4C874009F8579 /* MetricKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F59BD92EB4C874009F8579 /* MetricKitManager.swift */; };
 		1434A4612B7F73110072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
 		1434A4622B7F73110072E3BB /* OpenTelemetryApi.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1434A4632B7F73170072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
@@ -2586,6 +2588,7 @@
 		11F55FE62DCE501A00DE4944 /* DDSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDSpan+objc.swift"; sourceTree = "<group>"; };
 		11F55FE72DCE501A00DE4944 /* DDSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDSpanContext+objc.swift"; sourceTree = "<group>"; };
 		11F55FE82DCE501A00DE4944 /* Trace+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Trace+objc.swift"; sourceTree = "<group>"; };
+		11F59BD92EB4C874009F8579 /* MetricKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricKitManager.swift; sourceTree = "<group>"; };
 		1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugOTelTracingViewController.swift; sourceTree = "<group>"; };
 		261255862E2167E40015042B /* BaggageHeaderMerger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaggageHeaderMerger.swift; sourceTree = "<group>"; };
 		261255892E2167F10015042B /* BaggageHeaderMergerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaggageHeaderMergerTests.swift; sourceTree = "<group>"; };
@@ -5533,6 +5536,7 @@
 		61494B7827F3522C0082BBCC /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				11F59BD92EB4C874009F8579 /* MetricKitManager.swift */,
 				1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */,
 				619F1A232DEE491D003954BD /* LaunchReasonResolver.swift */,
 				61FF9A4425AC5DEA001058CC /* ViewIdentifier.swift */,
@@ -9733,6 +9737,7 @@
 				6105C50A2CFA222400C4C5EE /* INVMetric.swift in Sources */,
 				D23F8E8E29DDCD28001CFAE8 /* UIEventCommandFactory.swift in Sources */,
 				11A2F24C2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */,
+				11F59BDA2EB4C874009F8579 /* MetricKitManager.swift in Sources */,
 				11A2F24D2E70CC08006EDC52 /* MediaTimeProvider.swift in Sources */,
 				D23F8E8F29DDCD28001CFAE8 /* RUMUUIDGenerator.swift in Sources */,
 				61DCC84F2C071DCD00CB59E5 /* TelemetryInterceptor.swift in Sources */,
@@ -10220,6 +10225,7 @@
 				6105C5092CFA222400C4C5EE /* INVMetric.swift in Sources */,
 				D29A9F6929DD85BB005C54A4 /* UIEventCommandFactory.swift in Sources */,
 				11A2F24A2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */,
+				11F59BDB2EB4C874009F8579 /* MetricKitManager.swift in Sources */,
 				11A2F24B2E70CC08006EDC52 /* MediaTimeProvider.swift in Sources */,
 				D29A9F5229DD85BB005C54A4 /* RUMUUIDGenerator.swift in Sources */,
 				61DCC84E2C071DCD00CB59E5 /* TelemetryInterceptor.swift in Sources */,

@@ -151,6 +151,7 @@ private extension RUMAppLaunchManager {
 
         var attributes = attributes
         attributes.merge(context.launchInfo.attributes) { $1 }
+        attributes.merge(dependencies.metricKitManager.attributes) { $1 }
 
         let vitalEvent = RUMVitalEvent(
             dd: .init(),
@@ -215,7 +216,6 @@ private extension RUMAppLaunchManager {
     func shouldProcess(command: RUMTimeToFullDisplayCommand, context: DatadogContext) -> Bool {
         // Ignore command if the time to full display was already written
         guard self.timeToFullDisplay == nil else {
-            DD.logger.warn("Time to Full Display was already processed. Make sure the `reportAppFullyDisplayed()` API is only called once.")
             return false
         }
 
@@ -240,18 +240,16 @@ private extension RUMVitalEvent.Vital.AppLaunchProperties.AppLaunchMetric {
 
 private extension LaunchInfo {
     var attributes: [AttributeKey: AttributeValue] {
-
-        var attributes: [AttributeKey: AttributeValue] = ["launch_reason": self.launchReason,
-                                                          "task_policy_role": self.raw.taskPolicyRole]
-
+        var attributes: [AttributeKey: AttributeValue] = [
+            "launch_reason": self.launchReason,
+            "task_policy_role": self.raw.taskPolicyRole
+        ]
 
         launchPhaseDates.forEach { (key: LaunchPhase, date: Date) in
-
             attributes["\(key.key)"] = date.timeIntervalSince(self.processLaunchDate)
         }
 
         launchPhaseDates.forEach { (key: LaunchPhase, date: Date) in
-
             attributes["\(key.key)_date"] = shortFormatter.string(from: date)
         }
 
@@ -260,7 +258,7 @@ private extension LaunchInfo {
 }
 
 private extension LaunchPhase {
-    public var key: String {
+    var key: String {
         switch self {
         case .processLaunch: return "1-process_launch"
         case .runtimeLoad: return "2-runtime_load"
@@ -271,10 +269,9 @@ private extension LaunchPhase {
     }
 }
 
-let shortFormatter: DateFormatter = {
+internal let shortFormatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.calendar = Calendar(identifier: .gregorian)
     formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
     return formatter
 }()
-

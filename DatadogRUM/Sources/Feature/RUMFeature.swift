@@ -173,7 +173,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     predicate: nextViewActionPredicate
                 )
             },
-            sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) }
+            sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) },
+            metricKitManager: MetricKitManager()
         )
 
         self.monitor = Monitor(

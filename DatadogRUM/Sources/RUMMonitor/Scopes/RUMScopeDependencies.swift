@@ -69,6 +69,8 @@ internal struct RUMScopeDependencies {
     /// A factory function that creates a `INVMetric` when session starts.
     let interactionToNextViewMetricFactory: () -> INVMetricTracking?
 
+    let metricKitManager: MetricKitManager
+
     init(
         featureScope: FeatureScope,
         rumApplicationID: String,
@@ -96,7 +98,8 @@ internal struct RUMScopeDependencies {
         watchdogTermination: WatchdogTerminationMonitor?,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking,
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?,
-        sessionType: RUMSessionType?
+        sessionType: RUMSessionType?,
+        metricKitManager: MetricKitManager
     ) {
         self.featureScope = featureScope
         self.rumApplicationID = rumApplicationID
@@ -125,6 +128,7 @@ internal struct RUMScopeDependencies {
         self.watchdogTermination = watchdogTermination
         self.networkSettledMetricFactory = networkSettledMetricFactory
         self.interactionToNextViewMetricFactory = interactionToNextViewMetricFactory
+        self.metricKitManager = metricKitManager
 
         if let sessionType = sessionType {
             self.sessionType = sessionType

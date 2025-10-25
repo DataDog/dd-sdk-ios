@@ -1070,7 +1070,8 @@ extension RUMScopeDependencies {
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking = {
             INVMetric(predicate: TimeBasedINVActionPredicate())
         },
-        sessionType: RUMSessionType? = nil
+        sessionType: RUMSessionType? = nil,
+        metricKitManager: MetricKitManager = MetricKitManager()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -1099,7 +1100,8 @@ extension RUMScopeDependencies {
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory,
-            sessionType: sessionType
+            sessionType: sessionType,
+            metricKitManager: metricKitManager
         )
     }
 
@@ -1130,7 +1132,8 @@ extension RUMScopeDependencies {
         watchdogTermination: WatchdogTerminationMonitor? = nil,
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
         interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil,
-        sessionType: RUMSessionType? = nil
+        sessionType: RUMSessionType? = nil,
+        metricKitManager: MetricKitManager = MetricKitManager()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -1159,7 +1162,8 @@ extension RUMScopeDependencies {
             watchdogTermination: watchdogTermination ?? self.watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory,
-            sessionType: sessionType
+            sessionType: sessionType,
+            metricKitManager: metricKitManager
         )
     }
 }
