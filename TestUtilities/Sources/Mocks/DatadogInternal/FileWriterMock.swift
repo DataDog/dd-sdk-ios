@@ -20,6 +20,7 @@ public class FileWriterMock: Writer {
     /// - Parameter value: The event value to record.
     public func write<T: Encodable, M: Encodable>(value: T, metadata: M, completion: @escaping CompletionHandler) {
         events.append(value)
+        self.metadata.append(metadata)
         completion()
     }
 
