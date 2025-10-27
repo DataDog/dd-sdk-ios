@@ -3106,7 +3106,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// Type of the event: long task or long animation frame
         public let entryType: EntryType?
 
-        /// Start time of of the first UI event (mouse/keyboard and so on) to be handled during the course of this frame
+        /// Time difference (in ns) between the timeOrigin and the start time of of the first UI event (mouse/keyboard and so on) to be handled during the course of this frame
         public let firstUiEventTimestamp: Double?
 
         /// UUID of the long task or long animation frame
@@ -3115,7 +3115,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// Whether this long task is considered a frozen frame
         public let isFrozenFrame: Bool?
 
-        /// Start time of the rendering cycle, which includes requestAnimationFrame callbacks, style and layout calculation, resize observer and intersection observer callbacks
+        /// Time difference (in ns) between the timeOrigin and the start time of the rendering cycle, which includes requestAnimationFrame callbacks, style and layout calculation, resize observer and intersection observer callbacks
         public let renderStart: Double?
 
         /// A list of long scripts that were executed over the course of the long frame
@@ -3124,7 +3124,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// Start time of the long animation frame
         public let startTime: Double?
 
-        /// Start time of the time period spent in style and layout calculations
+        /// Time difference (in ns) between the timeOrigin and the start time of the time period spent in style and layout calculations
         public let styleAndLayoutStart: Double?
 
         public enum CodingKeys: String, CodingKey {
@@ -3146,13 +3146,13 @@ public struct RUMLongTaskEvent: RUMDataModel {
         ///   - blockingDuration: Duration in ns for which the animation frame was being blocked
         ///   - duration: Duration in ns of the long task or long animation frame
         ///   - entryType: Type of the event: long task or long animation frame
-        ///   - firstUiEventTimestamp: Start time of of the first UI event (mouse/keyboard and so on) to be handled during the course of this frame
+        ///   - firstUiEventTimestamp: Time difference (in ns) between the timeOrigin and the start time of of the first UI event (mouse/keyboard and so on) to be handled during the course of this frame
         ///   - id: UUID of the long task or long animation frame
         ///   - isFrozenFrame: Whether this long task is considered a frozen frame
-        ///   - renderStart: Start time of the rendering cycle, which includes requestAnimationFrame callbacks, style and layout calculation, resize observer and intersection observer callbacks
+        ///   - renderStart: Time difference (in ns) between the timeOrigin and the start time of the rendering cycle, which includes requestAnimationFrame callbacks, style and layout calculation, resize observer and intersection observer callbacks
         ///   - scripts: A list of long scripts that were executed over the course of the long frame
         ///   - startTime: Start time of the long animation frame
-        ///   - styleAndLayoutStart: Start time of the time period spent in style and layout calculations
+        ///   - styleAndLayoutStart: Time difference (in ns) between the timeOrigin and the start time of the time period spent in style and layout calculations
         public init(
             blockingDuration: Int64? = nil,
             duration: Int64,
@@ -4157,6 +4157,12 @@ public struct RUMResourceEvent: RUMDataModel {
 
         /// GraphQL requests parameters
         public struct Graphql: Codable {
+            /// Number of GraphQL errors in the response
+            public let errorCount: Int64?
+
+            /// Array of GraphQL errors from the response
+            public let errors: [Errors]?
+
             /// Name of the GraphQL operation
             public let operationName: String?
 
@@ -4170,6 +4176,8 @@ public struct RUMResourceEvent: RUMDataModel {
             public var variables: String?
 
             public enum CodingKeys: String, CodingKey {
+                case errorCount = "error_count"
+                case errors = "errors"
                 case operationName = "operationName"
                 case operationType = "operationType"
                 case payload = "payload"
@@ -4179,20 +4187,135 @@ public struct RUMResourceEvent: RUMDataModel {
             /// GraphQL requests parameters
             ///
             /// - Parameters:
+            ///   - errorCount: Number of GraphQL errors in the response
+            ///   - errors: Array of GraphQL errors from the response
             ///   - operationName: Name of the GraphQL operation
             ///   - operationType: Type of the GraphQL operation
             ///   - payload: Content of the GraphQL operation
             ///   - variables: String representation of the operation variables
             public init(
+                errorCount: Int64? = nil,
+                errors: [Errors]? = nil,
                 operationName: String? = nil,
                 operationType: OperationType,
                 payload: String? = nil,
                 variables: String? = nil
             ) {
+                self.errorCount = errorCount
+                self.errors = errors
                 self.operationName = operationName
                 self.operationType = operationType
                 self.payload = payload
                 self.variables = variables
+            }
+
+            /// GraphQL error details
+            public struct Errors: Codable {
+                /// Error code (used by some providers)
+                public let code: String?
+
+                /// Array of error locations in the GraphQL query
+                public let locations: [Locations]?
+
+                /// Error message
+                public let message: String
+
+                /// Path to the field that caused the error
+                public let path: [Path]?
+
+                public enum CodingKeys: String, CodingKey {
+                    case code = "code"
+                    case locations = "locations"
+                    case message = "message"
+                    case path = "path"
+                }
+
+                /// GraphQL error details
+                ///
+                /// - Parameters:
+                ///   - code: Error code (used by some providers)
+                ///   - locations: Array of error locations in the GraphQL query
+                ///   - message: Error message
+                ///   - path: Path to the field that caused the error
+                public init(
+                    code: String? = nil,
+                    locations: [Locations]? = nil,
+                    message: String,
+                    path: [Path]? = nil
+                ) {
+                    self.code = code
+                    self.locations = locations
+                    self.message = message
+                    self.path = path
+                }
+
+                /// Error location
+                public struct Locations: Codable {
+                    /// Column number where the error occurred
+                    public let column: Int64
+
+                    /// Line number where the error occurred
+                    public let line: Int64
+
+                    public enum CodingKeys: String, CodingKey {
+                        case column = "column"
+                        case line = "line"
+                    }
+
+                    /// Error location
+                    ///
+                    /// - Parameters:
+                    ///   - column: Column number where the error occurred
+                    ///   - line: Line number where the error occurred
+                    public init(
+                        column: Int64,
+                        line: Int64
+                    ) {
+                        self.column = column
+                        self.line = line
+                    }
+                }
+
+                public enum Path: Codable {
+                    case string(value: String)
+                    case integer(value: Int64)
+
+                    // MARK: - Codable
+
+                    public func encode(to encoder: Encoder) throws {
+                        // Encode only the associated value, without encoding enum case
+                        var container = encoder.singleValueContainer()
+
+                        switch self {
+                        case .string(let value):
+                            try container.encode(value)
+                        case .integer(let value):
+                            try container.encode(value)
+                        }
+                    }
+
+                    public init(from decoder: Decoder) throws {
+                        // Decode enum case from associated value
+                        let container = try decoder.singleValueContainer()
+
+                        if let value = try? container.decode(String.self) {
+                            self = .string(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(Int64.self) {
+                            self = .integer(value: value)
+                            return
+                        }
+                        let error = DecodingError.Context(
+                            codingPath: container.codingPath,
+                            debugDescription: """
+                            Failed to decode `Path`.
+                            Ran out of possibilities when trying to decode the value of associated type.
+                            """
+                        )
+                        throw DecodingError.typeMismatch(Path.self, error)
+                    }
+                }
             }
 
             /// Type of the GraphQL operation
@@ -5264,6 +5387,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// current bitrate at the time of collection
         public let bitrate: Double?
 
+        /// Percentage of amount of time watched relative to its total duration
+        public let completionPercent: Double?
+
         /// How long is the content (VOD only) (in ms)
         public let duration: Double?
 
@@ -5287,6 +5413,7 @@ public struct RUMViewEvent: RUMDataModel {
 
         public enum CodingKeys: String, CodingKey {
             case bitrate = "bitrate"
+            case completionPercent = "completion_percent"
             case duration = "duration"
             case format = "format"
             case fps = "fps"
@@ -5300,6 +5427,7 @@ public struct RUMViewEvent: RUMDataModel {
         ///
         /// - Parameters:
         ///   - bitrate: current bitrate at the time of collection
+        ///   - completionPercent: Percentage of amount of time watched relative to its total duration
         ///   - duration: How long is the content (VOD only) (in ms)
         ///   - format: Stream format
         ///   - fps: current frames per second at the time of collection
@@ -5309,6 +5437,7 @@ public struct RUMViewEvent: RUMDataModel {
         ///   - watchTime: how much did the media progress since the last context update (in ms)
         public init(
             bitrate: Double? = nil,
+            completionPercent: Double? = nil,
             duration: Double? = nil,
             format: String? = nil,
             fps: Double? = nil,
@@ -5318,6 +5447,7 @@ public struct RUMViewEvent: RUMDataModel {
             watchTime: Double? = nil
         ) {
             self.bitrate = bitrate
+            self.completionPercent = completionPercent
             self.duration = duration
             self.format = format
             self.fps = fps
@@ -6646,7 +6776,7 @@ public struct RUMVitalEvent: RUMDataModel {
     public let version: String?
 
     /// View properties
-    public var view: View
+    public var view: View?
 
     public let vital: Vital
 
@@ -6725,7 +6855,7 @@ public struct RUMVitalEvent: RUMDataModel {
         synthetics: RUMSyntheticsTest? = nil,
         usr: RUMUser? = nil,
         version: String? = nil,
-        view: View,
+        view: View? = nil,
         vital: Vital
     ) {
         self.dd = dd
@@ -6764,6 +6894,9 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// Profiling context
+        public let profiling: Profiling?
+
         /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         public let sdkName: String?
 
@@ -6777,6 +6910,7 @@ public struct RUMVitalEvent: RUMDataModel {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
             case formatVersion = "format_version"
+            case profiling = "profiling"
             case sdkName = "sdk_name"
             case session = "session"
             case vital = "vital"
@@ -6787,18 +6921,21 @@ public struct RUMVitalEvent: RUMDataModel {
         /// - Parameters:
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - profiling: Profiling context
         ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         ///   - vital: Internal vital properties
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
+            profiling: Profiling? = nil,
             sdkName: String? = nil,
             session: Session? = nil,
             vital: Vital? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
+            self.profiling = profiling
             self.sdkName = sdkName
             self.session = session
             self.vital = vital
@@ -6835,6 +6972,88 @@ public struct RUMVitalEvent: RUMDataModel {
                 self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
+            }
+        }
+
+        /// Profiling context
+        public struct Profiling: Codable {
+            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            public let errorReason: ErrorReason?
+
+            /// Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public let status: Status?
+
+            public enum CodingKeys: String, CodingKey {
+                case errorReason = "error_reason"
+                case status = "status"
+            }
+
+            /// Profiling context
+            ///
+            /// - Parameters:
+            ///   - errorReason: The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            ///   - status: Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public init(
+                errorReason: ErrorReason? = nil,
+                status: Status? = nil
+            ) {
+                self.errorReason = errorReason
+                self.status = status
+            }
+
+            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+            ///
+            /// Possible values:
+            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+            public enum ErrorReason: String, Codable {
+                case notSupportedByBrowser = "not-supported-by-browser"
+                case failedToLazyLoad = "failed-to-lazy-load"
+                case missingDocumentPolicyHeader = "missing-document-policy-header"
+                case unexpectedException = "unexpected-exception"
+            }
+
+            /// Used to track the status of the RUM Profiler.
+            ///
+            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+            ///
+            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+            /// - `running`: The Profiler is running.
+            /// - `stopped`: The Profiler is stopped.
+            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            public enum Status: String, Codable {
+                case starting = "starting"
+                case running = "running"
+                case stopped = "stopped"
+                case error = "error"
             }
         }
 
@@ -8490,6 +8709,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether GraphQL payload tracking is used for at least one GraphQL endpoint
             public let useTrackGraphQlPayload: Bool?
 
+            /// Whether GraphQL response errors tracking is used for at least one GraphQL endpoint
+            public let useTrackGraphQlResponseErrors: Bool?
+
             /// Whether the Worker is loaded from an external URL
             public let useWorkerUrl: Bool?
 
@@ -8589,6 +8811,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case useSecureSessionCookie = "use_secure_session_cookie"
                 case useTracing = "use_tracing"
                 case useTrackGraphQlPayload = "use_track_graph_ql_payload"
+                case useTrackGraphQlResponseErrors = "use_track_graph_ql_response_errors"
                 case useWorkerUrl = "use_worker_url"
                 case variant = "variant"
                 case viewTrackingStrategy = "view_tracking_strategy"
@@ -8686,6 +8909,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - useSecureSessionCookie: Whether a secure session cookie is used
             ///   - useTracing: Whether tracing features are enabled
             ///   - useTrackGraphQlPayload: Whether GraphQL payload tracking is used for at least one GraphQL endpoint
+            ///   - useTrackGraphQlResponseErrors: Whether GraphQL response errors tracking is used for at least one GraphQL endpoint
             ///   - useWorkerUrl: Whether the Worker is loaded from an external URL
             ///   - variant: The variant of the SDK build (e.g., standard, lite, etc.).
             ///   - viewTrackingStrategy: View tracking strategy
@@ -8779,6 +9003,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 useSecureSessionCookie: Bool? = nil,
                 useTracing: Bool? = nil,
                 useTrackGraphQlPayload: Bool? = nil,
+                useTrackGraphQlResponseErrors: Bool? = nil,
                 useWorkerUrl: Bool? = nil,
                 variant: String? = nil,
                 viewTrackingStrategy: ViewTrackingStrategy? = nil
@@ -8872,6 +9097,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.useSecureSessionCookie = useSecureSessionCookie
                 self.useTracing = useTracing
                 self.useTrackGraphQlPayload = useTrackGraphQlPayload
+                self.useTrackGraphQlResponseErrors = useTrackGraphQlResponseErrors
                 self.useWorkerUrl = useWorkerUrl
                 self.variant = variant
                 self.viewTrackingStrategy = viewTrackingStrategy
@@ -10647,4 +10873,4 @@ public struct RUMTelemetryOperatingSystem: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/fbf83da4ab8e7b6ad956aa0038d6e9fef3ec0a9a
+// Generated from https://github.com/DataDog/rum-events-format/tree/14ab2d9eba0140976da009fd124f675632855ca2
