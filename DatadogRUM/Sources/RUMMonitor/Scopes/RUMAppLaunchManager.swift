@@ -34,12 +34,12 @@ internal class RUMAppLaunchManager {
 
     // MARK: - Internal Interface
 
-    func process(_ command: RUMCommand, context: DatadogContext, writer: Writer) {
+    func process(_ command: RUMCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope? = nil) {
         switch command {
         case let command as RUMTimeToInitialDisplayCommand:
-            writeTTIDVitalEvent(from: command, context: context, writer: writer)
+            writeTTIDVitalEvent(from: command, context: context, writer: writer, activeView: activeView)
         case let command as RUMTimeToFullDisplayCommand:
-            writeTTFDVitalEvent(from: command, context: context, writer: writer)
+            writeTTFDVitalEvent(from: command, context: context, writer: writer, activeView: activeView)
         default: break
         }
     }
@@ -48,7 +48,7 @@ internal class RUMAppLaunchManager {
 // MARK: - TTID
 
 private extension RUMAppLaunchManager {
-    func writeTTIDVitalEvent(from command: RUMTimeToInitialDisplayCommand, context: DatadogContext, writer: Writer) {
+    func writeTTIDVitalEvent(from command: RUMTimeToInitialDisplayCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope?) {
         guard shouldProcess(command: command, context: context),
               let ttid = time(from: command, context: context)
         else {
@@ -74,7 +74,8 @@ private extension RUMAppLaunchManager {
                 startupType: startupType,
                 attributes: attributes,
                 context: context,
-                writer: writer
+                writer: writer,
+                activeView: activeView
             )
 
             // The TTFD is always written after the TTID. If it exists already, means it was not written before.
@@ -86,7 +87,8 @@ private extension RUMAppLaunchManager {
                     startupType: startupType,
                     attributes: attributes,
                     context: context,
-                    writer: writer
+                    writer: writer,
+                    activeView: activeView
                 )
             }
         }
@@ -133,7 +135,8 @@ private extension RUMAppLaunchManager {
         startupType: RUMVitalEvent.Vital.AppLaunchProperties.StartupType,
         attributes: [AttributeKey: AttributeValue],
         context: DatadogContext,
-        writer: Writer
+        writer: Writer,
+        activeView: RUMViewScope?
     ) {
         let vital = RUMVitalEvent.Vital.appLaunchProperties(
             value: RUMVitalEvent.Vital.AppLaunchProperties(
@@ -169,6 +172,10 @@ private extension RUMAppLaunchManager {
             synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
+            view: .init(
+                id: (activeView?.viewUUID).orNull.toRUMDataFormat,
+                url: activeView?.viewPath ?? ""
+            ),
             vital: vital
         )
 
@@ -179,7 +186,7 @@ private extension RUMAppLaunchManager {
 // MARK: - TTFD
 
 private extension RUMAppLaunchManager {
-    func writeTTFDVitalEvent(from command: RUMTimeToFullDisplayCommand, context: DatadogContext, writer: Writer) {
+    func writeTTFDVitalEvent(from command: RUMTimeToFullDisplayCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope?) {
         guard shouldProcess(command: command, context: context),
               let ttfd = time(from: command, context: context) else { return }
 
@@ -196,7 +203,8 @@ private extension RUMAppLaunchManager {
                 startupType: startupType,
                 attributes: attributes,
                 context: context,
-                writer: writer
+                writer: writer,
+                activeView: activeView
             )
         }
     }
