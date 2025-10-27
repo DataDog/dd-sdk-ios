@@ -64,7 +64,7 @@ public typealias AttributeValue = Encodable
 
 // MARK: - Internal attributes
 
-/// Internal attributes, passed from cross-platform bridge.
+/// Internal attributes, passed from cross-platform bridge or internal integrations.
 /// Used to configure or override SDK internal features and attributes for the need of cross-platform SDKs (e.g. React Native SDK).
 public struct CrossPlatformAttributes {
     /// Custom app version passed from CP SDK. Used for all events issued by the SDK (both coming from cross-platform SDK and produced internally, like RUM long tasks).
