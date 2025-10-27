@@ -5759,6 +5759,14 @@ public class objc_RUMResourceEventResourceGraphql: NSObject {
         self.root = root
     }
 
+    public var errorCount: NSNumber? {
+        root.swiftModel.resource.graphql!.errorCount as NSNumber?
+    }
+
+    public var errors: [objc_RUMResourceEventResourceGraphqlErrors]? {
+        root.swiftModel.resource.graphql!.errors?.map { objc_RUMResourceEventResourceGraphqlErrors(swiftModel: $0) }
+    }
+
     public var operationName: String? {
         root.swiftModel.resource.graphql!.operationName
     }
@@ -5775,6 +5783,80 @@ public class objc_RUMResourceEventResourceGraphql: NSObject {
     public var variables: String? {
         set { root.swiftModel.resource.graphql!.variables = newValue }
         get { root.swiftModel.resource.graphql!.variables }
+    }
+}
+
+@objc(DDRUMResourceEventResourceGraphqlErrors)
+@objcMembers
+@_spi(objc)
+public class objc_RUMResourceEventResourceGraphqlErrors: NSObject {
+    internal var swiftModel: RUMResourceEvent.Resource.Graphql.Errors
+    internal var root: objc_RUMResourceEventResourceGraphqlErrors { self }
+
+    internal init(swiftModel: RUMResourceEvent.Resource.Graphql.Errors) {
+        self.swiftModel = swiftModel
+    }
+
+    public var code: String? {
+        root.swiftModel.code
+    }
+
+    public var locations: [objc_RUMResourceEventResourceGraphqlErrorsLocations]? {
+        root.swiftModel.locations?.map { objc_RUMResourceEventResourceGraphqlErrorsLocations(swiftModel: $0) }
+    }
+
+    public var message: String {
+        root.swiftModel.message
+    }
+
+    public var path: [objc_RUMResourceEventResourceGraphqlErrorsPath]? {
+        root.swiftModel.path?.map { objc_RUMResourceEventResourceGraphqlErrorsPath(swiftModel: $0) }
+    }
+}
+
+@objc(DDRUMResourceEventResourceGraphqlErrorsLocations)
+@objcMembers
+@_spi(objc)
+public class objc_RUMResourceEventResourceGraphqlErrorsLocations: NSObject {
+    internal var swiftModel: RUMResourceEvent.Resource.Graphql.Errors.Locations
+    internal var root: objc_RUMResourceEventResourceGraphqlErrorsLocations { self }
+
+    internal init(swiftModel: RUMResourceEvent.Resource.Graphql.Errors.Locations) {
+        self.swiftModel = swiftModel
+    }
+
+    public var column: NSNumber {
+        root.swiftModel.column as NSNumber
+    }
+
+    public var line: NSNumber {
+        root.swiftModel.line as NSNumber
+    }
+}
+
+@objc(DDRUMResourceEventResourceGraphqlErrorsPath)
+@objcMembers
+@_spi(objc)
+public class objc_RUMResourceEventResourceGraphqlErrorsPath: NSObject {
+    internal var swiftModel: RUMResourceEvent.Resource.Graphql.Errors.Path
+    internal var root: objc_RUMResourceEventResourceGraphqlErrorsPath { self }
+
+    internal init(swiftModel: RUMResourceEvent.Resource.Graphql.Errors.Path) {
+        self.swiftModel = swiftModel
+    }
+
+    public var string: String? {
+        guard case .string(let value) = root.swiftModel else {
+            return nil
+        }
+        return value
+    }
+
+    public var integer: NSNumber? {
+        guard case .integer(let value) = root.swiftModel else {
+            return nil
+        }
+        return value as NSNumber
     }
 }
 
@@ -7331,6 +7413,10 @@ public class objc_RUMViewEventStream: NSObject {
         root.swiftModel.stream!.bitrate as NSNumber?
     }
 
+    public var completionPercent: NSNumber? {
+        root.swiftModel.stream!.completionPercent as NSNumber?
+    }
+
     public var duration: NSNumber? {
         root.swiftModel.stream!.duration as NSNumber?
     }
@@ -8335,8 +8421,8 @@ public class objc_RUMVitalEvent: NSObject {
         root.swiftModel.version
     }
 
-    public var view: objc_RUMVitalEventView {
-        objc_RUMVitalEventView(root: root)
+    public var view: objc_RUMVitalEventView? {
+        root.swiftModel.view != nil ? objc_RUMVitalEventView(root: root) : nil
     }
 
     public var vital: objc_RUMVitalEventVital {
@@ -8364,6 +8450,10 @@ public class objc_RUMVitalEventDD: NSObject {
 
     public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
+    }
+
+    public var profiling: objc_RUMVitalEventDDProfiling? {
+        root.swiftModel.dd.profiling != nil ? objc_RUMVitalEventDDProfiling(root: root) : nil
     }
 
     public var sdkName: String? {
@@ -8400,6 +8490,85 @@ public class objc_RUMVitalEventDDConfiguration: NSObject {
     public var sessionSampleRate: NSNumber {
         root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
     }
+}
+
+@objc(DDRUMVitalEventDDProfiling)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalEventDDProfiling: NSObject {
+    internal let root: objc_RUMVitalEvent
+
+    internal init(root: objc_RUMVitalEvent) {
+        self.root = root
+    }
+
+    public var errorReason: objc_RUMVitalEventDDProfilingErrorReason {
+        .init(swift: root.swiftModel.dd.profiling!.errorReason)
+    }
+
+    public var status: objc_RUMVitalEventDDProfilingStatus {
+        .init(swift: root.swiftModel.dd.profiling!.status)
+    }
+}
+
+@objc(DDRUMVitalEventDDProfilingErrorReason)
+@_spi(objc)
+public enum objc_RUMVitalEventDDProfilingErrorReason: Int {
+    internal init(swift: RUMVitalEvent.DD.Profiling.ErrorReason?) {
+        switch swift {
+        case nil: self = .none
+        case .notSupportedByBrowser?: self = .notSupportedByBrowser
+        case .failedToLazyLoad?: self = .failedToLazyLoad
+        case .missingDocumentPolicyHeader?: self = .missingDocumentPolicyHeader
+        case .unexpectedException?: self = .unexpectedException
+        }
+    }
+
+    internal var toSwift: RUMVitalEvent.DD.Profiling.ErrorReason? {
+        switch self {
+        case .none: return nil
+        case .notSupportedByBrowser: return .notSupportedByBrowser
+        case .failedToLazyLoad: return .failedToLazyLoad
+        case .missingDocumentPolicyHeader: return .missingDocumentPolicyHeader
+        case .unexpectedException: return .unexpectedException
+        }
+    }
+
+    case none
+    case notSupportedByBrowser
+    case failedToLazyLoad
+    case missingDocumentPolicyHeader
+    case unexpectedException
+}
+
+@objc(DDRUMVitalEventDDProfilingStatus)
+@_spi(objc)
+public enum objc_RUMVitalEventDDProfilingStatus: Int {
+    internal init(swift: RUMVitalEvent.DD.Profiling.Status?) {
+        switch swift {
+        case nil: self = .none
+        case .starting?: self = .starting
+        case .running?: self = .running
+        case .stopped?: self = .stopped
+        case .error?: self = .error
+        }
+    }
+
+    internal var toSwift: RUMVitalEvent.DD.Profiling.Status? {
+        switch self {
+        case .none: return nil
+        case .starting: return .starting
+        case .running: return .running
+        case .stopped: return .stopped
+        case .error: return .error
+        }
+    }
+
+    case none
+    case starting
+    case running
+    case stopped
+    case error
 }
 
 @objc(DDRUMVitalEventDDSession)
@@ -9116,22 +9285,22 @@ public class objc_RUMVitalEventView: NSObject {
     }
 
     public var id: String {
-        root.swiftModel.view.id
+        root.swiftModel.view!.id
     }
 
     public var name: String? {
-        set { root.swiftModel.view.name = newValue }
-        get { root.swiftModel.view.name }
+        set { root.swiftModel.view!.name = newValue }
+        get { root.swiftModel.view!.name }
     }
 
     public var referrer: String? {
-        set { root.swiftModel.view.referrer = newValue }
-        get { root.swiftModel.view.referrer }
+        set { root.swiftModel.view!.referrer = newValue }
+        get { root.swiftModel.view!.referrer }
     }
 
     public var url: String {
-        set { root.swiftModel.view.url = newValue }
-        get { root.swiftModel.view.url }
+        set { root.swiftModel.view!.url = newValue }
+        get { root.swiftModel.view!.url }
     }
 }
 
@@ -10532,6 +10701,10 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.useTrackGraphQlPayload as NSNumber?
     }
 
+    public var useTrackGraphQlResponseErrors: NSNumber? {
+        root.swiftModel.telemetry.configuration.useTrackGraphQlResponseErrors as NSNumber?
+    }
+
     public var useWorkerUrl: NSNumber? {
         root.swiftModel.telemetry.configuration.useWorkerUrl as NSNumber?
     }
@@ -10845,4 +11018,4 @@ public class objc_TelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/fbf83da4ab8e7b6ad956aa0038d6e9fef3ec0a9a
+// Generated from https://github.com/DataDog/rum-events-format/tree/14ab2d9eba0140976da009fd124f675632855ca2
