@@ -40,6 +40,52 @@ class DatadogTracer_SamplingTests: XCTestCase {
         XCTAssertEqual(events.filter({ !$0.isKept }).count, 0, "Not kept spans should be dropped")
     }
 
+    func testRecordingCustomSampleRateInRootSpanEvent() throws {
+        // When
+        let tracer = createTracer(sampleRate: 0)
+        (0..<10).forEach { _ in
+            let span = tracer.startRootSpan(operationName: .mockAny(), customSamplingRate: 100)
+            span.finish()
+        }
+
+        // Then
+        let events = try XCTUnwrap(featureScope.spanEventsWritten())
+        XCTAssertEqual(events.filter({ $0.samplingRate == 1 }).count, 10)
+        XCTAssertEqual(events.filter({ $0.isKept }).count, 10)
+    }
+
+    func testRootSampleInOverridesTracerAndPropagatesToChildSpans() throws {
+        // When
+        let tracer = createTracer(sampleRate: 0)
+        let root = tracer.startRootSpan(operationName: .mockAny(), customSamplingRate: 100)
+        let child = tracer.startSpan(operationName: .mockAny(), childOf: root.context)
+        let grandChild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
+        grandChild.finish()
+        child.finish()
+        root.finish()
+
+        // Then
+        let events = try XCTUnwrap(featureScope.spanEventsWritten())
+        XCTAssertEqual(events.count, 3)
+        XCTAssertEqual(events.filter({ $0.samplingRate == 1 }).count, 3)
+        XCTAssertEqual(events.filter({ $0.isKept }).count, 3)
+    }
+
+    func testRootSampleOutOverridesTracerAndPropagatesToChildSpans() throws {
+        // When
+        let tracer = createTracer(sampleRate: 100)
+        let root = tracer.startRootSpan(operationName: .mockAny(), customSamplingRate: 0)
+        let child = tracer.startSpan(operationName: .mockAny(), childOf: root.context)
+        let grandChild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
+        grandChild.finish()
+        child.finish()
+        root.finish()
+
+        // Then
+        let events = try XCTUnwrap(featureScope.spanEventsWritten())
+        XCTAssertEqual(events.count, 0)
+    }
+
     func testRecordingSampledSpan() throws {
         // When
         let tracer = createTracer(sampleRate: 100)
