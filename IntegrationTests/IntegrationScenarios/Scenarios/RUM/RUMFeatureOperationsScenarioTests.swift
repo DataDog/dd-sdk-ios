@@ -73,7 +73,7 @@ class RUMFeatureOperationsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
         // Verify login flow vital events
-        let featureOperationVitals = session.vitalEvents.map { $0.vital }
+        let featureOperationVitals = session.operationStepEvents.map { $0.vital }
         let loginStartEvents = featureOperationVitals.filter { $0.name == "login_flow" && $0.stepType == .start }
         let loginSucceedEvents = featureOperationVitals.filter { $0.name == "login_flow" && $0.stepType == .end && $0.failureReason == nil }
 
@@ -114,7 +114,7 @@ class RUMFeatureOperationsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
         // Verify error vital events
-        let featureOperationVitals = session.vitalEvents.map { $0.vital }
+        let featureOperationVitals = session.operationStepEvents.map { $0.vital }
         let loginStartEvents = featureOperationVitals.filter { $0.name == "login_flow" && $0.stepType == .start }
         let loginFailEvents = featureOperationVitals.filter { $0.name == "login_flow" && $0.stepType == .end && $0.failureReason == .error }
 
@@ -154,7 +154,7 @@ class RUMFeatureOperationsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
         // Verify parallel operations vital events
-        let featureOperationVitals = session.vitalEvents.map { $0.vital }
+        let featureOperationVitals = session.operationStepEvents.map { $0.vital }
         let photoUploadStartEvents = featureOperationVitals.filter { $0.name == "photo_upload" && $0.stepType == .start }
         let photoUploadSucceedEvents = featureOperationVitals.filter { $0.name == "photo_upload" && $0.stepType == .end && $0.failureReason == nil }
 
@@ -193,7 +193,7 @@ class RUMFeatureOperationsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
         // Verify parallel operations vital events
-        let featureOperationVitals = session.vitalEvents.map { $0.vital }
+        let featureOperationVitals = session.operationStepEvents.map { $0.vital }
         let startEvents = featureOperationVitals.filter { $0.name == "photo_upload" && $0.stepType == .start }
         let failureEvents = featureOperationVitals.filter {
             $0.name == "photo_upload" &&
@@ -256,8 +256,8 @@ class RUMFeatureOperationsScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertGreaterThan(session.views.count, 2, "Should have multiple views")
 
         // Verify vital events capture the correct view context
-        let loginStartEvents = session.vitalEvents.filter { $0.vital.name == "login_flow" && $0.vital.stepType == .start }
-        let loginSucceedEvents = session.vitalEvents.filter { $0.vital.name == "login_flow" && $0.vital.stepType == .end && $0.vital.failureReason == nil }
+        let loginStartEvents = session.operationStepEvents.filter { $0.vital.name == "login_flow" && $0.vital.stepType == .start }
+        let loginSucceedEvents = session.operationStepEvents.filter { $0.vital.name == "login_flow" && $0.vital.stepType == .end && $0.vital.failureReason == nil }
 
         XCTAssertEqual(loginStartEvents.count, 1, "Should have one login flow start event")
         XCTAssertEqual(loginSucceedEvents.count, 1, "Should have one login flow succeed event")
