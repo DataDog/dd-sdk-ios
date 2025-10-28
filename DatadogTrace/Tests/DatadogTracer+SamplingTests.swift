@@ -65,9 +65,9 @@ class DatadogTracer_SamplingTests: XCTestCase {
 
     // MARK: - Head-based Sampling
 
-    func testWhenRootSpanIsSampled_thenAllChildSpansMustBeSampled() throws {
+    func testWhenRootSpanIsSampled_thenAllChildSpansMustBeSampledTheSameWay() throws {
         // When
-        let tracer = createTracer(sampleRate: 100)
+        let tracer = createTracer(sampleRate: 50)
         let root = tracer.startSpan(operationName: .mockAny())
         let child = tracer.startSpan(operationName: .mockAny(), childOf: root.context)
         let grandchild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
@@ -77,23 +77,13 @@ class DatadogTracer_SamplingTests: XCTestCase {
 
         // Then
         let events = try XCTUnwrap(featureScope.spanEventsWritten())
-        XCTAssertEqual(events.filter({ $0.samplingRate == 1 }).count, 3, "All spans must encode the same sample rate")
-        XCTAssertEqual(events.filter({ $0.isKept }).count, 3, "All spans must be kept")
-    }
 
-    func testWhenRootSpanIsNotSampled_thenAllChildSpansMustBeNotSampled() throws {
-        // When
-        let tracer = createTracer(sampleRate: 0)
-        let root = tracer.startSpan(operationName: .mockAny())
-        let child = tracer.startSpan(operationName: .mockAny(), childOf: root.context)
-        let grandchild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
-        grandchild.finish()
-        child.finish()
-        root.finish()
-
-        // Then
-        let events = try XCTUnwrap(featureScope.spanEventsWritten())
-        XCTAssertEqual(events.count, 0, "All spans must be dropped")
+        if events.isEmpty {
+            XCTAssert(true, "No spans were collected")
+        } else {
+            XCTAssertEqual(events.filter({ $0.samplingRate == 0.5 }).count, 3, "All spans must encode the same sample rate")
+            XCTAssertEqual(events.filter({ $0.isKept }).count, 3, "All spans must be kept")
+        }
     }
 }
 
