@@ -1,4 +1,5 @@
 import Foundation
+import DatadogInternal
 
 /// Tracer is the starting point for all OpenTracing instrumentation. Use it
 /// to create OTSpans, inject/extract them between processes, and so on.
@@ -34,7 +35,8 @@ public protocol OTTracer {
     func startRootSpan(
         operationName: String,
         tags: [String: Encodable]?,
-        startTime: Date?
+        startTime: Date?,
+        customSamplingRate: SampleRate?
     ) -> OTSpan
 
     /// Transfer the span information into the carrier of the given format.
@@ -117,12 +119,14 @@ public extension OTTracer {
     func startRootSpan(
         operationName: String,
         tags: [String: Encodable]? = nil,
-        startTime: Date? = nil
+        startTime: Date? = nil,
+        customSamplingRate: SampleRate? = nil
     ) -> OTSpan {
         return self.startRootSpan(
             operationName: operationName,
             tags: tags,
-            startTime: startTime
+            startTime: startTime,
+            customSamplingRate: customSamplingRate
         )
     }
 }

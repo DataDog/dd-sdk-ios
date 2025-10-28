@@ -46,6 +46,11 @@ internal class DDNoopTracer: OTTracer, OpenTelemetryApi.Tracer {
         return DDNoopGlobals.span
     }
 
+    func startRootSpan(operationName: String, tags: [String : any Encodable]?, startTime: Date?, customSamplingRate: SampleRate?) -> any OTSpan {
+        warn()
+        return DDNoopGlobals.span
+    }
+
     // MARK: - Open Telemetry
 
     func spanBuilder(spanName: String) -> OpenTelemetryApi.SpanBuilder {
