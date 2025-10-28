@@ -10,6 +10,211 @@
 
 public protocol RUMDataModel: Codable {}
 
+/// Device properties
+public struct Device: Codable {
+    /// The CPU architecture of the device that is reporting the error
+    public let architecture: String?
+
+    /// Current battery level of the device (0.0 to 1.0).
+    public let batteryLevel: Double?
+
+    /// Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
+    public let brand: String?
+
+    /// Current screen brightness level (0.0 to 1.0).
+    public let brightnessLevel: Double?
+
+    /// The user’s locale as a language tag combining language and region, e.g. 'en-US'.
+    public let locale: String?
+
+    /// Ordered list of the user’s preferred system languages as IETF language tags.
+    public let locales: [String]?
+
+    /// Device SKU model, e.g. Samsung SM-988GN, etc. Quite often name and model can be the same.
+    public let model: String?
+
+    /// Device marketing name, e.g. Xiaomi Redmi Note 8 Pro, Pixel 5, etc.
+    public let name: String?
+
+    /// Whether the device is in power saving mode.
+    public let powerSavingMode: Bool?
+
+    /// The device’s current time zone identifier, e.g. 'Europe/Berlin'.
+    public let timeZone: String?
+
+    /// Device type info
+    public let type: DeviceType?
+
+    public enum CodingKeys: String, CodingKey {
+        case architecture = "architecture"
+        case batteryLevel = "battery_level"
+        case brand = "brand"
+        case brightnessLevel = "brightness_level"
+        case locale = "locale"
+        case locales = "locales"
+        case model = "model"
+        case name = "name"
+        case powerSavingMode = "power_saving_mode"
+        case timeZone = "time_zone"
+        case type = "type"
+    }
+
+    /// Device properties
+    ///
+    /// - Parameters:
+    ///   - architecture: The CPU architecture of the device that is reporting the error
+    ///   - batteryLevel: Current battery level of the device (0.0 to 1.0).
+    ///   - brand: Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
+    ///   - brightnessLevel: Current screen brightness level (0.0 to 1.0).
+    ///   - locale: The user’s locale as a language tag combining language and region, e.g. 'en-US'.
+    ///   - locales: Ordered list of the user’s preferred system languages as IETF language tags.
+    ///   - model: Device SKU model, e.g. Samsung SM-988GN, etc. Quite often name and model can be the same.
+    ///   - name: Device marketing name, e.g. Xiaomi Redmi Note 8 Pro, Pixel 5, etc.
+    ///   - powerSavingMode: Whether the device is in power saving mode.
+    ///   - timeZone: The device’s current time zone identifier, e.g. 'Europe/Berlin'.
+    ///   - type: Device type info
+    public init(
+        architecture: String? = nil,
+        batteryLevel: Double? = nil,
+        brand: String? = nil,
+        brightnessLevel: Double? = nil,
+        locale: String? = nil,
+        locales: [String]? = nil,
+        model: String? = nil,
+        name: String? = nil,
+        powerSavingMode: Bool? = nil,
+        timeZone: String? = nil,
+        type: DeviceType? = nil
+    ) {
+        self.architecture = architecture
+        self.batteryLevel = batteryLevel
+        self.brand = brand
+        self.brightnessLevel = brightnessLevel
+        self.locale = locale
+        self.locales = locales
+        self.model = model
+        self.name = name
+        self.powerSavingMode = powerSavingMode
+        self.timeZone = timeZone
+        self.type = type
+    }
+
+    /// Device type info
+    public enum DeviceType: String, Codable {
+        case mobile = "mobile"
+        case desktop = "desktop"
+        case tablet = "tablet"
+        case tv = "tv"
+        case gamingConsole = "gaming_console"
+        case bot = "bot"
+        case other = "other"
+    }
+}
+
+/// Operating system properties
+public struct OperatingSystem: Codable {
+    /// Operating system build number, e.g. 15D21
+    public let build: String?
+
+    /// Operating system name, e.g. Android, iOS
+    public let name: String
+
+    /// Full operating system version, e.g. 8.1.1
+    public let version: String
+
+    /// Major operating system version, e.g. 8
+    public let versionMajor: String
+
+    public enum CodingKeys: String, CodingKey {
+        case build = "build"
+        case name = "name"
+        case version = "version"
+        case versionMajor = "version_major"
+    }
+
+    /// Operating system properties
+    ///
+    /// - Parameters:
+    ///   - build: Operating system build number, e.g. 15D21
+    ///   - name: Operating system name, e.g. Android, iOS
+    ///   - version: Full operating system version, e.g. 8.1.1
+    ///   - versionMajor: Major operating system version, e.g. 8
+    public init(
+        build: String? = nil,
+        name: String,
+        version: String,
+        versionMajor: String
+    ) {
+        self.build = build
+        self.name = name
+        self.version = version
+        self.versionMajor = versionMajor
+    }
+}
+
+/// Account properties
+public struct RUMAccount: Codable {
+    /// Identifier of the account
+    public let id: String
+
+    /// Name of the account
+    public let name: String?
+
+    public var accountInfo: [String: Encodable]
+
+    public enum StaticCodingKeys: String, CodingKey {
+        case id = "id"
+        case name = "name"
+    }
+
+    /// Account properties
+    ///
+    /// - Parameters:
+    ///   - id: Identifier of the account
+    ///   - name: Name of the account
+    ///   - accountInfo:
+    public init(
+        id: String,
+        name: String? = nil,
+        accountInfo: [String: Encodable]
+    ) {
+        self.id = id
+        self.name = name
+        self.accountInfo = accountInfo
+    }
+}
+
+extension RUMAccount {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(id, forKey: .id)
+        try staticContainer.encodeIfPresent(name, forKey: .name)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try accountInfo.forEach {
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.id = try staticContainer.decode(String.self, forKey: .id)
+        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
+
+        // Decode other properties into [String: AnyCodable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.accountInfo = [:]
+
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.accountInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
+        }
+    }
+}
+
 /// Schema of all properties of an Action event
 public struct RUMActionEvent: RUMDataModel {
     /// Internal properties
@@ -874,529 +1079,160 @@ public struct RUMActionEvent: RUMDataModel {
     }
 }
 
-/// Schema of all properties of an Transition event
-public struct RUMTransitionEvent: RUMDataModel {
-    /// Internal properties
-    public let dd: DD
+/// UUID of the action
+public enum RUMActionID: Codable {
+    case string(value: String)
+    case stringsArray(value: [String])
 
-    /// Account properties
-    public var account: RUMAccount?
+    // MARK: - Codable
 
-    /// Application properties
-    public let application: Application
+    public func encode(to encoder: Encoder) throws {
+        // Encode only the associated value, without encoding enum case
+        var container = encoder.singleValueContainer()
 
-    /// Generated unique ID of the application build. Unlike version or build_version this field is not meant to be coming from the user, but rather generated by the tooling for each build.
-    public let buildId: String?
+        switch self {
+        case .string(let value):
+            try container.encode(value)
+        case .stringsArray(let value):
+            try container.encode(value)
+        }
+    }
 
-    /// The build version for this application
-    public let buildVersion: String?
+    public init(from decoder: Decoder) throws {
+        // Decode enum case from associated value
+        let container = try decoder.singleValueContainer()
 
-    /// CI Visibility properties
-    public let ciTest: RUMCITest?
+        if let value = try? container.decode(String.self) {
+            self = .string(value: value)
+            return
+        }
+        if let value = try? container.decode([String].self) {
+            self = .stringsArray(value: value)
+            return
+        }
+        let error = DecodingError.Context(
+            codingPath: container.codingPath,
+            debugDescription: """
+            Failed to decode `RUMActionID`.
+            Ran out of possibilities when trying to decode the value of associated type.
+            """
+        )
+        throw DecodingError.typeMismatch(RUMActionID.self, error)
+    }
+}
 
-    /// Device connectivity properties
-    public let connectivity: RUMConnectivity?
-
-    /// User provided context
-    public var context: RUMEventAttributes?
-
-    /// Start of the event in ms from epoch
-    public let date: Int64
-
-    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
-    public let ddtags: String?
-
-    /// Device properties
-    public let device: Device?
-
-    /// Display properties
-    public let display: Display?
-
-    /// Operating system properties
-    public let os: OperatingSystem?
-
-    /// The service name for this application
-    public let service: String?
-
-    /// Session properties
-    public let session: Session
-
-    /// The source of this event
-    public let source: Source?
-
-    /// Stream properties
-    public let stream: Stream
-
-    /// Synthetics properties
-    public let synthetics: RUMSyntheticsTest?
-
-    /// Transition properties
-    public let transition: Transition
-
-    /// RUM event type
-    public let type: String = "transition"
-
-    /// User properties
-    public var usr: RUMUser?
-
-    /// The version for this application
-    public let version: String?
-
-    /// View properties
-    public var view: View
+/// CI Visibility properties
+public struct RUMCITest: Codable {
+    /// The identifier of the current CI Visibility test execution
+    public let testExecutionId: String
 
     public enum CodingKeys: String, CodingKey {
-        case dd = "_dd"
-        case account = "account"
-        case application = "application"
-        case buildId = "build_id"
-        case buildVersion = "build_version"
-        case ciTest = "ci_test"
-        case connectivity = "connectivity"
-        case context = "context"
-        case date = "date"
-        case ddtags = "ddtags"
-        case device = "device"
-        case display = "display"
-        case os = "os"
-        case service = "service"
-        case session = "session"
-        case source = "source"
-        case stream = "stream"
-        case synthetics = "synthetics"
-        case transition = "transition"
-        case type = "type"
-        case usr = "usr"
-        case version = "version"
-        case view = "view"
+        case testExecutionId = "test_execution_id"
     }
 
-    /// Schema of all properties of an Transition event
+    /// CI Visibility properties
     ///
     /// - Parameters:
-    ///   - dd: Internal properties
-    ///   - account: Account properties
-    ///   - application: Application properties
-    ///   - buildId: Generated unique ID of the application build. Unlike version or build_version this field is not meant to be coming from the user, but rather generated by the tooling for each build.
-    ///   - buildVersion: The build version for this application
-    ///   - ciTest: CI Visibility properties
-    ///   - connectivity: Device connectivity properties
-    ///   - context: User provided context
-    ///   - date: Start of the event in ms from epoch
-    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
-    ///   - device: Device properties
-    ///   - display: Display properties
-    ///   - os: Operating system properties
-    ///   - service: The service name for this application
-    ///   - session: Session properties
-    ///   - source: The source of this event
-    ///   - stream: Stream properties
-    ///   - synthetics: Synthetics properties
-    ///   - transition: Transition properties
-    ///   - usr: User properties
-    ///   - version: The version for this application
-    ///   - view: View properties
+    ///   - testExecutionId: The identifier of the current CI Visibility test execution
     public init(
-        dd: DD,
-        account: RUMAccount? = nil,
-        application: Application,
-        buildId: String? = nil,
-        buildVersion: String? = nil,
-        ciTest: RUMCITest? = nil,
-        connectivity: RUMConnectivity? = nil,
-        context: RUMEventAttributes? = nil,
-        date: Int64,
-        ddtags: String? = nil,
-        device: Device? = nil,
-        display: Display? = nil,
-        os: OperatingSystem? = nil,
-        service: String? = nil,
-        session: Session,
-        source: Source? = nil,
-        stream: Stream,
-        synthetics: RUMSyntheticsTest? = nil,
-        transition: Transition,
-        usr: RUMUser? = nil,
-        version: String? = nil,
-        view: View
+        testExecutionId: String
     ) {
-        self.dd = dd
-        self.account = account
-        self.application = application
-        self.buildId = buildId
-        self.buildVersion = buildVersion
-        self.ciTest = ciTest
-        self.connectivity = connectivity
-        self.context = context
-        self.date = date
-        self.ddtags = ddtags
-        self.device = device
-        self.display = display
-        self.os = os
-        self.service = service
-        self.session = session
-        self.source = source
-        self.stream = stream
-        self.synthetics = synthetics
-        self.transition = transition
-        self.usr = usr
-        self.version = version
-        self.view = view
+        self.testExecutionId = testExecutionId
+    }
+}
+
+/// Device connectivity properties
+public struct RUMConnectivity: Codable {
+    /// Cellular connectivity properties
+    public let cellular: Cellular?
+
+    /// Cellular connection type reflecting the measured network performance
+    public let effectiveType: EffectiveType?
+
+    /// The list of available network interfaces
+    public let interfaces: [Interfaces]?
+
+    /// Status of the device connectivity
+    public let status: Status
+
+    public enum CodingKeys: String, CodingKey {
+        case cellular = "cellular"
+        case effectiveType = "effective_type"
+        case interfaces = "interfaces"
+        case status = "status"
     }
 
-    /// Internal properties
-    public struct DD: Codable {
-        /// Browser SDK version
-        public let browserSdkVersion: String?
+    /// Device connectivity properties
+    ///
+    /// - Parameters:
+    ///   - cellular: Cellular connectivity properties
+    ///   - effectiveType: Cellular connection type reflecting the measured network performance
+    ///   - interfaces: The list of available network interfaces
+    ///   - status: Status of the device connectivity
+    public init(
+        cellular: Cellular? = nil,
+        effectiveType: EffectiveType? = nil,
+        interfaces: [Interfaces]? = nil,
+        status: Status
+    ) {
+        self.cellular = cellular
+        self.effectiveType = effectiveType
+        self.interfaces = interfaces
+        self.status = status
+    }
 
-        /// Subset of the SDK configuration options in use during its execution
-        public let configuration: Configuration?
+    /// Cellular connectivity properties
+    public struct Cellular: Codable {
+        /// The name of the SIM carrier
+        public let carrierName: String?
 
-        /// Version of the RUM event format
-        public let formatVersion: Int64 = 2
-
-        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
-        public let sdkName: String?
-
-        /// Session-related internal properties
-        public let session: Session?
+        /// The type of a radio technology used for cellular connection
+        public let technology: String?
 
         public enum CodingKeys: String, CodingKey {
-            case browserSdkVersion = "browser_sdk_version"
-            case configuration = "configuration"
-            case formatVersion = "format_version"
-            case sdkName = "sdk_name"
-            case session = "session"
+            case carrierName = "carrier_name"
+            case technology = "technology"
         }
 
-        /// Internal properties
+        /// Cellular connectivity properties
         ///
         /// - Parameters:
-        ///   - browserSdkVersion: Browser SDK version
-        ///   - configuration: Subset of the SDK configuration options in use during its execution
-        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
-        ///   - session: Session-related internal properties
+        ///   - carrierName: The name of the SIM carrier
+        ///   - technology: The type of a radio technology used for cellular connection
         public init(
-            browserSdkVersion: String? = nil,
-            configuration: Configuration? = nil,
-            sdkName: String? = nil,
-            session: Session? = nil
+            carrierName: String? = nil,
+            technology: String? = nil
         ) {
-            self.browserSdkVersion = browserSdkVersion
-            self.configuration = configuration
-            self.sdkName = sdkName
-            self.session = session
-        }
-
-        /// Subset of the SDK configuration options in use during its execution
-        public struct Configuration: Codable {
-            /// The percentage of views profiled
-            public let profilingSampleRate: Double?
-
-            /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double?
-
-            /// The percentage of sessions tracked
-            public let sessionSampleRate: Double
-
-            public enum CodingKeys: String, CodingKey {
-                case profilingSampleRate = "profiling_sample_rate"
-                case sessionReplaySampleRate = "session_replay_sample_rate"
-                case sessionSampleRate = "session_sample_rate"
-            }
-
-            /// Subset of the SDK configuration options in use during its execution
-            ///
-            /// - Parameters:
-            ///   - profilingSampleRate: The percentage of views profiled
-            ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
-            ///   - sessionSampleRate: The percentage of sessions tracked
-            public init(
-                profilingSampleRate: Double? = nil,
-                sessionReplaySampleRate: Double? = nil,
-                sessionSampleRate: Double
-            ) {
-                self.profilingSampleRate = profilingSampleRate
-                self.sessionReplaySampleRate = sessionReplaySampleRate
-                self.sessionSampleRate = sessionSampleRate
-            }
-        }
-
-        /// Session-related internal properties
-        public struct Session: Codable {
-            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
-            public let plan: Plan?
-
-            /// The precondition that led to the creation of the session
-            public let sessionPrecondition: RUMSessionPrecondition?
-
-            public enum CodingKeys: String, CodingKey {
-                case plan = "plan"
-                case sessionPrecondition = "session_precondition"
-            }
-
-            /// Session-related internal properties
-            ///
-            /// - Parameters:
-            ///   - plan: Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
-            ///   - sessionPrecondition: The precondition that led to the creation of the session
-            public init(
-                plan: Plan? = nil,
-                sessionPrecondition: RUMSessionPrecondition? = nil
-            ) {
-                self.plan = plan
-                self.sessionPrecondition = sessionPrecondition
-            }
-
-            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
-            public enum Plan: Int, Codable {
-                case plan1 = 1
-                case plan2 = 2
-            }
+            self.carrierName = carrierName
+            self.technology = technology
         }
     }
 
-    /// Application properties
-    public struct Application: Codable {
-        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
-        public let currentLocale: String?
-
-        /// UUID of the application
-        public let id: String
-
-        public enum CodingKeys: String, CodingKey {
-            case currentLocale = "current_locale"
-            case id = "id"
-        }
-
-        /// Application properties
-        ///
-        /// - Parameters:
-        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
-        ///   - id: UUID of the application
-        public init(
-            currentLocale: String? = nil,
-            id: String
-        ) {
-            self.currentLocale = currentLocale
-            self.id = id
-        }
+    /// Cellular connection type reflecting the measured network performance
+    public enum EffectiveType: String, Codable {
+        case slow2g = "slow-2g"
+        case effectiveType2g = "2g"
+        case effectiveType3g = "3g"
+        case effectiveType4g = "4g"
     }
 
-    /// Display properties
-    public struct Display: Codable {
-        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-        public let viewport: Viewport?
-
-        public enum CodingKeys: String, CodingKey {
-            case viewport = "viewport"
-        }
-
-        /// Display properties
-        ///
-        /// - Parameters:
-        ///   - viewport: The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-        public init(
-            viewport: Viewport? = nil
-        ) {
-            self.viewport = viewport
-        }
-
-        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-        public struct Viewport: Codable {
-            /// Height of the viewport (in pixels)
-            public let height: Double
-
-            /// Width of the viewport (in pixels)
-            public let width: Double
-
-            public enum CodingKeys: String, CodingKey {
-                case height = "height"
-                case width = "width"
-            }
-
-            /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-            ///
-            /// - Parameters:
-            ///   - height: Height of the viewport (in pixels)
-            ///   - width: Width of the viewport (in pixels)
-            public init(
-                height: Double,
-                width: Double
-            ) {
-                self.height = height
-                self.width = width
-            }
-        }
+    public enum Interfaces: String, Codable {
+        case bluetooth = "bluetooth"
+        case cellular = "cellular"
+        case ethernet = "ethernet"
+        case wifi = "wifi"
+        case wimax = "wimax"
+        case mixed = "mixed"
+        case other = "other"
+        case unknown = "unknown"
+        case interfacesNone = "none"
     }
 
-    /// Session properties
-    public struct Session: Codable {
-        /// Whether this session has a replay
-        public let hasReplay: Bool?
-
-        /// UUID of the session
-        public let id: String
-
-        /// Type of the session
-        public let type: RUMSessionType
-
-        public enum CodingKeys: String, CodingKey {
-            case hasReplay = "has_replay"
-            case id = "id"
-            case type = "type"
-        }
-
-        /// Session properties
-        ///
-        /// - Parameters:
-        ///   - hasReplay: Whether this session has a replay
-        ///   - id: UUID of the session
-        ///   - type: Type of the session
-        public init(
-            hasReplay: Bool? = nil,
-            id: String,
-            type: RUMSessionType
-        ) {
-            self.hasReplay = hasReplay
-            self.id = id
-            self.type = type
-        }
-    }
-
-    /// The source of this event
-    public enum Source: String, Codable {
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-        case roku = "roku"
-        case unity = "unity"
-        case kotlinMultiplatform = "kotlin-multiplatform"
-    }
-
-    /// Stream properties
-    public struct Stream: Codable {
-        /// UUID of the stream
-        public let id: String
-
-        public enum CodingKeys: String, CodingKey {
-            case id = "id"
-        }
-
-        /// Stream properties
-        ///
-        /// - Parameters:
-        ///   - id: UUID of the stream
-        public init(
-            id: String
-        ) {
-            self.id = id
-        }
-    }
-
-    /// Transition properties
-    public struct Transition: Codable {
-        /// Buffer starvation duration, the amount of time spent rebuffering in milliseconds
-        public let bufferStarvationDuration: Int64?
-
-        /// Duration of the event in milliseconds
-        public let duration: Int64?
-
-        /// Error code, as reported by the player
-        public let errorCode: Int64?
-
-        /// UUID of the transition
-        public let id: String?
-
-        /// Media start delay, the amount of time spent loading before playing in milliseconds
-        public let mediaStartDelay: Int64?
-
-        /// The player's current timestamp in milliseconds
-        public let timestamp: Int64?
-
-        /// Type of the transition
-        public let type: String
-
-        public enum CodingKeys: String, CodingKey {
-            case bufferStarvationDuration = "buffer_starvation_duration"
-            case duration = "duration"
-            case errorCode = "error_code"
-            case id = "id"
-            case mediaStartDelay = "media_start_delay"
-            case timestamp = "timestamp"
-            case type = "type"
-        }
-
-        /// Transition properties
-        ///
-        /// - Parameters:
-        ///   - bufferStarvationDuration: Buffer starvation duration, the amount of time spent rebuffering in milliseconds
-        ///   - duration: Duration of the event in milliseconds
-        ///   - errorCode: Error code, as reported by the player
-        ///   - id: UUID of the transition
-        ///   - mediaStartDelay: Media start delay, the amount of time spent loading before playing in milliseconds
-        ///   - timestamp: The player's current timestamp in milliseconds
-        ///   - type: Type of the transition
-        public init(
-            bufferStarvationDuration: Int64? = nil,
-            duration: Int64? = nil,
-            errorCode: Int64? = nil,
-            id: String? = nil,
-            mediaStartDelay: Int64? = nil,
-            timestamp: Int64? = nil,
-            type: String
-        ) {
-            self.bufferStarvationDuration = bufferStarvationDuration
-            self.duration = duration
-            self.errorCode = errorCode
-            self.id = id
-            self.mediaStartDelay = mediaStartDelay
-            self.timestamp = timestamp
-            self.type = type
-        }
-    }
-
-    /// View properties
-    public struct View: Codable {
-        /// UUID of the view
-        public let id: String
-
-        /// User defined name of the view
-        public var name: String?
-
-        /// URL that linked to the initial view of the page
-        public var referrer: String?
-
-        /// URL of the view
-        public var url: String
-
-        public enum CodingKeys: String, CodingKey {
-            case id = "id"
-            case name = "name"
-            case referrer = "referrer"
-            case url = "url"
-        }
-
-        /// View properties
-        ///
-        /// - Parameters:
-        ///   - id: UUID of the view
-        ///   - name: User defined name of the view
-        ///   - referrer: URL that linked to the initial view of the page
-        ///   - url: URL of the view
-        public init(
-            id: String,
-            name: String? = nil,
-            referrer: String? = nil,
-            url: String
-        ) {
-            self.id = id
-            self.name = name
-            self.referrer = referrer
-            self.url = url
-        }
+    /// Status of the device connectivity
+    public enum Status: String, Codable {
+        case connected = "connected"
+        case notConnected = "not_connected"
+        case maybe = "maybe"
     }
 }
 
@@ -2550,6 +2386,41 @@ extension RUMErrorEvent.FeatureFlags {
     }
 }
 
+/// User provided context
+public struct RUMEventAttributes: Codable {
+    public var contextInfo: [String: Encodable]
+
+    /// User provided context
+    ///
+    /// - Parameters:
+    ///   - contextInfo:
+    public init(
+        contextInfo: [String: Encodable]
+    ) {
+        self.contextInfo = contextInfo
+    }
+}
+
+extension RUMEventAttributes {
+    public func encode(to encoder: Encoder) throws {
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try contextInfo.forEach {
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode other properties into [String: AnyCodable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.contextInfo = [:]
+
+        try dynamicContainer.allKeys.forEach {
+            self.contextInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
+        }
+    }
+}
+
 /// Schema of all properties of a Long Task event
 public struct RUMLongTaskEvent: RUMDataModel {
     /// Internal properties
@@ -3388,6 +3259,19 @@ public struct RUMLongTaskEvent: RUMDataModel {
             self.url = url
         }
     }
+}
+
+/// HTTP method of the resource
+public enum RUMMethod: String, Codable {
+    case post = "POST"
+    case get = "GET"
+    case head = "HEAD"
+    case put = "PUT"
+    case delete = "DELETE"
+    case patch = "PATCH"
+    case trace = "TRACE"
+    case options = "OPTIONS"
+    case connect = "CONNECT"
 }
 
 /// Schema of all properties of a Resource event
@@ -4585,6 +4469,207 @@ public struct RUMResourceEvent: RUMDataModel {
             self.name = name
             self.referrer = referrer
             self.url = url
+        }
+    }
+}
+
+/// The precondition that led to the creation of the session
+public enum RUMSessionPrecondition: String, Codable {
+    case userAppLaunch = "user_app_launch"
+    case inactivityTimeout = "inactivity_timeout"
+    case maxDuration = "max_duration"
+    case backgroundLaunch = "background_launch"
+    case prewarm = "prewarm"
+    case fromNonInteractiveSession = "from_non_interactive_session"
+    case explicitStop = "explicit_stop"
+}
+
+/// Type of the session
+public enum RUMSessionType: String, Codable {
+    case user = "user"
+    case synthetics = "synthetics"
+    case ciTest = "ci_test"
+}
+
+/// Synthetics properties
+public struct RUMSyntheticsTest: Codable {
+    /// Whether the event comes from a SDK instance injected by Synthetics
+    public let injected: Bool?
+
+    /// The identifier of the current Synthetics test results
+    public let resultId: String
+
+    /// The identifier of the current Synthetics test
+    public let testId: String
+
+    public enum CodingKeys: String, CodingKey {
+        case injected = "injected"
+        case resultId = "result_id"
+        case testId = "test_id"
+    }
+
+    /// Synthetics properties
+    ///
+    /// - Parameters:
+    ///   - injected: Whether the event comes from a SDK instance injected by Synthetics
+    ///   - resultId: The identifier of the current Synthetics test results
+    ///   - testId: The identifier of the current Synthetics test
+    public init(
+        injected: Bool? = nil,
+        resultId: String,
+        testId: String
+    ) {
+        self.injected = injected
+        self.resultId = resultId
+        self.testId = testId
+    }
+}
+
+/// Device properties
+public struct RUMTelemetryDevice: Codable {
+    /// Architecture of the device
+    public let architecture: String?
+
+    /// Brand of the device
+    public let brand: String?
+
+    /// Model of the device
+    public let model: String?
+
+    public enum CodingKeys: String, CodingKey {
+        case architecture = "architecture"
+        case brand = "brand"
+        case model = "model"
+    }
+
+    /// Device properties
+    ///
+    /// - Parameters:
+    ///   - architecture: Architecture of the device
+    ///   - brand: Brand of the device
+    ///   - model: Model of the device
+    public init(
+        architecture: String? = nil,
+        brand: String? = nil,
+        model: String? = nil
+    ) {
+        self.architecture = architecture
+        self.brand = brand
+        self.model = model
+    }
+}
+
+/// OS properties
+public struct RUMTelemetryOperatingSystem: Codable {
+    /// Build of the OS
+    public let build: String?
+
+    /// Name of the OS
+    public let name: String?
+
+    /// Version of the OS
+    public let version: String?
+
+    public enum CodingKeys: String, CodingKey {
+        case build = "build"
+        case name = "name"
+        case version = "version"
+    }
+
+    /// OS properties
+    ///
+    /// - Parameters:
+    ///   - build: Build of the OS
+    ///   - name: Name of the OS
+    ///   - version: Version of the OS
+    public init(
+        build: String? = nil,
+        name: String? = nil,
+        version: String? = nil
+    ) {
+        self.build = build
+        self.name = name
+        self.version = version
+    }
+}
+
+/// User properties
+public struct RUMUser: Codable {
+    /// Identifier of the user across sessions
+    public let anonymousId: String?
+
+    /// Email of the user
+    public let email: String?
+
+    /// Identifier of the user
+    public let id: String?
+
+    /// Name of the user
+    public let name: String?
+
+    public var usrInfo: [String: Encodable]
+
+    public enum StaticCodingKeys: String, CodingKey {
+        case anonymousId = "anonymous_id"
+        case email = "email"
+        case id = "id"
+        case name = "name"
+    }
+
+    /// User properties
+    ///
+    /// - Parameters:
+    ///   - anonymousId: Identifier of the user across sessions
+    ///   - email: Email of the user
+    ///   - id: Identifier of the user
+    ///   - name: Name of the user
+    ///   - usrInfo:
+    public init(
+        anonymousId: String? = nil,
+        email: String? = nil,
+        id: String? = nil,
+        name: String? = nil,
+        usrInfo: [String: Encodable]
+    ) {
+        self.anonymousId = anonymousId
+        self.email = email
+        self.id = id
+        self.name = name
+        self.usrInfo = usrInfo
+    }
+}
+
+extension RUMUser {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(anonymousId, forKey: .anonymousId)
+        try staticContainer.encodeIfPresent(email, forKey: .email)
+        try staticContainer.encodeIfPresent(id, forKey: .id)
+        try staticContainer.encodeIfPresent(name, forKey: .name)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try usrInfo.forEach {
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.anonymousId = try staticContainer.decodeIfPresent(String.self, forKey: .anonymousId)
+        self.email = try staticContainer.decodeIfPresent(String.self, forKey: .email)
+        self.id = try staticContainer.decodeIfPresent(String.self, forKey: .id)
+        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
+
+        // Decode other properties into [String: AnyCodable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.usrInfo = [:]
+
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.usrInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
     }
 }
@@ -6707,8 +6792,8 @@ extension RUMViewEvent.View.CustomTimings {
     }
 }
 
-/// Schema of all properties of a Vital event
-public struct RUMVitalEvent: RUMDataModel {
+/// Schema for app launch metrics.
+public struct RUMVitalAppLaunchEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
 
@@ -6778,6 +6863,7 @@ public struct RUMVitalEvent: RUMDataModel {
     /// View properties
     public var view: View?
 
+    /// Vital properties
     public let vital: Vital
 
     public enum CodingKeys: String, CodingKey {
@@ -6807,7 +6893,7 @@ public struct RUMVitalEvent: RUMDataModel {
         case vital = "vital"
     }
 
-    /// Schema of all properties of a Vital event
+    /// Schema for app launch metrics.
     ///
     /// - Parameters:
     ///   - dd: Internal properties
@@ -6832,7 +6918,7 @@ public struct RUMVitalEvent: RUMDataModel {
     ///   - usr: User properties
     ///   - version: The version for this application
     ///   - view: View properties
-    ///   - vital:
+    ///   - vital: Vital properties
     public init(
         dd: DD,
         account: RUMAccount? = nil,
@@ -6903,9 +6989,6 @@ public struct RUMVitalEvent: RUMDataModel {
         /// Session-related internal properties
         public let session: Session?
 
-        /// Internal vital properties
-        public let vital: Vital?
-
         public enum CodingKeys: String, CodingKey {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
@@ -6913,7 +6996,6 @@ public struct RUMVitalEvent: RUMDataModel {
             case profiling = "profiling"
             case sdkName = "sdk_name"
             case session = "session"
-            case vital = "vital"
         }
 
         /// Internal properties
@@ -6924,21 +7006,18 @@ public struct RUMVitalEvent: RUMDataModel {
         ///   - profiling: Profiling context
         ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
-        ///   - vital: Internal vital properties
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
             profiling: Profiling? = nil,
             sdkName: String? = nil,
-            session: Session? = nil,
-            vital: Vital? = nil
+            session: Session? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
             self.profiling = profiling
             self.sdkName = sdkName
             self.session = session
-            self.vital = vital
         }
 
         /// Subset of the SDK configuration options in use during its execution
@@ -7087,26 +7166,6 @@ public struct RUMVitalEvent: RUMDataModel {
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
-            }
-        }
-
-        /// Internal vital properties
-        public struct Vital: Codable {
-            /// Whether the value of the vital is computed by the SDK (as opposed to directly provided by the customer)
-            public let computedValue: Bool?
-
-            public enum CodingKeys: String, CodingKey {
-                case computedValue = "computed_value"
-            }
-
-            /// Internal vital properties
-            ///
-            /// - Parameters:
-            ///   - computedValue: Whether the value of the vital is computed by the SDK (as opposed to directly provided by the customer)
-            public init(
-                computedValue: Bool? = nil
-            ) {
-                self.computedValue = computedValue
             }
         }
     }
@@ -7351,429 +7410,545 @@ public struct RUMVitalEvent: RUMDataModel {
         }
     }
 
-    public enum Vital: Codable {
-        case durationProperties(value: DurationProperties)
-        case appLaunchProperties(value: AppLaunchProperties)
-        case featureOperationProperties(value: FeatureOperationProperties)
+    /// Vital properties
+    public struct Vital: Codable {
+        /// The metric of the app launch.
+        public let appLaunchMetric: AppLaunchMetric
 
-        // MARK: - Codable
+        /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
+        public let vitalDescription: String?
 
-        public func encode(to encoder: Encoder) throws {
-            // Encode only the associated value, without encoding enum case
-            var container = encoder.singleValueContainer()
+        /// Duration of the vital in nanoseconds.
+        public let duration: Double
 
-            switch self {
-            case .durationProperties(let value):
-                try container.encode(value)
-            case .appLaunchProperties(let value):
-                try container.encode(value)
-            case .featureOperationProperties(let value):
-                try container.encode(value)
-            }
+        /// If the app launch had a saved instance state bundle.
+        public let hasSavedInstanceStateBundle: Bool?
+
+        /// UUID of the vital
+        public let id: String
+
+        /// Whether the app launch was prewarmed.
+        public let isPrewarmed: Bool?
+
+        /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+        public let name: String?
+
+        /// The type of the app launch.
+        public let startupType: StartupType?
+
+        /// Type of the vital.
+        public let type: String = "app_launch"
+
+        public enum CodingKeys: String, CodingKey {
+            case appLaunchMetric = "app_launch_metric"
+            case vitalDescription = "description"
+            case duration = "duration"
+            case hasSavedInstanceStateBundle = "has_saved_instance_state_bundle"
+            case id = "id"
+            case isPrewarmed = "is_prewarmed"
+            case name = "name"
+            case startupType = "startup_type"
+            case type = "type"
         }
 
-        public init(from decoder: Decoder) throws {
-            // Decode enum case from associated value
-            let container = try decoder.singleValueContainer()
-
-            if let value = try? container.decode(DurationProperties.self) {
-                self = .durationProperties(value: value)
-                return
-            }
-            if let value = try? container.decode(AppLaunchProperties.self) {
-                self = .appLaunchProperties(value: value)
-                return
-            }
-            if let value = try? container.decode(FeatureOperationProperties.self) {
-                self = .featureOperationProperties(value: value)
-                return
-            }
-            let error = DecodingError.Context(
-                codingPath: container.codingPath,
-                debugDescription: """
-                Failed to decode `Vital`.
-                Ran out of possibilities when trying to decode the value of associated type.
-                """
-            )
-            throw DecodingError.typeMismatch(Vital.self, error)
+        /// Vital properties
+        ///
+        /// - Parameters:
+        ///   - appLaunchMetric: The metric of the app launch.
+        ///   - vitalDescription: Description of the vital. It can be used as a secondary identifier (URL, React component name...)
+        ///   - duration: Duration of the vital in nanoseconds.
+        ///   - hasSavedInstanceStateBundle: If the app launch had a saved instance state bundle.
+        ///   - id: UUID of the vital
+        ///   - isPrewarmed: Whether the app launch was prewarmed.
+        ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+        ///   - startupType: The type of the app launch.
+        public init(
+            appLaunchMetric: AppLaunchMetric,
+            vitalDescription: String? = nil,
+            duration: Double,
+            hasSavedInstanceStateBundle: Bool? = nil,
+            id: String,
+            isPrewarmed: Bool? = nil,
+            name: String? = nil,
+            startupType: StartupType? = nil
+        ) {
+            self.appLaunchMetric = appLaunchMetric
+            self.vitalDescription = vitalDescription
+            self.duration = duration
+            self.hasSavedInstanceStateBundle = hasSavedInstanceStateBundle
+            self.id = id
+            self.isPrewarmed = isPrewarmed
+            self.name = name
+            self.startupType = startupType
         }
 
-        /// Duration properties of a Vital event
-        public struct DurationProperties: Codable {
-            /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
-            public let durationPropertiesDescription: String?
-
-            /// Duration of the vital in nanoseconds.
-            public let duration: Double
-
-            /// UUID of the vital
-            public let id: String
-
-            /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
-            public let name: String?
-
-            /// Type of the vital.
-            public let type: String = "duration"
-
-            public enum CodingKeys: String, CodingKey {
-                case durationPropertiesDescription = "description"
-                case duration = "duration"
-                case id = "id"
-                case name = "name"
-                case type = "type"
-            }
-
-            /// Duration properties of a Vital event
-            ///
-            /// - Parameters:
-            ///   - durationPropertiesDescription: Description of the vital. It can be used as a secondary identifier (URL, React component name...)
-            ///   - duration: Duration of the vital in nanoseconds.
-            ///   - id: UUID of the vital
-            ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
-            public init(
-                durationPropertiesDescription: String? = nil,
-                duration: Double,
-                id: String,
-                name: String? = nil
-            ) {
-                self.durationPropertiesDescription = durationPropertiesDescription
-                self.duration = duration
-                self.id = id
-                self.name = name
-            }
+        /// The metric of the app launch.
+        public enum AppLaunchMetric: String, Codable {
+            case ttid = "ttid"
+            case ttfd = "ttfd"
         }
 
-        /// Schema for app launch metrics.
-        public struct AppLaunchProperties: Codable {
-            /// The metric of the app launch.
-            public let appLaunchMetric: AppLaunchMetric
-
-            /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
-            public let appLaunchPropertiesDescription: String?
-
-            /// Duration of the vital in nanoseconds.
-            public let duration: Double
-
-            /// If the app launch had a saved instance state bundle.
-            public let hasSavedInstanceStateBundle: Bool?
-
-            /// UUID of the vital
-            public let id: String
-
-            /// Whether the app launch was prewarmed.
-            public let isPrewarmed: Bool?
-
-            /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
-            public let name: String?
-
-            /// The type of the app launch.
-            public let startupType: StartupType?
-
-            /// Type of the vital.
-            public let type: String = "app_launch"
-
-            public enum CodingKeys: String, CodingKey {
-                case appLaunchMetric = "app_launch_metric"
-                case appLaunchPropertiesDescription = "description"
-                case duration = "duration"
-                case hasSavedInstanceStateBundle = "has_saved_instance_state_bundle"
-                case id = "id"
-                case isPrewarmed = "is_prewarmed"
-                case name = "name"
-                case startupType = "startup_type"
-                case type = "type"
-            }
-
-            /// Schema for app launch metrics.
-            ///
-            /// - Parameters:
-            ///   - appLaunchMetric: The metric of the app launch.
-            ///   - appLaunchPropertiesDescription: Description of the vital. It can be used as a secondary identifier (URL, React component name...)
-            ///   - duration: Duration of the vital in nanoseconds.
-            ///   - hasSavedInstanceStateBundle: If the app launch had a saved instance state bundle.
-            ///   - id: UUID of the vital
-            ///   - isPrewarmed: Whether the app launch was prewarmed.
-            ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
-            ///   - startupType: The type of the app launch.
-            public init(
-                appLaunchMetric: AppLaunchMetric,
-                appLaunchPropertiesDescription: String? = nil,
-                duration: Double,
-                hasSavedInstanceStateBundle: Bool? = nil,
-                id: String,
-                isPrewarmed: Bool? = nil,
-                name: String? = nil,
-                startupType: StartupType? = nil
-            ) {
-                self.appLaunchMetric = appLaunchMetric
-                self.appLaunchPropertiesDescription = appLaunchPropertiesDescription
-                self.duration = duration
-                self.hasSavedInstanceStateBundle = hasSavedInstanceStateBundle
-                self.id = id
-                self.isPrewarmed = isPrewarmed
-                self.name = name
-                self.startupType = startupType
-            }
-
-            /// The metric of the app launch.
-            public enum AppLaunchMetric: String, Codable {
-                case ttid = "ttid"
-                case ttfd = "ttfd"
-            }
-
-            /// The type of the app launch.
-            public enum StartupType: String, Codable {
-                case coldStart = "cold_start"
-                case warmStart = "warm_start"
-            }
-        }
-
-        /// Schema for a feature operation.
-        public struct FeatureOperationProperties: Codable {
-            /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
-            public let featureOperationPropertiesDescription: String?
-
-            /// Reason for the failure of the step, if applicable
-            public let failureReason: FailureReason?
-
-            /// UUID of the vital
-            public let id: String
-
-            /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
-            public let name: String?
-
-            /// Optional key to distinguish between multiple operations of the same name running in parallel (e.g., 'photo_upload' with keys 'profile_pic' vs 'cover')
-            public let operationKey: String?
-
-            /// Type of the step that triggered the vital, if applicable
-            public let stepType: StepType?
-
-            /// Type of the vital.
-            public let type: String = "operation_step"
-
-            public enum CodingKeys: String, CodingKey {
-                case featureOperationPropertiesDescription = "description"
-                case failureReason = "failure_reason"
-                case id = "id"
-                case name = "name"
-                case operationKey = "operation_key"
-                case stepType = "step_type"
-                case type = "type"
-            }
-
-            /// Schema for a feature operation.
-            ///
-            /// - Parameters:
-            ///   - featureOperationPropertiesDescription: Description of the vital. It can be used as a secondary identifier (URL, React component name...)
-            ///   - failureReason: Reason for the failure of the step, if applicable
-            ///   - id: UUID of the vital
-            ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
-            ///   - operationKey: Optional key to distinguish between multiple operations of the same name running in parallel (e.g., 'photo_upload' with keys 'profile_pic' vs 'cover')
-            ///   - stepType: Type of the step that triggered the vital, if applicable
-            public init(
-                featureOperationPropertiesDescription: String? = nil,
-                failureReason: FailureReason? = nil,
-                id: String,
-                name: String? = nil,
-                operationKey: String? = nil,
-                stepType: StepType? = nil
-            ) {
-                self.featureOperationPropertiesDescription = featureOperationPropertiesDescription
-                self.failureReason = failureReason
-                self.id = id
-                self.name = name
-                self.operationKey = operationKey
-                self.stepType = stepType
-            }
-
-            /// Reason for the failure of the step, if applicable
-            public enum FailureReason: String, Codable {
-                case error = "error"
-                case abandoned = "abandoned"
-                case other = "other"
-            }
-
-            /// Type of the step that triggered the vital, if applicable
-            public enum StepType: String, Codable {
-                case start = "start"
-                case update = "update"
-                case retry = "retry"
-                case end = "end"
-            }
+        /// The type of the app launch.
+        public enum StartupType: String, Codable {
+            case coldStart = "cold_start"
+            case warmStart = "warm_start"
         }
     }
 }
 
-/// Schema of all properties of a telemetry error event
-public struct TelemetryErrorEvent: RUMDataModel {
+/// Schema for a duration vital event.
+public struct RUMVitalDurationEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
 
-    /// Action properties
-    public let action: Action?
+    /// Account properties
+    public var account: RUMAccount?
 
     /// Application properties
-    public let application: Application?
+    public let application: Application
+
+    /// Generated unique ID of the application build. Unlike version or build_version this field is not meant to be coming from the user, but rather generated by the tooling for each build.
+    public let buildId: String?
+
+    /// The build version for this application
+    public let buildVersion: String?
+
+    /// CI Visibility properties
+    public let ciTest: RUMCITest?
+
+    /// Device connectivity properties
+    public let connectivity: RUMConnectivity?
+
+    /// View Container properties (view wrapping the current view)
+    public let container: Container?
+
+    /// User provided context
+    public var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
 
-    /// The actual percentage of telemetry usage per event
-    public let effectiveSampleRate: Double?
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
 
-    /// Enabled experimental features
-    public let experimentalFeatures: [String]?
+    /// Device properties
+    public let device: Device?
 
-    /// The SDK generating the telemetry event
-    public let service: String
+    /// Display properties
+    public let display: Display?
+
+    /// Operating system properties
+    public let os: OperatingSystem?
+
+    /// The service name for this application
+    public let service: String?
 
     /// Session properties
-    public let session: Session?
+    public let session: Session
 
     /// The source of this event
-    public let source: Source
+    public let source: Source?
 
-    /// The telemetry log information
-    public var telemetry: Telemetry
+    /// Stream properties
+    public let stream: Stream?
 
-    /// Telemetry event type. Should specify telemetry only.
-    public let type: String = "telemetry"
+    /// Synthetics properties
+    public let synthetics: RUMSyntheticsTest?
 
-    /// The version of the SDK generating the telemetry event
-    public let version: String
+    /// RUM event type
+    public let type: String = "vital"
+
+    /// User properties
+    public var usr: RUMUser?
+
+    /// The version for this application
+    public let version: String?
 
     /// View properties
-    public let view: View?
+    public var view: View
+
+    /// Vital properties
+    public let vital: Vital
 
     public enum CodingKeys: String, CodingKey {
         case dd = "_dd"
-        case action = "action"
+        case account = "account"
         case application = "application"
+        case buildId = "build_id"
+        case buildVersion = "build_version"
+        case ciTest = "ci_test"
+        case connectivity = "connectivity"
+        case container = "container"
+        case context = "context"
         case date = "date"
-        case effectiveSampleRate = "effective_sample_rate"
-        case experimentalFeatures = "experimental_features"
+        case ddtags = "ddtags"
+        case device = "device"
+        case display = "display"
+        case os = "os"
         case service = "service"
         case session = "session"
         case source = "source"
-        case telemetry = "telemetry"
+        case stream = "stream"
+        case synthetics = "synthetics"
         case type = "type"
+        case usr = "usr"
         case version = "version"
         case view = "view"
+        case vital = "vital"
     }
 
-    /// Schema of all properties of a telemetry error event
+    /// Schema for a duration vital event.
     ///
     /// - Parameters:
     ///   - dd: Internal properties
-    ///   - action: Action properties
+    ///   - account: Account properties
     ///   - application: Application properties
+    ///   - buildId: Generated unique ID of the application build. Unlike version or build_version this field is not meant to be coming from the user, but rather generated by the tooling for each build.
+    ///   - buildVersion: The build version for this application
+    ///   - ciTest: CI Visibility properties
+    ///   - connectivity: Device connectivity properties
+    ///   - container: View Container properties (view wrapping the current view)
+    ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
-    ///   - effectiveSampleRate: The actual percentage of telemetry usage per event
-    ///   - experimentalFeatures: Enabled experimental features
-    ///   - service: The SDK generating the telemetry event
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    ///   - device: Device properties
+    ///   - display: Display properties
+    ///   - os: Operating system properties
+    ///   - service: The service name for this application
     ///   - session: Session properties
     ///   - source: The source of this event
-    ///   - telemetry: The telemetry log information
-    ///   - version: The version of the SDK generating the telemetry event
+    ///   - stream: Stream properties
+    ///   - synthetics: Synthetics properties
+    ///   - usr: User properties
+    ///   - version: The version for this application
     ///   - view: View properties
+    ///   - vital: Vital properties
     public init(
         dd: DD,
-        action: Action? = nil,
-        application: Application? = nil,
+        account: RUMAccount? = nil,
+        application: Application,
+        buildId: String? = nil,
+        buildVersion: String? = nil,
+        ciTest: RUMCITest? = nil,
+        connectivity: RUMConnectivity? = nil,
+        container: Container? = nil,
+        context: RUMEventAttributes? = nil,
         date: Int64,
-        effectiveSampleRate: Double? = nil,
-        experimentalFeatures: [String]? = nil,
-        service: String,
-        session: Session? = nil,
-        source: Source,
-        telemetry: Telemetry,
-        version: String,
-        view: View? = nil
+        ddtags: String? = nil,
+        device: Device? = nil,
+        display: Display? = nil,
+        os: OperatingSystem? = nil,
+        service: String? = nil,
+        session: Session,
+        source: Source? = nil,
+        stream: Stream? = nil,
+        synthetics: RUMSyntheticsTest? = nil,
+        usr: RUMUser? = nil,
+        version: String? = nil,
+        view: View,
+        vital: Vital
     ) {
         self.dd = dd
-        self.action = action
+        self.account = account
         self.application = application
+        self.buildId = buildId
+        self.buildVersion = buildVersion
+        self.ciTest = ciTest
+        self.connectivity = connectivity
+        self.container = container
+        self.context = context
         self.date = date
-        self.effectiveSampleRate = effectiveSampleRate
-        self.experimentalFeatures = experimentalFeatures
+        self.ddtags = ddtags
+        self.device = device
+        self.display = display
+        self.os = os
         self.service = service
         self.session = session
         self.source = source
-        self.telemetry = telemetry
+        self.stream = stream
+        self.synthetics = synthetics
+        self.usr = usr
         self.version = version
         self.view = view
+        self.vital = vital
     }
 
     /// Internal properties
     public struct DD: Codable {
+        /// Browser SDK version
+        public let browserSdkVersion: String?
+
+        /// Subset of the SDK configuration options in use during its execution
+        public let configuration: Configuration?
+
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
+        /// Session-related internal properties
+        public let session: Session?
+
         public enum CodingKeys: String, CodingKey {
+            case browserSdkVersion = "browser_sdk_version"
+            case configuration = "configuration"
             case formatVersion = "format_version"
+            case sdkName = "sdk_name"
+            case session = "session"
         }
 
         /// Internal properties
-        public init() { }
-    }
-
-    /// Action properties
-    public struct Action: Codable {
-        /// UUID of the action
-        public let id: String
-
-        public enum CodingKeys: String, CodingKey {
-            case id = "id"
-        }
-
-        /// Action properties
         ///
         /// - Parameters:
-        ///   - id: UUID of the action
+        ///   - browserSdkVersion: Browser SDK version
+        ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        ///   - session: Session-related internal properties
         public init(
-            id: String
+            browserSdkVersion: String? = nil,
+            configuration: Configuration? = nil,
+            sdkName: String? = nil,
+            session: Session? = nil
         ) {
-            self.id = id
+            self.browserSdkVersion = browserSdkVersion
+            self.configuration = configuration
+            self.sdkName = sdkName
+            self.session = session
+        }
+
+        /// Subset of the SDK configuration options in use during its execution
+        public struct Configuration: Codable {
+            /// The percentage of views profiled
+            public let profilingSampleRate: Double?
+
+            /// The percentage of sessions with RUM & Session Replay pricing tracked
+            public let sessionReplaySampleRate: Double?
+
+            /// The percentage of sessions tracked
+            public let sessionSampleRate: Double
+
+            public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplaySampleRate = "session_replay_sample_rate"
+                case sessionSampleRate = "session_sample_rate"
+            }
+
+            /// Subset of the SDK configuration options in use during its execution
+            ///
+            /// - Parameters:
+            ///   - profilingSampleRate: The percentage of views profiled
+            ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
+            ///   - sessionSampleRate: The percentage of sessions tracked
+            public init(
+                profilingSampleRate: Double? = nil,
+                sessionReplaySampleRate: Double? = nil,
+                sessionSampleRate: Double
+            ) {
+                self.profilingSampleRate = profilingSampleRate
+                self.sessionReplaySampleRate = sessionReplaySampleRate
+                self.sessionSampleRate = sessionSampleRate
+            }
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public let plan: Plan?
+
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: RUMSessionPrecondition?
+
+            public enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+                case sessionPrecondition = "session_precondition"
+            }
+
+            /// Session-related internal properties
+            ///
+            /// - Parameters:
+            ///   - plan: Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            ///   - sessionPrecondition: The precondition that led to the creation of the session
+            public init(
+                plan: Plan? = nil,
+                sessionPrecondition: RUMSessionPrecondition? = nil
+            ) {
+                self.plan = plan
+                self.sessionPrecondition = sessionPrecondition
+            }
+
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
         }
     }
 
     /// Application properties
     public struct Application: Codable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
+        }
+    }
+
+    /// View Container properties (view wrapping the current view)
+    public struct Container: Codable {
+        /// Source of the parent view
+        public let source: Source
+
+        /// Attributes of the view's container
+        public let view: View
+
+        public enum CodingKeys: String, CodingKey {
+            case source = "source"
+            case view = "view"
+        }
+
+        /// View Container properties (view wrapping the current view)
+        ///
+        /// - Parameters:
+        ///   - source: Source of the parent view
+        ///   - view: Attributes of the view's container
+        public init(
+            source: Source,
+            view: View
+        ) {
+            self.source = source
+            self.view = view
+        }
+
+        /// Source of the parent view
+        public enum Source: String, Codable {
+            case android = "android"
+            case ios = "ios"
+            case browser = "browser"
+            case flutter = "flutter"
+            case reactNative = "react-native"
+            case roku = "roku"
+            case unity = "unity"
+            case kotlinMultiplatform = "kotlin-multiplatform"
+        }
+
+        /// Attributes of the view's container
+        public struct View: Codable {
+            /// ID of the parent view
+            public let id: String
+
+            public enum CodingKeys: String, CodingKey {
+                case id = "id"
+            }
+
+            /// Attributes of the view's container
+            ///
+            /// - Parameters:
+            ///   - id: ID of the parent view
+            public init(
+                id: String
+            ) {
+                self.id = id
+            }
+        }
+    }
+
+    /// Display properties
+    public struct Display: Codable {
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public let viewport: Viewport?
+
+        public enum CodingKeys: String, CodingKey {
+            case viewport = "viewport"
+        }
+
+        /// Display properties
+        ///
+        /// - Parameters:
+        ///   - viewport: The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public init(
+            viewport: Viewport? = nil
+        ) {
+            self.viewport = viewport
+        }
+
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public struct Viewport: Codable {
+            /// Height of the viewport (in pixels)
+            public let height: Double
+
+            /// Width of the viewport (in pixels)
+            public let width: Double
+
+            public enum CodingKeys: String, CodingKey {
+                case height = "height"
+                case width = "width"
+            }
+
+            /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+            ///
+            /// - Parameters:
+            ///   - height: Height of the viewport (in pixels)
+            ///   - width: Width of the viewport (in pixels)
+            public init(
+                height: Double,
+                width: Double
+            ) {
+                self.height = height
+                self.width = width
+            }
         }
     }
 
     /// Session properties
     public struct Session: Codable {
+        /// Whether this session has a replay
+        public let hasReplay: Bool?
+
         /// UUID of the session
         public let id: String
 
+        /// Type of the session
+        public let type: RUMSessionType
+
         public enum CodingKeys: String, CodingKey {
+            case hasReplay = "has_replay"
             case id = "id"
+            case type = "type"
         }
 
         /// Session properties
         ///
         /// - Parameters:
+        ///   - hasReplay: Whether this session has a replay
         ///   - id: UUID of the session
+        ///   - type: Type of the session
         public init(
-            id: String
+            hasReplay: Bool? = nil,
+            id: String,
+            type: RUMSessionType
         ) {
+            self.hasReplay = hasReplay
             self.id = id
+            self.type = type
         }
     }
 
@@ -7784,432 +7959,718 @@ public struct TelemetryErrorEvent: RUMDataModel {
         case browser = "browser"
         case flutter = "flutter"
         case reactNative = "react-native"
+        case roku = "roku"
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
     }
 
-    /// The telemetry log information
-    public struct Telemetry: Codable {
-        /// Device properties
-        public let device: RUMTelemetryDevice?
+    /// Stream properties
+    public struct Stream: Codable {
+        /// UUID of the stream
+        public let id: String
 
-        /// Error properties
-        public let error: Error?
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
 
-        /// Body of the log
-        public let message: String
+        /// Stream properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the stream
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
 
-        /// OS properties
-        public let os: RUMTelemetryOperatingSystem?
+    /// View properties
+    public struct View: Codable {
+        /// UUID of the view
+        public let id: String
 
-        /// Level/severity of the log
-        public let status: String = "error"
+        /// User defined name of the view
+        public var name: String?
 
-        /// Telemetry type
-        public let type: String? = "log"
+        /// URL that linked to the initial view of the page
+        public var referrer: String?
 
-        public var telemetryInfo: [String: Encodable]
+        /// URL of the view
+        public var url: String
 
-        public enum StaticCodingKeys: String, CodingKey {
-            case device = "device"
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case referrer = "referrer"
+            case url = "url"
+        }
+
+        /// View properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the view
+        ///   - name: User defined name of the view
+        ///   - referrer: URL that linked to the initial view of the page
+        ///   - url: URL of the view
+        public init(
+            id: String,
+            name: String? = nil,
+            referrer: String? = nil,
+            url: String
+        ) {
+            self.id = id
+            self.name = name
+            self.referrer = referrer
+            self.url = url
+        }
+    }
+
+    /// Vital properties
+    public struct Vital: Codable {
+        /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
+        public let vitalDescription: String?
+
+        /// Duration of the vital in nanoseconds.
+        public let duration: Double
+
+        /// UUID of the vital
+        public let id: String
+
+        /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+        public let name: String?
+
+        /// Type of the vital.
+        public let type: String = "duration"
+
+        public enum CodingKeys: String, CodingKey {
+            case vitalDescription = "description"
+            case duration = "duration"
+            case id = "id"
+            case name = "name"
+            case type = "type"
+        }
+
+        /// Vital properties
+        ///
+        /// - Parameters:
+        ///   - vitalDescription: Description of the vital. It can be used as a secondary identifier (URL, React component name...)
+        ///   - duration: Duration of the vital in nanoseconds.
+        ///   - id: UUID of the vital
+        ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+        public init(
+            vitalDescription: String? = nil,
+            duration: Double,
+            id: String,
+            name: String? = nil
+        ) {
+            self.vitalDescription = vitalDescription
+            self.duration = duration
+            self.id = id
+            self.name = name
+        }
+    }
+}
+
+/// Schema for a vital operation step event.
+public struct RUMVitalOperationStepEvent: RUMDataModel {
+    /// Internal properties
+    public let dd: DD
+
+    /// Account properties
+    public var account: RUMAccount?
+
+    /// Application properties
+    public let application: Application
+
+    /// Generated unique ID of the application build. Unlike version or build_version this field is not meant to be coming from the user, but rather generated by the tooling for each build.
+    public let buildId: String?
+
+    /// The build version for this application
+    public let buildVersion: String?
+
+    /// CI Visibility properties
+    public let ciTest: RUMCITest?
+
+    /// Device connectivity properties
+    public let connectivity: RUMConnectivity?
+
+    /// View Container properties (view wrapping the current view)
+    public let container: Container?
+
+    /// User provided context
+    public var context: RUMEventAttributes?
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
+    /// Device properties
+    public let device: Device?
+
+    /// Display properties
+    public let display: Display?
+
+    /// Operating system properties
+    public let os: OperatingSystem?
+
+    /// The service name for this application
+    public let service: String?
+
+    /// Session properties
+    public let session: Session
+
+    /// The source of this event
+    public let source: Source?
+
+    /// Stream properties
+    public let stream: Stream?
+
+    /// Synthetics properties
+    public let synthetics: RUMSyntheticsTest?
+
+    /// RUM event type
+    public let type: String = "vital"
+
+    /// User properties
+    public var usr: RUMUser?
+
+    /// The version for this application
+    public let version: String?
+
+    /// View properties
+    public var view: View
+
+    /// Vital properties
+    public let vital: Vital
+
+    public enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case account = "account"
+        case application = "application"
+        case buildId = "build_id"
+        case buildVersion = "build_version"
+        case ciTest = "ci_test"
+        case connectivity = "connectivity"
+        case container = "container"
+        case context = "context"
+        case date = "date"
+        case ddtags = "ddtags"
+        case device = "device"
+        case display = "display"
+        case os = "os"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case stream = "stream"
+        case synthetics = "synthetics"
+        case type = "type"
+        case usr = "usr"
+        case version = "version"
+        case view = "view"
+        case vital = "vital"
+    }
+
+    /// Schema for a vital operation step event.
+    ///
+    /// - Parameters:
+    ///   - dd: Internal properties
+    ///   - account: Account properties
+    ///   - application: Application properties
+    ///   - buildId: Generated unique ID of the application build. Unlike version or build_version this field is not meant to be coming from the user, but rather generated by the tooling for each build.
+    ///   - buildVersion: The build version for this application
+    ///   - ciTest: CI Visibility properties
+    ///   - connectivity: Device connectivity properties
+    ///   - container: View Container properties (view wrapping the current view)
+    ///   - context: User provided context
+    ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    ///   - device: Device properties
+    ///   - display: Display properties
+    ///   - os: Operating system properties
+    ///   - service: The service name for this application
+    ///   - session: Session properties
+    ///   - source: The source of this event
+    ///   - stream: Stream properties
+    ///   - synthetics: Synthetics properties
+    ///   - usr: User properties
+    ///   - version: The version for this application
+    ///   - view: View properties
+    ///   - vital: Vital properties
+    public init(
+        dd: DD,
+        account: RUMAccount? = nil,
+        application: Application,
+        buildId: String? = nil,
+        buildVersion: String? = nil,
+        ciTest: RUMCITest? = nil,
+        connectivity: RUMConnectivity? = nil,
+        container: Container? = nil,
+        context: RUMEventAttributes? = nil,
+        date: Int64,
+        ddtags: String? = nil,
+        device: Device? = nil,
+        display: Display? = nil,
+        os: OperatingSystem? = nil,
+        service: String? = nil,
+        session: Session,
+        source: Source? = nil,
+        stream: Stream? = nil,
+        synthetics: RUMSyntheticsTest? = nil,
+        usr: RUMUser? = nil,
+        version: String? = nil,
+        view: View,
+        vital: Vital
+    ) {
+        self.dd = dd
+        self.account = account
+        self.application = application
+        self.buildId = buildId
+        self.buildVersion = buildVersion
+        self.ciTest = ciTest
+        self.connectivity = connectivity
+        self.container = container
+        self.context = context
+        self.date = date
+        self.ddtags = ddtags
+        self.device = device
+        self.display = display
+        self.os = os
+        self.service = service
+        self.session = session
+        self.source = source
+        self.stream = stream
+        self.synthetics = synthetics
+        self.usr = usr
+        self.version = version
+        self.view = view
+        self.vital = vital
+    }
+
+    /// Internal properties
+    public struct DD: Codable {
+        /// Browser SDK version
+        public let browserSdkVersion: String?
+
+        /// Subset of the SDK configuration options in use during its execution
+        public let configuration: Configuration?
+
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
+        /// Session-related internal properties
+        public let session: Session?
+
+        public enum CodingKeys: String, CodingKey {
+            case browserSdkVersion = "browser_sdk_version"
+            case configuration = "configuration"
+            case formatVersion = "format_version"
+            case sdkName = "sdk_name"
+            case session = "session"
+        }
+
+        /// Internal properties
+        ///
+        /// - Parameters:
+        ///   - browserSdkVersion: Browser SDK version
+        ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        ///   - session: Session-related internal properties
+        public init(
+            browserSdkVersion: String? = nil,
+            configuration: Configuration? = nil,
+            sdkName: String? = nil,
+            session: Session? = nil
+        ) {
+            self.browserSdkVersion = browserSdkVersion
+            self.configuration = configuration
+            self.sdkName = sdkName
+            self.session = session
+        }
+
+        /// Subset of the SDK configuration options in use during its execution
+        public struct Configuration: Codable {
+            /// The percentage of views profiled
+            public let profilingSampleRate: Double?
+
+            /// The percentage of sessions with RUM & Session Replay pricing tracked
+            public let sessionReplaySampleRate: Double?
+
+            /// The percentage of sessions tracked
+            public let sessionSampleRate: Double
+
+            public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplaySampleRate = "session_replay_sample_rate"
+                case sessionSampleRate = "session_sample_rate"
+            }
+
+            /// Subset of the SDK configuration options in use during its execution
+            ///
+            /// - Parameters:
+            ///   - profilingSampleRate: The percentage of views profiled
+            ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
+            ///   - sessionSampleRate: The percentage of sessions tracked
+            public init(
+                profilingSampleRate: Double? = nil,
+                sessionReplaySampleRate: Double? = nil,
+                sessionSampleRate: Double
+            ) {
+                self.profilingSampleRate = profilingSampleRate
+                self.sessionReplaySampleRate = sessionReplaySampleRate
+                self.sessionSampleRate = sessionSampleRate
+            }
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public let plan: Plan?
+
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: RUMSessionPrecondition?
+
+            public enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+                case sessionPrecondition = "session_precondition"
+            }
+
+            /// Session-related internal properties
+            ///
+            /// - Parameters:
+            ///   - plan: Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            ///   - sessionPrecondition: The precondition that led to the creation of the session
+            public init(
+                plan: Plan? = nil,
+                sessionPrecondition: RUMSessionPrecondition? = nil
+            ) {
+                self.plan = plan
+                self.sessionPrecondition = sessionPrecondition
+            }
+
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
+        }
+    }
+
+    /// Application properties
+    public struct Application: Codable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
+        /// UUID of the application
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
+            case id = "id"
+        }
+
+        /// Application properties
+        ///
+        /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        ///   - id: UUID of the application
+        public init(
+            currentLocale: String? = nil,
+            id: String
+        ) {
+            self.currentLocale = currentLocale
+            self.id = id
+        }
+    }
+
+    /// View Container properties (view wrapping the current view)
+    public struct Container: Codable {
+        /// Source of the parent view
+        public let source: Source
+
+        /// Attributes of the view's container
+        public let view: View
+
+        public enum CodingKeys: String, CodingKey {
+            case source = "source"
+            case view = "view"
+        }
+
+        /// View Container properties (view wrapping the current view)
+        ///
+        /// - Parameters:
+        ///   - source: Source of the parent view
+        ///   - view: Attributes of the view's container
+        public init(
+            source: Source,
+            view: View
+        ) {
+            self.source = source
+            self.view = view
+        }
+
+        /// Source of the parent view
+        public enum Source: String, Codable {
+            case android = "android"
+            case ios = "ios"
+            case browser = "browser"
+            case flutter = "flutter"
+            case reactNative = "react-native"
+            case roku = "roku"
+            case unity = "unity"
+            case kotlinMultiplatform = "kotlin-multiplatform"
+        }
+
+        /// Attributes of the view's container
+        public struct View: Codable {
+            /// ID of the parent view
+            public let id: String
+
+            public enum CodingKeys: String, CodingKey {
+                case id = "id"
+            }
+
+            /// Attributes of the view's container
+            ///
+            /// - Parameters:
+            ///   - id: ID of the parent view
+            public init(
+                id: String
+            ) {
+                self.id = id
+            }
+        }
+    }
+
+    /// Display properties
+    public struct Display: Codable {
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public let viewport: Viewport?
+
+        public enum CodingKeys: String, CodingKey {
+            case viewport = "viewport"
+        }
+
+        /// Display properties
+        ///
+        /// - Parameters:
+        ///   - viewport: The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public init(
+            viewport: Viewport? = nil
+        ) {
+            self.viewport = viewport
+        }
+
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public struct Viewport: Codable {
+            /// Height of the viewport (in pixels)
+            public let height: Double
+
+            /// Width of the viewport (in pixels)
+            public let width: Double
+
+            public enum CodingKeys: String, CodingKey {
+                case height = "height"
+                case width = "width"
+            }
+
+            /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+            ///
+            /// - Parameters:
+            ///   - height: Height of the viewport (in pixels)
+            ///   - width: Width of the viewport (in pixels)
+            public init(
+                height: Double,
+                width: Double
+            ) {
+                self.height = height
+                self.width = width
+            }
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable {
+        /// Whether this session has a replay
+        public let hasReplay: Bool?
+
+        /// UUID of the session
+        public let id: String
+
+        /// Type of the session
+        public let type: RUMSessionType
+
+        public enum CodingKeys: String, CodingKey {
+            case hasReplay = "has_replay"
+            case id = "id"
+            case type = "type"
+        }
+
+        /// Session properties
+        ///
+        /// - Parameters:
+        ///   - hasReplay: Whether this session has a replay
+        ///   - id: UUID of the session
+        ///   - type: Type of the session
+        public init(
+            hasReplay: Bool? = nil,
+            id: String,
+            type: RUMSessionType
+        ) {
+            self.hasReplay = hasReplay
+            self.id = id
+            self.type = type
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case roku = "roku"
+        case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
+    }
+
+    /// Stream properties
+    public struct Stream: Codable {
+        /// UUID of the stream
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Stream properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the stream
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+
+    /// View properties
+    public struct View: Codable {
+        /// UUID of the view
+        public let id: String
+
+        /// User defined name of the view
+        public var name: String?
+
+        /// URL that linked to the initial view of the page
+        public var referrer: String?
+
+        /// URL of the view
+        public var url: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case referrer = "referrer"
+            case url = "url"
+        }
+
+        /// View properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the view
+        ///   - name: User defined name of the view
+        ///   - referrer: URL that linked to the initial view of the page
+        ///   - url: URL of the view
+        public init(
+            id: String,
+            name: String? = nil,
+            referrer: String? = nil,
+            url: String
+        ) {
+            self.id = id
+            self.name = name
+            self.referrer = referrer
+            self.url = url
+        }
+    }
+
+    /// Vital properties
+    public struct Vital: Codable {
+        /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
+        public let vitalDescription: String?
+
+        /// Reason for the failure of the step, if applicable
+        public let failureReason: FailureReason?
+
+        /// UUID of the vital
+        public let id: String
+
+        /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+        public let name: String?
+
+        /// Optional key to distinguish between multiple operations of the same name running in parallel (e.g., 'photo_upload' with keys 'profile_pic' vs 'cover')
+        public let operationKey: String?
+
+        /// Type of the step that triggered the vital, if applicable
+        public let stepType: StepType
+
+        /// Type of the vital.
+        public let type: String = "operation_step"
+
+        public enum CodingKeys: String, CodingKey {
+            case vitalDescription = "description"
+            case failureReason = "failure_reason"
+            case id = "id"
+            case name = "name"
+            case operationKey = "operation_key"
+            case stepType = "step_type"
+            case type = "type"
+        }
+
+        /// Vital properties
+        ///
+        /// - Parameters:
+        ///   - vitalDescription: Description of the vital. It can be used as a secondary identifier (URL, React component name...)
+        ///   - failureReason: Reason for the failure of the step, if applicable
+        ///   - id: UUID of the vital
+        ///   - name: Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+        ///   - operationKey: Optional key to distinguish between multiple operations of the same name running in parallel (e.g., 'photo_upload' with keys 'profile_pic' vs 'cover')
+        ///   - stepType: Type of the step that triggered the vital, if applicable
+        public init(
+            vitalDescription: String? = nil,
+            failureReason: FailureReason? = nil,
+            id: String,
+            name: String? = nil,
+            operationKey: String? = nil,
+            stepType: StepType
+        ) {
+            self.vitalDescription = vitalDescription
+            self.failureReason = failureReason
+            self.id = id
+            self.name = name
+            self.operationKey = operationKey
+            self.stepType = stepType
+        }
+
+        /// Reason for the failure of the step, if applicable
+        public enum FailureReason: String, Codable {
             case error = "error"
-            case message = "message"
-            case os = "os"
-            case status = "status"
-            case type = "type"
+            case abandoned = "abandoned"
+            case other = "other"
         }
 
-        /// The telemetry log information
-        ///
-        /// - Parameters:
-        ///   - device: Device properties
-        ///   - error: Error properties
-        ///   - message: Body of the log
-        ///   - os: OS properties
-        ///   - telemetryInfo:
-        public init(
-            device: RUMTelemetryDevice? = nil,
-            error: Error? = nil,
-            message: String,
-            os: RUMTelemetryOperatingSystem? = nil,
-            telemetryInfo: [String: Encodable]
-        ) {
-            self.device = device
-            self.error = error
-            self.message = message
-            self.os = os
-            self.telemetryInfo = telemetryInfo
-        }
-
-        /// Error properties
-        public struct Error: Codable {
-            /// The error type or kind (or code in some cases)
-            public let kind: String?
-
-            /// The stack trace or the complementary information about the error
-            public let stack: String?
-
-            public enum CodingKeys: String, CodingKey {
-                case kind = "kind"
-                case stack = "stack"
-            }
-
-            /// Error properties
-            ///
-            /// - Parameters:
-            ///   - kind: The error type or kind (or code in some cases)
-            ///   - stack: The stack trace or the complementary information about the error
-            public init(
-                kind: String? = nil,
-                stack: String? = nil
-            ) {
-                self.kind = kind
-                self.stack = stack
-            }
-        }
-    }
-
-    /// View properties
-    public struct View: Codable {
-        /// UUID of the view
-        public let id: String
-
-        public enum CodingKeys: String, CodingKey {
-            case id = "id"
-        }
-
-        /// View properties
-        ///
-        /// - Parameters:
-        ///   - id: UUID of the view
-        public init(
-            id: String
-        ) {
-            self.id = id
-        }
-    }
-}
-
-extension TelemetryErrorEvent.Telemetry {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(device, forKey: .device)
-        try staticContainer.encodeIfPresent(error, forKey: .error)
-        try staticContainer.encodeIfPresent(message, forKey: .message)
-        try staticContainer.encodeIfPresent(os, forKey: .os)
-        try staticContainer.encodeIfPresent(status, forKey: .status)
-        try staticContainer.encodeIfPresent(type, forKey: .type)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try telemetryInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.device = try staticContainer.decodeIfPresent(RUMTelemetryDevice.self, forKey: .device)
-        self.error = try staticContainer.decodeIfPresent(Error.self, forKey: .error)
-        self.message = try staticContainer.decode(String.self, forKey: .message)
-        self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
-
-        // Decode other properties into [String: AnyCodable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        self.telemetryInfo = [:]
-
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
-            self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
-        }
-    }
-}
-
-/// Schema of all properties of a telemetry debug event
-public struct TelemetryDebugEvent: RUMDataModel {
-    /// Internal properties
-    public let dd: DD
-
-    /// Action properties
-    public let action: Action?
-
-    /// Application properties
-    public let application: Application?
-
-    /// Start of the event in ms from epoch
-    public let date: Int64
-
-    /// The actual percentage of telemetry usage per event
-    public let effectiveSampleRate: Double?
-
-    /// Enabled experimental features
-    public let experimentalFeatures: [String]?
-
-    /// The SDK generating the telemetry event
-    public let service: String
-
-    /// Session properties
-    public let session: Session?
-
-    /// The source of this event
-    public let source: Source
-
-    /// The telemetry log information
-    public var telemetry: Telemetry
-
-    /// Telemetry event type. Should specify telemetry only.
-    public let type: String = "telemetry"
-
-    /// The version of the SDK generating the telemetry event
-    public let version: String
-
-    /// View properties
-    public let view: View?
-
-    public enum CodingKeys: String, CodingKey {
-        case dd = "_dd"
-        case action = "action"
-        case application = "application"
-        case date = "date"
-        case effectiveSampleRate = "effective_sample_rate"
-        case experimentalFeatures = "experimental_features"
-        case service = "service"
-        case session = "session"
-        case source = "source"
-        case telemetry = "telemetry"
-        case type = "type"
-        case version = "version"
-        case view = "view"
-    }
-
-    /// Schema of all properties of a telemetry debug event
-    ///
-    /// - Parameters:
-    ///   - dd: Internal properties
-    ///   - action: Action properties
-    ///   - application: Application properties
-    ///   - date: Start of the event in ms from epoch
-    ///   - effectiveSampleRate: The actual percentage of telemetry usage per event
-    ///   - experimentalFeatures: Enabled experimental features
-    ///   - service: The SDK generating the telemetry event
-    ///   - session: Session properties
-    ///   - source: The source of this event
-    ///   - telemetry: The telemetry log information
-    ///   - version: The version of the SDK generating the telemetry event
-    ///   - view: View properties
-    public init(
-        dd: DD,
-        action: Action? = nil,
-        application: Application? = nil,
-        date: Int64,
-        effectiveSampleRate: Double? = nil,
-        experimentalFeatures: [String]? = nil,
-        service: String,
-        session: Session? = nil,
-        source: Source,
-        telemetry: Telemetry,
-        version: String,
-        view: View? = nil
-    ) {
-        self.dd = dd
-        self.action = action
-        self.application = application
-        self.date = date
-        self.effectiveSampleRate = effectiveSampleRate
-        self.experimentalFeatures = experimentalFeatures
-        self.service = service
-        self.session = session
-        self.source = source
-        self.telemetry = telemetry
-        self.version = version
-        self.view = view
-    }
-
-    /// Internal properties
-    public struct DD: Codable {
-        /// Version of the RUM event format
-        public let formatVersion: Int64 = 2
-
-        public enum CodingKeys: String, CodingKey {
-            case formatVersion = "format_version"
-        }
-
-        /// Internal properties
-        public init() { }
-    }
-
-    /// Action properties
-    public struct Action: Codable {
-        /// UUID of the action
-        public let id: String
-
-        public enum CodingKeys: String, CodingKey {
-            case id = "id"
-        }
-
-        /// Action properties
-        ///
-        /// - Parameters:
-        ///   - id: UUID of the action
-        public init(
-            id: String
-        ) {
-            self.id = id
-        }
-    }
-
-    /// Application properties
-    public struct Application: Codable {
-        /// UUID of the application
-        public let id: String
-
-        public enum CodingKeys: String, CodingKey {
-            case id = "id"
-        }
-
-        /// Application properties
-        ///
-        /// - Parameters:
-        ///   - id: UUID of the application
-        public init(
-            id: String
-        ) {
-            self.id = id
-        }
-    }
-
-    /// Session properties
-    public struct Session: Codable {
-        /// UUID of the session
-        public let id: String
-
-        public enum CodingKeys: String, CodingKey {
-            case id = "id"
-        }
-
-        /// Session properties
-        ///
-        /// - Parameters:
-        ///   - id: UUID of the session
-        public init(
-            id: String
-        ) {
-            self.id = id
-        }
-    }
-
-    /// The source of this event
-    public enum Source: String, Codable {
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-        case unity = "unity"
-        case kotlinMultiplatform = "kotlin-multiplatform"
-    }
-
-    /// The telemetry log information
-    public struct Telemetry: Codable {
-        /// Device properties
-        public let device: RUMTelemetryDevice?
-
-        /// Body of the log
-        public let message: String
-
-        /// OS properties
-        public let os: RUMTelemetryOperatingSystem?
-
-        /// Level/severity of the log
-        public let status: String = "debug"
-
-        /// Telemetry type
-        public let type: String? = "log"
-
-        public var telemetryInfo: [String: Encodable]
-
-        public enum StaticCodingKeys: String, CodingKey {
-            case device = "device"
-            case message = "message"
-            case os = "os"
-            case status = "status"
-            case type = "type"
-        }
-
-        /// The telemetry log information
-        ///
-        /// - Parameters:
-        ///   - device: Device properties
-        ///   - message: Body of the log
-        ///   - os: OS properties
-        ///   - telemetryInfo:
-        public init(
-            device: RUMTelemetryDevice? = nil,
-            message: String,
-            os: RUMTelemetryOperatingSystem? = nil,
-            telemetryInfo: [String: Encodable]
-        ) {
-            self.device = device
-            self.message = message
-            self.os = os
-            self.telemetryInfo = telemetryInfo
-        }
-    }
-
-    /// View properties
-    public struct View: Codable {
-        /// UUID of the view
-        public let id: String
-
-        public enum CodingKeys: String, CodingKey {
-            case id = "id"
-        }
-
-        /// View properties
-        ///
-        /// - Parameters:
-        ///   - id: UUID of the view
-        public init(
-            id: String
-        ) {
-            self.id = id
-        }
-    }
-}
-
-extension TelemetryDebugEvent.Telemetry {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(device, forKey: .device)
-        try staticContainer.encodeIfPresent(message, forKey: .message)
-        try staticContainer.encodeIfPresent(os, forKey: .os)
-        try staticContainer.encodeIfPresent(status, forKey: .status)
-        try staticContainer.encodeIfPresent(type, forKey: .type)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try telemetryInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.device = try staticContainer.decodeIfPresent(RUMTelemetryDevice.self, forKey: .device)
-        self.message = try staticContainer.decode(String.self, forKey: .message)
-        self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
-
-        // Decode other properties into [String: AnyCodable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        self.telemetryInfo = [:]
-
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
-            self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
+        /// Type of the step that triggered the vital, if applicable
+        public enum StepType: String, Codable {
+            case start = "start"
+            case update = "update"
+            case retry = "retry"
+            case end = "end"
         }
     }
 }
@@ -9337,6 +9798,616 @@ extension TelemetryConfigurationEvent.Telemetry.Configuration.Plugins {
     }
 }
 
+/// Schema of all properties of a telemetry debug event
+public struct TelemetryDebugEvent: RUMDataModel {
+    /// Internal properties
+    public let dd: DD
+
+    /// Action properties
+    public let action: Action?
+
+    /// Application properties
+    public let application: Application?
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// The actual percentage of telemetry usage per event
+    public let effectiveSampleRate: Double?
+
+    /// Enabled experimental features
+    public let experimentalFeatures: [String]?
+
+    /// The SDK generating the telemetry event
+    public let service: String
+
+    /// Session properties
+    public let session: Session?
+
+    /// The source of this event
+    public let source: Source
+
+    /// The telemetry log information
+    public var telemetry: Telemetry
+
+    /// Telemetry event type. Should specify telemetry only.
+    public let type: String = "telemetry"
+
+    /// The version of the SDK generating the telemetry event
+    public let version: String
+
+    /// View properties
+    public let view: View?
+
+    public enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case action = "action"
+        case application = "application"
+        case date = "date"
+        case effectiveSampleRate = "effective_sample_rate"
+        case experimentalFeatures = "experimental_features"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case telemetry = "telemetry"
+        case type = "type"
+        case version = "version"
+        case view = "view"
+    }
+
+    /// Schema of all properties of a telemetry debug event
+    ///
+    /// - Parameters:
+    ///   - dd: Internal properties
+    ///   - action: Action properties
+    ///   - application: Application properties
+    ///   - date: Start of the event in ms from epoch
+    ///   - effectiveSampleRate: The actual percentage of telemetry usage per event
+    ///   - experimentalFeatures: Enabled experimental features
+    ///   - service: The SDK generating the telemetry event
+    ///   - session: Session properties
+    ///   - source: The source of this event
+    ///   - telemetry: The telemetry log information
+    ///   - version: The version of the SDK generating the telemetry event
+    ///   - view: View properties
+    public init(
+        dd: DD,
+        action: Action? = nil,
+        application: Application? = nil,
+        date: Int64,
+        effectiveSampleRate: Double? = nil,
+        experimentalFeatures: [String]? = nil,
+        service: String,
+        session: Session? = nil,
+        source: Source,
+        telemetry: Telemetry,
+        version: String,
+        view: View? = nil
+    ) {
+        self.dd = dd
+        self.action = action
+        self.application = application
+        self.date = date
+        self.effectiveSampleRate = effectiveSampleRate
+        self.experimentalFeatures = experimentalFeatures
+        self.service = service
+        self.session = session
+        self.source = source
+        self.telemetry = telemetry
+        self.version = version
+        self.view = view
+    }
+
+    /// Internal properties
+    public struct DD: Codable {
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        public enum CodingKeys: String, CodingKey {
+            case formatVersion = "format_version"
+        }
+
+        /// Internal properties
+        public init() { }
+    }
+
+    /// Action properties
+    public struct Action: Codable {
+        /// UUID of the action
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Action properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the action
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+
+    /// Application properties
+    public struct Application: Codable {
+        /// UUID of the application
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Application properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the application
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable {
+        /// UUID of the session
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Session properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the session
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
+    }
+
+    /// The telemetry log information
+    public struct Telemetry: Codable {
+        /// Device properties
+        public let device: RUMTelemetryDevice?
+
+        /// Body of the log
+        public let message: String
+
+        /// OS properties
+        public let os: RUMTelemetryOperatingSystem?
+
+        /// Level/severity of the log
+        public let status: String = "debug"
+
+        /// Telemetry type
+        public let type: String? = "log"
+
+        public var telemetryInfo: [String: Encodable]
+
+        public enum StaticCodingKeys: String, CodingKey {
+            case device = "device"
+            case message = "message"
+            case os = "os"
+            case status = "status"
+            case type = "type"
+        }
+
+        /// The telemetry log information
+        ///
+        /// - Parameters:
+        ///   - device: Device properties
+        ///   - message: Body of the log
+        ///   - os: OS properties
+        ///   - telemetryInfo:
+        public init(
+            device: RUMTelemetryDevice? = nil,
+            message: String,
+            os: RUMTelemetryOperatingSystem? = nil,
+            telemetryInfo: [String: Encodable]
+        ) {
+            self.device = device
+            self.message = message
+            self.os = os
+            self.telemetryInfo = telemetryInfo
+        }
+    }
+
+    /// View properties
+    public struct View: Codable {
+        /// UUID of the view
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// View properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the view
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+}
+
+extension TelemetryDebugEvent.Telemetry {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(device, forKey: .device)
+        try staticContainer.encodeIfPresent(message, forKey: .message)
+        try staticContainer.encodeIfPresent(os, forKey: .os)
+        try staticContainer.encodeIfPresent(status, forKey: .status)
+        try staticContainer.encodeIfPresent(type, forKey: .type)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try telemetryInfo.forEach {
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.device = try staticContainer.decodeIfPresent(RUMTelemetryDevice.self, forKey: .device)
+        self.message = try staticContainer.decode(String.self, forKey: .message)
+        self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
+
+        // Decode other properties into [String: AnyCodable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.telemetryInfo = [:]
+
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
+        }
+    }
+}
+
+/// Schema of all properties of a telemetry error event
+public struct TelemetryErrorEvent: RUMDataModel {
+    /// Internal properties
+    public let dd: DD
+
+    /// Action properties
+    public let action: Action?
+
+    /// Application properties
+    public let application: Application?
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// The actual percentage of telemetry usage per event
+    public let effectiveSampleRate: Double?
+
+    /// Enabled experimental features
+    public let experimentalFeatures: [String]?
+
+    /// The SDK generating the telemetry event
+    public let service: String
+
+    /// Session properties
+    public let session: Session?
+
+    /// The source of this event
+    public let source: Source
+
+    /// The telemetry log information
+    public var telemetry: Telemetry
+
+    /// Telemetry event type. Should specify telemetry only.
+    public let type: String = "telemetry"
+
+    /// The version of the SDK generating the telemetry event
+    public let version: String
+
+    /// View properties
+    public let view: View?
+
+    public enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case action = "action"
+        case application = "application"
+        case date = "date"
+        case effectiveSampleRate = "effective_sample_rate"
+        case experimentalFeatures = "experimental_features"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case telemetry = "telemetry"
+        case type = "type"
+        case version = "version"
+        case view = "view"
+    }
+
+    /// Schema of all properties of a telemetry error event
+    ///
+    /// - Parameters:
+    ///   - dd: Internal properties
+    ///   - action: Action properties
+    ///   - application: Application properties
+    ///   - date: Start of the event in ms from epoch
+    ///   - effectiveSampleRate: The actual percentage of telemetry usage per event
+    ///   - experimentalFeatures: Enabled experimental features
+    ///   - service: The SDK generating the telemetry event
+    ///   - session: Session properties
+    ///   - source: The source of this event
+    ///   - telemetry: The telemetry log information
+    ///   - version: The version of the SDK generating the telemetry event
+    ///   - view: View properties
+    public init(
+        dd: DD,
+        action: Action? = nil,
+        application: Application? = nil,
+        date: Int64,
+        effectiveSampleRate: Double? = nil,
+        experimentalFeatures: [String]? = nil,
+        service: String,
+        session: Session? = nil,
+        source: Source,
+        telemetry: Telemetry,
+        version: String,
+        view: View? = nil
+    ) {
+        self.dd = dd
+        self.action = action
+        self.application = application
+        self.date = date
+        self.effectiveSampleRate = effectiveSampleRate
+        self.experimentalFeatures = experimentalFeatures
+        self.service = service
+        self.session = session
+        self.source = source
+        self.telemetry = telemetry
+        self.version = version
+        self.view = view
+    }
+
+    /// Internal properties
+    public struct DD: Codable {
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        public enum CodingKeys: String, CodingKey {
+            case formatVersion = "format_version"
+        }
+
+        /// Internal properties
+        public init() { }
+    }
+
+    /// Action properties
+    public struct Action: Codable {
+        /// UUID of the action
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Action properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the action
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+
+    /// Application properties
+    public struct Application: Codable {
+        /// UUID of the application
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Application properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the application
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable {
+        /// UUID of the session
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Session properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the session
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
+    }
+
+    /// The telemetry log information
+    public struct Telemetry: Codable {
+        /// Device properties
+        public let device: RUMTelemetryDevice?
+
+        /// Error properties
+        public let error: Error?
+
+        /// Body of the log
+        public let message: String
+
+        /// OS properties
+        public let os: RUMTelemetryOperatingSystem?
+
+        /// Level/severity of the log
+        public let status: String = "error"
+
+        /// Telemetry type
+        public let type: String? = "log"
+
+        public var telemetryInfo: [String: Encodable]
+
+        public enum StaticCodingKeys: String, CodingKey {
+            case device = "device"
+            case error = "error"
+            case message = "message"
+            case os = "os"
+            case status = "status"
+            case type = "type"
+        }
+
+        /// The telemetry log information
+        ///
+        /// - Parameters:
+        ///   - device: Device properties
+        ///   - error: Error properties
+        ///   - message: Body of the log
+        ///   - os: OS properties
+        ///   - telemetryInfo:
+        public init(
+            device: RUMTelemetryDevice? = nil,
+            error: Error? = nil,
+            message: String,
+            os: RUMTelemetryOperatingSystem? = nil,
+            telemetryInfo: [String: Encodable]
+        ) {
+            self.device = device
+            self.error = error
+            self.message = message
+            self.os = os
+            self.telemetryInfo = telemetryInfo
+        }
+
+        /// Error properties
+        public struct Error: Codable {
+            /// The error type or kind (or code in some cases)
+            public let kind: String?
+
+            /// The stack trace or the complementary information about the error
+            public let stack: String?
+
+            public enum CodingKeys: String, CodingKey {
+                case kind = "kind"
+                case stack = "stack"
+            }
+
+            /// Error properties
+            ///
+            /// - Parameters:
+            ///   - kind: The error type or kind (or code in some cases)
+            ///   - stack: The stack trace or the complementary information about the error
+            public init(
+                kind: String? = nil,
+                stack: String? = nil
+            ) {
+                self.kind = kind
+                self.stack = stack
+            }
+        }
+    }
+
+    /// View properties
+    public struct View: Codable {
+        /// UUID of the view
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// View properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the view
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+}
+
+extension TelemetryErrorEvent.Telemetry {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(device, forKey: .device)
+        try staticContainer.encodeIfPresent(error, forKey: .error)
+        try staticContainer.encodeIfPresent(message, forKey: .message)
+        try staticContainer.encodeIfPresent(os, forKey: .os)
+        try staticContainer.encodeIfPresent(status, forKey: .status)
+        try staticContainer.encodeIfPresent(type, forKey: .type)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try telemetryInfo.forEach {
+            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.device = try staticContainer.decodeIfPresent(RUMTelemetryDevice.self, forKey: .device)
+        self.error = try staticContainer.decodeIfPresent(Error.self, forKey: .error)
+        self.message = try staticContainer.decode(String.self, forKey: .message)
+        self.os = try staticContainer.decodeIfPresent(RUMTelemetryOperatingSystem.self, forKey: .os)
+
+        // Decode other properties into [String: AnyCodable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.telemetryInfo = [:]
+
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+            self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
+        }
+    }
+}
+
 /// Schema of all properties of a telemetry usage event
 public struct TelemetryUsageEvent: RUMDataModel {
     /// Internal properties
@@ -10105,7 +11176,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                 }
 
                 public struct AddOperationStepVital: Codable {
-                    /// Feature operations action type
+                    /// Operations step type
                     public let actionType: ActionType
 
                     /// addOperationStepVital API
@@ -10118,14 +11189,14 @@ public struct TelemetryUsageEvent: RUMDataModel {
 
                     ///
                     /// - Parameters:
-                    ///   - actionType: Feature operations action type
+                    ///   - actionType: Operations step type
                     public init(
                         actionType: ActionType
                     ) {
                         self.actionType = actionType
                     }
 
-                    /// Feature operations action type
+                    /// Operations step type
                     public enum ActionType: String, Codable {
                         case start = "start"
                         case succeed = "succeed"
@@ -10262,615 +11333,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-/// The precondition that led to the creation of the session
-public enum RUMSessionPrecondition: String, Codable {
-    case userAppLaunch = "user_app_launch"
-    case inactivityTimeout = "inactivity_timeout"
-    case maxDuration = "max_duration"
-    case backgroundLaunch = "background_launch"
-    case prewarm = "prewarm"
-    case fromNonInteractiveSession = "from_non_interactive_session"
-    case explicitStop = "explicit_stop"
-}
-
-/// Account properties
-public struct RUMAccount: Codable {
-    /// Identifier of the account
-    public let id: String
-
-    /// Name of the account
-    public let name: String?
-
-    public var accountInfo: [String: Encodable]
-
-    public enum StaticCodingKeys: String, CodingKey {
-        case id = "id"
-        case name = "name"
-    }
-
-    /// Account properties
-    ///
-    /// - Parameters:
-    ///   - id: Identifier of the account
-    ///   - name: Name of the account
-    ///   - accountInfo:
-    public init(
-        id: String,
-        name: String? = nil,
-        accountInfo: [String: Encodable]
-    ) {
-        self.id = id
-        self.name = name
-        self.accountInfo = accountInfo
-    }
-}
-
-extension RUMAccount {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(id, forKey: .id)
-        try staticContainer.encodeIfPresent(name, forKey: .name)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try accountInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.id = try staticContainer.decode(String.self, forKey: .id)
-        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
-
-        // Decode other properties into [String: AnyCodable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        self.accountInfo = [:]
-
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
-            self.accountInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
-        }
-    }
-}
-
-/// CI Visibility properties
-public struct RUMCITest: Codable {
-    /// The identifier of the current CI Visibility test execution
-    public let testExecutionId: String
-
-    public enum CodingKeys: String, CodingKey {
-        case testExecutionId = "test_execution_id"
-    }
-
-    /// CI Visibility properties
-    ///
-    /// - Parameters:
-    ///   - testExecutionId: The identifier of the current CI Visibility test execution
-    public init(
-        testExecutionId: String
-    ) {
-        self.testExecutionId = testExecutionId
-    }
-}
-
-/// Device connectivity properties
-public struct RUMConnectivity: Codable {
-    /// Cellular connectivity properties
-    public let cellular: Cellular?
-
-    /// Cellular connection type reflecting the measured network performance
-    public let effectiveType: EffectiveType?
-
-    /// The list of available network interfaces
-    public let interfaces: [Interfaces]?
-
-    /// Status of the device connectivity
-    public let status: Status
-
-    public enum CodingKeys: String, CodingKey {
-        case cellular = "cellular"
-        case effectiveType = "effective_type"
-        case interfaces = "interfaces"
-        case status = "status"
-    }
-
-    /// Device connectivity properties
-    ///
-    /// - Parameters:
-    ///   - cellular: Cellular connectivity properties
-    ///   - effectiveType: Cellular connection type reflecting the measured network performance
-    ///   - interfaces: The list of available network interfaces
-    ///   - status: Status of the device connectivity
-    public init(
-        cellular: Cellular? = nil,
-        effectiveType: EffectiveType? = nil,
-        interfaces: [Interfaces]? = nil,
-        status: Status
-    ) {
-        self.cellular = cellular
-        self.effectiveType = effectiveType
-        self.interfaces = interfaces
-        self.status = status
-    }
-
-    /// Cellular connectivity properties
-    public struct Cellular: Codable {
-        /// The name of the SIM carrier
-        public let carrierName: String?
-
-        /// The type of a radio technology used for cellular connection
-        public let technology: String?
-
-        public enum CodingKeys: String, CodingKey {
-            case carrierName = "carrier_name"
-            case technology = "technology"
-        }
-
-        /// Cellular connectivity properties
-        ///
-        /// - Parameters:
-        ///   - carrierName: The name of the SIM carrier
-        ///   - technology: The type of a radio technology used for cellular connection
-        public init(
-            carrierName: String? = nil,
-            technology: String? = nil
-        ) {
-            self.carrierName = carrierName
-            self.technology = technology
-        }
-    }
-
-    /// Cellular connection type reflecting the measured network performance
-    public enum EffectiveType: String, Codable {
-        case slow2g = "slow-2g"
-        case effectiveType2g = "2g"
-        case effectiveType3g = "3g"
-        case effectiveType4g = "4g"
-    }
-
-    public enum Interfaces: String, Codable {
-        case bluetooth = "bluetooth"
-        case cellular = "cellular"
-        case ethernet = "ethernet"
-        case wifi = "wifi"
-        case wimax = "wimax"
-        case mixed = "mixed"
-        case other = "other"
-        case unknown = "unknown"
-        case interfacesNone = "none"
-    }
-
-    /// Status of the device connectivity
-    public enum Status: String, Codable {
-        case connected = "connected"
-        case notConnected = "not_connected"
-        case maybe = "maybe"
-    }
-}
-
-/// User provided context
-public struct RUMEventAttributes: Codable {
-    public var contextInfo: [String: Encodable]
-
-    /// User provided context
-    ///
-    /// - Parameters:
-    ///   - contextInfo:
-    public init(
-        contextInfo: [String: Encodable]
-    ) {
-        self.contextInfo = contextInfo
-    }
-}
-
-extension RUMEventAttributes {
-    public func encode(to encoder: Encoder) throws {
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try contextInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode other properties into [String: AnyCodable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        self.contextInfo = [:]
-
-        try dynamicContainer.allKeys.forEach {
-            self.contextInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
-        }
-    }
-}
-
-/// Device properties
-public struct Device: Codable {
-    /// The CPU architecture of the device that is reporting the error
-    public let architecture: String?
-
-    /// Current battery level of the device (0.0 to 1.0).
-    public let batteryLevel: Double?
-
-    /// Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
-    public let brand: String?
-
-    /// Current screen brightness level (0.0 to 1.0).
-    public let brightnessLevel: Double?
-
-    /// The user’s locale as a language tag combining language and region, e.g. 'en-US'.
-    public let locale: String?
-
-    /// Ordered list of the user’s preferred system languages as IETF language tags.
-    public let locales: [String]?
-
-    /// Device SKU model, e.g. Samsung SM-988GN, etc. Quite often name and model can be the same.
-    public let model: String?
-
-    /// Device marketing name, e.g. Xiaomi Redmi Note 8 Pro, Pixel 5, etc.
-    public let name: String?
-
-    /// Whether the device is in power saving mode.
-    public let powerSavingMode: Bool?
-
-    /// The device’s current time zone identifier, e.g. 'Europe/Berlin'.
-    public let timeZone: String?
-
-    /// Device type info
-    public let type: DeviceType?
-
-    public enum CodingKeys: String, CodingKey {
-        case architecture = "architecture"
-        case batteryLevel = "battery_level"
-        case brand = "brand"
-        case brightnessLevel = "brightness_level"
-        case locale = "locale"
-        case locales = "locales"
-        case model = "model"
-        case name = "name"
-        case powerSavingMode = "power_saving_mode"
-        case timeZone = "time_zone"
-        case type = "type"
-    }
-
-    /// Device properties
-    ///
-    /// - Parameters:
-    ///   - architecture: The CPU architecture of the device that is reporting the error
-    ///   - batteryLevel: Current battery level of the device (0.0 to 1.0).
-    ///   - brand: Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
-    ///   - brightnessLevel: Current screen brightness level (0.0 to 1.0).
-    ///   - locale: The user’s locale as a language tag combining language and region, e.g. 'en-US'.
-    ///   - locales: Ordered list of the user’s preferred system languages as IETF language tags.
-    ///   - model: Device SKU model, e.g. Samsung SM-988GN, etc. Quite often name and model can be the same.
-    ///   - name: Device marketing name, e.g. Xiaomi Redmi Note 8 Pro, Pixel 5, etc.
-    ///   - powerSavingMode: Whether the device is in power saving mode.
-    ///   - timeZone: The device’s current time zone identifier, e.g. 'Europe/Berlin'.
-    ///   - type: Device type info
-    public init(
-        architecture: String? = nil,
-        batteryLevel: Double? = nil,
-        brand: String? = nil,
-        brightnessLevel: Double? = nil,
-        locale: String? = nil,
-        locales: [String]? = nil,
-        model: String? = nil,
-        name: String? = nil,
-        powerSavingMode: Bool? = nil,
-        timeZone: String? = nil,
-        type: DeviceType? = nil
-    ) {
-        self.architecture = architecture
-        self.batteryLevel = batteryLevel
-        self.brand = brand
-        self.brightnessLevel = brightnessLevel
-        self.locale = locale
-        self.locales = locales
-        self.model = model
-        self.name = name
-        self.powerSavingMode = powerSavingMode
-        self.timeZone = timeZone
-        self.type = type
-    }
-
-    /// Device type info
-    public enum DeviceType: String, Codable {
-        case mobile = "mobile"
-        case desktop = "desktop"
-        case tablet = "tablet"
-        case tv = "tv"
-        case gamingConsole = "gaming_console"
-        case bot = "bot"
-        case other = "other"
-    }
-}
-
-/// Operating system properties
-public struct OperatingSystem: Codable {
-    /// Operating system build number, e.g. 15D21
-    public let build: String?
-
-    /// Operating system name, e.g. Android, iOS
-    public let name: String
-
-    /// Full operating system version, e.g. 8.1.1
-    public let version: String
-
-    /// Major operating system version, e.g. 8
-    public let versionMajor: String
-
-    public enum CodingKeys: String, CodingKey {
-        case build = "build"
-        case name = "name"
-        case version = "version"
-        case versionMajor = "version_major"
-    }
-
-    /// Operating system properties
-    ///
-    /// - Parameters:
-    ///   - build: Operating system build number, e.g. 15D21
-    ///   - name: Operating system name, e.g. Android, iOS
-    ///   - version: Full operating system version, e.g. 8.1.1
-    ///   - versionMajor: Major operating system version, e.g. 8
-    public init(
-        build: String? = nil,
-        name: String,
-        version: String,
-        versionMajor: String
-    ) {
-        self.build = build
-        self.name = name
-        self.version = version
-        self.versionMajor = versionMajor
-    }
-}
-
-/// Type of the session
-public enum RUMSessionType: String, Codable {
-    case user = "user"
-    case synthetics = "synthetics"
-    case ciTest = "ci_test"
-}
-
-/// Synthetics properties
-public struct RUMSyntheticsTest: Codable {
-    /// Whether the event comes from a SDK instance injected by Synthetics
-    public let injected: Bool?
-
-    /// The identifier of the current Synthetics test results
-    public let resultId: String
-
-    /// The identifier of the current Synthetics test
-    public let testId: String
-
-    public enum CodingKeys: String, CodingKey {
-        case injected = "injected"
-        case resultId = "result_id"
-        case testId = "test_id"
-    }
-
-    /// Synthetics properties
-    ///
-    /// - Parameters:
-    ///   - injected: Whether the event comes from a SDK instance injected by Synthetics
-    ///   - resultId: The identifier of the current Synthetics test results
-    ///   - testId: The identifier of the current Synthetics test
-    public init(
-        injected: Bool? = nil,
-        resultId: String,
-        testId: String
-    ) {
-        self.injected = injected
-        self.resultId = resultId
-        self.testId = testId
-    }
-}
-
-/// User properties
-public struct RUMUser: Codable {
-    /// Identifier of the user across sessions
-    public let anonymousId: String?
-
-    /// Email of the user
-    public let email: String?
-
-    /// Identifier of the user
-    public let id: String?
-
-    /// Name of the user
-    public let name: String?
-
-    public var usrInfo: [String: Encodable]
-
-    public enum StaticCodingKeys: String, CodingKey {
-        case anonymousId = "anonymous_id"
-        case email = "email"
-        case id = "id"
-        case name = "name"
-    }
-
-    /// User properties
-    ///
-    /// - Parameters:
-    ///   - anonymousId: Identifier of the user across sessions
-    ///   - email: Email of the user
-    ///   - id: Identifier of the user
-    ///   - name: Name of the user
-    ///   - usrInfo:
-    public init(
-        anonymousId: String? = nil,
-        email: String? = nil,
-        id: String? = nil,
-        name: String? = nil,
-        usrInfo: [String: Encodable]
-    ) {
-        self.anonymousId = anonymousId
-        self.email = email
-        self.id = id
-        self.name = name
-        self.usrInfo = usrInfo
-    }
-}
-
-extension RUMUser {
-    public func encode(to encoder: Encoder) throws {
-        // Encode static properties:
-        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
-        try staticContainer.encodeIfPresent(anonymousId, forKey: .anonymousId)
-        try staticContainer.encodeIfPresent(email, forKey: .email)
-        try staticContainer.encodeIfPresent(id, forKey: .id)
-        try staticContainer.encodeIfPresent(name, forKey: .name)
-
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try usrInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode static properties:
-        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
-        self.anonymousId = try staticContainer.decodeIfPresent(String.self, forKey: .anonymousId)
-        self.email = try staticContainer.decodeIfPresent(String.self, forKey: .email)
-        self.id = try staticContainer.decodeIfPresent(String.self, forKey: .id)
-        self.name = try staticContainer.decodeIfPresent(String.self, forKey: .name)
-
-        // Decode other properties into [String: AnyCodable] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        self.usrInfo = [:]
-
-        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-        try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
-            self.usrInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
-        }
-    }
-}
-
-/// UUID of the action
-public enum RUMActionID: Codable {
-    case string(value: String)
-    case stringsArray(value: [String])
-
-    // MARK: - Codable
-
-    public func encode(to encoder: Encoder) throws {
-        // Encode only the associated value, without encoding enum case
-        var container = encoder.singleValueContainer()
-
-        switch self {
-        case .string(let value):
-            try container.encode(value)
-        case .stringsArray(let value):
-            try container.encode(value)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode enum case from associated value
-        let container = try decoder.singleValueContainer()
-
-        if let value = try? container.decode(String.self) {
-            self = .string(value: value)
-            return
-        }
-        if let value = try? container.decode([String].self) {
-            self = .stringsArray(value: value)
-            return
-        }
-        let error = DecodingError.Context(
-            codingPath: container.codingPath,
-            debugDescription: """
-            Failed to decode `RUMActionID`.
-            Ran out of possibilities when trying to decode the value of associated type.
-            """
-        )
-        throw DecodingError.typeMismatch(RUMActionID.self, error)
-    }
-}
-
-/// HTTP method of the resource
-public enum RUMMethod: String, Codable {
-    case post = "POST"
-    case get = "GET"
-    case head = "HEAD"
-    case put = "PUT"
-    case delete = "DELETE"
-    case patch = "PATCH"
-    case trace = "TRACE"
-    case options = "OPTIONS"
-    case connect = "CONNECT"
-}
-
-/// Device properties
-public struct RUMTelemetryDevice: Codable {
-    /// Architecture of the device
-    public let architecture: String?
-
-    /// Brand of the device
-    public let brand: String?
-
-    /// Model of the device
-    public let model: String?
-
-    public enum CodingKeys: String, CodingKey {
-        case architecture = "architecture"
-        case brand = "brand"
-        case model = "model"
-    }
-
-    /// Device properties
-    ///
-    /// - Parameters:
-    ///   - architecture: Architecture of the device
-    ///   - brand: Brand of the device
-    ///   - model: Model of the device
-    public init(
-        architecture: String? = nil,
-        brand: String? = nil,
-        model: String? = nil
-    ) {
-        self.architecture = architecture
-        self.brand = brand
-        self.model = model
-    }
-}
-
-/// OS properties
-public struct RUMTelemetryOperatingSystem: Codable {
-    /// Build of the OS
-    public let build: String?
-
-    /// Name of the OS
-    public let name: String?
-
-    /// Version of the OS
-    public let version: String?
-
-    public enum CodingKeys: String, CodingKey {
-        case build = "build"
-        case name = "name"
-        case version = "version"
-    }
-
-    /// OS properties
-    ///
-    /// - Parameters:
-    ///   - build: Build of the OS
-    ///   - name: Name of the OS
-    ///   - version: Version of the OS
-    public init(
-        build: String? = nil,
-        name: String? = nil,
-        version: String? = nil
-    ) {
-        self.build = build
-        self.name = name
-        self.version = version
-    }
-}
-
-// Generated from https://github.com/DataDog/rum-events-format/tree/14ab2d9eba0140976da009fd124f675632855ca2
+// Generated from https://github.com/DataDog/rum-events-format/tree/fe242fe9a02cc373e61127d7a2ef629991a5c28f

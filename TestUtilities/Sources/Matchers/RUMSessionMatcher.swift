@@ -93,7 +93,7 @@ public class RUMSessionMatcher {
         public fileprivate(set) var longTaskEvents: [RUMLongTaskEvent] = []
 
         /// `RUMVital` events tracked during this visit.
-        public fileprivate(set) var vitalEvents: [RUMVitalEvent] = []
+        public fileprivate(set) var vitalEvents: [RUMVitalOperationStepEvent] = []
     }
 
     /// RUM application ID for this session.
@@ -113,7 +113,7 @@ public class RUMSessionMatcher {
     public let resourceEventMatchers: [RUMEventMatcher]
     public let errorEventMatchers: [RUMEventMatcher]
     public let longTaskEventMatchers: [RUMEventMatcher]
-    public let vitalEventMatchers: [RUMEventMatcher]
+    public let operationStepEventMatchers: [RUMEventMatcher]
 
     /// `RUMView` events tracked in this session.
     public let viewEvents: [RUMViewEvent]
@@ -130,8 +130,8 @@ public class RUMSessionMatcher {
     /// `RUMLongTask` events tracked in this session.
     public let longTaskEvents: [RUMLongTaskEvent]
 
-    /// `RUMVital` events tracked in this session.
-    public let vitalEvents: [RUMVitalEvent]
+    /// `RUMVitalOperationStep` events tracked in this session.
+    public let operationStepEvents: [RUMVitalOperationStepEvent]
 
     private init(applicationID: String, sessionID: String, sessionEventMatchers: [RUMEventMatcher]) throws {
         // Sort events so they follow increasing time order
@@ -155,7 +155,10 @@ public class RUMSessionMatcher {
         self.resourceEventMatchers = eventsMatchersByType["resource"] ?? []
         self.errorEventMatchers = eventsMatchersByType["error"] ?? []
         self.longTaskEventMatchers = eventsMatchersByType["long_task"] ?? []
-        self.vitalEventMatchers = eventsMatchersByType["vital"] ?? []
+        self.operationStepEventMatchers = try (eventsMatchersByType["vital"] ?? []).filter { vitalMatcher in
+            let vitalType: String = try vitalMatcher.attribute(forKeyPath: "vital.type")
+            return vitalType == "operation_step"
+        }
 
         let viewEvents: [RUMViewEvent] = try viewEventMatchers.map { matcher in try matcher.model() }
 
@@ -171,7 +174,7 @@ public class RUMSessionMatcher {
         let longTaskEvents: [RUMLongTaskEvent] = try longTaskEventMatchers
             .map { matcher in try matcher.model() }
 
-        let vitalEvents: [RUMVitalEvent] = try vitalEventMatchers
+        let operationStepVitalEvents: [RUMVitalOperationStepEvent] = try operationStepEventMatchers
             .map { matcher in try matcher.model() }
 
         // Validate each group of events individually
@@ -180,7 +183,7 @@ public class RUMSessionMatcher {
         try validate(rumResourceEvents: resourceEvents)
         try validate(rumErrorEvents: errorEvents)
         try validate(rumLongTaskEvents: longTaskEvents)
-        try validate(rumVitalEvents: vitalEvents)
+        try validate(operationStepVitalEvents: operationStepVitalEvents)
 
         // Group RUMView events into ViewVisits:
         let uniqueViewIDs = Set(viewEvents.map { $0.view.id })
@@ -255,18 +258,12 @@ public class RUMSessionMatcher {
             }
         }
 
-        try vitalEvents.forEach { rumEvent in
-            guard let vitalViewID = rumEvent.view?.id else {
-                throw RUMSessionConsistencyException(
-                    description: "Cannot link RUM Vital: \(rumEvent) to `RUMSessionMatcher.ViewVisit` by `view.id` (`view.id` is nil)."
-                )
-            }
-
-            if let visit = visitsByViewID[vitalViewID] {
+        try operationStepVitalEvents.forEach { rumEvent in
+            if let visit = visitsByViewID[rumEvent.view.id] {
                 visit.vitalEvents.append(rumEvent)
             } else {
                 throw RUMSessionConsistencyException(
-                    description: "Cannot link RUM Event: \(rumEvent) to `RUMSessionMatcher.ViewVisit` by `view.id` (no visit found for `view.id`: \(vitalViewID))."
+                    description: "Cannot link RUM Event: \(rumEvent) to `RUMSessionMatcher.ViewVisit` by `view.id` (no visit found for `view.id`: \(rumEvent.view.id))."
                 )
             }
         }
@@ -316,7 +313,7 @@ public class RUMSessionMatcher {
         self.resourceEvents = resourceEvents
         self.errorEvents = errorEvents
         self.longTaskEvents = longTaskEvents
-        self.vitalEvents = vitalEvents
+        self.operationStepEvents = operationStepVitalEvents
     }
 
     /// Checks if this session contains a view with a specific ID.
@@ -386,9 +383,9 @@ private func validate(rumLongTaskEvents: [RUMLongTaskEvent]) throws {
     }
 }
 
-private func validate(rumVitalEvents: [RUMVitalEvent]) throws {
+private func validate(operationStepVitalEvents: [RUMVitalOperationStepEvent]) throws {
     // All vital events must use `session.plan` "lite"
-    try rumVitalEvents.forEach { vitalEvent in
+    try operationStepVitalEvents.forEach { vitalEvent in
         if vitalEvent.source == .ios { // validate only mobile events
             try validate(device: vitalEvent.device)
             try validate(os: vitalEvent.os)
@@ -727,10 +724,8 @@ extension RUMSessionMatcher: CustomStringConvertible {
         return output
     }
 
-    private func render(event: RUMVitalEvent, in view: View) -> String {
-        guard case let .featureOperationProperties(value: vital) = event.vital else {
-            return ""
-        }
+    private func render(event: RUMVitalOperationStepEvent, in view: View) -> String {
+        let vital = event.vital
         var output = renderAttributesBox(attributes: [("⚡ RUM Vital", "")], indentationLevel: 2)
         output += renderAttributesBox(
             attributes: [
@@ -738,7 +733,7 @@ extension RUMSessionMatcher: CustomStringConvertible {
                 ("name", vital.name ?? ""),
                 ("operation.key", vital.operationKey ?? "nil"),
                 ("type", "\(vital.type)"),
-                ("step.type", "\(vital.stepType?.rawValue ?? "")"),
+                ("step.type", "\(vital.stepType.rawValue)"),
                 ("failure.reason", vital.failureReason?.rawValue ?? "nil"),
             ],
             prefix: "→",

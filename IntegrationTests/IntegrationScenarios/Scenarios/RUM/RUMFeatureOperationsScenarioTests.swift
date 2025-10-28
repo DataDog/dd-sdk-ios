@@ -73,21 +73,16 @@ class RUMFeatureOperationsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
         // Verify login flow vital events
-        let featureOperationVitalEvents = session.vitalEvents.compactMap {
-            if case let .featureOperationProperties(value: featureOperationVital) = $0.vital {
-                return featureOperationVital
-            }
-            return nil
-        }
-        let loginStartEvents = featureOperationVitalEvents.filter { $0.name == "login_flow" && $0.stepType == .start }
-        let loginSucceedEvents = featureOperationVitalEvents.filter { $0.name == "login_flow" && $0.stepType == .end && $0.failureReason == nil }
+        let featureOperationVitals = session.operationStepEvents.map { $0.vital }
+        let loginStartEvents = featureOperationVitals.filter { $0.name == "login_flow" && $0.stepType == .start }
+        let loginSucceedEvents = featureOperationVitals.filter { $0.name == "login_flow" && $0.stepType == .end && $0.failureReason == nil }
 
         XCTAssertEqual(loginStartEvents.count, 1, "Should have one login flow start event")
         XCTAssertEqual(loginSucceedEvents.count, 1, "Should have one login flow succeed event")
 
         // Verify no operation key for basic operation
-        for event in featureOperationVitalEvents {
-            XCTAssertNil(event.operationKey, "Basic operation should not have operation key")
+        for vital in featureOperationVitals {
+            XCTAssertNil(vital.operationKey, "Basic operation should not have operation key")
         }
     }
 
@@ -119,14 +114,9 @@ class RUMFeatureOperationsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
         // Verify error vital events
-        let featureOperationVitalEvents = session.vitalEvents.compactMap {
-            if case let .featureOperationProperties(value: featureOperationVital) = $0.vital {
-                return featureOperationVital
-            }
-            return nil
-        }
-        let loginStartEvents = featureOperationVitalEvents.filter { $0.name == "login_flow" && $0.stepType == .start }
-        let loginFailEvents = featureOperationVitalEvents.filter { $0.name == "login_flow" && $0.stepType == .end && $0.failureReason == .error }
+        let featureOperationVitals = session.operationStepEvents.map { $0.vital }
+        let loginStartEvents = featureOperationVitals.filter { $0.name == "login_flow" && $0.stepType == .start }
+        let loginFailEvents = featureOperationVitals.filter { $0.name == "login_flow" && $0.stepType == .end && $0.failureReason == .error }
 
         XCTAssertEqual(loginStartEvents.count, 1, "Should have one login flow start event")
         XCTAssertEqual(loginFailEvents.count, 1, "Should have one login flow fail event")
@@ -164,20 +154,15 @@ class RUMFeatureOperationsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
         // Verify parallel operations vital events
-        let featureOperationVitalEvents = session.vitalEvents.compactMap {
-            if case let .featureOperationProperties(value: featureOperationVital) = $0.vital {
-                return featureOperationVital
-            }
-            return nil
-        }
-        let photoUploadStartEvents = featureOperationVitalEvents.filter { $0.name == "photo_upload" && $0.stepType == .start }
-        let photoUploadSucceedEvents = featureOperationVitalEvents.filter { $0.name == "photo_upload" && $0.stepType == .end && $0.failureReason == nil }
+        let featureOperationVitals = session.operationStepEvents.map { $0.vital }
+        let photoUploadStartEvents = featureOperationVitals.filter { $0.name == "photo_upload" && $0.stepType == .start }
+        let photoUploadSucceedEvents = featureOperationVitals.filter { $0.name == "photo_upload" && $0.stepType == .end && $0.failureReason == nil }
 
         XCTAssertEqual(photoUploadStartEvents.count, 3, "Should have three photo upload start events")
         XCTAssertEqual(photoUploadSucceedEvents.count, 3, "Should have three photo upload succeed events")
 
         // Verify operation keys for parallel instances
-        let operationKeys = Set(featureOperationVitalEvents.map { $0.operationKey })
+        let operationKeys = Set(featureOperationVitals.map { $0.operationKey })
         let expectedKeys = Set(["photo1", "photo2", "photo3"])
         XCTAssertEqual(operationKeys, expectedKeys, "Parallel operations should have the correct operation keys")
     }
@@ -208,14 +193,9 @@ class RUMFeatureOperationsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
 
         // Verify parallel operations vital events
-        let featureOperationVitalEvents = session.vitalEvents.compactMap {
-            if case let .featureOperationProperties(value: featureOperationVital) = $0.vital {
-                return featureOperationVital
-            }
-            return nil
-        }
-        let startEvents = featureOperationVitalEvents.filter { $0.name == "photo_upload" && $0.stepType == .start }
-        let failureEvents = featureOperationVitalEvents.filter {
+        let featureOperationVitals = session.operationStepEvents.map { $0.vital }
+        let startEvents = featureOperationVitals.filter { $0.name == "photo_upload" && $0.stepType == .start }
+        let failureEvents = featureOperationVitals.filter {
             $0.name == "photo_upload" &&
             $0.stepType == .end &&
             $0.failureReason != nil
@@ -225,9 +205,9 @@ class RUMFeatureOperationsScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertEqual(failureEvents.count, 3, "Should have three photo upload failure events")
 
         let expectedFailures = [
-            ("photo1", RUMVitalEvent.Vital.FeatureOperationProperties.FailureReason.error),
-            ("photo2", RUMVitalEvent.Vital.FeatureOperationProperties.FailureReason.abandoned),
-            ("photo3", RUMVitalEvent.Vital.FeatureOperationProperties.FailureReason.other)
+            ("photo1", RUMVitalOperationStepEvent.Vital.FailureReason.error),
+            ("photo2", RUMVitalOperationStepEvent.Vital.FailureReason.abandoned),
+            ("photo3", RUMVitalOperationStepEvent.Vital.FailureReason.other)
         ]
 
         zip(failureEvents.sorted { $0.operationKey ?? "" < $1.operationKey ?? "" }, expectedFailures)
@@ -276,14 +256,8 @@ class RUMFeatureOperationsScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertGreaterThan(session.views.count, 2, "Should have multiple views")
 
         // Verify vital events capture the correct view context
-        let featureOperationVitalEvents = session.vitalEvents.compactMap {
-            if case let .featureOperationProperties(value: featureOperationVital) = $0.vital {
-                return (vital: featureOperationVital, view: $0.view)
-            }
-            return nil
-        }
-        let loginStartEvents = featureOperationVitalEvents.filter { $0.vital.name == "login_flow" && $0.vital.stepType == .start }
-        let loginSucceedEvents = featureOperationVitalEvents.filter { $0.vital.name == "login_flow" && $0.vital.stepType == .end && $0.vital.failureReason == nil }
+        let loginStartEvents = session.operationStepEvents.filter { $0.vital.name == "login_flow" && $0.vital.stepType == .start }
+        let loginSucceedEvents = session.operationStepEvents.filter { $0.vital.name == "login_flow" && $0.vital.stepType == .end && $0.vital.failureReason == nil }
 
         XCTAssertEqual(loginStartEvents.count, 1, "Should have one login flow start event")
         XCTAssertEqual(loginSucceedEvents.count, 1, "Should have one login flow succeed event")
@@ -291,11 +265,11 @@ class RUMFeatureOperationsScenarioTests: IntegrationTests, RUMCommonAsserts {
         // Verify start event is associated with 1st view
         let startEvent = try XCTUnwrap(loginStartEvents.first)
         let firstView = session.views[1] // Skip application launch view
-        XCTAssertEqual(startEvent.view?.id, firstView.viewID, "Start event should be associated with the view where it was started")
+        XCTAssertEqual(startEvent.view.id, firstView.viewID, "Start event should be associated with the view where it was started")
 
         // Verify second event is associated with 2nd view
         let secondEvent = try XCTUnwrap(loginSucceedEvents.first)
         let secondView = session.views[2]
-        XCTAssertEqual(secondEvent.view?.id, secondView.viewID, "Second event should be associated with the view where it was started")
+        XCTAssertEqual(secondEvent.view.id, secondView.viewID, "Second event should be associated with the view where it was started")
     }
 }
